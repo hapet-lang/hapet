@@ -9,50 +9,29 @@ public static class Program
 	public static int Main(string[] args)
 	{
 		Derived dr222 = new Derived();
-		var tt = dr222.AnimeLoh;
-		ISoh l = (dr222 as ISoh);
-		return l.AnimeLoh;
+		BaseCls l = (dr222 as BaseCls);
+		return l.Field1;
 	}
 }
 
-public interface IBot
+public interface ISoh
 {
-	byte AnimeBot;
-	byte AnimeBot222 { get; set; }
+
 }
 
-public interface ILoh
+public abstract class BaseCls
 {
-	short AnimeLoh { get; set; }
-}
+	public int Field1;
 
-public interface ISoh : ILoh, IBot
-{
-	int AnimeSoh { get; set; }
-}
-
-public class BaseCls : ILoh
-{
-	public string Field1;
-
-	public short AnimeLoh { get; set; } = 44;
-
-	public BaseCls(string ddd)
+	public BaseCls(int ddd)
 	{
 		this.Field1 = ddd;
 	}
 }
 
-public class Derived : BaseCls, ISoh, IBot
+public class Derived : BaseCls, ISoh
 {
-	public long Field2;
-
-	public int AnimeSoh { get; set; }
-
-	public byte AnimeBot;
-	public byte AnimeBot222 { get; set; }
-
-	public Derived() : base("dasdasd")
+	public Derived() : base(44)
 	{
 	}
 }
