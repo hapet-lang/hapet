@@ -1,4 +1,7 @@
-﻿namespace Frontend.Types
+﻿using Frontend.Parsing.Entities;
+using Frontend.Scoping.Entities;
+
+namespace Frontend.Types
 {
 	public abstract class HapetType
 	{
@@ -54,5 +57,38 @@
 		{
 			return base.GetHashCode();
 		}
+
+		public virtual int Match(HapetType concrete, Dictionary<string, (HapetType type, object value)> genericTypes)
+		{
+			if (concrete is ReferenceType r)
+				concrete = r.TargetType;
+
+			if (this == concrete)
+				return 0;
+			return -1;
+		}
+
+		#region Other Matches
+		public static int GenericValuesMatch((HapetType type, object value) a, (HapetType type, object value) b, Dictionary<string, (HapetType type, object value)> polyTypes)
+		{
+			switch (a.value, b.value)
+			{
+				case (HapetType ta, HapetType tb):
+					return ta.Match(tb, polyTypes);
+
+				case (NumberData va, NumberData vb): return va == vb ? 0 : -1;
+				case (bool va, bool vb): return va == vb ? 0 : -1;
+				case (string va, string vb): return va == vb ? 0 : -1;
+				case (char va, char vb): return va == vb ? 0 : -1;
+
+				// generic values
+				case (GenericValue _, object _): return 1;
+				case (object _, GenericValue _): return 1;
+
+				default:
+					return -1;
+			}
+		}
+		#endregion
 	}
 }
