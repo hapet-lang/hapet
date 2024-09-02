@@ -86,6 +86,8 @@
 		KwSwitch,
 		KwCase,
 		KwLoop,
+		KwFor,
+		KwWhile,
 
 		KwTrue,
 		KwFalse,

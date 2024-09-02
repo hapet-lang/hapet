@@ -9,9 +9,13 @@ namespace Frontend.Ast.Expressions
 
 		public AstIdExpr[] Path { get; }
 
-		public AstUsingExpr(AstIdExpr[] path, ILocation Location = null) : base(Location)
+		// when keyword 'as' is used
+		public AstIdExpr AsWhat { get; }
+
+		public AstUsingExpr(AstIdExpr[] path, AstIdExpr asWhat = null, ILocation Location = null) : base(Location)
 		{
 			this.Path = path;
+			this.AsWhat = asWhat;
 		}
 
 		public override TReturn Accept<TReturn, TData>(IVisitor<TReturn, TData> visitor, TData data = default)

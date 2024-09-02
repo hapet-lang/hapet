@@ -16,6 +16,7 @@ namespace Frontend.Visitors
 
 		ReturnType VisitIdExpr(AstIdExpr expr, DataType data = default);
 		ReturnType VisitUsingExpr(AstUsingExpr expr, DataType data = default);
+		ReturnType VisitEmptyExpr(AstEmptyExpr expr, DataType data = default);
 
 		ReturnType VisitExprStmt(AstExprStmt stmt, DataType data = default);
 		ReturnType VisitAttachStmt(AstAttachStmt stmt, DataType data = default);
@@ -29,6 +30,7 @@ namespace Frontend.Visitors
 
 		public virtual ReturnType VisitIdExpr(AstIdExpr expr, DataType data = default) => default;
 		public virtual ReturnType VisitUsingExpr(AstUsingExpr expr, DataType data = default) => default;
+		public virtual ReturnType VisitEmptyExpr(AstEmptyExpr expr, DataType data = default) => default;
 
 		public virtual ReturnType VisitExprStmt(AstExprStmt stmt, DataType data = default) => default;
 		public virtual ReturnType VisitAttachStmt(AstAttachStmt stmt, DataType data = default) => default;
