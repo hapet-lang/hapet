@@ -27,6 +27,9 @@ namespace Frontend.Ast
 	{
 		protected int mFlags { get; set; } = 0;
 
+		// like public/static/virtual
+		public List<int> SpecialKeys { get; private set; } = new List<int>();
+
 		public ILocation Location { get; set; }
 		public TokenLocation Beginning => Location?.Beginning;
 		public TokenLocation Ending => Location?.Ending;

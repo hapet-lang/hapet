@@ -514,6 +514,12 @@ namespace Frontend.Parsing
 				case TokenType.KwClass:
 					return ParseClassTypeExpression();
 
+				// custom shite
+				case TokenType.KwPublic:
+				case TokenType.KwProtected:
+				case TokenType.KwPrivate:
+					return ParseAccessKeys(token.Type);
+
 				default:
 					//NextToken();
 					ReportError(token.Location, errorMessage?.Invoke(token) ?? $"Failed to parse expression, unpexpected token ({token.Type}) {token.Data}");
