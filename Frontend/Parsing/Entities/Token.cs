@@ -6,6 +6,8 @@
 		public TokenLocation Location { get; set; }
 		public object Data { get; set; }
 
+		public string Suffix { get; set; } // like 0x 0b $ @
+
 		public override string ToString()
 		{
 			return $"({Location.Line}:{Location.Index - Location.LineStartIndex}) ({Type}) {Data}";

@@ -93,4 +93,45 @@ namespace Frontend.Ast
 			return string.Empty;
 		}
 	}
+
+	public class AstAssignment : AstStatement
+	{
+		public AstExpression Pattern { get; set; }
+		public AstExpression Value { get; set; }
+		public string Operator { get; set; }
+
+		public List<AstAssignment> SubAssignments { get; set; }
+		public bool OnlyGenerateValue { get; internal set; } = false;
+
+		public List<AstStatement> Destructions { get; private set; } = null;
+
+		public AstAssignment(AstExpression target, AstExpression value, string op = null, ILocation Location = null)
+			: base(Location: Location)
+		{
+			this.Pattern = target;
+			this.Value = value;
+			this.Operator = op;
+		}
+
+		public void AddSubAssignment(AstAssignment ass)
+		{
+			if (SubAssignments == null) SubAssignments = new List<AstAssignment>();
+			SubAssignments.Add(ass);
+		}
+
+		public void AddDestruction(AstStatement dest)
+		{
+			if (dest == null)
+				return;
+			if (Destructions == null)
+				Destructions = new List<AstStatement>();
+			Destructions.Add(dest);
+		}
+
+		[DebuggerStepThrough]
+		public override T Accept<T, D>(IVisitor<T, D> visitor, D data = default) => visitor.VisitAssignmentStmt(this, data);
+
+		public override AstStatement Clone()
+			=> CopyValuesTo(new AstAssignment(Pattern.Clone(), Value.Clone(), Operator));
+	}
 }

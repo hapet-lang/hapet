@@ -126,4 +126,14 @@ namespace Frontend.Ast
 			this.Parent = stmt;
 		}
 	}
+
+	public abstract class AstNestedExpression : AstExpression
+	{
+		public Scope SubScope { get; set; }
+
+		public AstNestedExpression(ILocation Location = null)
+			: base(Location: Location)
+		{
+		}
+	}
 }

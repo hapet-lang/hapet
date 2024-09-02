@@ -73,9 +73,6 @@ namespace Frontend.Parsing
 				case TokenType.OpenBrace:
 					return ParseBlockStatement();
 
-				case TokenType.KwUsing:
-					return ParseUsingStatement();
-
 				case TokenType.KwAttach:
 					return ParseAttachStatement();
 
@@ -85,7 +82,7 @@ namespace Frontend.Parsing
 						if (expr is AstEmptyExpr)
 						{
 							NextToken();
-							return new AstEmptyStatement(expr.Location);
+							return new AstEmptyStmt(expr.Location);
 						}
 						//if (CheckToken(TokenType.Colon))
 						//{

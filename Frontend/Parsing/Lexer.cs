@@ -207,20 +207,20 @@ namespace Frontend.Parsing
 					break;
 			}
 
-			//if (token.Type == TokenType.StringLiteral || token.Type == TokenType.NumberLiteral || token.Type == TokenType.CharLiteral)
-			//{
-			//	if (IsIdentBegin(Current))
-			//	{
-			//		token.Suffix = "" + Current;
-			//		_location.Index++;
+			if (token.Type == TokenType.StringLiteral || token.Type == TokenType.NumberLiteral || token.Type == TokenType.CharLiteral)
+			{
+				if (IsIdentBegin(Current))
+				{
+					token.Suffix = "" + Current;
+					_location.Index++;
 
-			//		while (IsIdent(Current))
-			//		{
-			//			token.Suffix += Current;
-			//			_location.Index++;
-			//		}
-			//	}
-			//}
+					while (IsIdent(Current))
+					{
+						token.Suffix += Current;
+						_location.Index++;
+					}
+				}
+			}
 
 			token.Location.End = _location.Index;
 			return token;
