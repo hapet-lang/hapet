@@ -32,5 +32,13 @@ namespace Frontend
 
 			return null;
 		}
+
+		#region string extensions
+		public static string PathNormalize(this string path)
+		{
+			return Path.GetFullPath(new Uri(path).LocalPath)
+					   .TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+		}
+		#endregion
 	}
 }

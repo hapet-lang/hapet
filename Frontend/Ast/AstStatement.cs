@@ -5,8 +5,25 @@ using System.Diagnostics;
 
 namespace Frontend.Ast
 {
+	public enum StmtFlags
+	{
+		GlobalScope,
+		Returns,
+		IsLastStatementInBlock,
+		NoDefaultInitializer,
+		MembersComputed,
+		ExcludeFromVtable,
+		IsMacroFunction,
+		IsForExtension,
+		IsCopy,
+		Breaks,
+		IsLocal
+	}
+
 	public abstract class AstStatement : IVisitorAcceptor, ILocation, IAstNode
 	{
+		protected int _flags { get; private set; } = 0;
+
 		public ILocation Location { get; private set; }
 		public TokenLocation Beginning => Location?.Beginning;
 		public TokenLocation Ending => Location?.Ending;
@@ -26,6 +43,21 @@ namespace Frontend.Ast
 			this.Location = Location;
 		}
 
+		public void SetFlag(StmtFlags f, bool b = true)
+		{
+			if (b)
+				_flags |= 1 << (int)f;
+			else
+				_flags &= ~(1 << (int)f);
+		}
+
+		public bool GetFlag(StmtFlags f) => (_flags & (1 << (int)f)) != 0;
+
+		public int GetFlags() => _flags;
+		public void SetFlags(int flags)
+		{
+			_flags = flags;
+		}
 		public bool HasDirective(string name) => Directives.Find(d => d.Name.Name == name) != null;
 
 		public AstDirective GetDirective(string name)

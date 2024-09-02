@@ -1,4 +1,5 @@
 ﻿using Frontend.Ast;
+using Frontend.Errors;
 using Frontend.Parsing.Entities;
 using Frontend.Scoping;
 
@@ -35,8 +36,21 @@ namespace Frontend
 		string GetText(ILocation location);
 	}
 
-	public class Compiler : ITextProvider
+	public partial class Compiler : ITextProvider
 	{
+		public IErrorHandler ErrorHandler { get; private set; }
+
+		private Scope _globalScope = null;
+
+		public Compiler(IErrorHandler errorHandler)
+		{
+			ErrorHandler = errorHandler;
+
+			_globalScope = new Scope("global_scope");
+			_globalScope.DefineBuiltInTypes();
+			_globalScope.DefineBuiltInOperators();
+		}
+
 		public string GetText(ILocation location)
 		{
 			throw new NotImplementedException();

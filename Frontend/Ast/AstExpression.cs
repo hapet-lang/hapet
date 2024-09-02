@@ -20,7 +20,6 @@ namespace Frontend.Ast
 		RequireInitializedSymbol = 9,
 		Breaks = 10,
 		ValueRequired = 11,
-		ExportScope = 12,
 		IsDeclarationPattern = 13
 	}
 

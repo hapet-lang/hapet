@@ -6,4 +6,18 @@
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
 
+  <ItemGroup>
+    <None Remove="TestFile1.hpt" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="TestFile1.hpt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\Frontend\Frontend.csproj" />
+	</ItemGroup>
+
 </Project>
