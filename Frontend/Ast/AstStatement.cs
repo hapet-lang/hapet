@@ -1,4 +1,5 @@
 ﻿using Frontend.Parsing.Entities;
+using Frontend.Scoping;
 using Frontend.Visitors;
 using System.Diagnostics;
 

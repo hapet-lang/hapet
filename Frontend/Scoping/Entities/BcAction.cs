@@ -1,4 +1,7 @@
-﻿namespace Frontend.Scoping.Entities
+﻿using Frontend.Ast;
+using Frontend.Ast.Expressions;
+
+namespace Frontend.Scoping.Entities
 {
 	public interface IBreakable
 	{

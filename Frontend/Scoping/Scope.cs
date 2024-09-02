@@ -1,4 +1,7 @@
-﻿using Frontend.Parsing.Entities;
+﻿using Frontend.Ast;
+using Frontend.Ast.Declarations;
+using Frontend.Ast.Expressions;
+using Frontend.Parsing.Entities;
 using Frontend.Scoping.Entities;
 using Frontend.Types;
 using System.Net.NetworkInformation;

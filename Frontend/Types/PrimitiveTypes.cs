@@ -26,6 +26,7 @@ namespace Frontend.Types
 		public static IntType LiteralType { get; } = new IntType(0, false);
 		public static IntType DefaultType => GetIntType(4, true);
 
+#warning align as size when it is 8 probably a bad idea because of x86 (should be checked somehow)
 		private IntType(int size, bool sign) : base(size, size)
 		{
 			Signed = sign;
@@ -103,6 +104,8 @@ namespace Frontend.Types
 		public static FloatType DefaultType => GetFloatType(4);
 		public override bool IsGenericType => false;
 
+
+#warning align as size when it is 8 probably a bad idea because of x86 (should be checked somehow)
 		private FloatType(int size) : base(size, size) { }
 
 		public static FloatType GetFloatType(int bytes)
@@ -517,7 +520,7 @@ namespace Frontend.Types
 
 		public override bool IsGenericType => false;
 
-		// ATTENTION: pointer size is 16
+#warning pointer size is 16
 		private StringType() : base(16, 8) { }
 		public override string ToString() => "string";
 	}
