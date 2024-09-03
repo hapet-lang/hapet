@@ -11,6 +11,10 @@ namespace Frontend.Ast.Expressions
 		public ISymbol Symbol { get; set; }
 
 		public bool IsGeneric { get; private set; }
+		/// <summary>
+		/// used only if AstIdExpr is a type
+		/// </summary>
+		public bool IsArray { get; set; } 
 
 		[DebuggerStepThrough]
 		public AstIdExpr(string name, bool isPolyTypeExpr, ILocation Location = null) : base(Location)

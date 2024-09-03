@@ -25,6 +25,7 @@ namespace HapetCompiler
 
 			var errorHandler = new ConsoleErrorHandler(0, 0, true);
 			var compiler = new Compiler(errorHandler);
+			errorHandler.TextProvider = compiler;
 
 			var ptFile = compiler.AddFile(_testFile);
 			compiler.CompileAll();
@@ -34,7 +35,6 @@ namespace HapetCompiler
 			using (var writer = new StreamWriter(file))
 			{
 				printer.PrintWorkspace(compiler, writer);
-
 			}
 		}
 	}

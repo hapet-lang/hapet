@@ -55,11 +55,10 @@ namespace Frontend.Parsing
 			{
 				case TokenType.EOF:
 					return null;
-
-					// TODO:
-				//case TokenType.SharpIdentifier:
-				//	return ParseDirectiveStatement();
-
+				
+				case TokenType.SharpIdentifier:
+					return ParseDirectiveStatement();
+				// TODO:
 				//case TokenType.KwReturn:
 				//	return ParseReturnStatement();
 				//case TokenType.KwWhile:
@@ -103,11 +102,11 @@ namespace Frontend.Parsing
 							}
 							SkipNewlines();
 							var val = ParseExpression(true);
-							return new AstAssignment(expr, val, op, new Location(expr.Beginning, val.End));
+							return new AstAssignment(expr, val, op, new Location(expr.Beginning, val.Ending));
 						}
 						else
 						{
-							return new AstExprStmt(expr, new Location(expr.Beginning, expr.End));
+							return new AstExprStmt(expr, new Location(expr.Beginning, expr.Ending));
 						}
 					}
 			}

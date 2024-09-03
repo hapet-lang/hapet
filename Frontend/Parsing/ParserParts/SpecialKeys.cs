@@ -7,12 +7,33 @@ namespace Frontend.Parsing
 	{
 		private AstExpression ParseAccessKeys(TokenType tknType)
 		{
+			return ParseKeysInternal(tknType);
+		}
+
+		private AstExpression ParseSyncKeys(TokenType tknType)
+		{
+			return ParseKeysInternal(tknType);
+		}
+
+		private AstExpression ParseInstancingKeys(TokenType tknType)
+		{
+			return ParseKeysInternal(tknType);
+		}
+
+		private AstExpression ParseImplementationKeys(TokenType tknType)
+		{
+			return ParseKeysInternal(tknType);
+		}
+
+		// they are all the same
+		private AstExpression ParseKeysInternal(TokenType tknType)
+		{
 			TokenLocation beg = null;
-			var tkn = Consume(tknType, ErrMsg($"keyword '{tknType}'", "at beginning of class type"));
+			var tkn = Consume(tknType, ErrMsg($"keyword '{tknType}'", "at beginning of type"));
 			beg = tkn.Location;
 
 			var expr = ParseExpression(false);
-			expr.SpecialKeys.Add((int)tknType);
+			expr.SpecialKeys.Add(tknType);
 
 			// change beginning
 			var prevLoc = expr.Location;

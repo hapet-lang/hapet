@@ -2,6 +2,7 @@
 using Frontend.Errors;
 using Frontend.Parsing.Entities;
 using Frontend.Scoping;
+using Microsoft.VisualBasic;
 
 namespace Frontend
 {
@@ -53,7 +54,22 @@ namespace Frontend
 
 		public string GetText(ILocation location)
 		{
-			throw new NotImplementedException();
+			if (location is null)
+				throw new ArgumentNullException(nameof(location));
+
+			var normalizedPath = Path.GetFullPath(location.Beginning.File).PathNormalize();
+
+			// files
+			if (_files.TryGetValue(normalizedPath, out var f))
+				return f.Text;
+			if (_loadingFiles.TryGetValue(normalizedPath, out var f2))
+				return f2.Text;
+
+			// strings
+			if (_strings.TryGetValue(location.Beginning.File, out var f3))
+				return f3;
+
+			return null;
 		}
 	}
 }

@@ -12,13 +12,26 @@ namespace Frontend.Parsing
 			var declarations = new List<AstDeclaration>();
 			var directives = new List<AstDirective>();
 			List<AstParameter> parameters = null;
+			AstIdExpr className = null;
 
-			var tkn = Consume(TokenType.KwClass, ErrMsg("keyword 'class'", "at beginning of class type"));
-			beg = tkn.Location;
+			beg = Consume(TokenType.KwClass, ErrMsg("keyword 'class'", "at beginning of class type")).Location;
+
+			// class name
+			if (!CheckToken(TokenType.Identifier))
+			{
+				// TODO: better error location
+				ReportError(beg, $"Expected class name after 'class' keyword");
+			}
+			else
+			{
+				className = ParseIdentifierExpr();
+			}
 
 			// TODO: generic parsing
 			//if (CheckToken(TokenType.OpenParen))
 			//	parameters = ParseParameterList(TokenType.OpenParen, TokenType.ClosingParen, out var _, out var _);
+
+			// TODO: inheritance parse
 
 			while (CheckToken(TokenType.SharpIdentifier))
 			{
@@ -27,7 +40,7 @@ namespace Frontend.Parsing
 					directives.Add(dir);
 			}
 
-			ConsumeUntil(TokenType.OpenBrace, ErrMsg("{", "at beginning of class body"));
+			ConsumeUntil(TokenType.OpenBrace, ErrMsg("{", "at beginning of class body"), true);
 
 			SkipNewlines();
 			while (true)
@@ -37,7 +50,7 @@ namespace Frontend.Parsing
 					break;
 
 				var memberDirectives = ParseDirectives(true);
-				declarations.Add(ParseDeclaration(null, false, true, memberDirectives, false));
+				declarations.Add(ParseDeclaration(null, true, memberDirectives, false));
 
 				next = PeekToken();
 				if (next.Type == TokenType.NewLine)
@@ -51,11 +64,11 @@ namespace Frontend.Parsing
 				else
 				{
 					NextToken();
-					ReportError(next.Location, $"Unexpected token {next} at end of trait member");
+					ReportError(next.Location, $"Unexpected token {next} at end of class member");
 				}
 			}
 
-			end = Consume(TokenType.CloseBrace, ErrMsg("}", "at end of trait declaration")).Location;
+			end = Consume(TokenType.CloseBrace, ErrMsg("}", "at end of class declaration")).Location;
 
 			return new AstClassTypeExpr(parameters, declarations, directives, new Location(beg, end));
 		}

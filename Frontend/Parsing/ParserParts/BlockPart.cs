@@ -53,8 +53,8 @@ namespace Frontend.Parsing
 					switch (s)
 					{
 						// TODO: wtf???
-						case AstExprStmt es when es.Expr is AstBlockExpr || es.Expr is AstIfExpr:
-							break;
+						//case AstExprStmt es when es.Expr is AstBlockExpr || es.Expr is AstIfExpr:
+						//	break;
 
 						default:
 							if (!Expect(TokenType.NewLine, ErrMsg("\\n", "after statement")))

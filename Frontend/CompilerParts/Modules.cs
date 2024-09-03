@@ -6,6 +6,7 @@ namespace Frontend
 	public partial class Compiler
 	{
 		private Dictionary<string, PtFile> _files = new Dictionary<string, PtFile>();
+		private Dictionary<string, string> _strings = new Dictionary<string, string>();
 
 		public PtFile AddFile(string fileNameT, string body = null, bool globalScope = false)
 		{

@@ -35,4 +35,13 @@
 			return $"generic {GenericName}";
 		}
 	}
+
+	public class HapetTypeType : HapetType
+	{
+		public static HapetTypeType Instance { get; } = new HapetTypeType();
+
+		public override string ToString() => "type";
+
+		private HapetTypeType() : base(0, 1) { }
+	}
 }

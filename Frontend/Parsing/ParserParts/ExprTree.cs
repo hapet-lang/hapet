@@ -1,4 +1,5 @@
 ﻿using Frontend.Ast;
+using Frontend.Ast.Declarations;
 using Frontend.Ast.Expressions;
 using Frontend.Parsing.Entities;
 using System.Diagnostics;
@@ -23,17 +24,17 @@ namespace Frontend.Parsing
 					if (list == null)
 					{
 						list = new List<AstParameter>();
-						list.Add(new AstParameter(null, expr, null, false, expr));
+						list.Add(new AstParameter(null, expr, null, expr));
 					}
 
 					NextToken();
 
 					expr = ParseIsExpression(false, allowFunctionExpression, errorMessage);
-					list.Add(new AstParameter(null, expr, null, false, expr));
+					list.Add(new AstParameter(null, expr, null, expr));
 				}
 
 				if (list != null)
-					expr = new AstTupleExpr(list, new Location(list.First().Beginning, list.Last().End));
+					expr = new AstTupleExpr(list, new Location(list.First().Beginning, list.Last().Ending));
 			}
 
 			return expr;
@@ -221,7 +222,7 @@ namespace Frontend.Parsing
 				//}
 
 				var sub = ParseUnaryExpression(allowCommaForTuple, allowFunctionExpression, errorMessage);
-				return new AstAddressOfExpr(sub, false, mutable, new Location(next.Location, sub.Ending));
+				return new AstAddressOfExpr(sub, false, new Location(next.Location, sub.Ending));
 			}
 			else if (next.Type == TokenType.Asterisk)
 			{
@@ -298,44 +299,45 @@ namespace Frontend.Parsing
 						}
 						break;
 
-					//case TokenType.OpenBracket:
-					//	{
-					//		NextToken();
-					//		SkipNewlines();
+					case TokenType.OpenBracket:
+						{
+							NextToken();
+							SkipNewlines();
 
-					//		var args = new List<AstExpression>();
-					//		while (true)
-					//		{
-					//			var next = PeekToken();
-					//			if (next.Type == TokenType.CloseBracket || next.Type == TokenType.EOF)
-					//				break;
-					//			args.Add(ParseExpression(false));
-					//			SkipNewlines();
+							var args = new List<AstExpression>();
+							while (true)
+							{
+								var next = PeekToken();
+								if (next.Type == TokenType.CloseBracket || next.Type == TokenType.EOF)
+									break;
+								args.Add(ParseExpression(false));
+								SkipNewlines();
 
-					//			next = PeekToken();
-					//			if (next.Type == TokenType.Comma)
-					//			{
-					//				NextToken();
-					//				SkipNewlines();
-					//			}
-					//			else if (next.Type == TokenType.CloseBracket)
-					//				break;
-					//			else
-					//			{
-					//				NextToken();
-					//				ReportError(next.Location, $"Failed to parse operator [], expected ',' or ']'");
-					//				//RecoverExpression();
-					//			}
-					//		}
-					//		var end = Consume(TokenType.CloseBracket, ErrMsg("]", "at end of [] operator")).Location;
-					//		if (args.Count == 0)
-					//		{
-					//			ReportError(end, "At least one argument required");
-					//			args.Add(ParseEmptyExpression());
-					//		}
-					//		expr = new AstArrayAccessExpr(expr, args, new Location(expr.Beginning, end));
-					//	}
-					//	break;
+								next = PeekToken();
+								if (next.Type == TokenType.Comma)
+								{
+									NextToken();
+									SkipNewlines();
+								}
+								else if (next.Type == TokenType.CloseBracket)
+									break;
+								else
+								{
+									NextToken();
+									ReportError(next.Location, $"Failed to parse operator [], expected ',' or ']'");
+									//RecoverExpression();
+								}
+							}
+							var end = Consume(TokenType.CloseBracket, ErrMsg("]", "at end of [] operator")).Location;
+							if (args.Count == 0)
+							{
+								// TODO: it could be an array type
+								// ReportError(end, "At least one argument required");
+								args.Add(ParseEmptyExpression());
+							}
+							expr = new AstArrayAccessExpr(expr, args, new Location(expr.Beginning, end));
+						}
+						break;
 
 					//case TokenType.Period:
 					//	{
@@ -405,35 +407,82 @@ namespace Frontend.Parsing
 
 				case TokenType.Identifier:
 					{
-						NextToken();
-						var id = new AstIdExpr((string)token.Data, false, new Location(token.Location));
-						//if (CheckToken(TokenType.Arrow))
-						//	return ParseLambdaExpr(
-						//		new List<AstParameter> { new AstParameter(id, null, null, false, id.Location) },
-						//		id.Beginning, allowCommaForTuple);
-						//else
-							return id;
+						//NextToken();
+						//var id = new AstIdExpr((string)token.Data, false, new Location(token.Location));
+						////if (CheckToken(TokenType.Arrow))
+						////	return ParseLambdaExpr(
+						////		new List<AstParameter> { new AstParameter(id, null, null, false, id.Location) },
+						////		id.Beginning, allowCommaForTuple);
+						////else
+						//	return id;
+
+						var currId = ParseIdentifierExpr();
+						if (CheckToken(TokenType.OpenBracket))
+						{
+							var arrShite = ParseExpression(allowCommaForTuple);
+							if (arrShite is AstArrayAccessExpr acsA && acsA.Arguments.Count == 1 && acsA.Arguments[0] is AstEmptyExpr)
+							{
+								currId.IsArray = true;
+							}
+							// TODO: idk what to do here :)))
+						}
+
+						if (CheckToken(TokenType.Identifier))
+						{
+							// currId is a type and new one is a name
+							var nameId = ParseIdentifierExpr();
+							if (CheckToken(TokenType.OpenParen))
+							{
+								// if it is method decl
+								var func = ParseExpression(true, true);
+								if (func is AstFuncExpr realFunc)
+								{
+									// setting the return type of the func
+									realFunc.Name = nameId.Name;
+									realFunc.ReturnTypeExpr = new AstParameter(null, currId, null, currId.Location);
+								}
+								// TODO: lambda won't be parsed here because it has no name
+								else if (func is AstLambdaExpr realLambda)
+								{
+									// setting the return type of the lambda
+									realLambda.ReturnTypeExpr = currId;
+								}
+								else
+								{
+									ReportError(func.Location, $"Unknown behaviour detected. This should be a func or lambda");
+								}
+								return func;
+							}
+							else
+							{
+								// it is a variable or a field/property and so on
+								// SHOULD BE EDITED IN ParseDeclaration
+								return new AstTypeWithNameExpr(currId, nameId, nameId.Location);
+							}
+						}
+						return currId; // just identifier
 					}
 
-				case TokenType.StringLiteral:
-					NextToken();
-					return new AstStringLiteral((string)token.Data, token.Suffix, new Location(token.Location));
+					// TODO: uncomment
+				//case TokenType.StringLiteral:
+				//	NextToken();
+				//	return new AstStringLiteral((string)token.Data, token.Suffix, new Location(token.Location));
 
-				case TokenType.CharLiteral:
-					NextToken();
-					return new AstCharLiteral((string)token.Data, new Location(token.Location));
+				//case TokenType.CharLiteral:
+				//	NextToken();
+				//	return new AstCharLiteral((string)token.Data, new Location(token.Location));
 
-				case TokenType.NumberLiteral:
-					NextToken();
-					return new AstNumberExpr((NumberData)token.Data, token.Suffix, new Location(token.Location));
+				//case TokenType.NumberLiteral:
+				//	NextToken();
+				//	return new AstNumberExpr((NumberData)token.Data, token.Suffix, new Location(token.Location));
 
-				case TokenType.KwTrue:
-					NextToken();
-					return new AstBoolExpr(true, new Location(token.Location));
+				//case TokenType.KwTrue:
+				//	NextToken();
+				//	return new AstBoolExpr(true, new Location(token.Location));
 
-				case TokenType.KwFalse:
-					NextToken();
-					return new AstBoolExpr(false, new Location(token.Location));
+				//case TokenType.KwFalse:
+				//	NextToken();
+				//	return new AstBoolExpr(false, new Location(token.Location));
 
 				case TokenType.OpenBrace:
 					return ParseBlockExpr();
@@ -444,23 +493,23 @@ namespace Frontend.Parsing
 				//case TokenType.KwSwitch:
 				//	return ParseMatchExpr();
 
-				//case TokenType.OpenParen:
-				//	return ParseTupleExpression(allowFunctionExpression, allowCommaForTuple);
-				// {
-				//     var start = NextToken().location;
-				//     SkipNewlines();
-				//     if (CheckToken(TokenType.ClosingParen))
-				//     {
-				//         var end = NextToken().location;
-				//         return new AstTupleExpr(new List<AstParameter>(), new Location(start, end));
-				//     }
-				//     else
-				//     {
-				//         var expr = ParseExpression(true);
-				//         var end = ConsumeUntil(TokenType.ClosingParen, ErrMsg(")", "at end of tuple")).location;
-				//         return expr;
-				//     }
-				// }
+				case TokenType.OpenParen:
+					return ParseTupleExpression(allowFunctionExpression, allowCommaForTuple);
+					//{
+					//	var start = NextToken().location;
+					//	SkipNewlines();
+					//	if (CheckToken(TokenType.ClosingParen))
+					//	{
+					//		var end = NextToken().location;
+					//		return new AstTupleExpr(new List<AstParameter>(), new Location(start, end));
+					//	}
+					//	else
+					//	{
+					//		var expr = ParseExpression(true);
+					//		var end = ConsumeUntil(TokenType.ClosingParen, ErrMsg(")", "at end of tuple")).location;
+					//		return expr;
+					//	}
+					//}
 
 				//case TokenType.Ampersand:
 				//	NextToken();
@@ -476,9 +525,10 @@ namespace Frontend.Parsing
 				//	var target = ParseExpression(allowCommaForTuple);
 				//	return new AstReferenceTypeExpr(target, mutable, new Location(token.Location, target.Ending));
 
-				case TokenType.Kwfn:
-				case TokenType.KwFn:
-					return ParseFunctionTypeExpr(allowCommaForTuple);
+				// TODO: probably won't be parsed from here
+				//case TokenType.Kwfn:
+				//case TokenType.KwFn:
+				//	return ParseFunctionTypeExpr(allowCommaForTuple);
 
 
 				// TODO: do i need it?
@@ -519,6 +569,18 @@ namespace Frontend.Parsing
 				case TokenType.KwProtected:
 				case TokenType.KwPrivate:
 					return ParseAccessKeys(token.Type);
+
+				case TokenType.KwAsync:
+					return ParseSyncKeys(token.Type);
+
+				case TokenType.KwStatic:
+					return ParseInstancingKeys(token.Type);
+
+				case TokenType.KwAbstract:
+				case TokenType.KwVirtual:
+				case TokenType.KwOverride:
+				case TokenType.KwPartial:
+					return ParseImplementationKeys(token.Type);
 
 				default:
 					//NextToken();

@@ -2,6 +2,7 @@
 using Frontend.Parsing.Entities;
 using System.Diagnostics;
 using System.Text;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace Frontend.Parsing
 {
@@ -138,10 +139,12 @@ namespace Frontend.Parsing
 		public bool CheckTokens(params TokenType[] types)
 		{
 			var next = PeekToken();
-			foreach (var t in types)
+			foreach (var (t, i) in types.Select((t, i) => (t, i)))
 			{
 				if (next.Type == t)
+				{
 					return true;
+				}
 			}
 			return false;
 		}
@@ -150,6 +153,85 @@ namespace Frontend.Parsing
 		public Token PeekToken()
 		{
 			return _lexer.PeekToken();
+		}
+
+		public bool IsTypeExprToken()
+		{
+			var next = PeekToken();
+			switch (next.Type)
+			{
+				case TokenType.OpenParen:
+				case TokenType.OpenBracket:
+				case TokenType.Ampersand:
+				case TokenType.Hat:
+				case TokenType.Identifier:
+				case TokenType.DollarIdentifier:
+					return true;
+
+				default:
+					return false;
+			}
+		}
+
+		public bool IsExprToken(params TokenType[] exclude)
+		{
+			var next = PeekToken();
+			if (exclude.Contains(next.Type))
+				return false;
+			switch (next.Type)
+			{
+				case TokenType.Plus:
+				case TokenType.Minus:
+				case TokenType.LessLess:
+				case TokenType.OpenParen:
+				case TokenType.OpenBracket:
+				case TokenType.OpenBrace:
+				case TokenType.StringLiteral:
+				case TokenType.CharLiteral:
+				case TokenType.NumberLiteral:
+				case TokenType.KwNull:
+				case TokenType.KwTrue:
+				case TokenType.KwFalse:
+				case TokenType.KwSwitch:
+				case TokenType.KwIf:
+				case TokenType.Ampersand:
+				case TokenType.Hat:
+				case TokenType.Asterisk:
+				case TokenType.Bang:
+				case TokenType.Identifier:
+				case TokenType.AtSignIdentifier:
+				case TokenType.DollarIdentifier:
+				case TokenType.PeriodPeriod:
+				case TokenType.Period:
+					return true;
+
+				default:
+					return false;
+			}
+		}
+
+		private void RecoverStatement()
+		{
+			while (true)
+			{
+				var next = PeekToken();
+				switch (next.Type)
+				{
+					case TokenType.NewLine:
+						NextToken();
+						return;
+
+					case TokenType.CloseBrace:
+						return;
+
+					case TokenType.EOF:
+						return;
+
+					default:
+						NextToken();
+						break;
+				}
+			}
 		}
 
 		#region Errors

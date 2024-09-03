@@ -1,4 +1,6 @@
 ﻿using Frontend.Parsing.Entities;
+using Frontend.Scoping;
+using Frontend.Types;
 using Frontend.Visitors;
 
 namespace Frontend.Ast.Expressions
@@ -7,33 +9,28 @@ namespace Frontend.Ast.Expressions
 	{
 		public string Name { get; set; } = "#anonymous";
 
+		/// <summary>
+		/// Generic shite
+		/// </summary>
 		public List<AstParameter> Parameters { get; set; }
 
 		public List<AstDeclaration> Declarations { get; }
-		public List<AstFuncExpr> Functions { get; } = new List<AstFuncExpr>();
-		public List<AstTraitMember> Members { get; } = new List<AstTraitMember>();
-
-		public Dictionary<CheezType, AstImplBlock> Implementations { get; } = new Dictionary<CheezType, AstImplBlock>();
 
 		public bool IsPolyInstance { get; set; }
 
-		public List<AstTraitTypeExpr> PolymorphicInstances { get; } = new List<AstTraitTypeExpr>();
-		public AstTraitTypeExpr Template { get; set; } = null;
+		public List<AstClassTypeExpr> GenericInstances { get; } = new List<AstClassTypeExpr>();
+		public AstClassTypeExpr Template { get; set; } = null;
 
 		public Scope SubScope { get; set; }
 
 		public bool IsGeneric { get; set; }
-		public override bool IsPolymorphic => IsGeneric;
 		public List<AstDirective> Directives { get; protected set; }
 
-		public TraitType TraitType => Value as TraitType;
+		public ClassType ClassType => Value as ClassType;
 
-		// flags
-		public bool MembersComputed { get; set; }
-
-		public AstTraitTypeExpr(
+		public AstClassTypeExpr(
 			List<AstParameter> parameters,
-			List<AstDecl> declarations,
+			List<AstDeclaration> declarations,
 			List<AstDirective> Directives = null,
 			ILocation Location = null)
 			: base(Location: Location)
@@ -44,28 +41,13 @@ namespace Frontend.Ast.Expressions
 			this.IsGeneric = Parameters?.Count > 0;
 		}
 
-		public override TReturn Accept<TReturn, TData>(IVisitor<TReturn, TData> visitor, TData data = default) => visitor.VisitTraitTypeExpr(this, data);
+		public override TReturn Accept<TReturn, TData>(IVisitor<TReturn, TData> visitor, TData data = default) => visitor.VisitClassTypeExpr(this, data);
 
 		public override AstExpression Clone() => CopyValuesTo(
-			new AstTraitTypeExpr(
+			new AstClassTypeExpr(
 				Parameters.Select(p => p.Clone()).ToList(),
-				Declarations.Select(d => d.Clone() as AstDecl).ToList(),
+				Declarations.Select(d => d.Clone() as AstDeclaration).ToList(),
 				Directives.Select(d => d.Clone()).ToList()));
-
-		public AstImplBlock FindMatchingImplementation(CheezType from)
-		{
-			foreach (var kv in Implementations)
-			{
-				var type = kv.Key;
-				var impl = kv.Value;
-				if (CheezType.TypesMatch(type, from))
-				{
-					return impl;
-				}
-			}
-
-			return null;
-		}
 
 		public bool HasDirective(string name) => Directives?.Find(d => d.Name.Name == name) != null;
 

@@ -94,7 +94,7 @@
 		KwTrue,
 		KwFalse,
 		KwNull,
-		KwVoid,
+		// KwVoid, // no need
 
 		KwAttach,
 		KwUsing,
@@ -115,7 +115,10 @@
 		KwProtected,
 		KwPrivate,
 
+		KwAsync,
+
 		KwStatic,
+
 		KwAbstract,
 		KwVirtual,
 		KwOverride,

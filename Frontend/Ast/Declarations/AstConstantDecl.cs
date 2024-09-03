@@ -5,7 +5,7 @@ using System.Diagnostics;
 
 namespace Frontend.Ast.Declarations
 {
-	public class AstConstantDeclaration : AstDeclaration
+	public class AstConstantDecl : AstDeclaration
 	{
 		public AstExpression Pattern { get; set; }
 		public AstExpression TypeExpr { get; set; }
@@ -13,7 +13,7 @@ namespace Frontend.Ast.Declarations
 
 		public object Value { get; set; }
 
-		public AstConstantDeclaration(
+		public AstConstantDecl(
 			AstExpression pattern,
 			AstExpression typeExpr,
 			AstExpression init,
@@ -32,10 +32,10 @@ namespace Frontend.Ast.Declarations
 		}
 
 		[DebuggerStepThrough]
-		public override T Accept<T, D>(IVisitor<T, D> visitor, D data = default) => visitor.VisitConstantDeclaration(this, data);
+		public override T Accept<T, D>(IVisitor<T, D> visitor, D data = default) => visitor.VisitConstantDecl(this, data);
 
 		public override AstStatement Clone()
-			=> CopyValuesTo(new AstConstantDeclaration(
+			=> CopyValuesTo(new AstConstantDecl(
 				Pattern.Clone(),
 				TypeExpr?.Clone(),
 				Initializer.Clone(),

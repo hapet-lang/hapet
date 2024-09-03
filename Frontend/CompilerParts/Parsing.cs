@@ -33,9 +33,9 @@ namespace Frontend
 			void HandleStatement(AstStatement s)
 			{
 				s.Scope = file.FileScope;
-				if ((s is AstConstantDeclaration cd && cd.TypeExpr is AstClassTypeExpr) ||
-					(s is AstConstantDeclaration cd2 && cd2.TypeExpr is AstStructTypeExpr) ||
-					(s is AstConstantDeclaration cd3 && cd3.TypeExpr is AstEnumTypeExpr) ||
+				if ((s is AstConstantDecl cd && cd.TypeExpr is AstClassTypeExpr) ||
+					(s is AstConstantDecl cd2 && cd2.TypeExpr is AstStructTypeExpr) ||
+					(s is AstConstantDecl cd3 && cd3.TypeExpr is AstEnumTypeExpr) ||
 					(s is AstExprStmt es && es.Expr is AstUsingExpr) ||
 					(s is AstAttachStmt ass && ass.Value is AstUsingExpr))
 				{

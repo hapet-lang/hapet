@@ -455,6 +455,7 @@ namespace Frontend.Types
 	{
 		private static Dictionary<int, CharType> _types = new Dictionary<int, CharType>();
 		public static CharType DefaultType => GetCharType();
+		public static CharType LiteralType => GetCharTypeInternal(0);
 
 		private CharType(int size) : base(size, size)
 		{
@@ -465,7 +466,12 @@ namespace Frontend.Types
 		public static CharType GetCharType()
 		{
 			// ATTENTION: char size is always 1 byte
-			int sizeInBytes = 1;
+			return GetCharTypeInternal(1);
+		}
+
+		private static CharType GetCharTypeInternal(int size)
+		{
+			int sizeInBytes = size;
 
 			var key = sizeInBytes;
 			if (_types.ContainsKey(key))
@@ -523,5 +529,14 @@ namespace Frontend.Types
 #warning pointer size is 16
 		private StringType() : base(16, 8) { }
 		public override string ToString() => "string";
+	}
+
+	public class StringLiteralType : HapetType
+	{
+		public static StringLiteralType Instance { get; } = new StringLiteralType();
+		public override bool IsGenericType => false;
+
+		private StringLiteralType() : base(0, 1) { }
+		public override string ToString() => "string_literal";
 	}
 }

@@ -238,7 +238,7 @@ namespace Frontend.Parsing
 				case "true": token.Type = TokenType.KwTrue; break;
 				case "false": token.Type = TokenType.KwFalse; break;
 				case "null": token.Type = TokenType.KwNull; break;
-				case "void": token.Type = TokenType.KwVoid; break;
+				// case "void": token.Type = TokenType.KwVoid; break;
 
 				case "using": token.Type = TokenType.KwUsing; break;
 				case "attach": token.Type = TokenType.KwAttach; break;
@@ -264,10 +264,15 @@ namespace Frontend.Parsing
 				case "public": token.Type = TokenType.KwPublic; break;
 				case "protected": token.Type = TokenType.KwProtected; break;
 				case "private": token.Type = TokenType.KwPrivate; break;
+
+				case "async": token.Type = TokenType.KwAsync; break;
+
 				case "static": token.Type = TokenType.KwStatic; break;
+
 				case "abstract": token.Type = TokenType.KwAbstract; break;
 				case "virtual": token.Type = TokenType.KwVirtual; break;
 				case "override": token.Type = TokenType.KwOverride; break;
+				case "partial": token.Type = TokenType.KwPartial; break;
 			}
 		}
 
