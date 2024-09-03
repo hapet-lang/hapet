@@ -21,11 +21,10 @@ namespace HapetFrontend.Types
 	public class IntType : HapetType
 	{
 		private static readonly Dictionary<(int, bool), IntType> _types = new Dictionary<(int, bool), IntType>();
-		public static IntType LiteralType { get; } = new IntType(0, false);
+		public static IntType LiteralType { get; } = new IntType(0, 0, false);
 		public static IntType DefaultType => GetIntType(4, true);
 
-#warning align as size when it is 8 probably a bad idea because of x86 (should be checked somehow)
-		private IntType(int size, bool sign) : base(size, size)
+		private IntType(int size, int align, bool sign) : base(size, align)
 		{
 			Signed = sign;
 		}
@@ -41,7 +40,8 @@ namespace HapetFrontend.Types
 				return _types[key];
 			}
 
-			var type = new IntType(sizeInBytes, signed);
+			int alignment = Math.Min(sizeInBytes, HapetType.PointerSize);
+			var type = new IntType(sizeInBytes, alignment, signed);
 			_types[key] = type;
 			return type;
 		}
