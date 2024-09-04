@@ -59,5 +59,15 @@
 		{
 			return base.GetHashCode();
 		}
+
+		public virtual int Match(HapetType concrete)
+		{
+			if (concrete is ReferenceType r)
+				concrete = r.TargetType;
+
+			if (this == concrete)
+				return 0;
+			return -1;
+		}
 	}
 }

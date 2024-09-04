@@ -3,9 +3,11 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.8.34525.116
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HapetCompiler", "HapetCompiler\HapetCompiler.csproj", "{A5F3264C-D4E1-4038-9B53-BFC3B6F0E1A9}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HapetCompiler", "HapetCompiler\HapetCompiler.csproj", "{A5F3264C-D4E1-4038-9B53-BFC3B6F0E1A9}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Frontend", "Frontend\Frontend.csproj", "{793B3F41-5B7A-40C2-A3A8-414065F093DF}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Frontend", "Frontend\Frontend.csproj", "{793B3F41-5B7A-40C2-A3A8-414065F093DF}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HapetFrontend", "HapetFrontend\HapetFrontend.csproj", "{E60DB66F-7B04-4F3D-BEDE-B8F165591CEB}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,6 +23,10 @@ Global
 		{793B3F41-5B7A-40C2-A3A8-414065F093DF}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{793B3F41-5B7A-40C2-A3A8-414065F093DF}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{793B3F41-5B7A-40C2-A3A8-414065F093DF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E60DB66F-7B04-4F3D-BEDE-B8F165591CEB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E60DB66F-7B04-4F3D-BEDE-B8F165591CEB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E60DB66F-7B04-4F3D-BEDE-B8F165591CEB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E60DB66F-7B04-4F3D-BEDE-B8F165591CEB}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
