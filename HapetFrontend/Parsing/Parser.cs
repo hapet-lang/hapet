@@ -1,4 +1,5 @@
-﻿using HapetFrontend.Entities;
+﻿using HapetFrontend.Ast;
+using HapetFrontend.Entities;
 using System.Text;
 
 namespace HapetFrontend.Parsing
@@ -6,6 +7,7 @@ namespace HapetFrontend.Parsing
 	public partial class Parser
 	{
 		public delegate string ErrorMessageResolver(Token t);
+		private delegate AstStatement ExpressionParser(bool allowCommaForTuple, bool allowFunctionExpression, ErrorMessageResolver e);
 
 		private ILexer _lexer;
 		private IErrorHandler _errorHandler;
