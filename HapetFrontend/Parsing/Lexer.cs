@@ -91,6 +91,8 @@ namespace HapetFrontend.Parsing
 			return ReadToken();
 		}
 
+
+
 		private StringBuilder tokenDataBuilder = new StringBuilder();
 		private Token ReadToken()
 		{

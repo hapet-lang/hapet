@@ -1,8 +1,13 @@
 ﻿using HapetFrontend.Ast;
 using HapetFrontend.Entities;
+using System.Diagnostics;
 
 namespace HapetFrontend
 {
+	[AttributeUsage(AttributeTargets.Method, AllowMultiple = false)]
+	public class SkipInStackFrameAttribute : Attribute
+	{ }
+
 	public static class CompilerUtils
 	{
 		#region Extensions
@@ -10,6 +15,33 @@ namespace HapetFrontend
 		{
 			return Path.GetFullPath(new Uri(path).LocalPath)
 					   .TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+		}
+		#endregion
+
+		#region Parsing shite helpers
+		[DebuggerStepThrough]
+		[System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Exception not required. This is for error reporting only.")]
+		public static (string function, string file, int line)? GetCallingFunction()
+		{
+			try
+			{
+				var trace = new StackTrace(true);
+				var frames = trace.GetFrames();
+
+				foreach (var frame in frames)
+				{
+					var method = frame.GetMethod();
+					var attribute = method.GetCustomAttributesData().FirstOrDefault(d => d.AttributeType == typeof(SkipInStackFrameAttribute));
+					if (attribute != null)
+						continue;
+
+					return (method.Name, frame.GetFileName(), frame.GetFileLineNumber());
+				}
+			}
+			catch (Exception)
+			{ }
+
+			return null;
 		}
 		#endregion
 
