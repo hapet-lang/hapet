@@ -10,11 +10,6 @@ namespace HapetFrontend.Ast
 		/// </summary>
 		public HapetType OutType { get; set; }
 
-		/// <summary>
-		/// In which scope it could be accessable
-		/// </summary>
-		public Scope Scope { get; set; }
-
 		public AstExpression(ILocation Location = null) : base(Location)
 		{
 		}

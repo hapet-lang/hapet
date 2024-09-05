@@ -1,5 +1,8 @@
 ﻿using HapetFrontend.Ast;
+using HapetFrontend.Ast.Declarations;
+using HapetFrontend.Ast.Statements;
 using HapetFrontend.Entities;
+using HapetFrontend.Parsing;
 using HapetFrontend.Scoping;
 
 namespace HapetFrontend
@@ -23,7 +26,7 @@ namespace HapetFrontend
 			// TODO: do i need it?
 			// string exePath = Path.Combine(Path.GetDirectoryName(Assembly.GetEntryAssembly().Location), "libraries");
 
-			_globalScope = new Scope("global_scope");
+			_globalScope = new Scope("global_scope_of_assembly");
 			_globalScope.DefineBuiltInTypes();
 			_globalScope.DefineBuiltInOperators();
 		}
@@ -46,6 +49,46 @@ namespace HapetFrontend
 
 			_files[filePath] = file;
 			return file;
+		}
+
+		private ProgramFile ParseFile(string fileName, IErrorHandler eh)
+		{
+			var lexer = Lexer.FromFile(fileName, eh);
+
+			if (lexer == null)
+				return null;
+
+			var parser = new Parser(lexer, eh);
+
+			var fileScope = new Scope($"{Path.GetFileNameWithoutExtension(fileName)}_scope", _globalScope);
+			var file = new ProgramFile(fileName, lexer.Text, fileScope);
+
+			while (true)
+			{
+				var s = parser.ParseStatement();
+				if (s == null)
+					break;
+
+				HandleStatement(s);
+			}
+			return file;
+
+			void HandleStatement(AstStatement s)
+			{
+				s.Scope = file.FileScope;
+				if (s is AstEnumDecl ||
+					s is AstStructDecl ||
+					s is AstClassDecl ||
+					s is AstUsingStmt)
+				{
+					s.SourceFile = file;
+					file.Statements.Add(s);
+				}
+				else if (s != null)
+				{
+					eh.ReportError(lexer.Text, s, "This type of statement is not allowed in global scope");
+				}
+			}
 		}
 
 		public ProgramFile GetFile(string v)
