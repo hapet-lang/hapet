@@ -1,4 +1,4 @@
-﻿using HapetFrontend.Enums;
+﻿using HapetFrontend.Ast.Declarations;
 
 namespace HapetFrontend.Types
 {
@@ -98,7 +98,7 @@ namespace HapetFrontend.Types
 
 		public int GetIndexOfMember(string member)
 		{
-			return Declaration.Members.FindIndex(m => m.Name == member);
+			return Declaration.Declarations.FindIndex(m => m.Name.Name == member);
 		}
 
 		public override bool Equals(object obj)
@@ -141,7 +141,7 @@ namespace HapetFrontend.Types
 
 		public override string ToString()
 		{
-			return $"enum {Declaration.Name}";
+			return $"enum {Declaration.Name.Name}";
 		}
 
 		public override int Match(HapetType concrete)
@@ -157,15 +157,9 @@ namespace HapetFrontend.Types
 
 	public class FunctionType : HapetType
 	{
-		public AstFunctionDecl Declaration { get; set; }
+		public AstFuncDecl Declaration { get; set; }
 
-		// TODO: SHOULD BE IN ASTDECL
-		//public (string name, CheezType type, AstExpression defaultValue)[] Parameters { get; private set; }
-		//public CheezType ReturnType { get; private set; }
-
-		//public CallingConvention CallingConvention { get; } = CallingConvention.Default;
-
-		public FunctionType(AstFunctionDecl decl)
+		public FunctionType(AstFuncDecl decl)
 			: base(PointerType.PointerSize, PointerType.PointerAlignment)
 		{
 			Declaration = decl;
@@ -175,13 +169,13 @@ namespace HapetFrontend.Types
 		{
 			var args = string.Join(", ", Declaration.Parameters.Select(p =>
 			{
-				if (p.name != null)
-					return $"{p.type} {p.name}";
-				return p.type.ToString();
+				if (p.Name != null)
+					return $"{p.Type.Name} {p.Name.Name}";
+				return p.Type.Name;
 			}));
 
-			if (Declaration.ReturnType != VoidType.Instance)
-				return $"{Declaration.ReturnType} {Declaration.Name.Name}({args})";
+			if (Declaration.Returns.Type.OutType != VoidType.Instance)
+				return $"{Declaration.Returns.Type.Name} {Declaration.Name.Name}({args})";
 			else
 				return $"void {Declaration.Name.Name}({args})";
 		}
@@ -190,17 +184,17 @@ namespace HapetFrontend.Types
 		{
 			if (obj is FunctionType f)
 			{
-				if (Declaration.ReturnType != f.Declaration.ReturnType)
+				if (Declaration.Returns.Type.OutType != f.Declaration.Returns.Type.OutType)
 					return false;
 
-				if (Declaration.Parameters.Length != f.Declaration.Parameters.Length)
+				if (Declaration.Parameters.Count != f.Declaration.Parameters.Count)
 					return false;
 
-				if (Declaration.CallingConvension != f.Declaration.CallingConvension)
+				if (Declaration.CallingConvention != f.Declaration.CallingConvention)
 					return false;
 
-				for (int i = 0; i < Declaration.Parameters.Length; i++)
-					if (this.Declaration.Parameters[i].type != f.Declaration.Parameters[i].type)
+				for (int i = 0; i < Declaration.Parameters.Count; i++)
+					if (this.Declaration.Parameters[i].Type.OutType != f.Declaration.Parameters[i].Type.OutType)
 						return false;
 
 				return true;
@@ -213,8 +207,8 @@ namespace HapetFrontend.Types
 		{
 			var hash = new HashCode();
 			foreach (var p in Declaration.Parameters)
-				hash.Add(p.type);
-			hash.Add(Declaration.ReturnType);
+				hash.Add(p.Type.OutType);
+			hash.Add(Declaration.Returns.Type.OutType);
 			return hash.ToHashCode();
 		}
 	}

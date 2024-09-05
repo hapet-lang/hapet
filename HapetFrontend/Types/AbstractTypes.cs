@@ -1,4 +1,6 @@
-﻿namespace HapetFrontend.Types
+﻿using HapetFrontend.Ast.Declarations;
+
+namespace HapetFrontend.Types
 {
 	public abstract class AbstractType : HapetType
 	{
@@ -28,9 +30,9 @@
 	/// </summary>
 	public class VarType : AbstractType
 	{
-		public AstVariableDecl Declaration { get; }
+		public AstVarDecl Declaration { get; }
 
-		public VarType(AstVariableDecl decl)
+		public VarType(AstVarDecl decl)
 		{
 			Declaration = decl;
 		}
