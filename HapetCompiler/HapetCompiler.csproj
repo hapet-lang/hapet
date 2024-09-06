@@ -17,7 +17,7 @@
   </ItemGroup>
 
 	<ItemGroup>
-		<ProjectReference Include="..\Frontend\Frontend.csproj" />
+		<ProjectReference Include="..\HapetFrontend\HapetFrontend.csproj" />
 	</ItemGroup>
 
 </Project>

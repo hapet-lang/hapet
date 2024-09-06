@@ -21,7 +21,7 @@ namespace HapetFrontend.Parsing
 
 			beg ??= Consume(TokenType.KwUsing, ErrMsg("keyword 'using'", "at beginning of 'using' statement")).Location;
 			SkipNewlines();
-			var expr = ParseExpression(true, errorMessage: ErrMsg("expression", "after keyword 'using'"));
+			var expr = ParseIdentifierExpression(ErrMsg("expression", "after keyword 'using'"));
 
 			if (expr is not AstIdExpr)
 			{
@@ -32,7 +32,7 @@ namespace HapetFrontend.Parsing
 			if (CheckToken(TokenType.KwAs))
 			{
 				NextToken();
-				asWhat = ParseExpression(true, errorMessage: ErrMsg("expression", "after keyword 'as' in 'using' statement"));
+				asWhat = ParseIdentifierExpression(ErrMsg("expression", "after keyword 'as' in 'using' statement"));
 				if (asWhat is not AstIdExpr)
 				{
 					ReportError(asWhat.Location, "Module aliasing expected after 'as' keyword in 'using' keyword");

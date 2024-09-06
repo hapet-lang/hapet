@@ -34,7 +34,8 @@ namespace HapetFrontend.Parsing
 				if (next.Type == TokenType.CloseBrace || next.Type == TokenType.EOF)
 					break;
 
-				declarations.Add(ParseDeclaration(null, true));
+				var decl = ParseDeclaration(null, true);
+				declarations.Add(decl);				
 
 				next = PeekToken();
 				if (next.Type == TokenType.NewLine)

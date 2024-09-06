@@ -331,15 +331,20 @@ namespace HapetFrontend.Parsing
 
 				case TokenType.Identifier:
 					{
-						NextToken();
+						var id = ParseIdentifierExpression();
 
-						var id = new AstIdExpr((string)token.Data, new Location(token.Location));
+						if (CheckToken(TokenType.ArrayDef))
+						{
+							// probably array def (i hope so)
+							id.Name += "[]";
+							id.Location.Ending.End += 2;
+							NextToken();
+						}
 
 						if (CheckToken(TokenType.Identifier))
 						{
-							var secondToken = NextToken();
-							var name = new AstIdExpr((string)secondToken.Data, new Location(secondToken.Location));
-							return new UnknownDecl(name, id, new Location(token.Location));
+							var name = ParseIdentifierExpression();
+							return new UnknownDecl(id, name, new Location(token.Location));
 						}
 						
 						return id;

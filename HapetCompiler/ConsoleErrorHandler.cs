@@ -1,6 +1,5 @@
-﻿using Frontend.Errors;
-using Frontend.Parsing.Entities;
-using Frontend;
+﻿using HapetFrontend.Ast;
+using HapetFrontend.Entities;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -14,7 +13,7 @@ namespace HapetCompiler
 	{
 		public bool HasErrors { get; set; }
 
-		public ITextProvider TextProvider { get; set; }
+		public ITextOnLocationProvider TextProvider { get; set; }
 
 		public int LinesBeforeError { get; set; } = 1;
 		public int LinesAfterError { get; set; } = 1;

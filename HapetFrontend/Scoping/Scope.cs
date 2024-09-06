@@ -10,9 +10,14 @@
 		/// </summary>
 		private List<Scope> _usedScopes;
 
+		/// <summary>
+		/// So all the scopes would be unique
+		/// </summary>
+		private static ulong _scopeCounter = 0;
+
 		public Scope(string name, Scope parent = null)
 		{
-			this.Name = name;
+			this.Name = $"{name}_{_scopeCounter++}";
 			this.Parent = parent;
 		}
 
@@ -23,6 +28,11 @@
 				return false;
 			_usedScopes.Add(scope);
 			return true;
+		}
+
+		public override string ToString()
+		{
+			return $"{Name}, Parent: {Parent?.Name}";
 		}
 	}
 }

@@ -1,4 +1,6 @@
 ﻿using HapetFrontend.Ast;
+using HapetFrontend.Ast.Declarations;
+using HapetFrontend.Ast.Expressions;
 using HapetFrontend.Ast.Statements;
 
 namespace HapetFrontend.Parsing
@@ -15,7 +17,7 @@ namespace HapetFrontend.Parsing
 			if (CheckToken(TokenType.Semicolon))
 			{
 				// TODO: haha is this cringe?
-				CheckToken(TokenType.Semicolon);
+				Consume(TokenType.Semicolon, ErrMsg(";", "at the end of the statement"));
 			}
 
 			var next = PeekToken();
@@ -66,7 +68,8 @@ namespace HapetFrontend.Parsing
 						}
 						if (CheckTokens(TokenType.Equal, TokenType.AddEq, TokenType.SubEq, TokenType.MulEq, TokenType.DivEq, TokenType.ModEq))
 						{
-							var x = NextToken().Type;
+							var currT = NextToken();
+							var x = currT.Type;
 							string op = null;
 							switch (x)
 							{
@@ -77,9 +80,29 @@ namespace HapetFrontend.Parsing
 								case TokenType.ModEq: op = "%"; break;
 							}
 							SkipNewlines();
-							// TODO: do i need it???
-							//var val = ParseExpression(true);
-							//return new AstAssignment(expr, val, op, new Location(expr.Beginning, val.End));
+
+							var val = ParseExpression(true);
+
+							if (val is not AstExpression)
+							{
+								ReportError(val.Location, $"The right side of variable assignment has to be an expression");
+								return stmt;
+							}
+
+							if (stmt is UnknownDecl udecl)
+							{
+								// if it is a declaration with initializing
+								if (x != TokenType.Equal)
+								{
+									ReportError(currT.Location, $"Variable initializer expected (=) but got {op}=");
+									return stmt;
+								}
+								return new AstVarDecl(udecl.Type, udecl.Name, val as AstExpression, "", new Location(stmt.Beginning, val.Ending));
+							}
+							else if (stmt is AstIdExpr id)
+							{
+								return new AstAssignStmt(id, val as AstExpression, op, new Location(stmt.Beginning, val.Ending));
+							}
 						}
 						else
 						{

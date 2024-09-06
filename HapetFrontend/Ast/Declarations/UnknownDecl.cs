@@ -8,7 +8,7 @@ namespace HapetFrontend.Ast.Declarations
 	/// </summary>
 	public class UnknownDecl : AstDeclaration
 	{
-		public UnknownDecl(AstIdExpr name, AstIdExpr type, ILocation Location = null) : base(name, "", Location)
+		public UnknownDecl(AstIdExpr type, AstIdExpr name, ILocation Location = null) : base(name, "", Location)
 		{
 			Type = type;
 		}

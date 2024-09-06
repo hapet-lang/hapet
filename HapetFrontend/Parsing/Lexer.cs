@@ -121,6 +121,7 @@ namespace HapetFrontend.Parsing
 				case '%' when Next == '=': SimpleToken(ref token, TokenType.ModEq, 2); break;
 				case '.' when Next == '.': SimpleToken(ref token, TokenType.PeriodPeriod, 2); break;
 				case '&' when Next == '&': SimpleToken(ref token, TokenType.LogicalAnd, 2); break;
+				case '[' when Next == ']': SimpleToken(ref token, TokenType.ArrayDef, 2); break;
 				case '|' when Next == '|': SimpleToken(ref token, TokenType.LogicalOr, 2); break;
 				case '/' when (Next == '/' && GetChar(2) == '/'):
 					{

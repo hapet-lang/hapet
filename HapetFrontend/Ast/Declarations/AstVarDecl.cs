@@ -16,7 +16,7 @@ namespace HapetFrontend.Ast.Declarations
 			Initializer = ini;
 			//Type = new AstIdExpr("var", Location);
 			//Type.OutType = new VarType(this);
-			if (Type.OutType is VarType)
+			if (Type?.OutType is VarType)
 			{
 				// TODO: resolve type via Initializer
 			}

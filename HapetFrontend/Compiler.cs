@@ -3,6 +3,7 @@ using HapetFrontend.Ast.Declarations;
 using HapetFrontend.Ast.Statements;
 using HapetFrontend.Entities;
 using HapetFrontend.Parsing;
+using HapetFrontend.Parsing.PostPrepare;
 using HapetFrontend.Scoping;
 
 namespace HapetFrontend
@@ -47,7 +48,6 @@ namespace HapetFrontend
 			if (file == null)
 				return null;
 
-			_files[filePath] = file;
 			return file;
 		}
 
@@ -63,6 +63,8 @@ namespace HapetFrontend
 			var fileScope = new Scope($"{Path.GetFileNameWithoutExtension(fileName)}_scope", _globalScope);
 			var file = new ProgramFile(fileName, lexer.Text, fileScope);
 
+			_files[fileName] = file;
+
 			while (true)
 			{
 				var s = parser.ParseStatement();
@@ -71,6 +73,9 @@ namespace HapetFrontend
 
 				HandleStatement(s);
 			}
+
+			PostPrepareProgramFile.PostPrepare(file);
+
 			return file;
 
 			void HandleStatement(AstStatement s)

@@ -18,22 +18,30 @@ namespace HapetFrontend.Parsing
 			beg = e.Beginning;
 			SkipNewlines();
 
-			// if next token is ident then e is the type of the parameter
-			if (CheckToken(TokenType.Identifier))
+			if (e is UnknownDecl udecl)
 			{
-				SkipNewlines();
-
-				var probName = ParseExpression(allowCommaForTuple);
-				if (probName is not AstIdExpr)
-				{
-					ReportError(probName.Location, $"Parameter name has to be an identifier");
-				}
-				pname = probName as AstIdExpr;
-				ptype = e;
+				pname = udecl.Name as AstIdExpr;
+				ptype = udecl.Type;
 			}
 			else
 			{
-				ptype = e;
+				// if next token is ident then e is the type of the parameter
+				if (CheckToken(TokenType.Identifier))
+				{
+					SkipNewlines();
+
+					var probName = ParseExpression(allowCommaForTuple);
+					if (probName is not AstIdExpr)
+					{
+						ReportError(probName.Location, $"Parameter name has to be an identifier");
+					}
+					pname = probName as AstIdExpr;
+					ptype = e;
+				}
+				else
+				{
+					ptype = e;
+				}
 			}
 
 			end = ptype.Ending;
@@ -101,6 +109,8 @@ namespace HapetFrontend.Parsing
 		private AstStatement ParseTupleExpression(bool allowFunctionExpression, bool allowCommaForTuple)
 		{
 			var list = ParseParameterList(TokenType.OpenParen, TokenType.CloseParen, out var beg, out var end, allowDefaultValue: true);
+
+			SkipNewlines();
 
 			// function expression
 			// hash identifier for directives

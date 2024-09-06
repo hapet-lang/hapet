@@ -1,6 +1,7 @@
 ﻿using HapetFrontend.Ast;
 using HapetFrontend.Ast.Expressions;
 using HapetFrontend.Ast.Statements;
+using System.Text;
 
 namespace HapetFrontend.Parsing
 {
@@ -21,7 +22,26 @@ namespace HapetFrontend.Parsing
 				return new AstIdExpr("anon", new Location(next.Location));
 			}
 			NextToken();
-			return new AstIdExpr((string)next.Data, new Location(next.Location));
+
+			StringBuilder sb = new StringBuilder();
+			sb.Append((string)next.Data);
+			// while there are more idents or periods
+			while (CheckToken(TokenType.Period))
+			{
+				NextToken();
+				sb.Append('.');
+				if (CheckToken(identType))
+				{
+					next = NextToken();
+					sb.Append((string)next.Data);
+				}
+				else
+				{
+					ReportError(PeekToken().Location, "Expected identifier after '.'");
+				}
+			}
+
+			return new AstIdExpr(sb.ToString(), new Location(next.Location));
 		}
 	}
 }

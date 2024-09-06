@@ -31,7 +31,7 @@ namespace HapetFrontend.Parsing
 			var tkn = Consume(tknType, ErrMsg($"keyword '{tknType}'", "at beginning of type"));
 			beg = tkn.Location;
 
-			var expr = ParseExpression(false);
+			var expr = ParseExpression(true);
 			// because it has to be declaration
 			if (expr is not AstDeclaration)
 			{

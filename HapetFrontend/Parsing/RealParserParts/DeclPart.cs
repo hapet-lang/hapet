@@ -30,13 +30,17 @@ namespace HapetFrontend.Parsing
 						ReportError(initializer.Location, $"Variable initializer has to be an expresssion");
 					}
 
-					return new AstVarDecl(udecl.Type, udecl.Name, initializer as AstExpression, docString, Location: new Location(expr.Beginning, end));
+					var varDecl = new AstVarDecl(udecl.Type, udecl.Name, initializer as AstExpression, docString, Location: new Location(expr.Beginning, end));
+					varDecl.SpecialKeys.AddRange(udecl.SpecialKeys);
+					return varDecl;
 				}
 				// variable declaration without initializer
 				else if (CheckToken(TokenType.Semicolon))
 				{
 					// do not get the next token
-					return new AstVarDecl(udecl.Type, udecl.Name, null, docString, Location: new Location(expr.Beginning, end));
+					var varDecl = new AstVarDecl(udecl.Type, udecl.Name, null, docString, Location: new Location(expr.Beginning, end));
+					varDecl.SpecialKeys.AddRange(udecl.SpecialKeys);
+					return varDecl;
 				}
 				// func declaration 
 				else if (CheckToken(TokenType.OpenParen))
@@ -46,11 +50,12 @@ namespace HapetFrontend.Parsing
 					{
 						func.Name = udecl.Name;
 						func.Returns = udecl.Type;
+						func.SpecialKeys.AddRange(udecl.SpecialKeys);
 						return func;
 					}
 					// TODO: could there be a lambda???
 				}
-				// TODO: properties
+				// TODO: properties with { get; set; }
 			}
 
 			ReportError(PeekToken().Location, $"Unexpected token. Expected '=' or '\\n'");

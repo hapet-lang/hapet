@@ -82,6 +82,8 @@ namespace HapetFrontend.Parsing
 		OpenBracket,  // [
 		CloseBracket,  // ]
 
+		ArrayDef,  // []
+
 		// words
 		KwStruct,
 		KwEnum,
