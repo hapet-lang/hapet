@@ -1,4 +1,5 @@
 ﻿using HapetFrontend.Ast;
+using HapetFrontend.Ast.Statements;
 
 namespace HapetFrontend.Parsing
 {
@@ -52,12 +53,13 @@ namespace HapetFrontend.Parsing
 					return ParseBlockStatement();
 				
 				case TokenType.KwUsing:
+				case TokenType.KwAttach:
 					return ParseUsingStatement();
 
 				default:
 					{
 						var stmt = ParseExpression(true); // anyway it should return AstStatement, not AstExpression
-						if (stmt is AstEmptyStatement)
+						if (stmt is AstEmptyStmt)
 						{
 							NextToken();
 							return stmt;

@@ -19,9 +19,11 @@ namespace HapetFrontend.Ast.Statements
 		/// </summary>
 		public AstIdExpr Module { get; set; }
 
-		public AstUsingStmt(AstIdExpr module, ILocation Location = null) : base(Location)
+		public AstUsingStmt(AstIdExpr module, bool isAttached = false, AstIdExpr asWhat = null, ILocation Location = null) : base(Location)
 		{
 			Module = module;
+			IsAttached = isAttached;
+			AsWhat = asWhat;
 		}
 	}
 }

@@ -161,22 +161,25 @@ namespace HapetFrontend.Parsing
 		private AstStatement ParseUnaryExpression(bool allowCommaForTuple, bool allowFunctionExpression, ErrorMessageResolver errorMessage = null)
 		{
 			var next = PeekToken();
-			if (next.Type == TokenType.Hat)
-			{
-				NextToken();
-				SkipNewlines();
+			// TODO: ...
+			//if (next.Type == TokenType.Hat)
+			//{
+			//	NextToken();
+			//	SkipNewlines();
 
-				var sub = ParseUnaryExpression(allowCommaForTuple, allowFunctionExpression, errorMessage);
-				return new AstAddressOfExpr(sub, false, new Location(next.Location, sub.Ending));
-			}
-			else if (next.Type == TokenType.Asterisk)
-			{
-				NextToken();
-				SkipNewlines();
-				var sub = ParseUnaryExpression(allowCommaForTuple, allowFunctionExpression, errorMessage);
-				return new AstDereferenceExpr(sub, new Location(next.Location, sub.Ending));
-			}
-			else if (next.Type == TokenType.Minus || next.Type == TokenType.Plus)
+			//	var sub = ParseUnaryExpression(allowCommaForTuple, allowFunctionExpression, errorMessage);
+			//	return new AstAddressOfExpr(sub, false, new Location(next.Location, sub.Ending));
+			//}
+			//else if (next.Type == TokenType.Asterisk)
+			//{
+			//	NextToken();
+			//	SkipNewlines();
+			//	var sub = ParseUnaryExpression(allowCommaForTuple, allowFunctionExpression, errorMessage);
+			//	return new AstDereferenceExpr(sub, new Location(next.Location, sub.Ending));
+			//}
+			//else if (next.Type == TokenType.Minus || next.Type == TokenType.Plus)
+			// TODO: replace with uncommented
+			if (next.Type == TokenType.Minus || next.Type == TokenType.Plus)
 			{
 				NextToken();
 				SkipNewlines();
@@ -307,19 +310,20 @@ namespace HapetFrontend.Parsing
 			var token = PeekToken();
 			switch (token.Type)
 			{
-				case TokenType.KwBreak:
-					return ParseBreakStatement();
+				// TODO: ...
+				//case TokenType.KwBreak:
+				//	return ParseBreakStatement();
 
-				case TokenType.KwContinue:
-					return ParseContinueStatement();
+				//case TokenType.KwContinue:
+				//	return ParseContinueStatement();
 
-				case TokenType.KwDefault:
-					NextToken();
-					return new AstDefaultExpr(new Location(token.Location));
+				//case TokenType.KwDefault:
+				//	NextToken();
+				//	return new AstDefaultExpr(new Location(token.Location));
 
-				case TokenType.KwNull:
-					NextToken();
-					return new AstNullExpr(new Location(token.Location));
+				//case TokenType.KwNull:
+				//	NextToken();
+				//	return new AstNullExpr(new Location(token.Location));
 
 					// TODO: what should i do here
 				//case TokenType.OpenBracket:
@@ -355,27 +359,30 @@ namespace HapetFrontend.Parsing
 				case TokenType.OpenBrace:
 					return ParseBlockStatement();
 
-				case TokenType.KwIf:
-					return ParseConditionExpression(allowCommaForTuple);
+				// TODO: ...
+				//case TokenType.KwIf:
+				//	return ParseConditionExpression(allowCommaForTuple);
 
-				case TokenType.KwSwitch:
-					return ParseSwitchExpression();
+				//case TokenType.KwSwitch:
+				//	return ParseSwitchExpression();
 
 				case TokenType.OpenParen:
 					return ParseTupleExpression(allowFunctionExpression, allowCommaForTuple);
 
-				case TokenType.Ampersand:
-					NextToken();
-					SkipNewlines();
+				// TODO: ...
+				//case TokenType.Ampersand:
+				//	NextToken();
+				//	SkipNewlines();
 
-					var target = ParseExpression(allowCommaForTuple);
-					return new AstReferenceTypeExpr(target, new Location(token.Location, target.Ending));
+				//	var target = ParseExpression(allowCommaForTuple);
+				//	return new AstReferenceTypeExpr(target, new Location(token.Location, target.Ending));
 
-				case TokenType.KwStruct:
-					return ParseStructDeclaration();
+				// TODO: ...
+				//case TokenType.KwStruct:
+				//	return ParseStructDeclaration();
 
-				case TokenType.KwEnum:
-					return ParseEnumDeclaration();
+				//case TokenType.KwEnum:
+				//	return ParseEnumDeclaration();
 
 				case TokenType.KwClass:
 					return ParseClassDeclaration();

@@ -10,6 +10,25 @@ namespace HapetFrontend.Ast
 		/// </summary>
 		public HapetType OutType { get; set; }
 
+		private object _outValue;
+		/// <summary>
+		/// The value that returned from expr (if it is compile time value like literals or consts)
+		/// </summary>
+		public object OutValue
+		{
+			get => _outValue;
+			set
+			{
+				_outValue = value;
+				IsCompileTimeValue = _outValue != null;
+			}
+		}
+
+		/// <summary>
+		/// Is the expression could be computed while compiling 
+		/// </summary>
+		public bool IsCompileTimeValue { get; protected set; } = false;
+
 		public AstExpression(ILocation Location = null) : base(Location)
 		{
 		}
