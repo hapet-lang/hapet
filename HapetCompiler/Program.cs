@@ -1,4 +1,5 @@
 ﻿using HapetFrontend;
+using HapetFrontend.Parsing.PostPrepare;
 using System.Text;
 
 namespace HapetCompiler
@@ -27,10 +28,12 @@ namespace HapetCompiler
 
 			var errorHandler = new ConsoleErrorHandler(0, 0, true);
 			var compiler = new Compiler(errorHandler);
+			var postPreparer = new PostPrepare(compiler);
 			errorHandler.TextProvider = compiler;
 
 			var ptFile = compiler.AddFile(_testFile);
-			//compiler.CompileAll();
+
+			postPreparer.StartPreparation();
 
 			//var printer = new AnalysedAstPrinter();
 			//using (var file = File.Open("analysed.hpt", FileMode.Create))

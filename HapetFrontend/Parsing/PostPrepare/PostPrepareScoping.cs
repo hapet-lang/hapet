@@ -1,22 +1,24 @@
 ﻿using HapetFrontend.Ast.Declarations;
-using HapetFrontend.Entities;
 
 namespace HapetFrontend.Parsing.PostPrepare
 {
-	public static class PostPrepareProgramFile
+	public partial class PostPrepare
 	{
-		public static void PostPrepare(ProgramFile file)
+		private void PostPrepareScoping()
 		{
-			foreach (var stmt in file.Statements)
+			foreach (var (path, file) in _compiler.GetFiles())
 			{
-				if (stmt is AstClassDecl classDecl)
+				foreach (var stmt in file.Statements)
 				{
-					PostPrepareClass(classDecl);
+					if (stmt is AstClassDecl classDecl)
+					{
+						PostPrepareClassScoping(classDecl);
+					}
 				}
 			}
 		}
 
-		private static void PostPrepareClass(AstClassDecl classDecl)
+		private void PostPrepareClassScoping(AstClassDecl classDecl)
 		{
 			foreach (var decl in classDecl.Declarations)
 			{

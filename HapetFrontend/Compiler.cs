@@ -5,6 +5,7 @@ using HapetFrontend.Entities;
 using HapetFrontend.Parsing;
 using HapetFrontend.Parsing.PostPrepare;
 using HapetFrontend.Scoping;
+using System.Collections.ObjectModel;
 
 namespace HapetFrontend
 {
@@ -74,8 +75,6 @@ namespace HapetFrontend
 				HandleStatement(s);
 			}
 
-			PostPrepareProgramFile.PostPrepare(file);
-
 			return file;
 
 			void HandleStatement(AstStatement s)
@@ -102,6 +101,11 @@ namespace HapetFrontend
 			if (!_files.ContainsKey(normalizedPath))
 				return null;
 			return _files[normalizedPath];
+		}
+
+		public ReadOnlyDictionary<string, ProgramFile> GetFiles()
+		{
+			return new ReadOnlyDictionary<string, ProgramFile>(_files);
 		}
 
 		public string GetText(ILocation location)
