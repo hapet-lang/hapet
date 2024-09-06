@@ -170,12 +170,12 @@ namespace HapetFrontend.Types
 			var args = string.Join(", ", Declaration.Parameters.Select(p =>
 			{
 				if (p.Name != null)
-					return $"{p.Type.Name} {p.Name.Name}";
-				return p.Type.Name;
+					return $"{p.Type} {p.Name.Name}";
+				return p.Type.ToString();
 			}));
 
-			if (Declaration.Returns.Type.OutType != VoidType.Instance)
-				return $"{Declaration.Returns.Type.Name} {Declaration.Name.Name}({args})";
+			if (Declaration.Returns.OutType != VoidType.Instance)
+				return $"{Declaration.Returns} {Declaration.Name.Name}({args})";
 			else
 				return $"void {Declaration.Name.Name}({args})";
 		}
@@ -184,7 +184,7 @@ namespace HapetFrontend.Types
 		{
 			if (obj is FunctionType f)
 			{
-				if (Declaration.Returns.Type.OutType != f.Declaration.Returns.Type.OutType)
+				if (Declaration.Returns.OutType != f.Declaration.Returns.OutType)
 					return false;
 
 				if (Declaration.Parameters.Count != f.Declaration.Parameters.Count)
@@ -208,7 +208,7 @@ namespace HapetFrontend.Types
 			var hash = new HashCode();
 			foreach (var p in Declaration.Parameters)
 				hash.Add(p.Type.OutType);
-			hash.Add(Declaration.Returns.Type.OutType);
+			hash.Add(Declaration.Returns.OutType);
 			return hash.ToHashCode();
 		}
 	}

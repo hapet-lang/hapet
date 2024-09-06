@@ -10,7 +10,7 @@ namespace HapetFrontend.Ast.Declarations
 		public CallingConvention CallingConvention { get; } = CallingConvention.Default;
 
 		public List<AstParamDecl> Parameters { get; set; }
-		public AstParamDecl Returns { get; }
+		public AstExpression Returns { get; set; }
 
 		public AstBlockStmt Body { get; set; }
 
@@ -22,11 +22,12 @@ namespace HapetFrontend.Ast.Declarations
 		// TODO: do i need it?
 		// public Scope SubScope { get; set; }
 
-		public AstFuncDecl(List<AstParamDecl> parameters, AstParamDecl returns, AstIdExpr name, string doc = "", ILocation Location = null) : base(name, doc, Location)
+		public AstFuncDecl(List<AstParamDecl> parameters, AstExpression returns, AstBlockStmt body, AstIdExpr name, string doc = "", ILocation Location = null) : base(name, doc, Location)
 		{
 			Type = new AstIdExpr("func", Location);
 			Type.OutType = new FunctionType(this);
 
+			Body = body;
 			Parameters = parameters;
 			Returns = returns;
 		}

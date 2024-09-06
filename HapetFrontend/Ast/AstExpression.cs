@@ -32,5 +32,11 @@ namespace HapetFrontend.Ast
 		public AstExpression(ILocation Location = null) : base(Location)
 		{
 		}
+
+		public override string ToString()
+		{
+			// TODO: so the return type would be printed normally
+			return base.ToString();
+		}
 	}
 }

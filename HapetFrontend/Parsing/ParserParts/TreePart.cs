@@ -332,7 +332,16 @@ namespace HapetFrontend.Parsing
 				case TokenType.Identifier:
 					{
 						NextToken();
+
 						var id = new AstIdExpr((string)token.Data, new Location(token.Location));
+
+						if (CheckToken(TokenType.Identifier))
+						{
+							var secondToken = NextToken();
+							var name = new AstIdExpr((string)secondToken.Data, new Location(secondToken.Location));
+							return new UnknownDecl(name, id, new Location(token.Location));
+						}
+						
 						return id;
 					}
 
@@ -386,6 +395,24 @@ namespace HapetFrontend.Parsing
 
 				case TokenType.KwClass:
 					return ParseClassDeclaration();
+
+				// custom shite
+				case TokenType.KwPublic:
+				case TokenType.KwProtected:
+				case TokenType.KwPrivate:
+					return ParseAccessKeys(token.Type);
+
+				case TokenType.KwAsync:
+					return ParseSyncKeys(token.Type);
+
+				case TokenType.KwStatic:
+					return ParseInstancingKeys(token.Type);
+
+				case TokenType.KwAbstract:
+				case TokenType.KwVirtual:
+				case TokenType.KwOverride:
+				case TokenType.KwPartial:
+					return ParseImplementationKeys(token.Type);
 
 				default:
 					//NextToken();

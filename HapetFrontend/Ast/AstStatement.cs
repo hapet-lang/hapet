@@ -10,7 +10,7 @@ namespace HapetFrontend.Ast
 
 	public abstract class AstStatement : ILocation, IAstNode
 	{
-		public ILocation Location { get; private set; }
+		public ILocation Location { get; set; }
 		public TokenLocation Beginning => Location?.Beginning;
 		public TokenLocation Ending => Location?.Ending;
 

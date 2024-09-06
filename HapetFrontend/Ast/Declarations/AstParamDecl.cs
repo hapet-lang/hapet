@@ -11,7 +11,7 @@ namespace HapetFrontend.Ast.Declarations
 		/// </summary>
 		public AstFuncDecl ContainingFunction { get; set; }
 
-		public AstParamDecl(AstIdExpr type, AstIdExpr name, AstExpression defaultValue = null, string doc = "", ILocation Location = null) : base(name, doc, Location)
+		public AstParamDecl(AstExpression type, AstIdExpr name, AstExpression defaultValue = null, string doc = "", ILocation Location = null) : base(name, doc, Location)
 		{
 			Type = type;
 			DefaultValue = defaultValue;

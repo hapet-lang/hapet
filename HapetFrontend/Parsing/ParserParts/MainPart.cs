@@ -77,13 +77,15 @@ namespace HapetFrontend.Parsing
 								case TokenType.ModEq: op = "%"; break;
 							}
 							SkipNewlines();
-							var val = ParseExpression(true);
-							return new AstAssignment(expr, val, op, new Location(expr.Beginning, val.End));
+							// TODO: do i need it???
+							//var val = ParseExpression(true);
+							//return new AstAssignment(expr, val, op, new Location(expr.Beginning, val.End));
 						}
 						else
 						{
 							return stmt;
 						}
+						return stmt;
 					}
 			}
 		}

@@ -1,14 +1,18 @@
 ﻿using HapetFrontend.Ast.Expressions;
+using HapetFrontend.Parsing;
 using HapetFrontend.Scoping;
 
 namespace HapetFrontend.Ast
 {
 	public abstract class AstDeclaration : AstStatement
 	{
-		public AstIdExpr Type { get; set; }
+		public AstExpression Type { get; set; }
 		public AstIdExpr Name { get; set; }
 
 		public string Documentation { get; set; }
+
+		// like public/static/virtual
+		public List<TokenType> SpecialKeys { get; private set; } = new List<TokenType>();
 
 		public AstDeclaration(AstIdExpr name, string doc, ILocation Location = null) : base(Location)
 		{

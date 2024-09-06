@@ -10,7 +10,7 @@ namespace HapetFrontend.Ast.Declarations
 		/// </summary>
 		public AstExpression Initializer { get; set; }
 
-		public AstVarDecl(AstIdExpr name, AstIdExpr type, AstExpression ini = null, string doc = "", ILocation Location = null) : base(name, doc, Location)
+		public AstVarDecl(AstExpression type, AstIdExpr name, AstExpression ini = null, string doc = "", ILocation Location = null) : base(name, doc, Location)
 		{
 			Type = type;
 			Initializer = ini;
