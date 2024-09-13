@@ -7,7 +7,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HapetCompiler", "HapetCompi
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Frontend", "Frontend\Frontend.csproj", "{793B3F41-5B7A-40C2-A3A8-414065F093DF}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HapetFrontend", "HapetFrontend\HapetFrontend.csproj", "{E60DB66F-7B04-4F3D-BEDE-B8F165591CEB}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HapetFrontend", "HapetFrontend\HapetFrontend.csproj", "{E60DB66F-7B04-4F3D-BEDE-B8F165591CEB}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HapetBackend", "HapetBackend\HapetBackend.csproj", "{80CE2BB5-15AD-4EAD-AEAF-A3ABC2052414}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HapetCommon", "HapetCommon\HapetCommon.csproj", "{811A5872-5AD5-47E2-B858-E0D7E83F5704}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -27,6 +31,14 @@ Global
 		{E60DB66F-7B04-4F3D-BEDE-B8F165591CEB}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E60DB66F-7B04-4F3D-BEDE-B8F165591CEB}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E60DB66F-7B04-4F3D-BEDE-B8F165591CEB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{80CE2BB5-15AD-4EAD-AEAF-A3ABC2052414}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{80CE2BB5-15AD-4EAD-AEAF-A3ABC2052414}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{80CE2BB5-15AD-4EAD-AEAF-A3ABC2052414}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{80CE2BB5-15AD-4EAD-AEAF-A3ABC2052414}.Release|Any CPU.Build.0 = Release|Any CPU
+		{811A5872-5AD5-47E2-B858-E0D7E83F5704}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{811A5872-5AD5-47E2-B858-E0D7E83F5704}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{811A5872-5AD5-47E2-B858-E0D7E83F5704}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{811A5872-5AD5-47E2-B858-E0D7E83F5704}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

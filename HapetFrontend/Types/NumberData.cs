@@ -107,6 +107,11 @@ namespace HapetFrontend.Types
 		//		return DoubleValue;
 		//}
 
+		public uint ToUInt()
+		{
+			return (uint)IntValue;
+		}
+
 		public NumberData Negate()
 		{
 			switch (Type)

@@ -3,9 +3,15 @@
 	<PropertyGroup>
 		<TargetFramework>net8.0</TargetFramework>
 		<ImplicitUsings>enable</ImplicitUsings>
+		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
 	</PropertyGroup>
 
 	<ItemGroup>
 		<ProjectReference Include="..\HapetCommon\HapetCommon.csproj" />
+		<ProjectReference Include="..\HapetFrontend\HapetFrontend.csproj" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<PackageReference Include="LLVMSharp" Version="16.0.0" />
 	</ItemGroup>
 </Project>

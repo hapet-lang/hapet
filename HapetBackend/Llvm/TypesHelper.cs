@@ -1,0 +1,326 @@
+﻿using HapetFrontend.Types;
+using LLVMSharp.Interop;
+using System;
+
+namespace HapetBackend.Llvm
+{
+	public partial class LlvmCodeGenerator
+	{
+		private Dictionary<HapetType, LLVMTypeRef> _typeMap = new Dictionary<HapetType, LLVMTypeRef>();
+
+		// rtti stuff
+		private HapetType sTypeInfoAttribute;
+		private ClassType sTypeInfo;
+		private HapetType sTypeInfoInt;
+		private HapetType sTypeInfoVoid;
+		private HapetType sTypeInfoFloat;
+		private HapetType sTypeInfoBool;
+		private HapetType sTypeInfoChar;
+		private HapetType sTypeInfoString;
+		private HapetType sTypeInfoPointer;
+		private HapetType sTypeInfoReference;
+		private HapetType sTypeInfoArray;
+		private HapetType sTypeInfoTuple;
+		private HapetType sTypeInfoFunction;
+		private HapetType sTypeInfoStruct;
+		private HapetType sTypeInfoEnum;
+		private HapetType sTypeInfoClass;
+		private HapetType sTypeInfoType;
+		private HapetType sTypeInfoCode;
+
+		private LLVMTypeRef rttiTypeInfoAttribute;
+		private LLVMTypeRef rttiTypeInfoPtr;
+		private LLVMTypeRef rttiTypeInfoRef;
+		private LLVMTypeRef rttiTypeInfoInt;
+		private LLVMTypeRef rttiTypeInfoVoid;
+		private LLVMTypeRef rttiTypeInfoFloat;
+		private LLVMTypeRef rttiTypeInfoBool;
+		private LLVMTypeRef rttiTypeInfoChar;
+		private LLVMTypeRef rttiTypeInfoString;
+		private LLVMTypeRef rttiTypeInfoPointer;
+		private LLVMTypeRef rttiTypeInfoReference;
+		private LLVMTypeRef rttiTypeInfoArray;
+		private LLVMTypeRef rttiTypeInfoTuple;
+		private LLVMTypeRef rttiTypeInfoFunction;
+		private LLVMTypeRef rttiTypeInfoStruct;
+		private LLVMTypeRef rttiTypeInfoEnum;
+		private LLVMTypeRef rttiTypeInfoClass;
+		private LLVMTypeRef rttiTypeInfoType;
+		private LLVMTypeRef rttiTypeInfoCode;
+
+		private void InitTypeInfoLLVMTypes()
+		{
+			sTypeInfoAttribute = _compiler.GlobalScope.GetStruct("TypeInfoAttribute").Type.OutType;
+			sTypeInfo = _compiler.GlobalScope.GetClass("TypeInfo").Type.OutType as ClassType;
+			sTypeInfoInt = _compiler.GlobalScope.GetStruct("TypeInfoInt").Type.OutType;
+			sTypeInfoVoid = _compiler.GlobalScope.GetStruct("TypeInfoVoid").Type.OutType;
+			sTypeInfoFloat = _compiler.GlobalScope.GetStruct("TypeInfoFloat").Type.OutType;
+			sTypeInfoBool = _compiler.GlobalScope.GetStruct("TypeInfoBool").Type.OutType;
+			sTypeInfoChar = _compiler.GlobalScope.GetStruct("TypeInfoChar").Type.OutType;
+			sTypeInfoString = _compiler.GlobalScope.GetStruct("TypeInfoString").Type.OutType;
+			sTypeInfoPointer = _compiler.GlobalScope.GetStruct("TypeInfoPointer").Type.OutType;
+			sTypeInfoReference = _compiler.GlobalScope.GetStruct("TypeInfoReference").Type.OutType;
+			sTypeInfoArray = _compiler.GlobalScope.GetStruct("TypeInfoArray").Type.OutType;
+			sTypeInfoTuple = _compiler.GlobalScope.GetStruct("TypeInfoTuple").Type.OutType;
+			sTypeInfoFunction = _compiler.GlobalScope.GetStruct("TypeInfoFunction").Type.OutType;
+			sTypeInfoStruct = _compiler.GlobalScope.GetStruct("TypeInfoStruct").Type.OutType;
+			sTypeInfoEnum = _compiler.GlobalScope.GetStruct("TypeInfoEnum").Type.OutType;
+			sTypeInfoClass = _compiler.GlobalScope.GetStruct("TypeInfoClass").Type.OutType;
+			sTypeInfoType = _compiler.GlobalScope.GetStruct("TypeInfoType").Type.OutType;
+			sTypeInfoCode = _compiler.GlobalScope.GetStruct("TypeInfoCode").Type.OutType;
+
+			rttiTypeInfoPtr = HapetTypeToLLVMType(PointerType.GetPointerType(sTypeInfo));
+			rttiTypeInfoRef = HapetTypeToLLVMType(ReferenceType.GetRefType(sTypeInfo));
+			rttiTypeInfoInt = HapetTypeToLLVMType(sTypeInfoInt);
+			rttiTypeInfoVoid = HapetTypeToLLVMType(sTypeInfoVoid);
+			rttiTypeInfoFloat = HapetTypeToLLVMType(sTypeInfoFloat);
+			rttiTypeInfoBool = HapetTypeToLLVMType(sTypeInfoBool);
+			rttiTypeInfoChar = HapetTypeToLLVMType(sTypeInfoChar);
+			rttiTypeInfoString = HapetTypeToLLVMType(sTypeInfoString);
+			rttiTypeInfoPointer = HapetTypeToLLVMType(sTypeInfoPointer);
+			rttiTypeInfoReference = HapetTypeToLLVMType(sTypeInfoReference);
+			rttiTypeInfoArray = HapetTypeToLLVMType(sTypeInfoArray);
+			rttiTypeInfoTuple = HapetTypeToLLVMType(sTypeInfoTuple);
+			rttiTypeInfoFunction = HapetTypeToLLVMType(sTypeInfoFunction);
+			rttiTypeInfoStruct = HapetTypeToLLVMType(sTypeInfoStruct);
+			rttiTypeInfoEnum = HapetTypeToLLVMType(sTypeInfoEnum);
+			rttiTypeInfoClass = HapetTypeToLLVMType(sTypeInfoClass);
+			rttiTypeInfoAttribute = HapetTypeToLLVMType(sTypeInfoAttribute);
+			rttiTypeInfoType = HapetTypeToLLVMType(sTypeInfoType);
+			rttiTypeInfoCode = HapetTypeToLLVMType(sTypeInfoCode);
+		}
+
+		private HapetType NormalizeType(HapetType type)
+		{
+			return type switch
+			{
+				// TODO: do i need it???
+				//ReferenceType r => ReferenceType.GetRefType(NormalizeType(r.TargetType)),
+				//PointerType r => PointerType.GetPointerType(NormalizeType(r.TargetType)),
+				//ArrayType r => ArrayType.GetArrayType(NormalizeType(r.TargetType), r.Length),
+				//TupleType r => TupleType.GetTuple(r.Members.Select(m => (NormalizeType(m.type), m.name)).ToArray()),
+				//FunctionType r => new FunctionType(r.Declaration.Parameters.Select(m => (m.name, NormalizeType(m.type), m.defaultValue)).ToArray(), NormalizeType(r.ReturnType)),
+				_ => type,
+			};
+		}
+
+		private LLVMTypeRef HapetTypeToLLVMType(HapetType ht)
+		{
+			ht = NormalizeType(ht);
+
+			if (_typeMap.TryGetValue(ht, out var tt)) 
+				return tt;
+
+			var t = HapetTypeToLLVMTypeHelper(ht);
+			_typeMap[ht] = t;
+			return t;
+		}
+
+		private unsafe LLVMTypeRef HapetTypeToLLVMTypeHelper(HapetType ht)
+		{
+			switch (ht)
+			{
+				case StringType s:
+					{
+						var str = _context.CreateNamedStruct("string");
+						str.StructSetBody(new LLVMTypeRef[] {
+							((LLVMTypeRef)LLVM.Int64Type()),
+							((LLVMTypeRef)LLVM.Int8Type()).GetPointerTo()
+						}, false);
+						return str;
+					}
+
+				case ClassType t:
+					{
+						Console.WriteLine($"[ERROR] class type {t}");
+						return LLVM.VoidType();
+					}
+
+				case BoolType b:
+					return LLVM.Int1Type();
+
+				case IntType i:
+					return LLVM.IntType((uint)i.GetSize() * 8);
+
+				case FloatType f:
+					if (f.GetSize() == 2)
+						return LLVMTypeRef.Half;
+					else if (f.GetSize() == 4)
+						return LLVMTypeRef.Float;
+					else if (f.GetSize() == 8)
+						return LLVMTypeRef.Double;
+					else throw new NotImplementedException();
+
+				case CharType c:
+					return LLVM.IntType((uint)c.GetSize() * 8);
+
+				case PointerType p:
+					{
+						// TODO: check it
+						//if (p.TargetType == CheezType.Any)
+						//{
+						//	var str = LLVM.StructCreateNamed(context, $"^{p.TargetType.ToString()}");
+						//	LLVM.StructSetBody(str, new LLVMTypeRef[] {
+						//		LLVM.Int8Type().GetPointerTo(),
+						//		rttiTypeInfoPtr
+						//	}, false);
+						//	return str;
+						//}
+						//else if (p.TargetType is TraitType)
+						//{
+						//	var str = LLVM.StructCreateNamed(context, $"^{p.TargetType.ToString()}");
+						//	LLVM.StructSetBody(str, new LLVMTypeRef[] {
+						//		LLVM.Int8Type().GetPointerTo(),
+						//		LLVM.Int8Type().GetPointerTo()
+						//	}, false);
+						//	return str;
+						//}
+						//else
+						//{
+						//	if (p.TargetType == VoidType.Instance)
+						//		return LLVM.Int8Type().GetPointerTo();
+						//	return HapetTypeToLLVMType(p.TargetType).GetPointerTo();
+						//}
+
+						if (p.TargetType == VoidType.Instance)
+							return ((LLVMTypeRef)LLVM.Int8Type()).GetPointerTo();
+						return HapetTypeToLLVMType(p.TargetType).GetPointerTo();
+					}
+
+				case ReferenceType r:
+					{
+						// TODO: check it
+						//if (r.TargetType == CheezType.Any)
+						//{
+						//	var str = LLVM.StructCreateNamed(context, $"&{r.TargetType.ToString()}");
+						//	LLVM.StructSetBody(str, new LLVMTypeRef[] {
+						//		LLVM.Int8Type().GetPointerTo(),
+						//		rttiTypeInfoPtr
+						//	}, false);
+						//	return str;
+						//}
+						//else if (r.TargetType is TraitType)
+						//{
+						//	var str = LLVM.StructCreateNamed(context, $"&{r.TargetType.ToString()}");
+						//	LLVM.StructSetBody(str, new LLVMTypeRef[] {
+						//		LLVM.Int8Type().GetPointerTo(),
+						//		LLVM.Int8Type().GetPointerTo()
+						//	}, false);
+						//	return str;
+						//}
+						//else
+						//{
+						//	return HapetTypeToLLVMType(r.TargetType).GetPointerTo();
+						//}
+
+						return HapetTypeToLLVMType(r.TargetType).GetPointerTo();
+					}
+
+				case ThisType self:
+					return LLVM.Int8Type();
+
+				case ArrayType a:
+					return LLVMTypeRef.CreateArray(HapetTypeToLLVMType(a.TargetType), (uint)((NumberData)a.Length).ToUInt());
+
+				case VoidType _:
+					return LLVM.VoidType();
+
+				case FunctionType f:
+					{
+						var paramTypes = f.Declaration.Parameters.Select(rt => HapetTypeToLLVMType(rt.Type.OutType)).ToList();
+						var returnType = HapetTypeToLLVMType(f.Declaration.Returns.OutType);
+						var funcType = LLVMTypeRef.CreateFunction(returnType, paramTypes.ToArray(), false); // TODO: var args
+						return funcType.GetPointerTo();
+					}
+
+					// TODO: check it
+				//case EnumType e:
+				//	{
+				//		var llvmType = _context.CreateNamedStruct($"enum.{e}");
+
+				//		// TODO: here was some shite with tags
+				//		var restSize = e.GetSize();
+				//		llvmType.StructSetBody(new LLVMTypeRef[]
+				//		{
+				//			LLVM.ArrayType(LLVM.Int8Type(), (uint)0),
+				//			LLVM.ArrayType(LLVM.Int8Type(), (uint)restSize)
+				//		}, false);
+
+				//		return llvmType;
+				//	}
+
+				//case StructType s:
+				//	{
+				//		var name = $"struct.{s.Declaration.Name.Name}";
+
+				//		var llvmType = _context.CreateNamedStruct(name);
+				//		typeMap[s] = llvmType;
+
+				//		var memTypes = new List<LLVMTypeRef>(s.Declaration.Declarations.Count);
+				//		var offsets = new uint[s.Declaration.Declarations.Count];
+				//		int currentSize = 0;
+				//		int i = 0;
+				//		foreach (var mem in s.Declaration.Declarations)
+				//		{
+				//			if (currentSize % mem.Type.OutType.GetAlignment() != 0)
+				//			{
+				//				// add padding
+				//				int padding = mem.Type.OutType.GetAlignment() - currentSize % mem.Type.OutType.GetAlignment();
+				//				memTypes.Add(LLVM.ArrayType(LLVM.Int8Type(), (uint)padding));
+				//				currentSize += padding;
+				//			}
+
+				//			offsets[i] = (uint)memTypes.Count;
+				//			memTypes.Add(HapetTypeToLLVMType(mem.Type.OutType));
+				//			currentSize += (int)((_targetData.SizeOfTypeInBits(memTypes.Last()) + 7) / 8);
+				//			i += 1;
+				//		}
+				//		if (currentSize % s.GetAlignment() != 0)
+				//		{
+				//			// add padding
+				//			int padding = s.GetAlignment() - currentSize % s.GetAlignment();
+				//			memTypes.Add(LLVM.ArrayType(LLVM.Int8Type(), (uint)padding));
+				//			currentSize += padding;
+				//		}
+
+				//		structMemberOffsets[s] = offsets;
+
+				//		llvmType.StructSetBody(memTypes.ToArray(), false);
+
+				//		// TODO: offsets checks
+				//		//foreach (var m in s.Declaration.Declarations)
+				//		//{
+				//		//	int myOffset = m.Type.Offset;
+				//		//	int llvmOffset = (int)LLVM.OffsetOfElement(_targetData, llvmType, offsets[m.Index]);
+
+				//		//	if (myOffset != llvmOffset)
+				//		//	{
+				//		//		System.Console.WriteLine($"[ERROR] {s.Declaration.Name}: offset mismatch at {m.Index}: cheez {myOffset}, llvm {llvmOffset}");
+				//		//	}
+				//		//}
+
+				//		if (_targetData.SizeOfTypeInBits(llvmType) / 8ul != (ulong)s.GetSize())
+				//		{
+				//			System.Console.WriteLine($"[ERROR] {s.Declaration.Name}: struct size mismatch: cheez {s.GetSize()}, llvm {_targetData.SizeOfTypeInBits(llvmType) / 8}");
+				//		}
+
+				//		if (_targetData.PreferredAlignmentOfType(llvmType) != (uint)s.GetAlignment()) // TODO: here was a directive check
+				//		{
+				//			System.Console.WriteLine($"[WARNING] {s.Declaration.Name}: struct alignment mismatch: cheez {s.GetAlignment()}, llvm {_targetData.PreferredAlignmentOfType(llvmType)}");
+				//		}
+
+				//		return llvmType;
+				//	}
+
+				case TupleType t:
+					{
+						var memTypes = t.Members.Select(m => HapetTypeToLLVMType(m.type)).ToArray();
+						return _context.GetStructType(memTypes, false);
+					}
+
+				default:
+					throw new NotImplementedException(ht.ToString());
+			}
+		}
+	}
+}

@@ -18,7 +18,7 @@ namespace HapetFrontend
 
 		public IErrorHandler ErrorHandler { get; }
 
-		private Scope _globalScope = null;
+		public Scope GlobalScope { get; private set; }
 
 		public Compiler(IErrorHandler errorHandler)
 		{
@@ -28,9 +28,9 @@ namespace HapetFrontend
 			// TODO: do i need it?
 			// string exePath = Path.Combine(Path.GetDirectoryName(Assembly.GetEntryAssembly().Location), "libraries");
 
-			_globalScope = new Scope("global_scope_of_assembly");
-			_globalScope.DefineBuiltInTypes();
-			_globalScope.DefineBuiltInOperators();
+			GlobalScope = new Scope("global_scope_of_assembly");
+			GlobalScope.DefineBuiltInTypes();
+			GlobalScope.DefineBuiltInOperators();
 		}
 
 		public ProgramFile AddFile(string fileName)
@@ -61,7 +61,7 @@ namespace HapetFrontend
 
 			var parser = new Parser(lexer, eh);
 
-			var fileScope = new Scope($"{Path.GetFileNameWithoutExtension(fileName)}_scope", _globalScope);
+			var fileScope = new Scope($"{Path.GetFileNameWithoutExtension(fileName)}_scope", GlobalScope);
 			var file = new ProgramFile(fileName, lexer.Text, fileScope);
 
 			_files[fileName] = file;
