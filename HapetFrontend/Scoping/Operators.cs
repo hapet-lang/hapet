@@ -1,4 +1,5 @@
-﻿using HapetFrontend.Types;
+﻿using HapetFrontend.Ast;
+using HapetFrontend.Types;
 
 namespace HapetFrontend.Scoping
 {
@@ -13,7 +14,7 @@ namespace HapetFrontend.Scoping
 	}
 
 	/// <summary>
-	/// Aliasing of types
+	/// To search for a type in a scope
 	/// </summary>
 	public class TypeSymbol : ITypedSymbol
 	{
@@ -27,7 +28,23 @@ namespace HapetFrontend.Scoping
 		}
 	}
 
-	public interface INaryOperator
+	/// <summary>
+	/// If a symbol found twice
+	/// </summary>
+    public class AmbiguousSymol : ISymbol
+    {
+        public string Name => throw new NotImplementedException();
+        public ILocation Location => throw new NotImplementedException();
+
+        public List<ISymbol> Symbols { get; }
+
+        public AmbiguousSymol(List<ISymbol> syms)
+        {
+            Symbols = syms;
+        }
+    }
+
+    public interface INaryOperator
 	{
 		HapetType[] ArgTypes { get; }
 		HapetType ResultType { get; }
