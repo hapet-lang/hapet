@@ -18,6 +18,7 @@ namespace HapetBackend.Llvm
 		private LLVMModuleRef _module;
 		private LLVMTargetDataRef _targetData;
 		private LLVMContextRef _context;
+		private LLVMBuilderRef _builder;
 		private LLVMBuilderRef _rawBuilder;
 		private LLVMTypeRef _voidPointerType;
 
@@ -63,7 +64,8 @@ namespace HapetBackend.Llvm
 			_rawBuilder = _module.Context.CreateBuilder();
 			_voidPointerType = ((LLVMTypeRef)LLVM.Int8Type()).GetPointerTo();
 
-			InitTypeInfoLLVMTypes();
+			// InitTypeInfoLLVMTypes(); // TODO: it is reflection
+			GenerateCode();
 		}
 	}
 }

@@ -3,47 +3,6 @@ using HapetFrontend.Types;
 
 namespace HapetFrontend.Scoping
 {
-	public interface ISymbol
-	{
-		string Name { get; }
-	}
-
-	public interface ITypedSymbol : ISymbol
-	{
-		HapetType Type { get; }
-	}
-
-	/// <summary>
-	/// To search for a type in a scope
-	/// </summary>
-	public class TypeSymbol : ITypedSymbol
-	{
-		public string Name { get; private set; }
-		public HapetType Type { get; private set; }
-
-		public TypeSymbol(string name, HapetType type)
-		{
-			this.Name = name;
-			this.Type = type;
-		}
-	}
-
-	/// <summary>
-	/// If a symbol found twice
-	/// </summary>
-    public class AmbiguousSymol : ISymbol
-    {
-        public string Name => throw new NotImplementedException();
-        public ILocation Location => throw new NotImplementedException();
-
-        public List<ISymbol> Symbols { get; }
-
-        public AmbiguousSymol(List<ISymbol> syms)
-        {
-            Symbols = syms;
-        }
-    }
-
     public interface INaryOperator
 	{
 		HapetType[] ArgTypes { get; }

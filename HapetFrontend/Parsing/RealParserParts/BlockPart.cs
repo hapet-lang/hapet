@@ -1,12 +1,11 @@
 ﻿using HapetFrontend.Ast;
 using HapetFrontend.Ast.Expressions;
-using HapetFrontend.Ast.Statements;
 
 namespace HapetFrontend.Parsing
 {
-	public partial class Parser
+    public partial class Parser
 	{
-		private AstBlockStmt ParseBlockStatement()
+		private AstBlockExpr ParseBlockStatement()
 		{
 			var statements = new List<AstStatement>();
 			var beg = Consume(TokenType.OpenBrace, ErrMsg("{", "at beginning of block statement")).Location;
@@ -32,7 +31,7 @@ namespace HapetFrontend.Parsing
 					{
 						// TODO: uncomment
 						// case AstConditionStmt:
-						case AstBlockStmt:
+						case AstBlockExpr:
 							break;
 
 						default:
@@ -47,7 +46,7 @@ namespace HapetFrontend.Parsing
 
 			var end = Consume(TokenType.CloseBrace, ErrMsg("}", "at end of block statement")).Location;
 
-			return new AstBlockStmt(statements, new Location(beg, end));
+			return new AstBlockExpr(statements, new Location(beg, end));
 		}
 	}
 }

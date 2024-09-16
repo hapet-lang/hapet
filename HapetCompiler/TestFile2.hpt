@@ -1,0 +1,8 @@
+﻿public static class Program
+{
+	public static void Main(string[] args)
+	{
+		int a = 2 + 5;
+		int b = args[0];
+	}
+}

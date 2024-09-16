@@ -1,11 +1,85 @@
-﻿using HapetFrontend.Ast.Declarations;
+﻿using HapetFrontend.Ast;
+using HapetFrontend.Ast.Declarations;
+using HapetFrontend.Ast.Statements;
+using HapetFrontend.Entities;
 using HapetFrontend.Types;
 
 namespace HapetFrontend.Scoping
 {
     public partial class Scope
     {
-        public bool DefineLocalSymbol(ISymbol symbol, string name = null)
+		public interface ISymbol
+		{
+			string Name { get; }
+		}
+
+		public interface ITypedSymbol : ISymbol
+		{
+			HapetType Type { get; }
+		}
+
+		/// <summary>
+		/// To search for a type in a scope
+		/// </summary>
+		public class TypeSymbol : ITypedSymbol
+		{
+			public string Name { get; private set; }
+			public HapetType Type { get; private set; }
+
+			public TypeSymbol(string name, HapetType type)
+			{
+				this.Name = name;
+				this.Type = type;
+			}
+		}
+
+		/// <summary>
+		/// To search for a module in a global scope
+		/// </summary>
+		public class ModuleSymbol : ISymbol
+		{
+			public string Name { get; private set; }
+			public ProgramFile File { get; private set; }
+
+			public ModuleSymbol(string name, ProgramFile file)
+			{
+				this.Name = name;
+				this.File = file;
+			}
+		}
+
+		/// <summary>
+		/// To search for a declaration in a global scope. Use it for local vars, params and other
+		/// </summary>
+		public class DeclSymbol : ISymbol
+		{
+			public string Name { get; private set; }
+			public AstDeclaration Decl { get; private set; }
+
+			public DeclSymbol(string name, AstDeclaration decl)
+			{
+				this.Name = name;
+				this.Decl = decl;
+			}
+		}
+
+		/// <summary>
+		/// If a symbol found twice
+		/// </summary>
+		public class AmbiguousSymol : ISymbol
+		{
+			public string Name => throw new NotImplementedException();
+			public ILocation Location => throw new NotImplementedException();
+
+			public List<ISymbol> Symbols { get; }
+
+			public AmbiguousSymol(List<ISymbol> syms)
+			{
+				Symbols = syms;
+			}
+		}
+
+		public bool DefineLocalSymbol(ISymbol symbol, string name = null)
         {
             name ??= symbol.Name;
             if (name == "_")
@@ -28,7 +102,17 @@ namespace HapetFrontend.Scoping
             return DefineSymbol(new TypeSymbol(name, symbol));
         }
 
-        public ISymbol GetSymbol(string name, bool searchUsedScopes = true, bool searchParentScope = true)
+		public bool DefineModuleSymbol(string name, ProgramFile file)
+		{
+			return DefineSymbol(new ModuleSymbol(name, file));
+		}
+
+		public bool DefineDeclSymbol(string name, AstDeclaration decl)
+		{
+			return DefineSymbol(new DeclSymbol(name, decl));
+		}
+
+		public ISymbol GetSymbol(string name, bool searchUsedScopes = true, bool searchParentScope = true)
         {
             if (_symbolTable.ContainsKey(name))
             {

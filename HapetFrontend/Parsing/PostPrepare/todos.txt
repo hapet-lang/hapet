@@ -1,0 +1,3 @@
+﻿- Check if static class contains only static declarations
+- Manually create ctor if there is no one
+- Manually create dtor if there is no one

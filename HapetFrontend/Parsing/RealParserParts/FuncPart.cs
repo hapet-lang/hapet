@@ -1,10 +1,10 @@
 ﻿using HapetFrontend.Ast;
 using HapetFrontend.Ast.Declarations;
-using HapetFrontend.Ast.Statements;
+using HapetFrontend.Ast.Expressions;
 
 namespace HapetFrontend.Parsing
 {
-	public partial class Parser
+    public partial class Parser
 	{
 		private AstFuncDecl ParseFuncDeclaration(List<AstParamDecl> parameters, Location paramsLocation)
 		{
@@ -14,7 +14,7 @@ namespace HapetFrontend.Parsing
 				paramsLocation = new Location(beg, end);
 			}
 
-			AstBlockStmt body = null;
+			AstBlockExpr body = null;
 
 			if (CheckToken(TokenType.Semicolon))
 				NextToken(); // do nothing
@@ -27,7 +27,7 @@ namespace HapetFrontend.Parsing
 		{
 			ConsumeUntil(TokenType.Arrow, ErrMsg("=>", "in lambda"));
 
-			AstBlockStmt body = ParseBlockStatement();
+			AstBlockExpr body = ParseBlockStatement();
 
 			return new AstLambdaDecl(parameters, body, null, new Location(beg, body.Ending));
 		}

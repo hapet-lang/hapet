@@ -75,6 +75,8 @@ namespace HapetFrontend
 				HandleStatement(s);
 			}
 
+			GlobalScope.DefineModuleSymbol(file.ModuleName, file);
+
 			return file;
 
 			void HandleStatement(AstStatement s)

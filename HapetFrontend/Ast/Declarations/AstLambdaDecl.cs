@@ -1,17 +1,17 @@
-﻿using HapetFrontend.Ast.Statements;
+﻿using HapetFrontend.Ast.Expressions;
 using HapetFrontend.Types;
 
 namespace HapetFrontend.Ast.Declarations
 {
-	public class AstLambdaDecl : AstExpression
+    public class AstLambdaDecl : AstExpression
 	{
 		public List<AstParamDecl> Parameters { get; set; }
 		public AstExpression ReturnType { get; set; }
-		public AstBlockStmt Body { get; set; }
+		public AstBlockExpr Body { get; set; }
 
 		public FunctionType FunctionType => OutType as FunctionType;
 
-		public AstLambdaDecl(List<AstParamDecl> parameters, AstBlockStmt body, AstExpression retType, ILocation location = null)
+		public AstLambdaDecl(List<AstParamDecl> parameters, AstBlockExpr body, AstExpression retType, ILocation location = null)
 			: base(location)
 		{
 			this.Parameters = parameters;

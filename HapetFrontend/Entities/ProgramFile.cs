@@ -10,6 +10,12 @@ namespace HapetFrontend.Entities
 		/// Filename without path parts
 		/// </summary>
 		public string Name { get; }
+
+		/// <summary>
+		/// Filename with some part to be represented as module. Implement it in ParseFile or prev
+		/// </summary>
+		public string ModuleName { get; }
+
 		/// <summary>
 		/// To grab the text only once and store it here
 		/// </summary>

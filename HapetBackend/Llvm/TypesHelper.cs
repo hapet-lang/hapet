@@ -8,6 +8,12 @@ namespace HapetBackend.Llvm
 	{
 		private Dictionary<HapetType, LLVMTypeRef> _typeMap = new Dictionary<HapetType, LLVMTypeRef>();
 
+		// vtable shite
+		private Dictionary<HapetType, LLVMTypeRef> _vtableTypes = new Dictionary<HapetType, LLVMTypeRef>();
+		private Dictionary<object, LLVMValueRef> _valueMap = new Dictionary<object, LLVMValueRef>();
+		private Dictionary<object, int> _vtableIndices = new Dictionary<object, int>();
+		private Dictionary<object, ulong> _vtableOffsets = new Dictionary<object, ulong>();
+
 		// rtti stuff
 		private HapetType sTypeInfoAttribute;
 		private ClassType sTypeInfo;
