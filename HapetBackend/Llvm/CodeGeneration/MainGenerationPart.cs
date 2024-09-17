@@ -31,7 +31,7 @@ namespace HapetBackend.Llvm
 			var entryTypes = new List<LLVMTypeRef>();
 
 			// TODO: entry for type info
-			entryTypes.Add(rttiTypeInfoPtr);
+			// entryTypes.Add(rttiTypeInfoPtr);
 
 			foreach (var decl in classDecl.Declarations)
 			{
@@ -121,7 +121,8 @@ namespace HapetBackend.Llvm
 
 						// body
 						builder.PositionAtEnd(bbBody);
-						GenerateExpression(funcDecl.Body, false);
+						// TODO: ...
+						// GenerateExpression(funcDecl.Body, false);
 
 						// ret if void
 						if (funcDecl.Returns == null)

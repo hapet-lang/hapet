@@ -1,0 +1,14 @@
+﻿int Main()
+{
+	int a = 2 + 5;
+	Math math = new Math();
+	float b = a + math.GetPi();
+}
+
+public class Math
+{
+	public float GetPi()
+	{
+		return 3.14;
+	}
+}

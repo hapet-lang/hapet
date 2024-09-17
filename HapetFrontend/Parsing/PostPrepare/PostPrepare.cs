@@ -12,6 +12,7 @@
 		public void StartPreparation()
 		{
 			PostPrepareScoping();
+			PostPrepareTypeInference();
 		}
 	}
 }

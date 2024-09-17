@@ -14,7 +14,7 @@ namespace HapetFrontend.Entities
 		/// <summary>
 		/// Filename with some part to be represented as module. Implement it in ParseFile or prev
 		/// </summary>
-		public string ModuleName { get; }
+		public string ModuleName { get; set; }
 
 		/// <summary>
 		/// To grab the text only once and store it here

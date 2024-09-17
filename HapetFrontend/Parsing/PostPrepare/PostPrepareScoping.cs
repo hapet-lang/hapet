@@ -38,12 +38,12 @@ namespace HapetFrontend.Parsing.PostPrepare
 				{
 					funcDecl.ContainingClass = classDecl;
 					classDecl.Scope.DefineTypeSymbol(funcDecl.Name.Name, funcDecl.Type.OutType);
-					PostPrepareFunction(funcDecl);
+					PostPrepareFunctionScoping(funcDecl);
 				}				
 			}
 		}
 
-		private void PostPrepareFunction(AstFuncDecl funcDecl) 
+		private void PostPrepareFunctionScoping(AstFuncDecl funcDecl) 
 		{
 			funcDecl.SourceFile = _currentSourceFile;
 			if (funcDecl.Body != null)
@@ -51,7 +51,7 @@ namespace HapetFrontend.Parsing.PostPrepare
 				// body scope is the same
 				funcDecl.Body.Scope = funcDecl.Scope;
 				funcDecl.Body.Parent = funcDecl;
-				var blockScope = PostPrepareBlock(funcDecl.Body, $"{funcDecl.Name.Name}_scope");
+				var blockScope = PostPrepareBlockScoping(funcDecl.Body, $"{funcDecl.Name.Name}_scope");
 				// defining parameters in the func scope
 				foreach (var p in funcDecl.Parameters)
 				{
@@ -61,18 +61,18 @@ namespace HapetFrontend.Parsing.PostPrepare
 		}
 
 		private static ulong _blockCounter = 0;
-		private Scope PostPrepareBlock(AstBlockExpr blockStmt, string scopename = "")
+		private Scope PostPrepareBlockScoping(AstBlockExpr blockExpr, string scopename = "")
 		{
 			if (string.IsNullOrWhiteSpace(scopename))
 				scopename = $"block_{_blockCounter++}_scope";
 
-			blockStmt.SourceFile = _currentSourceFile;
-			var blockScope = new Scoping.Scope(scopename, blockStmt.Scope);
+			blockExpr.SourceFile = _currentSourceFile;
+			var blockScope = new Scoping.Scope(scopename, blockExpr.Scope);
 
-			foreach (var stmt in blockStmt.Statements)
+			foreach (var stmt in blockExpr.Statements)
 			{
 				stmt.Scope = blockScope;
-				stmt.Parent = blockStmt;
+				stmt.Parent = blockExpr;
 				// todo: some check like if it is another block and etc.
 			}
 

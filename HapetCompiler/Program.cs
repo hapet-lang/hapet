@@ -1,4 +1,7 @@
-﻿using HapetFrontend;
+﻿using HapetBackend.Llvm;
+using HapetCommon;
+using HapetFrontend;
+using HapetFrontend.Entities;
 using HapetFrontend.Parsing.PostPrepare;
 using System.Text;
 
@@ -24,7 +27,7 @@ namespace HapetCompiler
 			Console.OutputEncoding = Encoding.UTF8;
 
 			// hptproj should be parsed here
-			CompilerSettings.PlatformData = CompilerSettings.SupportedPlatforms.FirstOrDefault();
+			CompilerSettings.PlatformData = CompilerSettings.SupportedPlatforms.FirstOrDefault(x => x.TargetPlatform == TargetPlatform.Win86);
 
 			var errorHandler = new ConsoleErrorHandler(0, 0, true);
 			var compiler = new Compiler(errorHandler);
@@ -41,6 +44,20 @@ namespace HapetCompiler
 			//{
 			//	printer.PrintWorkspace(compiler, writer);
 			//}
+
+			bool codeGenOk = GenerateAndCompileCode(compiler, errorHandler);
+		}
+
+		private static bool GenerateAndCompileCode(Compiler compiler, IErrorHandler errorHandler)
+		{
+			var generator = new LlvmCodeGenerator();
+			bool success = generator.GenerateCode(compiler, "./", "./", "TestFile", false, true);
+			if (!success)
+				return false;
+
+			// TODO: uncomment
+			// return generator.CompileCode(options.LibraryIncludeDirectories, options.Libraries, options.SubSystem.ToString(), errorHandler, options.PrintLinkerArguments);
+			return true;
 		}
 	}
 }

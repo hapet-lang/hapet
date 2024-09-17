@@ -20,6 +20,11 @@ namespace HapetFrontend
 
 		public Scope GlobalScope { get; private set; }
 
+		/// <summary>
+		/// The main function like an entry point of a program
+		/// </summary>
+		public AstFuncDecl MainFunction { get; private set; }
+
 		public Compiler(IErrorHandler errorHandler)
 		{
 			ErrorHandler = errorHandler;
@@ -64,6 +69,9 @@ namespace HapetFrontend
 			var fileScope = new Scope($"{Path.GetFileNameWithoutExtension(fileName)}_scope", GlobalScope);
 			var file = new ProgramFile(fileName, lexer.Text, fileScope);
 
+			// TODO: set here module name!!!
+			// TODO: this is kostyl
+			file.ModuleName = $"TestPrj.{(Path.GetFileNameWithoutExtension(file.Name))}";
 			_files[fileName] = file;
 
 			while (true)
@@ -90,6 +98,16 @@ namespace HapetFrontend
 					s.SourceFile = file;
 					file.Statements.Add(s);
 				}
+				//else if (s is AstFuncDecl funcDecl)
+				//{
+				//	if (MainFunction != null)
+				//	{
+				//		eh.ReportError(lexer.Text, s, $"There was already defined Main function in {MainFunction.SourceFile.ModuleName}");
+				//		return;
+				//	}
+				//	funcDecl.SourceFile = file;
+				//	file.Statements.Add()
+				//}
 				else if (s != null)
 				{
 					eh.ReportError(lexer.Text, s, "This type of statement is not allowed in global scope");

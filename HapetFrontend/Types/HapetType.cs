@@ -1,4 +1,6 @@
-﻿namespace HapetFrontend.Types
+﻿using HapetCommon;
+
+namespace HapetFrontend.Types
 {
 	public abstract class HapetType
 	{
