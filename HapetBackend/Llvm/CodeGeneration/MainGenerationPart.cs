@@ -1,5 +1,6 @@
 ﻿using HapetFrontend.Ast.Declarations;
 using HapetFrontend.Ast.Expressions;
+using HapetFrontend.Entities;
 using HapetFrontend.Parsing;
 using HapetFrontend.Types;
 using LLVMSharp;
@@ -12,12 +13,13 @@ namespace HapetBackend.Llvm
 {
 	public partial class LlvmCodeGenerator
 	{
-		// TODO: rewrite this shite
+		private ProgramFile _currentSourceFile;
 
 		private void GenerateCode()
 		{
 			foreach (var (path, file) in _compiler.GetFiles())
 			{
+				_currentSourceFile = file;
 				foreach (var stmt in file.Statements)
 				{
 					if (stmt is AstClassDecl classDecl)
@@ -53,20 +55,36 @@ namespace HapetBackend.Llvm
 						lfunc.Params[i].Name = p.Name.Name;
 					}
 
+					// check if there is no implementation
+					if (funcDecl.Body == null)
+						continue;
+
 					// function body
 					var bbBody = lfunc.AppendBasicBlock("entry");
 					_builder.PositionAtEnd(bbBody);
 
-					// ret if void
-					if (funcDecl.Returns.OutType is VoidType)
+					// genereting inside stuff of the function
+					var retOfBlock = GenerateBlockCode(funcDecl.Body, bbBody);
+
+					// return logics
+					if (retOfBlock != null)
 					{
+						// TODO: return value
+						_builder.BuildRet(retOfBlock.Value);
+					}
+					else if (funcDecl.Returns.OutType is VoidType)
+					{
+						// ret if void
 						// PopStackTrace(); // TODO: stack trace
 						_builder.BuildRetVoid();
 					}
 					else
 					{
-						// TODO: return value
+						// error because the func is not void but with a type return
+						// but the 'return' statement was not found
+						_errorHandler.ReportError(_currentSourceFile.Text, funcDecl, "Return statement of the function could not be found");
 					}
+					lfunc.VerifyFunction(LLVMVerifierFailureAction.LLVMPrintMessageAction);
 				}
 			}
 
@@ -80,9 +98,31 @@ namespace HapetBackend.Llvm
 			classStruct.StructSetBody(entryTypes.ToArray(), false);
 		}
 
-		private void GenerateBlockCode(AstBlockExpr block)
+		private LLVMValueRef? GenerateBlockCode(AstBlockExpr blockExpr, LLVMBasicBlockRef basicBlock)
 		{
+			// TODO: put here return of the block if it exists
+			LLVMValueRef? result = null;
+			foreach (var stmt in blockExpr.Statements)
+			{
+				if (stmt is AstVarDecl varDecl)
+				{
+					GenerateVarDeclCode(varDecl, basicBlock);
+				}
+			}
+			return result;
+		}
 
+		private void GenerateVarDeclCode(AstVarDecl varDecl, LLVMBasicBlockRef basicBlock)
+		{
+			// alloca new var in basicBlock
+			var varPtr = CreateLocalVariable(varDecl.Type.OutType, basicBlock, varDecl.Name.Name);
+
+			// check for initializer and try to evaluate expr
+			if (varDecl.Initializer != null)
+			{
+				var x = GenerateExpressionCode(varDecl.Initializer, basicBlock);
+				_builder.BuildStore(x, varPtr);
+			}
 		}
 	}
 }

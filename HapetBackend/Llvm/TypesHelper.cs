@@ -1,6 +1,7 @@
 ﻿using HapetFrontend.Types;
 using LLVMSharp.Interop;
 using System;
+using System.Diagnostics;
 
 namespace HapetBackend.Llvm
 {
@@ -322,6 +323,45 @@ namespace HapetBackend.Llvm
 				default:
 					throw new NotImplementedException(ht.ToString());
 			}
+		}
+
+		private unsafe LLVMValueRef HapetValueToLLVMValue(HapetType type, object v)
+		{
+			// ??? TOOD: why there is such check?
+			if (type == IntType.LiteralType || type == FloatType.LiteralType)
+				throw new Exception();
+
+			switch (type)
+			{
+				case BoolType _: return LLVM.ConstInt(HapetTypeToLLVMType(type), (bool)v ? 1ul : 0ul, 0);
+				case CharType _: return LLVM.ConstInt(HapetTypeToLLVMType(type), (char)v, 0);
+				case IntType i: return LLVM.ConstInt(HapetTypeToLLVMType(type), ((NumberData)v).ToULong(), i.Signed ? 1 : 0);
+				case FloatType: return LLVM.ConstReal(HapetTypeToLLVMType(type), ((NumberData)v).ToDouble());
+			}
+			return new LLVMValueRef();
+		}
+
+		private LLVMValueRef CreateLocalVariable(HapetType exprType, LLVMBasicBlockRef block, string name = "temp")
+		{
+			return CreateLocalVariable(HapetTypeToLLVMType(exprType), block, exprType.GetAlignment(), name);
+		}
+
+		private LLVMValueRef CreateLocalVariable(LLVMTypeRef type, LLVMBasicBlockRef block, int alignment, string name = "temp")
+		{
+			var bb = block;
+			var brInst = bb.LastInstruction;
+			// TODO: do i need this shity check?
+			if (brInst.Handle.ToInt64() == 0)
+				_builder.PositionAtEnd(bb);
+			else
+				_builder.PositionBefore(brInst);
+
+			var result = _builder.BuildAlloca(type, name);
+			var llvmAlignment = _targetData.PreferredAlignmentOfType(type);
+			Debug.Assert(alignment >= llvmAlignment && alignment % llvmAlignment == 0);
+			result.SetAlignment((uint)alignment);
+
+			return result;
 		}
 	}
 }

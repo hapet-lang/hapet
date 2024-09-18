@@ -51,7 +51,7 @@ namespace HapetCompiler
 		private static bool GenerateAndCompileCode(Compiler compiler, IErrorHandler errorHandler)
 		{
 			var generator = new LlvmCodeGenerator();
-			bool success = generator.GenerateCode(compiler, "./", "./", "TestFile", false, true);
+			bool success = generator.GenerateCode(compiler, errorHandler, "./", "./", "TestFile", false, true);
 			if (!success)
 				return false;
 

@@ -99,17 +99,22 @@ namespace HapetFrontend.Types
 		//	return (long)IntValue;
 		//}
 
-		//public double ToDouble()
-		//{
-		//	if (Type == NumberType.Int)
-		//		return (double)IntValue;
-		//	else
-		//		return DoubleValue;
-		//}
+		public double ToDouble()
+		{
+			if (Type == NumberType.Int)
+				return (double)IntValue;
+			else
+				return DoubleValue;
+		}
 
 		public uint ToUInt()
 		{
 			return (uint)IntValue;
+		}
+
+		public ulong ToULong()
+		{
+			return (ulong)IntValue;
 		}
 
 		public NumberData Negate()

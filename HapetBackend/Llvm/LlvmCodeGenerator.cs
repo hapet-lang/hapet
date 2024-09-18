@@ -1,5 +1,6 @@
 ﻿using HapetCommon;
 using HapetFrontend;
+using HapetFrontend.Entities;
 using LLVMSharp;
 using LLVMSharp.Interop;
 using System;
@@ -9,6 +10,7 @@ namespace HapetBackend.Llvm
 {
 	public partial class LlvmCodeGenerator 
 	{
+		private IErrorHandler _errorHandler;
 		private Compiler _compiler;
 		/// <summary>
 		/// Intermediate lang LLVM IR
@@ -43,7 +45,7 @@ namespace HapetBackend.Llvm
 			throw new NotImplementedException();
 		}
 
-		public unsafe bool GenerateCode(Compiler compiler, string irDir, string outDir, string targetFile, bool optimize, bool outputIntermediateFile)
+		public unsafe bool GenerateCode(Compiler compiler, IErrorHandler errorHandler, string irDir, string outDir, string targetFile, bool optimize, bool outputIntermediateFile)
 		{
 			LLVM.InitializeAllTargetMCs();
 			LLVM.InitializeAllTargets();
@@ -52,6 +54,7 @@ namespace HapetBackend.Llvm
 			LLVM.InitializeAllAsmPrinters();
 
 			this._compiler = compiler ?? throw new ArgumentNullException(nameof(compiler));
+			this._errorHandler = errorHandler ?? throw new ArgumentNullException(nameof(errorHandler));
 			this._irDir = Path.GetFullPath(irDir ?? "");
 			this._outDir = Path.GetFullPath(outDir ?? "");
 			this._targetFile = targetFile;
@@ -63,7 +66,7 @@ namespace HapetBackend.Llvm
 			_module.Target = _targetTriple;
 
 			var target = LLVMTargetRef.GetTargetFromTriple(_targetTriple);
-			var targetMachine = target.CreateTargetMachine(_targetTriple, "default", "",
+			var targetMachine = target.CreateTargetMachine(_targetTriple, "", "",
 				LLVMCodeGenOptLevel.LLVMCodeGenLevelNone, LLVMRelocMode.LLVMRelocDefault,
 				LLVMCodeModel.LLVMCodeModelDefault);
 
