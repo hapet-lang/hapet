@@ -7,12 +7,7 @@ namespace HapetBackend.Llvm
 	public partial class LlvmCodeGenerator
 	{
 		private Dictionary<HapetType, LLVMTypeRef> _typeMap = new Dictionary<HapetType, LLVMTypeRef>();
-
-		// vtable shite
-		private Dictionary<HapetType, LLVMTypeRef> _vtableTypes = new Dictionary<HapetType, LLVMTypeRef>();
-		private Dictionary<object, LLVMValueRef> _valueMap = new Dictionary<object, LLVMValueRef>();
-		private Dictionary<object, int> _vtableIndices = new Dictionary<object, int>();
-		private Dictionary<object, ulong> _vtableOffsets = new Dictionary<object, ulong>();
+		private Dictionary<FunctionType, LLVMValueRef> _functionMap = new Dictionary<FunctionType, LLVMValueRef>();
 
 		// rtti stuff
 		private HapetType sTypeInfoAttribute;
@@ -130,8 +125,8 @@ namespace HapetBackend.Llvm
 					{
 						var str = _context.CreateNamedStruct("string");
 						str.StructSetBody(new LLVMTypeRef[] {
-							((LLVMTypeRef)LLVM.Int64Type()),
-							((LLVMTypeRef)LLVM.Int8Type()).GetPointerTo()
+							((LLVMTypeRef)_context.Int64Type),
+							((LLVMTypeRef)_context.Int8Type).GetPointerTo()
 						}, false);
 						return str;
 					}
@@ -139,26 +134,26 @@ namespace HapetBackend.Llvm
 				case ClassType t:
 					{
 						Console.WriteLine($"[ERROR] class type {t}");
-						return LLVM.VoidType();
+						return _context.VoidType;
 					}
 
 				case BoolType b:
-					return LLVM.Int1Type();
+					return _context.Int1Type;
 
 				case IntType i:
-					return LLVM.IntType((uint)i.GetSize() * 8);
+					return _context.GetIntType((uint)i.GetSize() * 8);
 
 				case FloatType f:
 					if (f.GetSize() == 2)
-						return LLVMTypeRef.Half;
+						return _context.HalfType;
 					else if (f.GetSize() == 4)
-						return LLVMTypeRef.Float;
+						return _context.FloatType;
 					else if (f.GetSize() == 8)
-						return LLVMTypeRef.Double;
+						return _context.DoubleType;
 					else throw new NotImplementedException();
 
 				case CharType c:
-					return LLVM.IntType((uint)c.GetSize() * 8);
+					return _context.GetIntType((uint)c.GetSize() * 8);
 
 				case PointerType p:
 					{
@@ -189,7 +184,7 @@ namespace HapetBackend.Llvm
 						//}
 
 						if (p.TargetType == VoidType.Instance)
-							return ((LLVMTypeRef)LLVM.Int8Type()).GetPointerTo();
+							return ((LLVMTypeRef)_context.Int8Type).GetPointerTo();
 						return HapetTypeToLLVMType(p.TargetType).GetPointerTo();
 					}
 
@@ -223,20 +218,20 @@ namespace HapetBackend.Llvm
 					}
 
 				case ThisType self:
-					return LLVM.Int8Type();
+					return _context.Int8Type;
 
 				case ArrayType a:
 					return LLVMTypeRef.CreateArray(HapetTypeToLLVMType(a.TargetType), (uint)((NumberData)a.Length).ToUInt());
 
 				case VoidType _:
-					return LLVM.VoidType();
+					return _context.VoidType;
 
 				case FunctionType f:
 					{
 						var paramTypes = f.Declaration.Parameters.Select(rt => HapetTypeToLLVMType(rt.Type.OutType)).ToList();
 						var returnType = HapetTypeToLLVMType(f.Declaration.Returns.OutType);
 						var funcType = LLVMTypeRef.CreateFunction(returnType, paramTypes.ToArray(), false); // TODO: var args
-						return funcType.GetPointerTo();
+						return funcType;
 					}
 
 					// TODO: check it

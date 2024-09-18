@@ -3,6 +3,7 @@ using HapetFrontend;
 using LLVMSharp;
 using LLVMSharp.Interop;
 using System;
+using System.Reflection;
 
 namespace HapetBackend.Llvm
 {
@@ -58,9 +59,9 @@ namespace HapetBackend.Llvm
 
 			this._targetTriple = GetTargetTriple(CompilerSettings.PlatformData);
 
-			_module = LLVMModuleRef.CreateWithName("hapetlang-module");
+			_module = LLVMModuleRef.CreateWithName("hapetlang-module"); // TODO: project name here
 			_module.Target = _targetTriple;
-			
+
 			var target = LLVMTargetRef.GetTargetFromTriple(_targetTriple);
 			var targetMachine = target.CreateTargetMachine(_targetTriple, "default", "",
 				LLVMCodeGenOptLevel.LLVMCodeGenLevelNone, LLVMRelocMode.LLVMRelocDefault,
@@ -70,9 +71,11 @@ namespace HapetBackend.Llvm
 			_module.SetDataLayout(_targetData);
 			LLVM.EnablePrettyStackTrace();
 			_context = _module.Context;
-			
+
+			_builder = _context.CreateBuilder();
+
 			_rawBuilder = _module.Context.CreateBuilder();
-			_voidPointerType = ((LLVMTypeRef)LLVM.Int8Type()).GetPointerTo();
+			_voidPointerType = ((LLVMTypeRef)_context.Int8Type).GetPointerTo();
 
 			// InitTypeInfoLLVMTypes(); // TODO: it is reflection
 			GenerateCode();

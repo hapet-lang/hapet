@@ -1,4 +1,6 @@
-﻿- AstBlock - is an expression because it is not only for classes/interfaces/structs and etc. But!!! 
+﻿- Everything is a statement
+- AstParam - is a declaration because it is a local variables.
+- AstBlock - is an expression because it is not only for classes/interfaces/structs and etc. But!!! 
   The AstBlock is not used here so there is no need it to be a statement.  
 - AstTuple - is also an expression because it is not only for func decl/tuple decl (as a type). But!!! 
   The func decl does not uses AstTuple it just has an array of parameters.

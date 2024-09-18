@@ -14,7 +14,7 @@ namespace HapetFrontend.Types
 
 		public override string ToString()
 		{
-			return $"class {Declaration.Name}";
+			return $"class {Declaration.Name.Name}";
 		}
 
 		public override int Match(HapetType concrete)
