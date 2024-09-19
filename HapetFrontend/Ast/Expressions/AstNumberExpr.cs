@@ -14,6 +14,16 @@ namespace HapetFrontend.Ast.Expressions
 			Data = data;
 			OutValue = data;
 			this.Suffix = suffix;
+
+			// TODO: check sizes of Data and use GetFloatType and GetIntType
+			if (data.Type == Enums.NumberType.Float)
+			{
+				OutType = FloatType.DefaultType;
+			}
+			else
+			{
+				OutType = IntType.DefaultType;
+			}
 		}
 	}
 }

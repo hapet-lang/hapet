@@ -1,5 +1,6 @@
 ﻿using HapetFrontend.Ast.Declarations;
 using HapetFrontend.Ast.Expressions;
+using HapetFrontend.Ast.Statements;
 using HapetFrontend.Entities;
 using HapetFrontend.Parsing;
 using HapetFrontend.Types;
@@ -107,6 +108,12 @@ namespace HapetBackend.Llvm
 				if (stmt is AstVarDecl varDecl)
 				{
 					GenerateVarDeclCode(varDecl, basicBlock);
+				}
+				else if (stmt is AstReturnStmt returnStmt)
+				{
+					// TODO: also check if return expr is empty
+					result = GenerateExpressionCode(returnStmt.ReturnExpression, basicBlock);
+					break; // there is nothing to do in the block after return
 				}
 			}
 			return result;

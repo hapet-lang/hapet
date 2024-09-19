@@ -23,7 +23,7 @@ namespace HapetFrontend
 		/// <summary>
 		/// The main function like an entry point of a program
 		/// </summary>
-		public AstFuncDecl MainFunction { get; private set; }
+		public AstFuncDecl MainFunction { get; set; }
 
 		public Compiler(IErrorHandler errorHandler)
 		{
@@ -98,16 +98,6 @@ namespace HapetFrontend
 					s.SourceFile = file;
 					file.Statements.Add(s);
 				}
-				//else if (s is AstFuncDecl funcDecl)
-				//{
-				//	if (MainFunction != null)
-				//	{
-				//		eh.ReportError(lexer.Text, s, $"There was already defined Main function in {MainFunction.SourceFile.ModuleName}");
-				//		return;
-				//	}
-				//	funcDecl.SourceFile = file;
-				//	file.Statements.Add()
-				//}
 				else if (s != null)
 				{
 					eh.ReportError(lexer.Text, s, "This type of statement is not allowed in global scope");

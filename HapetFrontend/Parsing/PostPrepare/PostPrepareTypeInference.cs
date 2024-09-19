@@ -39,6 +39,8 @@ namespace HapetFrontend.Parsing.PostPrepare
 			foreach (var p in funcDecl.Parameters)
 			{
 				PostPrepareTypeExprInference(p.Type, funcDecl.Scope);
+				if (p.DefaultValue != null)
+					PostPrepareExprInference(p.DefaultValue);
 			}
 
 			// inferencing return type 
@@ -59,6 +61,8 @@ namespace HapetFrontend.Parsing.PostPrepare
 				if (stmt is AstVarDecl varDecl)
 				{
 					PostPrepareTypeExprInference(varDecl.Type, blockExpr.Scope);
+					if (varDecl.Initializer != null)
+						PostPrepareExprInference(varDecl.Initializer);
 				}
 				// todo: some check like if it is another block and etc.
 			}
@@ -98,6 +102,43 @@ namespace HapetFrontend.Parsing.PostPrepare
 			}
 		}
 
-		// TODO: recursively go through all of the statments and set Scope and Parent
+		private void PostPrepareExprInference(AstExpression expr)
+		{
+			switch (expr)
+			{
+				case AstBinaryExpr binExpr: 
+					PostPrepareBinaryExprInference(binExpr);
+					break;
+				// TODO: check other expressions
+
+				default:
+					{
+						// TODO: anything to do here?
+						break;
+					}
+			}
+		}
+
+		private void PostPrepareBinaryExprInference(AstBinaryExpr binExpr)
+		{
+			// resolve the actual operator in the current scope
+			PostPrepareExprInference(binExpr.Left as AstExpression);
+			PostPrepareExprInference(binExpr.Right as AstExpression);
+			var operators = binExpr.Scope.GetBinaryOperators(binExpr.Operator, (binExpr.Left as AstExpression).OutType, (binExpr.Right as AstExpression).OutType);
+			if (operators.Count == 0)
+			{
+				_compiler.ErrorHandler.ReportError(_currentSourceFile.Text, binExpr, $"Indefined operator {binExpr.Operator} for types {(binExpr.Left as AstExpression).OutType} and {(binExpr.Right as AstExpression).OutType}");
+			}
+			else if (operators.Count > 1)
+			{
+				// TODO: tell em where are the operators defined
+				_compiler.ErrorHandler.ReportError(_currentSourceFile.Text, binExpr, $"Too many operators {binExpr.Operator} defined for types {(binExpr.Left as AstExpression).OutType} and {(binExpr.Right as AstExpression).OutType}");
+			}
+			else
+			{
+				binExpr.ActualOperator = operators[0];
+				binExpr.OutType = binExpr.ActualOperator.ResultType;
+			}
+		}
 	}
 }

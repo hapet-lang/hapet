@@ -106,7 +106,7 @@ namespace HapetFrontend.Parsing
 			return parameters;
 		}
 
-		private AstStatement ParseTupleExpression(bool allowFunctionExpression, bool allowCommaForTuple)
+		private AstStatement ParseTupleExpression(bool allowFunctionDeclaration, bool allowCommaForTuple)
 		{
 			var list = ParseParameterList(TokenType.OpenParen, TokenType.CloseParen, out var beg, out var end, allowDefaultValue: true);
 
@@ -114,7 +114,7 @@ namespace HapetFrontend.Parsing
 
 			// function expression
 			// hash identifier for directives
-			if (allowFunctionExpression && CheckTokens(TokenType.OpenBrace, TokenType.Semicolon))
+			if (allowFunctionDeclaration && CheckTokens(TokenType.OpenBrace, TokenType.Semicolon))
 			{
 				return ParseFuncDeclaration(list, new Location(beg, end));
 			}

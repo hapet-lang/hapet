@@ -5,87 +5,100 @@ namespace HapetBackend.Llvm
 {
 	public partial class LlvmCodeGenerator
 	{
-		private Dictionary<(string, HapetType), Func<LLVMValueRef, LLVMValueRef, string, LLVMValueRef>> builtInOperators;
+		private Dictionary<(string, HapetType), Func<LLVMBuilderRef, LLVMValueRef, LLVMValueRef, string, LLVMValueRef>> builtInOperators;
 
-		private Func<LLVMValueRef, LLVMValueRef, string, LLVMValueRef> GetICompare(LLVMIntPredicate pred)
+		private unsafe Func<LLVMBuilderRef, LLVMValueRef, LLVMValueRef, string, LLVMValueRef> GetICompare(LLVMIntPredicate pred)
 		{
-			return (b, c, d) => _builder.BuildICmp(pred, b, c, d);
+			return (a, b, c, d) =>
+			{
+				using var marshaledName = new MarshaledString(d.AsSpan());
+				return LLVM.BuildICmp(a, pred, b, c, marshaledName);
+			};
 		}
 
-		private Func<LLVMValueRef, LLVMValueRef, string, LLVMValueRef> GetFCompare(LLVMRealPredicate pred)
+		private unsafe Func<LLVMBuilderRef, LLVMValueRef, LLVMValueRef, string, LLVMValueRef> GetFCompare(LLVMRealPredicate pred)
 		{
-			return (b, c, d) => _builder.BuildFCmp(pred, b, c, d);
+			return (a, b, c, d) =>
+			{
+				using var marshaledName = new MarshaledString(d.AsSpan());
+				return LLVM.BuildFCmp(a, pred, b, c, marshaledName);
+			};
 		}
 
 		private void InitOperators()
 		{
-			builtInOperators = new Dictionary<(string, HapetType), Func<LLVMValueRef, LLVMValueRef, string, LLVMValueRef>>
+			builtInOperators = new Dictionary<(string, HapetType), Func<LLVMBuilderRef, LLVMValueRef, LLVMValueRef, string, LLVMValueRef>>
 		   {
                 // 
-                { ("+", IntType.GetIntType(1, true)), _builder.BuildAdd },
-				{ ("+", IntType.GetIntType(2, true)), _builder.BuildAdd },
-				{ ("+", IntType.GetIntType(4, true)), _builder.BuildAdd },
-				{ ("+", IntType.GetIntType(8, true)), _builder.BuildAdd },
+                { ("+", IntType.GetIntType(1, true)), LlvmExtensions.BuildAdd },
+				{ ("+", IntType.GetIntType(2, true)), LlvmExtensions.BuildAdd },
+				{ ("+", IntType.GetIntType(4, true)), LlvmExtensions.BuildAdd },
+				{ ("+", IntType.GetIntType(8, true)), LlvmExtensions.BuildAdd },
 
-				{ ("+", IntType.GetIntType(1, false)), _builder.BuildAdd },
-				{ ("+", IntType.GetIntType(2, false)), _builder.BuildAdd },
-				{ ("+", IntType.GetIntType(4, false)), _builder.BuildAdd },
-				{ ("+", IntType.GetIntType(8, false)), _builder.BuildAdd },
+				{ ("+", IntType.GetIntType(1, false)), LlvmExtensions.BuildAdd },
+				{ ("+", IntType.GetIntType(2, false)), LlvmExtensions.BuildAdd },
+				{ ("+", IntType.GetIntType(4, false)), LlvmExtensions.BuildAdd },
+				{ ("+", IntType.GetIntType(8, false)), LlvmExtensions.BuildAdd },
 
-				{ ("-", IntType.GetIntType(1, true)), _builder.BuildSub },
-				{ ("-", IntType.GetIntType(2, true)), _builder.BuildSub },
-				{ ("-", IntType.GetIntType(4, true)), _builder.BuildSub },
-				{ ("-", IntType.GetIntType(8, true)), _builder.BuildSub },
+				{ ("-", IntType.GetIntType(1, true)), LlvmExtensions.BuildSub },
+				{ ("-", IntType.GetIntType(2, true)), LlvmExtensions.BuildSub },
+				{ ("-", IntType.GetIntType(4, true)), LlvmExtensions.BuildSub },
+				{ ("-", IntType.GetIntType(8, true)), LlvmExtensions.BuildSub },
 
-				{ ("-", IntType.GetIntType(1, false)), _builder.BuildSub },
-				{ ("-", IntType.GetIntType(2, false)), _builder.BuildSub },
-				{ ("-", IntType.GetIntType(4, false)), _builder.BuildSub },
-				{ ("-", IntType.GetIntType(8, false)), _builder.BuildSub },
+				{ ("-", IntType.GetIntType(1, false)), LlvmExtensions.BuildSub },
+				{ ("-", IntType.GetIntType(2, false)), LlvmExtensions.BuildSub },
+				{ ("-", IntType.GetIntType(4, false)), LlvmExtensions.BuildSub },
+				{ ("-", IntType.GetIntType(8, false)), LlvmExtensions.BuildSub },
 
-				{ ("*", IntType.GetIntType(1, true)), _builder.BuildMul },
-				{ ("*", IntType.GetIntType(2, true)), _builder.BuildMul },
-				{ ("*", IntType.GetIntType(4, true)), _builder.BuildMul },
-				{ ("*", IntType.GetIntType(8, true)), _builder.BuildMul },
+				{ ("*", IntType.GetIntType(1, true)), LlvmExtensions.BuildMul },
+				{ ("*", IntType.GetIntType(2, true)), LlvmExtensions.BuildMul },
+				{ ("*", IntType.GetIntType(4, true)), LlvmExtensions.BuildMul },
+				{ ("*", IntType.GetIntType(8, true)), LlvmExtensions.BuildMul },
 
-				{ ("*", IntType.GetIntType(1, false)), _builder.BuildMul },
-				{ ("*", IntType.GetIntType(2, false)), _builder.BuildMul },
-				{ ("*", IntType.GetIntType(4, false)), _builder.BuildMul },
-				{ ("*", IntType.GetIntType(8, false)), _builder.BuildMul },
+				{ ("*", IntType.GetIntType(1, false)), LlvmExtensions.BuildMul },
+				{ ("*", IntType.GetIntType(2, false)), LlvmExtensions.BuildMul },
+				{ ("*", IntType.GetIntType(4, false)), LlvmExtensions.BuildMul },
+				{ ("*", IntType.GetIntType(8, false)), LlvmExtensions.BuildMul },
 
-				{ ("/", IntType.GetIntType(1, true)), _builder.BuildSDiv },
-				{ ("/", IntType.GetIntType(2, true)), _builder.BuildSDiv },
-				{ ("/", IntType.GetIntType(4, true)), _builder.BuildSDiv },
-				{ ("/", IntType.GetIntType(8, true)), _builder.BuildSDiv },
+				{ ("/", IntType.GetIntType(1, true)), LlvmExtensions.BuildSDiv },
+				{ ("/", IntType.GetIntType(2, true)), LlvmExtensions.BuildSDiv },
+				{ ("/", IntType.GetIntType(4, true)), LlvmExtensions.BuildSDiv },
+				{ ("/", IntType.GetIntType(8, true)), LlvmExtensions.BuildSDiv },
 
-				{ ("/", IntType.GetIntType(1, false)), _builder.BuildUDiv },
-				{ ("/", IntType.GetIntType(2, false)), _builder.BuildUDiv },
-				{ ("/", IntType.GetIntType(4, false)), _builder.BuildUDiv },
-				{ ("/", IntType.GetIntType(8, false)), _builder.BuildUDiv },
+				{ ("/", IntType.GetIntType(1, false)), LlvmExtensions.BuildUDiv },
+				{ ("/", IntType.GetIntType(2, false)), LlvmExtensions.BuildUDiv },
+				{ ("/", IntType.GetIntType(4, false)), LlvmExtensions.BuildUDiv },
+				{ ("/", IntType.GetIntType(8, false)), LlvmExtensions.BuildUDiv },
 
-				{ ("%", IntType.GetIntType(1, true)), _builder.BuildSRem },
-				{ ("%", IntType.GetIntType(2, true)), _builder.BuildSRem },
-				{ ("%", IntType.GetIntType(4, true)), _builder.BuildSRem },
-				{ ("%", IntType.GetIntType(8, true)), _builder.BuildSRem },
+				{ ("%", IntType.GetIntType(1, true)), LlvmExtensions.BuildSRem },
+				{ ("%", IntType.GetIntType(2, true)), LlvmExtensions.BuildSRem },
+				{ ("%", IntType.GetIntType(4, true)), LlvmExtensions.BuildSRem },
+				{ ("%", IntType.GetIntType(8, true)), LlvmExtensions.BuildSRem },
 
-				{ ("%", IntType.GetIntType(1, false)), _builder.BuildURem },
-				{ ("%", IntType.GetIntType(2, false)), _builder.BuildURem },
-				{ ("%", IntType.GetIntType(4, false)), _builder.BuildURem },
-				{ ("%", IntType.GetIntType(8, false)), _builder.BuildURem },
+				{ ("%", IntType.GetIntType(1, false)), LlvmExtensions.BuildURem },
+				{ ("%", IntType.GetIntType(2, false)), LlvmExtensions.BuildURem },
+				{ ("%", IntType.GetIntType(4, false)), LlvmExtensions.BuildURem },
+				{ ("%", IntType.GetIntType(8, false)), LlvmExtensions.BuildURem },
 
-				{ ("+", FloatType.GetFloatType(4)), _builder.BuildFAdd },
-				{ ("+", FloatType.GetFloatType(8)), _builder.BuildFAdd },
+				{ ("+", FloatType.GetFloatType(2)), LlvmExtensions.BuildFAdd },
+				{ ("+", FloatType.GetFloatType(4)), LlvmExtensions.BuildFAdd },
+				{ ("+", FloatType.GetFloatType(8)), LlvmExtensions.BuildFAdd },
 
-				{ ("-", FloatType.GetFloatType(4)), _builder.BuildFSub },
-				{ ("-", FloatType.GetFloatType(8)), _builder.BuildFSub },
+				{ ("-", FloatType.GetFloatType(2)), LlvmExtensions.BuildFSub },
+				{ ("-", FloatType.GetFloatType(4)), LlvmExtensions.BuildFSub },
+				{ ("-", FloatType.GetFloatType(8)), LlvmExtensions.BuildFSub },
 
-				{ ("*", FloatType.GetFloatType(4)), _builder.BuildFMul },
-				{ ("*", FloatType.GetFloatType(8)), _builder.BuildFMul },
+				{ ("*", FloatType.GetFloatType(2)), LlvmExtensions.BuildFMul },
+				{ ("*", FloatType.GetFloatType(4)), LlvmExtensions.BuildFMul },
+				{ ("*", FloatType.GetFloatType(8)), LlvmExtensions.BuildFMul },
 
-				{ ("/", FloatType.GetFloatType(4)), _builder.BuildFDiv },
-				{ ("/", FloatType.GetFloatType(8)), _builder.BuildFDiv },
+				{ ("/", FloatType.GetFloatType(2)), LlvmExtensions.BuildFDiv },
+				{ ("/", FloatType.GetFloatType(4)), LlvmExtensions.BuildFDiv },
+				{ ("/", FloatType.GetFloatType(8)), LlvmExtensions.BuildFDiv },
 
-				{ ("%", FloatType.GetFloatType(4)), _builder.BuildFRem },
-				{ ("%", FloatType.GetFloatType(8)), _builder.BuildFRem },
+				{ ("%", FloatType.GetFloatType(2)), LlvmExtensions.BuildFRem },
+				{ ("%", FloatType.GetFloatType(4)), LlvmExtensions.BuildFRem },
+				{ ("%", FloatType.GetFloatType(8)), LlvmExtensions.BuildFRem },
 
                 //
                 { ("==", IntType.GetIntType(1, false)), GetICompare(LLVMIntPredicate.LLVMIntEQ) },
@@ -142,21 +155,27 @@ namespace HapetBackend.Llvm
 				{ (">=", IntType.GetIntType(4, true)), GetICompare(LLVMIntPredicate.LLVMIntSGE) },
 				{ (">=", IntType.GetIntType(8, true)), GetICompare(LLVMIntPredicate.LLVMIntSGE) },
 
+				{ ("==", FloatType.GetFloatType(2)), GetFCompare(LLVMRealPredicate.LLVMRealOEQ) },
 				{ ("==", FloatType.GetFloatType(4)), GetFCompare(LLVMRealPredicate.LLVMRealOEQ) },
 				{ ("==", FloatType.GetFloatType(8)), GetFCompare(LLVMRealPredicate.LLVMRealOEQ) },
 
+				{ ("!=", FloatType.GetFloatType(2)), GetFCompare(LLVMRealPredicate.LLVMRealONE) },
 				{ ("!=", FloatType.GetFloatType(4)), GetFCompare(LLVMRealPredicate.LLVMRealONE) },
 				{ ("!=", FloatType.GetFloatType(8)), GetFCompare(LLVMRealPredicate.LLVMRealONE) },
 
+				{ ("<", FloatType.GetFloatType(2)), GetFCompare(LLVMRealPredicate.LLVMRealOLT) },
 				{ ("<", FloatType.GetFloatType(4)), GetFCompare(LLVMRealPredicate.LLVMRealOLT) },
 				{ ("<", FloatType.GetFloatType(8)), GetFCompare(LLVMRealPredicate.LLVMRealOLT) },
 
+				{ ("<=", FloatType.GetFloatType(2)), GetFCompare(LLVMRealPredicate.LLVMRealOLE) },
 				{ ("<=", FloatType.GetFloatType(4)), GetFCompare(LLVMRealPredicate.LLVMRealOLE) },
 				{ ("<=", FloatType.GetFloatType(8)), GetFCompare(LLVMRealPredicate.LLVMRealOLE) },
 
+				{ (">", FloatType.GetFloatType(2)), GetFCompare(LLVMRealPredicate.LLVMRealOGT) },
 				{ (">", FloatType.GetFloatType(4)), GetFCompare(LLVMRealPredicate.LLVMRealOGT) },
 				{ (">", FloatType.GetFloatType(8)), GetFCompare(LLVMRealPredicate.LLVMRealOGT) },
 
+				{ (">=", FloatType.GetFloatType(2)), GetFCompare(LLVMRealPredicate.LLVMRealOGE) },
 				{ (">=", FloatType.GetFloatType(4)), GetFCompare(LLVMRealPredicate.LLVMRealOGE) },
 				{ (">=", FloatType.GetFloatType(8)), GetFCompare(LLVMRealPredicate.LLVMRealOGE) },
 
@@ -165,8 +184,8 @@ namespace HapetBackend.Llvm
 				{ ("!=", BoolType.Instance), GetICompare(LLVMIntPredicate.LLVMIntNE) },
 
                 //
-                { ("+", CharType.GetCharType(1)), _builder.BuildAdd },
-				{ ("-", CharType.GetCharType(1)), _builder.BuildSub },
+                { ("+", CharType.GetCharType(1)), LlvmExtensions.BuildAdd },
+				{ ("-", CharType.GetCharType(1)), LlvmExtensions.BuildSub },
 				{ ("==", CharType.GetCharType(1)), GetICompare(LLVMIntPredicate.LLVMIntEQ) },
 				{ ("!=", CharType.GetCharType(1)), GetICompare(LLVMIntPredicate.LLVMIntNE) },
 				{ (">", CharType.GetCharType(1)), GetICompare(LLVMIntPredicate.LLVMIntSGT) },
@@ -174,8 +193,8 @@ namespace HapetBackend.Llvm
 				{ ("<", CharType.GetCharType(1)), GetICompare(LLVMIntPredicate.LLVMIntSLT) },
 				{ ("<=", CharType.GetCharType(1)), GetICompare(LLVMIntPredicate.LLVMIntSLE) },
 
-				{ ("+", CharType.GetCharType(2)), _builder.BuildAdd },
-				{ ("-", CharType.GetCharType(2)), _builder.BuildSub },
+				{ ("+", CharType.GetCharType(2)), LlvmExtensions.BuildAdd },
+				{ ("-", CharType.GetCharType(2)), LlvmExtensions.BuildSub },
 				{ ("==", CharType.GetCharType(2)), GetICompare(LLVMIntPredicate.LLVMIntEQ) },
 				{ ("!=", CharType.GetCharType(2)), GetICompare(LLVMIntPredicate.LLVMIntNE) },
 				{ (">", CharType.GetCharType(2)), GetICompare(LLVMIntPredicate.LLVMIntSGT) },
@@ -183,8 +202,8 @@ namespace HapetBackend.Llvm
 				{ ("<", CharType.GetCharType(2)), GetICompare(LLVMIntPredicate.LLVMIntSLT) },
 				{ ("<=", CharType.GetCharType(2)), GetICompare(LLVMIntPredicate.LLVMIntSLE) },
 
-				{ ("+", CharType.GetCharType(4)), _builder.BuildAdd },
-				{ ("-", CharType.GetCharType(4)), _builder.BuildSub },
+				{ ("+", CharType.GetCharType(4)), LlvmExtensions.BuildAdd },
+				{ ("-", CharType.GetCharType(4)), LlvmExtensions.BuildSub },
 				{ ("==", CharType.GetCharType(4)), GetICompare(LLVMIntPredicate.LLVMIntEQ) },
 				{ ("!=", CharType.GetCharType(4)), GetICompare(LLVMIntPredicate.LLVMIntNE) },
 				{ (">", CharType.GetCharType(4)), GetICompare(LLVMIntPredicate.LLVMIntSGT) },

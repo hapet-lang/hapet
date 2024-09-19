@@ -1,9 +1,10 @@
 ﻿
 public static class Program
 {
-	public static void Main()
+	public static int Main()
 	{
 		int a = 2 + 5;
+		return 0;
 	}
 }
 

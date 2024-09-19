@@ -5,6 +5,7 @@ using LLVMSharp;
 using LLVMSharp.Interop;
 using System;
 using System.Reflection;
+using System.Runtime.InteropServices;
 
 namespace HapetBackend.Llvm
 {
@@ -60,6 +61,12 @@ namespace HapetBackend.Llvm
 			this._targetFile = targetFile;
 			this._emitDebugInfo = !optimize;
 
+			if (_compiler.MainFunction == null && CompilerSettings.TargetFormat == TargetFormat.Executable)
+			{
+				_errorHandler.ReportError("", location: null, "Main function could not be found...");
+				return false;
+			}
+
 			this._targetTriple = GetTargetTriple(CompilerSettings.PlatformData);
 
 			_module = LLVMModuleRef.CreateWithName("hapetlang-module"); // TODO: project name here
@@ -80,8 +87,14 @@ namespace HapetBackend.Llvm
 			_rawBuilder = _module.Context.CreateBuilder();
 			_voidPointerType = ((LLVMTypeRef)_context.Int8Type).GetPointerTo();
 
+			// init built in operators for llvm
+			InitOperators();
+
 			// InitTypeInfoLLVMTypes(); // TODO: it is reflection
 			GenerateCode();
+
+			// generating main call
+			GenerateMainFunction();
 
 			// verify module
 			{
@@ -109,6 +122,50 @@ namespace HapetBackend.Llvm
 
 			_module.Dispose();
 			return true;
+		}
+
+		private unsafe void GenerateMainFunction()
+		{
+			string mainFuncName = null;
+			LLVMTypeRef returnType = _context.VoidType;
+
+			switch (CompilerSettings.PlatformData.TargetPlatform)
+			{
+				case TargetPlatform.Win86:
+					mainFuncName = "main";
+					returnType = _context.Int32Type;
+					break;
+				case TargetPlatform.Win64:
+					mainFuncName = "WinMain";
+					returnType = _context.Int64Type;
+					break;
+				case TargetPlatform.Linux86:
+					mainFuncName = "main";
+					returnType = _context.Int32Type;
+					break;
+				case TargetPlatform.Linux64:
+					mainFuncName = "main";
+					returnType = _context.Int32Type;
+					break;
+			}
+
+			var ltype = LLVMTypeRef.CreateFunction(returnType, Array.Empty<LLVMTypeRef>(), false);
+			var lfunc = _module.AddFunction(mainFuncName, ltype);
+			var entry = lfunc.AppendBasicBlock("entry");
+			var main = lfunc.AppendBasicBlock("main");
+
+			_builder.PositionAtEnd(entry);
+
+			_builder.BuildBr(main);
+			_builder.PositionAtEnd(main);
+
+			{ // call main function
+				var hptType = _compiler.MainFunction.Type.OutType as HapetFrontend.Types.FunctionType;
+				var hapetMain = _functionMap[hptType];
+				LLVMTypeRef funcType = _typeMap[_compiler.MainFunction.Type.OutType];
+				var exitCode = _builder.BuildCall2(funcType, hapetMain, Array.Empty<LLVMValueRef>(), "exitCode");
+				_builder.BuildRet(exitCode);
+			}
 		}
 	}
 }

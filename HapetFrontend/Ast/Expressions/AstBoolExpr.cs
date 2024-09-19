@@ -1,4 +1,5 @@
-﻿using System.Diagnostics;
+﻿using HapetFrontend.Types;
+using System.Diagnostics;
 
 namespace HapetFrontend.Ast.Expressions
 {
@@ -9,6 +10,7 @@ namespace HapetFrontend.Ast.Expressions
 		[DebuggerStepThrough]
 		public AstBoolExpr(bool value, ILocation Location = null) : base(Location)
 		{
+			this.OutType = BoolType.Instance;
 			this.OutValue = value;
 		}
 	}

@@ -49,7 +49,7 @@ namespace HapetBackend.Llvm
 					var left = GenerateExpressionCode(binExpr.Left as AstExpression, basicBlock);
 					var right = GenerateExpressionCode(binExpr.Right as AstExpression, basicBlock);
 					var bo = builtInOperators[(binExpr.Operator, (binExpr.Left as AstExpression).OutType)];
-					var val = bo(left, right, "");
+					var val = bo(_builder, left, right, "binOp");
 					return val;
 				} 
 			}

@@ -38,9 +38,9 @@ namespace HapetFrontend.Parsing
 				case TokenType.EOF:
 					return null;
 
-					// TODO: ...
-				//case TokenType.KwReturn:
-				//	return ParseReturnStatement();
+				case TokenType.KwReturn:
+					return ParseReturnStatement();
+				// TODO: ...
 				//case TokenType.KwWhile:
 				//	return ParseWhileStatement();
 				//case TokenType.KwFor:

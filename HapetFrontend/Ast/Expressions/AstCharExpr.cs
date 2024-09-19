@@ -1,4 +1,5 @@
-﻿using System.Diagnostics;
+﻿using HapetFrontend.Types;
+using System.Diagnostics;
 
 namespace HapetFrontend.Ast.Expressions
 {
@@ -12,6 +13,7 @@ namespace HapetFrontend.Ast.Expressions
 		{
 			this.RawValue = rawValue;
 			OutValue = rawValue.FirstOrDefault();
+			OutType = CharType.DefaultType; // TODO: check prefixes for the size of char
 		}
 	}
 }
