@@ -12,7 +12,7 @@ namespace HapetFrontend.Types
 		/// <summary>
 		/// The size of a pointer on the currently selected platform
 		/// </summary>
-		public static int PointerSize => CompilerSettings.PlatformData.PointerSize;
+		public static int PointerSize => CompilerSettings.TargetPlatformData.PointerSize;
 
 		private int _size = -1;
 		private int _alignment = -1;

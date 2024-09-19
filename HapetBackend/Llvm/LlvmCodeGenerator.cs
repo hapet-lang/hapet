@@ -1,4 +1,5 @@
-﻿using HapetCommon;
+﻿using HapetBackend.Llvm.Linkers;
+using HapetCommon;
 using HapetFrontend;
 using HapetFrontend.Entities;
 using LLVMSharp;
@@ -67,7 +68,7 @@ namespace HapetBackend.Llvm
 				return false;
 			}
 
-			this._targetTriple = GetTargetTriple(CompilerSettings.PlatformData);
+			this._targetTriple = GetTargetTriple(CompilerSettings.TargetPlatformData);
 
 			_module = LLVMModuleRef.CreateWithName("hapetlang-module"); // TODO: project name here
 			_module.Target = _targetTriple;
@@ -116,12 +117,34 @@ namespace HapetBackend.Llvm
 
 			// emit machine code to object file
 			{
-				var objFile = Path.Combine(irDir, $"{targetFile}{CompilerSettings.PlatformData.ObjectFileExtension}");
+				var objFile = Path.Combine(irDir, $"{targetFile}{CompilerSettings.TargetPlatformData.ObjectFileExtension}");
 				targetMachine.EmitToFile(_module, objFile, LLVMCodeGenFileType.LLVMObjectFile);
 			}
 
+			_builder.Dispose();
 			_module.Dispose();
 			return true;
+		}
+
+		public bool CompileCode(IEnumerable<string> libraryIncludeDirectories, IEnumerable<string> libraries, string subsystem, IErrorHandler errorHandler, bool printLikerArgs)
+		{
+			if (!string.IsNullOrWhiteSpace(_outDir) && !Directory.Exists(_outDir))
+				Directory.CreateDirectory(_outDir);
+
+			string objFile = Path.Combine(_irDir, _targetFile + CompilerSettings.TargetPlatformData.ObjectFileExtension);
+			string exeFile = Path.Combine(_outDir, _targetFile);
+
+
+			switch (CompilerSettings.TargetPlatformData.TargetPlatform)
+			{
+				case TargetPlatform.Win86:
+				case TargetPlatform.Win64:
+				case TargetPlatform.Linux86:
+				case TargetPlatform.Linux64:
+					return LlvmLinker.Link(_compiler, exeFile, objFile, libraryIncludeDirectories, libraries, subsystem, errorHandler, printLikerArgs);
+				default:
+					throw new NotImplementedException();
+			}
 		}
 
 		private unsafe void GenerateMainFunction()
@@ -129,7 +152,7 @@ namespace HapetBackend.Llvm
 			string mainFuncName = null;
 			LLVMTypeRef returnType = _context.VoidType;
 
-			switch (CompilerSettings.PlatformData.TargetPlatform)
+			switch (CompilerSettings.TargetPlatformData.TargetPlatform)
 			{
 				case TargetPlatform.Win86:
 					mainFuncName = "main";

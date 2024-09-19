@@ -27,7 +27,8 @@ namespace HapetCompiler
 			Console.OutputEncoding = Encoding.UTF8;
 
 			// hptproj should be parsed here
-			CompilerSettings.PlatformData = CompilerSettings.SupportedPlatforms.FirstOrDefault(x => x.TargetPlatform == TargetPlatform.Win86);
+			CompilerSettings.TargetPlatformData = CompilerSettings.SupportedPlatforms.FirstOrDefault(x => x.TargetPlatform == TargetPlatform.Win86);
+			CompilerSettings.InitCurrentPlatformData();
 
 			var errorHandler = new ConsoleErrorHandler(0, 0, true);
 			var compiler = new Compiler(errorHandler);
@@ -37,13 +38,6 @@ namespace HapetCompiler
 			var ptFile = compiler.AddFile(_testFile);
 
 			postPreparer.StartPreparation();
-
-			//var printer = new AnalysedAstPrinter();
-			//using (var file = File.Open("analysed.hpt", FileMode.Create))
-			//using (var writer = new StreamWriter(file))
-			//{
-			//	printer.PrintWorkspace(compiler, writer);
-			//}
 
 			bool codeGenOk = GenerateAndCompileCode(compiler, errorHandler);
 		}
@@ -55,9 +49,8 @@ namespace HapetCompiler
 			if (!success)
 				return false;
 
-			// TODO: uncomment
-			// return generator.CompileCode(options.LibraryIncludeDirectories, options.Libraries, options.SubSystem.ToString(), errorHandler, options.PrintLinkerArguments);
-			return true;
+			// TODO: config parameters normally
+			return generator.CompileCode(Enumerable.Empty<string>(), Enumerable.Empty<string>(), "console", errorHandler, true);
 		}
 	}
 }

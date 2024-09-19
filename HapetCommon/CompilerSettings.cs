@@ -1,4 +1,6 @@
-﻿namespace HapetCommon
+﻿using System.Runtime.InteropServices;
+
+namespace HapetCommon
 {
 	public enum TargetPlatform
 	{
@@ -57,7 +59,36 @@
 			},
 		};
 
-		public static PlatformData PlatformData { get; set; } 
+		/// <summary>
+		/// The platform on which compiled binaries are going to be running
+		/// </summary>
+		public static PlatformData TargetPlatformData { get; set; } 
+		/// <summary>
+		/// The platform on which compiler is running
+		/// </summary>
+		public static PlatformData CurrentPlatformData { get; set; }
 		public static TargetFormat TargetFormat { get; set; }
+
+		public static void InitCurrentPlatformData()
+		{
+			switch (RuntimeInformation.OSArchitecture)
+			{
+				case Architecture.X86:
+					if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+						CurrentPlatformData = SupportedPlatforms.FirstOrDefault(x => x.TargetPlatform == TargetPlatform.Win86);
+					else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+						CurrentPlatformData = SupportedPlatforms.FirstOrDefault(x => x.TargetPlatform == TargetPlatform.Linux86);
+					break;
+				case Architecture.X64:
+					if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+						CurrentPlatformData = SupportedPlatforms.FirstOrDefault(x => x.TargetPlatform == TargetPlatform.Win64);
+					else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+						CurrentPlatformData = SupportedPlatforms.FirstOrDefault(x => x.TargetPlatform == TargetPlatform.Linux64);
+					break;
+				default:
+					// not supported
+					break;
+			}
+		}
 	}
 }
