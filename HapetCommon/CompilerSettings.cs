@@ -16,6 +16,13 @@ namespace HapetCommon
 		Library
 	}
 
+	public enum TargetRepresentation
+	{
+		None, // for libraries
+		Console,
+		Windowed
+	}
+
 	public class PlatformData
 	{
 		public string Name { get; set; }
@@ -67,7 +74,15 @@ namespace HapetCommon
 		/// The platform on which compiler is running
 		/// </summary>
 		public static PlatformData CurrentPlatformData { get; set; }
+		/// <summary>
+		/// The format of output - library or executable
+		/// </summary>
 		public static TargetFormat TargetFormat { get; set; }
+		/// <summary>
+		/// The target representation of the output
+		/// </summary>
+		public static TargetRepresentation TargetRepresentation { get; set; }
+
 
 		public static void InitCurrentPlatformData()
 		{

@@ -1,4 +1,5 @@
 ﻿using HapetBackend.Llvm.Linkers;
+using HapetBackend.Llvm.Linkers.Windows;
 using HapetCommon;
 using HapetFrontend;
 using HapetFrontend.Entities;
@@ -139,55 +140,12 @@ namespace HapetBackend.Llvm
 			{
 				case TargetPlatform.Win86:
 				case TargetPlatform.Win64:
+					return WinLinker.Link(_compiler, exeFile, objFile, libraryIncludeDirectories, libraries, subsystem, errorHandler, printLikerArgs);
 				case TargetPlatform.Linux86:
 				case TargetPlatform.Linux64:
-					return LlvmLinker.Link(_compiler, exeFile, objFile, libraryIncludeDirectories, libraries, subsystem, errorHandler, printLikerArgs);
+					// TODO: ... 
 				default:
 					throw new NotImplementedException();
-			}
-		}
-
-		private unsafe void GenerateMainFunction()
-		{
-			string mainFuncName = null;
-			LLVMTypeRef returnType = _context.VoidType;
-
-			switch (CompilerSettings.TargetPlatformData.TargetPlatform)
-			{
-				case TargetPlatform.Win86:
-					mainFuncName = "main";
-					returnType = _context.Int32Type;
-					break;
-				case TargetPlatform.Win64:
-					mainFuncName = "WinMain";
-					returnType = _context.Int64Type;
-					break;
-				case TargetPlatform.Linux86:
-					mainFuncName = "main";
-					returnType = _context.Int32Type;
-					break;
-				case TargetPlatform.Linux64:
-					mainFuncName = "main";
-					returnType = _context.Int32Type;
-					break;
-			}
-
-			var ltype = LLVMTypeRef.CreateFunction(returnType, Array.Empty<LLVMTypeRef>(), false);
-			var lfunc = _module.AddFunction(mainFuncName, ltype);
-			var entry = lfunc.AppendBasicBlock("entry");
-			var main = lfunc.AppendBasicBlock("main");
-
-			_builder.PositionAtEnd(entry);
-
-			_builder.BuildBr(main);
-			_builder.PositionAtEnd(main);
-
-			{ // call main function
-				var hptType = _compiler.MainFunction.Type.OutType as HapetFrontend.Types.FunctionType;
-				var hapetMain = _functionMap[hptType];
-				LLVMTypeRef funcType = _typeMap[_compiler.MainFunction.Type.OutType];
-				var exitCode = _builder.BuildCall2(funcType, hapetMain, Array.Empty<LLVMValueRef>(), "exitCode");
-				_builder.BuildRet(exitCode);
 			}
 		}
 	}
