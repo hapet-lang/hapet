@@ -2,6 +2,7 @@
 using HapetFrontend.Ast.Declarations;
 using HapetFrontend.Ast.Expressions;
 using HapetFrontend.Scoping;
+using HapetFrontend.Types;
 
 namespace HapetFrontend.Parsing.PostPrepare
 {
@@ -77,6 +78,13 @@ namespace HapetFrontend.Parsing.PostPrepare
 			else if (expr is AstIdExpr idExpr)
 			{
 				PostPrepareIdentifierInference(idExpr, scopeToSearch);
+			}
+			else if (expr is AstPointerExpr pointerExpr)
+			{
+				// prepare the right side
+				PostPrepareTypeExprInference(pointerExpr.SubExpression, scopeToSearch);
+				// create a new pointer type from the right side and set the type to itself
+				pointerExpr.OutType = PointerType.GetPointerType(pointerExpr.SubExpression.OutType);
 			}
 			// TODO: check for 'var'
 		}

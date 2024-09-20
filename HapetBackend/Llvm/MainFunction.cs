@@ -76,7 +76,7 @@ namespace HapetBackend.Llvm
 			{
 				case TargetPlatform.Win86:
 					if (CompilerSettings.TargetRepresentation == TargetRepresentation.Windowed)
-						lfunc.FunctionCallConv = 64; // X86_StdCall
+						lfunc.FunctionCallConv = (uint)LLVMCallConv.LLVMX86StdcallCallConv; // X86_StdCall
 					break;
 				case TargetPlatform.Win64:
 					// no need for this because it is defaulted by LLVM itself

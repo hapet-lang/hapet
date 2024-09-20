@@ -1,4 +1,5 @@
 ﻿using HapetFrontend.Ast.Declarations;
+using HapetFrontend.Entities;
 using HapetFrontend.Types;
 
 namespace HapetFrontend.Parsing.PostPrepare
@@ -7,6 +8,9 @@ namespace HapetFrontend.Parsing.PostPrepare
 	{
 		private readonly Compiler _compiler;
 
+		// file that is currently preparing
+		private ProgramFile _currentSourceFile;
+
 		public PostPrepare(Compiler compiler)
 		{
 			_compiler = compiler;
@@ -14,6 +18,7 @@ namespace HapetFrontend.Parsing.PostPrepare
 
 		public void StartPreparation()
 		{
+			PostPrepareClassMethods();
 			PostPrepareScoping();
 			PostPrepareTypeInference();
 			SearchForMainFunction();

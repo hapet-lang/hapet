@@ -1,8 +1,12 @@
-﻿int Main()
+﻿public static class Program
 {
-	int a = 2 + 5;
-	Math math = new Math();
-	float b = a + math.GetPi();
+	public static int Main()
+	{
+		int a = 2 + 5;
+		// Math math = new Math();
+		// float b = a + math.GetPi();
+		return a;
+	}
 }
 
 public class Math

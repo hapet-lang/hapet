@@ -12,9 +12,10 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<Content Include="TestFile1.hpt">
-			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
-		</Content>
+		<Content Include="TestFile1.hpt" CopyToOutputDirectory="Always"/>
+		<Content Include="TestFile1.1.hpt" CopyToOutputDirectory="Always"/>
+		<Content Include="TestFile2.hpt" CopyToOutputDirectory="Always"/>
+		<Content Include="TestFile3.hpt" CopyToOutputDirectory="Always"/>
 	</ItemGroup>
 
 	<ItemGroup>

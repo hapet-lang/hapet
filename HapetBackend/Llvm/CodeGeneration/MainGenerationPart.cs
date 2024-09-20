@@ -33,7 +33,12 @@ namespace HapetBackend.Llvm
 
 		private unsafe void GenerateClassCode(AstClassDecl classDecl)
 		{
+			// TODO: create using HapetTypeToLLVMType
+			var classStruct = _context.CreateNamedStruct($"class.{classDecl.Name.Name}");
+			_typeMap[classDecl.Type.OutType] = classStruct;
+
 			var entryTypes = new List<LLVMTypeRef>();
+			var funcs = new Dictionary<AstFuncDecl, LLVMTypeRef>();
 
 			// TODO: entry for type info
 			// entryTypes.Add(rttiTypeInfoPtr);
@@ -42,50 +47,9 @@ namespace HapetBackend.Llvm
 			{
 				if (decl is AstFuncDecl funcDecl)
 				{
-					// declaring global func
+					// defining global func
 					var funcType = HapetTypeToLLVMType(funcDecl.Type.OutType);
-					LLVMValueRef lfunc = _module.AddFunction($"{classDecl.Name.Name}::{funcDecl.Name.Name}", funcType);
-					lfunc.Linkage = LLVMLinkage.LLVMInternalLinkage; // TODO: external shite controlled here
-					// caching the function
-					_valueMap[funcDecl.Type.OutType as HapetFrontend.Types.FunctionType] = lfunc;
-
-					// setting parameter names
-					for (int i = 0; i < funcDecl.Parameters.Count; ++i)
-					{
-						var p = funcDecl.Parameters[i];
-						lfunc.Params[i].Name = p.Name.Name;
-					}
-
-					// check if there is no implementation
-					if (funcDecl.Body == null)
-						continue;
-
-					// function body
-					var bbBody = lfunc.AppendBasicBlock("entry");
-					_builder.PositionAtEnd(bbBody);
-
-					// genereting inside stuff of the function
-					var retOfBlock = GenerateBlockCode(funcDecl.Body, bbBody);
-
-					// return logics
-					if (retOfBlock != null)
-					{
-						// TODO: return value
-						_builder.BuildRet(retOfBlock.Value);
-					}
-					else if (funcDecl.Returns.OutType is VoidType)
-					{
-						// ret if void
-						// PopStackTrace(); // TODO: stack trace
-						_builder.BuildRetVoid();
-					}
-					else
-					{
-						// error because the func is not void but with a type return
-						// but the 'return' statement was not found
-						_errorHandler.ReportError(_currentSourceFile.Text, funcDecl, "Return statement of the function could not be found");
-					}
-					lfunc.VerifyFunction(LLVMVerifierFailureAction.LLVMPrintMessageAction);
+					funcs.Add(funcDecl, funcType);
 				}
 			}
 
@@ -95,8 +59,56 @@ namespace HapetBackend.Llvm
 				entryTypes.Add(_context.Int8Type.GetPointerTo());
 			}
 
-			var classStruct = _context.CreateNamedStruct($"class.{classDecl.Name.Name}");
+			// TODO: create using HapetTypeToLLVMType
 			classStruct.StructSetBody(entryTypes.ToArray(), false);
+			
+			foreach (var (funcDecl, funcType) in funcs)
+			{
+				// declaring global func
+				LLVMValueRef lfunc = _module.AddFunction($"{classDecl.Name.Name}::{funcDecl.Name.Name}", funcType);
+				lfunc.Linkage = LLVMLinkage.LLVMInternalLinkage; // TODO: external shite controlled here
+																 // caching the function
+				_valueMap[funcDecl.Type.OutType as HapetFrontend.Types.FunctionType] = lfunc;
+
+				// setting parameter names
+				for (int i = 0; i < funcDecl.Parameters.Count; ++i)
+				{
+					var p = funcDecl.Parameters[i];
+					lfunc.Params[i].Name = p.Name.Name;
+				}
+
+				// check if there is no implementation
+				if (funcDecl.Body == null)
+					continue;
+
+				// function body
+				var bbBody = lfunc.AppendBasicBlock("entry");
+				_builder.PositionAtEnd(bbBody);
+
+				// genereting inside stuff of the function
+				var retOfBlock = GenerateBlockCode(funcDecl.Body, bbBody);
+
+				// return logics
+				if (retOfBlock != null)
+				{
+					// TODO: return value
+					_builder.BuildRet(retOfBlock.Value);
+				}
+				else if (funcDecl.Returns.OutType is VoidType)
+				{
+					// ret if void
+					// PopStackTrace(); // TODO: stack trace
+					_builder.BuildRetVoid();
+				}
+				else
+				{
+					// error because the func is not void but with a type return
+					// but the 'return' statement was not found
+					_errorHandler.ReportError(_currentSourceFile.Text, funcDecl, "Return statement of the function could not be found");
+					_builder.BuildRetVoid();
+				}
+				lfunc.VerifyFunction(LLVMVerifierFailureAction.LLVMPrintMessageAction);
+			}
 		}
 
 		private LLVMValueRef? GenerateBlockCode(AstBlockExpr blockExpr, LLVMBasicBlockRef basicBlock)

@@ -9,7 +9,6 @@ namespace HapetFrontend.Parsing.PostPrepare
 {
     public partial class PostPrepare
 	{
-		private ProgramFile _currentSourceFile;
 		private void PostPrepareScoping()
 		{
 			foreach (var (path, file) in _compiler.GetFiles())
@@ -119,6 +118,9 @@ namespace HapetFrontend.Parsing.PostPrepare
 				case AstBinaryExpr binExpr:
 					PostPrepareBinaryExprScoping(binExpr);
 					break;
+				case AstPointerExpr pointerExpr:
+					PostPreparePointerExprScoping(pointerExpr);
+					break;
 				// TODO: check other expressions
 
 				default:
@@ -136,6 +138,12 @@ namespace HapetFrontend.Parsing.PostPrepare
 			binExpr.Right.Scope = binExpr.Scope;
 			PostPrepareExprScoping(binExpr.Left as AstExpression);
 			PostPrepareExprScoping(binExpr.Right as AstExpression);
+		}
+
+		private void PostPreparePointerExprScoping(AstPointerExpr pointerExpr)
+		{
+			pointerExpr.SubExpression.Scope = pointerExpr.Scope;
+			PostPrepareExprScoping(pointerExpr.SubExpression);
 		}
 
 		// TODO: recursively go through all of the statments and set Scope and Parent

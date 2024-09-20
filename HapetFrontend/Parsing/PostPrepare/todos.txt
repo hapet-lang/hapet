@@ -1,3 +1,4 @@
 ﻿- Check if static class contains only static declarations
 - Manually create ctor if there is no one
 - Manually create dtor if there is no one
+- Check for return statements in all funcs. That they exist and are with the correct ret type
