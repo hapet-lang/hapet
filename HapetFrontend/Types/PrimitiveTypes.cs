@@ -7,6 +7,8 @@ namespace HapetFrontend.Types
 		public static VoidType Instance { get; } = new VoidType();
 		public override string ToString() => "void";
 
+		public override string TypeName => "void";
+
 		private VoidType() : base(0, 0) { }
 	}
 
@@ -14,6 +16,8 @@ namespace HapetFrontend.Types
 	{
 		public static BoolType Instance { get; } = new BoolType();
 		public override string ToString() => "bool";
+
+		public override string TypeName => "bool";
 
 		private BoolType() : base(1, 1) { }
 	}
@@ -23,6 +27,8 @@ namespace HapetFrontend.Types
 		private static readonly Dictionary<(int, bool), IntType> _types = new Dictionary<(int, bool), IntType>();
 		public static IntType LiteralType { get; } = new IntType(0, 0, false);
 		public static IntType DefaultType => GetIntType(4, true);
+
+		public override string TypeName => "int";
 
 		private IntType(int size, int align, bool sign) : base(size, align)
 		{
@@ -99,6 +105,9 @@ namespace HapetFrontend.Types
 		private static Dictionary<int, FloatType> _types = new Dictionary<int, FloatType>();
 		public static FloatType LiteralType { get; } = new FloatType(0, 0);
 		public static FloatType DefaultType => GetFloatType(4);
+
+		public override string TypeName => "float";
+
 		private FloatType(int size, int align) : base(size, align) { }
 
 		public static FloatType GetFloatType(int bytes)
@@ -191,6 +200,8 @@ namespace HapetFrontend.Types
 		private static Dictionary<HapetType, PointerType> _types = new Dictionary<HapetType, PointerType>();
 		public static PointerType NullLiteralType { get; } = new PointerType(null);
 
+		public override string TypeName => "ptr";
+
 		private PointerType(HapetType target) : base(
 			target switch
 			{
@@ -263,6 +274,8 @@ namespace HapetFrontend.Types
 
 		public HapetType TargetType { get; set; }
 
+		public override string TypeName => "ref";
+
 		// TODO: should i treat classes in different way
 		private ReferenceType(HapetType target) : base(PointerType.PointerSize, PointerType.PointerAlignment)
 		{
@@ -327,6 +340,8 @@ namespace HapetFrontend.Types
 
 		public HapetType TargetType { get; set; }
 		public object Length { get; private set; }
+
+		public override string TypeName => "array";
 
 		private ArrayType(HapetType target, object length) : base()
 		{
@@ -396,6 +411,8 @@ namespace HapetFrontend.Types
 		public static CharType LiteralType { get; } = new CharType(0);
 		public static CharType DefaultType => GetCharType(4);
 
+		public override string TypeName => "char";
+
 		private CharType(int size) : base(size, size)
 		{
 		}
@@ -454,6 +471,8 @@ namespace HapetFrontend.Types
 	{
 		public static StringType Instance { get; } = new StringType(16, 8);
 		public static StringType LiteralType { get; } = new StringType(0, 0);
+
+		public override string TypeName => "string";
 
 		private StringType(int size, int align) : base(size, align) { }
 		public override string ToString() => "String";

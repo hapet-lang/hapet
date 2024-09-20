@@ -1,6 +1,7 @@
 ﻿using HapetFrontend.Ast;
 using HapetFrontend.Ast.Declarations;
 using HapetFrontend.Ast.Expressions;
+using HapetFrontend.Ast.Statements;
 using HapetFrontend.Entities;
 using HapetFrontend.Scoping;
 
@@ -18,7 +19,7 @@ namespace HapetFrontend.Parsing.PostPrepare
 				{
 					if (stmt is AstClassDecl classDecl)
 					{
-						file.FileScope.DefineTypeSymbol(classDecl.Name.Name, classDecl.Type.OutType);
+						file.FileScope.DefineDeclSymbol(classDecl.Name.Name, classDecl);
 						PostPrepareClassScoping(classDecl);
 					}
 				}
@@ -38,7 +39,7 @@ namespace HapetFrontend.Parsing.PostPrepare
 				if (decl is AstFuncDecl funcDecl)
 				{
 					funcDecl.ContainingClass = classDecl;
-					classDecl.Scope.DefineTypeSymbol(funcDecl.Name.Name, funcDecl.Type.OutType);
+					classDecl.Scope.DefineDeclSymbol(funcDecl.Name.Name, funcDecl);
 					PostPrepareFunctionScoping(funcDecl);
 				}				
 			}
@@ -58,6 +59,8 @@ namespace HapetFrontend.Parsing.PostPrepare
 				{
 					// settings the block scope to the parameters (so they are in the scope of the block)
 					p.Scope = blockScope;
+					p.Name.Scope = blockScope;
+					p.Type.Scope = blockScope;
 					if (p.DefaultValue != null)
 					{
 						// preparing scopes of default values if they exist
@@ -83,14 +86,25 @@ namespace HapetFrontend.Parsing.PostPrepare
 			{
 				stmt.Scope = blockScope;
 				stmt.Parent = blockExpr;
+				// preparing variable declaration parts scoping
 				if (stmt is AstVarDecl varDecl) 
 				{
+					varDecl.Name.Scope = blockScope;
+					varDecl.Type.Scope = blockScope;
 					if (varDecl.Initializer != null)
 					{
 						varDecl.Initializer.Scope = blockScope;
 						PostPrepareExprScoping(varDecl.Initializer);
 					}
 					blockScope.DefineDeclSymbol(varDecl.Name.Name, varDecl);
+				}
+				else if (stmt is AstReturnStmt returnStmt)
+				{
+					if (returnStmt.ReturnExpression != null)
+					{
+						returnStmt.ReturnExpression.Scope = blockScope;
+						PostPrepareExprScoping(returnStmt.ReturnExpression);
+					}
 				}
 				// todo: some check like if it is another block and etc.
 			}

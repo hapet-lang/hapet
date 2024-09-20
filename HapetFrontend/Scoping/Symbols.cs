@@ -9,26 +9,6 @@ namespace HapetFrontend.Scoping
 		string Name { get; }
 	}
 
-	public interface ITypedSymbol : ISymbol
-	{
-		HapetType Type { get; }
-	}
-
-	/// <summary>
-	/// To search for a type in a scope
-	/// </summary>
-	public class TypeSymbol : ITypedSymbol
-	{
-		public string Name { get; private set; }
-		public HapetType Type { get; private set; }
-
-		public TypeSymbol(string name, HapetType type)
-		{
-			this.Name = name;
-			this.Type = type;
-		}
-	}
-
 	/// <summary>
 	/// To search for a module in a global scope
 	/// </summary>

@@ -34,7 +34,9 @@ namespace HapetFrontend.Parsing
 			return new Lexer
 			{
 				_errorHandler = errorHandler,
-				_text = File.ReadAllText(fileName, Encoding.UTF8).Replace("\r\n", "\n", StringComparison.InvariantCulture),
+				_text = File.ReadAllText(fileName, Encoding.UTF8)
+					.Replace("\r\n", "\n", StringComparison.InvariantCulture)
+					.Replace("\t", "    ", StringComparison.InvariantCulture),
 				_location = new TokenLocation
 				{
 					File = fileName,

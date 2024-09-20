@@ -8,7 +8,7 @@ namespace HapetBackend.Llvm
 {
 	public partial class LlvmCodeGenerator
 	{
-		private LLVMValueRef GenerateExpressionCode(AstExpression expr, LLVMBasicBlockRef basicBlock)
+		private LLVMValueRef GenerateExpressionCode(AstExpression expr, LLVMBasicBlockRef basicBlock, bool deref = false)
 		{
 			// if the value already evaluated (usually literals or consts)
 			if (expr.OutValue != null)
@@ -21,7 +21,8 @@ namespace HapetBackend.Llvm
 			switch (expr)
 			{
 				case AstBinaryExpr binExpr: return GenerateBinaryExprCode(binExpr, basicBlock);
-					// TODO: check other expressions
+				case AstIdExpr idExpr: return GenerateIdExpr(idExpr, deref);
+				// TODO: check other expressions
 
 				default:
 				{
@@ -102,6 +103,32 @@ namespace HapetBackend.Llvm
 
 			//result = builder.CreateLoad(result, "");
 			return result;
+		}
+
+		private LLVMValueRef GenerateIdExpr(AstIdExpr expr, bool deref = false)
+		{
+			LLVMValueRef v = default;
+			if (expr.Symbol is DeclSymbol declSymbol)
+			{
+				v = _valueMap[declSymbol.Decl.Type.OutType];
+
+				// deref it because in valueMap it is ptr
+				if (deref)
+					v = _builder.BuildLoad2(_typeMap[declSymbol.Decl.Type.OutType], v, "");
+
+				return v;
+			}
+			else if (expr.Symbol is ModuleSymbol moduleSymbol)
+			{
+				// TODO: do i need it or just add it to the scope in postprocess?
+				// v = GenerateExpression(moduleSymbol, false);
+			}
+			else
+			{
+				// TODO: error here
+			}
+
+			return v;
 		}
 	}
 }

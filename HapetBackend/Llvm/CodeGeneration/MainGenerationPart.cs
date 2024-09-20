@@ -47,7 +47,7 @@ namespace HapetBackend.Llvm
 					LLVMValueRef lfunc = _module.AddFunction($"{classDecl.Name.Name}::{funcDecl.Name.Name}", funcType);
 					lfunc.Linkage = LLVMLinkage.LLVMInternalLinkage; // TODO: external shite controlled here
 					// caching the function
-					_functionMap[funcDecl.Type.OutType as HapetFrontend.Types.FunctionType] = lfunc;
+					_valueMap[funcDecl.Type.OutType as HapetFrontend.Types.FunctionType] = lfunc;
 
 					// setting parameter names
 					for (int i = 0; i < funcDecl.Parameters.Count; ++i)
@@ -112,7 +112,7 @@ namespace HapetBackend.Llvm
 				else if (stmt is AstReturnStmt returnStmt)
 				{
 					// TODO: also check if return expr is empty
-					result = GenerateExpressionCode(returnStmt.ReturnExpression, basicBlock);
+					result = GenerateExpressionCode(returnStmt.ReturnExpression, basicBlock, true);
 					break; // there is nothing to do in the block after return
 				}
 			}
@@ -123,6 +123,7 @@ namespace HapetBackend.Llvm
 		{
 			// alloca new var in basicBlock
 			var varPtr = CreateLocalVariable(varDecl.Type.OutType, basicBlock, varDecl.Name.Name);
+			_valueMap[varDecl.Type.OutType] = varPtr;
 
 			// check for initializer and try to evaluate expr
 			if (varDecl.Initializer != null)

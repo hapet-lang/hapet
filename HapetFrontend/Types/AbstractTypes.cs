@@ -14,6 +14,8 @@ namespace HapetFrontend.Types
 	{
 		public HapetType ClassType { get; }
 
+		public override string TypeName => "this";
+
 		public ThisType(HapetType classType)
 		{
 			this.ClassType = classType;
@@ -31,6 +33,8 @@ namespace HapetFrontend.Types
 	public class VarType : AbstractType
 	{
 		public AstVarDecl Declaration { get; }
+
+		public override string TypeName => "var";
 
 		public VarType(AstVarDecl decl)
 		{

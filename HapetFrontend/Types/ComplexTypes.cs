@@ -6,6 +6,8 @@ namespace HapetFrontend.Types
 	{
 		public AstClassDecl Declaration { get; }
 
+		public override string TypeName => "class";
+
 		public ClassType(AstClassDecl decl)
 			: base()
 		{
@@ -36,6 +38,8 @@ namespace HapetFrontend.Types
 		public static readonly TupleType LiteralType = GetTuple(Array.Empty<(HapetType, string)>());
 
 		public (HapetType type, string name)[] Members { get; }
+
+		public override string TypeName => "tuple";
 
 		private TupleType((HapetType type, string name)[] members) : base()
 		{
@@ -84,6 +88,8 @@ namespace HapetFrontend.Types
 	public class StructType : HapetType
 	{
 		public AstStructDecl Declaration { get; }
+
+		public override string TypeName => "struct";
 
 		public StructType(AstStructDecl decl)
 			: base()
@@ -134,6 +140,8 @@ namespace HapetFrontend.Types
 	{
 		public AstEnumDecl Declaration { get; set; }
 
+		public override string TypeName => "enum";
+
 		public EnumType(AstEnumDecl decl) : base()
 		{
 			Declaration = decl;
@@ -158,6 +166,8 @@ namespace HapetFrontend.Types
 	public class FunctionType : HapetType
 	{
 		public AstFuncDecl Declaration { get; set; }
+
+		public override string TypeName => "func";
 
 		public FunctionType(AstFuncDecl decl)
 			: base(PointerType.PointerSize, PointerType.PointerAlignment)

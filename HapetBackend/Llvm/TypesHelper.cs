@@ -8,7 +8,7 @@ namespace HapetBackend.Llvm
 	public partial class LlvmCodeGenerator
 	{
 		private Dictionary<HapetType, LLVMTypeRef> _typeMap = new Dictionary<HapetType, LLVMTypeRef>();
-		private Dictionary<FunctionType, LLVMValueRef> _functionMap = new Dictionary<FunctionType, LLVMValueRef>();
+		private Dictionary<HapetType, LLVMValueRef> _valueMap = new Dictionary<HapetType, LLVMValueRef>();
 
 		// rtti stuff
 		private HapetType sTypeInfoAttribute;

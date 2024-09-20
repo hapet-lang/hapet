@@ -10,6 +10,11 @@ namespace HapetFrontend.Types
 		public virtual bool IsGenericType { get; } = false;
 
 		/// <summary>
+		/// The name of the type alias like 'int', 'bool' and etc.
+		/// </summary>
+		public abstract string TypeName { get; }
+
+		/// <summary>
 		/// The size of a pointer on the currently selected platform
 		/// </summary>
 		public static int PointerSize => CompilerSettings.TargetPlatformData.PointerSize;

@@ -10,9 +10,6 @@ namespace HapetFrontend.Ast.Declarations
 		/// </summary>
 		public List<AstDeclaration> Declarations { get; } = new List<AstDeclaration>();
 
-		// TODO: do i need it?
-		// public Scope SubScope { get; set; }
-
 		public AstStructDecl(AstIdExpr name, string doc = "", ILocation Location = null) : base(name, doc, Location)
 		{
 			Type = new AstIdExpr("struct", Location);

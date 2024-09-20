@@ -26,10 +26,10 @@ namespace HapetFrontend.Scoping
             return DefineLocalSymbol(symbol, name);
         }
 
-        public bool DefineTypeSymbol(string name, HapetType symbol)
+        private bool DefineTypeSymbol(string name, HapetType tp)
         {
-            return DefineSymbol(new TypeSymbol(name, symbol));
-        }
+			return DefineSymbol(new DeclSymbol(name, new AstBuiltInTypeDecl(tp)));
+		}
 
 		public bool DefineModuleSymbol(string name, ProgramFile file)
 		{

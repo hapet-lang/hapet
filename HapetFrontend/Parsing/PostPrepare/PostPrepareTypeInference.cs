@@ -91,9 +91,9 @@ namespace HapetFrontend.Parsing.PostPrepare
 			}
 			
 			var smbl = scopeToSearch.GetSymbol(idExpr.Name);
-			if (smbl is ITypedSymbol typed)
+			if (smbl is DeclSymbol typed)
 			{
-				idExpr.OutType = typed.Type;
+				idExpr.OutType = typed.Decl.Type.OutType;
 			}
 			else
 			{
