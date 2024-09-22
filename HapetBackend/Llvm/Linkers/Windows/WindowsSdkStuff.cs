@@ -76,9 +76,9 @@ namespace HapetBackend.Llvm.Linkers.Windows
 						sdk.UcrtPath = null;
 				}
 
-				sdk.UmPath = Path.Combine(sdk.Path, "Lib", sdk.Version, "um");
-				if (!Directory.Exists(sdk.UmPath) || 
-					new DirectoryInfo(sdk.UmPath).GetFiles().FirstOrDefault(x => x.Name.Contains("kernel32")) == null) // if there is no kernel32 lib file
+				// TODO: there could be no kernel32.lib file. rewrite this whole shite
+                sdk.UmPath = Path.Combine(sdk.Path, "Lib", sdk.Version, "um");
+				if (!Directory.Exists(sdk.UmPath))
 				{
 					var notLatestVers = GetLatestSdkVersion(Path.Combine(sdk.Path, "bin"), new string[] { sdk.Version });
 					sdk.UmPath = Path.Combine(sdk.Path, "Lib", notLatestVers, "um");

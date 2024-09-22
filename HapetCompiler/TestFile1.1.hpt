@@ -2,7 +2,7 @@
 {
 	public static int Main()
 	{
-		int a = 2 + 5;
+		int a = 6 + 5;
 		// Math math = new Math();
 		// float b = a + math.GetPi();
 		return a;
@@ -11,7 +11,7 @@
 
 public class Math
 {
-	public float GetPi()
+	public float GetPi(int a)
 	{
 		return 3.14;
 	}
