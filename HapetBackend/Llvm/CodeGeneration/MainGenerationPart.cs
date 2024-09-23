@@ -61,7 +61,8 @@ namespace HapetBackend.Llvm
 
 			// TODO: create using HapetTypeToLLVMType
 			classStruct.StructSetBody(entryTypes.ToArray(), false);
-			
+			// classDecl.Type.OutType.SetSizeAndAlignment(1, 4); // TODO: idk
+
 			foreach (var (funcDecl, funcType) in funcs)
 			{
 				// declaring global func

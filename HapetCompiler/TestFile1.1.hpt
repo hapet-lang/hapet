@@ -1,4 +1,12 @@
-﻿public static class Program
+﻿public class Math
+{
+	public float GetPi(int a)
+	{
+		return 3.14;
+	}
+}
+
+public static class Program
 {
 	public static int Main()
 	{
@@ -6,13 +14,5 @@
 		Math math = new Math();
 		// float b = a + math.GetPi();
 		return a;
-	}
-}
-
-public class Math
-{
-	public float GetPi(int a)
-	{
-		return 3.14;
 	}
 }

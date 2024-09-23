@@ -1,4 +1,5 @@
 ﻿using HapetFrontend.Ast;
+using HapetFrontend.Ast.Declarations;
 using HapetFrontend.Ast.Expressions;
 using HapetFrontend.Scoping;
 using HapetFrontend.Types;
@@ -22,6 +23,7 @@ namespace HapetBackend.Llvm
 			{
 				case AstBinaryExpr binExpr: return GenerateBinaryExprCode(binExpr, basicBlock);
 				case AstIdExpr idExpr: return GenerateIdExpr(idExpr, deref);
+				case AstNewExpr newExpr: return GenerateNewExpr(newExpr, basicBlock);
 				// TODO: check other expressions
 
 				default:
@@ -113,7 +115,7 @@ namespace HapetBackend.Llvm
 				v = _valueMap[declSymbol.Decl.Type.OutType];
 
 				// deref it because in valueMap it is ptr
-				if (deref)
+				// if (deref)
 					v = _builder.BuildLoad2(_typeMap[declSymbol.Decl.Type.OutType], v, "");
 
 				return v;
@@ -126,6 +128,33 @@ namespace HapetBackend.Llvm
 			else
 			{
 				// TODO: error here
+			}
+
+			return v;
+		}
+
+		private unsafe LLVMValueRef GenerateNewExpr(AstNewExpr expr, LLVMBasicBlockRef basicBlock)
+		{
+			LLVMValueRef v = default;
+			if (expr.OutType is ClassType classType)
+			{
+				var hpt = classType.Declaration.Type.OutType;
+				var tp = _typeMap[hpt];
+
+				// all declarations except funcs
+				// TODO: there could be not only vardecls?
+				List<AstVarDecl> declarations = classType.Declaration.Declarations.Where(x => x is not AstFuncDecl).Select(x => x as AstVarDecl).ToList();
+				LLVMValueRef undef = LLVM.GetUndef(tp);
+				v = declarations.Aggregate(undef, (und, field) =>
+				{
+					return _builder.BuildInsertValue(und, GenerateExpressionCode(field.Initializer, basicBlock), 0); // TODO: offsets here
+				});
+
+				return v;
+			}
+			else
+			{
+				// TODO: other also could be created 
 			}
 
 			return v;

@@ -348,18 +348,22 @@ namespace HapetBackend.Llvm
 
 		private LLVMValueRef CreateLocalVariable(LLVMTypeRef type, LLVMBasicBlockRef block, int alignment, string name = "temp")
 		{
-			var bb = block;
-			var brInst = bb.LastInstruction;
-			// TODO: do i need this shity check?
-			if (brInst.Handle.ToInt64() == 0)
-				_builder.PositionAtEnd(bb);
-			else
-				_builder.PositionBefore(brInst);
+			//var bb = block;
+			//var brInst = bb.LastInstruction;
+			//// TODO: do i need this shity check?
+			//if (brInst.Handle.ToInt64() == 0)
+			//	_builder.PositionAtEnd(bb);
+			//else
+			//	_builder.PositionBefore(brInst);
 
 			var result = _builder.BuildAlloca(type, name);
 			var llvmAlignment = _targetData.PreferredAlignmentOfType(type);
-			Debug.Assert(alignment >= llvmAlignment && alignment % llvmAlignment == 0);
-			result.SetAlignment((uint)alignment);
+			if (alignment >= 0)
+			{
+				Debug.Assert(alignment >= llvmAlignment && alignment % llvmAlignment == 0);
+				result.SetAlignment((uint)alignment);
+			}
+			
 
 			return result;
 		}

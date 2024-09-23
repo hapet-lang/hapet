@@ -60,6 +60,7 @@ namespace HapetFrontend.Parsing.PostPrepare
 					p.Scope = blockScope;
 					p.Name.Scope = blockScope;
 					p.Type.Scope = blockScope;
+					PostPrepareExprScoping(p.Type);
 					if (p.DefaultValue != null)
 					{
 						// preparing scopes of default values if they exist
@@ -69,6 +70,9 @@ namespace HapetFrontend.Parsing.PostPrepare
 					// defining the symbol in the scope so it can be easily found
 					blockScope.DefineDeclSymbol(p.Name.Name, p);
 				}
+				// return type is the same
+				funcDecl.Returns.Scope = funcDecl.Scope;
+				funcDecl.Returns.Parent = funcDecl;
 			}
 		}
 
@@ -90,6 +94,7 @@ namespace HapetFrontend.Parsing.PostPrepare
 				{
 					varDecl.Name.Scope = blockScope;
 					varDecl.Type.Scope = blockScope;
+					PostPrepareExprScoping(varDecl.Type);
 					if (varDecl.Initializer != null)
 					{
 						varDecl.Initializer.Scope = blockScope;

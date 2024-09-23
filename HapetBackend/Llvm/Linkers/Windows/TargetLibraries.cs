@@ -20,12 +20,16 @@ namespace HapetBackend.Llvm.Linkers.Windows
 							case TargetPlatform.Win86:
 							case TargetPlatform.Win64:
 								{
-									var winSdk = FindWindowsSdk();
+									var winSdk = FindWindowsSdk(target);
 									if (winSdk == null)
 									{
 										errorHandler.ReportError("Couldn't find windows sdk");
 										return false;
 									}
+									if (winSdk.UcrtPath != null)
+										lldArgs.Add($@"-libpath:{winSdk.UcrtPath}");
+									if (winSdk.UmPath != null)
+										lldArgs.Add($@"-libpath:{winSdk.UmPath}");
 
 									var msvcLibPath = FindVisualStudioLibraryDirectory();
 									if (msvcLibPath == null)
@@ -33,11 +37,6 @@ namespace HapetBackend.Llvm.Linkers.Windows
 										errorHandler.ReportError("Couldn't find Visual Studio library directory");
 										return false;
 									}
-									if (winSdk.UcrtPath != null)
-										lldArgs.Add($@"-libpath:{winSdk.UcrtPath}\{target}");
-
-									if (winSdk.UmPath != null)
-										lldArgs.Add($@"-libpath:{winSdk.UmPath}\{target}");
 									if (msvcLibPath != null)
 										lldArgs.Add($@"-libpath:{msvcLibPath}\{target}");
 									break;

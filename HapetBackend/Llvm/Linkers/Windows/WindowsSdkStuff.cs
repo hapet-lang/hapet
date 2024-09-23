@@ -51,7 +51,7 @@ namespace HapetBackend.Llvm.Linkers.Windows
 			return version;
 		}
 
-		internal static HapetWindowsSdk FindWindowsSdk()
+		internal static HapetWindowsSdk FindWindowsSdk(string target)
 		{
 			using (var localMachine = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Default))
 			using (var roots = localMachine.OpenSubKey(@"SOFTWARE\Microsoft\Windows Kits\Installed Roots", RegistryRights.ReadKey))
@@ -67,23 +67,39 @@ namespace HapetBackend.Llvm.Linkers.Windows
 				if (sdk.Version == null)
 					return null;
 
-				sdk.UcrtPath = Path.Combine(sdk.Path, "Lib", sdk.Version, "ucrt");
-				if (!Directory.Exists(sdk.UcrtPath))
+				List<string> excludedVersions = new List<string>();
+				string prevVersion = null;
+
+				while (sdk.UcrtPath == null || 
+					!Directory.Exists(sdk.UcrtPath))
 				{
-					var notLatestVers = GetLatestSdkVersion(Path.Combine(sdk.Path, "bin"), new string[] { sdk.Version });
-					sdk.UcrtPath = Path.Combine(sdk.Path, "Lib", notLatestVers, "ucrt");
-					if (!Directory.Exists(sdk.UcrtPath))
-						sdk.UcrtPath = null;
+					excludedVersions.Add(prevVersion);
+
+					prevVersion = GetLatestSdkVersion(Path.Combine(sdk.Path, "bin"), excludedVersions.ToArray());
+					if (prevVersion == null)
+					{
+						// TODO: error!!! 
+						break;
+					}
+					sdk.UcrtPath = Path.Combine(sdk.Path, "Lib", prevVersion, "ucrt", target);
 				}
 
-				// TODO: there could be no kernel32.lib file. rewrite this whole shite
-                sdk.UmPath = Path.Combine(sdk.Path, "Lib", sdk.Version, "um");
-				if (!Directory.Exists(sdk.UmPath))
+				excludedVersions.Clear();
+				prevVersion = null;
+
+				while (sdk.UmPath == null || 
+					!Directory.Exists(sdk.UmPath) || 
+					(new DirectoryInfo(sdk.UmPath)).GetFiles().FirstOrDefault(x => x.Name.Contains("kernel32")) == null) // if there is no kernel 32 lib
 				{
-					var notLatestVers = GetLatestSdkVersion(Path.Combine(sdk.Path, "bin"), new string[] { sdk.Version });
-					sdk.UmPath = Path.Combine(sdk.Path, "Lib", notLatestVers, "um");
-					if (!Directory.Exists(sdk.UmPath))
-						sdk.UmPath = null;
+					excludedVersions.Add(prevVersion);
+
+					prevVersion = GetLatestSdkVersion(Path.Combine(sdk.Path, "bin"), excludedVersions.ToArray());
+					if (prevVersion == null)
+					{
+						// TODO: error!!! 
+						break;
+					}
+					sdk.UmPath = Path.Combine(sdk.Path, "Lib", prevVersion, "um", target);
 				}
 
 				return sdk;
