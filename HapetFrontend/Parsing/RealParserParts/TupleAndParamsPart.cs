@@ -6,6 +6,76 @@ namespace HapetFrontend.Parsing
 {
 	public partial class Parser
 	{
+		private AstArgumentExpr ParseArgument()
+		{
+			TokenLocation beg;
+			AstExpression expr;
+			AstIdExpr name = null;
+
+			var e = ParseExpression(false);
+			beg = e.Beginning;
+
+			// if next token is : then e is the name of the parameter
+			if (CheckToken(TokenType.Colon))
+			{
+				if (e is AstIdExpr i)
+				{
+					name = i;
+				}
+				else
+				{
+					ReportError(e, $"Name of argument must be an identifier");
+				}
+
+				Consume(TokenType.Equal, ErrMsg(":", "after name in argument"));
+				SkipNewlines();
+
+				expr = ParseExpression(false) as AstExpression;
+			}
+			else
+			{
+				expr = e as AstExpression;
+			}
+
+			return new AstArgumentExpr(expr, name, new Location(beg, expr.Ending));
+		}
+
+		private List<AstArgumentExpr> ParseArgumentList(out TokenLocation end)
+		{
+			Consume(TokenType.OpenParen, ErrMsg("(", "at beginning of argument list"));
+
+			SkipNewlines();
+			var args = new List<AstArgumentExpr>();
+			while (true)
+			{
+				var next = PeekToken();
+				if (next.Type == TokenType.CloseParen || next.Type == TokenType.EOF)
+					break;
+				args.Add(ParseArgument());
+
+				next = PeekToken();
+				if (next.Type == TokenType.NewLine)
+				{
+					NextToken();
+				}
+				else if (next.Type == TokenType.Comma)
+				{
+					NextToken();
+					SkipNewlines();
+				}
+				else if (next.Type == TokenType.CloseParen)
+					break;
+				else
+				{
+					NextToken();
+					ReportError(next.Location, $"Failed to parse argument list, expected ',' or ')'");
+				}
+			}
+			end = Consume(TokenType.CloseParen, ErrMsg(")", "at end of argument list")).Location;
+
+			return args;
+		}
+
 		private AstParamDecl ParseParameter(bool allowCommaForTuple, bool allowDefaultValue = true)
 		{
 			AstIdExpr pname = null;

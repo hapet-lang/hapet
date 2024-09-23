@@ -121,6 +121,14 @@ namespace HapetFrontend.Parsing.PostPrepare
 				case AstPointerExpr pointerExpr:
 					PostPreparePointerExprScoping(pointerExpr);
 					break;
+				case AstNewExpr newExpr:
+					PostPrepareNewExprScoping(newExpr);
+					break;
+				case AstArgumentExpr argumentExpr:
+					PostPrepareArgumentExprScoping(argumentExpr);
+					break;
+				case AstIdExpr _:
+					return;
 				// TODO: check other expressions
 
 				default:
@@ -144,6 +152,28 @@ namespace HapetFrontend.Parsing.PostPrepare
 		{
 			pointerExpr.SubExpression.Scope = pointerExpr.Scope;
 			PostPrepareExprScoping(pointerExpr.SubExpression);
+		}
+
+		private void PostPrepareNewExprScoping(AstNewExpr newExpr)
+		{
+			newExpr.TypeName.Scope = newExpr.Scope;
+			PostPrepareExprScoping(newExpr.TypeName);
+			foreach (var a in newExpr.Arguments)
+			{
+				a.Scope = newExpr.Scope;
+				PostPrepareExprScoping(a);
+			}
+		}
+
+		private void PostPrepareArgumentExprScoping(AstArgumentExpr argumentExpr)
+		{
+			argumentExpr.Expr.Scope = argumentExpr.Scope;
+			PostPrepareExprScoping(argumentExpr.Expr);
+			if (argumentExpr.Name != null)
+			{
+				argumentExpr.Name.Scope = argumentExpr.Scope;
+				PostPrepareExprScoping(argumentExpr.Name);
+			}
 		}
 
 		// TODO: recursively go through all of the statments and set Scope and Parent

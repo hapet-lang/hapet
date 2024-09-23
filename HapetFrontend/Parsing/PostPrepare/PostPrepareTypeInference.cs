@@ -39,14 +39,14 @@ namespace HapetFrontend.Parsing.PostPrepare
 			// inferencing parameters 
 			foreach (var p in funcDecl.Parameters)
 			{
-				PostPrepareTypeExprInference(p.Type, funcDecl.Scope);
+				PostPrepareExprInference(p.Type);
 				if (p.DefaultValue != null)
 					PostPrepareExprInference(p.DefaultValue);
 			}
 
 			// inferencing return type 
 			{
-				PostPrepareTypeExprInference(funcDecl.Returns, funcDecl.Scope);
+				PostPrepareExprInference(funcDecl.Returns);
 			}
 
 			if (funcDecl.Body != null)
@@ -61,52 +61,11 @@ namespace HapetFrontend.Parsing.PostPrepare
 			{
 				if (stmt is AstVarDecl varDecl)
 				{
-					PostPrepareTypeExprInference(varDecl.Type, blockExpr.Scope);
+					PostPrepareExprInference(varDecl.Type);
 					if (varDecl.Initializer != null)
 						PostPrepareExprInference(varDecl.Initializer);
 				}
 				// todo: some check like if it is another block and etc.
-			}
-		}
-
-		private void PostPrepareTypeExprInference(AstExpression expr, Scope scopeToSearch = null)
-		{
-			if (expr is AstTupleExpr tpl)
-			{
-				// TODO: resolve tuple shite
-			}
-			else if (expr is AstIdExpr idExpr)
-			{
-				PostPrepareIdentifierInference(idExpr, scopeToSearch);
-			}
-			else if (expr is AstPointerExpr pointerExpr)
-			{
-				// prepare the right side
-				PostPrepareTypeExprInference(pointerExpr.SubExpression, scopeToSearch);
-				// create a new pointer type from the right side and set the type to itself
-				pointerExpr.OutType = PointerType.GetPointerType(pointerExpr.SubExpression.OutType);
-			}
-			// TODO: check for 'var'
-		}
-
-		private void PostPrepareIdentifierInference(AstIdExpr idExpr, Scope scopeToSearch = null)
-		{
-			if (scopeToSearch == null)
-			{
-				if (idExpr.Parent is not AstStatement)
-					_compiler.ErrorHandler.ReportError(_currentSourceFile.Text, idExpr, "Parent ast node of current has to be a statement");
-				scopeToSearch = (idExpr.Parent as AstStatement).Scope;
-			}
-			
-			var smbl = scopeToSearch.GetSymbol(idExpr.Name);
-			if (smbl is DeclSymbol typed)
-			{
-				idExpr.OutType = typed.Decl.Type.OutType;
-			}
-			else
-			{
-				// TODO: really give them a error? or mb there is smth harder?
-				_compiler.ErrorHandler.ReportError(_currentSourceFile.Text, idExpr, "The type could not be infered...");
 			}
 		}
 
@@ -117,6 +76,18 @@ namespace HapetFrontend.Parsing.PostPrepare
 				case AstBinaryExpr binExpr: 
 					PostPrepareBinaryExprInference(binExpr);
 					break;
+				case AstPointerExpr pointerExpr:
+					PostPreparePointerExprInference(pointerExpr);
+					break;
+				case AstNewExpr newExpr:
+					PostPrepareNewExprInference(newExpr);
+					break;
+				case AstArgumentExpr argumentExpr:
+					PostPrepareArgumentExprInference(argumentExpr);
+					break;
+				case AstIdExpr idExpr:
+					PostPrepareIdentifierInference(idExpr);
+					return;
 				// TODO: check other expressions
 
 				default:
@@ -146,6 +117,54 @@ namespace HapetFrontend.Parsing.PostPrepare
 			{
 				binExpr.ActualOperator = operators[0];
 				binExpr.OutType = binExpr.ActualOperator.ResultType;
+			}
+		}
+
+		private void PostPreparePointerExprInference(AstPointerExpr pointerExpr)
+		{
+			// prepare the right side
+			PostPrepareExprInference(pointerExpr.SubExpression);
+			// create a new pointer type from the right side and set the type to itself
+			pointerExpr.OutType = PointerType.GetPointerType(pointerExpr.SubExpression.OutType);
+		}
+
+		private void PostPrepareNewExprInference(AstNewExpr newExpr)
+		{
+			// prepare the right side
+			PostPrepareExprInference(newExpr.TypeName);
+			// the type of newExpr is the same as the type of its name expr
+			newExpr.OutType = newExpr.TypeName.OutType;
+
+			foreach (var a in newExpr.Arguments)
+			{
+				PostPrepareExprInference(a);
+			}
+		}
+
+		private void PostPrepareArgumentExprInference(AstArgumentExpr argumentExpr)
+		{
+			PostPrepareExprInference(argumentExpr.Expr);
+
+			if (argumentExpr.Name != null)
+			{
+				PostPrepareExprInference(argumentExpr.Name);
+			}
+
+			// the argument type is the same as its expr type
+			argumentExpr.OutType = argumentExpr.Expr.OutType;
+		}
+
+		private void PostPrepareIdentifierInference(AstIdExpr idExpr)
+		{
+			var smbl = idExpr.Scope.GetSymbol(idExpr.Name);
+			if (smbl is DeclSymbol typed)
+			{
+				idExpr.OutType = typed.Decl.Type.OutType;
+			}
+			else
+			{
+				// TODO: really give them a error? or mb there is smth harder?
+				_compiler.ErrorHandler.ReportError(_currentSourceFile.Text, idExpr, "The type could not be infered...");
 			}
 		}
 	}

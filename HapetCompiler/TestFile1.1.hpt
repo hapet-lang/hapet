@@ -3,7 +3,7 @@
 	public static int Main()
 	{
 		int a = 6 + 5;
-		// Math math = new Math();
+		Math math = new Math();
 		// float b = a + math.GetPi();
 		return a;
 	}
