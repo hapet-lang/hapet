@@ -98,10 +98,32 @@ namespace HapetFrontend.Scoping
             DefineBinaryOperator(new BuiltInBinaryOperator(">", BoolType.Instance, FloatType.LiteralType, FloatType.LiteralType, (a, b) => (NumberData)a > (NumberData)b));
             DefineBinaryOperator(new BuiltInBinaryOperator(">=", BoolType.Instance, FloatType.LiteralType, FloatType.LiteralType, (a, b) => (NumberData)a >= (NumberData)b));
 
+			// special cases
+			DefineBinaryOperator(new BuiltInBinaryOperator("+", FloatType.LiteralType, IntType.LiteralType, FloatType.LiteralType, (a, b) => (NumberData)a + (NumberData)b));
+			DefineBinaryOperator(new BuiltInBinaryOperator("-", FloatType.LiteralType, IntType.LiteralType, FloatType.LiteralType, (a, b) => (NumberData)a - (NumberData)b));
+			DefineBinaryOperator(new BuiltInBinaryOperator("*", FloatType.LiteralType, IntType.LiteralType, FloatType.LiteralType, (a, b) => (NumberData)a * (NumberData)b));
+			DefineBinaryOperator(new BuiltInBinaryOperator("/", FloatType.LiteralType, IntType.LiteralType, FloatType.LiteralType, (a, b) => (NumberData)a / (NumberData)b));
+			DefineBinaryOperator(new BuiltInBinaryOperator("+", FloatType.LiteralType, FloatType.LiteralType, IntType.LiteralType, (a, b) => (NumberData)a + (NumberData)b));
+			DefineBinaryOperator(new BuiltInBinaryOperator("-", FloatType.LiteralType, FloatType.LiteralType, IntType.LiteralType, (a, b) => (NumberData)a - (NumberData)b));
+			DefineBinaryOperator(new BuiltInBinaryOperator("*", FloatType.LiteralType, FloatType.LiteralType, IntType.LiteralType, (a, b) => (NumberData)a * (NumberData)b));
+			DefineBinaryOperator(new BuiltInBinaryOperator("/", FloatType.LiteralType, FloatType.LiteralType, IntType.LiteralType, (a, b) => (NumberData)a / (NumberData)b));
+			DefineBinaryOperator(new BuiltInBinaryOperator("==", BoolType.Instance, FloatType.LiteralType, IntType.LiteralType, (a, b) => (NumberData)a == (NumberData)b));
+			DefineBinaryOperator(new BuiltInBinaryOperator("!=", BoolType.Instance, FloatType.LiteralType, IntType.LiteralType, (a, b) => (NumberData)a != (NumberData)b));
+			DefineBinaryOperator(new BuiltInBinaryOperator("<", BoolType.Instance, FloatType.LiteralType, IntType.LiteralType, (a, b) => (NumberData)a < (NumberData)b));
+			DefineBinaryOperator(new BuiltInBinaryOperator("<=", BoolType.Instance, FloatType.LiteralType, IntType.LiteralType, (a, b) => (NumberData)a <= (NumberData)b));
+			DefineBinaryOperator(new BuiltInBinaryOperator(">", BoolType.Instance, FloatType.LiteralType, IntType.LiteralType, (a, b) => (NumberData)a > (NumberData)b));
+			DefineBinaryOperator(new BuiltInBinaryOperator(">=", BoolType.Instance, FloatType.LiteralType, IntType.LiteralType, (a, b) => (NumberData)a >= (NumberData)b));
+			DefineBinaryOperator(new BuiltInBinaryOperator("==", BoolType.Instance, IntType.LiteralType, FloatType.LiteralType, (a, b) => (NumberData)a == (NumberData)b));
+			DefineBinaryOperator(new BuiltInBinaryOperator("!=", BoolType.Instance, IntType.LiteralType, FloatType.LiteralType, (a, b) => (NumberData)a != (NumberData)b));
+			DefineBinaryOperator(new BuiltInBinaryOperator("<", BoolType.Instance, IntType.LiteralType, FloatType.LiteralType, (a, b) => (NumberData)a < (NumberData)b));
+			DefineBinaryOperator(new BuiltInBinaryOperator("<=", BoolType.Instance, IntType.LiteralType, FloatType.LiteralType, (a, b) => (NumberData)a <= (NumberData)b));
+			DefineBinaryOperator(new BuiltInBinaryOperator(">", BoolType.Instance, IntType.LiteralType, FloatType.LiteralType, (a, b) => (NumberData)a > (NumberData)b));
+			DefineBinaryOperator(new BuiltInBinaryOperator(">=", BoolType.Instance, IntType.LiteralType, FloatType.LiteralType, (a, b) => (NumberData)a >= (NumberData)b));
+            // end special cases
 
             // basic types
 
-            foreach (var type in new HapetType[]
+            var numTypes = new HapetType[]
                 {
                     IntType.GetIntType(1, true),
                     IntType.GetIntType(2, true),
@@ -114,45 +136,59 @@ namespace HapetFrontend.Scoping
                     CharType.GetCharType(1),
                     CharType.GetCharType(2),
                     CharType.GetCharType(4),
-                })
+					FloatType.GetFloatType(2),
+				    FloatType.GetFloatType(4),
+				    FloatType.GetFloatType(8)
+				};
+			foreach (var type in numTypes)
             {
                 DefineUnaryOperator("-", type, a => ((NumberData)a).Negate());
 
-                DefineBinaryOperator(new BuiltInBinaryOperator("+", type, type, type, (a, b) => (NumberData)a + (NumberData)b));
-                DefineBinaryOperator(new BuiltInBinaryOperator("-", type, type, type, (a, b) => (NumberData)a - (NumberData)b));
-                DefineBinaryOperator(new BuiltInBinaryOperator("*", type, type, type, (a, b) => (NumberData)a * (NumberData)b));
-                DefineBinaryOperator(new BuiltInBinaryOperator("/", type, type, type, (a, b) => (NumberData)a / (NumberData)b));
-                DefineBinaryOperator(new BuiltInBinaryOperator("%", type, type, type, (a, b) => (NumberData)a % (NumberData)b));
+                foreach (var secondType in numTypes)
+                {
+                    // calc out type of these shite
+                    HapetType outType;
+                    if ((type is FloatType && secondType is IntType) || (type is FloatType && secondType is CharType))
+                    {
+                        outType = type;
+					}
+                    else if ((secondType is FloatType && type is IntType) || (secondType is FloatType && type is CharType))
+                    {
+                        outType = secondType;
+					}
+                    else if (secondType is IntType sInt && type is IntType fInt)
+                    {
+                        if (sInt.Signed && !fInt.Signed)
+                        {
+                            outType = sInt;
+						}
+                        else if (!sInt.Signed && fInt.Signed)
+                        {
+							outType = fInt;
+						}
+                        else
+                        {
+							outType = sInt.GetSize() > fInt.GetSize() ? sInt : fInt;
+						}
+					}
+					else
+					{
+						outType = secondType.GetSize() > type.GetSize() ? secondType : type;
+					}
 
-                DefineBinaryOperator(new BuiltInBinaryOperator("==", BoolType.Instance, type, type, (a, b) => (NumberData)a == (NumberData)b));
-                DefineBinaryOperator(new BuiltInBinaryOperator("!=", BoolType.Instance, type, type, (a, b) => (NumberData)a != (NumberData)b));
-                DefineBinaryOperator(new BuiltInBinaryOperator("<", BoolType.Instance, type, type, (a, b) => (NumberData)a < (NumberData)b));
-                DefineBinaryOperator(new BuiltInBinaryOperator("<=", BoolType.Instance, type, type, (a, b) => (NumberData)a <= (NumberData)b));
-                DefineBinaryOperator(new BuiltInBinaryOperator(">", BoolType.Instance, type, type, (a, b) => (NumberData)a > (NumberData)b));
-                DefineBinaryOperator(new BuiltInBinaryOperator(">=", BoolType.Instance, type, type, (a, b) => (NumberData)a >= (NumberData)b));
-            }
+					DefineBinaryOperator(new BuiltInBinaryOperator("+", outType, type, secondType, (a, b) => (NumberData)a + (NumberData)b));
+					DefineBinaryOperator(new BuiltInBinaryOperator("-", outType, type, secondType, (a, b) => (NumberData)a - (NumberData)b));
+					DefineBinaryOperator(new BuiltInBinaryOperator("*", outType, type, secondType, (a, b) => (NumberData)a * (NumberData)b));
+					DefineBinaryOperator(new BuiltInBinaryOperator("/", outType, type, secondType, (a, b) => (NumberData)a / (NumberData)b));
+					DefineBinaryOperator(new BuiltInBinaryOperator("%", outType, type, secondType, (a, b) => (NumberData)a % (NumberData)b));
 
-            foreach (var type in new FloatType[]
-            {
-                FloatType.GetFloatType(2),
-                FloatType.GetFloatType(4),
-                FloatType.GetFloatType(8)
-            })
-            {
-                DefineUnaryOperator("-", type, a => ((NumberData)a).Negate());
-
-                DefineBinaryOperator(new BuiltInBinaryOperator("+", type, type, type, (a, b) => ((NumberData)a) + ((NumberData)b)));
-                DefineBinaryOperator(new BuiltInBinaryOperator("-", type, type, type, (a, b) => ((NumberData)a) - ((NumberData)b)));
-                DefineBinaryOperator(new BuiltInBinaryOperator("*", type, type, type, (a, b) => ((NumberData)a) * ((NumberData)b)));
-                DefineBinaryOperator(new BuiltInBinaryOperator("/", type, type, type, (a, b) => ((NumberData)a) / ((NumberData)b)));
-                DefineBinaryOperator(new BuiltInBinaryOperator("%", type, type, type, (a, b) => ((NumberData)a) % ((NumberData)b)));
-
-                DefineBinaryOperator(new BuiltInBinaryOperator("==", BoolType.Instance, type, type, (a, b) => ((NumberData)a) == ((NumberData)b)));
-                DefineBinaryOperator(new BuiltInBinaryOperator("!=", BoolType.Instance, type, type, (a, b) => ((NumberData)a) != ((NumberData)b)));
-                DefineBinaryOperator(new BuiltInBinaryOperator("<", BoolType.Instance, type, type, (a, b) => ((NumberData)a) < ((NumberData)b)));
-                DefineBinaryOperator(new BuiltInBinaryOperator("<=", BoolType.Instance, type, type, (a, b) => ((NumberData)a) <= ((NumberData)b)));
-                DefineBinaryOperator(new BuiltInBinaryOperator(">", BoolType.Instance, type, type, (a, b) => ((NumberData)a) > ((NumberData)b)));
-                DefineBinaryOperator(new BuiltInBinaryOperator(">=", BoolType.Instance, type, type, (a, b) => ((NumberData)a) >= ((NumberData)b)));
+					DefineBinaryOperator(new BuiltInBinaryOperator("==", BoolType.Instance, type, secondType, (a, b) => (NumberData)a == (NumberData)b));
+					DefineBinaryOperator(new BuiltInBinaryOperator("!=", BoolType.Instance, type, secondType, (a, b) => (NumberData)a != (NumberData)b));
+					DefineBinaryOperator(new BuiltInBinaryOperator("<", BoolType.Instance, type, secondType, (a, b) => (NumberData)a < (NumberData)b));
+					DefineBinaryOperator(new BuiltInBinaryOperator("<=", BoolType.Instance, type, secondType, (a, b) => (NumberData)a <= (NumberData)b));
+					DefineBinaryOperator(new BuiltInBinaryOperator(">", BoolType.Instance, type, secondType, (a, b) => (NumberData)a > (NumberData)b));
+					DefineBinaryOperator(new BuiltInBinaryOperator(">=", BoolType.Instance, type, secondType, (a, b) => (NumberData)a >= (NumberData)b));
+				}
             }
         }
     }

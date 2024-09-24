@@ -3,8 +3,6 @@ using HapetFrontend.Ast.Declarations;
 using HapetFrontend.Ast.Expressions;
 using HapetFrontend.Types;
 using System.Diagnostics;
-using System.Linq;
-using static System.Net.Mime.MediaTypeNames;
 
 namespace HapetFrontend.Parsing
 {
@@ -209,12 +207,20 @@ namespace HapetFrontend.Parsing
 		{
 			var expr = ParseAtomicExpression(allowCommaForTuple, allowFunctionDeclaration, errorMessage);
 
-			while (true)
+			bool breakLoop = false;
+			while (!breakLoop)
 			{
 				switch (PeekToken().Type)
 				{
 					case TokenType.OpenParen:
 						{
+							// if it is func decl, not call
+							if (allowFunctionDeclaration)
+							{
+								breakLoop = true;
+								break;
+							}
+
 							var args = ParseArgumentList(out var end);
 							if (expr is not AstIdExpr idExpr)
 							{
@@ -298,6 +304,7 @@ namespace HapetFrontend.Parsing
 						return expr;
 				}
 			}
+			return expr;
 		}
 
 		private AstStatement ParseAtomicExpression(bool allowCommaForTuple, bool allowFunctionDeclaration, ErrorMessageResolver errorMessage)

@@ -3,6 +3,7 @@ using HapetFrontend.Ast.Expressions;
 using HapetFrontend.Ast.Statements;
 using HapetFrontend.Entities;
 using HapetFrontend.Parsing;
+using HapetFrontend.Scoping;
 using HapetFrontend.Types;
 using LLVMSharp;
 using LLVMSharp.Interop;
@@ -69,7 +70,7 @@ namespace HapetBackend.Llvm
 				LLVMValueRef lfunc = _module.AddFunction($"{classDecl.Name.Name}::{funcDecl.Name.Name}", funcType);
 				lfunc.Linkage = LLVMLinkage.LLVMInternalLinkage; // TODO: external shite controlled here
 																 // caching the function
-				_valueMap[funcDecl.Type.OutType as HapetFrontend.Types.FunctionType] = lfunc;
+				_valueMap[funcDecl.GetSymbol] = lfunc;
 
 				// setting parameter names
 				for (int i = 0; i < funcDecl.Parameters.Count; ++i)
@@ -78,16 +79,30 @@ namespace HapetBackend.Llvm
 					lfunc.Params[i].Name = p.Name.Name;
 				}
 
+				// params body
+				var paramsBody = lfunc.AppendBasicBlock("params");
+				_builder.PositionAtEnd(paramsBody);
+				// generating params allocs
+				for (int i = 0; i < funcDecl.Parameters.Count; ++i)
+				{
+					var p = funcDecl.Parameters[i];
+					var addrAlloca = _builder.BuildAlloca(HapetTypeToLLVMType(p.Type.OutType), $"{p.Name.Name}.addr");
+					_builder.BuildStore(lfunc.GetParam((uint)i), addrAlloca);
+					// var parArg = _builder.BuildLoad2(HapetTypeToLLVMType(p.Type.OutType), addrAlloca, $"{p.Name.Name}1");
+					_valueMap[p.GetSymbol] = addrAlloca;
+				}
+
 				// check if there is no implementation
 				if (funcDecl.Body == null)
 					continue;
 
 				// function body
 				var bbBody = lfunc.AppendBasicBlock("entry");
+				_builder.BuildBr(bbBody);
 				_builder.PositionAtEnd(bbBody);
 
 				// genereting inside stuff of the function
-				var retOfBlock = GenerateBlockCode(funcDecl.Body, bbBody);
+				var retOfBlock = GenerateBlockCode(funcDecl.Body);
 
 				// return logics
 				if (retOfBlock != null)
@@ -112,7 +127,7 @@ namespace HapetBackend.Llvm
 			}
 		}
 
-		private LLVMValueRef? GenerateBlockCode(AstBlockExpr blockExpr, LLVMBasicBlockRef basicBlock)
+		private LLVMValueRef? GenerateBlockCode(AstBlockExpr blockExpr)
 		{
 			// TODO: put here return of the block if it exists
 			LLVMValueRef? result = null;
@@ -120,28 +135,28 @@ namespace HapetBackend.Llvm
 			{
 				if (stmt is AstVarDecl varDecl)
 				{
-					GenerateVarDeclCode(varDecl, basicBlock);
+					GenerateVarDeclCode(varDecl);
 				}
 				else if (stmt is AstReturnStmt returnStmt)
 				{
 					// TODO: also check if return expr is empty
-					result = GenerateExpressionCode(returnStmt.ReturnExpression, basicBlock, true);
+					result = GenerateExpressionCode(returnStmt.ReturnExpression, true);
 					break; // there is nothing to do in the block after return
 				}
 			}
 			return result;
 		}
 
-		private void GenerateVarDeclCode(AstVarDecl varDecl, LLVMBasicBlockRef basicBlock)
+		private void GenerateVarDeclCode(AstVarDecl varDecl)
 		{
 			// alloca new var in basicBlock
-			var varPtr = CreateLocalVariable(varDecl.Type.OutType, basicBlock, varDecl.Name.Name);
-			_valueMap[varDecl.Type.OutType] = varPtr;
+			var varPtr = CreateLocalVariable(varDecl.Type.OutType, varDecl.Name.Name);
+			_valueMap[varDecl.GetSymbol] = varPtr;
 
 			// check for initializer and try to evaluate expr
 			if (varDecl.Initializer != null)
 			{
-				var x = GenerateExpressionCode(varDecl.Initializer, basicBlock);
+				var x = GenerateExpressionCode(varDecl.Initializer);
 				_builder.BuildStore(x, varPtr);
 			}
 		}

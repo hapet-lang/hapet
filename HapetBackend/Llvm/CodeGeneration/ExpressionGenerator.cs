@@ -9,7 +9,7 @@ namespace HapetBackend.Llvm
 {
 	public partial class LlvmCodeGenerator
 	{
-		private LLVMValueRef GenerateExpressionCode(AstExpression expr, LLVMBasicBlockRef basicBlock, bool deref = false)
+		private LLVMValueRef GenerateExpressionCode(AstExpression expr, bool deref = false)
 		{
 			// if the value already evaluated (usually literals or consts)
 			if (expr.OutValue != null)
@@ -21,9 +21,11 @@ namespace HapetBackend.Llvm
 
 			switch (expr)
 			{
-				case AstBinaryExpr binExpr: return GenerateBinaryExprCode(binExpr, basicBlock);
+				case AstBinaryExpr binExpr: return GenerateBinaryExprCode(binExpr);
 				case AstIdExpr idExpr: return GenerateIdExpr(idExpr, deref);
-				case AstNewExpr newExpr: return GenerateNewExpr(newExpr, basicBlock);
+				case AstNewExpr newExpr: return GenerateNewExpr(newExpr);
+				case AstCallExpr callExpr: return GenerateCallExpr(callExpr);
+				case AstArgumentExpr argExpr: return GenerateArgumentExpr(argExpr);
 				// TODO: check other expressions
 
 				default:
@@ -34,24 +36,38 @@ namespace HapetBackend.Llvm
 			}
 		}
 
-		private LLVMValueRef GenerateBinaryExprCode(AstBinaryExpr binExpr, LLVMBasicBlockRef basicBlock)
+		private LLVMValueRef GenerateBinaryExprCode(AstBinaryExpr binExpr)
 		{
 			if (binExpr.ActualOperator is BuiltInBinaryOperator)
 			{
 				if (binExpr.Operator == "&&")
 				{
-					return GenerateAndExpr(binExpr, basicBlock);
+					return GenerateAndExpr(binExpr);
 				}
 				else if (binExpr.Operator == "||")
 				{
-					return GenerateOrExpr(binExpr, basicBlock);
+					return GenerateOrExpr(binExpr);
 				}
 				else
 				{
 					// TODO: check that left and right are really expressions and report error if not
-					var left = GenerateExpressionCode(binExpr.Left as AstExpression, basicBlock);
-					var right = GenerateExpressionCode(binExpr.Right as AstExpression, basicBlock);
-					var bo = builtInOperators[(binExpr.Operator, (binExpr.Left as AstExpression).OutType)];
+					var leftExpr = (binExpr.Left as AstExpression);
+					var left = GenerateExpressionCode(leftExpr);
+					if (leftExpr.OutType != binExpr.OutType)
+					{
+						// cast if they are not the same haha
+						left = CreateCast(left, leftExpr.OutType, binExpr.OutType);
+					}
+
+					var rightExpr = (binExpr.Right as AstExpression);
+					var right = GenerateExpressionCode(rightExpr);
+					if (rightExpr.OutType != binExpr.OutType)
+					{
+						// cast if they are not the same haha
+						right = CreateCast(right, rightExpr.OutType, binExpr.OutType);
+					}
+
+					var bo = builtInOperators[(binExpr.Operator, binExpr.OutType)];
 					var val = bo(_builder, left, right, "binOp");
 					return val;
 				} 
@@ -61,10 +77,10 @@ namespace HapetBackend.Llvm
 			return new LLVMValueRef();
 		}
 
-		private LLVMValueRef GenerateAndExpr(AstBinaryExpr bin, LLVMBasicBlockRef basicBlock)
+		private LLVMValueRef GenerateAndExpr(AstBinaryExpr bin)
 		{
 			// TODO: ... check it pls, idk what is going on here
-			var result = CreateLocalVariable(BoolType.Instance, basicBlock);
+			var result = CreateLocalVariable(BoolType.Instance);
 
 			//var bbRight = basicBlock.InsertBasicBlock("_and_right");
 			//var bbEnd = basicBlock.InsertBasicBlock("_and_end");
@@ -84,10 +100,10 @@ namespace HapetBackend.Llvm
 			return result;
 		}
 
-		private LLVMValueRef GenerateOrExpr(AstBinaryExpr bin, LLVMBasicBlockRef basicBlock)
+		private LLVMValueRef GenerateOrExpr(AstBinaryExpr bin)
 		{
 			// TODO: ... check it pls, idk what is going on here
-			var result = CreateLocalVariable(BoolType.Instance, basicBlock);
+			var result = CreateLocalVariable(BoolType.Instance);
 
 			//var bbRight = LLVM.AppendBasicBlock(currentLLVMFunction, "_or_right");
 			//var bbEnd = LLVM.AppendBasicBlock(currentLLVMFunction, "_or_end");
@@ -110,30 +126,19 @@ namespace HapetBackend.Llvm
 		private LLVMValueRef GenerateIdExpr(AstIdExpr expr, bool deref = false)
 		{
 			LLVMValueRef v = default;
-			if (expr.Symbol is DeclSymbol declSymbol)
-			{
-				v = _valueMap[declSymbol.Decl.Type.OutType];
+			v = _valueMap[expr.FindSymbol];
+			// deref it because in valueMap it is ptr
+			// if (deref)
 
-				// deref it because in valueMap it is ptr
-				// if (deref)
-					v = _builder.BuildLoad2(_typeMap[declSymbol.Decl.Type.OutType], v, "");
+			bool isClass = (expr.FindSymbol as DeclSymbol).Decl.Type.OutType is ClassType;
 
-				return v;
-			}
-			else if (expr.Symbol is ModuleSymbol moduleSymbol)
-			{
-				// TODO: do i need it or just add it to the scope in postprocess?
-				// v = GenerateExpression(moduleSymbol, false);
-			}
-			else
-			{
-				// TODO: error here
-			}
+			if (!isClass)
+				v = _builder.BuildLoad2(_typeMap[(expr.FindSymbol as DeclSymbol).Decl.Type.OutType], v, ""); // TODO: error if it is not DeclSymbol
 
 			return v;
 		}
 
-		private unsafe LLVMValueRef GenerateNewExpr(AstNewExpr expr, LLVMBasicBlockRef basicBlock)
+		private unsafe LLVMValueRef GenerateNewExpr(AstNewExpr expr)
 		{
 			LLVMValueRef v = default;
 			if (expr.OutType is ClassType classType)
@@ -147,7 +152,7 @@ namespace HapetBackend.Llvm
 				LLVMValueRef undef = LLVM.GetUndef(tp);
 				v = declarations.Aggregate(undef, (und, field) =>
 				{
-					return _builder.BuildInsertValue(und, GenerateExpressionCode(field.Initializer, basicBlock), 0); // TODO: offsets here
+					return _builder.BuildInsertValue(und, GenerateExpressionCode(field.Initializer), 0); // TODO: offsets here
 				});
 
 				return v;
@@ -158,6 +163,32 @@ namespace HapetBackend.Llvm
 			}
 
 			return v;
+		}
+
+		private unsafe LLVMValueRef GenerateCallExpr(AstCallExpr expr)
+		{
+			var hptType = expr.FuncName.OutType as HapetFrontend.Types.FunctionType;
+			var hapetFunc = _valueMap[hptType.Declaration.GetSymbol];
+			LLVMTypeRef funcType = _typeMap[expr.FuncName.OutType];
+
+			// args shite
+			List<LLVMValueRef> args = new List<LLVMValueRef>();
+			if (!expr.StaticCall)
+			{
+				args.Add(GenerateExpressionCode(expr.TypeOrObjectName));
+			}
+			foreach (var a in expr.Arguments)
+			{
+				args.Add(GenerateExpressionCode(a, true));
+			}
+
+			return _builder.BuildCall2(funcType, hapetFunc, args.ToArray(), "funcReturnValue");
+		}
+
+		private unsafe LLVMValueRef GenerateArgumentExpr(AstArgumentExpr expr)
+		{
+			// TODO: handle arg name and index
+			return GenerateExpressionCode(expr.Expr);
 		}
 	}
 }

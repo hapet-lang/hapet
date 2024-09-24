@@ -11,7 +11,7 @@ namespace HapetFrontend.Parsing
 		{
 			var docString = GetCurrentDocString();
 			if (expr == null)
-				expr = ParseExpression(allowCommaTuple);
+				expr = ParseExpression(allowCommaTuple, true);
 
 			AstStatement initializer = null;
 			TokenLocation end = expr.Ending;

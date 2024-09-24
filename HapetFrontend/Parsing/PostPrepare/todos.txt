@@ -2,3 +2,4 @@
 - Manually create ctor if there is no one
 - Manually create dtor if there is no one
 - Check for return statements in all funcs. That they exist and are with the correct ret type
+- Check for var decls with func calls. If func ret type is not the same as var decl type. Or even func ret type is void

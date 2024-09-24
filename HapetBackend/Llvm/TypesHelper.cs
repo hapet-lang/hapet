@@ -1,4 +1,6 @@
-﻿using HapetFrontend.Types;
+﻿using HapetFrontend.Ast;
+using HapetFrontend.Scoping;
+using HapetFrontend.Types;
 using LLVMSharp.Interop;
 using System;
 using System.Diagnostics;
@@ -8,7 +10,7 @@ namespace HapetBackend.Llvm
 	public partial class LlvmCodeGenerator
 	{
 		private Dictionary<HapetType, LLVMTypeRef> _typeMap = new Dictionary<HapetType, LLVMTypeRef>();
-		private Dictionary<HapetType, LLVMValueRef> _valueMap = new Dictionary<HapetType, LLVMValueRef>();
+		private Dictionary<ISymbol, LLVMValueRef> _valueMap = new Dictionary<ISymbol, LLVMValueRef>();
 
 		// rtti stuff
 		private HapetType sTypeInfoAttribute;
@@ -341,21 +343,13 @@ namespace HapetBackend.Llvm
 			return new LLVMValueRef();
 		}
 
-		private LLVMValueRef CreateLocalVariable(HapetType exprType, LLVMBasicBlockRef block, string name = "temp")
+		private LLVMValueRef CreateLocalVariable(HapetType exprType, string name = "temp")
 		{
-			return CreateLocalVariable(HapetTypeToLLVMType(exprType), block, exprType.GetAlignment(), name);
+			return CreateLocalVariable(HapetTypeToLLVMType(exprType), exprType.GetAlignment(), name);
 		}
 
-		private LLVMValueRef CreateLocalVariable(LLVMTypeRef type, LLVMBasicBlockRef block, int alignment, string name = "temp")
+		private LLVMValueRef CreateLocalVariable(LLVMTypeRef type, int alignment, string name = "temp")
 		{
-			//var bb = block;
-			//var brInst = bb.LastInstruction;
-			//// TODO: do i need this shity check?
-			//if (brInst.Handle.ToInt64() == 0)
-			//	_builder.PositionAtEnd(bb);
-			//else
-			//	_builder.PositionBefore(brInst);
-
 			var result = _builder.BuildAlloca(type, name);
 			var llvmAlignment = _targetData.PreferredAlignmentOfType(type);
 			if (alignment >= 0)
@@ -363,9 +357,30 @@ namespace HapetBackend.Llvm
 				Debug.Assert(alignment >= llvmAlignment && alignment % llvmAlignment == 0);
 				result.SetAlignment((uint)alignment);
 			}
-			
 
 			return result;
+		}
+
+		private LLVMValueRef CreateCast(LLVMValueRef val, HapetType inType, HapetType outType)
+		{
+			if (inType is IntType intType && intType.Signed)
+			{
+				if (outType is FloatType floatType)
+				{
+					return _builder.BuildSIToFP(val, HapetTypeToLLVMType(floatType));
+				}
+				// TODO: ...
+			}
+			else if ((inType is IntType intType2 && !intType2.Signed) || inType is CharType)
+			{
+				if (outType is FloatType floatType)
+				{
+					return _builder.BuildUIToFP(val, HapetTypeToLLVMType(floatType));
+				}
+				// TODO: ...
+			}
+			// TODO: ...
+			return val;
 		}
 	}
 }

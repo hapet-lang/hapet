@@ -198,21 +198,20 @@ namespace HapetFrontend.Types
 
 		public static bool operator ==(NumberData a, NumberData b)
 		{
-			if (a.Type != b.Type) return false;
-			if (a.Type == NumberType.Int) return a.IntValue == b.IntValue;
-			return a.DoubleValue == b.DoubleValue;
+			if (a.Type == NumberType.Int && b.Type == NumberType.Int) return a.IntValue == b.IntValue;
+			return a.ToDouble() == b.ToDouble();
 		}
 		public static bool operator !=(NumberData a, NumberData b) => !(a == b);
-		public static bool operator >(NumberData a, NumberData b) => a.Type == b.Type && (a.Type == NumberType.Int ? a.IntValue > b.IntValue : a.DoubleValue > b.DoubleValue);
-		public static bool operator >=(NumberData a, NumberData b) => a.Type == b.Type && (a.Type == NumberType.Int ? a.IntValue >= b.IntValue : a.DoubleValue >= b.DoubleValue);
-		public static bool operator <(NumberData a, NumberData b) => a.Type == b.Type && (a.Type == NumberType.Int ? a.IntValue < b.IntValue : a.DoubleValue < b.DoubleValue);
-		public static bool operator <=(NumberData a, NumberData b) => a.Type == b.Type && (a.Type == NumberType.Int ? a.IntValue <= b.IntValue : a.DoubleValue <= b.DoubleValue);
+		public static bool operator >(NumberData a, NumberData b) => (a.Type == NumberType.Int && b.Type == NumberType.Int) ? a.IntValue > b.IntValue : a.ToDouble() > b.ToDouble();
+		public static bool operator >=(NumberData a, NumberData b) => (a.Type == NumberType.Int && b.Type == NumberType.Int) ? a.IntValue >= b.IntValue : a.ToDouble() >= b.ToDouble();
+		public static bool operator <(NumberData a, NumberData b) => (a.Type == NumberType.Int && b.Type == NumberType.Int) ? a.IntValue < b.IntValue : a.ToDouble() < b.ToDouble();
+		public static bool operator <=(NumberData a, NumberData b) => (a.Type == NumberType.Int && b.Type == NumberType.Int) ? a.IntValue <= b.IntValue : a.ToDouble() <= b.ToDouble();
 
-		public static NumberData operator +(NumberData a, NumberData b) => a.Type == NumberType.Int ? FromInt(a.IntValue + b.IntValue) : FromDouble(a.DoubleValue + b.DoubleValue);
-		public static NumberData operator -(NumberData a, NumberData b) => a.Type == NumberType.Int ? FromInt(a.IntValue - b.IntValue) : FromDouble(a.DoubleValue - b.DoubleValue);
-		public static NumberData operator *(NumberData a, NumberData b) => a.Type == NumberType.Int ? FromInt(a.IntValue * b.IntValue) : FromDouble(a.DoubleValue * b.DoubleValue);
-		public static NumberData operator /(NumberData a, NumberData b) => a.Type == NumberType.Int ? FromInt(a.IntValue / b.IntValue) : FromDouble(a.DoubleValue / b.DoubleValue);
-		public static NumberData operator %(NumberData a, NumberData b) => a.Type == NumberType.Int ? FromInt(a.IntValue % b.IntValue) : FromDouble(a.DoubleValue % b.DoubleValue);
+		public static NumberData operator +(NumberData a, NumberData b) => (a.Type == NumberType.Int && b.Type == NumberType.Int) ? FromInt(a.IntValue + b.IntValue) : FromDouble(a.ToDouble() + b.ToDouble());
+		public static NumberData operator -(NumberData a, NumberData b) => (a.Type == NumberType.Int && b.Type == NumberType.Int) ? FromInt(a.IntValue - b.IntValue) : FromDouble(a.ToDouble() - b.ToDouble());
+		public static NumberData operator *(NumberData a, NumberData b) => (a.Type == NumberType.Int && b.Type == NumberType.Int) ? FromInt(a.IntValue * b.IntValue) : FromDouble(a.ToDouble() * b.ToDouble());
+		public static NumberData operator /(NumberData a, NumberData b) => (a.Type == NumberType.Int && b.Type == NumberType.Int) ? FromInt(a.IntValue / b.IntValue) : FromDouble(a.ToDouble() / b.ToDouble());
+		public static NumberData operator %(NumberData a, NumberData b) => (a.Type == NumberType.Int && b.Type == NumberType.Int) ? FromInt(a.IntValue % b.IntValue) : FromDouble(a.ToDouble() % b.ToDouble());
 
 	}
 }

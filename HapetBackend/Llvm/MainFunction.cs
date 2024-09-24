@@ -103,8 +103,7 @@ namespace HapetBackend.Llvm
 			_builder.PositionAtEnd(main);
 
 			{ // call main function
-				var hptType = _compiler.MainFunction.Type.OutType as HapetFrontend.Types.FunctionType;
-				var hapetMain = _valueMap[hptType];
+				var hapetMain = _valueMap[_compiler.MainFunction.GetSymbol];
 				LLVMTypeRef funcType = _typeMap[_compiler.MainFunction.Type.OutType];
 				var exitCode = _builder.BuildCall2(funcType, hapetMain, Array.Empty<LLVMValueRef>(), "exitCode");
 				_builder.BuildRet(exitCode);

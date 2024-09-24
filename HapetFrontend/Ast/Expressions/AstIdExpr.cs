@@ -9,7 +9,7 @@ namespace HapetFrontend.Ast.Expressions
 		/// <summary>
 		/// Getting symbol of itself
 		/// </summary>
-		public ISymbol Symbol 
+		public ISymbol FindSymbol 
 		{
 			get
 			{

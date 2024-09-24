@@ -1,6 +1,7 @@
 ﻿using HapetFrontend.Ast;
 using HapetFrontend.Ast.Declarations;
 using HapetFrontend.Ast.Expressions;
+using HapetFrontend.Ast.Statements;
 using HapetFrontend.Scoping;
 using HapetFrontend.Types;
 
@@ -65,6 +66,15 @@ namespace HapetFrontend.Parsing.PostPrepare
 					if (varDecl.Initializer != null)
 						PostPrepareExprInference(varDecl.Initializer);
 				}
+				else if (stmt is AstReturnStmt returnStmt)
+				{
+					if (returnStmt.ReturnExpression != null)
+						PostPrepareExprInference(returnStmt.ReturnExpression);
+				}
+				else if (stmt is AstExpression expr)
+				{
+					PostPrepareExprInference(expr);
+				}
 				// todo: some check like if it is another block and etc.
 			}
 		}
@@ -88,6 +98,9 @@ namespace HapetFrontend.Parsing.PostPrepare
 				case AstIdExpr idExpr:
 					PostPrepareIdentifierInference(idExpr);
 					return;
+				case AstCallExpr callExpr:
+					PostPrepareCallExprInference(callExpr);
+					break;
 				// TODO: check other expressions
 
 				default:
@@ -165,6 +178,43 @@ namespace HapetFrontend.Parsing.PostPrepare
 			{
 				// TODO: really give them a error? or mb there is smth harder?
 				_compiler.ErrorHandler.ReportError(_currentSourceFile.Text, idExpr, "The type could not be infered...");
+			}
+		}
+
+		private void PostPrepareCallExprInference(AstCallExpr callExpr)
+		{
+			PostPrepareIdentifierInference(callExpr.FuncName);
+
+			var sym = callExpr.Scope.GetSymbol(callExpr.TypeOrObjectName.Name);
+			if (sym is DeclSymbol typed && typed.Decl is AstVarDecl)
+			{
+				// it is probably non static fun
+				callExpr.StaticCall = false;
+			}
+			else if (sym is DeclSymbol typed2 && typed2.Decl is AstClassDecl)
+			{
+				// it is probably static func...
+				callExpr.StaticCall = true;
+			}
+			else
+			{
+				// TODO: error here
+			}
+
+			PostPrepareIdentifierInference(callExpr.TypeOrObjectName);
+			foreach (var a in callExpr.Arguments)
+			{
+				PostPrepareExprInference(a);
+			}
+
+			if (callExpr.FuncName.OutType is FunctionType funcType)
+			{
+				// call expr type is the same as func return type
+				callExpr.OutType = funcType.Declaration.Returns.OutType;
+			}
+			else
+			{
+				// TODO: error here
 			}
 		}
 	}

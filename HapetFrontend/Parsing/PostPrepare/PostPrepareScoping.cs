@@ -110,6 +110,10 @@ namespace HapetFrontend.Parsing.PostPrepare
 						PostPrepareExprScoping(returnStmt.ReturnExpression);
 					}
 				}
+				else if (stmt is AstExpression expr)
+				{
+					PostPrepareExprScoping(expr);
+				}
 				// todo: some check like if it is another block and etc.
 			}
 
@@ -133,7 +137,10 @@ namespace HapetFrontend.Parsing.PostPrepare
 					PostPrepareArgumentExprScoping(argumentExpr);
 					break;
 				case AstIdExpr _:
-					return;
+					break;
+				case AstCallExpr callExpr:
+					PostPrepareCallExprScoping(callExpr);
+					break;
 				// TODO: check other expressions
 
 				default:
@@ -178,6 +185,19 @@ namespace HapetFrontend.Parsing.PostPrepare
 			{
 				argumentExpr.Name.Scope = argumentExpr.Scope;
 				PostPrepareExprScoping(argumentExpr.Name);
+			}
+		}
+
+		private void PostPrepareCallExprScoping(AstCallExpr callExpr)
+		{
+			callExpr.TypeOrObjectName.Scope = callExpr.Scope;
+			PostPrepareExprScoping(callExpr.TypeOrObjectName);
+			callExpr.FuncName.Scope = callExpr.Scope;
+			PostPrepareExprScoping(callExpr.FuncName);
+			foreach (var a in callExpr.Arguments)
+			{
+				a.Scope = callExpr.Scope;
+				PostPrepareExprScoping(a);
 			}
 		}
 

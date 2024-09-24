@@ -14,6 +14,17 @@ namespace HapetFrontend.Ast
 		// like public/static/virtual
 		public List<TokenType> SpecialKeys { get; private set; } = new List<TokenType>();
 
+		/// <summary>
+		/// Getting symbol of itself
+		/// </summary>
+		public ISymbol GetSymbol
+		{
+			get
+			{
+				return Scope.GetSymbol(Name.Name);
+			}
+		}
+
 		public AstDeclaration(AstIdExpr name, string doc, ILocation Location = null) : base(Location)
 		{
 			this.Name = name;
