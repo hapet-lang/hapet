@@ -1,6 +1,7 @@
 ﻿using HapetFrontend.Ast;
 using HapetFrontend.Ast.Declarations;
 using HapetFrontend.Ast.Expressions;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace HapetFrontend.Parsing
 {
@@ -218,6 +219,12 @@ namespace HapetFrontend.Parsing
 				{
 					var expr = list[0].Type;
 					expr.Location = new Location(beg, end);
+					if (CheckToken(TokenType.Identifier))
+					{
+						var sub = ParseExpression(allowCommaForTuple, false);
+						return new AstCastExpr(expr, sub, new Location(beg, sub.Ending));
+					}
+					ReportError(expr.Location, $"Identifier expected after '({expr})'"); // TODO: is it ok to print expr like that?
 					return expr;
 				}
 			}

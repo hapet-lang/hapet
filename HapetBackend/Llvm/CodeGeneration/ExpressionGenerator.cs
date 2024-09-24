@@ -26,6 +26,7 @@ namespace HapetBackend.Llvm
 				case AstNewExpr newExpr: return GenerateNewExpr(newExpr);
 				case AstCallExpr callExpr: return GenerateCallExpr(callExpr);
 				case AstArgumentExpr argExpr: return GenerateArgumentExpr(argExpr);
+				case AstCastExpr castExpr: return GenerateCastExpr(castExpr);
 				// TODO: check other expressions
 
 				default:
@@ -179,7 +180,7 @@ namespace HapetBackend.Llvm
 			}
 			foreach (var a in expr.Arguments)
 			{
-				args.Add(GenerateExpressionCode(a, true));
+				args.Add(GenerateExpressionCode(a));
 			}
 
 			return _builder.BuildCall2(funcType, hapetFunc, args.ToArray(), "funcReturnValue");
@@ -189,6 +190,12 @@ namespace HapetBackend.Llvm
 		{
 			// TODO: handle arg name and index
 			return GenerateExpressionCode(expr.Expr);
+		}
+
+		private unsafe LLVMValueRef GenerateCastExpr(AstCastExpr expr)
+		{
+			var sub = GenerateExpressionCode(expr.SubExpression as AstExpression);
+			return CreateCast(sub, (expr.SubExpression as AstExpression).OutType, expr.OutType);
 		}
 	}
 }

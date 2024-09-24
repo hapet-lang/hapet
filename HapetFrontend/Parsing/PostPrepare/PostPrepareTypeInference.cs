@@ -101,6 +101,9 @@ namespace HapetFrontend.Parsing.PostPrepare
 				case AstCallExpr callExpr:
 					PostPrepareCallExprInference(callExpr);
 					break;
+				case AstCastExpr castExpr:
+					PostPrepareCastExprInference(castExpr);
+					break;
 				// TODO: check other expressions
 
 				default:
@@ -216,6 +219,13 @@ namespace HapetFrontend.Parsing.PostPrepare
 			{
 				// TODO: error here
 			}
+		}
+
+		private void PostPrepareCastExprInference(AstCastExpr castExpr)
+		{
+			PostPrepareExprInference(castExpr.SubExpression as AstExpression);
+			PostPrepareExprInference(castExpr.TypeExpr as AstExpression);
+			castExpr.OutType = (castExpr.TypeExpr as AstExpression).OutType;
 		}
 	}
 }

@@ -13,6 +13,6 @@ public static class Program
 		int a = 6 + 5;
 		Math math = new Math();
 		float b = a + math.GetPi(7);
-		return a;
+		return (int)b;
 	}
 }

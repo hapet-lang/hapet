@@ -379,6 +379,22 @@ namespace HapetBackend.Llvm
 				}
 				// TODO: ...
 			}
+			else if (inType is FloatType)
+			{
+				if (outType is IntType intType1 && intType1.Signed)
+				{
+					return _builder.BuildFPToSI(val, HapetTypeToLLVMType(intType1));
+				}
+				else if (outType is IntType intType3 && !intType3.Signed)
+				{
+					return _builder.BuildFPToSI(val, HapetTypeToLLVMType(intType3));
+				}
+				else if (outType is IntType charType)
+				{
+					return _builder.BuildFPToSI(val, HapetTypeToLLVMType(charType));
+				}
+				// TODO: ...
+			}
 			// TODO: ...
 			return val;
 		}
