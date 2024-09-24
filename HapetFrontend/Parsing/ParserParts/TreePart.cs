@@ -3,6 +3,8 @@ using HapetFrontend.Ast.Declarations;
 using HapetFrontend.Ast.Expressions;
 using HapetFrontend.Types;
 using System.Diagnostics;
+using System.Linq;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace HapetFrontend.Parsing
 {
@@ -211,42 +213,35 @@ namespace HapetFrontend.Parsing
 			{
 				switch (PeekToken().Type)
 				{
-					// TODO: uncomment and check
-					//case TokenType.OpenParen:
-					//	{
-					//		NextToken();
-					//		SkipNewlines();
-					//		var args = new List<AstArgExpr>();
-					//		while (true)
-					//		{
-					//			var next = PeekToken();
-					//			if (next.Type == TokenType.CloseParen || next.Type == TokenType.EOF)
-					//				break;
-					//			args.Add(ParseArgumentExpression());
+					case TokenType.OpenParen:
+						{
+							var args = ParseArgumentList(out var end);
+							if (expr is not AstIdExpr idExpr)
+							{
+								ReportError(expr.Location, $"Indentifier expected");
+								return expr;
+							}
 
-					//			next = PeekToken();
-					//			if (next.Type == TokenType.NewLine)
-					//			{
-					//				NextToken();
-					//			}
-					//			else if (next.Type == TokenType.Comma)
-					//			{
-					//				NextToken();
-					//				SkipNewlines();
-					//			}
-					//			else if (next.Type == TokenType.CloseParen)
-					//				break;
-					//			else
-					//			{
-					//				NextToken();
-					//				ReportError(next.Location, $"Failed to parse function call, expected ',' or ')'");
-					//				//RecoverExpression();
-					//			}
-					//		}
-					//		var end = Consume(TokenType.CloseParen, ErrMsg(")", "at end of function call")).Location;
-					//		expr = new AstCallExpr(expr, args, new Location(expr.Beginning, end));
-					//	}
-					//	break;
+							AstIdExpr typeExpr;
+							AstIdExpr funcExpr;
+							if (idExpr.Name.Contains('.'))
+							{
+								// if contains type of instance name
+								string[] ids = idExpr.Name.Split('.');
+								string tp = string.Join('.', ids.Take(ids.Length - 1)); // take all except the last one
+								string fc = ids[ids.Length - 1]; // take the last one
+								typeExpr = new AstIdExpr(tp, idExpr);
+								funcExpr = new AstIdExpr(fc, idExpr);
+							}
+							else
+							{
+								typeExpr = new AstIdExpr("this", idExpr);
+								funcExpr = new AstIdExpr(idExpr.Name, idExpr);
+							}
+
+							expr = new AstCallExpr(typeExpr, funcExpr, args, new Location(expr.Beginning, end));
+						}
+						break;
 
 					// TODO: uncomment and check
 					//case TokenType.OpenBracket:
@@ -351,7 +346,7 @@ namespace HapetFrontend.Parsing
 							var name = ParseIdentifierExpression();
 							return new UnknownDecl(id, name, new Location(token.Location));
 						}
-						
+
 						return id;
 					}
 
