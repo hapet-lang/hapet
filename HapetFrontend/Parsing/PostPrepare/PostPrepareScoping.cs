@@ -21,6 +21,12 @@ namespace HapetFrontend.Parsing.PostPrepare
 						file.FileScope.DefineDeclSymbol(classDecl.Name.Name, classDecl);
 						PostPrepareClassScoping(classDecl);
 					}
+					else if (stmt is AstFuncDecl funcDecl)
+					{
+						// usually extern funcs
+						file.FileScope.DefineDeclSymbol(funcDecl.Name.Name, funcDecl);
+						PostPrepareFunctionScoping(funcDecl);
+					}
 				}
 			}
 		}
@@ -73,6 +79,30 @@ namespace HapetFrontend.Parsing.PostPrepare
 				// return type is the same
 				funcDecl.Returns.Scope = funcDecl.Scope;
 				funcDecl.Returns.Parent = funcDecl;
+				PostPrepareExprScoping(funcDecl.Returns);
+			}
+			else
+			{
+				// defining parameters in the func scope
+				foreach (var p in funcDecl.Parameters)
+				{
+					// settings the block scope to the parameters (so they are in the scope of the block)
+					p.Scope = funcDecl.Scope;
+					if (p.Name != null)
+						p.Name.Scope = funcDecl.Scope;
+					p.Type.Scope = funcDecl.Scope;
+					PostPrepareExprScoping(p.Type);
+					if (p.DefaultValue != null)
+					{
+						// preparing scopes of default values if they exist
+						p.DefaultValue.Scope = funcDecl.Scope;
+						PostPrepareExprScoping(p.DefaultValue);
+					}
+				}
+				// return type is the same
+				funcDecl.Returns.Scope = funcDecl.Scope;
+				funcDecl.Returns.Parent = funcDecl;
+				PostPrepareExprScoping(funcDecl.Returns);
 			}
 		}
 

@@ -128,5 +128,6 @@ namespace HapetFrontend.Parsing
 		KwVirtual,
 		KwOverride,
 		KwPartial,
+		KwExtern,
 	}
 }

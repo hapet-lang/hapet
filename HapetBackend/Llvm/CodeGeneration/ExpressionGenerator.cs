@@ -81,6 +81,7 @@ namespace HapetBackend.Llvm
 		private LLVMValueRef GenerateAndExpr(AstBinaryExpr bin)
 		{
 			// TODO: ... check it pls, idk what is going on here
+			// and use GenerateVarDeclCode
 			var result = CreateLocalVariable(BoolType.Instance);
 
 			//var bbRight = basicBlock.InsertBasicBlock("_and_right");
@@ -104,6 +105,7 @@ namespace HapetBackend.Llvm
 		private LLVMValueRef GenerateOrExpr(AstBinaryExpr bin)
 		{
 			// TODO: ... check it pls, idk what is going on here
+			// and use GenerateVarDeclCode
 			var result = CreateLocalVariable(BoolType.Instance);
 
 			//var bbRight = LLVM.AppendBasicBlock(currentLLVMFunction, "_or_right");
@@ -128,14 +130,6 @@ namespace HapetBackend.Llvm
 		{
 			LLVMValueRef v = default;
 			v = _valueMap[expr.FindSymbol];
-			// deref it because in valueMap it is ptr
-			// if (deref)
-
-			bool isClass = (expr.FindSymbol as DeclSymbol).Decl.Type.OutType is ClassType;
-
-			if (!isClass)
-				v = _builder.BuildLoad2(_typeMap[(expr.FindSymbol as DeclSymbol).Decl.Type.OutType], v, ""); // TODO: error if it is not DeclSymbol
-
 			return v;
 		}
 
@@ -149,12 +143,17 @@ namespace HapetBackend.Llvm
 
 				// all declarations except funcs
 				// TODO: there could be not only vardecls?
-				List<AstVarDecl> declarations = classType.Declaration.Declarations.Where(x => x is not AstFuncDecl).Select(x => x as AstVarDecl).ToList();
-				LLVMValueRef undef = LLVM.GetUndef(tp);
-				v = declarations.Aggregate(undef, (und, field) =>
-				{
-					return _builder.BuildInsertValue(und, GenerateExpressionCode(field.Initializer), 0); // TODO: offsets here
-				});
+				//List<AstVarDecl> declarations = classType.Declaration.Declarations.Where(x => x is not AstFuncDecl).Select(x => x as AstVarDecl).ToList();
+				//LLVMValueRef undef = LLVM.GetUndef(tp);
+				//v = declarations.Aggregate(undef, (und, field) =>
+				//{
+				//	return _builder.BuildInsertValue(und, GenerateExpressionCode(field.Initializer), 0); // TODO: offsets here
+				//});
+				var mallocSymbol = classType.Declaration.Scope.GetSymbol("malloc") as DeclSymbol;
+				var mallocFunc = _valueMap[mallocSymbol];
+				LLVMTypeRef funcType = _typeMap[mallocSymbol.Decl.Type.OutType];
+				LLVMValueRef mallocSize = LLVMValueRef.CreateConstInt(HapetTypeToLLVMType(IntType.GetIntType(4, true)), 1); // TODO: replace 1 with class size
+				v = _builder.BuildCall2(funcType, mallocFunc, new LLVMValueRef[] { mallocSize }, "allocated");
 
 				return v;
 			}

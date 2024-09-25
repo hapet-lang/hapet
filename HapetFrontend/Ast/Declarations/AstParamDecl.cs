@@ -16,5 +16,11 @@ namespace HapetFrontend.Ast.Declarations
 			Type = type;
 			DefaultValue = defaultValue;
 		}
+
+		public AstVarDecl ToVarDecl()
+		{
+			var varDecl = new AstVarDecl(Type, Name, DefaultValue, Documentation, Location);
+			return varDecl;
+		}
 	}
 }

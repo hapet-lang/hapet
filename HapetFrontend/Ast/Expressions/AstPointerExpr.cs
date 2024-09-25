@@ -15,7 +15,7 @@
 		/// </summary>
 		public bool IsDereference { get; set; } = false;
 
-		public AstPointerExpr(AstExpression sub, ILocation Location, bool isDeref = false)
+		public AstPointerExpr(AstExpression sub, bool isDeref = false, ILocation Location = null)
 			: base(Location)
 		{
 			IsDereference = isDeref;

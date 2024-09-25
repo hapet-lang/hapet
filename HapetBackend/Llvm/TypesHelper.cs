@@ -10,7 +10,14 @@ namespace HapetBackend.Llvm
 	public partial class LlvmCodeGenerator
 	{
 		private Dictionary<HapetType, LLVMTypeRef> _typeMap = new Dictionary<HapetType, LLVMTypeRef>();
+		/// <summary>
+		/// The value itself (loaded after alloca)
+		/// </summary>
 		private Dictionary<ISymbol, LLVMValueRef> _valueMap = new Dictionary<ISymbol, LLVMValueRef>();
+		/// <summary>
+		/// Ptr to a value (value after alloca)
+		/// </summary>
+		private Dictionary<ISymbol, LLVMValueRef> _refMap = new Dictionary<ISymbol, LLVMValueRef>();
 
 		// rtti stuff
 		private HapetType sTypeInfoAttribute;

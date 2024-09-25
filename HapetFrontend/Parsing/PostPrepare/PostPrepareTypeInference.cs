@@ -20,6 +20,11 @@ namespace HapetFrontend.Parsing.PostPrepare
 					{
 						PostPrepareClassInference(classDecl);
 					}
+					else if (stmt is AstFuncDecl funcDecl)
+					{
+						// usually extern funcs
+						PostPrepareFunctionInference(funcDecl);
+					}
 				}
 			}
 		}
@@ -63,6 +68,16 @@ namespace HapetFrontend.Parsing.PostPrepare
 				if (stmt is AstVarDecl varDecl)
 				{
 					PostPrepareExprInference(varDecl.Type);
+
+					if (varDecl.Type.OutType is ClassType)
+					{
+						// the var is actually a pointer to the class
+						var astPtr = new AstPointerExpr(varDecl.Type, false, varDecl.Type.Location);
+						astPtr.Scope = varDecl.Type.Scope;
+						varDecl.Type = astPtr;
+						PostPrepareExprInference(varDecl.Type);
+					}
+
 					if (varDecl.Initializer != null)
 						PostPrepareExprInference(varDecl.Initializer);
 				}

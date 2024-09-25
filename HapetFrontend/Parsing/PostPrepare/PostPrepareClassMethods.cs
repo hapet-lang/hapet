@@ -11,6 +11,8 @@ namespace HapetFrontend.Parsing.PostPrepare
 			foreach (var (path, file) in _compiler.GetFiles())
 			{
 				_currentSourceFile = file;
+				PostPrepareGenerateExternalFuncs();
+
 				foreach (var stmt in file.Statements)
 				{
 					if (stmt is AstClassDecl classDecl)
@@ -29,13 +31,27 @@ namespace HapetFrontend.Parsing.PostPrepare
 					!funcDecl.SpecialKeys.Contains(TokenType.KwStatic))
 				{
 					// creating the class instance 'this' param
-					AstExpression paramType = new AstPointerExpr(new AstIdExpr(classDecl.Name.Name), null, false);
+					AstExpression paramType = new AstPointerExpr(new AstIdExpr(classDecl.Name.Name), false);
 					AstIdExpr paramName = new AstIdExpr("this");
 					AstParamDecl thisParam = new AstParamDecl(paramType, paramName);
 					// adding the param as the func first param
 					funcDecl.Parameters.Insert(0, thisParam);
 				}
 			}
+		}
+
+		private void PostPrepareGenerateExternalFuncs()
+		{
+			var mallocDecl = new AstFuncDecl(new List<AstParamDecl>()
+			{
+				new AstParamDecl(new AstIdExpr("int"), null),
+			},
+			new AstPointerExpr(new AstIdExpr("void")),
+			null,
+			new AstIdExpr("malloc"));
+			mallocDecl.SpecialKeys.Add(TokenType.KwExtern);
+			_currentSourceFile.Statements.Insert(0, mallocDecl);
+			mallocDecl.Scope = _currentSourceFile.FileScope;
 		}
 	}
 }
