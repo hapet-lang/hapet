@@ -5,7 +5,7 @@
 		/// <summary>
 		/// The type (for static funcs) or object (for non static) where the func is located
 		/// </summary>
-		public AstIdExpr TypeOrObjectName { get; set; }
+		public AstNestedIdExpr TypeOrObjectName { get; set; }
 
 		/// <summary>
 		/// If the call is of static func
@@ -22,7 +22,7 @@
 		/// </summary>
 		public List<AstArgumentExpr> Arguments { get; set; }
 
-		public AstCallExpr(AstIdExpr typeOrObjectName, AstIdExpr funcName, List<AstArgumentExpr> arguments = null, ILocation Location = null)
+		public AstCallExpr(AstNestedIdExpr typeOrObjectName, AstIdExpr funcName, List<AstArgumentExpr> arguments = null, ILocation Location = null)
 			: base(Location)
 		{
 			this.TypeOrObjectName = typeOrObjectName;

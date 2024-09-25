@@ -5,7 +5,7 @@
 
 	public float GetPi()
 	{
-		return 3.14 + InsideField + InsideField2;
+		return 3.14 + this.InsideField + this.InsideField2;
 	}
 }
 

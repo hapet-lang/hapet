@@ -21,7 +21,7 @@ namespace HapetFrontend.Parsing
 			}
 
 			var args = ParseArgumentList(out var _);
-			return new AstNewExpr(typeName as AstIdExpr, args, Location: new Location(beg));
+			return new AstNewExpr(typeName, args, Location: new Location(beg));
 		}
 	}
 }

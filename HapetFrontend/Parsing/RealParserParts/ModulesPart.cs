@@ -40,7 +40,7 @@ namespace HapetFrontend.Parsing
 				}
 			}
 
-			return new AstUsingStmt(expr as AstIdExpr, isAttach, asWhat as AstIdExpr, Location: new Location(beg));
+			return new AstUsingStmt(expr, isAttach, asWhat as AstIdExpr, Location: new Location(beg));
 		}
 	}
 }

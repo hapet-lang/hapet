@@ -222,30 +222,12 @@ namespace HapetFrontend.Parsing
 							}
 
 							var args = ParseArgumentList(out var end);
-							if (expr is not AstIdExpr idExpr)
+							if (expr is not AstNestedIdExpr idExpr)
 							{
 								ReportError(expr.Location, $"Indentifier expected");
 								return expr;
 							}
-
-							AstIdExpr typeExpr;
-							AstIdExpr funcExpr;
-							if (idExpr.Name.Contains('.'))
-							{
-								// if contains type of instance name
-								string[] ids = idExpr.Name.Split('.');
-								string tp = string.Join('.', ids.Take(ids.Length - 1)); // take all except the last one
-								string fc = ids[ids.Length - 1]; // take the last one
-								typeExpr = new AstIdExpr(tp, idExpr);
-								funcExpr = new AstIdExpr(fc, idExpr);
-							}
-							else
-							{
-								typeExpr = new AstIdExpr("this", idExpr);
-								funcExpr = new AstIdExpr(idExpr.Name, idExpr);
-							}
-
-							expr = new AstCallExpr(typeExpr, funcExpr, args, new Location(expr.Beginning, end));
+							expr = new AstCallExpr(idExpr.LeftPart, new AstIdExpr(idExpr.Name, idExpr), args, new Location(expr.Beginning, end));
 						}
 						break;
 

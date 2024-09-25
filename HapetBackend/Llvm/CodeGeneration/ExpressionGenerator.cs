@@ -128,6 +128,7 @@ namespace HapetBackend.Llvm
 
 		private LLVMValueRef GenerateIdExpr(AstIdExpr expr, bool deref = false)
 		{
+			// TODO: check for AstNestedIdExpr
 			LLVMValueRef v = default;
 			v = _valueMap[expr.FindSymbol];
 			return v;

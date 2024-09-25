@@ -38,12 +38,6 @@ namespace HapetFrontend.Scoping
 
 		public bool DefineDeclSymbol(string name, AstDeclaration decl)
 		{
-            // if it is public func - it should be visible in the scope in which func's class is
-            if (decl is AstFuncDecl funcDecl && funcDecl.SpecialKeys.Contains(Parsing.TokenType.KwPublic)) // TODO: not only public
-            {
-                // define the func in scope in which the class is registered
-                return funcDecl.ContainingClass.Scope.DefineSymbol(new DeclSymbol(name, decl));
-			}
 			return DefineSymbol(new DeclSymbol(name, decl));
 		}
 

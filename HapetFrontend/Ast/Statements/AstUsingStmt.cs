@@ -17,9 +17,9 @@ namespace HapetFrontend.Ast.Statements
 		/// <summary>
 		/// The module to be imported
 		/// </summary>
-		public AstIdExpr Module { get; set; }
+		public AstNestedIdExpr Module { get; set; }
 
-		public AstUsingStmt(AstIdExpr module, bool isAttached = false, AstIdExpr asWhat = null, ILocation Location = null) : base(Location)
+		public AstUsingStmt(AstNestedIdExpr module, bool isAttached = false, AstIdExpr asWhat = null, ILocation Location = null) : base(Location)
 		{
 			Module = module;
 			IsAttached = isAttached;

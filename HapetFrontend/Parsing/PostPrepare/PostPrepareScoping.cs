@@ -44,9 +44,27 @@ namespace HapetFrontend.Parsing.PostPrepare
 				if (decl is AstFuncDecl funcDecl)
 				{
 					funcDecl.ContainingClass = classDecl;
-					classDecl.Scope.DefineDeclSymbol(funcDecl.Name.Name, funcDecl);
+
+					// if it is public func - it should be visible in the scope in which func's class is
+					if (funcDecl.SpecialKeys.Contains(Parsing.TokenType.KwPublic)) // TODO: not only public
+						classDecl.Scope.Parent.DefineDeclSymbol(funcDecl.Name.Name, funcDecl);
+					else
+						classDecl.Scope.DefineDeclSymbol(funcDecl.Name.Name, funcDecl);
+
 					PostPrepareFunctionScoping(funcDecl);
-				}				
+				}
+				else if (decl is AstVarDecl fieldDecl) // field or property
+				{
+					fieldDecl.ContainingClass = classDecl;
+
+					// if it is public field/property - it should be visible in the scope in which var's class is
+					if (fieldDecl.SpecialKeys.Contains(Parsing.TokenType.KwPublic)) // TODO: not only public
+						classDecl.Scope.Parent.DefineDeclSymbol(fieldDecl.Name.Name, fieldDecl);
+					else
+						classDecl.Scope.DefineDeclSymbol(fieldDecl.Name.Name, fieldDecl);
+
+					PostPrepareVarScoping(fieldDecl);
+				}
 			}
 		}
 
@@ -122,14 +140,7 @@ namespace HapetFrontend.Parsing.PostPrepare
 				// preparing variable declaration parts scoping
 				if (stmt is AstVarDecl varDecl) 
 				{
-					varDecl.Name.Scope = blockScope;
-					varDecl.Type.Scope = blockScope;
-					PostPrepareExprScoping(varDecl.Type);
-					if (varDecl.Initializer != null)
-					{
-						varDecl.Initializer.Scope = blockScope;
-						PostPrepareExprScoping(varDecl.Initializer);
-					}
+					PostPrepareVarScoping(varDecl);
 					blockScope.DefineDeclSymbol(varDecl.Name.Name, varDecl);
 				}
 				else if (stmt is AstReturnStmt returnStmt)
@@ -148,6 +159,18 @@ namespace HapetFrontend.Parsing.PostPrepare
 			}
 
 			return blockScope;
+		}
+
+		private void PostPrepareVarScoping(AstVarDecl varDecl)
+		{
+			varDecl.Name.Scope = varDecl.Scope;
+			varDecl.Type.Scope = varDecl.Scope;
+			PostPrepareExprScoping(varDecl.Type);
+			if (varDecl.Initializer != null)
+			{
+				varDecl.Initializer.Scope = varDecl.Scope;
+				PostPrepareExprScoping(varDecl.Initializer);
+			}
 		}
 
 		private void PostPrepareExprScoping(AstExpression expr)

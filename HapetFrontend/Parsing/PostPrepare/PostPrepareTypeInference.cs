@@ -37,6 +37,10 @@ namespace HapetFrontend.Parsing.PostPrepare
 				{
 					PostPrepareFunctionInference(funcDecl);
 				}
+				else if (decl is AstVarDecl fieldDecl) // field or property
+				{
+					PostPrepareVarInference(fieldDecl);
+				}
 			}
 		}
 
@@ -67,19 +71,7 @@ namespace HapetFrontend.Parsing.PostPrepare
 			{
 				if (stmt is AstVarDecl varDecl)
 				{
-					PostPrepareExprInference(varDecl.Type);
-
-					if (varDecl.Type.OutType is ClassType)
-					{
-						// the var is actually a pointer to the class
-						var astPtr = new AstPointerExpr(varDecl.Type, false, varDecl.Type.Location);
-						astPtr.Scope = varDecl.Type.Scope;
-						varDecl.Type = astPtr;
-						PostPrepareExprInference(varDecl.Type);
-					}
-
-					if (varDecl.Initializer != null)
-						PostPrepareExprInference(varDecl.Initializer);
+					PostPrepareVarInference(varDecl);
 				}
 				else if (stmt is AstReturnStmt returnStmt)
 				{
@@ -92,6 +84,23 @@ namespace HapetFrontend.Parsing.PostPrepare
 				}
 				// todo: some check like if it is another block and etc.
 			}
+		}
+
+		private void PostPrepareVarInference(AstVarDecl varDecl)
+		{
+			PostPrepareExprInference(varDecl.Type);
+
+			if (varDecl.Type.OutType is ClassType)
+			{
+				// the var is actually a pointer to the class
+				var astPtr = new AstPointerExpr(varDecl.Type, false, varDecl.Type.Location);
+				astPtr.Scope = varDecl.Type.Scope;
+				varDecl.Type = astPtr;
+				PostPrepareExprInference(varDecl.Type);
+			}
+
+			if (varDecl.Initializer != null)
+				PostPrepareExprInference(varDecl.Initializer);
 		}
 
 		private void PostPrepareExprInference(AstExpression expr)
@@ -203,23 +212,18 @@ namespace HapetFrontend.Parsing.PostPrepare
 		{
 			PostPrepareIdentifierInference(callExpr.FuncName);
 
-			var sym = callExpr.Scope.GetSymbol(callExpr.TypeOrObjectName.Name);
-			if (sym is DeclSymbol typed && typed.Decl is AstVarDecl)
+			var sym = callExpr.Scope.GetSymbol(callExpr.FuncName.Name);
+			if (sym is DeclSymbol typed && typed.Decl is AstFuncDecl funcDecl)
 			{
 				// it is probably non static fun
-				callExpr.StaticCall = false;
-			}
-			else if (sym is DeclSymbol typed2 && typed2.Decl is AstClassDecl)
-			{
-				// it is probably static func...
-				callExpr.StaticCall = true;
+				callExpr.StaticCall = funcDecl.SpecialKeys.Contains(TokenType.KwStatic);
 			}
 			else
 			{
 				// TODO: error here
 			}
 
-			PostPrepareIdentifierInference(callExpr.TypeOrObjectName);
+			PostPrepareExprInference(callExpr.TypeOrObjectName);
 			foreach (var a in callExpr.Arguments)
 			{
 				PostPrepareExprInference(a);

@@ -48,7 +48,7 @@ namespace HapetBackend.Llvm
 			var funcs = new Dictionary<AstFuncDecl, LLVMTypeRef>();
 
 			// TODO: entry for type info
-			// entryTypes.Add(rttiTypeInfoPtr);
+			entryTypes.Add(_context.Int8Type.GetPointerTo());
 
 			foreach (var decl in classDecl.Declarations)
 			{
@@ -58,12 +58,11 @@ namespace HapetBackend.Llvm
 					var funcType = HapetTypeToLLVMType(funcDecl.Type.OutType);
 					funcs.Add(funcDecl, funcType);
 				}
-			}
-
-			if (entryTypes.Count == 0)
-			{
-				// no need for class to be zero sized so add i8
-				entryTypes.Add(_context.Int8Type.GetPointerTo());
+				else if (decl is AstVarDecl fieldDecl)
+				{
+					// TODO: save the types
+					entryTypes.Add(HapetTypeToLLVMType(fieldDecl.Type.OutType));
+				}
 			}
 
 			// TODO: create using HapetTypeToLLVMType
