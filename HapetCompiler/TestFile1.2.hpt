@@ -1,0 +1,20 @@
+﻿public class Math
+{
+	public int InsideField;
+	public int InsideField2 = 4;
+
+	public float GetPi()
+	{
+		return 3.14 + InsideField + InsideField2;
+	}
+}
+
+public static class Program
+{
+	public static int Main()
+	{
+		Math math = new Math();
+		float b = math.GetPi();
+		return (int)b;
+	}
+}

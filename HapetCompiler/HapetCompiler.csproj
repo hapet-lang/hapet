@@ -8,14 +8,15 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<None Remove="TestFile1.hpt" />
+		<None Remove="TestFile1.0.hpt" />
 	</ItemGroup>
 
 	<ItemGroup>
-		<Content Include="TestFile1.hpt" CopyToOutputDirectory="Always"/>
-		<Content Include="TestFile1.1.hpt" CopyToOutputDirectory="Always"/>
-		<Content Include="TestFile2.hpt" CopyToOutputDirectory="Always"/>
-		<Content Include="TestFile3.hpt" CopyToOutputDirectory="Always"/>
+		<Content Include="TestFile1.0.hpt" CopyToOutputDirectory="Always" />
+		<Content Include="TestFile1.1.hpt" CopyToOutputDirectory="Always" />
+		<Content Include="TestFile1.2.hpt" CopyToOutputDirectory="Always" />
+		<Content Include="TestFile2.0.hpt" CopyToOutputDirectory="Always" />
+		<Content Include="TestFile3.0.hpt" CopyToOutputDirectory="Always" />
 	</ItemGroup>
 
 	<ItemGroup>

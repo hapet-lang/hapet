@@ -46,6 +46,12 @@ namespace HapetFrontend.Parsing
 				{
 					break;
 				}
+				else if (decl is AstVarDecl && next.Type == TokenType.Semicolon)
+				{
+					// it is just a ';' at the end of class field
+					NextToken();
+					SkipNewlines();
+				}
 				else
 				{
 					NextToken();
