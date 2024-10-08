@@ -261,7 +261,7 @@ namespace HapetFrontend.Parsing.PostPrepare
 			{
 				Scope leftSideScope = null;
 				PostPrepareExprInference(nestExpr.LeftPart);
-				if (nestExpr.LeftPart.OutType is ClassType classT)
+				if (nestExpr.LeftPart.OutType is PointerType ptr && ptr.TargetType is ClassType classT)
 				{
 					leftSideScope = classT.Declaration.Scope;
 				}

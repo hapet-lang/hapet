@@ -5,7 +5,6 @@ using HapetFrontend.Entities;
 using HapetFrontend.Parsing;
 using HapetFrontend.Scoping;
 using HapetFrontend.Types;
-using LLVMSharp;
 using LLVMSharp.Interop;
 using System;
 using System.Diagnostics;
@@ -45,12 +44,14 @@ namespace HapetBackend.Llvm
 			_typeMap[classDecl.Type.OutType] = classStruct;
 
 			var entryTypes = new List<LLVMTypeRef>();
+			var entryHapetTypes = new List<HapetType>();
 			var funcs = new Dictionary<AstFuncDecl, LLVMTypeRef>();
 
 			// TODO: entry for type info
 			entryTypes.Add(_context.Int8Type.GetPointerTo());
+			entryHapetTypes.Add(PointerType.GetPointerType(IntType.GetIntType(1, false)));
 
-			foreach (var decl in classDecl.Declarations)
+            foreach (var decl in classDecl.Declarations)
 			{
 				if (decl is AstFuncDecl funcDecl)
 				{
@@ -61,12 +62,14 @@ namespace HapetBackend.Llvm
 				else if (decl is AstVarDecl fieldDecl)
 				{
 					// TODO: save the types
-					entryTypes.Add(HapetTypeToLLVMType(fieldDecl.Type.OutType));
-				}
+                    entryTypes.Add(HapetTypeToLLVMType(fieldDecl.Type.OutType));
+					entryHapetTypes.Add(fieldDecl.Type.OutType);
+                }
 			}
 
 			// TODO: create using HapetTypeToLLVMType
-			classStruct.StructSetBody(entryTypes.ToArray(), false);
+			_structTypeElementsMap.Add(classDecl.Type.OutType, entryHapetTypes);
+            classStruct.StructSetBody(entryTypes.ToArray(), false);
 			// classDecl.Type.OutType.SetSizeAndAlignment(1, 4); // TODO: idk
 
 			foreach (var (funcDecl, funcType) in funcs)

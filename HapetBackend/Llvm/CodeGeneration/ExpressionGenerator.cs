@@ -151,10 +151,19 @@ namespace HapetBackend.Llvm
 				//{
 				//	return _builder.BuildInsertValue(und, GenerateExpressionCode(field.Initializer), 0); // TODO: offsets here
 				//});
-				var mallocSymbol = classType.Declaration.Scope.GetSymbol("malloc") as DeclSymbol;
+
+				// TODO: some shite with alignment here
+				ulong structSize = 0;
+				List<HapetType> structElements = _structTypeElementsMap[hpt];
+				foreach (var elem in structElements)
+				{
+					structSize += (ulong)elem.GetSize();
+                }
+
+                var mallocSymbol = classType.Declaration.Scope.GetSymbol("malloc") as DeclSymbol;
 				var mallocFunc = _valueMap[mallocSymbol];
 				LLVMTypeRef funcType = _typeMap[mallocSymbol.Decl.Type.OutType];
-				LLVMValueRef mallocSize = LLVMValueRef.CreateConstInt(HapetTypeToLLVMType(IntType.GetIntType(4, true)), 1); // TODO: replace 1 with class size
+				LLVMValueRef mallocSize = LLVMValueRef.CreateConstInt(HapetTypeToLLVMType(IntType.GetIntType(4, true)), structSize); 
 				v = _builder.BuildCall2(funcType, mallocFunc, new LLVMValueRef[] { mallocSize }, "allocated");
 
 				return v;
@@ -208,9 +217,40 @@ namespace HapetBackend.Llvm
 			}
 			else
 			{
-				// TODO: here you should prepare smth like few.dasd.ggg.ds etc.
-			}
-			_errorHandler.ReportError(_currentSourceFile.Text, expr, $"The nested expr could not be generated, fatal :^( ");
+                // TODO: check if it is a part of a module name :))))
+                var leftPart = GenerateExpressionCode(expr.LeftPart);
+				// if really has to be an AstIdExpr
+				if (expr.RightPart is not AstIdExpr idExpr)
+				{
+                    _errorHandler.ReportError(_currentSourceFile.Text, expr.RightPart, $"The part of the expression has to be an identifier");
+					return leftPart;
+                }
+
+				// WARN: the same as in PostPrepareNestedExprInference
+				uint elementIndex = 0;
+                if (expr.LeftPart.OutType is PointerType ptr && ptr.TargetType is ClassType classT)
+                {
+					// search for the name in decl
+                    for (uint i = 0; i < classT.Declaration.Declarations.Count; ++i)
+					{
+						var decl = classT.Declaration.Declarations[(int)i];
+                        if (decl.Name.Name == idExpr.Name)
+						{
+							elementIndex = i + 1; // + 1 because the first element in class struct is its reflection data
+							break;
+                        }
+					}
+
+                    var tp = _typeMap[classT];
+					var ret = _builder.BuildStructGEP2(tp, leftPart, elementIndex, idExpr.Name);
+					// loading the field because it is nt registered in _typeMap like a normal variable.
+					// it should be ok for all types of the fields including classes and other shite
+                    var retLoaded = _builder.BuildLoad2(HapetTypeToLLVMType(idExpr.OutType), ret, $"{idExpr.Name}Loaded");
+                    return retLoaded;
+                }
+				// TODO: structs and other
+            }
+            _errorHandler.ReportError(_currentSourceFile.Text, expr, $"The nested expr could not be generated, fatal :^( ");
 			return null;
 		}
 	}
