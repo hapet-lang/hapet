@@ -12,14 +12,14 @@ namespace HapetFrontend.Ast.Statements
 		/// <summary>
 		/// If using with 'as' word and a name that is in AsWhat
 		/// </summary>
-		public AstIdExpr AsWhat { get; set; }
+		public AstNestedExpr AsWhat { get; set; }
 
 		/// <summary>
-		/// The module to be imported
+		/// The module to be imported. Could be <see cref="AstNestedExpr"/>
 		/// </summary>
-		public AstNestedIdExpr Module { get; set; }
+		public AstNestedExpr Module { get; set; }
 
-		public AstUsingStmt(AstNestedIdExpr module, bool isAttached = false, AstIdExpr asWhat = null, ILocation Location = null) : base(Location)
+		public AstUsingStmt(AstNestedExpr module, bool isAttached = false, AstNestedExpr asWhat = null, ILocation Location = null) : base(Location)
 		{
 			Module = module;
 			IsAttached = isAttached;

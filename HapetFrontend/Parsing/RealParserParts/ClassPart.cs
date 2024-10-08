@@ -22,7 +22,13 @@ namespace HapetFrontend.Parsing
 			}
 			else
 			{
-				className = ParseIdentifierExpression();
+				var nest = ParseIdentifierExpression(allowDots: false);
+				if (nest.RightPart is not AstIdExpr idExpr)
+				{
+					ReportError(nest.Location, $"Class name expected to be an identifier");
+					return new AstClassDecl(new AstIdExpr("unknown"), declarations, "", beg);
+				}
+				className = idExpr;
 			}
 
 			ConsumeUntil(TokenType.OpenBrace, ErrMsg("{", "at beginning of class body"), true);

@@ -10,7 +10,7 @@ public static class Program
 {
 	public static int Main()
 	{
-		int a = 6 + 5;
+		int a = 6 + 9;
 		Math math = new Math();
 		float b = a + math.GetPi(7);
 		return (int)b;

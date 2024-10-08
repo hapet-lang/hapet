@@ -5,14 +5,14 @@
 		/// <summary>
 		/// The type that has to be created
 		/// </summary>
-		public AstNestedIdExpr TypeName { get; set; }
+		public AstNestedExpr TypeName { get; set; }
 
 		/// <summary>
 		/// The arguments to be passed into type constructor
 		/// </summary>
 		public List<AstArgumentExpr> Arguments { get; set; }
 
-		public AstNewExpr(AstNestedIdExpr typeName, List<AstArgumentExpr> arguments = null, ILocation Location = null)
+		public AstNewExpr(AstNestedExpr typeName, List<AstArgumentExpr> arguments = null, ILocation Location = null)
 			: base(Location)
 		{
 			this.TypeName = typeName;

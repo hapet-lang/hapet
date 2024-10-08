@@ -27,6 +27,7 @@ namespace HapetBackend.Llvm
 				case AstCallExpr callExpr: return GenerateCallExpr(callExpr);
 				case AstArgumentExpr argExpr: return GenerateArgumentExpr(argExpr);
 				case AstCastExpr castExpr: return GenerateCastExpr(castExpr);
+				case AstNestedExpr nestExpr: return GenerateNestedExpr(nestExpr);
 				// TODO: check other expressions
 
 				default:
@@ -196,6 +197,21 @@ namespace HapetBackend.Llvm
 		{
 			var sub = GenerateExpressionCode(expr.SubExpression as AstExpression);
 			return CreateCast(sub, (expr.SubExpression as AstExpression).OutType, expr.OutType);
+		}
+
+		private unsafe LLVMValueRef GenerateNestedExpr(AstNestedExpr expr)
+		{
+			if (expr.LeftPart == null)
+			{
+				// func call, ident or pure expr
+				return GenerateExpressionCode(expr.RightPart);
+			}
+			else
+			{
+				// TODO: here you should prepare smth like few.dasd.ggg.ds etc.
+			}
+			_errorHandler.ReportError(_currentSourceFile.Text, expr, $"The nested expr could not be generated, fatal :^( ");
+			return null;
 		}
 	}
 }

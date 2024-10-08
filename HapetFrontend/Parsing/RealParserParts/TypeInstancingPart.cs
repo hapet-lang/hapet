@@ -14,11 +14,11 @@ namespace HapetFrontend.Parsing
 			SkipNewlines();
 			var typeName = ParseIdentifierExpression(ErrMsg("expression", "after keyword 'new'"));
 
-			if (typeName is not AstIdExpr)
-			{
-				ReportError(typeName.Location, "Type name/path expected after 'new' keyword");
-				return ParseEmptyExpression();
-			}
+			//if (typeName is not AstIdExpr)
+			//{
+			//	ReportError(typeName.Location, "Type name/path expected after 'new' keyword");
+			//	return ParseEmptyExpression();
+			//}
 
 			var args = ParseArgumentList(out var _);
 			return new AstNewExpr(typeName, args, Location: new Location(beg));

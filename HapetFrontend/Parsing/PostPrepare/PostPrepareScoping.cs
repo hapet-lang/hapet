@@ -197,6 +197,9 @@ namespace HapetFrontend.Parsing.PostPrepare
 				case AstCastExpr castExpr:
 					PostPrepareCastExprScoping(castExpr);
 					break;
+				case AstNestedExpr nestExpr:
+					PostPrepareNestedExprScoping(nestExpr);
+					break;
 				// TODO: check other expressions
 
 				default:
@@ -263,7 +266,18 @@ namespace HapetFrontend.Parsing.PostPrepare
 			PostPrepareExprScoping(castExpr.SubExpression as AstExpression); // TODO: error if it is not an expr
 			castExpr.TypeExpr.Scope = castExpr.Scope;
 			PostPrepareExprScoping(castExpr.TypeExpr as AstExpression); // TODO: error if it is not an expr
-		} 
+		}
+
+		private void PostPrepareNestedExprScoping(AstNestedExpr nestExpr)
+		{
+			nestExpr.RightPart.Scope = nestExpr.Scope;
+			PostPrepareExprScoping(nestExpr.RightPart);
+			if (nestExpr.LeftPart != null)
+			{
+				nestExpr.LeftPart.Scope = nestExpr.Scope;
+				PostPrepareExprScoping(nestExpr.LeftPart);
+			}
+		}
 
 		// TODO: recursively go through all of the statments and set Scope and Parent
 	}

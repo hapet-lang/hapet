@@ -222,12 +222,19 @@ namespace HapetFrontend.Parsing
 							}
 
 							var args = ParseArgumentList(out var end);
-							if (expr is not AstNestedIdExpr idExpr)
+							if (expr is not AstNestedExpr nestExpr)
 							{
 								ReportError(expr.Location, $"Indentifier expected");
 								return expr;
 							}
-							expr = new AstCallExpr(idExpr.LeftPart, new AstIdExpr(idExpr.Name, idExpr), args, new Location(expr.Beginning, end));
+							if (nestExpr.RightPart is not AstIdExpr idExpr)
+							{
+								ReportError(nestExpr.Location, $"Indentifier expected as the func name");
+								return expr;
+							}
+							expr = new AstCallExpr(nestExpr.LeftPart, new AstIdExpr(idExpr.Name, idExpr), args, new Location(expr.Beginning, end));
+
+							// TODO: check for dots after this!!! there could be a.asd().asd().ddd().d.lll()
 						}
 						break;
 
@@ -324,16 +331,27 @@ namespace HapetFrontend.Parsing
 
 						if (CheckToken(TokenType.ArrayDef))
 						{
+							if (id.RightPart is not AstIdExpr idExpr)
+							{
+								ReportError(id.Location, $"Indentifier expected as the array type");
+								return id;
+							}
 							// probably array def (i hope so)
-							id.Name += "[]";
+							idExpr.Name += "[]";
+							idExpr.Location.Ending.End += 2;
 							id.Location.Ending.End += 2;
 							NextToken();
 						}
 
 						if (CheckToken(TokenType.Identifier))
 						{
-							var name = ParseIdentifierExpression();
-							return new UnknownDecl(id, name, new Location(token.Location));
+							var name = ParseIdentifierExpression(allowDots: false);
+							if (name.RightPart is not AstIdExpr idExpr)
+							{
+								ReportError(id.Location, $"Indentifier expected as a name of declaration");
+								return id;
+							}
+							return new UnknownDecl(id, idExpr, new Location(token.Location));
 						}
 
 						return id;

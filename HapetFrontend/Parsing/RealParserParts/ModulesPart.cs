@@ -23,7 +23,7 @@ namespace HapetFrontend.Parsing
 			SkipNewlines();
 			var expr = ParseIdentifierExpression(ErrMsg("expression", "after keyword 'using'"));
 
-			if (expr is not AstIdExpr)
+			if (expr is not AstNestedExpr)
 			{
 				ReportError(expr.Location, "Module name/path expected after 'using' keyword");
 				return ParseEmptyExpression();
@@ -32,15 +32,15 @@ namespace HapetFrontend.Parsing
 			if (CheckToken(TokenType.KwAs))
 			{
 				NextToken();
-				asWhat = ParseIdentifierExpression(ErrMsg("expression", "after keyword 'as' in 'using' statement"));
-				if (asWhat is not AstIdExpr)
+				asWhat = ParseIdentifierExpression(ErrMsg("expression", "after keyword 'as' in 'using' statement"), allowDots: false);
+				if (asWhat is not AstNestedExpr)
 				{
 					ReportError(asWhat.Location, "Module aliasing expected after 'as' keyword in 'using' keyword");
 					return ParseEmptyExpression();
 				}
 			}
 
-			return new AstUsingStmt(expr, isAttach, asWhat as AstIdExpr, Location: new Location(beg));
+			return new AstUsingStmt(expr, isAttach, asWhat as AstNestedExpr, Location: new Location(beg));
 		}
 	}
 }

@@ -128,6 +128,9 @@ namespace HapetFrontend.Parsing.PostPrepare
 				case AstCastExpr castExpr:
 					PostPrepareCastExprInference(castExpr);
 					break;
+				case AstNestedExpr nestExpr:
+					PostPrepareNestedExprInference(nestExpr);
+					break;
 				// TODO: check other expressions
 
 				default:
@@ -146,7 +149,7 @@ namespace HapetFrontend.Parsing.PostPrepare
 			var operators = binExpr.Scope.GetBinaryOperators(binExpr.Operator, (binExpr.Left as AstExpression).OutType, (binExpr.Right as AstExpression).OutType);
 			if (operators.Count == 0)
 			{
-				_compiler.ErrorHandler.ReportError(_currentSourceFile.Text, binExpr, $"Indefined operator {binExpr.Operator} for types {(binExpr.Left as AstExpression).OutType} and {(binExpr.Right as AstExpression).OutType}");
+				_compiler.ErrorHandler.ReportError(_currentSourceFile.Text, binExpr, $"Undefined operator {binExpr.Operator} for types {(binExpr.Left as AstExpression).OutType} and {(binExpr.Right as AstExpression).OutType}");
 			}
 			else if (operators.Count > 1)
 			{
@@ -245,6 +248,50 @@ namespace HapetFrontend.Parsing.PostPrepare
 			PostPrepareExprInference(castExpr.SubExpression as AstExpression);
 			PostPrepareExprInference(castExpr.TypeExpr as AstExpression);
 			castExpr.OutType = (castExpr.TypeExpr as AstExpression).OutType;
+		}
+
+		private void PostPrepareNestedExprInference(AstNestedExpr nestExpr)
+		{
+			if (nestExpr.LeftPart == null)
+			{
+				PostPrepareExprInference(nestExpr.RightPart);
+				nestExpr.OutType = nestExpr.RightPart.OutType;
+			}
+			else
+			{
+				Scope leftSideScope = null;
+				PostPrepareExprInference(nestExpr.LeftPart);
+				if (nestExpr.LeftPart.OutType is ClassType classT)
+				{
+					leftSideScope = classT.Declaration.Scope;
+				}
+				// TODO: structs and other
+
+				if (leftSideScope == null)
+				{
+					_compiler.ErrorHandler.ReportError(_currentSourceFile.Text, nestExpr.LeftPart, "The type of the expression has to be a class or a struct");
+					return;
+				}
+
+				// here could only be an AstIdExpr because AstCallExpr and AstExpression would be in 'if' block upper
+				if (nestExpr.RightPart is not AstIdExpr idExpr)
+				{
+					_compiler.ErrorHandler.ReportError(_currentSourceFile.Text, nestExpr.RightPart, "The expressions has to be an identifier");
+					return;
+				}
+
+				// searching for the symbol in the class/struct
+				var smbl = leftSideScope.GetSymbol(idExpr.Name);
+				if (smbl is DeclSymbol typed)
+				{
+					idExpr.OutType = typed.Decl.Type.OutType;
+					nestExpr.OutType = idExpr.OutType;
+				}
+				else
+				{
+					_compiler.ErrorHandler.ReportError(_currentSourceFile.Text, idExpr, $"The type could not be infered in {leftSideScope} scope...");
+				}
+			}
 		}
 	}
 }
