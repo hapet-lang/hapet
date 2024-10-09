@@ -174,6 +174,13 @@ namespace HapetBackend.Llvm
 				LLVMValueRef mallocSize = LLVMValueRef.CreateConstInt(HapetTypeToLLVMType(IntType.GetIntType(4, true)), structSize); 
 				v = _builder.BuildCall2(funcType, mallocFunc, new LLVMValueRef[] { mallocSize }, "allocated");
 
+				// TODO: calling ctors with parameters here...
+				var ctorSymbol = classType.Declaration.Scope.GetSymbol($"{classType.Declaration.Name.Name}_ctor") as DeclSymbol;
+				// TODO: error if ctor not found
+				var ctorFunc = _valueMap[ctorSymbol];
+				LLVMTypeRef ctorType = _typeMap[ctorSymbol.Decl.Type.OutType];
+				_builder.BuildCall2(ctorType, ctorFunc, new LLVMValueRef[] { v });  // calling default ctor
+
 				return v;
 			}
 			else
@@ -201,6 +208,7 @@ namespace HapetBackend.Llvm
 				args.Add(GenerateExpressionCode(a));
 			}
 
+			// the return name has to be empty if ret value of func is void
 			string funcRetName = "";
 			if (hptType.Declaration.Returns.OutType is not VoidType)
 				funcRetName = $"{expr.FuncName.Name}ReturnValue";
