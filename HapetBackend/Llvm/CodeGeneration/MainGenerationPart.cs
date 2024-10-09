@@ -115,9 +115,10 @@ namespace HapetBackend.Llvm
 				var p = funcDecl.Parameters[i];
 				var addrAlloca = _builder.BuildAlloca(HapetTypeToLLVMType(p.Type.OutType), $"{p.Name.Name}.addr");
 				_builder.BuildStore(lfunc.GetParam((uint)i), addrAlloca);
-				var parArg = _builder.BuildLoad2(HapetTypeToLLVMType(p.Type.OutType), addrAlloca, $"{p.Name.Name}1");
-				_refMap[p.GetSymbol] = addrAlloca;
-				_valueMap[p.GetSymbol] = parArg;
+				// var parArg = _builder.BuildLoad2(HapetTypeToLLVMType(p.Type.OutType), addrAlloca, $"{p.Name.Name}1");
+				// _refMap[p.GetSymbol] = addrAlloca;
+				// _valueMap[p.GetSymbol] = parArg;
+				_valueMap[p.GetSymbol] = addrAlloca;
 			}
 
 			// function body
@@ -160,10 +161,14 @@ namespace HapetBackend.Llvm
 				{
 					GenerateVarDeclCode(varDecl);
 				}
+				else if (stmt is AstAssignStmt assignStmt)
+				{
+					GenerateExpressionCode(assignStmt);
+				}
 				else if (stmt is AstReturnStmt returnStmt)
 				{
-					// TODO: also check if return expr is empty
-					result = GenerateExpressionCode(returnStmt.ReturnExpression, true);
+					// TODO: also check if return expr is empty and method has to return smth - error it
+					result = GenerateExpressionCode(returnStmt.ReturnExpression);
 					break; // there is nothing to do in the block after return
 				}
 			}
@@ -182,8 +187,9 @@ namespace HapetBackend.Llvm
 				_builder.BuildStore(x, varPtr);
 			}
 
-			_refMap[varDecl.GetSymbol] = varPtr;
-			_valueMap[varDecl.GetSymbol] = _builder.BuildLoad2(HapetTypeToLLVMType(varDecl.Type.OutType), varPtr, varDecl.Name.Name);
+			// _refMap[varDecl.GetSymbol] = varPtr;
+			// _valueMap[varDecl.GetSymbol] = _builder.BuildLoad2(HapetTypeToLLVMType(varDecl.Type.OutType), varPtr, varDecl.Name.Name);
+			_valueMap[varDecl.GetSymbol] = varPtr;
 		}
 	}
 }

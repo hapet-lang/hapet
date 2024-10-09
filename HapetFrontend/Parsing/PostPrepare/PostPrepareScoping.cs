@@ -151,7 +151,7 @@ namespace HapetFrontend.Parsing.PostPrepare
 						PostPrepareExprScoping(returnStmt.ReturnExpression);
 					}
 				}
-				else if (stmt is AstExpression expr)
+				else if (stmt is AstStatement expr)
 				{
 					PostPrepareExprScoping(expr);
 				}
@@ -173,7 +173,7 @@ namespace HapetFrontend.Parsing.PostPrepare
 			}
 		}
 
-		private void PostPrepareExprScoping(AstExpression expr)
+		private void PostPrepareExprScoping(AstStatement expr)
 		{
 			switch (expr)
 			{
@@ -199,6 +199,11 @@ namespace HapetFrontend.Parsing.PostPrepare
 					break;
 				case AstNestedExpr nestExpr:
 					PostPrepareNestedExprScoping(nestExpr);
+					break;
+
+				// statements
+				case AstAssignStmt assignStmt:
+					PostPrepareAssignStmtScoping(assignStmt);
 					break;
 				// TODO: check other expressions
 
@@ -276,6 +281,18 @@ namespace HapetFrontend.Parsing.PostPrepare
 			{
 				nestExpr.LeftPart.Scope = nestExpr.Scope;
 				PostPrepareExprScoping(nestExpr.LeftPart);
+			}
+		}
+
+		// statements
+		private void PostPrepareAssignStmtScoping(AstAssignStmt assignStmt)
+		{
+			assignStmt.Target.Scope = assignStmt.Scope;
+			PostPrepareExprScoping(assignStmt.Target);
+			if (assignStmt.Value != null)
+			{
+				assignStmt.Value.Scope = assignStmt.Scope;
+				PostPrepareExprScoping(assignStmt.Value);
 			}
 		}
 

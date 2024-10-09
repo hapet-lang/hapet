@@ -78,7 +78,7 @@ namespace HapetFrontend.Parsing.PostPrepare
 					if (returnStmt.ReturnExpression != null)
 						PostPrepareExprInference(returnStmt.ReturnExpression);
 				}
-				else if (stmt is AstExpression expr)
+				else if (stmt is AstStatement expr)
 				{
 					PostPrepareExprInference(expr);
 				}
@@ -103,7 +103,7 @@ namespace HapetFrontend.Parsing.PostPrepare
 				PostPrepareExprInference(varDecl.Initializer);
 		}
 
-		private void PostPrepareExprInference(AstExpression expr)
+		private void PostPrepareExprInference(AstStatement expr)
 		{
 			switch (expr)
 			{
@@ -130,6 +130,11 @@ namespace HapetFrontend.Parsing.PostPrepare
 					break;
 				case AstNestedExpr nestExpr:
 					PostPrepareNestedExprInference(nestExpr);
+					break;
+
+				// statements
+				case AstAssignStmt assignStmt:
+					PostPrepareAssignStmtInference(assignStmt);
 					break;
 				// TODO: check other expressions
 
@@ -291,6 +296,16 @@ namespace HapetFrontend.Parsing.PostPrepare
 				{
 					_compiler.ErrorHandler.ReportError(_currentSourceFile.Text, idExpr, $"The type could not be infered in {leftSideScope} scope...");
 				}
+			}
+		}
+
+		private void PostPrepareAssignStmtInference(AstAssignStmt assignStmt)
+		{
+			PostPrepareExprInference(assignStmt.Target);
+
+			if (assignStmt.Value != null)
+			{
+				PostPrepareExprInference(assignStmt.Value);
 			}
 		}
 	}

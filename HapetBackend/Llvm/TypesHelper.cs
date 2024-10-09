@@ -15,10 +15,6 @@ namespace HapetBackend.Llvm
 		/// </summary>
 		private Dictionary<ISymbol, LLVMValueRef> _valueMap = new Dictionary<ISymbol, LLVMValueRef>();
 		/// <summary>
-		/// Ptr to a value (value after alloca)
-		/// </summary>
-		private Dictionary<ISymbol, LLVMValueRef> _refMap = new Dictionary<ISymbol, LLVMValueRef>();
-		/// <summary>
 		/// Class or struct mapping to their elements
 		/// </summary>
         private Dictionary<HapetType, List<HapetType>> _structTypeElementsMap = new Dictionary<HapetType, List<HapetType>>();

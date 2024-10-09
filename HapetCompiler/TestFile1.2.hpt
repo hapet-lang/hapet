@@ -15,6 +15,7 @@ public static class Program
 	{
 		Math math = new Math();
 		float b = math.GetPi();
+		b = b + 3.0;
 		return (int)b;
 	}
 }

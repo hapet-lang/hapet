@@ -99,7 +99,7 @@ namespace HapetFrontend.Parsing
 								}
 								return new AstVarDecl(udecl.Type, udecl.Name, val as AstExpression, "", new Location(stmt.Beginning, val.Ending));
 							}
-							else if (stmt is AstIdExpr id)
+							else if (stmt is AstNestedExpr id)
 							{
 								return new AstAssignStmt(id, val as AstExpression, op, new Location(stmt.Beginning, val.Ending));
 							}

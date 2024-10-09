@@ -8,6 +8,8 @@ namespace HapetFrontend.Ast.Declarations
 	{
 		public CallingConvention CallingConvention { get; } = CallingConvention.Default;
 
+		public List<ClassFunctionType> ClassFunctionTypes { get; } = new List<ClassFunctionType>();
+
 		public List<AstParamDecl> Parameters { get; set; }
 		public AstExpression Returns { get; set; }
 

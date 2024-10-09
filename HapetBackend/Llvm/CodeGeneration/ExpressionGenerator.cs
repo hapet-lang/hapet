@@ -1,6 +1,7 @@
 ﻿using HapetFrontend.Ast;
 using HapetFrontend.Ast.Declarations;
 using HapetFrontend.Ast.Expressions;
+using HapetFrontend.Ast.Statements;
 using HapetFrontend.Scoping;
 using HapetFrontend.Types;
 using LLVMSharp.Interop;
@@ -9,12 +10,12 @@ namespace HapetBackend.Llvm
 {
 	public partial class LlvmCodeGenerator
 	{
-		private LLVMValueRef GenerateExpressionCode(AstExpression expr, bool deref = false)
+		private LLVMValueRef GenerateExpressionCode(AstStatement expr)
 		{
 			// if the value already evaluated (usually literals or consts)
-			if (expr.OutValue != null)
+			if (expr is AstExpression realExpr && realExpr.OutValue != null)
 			{
-				var result = HapetValueToLLVMValue(expr.OutType, expr.OutValue);
+				var result = HapetValueToLLVMValue(realExpr.OutType, realExpr.OutValue);
 				if (result.Handle.ToInt64() != 0)
 					return result;
 			}
@@ -22,12 +23,15 @@ namespace HapetBackend.Llvm
 			switch (expr)
 			{
 				case AstBinaryExpr binExpr: return GenerateBinaryExprCode(binExpr);
-				case AstIdExpr idExpr: return GenerateIdExpr(idExpr, deref);
+				case AstIdExpr idExpr: return GenerateIdExpr(idExpr);
 				case AstNewExpr newExpr: return GenerateNewExpr(newExpr);
 				case AstCallExpr callExpr: return GenerateCallExpr(callExpr);
 				case AstArgumentExpr argExpr: return GenerateArgumentExpr(argExpr);
 				case AstCastExpr castExpr: return GenerateCastExpr(castExpr);
 				case AstNestedExpr nestExpr: return GenerateNestedExpr(nestExpr);
+
+				// statements
+				case AstAssignStmt assignStmt: return GenerateAssignStmt(assignStmt);
 				// TODO: check other expressions
 
 				default:
@@ -127,12 +131,16 @@ namespace HapetBackend.Llvm
 			return result;
 		}
 
-		private LLVMValueRef GenerateIdExpr(AstIdExpr expr, bool deref = false)
+		private LLVMValueRef GenerateIdExpr(AstIdExpr expr, bool getPtr = false)
 		{
 			// TODO: check for AstNestedIdExpr
 			LLVMValueRef v = default;
 			v = _valueMap[expr.FindSymbol];
-			return v;
+			// return the ptr to the val. used for AstAddressOf or storing values
+			if (getPtr)
+				return v;
+			var loaded = _builder.BuildLoad2(HapetTypeToLLVMType(expr.OutType), v, expr.Name);
+			return loaded;
 		}
 
 		private unsafe LLVMValueRef GenerateNewExpr(AstNewExpr expr)
@@ -208,7 +216,7 @@ namespace HapetBackend.Llvm
 			return CreateCast(sub, (expr.SubExpression as AstExpression).OutType, expr.OutType);
 		}
 
-		private unsafe LLVMValueRef GenerateNestedExpr(AstNestedExpr expr)
+		private unsafe LLVMValueRef GenerateNestedExpr(AstNestedExpr expr, bool getPtr = false)
 		{
 			if (expr.LeftPart == null)
 			{
@@ -243,15 +251,47 @@ namespace HapetBackend.Llvm
 
                     var tp = _typeMap[classT];
 					var ret = _builder.BuildStructGEP2(tp, leftPart, elementIndex, idExpr.Name);
+					// if we need ptr for the shite. usually used to store some values inside vars
+					if (getPtr)
+						return ret;
 					// loading the field because it is nt registered in _typeMap like a normal variable.
 					// it should be ok for all types of the fields including classes and other shite
-                    var retLoaded = _builder.BuildLoad2(HapetTypeToLLVMType(idExpr.OutType), ret, $"{idExpr.Name}Loaded");
+					var retLoaded = _builder.BuildLoad2(HapetTypeToLLVMType(idExpr.OutType), ret, $"{idExpr.Name}Loaded");
                     return retLoaded;
                 }
 				// TODO: structs and other
             }
             _errorHandler.ReportError(_currentSourceFile.Text, expr, $"The nested expr could not be generated, fatal :^( ");
 			return null;
+		}
+
+		// statements
+		private LLVMValueRef GenerateAssignStmt(AstAssignStmt assignStmt)
+		{
+			LLVMValueRef theVar;
+			if (assignStmt.Target.LeftPart == null)
+			{
+				// if it is just a local var
+				// TODO: error if it is not an AstIdExpr
+				theVar = GenerateIdExpr(assignStmt.Target.RightPart as AstIdExpr, true);
+			}
+			else
+			{
+				theVar = GenerateNestedExpr(assignStmt.Target, true);
+			}
+
+			// check for initializer
+			if (assignStmt.Value == null)
+			{
+				// TODO: error here!!!!! it could not be null
+			}
+
+			var x = GenerateExpressionCode(assignStmt.Value);
+			_builder.BuildStore(x, theVar);
+
+			// WARN: always returns null because Assign is a stmt and does not returns anything. could be changed to expr
+			// so stmts like 'a = (b = 3);' would be allowed...
+			return null; 
 		}
 	}
 }

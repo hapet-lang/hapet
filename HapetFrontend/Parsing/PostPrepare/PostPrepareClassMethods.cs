@@ -25,6 +25,11 @@ namespace HapetFrontend.Parsing.PostPrepare
 
 		private void PostPrepareClassMethodsInternal(AstClassDecl classDecl)
 		{
+			var allFuncs = classDecl.Declarations.Where(x => x is AstFuncDecl).Select(x => x as AstFuncDecl);
+			// TODO: error if user created a func with the initializer name
+			// PostPrepareGenerateClassInitializer(classDecl);
+
+			// adding 'this' param as first
 			foreach (var decl in classDecl.Declarations)
 			{
 				if (decl is AstFuncDecl funcDecl && 
@@ -52,6 +57,17 @@ namespace HapetFrontend.Parsing.PostPrepare
 			mallocDecl.SpecialKeys.Add(TokenType.KwExtern);
 			_currentSourceFile.Statements.Insert(0, mallocDecl);
 			mallocDecl.Scope = _currentSourceFile.FileScope;
+		}
+
+		private void PostPrepareGenerateClassInitializer(AstClassDecl classDecl)
+		{
+			var iniDecl = new AstFuncDecl(new List<AstParamDecl>(),
+			new AstPointerExpr(new AstIdExpr("void")),
+			null,
+			new AstIdExpr($"{classDecl.Name.Name}_ini"));
+			iniDecl.SpecialKeys.Add(TokenType.KwPrivate); // ini is private because it is called inside ctors
+			iniDecl.ClassFunctionTypes.Add(Enums.ClassFunctionType.Initializer);
+			classDecl.Declarations.Insert(0, iniDecl);
 		}
 	}
 }
