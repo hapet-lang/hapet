@@ -1,6 +1,6 @@
 ﻿public class Math
 {
-	public int InsideField1; // default value here
+	public int InsideField1; // default value here (0)
 	public int InsideField2 = 4;
 	public int InsideField3; // inited when used
 

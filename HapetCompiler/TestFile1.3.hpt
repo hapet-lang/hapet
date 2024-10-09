@@ -1,0 +1,19 @@
+﻿public class Math
+{
+	public int InsideField;
+
+	public Math(int a)
+	{
+		this.InsideField = a;
+	}
+}
+
+public static class Program
+{
+	public static int Main()
+	{
+		Math math = new Math(5);
+		int a = math.InsideField;
+		return a;
+	}
+}
