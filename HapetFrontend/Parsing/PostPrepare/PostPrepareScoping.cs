@@ -200,6 +200,8 @@ namespace HapetFrontend.Parsing.PostPrepare
 				case AstNestedExpr nestExpr:
 					PostPrepareNestedExprScoping(nestExpr);
 					break;
+				case AstDefaultExpr _:
+					break;
 
 				// statements
 				case AstAssignStmt assignStmt:

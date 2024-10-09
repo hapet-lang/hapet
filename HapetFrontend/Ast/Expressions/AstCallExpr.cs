@@ -27,7 +27,7 @@
 		{
 			this.TypeOrObjectName = typeOrObjectName;
 			this.FuncName = funcName;
-			this.Arguments = arguments;
+			this.Arguments = arguments ?? new List<AstArgumentExpr>();
 		}
 	}
 }

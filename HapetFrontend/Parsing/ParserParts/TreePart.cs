@@ -308,13 +308,13 @@ namespace HapetFrontend.Parsing
 				//case TokenType.KwContinue:
 				//	return ParseContinueStatement();
 
-				//case TokenType.KwDefault:
-				//	NextToken();
-				//	return new AstDefaultExpr(new Location(token.Location));
+				case TokenType.KwDefault:
+					NextToken();
+					return new AstDefaultExpr(new Location(token.Location));
 
-				//case TokenType.KwNull:
-				//	NextToken();
-				//	return new AstNullExpr(new Location(token.Location));
+				case TokenType.KwNull:
+					NextToken();
+					return new AstNullExpr(new Location(token.Location));
 
 				// TODO: what should i do here
 				//case TokenType.OpenBracket:

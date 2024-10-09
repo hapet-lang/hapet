@@ -201,7 +201,11 @@ namespace HapetBackend.Llvm
 				args.Add(GenerateExpressionCode(a));
 			}
 
-			return _builder.BuildCall2(funcType, hapetFunc, args.ToArray(), "funcReturnValue");
+			string funcRetName = "";
+			if (hptType.Declaration.Returns.OutType is not VoidType)
+				funcRetName = $"{expr.FuncName.Name}ReturnValue";
+
+			return _builder.BuildCall2(funcType, hapetFunc, args.ToArray(), funcRetName);
 		}
 
 		private unsafe LLVMValueRef GenerateArgumentExpr(AstArgumentExpr expr)
@@ -238,10 +242,11 @@ namespace HapetBackend.Llvm
 				uint elementIndex = 0;
                 if (expr.LeftPart.OutType is PointerType ptr && ptr.TargetType is ClassType classT)
                 {
+					var fieldDecls = classT.Declaration.Declarations.Where(x => x is AstVarDecl).ToList();
 					// search for the name in decl
-                    for (uint i = 0; i < classT.Declaration.Declarations.Count; ++i)
+					for (uint i = 0; i < fieldDecls.Count; ++i)
 					{
-						var decl = classT.Declaration.Declarations[(int)i];
+						var decl = fieldDecls[(int)i];
                         if (decl.Name.Name == idExpr.Name)
 						{
 							elementIndex = i + 1; // + 1 because the first element in class struct is its reflection data

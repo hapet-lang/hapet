@@ -1,6 +1,8 @@
 ﻿using HapetFrontend.Ast;
 using HapetFrontend.Ast.Declarations;
 using HapetFrontend.Ast.Expressions;
+using HapetFrontend.Ast.Statements;
+using HapetFrontend.Types;
 
 namespace HapetFrontend.Parsing.PostPrepare
 {
@@ -27,7 +29,9 @@ namespace HapetFrontend.Parsing.PostPrepare
 		{
 			var allFuncs = classDecl.Declarations.Where(x => x is AstFuncDecl).Select(x => x as AstFuncDecl);
 			// TODO: error if user created a func with the initializer name
-			// PostPrepareGenerateClassInitializer(classDecl);
+			PostPrepareGenerateClassInitializer(classDecl);
+			// passing all the existing ctors
+			PostPrepareGenerateClassConstructor(classDecl, allFuncs.Where(x => x.ClassFunctionTypes.Contains(Enums.ClassFunctionType.Ctor)).ToList());
 
 			// adding 'this' param as first
 			foreach (var decl in classDecl.Declarations)
@@ -61,13 +65,68 @@ namespace HapetFrontend.Parsing.PostPrepare
 
 		private void PostPrepareGenerateClassInitializer(AstClassDecl classDecl)
 		{
+			// gettings all field decls and init them
+			var allVarDecls = classDecl.Declarations.Where(x => x is AstVarDecl).Select(x => x as AstVarDecl);
+			List<AstStatement> iniBlockStatements = new List<AstStatement>();
+			foreach (AstVarDecl decl in allVarDecls)
+			{
+				// creating field assing statement
+				var target = new AstNestedExpr(new AstIdExpr(decl.Name.Name), new AstNestedExpr(new AstIdExpr("this"), null), decl);
+				AstExpression fieldInitializer;
+				if (decl.Initializer != null)
+					fieldInitializer = decl.Initializer;
+				else
+					fieldInitializer = new AstDefaultExpr(decl);
+				var assign = new AstAssignStmt(target, fieldInitializer, "=", decl);
+				iniBlockStatements.Add(assign);
+			}
+			// the block with all field inits
+			var iniBlock = new AstBlockExpr(iniBlockStatements);
+
+			// the ini func
 			var iniDecl = new AstFuncDecl(new List<AstParamDecl>(),
-			new AstPointerExpr(new AstIdExpr("void")),
-			null,
+			new AstIdExpr("void"),
+			iniBlock,
 			new AstIdExpr($"{classDecl.Name.Name}_ini"));
 			iniDecl.SpecialKeys.Add(TokenType.KwPrivate); // ini is private because it is called inside ctors
 			iniDecl.ClassFunctionTypes.Add(Enums.ClassFunctionType.Initializer);
+			iniDecl.ContainingClass = classDecl;
 			classDecl.Declarations.Insert(0, iniDecl);
+		}
+
+		private void PostPrepareGenerateClassConstructor(AstClassDecl classDecl, List<AstFuncDecl> ctors)
+		{
+			if (ctors.Count == 0)
+			{
+				// there is no ctor. need to create one
+				List<AstStatement> ctorBlockStatements = new List<AstStatement>();
+				// creating ini func call
+				ctorBlockStatements.Add(new AstCallExpr(
+					new AstNestedExpr(new AstIdExpr("this"), null),
+					new AstIdExpr($"{classDecl.Name.Name}_ini")));
+				// the block with call of ini func
+				var ctorBlock = new AstBlockExpr(ctorBlockStatements);
+
+				// the ctor func
+				var ctorDecl = new AstFuncDecl(new List<AstParamDecl>(),
+				new AstIdExpr("void"),
+				ctorBlock,
+				new AstIdExpr($"{classDecl.Name.Name}_ctor"));
+				ctorDecl.SpecialKeys.Add(TokenType.KwPublic); // default ctor is public
+				ctorDecl.ClassFunctionTypes.Add(Enums.ClassFunctionType.Ctor);
+				ctorDecl.ContainingClass = classDecl;
+				classDecl.Declarations.Insert(1, ctorDecl); // the first one has to be ini func
+			}
+			else
+			{
+				foreach (var ct in ctors)
+				{
+					// insert ini func call at the beginning of the func body
+					ct.Body.Statements.Insert(0, new AstCallExpr(
+						new AstNestedExpr(new AstIdExpr("this"), null),
+						new AstIdExpr($"{classDecl.Name.Name}_ini")));
+				}
+			}
 		}
 	}
 }

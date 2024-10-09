@@ -161,9 +161,9 @@ namespace HapetBackend.Llvm
 				{
 					GenerateVarDeclCode(varDecl);
 				}
-				else if (stmt is AstAssignStmt assignStmt)
+				else if (stmt is AstAssignStmt || stmt is AstCallExpr)
 				{
-					GenerateExpressionCode(assignStmt);
+					GenerateExpressionCode(stmt);
 				}
 				else if (stmt is AstReturnStmt returnStmt)
 				{

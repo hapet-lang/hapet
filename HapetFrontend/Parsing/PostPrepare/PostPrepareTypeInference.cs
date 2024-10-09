@@ -31,16 +31,15 @@ namespace HapetFrontend.Parsing.PostPrepare
 
 		private void PostPrepareClassInference(AstClassDecl classDecl)
 		{
-			foreach (var decl in classDecl.Declarations)
+			// infer fields and props at first
+			foreach (var decl in classDecl.Declarations.Where(x => x is AstVarDecl).Select(x => x as AstVarDecl))
 			{
-				if (decl is AstFuncDecl funcDecl)
-				{
-					PostPrepareFunctionInference(funcDecl);
-				}
-				else if (decl is AstVarDecl fieldDecl) // field or property
-				{
-					PostPrepareVarInference(fieldDecl);
-				}
+				// field or property
+				PostPrepareVarInference(decl);
+			}
+			foreach (var decl in classDecl.Declarations.Where(x => x is AstFuncDecl).Select(x => x as AstFuncDecl))
+			{
+				PostPrepareFunctionInference(decl);
 			}
 		}
 
@@ -100,7 +99,20 @@ namespace HapetFrontend.Parsing.PostPrepare
 			}
 
 			if (varDecl.Initializer != null)
-				PostPrepareExprInference(varDecl.Initializer);
+			{
+				if (varDecl.Initializer is AstDefaultExpr)
+				{
+					// get the default value for the type (no need to infer)
+					varDecl.Initializer = AstDefaultExpr.GetDefaultValueForType(varDecl.Type.OutType, varDecl.Initializer);
+					if (varDecl.Initializer == null)
+						_compiler.ErrorHandler.ReportError(_currentSourceFile.Text, varDecl, "Default value for the type was not found");
+				}
+				else
+				{
+					// if it is not a default
+					PostPrepareExprInference(varDecl.Initializer);
+				}
+			}
 		}
 
 		private void PostPrepareExprInference(AstStatement expr)
@@ -130,6 +142,9 @@ namespace HapetFrontend.Parsing.PostPrepare
 					break;
 				case AstNestedExpr nestExpr:
 					PostPrepareNestedExprInference(nestExpr);
+					break;
+				case AstDefaultExpr defaultExpr:
+					_compiler.ErrorHandler.ReportError(_currentSourceFile.Text, defaultExpr, "(Inner exception) The default had to be infered previously by caller");
 					break;
 
 				// statements
@@ -299,13 +314,25 @@ namespace HapetFrontend.Parsing.PostPrepare
 			}
 		}
 
+		// statements
 		private void PostPrepareAssignStmtInference(AstAssignStmt assignStmt)
 		{
 			PostPrepareExprInference(assignStmt.Target);
 
 			if (assignStmt.Value != null)
 			{
-				PostPrepareExprInference(assignStmt.Value);
+				if (assignStmt.Value is AstDefaultExpr)
+				{
+					// get the default value for the type (no need to infer)
+					assignStmt.Value = AstDefaultExpr.GetDefaultValueForType(assignStmt.Target.OutType, assignStmt.Value);
+					if (assignStmt.Value == null)
+						_compiler.ErrorHandler.ReportError(_currentSourceFile.Text, assignStmt, "Default value for the type was not found");
+				}
+				else
+				{
+					// if it is not a default
+					PostPrepareExprInference(assignStmt.Value);
+				}
 			}
 		}
 	}
