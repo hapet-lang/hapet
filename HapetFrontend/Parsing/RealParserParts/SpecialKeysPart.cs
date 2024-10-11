@@ -1,4 +1,6 @@
 ﻿using HapetFrontend.Ast;
+using HapetFrontend.Ast.Declarations;
+using HapetFrontend.Ast.Expressions;
 
 namespace HapetFrontend.Parsing
 {
@@ -32,6 +34,17 @@ namespace HapetFrontend.Parsing
 			beg = tkn.Location;
 
 			var expr = ParseExpression(true, true);
+
+			// it could be an idexpr or nestedexpr when ctor/dtor decls are here
+			if (expr is AstIdExpr idExpr)
+			{
+				expr = new UnknownDecl(null, idExpr, expr);
+			}
+			else if (expr is AstNestedExpr nestExpr && nestExpr.RightPart is AstIdExpr idExpr2 && nestExpr.LeftPart == null)
+			{
+				expr = new UnknownDecl(null, idExpr2, expr);
+			}
+
 			// because it has to be declaration
 			if (expr is not AstDeclaration)
 			{

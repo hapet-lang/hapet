@@ -348,13 +348,34 @@ namespace HapetFrontend.Parsing
 							var name = ParseIdentifierExpression(allowDots: false);
 							if (name.RightPart is not AstIdExpr idExpr)
 							{
-								ReportError(id.Location, $"Indentifier expected as a name of declaration");
+								ReportError(id.Location, $"Identifier expected as a name of declaration");
 								return id;
 							}
 							return new UnknownDecl(id, idExpr, new Location(token.Location));
 						}
 
 						return id;
+					}
+
+				case TokenType.Tilda:
+					{
+						NextToken();
+						if (!CheckToken(TokenType.Identifier))
+						{
+							ReportError(PeekToken().Location, $"Identifier expected after '~'");
+							return ParseEmptyExpression();
+						}
+
+						var expr = ParseExpression(allowCommaForTuple, allowFunctionDeclaration, errorMessage);
+						if (expr is AstIdExpr idExpr)
+						{
+							idExpr.Suffix = "~";
+						}
+						else
+						{
+							ReportError(PeekToken().Location, $"This type of expr was not expected after '~'");
+						}
+						return expr;
 					}
 
 				case TokenType.StringLiteral:
@@ -426,10 +447,6 @@ namespace HapetFrontend.Parsing
 				case TokenType.KwPartial:
 				case TokenType.KwExtern:
 					return ParseImplementationKeys(token.Type);
-
-				case TokenType.KwCtor:
-				case TokenType.KwDtor:
-					return ParseCtorDtorExpression(token.Type);
 
 				default:
 					//NextToken();

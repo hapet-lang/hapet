@@ -17,6 +17,12 @@ namespace HapetFrontend.Ast.Expressions
 			} 
 		}
 
+		/// <summary>
+		/// Additional string in front of main. 
+		/// For example used for dtors like '~Anime()'
+		/// </summary>
+		public string Suffix { get; set; }
+
 		public AstIdExpr(string name, ILocation Location = null) : base(Location)
 		{
 			this.Name = name;
@@ -32,6 +38,7 @@ namespace HapetFrontend.Ast.Expressions
 			string newName = string.IsNullOrWhiteSpace(name) ? Name : name;
 			var newId = new AstIdExpr(newName, Location)
 			{
+				Suffix = this.Suffix,
 				Parent = this.Parent,
 				Scope = this.Scope,
 				IsCompileTimeValue = this.IsCompileTimeValue,

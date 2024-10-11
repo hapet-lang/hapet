@@ -160,6 +160,7 @@ namespace HapetFrontend.Parsing
 
 						break;
 					}
+				case '~': SimpleToken(ref token, TokenType.Tilda); break;
 				case ':': SimpleToken(ref token, TokenType.Colon); break;
 				case ';': SimpleToken(ref token, TokenType.Semicolon); break;
 				case '.': SimpleToken(ref token, TokenType.Period); break;
@@ -275,8 +276,6 @@ namespace HapetFrontend.Parsing
 				case "override": token.Type = TokenType.KwOverride; break;
 				case "partial": token.Type = TokenType.KwPartial; break;
 				case "extern": token.Type = TokenType.KwExtern; break;
-				case "ctor": token.Type = TokenType.KwCtor; break;
-				case "dtor": token.Type = TokenType.KwDtor; break;
 			}
 		}
 

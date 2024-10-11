@@ -37,16 +37,17 @@ namespace HapetFrontend.Parsing
 		SharpIdentifier,
 		AtSignIdentifier,
 
-		Semicolon, // ;
-		Colon, // :
-		Comma, // ,
-		Period, // .
-		PeriodPeriod, // ..
-		Equal, // =
-		Ampersand, // &
-		Hat, // ^
-		Bang, // !
-		VerticalSlash,  // |
+		Tilda,           // ~
+		Semicolon,		 // ;
+		Colon,			 // :
+		Comma,			 // ,
+		Period,			 // .
+		PeriodPeriod,	 // ..
+		Equal,			 // =
+		Ampersand,		 // &
+		Hat,			 // ^
+		Bang,			 // !
+		VerticalSlash,   // |
 
 		Plus,
 		Minus,
@@ -54,7 +55,7 @@ namespace HapetFrontend.Parsing
 		ForwardSlash,
 		Percent,
 
-		LessLess,  // <<
+		LessLess,		 // <<
 		GreaterGreater,  // >>
 
 		AddEq,
@@ -70,19 +71,19 @@ namespace HapetFrontend.Parsing
 		DoubleEqual,
 		NotEqual,
 
-		LogicalOr,  // ||
-		LogicalAnd,  // &&
+		LogicalOr,		 // ||
+		LogicalAnd,		 // &&
 
-		Arrow,  // =>
+		Arrow,			 // =>
 
-		OpenParen,  // (
-		CloseParen,  // )
-		OpenBrace,  // {
-		CloseBrace,  // }
-		OpenBracket,  // [
-		CloseBracket,  // ]
+		OpenParen,		 // (
+		CloseParen,		 // )
+		OpenBrace,		 // {
+		CloseBrace,		 // }
+		OpenBracket,	 // [
+		CloseBracket,    // ]
 
-		ArrayDef,  // []
+		ArrayDef,		 // []
 
 		// words
 		KwStruct,
@@ -128,9 +129,6 @@ namespace HapetFrontend.Parsing
 		KwVirtual,
 		KwOverride,
 		KwPartial,
-		KwExtern,
-
-		KwCtor,
-		KwDtor
+		KwExtern
 	}
 }

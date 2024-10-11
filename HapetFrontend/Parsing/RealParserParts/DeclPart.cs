@@ -48,8 +48,20 @@ namespace HapetFrontend.Parsing
 					var tpl = ParseTupleExpression(true, true);
 					if (tpl is AstFuncDecl func)
 					{
-						func.Name = udecl.Name;
-						func.Returns = udecl.Type;
+						if (udecl.Type == null)
+						{
+							// it is ctor/dtor
+							func.Name = udecl.Name.GetCopy(udecl.Name.Name + (udecl.Name.Suffix != "~" ? "_ctor" : "_dtor"));
+							func.Returns = new AstIdExpr("void");
+							func.ClassFunctionTypes.Add(udecl.Name.Suffix != "~" ? Enums.ClassFunctionType.Ctor : Enums.ClassFunctionType.Dtor);
+						}
+						else
+						{
+							// it is normal func
+							func.Name = udecl.Name;
+							func.Returns = udecl.Type;
+						}
+
 						func.SpecialKeys.AddRange(udecl.SpecialKeys);
 						return func;
 					}
