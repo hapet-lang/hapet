@@ -12,7 +12,8 @@ public static class Program
 {
 	public static int Main()
 	{
-		Math math = new Math(5);
+		int test = 5;
+		Math math = new Math(test);
 		int a = math.InsideField;
 		return a;
 	}

@@ -164,12 +164,19 @@ namespace HapetBackend.Llvm
 				LLVMValueRef mallocSize = LLVMValueRef.CreateConstInt(HapetTypeToLLVMType(IntType.GetIntType(4, true)), structSize); 
 				v = _builder.BuildCall2(funcType, mallocFunc, new LLVMValueRef[] { mallocSize }, "allocated");
 
+				// other args
+				List<LLVMValueRef> args = new List<LLVMValueRef>() { v };
+				foreach (var a in expr.Arguments)
+				{
+					args.Add(GenerateExpressionCode(a));
+				}
+
 				var ctorName = $"{classType.Declaration.Name.Name}_ctor" + expr.Arguments.GetArgsString(PointerType.GetPointerType(classType));
 				var ctorSymbol = classType.Declaration.Scope.GetSymbol(ctorName) as DeclSymbol;
 				// TODO: error if ctor not found
 				var ctorFunc = _valueMap[ctorSymbol];
 				LLVMTypeRef ctorType = _typeMap[ctorSymbol.Decl.Type.OutType];
-				_builder.BuildCall2(ctorType, ctorFunc, new LLVMValueRef[] { v });  // calling ctor
+				_builder.BuildCall2(ctorType, ctorFunc, args.ToArray());  // calling ctor
 
 				return v;
 			}
