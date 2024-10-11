@@ -55,7 +55,6 @@ namespace HapetFrontend.Parsing
 					return ParseBlockStatement();
 				
 				case TokenType.KwUsing:
-				case TokenType.KwAttach:
 					return ParseUsingStatement();
 
 				default:

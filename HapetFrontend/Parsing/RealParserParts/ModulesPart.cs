@@ -11,13 +11,6 @@ namespace HapetFrontend.Parsing
 		{
 			TokenLocation beg = null;
 			bool isAttach = false;
-			AstStatement asWhat = null;
-
-			if (CheckToken(TokenType.KwAttach))
-			{
-				isAttach = true;
-				Consume(TokenType.KwAttach, ErrMsg("keyword 'attach'", "at beginning of 'using' statement"));
-			}
 
 			beg ??= Consume(TokenType.KwUsing, ErrMsg("keyword 'using'", "at beginning of 'using' statement")).Location;
 			SkipNewlines();
@@ -29,18 +22,7 @@ namespace HapetFrontend.Parsing
 				return ParseEmptyExpression();
 			}
 
-			if (CheckToken(TokenType.KwAs))
-			{
-				NextToken();
-				asWhat = ParseIdentifierExpression(ErrMsg("expression", "after keyword 'as' in 'using' statement"), allowDots: false);
-				if (asWhat is not AstNestedExpr)
-				{
-					ReportError(asWhat.Location, "Module aliasing expected after 'as' keyword in 'using' keyword");
-					return ParseEmptyExpression();
-				}
-			}
-
-			return new AstUsingStmt(expr, isAttach, asWhat as AstNestedExpr, Location: new Location(beg));
+			return new AstUsingStmt(expr, Location: new Location(beg));
 		}
 	}
 }

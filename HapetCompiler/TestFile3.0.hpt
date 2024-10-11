@@ -1,13 +1,5 @@
-﻿// just says that the package is included
-// you still have to use it like "System.Math.Floor(...)"
+﻿// includes contents of Math file of System project into the current file
 using System.Math; 
-// attaches the using so you can access its contents directly 
-// like imagin there is a class Rand in System.Random. 
-// you can use it directly without module name like "... = new Rand(...)"
-attach using System.Random;
-// just like the first one but you specify your own name of the module
-// so now you can access contents like that "... = new Network.HttpClient(...)"
-using System.Net as Network;
 
 public static class Program
 {
