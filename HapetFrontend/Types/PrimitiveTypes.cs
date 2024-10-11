@@ -341,7 +341,7 @@ namespace HapetFrontend.Types
 		public HapetType TargetType { get; set; }
 		public object Length { get; private set; }
 
-		public override string TypeName => "array";
+		public override string TypeName => $"array";
 
 		private ArrayType(HapetType target, object length) : base()
 		{

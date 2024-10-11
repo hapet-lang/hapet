@@ -3,6 +3,7 @@ using HapetFrontend.Ast.Declarations;
 using HapetFrontend.Ast.Statements;
 using HapetFrontend.Entities;
 using HapetFrontend.Types;
+using System.Xml.Linq;
 
 namespace HapetFrontend.Scoping
 {
@@ -39,6 +40,17 @@ namespace HapetFrontend.Scoping
 		public bool DefineDeclSymbol(string name, AstDeclaration decl)
 		{
 			return DefineSymbol(new DeclSymbol(name, decl));
+		}
+
+        public bool RenameSymbol(string oldName, string newName)
+        {
+			if (!_symbolTable.TryGetValue(oldName, out var other))
+				return false;
+
+			_symbolTable[newName] = other;
+			_symbolTable.Remove(oldName);
+
+			return true;
 		}
 
 		public ISymbol GetSymbol(string name, bool searchUsedScopes = true, bool searchParentScope = true)

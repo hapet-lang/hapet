@@ -1,6 +1,8 @@
 ﻿using HapetFrontend.Ast.Expressions;
 using HapetFrontend.Enums;
+using HapetFrontend.Scoping;
 using HapetFrontend.Types;
+using System.Text;
 
 namespace HapetFrontend.Ast.Declarations
 {

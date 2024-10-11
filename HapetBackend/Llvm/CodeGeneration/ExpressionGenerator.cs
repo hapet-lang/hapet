@@ -1,4 +1,5 @@
-﻿using HapetFrontend.Ast;
+﻿using HapetFrontend;
+using HapetFrontend.Ast;
 using HapetFrontend.Ast.Declarations;
 using HapetFrontend.Ast.Expressions;
 using HapetFrontend.Ast.Statements;
@@ -148,38 +149,27 @@ namespace HapetBackend.Llvm
 			LLVMValueRef v = default;
 			if (expr.OutType is ClassType classType)
 			{
-				var hpt = classType.Declaration.Type.OutType;
-				var tp = _typeMap[hpt];
-
-				// all declarations except funcs
-				// TODO: there could be not only vardecls?
-				//List<AstVarDecl> declarations = classType.Declaration.Declarations.Where(x => x is not AstFuncDecl).Select(x => x as AstVarDecl).ToList();
-				//LLVMValueRef undef = LLVM.GetUndef(tp);
-				//v = declarations.Aggregate(undef, (und, field) =>
-				//{
-				//	return _builder.BuildInsertValue(und, GenerateExpressionCode(field.Initializer), 0); // TODO: offsets here
-				//});
-
 				// TODO: some shite with alignment here
 				ulong structSize = 0;
-				List<HapetType> structElements = _structTypeElementsMap[hpt];
+				List<HapetType> structElements = _structTypeElementsMap[classType];
 				foreach (var elem in structElements)
 				{
 					structSize += (ulong)elem.GetSize();
                 }
 
+				// allocating memory for struct
                 var mallocSymbol = classType.Declaration.Scope.GetSymbol("malloc") as DeclSymbol;
 				var mallocFunc = _valueMap[mallocSymbol];
 				LLVMTypeRef funcType = _typeMap[mallocSymbol.Decl.Type.OutType];
 				LLVMValueRef mallocSize = LLVMValueRef.CreateConstInt(HapetTypeToLLVMType(IntType.GetIntType(4, true)), structSize); 
 				v = _builder.BuildCall2(funcType, mallocFunc, new LLVMValueRef[] { mallocSize }, "allocated");
 
-				// TODO: calling ctors with parameters here...
-				var ctorSymbol = classType.Declaration.Scope.GetSymbol($"{classType.Declaration.Name.Name}_ctor") as DeclSymbol;
+				var ctorName = $"{classType.Declaration.Name.Name}_ctor" + expr.Arguments.GetArgsString(PointerType.GetPointerType(classType));
+				var ctorSymbol = classType.Declaration.Scope.GetSymbol(ctorName) as DeclSymbol;
 				// TODO: error if ctor not found
 				var ctorFunc = _valueMap[ctorSymbol];
 				LLVMTypeRef ctorType = _typeMap[ctorSymbol.Decl.Type.OutType];
-				_builder.BuildCall2(ctorType, ctorFunc, new LLVMValueRef[] { v });  // calling default ctor
+				_builder.BuildCall2(ctorType, ctorFunc, new LLVMValueRef[] { v });  // calling ctor
 
 				return v;
 			}

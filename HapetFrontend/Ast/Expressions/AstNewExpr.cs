@@ -1,4 +1,6 @@
-﻿namespace HapetFrontend.Ast.Expressions
+﻿using System.Text;
+
+namespace HapetFrontend.Ast.Expressions
 {
 	public class AstNewExpr : AstExpression
 	{

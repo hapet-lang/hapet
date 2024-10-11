@@ -17,7 +17,7 @@ namespace HapetFrontend.Ast
 		/// <summary>
 		/// Getting symbol of itself
 		/// </summary>
-		public ISymbol GetSymbol
+		public virtual ISymbol GetSymbol
 		{
 			get
 			{

@@ -1,6 +1,10 @@
 ﻿using HapetFrontend.Ast;
+using HapetFrontend.Ast.Declarations;
+using HapetFrontend.Ast.Expressions;
 using HapetFrontend.Entities;
+using HapetFrontend.Types;
 using System.Diagnostics;
+using System.Text;
 
 namespace HapetFrontend
 {
@@ -15,6 +19,47 @@ namespace HapetFrontend
 		{
 			return Path.GetFullPath(new Uri(path).LocalPath)
 					   .TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+		}
+
+		public static string GetArgsString(this List<AstArgumentExpr> args, HapetType containingClass = null)
+		{
+			StringBuilder sb = new StringBuilder();
+			sb.Append('(');
+
+			// class is passed as a first parameter
+			if (containingClass != null)
+			{
+				sb.Append(containingClass.ToString());
+				if (args.Count > 0)
+					sb.Append(", ");
+			}
+
+			for (int i = 0; i < args.Count; i++)
+			{
+				var a = args[i];
+				sb.Append(a.OutType.ToString());
+
+				if (i != args.Count - 1)
+					sb.Append(", ");
+			}
+			sb.Append(')');
+			return sb.ToString();
+		}
+
+		public static string GetParamsString(this List<AstParamDecl> pars)
+		{
+			StringBuilder sb = new StringBuilder();
+			sb.Append('(');
+			for (int i = 0; i < pars.Count; i++)
+			{
+				var p = pars[i];
+				sb.Append(p.Type.OutType.ToString());
+
+				if (i != pars.Count - 1)
+					sb.Append(", ");
+			}
+			sb.Append(')');
+			return sb.ToString();
 		}
 		#endregion
 

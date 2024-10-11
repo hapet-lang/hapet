@@ -53,6 +53,19 @@ namespace HapetFrontend.Parsing.PostPrepare
 					PostPrepareExprInference(p.DefaultValue);
 			}
 
+			// if the containing class is empty - it is external func
+			if (funcDecl.ContainingClass != null)
+			{
+				// renaming func name from 'Anime' to 'Anime(int, float)'
+				string newName = funcDecl.Name.Name + funcDecl.Parameters.GetParamsString();
+				// if it is public func - it should be visible in the scope in which func's class is
+				if (funcDecl.SpecialKeys.Contains(Parsing.TokenType.KwPublic)) // TODO: not only public, also check PostPrepareClassScoping
+					funcDecl.ContainingClass.Scope.Parent.RenameSymbol(funcDecl.Name.Name, newName);
+				else
+					funcDecl.ContainingClass.Scope.RenameSymbol(funcDecl.Name.Name, newName);
+				funcDecl.Name = funcDecl.Name.GetCopy(newName);
+			}
+
 			// inferencing return type 
 			{
 				PostPrepareExprInference(funcDecl.Returns);
@@ -233,8 +246,43 @@ namespace HapetFrontend.Parsing.PostPrepare
 
 		private void PostPrepareCallExprInference(AstCallExpr callExpr)
 		{
-			PostPrepareIdentifierInference(callExpr.FuncName);
+			// resolve the object on which func is called
+			PostPrepareExprInference(callExpr.TypeOrObjectName);
+			// resolve args
+			foreach (var a in callExpr.Arguments)
+			{
+				PostPrepareExprInference(a);
+			}
 
+			// we need to manually check if the function is an external. 
+			// if it is not - try to search it like an internal
+			var smbl = callExpr.FuncName.Scope.GetSymbol(callExpr.FuncName.Name);
+			if (smbl is DeclSymbol declTyped)
+			{
+				callExpr.FuncName.OutType = declTyped.Decl.Type.OutType;
+			}
+			else
+			{
+				// TODO: also callExpr.TypeOrObjectName could be checked to find out if the func is static or not
+				// renaming func call name from 'Anime' to 'Anime(int, float)' WITH OBJECT AS FIRST PARAM
+				string newName = callExpr.FuncName.Name + callExpr.Arguments.GetArgsString(callExpr.TypeOrObjectName.OutType);
+				var smbl2 = callExpr.FuncName.Scope.GetSymbol(newName);
+				if (smbl2 is DeclSymbol declTyped2)
+				{
+					// if it is a non static func
+					callExpr.FuncName.OutType = declTyped2.Decl.Type.OutType;
+					callExpr.FuncName = callExpr.FuncName.GetCopy(newName);
+				}
+				else
+				{
+					// probably static
+					newName = callExpr.FuncName.Name + callExpr.Arguments.GetArgsString();
+					callExpr.FuncName = callExpr.FuncName.GetCopy(newName);
+					PostPrepareIdentifierInference(callExpr.FuncName);
+				}
+			}
+
+			// setting parameters
 			var sym = callExpr.Scope.GetSymbol(callExpr.FuncName.Name);
 			if (sym is DeclSymbol typed && typed.Decl is AstFuncDecl funcDecl)
 			{
@@ -246,12 +294,7 @@ namespace HapetFrontend.Parsing.PostPrepare
 				// TODO: error here
 			}
 
-			PostPrepareExprInference(callExpr.TypeOrObjectName);
-			foreach (var a in callExpr.Arguments)
-			{
-				PostPrepareExprInference(a);
-			}
-
+			// setting call expr out type
 			if (callExpr.FuncName.OutType is FunctionType funcType)
 			{
 				// call expr type is the same as func return type

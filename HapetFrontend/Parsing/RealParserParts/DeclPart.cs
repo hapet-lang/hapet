@@ -57,6 +57,11 @@ namespace HapetFrontend.Parsing
 				}
 				// TODO: properties with { get; set; }
 			}
+			else if (expr is AstFuncDecl funcDecl)
+			{
+				// already prepared func (probably ctor or dtor)
+				return funcDecl;
+			}
 
 			ReportError(PeekToken().Location, $"Unexpected token. Expected '=' or '\\n'");
 			return new AstVarDecl(expr as AstIdExpr, null, null, docString, Location: expr);

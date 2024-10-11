@@ -232,7 +232,7 @@ namespace HapetFrontend.Parsing
 								ReportError(nestExpr.Location, $"Indentifier expected as the func name");
 								return expr;
 							}
-							expr = new AstCallExpr(nestExpr.LeftPart, new AstIdExpr(idExpr.Name, idExpr), args, new Location(expr.Beginning, end));
+							expr = new AstCallExpr(nestExpr.LeftPart, idExpr.GetCopy(), args, new Location(expr.Beginning, end));
 
 							// TODO: check for dots after this!!! there could be a.asd().asd().ddd().d.lll()
 						}
@@ -426,6 +426,10 @@ namespace HapetFrontend.Parsing
 				case TokenType.KwPartial:
 				case TokenType.KwExtern:
 					return ParseImplementationKeys(token.Type);
+
+				case TokenType.KwCtor:
+				case TokenType.KwDtor:
+					return ParseCtorDtorExpression(token.Type);
 
 				default:
 					//NextToken();

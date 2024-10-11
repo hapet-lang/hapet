@@ -32,6 +32,7 @@ namespace HapetFrontend.Parsing.PostPrepare
 			PostPrepareGenerateClassInitializer(classDecl);
 			// passing all the existing ctors
 			PostPrepareGenerateClassConstructor(classDecl, allFuncs.Where(x => x.ClassFunctionTypes.Contains(Enums.ClassFunctionType.Ctor)).ToList());
+			PostPrepareGenerateClassDestructor(classDecl, allFuncs.Where(x => x.ClassFunctionTypes.Contains(Enums.ClassFunctionType.Dtor)).ToList());
 
 			// adding 'this' param as first
 			foreach (var decl in classDecl.Declarations)
@@ -40,7 +41,7 @@ namespace HapetFrontend.Parsing.PostPrepare
 					!funcDecl.SpecialKeys.Contains(TokenType.KwStatic))
 				{
 					// creating the class instance 'this' param
-					AstExpression paramType = new AstPointerExpr(new AstIdExpr(classDecl.Name.Name), false);
+					AstExpression paramType = new AstPointerExpr(classDecl.Name.GetCopy(), false);
 					AstIdExpr paramName = new AstIdExpr("this");
 					AstParamDecl thisParam = new AstParamDecl(paramType, paramName);
 					// adding the param as the func first param
@@ -57,7 +58,7 @@ namespace HapetFrontend.Parsing.PostPrepare
 			},
 			new AstPointerExpr(new AstIdExpr("void")),
 			null,
-			new AstIdExpr("malloc"));
+			new AstIdExpr("malloc")); // TODO: not everywhere is has to be used. in future export it into std
 			mallocDecl.SpecialKeys.Add(TokenType.KwExtern);
 			_currentSourceFile.Statements.Insert(0, mallocDecl);
 			mallocDecl.Scope = _currentSourceFile.FileScope;
@@ -71,7 +72,7 @@ namespace HapetFrontend.Parsing.PostPrepare
 			foreach (AstVarDecl decl in allVarDecls)
 			{
 				// creating field assing statement
-				var target = new AstNestedExpr(new AstIdExpr(decl.Name.Name), new AstNestedExpr(new AstIdExpr("this"), null), decl);
+				var target = new AstNestedExpr(decl.Name.GetCopy(), new AstNestedExpr(new AstIdExpr("this"), null), decl);
 				AstExpression fieldInitializer;
 				if (decl.Initializer != null)
 					fieldInitializer = decl.Initializer;
@@ -126,6 +127,43 @@ namespace HapetFrontend.Parsing.PostPrepare
 						new AstNestedExpr(new AstIdExpr("this"), null),
 						new AstIdExpr($"{classDecl.Name.Name}_ini")));
 				}
+			}
+		}
+
+		private void PostPrepareGenerateClassDestructor(AstClassDecl classDecl, List<AstFuncDecl> dtors)
+		{
+			if (dtors.Count == 0)
+			{
+				// there is no dtor. need to create one
+				List<AstStatement> dtorBlockStatements = new List<AstStatement>();
+
+				// TODO: do i need to place here something?
+
+				// the block with 
+				var dtorBlock = new AstBlockExpr(dtorBlockStatements);
+
+				// the ctor func
+				var dtorDecl = new AstFuncDecl(new List<AstParamDecl>(),
+				new AstIdExpr("void"),
+				dtorBlock,
+				new AstIdExpr($"{classDecl.Name.Name}_dtor"));
+				dtorDecl.SpecialKeys.Add(TokenType.KwPublic); // default dtor is public
+				dtorDecl.ClassFunctionTypes.Add(Enums.ClassFunctionType.Dtor);
+				dtorDecl.ContainingClass = classDecl;
+				classDecl.Declarations.Add(dtorDecl);
+			}
+			else if (dtors.Count == 1)
+			{
+				var dtorFunc = dtors[0];
+
+				// TODO: do i need to insert smth here? probably need to extern 'delete' and call it at the end
+				//ct.Body.Statements.Insert(0, new AstCallExpr(
+				//	new AstNestedExpr(new AstIdExpr("this"), null),
+				//	new AstIdExpr($"{classDecl.Name.Name}_ini")));
+			}
+			else
+			{
+				_compiler.ErrorHandler.ReportError(_currentSourceFile.Text, dtors[1], "Only one destructor could be declared in a class");
 			}
 		}
 	}

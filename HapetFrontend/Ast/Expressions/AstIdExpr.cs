@@ -26,5 +26,20 @@ namespace HapetFrontend.Ast.Expressions
 		{
 			return Name;
 		}
+
+		public AstIdExpr GetCopy(string name = "")
+		{
+			string newName = string.IsNullOrWhiteSpace(name) ? Name : name;
+			var newId = new AstIdExpr(newName, Location)
+			{
+				Parent = this.Parent,
+				Scope = this.Scope,
+				IsCompileTimeValue = this.IsCompileTimeValue,
+				OutType = this.OutType,
+				OutValue = this.OutValue,
+				SourceFile = this.SourceFile,
+			};
+			return newId;
+		}
 	}
 }

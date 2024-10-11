@@ -2,7 +2,7 @@
 {
 	public int InsideField;
 
-	public Math(int a)
+	public ctor Math(int a)
 	{
 		this.InsideField = a;
 	}

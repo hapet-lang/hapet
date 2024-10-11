@@ -3,3 +3,5 @@
 - Manually create dtor if there is no one
 - Check for return statements in all funcs. That they exist and are with the correct ret type
 - Check for var decls with func calls. If func ret type is not the same as var decl type. Or even func ret type is void
+- Check for similar func (that have the same params) and error it. Check after TypeInference. Just create a new class
+- Do not create ini,ctor,dtor if the class is static. Also create and handle static ctors
