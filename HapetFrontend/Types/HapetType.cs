@@ -19,8 +19,8 @@ namespace HapetFrontend.Types
 		/// </summary>
 		public static int PointerSize => CompilerSettings.TargetPlatformData.PointerSize;
 
-		private int _size = -1;
-		private int _alignment = -1;
+		protected int _size = -1;
+		protected int _alignment = -1;
 
 		protected HapetType(int size, int align)
 		{

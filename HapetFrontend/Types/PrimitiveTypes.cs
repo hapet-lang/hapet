@@ -28,7 +28,40 @@ namespace HapetFrontend.Types
 		public static IntType LiteralType { get; } = new IntType(0, 0, false);
 		public static IntType DefaultType => GetIntType(4, true);
 
-		public override string TypeName => "int";
+		public override string TypeName 
+		{
+			get
+			{
+				if (Signed)
+				{
+                    switch (GetSize())
+                    {
+                        case 1:
+                            return "sbyte";
+                        case 2:
+                            return "short";
+                        case 4:
+                            return "int";
+                        default:
+                            return "long";
+                    }
+                }
+				else
+				{
+					switch (GetSize())
+					{
+						case 1:
+                            return "byte";
+                        case 2:
+                            return "ushort";
+                        case 4:
+                            return "uint";
+						default:
+                            return "ulong";
+                    }
+				}
+			}
+		}
 
 		private IntType(int size, int align, bool sign) : base(size, align)
 		{
@@ -106,7 +139,7 @@ namespace HapetFrontend.Types
 		public static FloatType LiteralType { get; } = new FloatType(0, 0);
 		public static FloatType DefaultType => GetFloatType(4);
 
-		public override string TypeName => "float";
+		public override string TypeName => ToString().ToLower();
 
 		private FloatType(int size, int align) : base(size, align) { }
 

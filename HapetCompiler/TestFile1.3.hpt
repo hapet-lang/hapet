@@ -6,6 +6,11 @@
 	{
 		this.InsideField = a;
 	}
+
+	public Math(float a)
+	{
+		this.InsideField = (int)a;
+	}
 }
 
 public static class Program
@@ -15,6 +20,13 @@ public static class Program
 		int test = 5;
 		Math math = new Math(test);
 		int a = math.InsideField;
-		return a;
+
+		float test2 = 6;
+		Math math2 = new Math(test2);
+		int a2 = math2.InsideField;
+
+		int ab = a + a2;
+
+		return ab;
 	}
 }

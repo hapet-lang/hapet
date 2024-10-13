@@ -45,11 +45,11 @@ namespace HapetFrontend.Parsing.PostPrepare
 				{
 					funcDecl.ContainingClass = classDecl;
 
-					// if it is public func - it should be visible in the scope in which func's class is
-					if (funcDecl.SpecialKeys.Contains(Parsing.TokenType.KwPublic)) // TODO: not only public. also check PostPrepareFunctionInference
-						classDecl.Scope.Parent.DefineDeclSymbol(funcDecl.Name.Name, funcDecl);
-					else
-						classDecl.Scope.DefineDeclSymbol(funcDecl.Name.Name, funcDecl);
+					//// if it is public func - it should be visible in the scope in which func's class is
+					//if (funcDecl.SpecialKeys.Contains(Parsing.TokenType.KwPublic)) // TODO: not only public. also check PostPrepareFunctionInference
+					//	classDecl.Scope.Parent.DefineDeclSymbol(funcDecl.Name.Name, funcDecl);
+					//else
+					//	classDecl.Scope.DefineDeclSymbol(funcDecl.Name.Name, funcDecl);
 
 					PostPrepareFunctionScoping(funcDecl);
 				}
