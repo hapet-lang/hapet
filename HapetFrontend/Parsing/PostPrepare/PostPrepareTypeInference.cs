@@ -59,7 +59,7 @@ namespace HapetFrontend.Parsing.PostPrepare
 				// renaming func name from 'Anime' to 'Anime(int, float)'
 				string newName = funcDecl.Name.Name + funcDecl.Parameters.GetParamsString();
 				// if it is public func - it should be visible in the scope in which func's class is
-				if (funcDecl.SpecialKeys.Contains(Parsing.TokenType.KwPublic)) // TODO: not only public, also check PostPrepareClassScoping
+				if (funcDecl.SpecialKeys.Contains(Parsing.TokenType.KwPublic)) // TODO: not only public
 					funcDecl.ContainingClass.Scope.Parent.DefineDeclSymbol(newName, funcDecl);
 				else
 					funcDecl.ContainingClass.Scope.DefineDeclSymbol(newName, funcDecl);
