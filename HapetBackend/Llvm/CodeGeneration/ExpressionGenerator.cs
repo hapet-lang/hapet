@@ -24,12 +24,15 @@ namespace HapetBackend.Llvm
 			switch (expr)
 			{
 				case AstBinaryExpr binExpr: return GenerateBinaryExprCode(binExpr);
+				case AstPointerExpr pointerExpr: return GeneratePointerExprCode(pointerExpr);
+				case AstAddressOfExpr addrExpr: return GenerateAddressOfExprCode(addrExpr);
 				case AstIdExpr idExpr: return GenerateIdExpr(idExpr);
 				case AstNewExpr newExpr: return GenerateNewExpr(newExpr);
 				case AstCallExpr callExpr: return GenerateCallExpr(callExpr);
 				case AstArgumentExpr argExpr: return GenerateArgumentExpr(argExpr);
 				case AstCastExpr castExpr: return GenerateCastExpr(castExpr);
 				case AstNestedExpr nestExpr: return GenerateNestedExpr(nestExpr);
+				case AstArrayExpr arrayExpr: return GenerateArrayExprCode(arrayExpr);
 
 				// statements
 				case AstAssignStmt assignStmt: return GenerateAssignStmt(assignStmt);
@@ -132,6 +135,38 @@ namespace HapetBackend.Llvm
 			return result;
 		}
 
+		private LLVMValueRef GeneratePointerExprCode(AstPointerExpr expr)
+		{
+			if (expr.IsDereference)
+			{
+				var theVar = GenerateExpressionCode(expr.SubExpression);
+				var loaded = _builder.BuildLoad2(HapetTypeToLLVMType(expr.SubExpression.OutType), theVar, $"derefed");
+				return loaded;
+			}
+			else
+			{
+				// idk what to do here :_(
+				// anyway it should not happen...
+				// TODO: internal error here
+			}
+			return null;
+		}
+
+		private LLVMValueRef GenerateAddressOfExprCode(AstAddressOfExpr addrExpr)
+		{
+			// TODO: should be better. probably there won't be only AstNestedExpr or AstIdExpr but something else...
+			if (addrExpr.SubExpression is AstNestedExpr nestExpr)
+			{
+				return GenerateNestedExpr(nestExpr, true);
+			}
+			else if (addrExpr.SubExpression is AstIdExpr idExpr)
+			{
+				return GenerateIdExpr(idExpr, true);
+			}
+			// TODO: internal error here
+			return null;
+		}
+
 		private LLVMValueRef GenerateIdExpr(AstIdExpr expr, bool getPtr = false)
 		{
 			// TODO: check for AstNestedIdExpr
@@ -158,7 +193,7 @@ namespace HapetBackend.Llvm
                 }
 
 				// allocating memory for struct
-                var mallocSymbol = classType.Declaration.Scope.GetSymbol("malloc") as DeclSymbol;
+                var mallocSymbol = classType.Declaration.Scope.GetSymbol("malloc") as DeclSymbol; // TODO: rewrite it when there would be a default project of Hapet
 				var mallocFunc = _valueMap[mallocSymbol];
 				LLVMTypeRef funcType = _typeMap[mallocSymbol.Decl.Type.OutType];
 				LLVMValueRef mallocSize = LLVMValueRef.CreateConstInt(HapetTypeToLLVMType(IntType.GetIntType(4, true)), structSize); 
@@ -264,7 +299,7 @@ namespace HapetBackend.Llvm
 					// if we need ptr for the shite. usually used to store some values inside vars
 					if (getPtr)
 						return ret;
-					// loading the field because it is nt registered in _typeMap like a normal variable.
+					// loading the field because it is not registered in _typeMap like a normal variable.
 					// it should be ok for all types of the fields including classes and other shite
 					var retLoaded = _builder.BuildLoad2(HapetTypeToLLVMType(idExpr.OutType), ret, $"{idExpr.Name}Loaded");
                     return retLoaded;
@@ -273,6 +308,22 @@ namespace HapetBackend.Llvm
             }
             _errorHandler.ReportError(_currentSourceFile.Text, expr, $"The nested expr could not be generated, fatal :^( ");
 			return null;
+		}
+
+		private LLVMValueRef GenerateArrayExprCode(AstArrayExpr arrayExpr)
+		{
+			// TODO: check if it could be allocated on stack
+
+			// allocating memory for the array
+			var mallocSymbol = arrayExpr.Scope.GetSymbol("malloc") as DeclSymbol; // TODO: rewrite it when there would be a default project of Hapet
+			var mallocFunc = _valueMap[mallocSymbol];
+			LLVMTypeRef funcType = _typeMap[mallocSymbol.Decl.Type.OutType];
+			LLVMValueRef mallocSize = GenerateExpressionCode(arrayExpr.SizeExpr); // TODO: for now it is only it bytes
+			var allocated = _builder.BuildCall2(funcType, mallocFunc, new LLVMValueRef[] { mallocSize }, "allocatedForArray");
+
+			// TODO: handle initializer values or if they are empty - default on each element!!!
+
+			return allocated;
 		}
 
 		// statements
