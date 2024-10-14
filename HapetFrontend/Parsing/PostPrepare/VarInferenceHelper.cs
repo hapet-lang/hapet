@@ -63,7 +63,8 @@ namespace HapetFrontend.Parsing.PostPrepare
             // if there is no way to cast
             if (neededType != exprType && outExpr == null)
             {
-                if (!(neededType is PointerType ptr1 && ptr1.TargetType is ClassType && exprType is ClassType) // usually when 'Anime a = new Anime();'
+                if (!(neededType is PointerType ptr1 && ptr1.TargetType is ClassType && exprType is ClassType) && // usually when 'Anime a = new Anime();'
+					!(neededType is PointerType ptr2 && ptr2.TargetType is CharType && exprType is StringType) // string is just a char ptr
                     ) // place here other exceptions
                 {
                     _compiler.ErrorHandler.ReportError(_currentSourceFile.Text, expr, $"Type {exprType} cannot be implicitly casted into {neededType}");

@@ -11,7 +11,7 @@
 
 		/// <summary>
 		/// The right part of the expression
-		/// Could only be <see cref="AstCallExpr"/> or <see cref="AstIdExpr"/> or real pure <see cref="AstExpression"/>
+		/// Could only be <see cref="AstCallExpr"/> or <see cref="AstIdExpr"/> or <see cref="AstPointerExpr"/> or real pure <see cref="AstExpression"/>
 		/// </summary>
 		public AstExpression RightPart { get; set; }
 

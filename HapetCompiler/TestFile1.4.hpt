@@ -5,7 +5,10 @@
 		char a = 'g';
 		char a2 = 'н';
 
-		char* s = "test string";
+		// char* s = "test string";
+
+		byte* arr = new byte[3];
+
 		return 0;
 	}
 }

@@ -14,8 +14,18 @@ namespace HapetFrontend.Parsing
 			SkipNewlines();
 			var typeName = ParseIdentifierExpression(ErrMsg("expression", "after keyword 'new'"));
 
-			var args = ParseArgumentList(out var _);
-			return new AstNewExpr(typeName, args, Location: new Location(beg));
+			if (CheckToken(TokenType.OpenBracket)) // array creation
+			{
+				return ParseArrayExpr(typeName, beg);
+			}
+			else if (CheckToken(TokenType.OpenParen)) // probably class instance creation
+			{
+				var args = ParseArgumentList(out var _);
+				return new AstNewExpr(typeName, args, Location: new Location(beg));
+			}
+
+			// TODO: error here that unexpected token .. after typeName
+			return ParseEmptyExpression();
 		}
 	}
 }

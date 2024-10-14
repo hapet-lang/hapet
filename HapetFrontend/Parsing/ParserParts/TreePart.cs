@@ -161,25 +161,32 @@ namespace HapetFrontend.Parsing
 		private AstStatement ParseUnaryExpression(bool allowCommaForTuple, bool allowFunctionDeclaration, ErrorMessageResolver errorMessage = null)
 		{
 			var next = PeekToken();
-			// TODO: ...
-			//if (next.Type == TokenType.Hat)
-			//{
-			//	NextToken();
-			//	SkipNewlines();
+			if (next.Type == TokenType.Ampersand)
+			{
+				NextToken();
+				SkipNewlines();
 
-			//	var sub = ParseUnaryExpression(allowCommaForTuple, allowFunctionExpression, errorMessage);
-			//	return new AstAddressOfExpr(sub, false, new Location(next.Location, sub.Ending));
-			//}
-			//else if (next.Type == TokenType.Asterisk)
-			//{
-			//	NextToken();
-			//	SkipNewlines();
-			//	var sub = ParseUnaryExpression(allowCommaForTuple, allowFunctionExpression, errorMessage);
-			//	return new AstDereferenceExpr(sub, new Location(next.Location, sub.Ending));
-			//}
-			//else if (next.Type == TokenType.Minus || next.Type == TokenType.Plus)
-			// TODO: replace with uncommented
-			if (next.Type == TokenType.Minus || next.Type == TokenType.Plus)
+				var sub = ParseUnaryExpression(allowCommaForTuple, allowFunctionDeclaration, errorMessage);
+				if (sub is not AstExpression expr)
+				{
+					// TODO: error here. it has to be an expr
+					return sub;
+				}
+				return new AstAddressOfExpr(expr, new Location(next.Location, sub.Ending));
+			}
+			else if (next.Type == TokenType.Asterisk)
+			{
+				NextToken();
+				SkipNewlines();
+				var sub = ParseUnaryExpression(allowCommaForTuple, allowFunctionDeclaration, errorMessage);
+				if (sub is not AstExpression expr)
+				{
+					// TODO: error here. it has to be an expr
+					return sub;
+				}
+				return new AstPointerExpr(expr, true, new Location(next.Location, sub.Ending));
+			}
+			else if (next.Type == TokenType.Minus || next.Type == TokenType.Plus)
 			{
 				NextToken();
 				SkipNewlines();
@@ -278,17 +285,6 @@ namespace HapetFrontend.Parsing
 					//	}
 					//	break;
 
-					// TODO: should be parsed as one AstIdExpr
-					//case TokenType.Period:
-					//	{
-					//		NextToken();
-					//		SkipNewlines();
-					//		var right = ParseIdentifierExpr(ErrMsg("identifier", "after ."));
-
-					//		expr = new AstDotExpr(expr, right, new Location(expr.Beginning, right.End));
-					//		break;
-					//	}
-
 					default:
 						return expr;
 				}
@@ -341,6 +337,14 @@ namespace HapetFrontend.Parsing
 							idExpr.Location.Ending.End += 2;
 							id.Location.Ending.End += 2;
 							NextToken();
+						}
+
+						// if it is a pointer type
+						while (CheckToken(TokenType.Asterisk))
+						{
+							NextToken();
+							var ptrExpr = new AstPointerExpr(id.RightPart, false, new Location(id.RightPart.Beginning, CurrentToken.Location.Ending));
+							id.RightPart = ptrExpr;
 						}
 
 						if (CheckToken(TokenType.Identifier))
@@ -410,14 +414,6 @@ namespace HapetFrontend.Parsing
 
 				case TokenType.OpenParen:
 					return ParseTupleExpression(allowFunctionDeclaration, allowCommaForTuple);
-
-				// TODO: ...
-				//case TokenType.Ampersand:
-				//	NextToken();
-				//	SkipNewlines();
-
-				//	var target = ParseExpression(allowCommaForTuple);
-				//	return new AstReferenceTypeExpr(target, new Location(token.Location, target.Ending));
 
 				// TODO: ...
 				//case TokenType.KwStruct:

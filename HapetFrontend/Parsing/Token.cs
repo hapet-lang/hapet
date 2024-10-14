@@ -51,7 +51,7 @@ namespace HapetFrontend.Parsing
 
 		Plus,
 		Minus,
-		Asterisk,
+		Asterisk,		 // *
 		ForwardSlash,
 		Percent,
 
