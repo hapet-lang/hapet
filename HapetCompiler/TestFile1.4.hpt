@@ -5,7 +5,7 @@
 		char a = 'g';
 		char a2 = 'н';
 
-		string s = "test string";
+		char* s = "test string";
 		return 0;
 	}
 }

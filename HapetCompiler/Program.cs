@@ -22,7 +22,7 @@ namespace HapetCompiler
 			public bool PrintTime = false;
 		}
 
-		static void Main(string[] args)
+		static int Main(string[] args)
 		{
 			Console.OutputEncoding = Encoding.UTF8;
 
@@ -39,9 +39,26 @@ namespace HapetCompiler
 
 			var ptFile = compiler.AddFile(_testFile);
 
+			if (errorHandler.HasErrors)
+			{
+				return 1; // parsing errors
+			}
+
 			postPreparer.StartPreparation();
 
+			if (errorHandler.HasErrors)
+			{
+				return 2; // post prepare errors
+			}
+
 			bool codeGenOk = GenerateAndCompileCode(compiler, errorHandler);
+
+			if (errorHandler.HasErrors || !codeGenOk)
+			{
+				return 3; // code generation errors errors
+			}
+
+			return 0;
 		}
 
 		private static bool GenerateAndCompileCode(Compiler compiler, IErrorHandler errorHandler)
