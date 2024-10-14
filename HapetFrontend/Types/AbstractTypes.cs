@@ -41,6 +41,6 @@ namespace HapetFrontend.Types
 			Declaration = decl;
 		}
 
-		public override string ToString() => $"var {Declaration.Name.Name}";
+		public override string ToString() => $"{Declaration.Name.Name}";
 	}
 }

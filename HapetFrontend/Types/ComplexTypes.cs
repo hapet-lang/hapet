@@ -16,7 +16,7 @@ namespace HapetFrontend.Types
 
 		public override string ToString()
 		{
-			return $"class {Declaration.Name.Name}";
+			return $"{Declaration.Name.Name}";
 		}
 
 		public override int Match(HapetType concrete)
@@ -58,7 +58,7 @@ namespace HapetFrontend.Types
 				if (m.name != null) return $"{m.type} {m.name}";
 				return m.type.ToString();
 			}));
-			return $"tuple ({members})";
+			return $"({members})";
 		}
 
 		public override bool Equals(object obj)
@@ -99,7 +99,7 @@ namespace HapetFrontend.Types
 
 		public override string ToString()
 		{
-			return $"struct {Declaration.Name}";
+			return $"{Declaration.Name}";
 		}
 
 		public int GetIndexOfMember(string member)
@@ -149,7 +149,7 @@ namespace HapetFrontend.Types
 
 		public override string ToString()
 		{
-			return $"enum {Declaration.Name.Name}";
+			return $"{Declaration.Name.Name}";
 		}
 
 		public override int Match(HapetType concrete)
@@ -185,9 +185,9 @@ namespace HapetFrontend.Types
 			}));
 
 			if (Declaration.Returns.OutType != VoidType.Instance)
-				return $"{Declaration.Returns} {Declaration.Name.Name}({args})";
+				return $"({Declaration.Returns} {Declaration.Name.Name}({args}))";
 			else
-				return $"void {Declaration.Name.Name}({args})";
+				return $"(void {Declaration.Name.Name}({args}))";
 		}
 
 		public override bool Equals(object obj)

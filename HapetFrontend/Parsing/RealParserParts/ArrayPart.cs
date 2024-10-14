@@ -1,5 +1,6 @@
 ﻿using HapetFrontend.Ast;
 using HapetFrontend.Ast.Expressions;
+using HapetFrontend.Types;
 
 namespace HapetFrontend.Parsing
 {
@@ -39,6 +40,10 @@ namespace HapetFrontend.Parsing
 			else if (CheckToken(TokenType.OpenBrace))
 			{
 				var elements = ParseArrayElementsExpression();
+
+				// count parsed elements and set the size if the sizeExpr was null
+				sizeExpr ??= new AstNumberExpr(NumberData.FromInt(elements.Count));
+
 				return new AstArrayExpr(typeName, sizeExpr, elements, new Location(beg, CurrentToken.Location.Ending));
 			}
 

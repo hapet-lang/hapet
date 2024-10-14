@@ -28,40 +28,7 @@ namespace HapetFrontend.Types
 		public static IntType LiteralType { get; } = new IntType(0, 0, false);
 		public static IntType DefaultType => GetIntType(4, true);
 
-		public override string TypeName 
-		{
-			get
-			{
-				if (Signed)
-				{
-                    switch (GetSize())
-                    {
-                        case 1:
-                            return "sbyte";
-                        case 2:
-                            return "short";
-                        case 4:
-                            return "int";
-                        default:
-                            return "long";
-                    }
-                }
-				else
-				{
-					switch (GetSize())
-					{
-						case 1:
-                            return "byte";
-                        case 2:
-                            return "ushort";
-                        case 4:
-                            return "uint";
-						default:
-                            return "ulong";
-                    }
-				}
-			}
-		}
+		public override string TypeName => ToString();
 
 		private IntType(int size, int align, bool sign) : base(size, align)
 		{
@@ -86,7 +53,34 @@ namespace HapetFrontend.Types
 
 		public override string ToString()
 		{
-			return (Signed ? "Int" : "UInt") + (GetSize() * 8);
+			if (Signed)
+			{
+				switch (GetSize())
+				{
+					case 1:
+						return "sbyte";
+					case 2:
+						return "short";
+					case 4:
+						return "int";
+					default:
+						return "long";
+				}
+			}
+			else
+			{
+				switch (GetSize())
+				{
+					case 1:
+						return "byte";
+					case 2:
+						return "ushort";
+					case 4:
+						return "uint";
+					default:
+						return "ulong";
+				}
+			}
 		}
 
 		public override int Match(HapetType concrete)
@@ -139,7 +133,7 @@ namespace HapetFrontend.Types
 		public static FloatType LiteralType { get; } = new FloatType(0, 0);
 		public static FloatType DefaultType => GetFloatType(4);
 
-		public override string TypeName => ToString().ToLower();
+		public override string TypeName => ToString();
 
 		private FloatType(int size, int align) : base(size, align) { }
 
@@ -161,13 +155,13 @@ namespace HapetFrontend.Types
 			switch (GetSize())
 			{
 				case 2:
-					return "Half";
+					return "half";
 				case 4:
-					return "Float";
+					return "float";
 				case 8:
-					return "Double";
+					return "double";
 			}
-			return "Float";
+			return "float";
 		}
 
 		public override int Match(HapetType concrete)
@@ -466,7 +460,7 @@ namespace HapetFrontend.Types
 
 		public override string ToString()
 		{
-			return "Char";
+			return "char";
 		}
 
 		public override int Match(HapetType concrete)
@@ -504,6 +498,6 @@ namespace HapetFrontend.Types
 		public override string TypeName => "string";
 
 		private StringType(int size, int align) : base(size, align) { }
-		public override string ToString() => "String";
+		public override string ToString() => "string";
 	}
 }

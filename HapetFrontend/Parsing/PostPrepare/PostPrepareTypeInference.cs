@@ -139,6 +139,9 @@ namespace HapetFrontend.Parsing.PostPrepare
 				case AstPointerExpr pointerExpr:
 					PostPreparePointerExprInference(pointerExpr);
 					break;
+				case AstAddressOfExpr addrExpr:
+					PostPrepareAddressOfExprInference(addrExpr);
+					break;
 				case AstNewExpr newExpr:
 					PostPrepareNewExprInference(newExpr);
 					break;
@@ -159,6 +162,9 @@ namespace HapetFrontend.Parsing.PostPrepare
 					break;
 				case AstDefaultExpr defaultExpr:
 					_compiler.ErrorHandler.ReportError(_currentSourceFile.Text, defaultExpr, "(Inner exception) The default had to be infered previously by caller");
+					break;
+				case AstArrayExpr arrayExpr:
+					PostPrepareArrayExprInference(arrayExpr);
 					break;
 
 				// statements
@@ -203,6 +209,14 @@ namespace HapetFrontend.Parsing.PostPrepare
 			PostPrepareExprInference(pointerExpr.SubExpression);
 			// create a new pointer type from the right side and set the type to itself
 			pointerExpr.OutType = PointerType.GetPointerType(pointerExpr.SubExpression.OutType);
+		}
+
+		private void PostPrepareAddressOfExprInference(AstAddressOfExpr addrExpr)
+		{
+			// prepare the right side
+			PostPrepareExprInference(addrExpr.SubExpression);
+			// create a new reference type from the right side and set the type to itself
+			addrExpr.OutType = ReferenceType.GetRefType(addrExpr.SubExpression.OutType);
 		}
 
 		private void PostPrepareNewExprInference(AstNewExpr newExpr)
@@ -356,6 +370,27 @@ namespace HapetFrontend.Parsing.PostPrepare
 					_compiler.ErrorHandler.ReportError(_currentSourceFile.Text, idExpr, $"The type could not be infered in {leftSideScope} scope...");
 				}
 			}
+		}
+
+		private void PostPrepareArrayExprInference(AstArrayExpr arrayExpr)
+		{
+			PostPrepareExprInference(arrayExpr.SizeExpr);
+			// TODO: you can check if the size is available at compile time and create the array on stack
+
+			PostPrepareExprInference(arrayExpr.TypeName);
+
+			foreach (var e in arrayExpr.Elements)
+			{
+				PostPrepareExprInference(e);
+				/// TODO: WARN: won't work on implicit casts and interfaces. 
+				/// probably <see cref="PostPrepareExpressionWithType"/> should be used
+				if (e.OutType != arrayExpr.TypeName.OutType) 
+				{
+					// TODO: error because they are not the 'same'
+				}
+			}
+
+			arrayExpr.OutType = PointerType.GetPointerType(arrayExpr.TypeName.OutType);
 		}
 
 		// statements

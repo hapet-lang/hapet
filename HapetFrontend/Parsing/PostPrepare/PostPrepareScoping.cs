@@ -179,6 +179,9 @@ namespace HapetFrontend.Parsing.PostPrepare
 				case AstPointerExpr pointerExpr:
 					PostPreparePointerExprScoping(pointerExpr);
 					break;
+				case AstAddressOfExpr addrExpr:
+					PostPrepareAddressOfExprScoping(addrExpr);
+					break;
 				case AstNewExpr newExpr:
 					PostPrepareNewExprScoping(newExpr);
 					break;
@@ -197,6 +200,9 @@ namespace HapetFrontend.Parsing.PostPrepare
 					PostPrepareNestedExprScoping(nestExpr);
 					break;
 				case AstDefaultExpr _:
+					break;
+				case AstArrayExpr arrayExpr:
+					PostPrepareArrayExprScoping(arrayExpr);
 					break;
 
 				// statements
@@ -226,6 +232,12 @@ namespace HapetFrontend.Parsing.PostPrepare
 		{
 			pointerExpr.SubExpression.Scope = pointerExpr.Scope;
 			PostPrepareExprScoping(pointerExpr.SubExpression);
+		}
+
+		private void PostPrepareAddressOfExprScoping(AstAddressOfExpr addrExpr)
+		{
+			addrExpr.SubExpression.Scope = addrExpr.Scope;
+			PostPrepareExprScoping(addrExpr.SubExpression);
 		}
 
 		private void PostPrepareNewExprScoping(AstNewExpr newExpr)
@@ -279,6 +291,19 @@ namespace HapetFrontend.Parsing.PostPrepare
 			{
 				nestExpr.LeftPart.Scope = nestExpr.Scope;
 				PostPrepareExprScoping(nestExpr.LeftPart);
+			}
+		}
+
+		private void PostPrepareArrayExprScoping(AstArrayExpr arrayExpr)
+		{
+			arrayExpr.SizeExpr.Scope = arrayExpr.Scope;
+			PostPrepareExprScoping(arrayExpr.SizeExpr);
+			arrayExpr.TypeName.Scope = arrayExpr.Scope;
+			PostPrepareExprScoping(arrayExpr.TypeName);
+			foreach (var e in arrayExpr.Elements)
+			{
+				e.Scope = arrayExpr.Scope;
+				PostPrepareExprScoping(e);
 			}
 		}
 
