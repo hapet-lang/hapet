@@ -8,6 +8,7 @@
 		// char* s = "test string";
 
 		byte* arr = new byte[3];
+		byte* arr2 = new byte[3] { 1, 2, 3 };
 
 		return 0;
 	}

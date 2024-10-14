@@ -323,6 +323,22 @@ namespace HapetBackend.Llvm
 
 			// TODO: handle initializer values or if they are empty - default on each element!!!
 
+			for (int i = 0; i < arrayExpr.Elements.Count; ++i)
+			{
+				var el = arrayExpr.Elements[i];
+				LLVMValueRef llvmElement = GenerateExpressionCode(el);
+
+				// var itself = LLVMValueRef.CreateConstInt(HapetTypeToLLVMType(IntType.GetIntType(4, true)), 0);
+				var elementNum = LLVMValueRef.CreateConstInt(HapetTypeToLLVMType(IntType.GetIntType(4, true)), (ulong)i);
+				var arrayEl = _builder.BuildInBoundsGEP2(HapetTypeToLLVMType(arrayExpr.OutType), allocated, new LLVMValueRef[] { elementNum }, $"element{i}");
+				_builder.BuildStore(llvmElement, arrayEl);
+			}
+
+			if (arrayExpr.Elements.Count == 0)
+			{
+				// TODO: create here a loop that loops SizeExpr times and inites with defaults!
+			}
+
 			return allocated;
 		}
 

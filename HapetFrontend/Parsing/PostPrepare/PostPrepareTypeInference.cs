@@ -390,6 +390,13 @@ namespace HapetFrontend.Parsing.PostPrepare
 				}
 			}
 
+			if (arrayExpr.Elements.Count > 0 && arrayExpr.SizeExpr.OutValue == null)
+			{
+				// expected a const value to be used when creating an array with elements
+				// byte[] a2 = new byte[b] {1, b, 2, 4}; - would error in C#
+				// TODO: error. const value is expected in SizeExpr
+			}
+
 			arrayExpr.OutType = PointerType.GetPointerType(arrayExpr.TypeName.OutType);
 		}
 
