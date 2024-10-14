@@ -184,32 +184,14 @@ namespace HapetBackend.Llvm
 				{ ("!=", BoolType.Instance), GetICompare(LLVMIntPredicate.LLVMIntNE) },
 
                 //
-                { ("+", CharType.GetCharType(1)), LlvmExtensions.BuildAdd },
-				{ ("-", CharType.GetCharType(1)), LlvmExtensions.BuildSub },
-				{ ("==", CharType.GetCharType(1)), GetICompare(LLVMIntPredicate.LLVMIntEQ) },
-				{ ("!=", CharType.GetCharType(1)), GetICompare(LLVMIntPredicate.LLVMIntNE) },
-				{ (">", CharType.GetCharType(1)), GetICompare(LLVMIntPredicate.LLVMIntSGT) },
-				{ (">=", CharType.GetCharType(1)), GetICompare(LLVMIntPredicate.LLVMIntSGE) },
-				{ ("<", CharType.GetCharType(1)), GetICompare(LLVMIntPredicate.LLVMIntSLT) },
-				{ ("<=", CharType.GetCharType(1)), GetICompare(LLVMIntPredicate.LLVMIntSLE) },
-
-				{ ("+", CharType.GetCharType(2)), LlvmExtensions.BuildAdd },
-				{ ("-", CharType.GetCharType(2)), LlvmExtensions.BuildSub },
-				{ ("==", CharType.GetCharType(2)), GetICompare(LLVMIntPredicate.LLVMIntEQ) },
-				{ ("!=", CharType.GetCharType(2)), GetICompare(LLVMIntPredicate.LLVMIntNE) },
-				{ (">", CharType.GetCharType(2)), GetICompare(LLVMIntPredicate.LLVMIntSGT) },
-				{ (">=", CharType.GetCharType(2)), GetICompare(LLVMIntPredicate.LLVMIntSGE) },
-				{ ("<", CharType.GetCharType(2)), GetICompare(LLVMIntPredicate.LLVMIntSLT) },
-				{ ("<=", CharType.GetCharType(2)), GetICompare(LLVMIntPredicate.LLVMIntSLE) },
-
-				{ ("+", CharType.GetCharType(4)), LlvmExtensions.BuildAdd },
-				{ ("-", CharType.GetCharType(4)), LlvmExtensions.BuildSub },
-				{ ("==", CharType.GetCharType(4)), GetICompare(LLVMIntPredicate.LLVMIntEQ) },
-				{ ("!=", CharType.GetCharType(4)), GetICompare(LLVMIntPredicate.LLVMIntNE) },
-				{ (">", CharType.GetCharType(4)), GetICompare(LLVMIntPredicate.LLVMIntSGT) },
-				{ (">=", CharType.GetCharType(4)), GetICompare(LLVMIntPredicate.LLVMIntSGE) },
-				{ ("<", CharType.GetCharType(4)), GetICompare(LLVMIntPredicate.LLVMIntSLT) },
-				{ ("<=", CharType.GetCharType(4)), GetICompare(LLVMIntPredicate.LLVMIntSLE) },
+				{ ("+", CharType.DefaultType), LlvmExtensions.BuildAdd },
+				{ ("-", CharType.DefaultType), LlvmExtensions.BuildSub },
+				{ ("==", CharType.DefaultType), GetICompare(LLVMIntPredicate.LLVMIntEQ) },
+				{ ("!=", CharType.DefaultType), GetICompare(LLVMIntPredicate.LLVMIntNE) },
+				{ (">", CharType.DefaultType), GetICompare(LLVMIntPredicate.LLVMIntSGT) },
+				{ (">=", CharType.DefaultType), GetICompare(LLVMIntPredicate.LLVMIntSGE) },
+				{ ("<", CharType.DefaultType), GetICompare(LLVMIntPredicate.LLVMIntSLT) },
+				{ ("<=", CharType.DefaultType), GetICompare(LLVMIntPredicate.LLVMIntSLE) },
 		   };
 		}
 	}

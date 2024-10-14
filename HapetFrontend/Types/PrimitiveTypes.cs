@@ -442,7 +442,7 @@ namespace HapetFrontend.Types
 	{
 		private static Dictionary<int, CharType> _types = new Dictionary<int, CharType>();
 		public static CharType LiteralType { get; } = new CharType(0);
-		public static CharType DefaultType => GetCharType(4);
+		public static CharType DefaultType => GetCharType(2);
 
 		public override string TypeName => "char";
 
@@ -450,7 +450,7 @@ namespace HapetFrontend.Types
 		{
 		}
 
-		public static CharType GetCharType(int sizeInBytes)
+		private static CharType GetCharType(int sizeInBytes)
 		{
 			var key = sizeInBytes;
 
@@ -466,7 +466,7 @@ namespace HapetFrontend.Types
 
 		public override string ToString()
 		{
-			return "Char" + (GetSize() * 8);
+			return "Char";
 		}
 
 		public override int Match(HapetType concrete)
@@ -485,17 +485,13 @@ namespace HapetFrontend.Types
 
 		public BigInteger MinValue => GetSize() switch
 		{
-			1 => byte.MinValue,
 			2 => ushort.MinValue,
-			4 => uint.MinValue,
 			_ => throw new NotImplementedException()
 		};
 
 		public BigInteger MaxValue => GetSize() switch
 		{
-			1 => byte.MaxValue,
 			2 => ushort.MaxValue,
-			4 => uint.MaxValue,
 			_ => throw new NotImplementedException()
 		};
 	}

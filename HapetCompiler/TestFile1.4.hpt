@@ -1,0 +1,11 @@
+﻿public static class Program
+{
+	public static int Main()
+	{
+		char a = 'g';
+		char a2 = 'н';
+
+		string s = "test string";
+		return 0;
+	}
+}

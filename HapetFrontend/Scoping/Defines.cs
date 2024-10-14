@@ -20,10 +20,8 @@ namespace HapetFrontend.Scoping
             DefineTypeSymbol("float", FloatType.GetFloatType(4));
             DefineTypeSymbol("double", FloatType.GetFloatType(8));
 
-            DefineTypeSymbol("char8", CharType.GetCharType(1));
-            DefineTypeSymbol("char16", CharType.GetCharType(2));
-            DefineTypeSymbol("char32", CharType.GetCharType(4));
-            DefineTypeSymbol("char", CharType.GetCharType(4));
+            DefineTypeSymbol("char16", CharType.DefaultType);
+            DefineTypeSymbol("char", CharType.DefaultType);
             DefineTypeSymbol("bool", BoolType.Instance);
             DefineTypeSymbol("string", StringType.Instance);
             DefineTypeSymbol("void", VoidType.Instance);
@@ -133,9 +131,7 @@ namespace HapetFrontend.Scoping
                     IntType.GetIntType(2, false),
                     IntType.GetIntType(4, false),
                     IntType.GetIntType(8, false),
-                    CharType.GetCharType(1),
-                    CharType.GetCharType(2),
-                    CharType.GetCharType(4),
+                    CharType.DefaultType,
 					FloatType.GetFloatType(2),
 				    FloatType.GetFloatType(4),
 				    FloatType.GetFloatType(8)
