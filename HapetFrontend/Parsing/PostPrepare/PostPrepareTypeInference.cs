@@ -247,10 +247,23 @@ namespace HapetFrontend.Parsing.PostPrepare
 
 		private void PostPrepareIdentifierInference(AstIdExpr idExpr)
 		{
-			var smbl = idExpr.Scope.GetSymbol(idExpr.Name);
+			string name = idExpr.Name;
+			bool isArray = false;
+
+			if (idExpr.Name.EndsWith("[]"))
+			{
+				// it is probably an array def
+				name = name.Substring(0, name.Length - 2);
+				isArray = true;
+			}
+
+			var smbl = idExpr.Scope.GetSymbol(name);
 			if (smbl is DeclSymbol typed)
 			{
-				idExpr.OutType = typed.Decl.Type.OutType;
+				if (isArray)
+					idExpr.OutType = ArrayType.GetArrayType(typed.Decl.Type.OutType);
+				else
+					idExpr.OutType = typed.Decl.Type.OutType;
 			}
 			else
 			{
@@ -379,15 +392,12 @@ namespace HapetFrontend.Parsing.PostPrepare
 
 			PostPrepareExprInference(arrayExpr.TypeName);
 
-			foreach (var e in arrayExpr.Elements)
+			for (int i = 0; i < arrayExpr.Elements.Count; ++i)
 			{
+				var e = arrayExpr.Elements[i];
 				PostPrepareExprInference(e);
-				/// TODO: WARN: won't work on implicit casts and interfaces. 
-				/// probably <see cref="PostPrepareExpressionWithType"/> should be used
-				if (e.OutType != arrayExpr.TypeName.OutType) 
-				{
-					// TODO: error because they are not the 'same'
-				}
+				// try to use implicit cast if it can be used
+				arrayExpr.Elements[i] = PostPrepareExpressionWithType(arrayExpr.TypeName.OutType, e);
 			}
 
 			if (arrayExpr.Elements.Count > 0 && arrayExpr.SizeExpr.OutValue == null)

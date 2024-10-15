@@ -213,5 +213,29 @@ namespace HapetFrontend.Types
 		public static NumberData operator /(NumberData a, NumberData b) => (a.Type == NumberType.Int && b.Type == NumberType.Int) ? FromInt(a.IntValue / b.IntValue) : FromDouble(a.ToDouble() / b.ToDouble());
 		public static NumberData operator %(NumberData a, NumberData b) => (a.Type == NumberType.Int && b.Type == NumberType.Int) ? FromInt(a.IntValue % b.IntValue) : FromDouble(a.ToDouble() % b.ToDouble());
 
+
+		public bool IsInRangeOfType(IntType intType, bool includeFloat = false)
+		{
+			// do not include float values in calc and the NumberData is a float :)
+			if (!includeFloat && Type == NumberType.Float)
+				return false;
+
+			var min = intType.MinValue;
+			var max = intType.MaxValue;
+			if (includeFloat)
+			{
+				var val = ToDouble();
+				return val < (double)max && (val > (double)min);
+			}
+			else
+			{
+				BigInteger val;
+				if (Type == NumberType.Float)
+					val = (BigInteger)DoubleValue;
+				else
+					val = IntValue;
+				return val < max && (val > min);
+			}
+		}
 	}
 }

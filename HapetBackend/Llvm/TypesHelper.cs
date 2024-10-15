@@ -231,7 +231,12 @@ namespace HapetBackend.Llvm
 					return _context.Int8Type;
 
 				case ArrayType a:
-					return LLVMTypeRef.CreateArray(HapetTypeToLLVMType(a.TargetType), (uint)((NumberData)a.Length).ToUInt());
+					{
+						var arrayStruct = _context.CreateNamedStruct($"array.{a.TargetType.TypeName}");
+						var arrayType = HapetTypeToLLVMType(a.TargetType);
+						arrayStruct.StructSetBody(new LLVMTypeRef[] { _context.Int32Type, arrayType.GetPointerTo() }, false);
+						return arrayStruct;
+					}
 
 				case VoidType _:
 					return _context.VoidType;
@@ -376,6 +381,20 @@ namespace HapetBackend.Llvm
 				{
 					return _builder.BuildSIToFP(val, HapetTypeToLLVMType(floatType));
 				}
+				else if (outType is IntType outIntType)
+				{
+					if (inType.GetSize() > outIntType.GetSize())
+					{
+						return _builder.BuildTruncOrBitCast(val, HapetTypeToLLVMType(outIntType));
+					}
+					else if (inType.GetSize() < outIntType.GetSize())
+					{
+						// for signed and unsigned they are the same
+						return _builder.BuildSExtOrBitCast(val, HapetTypeToLLVMType(outIntType));
+					}
+					// if the same size just return it
+					return val;
+				}
 				// TODO: ...
 			}
 			else if ((inType is IntType intType2 && !intType2.Signed) || inType is CharType)
@@ -383,6 +402,23 @@ namespace HapetBackend.Llvm
 				if (outType is FloatType floatType)
 				{
 					return _builder.BuildUIToFP(val, HapetTypeToLLVMType(floatType));
+				}
+				else if (outType is IntType outIntType && !outIntType.Signed)
+				{
+					if (inType.GetSize() > outIntType.GetSize())
+					{
+						return _builder.BuildTruncOrBitCast(val, HapetTypeToLLVMType(outIntType));
+					}
+					else if (inType.GetSize() < outIntType.GetSize())
+					{
+						return _builder.BuildZExtOrBitCast(val, HapetTypeToLLVMType(outIntType));
+					}
+					// if the same size just return it
+					return val;
+				}
+				else if (outType is IntType outIntType2 && outIntType2.Signed)
+				{
+					return _builder.BuildBitCast(val, HapetTypeToLLVMType(outIntType2));
 				}
 				// TODO: ...
 			}
@@ -392,13 +428,20 @@ namespace HapetBackend.Llvm
 				{
 					return _builder.BuildFPToSI(val, HapetTypeToLLVMType(intType1));
 				}
-				else if (outType is IntType intType3 && !intType3.Signed)
+				else if ((outType is IntType intType3 && !intType3.Signed) || outType is CharType)
 				{
-					return _builder.BuildFPToSI(val, HapetTypeToLLVMType(intType3));
+					return _builder.BuildFPToUI(val, HapetTypeToLLVMType(outType));
 				}
-				else if (outType is IntType charType)
+				else if (outType is FloatType floatType)
 				{
-					return _builder.BuildFPToSI(val, HapetTypeToLLVMType(charType));
+					if (inType.GetSize() > floatType.GetSize())
+					{
+						return _builder.BuildFPTrunc(val, HapetTypeToLLVMType(floatType));
+					}
+					else
+					{
+						return _builder.BuildFPExt(val, HapetTypeToLLVMType(floatType));
+					}
 				}
 				// TODO: ...
 			}

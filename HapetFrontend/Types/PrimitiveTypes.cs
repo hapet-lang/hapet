@@ -366,31 +366,24 @@ namespace HapetFrontend.Types
 		private static Dictionary<HapetType, ArrayType> _types = new Dictionary<HapetType, ArrayType>();
 
 		public HapetType TargetType { get; set; }
-		public object Length { get; private set; }
 
 		public override string TypeName => $"array";
 
-		private ArrayType(HapetType target, object length) : base()
+		private ArrayType(HapetType target) : base()
 		{
 			TargetType = target;
-			Length = length;
 		}
 
-		public static ArrayType GetArrayType(HapetType targetType, int length)
-		{
-			return GetArrayType(targetType, NumberData.FromInt(length));
-		}
-
-		public static ArrayType GetArrayType(HapetType targetType, object length)
+		public static ArrayType GetArrayType(HapetType targetType)
 		{
 			if (targetType == null)
 				return null;
 
-			var existing = _types.FirstOrDefault(t => t.Value.TargetType == targetType && t.Value.Length.Equals(length)).Value;
+			var existing = _types.FirstOrDefault(t => t.Value.TargetType == targetType).Value;
 			if (existing != null)
 				return existing;
 
-			var type = new ArrayType(targetType, length);
+			var type = new ArrayType(targetType);
 
 			_types[targetType] = type;
 			return type;
@@ -398,7 +391,7 @@ namespace HapetFrontend.Types
 
 		public override string ToString()
 		{
-			return $"{TargetType}[{Length}]";
+			return $"{TargetType}[]";
 		}
 
 		public PointerType ToPointerType()
@@ -408,7 +401,7 @@ namespace HapetFrontend.Types
 
 		public override int Match(HapetType concrete)
 		{
-			if (concrete is ArrayType p && Length.Equals(p.Length))
+			if (concrete is ArrayType p)
 				return this.TargetType.Match(p.TargetType);
 			return -1;
 		}
@@ -417,7 +410,7 @@ namespace HapetFrontend.Types
 		{
 			if (obj is ArrayType r)
 			{
-				return TargetType == r.TargetType && Length.Equals(r.Length);
+				return TargetType == r.TargetType;
 			}
 			return false;
 		}
@@ -427,7 +420,6 @@ namespace HapetFrontend.Types
 			var hashCode = -687864485;
 			hashCode = hashCode * -1521134295 + base.GetHashCode();
 			hashCode = hashCode * -1521134295 + EqualityComparer<HapetType>.Default.GetHashCode(TargetType);
-			hashCode = hashCode * -1521134295 + Length.GetHashCode();
 			return hashCode;
 		}
 	}

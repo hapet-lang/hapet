@@ -52,20 +52,42 @@ namespace HapetFrontend.Parsing.PostPrepare
 
             switch (neededType)
             {
+                // default cringe casting
                 case FloatType when exprType is IntType:
                 case FloatType when exprType is CharType:
                 case IntType when exprType is CharType:
                     outExpr = cst;
                     break;
-                    // TODO: other checks also. warn: class and class should be checked properly!!!
-            }
+				case IntType int1 when exprType is IntType exprInt1:
+                    {
+                        // allow if the var type size is bigger
+                        // TODO: do not allow is signes are different or something like that. idk :)
+                        if (int1.GetSize() > exprInt1.GetSize())
+                        {
+							outExpr = cst;
+                            break;
+						}
+
+                        // there is no way to implicitly cast non-compiletime values
+                        if (expr.OutValue == null || expr.OutValue is not NumberData numData)
+                            break;
+
+                        // it the value is in range of the target - then it could be easily casted :)
+						if (numData.IsInRangeOfType(int1, false))
+							outExpr = cst;
+
+						break;
+                    }
+					// TODO: other checks also. warn: class and class should be checked properly!!!
+			}
 
             // if there is no way to cast
             if (neededType != exprType && outExpr == null)
             {
                 if (!(neededType is PointerType ptr1 && ptr1.TargetType is ClassType && exprType is ClassType) && // usually when 'Anime a = new Anime();'
-					!(neededType is PointerType ptr2 && ptr2.TargetType is CharType && exprType is StringType) // string is just a char ptr
-                    ) // place here other exceptions
+					!(neededType is PointerType ptr2 && ptr2.TargetType is CharType && exprType is StringType) && // string is just a char ptr
+					!(neededType is ArrayType arr1 && exprType is PointerType ptr3 && arr1.TargetType == ptr3.TargetType)  // usually when 'Anime[] a = new Anime[n];'
+					) // place here other exceptions
                 {
                     _compiler.ErrorHandler.ReportError(_currentSourceFile.Text, expr, $"Type {exprType} cannot be implicitly casted into {neededType}");
                 }

@@ -310,6 +310,7 @@ namespace HapetBackend.Llvm
 			return null;
 		}
 
+		private LLVMValueRef _lastArraySizeValueRef = default;
 		private LLVMValueRef GenerateArrayExprCode(AstArrayExpr arrayExpr)
 		{
 			// TODO: check if it could be allocated on stack
@@ -318,8 +319,8 @@ namespace HapetBackend.Llvm
 			var mallocSymbol = arrayExpr.Scope.GetSymbol("malloc") as DeclSymbol; // TODO: rewrite it when there would be a default project of Hapet
 			var mallocFunc = _valueMap[mallocSymbol];
 			LLVMTypeRef funcType = _typeMap[mallocSymbol.Decl.Type.OutType];
-			LLVMValueRef mallocSize = GenerateExpressionCode(arrayExpr.SizeExpr); // TODO: for now it is only it bytes
-			var allocated = _builder.BuildCall2(funcType, mallocFunc, new LLVMValueRef[] { mallocSize }, "allocatedForArray");
+			_lastArraySizeValueRef = GenerateExpressionCode(arrayExpr.SizeExpr); // TODO: for now it is only it bytes
+			var allocated = _builder.BuildCall2(funcType, mallocFunc, new LLVMValueRef[] { _lastArraySizeValueRef }, "allocatedForArray");
 
 			// TODO: handle initializer values or if they are empty - default on each element!!!
 

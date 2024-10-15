@@ -335,7 +335,6 @@ namespace HapetFrontend.Parsing
 							// probably array def (i hope so)
 							idExpr.Name += "[]";
 							idExpr.Location.Ending.End += 2;
-							id.Location.Ending.End += 2;
 							NextToken();
 						}
 
