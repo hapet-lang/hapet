@@ -444,5 +444,34 @@ namespace HapetBackend.Llvm
 			// TODO: ...
 			return val;
 		}
+
+		/// <summary>
+		/// Assigns value to a variable
+		/// </summary>
+		/// <param name="varPtr">The variable</param>
+		/// <param name="varType">The type of variable</param>
+		/// <param name="value">The value that needs to be assigned</param>
+		private void AssignToVar(LLVMValueRef varPtr, HapetType varType, AstExpression value)
+		{
+			// generate the initializer value
+			var x = GenerateExpressionCode(value);
+
+			if (varType is ArrayType)
+			{
+				// array type has to be stored in another way
+				var tp = _typeMap[varType];
+				// the 1 is because ArrayType struct has buf field as it's 1 param
+				var buf = _builder.BuildStructGEP2(tp, varPtr, 1, "arrayBuf");
+				_builder.BuildStore(x, buf);
+				/// setting the array size. <see cref="_lastArraySizeValueRef"/> is set in <see cref="GenerateArrayExprCode"/>
+				var len = _builder.BuildStructGEP2(tp, varPtr, 0, "arrayLen");
+				_builder.BuildStore(_lastArraySizeValueRef, len);
+			}
+			else
+			{
+				// just storing initializer value in the var
+				_builder.BuildStore(x, varPtr);
+			}
+		}
 	}
 }

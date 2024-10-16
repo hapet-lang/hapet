@@ -357,8 +357,7 @@ namespace HapetBackend.Llvm
 				// TODO: error here!!!!! it could not be null
 			}
 
-			var x = GenerateExpressionCode(assignStmt.Value);
-			_builder.BuildStore(x, theVar);
+			AssignToVar(theVar, assignStmt.Target.OutType, assignStmt.Value);
 
 			// WARN: always returns null because Assign is a stmt and does not returns anything. could be changed to expr
 			// so stmts like 'a = (b = 3);' would be allowed...

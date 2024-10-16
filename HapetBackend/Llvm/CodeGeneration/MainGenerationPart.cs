@@ -183,25 +183,7 @@ namespace HapetBackend.Llvm
 			// check for initializer and try to evaluate expr
 			if (varDecl.Initializer != null)
 			{
-				// generate the initializer value
-				var x = GenerateExpressionCode(varDecl.Initializer);
-
-				if (varDecl.Type.OutType is ArrayType)
-				{
-					// array type has to be stored in another way
-					var tp = _typeMap[varDecl.Type.OutType];
-					// the 1 is because ArrayType struct has buf field as it's 1 param
-					var buf = _builder.BuildStructGEP2(tp, varPtr, 1, "arrayBuf");
-					_builder.BuildStore(x, buf);
-					/// setting the array size. <see cref="_lastArraySizeValueRef"/> is set in <see cref="GenerateArrayExprCode"/>
-					var len = _builder.BuildStructGEP2(tp, varPtr, 0, "arrayLen");
-					_builder.BuildStore(_lastArraySizeValueRef, len);
-				}
-				else
-				{
-					// just storing initializer value in the var
-					_builder.BuildStore(x, varPtr);
-				}
+				AssignToVar(varPtr, varDecl.Type.OutType, varDecl.Initializer);
 			}
 
 			// _refMap[varDecl.GetSymbol] = varPtr;
