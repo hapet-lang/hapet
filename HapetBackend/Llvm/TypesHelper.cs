@@ -381,16 +381,16 @@ namespace HapetBackend.Llvm
 				{
 					return _builder.BuildSIToFP(val, HapetTypeToLLVMType(floatType));
 				}
-				else if (outType is IntType outIntType)
+				else if (outType is IntType || outType is CharType)
 				{
-					if (inType.GetSize() > outIntType.GetSize())
+					if (inType.GetSize() > outType.GetSize())
 					{
-						return _builder.BuildTruncOrBitCast(val, HapetTypeToLLVMType(outIntType));
+						return _builder.BuildTruncOrBitCast(val, HapetTypeToLLVMType(outType));
 					}
-					else if (inType.GetSize() < outIntType.GetSize())
+					else if (inType.GetSize() < outType.GetSize())
 					{
 						// for signed and unsigned they are the same
-						return _builder.BuildSExtOrBitCast(val, HapetTypeToLLVMType(outIntType));
+						return _builder.BuildSExtOrBitCast(val, HapetTypeToLLVMType(outType));
 					}
 					// if the same size just return it
 					return val;
@@ -403,22 +403,18 @@ namespace HapetBackend.Llvm
 				{
 					return _builder.BuildUIToFP(val, HapetTypeToLLVMType(floatType));
 				}
-				else if (outType is IntType outIntType && !outIntType.Signed)
+				else if (outType is IntType || outType is CharType)
 				{
-					if (inType.GetSize() > outIntType.GetSize())
+					if (inType.GetSize() > outType.GetSize())
 					{
-						return _builder.BuildTruncOrBitCast(val, HapetTypeToLLVMType(outIntType));
+						return _builder.BuildTruncOrBitCast(val, HapetTypeToLLVMType(outType));
 					}
-					else if (inType.GetSize() < outIntType.GetSize())
+					else if (inType.GetSize() < outType.GetSize())
 					{
-						return _builder.BuildZExtOrBitCast(val, HapetTypeToLLVMType(outIntType));
+						return _builder.BuildZExtOrBitCast(val, HapetTypeToLLVMType(outType));
 					}
 					// if the same size just return it
 					return val;
-				}
-				else if (outType is IntType outIntType2 && outIntType2.Signed)
-				{
-					return _builder.BuildBitCast(val, HapetTypeToLLVMType(outIntType2));
 				}
 				// TODO: ...
 			}

@@ -65,6 +65,7 @@ namespace HapetBackend.Llvm
 					var left = GenerateExpressionCode(leftExpr);
 					if (leftExpr.OutType != binExpr.OutType)
 					{
+						// TODO: this should not be here - move it into TypeInference with PostPrepareExpressionWithType
 						// cast if they are not the same haha
 						left = CreateCast(left, leftExpr.OutType, binExpr.OutType);
 					}
@@ -73,6 +74,7 @@ namespace HapetBackend.Llvm
 					var right = GenerateExpressionCode(rightExpr);
 					if (rightExpr.OutType != binExpr.OutType)
 					{
+						// TODO: this should not be here - move it into TypeInference with PostPrepareExpressionWithType
 						// cast if they are not the same haha
 						right = CreateCast(right, rightExpr.OutType, binExpr.OutType);
 					}
@@ -319,19 +321,20 @@ namespace HapetBackend.Llvm
 			var mallocSymbol = arrayExpr.Scope.GetSymbol("malloc") as DeclSymbol; // TODO: rewrite it when there would be a default project of Hapet
 			var mallocFunc = _valueMap[mallocSymbol];
 			LLVMTypeRef funcType = _typeMap[mallocSymbol.Decl.Type.OutType];
-			_lastArraySizeValueRef = GenerateExpressionCode(arrayExpr.SizeExpr); // TODO: for now it is only it bytes
-			var allocated = _builder.BuildCall2(funcType, mallocFunc, new LLVMValueRef[] { _lastArraySizeValueRef }, "allocatedForArray");
+			// calc size to malloc = amount * typeSize
+			_lastArraySizeValueRef = GenerateExpressionCode(arrayExpr.SizeExpr);
+			var typeSize = LLVMValueRef.CreateConstInt(HapetTypeToLLVMType(IntType.GetIntType(4, true)), (ulong)arrayExpr.TypeName.OutType.GetSize());
+			var sizeToMalloc = _builder.BuildMul(_lastArraySizeValueRef, typeSize, "sizeToMalloc");
 
-			// TODO: handle initializer values or if they are empty - default on each element!!!
+			var allocated = _builder.BuildCall2(funcType, mallocFunc, new LLVMValueRef[] { sizeToMalloc }, "allocatedForArray");
 
 			for (int i = 0; i < arrayExpr.Elements.Count; ++i)
 			{
 				var el = arrayExpr.Elements[i];
 				LLVMValueRef llvmElement = GenerateExpressionCode(el);
 
-				// var itself = LLVMValueRef.CreateConstInt(HapetTypeToLLVMType(IntType.GetIntType(4, true)), 0);
 				var elementNum = LLVMValueRef.CreateConstInt(HapetTypeToLLVMType(IntType.GetIntType(4, true)), (ulong)i);
-				var arrayEl = _builder.BuildInBoundsGEP2(HapetTypeToLLVMType(arrayExpr.OutType), allocated, new LLVMValueRef[] { elementNum }, $"element{i}");
+				var arrayEl = _builder.BuildGEP2(HapetTypeToLLVMType(arrayExpr.TypeName.OutType), allocated, new LLVMValueRef[] { elementNum }, $"element{i}");
 				_builder.BuildStore(llvmElement, arrayEl);
 			}
 

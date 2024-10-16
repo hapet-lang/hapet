@@ -11,6 +11,7 @@
 		byte* arr2 = new byte[3] { 1, 2, 3 };
 
 		byte[] arr3 = new byte[3] { 1, 2, 3 };
+		char[] arr4 = new char[3] { 1, 2, 3 };
 
 		return 0;
 	}

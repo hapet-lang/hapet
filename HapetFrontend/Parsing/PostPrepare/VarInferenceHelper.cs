@@ -58,11 +58,12 @@ namespace HapetFrontend.Parsing.PostPrepare
                 case IntType when exprType is CharType:
                     outExpr = cst;
                     break;
-				case IntType int1 when exprType is IntType exprInt1:
+				case IntType when exprType is IntType:
+				case CharType when exprType is IntType:
                     {
                         // allow if the var type size is bigger
                         // TODO: do not allow is signes are different or something like that. idk :)
-                        if (int1.GetSize() > exprInt1.GetSize())
+                        if (neededType.GetSize() > exprType.GetSize())
                         {
 							outExpr = cst;
                             break;
@@ -73,7 +74,7 @@ namespace HapetFrontend.Parsing.PostPrepare
                             break;
 
                         // it the value is in range of the target - then it could be easily casted :)
-						if (numData.IsInRangeOfType(int1, false))
+						if (numData.IsInRangeOfType(neededType))
 							outExpr = cst;
 
 						break;

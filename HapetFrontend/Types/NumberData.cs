@@ -145,6 +145,11 @@ namespace HapetFrontend.Types
 			}
 		}
 
+		public void ResetError()
+		{
+			Error = string.Empty;
+		}
+
 		public override bool Equals(object obj)
 		{
 			if (obj is NumberData o) return this == o;
@@ -214,28 +219,34 @@ namespace HapetFrontend.Types
 		public static NumberData operator %(NumberData a, NumberData b) => (a.Type == NumberType.Int && b.Type == NumberType.Int) ? FromInt(a.IntValue % b.IntValue) : FromDouble(a.ToDouble() % b.ToDouble());
 
 
-		public bool IsInRangeOfType(IntType intType, bool includeFloat = false)
+		public bool IsInRangeOfType(HapetType hptType)
 		{
-			// do not include float values in calc and the NumberData is a float :)
-			if (!includeFloat && Type == NumberType.Float)
-				return false;
+			double min = 0;
+			double max = 0;
 
-			var min = intType.MinValue;
-			var max = intType.MaxValue;
-			if (includeFloat)
+			// checking what is the type
+			if (hptType is IntType intType)
 			{
-				var val = ToDouble();
-				return val < (double)max && (val > (double)min);
+				min = (double)intType.MinValue;
+				max = (double)intType.MaxValue;
+			}
+			else if (hptType is CharType charType)
+			{
+				min = (double)charType.MinValue;
+				max = (double)charType.MaxValue;
+			}
+			else if (hptType is FloatType floatType)
+			{
+				min = floatType.MinValue;
+				max = floatType.MaxValue;
 			}
 			else
 			{
-				BigInteger val;
-				if (Type == NumberType.Float)
-					val = (BigInteger)DoubleValue;
-				else
-					val = IntValue;
-				return val < max && (val > min);
+				Error = "The type cannot be checked for range";
 			}
+
+			var val = ToDouble();
+			return val < max && (val > min);
 		}
 	}
 }
