@@ -133,6 +133,9 @@ namespace HapetFrontend.Parsing.PostPrepare
 		{
 			switch (expr)
 			{
+				case AstUnaryExpr unExpr:
+					PostPrepareUnaryExprInference(unExpr);
+					break;
 				case AstBinaryExpr binExpr: 
 					PostPrepareBinaryExprInference(binExpr);
 					break;
@@ -181,6 +184,27 @@ namespace HapetFrontend.Parsing.PostPrepare
 						// TODO: anything to do here?
 						break;
 					}
+			}
+		}
+
+		private void PostPrepareUnaryExprInference(AstUnaryExpr unExpr) 
+		{
+			// TODO: check for the right size for an existance value (compiletime evaluated) and do some shite
+			PostPrepareExprInference(unExpr.SubExpr as AstExpression);
+			var operators = unExpr.Scope.GetUnaryOperators(unExpr.Operator, (unExpr.SubExpr as AstExpression).OutType);
+			if (operators.Count == 0)
+			{
+				_compiler.ErrorHandler.ReportError(_currentSourceFile.Text, unExpr, $"Undefined operator {unExpr.Operator} for type {(unExpr.SubExpr as AstExpression).OutType}");
+			}
+			else if (operators.Count > 1)
+			{
+				// TODO: tell em where are the operators defined
+				_compiler.ErrorHandler.ReportError(_currentSourceFile.Text, unExpr, $"Too many operators {unExpr.Operator} defined for type {(unExpr.SubExpr as AstExpression).OutType}");
+			}
+			else
+			{
+				unExpr.ActualOperator = operators[0];
+				unExpr.OutType = unExpr.ActualOperator.ResultType;
 			}
 		}
 

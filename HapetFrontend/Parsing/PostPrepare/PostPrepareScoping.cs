@@ -173,6 +173,9 @@ namespace HapetFrontend.Parsing.PostPrepare
 		{
 			switch (expr)
 			{
+				case AstUnaryExpr unExpr:
+					PostPrepareUnaryExprScoping(unExpr);
+					break;
 				case AstBinaryExpr binExpr:
 					PostPrepareBinaryExprScoping(binExpr);
 					break;
@@ -222,11 +225,19 @@ namespace HapetFrontend.Parsing.PostPrepare
 			}
 		}
 
+		private void PostPrepareUnaryExprScoping(AstUnaryExpr unExpr)
+		{
+			unExpr.SubExpr.Scope = unExpr.Scope;
+			// TODO: error if it is not an expr
+			PostPrepareExprScoping(unExpr.SubExpr as AstExpression);
+		}
+
 		private void PostPrepareBinaryExprScoping(AstBinaryExpr binExpr)
 		{
 			// these scopes are probably the same for the bin expr parts
 			binExpr.Left.Scope = binExpr.Scope;
 			binExpr.Right.Scope = binExpr.Scope;
+			// TODO: error if it is not an expr
 			PostPrepareExprScoping(binExpr.Left as AstExpression);
 			PostPrepareExprScoping(binExpr.Right as AstExpression);
 		}

@@ -158,9 +158,9 @@ namespace HapetFrontend.Scoping
 		#endregion
 
 		#region Operator defines
-		private void DefineUnaryOperator(string name, HapetType type, BuiltInUnaryOperator.CompileTimeExecution exe)
+		private void DefineUnaryOperator(string name, HapetType resultType, HapetType type, BuiltInUnaryOperator.CompileTimeExecution exe)
 		{
-			DefineUnaryOperator(new BuiltInUnaryOperator(name, type, type, exe));
+			DefineUnaryOperator(new BuiltInUnaryOperator(name, resultType, type, exe));
 		}
 
 		public void DefineUnaryOperator(IUnaryOperator op)

@@ -57,9 +57,9 @@ namespace HapetFrontend.Scoping
         private void DefineLiteralOperators()
         {
             // literal types
-            DefineUnaryOperator("!", BoolType.Instance, b => !(bool)b);
-            DefineUnaryOperator("-", IntType.LiteralType, a => ((NumberData)a).Negate());
-            DefineUnaryOperator("-", FloatType.LiteralType, a => ((NumberData)a).Negate());
+            DefineUnaryOperator("!", BoolType.Instance, BoolType.Instance, b => !(bool)b);
+            DefineUnaryOperator("-", IntType.LiteralType, IntType.LiteralType, a => ((NumberData)a).Negate());
+            DefineUnaryOperator("-", FloatType.LiteralType, FloatType.LiteralType, a => ((NumberData)a).Negate());
 
             DefineBinaryOperator(new BuiltInBinaryOperator("+", StringType.LiteralType, StringType.LiteralType, StringType.LiteralType, (a, b) => $"{a}{b}"));
 
@@ -138,7 +138,12 @@ namespace HapetFrontend.Scoping
 				};
 			foreach (var type in numTypes)
             {
-                DefineUnaryOperator("-", type, a => ((NumberData)a).Negate());
+                // TODO: replace resultType here with normally calced type
+                // for example if we have 
+                // byte a = 5;
+                // int b = -a;
+                // the result type has to be at least sbyte or even short
+                DefineUnaryOperator("-", type, type, a => ((NumberData)a).Negate());
 
                 foreach (var secondType in numTypes)
                 {
