@@ -56,8 +56,6 @@ namespace HapetFrontend.Parsing.PostPrepare
                 case FloatType when exprType is IntType:
                 case FloatType when exprType is CharType:
                 case IntType when exprType is CharType:
-                    outExpr = cst;
-                    break;
 				case IntType when exprType is IntType:
 				case CharType when exprType is IntType:
                     {
@@ -70,11 +68,19 @@ namespace HapetFrontend.Parsing.PostPrepare
 						}
 
                         // there is no way to implicitly cast non-compiletime values
-                        if (expr.OutValue == null || expr.OutValue is not NumberData numData)
+                        if (expr.OutValue == null)
                             break;
 
-                        // it the value is in range of the target - then it could be easily casted :)
-						if (numData.IsInRangeOfType(neededType))
+						// it the value is in range of the target - then it could be easily casted :)
+						if (expr.OutValue is char charData)
+                        {
+                            // getting a NumberData from char UTF-16 value to normally check ranging
+                            var newNumData = NumberData.FromInt(((short)charData));
+                            if (newNumData.IsInRangeOfType(neededType))
+								outExpr = cst;
+						}
+						// it the value is in range of the target - then it could be easily casted :)
+						else if (expr.OutValue is NumberData numData && numData.IsInRangeOfType(neededType))
 							outExpr = cst;
 
 						break;
