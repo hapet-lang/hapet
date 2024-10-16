@@ -133,12 +133,21 @@ namespace HapetBackend.Llvm
 			{
 				case StringType s:
 					{
+						var charType = HapetTypeToLLVMType(CharType.DefaultType);
 						var str = _context.CreateNamedStruct("string");
 						str.StructSetBody(new LLVMTypeRef[] {
-							((LLVMTypeRef)_context.Int64Type),
-							((LLVMTypeRef)_context.Int8Type).GetPointerTo()
+							((LLVMTypeRef)_context.Int32Type),
+							((LLVMTypeRef)charType).GetPointerTo()
 						}, false);
 						return str;
+					}
+
+				case ArrayType a:
+					{
+						var arrayStruct = _context.CreateNamedStruct($"array.{a.TargetType.TypeName}");
+						var arrayType = HapetTypeToLLVMType(a.TargetType);
+						arrayStruct.StructSetBody(new LLVMTypeRef[] { _context.Int32Type, arrayType.GetPointerTo() }, false);
+						return arrayStruct;
 					}
 
 				case ClassType t:
@@ -229,14 +238,6 @@ namespace HapetBackend.Llvm
 
 				case ThisType self:
 					return _context.Int8Type;
-
-				case ArrayType a:
-					{
-						var arrayStruct = _context.CreateNamedStruct($"array.{a.TargetType.TypeName}");
-						var arrayType = HapetTypeToLLVMType(a.TargetType);
-						arrayStruct.StructSetBody(new LLVMTypeRef[] { _context.Int32Type, arrayType.GetPointerTo() }, false);
-						return arrayStruct;
-					}
 
 				case VoidType _:
 					return _context.VoidType;
@@ -339,6 +340,7 @@ namespace HapetBackend.Llvm
 			}
 		}
 
+		private LLVMValueRef _lastStringSizeValueRef = default;
 		private unsafe LLVMValueRef HapetValueToLLVMValue(HapetType type, object v)
 		{
 			// ??? TOOD: why there is such check?
@@ -351,6 +353,14 @@ namespace HapetBackend.Llvm
 				case CharType _: return LLVM.ConstInt(HapetTypeToLLVMType(type), (char)v, 0);
 				case IntType i: return LLVM.ConstInt(HapetTypeToLLVMType(type), ((NumberData)v).ToULong(), i.Signed ? 1 : 0);
 				case FloatType: return LLVM.ConstReal(HapetTypeToLLVMType(type), ((NumberData)v).ToDouble());
+				case StringType:
+					{
+						string theString = (string)v;
+						_lastStringSizeValueRef = LLVMValueRef.CreateConstInt(HapetTypeToLLVMType(IntType.GetIntType(4, true)), (ulong)theString.Length);
+
+						var elements = theString.ToCharArray().Select(c => HapetValueToLLVMValue(CharType.DefaultType, c)).ToArray();
+						return LLVMValueRef.CreateConstArray(HapetTypeToLLVMType(CharType.DefaultType), elements);
+					}
 			}
 			return new LLVMValueRef();
 		}
@@ -456,7 +466,7 @@ namespace HapetBackend.Llvm
 			// generate the initializer value
 			var x = GenerateExpressionCode(value);
 
-			if (varType is ArrayType)
+			if (varType is ArrayType arr1 && value.OutType is PointerType ptr1 && arr1.TargetType == ptr1.TargetType)
 			{
 				// array type has to be stored in another way
 				var tp = _typeMap[varType];
@@ -466,6 +476,22 @@ namespace HapetBackend.Llvm
 				/// setting the array size. <see cref="_lastArraySizeValueRef"/> is set in <see cref="GenerateArrayExprCode"/>
 				var len = _builder.BuildStructGEP2(tp, varPtr, 0, "arrayLen");
 				_builder.BuildStore(_lastArraySizeValueRef, len);
+			}
+			else if (varType is StringType && value.OutType is StringType)
+			{
+				// TODO: it would work only with const string assignment. if you want smth like this to work
+				// string a = b.Substring(...); 
+				// then you should some how check what GenerateExpressionCode returns
+				// this is also true for ArrayType...
+
+				// if they are trying to store a string in string
+				var tp = _typeMap[varType];
+				// the 1 is because StringType struct has buf field as it's 1 param
+				var buf = _builder.BuildStructGEP2(tp, varPtr, 1, "strBuf");
+				_builder.BuildStore(x, buf);
+				/// setting the string size. <see cref="_lastStringSizeInt"/> is set in <see cref="HapetValueToLLVMValue"/>
+				var len = _builder.BuildStructGEP2(tp, varPtr, 0, "strLen");
+				_builder.BuildStore(_lastStringSizeValueRef, len);
 			}
 			else
 			{

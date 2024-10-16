@@ -365,7 +365,9 @@ namespace HapetFrontend.Types
 
 		public override string TypeName => $"array";
 
-		private ArrayType(HapetType target) : base()
+		// array size is like that because of the array struct:
+		// { int32, ptr }
+		private ArrayType(HapetType target) : base(4 + PointerType.PointerSize, 4)
 		{
 			TargetType = target;
 		}
@@ -480,7 +482,18 @@ namespace HapetFrontend.Types
 
 	public class StringType : HapetType
 	{
-		public static StringType Instance { get; } = new StringType(16, 8);
+		private static StringType _instance;
+		public static StringType Instance 
+		{ 
+			get 
+			{ 
+				// string size is like that because of the string struct:
+				// { int32, ptr }
+				if (_instance == null)
+					_instance = new StringType(4 + PointerType.PointerSize, 4);
+				return _instance; 
+			} 
+		} 
 		public static StringType LiteralType { get; } = new StringType(0, 0);
 
 		public override string TypeName => "string";
