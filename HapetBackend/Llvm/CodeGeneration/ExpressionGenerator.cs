@@ -349,17 +349,7 @@ namespace HapetBackend.Llvm
 		// statements
 		private LLVMValueRef GenerateAssignStmt(AstAssignStmt assignStmt)
 		{
-			LLVMValueRef theVar;
-			if (assignStmt.Target.LeftPart == null)
-			{
-				// if it is just a local var
-				// TODO: error if it is not an AstIdExpr
-				theVar = GenerateIdExpr(assignStmt.Target.RightPart as AstIdExpr, true);
-			}
-			else
-			{
-				theVar = GenerateNestedExpr(assignStmt.Target, true);
-			}
+			LLVMValueRef theVar = GenerateNestedExpr(assignStmt.Target, true);
 
 			// check for initializer
 			if (assignStmt.Value == null)

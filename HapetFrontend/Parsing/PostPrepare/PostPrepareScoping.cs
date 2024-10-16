@@ -204,6 +204,9 @@ namespace HapetFrontend.Parsing.PostPrepare
 				case AstArrayExpr arrayExpr:
 					PostPrepareArrayExprScoping(arrayExpr);
 					break;
+				case AstArrayAccessExpr arrayAccExpr:
+					PostPrepareArrayAccessExprScoping(arrayAccExpr);
+					break;
 
 				// statements
 				case AstAssignStmt assignStmt:
@@ -305,6 +308,14 @@ namespace HapetFrontend.Parsing.PostPrepare
 				e.Scope = arrayExpr.Scope;
 				PostPrepareExprScoping(e);
 			}
+		}
+
+		private void PostPrepareArrayAccessExprScoping(AstArrayAccessExpr arrayAccExpr)
+		{
+			arrayAccExpr.ParameterExpr.Scope = arrayAccExpr.Scope;
+			PostPrepareExprScoping(arrayAccExpr.ParameterExpr);
+			arrayAccExpr.ObjectName.Scope = arrayAccExpr.Scope;
+			PostPrepareExprScoping(arrayAccExpr.ObjectName);
 		}
 
 		// statements

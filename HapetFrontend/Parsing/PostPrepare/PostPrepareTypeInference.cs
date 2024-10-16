@@ -166,6 +166,9 @@ namespace HapetFrontend.Parsing.PostPrepare
 				case AstArrayExpr arrayExpr:
 					PostPrepareArrayExprInference(arrayExpr);
 					break;
+				case AstArrayAccessExpr arrayAccExpr:
+					PostPrepareArrayAccessExprInference(arrayAccExpr);
+					break;
 
 				// statements
 				case AstAssignStmt assignStmt:
@@ -408,6 +411,18 @@ namespace HapetFrontend.Parsing.PostPrepare
 			}
 
 			arrayExpr.OutType = PointerType.GetPointerType(arrayExpr.TypeName.OutType);
+		}
+
+		private void PostPrepareArrayAccessExprInference(AstArrayAccessExpr arrayAccExpr)
+		{
+			PostPrepareExprInference(arrayAccExpr.ParameterExpr);
+			PostPrepareExprInference(arrayAccExpr.ObjectName);
+			if (arrayAccExpr.ObjectName.OutType is not ArrayType arrayType)
+			{
+				// TODO: error because expected an array 
+				return;
+			}
+			arrayAccExpr.OutType = arrayType.TargetType;
 		}
 
 		// statements

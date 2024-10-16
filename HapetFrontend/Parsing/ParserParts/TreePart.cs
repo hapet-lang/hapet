@@ -245,45 +245,57 @@ namespace HapetFrontend.Parsing
 						}
 						break;
 
-					// TODO: uncomment and check
-					//case TokenType.OpenBracket:
-					//	{
-					//		NextToken();
-					//		SkipNewlines();
+					case TokenType.OpenBracket:
+						{
+							NextToken();
+							SkipNewlines();
 
-					//		var args = new List<AstStatement>();
-					//		while (true)
-					//		{
-					//			var next = PeekToken();
-					//			if (next.Type == TokenType.CloseBracket || next.Type == TokenType.EOF)
-					//				break;
-					//			args.Add(ParseExpression(false));
-					//			SkipNewlines();
+							var args = new List<AstStatement>();
+							while (true)
+							{
+								var next = PeekToken();
+								if (next.Type == TokenType.CloseBracket || next.Type == TokenType.EOF)
+									break;
+								args.Add(ParseExpression(false));
+								SkipNewlines();
 
-					//			next = PeekToken();
-					//			if (next.Type == TokenType.Comma)
-					//			{
-					//				NextToken();
-					//				SkipNewlines();
-					//			}
-					//			else if (next.Type == TokenType.CloseBracket)
-					//				break;
-					//			else
-					//			{
-					//				NextToken();
-					//				ReportError(next.Location, $"Failed to parse operator [], expected ',' or ']'");
-					//				//RecoverExpression();
-					//			}
-					//		}
-					//		var end = Consume(TokenType.CloseBracket, ErrMsg("]", "at end of [] operator")).Location;
-					//		if (args.Count == 0)
-					//		{
-					//			ReportError(end, "At least one argument required");
-					//			args.Add(ParseEmptyExpression());
-					//		}
-					//		expr = new AstArrayAccessExpr(expr, args, new Location(expr.Beginning, end));
-					//	}
-					//	break;
+								next = PeekToken();
+								if (next.Type == TokenType.Comma)
+								{
+									NextToken();
+									SkipNewlines();
+								}
+								else if (next.Type == TokenType.CloseBracket)
+									break;
+								else
+								{
+									NextToken();
+									ReportError(next.Location, $"Failed to parse operator [], expected ',' or ']'");
+									//RecoverExpression();
+								}
+							}
+							var end = Consume(TokenType.CloseBracket, ErrMsg("]", "at end of [] operator")).Location;
+							if (args.Count == 0)
+							{
+								ReportError(end, "At least one argument required");
+								args.Add(ParseEmptyExpression());
+							}
+							else if (args.Count > 1)
+							{
+								ReportError(end, "Too many arguments passed");
+							}
+
+							if (expr is not AstNestedExpr nestExpr)
+							{
+								ReportError(expr.Location, $"Indentifier expected before an array access");
+								return expr;
+							}
+
+							// TODO: error if args.First() is not an expr
+							var arrAcc = new AstArrayAccessExpr(nestExpr, args.First() as AstExpression, new Location(expr.Beginning, end));
+							expr = new AstNestedExpr(arrAcc, null, new Location(expr.Beginning, end));
+						}
+						break;
 
 					default:
 						return expr;
