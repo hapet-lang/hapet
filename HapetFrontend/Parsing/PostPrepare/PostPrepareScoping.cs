@@ -151,7 +151,6 @@ namespace HapetFrontend.Parsing.PostPrepare
 				{
 					PostPrepareExprScoping(expr);
 				}
-				// todo: some check like if it is another block and etc.
 			}
 
 			return blockScope;
@@ -228,8 +227,13 @@ namespace HapetFrontend.Parsing.PostPrepare
 		private void PostPrepareUnaryExprScoping(AstUnaryExpr unExpr)
 		{
 			unExpr.SubExpr.Scope = unExpr.Scope;
-			// TODO: error if it is not an expr
-			PostPrepareExprScoping(unExpr.SubExpr as AstExpression);
+			// error if it is not an expr
+			if (unExpr.SubExpr is not AstExpression expr)
+			{
+				_compiler.ErrorHandler.ReportError(_currentSourceFile.Text, unExpr.SubExpr, $"Expression expected after {unExpr.Operator}");
+				return;
+			}
+			PostPrepareExprScoping(expr);
 		}
 
 		private void PostPrepareBinaryExprScoping(AstBinaryExpr binExpr)
@@ -237,9 +241,20 @@ namespace HapetFrontend.Parsing.PostPrepare
 			// these scopes are probably the same for the bin expr parts
 			binExpr.Left.Scope = binExpr.Scope;
 			binExpr.Right.Scope = binExpr.Scope;
-			// TODO: error if it is not an expr
-			PostPrepareExprScoping(binExpr.Left as AstExpression);
-			PostPrepareExprScoping(binExpr.Right as AstExpression);
+			// error if it is not an expr
+			if (binExpr.Left is not AstExpression leftExpr)
+			{
+				_compiler.ErrorHandler.ReportError(_currentSourceFile.Text, binExpr.Left, $"Expression expected before {binExpr.Operator}");
+				return;
+			}
+			// error if it is not an expr
+			if (binExpr.Right is not AstExpression rightExpr)
+			{
+				_compiler.ErrorHandler.ReportError(_currentSourceFile.Text, binExpr.Right, $"Expression expected after {binExpr.Operator}");
+				return;
+			}
+			PostPrepareExprScoping(leftExpr);
+			PostPrepareExprScoping(rightExpr);
 		}
 
 		private void PostPreparePointerExprScoping(AstPointerExpr pointerExpr)
@@ -292,9 +307,21 @@ namespace HapetFrontend.Parsing.PostPrepare
 		private void PostPrepareCastExprScoping(AstCastExpr castExpr)
 		{
 			castExpr.SubExpression.Scope = castExpr.Scope;
-			PostPrepareExprScoping(castExpr.SubExpression as AstExpression); // TODO: error if it is not an expr
+			// error if it is not an exprv
+			if (castExpr.SubExpression is not AstExpression subExpr)
+			{
+				_compiler.ErrorHandler.ReportError(_currentSourceFile.Text, castExpr.SubExpression, $"Expression expected");
+				return;
+			}
+			PostPrepareExprScoping(subExpr);
 			castExpr.TypeExpr.Scope = castExpr.Scope;
-			PostPrepareExprScoping(castExpr.TypeExpr as AstExpression); // TODO: error if it is not an expr
+			// error if it is not an expr
+			if (castExpr.TypeExpr is not AstExpression typeExpr)
+			{
+				_compiler.ErrorHandler.ReportError(_currentSourceFile.Text, castExpr.TypeExpr, $"Expression expected");
+				return;
+			}
+			PostPrepareExprScoping(typeExpr);
 		}
 
 		private void PostPrepareNestedExprScoping(AstNestedExpr nestExpr)

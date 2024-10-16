@@ -60,7 +60,7 @@ namespace HapetFrontend.Parsing.PostPrepare
 				case CharType when exprType is IntType:
                     {
                         // allow if the var type size is bigger
-                        // TODO: do not allow is signes are different or something like that. idk :)
+                        // TODO: do not allow if signes are different or something like that. idk :)
                         if (neededType.GetSize() > exprType.GetSize())
                         {
 							outExpr = cst;

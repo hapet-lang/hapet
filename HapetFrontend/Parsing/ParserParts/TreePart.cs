@@ -169,7 +169,7 @@ namespace HapetFrontend.Parsing
 				var sub = ParseUnaryExpression(allowCommaForTuple, allowFunctionDeclaration, errorMessage);
 				if (sub is not AstExpression expr)
 				{
-					// TODO: error here. it has to be an expr
+					ReportError(sub.Location, $"Expression expected after '&'");
 					return sub;
 				}
 				return new AstAddressOfExpr(expr, new Location(next.Location, sub.Ending));
@@ -181,7 +181,7 @@ namespace HapetFrontend.Parsing
 				var sub = ParseUnaryExpression(allowCommaForTuple, allowFunctionDeclaration, errorMessage);
 				if (sub is not AstExpression expr)
 				{
-					// TODO: error here. it has to be an expr
+					ReportError(sub.Location, $"Expression expected after '*'");
 					return sub;
 				}
 				return new AstPointerExpr(expr, true, new Location(next.Location, sub.Ending));
@@ -282,6 +282,7 @@ namespace HapetFrontend.Parsing
 							}
 							else if (args.Count > 1)
 							{
+								// TODO: mb allow them multiple args in []?
 								ReportError(end, "Too many arguments passed");
 							}
 
@@ -291,8 +292,12 @@ namespace HapetFrontend.Parsing
 								return expr;
 							}
 
-							// TODO: error if args.First() is not an expr
-							var arrAcc = new AstArrayAccessExpr(nestExpr, args.First() as AstExpression, new Location(expr.Beginning, end));
+							if (args.First() is not AstExpression firstExpr)
+							{
+								ReportError(args.First().Location, $"Expression expected as index of element in [...]");
+								return expr;
+							}
+							var arrAcc = new AstArrayAccessExpr(nestExpr, firstExpr, new Location(expr.Beginning, end));
 							expr = new AstNestedExpr(arrAcc, null, new Location(expr.Beginning, end));
 						}
 						break;

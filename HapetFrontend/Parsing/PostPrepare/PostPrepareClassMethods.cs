@@ -28,7 +28,16 @@ namespace HapetFrontend.Parsing.PostPrepare
 		private void PostPrepareClassMethodsInternal(AstClassDecl classDecl)
 		{
 			var allFuncs = classDecl.Declarations.Where(x => x is AstFuncDecl).Select(x => x as AstFuncDecl);
-			// TODO: error if user created a func with the initializer name
+
+			// error if user created a func with the initializer name
+			var specialFuncs = allFuncs.Where(x => (x.Name.Name == $"{classDecl.Name.Name}_ini" || 
+												    x.Name.Name == $"{classDecl.Name.Name}_ctor" ||
+												    x.Name.Name == $"{classDecl.Name.Name}_dtor"));
+			foreach (var fnc in specialFuncs)
+			{
+				_compiler.ErrorHandler.ReportError(_currentSourceFile.Text, fnc, $"Function with the name is not allowed in the {classDecl.Name.Name} class");
+			}
+
 			PostPrepareGenerateClassInitializer(classDecl);
 			// passing all the existing ctors
 			PostPrepareGenerateClassConstructor(classDecl, allFuncs.Where(x => x.ClassFunctionTypes.Contains(Enums.ClassFunctionType.Ctor)).ToList());
