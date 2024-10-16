@@ -19,7 +19,8 @@ namespace HapetFrontend.Parsing
 				var arraySize = ParseExpression(false, false);
 				if (arraySize is not AstExpression expr)
 				{
-					// TODO: error here. it has to be an expr
+					// error here. it has to be an expr
+					ReportError(arraySize.Location, $"Expression expected to be as an array size");
 					return ParseEmptyExpression();
 				}
 
@@ -33,7 +34,8 @@ namespace HapetFrontend.Parsing
 			{
 				if (sizeExpr == null)
 				{
-					// TODO: error here. because size was not defined and elements are also were not
+					// error here. because size was not defined and elements are also were not
+					ReportError(typeName.Location, $"Array creation requires its size or elements to be specified");
 				}
 				return new AstArrayExpr(typeName, sizeExpr, new List<AstExpression>(), new Location(beg, CurrentToken.Location.Ending));
 			}
@@ -47,7 +49,8 @@ namespace HapetFrontend.Parsing
 				return new AstArrayExpr(typeName, sizeExpr, elements, new Location(beg, CurrentToken.Location.Ending));
 			}
 
-			// TODO: error here like unexpected token
+			// error here like unexpected token
+			ReportError(PeekToken().Location, $"Unexpected token after array creation expression");
 			return ParseEmptyExpression();
 		}
 
@@ -67,7 +70,8 @@ namespace HapetFrontend.Parsing
 				var expr = ParseExpression(false);
 				if (expr is not AstExpression exprexpr)
 				{
-					// TODO: error here. it has to be
+					// error here. it has to be
+					ReportError(expr.Location, $"Array element expected to be an expression");
 					break;
 				}
 				values.Add(exprexpr);

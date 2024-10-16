@@ -24,7 +24,8 @@ namespace HapetFrontend.Parsing
 				return new AstNewExpr(typeName, args, Location: new Location(beg));
 			}
 
-			// TODO: error here that unexpected token .. after typeName
+			// error here that unexpected token .. after typeName
+			ReportError(PeekToken().Location, $"Unexpected token after a type name");
 			return ParseEmptyExpression();
 		}
 	}

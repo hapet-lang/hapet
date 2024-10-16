@@ -17,8 +17,8 @@ namespace HapetFrontend.Parsing
 			// class name
 			if (!CheckToken(TokenType.Identifier))
 			{
-				// TODO: better error location
-				ReportError(beg, $"Expected class name after 'class' keyword");
+				// better error location
+				ReportError(PeekToken().Location, $"Expected class name after 'class' keyword");
 			}
 			else
 			{

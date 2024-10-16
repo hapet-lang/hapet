@@ -232,9 +232,6 @@ namespace HapetFrontend.Types
 		private PointerType(HapetType target) : base(
 			target switch
 			{
-				// TODO: should i treat classes in different way
-				//AnyType t => PointerSize * 3,
-				//TraitType t => PointerSize * 2,
 				_ => PointerSize * 1,
 			}, PointerAlignment)
 		{
@@ -303,7 +300,6 @@ namespace HapetFrontend.Types
 
 		public override string TypeName => "ref";
 
-		// TODO: should i treat classes in different way
 		private ReferenceType(HapetType target) : base(PointerType.PointerSize, PointerType.PointerAlignment)
 		{
 			TargetType = target;

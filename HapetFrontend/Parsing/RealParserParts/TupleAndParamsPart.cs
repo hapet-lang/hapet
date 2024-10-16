@@ -224,7 +224,7 @@ namespace HapetFrontend.Parsing
 						var sub = ParseExpression(allowCommaForTuple, false);
 						return new AstCastExpr(expr, sub, new Location(beg, sub.Ending));
 					}
-					ReportError(expr.Location, $"Identifier expected after '({expr})'"); // TODO: is it ok to print expr like that?
+					ReportError(expr.Location, $"Identifier expected after a cast type");
 					return expr;
 				}
 			}

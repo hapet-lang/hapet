@@ -94,7 +94,6 @@ namespace HapetFrontend.Parsing.PostPrepare
 				{
 					PostPrepareExprInference(expr);
 				}
-				// todo: some check like if it is another block and etc.
 			}
 		}
 
@@ -189,7 +188,7 @@ namespace HapetFrontend.Parsing.PostPrepare
 
 		private void PostPrepareUnaryExprInference(AstUnaryExpr unExpr) 
 		{
-			// TODO: check for the right size for an existance value (compiletime evaluated) and do some shite
+			// TODO: check for the right size for an existance value (compiletime evaluated) and do some shite (set unExpr OutValue)
 			PostPrepareExprInference(unExpr.SubExpr as AstExpression);
 			var operators = unExpr.Scope.GetUnaryOperators(unExpr.Operator, (unExpr.SubExpr as AstExpression).OutType);
 			if (operators.Count == 0)
@@ -341,12 +340,13 @@ namespace HapetFrontend.Parsing.PostPrepare
 			var sym = callExpr.Scope.GetSymbol(callExpr.FuncName.Name);
 			if (sym is DeclSymbol typed && typed.Decl is AstFuncDecl funcDecl)
 			{
-				// it is probably non static fun
+				// checking if it is a static func
 				callExpr.StaticCall = funcDecl.SpecialKeys.Contains(TokenType.KwStatic);
 			}
 			else
 			{
-				// TODO: error here
+				// error here
+				_compiler.ErrorHandler.ReportError(_currentSourceFile.Text, callExpr, $"The function could not be found in the scope");
 			}
 
 			// setting call expr out type
@@ -357,7 +357,8 @@ namespace HapetFrontend.Parsing.PostPrepare
 			}
 			else
 			{
-				// TODO: error here
+				// error here
+				_compiler.ErrorHandler.ReportError(_currentSourceFile.Text, callExpr, $"The calling thing has to be a function");
 			}
 		}
 
@@ -448,7 +449,8 @@ namespace HapetFrontend.Parsing.PostPrepare
 			PostPrepareExprInference(arrayAccExpr.ObjectName);
 			if (arrayAccExpr.ObjectName.OutType is not ArrayType arrayType)
 			{
-				// TODO: error because expected an array 
+				// error because expected an array 
+				_compiler.ErrorHandler.ReportError(_currentSourceFile.Text, arrayAccExpr.ObjectName, $"Array type expected to be indexed");
 				return;
 			}
 			arrayAccExpr.OutType = arrayType.TargetType;

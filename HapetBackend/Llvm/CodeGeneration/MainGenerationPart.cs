@@ -61,7 +61,6 @@ namespace HapetBackend.Llvm
 				}
 				else if (decl is AstVarDecl fieldDecl)
 				{
-					// TODO: save the types
                     entryTypes.Add(HapetTypeToLLVMType(fieldDecl.Type.OutType));
 					entryHapetTypes.Add(fieldDecl.Type.OutType);
                 }
@@ -70,7 +69,6 @@ namespace HapetBackend.Llvm
 			// TODO: create using HapetTypeToLLVMType
 			_structTypeElementsMap.Add(classDecl.Type.OutType, entryHapetTypes);
             classStruct.StructSetBody(entryTypes.ToArray(), false);
-			// classDecl.Type.OutType.SetSizeAndAlignment(1, 4); // TODO: idk
 
 			foreach (var (funcDecl, funcType) in funcs)
 			{
@@ -132,7 +130,7 @@ namespace HapetBackend.Llvm
 			// return logics
 			if (retOfBlock != null)
 			{
-				// TODO: return value
+				// TODO: return value (what did i mean by this?? ahahaha)
 				_builder.BuildRet(retOfBlock.Value);
 			}
 			else if (funcDecl.Returns.OutType is VoidType)
@@ -153,7 +151,6 @@ namespace HapetBackend.Llvm
 
 		private LLVMValueRef? GenerateBlockCode(AstBlockExpr blockExpr)
 		{
-			// TODO: put here return of the block if it exists
 			LLVMValueRef? result = null;
 			foreach (var stmt in blockExpr.Statements)
 			{

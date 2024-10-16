@@ -318,7 +318,7 @@ namespace HapetFrontend.Parsing.PostPrepare
 			// error if it is not an expr
 			if (castExpr.TypeExpr is not AstExpression typeExpr)
 			{
-				_compiler.ErrorHandler.ReportError(_currentSourceFile.Text, castExpr.TypeExpr, $"Expression expected");
+				_compiler.ErrorHandler.ReportError(_currentSourceFile.Text, castExpr.TypeExpr, $"Expression expected as a result type");
 				return;
 			}
 			PostPrepareExprScoping(typeExpr);

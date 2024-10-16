@@ -61,7 +61,6 @@ namespace HapetBackend.Llvm
 				}
 				else
 				{
-					// TODO: check that left and right are really expressions and report error if not
 					var leftExpr = (binExpr.Left as AstExpression);
 					var left = GenerateExpressionCode(leftExpr);
 					if (leftExpr.OutType != binExpr.OutType)
@@ -150,7 +149,8 @@ namespace HapetBackend.Llvm
 			{
 				// idk what to do here :_(
 				// anyway it should not happen...
-				// TODO: internal error here
+				// internal error here
+				_errorHandler.ReportError(_currentSourceFile.Text, expr, $"Internal compiler error (AstPointerExpr could not be generated here)");
 			}
 			return null;
 		}
@@ -166,13 +166,13 @@ namespace HapetBackend.Llvm
 			{
 				return GenerateIdExpr(idExpr, true);
 			}
-			// TODO: internal error here
+			// internal error here
+			_errorHandler.ReportError(_currentSourceFile.Text, addrExpr, $"Internal compiler error (AstAddressOfExpr could not be generated here)");
 			return null;
 		}
 
 		private LLVMValueRef GenerateIdExpr(AstIdExpr expr, bool getPtr = false)
 		{
-			// TODO: check for AstNestedIdExpr
 			LLVMValueRef v = default;
 			v = _valueMap[expr.FindSymbol];
 			// return the ptr to the val. used for AstAddressOf or storing values
@@ -211,7 +211,14 @@ namespace HapetBackend.Llvm
 
 				var ctorName = $"{classType.Declaration.Name.Name}_ctor" + expr.Arguments.GetArgsString(PointerType.GetPointerType(classType));
 				var ctorSymbol = classType.Declaration.Scope.GetSymbol(ctorName) as DeclSymbol;
-				// TODO: error if ctor not found
+
+				// error if ctor not found
+				if (ctorSymbol == null)
+				{
+					_errorHandler.ReportError(_currentSourceFile.Text, expr, $"Constructor with specified argument types was not found in the {classType.Declaration.Name.Name} class");
+					return v;
+				}
+
 				var ctorFunc = _valueMap[ctorSymbol];
 				LLVMTypeRef ctorType = _typeMap[ctorSymbol.Decl.Type.OutType];
 				_builder.BuildCall2(ctorType, ctorFunc, args.ToArray());  // calling ctor
@@ -351,7 +358,8 @@ namespace HapetBackend.Llvm
 		{
 			if (expr.ParameterExpr.OutType is not IntType)
 			{
-				// TODO: error here? i cannot access array if it is not an int type
+				// error here? i cannot access array if it is not an int type
+				_errorHandler.ReportError(_currentSourceFile.Text, expr.ParameterExpr, $"Type of the index has to be an integer type");
 			}
 
 			// getting arrayBuf from struct and pointer to it
@@ -378,7 +386,8 @@ namespace HapetBackend.Llvm
 			// check for initializer
 			if (assignStmt.Value == null)
 			{
-				// TODO: error here!!!!! it could not be null
+				// error here!!!!! it could not be null
+				_errorHandler.ReportError(_currentSourceFile.Text, assignStmt, $"Expression expected on the right side of assignment");
 			}
 
 			AssignToVar(theVar, assignStmt.Target.OutType, assignStmt.Value);
