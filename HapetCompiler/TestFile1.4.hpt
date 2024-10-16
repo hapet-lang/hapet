@@ -2,17 +2,23 @@
 {
 	public static int Main()
 	{
-		char a = 'g';
-		char a2 = 'н';
+		// char a = 'g';
+		// char a2 = 'н';
 
 		// char* s = "test string";
 
-		byte* arr = new byte[3];
-		byte* arr2 = new byte[3] { 1, 2, 3 };
+		// byte* arr = new byte[3];
+		// byte* arr2 = new byte[3] { 1, 2, 3 };
 
 		byte[] arr3 = new byte[3] { 1, 2, 3 };
-		char[] arr4 = new char[3] { 1, 2, 3 };
+		arr3[1] = 7;
 
-		return 0;
+		byte a = arr3[2];
+
+		// char[] arr4 = new char[3] { 1, 2, 3 };
+
+		int outVal = a + arr3[0] + arr3[1];
+
+		return outVal;
 	}
 }

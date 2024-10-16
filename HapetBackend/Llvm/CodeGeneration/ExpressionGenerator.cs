@@ -11,7 +11,7 @@ namespace HapetBackend.Llvm
 {
 	public partial class LlvmCodeGenerator
 	{
-		private LLVMValueRef GenerateExpressionCode(AstStatement expr)
+		private LLVMValueRef GenerateExpressionCode(AstStatement expr, bool getPtr = false)
 		{
 			// if the value already evaluated (usually literals or consts)
 			if (expr is AstExpression realExpr && realExpr.OutValue != null)
@@ -26,13 +26,14 @@ namespace HapetBackend.Llvm
 				case AstBinaryExpr binExpr: return GenerateBinaryExprCode(binExpr);
 				case AstPointerExpr pointerExpr: return GeneratePointerExprCode(pointerExpr);
 				case AstAddressOfExpr addrExpr: return GenerateAddressOfExprCode(addrExpr);
-				case AstIdExpr idExpr: return GenerateIdExpr(idExpr);
+				case AstIdExpr idExpr: return GenerateIdExpr(idExpr, getPtr);
 				case AstNewExpr newExpr: return GenerateNewExpr(newExpr);
 				case AstCallExpr callExpr: return GenerateCallExpr(callExpr);
 				case AstArgumentExpr argExpr: return GenerateArgumentExpr(argExpr);
 				case AstCastExpr castExpr: return GenerateCastExpr(castExpr);
-				case AstNestedExpr nestExpr: return GenerateNestedExpr(nestExpr);
+				case AstNestedExpr nestExpr: return GenerateNestedExpr(nestExpr, getPtr);
 				case AstArrayExpr arrayExpr: return GenerateArrayExprCode(arrayExpr);
+				case AstArrayAccessExpr arrayAccessExpr: return GenerateArrayAccessExprCode(arrayAccessExpr, getPtr);
 
 				// statements
 				case AstAssignStmt assignStmt: return GenerateAssignStmt(assignStmt);
@@ -267,7 +268,7 @@ namespace HapetBackend.Llvm
 			if (expr.LeftPart == null)
 			{
 				// func call, ident or pure expr
-				return GenerateExpressionCode(expr.RightPart);
+				return GenerateExpressionCode(expr.RightPart, getPtr);
 			}
 			else
 			{
@@ -313,37 +314,60 @@ namespace HapetBackend.Llvm
 		}
 
 		private LLVMValueRef _lastArraySizeValueRef = default;
-		private LLVMValueRef GenerateArrayExprCode(AstArrayExpr arrayExpr)
+		private LLVMValueRef GenerateArrayExprCode(AstArrayExpr expr)
 		{
 			// TODO: check if it could be allocated on stack
 
 			// allocating memory for the array
-			var mallocSymbol = arrayExpr.Scope.GetSymbol("malloc") as DeclSymbol; // TODO: rewrite it when there would be a default project of Hapet
+			var mallocSymbol = expr.Scope.GetSymbol("malloc") as DeclSymbol; // TODO: rewrite it when there would be a default project of Hapet
 			var mallocFunc = _valueMap[mallocSymbol];
 			LLVMTypeRef funcType = _typeMap[mallocSymbol.Decl.Type.OutType];
 			// calc size to malloc = amount * typeSize
-			_lastArraySizeValueRef = GenerateExpressionCode(arrayExpr.SizeExpr);
-			var typeSize = LLVMValueRef.CreateConstInt(HapetTypeToLLVMType(IntType.GetIntType(4, true)), (ulong)arrayExpr.TypeName.OutType.GetSize());
+			_lastArraySizeValueRef = GenerateExpressionCode(expr.SizeExpr);
+			var typeSize = LLVMValueRef.CreateConstInt(HapetTypeToLLVMType(IntType.GetIntType(4, true)), (ulong)expr.TypeName.OutType.GetSize());
 			var sizeToMalloc = _builder.BuildMul(_lastArraySizeValueRef, typeSize, "sizeToMalloc");
 
 			var allocated = _builder.BuildCall2(funcType, mallocFunc, new LLVMValueRef[] { sizeToMalloc }, "allocatedForArray");
 
-			for (int i = 0; i < arrayExpr.Elements.Count; ++i)
+			for (int i = 0; i < expr.Elements.Count; ++i)
 			{
-				var el = arrayExpr.Elements[i];
+				var el = expr.Elements[i];
 				LLVMValueRef llvmElement = GenerateExpressionCode(el);
 
 				var elementNum = LLVMValueRef.CreateConstInt(HapetTypeToLLVMType(IntType.GetIntType(4, true)), (ulong)i);
-				var arrayEl = _builder.BuildGEP2(HapetTypeToLLVMType(arrayExpr.TypeName.OutType), allocated, new LLVMValueRef[] { elementNum }, $"element{i}");
+				var arrayEl = _builder.BuildGEP2(HapetTypeToLLVMType(expr.TypeName.OutType), allocated, new LLVMValueRef[] { elementNum }, $"element{i}");
 				_builder.BuildStore(llvmElement, arrayEl);
 			}
 
-			if (arrayExpr.Elements.Count == 0)
+			if (expr.Elements.Count == 0)
 			{
 				// TODO: create here a loop that loops SizeExpr times and inites with defaults!
 			}
 
 			return allocated;
+		}
+
+		private LLVMValueRef GenerateArrayAccessExprCode(AstArrayAccessExpr expr, bool getPtr = false)
+		{
+			if (expr.ParameterExpr.OutType is not IntType)
+			{
+				// TODO: error here? i cannot access array if it is not an int type
+			}
+
+			// getting arrayBuf from struct and pointer to it
+			LLVMValueRef ptrToArray = GenerateExpressionCode(expr.ObjectName, true);
+			var ptrToBuffer = _builder.BuildStructGEP2(HapetTypeToLLVMType(expr.ObjectName.OutType), ptrToArray, 1, "arrayBuf");
+			var bufferItself = _builder.BuildLoad2(HapetTypeToLLVMType(expr.OutType).GetPointerTo(), ptrToBuffer);
+
+			// getting an element from the arrayBuf
+			LLVMValueRef llvmElementIndex = GenerateExpressionCode(expr.ParameterExpr);
+			var arrayEl = _builder.BuildGEP2(HapetTypeToLLVMType(expr.OutType), bufferItself, new LLVMValueRef[] { llvmElementIndex });
+
+			if (getPtr)
+				return arrayEl;
+
+			var retLoaded = _builder.BuildLoad2(HapetTypeToLLVMType(expr.OutType), arrayEl);
+			return retLoaded;
 		}
 
 		// statements
