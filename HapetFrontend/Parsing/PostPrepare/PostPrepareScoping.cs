@@ -60,7 +60,8 @@ namespace HapetFrontend.Parsing.PostPrepare
 					else
 						classDecl.Scope.DefineDeclSymbol(fieldDecl.Name.Name, fieldDecl);
 
-					PostPrepareVarScoping(fieldDecl);
+					// setting already defined to 'true' because of some shite with access types
+					PostPrepareVarScoping(fieldDecl, true);
 				}
 			}
 		}
@@ -69,6 +70,7 @@ namespace HapetFrontend.Parsing.PostPrepare
 		{
 			_currentFunction = funcDecl;
 
+			// TODO: refactor similar shite!
 			funcDecl.SourceFile = _currentSourceFile;
 			if (funcDecl.Body != null)
 			{
@@ -81,17 +83,7 @@ namespace HapetFrontend.Parsing.PostPrepare
 				{
 					// settings the block scope to the parameters (so they are in the scope of the block)
 					p.Scope = blockScope;
-					p.Name.Scope = blockScope;
-					p.Type.Scope = blockScope;
-					PostPrepareExprScoping(p.Type);
-					if (p.DefaultValue != null)
-					{
-						// preparing scopes of default values if they exist
-						p.DefaultValue.Scope = blockScope;
-						PostPrepareExprScoping(p.DefaultValue);
-					}
-					// defining the symbol in the scope so it can be easily found
-					blockScope.DefineDeclSymbol(p.Name.Name, p);
+					PostPrepareParamScoping(p);
 				}
 				// return type is the same
 				funcDecl.Returns.Scope = funcDecl.Scope;
@@ -105,16 +97,7 @@ namespace HapetFrontend.Parsing.PostPrepare
 				{
 					// settings the block scope to the parameters (so they are in the scope of the block)
 					p.Scope = funcDecl.Scope;
-					if (p.Name != null)
-						p.Name.Scope = funcDecl.Scope;
-					p.Type.Scope = funcDecl.Scope;
-					PostPrepareExprScoping(p.Type);
-					if (p.DefaultValue != null)
-					{
-						// preparing scopes of default values if they exist
-						p.DefaultValue.Scope = funcDecl.Scope;
-						PostPrepareExprScoping(p.DefaultValue);
-					}
+					PostPrepareParamScoping(p);
 				}
 				// return type is the same
 				funcDecl.Returns.Scope = funcDecl.Scope;
@@ -123,7 +106,12 @@ namespace HapetFrontend.Parsing.PostPrepare
 			}
 		}
 
-		private void PostPrepareVarScoping(AstVarDecl varDecl)
+		/// <summary>
+		/// Post preparation of varDecl
+		/// </summary>
+		/// <param name="varDecl">The var decl</param>
+		/// <param name="alreadyDefined">It could be already defined for example by classDecl (because of public/private shite)</param>
+		private void PostPrepareVarScoping(AstVarDecl varDecl, bool alreadyDefined = false)
 		{
 			varDecl.Name.Scope = varDecl.Scope;
 			varDecl.Type.Scope = varDecl.Scope;
@@ -132,6 +120,30 @@ namespace HapetFrontend.Parsing.PostPrepare
 			{
 				varDecl.Initializer.Scope = varDecl.Scope;
 				PostPrepareExprScoping(varDecl.Initializer);
+			}
+			// define it in the scope if it is not yet
+			if (!alreadyDefined)
+				varDecl.Scope.DefineDeclSymbol(varDecl.Name.Name, varDecl);
+		}
+
+		private void PostPrepareParamScoping(AstParamDecl paramDecl)
+		{
+			// it can be null when the func is only declared but not defined!
+			if (paramDecl.Name != null)
+				paramDecl.Name.Scope = paramDecl.Scope;
+			paramDecl.Type.Scope = paramDecl.Scope;
+			PostPrepareExprScoping(paramDecl.Type);
+			if (paramDecl.DefaultValue != null)
+			{
+				// preparing scopes of default values if they exist
+				paramDecl.DefaultValue.Scope = paramDecl.Scope;
+				PostPrepareExprScoping(paramDecl.DefaultValue);
+			}
+			// it can be null when the func is only declared but not defined!
+			if (paramDecl.Name != null)
+			{
+				// defining the symbol in the scope so it can be easily found
+				paramDecl.Scope.DefineDeclSymbol(paramDecl.Name.Name, paramDecl);
 			}
 		}
 
@@ -217,13 +229,7 @@ namespace HapetFrontend.Parsing.PostPrepare
 			{
 				stmt.Scope = blockScope;
 				stmt.Parent = blockExpr;
-				// preparing variable declaration parts scoping
-				if (stmt is AstVarDecl varDecl)
-				{
-					PostPrepareVarScoping(varDecl);
-					blockScope.DefineDeclSymbol(varDecl.Name.Name, varDecl);
-				}
-				else if (stmt is AstReturnStmt returnStmt)
+				if (stmt is AstReturnStmt returnStmt) // TODO: make it via PostPrepareExprScoping ?
 				{
 					if (returnStmt.ReturnExpression != null)
 					{

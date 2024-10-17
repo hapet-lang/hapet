@@ -18,16 +18,16 @@ namespace HapetFrontend.Ast.Statements
 		public AstExpression SecondParam { get; set; }
 
 		/// <summary>
-		/// The third param of for loop. Could be pure <see cref="AstExpression"/> or just a <see cref="null"/>.
+		/// The third param of for loop. Usually just a <see cref="AstAssignStmt"/> so <see cref="AstStatement"/> or just a <see cref="null"/>.
 		/// </summary>
-		public AstExpression ThirdParam { get; set; }
+		public AstStatement ThirdParam { get; set; }
 
 		/// <summary>
 		/// The body of for loop
 		/// </summary>
 		public AstBlockExpr Body { get; set; }
 
-		public AstForStmt(AstStatement first, AstExpression second, AstExpression third, AstBlockExpr body, ILocation location = null) : base(location)
+		public AstForStmt(AstStatement first, AstExpression second, AstStatement third, AstBlockExpr body, ILocation location = null) : base(location)
 		{
 			FirstParam = first;
 			SecondParam = second;

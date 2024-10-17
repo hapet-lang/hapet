@@ -50,9 +50,7 @@ namespace HapetFrontend.Parsing.PostPrepare
 			// inferencing parameters 
 			foreach (var p in funcDecl.Parameters)
 			{
-				PostPrepareExprInference(p.Type);
-				if (p.DefaultValue != null)
-					PostPrepareExprInference(p.DefaultValue);
+				PostPrepareParamInference(p);
 			}
 
 			// if the containing class is empty - it is external func
@@ -108,6 +106,13 @@ namespace HapetFrontend.Parsing.PostPrepare
 				}
 				PostPrepareVariableAssign(varDecl);
             }
+		}
+
+		private void PostPrepareParamInference(AstParamDecl paramDecl)
+		{
+			PostPrepareExprInference(paramDecl.Type);
+			if (paramDecl.DefaultValue != null)
+				PostPrepareExprInference(paramDecl.DefaultValue);
 		}
 
 		private void PostPrepareExprInference(AstStatement expr)

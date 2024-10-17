@@ -10,7 +10,7 @@ namespace HapetFrontend.Parsing
 		{
 			AstStatement first = null;
 			AstExpression second = null;
-			AstExpression third = null;
+			AstStatement third = null;
 			AstBlockExpr body;
 
 			var beg = Consume(TokenType.KwFor, ErrMsg("keyword 'for'", "at beginning of for loop"));
@@ -34,7 +34,7 @@ namespace HapetFrontend.Parsing
 
 			// if there is a third param
 			if (!CheckToken(TokenType.CloseParen))
-				third = ParseExpression(true, false) as AstExpression; // TODO: error if it is not an expr
+				third = ParseStatement(false);
 			var end = Consume(TokenType.CloseParen, ErrMsg("')'", "after the third argument"));
 
 			SkipNewlines();
