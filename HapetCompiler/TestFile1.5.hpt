@@ -8,6 +8,6 @@
 		string s = "test string";
 		string s2 = "test string2";
 
-		return 0;
+		return s[5];
 	}
 }

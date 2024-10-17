@@ -96,7 +96,8 @@ namespace HapetFrontend.Parsing.PostPrepare
 					!(neededType is ArrayType arr1 && exprType is PointerType ptr3 && arr1.TargetType == ptr3.TargetType)  // usually when 'Anime[] a = new Anime[n];'
 					) // place here other exceptions
                 {
-                    _compiler.ErrorHandler.ReportError(_currentSourceFile.Text, expr, $"Type {exprType} cannot be implicitly casted into {neededType}");
+                    string typeName = exprType?.ToString() ?? "[Unresolved]";
+					_compiler.ErrorHandler.ReportError(_currentSourceFile.Text, expr, $"Type {typeName} cannot be implicitly casted into {neededType}");
                 }
                 outExpr = expr;
             }
