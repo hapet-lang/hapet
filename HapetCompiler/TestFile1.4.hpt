@@ -1,15 +1,17 @@
 ﻿public static class Program
 {
-	public static int Main()
+	public static int Main(string[] args)
 	{
-		char[] arr1 = new char[3] { 1, 2, 3 };
+		// char[] arr1 = new char[3] { 1, 2, 3 };
 		int[] arr2 = new int[3] { 1, 2, 3 };
 
-		byte[] arr3 = new byte[3] { 1, 2, 3 };
-		arr3[1] = 'a';
-		byte a = arr3[2];
-		byte outVal = a + arr3[0] + arr3[1];
+		int[] arr4 = arr2;
 
-		return outVal;
+		// byte[] arr3 = new byte[3] { 1, 2, 3 };
+		// arr3[1] = 'a';
+		// byte a = arr3[2];
+		// byte outVal = a + arr3[0] + arr3[1];
+
+		return 1;
 	}
 }

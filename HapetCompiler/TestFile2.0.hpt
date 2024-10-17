@@ -1,8 +1,10 @@
 ﻿public static class Program
 {
-	public static void Main(string[] args)
+	public static int Main(string[] args)
 	{
 		int a = 2 + 5;
-		int b = args[0];
+		// string bb = "asdasd";
+		string b = args[0];
+		return 1;
 	}
 }

@@ -48,9 +48,9 @@ namespace HapetFrontend.Parsing.PostPrepare
 
 						// TODO: remake to "int Main(string[] args)"
 						var funcDecl = decl as AstFuncDecl;
-						if (funcDecl.Name.Name == "Main()" &&
+						if (funcDecl.Name.Name == "Main(string[])" &&
 							funcDecl.Returns.OutType == IntType.GetIntType(4, true) &&
-							funcDecl.Parameters.Count == 0)
+							funcDecl.Parameters.Count == 1)
 						{
 							_compiler.MainFunction = funcDecl;
 						}
