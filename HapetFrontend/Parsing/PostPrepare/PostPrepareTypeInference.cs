@@ -79,29 +79,6 @@ namespace HapetFrontend.Parsing.PostPrepare
 			}
 		}
 
-		private void PostPrepareBlockInference(AstBlockExpr blockExpr)
-		{
-			foreach (var stmt in blockExpr.Statements)
-			{
-				if (stmt is AstVarDecl varDecl)
-				{
-					PostPrepareVarInference(varDecl);
-				}
-				else if (stmt is AstReturnStmt returnStmt)
-				{
-					if (returnStmt.ReturnExpression != null)
-					{
-						PostPrepareExprInference(returnStmt.ReturnExpression);
-						returnStmt.ReturnExpression = PostPrepareExpressionWithType(_currentFunction.Returns.OutType, returnStmt.ReturnExpression);
-					}
-				}
-				else if (stmt is AstStatement expr)
-				{
-					PostPrepareExprInference(expr);
-				}
-			}
-		}
-
 		private void PostPrepareVarInference(AstVarDecl varDecl)
 		{
 			PostPrepareExprInference(varDecl.Type);
@@ -137,6 +114,16 @@ namespace HapetFrontend.Parsing.PostPrepare
 		{
 			switch (expr)
 			{
+				// special case at least for 'for' loop
+				// when 'for (int i = 0;...)' where 'int i' 
+				// would not be handled by blockExpr
+				case AstVarDecl varDecl:
+					PostPrepareVarInference(varDecl);
+					break;
+
+				case AstBlockExpr blockExpr:
+					PostPrepareBlockInference(blockExpr);
+					break;
 				case AstUnaryExpr unExpr:
 					PostPrepareUnaryExprInference(unExpr);
 					break;
@@ -181,6 +168,9 @@ namespace HapetFrontend.Parsing.PostPrepare
 				case AstAssignStmt assignStmt:
 					PostPrepareAssignStmtInference(assignStmt);
 					break;
+				case AstForStmt forStmt:
+					PostPrepareForStmtInference(forStmt);
+					break;
 				// TODO: check other expressions
 
 				default:
@@ -188,6 +178,29 @@ namespace HapetFrontend.Parsing.PostPrepare
 						// TODO: anything to do here?
 						break;
 					}
+			}
+		}
+
+		private void PostPrepareBlockInference(AstBlockExpr blockExpr)
+		{
+			foreach (var stmt in blockExpr.Statements)
+			{
+				if (stmt is AstVarDecl varDecl)
+				{
+					PostPrepareVarInference(varDecl);
+				}
+				else if (stmt is AstReturnStmt returnStmt)
+				{
+					if (returnStmt.ReturnExpression != null)
+					{
+						PostPrepareExprInference(returnStmt.ReturnExpression);
+						returnStmt.ReturnExpression = PostPrepareExpressionWithType(_currentFunction.Returns.OutType, returnStmt.ReturnExpression);
+					}
+				}
+				else if (stmt is AstStatement expr)
+				{
+					PostPrepareExprInference(expr);
+				}
 			}
 		}
 
@@ -487,6 +500,18 @@ namespace HapetFrontend.Parsing.PostPrepare
 				}
                 PostPrepareVariableAssign(assignStmt);
             }
+		}
+
+		private void PostPrepareForStmtInference(AstForStmt forStmt)
+		{
+			if (forStmt.FirstParam != null)
+				PostPrepareExprInference(forStmt.FirstParam);
+			if (forStmt.SecondParam != null)
+				PostPrepareExprInference(forStmt.SecondParam);
+			if (forStmt.ThirdParam != null)
+				PostPrepareExprInference(forStmt.ThirdParam);
+
+			PostPrepareExprInference(forStmt.Body);
 		}
 	}
 }

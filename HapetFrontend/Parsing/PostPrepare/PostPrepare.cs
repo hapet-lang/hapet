@@ -28,7 +28,7 @@ namespace HapetFrontend.Parsing.PostPrepare
 			PostPrepareClassMethods();
 			PostPrepareScoping();
 			PostPrepareTypeInference();
-			PostPrepareAfterInference();
+
 			SearchForMainFunction();
 		}
 

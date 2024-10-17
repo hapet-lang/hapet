@@ -4,6 +4,7 @@ using HapetFrontend.Ast.Expressions;
 using HapetFrontend.Ast.Statements;
 using HapetFrontend.Entities;
 using HapetFrontend.Scoping;
+using System.Security.Cryptography.X509Certificates;
 
 namespace HapetFrontend.Parsing.PostPrepare
 {
@@ -122,42 +123,6 @@ namespace HapetFrontend.Parsing.PostPrepare
 			}
 		}
 
-		private static ulong _blockCounter = 0;
-		private Scope PostPrepareBlockScoping(AstBlockExpr blockExpr, string scopename = "")
-		{
-			if (string.IsNullOrWhiteSpace(scopename))
-				scopename = $"block_{_blockCounter++}_scope";
-
-			blockExpr.SourceFile = _currentSourceFile;
-			var blockScope = new Scoping.Scope(scopename, blockExpr.Scope);
-
-			foreach (var stmt in blockExpr.Statements)
-			{
-				stmt.Scope = blockScope;
-				stmt.Parent = blockExpr;
-				// preparing variable declaration parts scoping
-				if (stmt is AstVarDecl varDecl) 
-				{
-					PostPrepareVarScoping(varDecl);
-					blockScope.DefineDeclSymbol(varDecl.Name.Name, varDecl);
-				}
-				else if (stmt is AstReturnStmt returnStmt)
-				{
-					if (returnStmt.ReturnExpression != null)
-					{
-						returnStmt.ReturnExpression.Scope = blockScope;
-						PostPrepareExprScoping(returnStmt.ReturnExpression);
-					}
-				}
-				else if (stmt is AstStatement expr)
-				{
-					PostPrepareExprScoping(expr);
-				}
-			}
-
-			return blockScope;
-		}
-
 		private void PostPrepareVarScoping(AstVarDecl varDecl)
 		{
 			varDecl.Name.Scope = varDecl.Scope;
@@ -174,6 +139,16 @@ namespace HapetFrontend.Parsing.PostPrepare
 		{
 			switch (expr)
 			{
+				// special case at least for 'for' loop
+				// when 'for (int i = 0;...)' where 'int i' 
+				// would not be handled by blockExpr
+				case AstVarDecl varDecl:
+					PostPrepareVarScoping(varDecl);
+					break;
+
+				case AstBlockExpr blockExpr:
+					PostPrepareBlockScoping(blockExpr);
+					break;
 				case AstUnaryExpr unExpr:
 					PostPrepareUnaryExprScoping(unExpr);
 					break;
@@ -216,6 +191,9 @@ namespace HapetFrontend.Parsing.PostPrepare
 				case AstAssignStmt assignStmt:
 					PostPrepareAssignStmtScoping(assignStmt);
 					break;
+				case AstForStmt forStmt:
+					PostPrepareForStmtScoping(forStmt);
+					break;
 				// TODO: check other expressions
 
 				default:
@@ -224,6 +202,42 @@ namespace HapetFrontend.Parsing.PostPrepare
 						break;
 					}
 			}
+		}
+
+		private static ulong _blockCounter = 0;
+		private Scope PostPrepareBlockScoping(AstBlockExpr blockExpr, string scopename = "")
+		{
+			if (string.IsNullOrWhiteSpace(scopename))
+				scopename = $"block_{_blockCounter++}_scope";
+
+			blockExpr.SourceFile = _currentSourceFile;
+			var blockScope = new Scoping.Scope(scopename, blockExpr.Scope);
+
+			foreach (var stmt in blockExpr.Statements)
+			{
+				stmt.Scope = blockScope;
+				stmt.Parent = blockExpr;
+				// preparing variable declaration parts scoping
+				if (stmt is AstVarDecl varDecl)
+				{
+					PostPrepareVarScoping(varDecl);
+					blockScope.DefineDeclSymbol(varDecl.Name.Name, varDecl);
+				}
+				else if (stmt is AstReturnStmt returnStmt)
+				{
+					if (returnStmt.ReturnExpression != null)
+					{
+						returnStmt.ReturnExpression.Scope = blockScope;
+						PostPrepareExprScoping(returnStmt.ReturnExpression);
+					}
+				}
+				else if (stmt is AstStatement expr)
+				{
+					PostPrepareExprScoping(expr);
+				}
+			}
+
+			return blockScope;
 		}
 
 		private void PostPrepareUnaryExprScoping(AstUnaryExpr unExpr)
@@ -367,6 +381,31 @@ namespace HapetFrontend.Parsing.PostPrepare
 			{
 				assignStmt.Value.Scope = assignStmt.Scope;
 				PostPrepareExprScoping(assignStmt.Value);
+			}
+		}
+
+		private static ulong _forCounter = 0;
+		private void PostPrepareForStmtScoping(AstForStmt forStmt)
+		{
+			forStmt.Body.Scope = forStmt.Scope;
+
+			string scopename = $"for_{_forCounter++}_scope";
+			var forScope = PostPrepareBlockScoping(forStmt.Body, scopename);
+
+			if (forStmt.FirstParam != null)
+			{
+				forStmt.FirstParam.Scope = forScope;
+				PostPrepareExprScoping(forStmt.FirstParam);
+			}
+			if (forStmt.SecondParam != null)
+			{
+				forStmt.SecondParam.Scope = forScope;
+				PostPrepareExprScoping(forStmt.SecondParam);
+			}
+			if (forStmt.ThirdParam != null)
+			{
+				forStmt.ThirdParam.Scope = forScope;
+				PostPrepareExprScoping(forStmt.ThirdParam);
 			}
 		}
 

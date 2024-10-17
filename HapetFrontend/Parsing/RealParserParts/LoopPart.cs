@@ -39,6 +39,10 @@ namespace HapetFrontend.Parsing
 
 			SkipNewlines();
 
+			// TODO: check if there is not only a '{' but could be a ';'
+			// because exprs like 'for (;;) ;' should also be handled
+			// if there is no '{' just create an empty block
+
 			// parsing the block
 			body = ParseBlockExpression();
 
