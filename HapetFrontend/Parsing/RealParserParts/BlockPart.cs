@@ -5,10 +5,10 @@ namespace HapetFrontend.Parsing
 {
     public partial class Parser
 	{
-		private AstBlockExpr ParseBlockStatement()
+		private AstBlockExpr ParseBlockExpression()
 		{
 			var statements = new List<AstStatement>();
-			var beg = Consume(TokenType.OpenBrace, ErrMsg("{", "at beginning of block statement")).Location;
+			var beg = Consume(TokenType.OpenBrace, ErrMsg("{", "at beginning of block expression")).Location;
 
 			SkipNewlines();
 			while (true)
@@ -44,7 +44,7 @@ namespace HapetFrontend.Parsing
 				SkipNewlines();
 			}
 
-			var end = Consume(TokenType.CloseBrace, ErrMsg("}", "at end of block statement")).Location;
+			var end = Consume(TokenType.CloseBrace, ErrMsg("}", "at end of block expression")).Location;
 
 			return new AstBlockExpr(statements, new Location(beg, end));
 		}

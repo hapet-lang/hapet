@@ -249,6 +249,8 @@ namespace HapetFrontend.Parsing
 				case "else": token.Type = TokenType.KwElse; break;
 				case "switch": token.Type = TokenType.KwSwitch; break;
 				case "case": token.Type = TokenType.KwCase; break;
+				case "for": token.Type = TokenType.KwFor; break;
+				case "while": token.Type = TokenType.KwWhile; break;
 
 				case "break": token.Type = TokenType.KwBreak; break;
 				case "continue": token.Type = TokenType.KwContinue; break;

@@ -19,7 +19,7 @@ namespace HapetFrontend.Parsing
 			if (CheckToken(TokenType.Semicolon))
 				NextToken(); // do nothing
 			else
-				body = ParseBlockStatement();
+				body = ParseBlockExpression();
 			return new AstFuncDecl(parameters, null, body, null, Location: new Location(paramsLocation.Beginning, body?.Ending ?? paramsLocation.Ending));
 		}
 
@@ -27,7 +27,7 @@ namespace HapetFrontend.Parsing
 		{
 			ConsumeUntil(TokenType.Arrow, ErrMsg("=>", "in lambda"));
 
-			AstBlockExpr body = ParseBlockStatement();
+			AstBlockExpr body = ParseBlockExpression();
 
 			return new AstLambdaDecl(parameters, body, null, new Location(beg, body.Ending));
 		}

@@ -419,7 +419,7 @@ namespace HapetFrontend.Parsing
 					return new AstBoolExpr(false, new Location(token.Location));
 
 				case TokenType.OpenBrace:
-					return ParseBlockStatement();
+					return ParseBlockExpression();
 
 				// TODO: ...
 				//case TokenType.KwIf:

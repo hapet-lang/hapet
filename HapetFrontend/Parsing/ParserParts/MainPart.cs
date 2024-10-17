@@ -43,19 +43,19 @@ namespace HapetFrontend.Parsing
 				// TODO: ...
 				//case TokenType.KwWhile:
 				//	return ParseWhileStatement();
-				//case TokenType.KwFor:
-				//	return ParseForStatement();
+				case TokenType.KwFor:
+					return ParseForStatement();
 				//case TokenType.KwIf:
 				//	return ParseConditionalStatement();
 				//case TokenType.KwContinue:
 				//case TokenType.KwBreak:
 				//	return ParseBcStatement();
-
-				case TokenType.OpenBrace:
-					return ParseBlockStatement();
 				
 				case TokenType.KwUsing:
 					return ParseUsingStatement();
+
+				case TokenType.OpenBrace:
+					return ParseBlockExpression();
 
 				default:
 					{
