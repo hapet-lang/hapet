@@ -8,26 +8,33 @@ namespace HapetFrontend.Parsing
 	{
 		private AstStatement ParseArrayExpr(AstNestedExpr typeName, TokenLocation beg)
 		{
-			Consume(TokenType.OpenBracket, ErrMsg("[", "at the beggining of array expr"));
-
 			// by default it is null because the size could not be defined
 			// when values are presented
 			AstExpression sizeExpr = null;
 
-			if (!CheckToken(TokenType.CloseBracket))
+			// if there is a size expr 
+			if (CheckToken(TokenType.OpenBracket))
 			{
-				var arraySize = ParseExpression(false, false);
-				if (arraySize is not AstExpression expr)
+				Consume(TokenType.OpenBracket, ErrMsg("[", "at the beggining of array expr"));
+				if (!CheckToken(TokenType.CloseBracket))
 				{
-					// error here. it has to be an expr
-					ReportError(arraySize.Location, $"Expression expected to be as an array size");
-					return ParseEmptyExpression();
+					var arraySize = ParseExpression(false, false);
+					if (arraySize is not AstExpression expr)
+					{
+						// error here. it has to be an expr
+						ReportError(arraySize.Location, $"Expression expected to be as an array size");
+						return ParseEmptyExpression();
+					}
+
+					sizeExpr = expr;
 				}
-
-				sizeExpr = expr;
+				Consume(TokenType.CloseBracket, ErrMsg("]", "at the end of array expr"));
 			}
-
-			Consume(TokenType.CloseBracket, ErrMsg("]", "at the end of array expr"));
+			else
+			{
+				// if there is no size expr
+				Consume(TokenType.ArrayDef, ErrMsg("[]", "at the end of array expr"));
+			}
 
 			// defined only size
 			if (CheckToken(TokenType.Semicolon))

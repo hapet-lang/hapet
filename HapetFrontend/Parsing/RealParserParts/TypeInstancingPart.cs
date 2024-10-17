@@ -14,7 +14,8 @@ namespace HapetFrontend.Parsing
 			SkipNewlines();
 			var typeName = ParseIdentifierExpression(ErrMsg("expression", "after keyword 'new'"));
 
-			if (CheckToken(TokenType.OpenBracket)) // array creation
+			// TokenType.ArrayDef is for array creation with ini values
+			if (CheckToken(TokenType.OpenBracket) || CheckToken(TokenType.ArrayDef)) // array creation
 			{
 				return ParseArrayExpr(typeName, beg);
 			}
