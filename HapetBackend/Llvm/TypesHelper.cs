@@ -505,28 +505,6 @@ namespace HapetBackend.Llvm
 				var len = _builder.BuildStructGEP2(tp, varPtr, 0, "strLen");
 				_builder.BuildStore(_lastStringSizeValueRef, len);
 			}
-			//else if (varType is StringType && value.OutType is StringType && value.OutValue == null)
-			//{
-			//	// generate the initializer value
-			//	var x = GenerateExpressionCode(value, true);
-
-			//	// string a = b.Substring(...); would work here
-			//	// if they are trying to store a string in string
-			//	var tp = _typeMap[varType];
-
-			//	// now 'x' is just an another string struct. so we are going to copy its contents :)
-			//	var bufRight = _builder.BuildStructGEP2(tp, x, 1, "strBuf");
-			//	var bufRightLoaded = _builder.BuildLoad2(HapetTypeToLLVMType(CharType.DefaultType).GetPointerTo(), bufRight, $"strBufLoaded");
-			//	var lenRight = _builder.BuildStructGEP2(tp, x, 0, "strLen");
-			//	var lenRightLoaded = _builder.BuildLoad2(_context.Int32Type, lenRight, $"strLenLoaded");
-
-			//	// the 1 is because StringType struct has buf field as it's 1 param
-			//	var buf = _builder.BuildStructGEP2(tp, varPtr, 1, "strBuf");
-			//	_builder.BuildStore(bufRightLoaded, buf);
-			//	/// setting the string size. <see cref="_lastStringSizeInt"/> is set in <see cref="HapetValueToLLVMValue"/>
-			//	var len = _builder.BuildStructGEP2(tp, varPtr, 0, "strLen");
-			//	_builder.BuildStore(lenRightLoaded, len);
-			//}
 			else
 			{
 				// generate the initializer value
