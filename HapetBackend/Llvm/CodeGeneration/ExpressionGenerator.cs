@@ -362,20 +362,27 @@ namespace HapetBackend.Llvm
 				_errorHandler.ReportError(_currentSourceFile.Text, expr.ParameterExpr, $"Type of the index has to be an integer type");
 			}
 
-			// getting arrayBuf from struct and pointer to it
-			LLVMValueRef ptrToArray = GenerateExpressionCode(expr.ObjectName, true);
-			var ptrToBuffer = _builder.BuildStructGEP2(HapetTypeToLLVMType(expr.ObjectName.OutType), ptrToArray, 1, "arrayBuf");
-			var bufferItself = _builder.BuildLoad2(HapetTypeToLLVMType(expr.OutType).GetPointerTo(), ptrToBuffer);
+			// for now they are identical
+			if (expr.ObjectName.OutType is ArrayType || expr.ObjectName.OutType is StringType)
+			{
+				// getting arrayBuf from struct and pointer to it
+				LLVMValueRef ptrToArray = GenerateExpressionCode(expr.ObjectName, true);
+				var ptrToBuffer = _builder.BuildStructGEP2(HapetTypeToLLVMType(expr.ObjectName.OutType), ptrToArray, 1, "arrayBuf");
+				var bufferItself = _builder.BuildLoad2(HapetTypeToLLVMType(expr.OutType).GetPointerTo(), ptrToBuffer);
 
-			// getting an element from the arrayBuf
-			LLVMValueRef llvmElementIndex = GenerateExpressionCode(expr.ParameterExpr);
-			var arrayEl = _builder.BuildGEP2(HapetTypeToLLVMType(expr.OutType), bufferItself, new LLVMValueRef[] { llvmElementIndex });
+				// getting an element from the arrayBuf
+				LLVMValueRef llvmElementIndex = GenerateExpressionCode(expr.ParameterExpr);
+				var arrayEl = _builder.BuildGEP2(HapetTypeToLLVMType(expr.OutType), bufferItself, new LLVMValueRef[] { llvmElementIndex });
 
-			if (getPtr)
-				return arrayEl;
+				if (getPtr)
+					return arrayEl;
 
-			var retLoaded = _builder.BuildLoad2(HapetTypeToLLVMType(expr.OutType), arrayEl);
-			return retLoaded;
+				var retLoaded = _builder.BuildLoad2(HapetTypeToLLVMType(expr.OutType), arrayEl);
+				return retLoaded;
+			}
+
+			_errorHandler.ReportError(_currentSourceFile.Text, expr, $"Could not generate access code for the {expr.ObjectName.OutType} type");
+			return null;
 		}
 
 		// statements

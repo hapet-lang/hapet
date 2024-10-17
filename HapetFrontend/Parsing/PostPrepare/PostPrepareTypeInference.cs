@@ -452,13 +452,18 @@ namespace HapetFrontend.Parsing.PostPrepare
 		{
 			PostPrepareExprInference(arrayAccExpr.ParameterExpr);
 			PostPrepareExprInference(arrayAccExpr.ObjectName);
-			if (arrayAccExpr.ObjectName.OutType is not ArrayType arrayType)
+
+			HapetType outType = null;
+			if (arrayAccExpr.ObjectName.OutType is ArrayType arrayType)
+				outType = arrayType.TargetType;
+			else if (arrayAccExpr.ObjectName.OutType is StringType)
+				outType = CharType.DefaultType; // TODO: mb non default could be here? idk :)
+			else
 			{
 				// error because expected an array 
-				_compiler.ErrorHandler.ReportError(_currentSourceFile.Text, arrayAccExpr.ObjectName, $"Array type expected to be indexed");
-				return;
+				_compiler.ErrorHandler.ReportError(_currentSourceFile.Text, arrayAccExpr.ObjectName, $"Array/String type expected to be indexed");
 			}
-			arrayAccExpr.OutType = arrayType.TargetType;
+			arrayAccExpr.OutType = outType;
 		}
 
 		// statements

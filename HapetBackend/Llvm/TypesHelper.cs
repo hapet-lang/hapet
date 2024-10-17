@@ -19,6 +19,10 @@ namespace HapetBackend.Llvm
 		/// </summary>
         private Dictionary<HapetType, List<HapetType>> _structTypeElementsMap = new Dictionary<HapetType, List<HapetType>>();
 
+		// cringe
+		// this is because all arrays are the same in LLVM IR
+		private LLVMTypeRef _llvmArrayType = null;
+
         // rtti stuff
         private HapetType sTypeInfoAttribute;
 		private ClassType sTypeInfo;
@@ -134,7 +138,7 @@ namespace HapetBackend.Llvm
 				case StringType s:
 					{
 						var charType = HapetTypeToLLVMType(CharType.DefaultType);
-						var str = _context.CreateNamedStruct("string");
+						var str = _context.CreateNamedStruct("string.type");
 						str.StructSetBody(new LLVMTypeRef[] {
 							((LLVMTypeRef)_context.Int32Type),
 							((LLVMTypeRef)charType).GetPointerTo()
@@ -144,10 +148,15 @@ namespace HapetBackend.Llvm
 
 				case ArrayType a:
 					{
-						var arrayStruct = _context.CreateNamedStruct($"array.{a.TargetType.TypeName}");
-						var arrayType = HapetTypeToLLVMType(a.TargetType);
-						arrayStruct.StructSetBody(new LLVMTypeRef[] { _context.Int32Type, arrayType.GetPointerTo() }, false);
-						return arrayStruct;
+						// because all array types are the same in LLVM IR
+						if (_llvmArrayType == null)
+						{
+							var arrayStruct = _context.CreateNamedStruct($"array.type");
+							var arrayType = HapetTypeToLLVMType(a.TargetType);
+							arrayStruct.StructSetBody(new LLVMTypeRef[] { _context.Int32Type, arrayType.GetPointerTo() }, false);
+							_llvmArrayType = arrayStruct;
+						}
+						return _llvmArrayType;
 					}
 
 				case ClassType t:
