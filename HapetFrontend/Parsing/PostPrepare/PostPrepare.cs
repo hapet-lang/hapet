@@ -8,8 +8,15 @@ namespace HapetFrontend.Parsing.PostPrepare
 	{
 		private readonly Compiler _compiler;
 
-		// file that is currently preparing
+		/// <summary>
+		/// File that is currently preparing
+		/// </summary>
 		private ProgramFile _currentSourceFile;
+
+		/// <summary>
+		/// The function decl that is currently preparing
+		/// </summary>
+		private AstFuncDecl _currentFunction;
 
 		public PostPrepare(Compiler compiler)
 		{

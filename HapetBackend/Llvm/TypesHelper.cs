@@ -359,7 +359,9 @@ namespace HapetBackend.Llvm
 						_lastStringSizeValueRef = LLVMValueRef.CreateConstInt(HapetTypeToLLVMType(IntType.GetIntType(4, true)), (ulong)theString.Length);
 
 						var elements = theString.ToCharArray().Select(c => HapetValueToLLVMValue(CharType.DefaultType, c)).ToArray();
-						return LLVMValueRef.CreateConstArray(HapetTypeToLLVMType(CharType.DefaultType), elements);
+						var stringGlobArray = _module.AddGlobal(LLVMTypeRef.CreateArray(HapetTypeToLLVMType(CharType.DefaultType), (uint)theString.Length), "constString");
+						stringGlobArray.Initializer = LLVMValueRef.CreateConstArray(HapetTypeToLLVMType(CharType.DefaultType), elements);
+						return stringGlobArray;
 					}
 			}
 			return new LLVMValueRef();

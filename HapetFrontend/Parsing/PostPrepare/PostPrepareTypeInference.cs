@@ -45,6 +45,8 @@ namespace HapetFrontend.Parsing.PostPrepare
 
 		private void PostPrepareFunctionInference(AstFuncDecl funcDecl)
 		{
+			_currentFunction = funcDecl;
+
 			// inferencing parameters 
 			foreach (var p in funcDecl.Parameters)
 			{
@@ -88,7 +90,10 @@ namespace HapetFrontend.Parsing.PostPrepare
 				else if (stmt is AstReturnStmt returnStmt)
 				{
 					if (returnStmt.ReturnExpression != null)
+					{
 						PostPrepareExprInference(returnStmt.ReturnExpression);
+						returnStmt.ReturnExpression = PostPrepareExpressionWithType(_currentFunction.Returns.OutType, returnStmt.ReturnExpression);
+					}
 				}
 				else if (stmt is AstStatement expr)
 				{

@@ -2,15 +2,10 @@
 {
 	public static int Main()
 	{
-		// char a = 'g';
-		// char a2 = 'н';
-
-		string s = "test string";
-
 		byte[] arr3 = new byte[3] { 1, 2, 3 };
 		arr3[1] = 'a';
 		byte a = arr3[2];
-		int outVal = a + arr3[0] + arr3[1];
+		byte outVal = a + arr3[0] + arr3[1];
 
 		return outVal;
 	}

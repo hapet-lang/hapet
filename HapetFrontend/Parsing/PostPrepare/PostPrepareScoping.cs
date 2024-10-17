@@ -66,6 +66,8 @@ namespace HapetFrontend.Parsing.PostPrepare
 
 		private void PostPrepareFunctionScoping(AstFuncDecl funcDecl) 
 		{
+			_currentFunction = funcDecl;
+
 			funcDecl.SourceFile = _currentSourceFile;
 			if (funcDecl.Body != null)
 			{
