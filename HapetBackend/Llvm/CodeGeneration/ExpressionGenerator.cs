@@ -418,9 +418,28 @@ namespace HapetBackend.Llvm
 		}
 
 		private static ulong _forCounter = 0;
-		private void GenerateForStmt(AstForStmt forStmt)
+		// these blocks are needed for break and continue statements
+		private LLVMBasicBlockRef _currentLoopInc = null;
+		private LLVMBasicBlockRef _currentLoopEnd = null;
+		private unsafe void GenerateForStmt(AstForStmt forStmt)
 		{
+			// WARN: this strange code is not just for 'fun'
+			// when creating nested 'for' loops it would be easier to read LLVM IR code with that shite
+			// so for example if we have two nested 'for' loops it would look like this:
+			// for1.cond: ...
+			// for1.body: ...
+			//   for2.cond: ...
+			//   for2.body: ...
+			//   for2.inc: ...
+			//   for2.end: ...
+			// for1.inc: ...
+			// for1.end: ...
+
 			_forCounter++;
+
+			// saving previous blocks because of nesting
+			var prevForInc = _currentLoopInc;
+			var prevForEnd = _currentLoopEnd;
 
 			if (forStmt.FirstParam != null)
 				GenerateExpressionCode(forStmt.FirstParam);
@@ -428,23 +447,15 @@ namespace HapetBackend.Llvm
 			var bbCond = _lastFunctionValueRef.AppendBasicBlock($"for{_forCounter}.cond");
 			var bbBody = _lastFunctionValueRef.AppendBasicBlock($"for{_forCounter}.body");
 
+			// creating other blocks
+			var bbInc = _context.CreateBasicBlock($"for{_forCounter}.inc");
+			var bbEnd = _context.CreateBasicBlock($"for{_forCounter}.end");
+
 			// directly br into loop condition
 			_builder.BuildBr(bbCond);
 
-			// body
-			_builder.PositionAtEnd(bbBody);
-			if (forStmt.Body != null)
-			{
-				// generating body code
-				GenerateExpressionCode(forStmt.Body);
-			}
-
-			// creating other blocks
-			var bbInc = _lastFunctionValueRef.AppendBasicBlock($"for{_forCounter}.inc");
-			var bbEnd = _lastFunctionValueRef.AppendBasicBlock($"for{_forCounter}.end");
-
-			// setting br without condition into inc block from body block
-			_builder.BuildBr(bbInc);
+			_currentLoopInc = bbInc;
+			_currentLoopEnd = bbEnd;
 
 			// condition
 			_builder.PositionAtEnd(bbCond);
@@ -460,6 +471,21 @@ namespace HapetBackend.Llvm
 				_builder.BuildBr(bbBody);
 			}
 
+			// body
+			_builder.PositionAtEnd(bbBody);
+			if (forStmt.Body != null)
+			{
+				// generating body code
+				GenerateExpressionCode(forStmt.Body);
+			}
+
+			// appending them sooner
+			LLVM.AppendExistingBasicBlock(_lastFunctionValueRef, bbInc);
+			LLVM.AppendExistingBasicBlock(_lastFunctionValueRef, bbEnd);
+
+			// setting br without condition into inc block from body block
+			_builder.BuildBr(bbInc);
+
 			// inc
 			_builder.PositionAtEnd(bbInc);
 			if (forStmt.ThirdParam != null)
@@ -469,6 +495,10 @@ namespace HapetBackend.Llvm
 			}
 			_builder.BuildBr(bbCond);
 			_builder.PositionAtEnd(bbEnd);
+
+			// restoring prev blocks
+			_currentLoopInc = prevForInc;
+			_currentLoopEnd = prevForEnd;
 		}
 	}
 }
