@@ -199,6 +199,7 @@ namespace HapetFrontend.Parsing.PostPrepare
 				}
 				else if (stmt is AstReturnStmt returnStmt)
 				{
+					// TODO: check for _currentFunction that the types are equal with return stmt!!!
 					if (returnStmt.ReturnExpression != null)
 					{
 						PostPrepareExprInference(returnStmt.ReturnExpression);

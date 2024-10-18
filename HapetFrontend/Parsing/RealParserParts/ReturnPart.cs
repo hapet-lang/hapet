@@ -12,11 +12,19 @@ namespace HapetFrontend.Parsing
 			beg = Consume(TokenType.KwReturn, ErrMsg("keyword 'return'", "at beginning of 'return' statement")).Location;
 			SkipNewlines();
 
-			var expr = ParseExpression(true, false, ErrMsg("expression", "after keyword 'return'"));
-
-			if (expr is not AstExpression)
+			// if it is a simple return without params
+			if (CheckToken(TokenType.Semicolon))
 			{
-				ReportError(expr.Location, "Expression expected after 'return' keyword");
+				return new AstReturnStmt(null, Location: new Location(beg));
+			}
+
+			var expr = ParseExpression(true, false, ErrMsg("expression", "after keyword 'return'"));
+			// here is the check for AstEmptyStmt because ParseExpression
+			// will already generate an exception for this and return AstEmptyStmt
+			// so there is no need to generate exception twice :)
+			if (expr is not AstExpression && expr is not AstEmptyStmt)
+			{
+				ReportError(expr.Location, "Code ");
 				return ParseEmptyExpression();
 			}
 

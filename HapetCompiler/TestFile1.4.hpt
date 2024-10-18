@@ -14,6 +14,6 @@
 		// byte a = arr3[2];
 		// byte outVal = a + arr3[0] + arr3[1];
 
-		return 1;
+		return;
 	}
 }
