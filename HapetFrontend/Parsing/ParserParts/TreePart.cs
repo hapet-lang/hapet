@@ -317,6 +317,7 @@ namespace HapetFrontend.Parsing
 			{
 				case TokenType.KwBreak:
 				case TokenType.KwContinue:
+					NextToken();
 					return new AstBreakContStmt(token.Type == TokenType.KwBreak, new Location(token.Location));
 
 				case TokenType.KwDefault:

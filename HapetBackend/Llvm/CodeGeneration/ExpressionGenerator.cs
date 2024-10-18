@@ -44,6 +44,7 @@ namespace HapetBackend.Llvm
 				// statements
 				case AstAssignStmt assignStmt: GenerateAssignStmt(assignStmt); return null;
 				case AstForStmt forStmt: GenerateForStmt(forStmt); return null;
+				case AstBreakContStmt breakContStmt: GenerateBreakContStmt(breakContStmt); return null;
 				// TODO: check other expressions
 
 				default:
@@ -400,18 +401,18 @@ namespace HapetBackend.Llvm
 		}
 
 		// statements
-		private void GenerateAssignStmt(AstAssignStmt assignStmt)
+		private void GenerateAssignStmt(AstAssignStmt stmt)
 		{
-			LLVMValueRef theVar = GenerateNestedExpr(assignStmt.Target, true);
+			LLVMValueRef theVar = GenerateNestedExpr(stmt.Target, true);
 
 			// check for initializer
-			if (assignStmt.Value == null)
+			if (stmt.Value == null)
 			{
 				// error here!!!!! it could not be null
-				_errorHandler.ReportError(_currentSourceFile.Text, assignStmt, $"Expression expected on the right side of assignment");
+				_errorHandler.ReportError(_currentSourceFile.Text, stmt, $"Expression expected on the right side of assignment");
 			}
 
-			AssignToVar(theVar, assignStmt.Target.OutType, assignStmt.Value);
+			AssignToVar(theVar, stmt.Target.OutType, stmt.Value);
 
 			// TODO: WARN: always returns null because Assign is a stmt and does not returns anything. could be changed to expr
 			// so stmts like 'a = (b = 3);' would be allowed...
@@ -421,7 +422,7 @@ namespace HapetBackend.Llvm
 		// these blocks are needed for break and continue statements
 		private LLVMBasicBlockRef _currentLoopInc = null;
 		private LLVMBasicBlockRef _currentLoopEnd = null;
-		private unsafe void GenerateForStmt(AstForStmt forStmt)
+		private unsafe void GenerateForStmt(AstForStmt stmt)
 		{
 			// WARN: this strange code is not just for 'fun'
 			// when creating nested 'for' loops it would be easier to read LLVM IR code with that shite
@@ -441,8 +442,8 @@ namespace HapetBackend.Llvm
 			var prevForInc = _currentLoopInc;
 			var prevForEnd = _currentLoopEnd;
 
-			if (forStmt.FirstParam != null)
-				GenerateExpressionCode(forStmt.FirstParam);
+			if (stmt.FirstParam != null)
+				GenerateExpressionCode(stmt.FirstParam);
 
 			var bbCond = _lastFunctionValueRef.AppendBasicBlock($"for{_forCounter}.cond");
 			var bbBody = _lastFunctionValueRef.AppendBasicBlock($"for{_forCounter}.body");
@@ -459,10 +460,10 @@ namespace HapetBackend.Llvm
 
 			// condition
 			_builder.PositionAtEnd(bbCond);
-			if (forStmt.SecondParam != null)
+			if (stmt.SecondParam != null)
 			{
 				// building the condition
-				var cmp = GenerateExpressionCode(forStmt.SecondParam);
+				var cmp = GenerateExpressionCode(stmt.SecondParam);
 				_builder.BuildCondBr(cmp, bbBody, bbEnd);
 			}
 			else
@@ -473,10 +474,10 @@ namespace HapetBackend.Llvm
 
 			// body
 			_builder.PositionAtEnd(bbBody);
-			if (forStmt.Body != null)
+			if (stmt.Body != null)
 			{
 				// generating body code
-				GenerateExpressionCode(forStmt.Body);
+				GenerateExpressionCode(stmt.Body);
 			}
 
 			// appending them sooner
@@ -488,10 +489,10 @@ namespace HapetBackend.Llvm
 
 			// inc
 			_builder.PositionAtEnd(bbInc);
-			if (forStmt.ThirdParam != null)
+			if (stmt.ThirdParam != null)
 			{
 				// generating inc code
-				GenerateExpressionCode(forStmt.ThirdParam);
+				GenerateExpressionCode(stmt.ThirdParam);
 			}
 			_builder.BuildBr(bbCond);
 			_builder.PositionAtEnd(bbEnd);
@@ -499,6 +500,36 @@ namespace HapetBackend.Llvm
 			// restoring prev blocks
 			_currentLoopInc = prevForInc;
 			_currentLoopEnd = prevForEnd;
+		}
+
+		private void GenerateBreakContStmt(AstBreakContStmt stmt)
+		{
+			// just generating shite that jumps between blocks :)
+			if (stmt.IsSwitchParent)
+			{
+				// TODO: for switch-case
+			}
+			else
+			{
+				if (stmt.IsBreak)
+				{
+					if (_currentLoopEnd == null)
+					{
+						_errorHandler.ReportError(_currentSourceFile.Text, stmt, $"Loop to break could not be found");
+						return;
+					}
+					_builder.BuildBr(_currentLoopEnd);
+				}
+				else
+				{
+					if (_currentLoopInc == null)
+					{
+						_errorHandler.ReportError(_currentSourceFile.Text, stmt, $"Loop to continue could not be found");
+						return;
+					}
+					_builder.BuildBr(_currentLoopInc);
+				}
+			}
 		}
 	}
 }

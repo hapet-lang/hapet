@@ -3,8 +3,10 @@
 	public static int Main(string[] args)
 	{
 		// char[] arr1 = new char[3] { 1, 2, 3 };
-		int[] arr2 = new int[3] { 1, 2, 3 };
 
+		int[] elinaLoh = new int[] { };
+
+		int[] arr2 = new int[3] { 1, 2, 3 };
 		int[] arr4 = arr2;
 
 		// byte[] arr3 = new byte[3] { 1, 2, 3 };

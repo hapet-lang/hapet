@@ -1,5 +1,6 @@
 ﻿using HapetFrontend.Ast;
 using HapetFrontend.Ast.Expressions;
+using HapetFrontend.Ast.Statements;
 
 namespace HapetFrontend.Parsing
 {
@@ -9,6 +10,10 @@ namespace HapetFrontend.Parsing
 		{
 			var statements = new List<AstStatement>();
 			var beg = Consume(TokenType.OpenBrace, ErrMsg("{", "at beginning of block expression")).Location;
+
+			// the string is used to check if BR found in the block
+			// so do not accept any statements after it
+			string foundBrStatement = string.Empty;
 
 			SkipNewlines();
 			while (true)
@@ -20,7 +25,15 @@ namespace HapetFrontend.Parsing
 				var s = ParseStatement(false);
 				if (s != null)
 				{
-					statements.Add(s);
+					if (string.IsNullOrWhiteSpace(foundBrStatement))
+					{
+						statements.Add(s);
+					}
+					else
+					{
+						// TODO: print warning that the line won't be accepted
+						// TODO: print the warning only once, do not spam
+					}
 
 					next = PeekToken();
 
@@ -29,9 +42,11 @@ namespace HapetFrontend.Parsing
 
 					switch (s)
 					{
-						// TODO: uncomment
-						// case AstConditionStmt:
-						case AstBlockExpr:
+						case AstReturnStmt:
+							foundBrStatement = "return";
+							break;
+						case AstBreakContStmt bc:
+							foundBrStatement = bc.IsBreak ? "break" : "continue";
 							break;
 
 						default:

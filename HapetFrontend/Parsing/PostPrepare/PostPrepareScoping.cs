@@ -95,7 +95,7 @@ namespace HapetFrontend.Parsing.PostPrepare
 					// settings the block scope to the parameters (so they are in the scope of the block)
 					// TODO: WARN!!!! do not set the scope the same as func scope because its params would be visible in class or smth
 					// create an empty ast (?) and set its scope to params
-					SetScopeAndParent(funcDecl.Returns, funcDecl);
+					SetScopeAndParent(p, funcDecl);
 					PostPrepareParamScoping(p);
 				}
 				// return type is the same

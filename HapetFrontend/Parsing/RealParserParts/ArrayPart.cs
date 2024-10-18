@@ -50,6 +50,8 @@ namespace HapetFrontend.Parsing
 			{
 				var elements = ParseArrayElementsExpression();
 
+				// TODO: pring warning here if sizeExpr is null and elements.Count == 0, that empty array will be created
+
 				// count parsed elements and set the size if the sizeExpr was null
 				sizeExpr ??= new AstNumberExpr(NumberData.FromInt(elements.Count));
 

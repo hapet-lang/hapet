@@ -49,6 +49,7 @@ namespace HapetFrontend.Parsing
 				//	return ParseConditionalStatement();
 				case TokenType.KwContinue:
 				case TokenType.KwBreak:
+					NextToken();
 					return new AstBreakContStmt(token.Type == TokenType.KwBreak, new Location(token.Location));
 
 				case TokenType.KwUsing:
