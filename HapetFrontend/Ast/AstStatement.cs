@@ -24,7 +24,14 @@ namespace HapetFrontend.Ast
 		/// </summary>
 		public ProgramFile SourceFile { get; set; }
 
+		/// <summary>
+		/// Parent ast node
+		/// </summary>
 		public IAstNode Parent { get; set; }
+		/// <summary>
+		/// Parent ast node as AstStatement
+		/// </summary>
+		public AstStatement NormalParent => Parent as AstStatement;
 
 		public AstStatement(ILocation Location = null)
 		{

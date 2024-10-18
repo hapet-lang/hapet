@@ -1,6 +1,7 @@
 ﻿using HapetFrontend.Ast;
 using HapetFrontend.Ast.Declarations;
 using HapetFrontend.Ast.Expressions;
+using HapetFrontend.Ast.Statements;
 using HapetFrontend.Types;
 using System.Diagnostics;
 
@@ -314,12 +315,9 @@ namespace HapetFrontend.Parsing
 			var token = PeekToken();
 			switch (token.Type)
 			{
-				// TODO: ...
-				//case TokenType.KwBreak:
-				//	return ParseBreakStatement();
-
-				//case TokenType.KwContinue:
-				//	return ParseContinueStatement();
+				case TokenType.KwBreak:
+				case TokenType.KwContinue:
+					return new AstBreakContStmt(token.Type == TokenType.KwBreak, new Location(token.Location));
 
 				case TokenType.KwDefault:
 					NextToken();

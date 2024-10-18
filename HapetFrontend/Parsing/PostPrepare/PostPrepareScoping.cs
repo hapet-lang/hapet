@@ -39,8 +39,7 @@ namespace HapetFrontend.Parsing.PostPrepare
 			
 			foreach (var decl in classDecl.Declarations)
 			{
-				decl.Scope = classScope;
-				decl.Parent = classDecl;
+				SetScopeAndParent(decl, classDecl, classScope);
 
 				if (decl is AstFuncDecl funcDecl)
 				{
@@ -75,19 +74,17 @@ namespace HapetFrontend.Parsing.PostPrepare
 			if (funcDecl.Body != null)
 			{
 				// body scope is the same
-				funcDecl.Body.Scope = funcDecl.Scope;
-				funcDecl.Body.Parent = funcDecl;
+				SetScopeAndParent(funcDecl.Body, funcDecl);
 				var blockScope = PostPrepareBlockScoping(funcDecl.Body, $"{funcDecl.Name.Name}_scope");
 				// defining parameters in the func scope
 				foreach (var p in funcDecl.Parameters)
 				{
 					// settings the block scope to the parameters (so they are in the scope of the block)
-					p.Scope = blockScope;
+					SetScopeAndParent(p, funcDecl, blockScope);
 					PostPrepareParamScoping(p);
 				}
 				// return type is the same
-				funcDecl.Returns.Scope = funcDecl.Scope;
-				funcDecl.Returns.Parent = funcDecl;
+				SetScopeAndParent(funcDecl.Returns, funcDecl, blockScope);
 				PostPrepareExprScoping(funcDecl.Returns);
 			}
 			else
@@ -96,12 +93,13 @@ namespace HapetFrontend.Parsing.PostPrepare
 				foreach (var p in funcDecl.Parameters)
 				{
 					// settings the block scope to the parameters (so they are in the scope of the block)
-					p.Scope = funcDecl.Scope;
+					// TODO: WARN!!!! do not set the scope the same as func scope because its params would be visible in class or smth
+					// create an empty ast (?) and set its scope to params
+					SetScopeAndParent(funcDecl.Returns, funcDecl);
 					PostPrepareParamScoping(p);
 				}
 				// return type is the same
-				funcDecl.Returns.Scope = funcDecl.Scope;
-				funcDecl.Returns.Parent = funcDecl;
+				SetScopeAndParent(funcDecl.Returns, funcDecl); // TODO: WARN!!! the same as above
 				PostPrepareExprScoping(funcDecl.Returns);
 			}
 		}
@@ -113,12 +111,13 @@ namespace HapetFrontend.Parsing.PostPrepare
 		/// <param name="alreadyDefined">It could be already defined for example by classDecl (because of public/private shite)</param>
 		private void PostPrepareVarScoping(AstVarDecl varDecl, bool alreadyDefined = false)
 		{
-			varDecl.Name.Scope = varDecl.Scope;
-			varDecl.Type.Scope = varDecl.Scope;
+			SetScopeAndParent(varDecl.Name, varDecl);
+			SetScopeAndParent(varDecl.Type, varDecl);
+
 			PostPrepareExprScoping(varDecl.Type);
 			if (varDecl.Initializer != null)
 			{
-				varDecl.Initializer.Scope = varDecl.Scope;
+				SetScopeAndParent(varDecl.Initializer, varDecl);
 				PostPrepareExprScoping(varDecl.Initializer);
 			}
 			// define it in the scope if it is not yet
@@ -130,13 +129,13 @@ namespace HapetFrontend.Parsing.PostPrepare
 		{
 			// it can be null when the func is only declared but not defined!
 			if (paramDecl.Name != null)
-				paramDecl.Name.Scope = paramDecl.Scope;
-			paramDecl.Type.Scope = paramDecl.Scope;
+				SetScopeAndParent(paramDecl.Name, paramDecl);
+			SetScopeAndParent(paramDecl.Type, paramDecl);
 			PostPrepareExprScoping(paramDecl.Type);
 			if (paramDecl.DefaultValue != null)
 			{
 				// preparing scopes of default values if they exist
-				paramDecl.DefaultValue.Scope = paramDecl.Scope;
+				SetScopeAndParent(paramDecl.DefaultValue, paramDecl);
 				PostPrepareExprScoping(paramDecl.DefaultValue);
 			}
 			// it can be null when the func is only declared but not defined!
@@ -206,6 +205,9 @@ namespace HapetFrontend.Parsing.PostPrepare
 				case AstForStmt forStmt:
 					PostPrepareForStmtScoping(forStmt);
 					break;
+				case AstBreakContStmt:
+					// nothing to do
+					break;
 				// TODO: check other expressions
 
 				default:
@@ -227,13 +229,12 @@ namespace HapetFrontend.Parsing.PostPrepare
 
 			foreach (var stmt in blockExpr.Statements)
 			{
-				stmt.Scope = blockScope;
-				stmt.Parent = blockExpr;
+				SetScopeAndParent(stmt, blockExpr, blockScope);
 				if (stmt is AstReturnStmt returnStmt) // TODO: make it via PostPrepareExprScoping ?
 				{
 					if (returnStmt.ReturnExpression != null)
 					{
-						returnStmt.ReturnExpression.Scope = blockScope;
+						SetScopeAndParent(returnStmt.ReturnExpression, blockExpr, blockScope);
 						PostPrepareExprScoping(returnStmt.ReturnExpression);
 					}
 				}
@@ -248,7 +249,7 @@ namespace HapetFrontend.Parsing.PostPrepare
 
 		private void PostPrepareUnaryExprScoping(AstUnaryExpr unExpr)
 		{
-			unExpr.SubExpr.Scope = unExpr.Scope;
+			SetScopeAndParent(unExpr.SubExpr, unExpr);
 			// error if it is not an expr
 			if (unExpr.SubExpr is not AstExpression expr)
 			{
@@ -261,8 +262,8 @@ namespace HapetFrontend.Parsing.PostPrepare
 		private void PostPrepareBinaryExprScoping(AstBinaryExpr binExpr)
 		{
 			// these scopes are probably the same for the bin expr parts
-			binExpr.Left.Scope = binExpr.Scope;
-			binExpr.Right.Scope = binExpr.Scope;
+			SetScopeAndParent(binExpr.Left, binExpr);
+			SetScopeAndParent(binExpr.Right, binExpr);
 			// error if it is not an expr
 			if (binExpr.Left is not AstExpression leftExpr)
 			{
@@ -281,54 +282,54 @@ namespace HapetFrontend.Parsing.PostPrepare
 
 		private void PostPreparePointerExprScoping(AstPointerExpr pointerExpr)
 		{
-			pointerExpr.SubExpression.Scope = pointerExpr.Scope;
+			SetScopeAndParent(pointerExpr.SubExpression, pointerExpr);
 			PostPrepareExprScoping(pointerExpr.SubExpression);
 		}
 
 		private void PostPrepareAddressOfExprScoping(AstAddressOfExpr addrExpr)
 		{
-			addrExpr.SubExpression.Scope = addrExpr.Scope;
+			SetScopeAndParent(addrExpr.SubExpression, addrExpr);
 			PostPrepareExprScoping(addrExpr.SubExpression);
 		}
 
 		private void PostPrepareNewExprScoping(AstNewExpr newExpr)
 		{
-			newExpr.TypeName.Scope = newExpr.Scope;
+			SetScopeAndParent(newExpr.TypeName, newExpr);
 			PostPrepareExprScoping(newExpr.TypeName);
 			foreach (var a in newExpr.Arguments)
 			{
-				a.Scope = newExpr.Scope;
+				SetScopeAndParent(a, newExpr);
 				PostPrepareExprScoping(a);
 			}
 		}
 
 		private void PostPrepareArgumentExprScoping(AstArgumentExpr argumentExpr)
 		{
-			argumentExpr.Expr.Scope = argumentExpr.Scope;
+			SetScopeAndParent(argumentExpr.Expr, argumentExpr);
 			PostPrepareExprScoping(argumentExpr.Expr);
 			if (argumentExpr.Name != null)
 			{
-				argumentExpr.Name.Scope = argumentExpr.Scope;
+				SetScopeAndParent(argumentExpr.Name, argumentExpr);
 				PostPrepareExprScoping(argumentExpr.Name);
 			}
 		}
 
 		private void PostPrepareCallExprScoping(AstCallExpr callExpr)
 		{
-			callExpr.TypeOrObjectName.Scope = callExpr.Scope;
+			SetScopeAndParent(callExpr.TypeOrObjectName, callExpr);
 			PostPrepareExprScoping(callExpr.TypeOrObjectName);
-			callExpr.FuncName.Scope = callExpr.Scope;
+			SetScopeAndParent(callExpr.FuncName, callExpr);
 			PostPrepareExprScoping(callExpr.FuncName);
 			foreach (var a in callExpr.Arguments)
 			{
-				a.Scope = callExpr.Scope;
+				SetScopeAndParent(a, callExpr);
 				PostPrepareExprScoping(a);
 			}
 		}
 
 		private void PostPrepareCastExprScoping(AstCastExpr castExpr)
 		{
-			castExpr.SubExpression.Scope = castExpr.Scope;
+			SetScopeAndParent(castExpr.SubExpression, castExpr);
 			// error if it is not an exprv
 			if (castExpr.SubExpression is not AstExpression subExpr)
 			{
@@ -336,7 +337,8 @@ namespace HapetFrontend.Parsing.PostPrepare
 				return;
 			}
 			PostPrepareExprScoping(subExpr);
-			castExpr.TypeExpr.Scope = castExpr.Scope;
+
+			SetScopeAndParent(castExpr.TypeExpr, castExpr);
 			// error if it is not an expr
 			if (castExpr.TypeExpr is not AstExpression typeExpr)
 			{
@@ -348,44 +350,44 @@ namespace HapetFrontend.Parsing.PostPrepare
 
 		private void PostPrepareNestedExprScoping(AstNestedExpr nestExpr)
 		{
-			nestExpr.RightPart.Scope = nestExpr.Scope;
+			SetScopeAndParent(nestExpr.RightPart, nestExpr);
 			PostPrepareExprScoping(nestExpr.RightPart);
 			if (nestExpr.LeftPart != null)
 			{
-				nestExpr.LeftPart.Scope = nestExpr.Scope;
+				SetScopeAndParent(nestExpr.LeftPart, nestExpr);
 				PostPrepareExprScoping(nestExpr.LeftPart);
 			}
 		}
 
 		private void PostPrepareArrayExprScoping(AstArrayExpr arrayExpr)
 		{
-			arrayExpr.SizeExpr.Scope = arrayExpr.Scope;
+			SetScopeAndParent(arrayExpr.SizeExpr, arrayExpr);
 			PostPrepareExprScoping(arrayExpr.SizeExpr);
-			arrayExpr.TypeName.Scope = arrayExpr.Scope;
+			SetScopeAndParent(arrayExpr.TypeName, arrayExpr);
 			PostPrepareExprScoping(arrayExpr.TypeName);
 			foreach (var e in arrayExpr.Elements)
 			{
-				e.Scope = arrayExpr.Scope;
+				SetScopeAndParent(e, arrayExpr);
 				PostPrepareExprScoping(e);
 			}
 		}
 
 		private void PostPrepareArrayAccessExprScoping(AstArrayAccessExpr arrayAccExpr)
 		{
-			arrayAccExpr.ParameterExpr.Scope = arrayAccExpr.Scope;
+			SetScopeAndParent(arrayAccExpr.ParameterExpr, arrayAccExpr);
 			PostPrepareExprScoping(arrayAccExpr.ParameterExpr);
-			arrayAccExpr.ObjectName.Scope = arrayAccExpr.Scope;
+			SetScopeAndParent(arrayAccExpr.ObjectName, arrayAccExpr);
 			PostPrepareExprScoping(arrayAccExpr.ObjectName);
 		}
 
 		// statements
 		private void PostPrepareAssignStmtScoping(AstAssignStmt assignStmt)
 		{
-			assignStmt.Target.Scope = assignStmt.Scope;
+			SetScopeAndParent(assignStmt.Target, assignStmt);
 			PostPrepareExprScoping(assignStmt.Target);
 			if (assignStmt.Value != null)
 			{
-				assignStmt.Value.Scope = assignStmt.Scope;
+				SetScopeAndParent(assignStmt.Value, assignStmt);
 				PostPrepareExprScoping(assignStmt.Value);
 			}
 		}
@@ -393,28 +395,41 @@ namespace HapetFrontend.Parsing.PostPrepare
 		private static ulong _forCounter = 0;
 		private void PostPrepareForStmtScoping(AstForStmt forStmt)
 		{
-			forStmt.Body.Scope = forStmt.Scope;
+			SetScopeAndParent(forStmt.Body, forStmt);
 
 			string scopename = $"for_{_forCounter++}_scope";
 			var forScope = PostPrepareBlockScoping(forStmt.Body, scopename);
 
 			if (forStmt.FirstParam != null)
 			{
-				forStmt.FirstParam.Scope = forScope;
+				SetScopeAndParent(forStmt.FirstParam, forStmt, forScope);
 				PostPrepareExprScoping(forStmt.FirstParam);
 			}
 			if (forStmt.SecondParam != null)
 			{
-				forStmt.SecondParam.Scope = forScope;
+				SetScopeAndParent(forStmt.SecondParam, forStmt, forScope);
 				PostPrepareExprScoping(forStmt.SecondParam);
 			}
 			if (forStmt.ThirdParam != null)
 			{
-				forStmt.ThirdParam.Scope = forScope;
+				SetScopeAndParent(forStmt.ThirdParam, forStmt, forScope);
 				PostPrepareExprScoping(forStmt.ThirdParam);
 			}
 		}
 
 		// TODO: recursively go through all of the statments and set Scope and Parent
+
+		/// <summary>
+		/// Sets parent and scope to a child
+		/// </summary>
+		/// <param name="child">The child</param>
+		/// <param name="parent">The parent</param>
+		/// <param name="anotherScope">Scope to be set to a child. If null then parent scope is used</param>
+		private void SetScopeAndParent(AstStatement child, AstStatement parent, Scope anotherScope = null)
+		{
+			anotherScope ??= parent.Scope;
+			child.Scope = anotherScope;
+			child.Parent = parent;
+		}
 	}
 }

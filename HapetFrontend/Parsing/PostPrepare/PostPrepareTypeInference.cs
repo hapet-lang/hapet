@@ -176,6 +176,9 @@ namespace HapetFrontend.Parsing.PostPrepare
 				case AstForStmt forStmt:
 					PostPrepareForStmtInference(forStmt);
 					break;
+				case AstBreakContStmt breakContStmt:
+					PostPrepareBreakContStmtInference(breakContStmt);
+					break;
 				// TODO: check other expressions
 
 				default:
@@ -554,6 +557,13 @@ namespace HapetFrontend.Parsing.PostPrepare
 				PostPrepareExprInference(forStmt.ThirdParam);
 
 			PostPrepareExprInference(forStmt.Body);
+		}
+
+		private void PostPrepareBreakContStmtInference(AstBreakContStmt breakContStmt)
+		{
+			// there is no inferences but just checks if it is in switch-case
+			AstStatement currentParent = breakContStmt.NormalParent;
+			// TODO: check if the breakContStmt is for switch-case via loop and error if there is nothing
 		}
 	}
 }
