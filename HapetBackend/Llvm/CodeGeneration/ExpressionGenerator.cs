@@ -484,8 +484,22 @@ namespace HapetBackend.Llvm
 			LLVM.AppendExistingBasicBlock(_lastFunctionValueRef, bbInc);
 			LLVM.AppendExistingBasicBlock(_lastFunctionValueRef, bbEnd);
 
-			// setting br without condition into inc block from body block
-			_builder.BuildBr(bbInc);
+			
+			if (stmt.Body != null && 
+				stmt.Body.Statements.Count > 0 &&
+				(stmt.Body.Statements.Last() is AstReturnStmt ||
+				stmt.Body.Statements.Last() is AstBreakContStmt))
+			{
+				// if the last statement of the block is already
+				// a return or break or continue then there is no
+				// need to create our own!!!
+				// so this case is empty
+			}
+			else
+			{
+				// setting br without condition into inc block from body block
+				_builder.BuildBr(bbInc);
+			}
 
 			// inc
 			_builder.PositionAtEnd(bbInc);
