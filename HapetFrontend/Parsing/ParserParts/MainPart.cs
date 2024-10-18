@@ -100,7 +100,9 @@ namespace HapetFrontend.Parsing
 							}
 							else if (stmt is AstNestedExpr id)
 							{
-								return new AstAssignStmt(id, val as AstExpression, op, new Location(stmt.Beginning, val.Ending));
+								// expand ops like 'a += b' into 'a = a + b'
+								var binOpExpr = new AstBinaryExpr(op, id, val, new Location(id.Location.Beginning, val.Location.Ending));
+								return new AstAssignStmt(id, binOpExpr, new Location(stmt.Beginning, val.Ending));
 							}
 						}
 						else

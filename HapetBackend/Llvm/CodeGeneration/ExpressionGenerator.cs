@@ -89,23 +89,11 @@ namespace HapetBackend.Llvm
 				{
 					var leftExpr = (binExpr.Left as AstExpression);
 					var left = GenerateExpressionCode(leftExpr);
-					if (leftExpr.OutType != binExpr.OutType)
-					{
-						// TODO: this should not be here - move it into TypeInference with PostPrepareExpressionWithType
-						// cast if they are not the same haha
-						left = CreateCast(left, leftExpr.OutType, binExpr.OutType);
-					}
 
 					var rightExpr = (binExpr.Right as AstExpression);
 					var right = GenerateExpressionCode(rightExpr);
-					if (rightExpr.OutType != binExpr.OutType)
-					{
-						// TODO: this should not be here - move it into TypeInference with PostPrepareExpressionWithType
-						// cast if they are not the same haha
-						right = CreateCast(right, rightExpr.OutType, binExpr.OutType);
-					}
 
-					var bo = builtInOperators[(binExpr.Operator, binExpr.OutType)];
+					var bo = builtInBinOperators[(binExpr.Operator, leftExpr.OutType, rightExpr.OutType)];
 					var val = bo(_builder, left, right, "binOp");
 					return val;
 				} 
@@ -429,20 +417,37 @@ namespace HapetBackend.Llvm
 			// so stmts like 'a = (b = 3);' would be allowed...
 		}
 
+		private static ulong _forCounter = 0;
 		private void GenerateForStmt(AstForStmt forStmt)
 		{
+			_forCounter++;
+
 			if (forStmt.FirstParam != null)
 				GenerateExpressionCode(forStmt.FirstParam);
 
-			var bbCond = _lastFunctionValueRef.AppendBasicBlock("for.cond");
-			var bbBody = _lastFunctionValueRef.AppendBasicBlock("for.body");
-			var bbInc = _lastFunctionValueRef.AppendBasicBlock("for.inc");
-			var bbEnd = _lastFunctionValueRef.AppendBasicBlock("for.end");
+			var bbCond = _lastFunctionValueRef.AppendBasicBlock($"for{_forCounter}.cond");
+			var bbBody = _lastFunctionValueRef.AppendBasicBlock($"for{_forCounter}.body");
 
+			// directly br into loop condition
 			_builder.BuildBr(bbCond);
-			_builder.PositionAtEnd(bbCond);
+
+			// body
+			_builder.PositionAtEnd(bbBody);
+			if (forStmt.Body != null)
+			{
+				// generating body code
+				GenerateExpressionCode(forStmt.Body);
+			}
+
+			// creating other blocks
+			var bbInc = _lastFunctionValueRef.AppendBasicBlock($"for{_forCounter}.inc");
+			var bbEnd = _lastFunctionValueRef.AppendBasicBlock($"for{_forCounter}.end");
+
+			// setting br without condition into inc block from body block
+			_builder.BuildBr(bbInc);
 
 			// condition
+			_builder.PositionAtEnd(bbCond);
 			if (forStmt.SecondParam != null)
 			{
 				// building the condition
@@ -454,18 +459,9 @@ namespace HapetBackend.Llvm
 				// if the second param is null - just move to the body block
 				_builder.BuildBr(bbBody);
 			}
-			_builder.PositionAtEnd(bbBody);
-
-			// body
-			if (forStmt.Body != null)
-			{
-				// generating body code
-				GenerateExpressionCode(forStmt.Body);
-			}
-			_builder.BuildBr(bbInc);
-			_builder.PositionAtEnd(bbInc);
 
 			// inc
+			_builder.PositionAtEnd(bbInc);
 			if (forStmt.ThirdParam != null)
 			{
 				// generating inc code

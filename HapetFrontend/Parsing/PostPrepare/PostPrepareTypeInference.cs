@@ -249,6 +249,35 @@ namespace HapetFrontend.Parsing.PostPrepare
 			{
 				binExpr.ActualOperator = operators[0];
 				binExpr.OutType = binExpr.ActualOperator.ResultType;
+
+				// making some type casts
+				var leftExpr = (binExpr.Left as AstExpression);
+				var rightExpr = (binExpr.Right as AstExpression);
+
+				// creating cast to result type if it is not a bool expr
+				if (leftExpr.OutType != binExpr.OutType && binExpr.OutType is not BoolType)
+				{
+					// cast if they are not the same haha
+					binExpr.Left = PostPrepareExpressionWithType(binExpr.OutType, leftExpr);
+				}
+				// creating cast to result type if it is not a bool expr
+				if (rightExpr.OutType != binExpr.OutType && binExpr.OutType is not BoolType)
+				{
+					// cast if they are not the same haha
+					binExpr.Right = PostPrepareExpressionWithType(binExpr.OutType, rightExpr);
+				}
+
+				// creating cast to result type if it is a bool expr and left and right are not the same types
+				if (rightExpr.OutType != leftExpr.OutType && binExpr.OutType is BoolType)
+				{
+					// cast if they are not the same haha
+					HapetType castingType = HapetType.GetPreferredTypeOf(leftExpr.OutType, rightExpr.OutType, out bool tookLeft);
+					// if the left type was taken then change the right expr
+					if (tookLeft)
+						binExpr.Right = PostPrepareExpressionWithType(castingType, rightExpr);
+					else
+						binExpr.Left = PostPrepareExpressionWithType(castingType, leftExpr);
+				}
 			}
 		}
 

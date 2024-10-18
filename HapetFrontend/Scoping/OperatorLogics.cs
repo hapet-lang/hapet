@@ -60,6 +60,15 @@ namespace HapetFrontend.Scoping
 		}
 
 		/// <summary>
+		/// Getting all the built in operators
+		/// </summary>
+		/// <returns>The built in operators</returns>
+		public List<BuiltInBinaryOperator> GetBuiltInBinaryOperators()
+		{
+			return _binaryOperatorTable.SelectMany(x => x.Value).Where(x => x is BuiltInBinaryOperator).Select(x => x as BuiltInBinaryOperator).ToList();
+		}
+
+		/// <summary>
 		/// Returns all operators defined for the specified <param name="lhs"/>, <param name="rhs"/> and <param name="name"/>
 		/// </summary>
 		/// <param name="name">The name of the operator</param>
@@ -201,25 +210,6 @@ namespace HapetFrontend.Scoping
 			}
 
 			list.Add(op);
-		}
-
-		private void DefineLogicOperators(HapetType[] types, params (string name, BuiltInBinaryOperator.CompileTimeExecution exe)[] ops)
-		{
-			foreach (var op in ops)
-			{
-				List<IBinaryOperator> list;
-				if (_binaryOperatorTable.ContainsKey(op.name))
-					list = _binaryOperatorTable[op.name];
-				else
-				{
-					list = new List<IBinaryOperator>();
-					_binaryOperatorTable[op.name] = list;
-				}
-				foreach (var t in types)
-				{
-					list.Add(new BuiltInBinaryOperator(op.name, BoolType.Instance, t, t, op.exe));
-				}
-			}
 		}
 		#endregion
 	}

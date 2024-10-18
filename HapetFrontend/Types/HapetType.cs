@@ -76,5 +76,53 @@ namespace HapetFrontend.Types
 				return 0;
 			return -1;
 		}
+
+		/// <summary>
+		/// Returns the preferred type of two other types
+		/// Usually used for Numeric types and for Binary expressions
+		/// Like: bool a = (5 == 6.3); Where preferred type of 5 would be a FloatType
+		/// </summary>
+		/// <param name="first">The first type</param>
+		/// <param name="second">The second type</param>
+		/// <param name="tookFirst">Returns 'true' if type of the first param was used. Otherwise 'false' (the second was used)</param>
+		/// <returns>Preferred type</returns>
+		public static HapetType GetPreferredTypeOf(HapetType first, HapetType second, out bool tookFirst)
+		{
+			HapetType outType;
+			if ((first is FloatType && second is IntType) || (first is FloatType && second is CharType))
+			{
+				outType = first;
+				tookFirst = true;
+			}
+			else if ((second is FloatType && first is IntType) || (second is FloatType && first is CharType))
+			{
+				outType = second;
+				tookFirst = false;
+			}
+			else if (second is IntType sInt && first is IntType fInt)
+			{
+				if (sInt.Signed && !fInt.Signed)
+				{
+					outType = sInt;
+					tookFirst = false;
+				}
+				else if (!sInt.Signed && fInt.Signed)
+				{
+					outType = fInt;
+					tookFirst = true;
+				}
+				else
+				{
+					tookFirst = sInt.GetSize() < fInt.GetSize();
+					outType = tookFirst ? fInt : sInt;
+				}
+			}
+			else
+			{
+				tookFirst = second.GetSize() < first.GetSize();
+				outType = tookFirst ? first : second;
+			}
+			return outType;
+		}
 	}
 }

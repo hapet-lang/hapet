@@ -33,12 +33,6 @@ namespace HapetFrontend.Scoping
         {
             DefineLiteralOperators();
 
-            DefineLogicOperators(new HapetType[] { BoolType.Instance },
-                ("&&", (a, b) => (bool)a && (bool)b),
-                ("||", (a, b) => (bool)a || (bool)b),
-                ("==", (a, b) => (bool)a == (bool)b),
-                ("!=", (a, b) => (bool)a != (bool)b));
-
             // TODO: ...
             // DefinePointerOperators();
 
@@ -61,7 +55,13 @@ namespace HapetFrontend.Scoping
             DefineUnaryOperator("-", IntType.LiteralType, IntType.LiteralType, a => ((NumberData)a).Negate());
             DefineUnaryOperator("-", FloatType.LiteralType, FloatType.LiteralType, a => ((NumberData)a).Negate());
 
-            DefineBinaryOperator(new BuiltInBinaryOperator("+", StringType.LiteralType, StringType.LiteralType, StringType.LiteralType, (a, b) => $"{a}{b}"));
+			// bool types
+			DefineBinaryOperator(new BuiltInBinaryOperator("&&", BoolType.Instance, BoolType.Instance, BoolType.Instance, (a, b) => (bool)a && (bool)b));
+			DefineBinaryOperator(new BuiltInBinaryOperator("||", BoolType.Instance, BoolType.Instance, BoolType.Instance, (a, b) => (bool)a || (bool)b));
+			DefineBinaryOperator(new BuiltInBinaryOperator("==", BoolType.Instance, BoolType.Instance, BoolType.Instance, (a, b) => (bool)a == (bool)b));
+			DefineBinaryOperator(new BuiltInBinaryOperator("!=", BoolType.Instance, BoolType.Instance, BoolType.Instance, (a, b) => (bool)a != (bool)b));
+
+			DefineBinaryOperator(new BuiltInBinaryOperator("+", StringType.LiteralType, StringType.LiteralType, StringType.LiteralType, (a, b) => $"{a}{b}"));
 
             DefineBinaryOperator(new BuiltInBinaryOperator("+", IntType.LiteralType, IntType.LiteralType, IntType.LiteralType, (a, b) => (NumberData)a + (NumberData)b));
             DefineBinaryOperator(new BuiltInBinaryOperator("-", IntType.LiteralType, IntType.LiteralType, IntType.LiteralType, (a, b) => (NumberData)a - (NumberData)b));
@@ -148,34 +148,7 @@ namespace HapetFrontend.Scoping
                 foreach (var secondType in numTypes)
                 {
                     // calc out type of these shite
-                    HapetType outType;
-                    if ((type is FloatType && secondType is IntType) || (type is FloatType && secondType is CharType))
-                    {
-                        outType = type;
-					}
-                    else if ((secondType is FloatType && type is IntType) || (secondType is FloatType && type is CharType))
-                    {
-                        outType = secondType;
-					}
-                    else if (secondType is IntType sInt && type is IntType fInt)
-                    {
-                        if (sInt.Signed && !fInt.Signed)
-                        {
-                            outType = sInt;
-						}
-                        else if (!sInt.Signed && fInt.Signed)
-                        {
-							outType = fInt;
-						}
-                        else
-                        {
-							outType = sInt.GetSize() > fInt.GetSize() ? sInt : fInt;
-						}
-					}
-					else
-					{
-						outType = secondType.GetSize() > type.GetSize() ? secondType : type;
-					}
+                    HapetType outType = HapetType.GetPreferredTypeOf(type, secondType, out bool _);
 
 					DefineBinaryOperator(new BuiltInBinaryOperator("+", outType, type, secondType, (a, b) => (NumberData)a + (NumberData)b));
 					DefineBinaryOperator(new BuiltInBinaryOperator("-", outType, type, secondType, (a, b) => (NumberData)a - (NumberData)b));
