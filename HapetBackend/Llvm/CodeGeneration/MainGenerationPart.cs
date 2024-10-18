@@ -76,6 +76,7 @@ namespace HapetBackend.Llvm
 			}
 		}
 
+		private LLVMValueRef _lastFunctionValueRef = default;
 		private unsafe void GenerateFuncCode(AstFuncDecl funcDecl, LLVMTypeRef? funcType = null, AstClassDecl classDecl = null)
 		{
 			funcType ??= HapetTypeToLLVMType(funcDecl.Type.OutType);
@@ -91,6 +92,7 @@ namespace HapetBackend.Llvm
 
 			// caching the function											 
 			_valueMap[funcDecl.GetSymbol] = lfunc;
+			_lastFunctionValueRef = lfunc;
 
 			// setting parameter names
 			for (int i = 0; i < funcDecl.Parameters.Count; ++i)
@@ -125,13 +127,13 @@ namespace HapetBackend.Llvm
 			_builder.PositionAtEnd(bbBody);
 
 			// genereting inside stuff of the function
-			var retOfBlock = GenerateBlockCode(funcDecl.Body);
+			var retOfBlock = GenerateBlockExprCode(funcDecl.Body);
 
 			// return logics
 			if (retOfBlock != null)
 			{
 				// TODO: return value (what did i mean by this?? ahahaha)
-				_builder.BuildRet(retOfBlock.Value);
+				_builder.BuildRet(retOfBlock);
 			}
 			else if (funcDecl.Returns.OutType is VoidType)
 			{
@@ -147,29 +149,6 @@ namespace HapetBackend.Llvm
 				_builder.BuildRetVoid();
 			}
 			lfunc.VerifyFunction(LLVMVerifierFailureAction.LLVMPrintMessageAction);
-		}
-
-		private LLVMValueRef? GenerateBlockCode(AstBlockExpr blockExpr)
-		{
-			LLVMValueRef? result = null;
-			foreach (var stmt in blockExpr.Statements)
-			{
-				if (stmt is AstVarDecl varDecl)
-				{
-					GenerateVarDeclCode(varDecl);
-				}
-				else if (stmt is AstAssignStmt || stmt is AstCallExpr)
-				{
-					GenerateExpressionCode(stmt);
-				}
-				else if (stmt is AstReturnStmt returnStmt)
-				{
-					// TODO: also check if return expr is empty and method has to return smth - error it
-					result = GenerateExpressionCode(returnStmt.ReturnExpression);
-					break; // there is nothing to do in the block after return
-				}
-			}
-			return result;
 		}
 
 		private void GenerateVarDeclCode(AstVarDecl varDecl)

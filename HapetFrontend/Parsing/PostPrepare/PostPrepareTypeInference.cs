@@ -202,9 +202,9 @@ namespace HapetFrontend.Parsing.PostPrepare
 						returnStmt.ReturnExpression = PostPrepareExpressionWithType(_currentFunction.Returns.OutType, returnStmt.ReturnExpression);
 					}
 				}
-				else if (stmt is AstStatement expr)
+				else if (stmt is not null)
 				{
-					PostPrepareExprInference(expr);
+					PostPrepareExprInference(stmt);
 				}
 			}
 		}
@@ -512,7 +512,15 @@ namespace HapetFrontend.Parsing.PostPrepare
 			if (forStmt.FirstParam != null)
 				PostPrepareExprInference(forStmt.FirstParam);
 			if (forStmt.SecondParam != null)
+			{
 				PostPrepareExprInference(forStmt.SecondParam);
+
+				// error if it is not a bool type because it has to be
+				if (forStmt.SecondParam.OutType is not BoolType)
+				{
+					_compiler.ErrorHandler.ReportError(_currentSourceFile.Text, forStmt.SecondParam, "Type of the expression has to be boolean type");
+				}
+			}
 			if (forStmt.ThirdParam != null)
 				PostPrepareExprInference(forStmt.ThirdParam);
 

@@ -237,9 +237,9 @@ namespace HapetFrontend.Parsing.PostPrepare
 						PostPrepareExprScoping(returnStmt.ReturnExpression);
 					}
 				}
-				else if (stmt is AstStatement expr)
+				else if (stmt is not null)
 				{
-					PostPrepareExprScoping(expr);
+					PostPrepareExprScoping(stmt);
 				}
 			}
 

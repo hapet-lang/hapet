@@ -23,6 +23,12 @@ namespace HapetBackend.Llvm
 
 			switch (expr)
 			{
+				// special case at least for 'for' loop
+				// when 'for (int i = 0;...)' where 'int i' 
+				// would not be handled by blockExpr
+				case AstVarDecl varDecl: GenerateVarDeclCode(varDecl); return null;
+
+				case AstBlockExpr blockExpr: return GenerateBlockExprCode(blockExpr);
 				case AstBinaryExpr binExpr: return GenerateBinaryExprCode(binExpr);
 				case AstPointerExpr pointerExpr: return GeneratePointerExprCode(pointerExpr);
 				case AstAddressOfExpr addrExpr: return GenerateAddressOfExprCode(addrExpr);
@@ -36,7 +42,8 @@ namespace HapetBackend.Llvm
 				case AstArrayAccessExpr arrayAccessExpr: return GenerateArrayAccessExprCode(arrayAccessExpr, getPtr);
 
 				// statements
-				case AstAssignStmt assignStmt: return GenerateAssignStmt(assignStmt);
+				case AstAssignStmt assignStmt: GenerateAssignStmt(assignStmt); return null;
+				case AstForStmt forStmt: GenerateForStmt(forStmt); return null;
 				// TODO: check other expressions
 
 				default:
@@ -45,6 +52,25 @@ namespace HapetBackend.Llvm
 					return new LLVMValueRef();
 				}
 			}
+		}
+
+		private LLVMValueRef GenerateBlockExprCode(AstBlockExpr blockExpr)
+		{
+			LLVMValueRef result = null;
+			foreach (var stmt in blockExpr.Statements)
+			{
+				if (stmt is AstReturnStmt returnStmt)
+				{
+					// TODO: also check if return expr is empty and method has to return smth - error it
+					result = GenerateExpressionCode(returnStmt.ReturnExpression);
+					break; // there is nothing to do in the block after return
+				}
+				else if (stmt is not null)
+				{
+					GenerateExpressionCode(stmt);
+				}
+			}
+			return result;
 		}
 
 		private LLVMValueRef GenerateBinaryExprCode(AstBinaryExpr binExpr)
@@ -386,7 +412,7 @@ namespace HapetBackend.Llvm
 		}
 
 		// statements
-		private LLVMValueRef GenerateAssignStmt(AstAssignStmt assignStmt)
+		private void GenerateAssignStmt(AstAssignStmt assignStmt)
 		{
 			LLVMValueRef theVar = GenerateNestedExpr(assignStmt.Target, true);
 
@@ -399,9 +425,54 @@ namespace HapetBackend.Llvm
 
 			AssignToVar(theVar, assignStmt.Target.OutType, assignStmt.Value);
 
-			// WARN: always returns null because Assign is a stmt and does not returns anything. could be changed to expr
+			// TODO: WARN: always returns null because Assign is a stmt and does not returns anything. could be changed to expr
 			// so stmts like 'a = (b = 3);' would be allowed...
-			return null; 
+		}
+
+		private void GenerateForStmt(AstForStmt forStmt)
+		{
+			if (forStmt.FirstParam != null)
+				GenerateExpressionCode(forStmt.FirstParam);
+
+			var bbCond = _lastFunctionValueRef.AppendBasicBlock("for.cond");
+			var bbBody = _lastFunctionValueRef.AppendBasicBlock("for.body");
+			var bbInc = _lastFunctionValueRef.AppendBasicBlock("for.inc");
+			var bbEnd = _lastFunctionValueRef.AppendBasicBlock("for.end");
+
+			_builder.BuildBr(bbCond);
+			_builder.PositionAtEnd(bbCond);
+
+			// condition
+			if (forStmt.SecondParam != null)
+			{
+				// building the condition
+				var cmp = GenerateExpressionCode(forStmt.SecondParam);
+				_builder.BuildCondBr(cmp, bbBody, bbEnd);
+			}
+			else
+			{
+				// if the second param is null - just move to the body block
+				_builder.BuildBr(bbBody);
+			}
+			_builder.PositionAtEnd(bbBody);
+
+			// body
+			if (forStmt.Body != null)
+			{
+				// generating body code
+				GenerateExpressionCode(forStmt.Body);
+			}
+			_builder.BuildBr(bbInc);
+			_builder.PositionAtEnd(bbInc);
+
+			// inc
+			if (forStmt.ThirdParam != null)
+			{
+				// generating inc code
+				GenerateExpressionCode(forStmt.ThirdParam);
+			}
+			_builder.BuildBr(bbCond);
+			_builder.PositionAtEnd(bbEnd);
 		}
 	}
 }
