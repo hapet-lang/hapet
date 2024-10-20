@@ -8,7 +8,7 @@
 
 public static class Program
 {
-	public static int Main()
+	public static int Main(string[] args)
 	{
 		int a = 6 + 9;
 		Math math = new Math();

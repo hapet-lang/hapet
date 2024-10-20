@@ -15,7 +15,7 @@
 
 public static class Program
 {
-	public static int Main()
+	public static int Main(string[] args)
 	{
 		int test = 5;
 		Math math = new Math(test);

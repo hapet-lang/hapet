@@ -1,6 +1,6 @@
 ﻿public static class Program
 {
-	public static int Main()
+	public static int Main(string[] args)
 	{
 		// char a = 'g';
 		// char a2 = 'н';

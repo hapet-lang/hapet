@@ -54,6 +54,7 @@ namespace HapetFrontend.Parsing.PostPrepare
             {
                 // default cringe casting
                 case FloatType when exprType is IntType:
+                case FloatType when exprType is FloatType:
                 case FloatType when exprType is CharType:
                 case IntType when exprType is CharType:
 				case IntType when exprType is IntType:
