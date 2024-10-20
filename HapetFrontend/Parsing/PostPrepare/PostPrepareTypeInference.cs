@@ -179,9 +179,12 @@ namespace HapetFrontend.Parsing.PostPrepare
 				case AstBreakContStmt breakContStmt:
 					PostPrepareBreakContStmtInference(breakContStmt);
 					break;
-				// TODO: check other expressions
+                case AstReturnStmt returnStmt:
+                    PostPrepareReturnStmtInference(returnStmt);
+                    break;
+                // TODO: check other expressions
 
-				default:
+                default:
 					{
 						// TODO: anything to do here?
 						break;
@@ -193,23 +196,10 @@ namespace HapetFrontend.Parsing.PostPrepare
 		{
 			foreach (var stmt in blockExpr.Statements)
 			{
-				if (stmt is AstVarDecl varDecl)
-				{
-					PostPrepareVarInference(varDecl);
-				}
-				else if (stmt is AstReturnStmt returnStmt)
-				{
-					// TODO: check for _currentFunction that the types are equal with return stmt!!!
-					if (returnStmt.ReturnExpression != null)
-					{
-						PostPrepareExprInference(returnStmt.ReturnExpression);
-						returnStmt.ReturnExpression = PostPrepareExpressionWithType(_currentFunction.Returns.OutType, returnStmt.ReturnExpression);
-					}
-				}
-				else if (stmt is not null)
-				{
-					PostPrepareExprInference(stmt);
-				}
+				if (stmt == null)
+					continue;
+
+				PostPrepareExprInference(stmt);
 			}
 		}
 
@@ -567,5 +557,15 @@ namespace HapetFrontend.Parsing.PostPrepare
 			// TODO: check if the breakContStmt is for switch-case via loop and error if there is nothing
 			// TODO: also check if there is something after and warn! (add warnings to error handler?)
 		}
-	}
+
+		private void PostPrepareReturnStmtInference(AstReturnStmt returnStmt)
+		{
+            // TODO: check for _currentFunction that the types are equal with return stmt!!!
+            if (returnStmt.ReturnExpression != null)
+            {
+                PostPrepareExprInference(returnStmt.ReturnExpression);
+                returnStmt.ReturnExpression = PostPrepareExpressionWithType(_currentFunction.Returns.OutType, returnStmt.ReturnExpression);
+            }
+        }
+    }
 }
