@@ -205,7 +205,10 @@ namespace HapetFrontend.Parsing.PostPrepare
 				case AstForStmt forStmt:
 					PostPrepareForStmtScoping(forStmt);
 					break;
-				case AstBreakContStmt:
+                case AstWhileStmt whileStmt:
+                    PostPrepareWhileStmtScoping(whileStmt);
+                    break;
+                case AstBreakContStmt:
 					// nothing to do
 					break;
                 case AstReturnStmt returnStmt:
@@ -411,6 +414,21 @@ namespace HapetFrontend.Parsing.PostPrepare
 				PostPrepareExprScoping(forStmt.ThirdParam);
 			}
 		}
+
+        private static ulong _whileCounter = 0;
+        private void PostPrepareWhileStmtScoping(AstWhileStmt whileStmt)
+		{
+            SetScopeAndParent(whileStmt.Body, whileStmt);
+
+            string scopename = $"while_{_whileCounter++}_scope";
+            var whileScope = PostPrepareBlockScoping(whileStmt.Body, scopename);
+
+            if (whileStmt.ConditionParam != null)
+            {
+                SetScopeAndParent(whileStmt.ConditionParam, whileStmt, whileScope);
+                PostPrepareExprScoping(whileStmt.ConditionParam);
+            }
+        }
 
 		private void PostPrepareReturnStmtScoping(AstReturnStmt returnStmt)
 		{
