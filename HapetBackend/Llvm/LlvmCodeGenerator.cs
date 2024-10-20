@@ -116,10 +116,11 @@ namespace HapetBackend.Llvm
 				_module.PrintToFile(Path.Combine(irDir, targetFile + ".ll"));
 			}
 
-			// emit machine code to object file
+			// do not generate exe/dll if there are errors
 			if (!errorHandler.HasErrors)
 			{
-				var objFile = Path.Combine(irDir, $"{targetFile}{CompilerSettings.TargetPlatformData.ObjectFileExtension}");
+                // emit machine code to object file
+                var objFile = Path.Combine(irDir, $"{targetFile}{CompilerSettings.TargetPlatformData.ObjectFileExtension}");
 				targetMachine.EmitToFile(_module, objFile, LLVMCodeGenFileType.LLVMObjectFile);
 			}
 			else
@@ -128,6 +129,7 @@ namespace HapetBackend.Llvm
                 return false;
             }
 
+			// TODO: dispose before every return!!!
 			_builder.Dispose();
 			_module.Dispose();
 			return true;

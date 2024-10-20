@@ -46,7 +46,6 @@ namespace HapetFrontend.Parsing.PostPrepare
 						if (decl is not AstFuncDecl)
 							continue;
 
-						// TODO: remake to "int Main(string[] args)"
 						var funcDecl = decl as AstFuncDecl;
 						if (funcDecl.Name.Name == "Main(string[])" &&
 							funcDecl.Returns.OutType == IntType.GetIntType(4, true) &&

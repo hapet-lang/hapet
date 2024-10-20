@@ -17,44 +17,19 @@ namespace HapetBackend.Llvm
 			switch (CompilerSettings.TargetPlatformData.TargetPlatform)
 			{
 				case TargetPlatform.Win86:
-					if (CompilerSettings.TargetRepresentation == TargetRepresentation.Console)
-					{
-						// creating crt main func extern
-						crtMainFuncType = LLVMTypeRef.CreateFunction(_context.VoidType, Array.Empty<LLVMTypeRef>(), false);
-						crtMainFunc = _module.AddFunction("__main", crtMainFuncType);
-						crtMainFunc.Linkage = LLVMLinkage.LLVMExternalLinkage;
-						var crtEntry = crtMainFunc.AppendBasicBlock("entry");
-						_builder.PositionAtEnd(crtEntry);
-						_builder.BuildRetVoid();
-
-						mainFuncName = "main";
-						returnType = _context.Int32Type;
-						// i32 %argc, ptr %argv
-						paramTypes = new LLVMTypeRef[] { _context.Int32Type, _voidPointerType };
-					}
-					else if (CompilerSettings.TargetRepresentation == TargetRepresentation.Windowed)
-					{
-						mainFuncName = "WinMain";
-						returnType = _context.Int32Type;
-						// ptr %hInstance, ptr %hPrevInstance, ptr %lpCmdLine, i32 %nCmdShow
-						paramTypes = new LLVMTypeRef[] { _voidPointerType, _voidPointerType, _voidPointerType, _context.Int32Type };
-					}
-					break;
 				case TargetPlatform.Win64:
-					if (CompilerSettings.TargetRepresentation == TargetRepresentation.Console)
-					{
-						mainFuncName = "main";
-						returnType = _context.Int32Type;
-						// i32 %argc, ptr %argv
-						paramTypes = new LLVMTypeRef[] { _context.Int32Type, _voidPointerType };
-					}
-					else if (CompilerSettings.TargetRepresentation == TargetRepresentation.Windowed)
-					{
-						mainFuncName = "WinMain";
-						returnType = _context.Int32Type;
-						// ptr %hInstance, ptr %hPrevInstance, ptr %lpCmdLine, i32 %nCmdShow
-						paramTypes = new LLVMTypeRef[] { _voidPointerType, _voidPointerType, _voidPointerType, _context.Int32Type };
-					}
+					// creating crt main func extern
+					crtMainFuncType = LLVMTypeRef.CreateFunction(_context.VoidType, Array.Empty<LLVMTypeRef>(), false);
+					crtMainFunc = _module.AddFunction("__main", crtMainFuncType);
+					crtMainFunc.Linkage = LLVMLinkage.LLVMExternalLinkage;
+					var crtEntry = crtMainFunc.AppendBasicBlock("entry");
+					_builder.PositionAtEnd(crtEntry);
+					_builder.BuildRetVoid();
+
+					mainFuncName = "main";
+					returnType = _context.Int32Type;
+					// i32 %argc, ptr %argv
+					paramTypes = new LLVMTypeRef[] { _context.Int32Type, _voidPointerType };
 					break;
 				case TargetPlatform.Linux86:
 					mainFuncName = "main";
@@ -75,8 +50,8 @@ namespace HapetBackend.Llvm
 			switch (CompilerSettings.TargetPlatformData.TargetPlatform)
 			{
 				case TargetPlatform.Win86:
-					if (CompilerSettings.TargetRepresentation == TargetRepresentation.Windowed)
-						lfunc.FunctionCallConv = (uint)LLVMCallConv.LLVMX86StdcallCallConv; // X86_StdCall
+					//if (CompilerSettings.TargetRepresentation == TargetRepresentation.Windowed)
+					//	lfunc.FunctionCallConv = (uint)LLVMCallConv.LLVMX86StdcallCallConv; // X86_StdCall
 					break;
 				case TargetPlatform.Win64:
 					// no need for this because it is defaulted by LLVM itself
@@ -89,18 +64,22 @@ namespace HapetBackend.Llvm
 			}
 
 			var entry = lfunc.AppendBasicBlock("entry");
+			var pars = lfunc.AppendBasicBlock("params");
 			var main = lfunc.AppendBasicBlock("mainpart");
 
 			_builder.PositionAtEnd(entry);
-
 			// if crt main func call should be placed 
 			if (crtMainFunc != null)
 			{
 				_builder.BuildCall2(crtMainFuncType, crtMainFunc, Array.Empty<LLVMValueRef>());
 			}
+			_builder.BuildBr(pars);
 
-			_builder.BuildBr(main);
-			_builder.PositionAtEnd(main);
+            _builder.PositionAtEnd(pars);
+			// var stringParams = GenerateNormalStringParam(paramTypes, lfunc);
+            _builder.BuildBr(main);
+
+            _builder.PositionAtEnd(main);
 
 			{ // call main function
 				var hapetMain = _valueMap[_compiler.MainFunction.GetSymbol];
