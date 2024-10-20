@@ -15,6 +15,7 @@ namespace HapetBackend.Llvm
 	public partial class LlvmCodeGenerator
 	{
 		private ProgramFile _currentSourceFile;
+		private AstFuncDecl _currentFunction;
 
 		private void GenerateCode()
 		{
@@ -79,7 +80,9 @@ namespace HapetBackend.Llvm
 		private LLVMValueRef _lastFunctionValueRef = default;
 		private unsafe void GenerateFuncCode(AstFuncDecl funcDecl, LLVMTypeRef? funcType = null, AstClassDecl classDecl = null)
 		{
-			funcType ??= HapetTypeToLLVMType(funcDecl.Type.OutType);
+            _currentFunction = funcDecl;
+
+            funcType ??= HapetTypeToLLVMType(funcDecl.Type.OutType);
 
 			string funcName = classDecl != null ? $"{classDecl.Name.Name}::{funcDecl.Name.Name}" : funcDecl.Name.Name;
 
@@ -127,27 +130,8 @@ namespace HapetBackend.Llvm
 			_builder.PositionAtEnd(bbBody);
 
 			// genereting inside stuff of the function
-			var retOfBlock = GenerateBlockExprCode(funcDecl.Body);
+			GenerateBlockExprCode(funcDecl.Body);
 
-			// return logics
-			if (retOfBlock != null)
-			{
-				// TODO: return value (what did i mean by this?? ahahaha)
-				_builder.BuildRet(retOfBlock);
-			}
-			else if (funcDecl.Returns.OutType is VoidType)
-			{
-				// ret if void
-				// PopStackTrace(); // TODO: stack trace
-				_builder.BuildRetVoid();
-			}
-			else
-			{
-				// error because the func is not void but with a type return
-				// but the 'return' statement was not found
-				_errorHandler.ReportError(_currentSourceFile.Text, funcDecl, "Return statement of the function could not be found");
-				_builder.BuildRetVoid();
-			}
 			lfunc.VerifyFunction(LLVMVerifierFailureAction.LLVMPrintMessageAction);
 		}
 

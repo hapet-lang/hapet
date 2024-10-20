@@ -45,6 +45,7 @@ namespace HapetBackend.Llvm
 				case AstAssignStmt assignStmt: GenerateAssignStmt(assignStmt); return null;
 				case AstForStmt forStmt: GenerateForStmt(forStmt); return null;
 				case AstBreakContStmt breakContStmt: GenerateBreakContStmt(breakContStmt); return null;
+				case AstReturnStmt returnStmt: GenerateReturnStmt(returnStmt); return null;
 				// TODO: check other expressions
 
 				default:
@@ -60,16 +61,10 @@ namespace HapetBackend.Llvm
 			LLVMValueRef result = null;
 			foreach (var stmt in blockExpr.Statements)
 			{
-				if (stmt is AstReturnStmt returnStmt)
-				{
-					// TODO: also check if return expr is empty and method has to return smth - error it
-					result = GenerateExpressionCode(returnStmt.ReturnExpression);
-					break; // there is nothing to do in the block after return
-				}
-				else if (stmt is not null)
-				{
-					GenerateExpressionCode(stmt);
-				}
+				if (stmt == null)
+					continue;
+
+				GenerateExpressionCode(stmt);
 			}
 			return result;
 		}
@@ -545,5 +540,33 @@ namespace HapetBackend.Llvm
 				}
 			}
 		}
-	}
+
+		private void GenerateReturnStmt(AstReturnStmt returnStmt)
+		{
+			// TODO: also check if return expr is empty and method has to return smth - error it
+			LLVMValueRef result = null;
+			if (returnStmt.ReturnExpression != null)
+                result = GenerateExpressionCode(returnStmt.ReturnExpression);
+
+            // return logics
+            if (result != null)
+            {
+                // TODO: return value (what did i mean by this?? ahahaha)
+                _builder.BuildRet(result);
+            }
+            else if (_currentFunction.Returns.OutType is VoidType)
+            {
+                // ret if void
+                // PopStackTrace(); // TODO: stack trace
+                _builder.BuildRetVoid();
+            }
+            else
+            {
+                // error because the func is not void but with a type return
+                // but the 'return' statement was not found
+                _errorHandler.ReportError(_currentSourceFile.Text, returnStmt, "The 'return' statement returns a type that does not match the type specified in the function declaration");
+                _builder.BuildRetVoid();
+            }
+        }
+    }
 }

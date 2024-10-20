@@ -46,8 +46,11 @@ namespace HapetFrontend.Parsing.PostPrepare
 			// adding 'this' param as first
 			foreach (var decl in classDecl.Declarations)
 			{
-				if (decl is AstFuncDecl funcDecl && 
-					!funcDecl.SpecialKeys.Contains(TokenType.KwStatic))
+				if (decl is not AstFuncDecl funcDecl)
+					continue;
+
+				// adding 'this' param to func params
+				if (!funcDecl.SpecialKeys.Contains(TokenType.KwStatic))
 				{
 					// creating the class instance 'this' param
 					AstExpression paramType = new AstPointerExpr(classDecl.Name.GetCopy(), false);
@@ -56,6 +59,12 @@ namespace HapetFrontend.Parsing.PostPrepare
 					// adding the param as the func first param
 					funcDecl.Parameters.Insert(0, thisParam);
 				}
+
+				// checking for 'return' existance at the end. if not - add
+				if (funcDecl.Body != null && funcDecl.Body.Statements.LastOrDefault() is not AstReturnStmt)
+				{
+					funcDecl.Body.Statements.Add(new AstReturnStmt(null));
+                }
 			}
 		}
 

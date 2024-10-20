@@ -117,10 +117,16 @@ namespace HapetBackend.Llvm
 			}
 
 			// emit machine code to object file
+			if (!errorHandler.HasErrors)
 			{
 				var objFile = Path.Combine(irDir, $"{targetFile}{CompilerSettings.TargetPlatformData.ObjectFileExtension}");
 				targetMachine.EmitToFile(_module, objFile, LLVMCodeGenFileType.LLVMObjectFile);
 			}
+			else
+			{
+                // TODO: info that the out file was not generated due errors
+                return false;
+            }
 
 			_builder.Dispose();
 			_module.Dispose();

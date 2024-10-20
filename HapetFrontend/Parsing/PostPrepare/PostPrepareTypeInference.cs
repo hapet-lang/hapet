@@ -560,11 +560,14 @@ namespace HapetFrontend.Parsing.PostPrepare
 
 		private void PostPrepareReturnStmtInference(AstReturnStmt returnStmt)
 		{
-            // TODO: check for _currentFunction that the types are equal with return stmt!!!
             if (returnStmt.ReturnExpression != null)
             {
                 PostPrepareExprInference(returnStmt.ReturnExpression);
                 returnStmt.ReturnExpression = PostPrepareExpressionWithType(_currentFunction.Returns.OutType, returnStmt.ReturnExpression);
+            }
+			else if (returnStmt.ReturnExpression == null && _currentFunction.Returns.OutType is not VoidType)
+			{
+                _compiler.ErrorHandler.ReportError(_currentSourceFile.Text, returnStmt, $"Empty 'return' statement in function that has to return {_currentFunction.Returns.OutType}");
             }
         }
     }
