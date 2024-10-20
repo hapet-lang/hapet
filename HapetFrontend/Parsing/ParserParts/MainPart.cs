@@ -84,7 +84,7 @@ namespace HapetFrontend.Parsing
 
 							var val = ParseExpression(true);
 
-							if (val is not AstExpression)
+							if (val is not AstExpression valExpr)
 							{
 								ReportError(val.Location, $"The right side of variable assignment has to be an expression");
 								return stmt;
@@ -100,12 +100,16 @@ namespace HapetFrontend.Parsing
 								}
 								return new AstVarDecl(udecl.Type, udecl.Name, val as AstExpression, "", new Location(stmt.Beginning, val.Ending));
 							}
-							else if (stmt is AstNestedExpr id)
+							else if (stmt is AstNestedExpr id && currT.Type != TokenType.Equal)
 							{
 								// expand ops like 'a += b' into 'a = a + b'
 								var binOpExpr = new AstBinaryExpr(op, id, val, new Location(id.Location.Beginning, val.Location.Ending));
 								return new AstAssignStmt(id, binOpExpr, new Location(stmt.Beginning, val.Ending));
 							}
+							else if (stmt is AstNestedExpr nestId && currT.Type == TokenType.Equal)
+							{
+                                return new AstAssignStmt(nestId, valExpr, new Location(stmt.Beginning, val.Ending));
+                            }
 						}
 						else
 						{

@@ -508,7 +508,9 @@ namespace HapetFrontend.Parsing.PostPrepare
 				outType = arrayType.TargetType;
 			else if (arrayAccExpr.ObjectName.OutType is StringType)
 				outType = CharType.DefaultType; // TODO: mb non default could be here? idk :)
-			else
+            else if(arrayAccExpr.ObjectName.OutType is PointerType ptrType)
+                outType = ptrType.TargetType;
+            else
 			{
 				// error because expected an array 
 				_compiler.ErrorHandler.ReportError(_currentSourceFile.Text, arrayAccExpr.ObjectName, $"Array/String type expected to be indexed");

@@ -246,7 +246,7 @@ namespace HapetFrontend.Types
 			}
 
 			var val = ToDouble();
-			return val < max && (val > min);
+			return val <= max && (val >= min);
 		}
 	}
 }
