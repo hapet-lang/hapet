@@ -349,8 +349,13 @@ namespace HapetFrontend.Parsing.PostPrepare
 
 		private void PostPrepareCallExprInference(AstCallExpr callExpr)
 		{
-			// resolve the object on which func is called
-			PostPrepareExprInference(callExpr.TypeOrObjectName);
+			// usually when in the same class
+			if (callExpr.TypeOrObjectName != null)
+			{
+                // resolve the object on which func is called
+                PostPrepareExprInference(callExpr.TypeOrObjectName);
+            }
+			
 			// resolve args
 			foreach (var a in callExpr.Arguments)
 			{
@@ -368,21 +373,22 @@ namespace HapetFrontend.Parsing.PostPrepare
 			{
 				// TODO: also callExpr.TypeOrObjectName could be checked to find out if the func is static or not
 				// renaming func call name from 'Anime' to 'Anime(int, float)' WITH OBJECT AS FIRST PARAM
-				string newName = callExpr.FuncName.Name + callExpr.Arguments.GetArgsString(callExpr.TypeOrObjectName.OutType);
-				var smbl2 = callExpr.FuncName.Scope.GetSymbol(newName);
-				if (smbl2 is DeclSymbol declTyped2)
+				string newName = callExpr.FuncName.Name + callExpr.Arguments.GetArgsString();
+                var smbl2 = callExpr.FuncName.Scope.GetSymbol(newName);
+                if (smbl2 is DeclSymbol)
 				{
-					// if it is a non static func
-					callExpr.FuncName.OutType = declTyped2.Decl.Type.OutType;
-					callExpr.FuncName = callExpr.FuncName.GetCopy(newName);
-				}
+                    // probably static
+                    callExpr.FuncName = callExpr.FuncName.GetCopy(newName);
+                    PostPrepareIdentifierInference(callExpr.FuncName);
+                }
 				else
 				{
-					// probably static
-					newName = callExpr.FuncName.Name + callExpr.Arguments.GetArgsString();
-					callExpr.FuncName = callExpr.FuncName.GetCopy(newName);
-					PostPrepareIdentifierInference(callExpr.FuncName);
-				}
+                    // TODO: TypeOrObjectName could be null when calling in the same class
+                    // if it is a non static func
+                    newName = callExpr.FuncName.Name + callExpr.Arguments.GetArgsString(callExpr.TypeOrObjectName.OutType);
+                    callExpr.FuncName = callExpr.FuncName.GetCopy(newName);
+                    PostPrepareIdentifierInference(callExpr.FuncName);
+                }
 			}
 
 			// setting parameters

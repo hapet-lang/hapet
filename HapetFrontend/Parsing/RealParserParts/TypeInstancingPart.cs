@@ -12,17 +12,27 @@ namespace HapetFrontend.Parsing
 
 			beg ??= Consume(TokenType.KwNew, ErrMsg("keyword 'new'", "at beginning of type instancing expression")).Location;
 			SkipNewlines();
-			var typeName = ParseIdentifierExpression(ErrMsg("expression", "after keyword 'new'"));
+			var type = ParseAtomicExpression(false, false, ErrMsg("expression", "after keyword 'new'"));
 
 			// TokenType.ArrayDef is for array creation with ini values
 			if (CheckToken(TokenType.OpenBracket) || CheckToken(TokenType.ArrayDef)) // array creation
 			{
-				return ParseArrayExpr(typeName, beg);
+                if (type is not AstExpression expr)
+                {
+                    ReportError(type.Location, $"Expression expected as a type name");
+                    return ParseEmptyExpression();
+                }
+                return ParseArrayExpr(expr, beg);
 			}
 			else if (CheckToken(TokenType.OpenParen)) // probably class instance creation
 			{
+				if (type is not AstNestedExpr nestExpr)
+				{
+                    ReportError(type.Location, $"Unexpected token as a type name");
+                    return ParseEmptyExpression();
+                }
 				var args = ParseArgumentList(out var _);
-				return new AstNewExpr(typeName, args, Location: new Location(beg));
+				return new AstNewExpr(nestExpr, args, Location: new Location(beg));
 			}
 
 			// error here that unexpected token .. after typeName

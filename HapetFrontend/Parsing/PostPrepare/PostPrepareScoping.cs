@@ -314,8 +314,13 @@ namespace HapetFrontend.Parsing.PostPrepare
 
 		private void PostPrepareCallExprScoping(AstCallExpr callExpr)
 		{
-			SetScopeAndParent(callExpr.TypeOrObjectName, callExpr);
-			PostPrepareExprScoping(callExpr.TypeOrObjectName);
+			// usually when in the same class
+			if (callExpr.TypeOrObjectName != null)
+			{
+                SetScopeAndParent(callExpr.TypeOrObjectName, callExpr);
+                PostPrepareExprScoping(callExpr.TypeOrObjectName);
+            }
+			
 			SetScopeAndParent(callExpr.FuncName, callExpr);
 			PostPrepareExprScoping(callExpr.FuncName);
 			foreach (var a in callExpr.Arguments)

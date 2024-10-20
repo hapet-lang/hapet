@@ -6,7 +6,7 @@ namespace HapetFrontend.Parsing
 {
 	public partial class Parser
 	{
-		private AstStatement ParseArrayExpr(AstNestedExpr typeName, TokenLocation beg)
+		private AstStatement ParseArrayExpr(AstExpression type, TokenLocation beg)
 		{
 			// by default it is null because the size could not be defined
 			// when values are presented
@@ -42,9 +42,9 @@ namespace HapetFrontend.Parsing
 				if (sizeExpr == null)
 				{
 					// error here. because size was not defined and elements are also were not
-					ReportError(typeName.Location, $"Array creation requires its size or elements to be specified");
+					ReportError(type.Location, $"Array creation requires its size or elements to be specified");
 				}
-				return new AstArrayExpr(typeName, sizeExpr, new List<AstExpression>(), new Location(beg, CurrentToken.Location.Ending));
+				return new AstArrayExpr(type, sizeExpr, new List<AstExpression>(), new Location(beg, CurrentToken.Location.Ending));
 			}
 			else if (CheckToken(TokenType.OpenBrace))
 			{
@@ -55,7 +55,7 @@ namespace HapetFrontend.Parsing
 				// count parsed elements and set the size if the sizeExpr was null
 				sizeExpr ??= new AstNumberExpr(NumberData.FromInt(elements.Count));
 
-				return new AstArrayExpr(typeName, sizeExpr, elements, new Location(beg, CurrentToken.Location.Ending));
+				return new AstArrayExpr(type, sizeExpr, elements, new Location(beg, CurrentToken.Location.Ending));
 			}
 
 			// error here like unexpected token

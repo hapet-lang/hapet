@@ -1,11 +1,5 @@
 ﻿public static class Program
 {
-	public static int Main(string[] args)
-	{
-		TestArgs();
-		return 1;
-	}
-
 	public static void TestArgs()
 	{
 		int argc = 4;
@@ -16,5 +10,11 @@
 		{
 			int charsAmount = 0;
 		}
+	}
+
+	public static int Main(string[] args)
+	{
+		TestArgs();
+		return 1;
 	}
 }
