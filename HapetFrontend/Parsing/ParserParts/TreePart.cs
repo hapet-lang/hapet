@@ -82,13 +82,21 @@ namespace HapetFrontend.Parsing
 		[DebuggerStepThrough]
 		private AstStatement ParseComparisonExpression(bool allowCommaForTuple, bool allowFunctionDeclaration, ErrorMessageResolver e)
 		{
-			return ParseBinaryLeftAssociativeExpression(ParseAddSubExpression, allowCommaForTuple, allowFunctionDeclaration, e,
+			return ParseBinaryLeftAssociativeExpression(ParseBitAndOrExpression, allowCommaForTuple, allowFunctionDeclaration, e,
 				(TokenType.Less, "<"),
 				(TokenType.LessEqual, "<="),
 				(TokenType.Greater, ">"),
 				(TokenType.GreaterEqual, ">="),
 				(TokenType.DoubleEqual, "=="),
 				(TokenType.NotEqual, "!="));
+		}
+
+		[DebuggerStepThrough]
+		private AstStatement ParseBitAndOrExpression(bool allowCommaForTuple, bool allowFunctionDeclaration, ErrorMessageResolver e)
+		{
+			return ParseBinaryLeftAssociativeExpression(ParseAddSubExpression, allowCommaForTuple, allowFunctionDeclaration, e,
+				(TokenType.Ampersand, "&"),
+				(TokenType.VerticalSlash, "|"));
 		}
 
 		[DebuggerStepThrough]

@@ -17,6 +17,7 @@
 		<Content Include="TestFile1.3.hpt" CopyToOutputDirectory="Always" />
 		<Content Include="TestFile1.4.hpt" CopyToOutputDirectory="Always" />
 		<Content Include="TestFile1.5.hpt" CopyToOutputDirectory="Always" />
+		<Content Include="TestFile1.6.hpt" CopyToOutputDirectory="Always" />
 		<Content Include="TestFile2.0.hpt" CopyToOutputDirectory="Always" />
 		<Content Include="TestFile2.1.hpt" CopyToOutputDirectory="Always" />
 		<Content Include="TestFile2.2.hpt" CopyToOutputDirectory="Always" />

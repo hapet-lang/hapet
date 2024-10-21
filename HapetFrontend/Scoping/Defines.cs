@@ -57,7 +57,9 @@ namespace HapetFrontend.Scoping
 
 			// bool types
 			DefineBinaryOperator(new BuiltInBinaryOperator("&&", BoolType.Instance, BoolType.Instance, BoolType.Instance, (a, b) => (bool)a && (bool)b));
+			DefineBinaryOperator(new BuiltInBinaryOperator("&", BoolType.Instance, BoolType.Instance, BoolType.Instance, (a, b) => (bool)a & (bool)b));
 			DefineBinaryOperator(new BuiltInBinaryOperator("||", BoolType.Instance, BoolType.Instance, BoolType.Instance, (a, b) => (bool)a || (bool)b));
+			DefineBinaryOperator(new BuiltInBinaryOperator("|", BoolType.Instance, BoolType.Instance, BoolType.Instance, (a, b) => (bool)a | (bool)b));
 			DefineBinaryOperator(new BuiltInBinaryOperator("==", BoolType.Instance, BoolType.Instance, BoolType.Instance, (a, b) => (bool)a == (bool)b));
 			DefineBinaryOperator(new BuiltInBinaryOperator("!=", BoolType.Instance, BoolType.Instance, BoolType.Instance, (a, b) => (bool)a != (bool)b));
 
@@ -68,12 +70,16 @@ namespace HapetFrontend.Scoping
             DefineBinaryOperator(new BuiltInBinaryOperator("*", IntType.LiteralType, IntType.LiteralType, IntType.LiteralType, (a, b) => (NumberData)a * (NumberData)b));
             DefineBinaryOperator(new BuiltInBinaryOperator("/", IntType.LiteralType, IntType.LiteralType, IntType.LiteralType, (a, b) => (NumberData)a / (NumberData)b));
             DefineBinaryOperator(new BuiltInBinaryOperator("%", IntType.LiteralType, IntType.LiteralType, IntType.LiteralType, (a, b) => (NumberData)a % (NumberData)b));
+            DefineBinaryOperator(new BuiltInBinaryOperator("&", IntType.LiteralType, IntType.LiteralType, IntType.LiteralType, (a, b) => (NumberData)a & (NumberData)b));
+            DefineBinaryOperator(new BuiltInBinaryOperator("|", IntType.LiteralType, IntType.LiteralType, IntType.LiteralType, (a, b) => (NumberData)a | (NumberData)b));
 
             DefineBinaryOperator(new BuiltInBinaryOperator("+", CharType.LiteralType, CharType.LiteralType, CharType.LiteralType, (a, b) => (NumberData)a + (NumberData)b));
             DefineBinaryOperator(new BuiltInBinaryOperator("-", CharType.LiteralType, CharType.LiteralType, CharType.LiteralType, (a, b) => (NumberData)a - (NumberData)b));
             DefineBinaryOperator(new BuiltInBinaryOperator("*", CharType.LiteralType, CharType.LiteralType, CharType.LiteralType, (a, b) => (NumberData)a * (NumberData)b));
             DefineBinaryOperator(new BuiltInBinaryOperator("/", CharType.LiteralType, CharType.LiteralType, CharType.LiteralType, (a, b) => (NumberData)a / (NumberData)b));
             DefineBinaryOperator(new BuiltInBinaryOperator("%", CharType.LiteralType, CharType.LiteralType, CharType.LiteralType, (a, b) => (NumberData)a % (NumberData)b));
+            DefineBinaryOperator(new BuiltInBinaryOperator("&", CharType.LiteralType, CharType.LiteralType, CharType.LiteralType, (a, b) => (NumberData)a & (NumberData)b));
+            DefineBinaryOperator(new BuiltInBinaryOperator("|", CharType.LiteralType, CharType.LiteralType, CharType.LiteralType, (a, b) => (NumberData)a | (NumberData)b));
 
             DefineBinaryOperator(new BuiltInBinaryOperator("==", BoolType.Instance, IntType.LiteralType, IntType.LiteralType, (a, b) => (NumberData)a == (NumberData)b));
             DefineBinaryOperator(new BuiltInBinaryOperator("!=", BoolType.Instance, IntType.LiteralType, IntType.LiteralType, (a, b) => (NumberData)a != (NumberData)b));
@@ -162,6 +168,15 @@ namespace HapetFrontend.Scoping
 					DefineBinaryOperator(new BuiltInBinaryOperator("<=", BoolType.Instance, type, secondType, (a, b) => (NumberData)a <= (NumberData)b));
 					DefineBinaryOperator(new BuiltInBinaryOperator(">", BoolType.Instance, type, secondType, (a, b) => (NumberData)a > (NumberData)b));
 					DefineBinaryOperator(new BuiltInBinaryOperator(">=", BoolType.Instance, type, secondType, (a, b) => (NumberData)a >= (NumberData)b));
+
+                    if ((type is IntType && secondType is IntType) ||
+						(type is IntType && secondType is CharType) ||
+						(type is CharType && secondType is IntType) ||
+						(type is CharType && secondType is CharType))
+                    {
+						DefineBinaryOperator(new BuiltInBinaryOperator("&", outType, type, secondType, (a, b) => (NumberData)a & (NumberData)b));
+						DefineBinaryOperator(new BuiltInBinaryOperator("|", outType, type, secondType, (a, b) => (NumberData)a | (NumberData)b));
+					}
 				}
             }
         }

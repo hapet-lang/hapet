@@ -134,6 +134,7 @@ namespace HapetFrontend.Parsing
 			return _lexer.PeekToken();
 		}
 
+		// TODO: do i need it?
 		public bool IsTypeExprToken()
 		{
 			var next = PeekToken();
@@ -152,6 +153,7 @@ namespace HapetFrontend.Parsing
 			}
 		}
 
+		// TODO: do i need it?
 		public bool IsExprToken(params TokenType[] exclude)
 		{
 			var next = PeekToken();
