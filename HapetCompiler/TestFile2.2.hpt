@@ -43,8 +43,24 @@
 					realChars[realCharsAmount] = (char)(((char)currChar & 0x1F) << 6) | (currChar2 & 0x3F);
 					realCharsAmount += 1;
 				}
+				else if ((currChar & 0xF0) == 0xE0)
+				{
+					charsAmount += 1;
+					byte currChar2 = argv[i][charsAmount];
+					charsAmount += 1;
+					byte currChar3 = argv[i][charsAmount];
 
-				
+					realChars[realCharsAmount] = (char)((((char)currChar & 0x0F) << 12) | (((char)currChar2 & 0x3F) << 6) | (currChar3 & 0x3F));
+					realCharsAmount += 1;
+				}
+				else if ((currChar & 0xF8) == 0xF0)
+				{
+					// TODO: surrogates
+				}
+				else
+				{
+					// TODO: error
+				}
 			}
 		}
 	}
