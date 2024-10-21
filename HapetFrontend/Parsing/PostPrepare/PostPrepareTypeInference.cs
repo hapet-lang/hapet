@@ -179,7 +179,10 @@ namespace HapetFrontend.Parsing.PostPrepare
                 case AstWhileStmt whileStmt:
                     PostPrepareWhileStmtInference(whileStmt);
                     break;
-                case AstBreakContStmt breakContStmt:
+				case AstIfStmt ifStmt:
+					PostPrepareIfStmtInference(ifStmt);
+					break;
+				case AstBreakContStmt breakContStmt:
 					PostPrepareBreakContStmtInference(breakContStmt);
 					break;
                 case AstReturnStmt returnStmt:
@@ -577,8 +580,25 @@ namespace HapetFrontend.Parsing.PostPrepare
             PostPrepareExprInference(whileStmt.Body);
         }
 
+		private void PostPrepareIfStmtInference(AstIfStmt ifStmt)
+		{
+			if (ifStmt.Condition != null)
+			{
+				PostPrepareExprInference(ifStmt.Condition);
 
-        private void PostPrepareBreakContStmtInference(AstBreakContStmt breakContStmt)
+				// error if it is not a bool type because it has to be
+				if (ifStmt.Condition.OutType is not BoolType)
+				{
+					_compiler.ErrorHandler.ReportError(_currentSourceFile.Text, ifStmt.Condition, "Type of the expression has to be boolean type");
+				}
+			}
+
+			PostPrepareExprInference(ifStmt.BodyTrue);
+			if (ifStmt.BodyFalse != null)
+				PostPrepareExprInference(ifStmt.BodyFalse);
+		}
+
+		private void PostPrepareBreakContStmtInference(AstBreakContStmt breakContStmt)
 		{
 			// there is no inferences but just checks if it is in switch-case
 			AstStatement currentParent = breakContStmt.NormalParent;
