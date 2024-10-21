@@ -14,17 +14,26 @@
 		string[] arr = new string[argc];
 		for (int i = 0; i < argc; i += 1)
 		{
+			// calc amount
 			int charsAmount = 0;
 			byte currChar = argv[i][charsAmount];
 			while (currChar != 0)
 			{
-				// todo: logics here
-				
 				charsAmount += 1;
 				currChar = argv[i][charsAmount];
 			}
 
+			// placing
+			char[] realChars = new char[charsAmount];
+			charsAmount = 0;
+			currChar = argv[i][charsAmount];
+			while (currChar != 0)
+			{
+				
 
+				charsAmount += 1;
+				currChar = argv[i][charsAmount];
+			}
 		}
 	}
 

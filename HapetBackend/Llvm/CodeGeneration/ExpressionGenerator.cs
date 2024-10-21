@@ -46,6 +46,7 @@ namespace HapetBackend.Llvm
 				case AstAssignStmt assignStmt: GenerateAssignStmt(assignStmt); return null;
 				case AstForStmt forStmt: GenerateForStmt(forStmt); return null;
 				case AstWhileStmt whileStmt: GenerateWhileStmt(whileStmt); return null;
+				case AstIfStmt ifStmt: GenerateIfStmt(ifStmt); return null;
 				case AstBreakContStmt breakContStmt: GenerateBreakContStmt(breakContStmt); return null;
 				case AstReturnStmt returnStmt: GenerateReturnStmt(returnStmt); return null;
 				// TODO: check other expressions
@@ -581,9 +582,6 @@ namespace HapetBackend.Llvm
                 GenerateExpressionCode(stmt.Body);
             }
 
-            // appending them sooner
-            LLVM.AppendExistingBasicBlock(_lastFunctionValueRef, bbEnd);
-
             if (stmt.Body != null &&
                 stmt.Body.Statements.Count > 0 &&
                 (stmt.Body.Statements.Last() is AstReturnStmt ||
@@ -600,14 +598,119 @@ namespace HapetBackend.Llvm
                 _builder.BuildBr(bbCond);
             }
 
-            _builder.PositionAtEnd(bbEnd);
+			// appending them sooner
+			LLVM.AppendExistingBasicBlock(_lastFunctionValueRef, bbEnd);
+
+			_builder.PositionAtEnd(bbEnd);
 
             // restoring prev blocks
             _currentLoopInc = prevWhileInc;
             _currentLoopEnd = prevWhileEnd;
         }
 
-        private void GenerateBreakContStmt(AstBreakContStmt stmt)
+		private static ulong _ifCounter = 0;
+		private unsafe void GenerateIfStmt(AstIfStmt stmt)
+		{
+			// WARN: this strange code is not just for 'fun'
+			// when creating nested 'if' stmts it would be easier to read LLVM IR code with that shite
+			// so for example if we have two nested 'if' stmts it would look like this:
+			// if1.cond: ...
+			// if1.body: ...
+			//   if2.cond: ...
+			//   if2.body: ...
+			//   if2.end: ...
+			// if1.else
+			//	 ...
+			// if1.end: ...
+
+			_ifCounter++;
+
+			var bbCond = _lastFunctionValueRef.AppendBasicBlock($"if{_ifCounter}.cond");
+			var bbBody = _lastFunctionValueRef.AppendBasicBlock($"if{_ifCounter}.body");
+
+			// creating other blocks
+			var bbElse = _context.CreateBasicBlock($"if{_ifCounter}.else");
+			var bbEnd = _context.CreateBasicBlock($"if{_ifCounter}.end");
+
+			// directly br into loop condition
+			_builder.BuildBr(bbCond);
+
+			// condition
+			_builder.PositionAtEnd(bbCond);
+			if (stmt.Condition != null)
+			{
+				// building the condition
+				var cmp = GenerateExpressionCode(stmt.Condition);
+				if (stmt.BodyFalse != null)
+				{
+					_builder.BuildCondBr(cmp, bbBody, bbElse);
+				}
+				else
+				{
+					// going directly to end block because there is no else block
+					_builder.BuildCondBr(cmp, bbBody, bbEnd);
+				}
+			}
+			else
+			{
+				// if the second param is null (should not happen!!! - checked in Parsing) - just move to the body block
+				_builder.BuildBr(bbBody);
+			}
+
+			// body
+			_builder.PositionAtEnd(bbBody);
+			if (stmt.BodyTrue != null)
+			{
+				// generating body code
+				GenerateExpressionCode(stmt.BodyTrue);
+			}
+
+			if (stmt.BodyTrue != null &&
+				stmt.BodyTrue.Statements.Count > 0 &&
+				(stmt.BodyTrue.Statements.Last() is AstReturnStmt))
+			{
+				// if the last statement of the block is already
+				// a return then there is no
+				// need to create our own!!!
+				// so this case is empty
+			}
+			else
+			{
+				// setting br without condition into inc block from body block
+				_builder.BuildBr(bbEnd);
+			}
+
+			// else
+			if (stmt.BodyFalse != null)
+			{
+				LLVM.AppendExistingBasicBlock(_lastFunctionValueRef, bbElse);
+				_builder.PositionAtEnd(bbElse);
+				// generating else code
+				GenerateExpressionCode(stmt.BodyFalse);
+
+				if (stmt.BodyFalse != null &&
+					stmt.BodyFalse.Statements.Count > 0 &&
+					(stmt.BodyFalse.Statements.Last() is AstReturnStmt))
+				{
+					// if the last statement of the block is already
+					// a return then there is no
+					// need to create our own!!!
+					// so this case is empty
+				}
+				else
+				{
+					// setting br without condition into inc block from body block
+					_builder.BuildBr(bbEnd);
+				}
+			}
+
+			// appending them sooner
+			LLVM.AppendExistingBasicBlock(_lastFunctionValueRef, bbEnd);
+
+			_builder.PositionAtEnd(bbEnd);
+		}
+
+		private void GenerateBreakContStmt(AstBreakContStmt stmt)
 		{
 			// just generating shite that jumps between blocks :)
 			if (stmt.IsSwitchParent)
