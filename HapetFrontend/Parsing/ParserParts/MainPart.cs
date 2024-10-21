@@ -45,10 +45,10 @@ namespace HapetFrontend.Parsing
 					return ParseWhileStatement();
 				case TokenType.KwFor:
 					return ParseForStatement();
-                // TODO: ...
-                //case TokenType.KwIf:
-                //	return ParseConditionalStatement();
-                case TokenType.KwContinue:
+				case TokenType.KwIf:
+					return ParseIfStatement();
+
+				case TokenType.KwContinue:
 				case TokenType.KwBreak:
 					NextToken();
 					return new AstBreakContStmt(token.Type == TokenType.KwBreak, new Location(token.Location));

@@ -419,11 +419,11 @@ namespace HapetFrontend.Parsing
 
 				case TokenType.OpenBrace:
 					return ParseBlockExpression();
+				
+				case TokenType.KwIf:
+					return ParseIfStatement();
 
 				// TODO: ...
-				//case TokenType.KwIf:
-				//	return ParseConditionExpression(allowCommaForTuple);
-
 				//case TokenType.KwSwitch:
 				//	return ParseSwitchExpression();
 
