@@ -6,6 +6,7 @@ using HapetFrontend.Ast.Statements;
 using HapetFrontend.Scoping;
 using HapetFrontend.Types;
 using LLVMSharp.Interop;
+using System.Text;
 
 namespace HapetBackend.Llvm
 {
@@ -546,11 +547,11 @@ namespace HapetBackend.Llvm
             var prevWhileInc = _currentLoopInc;
             var prevWhileEnd = _currentLoopEnd;
 
-            var bbCond = _lastFunctionValueRef.AppendBasicBlock($"for{_whileCounter}.cond");
-            var bbBody = _lastFunctionValueRef.AppendBasicBlock($"for{_whileCounter}.body");
+            var bbCond = _lastFunctionValueRef.AppendBasicBlock($"while{_whileCounter}.cond");
+            var bbBody = _lastFunctionValueRef.AppendBasicBlock($"while{_whileCounter}.body");
 
             // creating other blocks
-            var bbEnd = _context.CreateBasicBlock($"for{_whileCounter}.end");
+            var bbEnd = _context.CreateBasicBlock($"while{_whileCounter}.end");
 
             // directly br into loop condition
             _builder.BuildBr(bbCond);
