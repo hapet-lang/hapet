@@ -9,7 +9,7 @@ namespace HapetCompiler
 {
 	public class Program
 	{
-		private const string _testFile = "TestFile1.6.hpt";
+		private const string _testFile = "TestFile2.2.hpt";
 
 		class CompilationResult
 		{

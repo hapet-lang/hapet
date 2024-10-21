@@ -29,7 +29,10 @@
 			currChar = argv[i][charsAmount];
 			while (currChar != 0)
 			{
-				
+				if ((currChar & 0x80) == 0x00)
+				{
+					
+				}
 
 				charsAmount += 1;
 				currChar = argv[i][charsAmount];

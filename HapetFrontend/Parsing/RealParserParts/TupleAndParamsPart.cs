@@ -217,15 +217,20 @@ namespace HapetFrontend.Parsing
 			{
 				if (list.Count == 1)
 				{
-					var expr = list[0].Type;
-					expr.Location = new Location(beg, end);
-					if (CheckToken(TokenType.Identifier))
+					if (list[0].Type is AstNestedExpr)
 					{
+						// probably a cast 
+						var expr = list[0].Type;
+						expr.Location = new Location(beg, end);
 						var sub = ParseExpression(allowCommaForTuple, false);
 						return new AstCastExpr(expr, sub, new Location(beg, sub.Ending));
 					}
-					ReportError(expr.Location, $"Identifier expected after a cast type");
-					return expr;
+					else
+					{
+						// just a more priority for expr
+						// like '(a & b) == 0'
+						return list[0].Type;
+					}
 				}
 			}
 
