@@ -4,7 +4,6 @@ using HapetFrontend.Ast.Expressions;
 using HapetFrontend.Ast.Statements;
 using HapetFrontend.Entities;
 using HapetFrontend.Scoping;
-using System.Security.Cryptography.X509Certificates;
 
 namespace HapetFrontend.Parsing.PostPrepare
 {
@@ -210,6 +209,12 @@ namespace HapetFrontend.Parsing.PostPrepare
                     break;
 				case AstIfStmt ifStmt:
 					PostPrepareIfStmtScoping(ifStmt);
+					break;
+				case AstSwitchStmt switchStmt:
+					PostPrepareSwitchStmtScoping(switchStmt);
+					break;
+				case AstCaseStmt caseStmt:
+					PostPrepareCaseStmtScoping(caseStmt);
 					break;
 				case AstBreakContStmt:
 					// nothing to do
@@ -457,6 +462,33 @@ namespace HapetFrontend.Parsing.PostPrepare
 			string scopenameElse = $"else_{_ifCounter++}_scope";
 			if (ifStmt.BodyFalse != null)
 				PostPrepareBlockScoping(ifStmt.BodyFalse, scopenameElse);
+		}
+
+		private void PostPrepareSwitchStmtScoping(AstSwitchStmt switchStmt)
+		{
+			SetScopeAndParent(switchStmt.SubExpression, switchStmt);
+			PostPrepareExprScoping(switchStmt.SubExpression);
+
+			foreach (var cc in switchStmt.Cases)
+			{
+				SetScopeAndParent(cc, switchStmt);
+				PostPrepareExprScoping(cc);
+			}
+		}
+
+		private void PostPrepareCaseStmtScoping(AstCaseStmt caseStmt)
+		{
+			if (!caseStmt.DefaultCase)
+			{
+				SetScopeAndParent(caseStmt.Pattern, caseStmt);
+				PostPrepareExprScoping(caseStmt.Pattern);
+			}
+
+			if (!caseStmt.FallingCase)
+			{
+				SetScopeAndParent(caseStmt.Body, caseStmt);
+				PostPrepareExprScoping(caseStmt.Body);
+			}
 		}
 
 		private void PostPrepareReturnStmtScoping(AstReturnStmt returnStmt)

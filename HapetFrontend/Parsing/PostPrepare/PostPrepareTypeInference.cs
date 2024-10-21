@@ -182,6 +182,12 @@ namespace HapetFrontend.Parsing.PostPrepare
 				case AstIfStmt ifStmt:
 					PostPrepareIfStmtInference(ifStmt);
 					break;
+				case AstSwitchStmt switchStmt:
+					PostPrepareSwitchStmtInference(switchStmt);
+					break;
+				case AstCaseStmt caseStmt:
+					PostPrepareCaseStmtInference(caseStmt);
+					break;
 				case AstBreakContStmt breakContStmt:
 					PostPrepareBreakContStmtInference(breakContStmt);
 					break;
@@ -566,15 +572,12 @@ namespace HapetFrontend.Parsing.PostPrepare
 
 		private void PostPrepareWhileStmtInference(AstWhileStmt whileStmt)
 		{
-            if (whileStmt.ConditionParam != null)
-            {
-                PostPrepareExprInference(whileStmt.ConditionParam);
+            PostPrepareExprInference(whileStmt.ConditionParam);
 
-                // error if it is not a bool type because it has to be
-                if (whileStmt.ConditionParam.OutType is not BoolType)
-                {
-                    _compiler.ErrorHandler.ReportError(_currentSourceFile.Text, whileStmt.ConditionParam, "Type of the expression has to be boolean type");
-                }
+            // error if it is not a bool type because it has to be
+            if (whileStmt.ConditionParam.OutType is not BoolType)
+            {
+                _compiler.ErrorHandler.ReportError(_currentSourceFile.Text, whileStmt.ConditionParam, "Type of the expression has to be boolean type");
             }
 
             PostPrepareExprInference(whileStmt.Body);
@@ -582,20 +585,39 @@ namespace HapetFrontend.Parsing.PostPrepare
 
 		private void PostPrepareIfStmtInference(AstIfStmt ifStmt)
 		{
-			if (ifStmt.Condition != null)
-			{
-				PostPrepareExprInference(ifStmt.Condition);
+			PostPrepareExprInference(ifStmt.Condition);
 
-				// error if it is not a bool type because it has to be
-				if (ifStmt.Condition.OutType is not BoolType)
-				{
-					_compiler.ErrorHandler.ReportError(_currentSourceFile.Text, ifStmt.Condition, "Type of the expression has to be boolean type");
-				}
+			// error if it is not a bool type because it has to be
+			if (ifStmt.Condition.OutType is not BoolType)
+			{
+				_compiler.ErrorHandler.ReportError(_currentSourceFile.Text, ifStmt.Condition, "Type of the expression has to be boolean type");
 			}
 
 			PostPrepareExprInference(ifStmt.BodyTrue);
 			if (ifStmt.BodyFalse != null)
 				PostPrepareExprInference(ifStmt.BodyFalse);
+		}
+
+		private void PostPrepareSwitchStmtInference(AstSwitchStmt switchStmt)
+		{
+			PostPrepareExprInference(switchStmt.SubExpression);
+
+			foreach (var cc in switchStmt.Cases)
+			{
+				PostPrepareExprInference(cc);
+
+				// trying to implicitly cast cast value into switch sub expr
+				cc.Pattern = PostPrepareExpressionWithType(switchStmt.SubExpression.OutType, cc.Pattern);
+			}
+		}
+
+		private void PostPrepareCaseStmtInference(AstCaseStmt caseStmt)
+		{
+			if (!caseStmt.DefaultCase)
+				PostPrepareExprInference(caseStmt.Pattern);
+
+			if (!caseStmt.FallingCase)
+				PostPrepareExprInference(caseStmt.Body);
 		}
 
 		private void PostPrepareBreakContStmtInference(AstBreakContStmt breakContStmt)
