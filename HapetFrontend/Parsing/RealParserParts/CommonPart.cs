@@ -1,4 +1,5 @@
 ﻿using HapetFrontend.Ast;
+using HapetFrontend.Ast.Declarations;
 using HapetFrontend.Ast.Expressions;
 using HapetFrontend.Ast.Statements;
 using System.Text;
@@ -48,6 +49,66 @@ namespace HapetFrontend.Parsing
 			}
 
 			return currNested;
+		}
+
+		private AstDeclaration PrepareUnknownDecl(UnknownDecl udecl, string docString, bool allowCommaTuple)
+		{
+			TokenLocation end = udecl.Ending;
+			AstStatement initializer = null;
+
+			// variable declaration with initializer
+			if (CheckToken(TokenType.Equal))
+			{
+				NextToken();
+				initializer = ParseExpression(allowCommaTuple);
+				end = initializer.Ending;
+
+				if (initializer is not AstExpression)
+				{
+					ReportError(initializer.Location, $"Variable initializer has to be an expresssion");
+				}
+
+				var varDecl = new AstVarDecl(udecl.Type, udecl.Name, initializer as AstExpression, docString, Location: new Location(udecl.Beginning, end));
+				varDecl.SpecialKeys.AddRange(udecl.SpecialKeys);
+				return varDecl;
+			}
+			// variable declaration without initializer
+			else if (CheckToken(TokenType.Semicolon))
+			{
+				// do not get the next token
+				var varDecl = new AstVarDecl(udecl.Type, udecl.Name, null, docString, Location: new Location(udecl.Beginning, end));
+				varDecl.SpecialKeys.AddRange(udecl.SpecialKeys);
+				return varDecl;
+			}
+			// func declaration 
+			else if (CheckToken(TokenType.OpenParen))
+			{
+				var tpl = ParseTupleExpression(true, true);
+				if (tpl is AstFuncDecl func)
+				{
+					if (udecl.Type == null)
+					{
+						// it is ctor/dtor
+						func.Name = udecl.Name.GetCopy(udecl.Name.Name + (udecl.Name.Suffix != "~" ? "_ctor" : "_dtor"));
+						func.Returns = new AstIdExpr("void");
+						func.ClassFunctionTypes.Add(udecl.Name.Suffix != "~" ? Enums.ClassFunctionType.Ctor : Enums.ClassFunctionType.Dtor);
+					}
+					else
+					{
+						// it is normal func
+						func.Name = udecl.Name;
+						func.Returns = udecl.Type;
+					}
+
+					func.SpecialKeys.AddRange(udecl.SpecialKeys);
+					return func;
+				}
+				// TODO: could there be a lambda???
+			}
+			// TODO: properties with { get; set; }
+
+			ReportError(PeekToken().Location, $"Unexpected token"); // TODO: better error message?
+			return udecl;
 		}
 	}
 }

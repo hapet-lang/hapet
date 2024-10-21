@@ -72,6 +72,10 @@ namespace HapetFrontend.Parsing
 							NextToken();
 							return stmt;
 						}
+						if (stmt is UnknownDecl udecl)
+						{
+							return PrepareUnknownDecl(udecl, "", true); // TODO: doc string?
+						}
 						if (CheckTokens(TokenType.Equal, TokenType.AddEq, TokenType.SubEq, TokenType.MulEq, TokenType.DivEq, TokenType.ModEq))
 						{
 							var currT = NextToken();
@@ -95,17 +99,7 @@ namespace HapetFrontend.Parsing
 								return stmt;
 							}
 
-							if (stmt is UnknownDecl udecl)
-							{
-								// if it is a declaration with initializing
-								if (x != TokenType.Equal)
-								{
-									ReportError(currT.Location, $"Variable initializer expected (=) but got {op}=");
-									return stmt;
-								}
-								return new AstVarDecl(udecl.Type, udecl.Name, val as AstExpression, "", new Location(stmt.Beginning, val.Ending));
-							}
-							else if (stmt is AstNestedExpr id && currT.Type != TokenType.Equal)
+							if (stmt is AstNestedExpr id && currT.Type != TokenType.Equal)
 							{
 								// expand ops like 'a += b' into 'a = a + b'
 								var binOpExpr = new AstBinaryExpr(op, id, val, new Location(id.Location.Beginning, val.Location.Ending));
