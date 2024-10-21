@@ -98,11 +98,33 @@ namespace HapetFrontend.Parsing
 				var theBlock = ParseBlockExpression();
 				List<AstCaseStmt> cases = new List<AstCaseStmt>();
 
+				// serching for default
+				AstExpression prevWasDefault = null;
 				foreach (var s in theBlock.Statements)
 				{
 					if (s is not AstCaseStmt caseStmt)
 					{
-						// TODO: error here. all the statements have to be cases
+						if (s is AstDefaultExpr defExpr)
+						{
+							prevWasDefault = defExpr;
+							continue;
+						}
+
+						// this cringe is done to handle default case :((
+						if (s is AstBlockExpr block && prevWasDefault != null)
+						{
+							cases.Add(new AstCaseStmt(null, block, prevWasDefault) { DefaultCase = true });
+							prevWasDefault = null;
+						}
+						else if (s is AstStatement stmt && prevWasDefault != null)
+						{
+							cases.Add(new AstCaseStmt(null, new AstBlockExpr(new List<AstStatement>() { stmt }, stmt), prevWasDefault) { DefaultCase = true });
+							prevWasDefault = null;
+						}
+						else
+						{
+							// TODO: error here. all the statements have to be cases
+						}
 						continue;
 					}
 					cases.Add(caseStmt);
@@ -178,7 +200,7 @@ namespace HapetFrontend.Parsing
 			}
 
 			var cs = new AstCaseStmt(pattern, body);
-			cs.DefaultCase = true;
+			cs.DefaultCase = isDefault;
 			cs.FallingCase = isFalling;
 			return cs;
 		}

@@ -55,6 +55,7 @@ namespace HapetFrontend.Parsing.PostPrepare
             var cst = new AstCastExpr(tpName, expr, expr);
             cst.OutType = neededType;
             cst.Scope = expr.Scope;
+            cst.OutValue = expr.OutValue;
 
             switch (neededType)
             {

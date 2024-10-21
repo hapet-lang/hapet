@@ -741,9 +741,6 @@ namespace HapetBackend.Llvm
 					continue;
 				}
 
-				// the pattern of the case
-				var patt = GenerateExpressionCode(cc.Pattern);
-
 				// creating a block for the case
 				LLVMBasicBlockRef currBb;
 				if (cc.DefaultCase)
@@ -762,8 +759,15 @@ namespace HapetBackend.Llvm
 				var _ = GenerateExpressionCode(cc.Body);
 				_builder.BuildBr(bbEnd);
 
-				// creating the LLVM case 
-				theSwitchValueRef.AddCase(patt, currBb);
+				// there is no pattern in default case
+				if (!cc.DefaultCase)
+				{
+					// the pattern of the case
+					var patt = GenerateExpressionCode(cc.Pattern);
+					// creating the LLVM case 
+					theSwitchValueRef.AddCase(patt, currBb);
+				}
+
 				// going through all the falling cases
 				foreach (var fc in fallingCases)
 				{

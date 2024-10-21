@@ -609,6 +609,15 @@ namespace HapetFrontend.Parsing.PostPrepare
 			{
 				PostPrepareExprInference(cc);
 
+				// calc default cases. if there are more than 1 - error
+				if (cc.DefaultCase)
+				{
+					if (thereWasADefaultCase)
+						_compiler.ErrorHandler.ReportError(_currentSourceFile.Text, cc.Pattern, "Only one 'default' case is allowed");
+					thereWasADefaultCase = true;
+					continue; // do not check for pattern in default expr...
+				}
+
 				// trying to implicitly cast cast value into switch sub expr
 				cc.Pattern = PostPrepareExpressionWithType(switchStmt.SubExpression.OutType, cc.Pattern);
 
@@ -616,14 +625,6 @@ namespace HapetFrontend.Parsing.PostPrepare
 				if (cc.Pattern.OutValue == null)
 				{
 					_compiler.ErrorHandler.ReportError(_currentSourceFile.Text, cc.Pattern, "Only constant values allowed in 'case' statements");
-				}
-
-				// calc default cases. if there are more than 1 - error
-				if (cc.DefaultCase)
-				{
-					if (thereWasADefaultCase)
-						_compiler.ErrorHandler.ReportError(_currentSourceFile.Text, cc.Pattern, "Only one 'default' case is allowed");
-					thereWasADefaultCase = true;
 				}
 			}
 		}
