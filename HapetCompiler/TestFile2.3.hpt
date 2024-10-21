@@ -1,0 +1,29 @@
+﻿
+public static class Program
+{
+	public static int Main(string[] args)
+	{
+		int a;
+		itn b = 3;
+
+		switch (b)
+		{
+			case (0)
+			{
+				a = 2;
+			}
+			case (2)
+			case (3)
+			{
+				a = 4;
+			}
+			default
+			{
+				a = -1;
+			}
+		}
+
+		return a;
+	}
+}
+

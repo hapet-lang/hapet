@@ -48,6 +48,11 @@ namespace HapetFrontend.Parsing
 				case TokenType.KwIf:
 					return ParseIfStatement();
 
+				case TokenType.KwSwitch:
+					return ParseSwitchStatement();
+				case TokenType.KwCase:
+					return ParseCaseStatement();
+
 				case TokenType.KwContinue:
 				case TokenType.KwBreak:
 					NextToken();

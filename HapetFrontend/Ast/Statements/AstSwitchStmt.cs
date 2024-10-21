@@ -38,6 +38,17 @@ namespace HapetFrontend.Ast.Statements
 		/// </summary>
 		public bool DefaultCase { get; set; }
 
+		/// <summary>
+		/// The case that is just falling into lower one like: <br/>
+		/// case (0) <br/>
+		/// case (1) <br/>
+		/// { <br/>
+		///		... <br/>
+		///	} <br/>
+		///	Where the 'case (0)' would be Falling
+		/// </summary>
+		public bool FallingCase { get; set; }
+
 		public AstCaseStmt(AstExpression pattern, AstBlockExpr body, ILocation location = null) : base(location)
 		{
 			Pattern = pattern;

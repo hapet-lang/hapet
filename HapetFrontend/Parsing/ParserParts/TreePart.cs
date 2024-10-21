@@ -337,8 +337,19 @@ namespace HapetFrontend.Parsing
 					return new AstBreakContStmt(token.Type == TokenType.KwBreak, new Location(token.Location));
 
 				case TokenType.KwDefault:
-					NextToken();
-					return new AstDefaultExpr(new Location(token.Location));
+					{
+						if (CheckToken(TokenType.Colon))
+						{
+							// it is probably a default case in switch-case stmt
+							return ParseCaseStatement();
+						}
+						else
+						{
+							NextToken();
+							// it is just a 'default' word
+							return new AstDefaultExpr(new Location(token.Location));
+						}
+					}
 
 				case TokenType.KwNull:
 					NextToken();
@@ -439,9 +450,10 @@ namespace HapetFrontend.Parsing
 				case TokenType.KwIf:
 					return ParseIfStatement();
 
-				// TODO: ...
-				//case TokenType.KwSwitch:
-				//	return ParseSwitchExpression();
+				case TokenType.KwSwitch:
+					return ParseSwitchStatement();
+				case TokenType.KwCase:
+					return ParseCaseStatement();
 
 				case TokenType.OpenParen:
 					return ParseTupleExpression(allowFunctionDeclaration, allowCommaForTuple);

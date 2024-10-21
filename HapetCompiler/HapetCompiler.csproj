@@ -21,6 +21,7 @@
 		<Content Include="TestFile2.0.hpt" CopyToOutputDirectory="Always" />
 		<Content Include="TestFile2.1.hpt" CopyToOutputDirectory="Always" />
 		<Content Include="TestFile2.2.hpt" CopyToOutputDirectory="Always" />
+		<Content Include="TestFile2.3.hpt" CopyToOutputDirectory="Always" />
 		<Content Include="TestFile3.0.hpt" CopyToOutputDirectory="Always" />
 	</ItemGroup>
 
