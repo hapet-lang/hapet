@@ -160,7 +160,7 @@ namespace HapetFrontend.Parsing.PostPrepare
 					PostPrepareNestedExprInference(nestExpr);
 					break;
 				case AstDefaultExpr defaultExpr:
-					_compiler.ErrorHandler.ReportError(_currentSourceFile.Text, defaultExpr, "(Inner exception) The default had to be infered previously by caller");
+					_compiler.ErrorHandler.ReportError(_currentSourceFile.Text, defaultExpr, "(Compiler exception) The default had to be infered previously by caller");
 					break;
 				case AstArrayExpr arrayExpr:
 					PostPrepareArrayExprInference(arrayExpr);
@@ -602,12 +602,29 @@ namespace HapetFrontend.Parsing.PostPrepare
 		{
 			PostPrepareExprInference(switchStmt.SubExpression);
 
+			// used to check that there are no more than 1 default case
+			bool thereWasADefaultCase = false;
+
 			foreach (var cc in switchStmt.Cases)
 			{
 				PostPrepareExprInference(cc);
 
 				// trying to implicitly cast cast value into switch sub expr
 				cc.Pattern = PostPrepareExpressionWithType(switchStmt.SubExpression.OutType, cc.Pattern);
+
+				// check that the value is a const 
+				if (cc.Pattern.OutValue == null)
+				{
+					_compiler.ErrorHandler.ReportError(_currentSourceFile.Text, cc.Pattern, "Only constant values allowed in 'case' statements");
+				}
+
+				// calc default cases. if there are more than 1 - error
+				if (cc.DefaultCase)
+				{
+					if (thereWasADefaultCase)
+						_compiler.ErrorHandler.ReportError(_currentSourceFile.Text, cc.Pattern, "Only one 'default' case is allowed");
+					thereWasADefaultCase = true;
+				}
 			}
 		}
 

@@ -42,6 +42,12 @@ namespace HapetFrontend.Parsing.PostPrepare
             HapetType exprType = expr.OutType;
             AstExpression outExpr = null;
 
+            if (neededType == null)
+            {
+				_compiler.ErrorHandler.ReportError(_currentSourceFile.Text, expr, $"The required type of the expr could not be evaluated");
+                return expr;
+			}
+
             var tpName = new AstIdExpr(neededType.TypeName);
             tpName.OutType = neededType;
             tpName.Scope = expr.Scope;

@@ -47,6 +47,7 @@ namespace HapetBackend.Llvm
 				case AstForStmt forStmt: GenerateForStmt(forStmt); return null;
 				case AstWhileStmt whileStmt: GenerateWhileStmt(whileStmt); return null;
 				case AstIfStmt ifStmt: GenerateIfStmt(ifStmt); return null;
+				case AstSwitchStmt switchStmt: GenerateSwitchStmt(switchStmt); return null;
 				case AstBreakContStmt breakContStmt: GenerateBreakContStmt(breakContStmt); return null;
 				case AstReturnStmt returnStmt: GenerateReturnStmt(returnStmt); return null;
 				// TODO: check other expressions
@@ -625,7 +626,7 @@ namespace HapetBackend.Llvm
 
 			_ifCounter++;
 
-			var bbCond = _lastFunctionValueRef.AppendBasicBlock($"if{_ifCounter}.cond");
+			var bbCond = _lastFunctionValueRef.AppendBasicBlock($"if{_ifCounter}.cond"); // TODO: WARN: cond block is redunant
 			var bbBody = _lastFunctionValueRef.AppendBasicBlock($"if{_ifCounter}.body");
 
 			// creating other blocks
@@ -707,6 +708,85 @@ namespace HapetBackend.Llvm
 			// appending them sooner
 			LLVM.AppendExistingBasicBlock(_lastFunctionValueRef, bbEnd);
 
+			_builder.PositionAtEnd(bbEnd);
+		}
+
+		private static ulong _switchCounter = 0;
+		private unsafe void GenerateSwitchStmt(AstSwitchStmt stmt)
+		{
+			_switchCounter++;
+
+			// checking if there is a user defined default case
+			bool userDefinedDefaultCase = stmt.Cases.Any(x => x.DefaultCase);
+
+			var bbDefault = _context.CreateBasicBlock($"switch{_switchCounter}.default");
+			var bbEnd = _context.CreateBasicBlock($"switch{_switchCounter}.end");
+
+			var subExprOfSwitch = GenerateExpressionCode(stmt.SubExpression);
+			// this cringe shite is because the default case always exists even if user has not defined it!!!
+			var theSwitchValueRef = _builder.BuildSwitch(subExprOfSwitch, bbDefault, (uint)(userDefinedDefaultCase ? stmt.Cases.Count : stmt.Cases.Count + 1));
+
+			// counter for the names of the cases
+			int caseCounter = 0;
+
+			// this list holds all the falling cases.
+			// when the non-falling occured all the falling are also going to be prepared
+			List<AstCaseStmt> fallingCases = new List<AstCaseStmt>();
+			foreach (var cc in stmt.Cases)
+			{
+				// just wait for a normal case
+				if (cc.FallingCase)
+				{
+					fallingCases.Add(cc);
+					continue;
+				}
+
+				// the pattern of the case
+				var patt = GenerateExpressionCode(cc.Pattern);
+
+				// creating a block for the case
+				LLVMBasicBlockRef currBb;
+				if (cc.DefaultCase)
+				{
+					LLVM.AppendExistingBasicBlock(_lastFunctionValueRef, bbDefault);
+					currBb = bbDefault;
+				}
+				else
+				{
+					currBb = _lastFunctionValueRef.AppendBasicBlock($"switch{_switchCounter}.case{caseCounter++}");
+				}
+				_builder.PositionAtEnd(currBb);
+
+				// generating the block
+				// TODO: the return value could be used for returnable switch-case exprs :))
+				var _ = GenerateExpressionCode(cc.Body);
+				_builder.BuildBr(bbEnd);
+
+				// creating the LLVM case 
+				theSwitchValueRef.AddCase(patt, currBb);
+				// going through all the falling cases
+				foreach (var fc in fallingCases)
+				{
+					// the pattern of the case
+					var pattFc = GenerateExpressionCode(fc.Pattern);
+					// creating the LLVM case 
+					theSwitchValueRef.AddCase(pattFc, currBb);
+				}
+				// clear the falling cases
+				fallingCases.Clear();
+			}
+
+			// if user has not been defined its 'default' case
+			if (!userDefinedDefaultCase)
+			{
+				// just braking into end block
+				LLVM.AppendExistingBasicBlock(_lastFunctionValueRef, bbDefault);
+				_builder.PositionAtEnd(bbDefault);
+				_builder.BuildBr(bbEnd);
+			}
+
+			// the end block
+			LLVM.AppendExistingBasicBlock(_lastFunctionValueRef, bbEnd);
 			_builder.PositionAtEnd(bbEnd);
 		}
 

@@ -50,8 +50,9 @@ namespace HapetFrontend.Parsing
 							break;
 
 						default:
-							if (!Expect(TokenType.NewLine, ErrMsg("\\n", "after statement")))
-								RecoverStatement();
+							// TODO: do i really need this shite?
+							//if (!Expect(TokenType.NewLine, ErrMsg("\\n", "after statement")))
+							//	RecoverStatement();
 							break;
 					}
 
