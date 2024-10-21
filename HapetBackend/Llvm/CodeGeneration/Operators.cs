@@ -86,6 +86,20 @@ namespace HapetBackend.Llvm
 							else theFunc = null;
 							break;
 						}
+					case ">>":
+						{
+							// checking if the result type of the OP is float - set null
+							if (op.ResultType is IntType || op.ResultType is CharType) theFunc = LlvmExtensions.BuildRShift;
+							else theFunc = null;
+							break;
+						}
+					case "<<":
+						{
+							// checking if the result type of the OP is float - set null
+							if (op.ResultType is IntType || op.ResultType is CharType) theFunc = LlvmExtensions.BuildLShift;
+							else theFunc = null;
+							break;
+						}
 					case "==":
 						{
 							// checking if the result type of the OP is float

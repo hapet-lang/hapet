@@ -4,10 +4,15 @@ public static class Program
 	public static int Main(string[] args)
 	{
 		int a = 6;
-		int b = 7;
+		char b = 9;
+
 		int c = a & b;
 		int d = a | b;
-		return d;
+
+		int e = a << 3;
+		int f = b >> 3;
+
+		return f;
 	}
 }
 

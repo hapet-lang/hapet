@@ -219,6 +219,8 @@ namespace HapetFrontend.Types
 		public static NumberData operator %(NumberData a, NumberData b) => (a.Type == NumberType.Int && b.Type == NumberType.Int) ? FromInt(a.IntValue % b.IntValue) : FromDouble(a.ToDouble() % b.ToDouble());
 		public static NumberData operator &(NumberData a, NumberData b) => (a.Type == NumberType.Int && b.Type == NumberType.Int) ? FromInt(a.IntValue & b.IntValue) : FromDouble(0);
 		public static NumberData operator |(NumberData a, NumberData b) => (a.Type == NumberType.Int && b.Type == NumberType.Int) ? FromInt(a.IntValue | b.IntValue) : FromDouble(0);
+		public static NumberData operator >>(NumberData a, NumberData b) => (a.Type == NumberType.Int && b.Type == NumberType.Int) ? FromInt(a.IntValue >> (int)b.IntValue) : FromDouble(0);
+		public static NumberData operator <<(NumberData a, NumberData b) => (a.Type == NumberType.Int && b.Type == NumberType.Int) ? FromInt(a.IntValue << (int)b.IntValue) : FromDouble(0);
 
 
 		public bool IsInRangeOfType(HapetType hptType)
