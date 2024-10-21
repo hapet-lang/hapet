@@ -35,14 +35,36 @@ namespace HapetFrontend.Parsing
 			// if there is no '{' just create an empty block
 
 			// parsing the block
-			bodyTrue = ParseBlockExpression();
+			if (CheckToken(TokenType.OpenBrace))
+			{
+				bodyTrue = ParseBlockExpression();
+			}
+			else
+			{
+				// getting only one stmt if there are no braces
+				var onlyStmt = ParseStatement(false);
+				bodyTrue = new AstBlockExpr(new List<AstStatement>() { onlyStmt }, onlyStmt);
+			}
+
+			SkipNewlines();
 
 			// if there is an 'else' block
 			if (CheckToken(TokenType.KwElse))
 			{
 				Consume(TokenType.KwElse, ErrMsg("keyword 'else'", "at beginning of 'else' statement"));
+				SkipNewlines();
+
 				// parsing the block
-				bodyFalse = ParseBlockExpression();
+				if (CheckToken(TokenType.OpenBrace))
+				{
+					bodyFalse = ParseBlockExpression();
+				}
+				else
+				{
+					// getting only one stmt if there are no braces
+					var onlyStmt = ParseStatement(false);
+					bodyFalse = new AstBlockExpr(new List<AstStatement>() { onlyStmt }, onlyStmt);
+				}
 			}
 
 			return new AstIfStmt(condition, bodyTrue, bodyFalse, new Location(beg.Location, end.Location));

@@ -25,17 +25,26 @@
 
 			// placing
 			char[] realChars = new char[charsAmount];
+			int realCharsAmount = 0;
 			charsAmount = 0;
 			currChar = argv[i][charsAmount];
 			while (currChar != 0)
 			{
 				if ((currChar & 0x80) == 0x00)
 				{
-					
+					realChars[realCharsAmount] = (char)(currChar & 0x7F);
+					realCharsAmount += 1;
+				}
+				else if ((currChar & 0xE0) == 0xC0)
+				{
+					charsAmount += 1;
+					byte currChar2 = argv[i][charsAmount];
+
+					realChars[realCharsAmount] = (char)(((char)currChar & 0x1F) << 6) | (currChar2 & 0x3F);
+					realCharsAmount += 1;
 				}
 
-				charsAmount += 1;
-				currChar = argv[i][charsAmount];
+				
 			}
 		}
 	}
