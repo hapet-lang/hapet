@@ -2,7 +2,7 @@
 
 namespace HapetFrontend.Ast.Expressions
 {
-	public class AstArrayCreateExpr : AstExpression
+	public class AstArrayCreateExpr : AstExpression, ICloneable
 	{
 		/// <summary>
 		/// The type of which array is created
@@ -24,6 +24,19 @@ namespace HapetFrontend.Ast.Expressions
 			TypeName = type;
 			SizeExprs = sizeExprs;
 			Elements = elements;
+		}
+
+		public object Clone()
+		{
+			return new AstArrayCreateExpr(TypeName, new List<AstExpression>(SizeExprs), new List<AstExpression>(Elements), Location)
+			{
+				OutType = OutType,
+				Parent = Parent,
+				Scope = Scope,
+				SourceFile = SourceFile,
+				OutValue = OutValue,
+				IsCompileTimeValue = IsCompileTimeValue
+			};
 		}
 	}
 }

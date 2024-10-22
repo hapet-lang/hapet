@@ -513,5 +513,36 @@ namespace HapetBackend.Llvm
 				_builder.BuildStore(x, varPtr);
 			}
 		}
+
+		#region Mallocs
+		private LLVMValueRef GetMalloc(int typeSize, int amount)
+		{
+			var tp = LLVMValueRef.CreateConstInt(HapetTypeToLLVMType(IntType.GetIntType(4, true)), (ulong)typeSize);
+			var am = LLVMValueRef.CreateConstInt(HapetTypeToLLVMType(IntType.GetIntType(4, true)), (ulong)amount);
+			return GetMalloc(tp, am);
+		}
+
+		private LLVMValueRef GetMalloc(LLVMValueRef typeSize, int amount)
+		{
+			var am = LLVMValueRef.CreateConstInt(HapetTypeToLLVMType(IntType.GetIntType(4, true)), (ulong)amount);
+			return GetMalloc(typeSize, am);
+		}
+
+		private LLVMValueRef GetMalloc(int typeSize, LLVMValueRef amount)
+		{
+			var tp = LLVMValueRef.CreateConstInt(HapetTypeToLLVMType(IntType.GetIntType(4, true)), (ulong)typeSize);
+			return GetMalloc(tp, amount);
+		}
+
+		private LLVMValueRef GetMalloc(LLVMValueRef typeSize, LLVMValueRef amount)
+		{
+			var mallocSymbol = _currentFunction.Scope.GetSymbol("malloc") as DeclSymbol; // TODO: rewrite it when there would be a default project of Hapet
+			var mallocFunc = _valueMap[mallocSymbol];
+			LLVMTypeRef funcType = _typeMap[mallocSymbol.Decl.Type.OutType];
+			// calc size to malloc = amount * typeSize
+			var sizeToMalloc = _builder.BuildMul(amount, typeSize, "sizeToMalloc");
+			return _builder.BuildCall2(funcType, mallocFunc, new LLVMValueRef[] { sizeToMalloc }, "allocated");
+		}
+		#endregion
 	}
 }
