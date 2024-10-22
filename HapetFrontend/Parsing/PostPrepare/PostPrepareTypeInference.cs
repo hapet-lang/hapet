@@ -4,6 +4,7 @@ using HapetFrontend.Ast.Expressions;
 using HapetFrontend.Ast.Statements;
 using HapetFrontend.Scoping;
 using HapetFrontend.Types;
+using System;
 
 namespace HapetFrontend.Parsing.PostPrepare
 {
@@ -164,6 +165,9 @@ namespace HapetFrontend.Parsing.PostPrepare
 					break;
 				case AstArrayExpr arrayExpr:
 					PostPrepareArrayExprInference(arrayExpr);
+					break;
+				case AstArrayCreateExpr arrayCreateExpr:
+					PostPrepareArrayCreateExprInference(arrayCreateExpr);
 					break;
 				case AstArrayAccessExpr arrayAccExpr:
 					PostPrepareArrayAccessExprInference(arrayAccExpr);
@@ -332,22 +336,11 @@ namespace HapetFrontend.Parsing.PostPrepare
 		private void PostPrepareIdentifierInference(AstIdExpr idExpr)
 		{
 			string name = idExpr.Name;
-			bool isArray = false;
-
-			if (idExpr.Name.EndsWith("[]"))
-			{
-				// it is probably an array def
-				name = name.Substring(0, name.Length - 2);
-				isArray = true;
-			}
 
 			var smbl = idExpr.Scope.GetSymbol(name);
 			if (smbl is DeclSymbol typed)
 			{
-				if (isArray)
-					idExpr.OutType = ArrayType.GetArrayType(typed.Decl.Type.OutType);
-				else
-					idExpr.OutType = typed.Decl.Type.OutType;
+				idExpr.OutType = typed.Decl.Type.OutType;
 			}
 			else
 			{
@@ -479,7 +472,16 @@ namespace HapetFrontend.Parsing.PostPrepare
 
 		private void PostPrepareArrayExprInference(AstArrayExpr arrayExpr)
 		{
-			PostPrepareExprInference(arrayExpr.SizeExpr);
+			PostPrepareExprInference(arrayExpr.SubExpression);
+			arrayExpr.OutType = ArrayType.GetArrayType(arrayExpr.SubExpression.OutType);
+		}
+
+		private void PostPrepareArrayCreateExprInference(AstArrayCreateExpr arrayExpr)
+		{
+			foreach (var sz in arrayExpr.SizeExprs)
+			{
+				PostPrepareExprInference(sz);
+			}
 			// TODO: you can check if the size is available at compile time and create the array on stack
 
 			PostPrepareExprInference(arrayExpr.TypeName);
@@ -492,13 +494,15 @@ namespace HapetFrontend.Parsing.PostPrepare
 				arrayExpr.Elements[i] = PostPrepareExpressionWithType(arrayExpr.TypeName.OutType, e);
 			}
 
-			if (arrayExpr.Elements.Count > 0 && arrayExpr.SizeExpr.OutValue == null)
+			// TODO: the cringe with the .Last() is just a kostyl that only checks the last dimention of the array
+			// all the dimetions should be checked for this shite!
+			if (arrayExpr.Elements.Count > 0 && arrayExpr.SizeExprs.Last().OutValue == null)
 			{
 				// expected a const value to be used when creating an array with elements
 				// byte[] a2 = new byte[b] {1, b, 2, 4}; - would error in C#
 				_compiler.ErrorHandler.ReportError(_currentSourceFile.Text, arrayExpr, $"Array cannot has initialization values when its size is not a const");
 			}
-			else if (arrayExpr.Elements.Count > 0 && arrayExpr.SizeExpr.OutValue is NumberData numData && numData != arrayExpr.Elements.Count)
+			else if (arrayExpr.Elements.Count > 0 && arrayExpr.SizeExprs.Last().OutValue is NumberData numData && numData != arrayExpr.Elements.Count)
 			{
 				//  byte[] a2 = new byte[3] {1, 1, 2, 4}; - would error in C#
 				_compiler.ErrorHandler.ReportError(_currentSourceFile.Text, arrayExpr, $"Array initialization values amount and its size different but they haму to be the same");

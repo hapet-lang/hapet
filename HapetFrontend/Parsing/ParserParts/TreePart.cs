@@ -360,27 +360,23 @@ namespace HapetFrontend.Parsing
 					{
 						var id = ParseIdentifierExpression();
 
-						if (CheckToken(TokenType.ArrayDef))
+						// if it is a pointer or array type
+						while (CheckToken(TokenType.Asterisk) || CheckToken(TokenType.ArrayDef))
 						{
-							if (id.RightPart is not AstIdExpr idExpr)
+							if (CheckToken(TokenType.ArrayDef))
 							{
-								ReportError(id.Location, $"Indentifier expected as the array type");
-								return id;
+								var arrExpr = new AstArrayExpr(id.RightPart, new Location(id.RightPart.Beginning, CurrentToken.Location.Ending));
+								id.RightPart = arrExpr;
 							}
-							// probably array def (i hope so)
-							idExpr.Name += "[]";
-							idExpr.Location.Ending.End += 2;
+							else
+							{
+								var ptrExpr = new AstPointerExpr(id.RightPart, false, new Location(id.RightPart.Beginning, CurrentToken.Location.Ending));
+								id.RightPart = ptrExpr;
+							}
 							NextToken();
 						}
 
-						// if it is a pointer type
-						while (CheckToken(TokenType.Asterisk))
-						{
-							NextToken();
-							var ptrExpr = new AstPointerExpr(id.RightPart, false, new Location(id.RightPart.Beginning, CurrentToken.Location.Ending));
-							id.RightPart = ptrExpr;
-						}
-
+						// the second identifier for UnknownDecl
 						if (CheckToken(TokenType.Identifier))
 						{
 							var name = ParseIdentifierExpression(allowDots: false);

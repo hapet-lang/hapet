@@ -10,41 +10,45 @@ namespace HapetFrontend.Parsing
 		{
 			// by default it is null because the size could not be defined
 			// when values are presented
-			AstExpression sizeExpr = null;
+			List<AstExpression> sizeExprs = new List<AstExpression>();
 
-			// if there is a size expr 
-			if (CheckToken(TokenType.OpenBracket))
+			while (CheckToken(TokenType.OpenBracket) || CheckToken(TokenType.ArrayDef))
 			{
-				Consume(TokenType.OpenBracket, ErrMsg("[", "at the beggining of array expr"));
-				if (!CheckToken(TokenType.CloseBracket))
+				// if there is a size expr 
+				if (CheckToken(TokenType.OpenBracket))
 				{
-					var arraySize = ParseExpression(false, false);
-					if (arraySize is not AstExpression expr)
+					Consume(TokenType.OpenBracket, ErrMsg("[", "at the beggining of array expr"));
+					if (!CheckToken(TokenType.CloseBracket))
 					{
-						// error here. it has to be an expr
-						ReportError(arraySize.Location, $"Expression expected to be as an array size");
-						return ParseEmptyExpression();
-					}
+						var arraySize = ParseExpression(false, false);
+						if (arraySize is not AstExpression expr)
+						{
+							// error here. it has to be an expr
+							ReportError(arraySize.Location, $"Expression expected to be as an array size");
+							return ParseEmptyExpression();
+						}
 
-					sizeExpr = expr;
+						sizeExprs.Add(expr);
+					}
+					Consume(TokenType.CloseBracket, ErrMsg("]", "at the end of array expr"));
 				}
-				Consume(TokenType.CloseBracket, ErrMsg("]", "at the end of array expr"));
-			}
-			else
-			{
-				// if there is no size expr
-				Consume(TokenType.ArrayDef, ErrMsg("[]", "at the end of array expr"));
+				else
+				{
+					// if there is no size expr
+					Consume(TokenType.ArrayDef, ErrMsg("[]", "at the end of array expr"));
+					sizeExprs.Add(null);
+				}
 			}
 
 			// defined only size
 			if (CheckToken(TokenType.Semicolon))
 			{
-				if (sizeExpr == null)
+				if (sizeExprs.Any(x => x == null))
 				{
 					// error here. because size was not defined and elements are also were not
 					ReportError(type.Location, $"Array creation requires its size or elements to be specified");
 				}
-				return new AstArrayExpr(type, sizeExpr, new List<AstExpression>(), new Location(beg, CurrentToken.Location.Ending));
+				return new AstArrayCreateExpr(type, sizeExprs, new List<AstExpression>(), new Location(beg, CurrentToken.Location.Ending));
 			}
 			else if (CheckToken(TokenType.OpenBrace))
 			{
@@ -53,9 +57,12 @@ namespace HapetFrontend.Parsing
 				// TODO: pring warning here if sizeExpr is null and elements.Count == 0, that empty array will be created
 
 				// count parsed elements and set the size if the sizeExpr was null
-				sizeExpr ??= new AstNumberExpr(NumberData.FromInt(elements.Count));
+				// sizeExpr ??= new AstNumberExpr(NumberData.FromInt(elements.Count));
+				// TODO: rewrite the shite to check elements in nested arrays (because they could be only specified in ndim arrays)
+				// some elements in sizeExprs could be null so the elements in this situation have to be specified
+				// mb do it in PostPrepareInference?
 
-				return new AstArrayExpr(type, sizeExpr, elements, new Location(beg, CurrentToken.Location.Ending));
+				return new AstArrayCreateExpr(type, sizeExprs, elements, new Location(beg, CurrentToken.Location.Ending));
 			}
 
 			// error here like unexpected token

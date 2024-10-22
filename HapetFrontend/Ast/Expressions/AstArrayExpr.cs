@@ -1,19 +1,15 @@
-﻿using System.Diagnostics;
-
-namespace HapetFrontend.Ast.Expressions
+﻿namespace HapetFrontend.Ast.Expressions
 {
 	public class AstArrayExpr : AstExpression
 	{
-		public AstExpression TypeName { get; set; }
-		public AstExpression SizeExpr { get; set; }
-		public List<AstExpression> Elements { get; set; }
+		/// <summary>
+		/// The expression on which the array is applied
+		/// </summary>
+		public AstExpression SubExpression { get; set; }
 
-		[DebuggerStepThrough]
-		public AstArrayExpr(AstExpression type, AstExpression sizeExpr, List<AstExpression> elements, ILocation Location = null) : base(Location)
+		public AstArrayExpr(AstExpression sub, ILocation Location = null) : base(Location)
 		{
-			TypeName = type;
-			SizeExpr = sizeExpr;
-			Elements = elements;
+			SubExpression = sub;
 		}
 	}
 }

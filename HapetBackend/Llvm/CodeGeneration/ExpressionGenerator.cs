@@ -39,7 +39,7 @@ namespace HapetBackend.Llvm
 				case AstArgumentExpr argExpr: return GenerateArgumentExpr(argExpr);
 				case AstCastExpr castExpr: return GenerateCastExpr(castExpr);
 				case AstNestedExpr nestExpr: return GenerateNestedExpr(nestExpr, getPtr);
-				case AstArrayExpr arrayExpr: return GenerateArrayExprCode(arrayExpr);
+				case AstArrayCreateExpr arrayCreateExpr: return GenerateArrayCreateExprCode(arrayCreateExpr);
 				case AstArrayAccessExpr arrayAccessExpr: return GenerateArrayAccessExprCode(arrayAccessExpr, getPtr);
 
 				// statements
@@ -335,7 +335,7 @@ namespace HapetBackend.Llvm
 		}
 
 		private LLVMValueRef _lastArraySizeValueRef = default;
-		private LLVMValueRef GenerateArrayExprCode(AstArrayExpr expr)
+		private LLVMValueRef GenerateArrayCreateExprCode(AstArrayCreateExpr expr)
 		{
 			// TODO: check if it could be allocated on stack
 

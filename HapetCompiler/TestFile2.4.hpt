@@ -1,0 +1,9 @@
+﻿public static class Program
+{
+	public static int Main(string[] args)
+	{
+		byte[][] argv = new byte[3][4];
+
+		return 1;
+	}
+}

@@ -4,9 +4,13 @@ namespace HapetFrontend.Ast.Expressions
 {
 	public class AstArrayAccessExpr : AstExpression
 	{
+		/// <summary>
+		/// The object on which indexing is done
+		/// </summary>
 		public AstNestedExpr ObjectName { get; set; }
 		/// <summary>
 		/// It could be not only an Int. but also a String (for dicts) and other shite
+		/// For ndim arrays use nested of this
 		/// </summary>
 		public AstExpression ParameterExpr { get; set; }
 
