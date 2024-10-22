@@ -334,57 +334,12 @@ namespace HapetBackend.Llvm
 			return null;
 		}
 
-		private LLVMValueRef _lastArraySizeValueRef = default;
 		private LLVMValueRef GenerateArrayCreateExprCode(AstArrayCreateExpr expr)
 		{
 			// TODO: check if it could be allocated on stack
 
-			
-
-			// check if there are ini elements
-			if (expr.Elements.Count > 0)
-			{
-
-			}
-			else
-			{
-				// we clone it because there would be deletions from its lists like from SizeExprs
-				var cloned = expr.Clone() as AstArrayCreateExpr;
-
-			}
-
-			for (int i = 0; i < expr.Elements.Count; ++i)
-			{
-				var el = expr.Elements[i];
-				LLVMValueRef llvmElement = GenerateExpressionCode(el);
-
-				var elementNum = LLVMValueRef.CreateConstInt(HapetTypeToLLVMType(IntType.GetIntType(4, true)), (ulong)i);
-				var arrayEl = _builder.BuildGEP2(HapetTypeToLLVMType(expr.TypeName.OutType), allocated, new LLVMValueRef[] { elementNum }, $"element{i}");
-				_builder.BuildStore(llvmElement, arrayEl);
-			}
-
-			if (expr.Elements.Count == 0)
-			{
-				// TODO: create here a loop that loops SizeExpr times and inites with defaults!
-			}
-
-			return allocated;
-		}
-
-		/// <summary>
-		/// Generates fully clear array with default values
-		/// </summary>
-		/// <param name="expr">The array expr</param>
-		/// <returns>Array struct ref</returns>
-		private LLVMValueRef GenerateArrayInternal(AstArrayCreateExpr expr)
-		{
-			if (expr.SizeExprs.Count > 1)
-			{
-				// allocating memory for the array
-				var allocated = GetMalloc(GenerateExpressionCode(expr.SizeExprs.Last()), ArrayType.GetArrayType(expr.TypeName.OutType).GetSize());
-
-			}
-			
+			var cloned = expr.Clone() as AstArrayCreateExpr;
+			return GenerateArrayInternal(cloned);
 		}
 
 		private LLVMValueRef GenerateArrayAccessExprCode(AstArrayAccessExpr expr, bool getPtr = false)

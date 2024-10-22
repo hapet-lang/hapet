@@ -476,6 +476,7 @@ namespace HapetFrontend.Parsing.PostPrepare
 			arrayExpr.OutType = ArrayType.GetArrayType(arrayExpr.SubExpression.OutType);
 		}
 
+		// TODO: make the same cringe as in code generation with arrayExpr cloning
 		private void PostPrepareArrayCreateExprInference(AstArrayCreateExpr arrayExpr)
 		{
 			foreach (var sz in arrayExpr.SizeExprs)
@@ -508,7 +509,7 @@ namespace HapetFrontend.Parsing.PostPrepare
 				_compiler.ErrorHandler.ReportError(_currentSourceFile.Text, arrayExpr, $"Array initialization values amount and its size different but they haму to be the same");
 			}
 
-			arrayExpr.OutType = PointerType.GetPointerType(arrayExpr.TypeName.OutType);
+			arrayExpr.OutType = ArrayType.GetArrayType(arrayExpr.TypeName.OutType);
 		}
 
 		private void PostPrepareArrayAccessExprInference(AstArrayAccessExpr arrayAccExpr)

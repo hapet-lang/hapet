@@ -35,7 +35,7 @@ namespace HapetFrontend.Ast.Expressions
 					outExpr = null;
 					break;
 			}
-			if (outExpr != null)
+			if (outExpr != null && orig != null)
 				outExpr.Scope = orig.Scope;
 			return outExpr;
 		}
