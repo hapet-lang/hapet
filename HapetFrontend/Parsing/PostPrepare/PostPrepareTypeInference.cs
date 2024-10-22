@@ -495,22 +495,9 @@ namespace HapetFrontend.Parsing.PostPrepare
 				arrayExpr.Elements[i] = PostPrepareExpressionWithType(arrayExpr.TypeName.OutType, e);
 			}
 
-			// TODO: the cringe with the .Last() is just a kostyl that only checks the last dimention of the array
-			// all the dimetions should be checked for this shite!
-			if (arrayExpr.Elements.Count > 0 && arrayExpr.SizeExprs.Last().OutValue == null)
-			{
-				// expected a const value to be used when creating an array with elements
-				// byte[] a2 = new byte[b] {1, b, 2, 4}; - would error in C#
-				_compiler.ErrorHandler.ReportError(_currentSourceFile.Text, arrayExpr, $"Array cannot has initialization values when its size is not a const");
-			}
-			else if (arrayExpr.Elements.Count > 0 && arrayExpr.SizeExprs.Last().OutValue is NumberData numData && numData != arrayExpr.Elements.Count)
-			{
-				//  byte[] a2 = new byte[3] {1, 1, 2, 4}; - would error in C#
-				_compiler.ErrorHandler.ReportError(_currentSourceFile.Text, arrayExpr, $"Array initialization values amount and its size different but they haму to be the same");
-			}
-
-			arrayExpr.OutType = ArrayType.GetArrayType(arrayExpr.TypeName.OutType);
-		}
+			// preparing the array
+			PostPrepareFullArray(arrayExpr);
+        }
 
 		private void PostPrepareArrayAccessExprInference(AstArrayAccessExpr arrayAccExpr)
 		{

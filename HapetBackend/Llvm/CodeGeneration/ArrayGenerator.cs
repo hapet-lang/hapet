@@ -54,9 +54,8 @@ namespace HapetBackend.Llvm
 
 			// building the condition
 			var left = _builder.BuildLoad2(HapetTypeToLLVMType(IntType.DefaultType), varPtrI, "iLoaded");
-			var right = _builder.BuildLoad2(HapetTypeToLLVMType(IntType.DefaultType), currentArraySizeValueRef, "sizeLoaded");
 			var bo = builtInBinOperators[("<", IntType.DefaultType, IntType.DefaultType)];
-			var cmp = bo(_builder, left, right, "cmpOp");
+			var cmp = bo(_builder, left, currentArraySizeValueRef, "cmpOp");
 			_builder.BuildCondBr(cmp, bbBody, bbEnd);
 
 			// body
@@ -65,19 +64,35 @@ namespace HapetBackend.Llvm
 			var iLoadedForBody = _builder.BuildLoad2(HapetTypeToLLVMType(IntType.DefaultType), varPtrI, "iLoadedBody");
 			if (expr.SizeExprs.Count > 1)
 			{
-				// generate nested array
-				// removing the last array size
-				expr.SizeExprs.RemoveAt(expr.SizeExprs.Count - 1);
-				var arrayVal = GenerateArrayInternal(expr);
-				var arrayBufEl = _builder.BuildGEP2(arrayTypeRef, allocated, new LLVMValueRef[] { iLoadedForBody }, $"elementPtr");
-				_builder.BuildStore(arrayVal, arrayBufEl);
+				// different generation depending on ini elements
+				if (expr.Elements.Count > 0)
+				{
+                    // TODO: do not generate loop (just craete it here) if there are ini elements!!!
+                }
+                else
+				{
+                    // generate nested array with no ini values
+                    // removing the last array size
+                    expr.SizeExprs.RemoveAt(expr.SizeExprs.Count - 1);
+                    var arrayVal = GenerateArrayInternal(expr);
+                    var arrayBufEl = _builder.BuildGEP2(arrayTypeRef, allocated, new LLVMValueRef[] { iLoadedForBody }, $"elementPtr");
+                    _builder.BuildStore(arrayVal, arrayBufEl);
+                }
 			}
 			else
 			{
-				// just normal default values
-				var defaultVal = GenerateExpressionCode(AstDefaultExpr.GetDefaultValueForType(expr.TypeName.OutType, null));
-				var arrayBufEl = _builder.BuildGEP2(HapetTypeToLLVMType(expr.TypeName.OutType), allocated, new LLVMValueRef[] { iLoadedForBody }, $"elementPtr");
-				_builder.BuildStore(defaultVal, arrayBufEl);
+                // different generation depending on ini elements
+                if (expr.Elements.Count > 0)
+                {
+					// TODO: do not generate loop (just craete it here) if there are ini elements!!!
+                }
+				else
+				{
+                    // just normal default values 
+                    var defaultVal = GenerateExpressionCode(AstDefaultExpr.GetDefaultValueForType(expr.TypeName.OutType, null));
+                    var arrayBufEl = _builder.BuildGEP2(HapetTypeToLLVMType(expr.TypeName.OutType), allocated, new LLVMValueRef[] { iLoadedForBody }, $"elementPtr");
+                    _builder.BuildStore(defaultVal, arrayBufEl);
+                }
 			}
 
 			// appending them sooner
