@@ -476,7 +476,6 @@ namespace HapetFrontend.Parsing.PostPrepare
 			arrayExpr.OutType = ArrayType.GetArrayType(arrayExpr.SubExpression.OutType);
 		}
 
-		// TODO: make the same cringe as in code generation with arrayExpr cloning
 		private void PostPrepareArrayCreateExprInference(AstArrayCreateExpr arrayExpr)
 		{
 			foreach (var sz in arrayExpr.SizeExprs)
@@ -487,12 +486,23 @@ namespace HapetFrontend.Parsing.PostPrepare
 
 			PostPrepareExprInference(arrayExpr.TypeName);
 
+			// create an expecting elements type to be
+			HapetType expectingElementType = arrayExpr.TypeName.OutType;
+			int sizeAmount = arrayExpr.SizeExprs.Count;
+			// preparing for ndim arrays
+			while (sizeAmount > 1)
+			{
+				expectingElementType = ArrayType.GetArrayType(expectingElementType);
+				sizeAmount--;
+			}
+
+			// infer elements
 			for (int i = 0; i < arrayExpr.Elements.Count; ++i)
 			{
 				var e = arrayExpr.Elements[i];
 				PostPrepareExprInference(e);
 				// try to use implicit cast if it can be used
-				arrayExpr.Elements[i] = PostPrepareExpressionWithType(arrayExpr.TypeName.OutType, e);
+				arrayExpr.Elements[i] = PostPrepareExpressionWithType(expectingElementType, e);
 			}
 
 			// preparing the array

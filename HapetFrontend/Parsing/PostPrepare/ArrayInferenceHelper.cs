@@ -22,7 +22,7 @@ namespace HapetFrontend.Parsing.PostPrepare
             else if (arrayExpr.Elements.Count > 0 && currentSizeExpr.OutValue is NumberData numData && numData != arrayExpr.Elements.Count)
             {
                 //  byte[] a2 = new byte[3] {1, 1, 2, 4}; - would error in C#
-                _compiler.ErrorHandler.ReportError(_currentSourceFile.Text, arrayExpr, $"Array initialization values amount and its size different but they haму to be the same");
+                _compiler.ErrorHandler.ReportError(_currentSourceFile.Text, arrayExpr, $"Array initialization values amount and its size different but they have to be the same");
             }
 
             // if it is ndim array

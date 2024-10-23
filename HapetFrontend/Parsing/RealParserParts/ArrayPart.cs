@@ -12,6 +12,9 @@ namespace HapetFrontend.Parsing
 			// when values are presented
 			List<AstExpression> sizeExprs = new List<AstExpression>();
 
+			TokenLocation sizesBeg = PeekToken().Location;
+			TokenLocation sizesEnd = PeekToken().Location;
+
 			while (CheckToken(TokenType.OpenBracket) || CheckToken(TokenType.ArrayDef))
 			{
 				// if there is a size expr 
@@ -38,7 +41,17 @@ namespace HapetFrontend.Parsing
 					Consume(TokenType.ArrayDef, ErrMsg("[]", "at the end of array expr"));
 					sizeExprs.Add(null);
 				}
+
+				sizesEnd = CurrentToken.Location;
 			}
+
+			// check for size exprs
+			if (sizeExprs.Count == 0)
+			{
+				ReportError(type.Location, $"Array size has to be specified!!!");
+			}
+
+			SkipNewlines();
 
 			// defined only size
 			if (CheckToken(TokenType.Semicolon))
@@ -52,15 +65,20 @@ namespace HapetFrontend.Parsing
 			}
 			else if (CheckToken(TokenType.OpenBrace))
 			{
+				// allow only the last size to be null!!! because in other way it is very hard to prepare
+				bool allExceptTheLastAreNotNull = sizeExprs.SkipLast(1).All(x => x != null);
+				if (!allExceptTheLastAreNotNull)
+				{
+					ReportError(new Location(sizesBeg, sizesEnd), $"Only the last size could be not specified");
+				}
+
 				var elements = ParseArrayElementsExpression();
 
-				// TODO: pring warning here if sizeExpr is null and elements.Count == 0, that empty array will be created
+				// TODO: print warning here if sizeExpr is null and elements.Count == 0, that empty array will be created
 
 				// count parsed elements and set the size if the sizeExpr was null
-				// sizeExpr ??= new AstNumberExpr(NumberData.FromInt(elements.Count));
-				// TODO: rewrite the shite to check elements in nested arrays (because they could be only specified in ndim arrays)
-				// some elements in sizeExprs could be null so the elements in this situation have to be specified
-				// mb do it in PostPrepareInference?
+				if (sizeExprs.Last() == null)
+					sizeExprs[sizeExprs.Count - 1] = new AstNumberExpr(NumberData.FromInt(elements.Count));
 
 				return new AstArrayCreateExpr(type, sizeExprs, elements, new Location(beg, CurrentToken.Location.Ending));
 			}

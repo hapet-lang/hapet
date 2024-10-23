@@ -12,7 +12,8 @@ namespace HapetFrontend.Parsing
 
 			beg ??= Consume(TokenType.KwNew, ErrMsg("keyword 'new'", "at beginning of type instancing expression")).Location;
 			SkipNewlines();
-			var type = ParseAtomicExpression(false, false, ErrMsg("expression", "after keyword 'new'"));
+			// do not allow array expressions after 'new' word!!!
+			var type = ParseAtomicExpression(false, false, ErrMsg("expression", "after keyword 'new'"), false);
 
 			// TokenType.ArrayDef is for array creation with ini values
 			if (CheckToken(TokenType.OpenBracket) || CheckToken(TokenType.ArrayDef)) // array creation

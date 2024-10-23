@@ -326,7 +326,7 @@ namespace HapetFrontend.Parsing
 			return expr;
 		}
 
-		private AstStatement ParseAtomicExpression(bool allowCommaForTuple, bool allowFunctionDeclaration, ErrorMessageResolver errorMessage)
+		private AstStatement ParseAtomicExpression(bool allowCommaForTuple, bool allowFunctionDeclaration, ErrorMessageResolver errorMessage, bool allowArrayExpressions = true)
 		{
 			var token = PeekToken();
 			switch (token.Type)
@@ -365,6 +365,9 @@ namespace HapetFrontend.Parsing
 						{
 							if (CheckToken(TokenType.ArrayDef))
 							{
+								// it is not allowed usually from ParseArrayExpr
+								if (!allowArrayExpressions)
+									break;
 								var arrExpr = new AstArrayExpr(id.RightPart, new Location(id.RightPart.Beginning, CurrentToken.Location.Ending));
 								id.RightPart = arrExpr;
 							}

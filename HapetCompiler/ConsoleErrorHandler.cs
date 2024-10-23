@@ -19,6 +19,8 @@ namespace HapetCompiler
 		public int LinesAfterError { get; set; } = 1;
 		public bool DoPrintLocation { get; set; } = true;
 
+		private const int _maxPrintErrorSize = 10;
+
 		public ConsoleErrorHandler(int linesBeforeError, int linesAfterError, bool printLocation)
 		{
 			this.LinesBeforeError = linesBeforeError;
@@ -122,7 +124,7 @@ namespace HapetCompiler
 			int lineStart = GetLineStartIndex(text, index);
 			int lineEnd = GetLineEndIndex(text, end.End);
 			int linesSpread = CountLines(text, index, end.End);
-			linesSpread = Math.Min(linesSpread, 2);
+			linesSpread = Math.Min(linesSpread, _maxPrintErrorSize);
 
 			int lineNumberWidth = (end.Line + linesAfter).ToString(CultureInfo.InvariantCulture).Length;
 
