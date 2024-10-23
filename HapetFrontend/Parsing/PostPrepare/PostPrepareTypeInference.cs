@@ -345,7 +345,7 @@ namespace HapetFrontend.Parsing.PostPrepare
 			else
 			{
 				// TODO: really give them a error? or mb there is smth harder?
-				_compiler.ErrorHandler.ReportError(_currentSourceFile.Text, idExpr, "The type could not be infered...");
+				_compiler.ErrorHandler.ReportError(_currentSourceFile.Text, idExpr, "The type could not be inferred...");
 			}
 		}
 

@@ -67,7 +67,7 @@ namespace HapetCompiler
 				TokenLocation end = error.Location.Ending;
 
 				// location, message
-				LogInline($"{beginning}: ", ConsoleColor.White);
+				LogInline($"{beginning}: \n", ConsoleColor.White);
 				Log(error.Message, ConsoleColor.Red);
 
 				if (DoPrintLocation)
