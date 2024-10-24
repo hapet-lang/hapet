@@ -27,9 +27,9 @@ namespace HapetCompiler
 			Console.OutputEncoding = Encoding.UTF8;
 			var errorHandler = new ConsoleErrorHandler(0, 0, true);
 
-			var projectParser = new ProjectXmlParser("", errorHandler); // TODO: set project path here
 			CompilerSettings.InitCurrentPlatformData();
-
+			var projectParser = new ProjectXmlParser("../../../../../test/TestProject/TestProject.hptproj", errorHandler); // TODO: set project path here
+			projectParser.UpdateSettings(); // setting compiler settings from project
 			if (errorHandler.HasErrors)
 			{
 				return (int)CompilerErrors.ProjectFileParseError; // proj file parsing errors

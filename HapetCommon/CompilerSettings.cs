@@ -61,6 +61,11 @@ namespace HapetCommon
 		};
 
 		/// <summary>
+		/// The name of the project that is going to be compiled
+		/// </summary>
+		public static string ProjectName { get; set; }
+
+		/// <summary>
 		/// The platform on which compiled binaries are going to be running
 		/// </summary>
 		public static PlatformData TargetPlatformData { get; set; } 
