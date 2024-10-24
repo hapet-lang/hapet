@@ -358,8 +358,26 @@ namespace HapetBackend.Llvm
 					var retLoaded = _builder.BuildLoad2(HapetTypeToLLVMType(idExpr.OutType), ret, $"{idExpr.Name}Loaded");
 					return retLoaded;
 				}
+				else if (expr.LeftPart.OutType is StringType stringT)
+				{
+					// TODO: check if it is a part of a module name :))))
+					var leftPart = GenerateExpressionCode(expr.LeftPart, true); // we have to get the ptr to it. because idk
+
+					var fieldDecls = AstStringExpr.StringStruct.Declarations;
+					elementIndex = GetElementIndex(idExpr.Name, fieldDecls);
+
+					var tp = HapetTypeToLLVMType(stringT);
+					var ret = _builder.BuildStructGEP2(tp, leftPart, elementIndex, idExpr.Name);
+					// if we need ptr for the shite. usually used to store some values inside vars
+					if (getPtr)
+						return ret;
+					// loading the field because it is not registered in _typeMap like a normal variable.
+					// it should be ok for all types of the fields including classes and other shite
+					var retLoaded = _builder.BuildLoad2(HapetTypeToLLVMType(idExpr.OutType), ret, $"{idExpr.Name}Loaded");
+					return retLoaded;
+				}
 				// TODO: strings and other
-            }
+			}
             _errorHandler.ReportError(_currentSourceFile.Text, expr, $"The nested expr could not be generated, fatal :^( ");
 			return null;
 		}

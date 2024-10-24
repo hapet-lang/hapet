@@ -350,7 +350,6 @@ namespace HapetBackend.Llvm
 			}
 		}
 
-		private LLVMValueRef _lastStringSizeValueRef = default;
 		private unsafe LLVMValueRef HapetValueToLLVMValue(HapetType type, object v)
 		{
 			// ??? TOOD: why there is such check?
@@ -365,13 +364,31 @@ namespace HapetBackend.Llvm
 				case FloatType: return LLVM.ConstReal(HapetTypeToLLVMType(type), ((NumberData)v).ToDouble());
 				case StringType:
 					{
+						// this code creates a new string struct so its content could be easily copied to another string var
 						string theString = (string)v;
-						_lastStringSizeValueRef = LLVMValueRef.CreateConstInt(HapetTypeToLLVMType(IntType.GetIntType(4, true)), (ulong)theString.Length);
+						var stringSizeValueRef = LLVMValueRef.CreateConstInt(HapetTypeToLLVMType(IntType.GetIntType(4, true)), (ulong)theString.Length);
 
+						// creating global static array
 						var elements = theString.ToCharArray().Select(c => HapetValueToLLVMValue(CharType.DefaultType, c)).ToArray();
 						var stringGlobArray = _module.AddGlobal(LLVMTypeRef.CreateArray(HapetTypeToLLVMType(CharType.DefaultType), (uint)theString.Length), "constString");
 						stringGlobArray.Initializer = LLVMValueRef.CreateConstArray(HapetTypeToLLVMType(CharType.DefaultType), elements);
-						return stringGlobArray;
+
+						// creating string variable
+						var theStringItself = CreateLocalVariable(StringType.Instance, "theString");
+
+						// it would work only with const string assignment. if you want smth like this to work
+						// if they are trying to store a char* in string
+						var tp = HapetTypeToLLVMType(StringType.Instance);
+						// the 1 is because StringType struct has buf field as it's 1 param
+						var buf = _builder.BuildStructGEP2(tp, theStringItself, 1, "strBuf");
+						_builder.BuildStore(stringGlobArray, buf);
+						/// setting the string size.
+						var len = _builder.BuildStructGEP2(tp, theStringItself, 0, "strLen");
+						_builder.BuildStore(stringSizeValueRef, len);
+
+						// loading the string struct
+						var theStringItselfLoaded = _builder.BuildLoad2(HapetTypeToLLVMType(StringType.Instance), theStringItself, "theStringLoaded");
+						return theStringItselfLoaded;
 					}
 			}
 			return new LLVMValueRef();
@@ -475,29 +492,10 @@ namespace HapetBackend.Llvm
 		/// <param name="value">The value that needs to be assigned</param>
 		private void AssignToVar(LLVMValueRef varPtr, HapetType varType, AstExpression value)
 		{
-			// TODO: refactor similar code...
-			if (varType is StringType && value.OutType is StringType && value.OutValue != null)
-			{
-				// generate the initializer value
-				var x = GenerateExpressionCode(value);
-
-				// it would work only with const string assignment. if you want smth like this to work
-				// if they are trying to store a char* in string
-				var tp = _typeMap[varType];
-				// the 1 is because StringType struct has buf field as it's 1 param
-				var buf = _builder.BuildStructGEP2(tp, varPtr, 1, "strBuf");
-				_builder.BuildStore(x, buf);
-				/// setting the string size. <see cref="_lastStringSizeInt"/> is set in <see cref="HapetValueToLLVMValue"/>
-				var len = _builder.BuildStructGEP2(tp, varPtr, 0, "strLen");
-				_builder.BuildStore(_lastStringSizeValueRef, len);
-			}
-			else
-			{
-				// generate the initializer value
-				var x = GenerateExpressionCode(value);
-				// just storing initializer value in the var
-				_builder.BuildStore(x, varPtr);
-			}
+			// generate the initializer value
+			var x = GenerateExpressionCode(value);
+			// just storing initializer value in the var
+			_builder.BuildStore(x, varPtr);
 		}
 
 		#region Mallocs

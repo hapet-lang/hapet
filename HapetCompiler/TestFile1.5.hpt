@@ -12,6 +12,6 @@
 
 		// fifth symbol in s is 's' and it is 115
 		// zero symbol in s2 is 'r' and it is 114
-		return s[5] + s2[0];
+		return s[5] + s2[0] + s2.Length;
 	}
 }

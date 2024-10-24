@@ -100,7 +100,6 @@ namespace HapetFrontend.Parsing.PostPrepare
             if (neededType != exprType && outExpr == null)
             {
                 if (!(neededType is PointerType ptr1 && ptr1.TargetType is ClassType && exprType is ClassType) && // usually when 'Anime a = new Anime();'
-					!(neededType is PointerType ptr2 && ptr2.TargetType is CharType && exprType is StringType) && // string is just a char ptr
                     !(neededType is PointerType && expr is AstNullExpr) // just setting null to a pointer
 					) // place here other exceptions
                 {
