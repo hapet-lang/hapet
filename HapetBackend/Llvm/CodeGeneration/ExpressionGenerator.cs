@@ -301,72 +301,46 @@ namespace HapetBackend.Llvm
 					return null;
                 }
 
-				// TODO: could be refactored :)
-				// WARN: the same as in PostPrepareNestedExprInference
-				uint elementIndex = 0;
+				// we need to get 'struct' elements by ref to access it's elements
+				bool getByRef = (expr.LeftPart.OutType is StructType) || (expr.LeftPart.OutType is ArrayType) || (expr.LeftPart.OutType is StringType);
+				// TODO: check if it is a part of a module name :))))
+				var leftPart = GenerateExpressionCode(expr.LeftPart, getByRef);
+
+				// getting struct/class/interface declarations and the type
+				HapetType leftPartType = null;
+				List<AstDeclaration> leftPartDeclarations = null;
                 if (expr.LeftPart.OutType is PointerType ptr && ptr.TargetType is ClassType classT)
                 {
-					// TODO: check if it is a part of a module name :))))
-					var leftPart = GenerateExpressionCode(expr.LeftPart);
-
-					var fieldDecls = classT.Declaration.Declarations.Where(x => x is AstVarDecl).ToList();
-					elementIndex = GetElementIndex(idExpr.Name, fieldDecls) + 1; // + 1 because the first element in class struct is its reflection data
-
-					var tp = _typeMap[classT];
-					var ret = _builder.BuildStructGEP2(tp, leftPart, elementIndex, idExpr.Name);
-					// if we need ptr for the shite. usually used to store some values inside vars
-					if (getPtr)
-						return ret;
-					// loading the field because it is not registered in _typeMap like a normal variable.
-					// it should be ok for all types of the fields including classes and other shite
-					var retLoaded = _builder.BuildLoad2(HapetTypeToLLVMType(idExpr.OutType), ret, $"{idExpr.Name}Loaded");
-                    return retLoaded;
+					leftPartDeclarations = classT.Declaration.Declarations.Where(x => x is AstVarDecl).ToList();
+					leftPartType = classT;
                 }
 				else if (expr.LeftPart.OutType is StructType structT)
 				{
-					// TODO: check if it is a part of a module name :))))
-					var leftPart = GenerateExpressionCode(expr.LeftPart, true); // we have to get the ptr to it. because idk
-
-					var fieldDecls = structT.Declaration.Declarations;
-					elementIndex = GetElementIndex(idExpr.Name, fieldDecls);
-
-					var tp = _typeMap[structT];
-					var ret = _builder.BuildStructGEP2(tp, leftPart, elementIndex, idExpr.Name);
-					// if we need ptr for the shite. usually used to store some values inside vars
-					if (getPtr)
-						return ret;
-					// loading the field because it is not registered in _typeMap like a normal variable.
-					// it should be ok for all types of the fields including classes and other shite
-					var retLoaded = _builder.BuildLoad2(HapetTypeToLLVMType(idExpr.OutType), ret, $"{idExpr.Name}Loaded");
-					return retLoaded;
+					leftPartDeclarations = structT.Declaration.Declarations;
+					leftPartType = structT;
 				}
 				else if (expr.LeftPart.OutType is ArrayType arrayT)
 				{
-					// TODO: check if it is a part of a module name :))))
-					var leftPart = GenerateExpressionCode(expr.LeftPart, true); // we have to get the ptr to it. because idk
-
-					var fieldDecls = AstArrayExpr.ArrayStruct.Declarations;
-					elementIndex = GetElementIndex(idExpr.Name, fieldDecls);
-
-					var tp = HapetTypeToLLVMType(arrayT);
-					var ret = _builder.BuildStructGEP2(tp, leftPart, elementIndex, idExpr.Name);
-					// if we need ptr for the shite. usually used to store some values inside vars
-					if (getPtr)
-						return ret;
-					// loading the field because it is not registered in _typeMap like a normal variable.
-					// it should be ok for all types of the fields including classes and other shite
-					var retLoaded = _builder.BuildLoad2(HapetTypeToLLVMType(idExpr.OutType), ret, $"{idExpr.Name}Loaded");
-					return retLoaded;
+					leftPartDeclarations = AstArrayExpr.ArrayStruct.Declarations;
+					leftPartType = arrayT;
 				}
 				else if (expr.LeftPart.OutType is StringType stringT)
 				{
-					// TODO: check if it is a part of a module name :))))
-					var leftPart = GenerateExpressionCode(expr.LeftPart, true); // we have to get the ptr to it. because idk
+					leftPartDeclarations = AstStringExpr.StringStruct.Declarations;
+					leftPartType = stringT;
+				}
 
-					var fieldDecls = AstStringExpr.StringStruct.Declarations;
-					elementIndex = GetElementIndex(idExpr.Name, fieldDecls);
+				// getting index of the element and the element itself
+				if (leftPartDeclarations != null && leftPartType != null)
+				{
+					// getting the index of the element
+					uint elementIndex = GetElementIndex(idExpr.Name, leftPartDeclarations);
 
-					var tp = HapetTypeToLLVMType(stringT);
+					// this is because the first field in class - is it reflection data (?)
+					if (leftPartType is ClassType)
+						elementIndex += 1;
+
+					var tp = HapetTypeToLLVMType(leftPartType);
 					var ret = _builder.BuildStructGEP2(tp, leftPart, elementIndex, idExpr.Name);
 					// if we need ptr for the shite. usually used to store some values inside vars
 					if (getPtr)
@@ -376,6 +350,7 @@ namespace HapetBackend.Llvm
 					var retLoaded = _builder.BuildLoad2(HapetTypeToLLVMType(idExpr.OutType), ret, $"{idExpr.Name}Loaded");
 					return retLoaded;
 				}
+
 				// TODO: strings and other
 			}
             _errorHandler.ReportError(_currentSourceFile.Text, expr, $"The nested expr could not be generated, fatal :^( ");
