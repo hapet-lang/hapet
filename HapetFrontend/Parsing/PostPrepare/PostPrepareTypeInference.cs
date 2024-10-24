@@ -12,6 +12,7 @@ namespace HapetFrontend.Parsing.PostPrepare
 	{
 		private void PostPrepareTypeInference()
 		{
+			PostPrepareInternalShiteInference();
 			foreach (var (path, file) in _compiler.GetFiles())
 			{
 				_currentSourceFile = file;
@@ -21,6 +22,10 @@ namespace HapetFrontend.Parsing.PostPrepare
 					{
 						PostPrepareClassInference(classDecl);
 					}
+					else if (stmt is AstStructDecl structDecl)
+					{
+						PostPrepareStructInference(structDecl);
+					}
 					else if (stmt is AstFuncDecl funcDecl)
 					{
 						// usually extern funcs
@@ -28,6 +33,12 @@ namespace HapetFrontend.Parsing.PostPrepare
 					}
 				}
 			}
+		}
+
+		private void PostPrepareInternalShiteInference()
+		{
+			PostPrepareStructInference(AstStringExpr.StringStruct);
+			PostPrepareStructInference(AstArrayExpr.ArrayStruct);
 		}
 
 		private void PostPrepareClassInference(AstClassDecl classDecl)
@@ -41,6 +52,16 @@ namespace HapetFrontend.Parsing.PostPrepare
 			foreach (var decl in classDecl.Declarations.Where(x => x is AstFuncDecl).Select(x => x as AstFuncDecl))
 			{
 				PostPrepareFunctionInference(decl);
+			}
+		}
+
+		private void PostPrepareStructInference(AstStructDecl structDecl)
+		{
+			// infer fields at first
+			foreach (var decl in structDecl.Declarations.Where(x => x is AstVarDecl).Select(x => x as AstVarDecl))
+			{
+				// field 
+				PostPrepareVarInference(decl);
 			}
 		}
 
@@ -59,11 +80,8 @@ namespace HapetFrontend.Parsing.PostPrepare
 			{
 				// renaming func name from 'Anime' to 'Anime(int, float)'
 				string newName = funcDecl.Name.Name + funcDecl.Parameters.GetParamsString();
-				// if it is public func - it should be visible in the scope in which func's class is
-				if (funcDecl.SpecialKeys.Contains(Parsing.TokenType.KwPublic)) // TODO: not only public
-					funcDecl.ContainingClass.Scope.Parent.DefineDeclSymbol(newName, funcDecl);
-				else
-					funcDecl.ContainingClass.Scope.DefineDeclSymbol(newName, funcDecl);
+				// TODO: if it is public func - it should be visible in the scope in which func's class is
+				funcDecl.ContainingClass.SubScope.DefineDeclSymbol(newName, funcDecl);
 				funcDecl.Name = funcDecl.Name.GetCopy(newName);
 			}
 
@@ -438,9 +456,13 @@ namespace HapetFrontend.Parsing.PostPrepare
 				Scope leftSideScope = null;
 				PostPrepareExprInference(nestExpr.LeftPart);
 				if (nestExpr.LeftPart.OutType is PointerType ptr && ptr.TargetType is ClassType classT)
-				{
-					leftSideScope = classT.Declaration.Scope;
-				}
+					leftSideScope = classT.Declaration.SubScope;
+				else if (nestExpr.LeftPart.OutType is StructType structt)
+					leftSideScope = structt.Declaration.SubScope;
+				else if (nestExpr.LeftPart.OutType is StringType)
+					leftSideScope = AstStringExpr.StringStruct.SubScope;
+				else if (nestExpr.LeftPart.OutType is ArrayType)
+					leftSideScope = AstArrayExpr.ArrayStruct.SubScope;
 				// TODO: structs and other
 
 				if (leftSideScope == null)

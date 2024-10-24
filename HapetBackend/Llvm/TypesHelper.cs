@@ -153,7 +153,7 @@ namespace HapetBackend.Llvm
 						if (_llvmArrayType == null)
 						{
 							var arrayStruct = _context.CreateNamedStruct($"array.type");
-							var arrayType = HapetTypeToLLVMType(a.TargetType);
+							var arrayType = HapetTypeToLLVMType(IntType.GetIntType(1, false)); // byte
 							arrayStruct.StructSetBody(new LLVMTypeRef[] { _context.Int32Type, arrayType.GetPointerTo() }, false);
 							_llvmArrayType = arrayStruct;
 						}

@@ -3,6 +3,7 @@ using HapetFrontend.Ast;
 using HapetFrontend.Ast.Declarations;
 using HapetFrontend.Ast.Expressions;
 using HapetFrontend.Ast.Statements;
+using HapetFrontend.Parsing;
 using HapetFrontend.Scoping;
 using HapetFrontend.Types;
 using LLVMSharp.Interop;
@@ -293,32 +294,25 @@ namespace HapetBackend.Llvm
 			}
 			else
 			{
-                // TODO: check if it is a part of a module name :))))
-                var leftPart = GenerateExpressionCode(expr.LeftPart);
 				// if really has to be an AstIdExpr
 				if (expr.RightPart is not AstIdExpr idExpr)
 				{
                     _errorHandler.ReportError(_currentSourceFile.Text, expr.RightPart, $"The part of the expression has to be an identifier");
-					return leftPart;
+					return null;
                 }
 
+				// TODO: could be refactored :)
 				// WARN: the same as in PostPrepareNestedExprInference
 				uint elementIndex = 0;
                 if (expr.LeftPart.OutType is PointerType ptr && ptr.TargetType is ClassType classT)
                 {
-					var fieldDecls = classT.Declaration.Declarations.Where(x => x is AstVarDecl).ToList();
-					// search for the name in decl
-					for (uint i = 0; i < fieldDecls.Count; ++i)
-					{
-						var decl = fieldDecls[(int)i];
-                        if (decl.Name.Name == idExpr.Name)
-						{
-							elementIndex = i + 1; // + 1 because the first element in class struct is its reflection data
-							break;
-                        }
-					}
+					// TODO: check if it is a part of a module name :))))
+					var leftPart = GenerateExpressionCode(expr.LeftPart);
 
-                    var tp = _typeMap[classT];
+					var fieldDecls = classT.Declaration.Declarations.Where(x => x is AstVarDecl).ToList();
+					elementIndex = GetElementIndex(idExpr.Name, fieldDecls) + 1; // + 1 because the first element in class struct is its reflection data
+
+					var tp = _typeMap[classT];
 					var ret = _builder.BuildStructGEP2(tp, leftPart, elementIndex, idExpr.Name);
 					// if we need ptr for the shite. usually used to store some values inside vars
 					if (getPtr)
@@ -328,10 +322,60 @@ namespace HapetBackend.Llvm
 					var retLoaded = _builder.BuildLoad2(HapetTypeToLLVMType(idExpr.OutType), ret, $"{idExpr.Name}Loaded");
                     return retLoaded;
                 }
-				// TODO: structs and other
+				else if (expr.LeftPart.OutType is StructType structT)
+				{
+					// TODO: check if it is a part of a module name :))))
+					var leftPart = GenerateExpressionCode(expr.LeftPart, true); // we have to get the ptr to it. because idk
+
+					var fieldDecls = structT.Declaration.Declarations;
+					elementIndex = GetElementIndex(idExpr.Name, fieldDecls);
+
+					var tp = _typeMap[structT];
+					var ret = _builder.BuildStructGEP2(tp, leftPart, elementIndex, idExpr.Name);
+					// if we need ptr for the shite. usually used to store some values inside vars
+					if (getPtr)
+						return ret;
+					// loading the field because it is not registered in _typeMap like a normal variable.
+					// it should be ok for all types of the fields including classes and other shite
+					var retLoaded = _builder.BuildLoad2(HapetTypeToLLVMType(idExpr.OutType), ret, $"{idExpr.Name}Loaded");
+					return retLoaded;
+				}
+				else if (expr.LeftPart.OutType is ArrayType arrayT)
+				{
+					// TODO: check if it is a part of a module name :))))
+					var leftPart = GenerateExpressionCode(expr.LeftPart, true); // we have to get the ptr to it. because idk
+
+					var fieldDecls = AstArrayExpr.ArrayStruct.Declarations;
+					elementIndex = GetElementIndex(idExpr.Name, fieldDecls);
+
+					var tp = HapetTypeToLLVMType(arrayT);
+					var ret = _builder.BuildStructGEP2(tp, leftPart, elementIndex, idExpr.Name);
+					// if we need ptr for the shite. usually used to store some values inside vars
+					if (getPtr)
+						return ret;
+					// loading the field because it is not registered in _typeMap like a normal variable.
+					// it should be ok for all types of the fields including classes and other shite
+					var retLoaded = _builder.BuildLoad2(HapetTypeToLLVMType(idExpr.OutType), ret, $"{idExpr.Name}Loaded");
+					return retLoaded;
+				}
+				// TODO: strings and other
             }
             _errorHandler.ReportError(_currentSourceFile.Text, expr, $"The nested expr could not be generated, fatal :^( ");
 			return null;
+		}
+
+		private uint GetElementIndex(string name, List<AstDeclaration> decls)
+		{
+			// search for the name in decl
+			for (uint i = 0; i < decls.Count; ++i)
+			{
+				var decl = decls[(int)i];
+				if (decl.Name.Name == name)
+				{
+					return i; // getting the field index
+				}
+			}
+			return 0;
 		}
 
 		private LLVMValueRef GenerateArrayCreateExprCode(AstArrayCreateExpr expr)

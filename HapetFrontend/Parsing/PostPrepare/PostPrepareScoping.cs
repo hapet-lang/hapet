@@ -11,6 +11,7 @@ namespace HapetFrontend.Parsing.PostPrepare
 	{
 		private void PostPrepareScoping()
 		{
+			PostPrepareInternalShiteScoping();
 			foreach (var (path, file) in _compiler.GetFiles())
 			{
 				_currentSourceFile = file;
@@ -20,6 +21,11 @@ namespace HapetFrontend.Parsing.PostPrepare
 					{
 						file.FileScope.DefineDeclSymbol(classDecl.Name.Name, classDecl);
 						PostPrepareClassScoping(classDecl);
+					}
+					else if (stmt is AstStructDecl structDecl)
+					{
+						file.FileScope.DefineDeclSymbol(structDecl.Name.Name, structDecl);
+						PostPrepareStructScoping(structDecl);
 					}
 					else if (stmt is AstFuncDecl funcDecl)
 					{
@@ -31,11 +37,20 @@ namespace HapetFrontend.Parsing.PostPrepare
 			}
 		}
 
+		private void PostPrepareInternalShiteScoping()
+		{
+			AstStringExpr.StringStruct.Scope = _compiler.GlobalScope;
+			PostPrepareStructScoping(AstStringExpr.StringStruct);
+			AstArrayExpr.ArrayStruct.Scope = _compiler.GlobalScope;
+			PostPrepareStructScoping(AstArrayExpr.ArrayStruct);
+		}
+
 		private void PostPrepareClassScoping(AstClassDecl classDecl)
 		{
 			classDecl.SourceFile = _currentSourceFile;
 			var classScope = new Scoping.Scope($"{classDecl.Name.Name}_scope", classDecl.Scope);
-			
+			classDecl.SubScope = classScope; // setting the sub scope
+
 			foreach (var decl in classDecl.Declarations)
 			{
 				SetScopeAndParent(decl, classDecl, classScope);
@@ -50,16 +65,40 @@ namespace HapetFrontend.Parsing.PostPrepare
 				}
 				else if (decl is AstVarDecl fieldDecl) // field or property
 				{
-					fieldDecl.ContainingClass = classDecl;
+					fieldDecl.ContainingParent = classDecl;
 
-					// if it is public field/property - it should be visible in the scope in which var's class is
-					if (fieldDecl.SpecialKeys.Contains(Parsing.TokenType.KwPublic)) // TODO: not only public
-						classDecl.Scope.Parent.DefineDeclSymbol(fieldDecl.Name.Name, fieldDecl);
-					else
-						classDecl.Scope.DefineDeclSymbol(fieldDecl.Name.Name, fieldDecl);
+					// TODO: if it is public field/property - it should be visible in the scope in which var's class is
+					classDecl.SubScope.DefineDeclSymbol(fieldDecl.Name.Name, fieldDecl);
 
 					// setting already defined to 'true' because of some shite with access types
 					PostPrepareVarScoping(fieldDecl, true);
+				}
+			}
+		}
+
+		private void PostPrepareStructScoping(AstStructDecl structDecl)
+		{
+			structDecl.SourceFile = _currentSourceFile;
+			var structScope = new Scoping.Scope($"{structDecl.Name.Name}_scope", structDecl.Scope);
+			structDecl.SubScope = structScope;
+
+			foreach (var decl in structDecl.Declarations)
+			{
+				SetScopeAndParent(decl, structDecl, structScope);
+
+				if (decl is AstVarDecl fieldDecl) // field 
+				{
+					fieldDecl.ContainingParent = structDecl;
+
+					// TODO: if it is public field/property - it should be visible in the scope in which var's class is
+					structDecl.SubScope.DefineDeclSymbol(fieldDecl.Name.Name, fieldDecl);
+
+					// setting already defined to 'true' because of some shite with access types
+					PostPrepareVarScoping(fieldDecl, true);
+				}
+				else
+				{
+					// TODO: error - unexpected decl in struct type
 				}
 			}
 		}

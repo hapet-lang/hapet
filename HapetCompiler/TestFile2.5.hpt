@@ -1,0 +1,14 @@
+﻿public static class Program
+{
+	public static int Main(string[] args)
+	{
+		byte[][] argv = new byte[3][4];
+		// byte[] argv = new byte[3];
+
+		byte[] argv2 = argv[0];
+
+		byte* bb = argv.Buffer;
+
+		return argv2.Length;
+	}
+}

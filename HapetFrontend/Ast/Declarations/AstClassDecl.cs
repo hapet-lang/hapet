@@ -1,4 +1,5 @@
 ﻿using HapetFrontend.Ast.Expressions;
+using HapetFrontend.Scoping;
 using HapetFrontend.Types;
 
 namespace HapetFrontend.Ast.Declarations
@@ -9,6 +10,11 @@ namespace HapetFrontend.Ast.Declarations
 		/// Declarations that are in the class
 		/// </summary>
 		public List<AstDeclaration> Declarations { get; } = new List<AstDeclaration>();
+
+		/// <summary>
+		/// The inner scope of the class. Used to get access to it's content
+		/// </summary>
+		public Scope SubScope { get; set; }
 
 		public AstClassDecl(AstIdExpr name, List<AstDeclaration> declarations, string doc = "", ILocation Location = null) : base(name, doc, Location) 
 		{

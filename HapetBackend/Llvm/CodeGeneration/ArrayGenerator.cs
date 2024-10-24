@@ -117,7 +117,7 @@ namespace HapetBackend.Llvm
 				var iLoaded = _builder.BuildLoad2(HapetTypeToLLVMType(IntType.DefaultType), varPtrI, "iLoadedAgain");
 				var oneConst = LLVMValueRef.CreateConstInt(HapetTypeToLLVMType(IntType.DefaultType), (ulong)1);
 				var boSum = builtInBinOperators[("+", IntType.DefaultType, IntType.DefaultType)];
-				var summ = bo(_builder, iLoaded, oneConst, "summOp");
+				var summ = boSum(_builder, iLoaded, oneConst, "summOp");
 				_builder.BuildStore(summ, varPtrI);
 
 				_builder.BuildBr(bbCond);

@@ -1,4 +1,5 @@
-﻿using HapetFrontend.Types;
+﻿using HapetFrontend.Ast.Declarations;
+using HapetFrontend.Types;
 using System.Diagnostics;
 
 namespace HapetFrontend.Ast.Expressions
@@ -14,6 +15,29 @@ namespace HapetFrontend.Ast.Expressions
 			this.OutValue = value;
 			this.Suffix = suffix;
 			OutType = StringType.Instance;
+		}
+
+		private static AstStructDecl GenerateStringStructExpr()
+		{
+			// creating the struct and its scope
+			AstStructDecl strStruct = new AstStructDecl(new AstIdExpr("string.type"), ""); // TODO: doc string
+			// TODO: doc string
+			AstVarDecl sizeField = new AstVarDecl(new AstNestedExpr(new AstIdExpr("int"), null), new AstIdExpr("Length"), new AstNumberExpr((NumberData)0), "");
+			AstVarDecl bufField = new AstVarDecl(new AstNestedExpr(new AstPointerExpr(new AstIdExpr("char")), null), new AstIdExpr("Buffer"), new AstNullExpr(), "");
+			strStruct.Declarations.Add(sizeField);
+			strStruct.Declarations.Add(bufField);
+			return strStruct;
+		}
+
+		// the string struct is always like that
+		private static AstStructDecl _stringStruct;
+		public static AstStructDecl StringStruct
+		{
+			get
+			{
+				_stringStruct ??= GenerateStringStructExpr();
+				return _stringStruct;
+			}
 		}
 	}
 }

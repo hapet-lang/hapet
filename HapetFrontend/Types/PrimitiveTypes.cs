@@ -1,4 +1,6 @@
-﻿using System.Numerics;
+﻿using HapetFrontend.Ast.Declarations;
+using HapetFrontend.Ast.Expressions;
+using System.Numerics;
 
 namespace HapetFrontend.Types
 {
