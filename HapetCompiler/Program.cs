@@ -25,39 +25,43 @@ namespace HapetCompiler
 		static int Main(string[] args)
 		{
 			Console.OutputEncoding = Encoding.UTF8;
+			var errorHandler = new ConsoleErrorHandler(0, 0, true);
 
-			// hptproj should be parsed here
-			CompilerSettings.TargetPlatformData = CompilerSettings.SupportedPlatforms.FirstOrDefault(x => x.TargetPlatform == TargetPlatform.Win86);
-			CompilerSettings.TargetFormat = TargetFormat.Console;
+			var projectParser = new ProjectXmlParser("", errorHandler); // TODO: set project path here
 			CompilerSettings.InitCurrentPlatformData();
 
-			var errorHandler = new ConsoleErrorHandler(0, 0, true);
+			if (errorHandler.HasErrors)
+			{
+				return (int)CompilerErrors.ProjectFileParseError; // proj file parsing errors
+			}
+
 			var compiler = new Compiler(errorHandler);
 			var postPreparer = new PostPrepare(compiler);
 			errorHandler.TextProvider = compiler;
 
+			// TODO: go all over the files and at first generate header file for the project. then parse them normally
 			var ptFile = compiler.AddFile(_testFile);
 
 			if (errorHandler.HasErrors)
 			{
-				return 1; // parsing errors
+				return (int)CompilerErrors.ParsingError; // parsing errors
 			}
 
 			postPreparer.StartPreparation();
 
 			if (errorHandler.HasErrors)
 			{
-				return 2; // post prepare errors
+				return (int)CompilerErrors.PostPrepareError; // post prepare errors
 			}
 
 			bool codeGenOk = GenerateAndCompileCode(compiler, errorHandler);
 
 			if (errorHandler.HasErrors || !codeGenOk)
 			{
-				return 3; // code generation errors errors
+				return (int)CompilerErrors.CodeGenerationError; // code generation errors
 			}
 
-			return 0;
+			return (int)CompilerErrors.Ok;
 		}
 
 		private static bool GenerateAndCompileCode(Compiler compiler, IErrorHandler errorHandler)
