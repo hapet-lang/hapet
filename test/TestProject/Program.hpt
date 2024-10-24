@@ -1,0 +1,12 @@
+using TestProject.Sub; 
+
+public static class Program
+{
+	public static int Main(string[] args)
+	{
+        Anime a = new Anime();
+        int rett = a.Calc(3, 5);
+
+		return rett;
+	}
+}

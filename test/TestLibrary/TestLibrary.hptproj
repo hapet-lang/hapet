@@ -1,0 +1,10 @@
+<Project>
+	<PropertyGroup>
+		<ProjectName>TestProject</ProjectName>
+		<ProjectVersion>1.0.0</ProjectVersion>
+		<AllowUnsafeCode>false</AllowUnsafeCode>
+
+        <TargetPlatform>win-32</TargetPlatform>
+        <TargetFormat>Library</TargetFormat>
+	</PropertyGroup>
+</Project>
