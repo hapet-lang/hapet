@@ -12,13 +12,7 @@ namespace HapetCommon
 
 	public enum TargetFormat
 	{
-		Executable,
-		Library
-	}
-
-	public enum TargetRepresentation
-	{
-		None, // for libraries
+		Library,
 		Console,
 		Windowed
 	}
@@ -75,13 +69,9 @@ namespace HapetCommon
 		/// </summary>
 		public static PlatformData CurrentPlatformData { get; set; }
 		/// <summary>
-		/// The format of output - library or executable
+		/// The format of output - library, console or windowed
 		/// </summary>
 		public static TargetFormat TargetFormat { get; set; }
-		/// <summary>
-		/// The target representation of the output
-		/// </summary>
-		public static TargetRepresentation TargetRepresentation { get; set; }
 
 
 		public static void InitCurrentPlatformData()

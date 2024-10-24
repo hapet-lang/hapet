@@ -58,16 +58,8 @@ namespace HapetBackend.Llvm.Linkers.Windows
 			switch (CompilerSettings.TargetPlatformData.TargetPlatform)
 			{
 				case TargetPlatform.Win86:
-					if (CompilerSettings.TargetRepresentation == TargetRepresentation.Console)
-						lldArgs.Add("/entry:mainCRTStartup");
-					else if (CompilerSettings.TargetRepresentation == TargetRepresentation.Windowed)
-						lldArgs.Add("/entry:WinMainCRTStartup");
-					break;
 				case TargetPlatform.Win64:
-					if (CompilerSettings.TargetRepresentation == TargetRepresentation.Console)
-						lldArgs.Add("/entry:mainCRTStartup");
-					else if (CompilerSettings.TargetRepresentation == TargetRepresentation.Windowed)
-						lldArgs.Add("/entry:WinMainCRTStartup"); 
+					lldArgs.Add("/entry:mainCRTStartup");
 					break;
 					// TODO: do i need this for linux?
 			}

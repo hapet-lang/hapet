@@ -63,7 +63,7 @@ namespace HapetBackend.Llvm
 			this._targetFile = targetFile;
 			this._emitDebugInfo = !optimize;
 
-			if (_compiler.MainFunction == null && CompilerSettings.TargetFormat == TargetFormat.Executable)
+			if (_compiler.MainFunction == null && (CompilerSettings.TargetFormat == TargetFormat.Console || CompilerSettings.TargetFormat == TargetFormat.Windowed))
 			{
 				_errorHandler.ReportError("", location: null, "Main function could not be found...");
 				return false;

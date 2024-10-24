@@ -28,8 +28,7 @@ namespace HapetCompiler
 
 			// hptproj should be parsed here
 			CompilerSettings.TargetPlatformData = CompilerSettings.SupportedPlatforms.FirstOrDefault(x => x.TargetPlatform == TargetPlatform.Win86);
-			CompilerSettings.TargetFormat = TargetFormat.Executable;
-			CompilerSettings.TargetRepresentation = TargetRepresentation.Console;
+			CompilerSettings.TargetFormat = TargetFormat.Console;
 			CompilerSettings.InitCurrentPlatformData();
 
 			var errorHandler = new ConsoleErrorHandler(0, 0, true);
