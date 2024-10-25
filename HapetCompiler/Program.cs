@@ -12,8 +12,41 @@ namespace HapetCompiler
 			var errorHandler = new ConsoleErrorHandler(0, 0, true);
 			CompilerSettings.InitCurrentPlatformData();
 			
-			ProjectBuildToolchain projectToolchain = new ProjectBuildToolchain();
-			return projectToolchain.Build("../../../../../test/TestProject/TestProject.hptproj", errorHandler);
+			if (args.Length == 0)
+			{
+				errorHandler.ReportError("hapet command must be specified. For example 'hapet build /path/to/project.hptproj'");
+				return (int)CompilerErrors.HapetCommandError;
+			}
+
+			switch (args[0])
+			{
+				case "build":
+					{
+						if (args.Length == 1)
+						{
+							errorHandler.ReportError("Path to the project file must be specified. For example 'hapet build /path/to/project.hptproj'");
+							return (int)CompilerErrors.HapetCommandParamsError;
+						}
+						// skip the first two args because they are already used
+						ProjectBuildToolchain projectToolchain = new ProjectBuildToolchain(args.Skip(2).ToArray());
+						return projectToolchain.Build(args[1], errorHandler);
+						//"../../../../../test/TestProject/TestProject.hptproj"
+					}
+				case "restore":
+					{
+						if (args.Length == 1)
+						{
+							errorHandler.ReportError("Path to the project file must be specified. For example 'hapet restore /path/to/project.hptproj'");
+							return (int)CompilerErrors.HapetCommandParamsError;
+						}
+						// skip the first two args because they are already used
+						ProjectRestoreToolchain projectToolchain = new ProjectRestoreToolchain(args.Skip(2).ToArray());
+						return projectToolchain.Restore(args[1], errorHandler);
+						//"../../../../../test/TestProject/TestProject.hptproj"
+					}
+			}
+			errorHandler.ReportError($"hapet command called {args[0]} is not available");
+			return (int)CompilerErrors.HapetCommandError;
 		}
 	}
 }

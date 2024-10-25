@@ -18,6 +18,12 @@ namespace HapetCompiler.Toolchains
 
     internal class ProjectBuildToolchain
     {
+        private string[] _cmdArgs; // TODO: use them for ProjectXmlParser
+		public ProjectBuildToolchain(string[] args)
+        {
+            _cmdArgs = args;
+		}
+
         public int Build(string projectPath, IErrorHandler errorHandler)
         {
             // creating settings instance for the project
