@@ -7,7 +7,6 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<ProjectReference Include="..\HapetCommon\HapetCommon.csproj" />
 		<ProjectReference Include="..\HapetFrontend\HapetFrontend.csproj" />
 	</ItemGroup>
 

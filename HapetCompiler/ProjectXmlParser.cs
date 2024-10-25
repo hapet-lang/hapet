@@ -1,5 +1,4 @@
-﻿using HapetCommon;
-using HapetFrontend;
+﻿using HapetFrontend;
 using HapetFrontend.Entities;
 using System.Xml;
 
@@ -7,15 +6,26 @@ namespace HapetCompiler
 {
 	internal class ProjectXmlParser
 	{
+		private readonly string _projectPath = string.Empty;
+		private readonly string _projectPathAbsolute = string.Empty;
+		private readonly CompilerSettings _projectSettings = null;
+		private readonly IErrorHandler _errorHandler = null;
+
 		private Dictionary<string, string> _propertyGroupData = new Dictionary<string, string>();
 
-		public ProjectXmlParser(string projectPath, IErrorHandler errorHandler)
+		// TODO: this class also should get args from cmd that would have bigger priority over defined in .hptproj file
+		public ProjectXmlParser(string projectPath, CompilerSettings projectSettings, IErrorHandler errorHandler)
 		{
+			_projectPath = projectPath;
+			_projectPathAbsolute = Path.GetFullPath(_projectPath);
+			_projectSettings = projectSettings;
+			_errorHandler = errorHandler;
+
 			XmlDocument projDoc = new XmlDocument();
-			projDoc.Load(projectPath);
+			projDoc.Load(_projectPath);
 			if (projDoc == null)
 			{
-				errorHandler.ReportError($"Project file {projectPath} could not be parsed");
+				_errorHandler.ReportError($"Project file {_projectPath} could not be parsed");
 				return;
 			}
 
@@ -31,38 +41,78 @@ namespace HapetCompiler
 						_propertyGroupData.Add(childnode.Name, childnode.FirstChild.Value);
 					}
 				}
+				// TODO: ...
 			}
-
-			// hptproj should be parsed here
-			CompilerSettings.TargetPlatformData = CompilerSettings.SupportedPlatforms.FirstOrDefault(x => x.TargetPlatform == TargetPlatform.Win86);
-			CompilerSettings.TargetFormat = TargetFormat.Console;
 		}
 
 		public void UpdateSettings()
 		{
+			// setting project name
+			string projectFileName = Path.GetFileNameWithoutExtension(_projectPath);
+			_projectSettings.ProjectName = GetValueOrDefault<string>("ProjectName", projectFileName);
+			// setting project version
+			_projectSettings.ProjectVersion = GetValueOrDefault<string>("ProjectVersion", "1.0.0");
+			// setting project configuration
+			_projectSettings.ProjectConfiguration = GetValueOrDefault<string>("ProjectConfiguration", "Debug");
+			// setting project out folder
+			var outDirRelative = GetValueOrDefault<string>("OutputDirectory", $"./bin/{_projectSettings.ProjectConfiguration}");
+			_projectSettings.OutputDirectory = Path.Combine(Path.GetDirectoryName(_projectPathAbsolute).PathNormalize(), outDirRelative);
+
+			// setting unsafe code allowence
+			_projectSettings.AllowUnsafeCode = GetValueOrDefault<bool>("AllowUnsafeCode", false);
+
 			// setting target format
-			CompilerSettings.TargetFormat = GetValueOrDefault<TargetFormat>("TargetFormat", TargetFormat.Console);
+			_projectSettings.TargetFormat = GetValueOrDefault<TargetFormat>("TargetFormat", TargetFormat.Console);
 			// setting platform data
 			string targetPlatform = GetValueOrDefault<string>("TargetPlatform", "");
-			if (string.IsNullOrEmpty(targetPlatform)) CompilerSettings.TargetPlatformData = CompilerSettings.CurrentPlatformData;
-			else CompilerSettings.TargetPlatformData = CompilerSettings.SupportedPlatforms.FirstOrDefault(x => x.Name == targetPlatform);
+			if (string.IsNullOrEmpty(targetPlatform)) _projectSettings.TargetPlatformData = CompilerSettings.CurrentPlatformData;
+			else _projectSettings.TargetPlatformData = CompilerSettings.SupportedPlatforms.FirstOrDefault(x => x.Name == targetPlatform);
 
 			// TODO:
 		}
 
+		// TODO: add allowed items parameter
+		// for example when parsing ProjectConfiguration should be checked
 		private T GetValueOrDefault<T>(string key, T defaultValue)
 		{
-			if (_propertyGroupData.TryGetValue(key, out var value))
+			try
 			{
-				if (typeof(bool) == typeof(T))
+				if (_propertyGroupData.TryGetValue(key, out var value))
 				{
-
+					// TODO: better casts. like at least int could be checked and other
+					if (typeof(bool) == typeof(T))
+					{
+						return (T)(object)(value == "true");
+					}
+					else if (typeof(string) == typeof(T))
+					{
+						return (T)(object)(value);
+					}
+					else if (typeof(int) == typeof(T))
+					{
+						return (T)(object)(int.Parse(value));
+					}
+					else if (typeof(T).IsEnum)
+					{
+						foreach (T item in Enum.GetValues(typeof(T)))
+						{
+							if (item.ToString().ToLower().Equals(value.Trim().ToLower()))
+								return item;
+						}
+						_errorHandler.ReportError($"The value '{value}' is invalid for the '{key}' tag");
+					}
+				}
+				else
+				{
+					return defaultValue; // do not error here!
 				}
 			}
-			else
+			catch (Exception ex)
 			{
-				return defaultValue;
+				_errorHandler.ReportError($"Compiler error while inferencing '{key}' tag: {ex}");
 			}
+			_errorHandler.ReportError($"Compiler error while inferencing '{key}' tag");
+			return defaultValue;
 		}
 	}
 }

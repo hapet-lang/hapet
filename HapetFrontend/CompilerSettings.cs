@@ -1,6 +1,6 @@
 ﻿using System.Runtime.InteropServices;
 
-namespace HapetCommon
+namespace HapetFrontend
 {
 	public enum TargetPlatform
 	{
@@ -26,7 +26,7 @@ namespace HapetCommon
 		public string ExecutableFileExtension { get; set; }
 	}
 
-	public static class CompilerSettings
+	public class CompilerSettings
 	{
 		public static readonly PlatformData[] SupportedPlatforms =
 		{
@@ -63,22 +63,42 @@ namespace HapetCommon
 		/// <summary>
 		/// The name of the project that is going to be compiled
 		/// </summary>
-		public static string ProjectName { get; set; }
+		public string ProjectName { get; set; }
+		/// <summary>
+		/// The version of the project that is going to be compiled
+		/// </summary>
+		public string ProjectVersion { get; set; }
+		/// <summary>
+		/// The configuration of project. Debug or Release
+		/// </summary>
+		public string ProjectConfiguration { get; set; }
+		/// <summary>
+		/// The absolut path to the output directory
+		/// </summary>
+		public string OutputDirectory { get; set; }
+		/// <summary>
+		/// If true - pointers usage and other shite are allowed
+		/// </summary>
+		public bool AllowUnsafeCode { get; set; }
 
+		/// <summary>
+		/// 'true' if Debug conf. 'false' if Release
+		/// </summary>
+		public bool IsDebug => ProjectConfiguration == "Debug";
 		/// <summary>
 		/// The platform on which compiled binaries are going to be running
 		/// </summary>
-		public static PlatformData TargetPlatformData { get; set; } 
+		public PlatformData TargetPlatformData { get; set; } 
+		/// <summary>
+		/// The format of output - library, console or windowed
+		/// </summary>
+		public TargetFormat TargetFormat { get; set; }
+
+
 		/// <summary>
 		/// The platform on which compiler is running
 		/// </summary>
 		public static PlatformData CurrentPlatformData { get; set; }
-		/// <summary>
-		/// The format of output - library, console or windowed
-		/// </summary>
-		public static TargetFormat TargetFormat { get; set; }
-
-
 		public static void InitCurrentPlatformData()
 		{
 			switch (RuntimeInformation.OSArchitecture)

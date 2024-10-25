@@ -17,6 +17,8 @@ namespace HapetFrontend
 		private Dictionary<string, ProgramFile> _files = new Dictionary<string, ProgramFile>();
 
 		public IErrorHandler ErrorHandler { get; }
+		public CompilerSettings CurrentProjectSettings { get; }
+		public static int AssemblyPointerSize { get; set; }
 
 		public Scope GlobalScope { get; private set; }
 
@@ -25,14 +27,16 @@ namespace HapetFrontend
 		/// </summary>
 		public AstFuncDecl MainFunction { get; set; }
 
-		public Compiler(IErrorHandler errorHandler)
+		public Compiler(CompilerSettings projectSettings, IErrorHandler errorHandler)
 		{
+			CurrentProjectSettings = projectSettings;
+
 			ErrorHandler = errorHandler;
 			ErrorHandler.TextProvider = this;
+		}
 
-			// TODO: do i need it?
-			// string exePath = Path.Combine(Path.GetDirectoryName(Assembly.GetEntryAssembly().Location), "libraries");
-
+		public void InitGlobalScope()
+		{
 			GlobalScope = new Scope("global_scope_of_assembly");
 			GlobalScope.DefineBuiltInTypes();
 			GlobalScope.DefineBuiltInOperators();

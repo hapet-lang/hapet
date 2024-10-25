@@ -1,6 +1,4 @@
-﻿using HapetCommon;
-
-namespace HapetFrontend.Types
+﻿namespace HapetFrontend.Types
 {
 	public abstract class HapetType
 	{
@@ -17,7 +15,7 @@ namespace HapetFrontend.Types
 		/// <summary>
 		/// The size of a pointer on the currently selected platform
 		/// </summary>
-		public static int PointerSize => CompilerSettings.TargetPlatformData.PointerSize;
+		public static int PointerSize => Compiler.AssemblyPointerSize;
 
 		protected int _size = -1;
 		protected int _alignment = -1;

@@ -1,6 +1,5 @@
 ﻿using HapetBackend.Llvm.Linkers;
 using HapetBackend.Llvm.Linkers.Windows;
-using HapetCommon;
 using HapetFrontend;
 using HapetFrontend.Entities;
 using LLVMSharp;
@@ -18,7 +17,6 @@ namespace HapetBackend.Llvm
 		/// <summary>
 		/// Intermediate lang LLVM IR
 		/// </summary>
-		private string _irDir;
 		private string _outDir;
 		private string _targetFile;
 		private bool _emitDebugInfo;
@@ -48,7 +46,7 @@ namespace HapetBackend.Llvm
 			throw new NotImplementedException();
 		}
 
-		public unsafe bool GenerateCode(Compiler compiler, IErrorHandler errorHandler, string irDir, string outDir, string targetFile, bool optimize, bool outputIntermediateFile)
+		public unsafe bool GenerateCode(Compiler compiler, IErrorHandler errorHandler, bool optimize, bool outputIntermediateFile)
 		{
 			LLVM.InitializeAllTargetMCs();
 			LLVM.InitializeAllTargets();
@@ -58,18 +56,17 @@ namespace HapetBackend.Llvm
 
 			this._compiler = compiler ?? throw new ArgumentNullException(nameof(compiler));
 			this._errorHandler = errorHandler ?? throw new ArgumentNullException(nameof(errorHandler));
-			this._irDir = Path.GetFullPath(irDir ?? "");
-			this._outDir = Path.GetFullPath(outDir ?? "");
-			this._targetFile = targetFile;
+			this._outDir = _compiler.CurrentProjectSettings.OutputDirectory;
+			this._targetFile = _compiler.CurrentProjectSettings.ProjectName;
 			this._emitDebugInfo = !optimize;
 
-			if (_compiler.MainFunction == null && (CompilerSettings.TargetFormat == TargetFormat.Console || CompilerSettings.TargetFormat == TargetFormat.Windowed))
+			if (_compiler.MainFunction == null && (_compiler.CurrentProjectSettings.TargetFormat == TargetFormat.Console || _compiler.CurrentProjectSettings.TargetFormat == TargetFormat.Windowed))
 			{
 				_errorHandler.ReportError("Main function could not be found...");
 				return false;
 			}
 
-			this._targetTriple = GetTargetTriple(CompilerSettings.TargetPlatformData);
+			this._targetTriple = GetTargetTriple(_compiler.CurrentProjectSettings.TargetPlatformData);
 
 			_module = LLVMModuleRef.CreateWithName("hapetlang-module"); // TODO: project name here
 			_module.Target = _targetTriple;
@@ -106,21 +103,21 @@ namespace HapetBackend.Llvm
 				}
 			}
 
-			// generate ir dir
-			if (!string.IsNullOrWhiteSpace(irDir) && !Directory.Exists(irDir))
-				Directory.CreateDirectory(irDir);
+			// generate out dir
+			if (!string.IsNullOrWhiteSpace(_outDir) && !Directory.Exists(_outDir))
+				Directory.CreateDirectory(_outDir);
 
 			// create .ll file
 			if (outputIntermediateFile)
 			{
-				_module.PrintToFile(Path.Combine(irDir, targetFile + ".ll"));
+				_module.PrintToFile(Path.Combine(_outDir, _targetFile + ".ll"));
 			}
 
 			// do not generate exe/dll if there are errors
 			if (!errorHandler.HasErrors)
 			{
                 // emit machine code to object file
-                var objFile = Path.Combine(irDir, $"{targetFile}{CompilerSettings.TargetPlatformData.ObjectFileExtension}");
+                var objFile = Path.Combine(_outDir, $"{_targetFile}{_compiler.CurrentProjectSettings.TargetPlatformData.ObjectFileExtension}");
 				targetMachine.EmitToFile(_module, objFile, LLVMCodeGenFileType.LLVMObjectFile);
 			}
 			else
@@ -135,20 +132,19 @@ namespace HapetBackend.Llvm
 			return true;
 		}
 
-		public bool CompileCode(IEnumerable<string> libraryIncludeDirectories, IEnumerable<string> libraries, string subsystem, IErrorHandler errorHandler, bool printLikerArgs)
+		public bool CompileCode(IEnumerable<string> libraryIncludeDirectories, IEnumerable<string> libraries, IErrorHandler errorHandler, bool printLikerArgs)
 		{
 			if (!string.IsNullOrWhiteSpace(_outDir) && !Directory.Exists(_outDir))
 				Directory.CreateDirectory(_outDir);
 
-			string objFile = Path.Combine(_irDir, _targetFile + CompilerSettings.TargetPlatformData.ObjectFileExtension);
+			string objFile = Path.Combine(_outDir, _targetFile + _compiler.CurrentProjectSettings.TargetPlatformData.ObjectFileExtension);
 			string exeFile = Path.Combine(_outDir, _targetFile);
 
-
-			switch (CompilerSettings.TargetPlatformData.TargetPlatform)
+			switch (_compiler.CurrentProjectSettings.TargetPlatformData.TargetPlatform)
 			{
 				case TargetPlatform.Win86:
 				case TargetPlatform.Win64:
-					return WinLinker.Link(_compiler, exeFile, objFile, libraryIncludeDirectories, libraries, subsystem, errorHandler, printLikerArgs);
+					return WinLinker.Link(_compiler, exeFile, objFile, libraryIncludeDirectories, libraries, errorHandler, printLikerArgs);
 				case TargetPlatform.Linux86:
 				case TargetPlatform.Linux64:
 					// TODO: ... 

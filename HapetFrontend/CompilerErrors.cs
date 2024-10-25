@@ -1,4 +1,4 @@
-﻿namespace HapetCommon
+﻿namespace HapetFrontend
 {
 	public enum CompilerErrors
 	{

@@ -1,15 +1,14 @@
-﻿using HapetCommon;
-using HapetFrontend;
+﻿using HapetFrontend;
 using HapetFrontend.Entities;
 
 namespace HapetBackend.Llvm.Linkers.Windows
 {
 	public static partial class WinLinker
 	{
-		private static bool LinkPlatformLibraries(List<string> lldArgs, IErrorHandler errorHandler, string target)
+		private static bool LinkPlatformLibraries(Compiler compiler, List<string> lldArgs, IErrorHandler errorHandler, string target)
 		{
 			// platform libraries
-			switch (CompilerSettings.TargetPlatformData.TargetPlatform)
+			switch (compiler.CurrentProjectSettings.TargetPlatformData.TargetPlatform)
 			{
 				case TargetPlatform.Win86:
 				case TargetPlatform.Win64:

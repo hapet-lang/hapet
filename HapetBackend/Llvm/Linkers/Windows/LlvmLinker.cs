@@ -1,5 +1,4 @@
-﻿using HapetCommon;
-using HapetFrontend;
+﻿using HapetFrontend;
 using HapetFrontend.Entities;
 using System.Reflection;
 using System.Runtime.InteropServices;
@@ -8,7 +7,7 @@ namespace HapetBackend.Llvm.Linkers.Windows
 {
 	public static partial class WinLinker
 	{
-		public static bool Link(Compiler compiler, string targetFile, string objFile, IEnumerable<string> libraryIncludeDirectories, IEnumerable<string> libraries, string subsystem, IErrorHandler errorHandler, bool printLinkerArgs)
+		public static bool Link(Compiler compiler, string targetFile, string objFile, IEnumerable<string> libraryIncludeDirectories, IEnumerable<string> libraries, IErrorHandler errorHandler, bool printLinkerArgs)
 		{
 			if (compiler is null)
 				throw new ArgumentNullException(nameof(compiler));
@@ -18,7 +17,7 @@ namespace HapetBackend.Llvm.Linkers.Windows
 				throw new ArgumentNullException(nameof(errorHandler));
 
 			string target = null;
-			switch (CompilerSettings.TargetPlatformData.TargetPlatform)
+			switch (compiler.CurrentProjectSettings.TargetPlatformData.TargetPlatform)
 			{
 				case TargetPlatform.Win86: 
 				case TargetPlatform.Linux86: 
@@ -38,7 +37,7 @@ namespace HapetBackend.Llvm.Linkers.Windows
 			filename = Path.Combine(dir, filename);
 
 			var lldArgs = new List<string>();
-			lldArgs.Add($"/out:{filename}{CompilerSettings.TargetPlatformData.ExecutableFileExtension}");
+			lldArgs.Add($"/out:{filename}{compiler.CurrentProjectSettings.TargetPlatformData.ExecutableFileExtension}");
 			// lldArgs.Add("/errorlimit:0"); // gives me a warning
 
 			// current compiler directory
@@ -55,7 +54,7 @@ namespace HapetBackend.Llvm.Linkers.Windows
 			//lldArgs.Add($@"-libpath:{exePath}\lib");
 
 			// other options
-			switch (CompilerSettings.TargetPlatformData.TargetPlatform)
+			switch (compiler.CurrentProjectSettings.TargetPlatformData.TargetPlatform)
 			{
 				case TargetPlatform.Win86:
 				case TargetPlatform.Win64:
@@ -64,10 +63,10 @@ namespace HapetBackend.Llvm.Linkers.Windows
 					// TODO: do i need this for linux?
 			}
 			lldArgs.Add($"/machine:{target}");
-			lldArgs.Add($"/subsystem:{subsystem}");
+			lldArgs.Add($"/subsystem:console"); // WARN: always console because the want 'int main(int argc, char*[] argv)'
 
 			// link platform specific shite
-			if (!LinkPlatformLibraries(lldArgs, errorHandler, target))
+			if (!LinkPlatformLibraries(compiler, lldArgs, errorHandler, target))
 				return false;
 
 			foreach (var linc in libraries)
