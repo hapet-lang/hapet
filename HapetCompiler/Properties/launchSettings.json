@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "HapetCompiler": {
+      "commandName": "Project",
+      "commandLineArgs": "build \"../../../../../test/TestProject/TestProject.hptproj\""
+    }
+  }
+}

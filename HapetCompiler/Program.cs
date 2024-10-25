@@ -14,7 +14,7 @@ namespace HapetCompiler
 			
 			if (args.Length == 0)
 			{
-				errorHandler.ReportError("hapet command must be specified. For example 'hapet build /path/to/project.hptproj'");
+				errorHandler.ReportError("hapet command must be specified. For example 'hapet build ...");
 				return (int)CompilerErrors.HapetCommandError;
 			}
 
