@@ -73,9 +73,8 @@ namespace HapetFrontend
 			var fileScope = new Scope($"{Path.GetFileNameWithoutExtension(fileName)}_scope", GlobalScope);
 			var file = new ProgramFile(fileName, lexer.Text, fileScope);
 
-			// TODO: set here module name!!!
-			// TODO: this is kostyl
-			file.ModuleName = $"TestPrj.{(Path.GetFileNameWithoutExtension(file.Name))}";
+			file.Namespace = CompilerUtils.GetNamespace(CurrentProjectSettings.ProjectPath, CurrentProjectSettings.ProjectName, fileName);
+			file.Module = $"{file.Namespace}.{Path.GetFileNameWithoutExtension(file.Name)}";
 			_files[fileName] = file;
 
 			while (true)
@@ -87,7 +86,7 @@ namespace HapetFrontend
 				HandleStatement(s);
 			}
 
-			GlobalScope.DefineModuleSymbol(file.ModuleName, file);
+			GlobalScope.DefineFileSymbol(file.Module, file);
 
 			return file;
 

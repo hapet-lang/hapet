@@ -43,13 +43,8 @@ namespace HapetFrontend.Parsing.PostPrepare
 
 		private void PostPrepareClassInference(AstClassDecl classDecl)
 		{
-			// infer fields and props at first
-			foreach (var decl in classDecl.Declarations.Where(x => x is AstVarDecl).Select(x => x as AstVarDecl))
-			{
-				// field or property
-				PostPrepareVarInference(decl);
-			}
-			foreach (var decl in classDecl.Declarations.Where(x => x is AstFuncDecl).Select(x => x as AstFuncDecl))
+            /// fields should be already inferred in <see cref="PostPrepareMetadataTypes"/> and <see cref="PostPrepareMetadataTypeFields"/>
+            foreach (var decl in classDecl.Declarations.Where(x => x is AstFuncDecl).Select(x => x as AstFuncDecl))
 			{
 				PostPrepareFunctionInference(decl);
 			}
@@ -57,43 +52,46 @@ namespace HapetFrontend.Parsing.PostPrepare
 
 		private void PostPrepareStructInference(AstStructDecl structDecl)
 		{
-			// infer fields at first
-			foreach (var decl in structDecl.Declarations.Where(x => x is AstVarDecl).Select(x => x as AstVarDecl))
-			{
-				// field 
-				PostPrepareVarInference(decl);
-			}
-		}
+            /// should be already inferred in <see cref="PostPrepareMetadataTypes"/> and <see cref="PostPrepareMetadataTypeFields"/>
+        }
 
-		private void PostPrepareFunctionInference(AstFuncDecl funcDecl)
+        private void PostPrepareFunctionInference(AstFuncDecl funcDecl, bool forMetadata = false)
 		{
 			_currentFunction = funcDecl;
 
-			// inferencing parameters 
-			foreach (var p in funcDecl.Parameters)
+			// if the function inference is for metadata - infer everything except body
+			// if not - infer only body because func decl already infered from metadata :)
+			if (forMetadata)
 			{
-				PostPrepareParamInference(p);
-			}
+                // inferencing parameters 
+                foreach (var p in funcDecl.Parameters)
+                {
+                    PostPrepareParamInference(p);
+                }
 
-			// if the containing class is empty - it is external func
-			if (funcDecl.ContainingClass != null)
-			{
-				// renaming func name from 'Anime' to 'Anime(int, float)'
-				string newName = funcDecl.Name.Name + funcDecl.Parameters.GetParamsString();
-				// TODO: if it is public func - it should be visible in the scope in which func's class is
-				funcDecl.ContainingClass.SubScope.DefineDeclSymbol(newName, funcDecl);
-				funcDecl.Name = funcDecl.Name.GetCopy(newName);
-			}
+                // if the containing class is empty - it is external func
+                if (funcDecl.ContainingClass != null)
+                {
+                    // renaming func name from 'Anime' to 'Anime(int, float)'
+                    string newName = funcDecl.Name.Name + funcDecl.Parameters.GetParamsString();
+                    // TODO: if it is public func - it should be visible in the scope in which func's class is
+                    funcDecl.ContainingClass.SubScope.DefineDeclSymbol(newName, funcDecl);
+                    funcDecl.Name = funcDecl.Name.GetCopy(newName);
+                }
 
-			// inferencing return type 
+                // inferencing return type 
+                {
+                    PostPrepareExprInference(funcDecl.Returns);
+                }
+            }
+			else
 			{
-				PostPrepareExprInference(funcDecl.Returns);
-			}
-
-			if (funcDecl.Body != null)
-			{
-				PostPrepareBlockInference(funcDecl.Body);
-			}
+				// inferring only body
+                if (funcDecl.Body != null)
+                {
+                    PostPrepareBlockInference(funcDecl.Body);
+                }
+            }
 		}
 
 		private void PostPrepareVarInference(AstVarDecl varDecl)

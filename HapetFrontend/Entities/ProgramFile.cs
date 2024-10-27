@@ -12,14 +12,19 @@ namespace HapetFrontend.Entities
 		public string Name { get; }
 
 		/// <summary>
-		/// Filename with some part to be represented as module. Implement it in ParseFile or prev
+		/// The full folder name where file is located
 		/// </summary>
-		public string ModuleName { get; set; }
+		public string Namespace { get; set; }
 
-		/// <summary>
-		/// To grab the text only once and store it here
-		/// </summary>
-		public string Text { get; }
+        /// <summary>
+        /// Filename with namespace to be represented as module
+        /// </summary>
+        public string Module { get; set; }
+
+        /// <summary>
+        /// To grab the text only once and store it here
+        /// </summary>
+        public string Text { get; }
 
 		public Scope FileScope { get; }
 

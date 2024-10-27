@@ -98,7 +98,10 @@ namespace HapetFrontend.Parsing.PostPrepare
 					fieldInitializer = new AstDefaultExpr(decl);
 				var assign = new AstAssignStmt(target, fieldInitializer, decl);
 				iniBlockStatements.Add(assign);
-			}
+
+				// we don't need it anymore
+				decl.Initializer = null;
+            }
 			// the block with all field inits
 			var iniBlock = new AstBlockExpr(iniBlockStatements);
 

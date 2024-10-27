@@ -1,4 +1,5 @@
 ﻿using HapetFrontend.Ast.Expressions;
+using HapetFrontend.Parsing;
 using HapetFrontend.Types;
 
 namespace HapetFrontend.Ast.Declarations
@@ -21,5 +22,26 @@ namespace HapetFrontend.Ast.Declarations
 			Type = type;
 			Initializer = ini;
 		}
-	}
+
+		internal VarDeclJson GetJson()
+		{
+			return new VarDeclJson()
+			{
+				Type = Type.OutType.ToString(),
+				Name = Name.Name,
+				SpecialKeys = SpecialKeys,
+				DocString = Documentation
+			};
+		}
+    }
+
+    internal class VarDeclJson
+    {
+		public string Type { get; set; }
+		public string Name { get; set; }
+
+        public List<TokenType> SpecialKeys { get; set; }
+
+		public string DocString { get; set; }
+    }
 }

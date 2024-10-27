@@ -1,31 +1,35 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-	<PropertyGroup>
-		<OutputType>Exe</OutputType>
-		<TargetFramework>net8.0</TargetFramework>
-		<ImplicitUsings>enable</ImplicitUsings>
-		<RuntimeIdentifier Condition="'$(RuntimeIdentifier)' == ''">win-x64</RuntimeIdentifier>
-	</PropertyGroup>
+    <PropertyGroup>
+        <OutputType>Exe</OutputType>
+        <TargetFramework>net8.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <RuntimeIdentifier Condition="'$(RuntimeIdentifier)' == ''">win-x64</RuntimeIdentifier>
+    </PropertyGroup>
 
-	<ItemGroup>
-		<Content Include="TestFile1.0.hpt" CopyToOutputDirectory="Always" />
-		<Content Include="TestFile1.1.hpt" CopyToOutputDirectory="Always" />
-		<Content Include="TestFile1.2.hpt" CopyToOutputDirectory="Always" />
-		<Content Include="TestFile1.3.hpt" CopyToOutputDirectory="Always" />
-		<Content Include="TestFile1.4.hpt" CopyToOutputDirectory="Always" />
-		<Content Include="TestFile1.5.hpt" CopyToOutputDirectory="Always" />
-		<Content Include="TestFile1.6.hpt" CopyToOutputDirectory="Always" />
-		<Content Include="TestFile2.0.hpt" CopyToOutputDirectory="Always" />
-		<Content Include="TestFile2.1.hpt" CopyToOutputDirectory="Always" />
-		<Content Include="TestFile2.2.hpt" CopyToOutputDirectory="Always" />
-		<Content Include="TestFile2.3.hpt" CopyToOutputDirectory="Always" />
-		<Content Include="TestFile2.4.hpt" CopyToOutputDirectory="Always" />
-		<Content Include="TestFile2.5.hpt" CopyToOutputDirectory="Always" />
-	</ItemGroup>
+    <ItemGroup>
+        <Content Include="TestFile1.0.hpt" CopyToOutputDirectory="Always" />
+        <Content Include="TestFile1.1.hpt" CopyToOutputDirectory="Always" />
+        <Content Include="TestFile1.2.hpt" CopyToOutputDirectory="Always" />
+        <Content Include="TestFile1.3.hpt" CopyToOutputDirectory="Always" />
+        <Content Include="TestFile1.4.hpt" CopyToOutputDirectory="Always" />
+        <Content Include="TestFile1.5.hpt" CopyToOutputDirectory="Always" />
+        <Content Include="TestFile1.6.hpt" CopyToOutputDirectory="Always" />
+        <Content Include="TestFile2.0.hpt" CopyToOutputDirectory="Always" />
+        <Content Include="TestFile2.1.hpt" CopyToOutputDirectory="Always" />
+        <Content Include="TestFile2.2.hpt" CopyToOutputDirectory="Always" />
+        <Content Include="TestFile2.3.hpt" CopyToOutputDirectory="Always" />
+        <Content Include="TestFile2.4.hpt" CopyToOutputDirectory="Always" />
+        <Content Include="TestFile2.5.hpt" CopyToOutputDirectory="Always" />
+    </ItemGroup>
 
-	<ItemGroup>
-		<ProjectReference Include="..\HapetBackend\HapetBackend.csproj" />
-		<ProjectReference Include="..\HapetFrontend\HapetFrontend.csproj" />
-	</ItemGroup>
+    <ItemGroup>
+        <ProjectReference Include="..\HapetBackend\HapetBackend.csproj" />
+        <ProjectReference Include="..\HapetFrontend\HapetFrontend.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+    </ItemGroup>
 
 </Project>

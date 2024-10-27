@@ -1,4 +1,5 @@
 ﻿using HapetFrontend.Ast.Expressions;
+using HapetFrontend.Parsing;
 using HapetFrontend.Scoping;
 using HapetFrontend.Types;
 
@@ -23,5 +24,27 @@ namespace HapetFrontend.Ast.Declarations
 
 			Declarations = declarations;
 		}
-	}
+
+        internal ClassDeclJson GetJson()
+        {
+			var fields = Declarations.Where(x => x is AstVarDecl).Select(x => (x as AstVarDecl).GetJson()).ToList();
+            return new ClassDeclJson()
+            {
+                Fields = fields,
+                Name = Name.Name,
+                SpecialKeys = SpecialKeys,
+                DocString = Documentation
+            };
+        }
+    }
+
+	internal class ClassDeclJson
+	{
+		public List<VarDeclJson> Fields { get; set; }
+        public string Name { get; set; }
+
+        public List<TokenType> SpecialKeys { get; set; }
+
+        public string DocString { get; set; }
+    }
 }

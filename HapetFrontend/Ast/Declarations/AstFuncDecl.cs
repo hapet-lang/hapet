@@ -1,5 +1,6 @@
 ﻿using HapetFrontend.Ast.Expressions;
 using HapetFrontend.Enums;
+using HapetFrontend.Parsing;
 using HapetFrontend.Scoping;
 using HapetFrontend.Types;
 using System.Text;
@@ -31,5 +32,32 @@ namespace HapetFrontend.Ast.Declarations
 			Parameters = parameters;
 			Returns = returns;
 		}
-	}
+
+        internal FuncDeclJson GetJson()
+        {
+            var parameters = Parameters.Select(x => x.GetJson()).ToList();
+            return new FuncDeclJson()
+            {
+                Parameters = parameters,
+                ReturnType = Returns.OutType.ToString(),
+                Name = Name.Name,
+                SpecialKeys = SpecialKeys,
+                CallingConvention = CallingConvention,
+                DocString = Documentation
+            };
+        }
+    }
+
+    internal class FuncDeclJson
+    {
+        public List<ParamDeclJson> Parameters { get; set; }
+        public string ReturnType { get; set; }
+        public string Name { get; set; }
+
+        public List<TokenType> SpecialKeys { get; set; }
+
+		public CallingConvention CallingConvention { get; set; }
+
+        public string DocString { get; set; }
+    }
 }

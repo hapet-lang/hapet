@@ -59,11 +59,15 @@ namespace HapetFrontend
 				ExecutableFileExtension = "",
 			},
 		};
+        /// <summary>
+        /// Path to the project (used usually for calc namespaces)
+        /// </summary>
+        public string ProjectPath { get; set; } 
 
-		/// <summary>
-		/// The name of the project that is going to be compiled
-		/// </summary>
-		public string ProjectName { get; set; }
+        /// <summary>
+        /// The name of the project that is going to be compiled
+        /// </summary>
+        public string ProjectName { get; set; }
 		/// <summary>
 		/// The version of the project that is going to be compiled
 		/// </summary>

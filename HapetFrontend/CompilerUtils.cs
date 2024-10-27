@@ -130,6 +130,30 @@ namespace HapetFrontend
 			return true;
 		}
 
+		public static string GetNamespace(string projectPath, string projectName, string filePath)
+		{
+            var projectPathNormalized = Path.GetDirectoryName(projectPath).Replace("\\", "/").TrimEnd('/');
+            var filePathNormalized = Path.GetDirectoryName(filePath).Replace("\\", "/").TrimEnd('/');
+
+			StringBuilder uniquePath = new StringBuilder();
+			for (int i = 0; i < filePathNormalized.Length; ++i)
+			{
+				if (i >= projectPathNormalized.Length)
+				{
+					uniquePath.Append(filePathNormalized[i]);
+                }
+			}
+
+			var uniquePathNormalized = uniquePath.ToString().Trim('/').Replace('/', '.');
+			// it could be empty if the file is in the same directory as project file
+			if (string.IsNullOrWhiteSpace(uniquePathNormalized))
+			{
+				return projectName;
+			}
+
+			return $"{projectName}.{uniquePathNormalized}";
+        }
+
 		public static Process StartProcess(string exe, List<string> argList = null, string workingDirectory = null, DataReceivedEventHandler stdout = null, DataReceivedEventHandler stderr = null)
 		{
 			argList = argList ?? new List<string>();

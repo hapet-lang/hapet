@@ -43,7 +43,10 @@ namespace HapetCompiler
 				}
 				// TODO: ...
 			}
-		}
+
+			// setting the project path into the settings
+            _projectSettings.ProjectPath = _projectPath;
+        }
 
 		public void UpdateSettings()
 		{
@@ -56,7 +59,9 @@ namespace HapetCompiler
 			_projectSettings.ProjectConfiguration = GetValueOrDefault<string>("ProjectConfiguration", "Debug");
 			// setting project out folder
 			var outDirRelative = GetValueOrDefault<string>("OutputDirectory", $"./bin/{_projectSettings.ProjectConfiguration}");
-			_projectSettings.OutputDirectory = Path.Combine(Path.GetDirectoryName(_projectPathAbsolute).PathNormalize(), outDirRelative);
+			_projectSettings.OutputDirectory = $"{Path.GetDirectoryName(_projectPathAbsolute).Replace("\\", "/").TrimEnd('/')}/{outDirRelative.Replace("\\", "/")}";
+			// WARN: creating the dir here!!!
+			if (!Directory.Exists(_projectSettings.OutputDirectory)) Directory.CreateDirectory(_projectSettings.OutputDirectory);
 
 			// setting unsafe code allowence
 			_projectSettings.AllowUnsafeCode = GetValueOrDefault<bool>("AllowUnsafeCode", false);

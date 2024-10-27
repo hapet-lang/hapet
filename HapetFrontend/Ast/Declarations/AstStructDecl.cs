@@ -1,4 +1,5 @@
 ﻿using HapetFrontend.Ast.Expressions;
+using HapetFrontend.Parsing;
 using HapetFrontend.Scoping;
 using HapetFrontend.Types;
 
@@ -21,5 +22,27 @@ namespace HapetFrontend.Ast.Declarations
 			Type = new AstIdExpr("struct", Location);
 			Type.OutType = new StructType(this);
 		}
-	}
+
+        internal StructDeclJson GetJson()
+        {
+            var fields = Declarations.Where(x => x is AstVarDecl).Select(x => (x as AstVarDecl).GetJson()).ToList();
+            return new StructDeclJson()
+            {
+                Fields = fields,
+                Name = Name.Name,
+                SpecialKeys = SpecialKeys,
+                DocString = Documentation
+            };
+        }
+    }
+
+    internal class StructDeclJson
+    {
+        public List<VarDeclJson> Fields { get; set; }
+        public string Name { get; set; }
+
+        public List<TokenType> SpecialKeys { get; set; }
+
+        public string DocString { get; set; }
+    }
 }
