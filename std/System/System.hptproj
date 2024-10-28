@@ -1,0 +1,9 @@
+<Project>
+	<PropertyGroup>
+		<ProjectName>System</ProjectName>
+		<ProjectVersion>1.0.0</ProjectVersion>
+		<AllowUnsafeCode>true</AllowUnsafeCode>
+
+        <TargetFormat>Library</TargetFormat>
+	</PropertyGroup>
+</Project>
