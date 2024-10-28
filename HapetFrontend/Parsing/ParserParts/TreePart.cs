@@ -441,6 +441,10 @@ namespace HapetFrontend.Parsing
 							}
 							else
 							{
+								// the check is done because of some misunderstood shite
+								// how to find out when 'a * b' is a mul expr
+								// and 'bool* bptr' is a ptr expr?
+								// so allowPointerExpressions is true only when decls are parsed!!!
 								if (!allowPointerExpressions)
 									break;
 								var ptrExpr = new AstPointerExpr(id.RightPart, false, new Location(id.RightPart.Beginning, CurrentToken.Location.Ending));
