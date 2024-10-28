@@ -33,11 +33,13 @@ namespace HapetBackend.Llvm.Linkers.Windows
 			// creating executable name
 			var filename = Path.GetFileNameWithoutExtension(targetFile + ".x");
 			var dir = Path.GetDirectoryName(Path.GetFullPath(targetFile));
+			var outFileExtension = compiler.CurrentProjectSettings.TargetFormat == TargetFormat.Library ? 
+				compiler.CurrentProjectSettings.TargetPlatformData.LibraryFileExtension : 
+				compiler.CurrentProjectSettings.TargetPlatformData.ExecutableFileExtension;
 
 			filename = Path.Combine(dir, filename);
-
 			var lldArgs = new List<string>();
-			lldArgs.Add($"/out:{filename}{compiler.CurrentProjectSettings.TargetPlatformData.ExecutableFileExtension}");
+			lldArgs.Add($"/out:{filename}{outFileExtension}");
 			// lldArgs.Add("/errorlimit:0"); // gives me a warning
 
 			// current compiler directory
@@ -53,17 +55,25 @@ namespace HapetBackend.Llvm.Linkers.Windows
 			//lldArgs.Add($@"-libpath:{Environment.CurrentDirectory}\lib"); // hack so it can be used from prj/sln dir
 			//lldArgs.Add($@"-libpath:{exePath}\lib");
 
-			// other options
-			switch (compiler.CurrentProjectSettings.TargetPlatformData.TargetPlatform)
+			// we need to set entry only for console and windowed types
+			if (compiler.CurrentProjectSettings.TargetFormat == TargetFormat.Console || compiler.CurrentProjectSettings.TargetFormat == TargetFormat.Windowed)
 			{
-				case TargetPlatform.Win86:
-				case TargetPlatform.Win64:
-					lldArgs.Add("/entry:mainCRTStartup");
-					break;
-					// TODO: do i need this for linux?
+				// other options
+				switch (compiler.CurrentProjectSettings.TargetPlatformData.TargetPlatform)
+				{
+					case TargetPlatform.Win86:
+					case TargetPlatform.Win64:
+						lldArgs.Add("/entry:mainCRTStartup");
+						break;
+						// TODO: do i need this for linux?
+				}
 			}
+			
 			lldArgs.Add($"/machine:{target}");
-			lldArgs.Add($"/subsystem:console"); // WARN: always console because the want 'int main(int argc, char*[] argv)'
+			if (compiler.CurrentProjectSettings.TargetFormat == TargetFormat.Console || compiler.CurrentProjectSettings.TargetFormat == TargetFormat.Windowed)
+				lldArgs.Add($"/subsystem:console"); // WARN: always console because the want 'int main(int argc, char*[] argv)'
+			else
+				lldArgs.Add($"/DLL"); // TODO: is it ok?
 
 			// link platform specific shite
 			if (!LinkPlatformLibraries(compiler, lldArgs, errorHandler, target))
@@ -107,7 +117,7 @@ namespace HapetBackend.Llvm.Linkers.Windows
 			var result = process.ExitCode == 0;
 			if (result)
 			{
-				Console.WriteLine($"Generated {filename}.exe");
+				Console.WriteLine($"Generated {filename}{outFileExtension}");
 			}
 			else
 			{

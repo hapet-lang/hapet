@@ -35,7 +35,7 @@ namespace HapetFrontend.Parsing.PostPrepare
 												    x.Name.Name == $"{classDecl.Name.Name}_dtor"));
 			foreach (var fnc in specialFuncs)
 			{
-				_compiler.ErrorHandler.ReportError(_currentSourceFile.Text, fnc, $"Function with the name is not allowed in the {classDecl.Name.Name} class");
+				_compiler.ErrorHandler.ReportError(_currentSourceFile.Text, fnc.Name, $"Function with the name is not allowed in the {classDecl.Name.Name} class");
 			}
 
 			PostPrepareGenerateClassInitializer(classDecl);

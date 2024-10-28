@@ -10,6 +10,7 @@ namespace HapetFrontend.Parsing
 		{
 			TokenLocation beg = null, end = null;
 			var declarations = new List<AstDeclaration>();
+			var inherited = new List<AstNestedExpr>();
 			AstIdExpr className = null;
 
 			beg = Consume(TokenType.KwClass, ErrMsg("keyword 'class'", "at beginning of class type")).Location;
@@ -30,6 +31,29 @@ namespace HapetFrontend.Parsing
 				}
 				className = idExpr;
 			}
+
+			// checking for inheritance
+			if (CheckToken(TokenType.Colon))
+			{
+				Consume(TokenType.Colon, ErrMsg(":", "before inherited types"));
+				SkipNewlines();
+
+				while (CheckToken(TokenType.Identifier))
+				{
+					var ident = ParseIdentifierExpression();
+					inherited.Add(ident);
+					// if there is something else
+					if (CheckToken(TokenType.Comma))
+					{
+						Consume(TokenType.Comma, ErrMsg(",", "before the next inherited type"));
+						continue;
+					}
+
+					// if there is nothing else
+					break;
+				}
+			}
+			SkipNewlines();
 
 			ConsumeUntil(TokenType.OpenBrace, ErrMsg("{", "at beginning of class body"), true);
 
@@ -68,7 +92,7 @@ namespace HapetFrontend.Parsing
 			end = Consume(TokenType.CloseBrace, ErrMsg("}", "at end of class declaration")).Location;
 
 			// TODO: doc string
-			return new AstClassDecl(className, declarations, "", new Location(beg, end));
+			return new AstClassDecl(className, declarations, "", new Location(beg, end)) { InheritedFrom = inherited };
 		}
 	}
 }

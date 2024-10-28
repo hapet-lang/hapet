@@ -89,7 +89,8 @@ namespace HapetFrontend.Parsing
 					if (udecl.Type == null)
 					{
 						// it is ctor/dtor
-						func.Name = udecl.Name.GetCopy(udecl.Name.Name + (udecl.Name.Suffix != "~" ? "_ctor" : "_dtor"));
+						// func.Name = udecl.Name.GetCopy(udecl.Name.Name + (udecl.Name.Suffix != "~" ? "_ctor" : "_dtor")); // no need anymore?
+						func.Name = udecl.Name.GetCopy();
 						func.Returns = new AstIdExpr("void");
 						func.ClassFunctionTypes.Add(udecl.Name.Suffix != "~" ? Enums.ClassFunctionType.Ctor : Enums.ClassFunctionType.Dtor);
 					}

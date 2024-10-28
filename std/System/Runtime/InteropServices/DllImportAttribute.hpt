@@ -2,11 +2,11 @@ using System;
 
 public sealed class DllImportAttribute : Attribute
 {
-    public string Value;
-    public string EntryPoint;
+    // public string Value;
+    // public string EntryPoint;
 
     public DllImportAttribute(string dllName)
     {
-        Value = dllName;
+        // this.Value = dllName;
     }
 }

@@ -92,8 +92,12 @@ namespace HapetBackend.Llvm
 			// InitTypeInfoLLVMTypes(); // TODO: it is reflection
 			GenerateCode();
 
-			// generating main call
-			GenerateMainFunction();
+			// no need to gen main func for library typed project
+			if (_compiler.CurrentProjectSettings.TargetFormat == TargetFormat.Console || _compiler.CurrentProjectSettings.TargetFormat == TargetFormat.Windowed)
+			{
+				// generating main call
+				GenerateMainFunction();
+			}
 
 			// verify module
 			{

@@ -13,6 +13,11 @@ namespace HapetFrontend.Ast.Declarations
 		public List<AstDeclaration> Declarations { get; } = new List<AstDeclaration>();
 
 		/// <summary>
+		/// The list of types from which the current class is inherited
+		/// </summary>
+		public List<AstNestedExpr> InheritedFrom { get; set; } = new List<AstNestedExpr>();
+
+		/// <summary>
 		/// The inner scope of the class. Used to get access to it's content
 		/// </summary>
 		public Scope SubScope { get; set; }

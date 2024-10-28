@@ -24,6 +24,7 @@ namespace HapetFrontend
 		public int PointerSize { get; set; }
 		public string ObjectFileExtension { get; set; }
 		public string ExecutableFileExtension { get; set; }
+		public string LibraryFileExtension { get; set; }
 	}
 
 	public class CompilerSettings
@@ -36,6 +37,7 @@ namespace HapetFrontend
 				PointerSize = 4,
 				ObjectFileExtension = ".obj",
 				ExecutableFileExtension = ".exe",
+				LibraryFileExtension = ".dll",
 			},
 			new PlatformData() 
 			{ 
@@ -43,6 +45,7 @@ namespace HapetFrontend
 				PointerSize = 8,
 				ObjectFileExtension = ".obj",
 				ExecutableFileExtension = ".exe",
+				LibraryFileExtension = ".dll",
 			},
 			new PlatformData() 
 			{ 
@@ -50,6 +53,7 @@ namespace HapetFrontend
 				PointerSize = 4,
 				ObjectFileExtension = ".o",
 				ExecutableFileExtension = "",
+				LibraryFileExtension = ".so",
 			},
 			new PlatformData() 
 			{ 
@@ -57,6 +61,7 @@ namespace HapetFrontend
 				PointerSize = 8,
 				ObjectFileExtension = ".o",
 				ExecutableFileExtension = "",
+				LibraryFileExtension = ".so",
 			},
 		};
         /// <summary>
