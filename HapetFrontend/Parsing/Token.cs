@@ -122,12 +122,12 @@ namespace HapetFrontend.Parsing
 
 		KwAsync,
 
-		KwStatic,
-
+		KwStatic,		
 		KwAbstract,
 		KwVirtual,
 		KwOverride,
 		KwPartial,
-		KwExtern
+		KwExtern,
+		KwSealed,
 	}
 }

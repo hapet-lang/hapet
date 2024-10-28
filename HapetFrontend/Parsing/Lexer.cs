@@ -277,6 +277,7 @@ namespace HapetFrontend.Parsing
 				case "override": token.Type = TokenType.KwOverride; break;
 				case "partial": token.Type = TokenType.KwPartial; break;
 				case "extern": token.Type = TokenType.KwExtern; break;
+				case "sealed": token.Type = TokenType.KwSealed; break;
 			}
 		}
 

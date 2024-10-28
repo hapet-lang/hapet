@@ -550,6 +550,7 @@ namespace HapetFrontend.Parsing
 				case TokenType.KwOverride:
 				case TokenType.KwPartial:
 				case TokenType.KwExtern:
+				case TokenType.KwSealed:
 					return ParseImplementationKeys(token.Type);
 
 				default:
