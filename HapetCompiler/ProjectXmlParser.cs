@@ -45,7 +45,7 @@ namespace HapetCompiler
 			}
 
 			// setting the project path into the settings
-            _projectSettings.ProjectPath = _projectPath;
+            _projectSettings.ProjectPath = Path.GetFullPath(_projectPath);
         }
 
 		public void UpdateSettings()

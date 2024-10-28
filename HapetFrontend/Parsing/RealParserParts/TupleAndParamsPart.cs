@@ -1,7 +1,6 @@
 ﻿using HapetFrontend.Ast;
 using HapetFrontend.Ast.Declarations;
 using HapetFrontend.Ast.Expressions;
-using static System.Net.Mime.MediaTypeNames;
 
 namespace HapetFrontend.Parsing
 {
@@ -85,7 +84,7 @@ namespace HapetFrontend.Parsing
 
 			TokenLocation beg = null, end = null;
 
-			var e = ParseExpression(allowCommaForTuple);
+			var e = ParseExpression(allowCommaForTuple, false, null, true);
 			beg = e.Beginning;
 			SkipNewlines();
 

@@ -13,7 +13,7 @@ namespace HapetFrontend.Parsing.PostPrepare
 			foreach (var (path, file) in _compiler.GetFiles())
 			{
 				_currentSourceFile = file;
-				PostPrepareGenerateExternalFuncs();
+				// PostPrepareGenerateExternalFuncs();
 
 				foreach (var stmt in file.Statements)
 				{

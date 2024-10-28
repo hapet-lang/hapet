@@ -66,7 +66,7 @@ namespace HapetFrontend.Parsing
 
 				default:
 					{
-						var stmt = ParseExpression(true); // anyway it should return AstStatement, not AstExpression
+						var stmt = ParseExpression(true, false, null, true); // anyway it should return AstStatement, not AstExpression
 						if (stmt is AstEmptyStmt)
 						{
 							NextToken();

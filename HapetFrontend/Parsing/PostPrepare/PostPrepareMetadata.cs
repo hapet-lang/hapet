@@ -107,7 +107,7 @@ namespace HapetFrontend.Parsing.PostPrepare
             metadata.FuncDecls = _allFunctions.Select(x => x.GetJson()).ToList();
 
             // WARN: take care about the shite that is goin on here
-            var sz = JsonConvert.SerializeObject(metadata);
+            var sz = JsonConvert.SerializeObject(metadata, Formatting.Indented);
             var outFolderPath = _compiler.CurrentProjectSettings.OutputDirectory;
             var projectName = _compiler.CurrentProjectSettings.ProjectName;
             File.WriteAllText($"{outFolderPath}/{projectName}.json", sz);

@@ -60,7 +60,7 @@ namespace HapetFrontend
 			},
 		};
         /// <summary>
-        /// Path to the project (used usually for calc namespaces)
+        /// Path to the project (absolute!) (used usually for calc namespaces)
         /// </summary>
         public string ProjectPath { get; set; } 
 

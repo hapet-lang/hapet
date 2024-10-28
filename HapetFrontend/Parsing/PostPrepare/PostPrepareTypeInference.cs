@@ -357,12 +357,21 @@ namespace HapetFrontend.Parsing.PostPrepare
 			if (smbl is DeclSymbol typed)
 			{
 				idExpr.OutType = typed.Decl.Type.OutType;
+				return;
 			}
-			else
+
+			string currentFileNamespace = _currentSourceFile.Namespace;
+			var smblInLocalFile = idExpr.Scope.GetSymbol($"{currentFileNamespace}.{name}");
+			if (smblInLocalFile is DeclSymbol typed2)
 			{
-				// TODO: really give them a error? or mb there is smth harder?
-				_compiler.ErrorHandler.ReportError(_currentSourceFile.Text, idExpr, "The type could not be inferred...");
+				idExpr.OutType = typed2.Decl.Type.OutType;
+				return;
 			}
+
+			// TODO: check in 'usings' via similar way as upper
+
+			// TODO: really give them a error? or mb there is smth harder?
+			_compiler.ErrorHandler.ReportError(_currentSourceFile.Text, idExpr, "The type could not be inferred...");
 		}
 
 		private void PostPrepareCallExprInference(AstCallExpr callExpr)

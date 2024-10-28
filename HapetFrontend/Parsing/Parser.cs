@@ -7,7 +7,7 @@ namespace HapetFrontend.Parsing
 	public partial class Parser
 	{
 		public delegate string ErrorMessageResolver(Token t);
-		private delegate AstStatement ExpressionParser(bool allowCommaForTuple, bool allowFunctionExpression, ErrorMessageResolver e);
+		private delegate AstStatement ExpressionParser(bool allowCommaForTuple, bool allowFunctionExpression, ErrorMessageResolver e, bool allowPointerExpressions);
 
 		private ILexer _lexer;
 		private IErrorHandler _errorHandler;

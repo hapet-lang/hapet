@@ -33,7 +33,7 @@ namespace HapetFrontend.Parsing
 			var tkn = Consume(tknType, ErrMsg($"keyword '{tknType}'", "at beginning of type"));
 			beg = tkn.Location;
 
-			var expr = ParseExpression(true, true);
+			var expr = ParseExpression(true, true, null, true);
 
 			// it could be an idexpr or nestedexpr when ctor/dtor decls are here
 			if (expr is AstIdExpr idExpr)

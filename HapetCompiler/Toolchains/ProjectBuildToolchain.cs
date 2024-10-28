@@ -48,21 +48,27 @@ namespace HapetCompiler.Toolchains
 
             // TODO: go all over the files and at first generate header file for the project. then parse them normally
             // var ptFile = compiler.AddFile(_testFile);
+            var allFilesInProjectFolder = (new DirectoryInfo(Path.GetDirectoryName(currentProjectSettings.ProjectPath))).EnumerateFiles("*", SearchOption.AllDirectories);
+            foreach (var file in allFilesInProjectFolder)
+            {
+                if (Path.GetExtension(file.FullName) == ".hpt")
+				    compiler.AddFile(file.FullName);
+			}
 
             if (errorHandler.HasErrors)
             {
                 return (int)CompilerErrors.ParsingError; // parsing errors
             }
 
+            // post prepare
             postPreparer.StartPreparation();
-
             if (errorHandler.HasErrors)
             {
                 return (int)CompilerErrors.PostPrepareError; // post prepare errors
             }
 
+            // code gen
             bool codeGenOk = GenerateAndCompileCode(compiler, errorHandler);
-
             if (errorHandler.HasErrors || !codeGenOk)
             {
                 return (int)CompilerErrors.CodeGenerationError; // code generation errors
