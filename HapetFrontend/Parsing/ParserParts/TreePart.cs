@@ -415,9 +415,8 @@ namespace HapetFrontend.Parsing
 					NextToken();
 					return new AstNullExpr(new Location(token.Location));
 
-				// TODO: what should i do here
-				//case TokenType.OpenBracket:
-				//	return ParseArrayOrSliceExpression();
+				case TokenType.OpenBracket:
+					return ParseAttributeStatement();
 
 				case TokenType.KwNew:
 					{

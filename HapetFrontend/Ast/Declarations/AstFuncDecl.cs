@@ -1,4 +1,5 @@
 ﻿using HapetFrontend.Ast.Expressions;
+using HapetFrontend.Ast.Statements;
 using HapetFrontend.Enums;
 using HapetFrontend.Parsing;
 using HapetFrontend.Scoping;
@@ -9,9 +10,8 @@ namespace HapetFrontend.Ast.Declarations
 {
     public class AstFuncDecl : AstDeclaration
 	{
-		public CallingConvention CallingConvention { get; } = CallingConvention.Default;
-
-		public List<ClassFunctionType> ClassFunctionTypes { get; } = new List<ClassFunctionType>();
+		public CallingConvention CallingConvention { get; set; } = CallingConvention.Default;
+        public ClassFunctionType ClassFunctionType { get; set; } = ClassFunctionType.Default;
 
 		public List<AstParamDecl> Parameters { get; set; }
 		public AstExpression Returns { get; set; }
@@ -22,6 +22,11 @@ namespace HapetFrontend.Ast.Declarations
 		/// The class that contains the function
 		/// </summary>
 		public AstClassDecl ContainingClass { get; set; }
+
+        /// <summary>
+        /// Attributes that are applied to the func decl
+        /// </summary>
+        public List<AstAttributeStmt> Attributes { get; } = new List<AstAttributeStmt>();
 
 		public AstFuncDecl(List<AstParamDecl> parameters, AstExpression returns, AstBlockExpr body, AstIdExpr name, string doc = "", ILocation Location = null) : base(name, doc, Location)
 		{

@@ -65,7 +65,14 @@ namespace HapetFrontend.Parsing
 					break;
 
 				var decl = ParseDeclaration(null, true);
-				declarations.Add(decl);				
+				// it is probably an attribute so no need to save it to decls
+				if (decl is AstEmptyDecl)
+				{
+					SkipNewlines();
+					continue;
+				}
+
+				declarations.Add(decl);
 
 				next = PeekToken();
 				if (next.Type == TokenType.NewLine)

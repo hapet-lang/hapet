@@ -40,8 +40,8 @@ namespace HapetFrontend.Parsing.PostPrepare
 
 			PostPrepareGenerateClassInitializer(classDecl);
 			// passing all the existing ctors
-			PostPrepareGenerateClassConstructor(classDecl, allFuncs.Where(x => x.ClassFunctionTypes.Contains(Enums.ClassFunctionType.Ctor)).ToList());
-			PostPrepareGenerateClassDestructor(classDecl, allFuncs.Where(x => x.ClassFunctionTypes.Contains(Enums.ClassFunctionType.Dtor)).ToList());
+			PostPrepareGenerateClassConstructor(classDecl, allFuncs.Where(x => x.ClassFunctionType == Enums.ClassFunctionType.Ctor).ToList());
+			PostPrepareGenerateClassDestructor(classDecl, allFuncs.Where(x => x.ClassFunctionType == Enums.ClassFunctionType.Dtor).ToList());
 
 			// adding 'this' param as first
 			foreach (var decl in classDecl.Declarations)
@@ -111,7 +111,7 @@ namespace HapetFrontend.Parsing.PostPrepare
 			iniBlock,
 			new AstIdExpr($"{classDecl.Name.Name}_ini"));
 			iniDecl.SpecialKeys.Add(TokenType.KwPrivate); // ini is private because it is called inside ctors
-			iniDecl.ClassFunctionTypes.Add(Enums.ClassFunctionType.Initializer);
+			iniDecl.ClassFunctionType = Enums.ClassFunctionType.Initializer;
 			iniDecl.ContainingClass = classDecl;
 			classDecl.Declarations.Insert(0, iniDecl);
 		}
@@ -135,7 +135,7 @@ namespace HapetFrontend.Parsing.PostPrepare
 				ctorBlock,
 				new AstIdExpr($"{classDecl.Name.Name}_ctor"));
 				ctorDecl.SpecialKeys.Add(TokenType.KwPublic); // default ctor is public
-				ctorDecl.ClassFunctionTypes.Add(Enums.ClassFunctionType.Ctor);
+				ctorDecl.ClassFunctionType = Enums.ClassFunctionType.Ctor;
 				ctorDecl.ContainingClass = classDecl;
 				classDecl.Declarations.Insert(1, ctorDecl); // the first one has to be ini func
 			}
@@ -169,7 +169,7 @@ namespace HapetFrontend.Parsing.PostPrepare
 				dtorBlock,
 				new AstIdExpr($"{classDecl.Name.Name}_dtor"));
 				dtorDecl.SpecialKeys.Add(TokenType.KwPublic); // default dtor is public
-				dtorDecl.ClassFunctionTypes.Add(Enums.ClassFunctionType.Dtor);
+				dtorDecl.ClassFunctionType = Enums.ClassFunctionType.Dtor;
 				dtorDecl.ContainingClass = classDecl;
 				classDecl.Declarations.Add(dtorDecl);
 			}

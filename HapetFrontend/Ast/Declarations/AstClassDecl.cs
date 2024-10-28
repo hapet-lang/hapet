@@ -43,6 +43,7 @@ namespace HapetFrontend.Ast.Declarations
         }
     }
 
+	// TODO: add inherited types property
 	internal class ClassDeclJson
 	{
 		public List<VarDeclJson> Fields { get; set; }

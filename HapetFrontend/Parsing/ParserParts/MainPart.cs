@@ -74,7 +74,7 @@ namespace HapetFrontend.Parsing
 						}
 						if (stmt is UnknownDecl udecl)
 						{
-							return PrepareUnknownDecl(udecl, "", true); // TODO: doc string?
+							return PrepareUnknownDecl(udecl, "", true, new List<AstAttributeStmt>()); // TODO: doc string?
 						}
 						if (CheckTokens(TokenType.Equal, TokenType.AddEq, TokenType.SubEq, TokenType.MulEq, TokenType.DivEq, TokenType.ModEq))
 						{

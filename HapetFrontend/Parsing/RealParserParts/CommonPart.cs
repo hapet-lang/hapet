@@ -51,7 +51,7 @@ namespace HapetFrontend.Parsing
 			return currNested;
 		}
 
-		private AstDeclaration PrepareUnknownDecl(UnknownDecl udecl, string docString, bool allowCommaTuple)
+		private AstDeclaration PrepareUnknownDecl(UnknownDecl udecl, string docString, bool allowCommaTuple, List<AstAttributeStmt> attrs)
 		{
 			TokenLocation end = udecl.Ending;
 			AstStatement initializer = null;
@@ -92,7 +92,7 @@ namespace HapetFrontend.Parsing
 						// func.Name = udecl.Name.GetCopy(udecl.Name.Name + (udecl.Name.Suffix != "~" ? "_ctor" : "_dtor")); // no need anymore?
 						func.Name = udecl.Name.GetCopy();
 						func.Returns = new AstIdExpr("void");
-						func.ClassFunctionTypes.Add(udecl.Name.Suffix != "~" ? Enums.ClassFunctionType.Ctor : Enums.ClassFunctionType.Dtor);
+						func.ClassFunctionType = udecl.Name.Suffix != "~" ? Enums.ClassFunctionType.Ctor : Enums.ClassFunctionType.Dtor;
 					}
 					else
 					{
@@ -100,7 +100,7 @@ namespace HapetFrontend.Parsing
 						func.Name = udecl.Name;
 						func.Returns = udecl.Type;
 					}
-
+					func.Attributes.AddRange(attrs); // TODO: WARNING: attr are only applied to the func decl now!!! apply them also to fields and other
 					func.SpecialKeys.AddRange(udecl.SpecialKeys);
 					return func;
 				}
