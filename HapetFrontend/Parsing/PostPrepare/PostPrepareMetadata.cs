@@ -30,8 +30,10 @@ namespace HapetFrontend.Parsing.PostPrepare
                 {
                     if (stmt is AstClassDecl classDecl)
                     {
-                        // creating a new class name with namespace
-                        string newClassName = $"{file.Namespace}.{classDecl.Name.Name}";
+						_currentClass = classDecl;
+
+						// creating a new class name with namespace
+						string newClassName = $"{file.Namespace}.{classDecl.Name.Name}";
                         classDecl.Name = classDecl.Name.GetCopy(newClassName);
 
                         file.FileScope.DefineDeclSymbol(classDecl.Name.Name, classDecl);
@@ -59,8 +61,9 @@ namespace HapetFrontend.Parsing.PostPrepare
                 {
                     if (stmt is AstClassDecl classDecl)
                     {
-                        // infer fields and props at first
-                        foreach (var decl in classDecl.Declarations.Where(x => x is AstVarDecl).Select(x => x as AstVarDecl))
+						_currentClass = classDecl;
+						// infer fields and props at first
+						foreach (var decl in classDecl.Declarations.Where(x => x is AstVarDecl).Select(x => x as AstVarDecl))
                         {
                             // field or property
                             PostPrepareVarInference(decl);
@@ -88,7 +91,8 @@ namespace HapetFrontend.Parsing.PostPrepare
                 {
                     if (stmt is AstClassDecl classDecl)
                     {
-                        foreach (var decl in classDecl.Declarations.Where(x => x is AstFuncDecl).Select(x => x as AstFuncDecl))
+						_currentClass = classDecl;
+						foreach (var decl in classDecl.Declarations.Where(x => x is AstFuncDecl).Select(x => x as AstFuncDecl))
                         {
                             PostPrepareFunctionInference(decl, true);
                             _allFunctions.Add(decl);

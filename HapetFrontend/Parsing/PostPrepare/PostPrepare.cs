@@ -14,6 +14,11 @@ namespace HapetFrontend.Parsing.PostPrepare
 		private ProgramFile _currentSourceFile;
 
 		/// <summary>
+		/// The class decl that is currently preparing
+		/// </summary>
+		private AstClassDecl _currentClass;
+
+		/// <summary>
 		/// The function decl that is currently preparing
 		/// </summary>
 		private AstFuncDecl _currentFunction;
@@ -48,7 +53,7 @@ namespace HapetFrontend.Parsing.PostPrepare
 							continue;
 
 						var funcDecl = decl as AstFuncDecl;
-						if (funcDecl.Name.Name == "Main(string[])" &&
+						if (funcDecl.Name.Name.EndsWith("Main(string[])") &&
 							funcDecl.Returns.OutType == IntType.GetIntType(4, true) &&
 							funcDecl.Parameters.Count == 1)
 						{

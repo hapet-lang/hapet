@@ -43,8 +43,10 @@ namespace HapetFrontend.Parsing.PostPrepare
 
 		private void PostPrepareClassInference(AstClassDecl classDecl)
 		{
-            /// fields should be already inferred in <see cref="PostPrepareMetadataTypes"/> and <see cref="PostPrepareMetadataTypeFields"/>
-            foreach (var decl in classDecl.Declarations.Where(x => x is AstFuncDecl).Select(x => x as AstFuncDecl))
+			_currentClass = classDecl;
+
+			/// fields should be already inferred in <see cref="PostPrepareMetadataTypes"/> and <see cref="PostPrepareMetadataTypeFields"/>
+			foreach (var decl in classDecl.Declarations.Where(x => x is AstFuncDecl).Select(x => x as AstFuncDecl))
 			{
 				PostPrepareFunctionInference(decl);
 			}
@@ -73,7 +75,7 @@ namespace HapetFrontend.Parsing.PostPrepare
                 if (funcDecl.ContainingClass != null)
                 {
                     // renaming func name from 'Anime' to 'Anime(int, float)'
-                    string newName = funcDecl.Name.Name + funcDecl.Parameters.GetParamsString();
+                    string newName = $"{funcDecl.ContainingClass.Name.Name}::{funcDecl.Name.Name}{funcDecl.Parameters.GetParamsString()}";
                     // TODO: if it is public func - it should be visible in the scope in which func's class is
                     funcDecl.ContainingClass.SubScope.DefineDeclSymbol(newName, funcDecl);
                     funcDecl.Name = funcDecl.Name.GetCopy(newName);
@@ -360,11 +362,23 @@ namespace HapetFrontend.Parsing.PostPrepare
 				return;
 			}
 
-			string currentFileNamespace = _currentSourceFile.Namespace;
-			var smblInLocalFile = idExpr.Scope.GetSymbol($"{currentFileNamespace}.{name}");
-			if (smblInLocalFile is DeclSymbol typed2)
+			// searching for the name in current class
+			// works only for functions
+			string currentClassName = _currentClass.Name.Name;
+			var smblInLocalClass = idExpr.Scope.GetSymbol($"{currentClassName}::{name}");
+			if (smblInLocalClass is DeclSymbol typed2)
 			{
 				idExpr.OutType = typed2.Decl.Type.OutType;
+				return;
+			}
+
+			// searching for the name in namespace
+			// works only for types/objects
+			string currentFileNamespace = _currentSourceFile.Namespace;
+			var smblInLocalFile = idExpr.Scope.GetSymbol($"{currentFileNamespace}.{name}");
+			if (smblInLocalFile is DeclSymbol typed3)
+			{
+				idExpr.OutType = typed3.Decl.Type.OutType;
 				return;
 			}
 
@@ -398,24 +412,44 @@ namespace HapetFrontend.Parsing.PostPrepare
 			}
 			else
 			{
-				// TODO: also callExpr.TypeOrObjectName could be checked to find out if the func is static or not
+				string newName = string.Empty;
 				// renaming func call name from 'Anime' to 'Anime(int, float)' WITH OBJECT AS FIRST PARAM
-				string newName = callExpr.FuncName.Name + callExpr.Arguments.GetArgsString();
-                var smbl2 = callExpr.FuncName.Scope.GetSymbol(newName);
-                if (smbl2 is DeclSymbol)
+				if (callExpr.TypeOrObjectName == null)
 				{
-                    // probably static
-                    callExpr.FuncName = callExpr.FuncName.GetCopy(newName);
-                    PostPrepareIdentifierInference(callExpr.FuncName);
-                }
+					// if the type/object name is not presented - the function is in the same class
+					// but we need to know is it static or not
+					newName = $"{_currentClass.Name.Name}::{callExpr.FuncName.Name}{callExpr.Arguments.GetArgsString()}";
+					var smbl2 = callExpr.FuncName.Scope.GetSymbol(newName);
+					if (smbl2 is DeclSymbol)
+					{
+						// static func defined in local class
+					}
+					else
+					{
+						// if it is a non static func defined in local class
+						newName = $"{_currentClass.Name.Name}::{callExpr.FuncName.Name}{callExpr.Arguments.GetArgsString(callExpr.TypeOrObjectName.OutType)}";
+					}
+				}
+				else if (callExpr.TypeOrObjectName.OutType is PointerType ptrTp && ptrTp.TargetType is ClassType clsTp)
+				{
+					// if we are calling like 'a.Anime()' where 'a' is an object
+					// we need to rename the func name call like that:
+					newName = $"{clsTp.Declaration.Name.Name}::{callExpr.FuncName.Name}{callExpr.Arguments.GetArgsString(callExpr.TypeOrObjectName.OutType)}";
+				}
+				else if (callExpr.TypeOrObjectName.OutType is ClassType clsTpStatic)
+				{
+					// if we are calling like 'A.Anime()' where 'A' is a class
+					// we need to rename the func name call like that:
+					newName = $"{clsTpStatic.Declaration.Name.Name}::{callExpr.FuncName.Name}{callExpr.Arguments.GetArgsString()}";
+				}
 				else
 				{
-                    // TODO: TypeOrObjectName could be null when calling in the same class
-                    // if it is a non static func
-                    newName = callExpr.FuncName.Name + callExpr.Arguments.GetArgsString(callExpr.TypeOrObjectName.OutType);
-                    callExpr.FuncName = callExpr.FuncName.GetCopy(newName);
-                    PostPrepareIdentifierInference(callExpr.FuncName);
-                }
+					// error here: the function call could not be infered
+					_compiler.ErrorHandler.ReportError(_currentSourceFile.Text, callExpr, $"The function call could not be inferred");
+				}
+
+				callExpr.FuncName = callExpr.FuncName.GetCopy(newName);
+				PostPrepareIdentifierInference(callExpr.FuncName);
 			}
 
 			// setting parameters

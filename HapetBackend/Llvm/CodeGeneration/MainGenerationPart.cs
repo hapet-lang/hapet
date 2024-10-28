@@ -84,7 +84,7 @@ namespace HapetBackend.Llvm
 
             funcType ??= HapetTypeToLLVMType(funcDecl.Type.OutType);
 
-			string funcName = classDecl != null ? $"{classDecl.Name.Name}::{funcDecl.Name.Name}" : funcDecl.Name.Name;
+			string funcName = funcDecl.Name.Name;
 
 			// declaring global func
 			LLVMValueRef lfunc = _module.AddFunction(funcName, funcType.Value);

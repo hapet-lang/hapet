@@ -48,6 +48,8 @@ namespace HapetFrontend.Parsing.PostPrepare
 
 		private void PostPrepareClassScoping(AstClassDecl classDecl)
 		{
+			_currentClass = classDecl;
+
 			classDecl.SourceFile = _currentSourceFile;
 			var classScope = new Scoping.Scope($"{classDecl.Name.Name}_scope", classDecl.Scope);
 			classDecl.SubScope = classScope; // setting the sub scope
