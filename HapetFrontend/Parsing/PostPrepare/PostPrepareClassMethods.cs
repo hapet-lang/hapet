@@ -95,7 +95,7 @@ namespace HapetFrontend.Parsing.PostPrepare
 			new AstIdExpr("void"),
 			iniBlock,
 			new AstIdExpr($"{classDecl.Name.Name}_ini"));
-			iniDecl.SpecialKeys.Add(TokenType.KwPrivate); // ini is private because it is called inside ctors
+			iniDecl.SpecialKeys.Add(TokenType.KwUnreflected); // ini is private because it is called inside ctors
 			iniDecl.ClassFunctionType = Enums.ClassFunctionType.Initializer;
 			iniDecl.ContainingClass = classDecl;
 			classDecl.Declarations.Insert(0, iniDecl);

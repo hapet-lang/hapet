@@ -83,8 +83,16 @@ namespace HapetBackend.Llvm
 
 			// declaring global func
 			LLVMValueRef lfunc = _module.AddFunction(funcName, funcType.Value);
-			lfunc.Linkage = LLVMLinkage.LLVMExternalLinkage;
-			lfunc.DLLStorageClass = LLVMDLLStorageClass.LLVMDLLExportStorageClass;
+			// make the function dllexport when it is not 'unreflected'
+			if (!funcDecl.SpecialKeys.Contains(TokenType.KwUnreflected))
+			{
+				lfunc.Linkage = LLVMLinkage.LLVMExternalLinkage;
+				lfunc.DLLStorageClass = LLVMDLLStorageClass.LLVMDLLExportStorageClass;
+			}
+			else
+			{
+				lfunc.Linkage = LLVMLinkage.LLVMInternalLinkage;
+			}
 
 			// caching the function											 
 			_valueMap[funcDecl.GetSymbol] = lfunc;

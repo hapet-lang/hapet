@@ -536,6 +536,7 @@ namespace HapetFrontend.Parsing
 				case TokenType.KwPublic:
 				case TokenType.KwProtected:
 				case TokenType.KwPrivate:
+				case TokenType.KwUnreflected:
 					return ParseAccessKeys(token.Type);
 
 				case TokenType.KwAsync:
