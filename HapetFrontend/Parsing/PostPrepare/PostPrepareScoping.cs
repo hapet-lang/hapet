@@ -7,7 +7,7 @@ using HapetFrontend.Scoping;
 
 namespace HapetFrontend.Parsing.PostPrepare
 {
-    public partial class PostPrepare
+	public partial class PostPrepare
 	{
 		private void PostPrepareScoping()
 		{
@@ -28,7 +28,7 @@ namespace HapetFrontend.Parsing.PostPrepare
 						PostPrepareStructScoping(structDecl);
 					}
 					else if (stmt is AstFuncDecl funcDecl)
-					{  
+					{
 						// TODO: remove and use 'extern' key of static func
 						// usually extern funcs
 						file.FileScope.DefineDeclSymbol(funcDecl.Name.Name, funcDecl);
@@ -62,9 +62,9 @@ namespace HapetFrontend.Parsing.PostPrepare
 				{
 					funcDecl.ContainingClass = classDecl;
 
-                    /// defining in a scope is done in <see cref="PostPrepareFunctionInference"/>
+					/// defining in a scope is done in <see cref="PostPrepareFunctionInference"/>
 
-                    PostPrepareFunctionScoping(funcDecl);
+					PostPrepareFunctionScoping(funcDecl);
 				}
 				else if (decl is AstVarDecl fieldDecl) // field or property
 				{
@@ -106,7 +106,7 @@ namespace HapetFrontend.Parsing.PostPrepare
 			}
 		}
 
-		private void PostPrepareFunctionScoping(AstFuncDecl funcDecl) 
+		private void PostPrepareFunctionScoping(AstFuncDecl funcDecl)
 		{
 			_currentFunction = funcDecl;
 
@@ -249,9 +249,9 @@ namespace HapetFrontend.Parsing.PostPrepare
 				case AstForStmt forStmt:
 					PostPrepareForStmtScoping(forStmt);
 					break;
-                case AstWhileStmt whileStmt:
-                    PostPrepareWhileStmtScoping(whileStmt);
-                    break;
+				case AstWhileStmt whileStmt:
+					PostPrepareWhileStmtScoping(whileStmt);
+					break;
 				case AstIfStmt ifStmt:
 					PostPrepareIfStmtScoping(ifStmt);
 					break;
@@ -264,9 +264,9 @@ namespace HapetFrontend.Parsing.PostPrepare
 				case AstBreakContStmt:
 					// nothing to do
 					break;
-                case AstReturnStmt returnStmt:
-                    PostPrepareReturnStmtScoping(returnStmt);
-                    break;
+				case AstReturnStmt returnStmt:
+					PostPrepareReturnStmtScoping(returnStmt);
+					break;
 				case AstAttributeStmt attrStmt:
 					PostPrepareAttributeStmtScoping(attrStmt);
 					break;
@@ -294,8 +294,8 @@ namespace HapetFrontend.Parsing.PostPrepare
 				if (stmt == null)
 					continue;
 
-                SetScopeAndParent(stmt, blockExpr, blockScope);
-                PostPrepareExprScoping(stmt);
+				SetScopeAndParent(stmt, blockExpr, blockScope);
+				PostPrepareExprScoping(stmt);
 			}
 
 			return blockScope;
@@ -373,10 +373,10 @@ namespace HapetFrontend.Parsing.PostPrepare
 			// usually when in the same class
 			if (callExpr.TypeOrObjectName != null)
 			{
-                SetScopeAndParent(callExpr.TypeOrObjectName, callExpr);
-                PostPrepareExprScoping(callExpr.TypeOrObjectName);
-            }
-			
+				SetScopeAndParent(callExpr.TypeOrObjectName, callExpr);
+				PostPrepareExprScoping(callExpr.TypeOrObjectName);
+			}
+
 			SetScopeAndParent(callExpr.FuncName, callExpr);
 			PostPrepareExprScoping(callExpr.FuncName);
 			foreach (var a in callExpr.Arguments)
@@ -485,20 +485,20 @@ namespace HapetFrontend.Parsing.PostPrepare
 			}
 		}
 
-        private static ulong _whileCounter = 0;
-        private void PostPrepareWhileStmtScoping(AstWhileStmt whileStmt)
+		private static ulong _whileCounter = 0;
+		private void PostPrepareWhileStmtScoping(AstWhileStmt whileStmt)
 		{
-            SetScopeAndParent(whileStmt.Body, whileStmt);
+			SetScopeAndParent(whileStmt.Body, whileStmt);
 
-            string scopename = $"while_{_whileCounter++}_scope";
-            var whileScope = PostPrepareBlockScoping(whileStmt.Body, scopename);
+			string scopename = $"while_{_whileCounter++}_scope";
+			var whileScope = PostPrepareBlockScoping(whileStmt.Body, scopename);
 
-            if (whileStmt.ConditionParam != null)
-            {
-                SetScopeAndParent(whileStmt.ConditionParam, whileStmt, whileScope);
-                PostPrepareExprScoping(whileStmt.ConditionParam);
-            }
-        }
+			if (whileStmt.ConditionParam != null)
+			{
+				SetScopeAndParent(whileStmt.ConditionParam, whileStmt, whileScope);
+				PostPrepareExprScoping(whileStmt.ConditionParam);
+			}
+		}
 
 		private static ulong _ifCounter = 0;
 		private void PostPrepareIfStmtScoping(AstIfStmt ifStmt)
@@ -550,12 +550,12 @@ namespace HapetFrontend.Parsing.PostPrepare
 
 		private void PostPrepareReturnStmtScoping(AstReturnStmt returnStmt)
 		{
-            if (returnStmt.ReturnExpression != null)
-            {
-                SetScopeAndParent(returnStmt.ReturnExpression, returnStmt);
-                PostPrepareExprScoping(returnStmt.ReturnExpression);
-            }
-        }
+			if (returnStmt.ReturnExpression != null)
+			{
+				SetScopeAndParent(returnStmt.ReturnExpression, returnStmt);
+				PostPrepareExprScoping(returnStmt.ReturnExpression);
+			}
+		}
 
 		private void PostPrepareAttributeStmtScoping(AstAttributeStmt attrStmt)
 		{
