@@ -80,9 +80,9 @@ namespace HapetBackend.Llvm
 		private LLVMValueRef _lastFunctionValueRef = default;
 		private unsafe void GenerateFuncCode(AstFuncDecl funcDecl, LLVMTypeRef? funcType = null, AstClassDecl classDecl = null)
 		{
-            _currentFunction = funcDecl;
+			_currentFunction = funcDecl;
 
-            funcType ??= HapetTypeToLLVMType(funcDecl.Type.OutType);
+			funcType ??= HapetTypeToLLVMType(funcDecl.Type.OutType);
 
 			string funcName = funcDecl.Name.Name;
 
@@ -103,8 +103,8 @@ namespace HapetBackend.Llvm
 					lfunc.Params[i].Name = p.Name.Name;
 			}
 
-			// check if there is no implementation
-			if (funcDecl.Body == null)
+			// check if there is no implementation and it is not an extern shite
+			if (funcDecl.Body == null && !funcDecl.SpecialKeys.Contains(TokenType.KwExtern))
 				return;
 
 			// params body
@@ -127,8 +127,17 @@ namespace HapetBackend.Llvm
 			_builder.BuildBr(bbBody);
 			_builder.PositionAtEnd(bbBody);
 
-			// genereting inside stuff of the function
-			GenerateBlockExprCode(funcDecl.Body);
+			// different behaviour when extern func
+			if (funcDecl.SpecialKeys.Contains(TokenType.KwExtern))
+			{
+				// when extern func
+				GenerateExternFunctionBody(funcDecl);
+			}
+			else
+			{
+				// genereting inside stuff of the function
+				GenerateBlockExprCode(funcDecl.Body);
+			}
 
 			lfunc.VerifyFunction(LLVMVerifierFailureAction.LLVMPrintMessageAction);
 		}
@@ -147,6 +156,39 @@ namespace HapetBackend.Llvm
 			// _refMap[varDecl.GetSymbol] = varPtr;
 			// _valueMap[varDecl.GetSymbol] = _builder.BuildLoad2(HapetTypeToLLVMType(varDecl.Type.OutType), varPtr, varDecl.Name.Name);
 			_valueMap[varDecl.GetSymbol] = varPtr;
+		}
+
+		private void GenerateExternFunctionBody(AstFuncDecl funcDecl)
+		{
+			// creating extern call of C func
+			string dllImportAttrFullName = "System.Runtime.InteropServices.DllImportAttribute"; // WARN: hard cock
+			var dllImportAttr = funcDecl.Attributes.FirstOrDefault(x => x.AttributeName.OutType.ToString() == dllImportAttrFullName);
+			// TODO: check for null should be done in type inferencing
+			string dllName = dllImportAttr.Parameters[0].OutValue as string; // TODO: check in type inferencing that it is a string and declared
+			string entryPoint = dllImportAttr.Parameters[1].OutValue as string; // TODO: check in type inferencing that it is a string and declared
+
+			// check if import from staticly linked shite
+			if (string.IsNullOrWhiteSpace(dllName))
+			{
+				// the same type
+				var funcType = HapetTypeToLLVMType(funcDecl.Type.OutType);
+
+				// declaring external global func
+				LLVMValueRef lfunc = _module.AddFunction(entryPoint, funcType);
+				lfunc.Linkage = LLVMLinkage.LLVMExternalLinkage;
+
+				// setting parameter names
+				for (int i = 0; i < funcDecl.Parameters.Count; ++i)
+				{
+					var p = funcDecl.Parameters[i];
+					if (p.Name != null)
+						lfunc.Params[i].Name = p.Name.Name;
+				}
+			}
+			else
+			{
+				// TODO: import from DLL
+			}
 		}
 	}
 }
