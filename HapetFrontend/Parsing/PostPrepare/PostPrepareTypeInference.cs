@@ -54,10 +54,10 @@ namespace HapetFrontend.Parsing.PostPrepare
 
 		private void PostPrepareStructInference(AstStructDecl structDecl)
 		{
-            /// should be already inferred in <see cref="PostPrepareMetadataTypes"/> and <see cref="PostPrepareMetadataTypeFields"/>
-        }
+			/// should be already inferred in <see cref="PostPrepareMetadataTypes"/> and <see cref="PostPrepareMetadataTypeFields"/>
+		}
 
-        private void PostPrepareFunctionInference(AstFuncDecl funcDecl, bool forMetadata = false)
+		private void PostPrepareFunctionInference(AstFuncDecl funcDecl, bool forMetadata = false)
 		{
 			_currentFunction = funcDecl;
 
@@ -65,35 +65,35 @@ namespace HapetFrontend.Parsing.PostPrepare
 			// if not - infer only body because func decl already infered from metadata :)
 			if (forMetadata)
 			{
-                // inferencing parameters 
-                foreach (var p in funcDecl.Parameters)
-                {
-                    PostPrepareParamInference(p);
-                }
+				// inferencing parameters 
+				foreach (var p in funcDecl.Parameters)
+				{
+					PostPrepareParamInference(p);
+				}
 
-                // if the containing class is empty - it is external func
-                if (funcDecl.ContainingClass != null)
-                {
-                    // renaming func name from 'Anime' to 'Anime(int, float)'
-                    string newName = $"{funcDecl.ContainingClass.Name.Name}::{funcDecl.Name.Name}{funcDecl.Parameters.GetParamsString()}";
-                    // TODO: if it is public func - it should be visible in the scope in which func's class is
-                    funcDecl.ContainingClass.SubScope.DefineDeclSymbol(newName, funcDecl);
-                    funcDecl.Name = funcDecl.Name.GetCopy(newName);
-                }
+				// if the containing class is empty - it is external func
+				if (funcDecl.ContainingClass != null)
+				{
+					// renaming func name from 'Anime' to 'Anime(int, float)'
+					string newName = $"{funcDecl.ContainingClass.Name.Name}::{funcDecl.Name.Name}{funcDecl.Parameters.GetParamsString()}";
+					// TODO: if it is public func - it should be visible in the scope in which func's class is
+					funcDecl.ContainingClass.SubScope.DefineDeclSymbol(newName, funcDecl);
+					funcDecl.Name = funcDecl.Name.GetCopy(newName);
+				}
 
-                // inferencing return type 
-                {
-                    PostPrepareExprInference(funcDecl.Returns);
-                }
-            }
+				// inferencing return type 
+				{
+					PostPrepareExprInference(funcDecl.Returns);
+				}
+			}
 			else
 			{
 				// inferring only body
-                if (funcDecl.Body != null)
-                {
-                    PostPrepareBlockInference(funcDecl.Body);
-                }
-            }
+				if (funcDecl.Body != null)
+				{
+					PostPrepareBlockInference(funcDecl.Body);
+				}
+			}
 		}
 
 		private void PostPrepareVarInference(AstVarDecl varDecl)
@@ -124,7 +124,7 @@ namespace HapetFrontend.Parsing.PostPrepare
 					PostPrepareExprInference(varDecl.Initializer);
 				}
 				PostPrepareVariableAssign(varDecl);
-            }
+			}
 		}
 
 		private void PostPrepareParamInference(AstParamDecl paramDecl)
@@ -151,7 +151,7 @@ namespace HapetFrontend.Parsing.PostPrepare
 				case AstUnaryExpr unExpr:
 					PostPrepareUnaryExprInference(unExpr);
 					break;
-				case AstBinaryExpr binExpr: 
+				case AstBinaryExpr binExpr:
 					PostPrepareBinaryExprInference(binExpr);
 					break;
 				case AstPointerExpr pointerExpr:
@@ -198,9 +198,9 @@ namespace HapetFrontend.Parsing.PostPrepare
 				case AstForStmt forStmt:
 					PostPrepareForStmtInference(forStmt);
 					break;
-                case AstWhileStmt whileStmt:
-                    PostPrepareWhileStmtInference(whileStmt);
-                    break;
+				case AstWhileStmt whileStmt:
+					PostPrepareWhileStmtInference(whileStmt);
+					break;
 				case AstIfStmt ifStmt:
 					PostPrepareIfStmtInference(ifStmt);
 					break;
@@ -213,9 +213,9 @@ namespace HapetFrontend.Parsing.PostPrepare
 				case AstBreakContStmt breakContStmt:
 					PostPrepareBreakContStmtInference(breakContStmt);
 					break;
-                case AstReturnStmt returnStmt:
-                    PostPrepareReturnStmtInference(returnStmt);
-                    break;
+				case AstReturnStmt returnStmt:
+					PostPrepareReturnStmtInference(returnStmt);
+					break;
 				case AstAttributeStmt attrStmt:
 					PostPrepareAttributeStmtInference(attrStmt);
 					break;
@@ -240,7 +240,7 @@ namespace HapetFrontend.Parsing.PostPrepare
 			}
 		}
 
-		private void PostPrepareUnaryExprInference(AstUnaryExpr unExpr) 
+		private void PostPrepareUnaryExprInference(AstUnaryExpr unExpr)
 		{
 			// TODO: check for the right size for an existance value (compiletime evaluated) and do some shite (set unExpr OutValue)
 			PostPrepareExprInference(unExpr.SubExpr as AstExpression);
@@ -396,10 +396,10 @@ namespace HapetFrontend.Parsing.PostPrepare
 			// usually when in the same class
 			if (callExpr.TypeOrObjectName != null)
 			{
-                // resolve the object on which func is called
-                PostPrepareExprInference(callExpr.TypeOrObjectName);
-            }
-			
+				// resolve the object on which func is called
+				PostPrepareExprInference(callExpr.TypeOrObjectName);
+			}
+
 			// resolve args
 			foreach (var a in callExpr.Arguments)
 			{
@@ -573,7 +573,7 @@ namespace HapetFrontend.Parsing.PostPrepare
 
 			// preparing the array
 			PostPrepareFullArray(arrayExpr);
-        }
+		}
 
 		private void PostPrepareArrayAccessExprInference(AstArrayAccessExpr arrayAccExpr)
 		{
@@ -585,9 +585,9 @@ namespace HapetFrontend.Parsing.PostPrepare
 				outType = arrayType.TargetType;
 			else if (arrayAccExpr.ObjectName.OutType is StringType)
 				outType = CharType.DefaultType; // TODO: mb non default could be here? idk :)
-            else if(arrayAccExpr.ObjectName.OutType is PointerType ptrType)
-                outType = ptrType.TargetType;
-            else
+			else if (arrayAccExpr.ObjectName.OutType is PointerType ptrType)
+				outType = ptrType.TargetType;
+			else
 			{
 				// error because expected an array 
 				_compiler.ErrorHandler.ReportError(_currentSourceFile.Text, arrayAccExpr.ObjectName, $"Array/String type expected to be indexed");
@@ -614,8 +614,8 @@ namespace HapetFrontend.Parsing.PostPrepare
 					// if it is not a default
 					PostPrepareExprInference(assignStmt.Value);
 				}
-                PostPrepareVariableAssign(assignStmt);
-            }
+				PostPrepareVariableAssign(assignStmt);
+			}
 		}
 
 		private void PostPrepareForStmtInference(AstForStmt forStmt)
@@ -640,16 +640,16 @@ namespace HapetFrontend.Parsing.PostPrepare
 
 		private void PostPrepareWhileStmtInference(AstWhileStmt whileStmt)
 		{
-            PostPrepareExprInference(whileStmt.ConditionParam);
+			PostPrepareExprInference(whileStmt.ConditionParam);
 
-            // error if it is not a bool type because it has to be
-            if (whileStmt.ConditionParam.OutType is not BoolType)
-            {
-                _compiler.ErrorHandler.ReportError(_currentSourceFile.Text, whileStmt.ConditionParam, "Type of the expression has to be boolean type");
-            }
+			// error if it is not a bool type because it has to be
+			if (whileStmt.ConditionParam.OutType is not BoolType)
+			{
+				_compiler.ErrorHandler.ReportError(_currentSourceFile.Text, whileStmt.ConditionParam, "Type of the expression has to be boolean type");
+			}
 
-            PostPrepareExprInference(whileStmt.Body);
-        }
+			PostPrepareExprInference(whileStmt.Body);
+		}
 
 		private void PostPrepareIfStmtInference(AstIfStmt ifStmt)
 		{
@@ -716,17 +716,17 @@ namespace HapetFrontend.Parsing.PostPrepare
 
 		private void PostPrepareReturnStmtInference(AstReturnStmt returnStmt)
 		{
-            if (returnStmt.ReturnExpression != null)
-            {
-                PostPrepareExprInference(returnStmt.ReturnExpression);
+			if (returnStmt.ReturnExpression != null)
+			{
+				PostPrepareExprInference(returnStmt.ReturnExpression);
 				// casting to func return type
-                returnStmt.ReturnExpression = PostPrepareExpressionWithType(_currentFunction.Returns.OutType, returnStmt.ReturnExpression);
-            }
+				returnStmt.ReturnExpression = PostPrepareExpressionWithType(_currentFunction.Returns.OutType, returnStmt.ReturnExpression);
+			}
 			else if (returnStmt.ReturnExpression == null && _currentFunction.Returns.OutType is not VoidType)
 			{
-                _compiler.ErrorHandler.ReportError(_currentSourceFile.Text, returnStmt, $"Empty 'return' statement in function that has to return {_currentFunction.Returns.OutType}");
-            }
-        }
+				_compiler.ErrorHandler.ReportError(_currentSourceFile.Text, returnStmt, $"Empty 'return' statement in function that has to return {_currentFunction.Returns.OutType}");
+			}
+		}
 
 		private void PostPrepareAttributeStmtInference(AstAttributeStmt attrStmt)
 		{
