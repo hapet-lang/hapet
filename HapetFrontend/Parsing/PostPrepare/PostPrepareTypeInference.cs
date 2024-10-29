@@ -216,9 +216,12 @@ namespace HapetFrontend.Parsing.PostPrepare
                 case AstReturnStmt returnStmt:
                     PostPrepareReturnStmtInference(returnStmt);
                     break;
-                // TODO: check other expressions
+				case AstAttributeStmt attrStmt:
+					PostPrepareAttributeStmtInference(attrStmt);
+					break;
+				// TODO: check other expressions
 
-                default:
+				default:
 					{
 						// TODO: anything to do here?
 						break;
@@ -716,6 +719,7 @@ namespace HapetFrontend.Parsing.PostPrepare
             if (returnStmt.ReturnExpression != null)
             {
                 PostPrepareExprInference(returnStmt.ReturnExpression);
+				// casting to func return type
                 returnStmt.ReturnExpression = PostPrepareExpressionWithType(_currentFunction.Returns.OutType, returnStmt.ReturnExpression);
             }
 			else if (returnStmt.ReturnExpression == null && _currentFunction.Returns.OutType is not VoidType)
@@ -723,5 +727,19 @@ namespace HapetFrontend.Parsing.PostPrepare
                 _compiler.ErrorHandler.ReportError(_currentSourceFile.Text, returnStmt, $"Empty 'return' statement in function that has to return {_currentFunction.Returns.OutType}");
             }
         }
-    }
+
+		private void PostPrepareAttributeStmtInference(AstAttributeStmt attrStmt)
+		{
+			PostPrepareExprInference(attrStmt.AttributeName);
+			foreach (var a in attrStmt.Parameters)
+			{
+				PostPrepareExprInference(a);
+				// all attr params has to be const values
+				if (a.OutValue == null)
+				{
+					_compiler.ErrorHandler.ReportError(_currentSourceFile.Text, a, $"Parameter value has to be compile time available");
+				}
+			}
+		}
+	}
 }

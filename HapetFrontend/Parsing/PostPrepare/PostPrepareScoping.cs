@@ -267,9 +267,12 @@ namespace HapetFrontend.Parsing.PostPrepare
                 case AstReturnStmt returnStmt:
                     PostPrepareReturnStmtScoping(returnStmt);
                     break;
-                // TODO: check other expressions
+				case AstAttributeStmt attrStmt:
+					PostPrepareAttributeStmtScoping(attrStmt);
+					break;
+				// TODO: check other expressions
 
-                default:
+				default:
 					{
 						// TODO: anything to do here?
 						break;
@@ -554,15 +557,26 @@ namespace HapetFrontend.Parsing.PostPrepare
             }
         }
 
-        // TODO: recursively go through all of the statments and set Scope and Parent
+		private void PostPrepareAttributeStmtScoping(AstAttributeStmt attrStmt)
+		{
+			SetScopeAndParent(attrStmt.AttributeName, attrStmt);
+			PostPrepareExprScoping(attrStmt.AttributeName);
+			foreach (var a in attrStmt.Parameters)
+			{
+				SetScopeAndParent(a, attrStmt);
+				PostPrepareExprScoping(a);
+			}
+		}
 
-        /// <summary>
-        /// Sets parent and scope to a child
-        /// </summary>
-        /// <param name="child">The child</param>
-        /// <param name="parent">The parent</param>
-        /// <param name="anotherScope">Scope to be set to a child. If null then parent scope is used</param>
-        private void SetScopeAndParent(AstStatement child, AstStatement parent, Scope anotherScope = null)
+		// TODO: recursively go through all of the statments and set Scope and Parent
+
+		/// <summary>
+		/// Sets parent and scope to a child
+		/// </summary>
+		/// <param name="child">The child</param>
+		/// <param name="parent">The parent</param>
+		/// <param name="anotherScope">Scope to be set to a child. If null then parent scope is used</param>
+		private void SetScopeAndParent(AstStatement child, AstStatement parent, Scope anotherScope = null)
 		{
 			anotherScope ??= parent.Scope;
 			child.Scope = anotherScope;
