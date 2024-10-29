@@ -88,10 +88,8 @@ namespace HapetBackend.Llvm
 
 			// declaring global func
 			LLVMValueRef lfunc = _module.AddFunction(funcName, funcType.Value);
-			if (funcDecl.SpecialKeys.Contains(TokenType.KwExtern))
-				lfunc.Linkage = LLVMLinkage.LLVMExternalLinkage; 
-			else
-				lfunc.Linkage = LLVMLinkage.LLVMInternalLinkage;
+			lfunc.Linkage = LLVMLinkage.LLVMExternalLinkage;
+			lfunc.DLLStorageClass = LLVMDLLStorageClass.LLVMDLLExportStorageClass;
 
 			// caching the function											 
 			_valueMap[funcDecl.GetSymbol] = lfunc;
