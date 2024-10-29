@@ -182,29 +182,56 @@ namespace HapetBackend.Llvm
 				return;
 			}
 			string dllName = dllImportAttr.Parameters[0].OutValue as string; 
-			string entryPoint = dllImportAttr.Parameters[1].OutValue as string; 
+			string entryPoint = dllImportAttr.Parameters[1].OutValue as string;
+
+			LLVMTypeRef funcType;
+			LLVMValueRef funcValue;
 
 			// check if import from staticly linked shite
 			if (string.IsNullOrWhiteSpace(dllName))
 			{
 				// the same type
-				var funcType = HapetTypeToLLVMType(funcDecl.Type.OutType);
+				funcType = HapetTypeToLLVMType(funcDecl.Type.OutType);
 
 				// declaring external global func
-				LLVMValueRef lfunc = _module.AddFunction(entryPoint, funcType);
-				lfunc.Linkage = LLVMLinkage.LLVMExternalLinkage;
+				funcValue = _module.AddFunction(entryPoint, funcType);
+				funcValue.Linkage = LLVMLinkage.LLVMExternalLinkage;
 
 				// setting parameter names
 				for (int i = 0; i < funcDecl.Parameters.Count; ++i)
 				{
 					var p = funcDecl.Parameters[i];
 					if (p.Name != null)
-						lfunc.Params[i].Name = p.Name.Name;
+						funcValue.Params[i].Name = p.Name.Name;
 				}
 			}
 			else
 			{
+				funcType = null;
+				funcValue = null;
 				// TODO: import from DLL
+			}
+
+			// generating params
+			List<LLVMValueRef> parameters = new List<LLVMValueRef>();
+			for (int i = 0; i < funcDecl.Parameters.Count; ++i)
+			{
+				var p = funcDecl.Parameters[i];
+				var vptr = _valueMap[p.GetSymbol];
+				var loaded = _builder.BuildLoad2(HapetTypeToLLVMType(p.Type.OutType), vptr, p.Name.Name);
+				parameters.Add(loaded);
+			}
+
+			// if there is smth to return
+			if (funcDecl.Returns.OutType is VoidType)
+			{
+				_builder.BuildCall2(funcType, funcValue, parameters.ToArray());
+				_builder.BuildRetVoid();
+			}
+			else
+			{
+				var v = _builder.BuildCall2(funcType, funcValue, parameters.ToArray(), $"{entryPoint}Result");
+				_builder.BuildRet(v);
 			}
 		}
 	}
