@@ -37,6 +37,11 @@ namespace HapetFrontend.Scoping
 			return DefineSymbol(new ModuleSymbol(name, file));
 		}
 
+		public bool DefineNamespaceSymbol(string name, Scope nsScope)
+		{
+			return DefineSymbol(new NamespaceSymbol(name, nsScope));
+		}
+
 		public bool DefineDeclSymbol(string name, AstDeclaration decl)
 		{
 			return DefineSymbol(new DeclSymbol(name, decl));

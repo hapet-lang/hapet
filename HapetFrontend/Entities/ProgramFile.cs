@@ -26,16 +26,15 @@ namespace HapetFrontend.Entities
         /// </summary>
         public string Text { get; }
 
-		public Scope FileScope { get; }
+		public Scope FileScope { get; set; }
 
 		public List<AstStatement> Statements { get; } = new List<AstStatement>();
 		public List<AstUsingStmt> Usings { get; set; } = new List<AstUsingStmt>();
 
-		public ProgramFile(string name, string text, Scope scope)
+		public ProgramFile(string name, string text)
 		{
 			this.Name = name;
 			this.Text = text;
-			FileScope = scope;
 		}
 
 		public override string ToString()

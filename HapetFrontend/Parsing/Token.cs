@@ -103,6 +103,7 @@ namespace HapetFrontend.Parsing
 		KwNull,
 
 		KwUsing,
+		KwNamespace,
 
 		KwBreak,
 		KwContinue,

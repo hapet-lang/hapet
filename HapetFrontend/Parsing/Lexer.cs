@@ -244,6 +244,7 @@ namespace HapetFrontend.Parsing
 				case "null": token.Type = TokenType.KwNull; break;
 
 				case "using": token.Type = TokenType.KwUsing; break;
+				case "namespace": token.Type = TokenType.KwNamespace; break;
 
 				case "if": token.Type = TokenType.KwIf; break;
 				case "else": token.Type = TokenType.KwElse; break;

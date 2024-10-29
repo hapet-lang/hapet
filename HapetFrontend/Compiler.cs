@@ -16,6 +16,11 @@ namespace HapetFrontend
 		/// </summary>
 		private Dictionary<string, ProgramFile> _files = new Dictionary<string, ProgramFile>();
 
+		/// <summary>
+		/// All the namespaces in the project
+		/// </summary>
+		private Dictionary<string, Scope> _nameSpaces = new Dictionary<string, Scope>();
+
 		public IErrorHandler ErrorHandler { get; }
 		public CompilerSettings CurrentProjectSettings { get; }
 		public static int AssemblyPointerSize { get; set; }
@@ -70,11 +75,7 @@ namespace HapetFrontend
 
 			var parser = new Parser(lexer, eh);
 
-			var fileScope = new Scope($"{Path.GetFileNameWithoutExtension(fileName)}_scope", GlobalScope);
-			var file = new ProgramFile(fileName, lexer.Text, fileScope);
-
-			file.Namespace = CompilerUtils.GetNamespace(CurrentProjectSettings.ProjectPath, CurrentProjectSettings.ProjectName, fileName);
-			file.Module = $"{file.Namespace}.{Path.GetFileNameWithoutExtension(file.Name)}";
+			var file = new ProgramFile(fileName, lexer.Text);
 			_files[fileName] = file;
 
 			while (true)
@@ -86,7 +87,15 @@ namespace HapetFrontend
 				HandleStatement(s);
 			}
 
-			GlobalScope.DefineFileSymbol(file.Module, file);
+			string normalNamespace = CompilerUtils.GetNamespace(CurrentProjectSettings.ProjectPath, CurrentProjectSettings.ProjectName, fileName);
+			GetCustomNamespaceIfDeclared(file, ref normalNamespace); // will change the namespace if declared
+
+			// generating namespace scope and doint some shite with it
+			var nsScope = GetNamespaceScope(normalNamespace);
+			file.FileScope = new Scope($"{Path.GetFileNameWithoutExtension(fileName)}_scope", nsScope);
+			file.Namespace = normalNamespace;
+			file.Module = $"{file.Namespace}.{Path.GetFileNameWithoutExtension(file.Name)}";
+			nsScope.DefineFileSymbol(file.Module, file);
 
 			return file;
 
@@ -106,6 +115,30 @@ namespace HapetFrontend
 					eh.ReportError(lexer.Text, s, "This type of statement is not allowed in global scope");
 				}
 			}
+		}
+
+		private void GetCustomNamespaceIfDeclared(ProgramFile file, ref string ns)
+		{
+			foreach (AstStatement s in file.Statements)
+			{
+				if (s is AstNamespaceStmt nsStmt)
+				{
+					ns = nsStmt.NameExpression.TryFlatten(ErrorHandler, file);
+					return;
+				}
+			}
+		}
+
+		public Scope GetNamespaceScope(string ns)
+		{
+			string scopeName = $"{ns}_scope";
+			if (_nameSpaces.TryGetValue(scopeName, out var scope))
+			{
+				return scope;
+			}
+			_nameSpaces[scopeName] = new Scope(scopeName, GlobalScope);
+			GlobalScope.DefineNamespaceSymbol(ns, _nameSpaces[scopeName]);
+			return _nameSpaces[scopeName];
 		}
 
 		public ProgramFile GetFile(string v)

@@ -10,7 +10,6 @@ namespace HapetFrontend.Parsing
 		private AstStatement ParseUsingStatement()
 		{
 			TokenLocation beg = null;
-			bool isAttach = false;
 
 			beg ??= Consume(TokenType.KwUsing, ErrMsg("keyword 'using'", "at beginning of 'using' statement")).Location;
 			SkipNewlines();
@@ -23,6 +22,23 @@ namespace HapetFrontend.Parsing
 			}
 
 			return new AstUsingStmt(expr, Location: new Location(beg));
+		}
+
+		private AstStatement ParseNamespaceStatement()
+		{
+			TokenLocation beg = null;
+
+			beg ??= Consume(TokenType.KwNamespace, ErrMsg("keyword 'namespace'", "at beginning of 'namespace' statement")).Location;
+			SkipNewlines();
+			var expr = ParseIdentifierExpression(ErrMsg("expression", "after keyword 'namespace'"));
+
+			if (expr is not AstNestedExpr)
+			{
+				ReportError(expr.Location, "Namespace name/path expected after 'namespace' keyword");
+				return ParseEmptyExpression();
+			}
+
+			return new AstNamespaceStmt(expr, Location: new Location(beg));
 		}
 	}
 }

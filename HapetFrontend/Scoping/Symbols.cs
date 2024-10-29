@@ -10,7 +10,7 @@ namespace HapetFrontend.Scoping
 	}
 
 	/// <summary>
-	/// To search for a module in a global scope
+	/// To search for a file in a namespace scope
 	/// </summary>
 	public class ModuleSymbol : ISymbol
 	{
@@ -21,6 +21,21 @@ namespace HapetFrontend.Scoping
 		{
 			this.Name = name;
 			this.File = file;
+		}
+	}
+
+	/// <summary>
+	/// To search for a namespace in a global scope
+	/// </summary>
+	public class NamespaceSymbol : ISymbol
+	{
+		public string Name { get; private set; }
+		public Scope Scope { get; private set; }
+
+		public NamespaceSymbol(string name, Scope scope)
+		{
+			this.Name = name;
+			this.Scope = scope;
 		}
 	}
 

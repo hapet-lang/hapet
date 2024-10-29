@@ -60,6 +60,8 @@ namespace HapetFrontend.Parsing
 
 				case TokenType.KwUsing:
 					return ParseUsingStatement();
+				case TokenType.KwNamespace:
+					return ParseNamespaceStatement();
 
 				case TokenType.OpenBrace:
 					return ParseBlockExpression();
