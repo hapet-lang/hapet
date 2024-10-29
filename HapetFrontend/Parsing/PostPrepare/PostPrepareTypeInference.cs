@@ -26,11 +26,6 @@ namespace HapetFrontend.Parsing.PostPrepare
 					{
 						PostPrepareStructInference(structDecl);
 					}
-					else if (stmt is AstFuncDecl funcDecl)
-					{
-						// usually extern funcs
-						PostPrepareFunctionInference(funcDecl);
-					}
 				}
 			}
 		}
@@ -373,7 +368,7 @@ namespace HapetFrontend.Parsing.PostPrepare
 				return;
 			}
 
-			// searching for the name in current class
+			// searching for the name with current class name
 			// works only for functions
 			string currentClassName = _currentClass.Name.Name;
 			var smblInLocalClass = idExpr.Scope.GetSymbol($"{currentClassName}::{name}");
@@ -383,7 +378,7 @@ namespace HapetFrontend.Parsing.PostPrepare
 				return;
 			}
 
-			// searching for the name in namespace
+			// searching for the name with namespace
 			// works only for types/objects
 			string currentFileNamespace = _currentSourceFile.Namespace;
 			var smblInLocalFile = idExpr.Scope.GetSymbol($"{currentFileNamespace}.{name}");

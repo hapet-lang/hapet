@@ -19,20 +19,11 @@ namespace HapetFrontend.Parsing.PostPrepare
 				{
 					if (stmt is AstClassDecl classDecl)
 					{
-						// file.FileScope.DefineDeclSymbol(classDecl.Name.Name, classDecl);
 						PostPrepareClassScoping(classDecl);
 					}
 					else if (stmt is AstStructDecl structDecl)
 					{
-						// file.FileScope.DefineDeclSymbol(structDecl.Name.Name, structDecl);
 						PostPrepareStructScoping(structDecl);
-					}
-					else if (stmt is AstFuncDecl funcDecl)
-					{
-						// TODO: remove and use 'extern' key of static func
-						// usually extern funcs
-						file.FileScope.DefineDeclSymbol(funcDecl.Name.Name, funcDecl);
-						PostPrepareFunctionScoping(funcDecl);
 					}
 				}
 			}

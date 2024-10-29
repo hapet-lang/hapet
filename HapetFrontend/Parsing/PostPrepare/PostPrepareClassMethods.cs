@@ -13,7 +13,6 @@ namespace HapetFrontend.Parsing.PostPrepare
 			foreach (var (path, file) in _compiler.GetFiles())
 			{
 				_currentSourceFile = file;
-				// PostPrepareGenerateExternalFuncs();
 
 				foreach (var stmt in file.Statements)
 				{
@@ -66,20 +65,6 @@ namespace HapetFrontend.Parsing.PostPrepare
 					funcDecl.Body.Statements.Add(new AstReturnStmt(null));
                 }
 			}
-		}
-
-		private void PostPrepareGenerateExternalFuncs()
-		{
-			var mallocDecl = new AstFuncDecl(new List<AstParamDecl>()
-			{
-				new AstParamDecl(new AstIdExpr("int"), null),
-			},
-			new AstPointerExpr(new AstIdExpr("void")),
-			null,
-			new AstIdExpr("malloc")); // TODO: not everywhere is has to be used. in future export it into std
-			mallocDecl.SpecialKeys.Add(TokenType.KwExtern);
-			_currentSourceFile.Statements.Insert(0, mallocDecl);
-			mallocDecl.Scope = _currentSourceFile.FileScope;
 		}
 
 		private void PostPrepareGenerateClassInitializer(AstClassDecl classDecl)

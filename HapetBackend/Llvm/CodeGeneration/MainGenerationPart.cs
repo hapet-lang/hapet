@@ -29,11 +29,6 @@ namespace HapetBackend.Llvm
 					{
 						GenerateClassCode(classDecl);
 					}
-					else if (stmt is AstFuncDecl funcDecl)
-					{
-						// usually extern funcs
-						GenerateFuncCode(funcDecl, null, null);
-					}
 				}
 			}
 		}
