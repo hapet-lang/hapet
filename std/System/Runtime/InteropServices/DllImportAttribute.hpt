@@ -7,5 +7,6 @@ public sealed class DllImportAttribute : Attribute
 
     public DllImportAttribute()
     {
+        string a = "asd";
     }
 }

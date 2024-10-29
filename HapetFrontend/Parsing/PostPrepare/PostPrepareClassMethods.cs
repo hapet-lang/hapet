@@ -29,9 +29,9 @@ namespace HapetFrontend.Parsing.PostPrepare
 			var allFuncs = classDecl.Declarations.Where(x => x is AstFuncDecl).Select(x => x as AstFuncDecl);
 
 			// error if user created a func with the initializer name
-			var specialFuncs = allFuncs.Where(x => (x.Name.Name == $"{classDecl.Name.Name}_ini" || 
-												    x.Name.Name == $"{classDecl.Name.Name}_ctor" ||
-												    x.Name.Name == $"{classDecl.Name.Name}_dtor"));
+			var specialFuncs = allFuncs.Where(x => (x.Name.Name.EndsWith($"::{classDecl.Name.Name}_ini") || 
+												    x.Name.Name.EndsWith($"::{classDecl.Name.Name}_ctor") ||
+												    x.Name.Name.EndsWith($"::{classDecl.Name.Name}_dtor")));
 			foreach (var fnc in specialFuncs)
 			{
 				_compiler.ErrorHandler.ReportError(_currentSourceFile.Text, fnc.Name, $"Function with the name is not allowed in the {classDecl.Name.Name} class");
@@ -128,6 +128,7 @@ namespace HapetFrontend.Parsing.PostPrepare
 			{
 				foreach (var ct in ctors)
 				{
+					ct.Name = ct.Name.GetCopy($"{ct.Name.Name}_ctor");
 					// insert ini func call at the beginning of the func body
 					ct.Body.Statements.Insert(0, new AstCallExpr(
 						new AstNestedExpr(new AstIdExpr("this"), null),
@@ -161,6 +162,7 @@ namespace HapetFrontend.Parsing.PostPrepare
 			else if (dtors.Count == 1)
 			{
 				var dtorFunc = dtors[0];
+				dtorFunc.Name = dtorFunc.Name.GetCopy($"{dtorFunc.Name.Name}_dtor");
 
 				// TODO: do i need to insert smth here? probably need to extern 'delete' and call it at the end
 				//ct.Body.Statements.Insert(0, new AstCallExpr(

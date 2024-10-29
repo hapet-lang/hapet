@@ -521,7 +521,8 @@ namespace HapetBackend.Llvm
 
 		private LLVMValueRef GetMalloc(LLVMValueRef typeSize, LLVMValueRef amount)
 		{
-			var mallocSymbol = _currentFunction.Scope.GetSymbol("malloc") as DeclSymbol; // TODO: rewrite it when there would be a default project of Hapet
+			// WARN: hard cock
+			var mallocSymbol = _currentFunction.Scope.GetSymbol("System.Runtime.InteropServices.Marshal::Malloc(int)") as DeclSymbol; // TODO: rewrite it when there would be a default project of Hapet
 			var mallocFunc = _valueMap[mallocSymbol];
 			LLVMTypeRef funcType = _typeMap[mallocSymbol.Decl.Type.OutType];
 			// calc size to malloc = amount * typeSize

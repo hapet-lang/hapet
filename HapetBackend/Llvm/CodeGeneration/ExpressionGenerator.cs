@@ -203,19 +203,15 @@ namespace HapetBackend.Llvm
 			if (expr.OutType is ClassType classType)
 			{
 				// TODO: some shite with alignment here
-				ulong structSize = 0;
+				int structSize = 0;
 				List<HapetType> structElements = _structTypeElementsMap[classType];
 				foreach (var elem in structElements)
 				{
-					structSize += (ulong)elem.GetSize();
+					structSize += elem.GetSize();
                 }
 
 				// allocating memory for struct
-                var mallocSymbol = classType.Declaration.Scope.GetSymbol("malloc") as DeclSymbol; // TODO: rewrite it when there would be a default project of Hapet
-				var mallocFunc = _valueMap[mallocSymbol];
-				LLVMTypeRef funcType = _typeMap[mallocSymbol.Decl.Type.OutType];
-				LLVMValueRef mallocSize = LLVMValueRef.CreateConstInt(HapetTypeToLLVMType(IntType.GetIntType(4, true)), structSize); 
-				v = _builder.BuildCall2(funcType, mallocFunc, new LLVMValueRef[] { mallocSize }, "allocated");
+				v = GetMalloc(structSize, 1);
 
 				// other args
 				List<LLVMValueRef> args = new List<LLVMValueRef>() { v };
