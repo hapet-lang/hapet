@@ -26,7 +26,7 @@ namespace HapetFrontend.Entities
         /// </summary>
         public string Text { get; }
 
-		public Scope FileScope { get; set; }
+		public Scope NamespaceScope { get; set; }
 
 		public List<AstStatement> Statements { get; } = new List<AstStatement>();
 		public List<AstUsingStmt> Usings { get; set; } = new List<AstUsingStmt>();

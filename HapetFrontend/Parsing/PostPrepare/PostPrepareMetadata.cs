@@ -36,7 +36,7 @@ namespace HapetFrontend.Parsing.PostPrepare
 						string newClassName = $"{file.Namespace}.{classDecl.Name.Name}";
                         classDecl.Name = classDecl.Name.GetCopy(newClassName);
 
-                        file.FileScope.DefineDeclSymbol(classDecl.Name.Name, classDecl);
+                        file.NamespaceScope.DefineDeclSymbol(classDecl.Name.Name, classDecl);
                         _allClasses.Add(classDecl);
                     }
                     else if (stmt is AstStructDecl structDecl)
@@ -45,7 +45,7 @@ namespace HapetFrontend.Parsing.PostPrepare
                         string newClassName = $"{file.Namespace}.{structDecl.Name.Name}";
                         structDecl.Name = structDecl.Name.GetCopy(newClassName);
 
-                        file.FileScope.DefineDeclSymbol(structDecl.Name.Name, structDecl);
+                        file.NamespaceScope.DefineDeclSymbol(structDecl.Name.Name, structDecl);
                         _allStructs.Add(structDecl);
                     }
                 }

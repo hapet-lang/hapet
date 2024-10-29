@@ -90,18 +90,16 @@ namespace HapetFrontend
 			string normalNamespace = CompilerUtils.GetNamespace(CurrentProjectSettings.ProjectPath, CurrentProjectSettings.ProjectName, fileName);
 			GetCustomNamespaceIfDeclared(file, ref normalNamespace); // will change the namespace if declared
 
-			// generating namespace scope and doint some shite with it
+			// generating namespace scope and doing some shite with it
 			var nsScope = GetNamespaceScope(normalNamespace);
-			file.FileScope = new Scope($"{Path.GetFileNameWithoutExtension(fileName)}_scope", nsScope);
+			file.NamespaceScope = nsScope;
 			file.Namespace = normalNamespace;
 			file.Module = $"{file.Namespace}.{Path.GetFileNameWithoutExtension(file.Name)}";
-			nsScope.DefineFileSymbol(file.Module, file);
 
 			return file;
 
 			void HandleStatement(AstStatement s)
 			{
-				s.Scope = file.FileScope;
 				if (s is AstEnumDecl ||
 					s is AstStructDecl ||
 					s is AstClassDecl ||
@@ -124,6 +122,7 @@ namespace HapetFrontend
 				if (s is AstNamespaceStmt nsStmt)
 				{
 					ns = nsStmt.NameExpression.TryFlatten(ErrorHandler, file);
+					file.Statements.Remove(s);
 					return;
 				}
 			}

@@ -17,6 +17,7 @@ namespace HapetFrontend.Parsing.PostPrepare
 				_currentSourceFile = file;
 				foreach (var stmt in file.Statements)
 				{
+					stmt.Scope = file.NamespaceScope;
 					if (stmt is AstClassDecl classDecl)
 					{
 						PostPrepareClassScoping(classDecl);
