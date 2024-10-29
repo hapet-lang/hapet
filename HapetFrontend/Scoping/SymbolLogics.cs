@@ -83,7 +83,17 @@ namespace HapetFrontend.Scoping
             return null;
         }
 
-        public AstClassDecl GetClass(string name)
+        // to get decl in namespace
+		public DeclSymbol GetSymbolInNamespace(string ns, string symbol, bool searchUsedScopes = true, bool searchParentScope = true)
+        {
+			NamespaceSymbol nsSymbol = GetSymbol(ns, searchUsedScopes, searchParentScope) as NamespaceSymbol;
+            if (nsSymbol == null)
+                return null; // TODO: error here somehow ?
+
+            return nsSymbol.Scope.GetSymbol($"{ns}.{symbol}", searchUsedScopes, searchParentScope) as DeclSymbol;
+		}
+
+		public AstClassDecl GetClass(string name)
         {
             var sym = GetSymbol(name);
             if (sym is AstClassDecl s)

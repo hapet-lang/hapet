@@ -35,19 +35,8 @@ namespace HapetBackend.Llvm
 
 		private unsafe void GenerateClassCode(AstClassDecl classDecl)
 		{
-			// TODO: create using HapetTypeToLLVMType
-			var classStruct = _context.CreateNamedStruct($"class.{classDecl.Name.Name}");
-			_typeMap[classDecl.Type.OutType] = classStruct;
-
-			var entryTypes = new List<LLVMTypeRef>();
-			var entryHapetTypes = new List<HapetType>();
 			var funcs = new Dictionary<AstFuncDecl, LLVMTypeRef>();
-
-			// TODO: entry for type info
-			entryTypes.Add(_context.Int8Type.GetPointerTo());
-			entryHapetTypes.Add(PointerType.GetPointerType(IntType.GetIntType(1, false)));
-
-            foreach (var decl in classDecl.Declarations)
+			foreach (var decl in classDecl.Declarations)
 			{
 				if (decl is AstFuncDecl funcDecl)
 				{
@@ -55,25 +44,16 @@ namespace HapetBackend.Llvm
 					var funcType = HapetTypeToLLVMType(funcDecl.Type.OutType);
 					funcs.Add(funcDecl, funcType);
 				}
-				else if (decl is AstVarDecl fieldDecl)
-				{
-                    entryTypes.Add(HapetTypeToLLVMType(fieldDecl.Type.OutType));
-					entryHapetTypes.Add(fieldDecl.Type.OutType);
-                }
 			}
-
-			// TODO: create using HapetTypeToLLVMType
-			_structTypeElementsMap.Add(classDecl.Type.OutType, entryHapetTypes);
-            classStruct.StructSetBody(entryTypes.ToArray(), false);
 
 			foreach (var (funcDecl, funcType) in funcs)
 			{
-				GenerateFuncCode(funcDecl, funcType, classDecl);
+				GenerateFuncCode(funcDecl, funcType);
 			}
 		}
 
 		private LLVMValueRef _lastFunctionValueRef = default;
-		private unsafe void GenerateFuncCode(AstFuncDecl funcDecl, LLVMTypeRef? funcType = null, AstClassDecl classDecl = null)
+		private unsafe void GenerateFuncCode(AstFuncDecl funcDecl, LLVMTypeRef? funcType = null, bool forMetadata = false)
 		{
 			_currentFunction = funcDecl;
 
@@ -81,68 +61,80 @@ namespace HapetBackend.Llvm
 
 			string funcName = funcDecl.Name.Name;
 
-			// declaring global func
-			LLVMValueRef lfunc = _module.AddFunction(funcName, funcType.Value);
-			// make the function dllexport when it is not 'unreflected'
-			if (!funcDecl.SpecialKeys.Contains(TokenType.KwUnreflected))
+			// if it is for metadata - only 'declares' would be generated that would be replaced with 'defines' in the future
+			if (forMetadata)
 			{
-				lfunc.Linkage = LLVMLinkage.LLVMExternalLinkage;
-				lfunc.DLLStorageClass = LLVMDLLStorageClass.LLVMDLLExportStorageClass;
+				// declaring global func
+				LLVMValueRef lfunc = _module.AddFunction(funcName, funcType.Value);
+				// make the function dllexport when it is not 'unreflected'
+				if (!funcDecl.SpecialKeys.Contains(TokenType.KwUnreflected))
+				{
+					lfunc.Linkage = LLVMLinkage.LLVMExternalLinkage;
+					lfunc.DLLStorageClass = LLVMDLLStorageClass.LLVMDLLExportStorageClass;
+					
+					// for win-x86 callconv is that
+					if (_compiler.CurrentProjectSettings.TargetPlatformData.TargetPlatform == HapetFrontend.TargetPlatform.Win86)
+					{
+						lfunc.FunctionCallConv = (uint)LLVMCallConv.LLVMX86StdcallCallConv; // X86_StdCall
+					}
+				}
+				else
+				{
+					lfunc.Linkage = LLVMLinkage.LLVMInternalLinkage;
+				}
+
+				// caching the function											 
+				_valueMap[funcDecl.GetSymbol] = lfunc;
+				_lastFunctionValueRef = lfunc;
+
+				// setting parameter names
+				for (int i = 0; i < funcDecl.Parameters.Count; ++i)
+				{
+					var p = funcDecl.Parameters[i];
+					if (p.Name != null)
+						lfunc.Params[i].Name = p.Name.Name;
+				}
 			}
 			else
 			{
-				lfunc.Linkage = LLVMLinkage.LLVMInternalLinkage;
-			}
+				// getting the func
+				LLVMValueRef lfunc = _valueMap[funcDecl.GetSymbol];
 
-			// caching the function											 
-			_valueMap[funcDecl.GetSymbol] = lfunc;
-			_lastFunctionValueRef = lfunc;
+				// check if there is no implementation and it is not an extern shite
+				if (funcDecl.Body == null && !funcDecl.SpecialKeys.Contains(TokenType.KwExtern))
+					return;
 
-			// setting parameter names
-			for (int i = 0; i < funcDecl.Parameters.Count; ++i)
-			{
-				var p = funcDecl.Parameters[i];
-				if (p.Name != null)
-					lfunc.Params[i].Name = p.Name.Name;
-			}
+				// params body
+				var paramsBody = lfunc.AppendBasicBlock("params");
+				_builder.PositionAtEnd(paramsBody);
+				// generating params allocs
+				for (int i = 0; i < funcDecl.Parameters.Count; ++i)
+				{
+					var p = funcDecl.Parameters[i];
+					var addrAlloca = _builder.BuildAlloca(HapetTypeToLLVMType(p.Type.OutType), $"{p.Name.Name}.addr");
+					_builder.BuildStore(lfunc.GetParam((uint)i), addrAlloca);
+					_valueMap[p.GetSymbol] = addrAlloca;
+				}
 
-			// check if there is no implementation and it is not an extern shite
-			if (funcDecl.Body == null && !funcDecl.SpecialKeys.Contains(TokenType.KwExtern))
-				return;
+				// function body
+				var bbBody = lfunc.AppendBasicBlock("entry");
+				_builder.BuildBr(bbBody);
+				_builder.PositionAtEnd(bbBody);
 
-			// params body
-			var paramsBody = lfunc.AppendBasicBlock("params");
-			_builder.PositionAtEnd(paramsBody);
-			// generating params allocs
-			for (int i = 0; i < funcDecl.Parameters.Count; ++i)
-			{
-				var p = funcDecl.Parameters[i];
-				var addrAlloca = _builder.BuildAlloca(HapetTypeToLLVMType(p.Type.OutType), $"{p.Name.Name}.addr");
-				_builder.BuildStore(lfunc.GetParam((uint)i), addrAlloca);
-				// var parArg = _builder.BuildLoad2(HapetTypeToLLVMType(p.Type.OutType), addrAlloca, $"{p.Name.Name}1");
-				// _refMap[p.GetSymbol] = addrAlloca;
-				// _valueMap[p.GetSymbol] = parArg;
-				_valueMap[p.GetSymbol] = addrAlloca;
-			}
+				// different behaviour when extern func
+				if (funcDecl.SpecialKeys.Contains(TokenType.KwExtern))
+				{
+					// when extern func
+					GenerateExternFunctionBody(funcDecl);
+				}
+				else
+				{
+					// genereting inside stuff of the function
+					GenerateBlockExprCode(funcDecl.Body);
+				}
 
-			// function body
-			var bbBody = lfunc.AppendBasicBlock("entry");
-			_builder.BuildBr(bbBody);
-			_builder.PositionAtEnd(bbBody);
-
-			// different behaviour when extern func
-			if (funcDecl.SpecialKeys.Contains(TokenType.KwExtern))
-			{
-				// when extern func
-				GenerateExternFunctionBody(funcDecl);
-			}
-			else
-			{
-				// genereting inside stuff of the function
-				GenerateBlockExprCode(funcDecl.Body);
-			}
-
-			lfunc.VerifyFunction(LLVMVerifierFailureAction.LLVMPrintMessageAction);
+				lfunc.VerifyFunction(LLVMVerifierFailureAction.LLVMPrintMessageAction);
+			}			
 		}
 
 		private void GenerateVarDeclCode(AstVarDecl varDecl)
@@ -204,6 +196,7 @@ namespace HapetBackend.Llvm
 				// declaring external global func
 				funcValue = _module.AddFunction(entryPoint, funcType);
 				funcValue.Linkage = LLVMLinkage.LLVMExternalLinkage;
+				funcValue.DLLStorageClass = LLVMDLLStorageClass.LLVMDLLImportStorageClass;
 
 				// setting parameter names
 				for (int i = 0; i < funcDecl.Parameters.Count; ++i)

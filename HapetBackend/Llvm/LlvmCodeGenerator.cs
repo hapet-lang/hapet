@@ -2,6 +2,7 @@
 using HapetBackend.Llvm.Linkers.Windows;
 using HapetFrontend;
 using HapetFrontend.Entities;
+using HapetFrontend.Parsing.PostPrepare;
 using LLVMSharp;
 using LLVMSharp.Interop;
 using System;
@@ -14,6 +15,7 @@ namespace HapetBackend.Llvm
 	{
 		private IErrorHandler _errorHandler;
 		private Compiler _compiler;
+		private PostPrepare _postPreparer;
 		/// <summary>
 		/// Intermediate lang LLVM IR
 		/// </summary>
@@ -46,7 +48,7 @@ namespace HapetBackend.Llvm
 			throw new NotImplementedException();
 		}
 
-		public unsafe bool GenerateCode(Compiler compiler, IErrorHandler errorHandler, bool optimize, bool outputIntermediateFile)
+		public unsafe bool GenerateCode(Compiler compiler, PostPrepare postPreparer, IErrorHandler errorHandler, bool optimize, bool outputIntermediateFile)
 		{
 			LLVM.InitializeAllTargetMCs();
 			LLVM.InitializeAllTargets();
@@ -55,6 +57,7 @@ namespace HapetBackend.Llvm
 			LLVM.InitializeAllAsmPrinters();
 
 			this._compiler = compiler ?? throw new ArgumentNullException(nameof(compiler));
+			this._postPreparer = postPreparer ?? throw new ArgumentNullException(nameof(postPreparer));
 			this._errorHandler = errorHandler ?? throw new ArgumentNullException(nameof(errorHandler));
 			this._outDir = _compiler.CurrentProjectSettings.OutputDirectory;
 			this._targetFile = _compiler.CurrentProjectSettings.ProjectName;
@@ -90,6 +93,7 @@ namespace HapetBackend.Llvm
 			InitOperators();
 
 			// InitTypeInfoLLVMTypes(); // TODO: it is reflection
+			GenerateMetadataShite();
 			GenerateCode();
 
 			// no need to gen main func for library typed project

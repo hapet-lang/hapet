@@ -1,4 +1,5 @@
 ﻿using HapetFrontend.Ast;
+using HapetFrontend.Ast.Declarations;
 using HapetFrontend.Parsing;
 using HapetFrontend.Scoping;
 using HapetFrontend.Types;
@@ -162,8 +163,7 @@ namespace HapetBackend.Llvm
 
 				case ClassType t:
 					{
-						Console.WriteLine($"[ERROR] class type {t}");
-						return _context.VoidType;
+						return _context.CreateNamedStruct($"class.{t.Declaration.Name.Name}"); ;
 					}
 
 				case BoolType b:
@@ -522,7 +522,8 @@ namespace HapetBackend.Llvm
 		private LLVMValueRef GetMalloc(LLVMValueRef typeSize, LLVMValueRef amount)
 		{
 			// WARN: hard cock
-			var mallocSymbol = _currentFunction.Scope.GetSymbol("System.Runtime.InteropServices.Marshal::Malloc(int)") as DeclSymbol; // TODO: rewrite it when there would be a default project of Hapet
+			var marshalDecl = _currentFunction.Scope.GetSymbolInNamespace("System.Runtime.InteropServices", "Marshal");
+			var mallocSymbol = (marshalDecl.Decl as AstClassDecl).SubScope.GetSymbol("System.Runtime.InteropServices.Marshal::Malloc(int)") as DeclSymbol; 
 			var mallocFunc = _valueMap[mallocSymbol];
 			LLVMTypeRef funcType = _typeMap[mallocSymbol.Decl.Type.OutType];
 			// calc size to malloc = amount * typeSize

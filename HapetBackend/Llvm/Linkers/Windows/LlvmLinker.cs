@@ -87,9 +87,6 @@ namespace HapetBackend.Llvm.Linkers.Windows
 			// generated object files
 			lldArgs.Add(objFile);
 
-			if (printLinkerArgs)
-				Console.WriteLine("[LINKER] " + string.Join(" ", lldArgs.Select(a => $"\"{a}\"")));
-
 			// searching for win linker
 			string vsBinFolder = FindVisualStudioBinaryDirectory();
 			if (vsBinFolder == null || !Directory.Exists(vsBinFolder))
@@ -109,6 +106,9 @@ namespace HapetBackend.Llvm.Linkers.Windows
 				errorHandler.ReportError("Couldn't find Visual Studio linker file");
 				return false;
 			}
+
+			if (printLinkerArgs)
+				Console.WriteLine("[LINKER] " + vsLinkerFile + string.Join(" ", lldArgs.Select(a => $"\"{a}\"")));
 
 			var process = CompilerUtils.StartProcess(vsLinkerFile, lldArgs,
 							stdout: (s, e) => { if (e.Data != null) Console.WriteLine(e.Data); },

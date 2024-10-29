@@ -38,6 +38,9 @@ namespace HapetCompiler
 					// go all over the project settings
 					foreach (XmlNode childnode in xnode.ChildNodes)
 					{
+						// skip comments
+						if (childnode is XmlComment)
+							continue;
 						_propertyGroupData.Add(childnode.Name, childnode.FirstChild.Value);
 					}
 				}

@@ -68,7 +68,7 @@ namespace HapetCompiler.Toolchains
             }
 
             // code gen
-            bool codeGenOk = GenerateAndCompileCode(compiler, errorHandler);
+            bool codeGenOk = GenerateAndCompileCode(compiler, postPreparer, errorHandler);
             if (errorHandler.HasErrors || !codeGenOk)
             {
                 return (int)CompilerErrors.CodeGenerationError; // code generation errors
@@ -77,10 +77,10 @@ namespace HapetCompiler.Toolchains
             return (int)CompilerErrors.Ok;
         }
 
-        private bool GenerateAndCompileCode(Compiler compiler, IErrorHandler errorHandler)
+        private bool GenerateAndCompileCode(Compiler compiler, PostPrepare postPreparer, IErrorHandler errorHandler)
         {
             var generator = new LlvmCodeGenerator();
-            bool success = generator.GenerateCode(compiler, errorHandler, false, true);
+            bool success = generator.GenerateCode(compiler, postPreparer, errorHandler, false, true);
             if (!success)
                 return false;
 

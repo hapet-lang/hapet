@@ -5,9 +5,9 @@ namespace HapetFrontend.Parsing.PostPrepare
 {
     public partial class PostPrepare
     {
-        private List<AstClassDecl> _allClasses = new List<AstClassDecl>();
-        private List<AstStructDecl> _allStructs = new List<AstStructDecl>();
-        private List<AstFuncDecl> _allFunctions = new List<AstFuncDecl>();
+        public List<AstClassDecl> AllClassesMetadata { get; } = new List<AstClassDecl>();
+		public List<AstStructDecl> AllStructsMetadata { get; } = new List<AstStructDecl>();
+		public List<AstFuncDecl> AllFunctionsMetadata { get; } = new List<AstFuncDecl>();
 
         // TODO: some changes should be done in the file when impl 'using' and class inheritance
 
@@ -37,7 +37,7 @@ namespace HapetFrontend.Parsing.PostPrepare
                         classDecl.Name = classDecl.Name.GetCopy(newClassName);
 
                         file.NamespaceScope.DefineDeclSymbol(classDecl.Name.Name, classDecl);
-                        _allClasses.Add(classDecl);
+						AllClassesMetadata.Add(classDecl);
                     }
                     else if (stmt is AstStructDecl structDecl)
                     {
@@ -46,7 +46,7 @@ namespace HapetFrontend.Parsing.PostPrepare
                         structDecl.Name = structDecl.Name.GetCopy(newClassName);
 
                         file.NamespaceScope.DefineDeclSymbol(structDecl.Name.Name, structDecl);
-                        _allStructs.Add(structDecl);
+						AllStructsMetadata.Add(structDecl);
                     }
                 }
             }
@@ -95,7 +95,7 @@ namespace HapetFrontend.Parsing.PostPrepare
 						foreach (var decl in classDecl.Declarations.Where(x => x is AstFuncDecl).Select(x => x as AstFuncDecl))
                         {
                             PostPrepareFunctionInference(decl, true);
-                            _allFunctions.Add(decl);
+							AllFunctionsMetadata.Add(decl);
                         }
                     }
                 }
@@ -106,9 +106,9 @@ namespace HapetFrontend.Parsing.PostPrepare
         {
             // TODO: probably should be sorted somehow by inheritance, idk
             MetadataJson metadata = new MetadataJson();
-            metadata.ClassDecls = _allClasses.Select(x => x.GetJson()).ToList();
-            metadata.StructDecls = _allStructs.Select(x => x.GetJson()).ToList();
-            metadata.FuncDecls = _allFunctions.Select(x => x.GetJson()).ToList();
+            metadata.ClassDecls = AllClassesMetadata.Select(x => x.GetJson()).ToList();
+            metadata.StructDecls = AllStructsMetadata.Select(x => x.GetJson()).ToList();
+            metadata.FuncDecls = AllFunctionsMetadata.Select(x => x.GetJson()).ToList();
 
             // WARN: take care about the shite that is goin on here
             var sz = JsonConvert.SerializeObject(metadata, Formatting.Indented);
