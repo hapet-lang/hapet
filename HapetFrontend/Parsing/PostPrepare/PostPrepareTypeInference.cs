@@ -65,6 +65,14 @@ namespace HapetFrontend.Parsing.PostPrepare
 			// if not - infer only body because func decl already infered from metadata :)
 			if (forMetadata)
 			{
+				// inferencing attrs
+				foreach (var a in funcDecl.Attributes)
+				{
+					PostPrepareExprInference(a);
+
+					// TODO: many checks here (like fields and so on):
+				}
+
 				// inferencing parameters 
 				foreach (var p in funcDecl.Parameters)
 				{

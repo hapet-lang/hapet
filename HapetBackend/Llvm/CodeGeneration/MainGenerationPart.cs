@@ -163,9 +163,31 @@ namespace HapetBackend.Llvm
 			// creating extern call of C func
 			string dllImportAttrFullName = "System.Runtime.InteropServices.DllImportAttribute"; // WARN: hard cock
 			var dllImportAttr = funcDecl.Attributes.FirstOrDefault(x => x.AttributeName.OutType.ToString() == dllImportAttrFullName);
-			// TODO: check for null should be done in type inferencing
-			string dllName = dllImportAttr.Parameters[0].OutValue as string; // TODO: check in type inferencing that it is a string and declared
-			string entryPoint = dllImportAttr.Parameters[1].OutValue as string; // TODO: check in type inferencing that it is a string and declared
+
+			// many checks are here
+			if (dllImportAttr == null) 
+			{
+				_errorHandler.ReportError(_currentSourceFile.Text, funcDecl, $"'DllImportAttribute' has to be specified when function is 'extern'");
+				return;
+			}
+			if (dllImportAttr.Parameters.Count < 2)
+			{
+				_errorHandler.ReportError(_currentSourceFile.Text, dllImportAttr, $"Both 'DllName' and 'EntryPoint' has to be specified");
+				return;
+			}
+			// TODO: the types has to be checked in type inference
+			if (dllImportAttr.Parameters[0].OutValue is not string)
+			{
+				_errorHandler.ReportError(_currentSourceFile.Text, dllImportAttr.Parameters[0], $"Out type of the expr has to be string");
+				return;
+			}
+			if (dllImportAttr.Parameters[1].OutValue is not string)
+			{
+				_errorHandler.ReportError(_currentSourceFile.Text, dllImportAttr.Parameters[1], $"Out type of the expr has to be string");
+				return;
+			}
+			string dllName = dllImportAttr.Parameters[0].OutValue as string; 
+			string entryPoint = dllImportAttr.Parameters[1].OutValue as string; 
 
 			// check if import from staticly linked shite
 			if (string.IsNullOrWhiteSpace(dllName))

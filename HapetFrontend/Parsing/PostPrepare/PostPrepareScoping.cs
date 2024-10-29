@@ -110,8 +110,16 @@ namespace HapetFrontend.Parsing.PostPrepare
 		{
 			_currentFunction = funcDecl;
 
-			// TODO: refactor similar shite!
 			funcDecl.SourceFile = _currentSourceFile;
+
+			// scoping func attrs
+			foreach (var a in funcDecl.Attributes)
+			{
+				SetScopeAndParent(a, funcDecl);
+				PostPrepareExprScoping(a);
+			}
+
+			// TODO: refactor similar shite!
 			if (funcDecl.Body != null)
 			{
 				// body scope is the same
