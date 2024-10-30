@@ -2,20 +2,10 @@
 using HapetFrontend.Entities;
 using HapetFrontend;
 using HapetFrontend.Parsing.PostPrepare;
+using System.Diagnostics;
 
 namespace HapetCompiler.Toolchains
 {
-    class CompilationResult
-    {
-        public int ExitCode;
-        public TimeSpan? LexAndParse;
-        public TimeSpan? SemanticAnalysis;
-        public TimeSpan? FrontEnd;
-        public TimeSpan? BackEnd;
-        public TimeSpan? Execution;
-        public bool PrintTime = false;
-    }
-
     internal class ProjectBuildToolchain
     {
         private string[] _cmdArgs; // TODO: use them for ProjectXmlParser
@@ -26,7 +16,10 @@ namespace HapetCompiler.Toolchains
 
         public int Build(string projectPath, IMessageHandler messageHandler)
         {
-			messageHandler.ReportMessage("Project preparation...", ReportType.Info);
+			Stopwatch stopwatch = new Stopwatch();
+			stopwatch.Start();
+
+			messageHandler.ReportMessage($"{CompilerUtils.GetPrettyTimeString(stopwatch.Elapsed)} Project preparation...", ReportType.Info);
 
 			// creating settings instance for the project
 			CompilerSettings currentProjectSettings = new CompilerSettings();
@@ -39,7 +32,7 @@ namespace HapetCompiler.Toolchains
                 return (int)CompilerErrors.ProjectFileParseError; // proj file parsing errors
             }
 
-            messageHandler.ReportMessage("Parsing...", ReportType.Info);
+            messageHandler.ReportMessage($"{CompilerUtils.GetPrettyTimeString(stopwatch.Elapsed)} Parsing...", ReportType.Info);
 
 			// setting pointer size for the whole assembly
 			Compiler.AssemblyPointerSize = currentProjectSettings.TargetPlatformData.PointerSize;
@@ -61,7 +54,7 @@ namespace HapetCompiler.Toolchains
                 return (int)CompilerErrors.ParsingError; // parsing errors
             }
 
-			messageHandler.ReportMessage("Post preparation...", ReportType.Info);
+			messageHandler.ReportMessage($"{CompilerUtils.GetPrettyTimeString(stopwatch.Elapsed)} Post preparation...", ReportType.Info);
 
 			// post prepare
 			postPreparer.StartPreparation();
@@ -70,7 +63,7 @@ namespace HapetCompiler.Toolchains
                 return (int)CompilerErrors.PostPrepareError; // post prepare errors
             }
 
-			messageHandler.ReportMessage("Code generation...", ReportType.Info);
+			messageHandler.ReportMessage($"{CompilerUtils.GetPrettyTimeString(stopwatch.Elapsed)} Code generation...", ReportType.Info);
 
 			// code gen
 			bool codeGenOk = GenerateAndCompileCode(compiler, postPreparer, messageHandler);
@@ -78,6 +71,9 @@ namespace HapetCompiler.Toolchains
             {
                 return (int)CompilerErrors.CodeGenerationError; // code generation errors
             }
+
+			messageHandler.ReportMessage($"{CompilerUtils.GetPrettyTimeString(stopwatch.Elapsed)} Done...", ReportType.Info);
+
 
             return (int)CompilerErrors.Ok;
         }

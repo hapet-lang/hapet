@@ -130,7 +130,7 @@ namespace HapetBackend.Llvm.Linkers.Windows
 			var result = process.ExitCode == 0;
 			if (result)
 			{
-				messageHandler.ReportMessage($"Generated {filename}{outFileExtension}", ReportType.Info);
+				messageHandler.ReportMessage($"\t  Generated {filename}{outFileExtension}", ReportType.Info);
 			}
 			else
 			{

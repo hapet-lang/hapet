@@ -154,6 +154,17 @@ namespace HapetFrontend
 			return $"{projectName}.{uniquePathNormalized}";
         }
 
+		public static string GetPrettyTimeString(TimeSpan ts)
+		{
+			ulong totalMs = (ulong)ts.TotalMilliseconds;
+
+			string showMs = (totalMs % 1000).ToString("D3");
+			string showS = ((totalMs / 1000) % 60).ToString("D2");
+			string showM = ((totalMs / 1000 / 60) % 60).ToString("D2");
+
+			return $"{showM}:{showS}:{showMs}";
+		}
+
 		public static Process StartProcess(string exe, List<string> argList = null, string workingDirectory = null, DataReceivedEventHandler stdout = null, DataReceivedEventHandler stderr = null)
 		{
 			argList = argList ?? new List<string>();

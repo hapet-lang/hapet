@@ -298,7 +298,7 @@ namespace HapetCompiler
 			ConsoleColor outColor = ConsoleColor.Red;
 			switch (reportType)
 			{
-				case ReportType.Info: outColor = ConsoleColor.Blue; break;
+				case ReportType.Info: outColor = ConsoleColor.Cyan; break;
 				case ReportType.Warning: outColor = ConsoleColor.Yellow; break;
 				case ReportType.Error: outColor = ConsoleColor.Red; break;
 			}
