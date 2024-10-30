@@ -109,9 +109,10 @@ namespace HapetFrontend.Parsing.PostPrepare
 			// TODO: probably should be sorted somehow by inheritance, idk
 			MetadataJson metadata = new MetadataJson();
             metadata.Version = projectVersion;
-            metadata.ClassDecls = AllClassesMetadata.Select(x => x.GetJson()).ToList();
-            metadata.StructDecls = AllStructsMetadata.Select(x => x.GetJson()).ToList();
-            metadata.FuncDecls = AllFunctionsMetadata.Select(x => x.GetJson()).ToList();
+            // serialize all unreflected
+            metadata.ClassDecls = AllClassesMetadata.Where(x => !x.SpecialKeys.Contains(TokenType.KwUnreflected)).Select(x => x.GetJson()).ToList();
+            metadata.StructDecls = AllStructsMetadata.Where(x => !x.SpecialKeys.Contains(TokenType.KwUnreflected)).Select(x => x.GetJson()).ToList();
+            metadata.FuncDecls = AllFunctionsMetadata.Where(x => !x.SpecialKeys.Contains(TokenType.KwUnreflected)).Select(x => x.GetJson()).ToList();
 
             // WARN: take care about the shite that is goin on here
             var sz = JsonConvert.SerializeObject(metadata, Formatting.Indented);
