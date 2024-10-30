@@ -65,6 +65,8 @@ namespace HapetCompiler
 			_projectSettings.OutputDirectory = $"{Path.GetDirectoryName(_projectPathAbsolute).Replace("\\", "/").TrimEnd('/')}/{outDirRelative.Replace("\\", "/")}";
 			// WARN: creating the dir here!!!
 			if (!Directory.Exists(_projectSettings.OutputDirectory)) Directory.CreateDirectory(_projectSettings.OutputDirectory);
+			// setting the root namespace
+			_projectSettings.RootNamespace = GetValueOrDefault<string>("RootNamespace", _projectSettings.ProjectName);
 
 			// setting unsafe code allowence
 			_projectSettings.AllowUnsafeCode = GetValueOrDefault<bool>("AllowUnsafeCode", false);

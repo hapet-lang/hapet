@@ -90,6 +90,10 @@ namespace HapetFrontend
 		/// If true - pointers usage and other shite are allowed
 		/// </summary>
 		public bool AllowUnsafeCode { get; set; }
+		/// <summary>
+		/// The name of the root namespace
+		/// </summary>
+		public string RootNamespace { get; set; }
 
 		/// <summary>
 		/// If true - debug data will be printed

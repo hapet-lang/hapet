@@ -87,7 +87,7 @@ namespace HapetFrontend
 				HandleStatement(s);
 			}
 
-			string normalNamespace = CompilerUtils.GetNamespace(CurrentProjectSettings.ProjectPath, CurrentProjectSettings.ProjectName, fileName);
+			string normalNamespace = CompilerUtils.GetNamespace(CurrentProjectSettings.ProjectPath, CurrentProjectSettings.RootNamespace, fileName);
 			GetCustomNamespaceIfDeclared(file, ref normalNamespace); // will change the namespace if declared
 
 			// generating namespace scope and doing some shite with it

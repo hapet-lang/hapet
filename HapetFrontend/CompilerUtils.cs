@@ -130,7 +130,7 @@ namespace HapetFrontend
 			return true;
 		}
 
-		public static string GetNamespace(string projectPath, string projectName, string filePath)
+		public static string GetNamespace(string projectPath, string rootNamespace, string filePath)
 		{
             var projectPathNormalized = Path.GetDirectoryName(projectPath).Replace("\\", "/").TrimEnd('/');
             var filePathNormalized = Path.GetDirectoryName(filePath).Replace("\\", "/").TrimEnd('/');
@@ -148,10 +148,10 @@ namespace HapetFrontend
 			// it could be empty if the file is in the same directory as project file
 			if (string.IsNullOrWhiteSpace(uniquePathNormalized))
 			{
-				return projectName;
+				return rootNamespace;
 			}
 
-			return $"{projectName}.{uniquePathNormalized}";
+			return $"{rootNamespace}.{uniquePathNormalized}";
         }
 
 		public static string GetPrettyTimeString(TimeSpan ts)
