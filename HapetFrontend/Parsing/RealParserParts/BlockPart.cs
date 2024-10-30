@@ -32,11 +32,10 @@ namespace HapetFrontend.Parsing
 					}
 					else if (!afterBrStatementReported)
 					{
-						// TODO: print warning that the line won't be accepted
-						// TODO: print the warning only once, do not spam
+						// print warning that the line won't be accepted
+						// print the warning only once, do not spam
 						afterBrStatementReported = true;
-
-
+						ReportMessage(s, $"All the statements after '{foundBrStatement}' won't be accepted by compiler!", Entities.ReportType.Warning);
 					}
 
 					next = PeekToken();

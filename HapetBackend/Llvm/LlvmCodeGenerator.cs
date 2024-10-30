@@ -99,9 +99,9 @@ namespace HapetBackend.Llvm
 
 			// verify module
 			{
-				if (_module.TryVerify(LLVMVerifierFailureAction.LLVMReturnStatusAction, out string message))
+				if (!_module.TryVerify(LLVMVerifierFailureAction.LLVMReturnStatusAction, out string message))
 				{
-					Console.Error.WriteLine($"[LLVM-validate-module] {message}");
+					messageHandler.ReportMessage($"[LLVM-validate-module] {message}", ReportType.Error);
 				}
 			}
 
@@ -151,7 +151,7 @@ namespace HapetBackend.Llvm
 			{
 				case TargetPlatform.Win86:
 				case TargetPlatform.Win64:
-					return WinLinker.Link(_compiler, exeFile, objFile, libraryIncludeDirectories, libraries, messageHandler, _compiler.CurrentProjectSettings.Verbose);
+					return WinLinker.Link(_compiler, exeFile, objFile, libraryIncludeDirectories, libraries, messageHandler);
 				case TargetPlatform.Linux86:
 				case TargetPlatform.Linux64:
 					// TODO: ... 

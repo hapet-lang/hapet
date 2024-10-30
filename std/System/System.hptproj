@@ -6,7 +6,7 @@
 
 		<OutputIrFile>true</OutputIrFile>
 		<Optimization>0</Optimization>
-		<Verbose>true</Verbose>
+		<Verbose>false</Verbose>
 
         <TargetFormat>Library</TargetFormat>
         <!--<TargetPlatform>win-32</TargetPlatform>-->

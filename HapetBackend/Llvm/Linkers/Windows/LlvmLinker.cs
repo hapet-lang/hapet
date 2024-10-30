@@ -7,7 +7,9 @@ namespace HapetBackend.Llvm.Linkers.Windows
 {
 	public static partial class WinLinker
 	{
-		public static bool Link(Compiler compiler, string targetFile, string objFile, IEnumerable<string> libraryIncludeDirectories, IEnumerable<string> libraries, IMessageHandler messageHandler, bool printLinkerArgs)
+		private static Compiler _compiler;
+
+		public static bool Link(Compiler compiler, string targetFile, string objFile, IEnumerable<string> libraryIncludeDirectories, IEnumerable<string> libraries, IMessageHandler messageHandler)
 		{
 			if (compiler is null)
 				throw new ArgumentNullException(nameof(compiler));
@@ -15,6 +17,9 @@ namespace HapetBackend.Llvm.Linkers.Windows
 				throw new ArgumentNullException(nameof(libraryIncludeDirectories));
 			if (messageHandler is null)
 				throw new ArgumentNullException(nameof(messageHandler));
+
+			_compiler = compiler;
+			bool verbose = _compiler.CurrentProjectSettings.Verbose;
 
 			string target = null;
 			switch (compiler.CurrentProjectSettings.TargetPlatformData.TargetPlatform)
@@ -107,21 +112,29 @@ namespace HapetBackend.Llvm.Linkers.Windows
 				return false;
 			}
 
-			if (printLinkerArgs)
+			if (verbose)
 				Console.WriteLine("[LINKER] " + vsLinkerFile + string.Join(" ", lldArgs.Select(a => $"\"{a}\"")));
 
 			var process = CompilerUtils.StartProcess(vsLinkerFile, lldArgs,
-							stdout: (s, e) => { if (e.Data != null) Console.WriteLine(e.Data); },
-							stderr: (s, e) => { if (e.Data != null) Console.Error.WriteLine(e.Data); });
+							stdout: (s, e) => 
+							{ 
+								if (e.Data != null && verbose) 
+									Console.WriteLine(e.Data); 
+							},
+							stderr: (s, e) => 
+							{ 
+								if (e.Data != null)
+									messageHandler.ReportMessage($"[LINKER] error: {e.Data}", ReportType.Error);
+							});
 			process.WaitForExit();
 			var result = process.ExitCode == 0;
 			if (result)
 			{
-				Console.WriteLine($"Generated {filename}{outFileExtension}");
+				messageHandler.ReportMessage($"Generated {filename}{outFileExtension}", ReportType.Info);
 			}
 			else
 			{
-				Console.WriteLine($"Failed to link");
+				messageHandler.ReportMessage($"Failed to link", ReportType.Error);
 			}
 
 			return result;

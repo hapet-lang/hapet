@@ -82,7 +82,7 @@ namespace HapetCompiler
 				Log(message.Message, printColor);
 
 				if (DoPrintLocation)
-					PrintLocation(text, message.Location, linesBefore: LinesBeforeError, linesAfter: LinesAfterError);
+					PrintLocation(text, message.Location, linesBefore: LinesBeforeError, linesAfter: LinesAfterError, highlightColor: printColor);
 			}
 			else
 			{

@@ -62,7 +62,8 @@ namespace HapetBackend.Llvm.Linkers.Windows
 					skipLatest = versions.Length - 1;
 
 				var latest = versions.Skip(Math.Min(skipLatest, versions.Length - 1)).First();
-				System.Console.WriteLine($"vs version: {latest.installationVersion}");
+				if (_compiler.CurrentProjectSettings.Verbose)
+					System.Console.WriteLine($"vs version: {latest.installationVersion}");
 
 				var v = latest.installationVersion.Scan1(@"(\d+)\.(\d+)\.(\d+)\.(\d+)").Select(s => int.TryParse(s, out int i) ? i : 0).First();
 				var dir = latest.installationPath;

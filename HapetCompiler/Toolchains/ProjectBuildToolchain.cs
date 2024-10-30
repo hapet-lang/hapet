@@ -26,8 +26,10 @@ namespace HapetCompiler.Toolchains
 
         public int Build(string projectPath, IMessageHandler messageHandler)
         {
-            // creating settings instance for the project
-            CompilerSettings currentProjectSettings = new CompilerSettings();
+			messageHandler.ReportMessage("Project preparation...", ReportType.Info);
+
+			// creating settings instance for the project
+			CompilerSettings currentProjectSettings = new CompilerSettings();
 
             // parsing project .hptproj file
             var projectParser = new ProjectXmlParser(projectPath, currentProjectSettings, messageHandler);
@@ -37,8 +39,10 @@ namespace HapetCompiler.Toolchains
                 return (int)CompilerErrors.ProjectFileParseError; // proj file parsing errors
             }
 
-            // setting pointer size for the whole assembly
-            Compiler.AssemblyPointerSize = currentProjectSettings.TargetPlatformData.PointerSize;
+            messageHandler.ReportMessage("Parsing...", ReportType.Info);
+
+			// setting pointer size for the whole assembly
+			Compiler.AssemblyPointerSize = currentProjectSettings.TargetPlatformData.PointerSize;
 
             // creating the compiler and post preparer
             var compiler = new Compiler(currentProjectSettings, messageHandler);
@@ -52,21 +56,24 @@ namespace HapetCompiler.Toolchains
                 if (Path.GetExtension(file.FullName) == ".hpt")
 				    compiler.AddFile(file.FullName);
 			}
-
             if (messageHandler.HasErrors)
             {
                 return (int)CompilerErrors.ParsingError; // parsing errors
             }
 
-            // post prepare
-            postPreparer.StartPreparation();
+			messageHandler.ReportMessage("Post preparation...", ReportType.Info);
+
+			// post prepare
+			postPreparer.StartPreparation();
             if (messageHandler.HasErrors)
             {
                 return (int)CompilerErrors.PostPrepareError; // post prepare errors
             }
 
-            // code gen
-            bool codeGenOk = GenerateAndCompileCode(compiler, postPreparer, messageHandler);
+			messageHandler.ReportMessage("Code generation...", ReportType.Info);
+
+			// code gen
+			bool codeGenOk = GenerateAndCompileCode(compiler, postPreparer, messageHandler);
             if (messageHandler.HasErrors || !codeGenOk)
             {
                 return (int)CompilerErrors.CodeGenerationError; // code generation errors
