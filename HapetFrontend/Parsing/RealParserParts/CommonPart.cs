@@ -14,18 +14,18 @@ namespace HapetFrontend.Parsing
 			return new AstEmptyStmt(new Location(loc.beg, loc.end));
 		}
 
-		private AstNestedExpr ParseIdentifierExpression(ErrorMessageResolver customErrorMessage = null, TokenType identType = TokenType.Identifier, bool allowDots = true)
+		private AstNestedExpr ParseIdentifierExpression(ErrorMessageResolver customErrorMessage = null, TokenType identType = TokenType.Identifier, bool allowDots = true, AstNestedExpr iniNested = null)
 		{
 			var next = PeekToken();
 			if (next.Type != identType)
 			{
 				ReportError(next.Location, customErrorMessage?.Invoke(next) ?? "Expected identifier");
-				return new AstNestedExpr(new AstIdExpr("anon", new Location(next.Location)), null, next.Location);
+				return new AstNestedExpr(new AstIdExpr("anon", new Location(next.Location)), iniNested, next.Location);
 			}
 			NextToken();
 
 			var beg = next.Location.Beginning;
-			var currNested = new AstNestedExpr(new AstIdExpr((string)next.Data, new Location(next.Location)), null, next.Location);
+			var currNested = new AstNestedExpr(new AstIdExpr((string)next.Data, new Location(next.Location)), iniNested, next.Location);
 
 			// while there are more idents or periods
 			while (CheckToken(TokenType.Period))

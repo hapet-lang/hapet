@@ -30,7 +30,7 @@ namespace HapetCompiler.Toolchains
             CompilerSettings currentProjectSettings = new CompilerSettings();
 
             // parsing project .hptproj file
-            var projectParser = new ProjectXmlParser(projectPath, currentProjectSettings, errorHandler); // TODO: set project path here
+            var projectParser = new ProjectXmlParser(projectPath, currentProjectSettings, errorHandler);
             projectParser.UpdateSettings(); // setting compiler settings from project
             if (errorHandler.HasErrors)
             {
@@ -46,8 +46,6 @@ namespace HapetCompiler.Toolchains
             var postPreparer = new PostPrepare(compiler);
             errorHandler.TextProvider = compiler;
 
-            // TODO: go all over the files and at first generate header file for the project. then parse them normally
-            // var ptFile = compiler.AddFile(_testFile);
             var allFilesInProjectFolder = (new DirectoryInfo(Path.GetDirectoryName(currentProjectSettings.ProjectPath))).EnumerateFiles("*", SearchOption.AllDirectories);
             foreach (var file in allFilesInProjectFolder)
             {

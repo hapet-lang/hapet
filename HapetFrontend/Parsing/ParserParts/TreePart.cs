@@ -321,7 +321,19 @@ namespace HapetFrontend.Parsing
 							}
 							expr = new AstCallExpr(nestExpr.LeftPart, idExpr.GetCopy(), args, new Location(expr.Beginning, end));
 
-							// TODO: check for dots after this!!! there could be a.asd().asd().ddd().d.lll()
+							// check for dots after this!!! there could be a.asd().asd().ddd().d.lll()
+							// for better understand imagine we have 'anime.Asd().dwd.Lmao();'
+							// and this is the first entry. So we already parsed here 'anime.Asd()' 
+							// and need to check the reset shite
+							if (CheckToken(TokenType.Period))
+							{
+								NextToken();
+								var currNest = new AstNestedExpr(expr as AstCallExpr, null, expr);
+								// here we are getting the rest 'dwd.Lmao'
+								expr = ParseIdentifierExpression(iniNested: currNest);
+								// so after this the upper loop will check if there is a OpenParent and so on
+								// if there is no OpenParen - then just NestedExpr will be returned
+							}
 						}
 						break;
 
