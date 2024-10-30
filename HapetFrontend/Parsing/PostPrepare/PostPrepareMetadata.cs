@@ -104,8 +104,11 @@ namespace HapetFrontend.Parsing.PostPrepare
 
         private void PostPrepareMetadataCreate()
         {
-            // TODO: probably should be sorted somehow by inheritance, idk
-            MetadataJson metadata = new MetadataJson();
+			var projectVersion= _compiler.CurrentProjectSettings.ProjectVersion;
+
+			// TODO: probably should be sorted somehow by inheritance, idk
+			MetadataJson metadata = new MetadataJson();
+            metadata.Version = projectVersion;
             metadata.ClassDecls = AllClassesMetadata.Select(x => x.GetJson()).ToList();
             metadata.StructDecls = AllStructsMetadata.Select(x => x.GetJson()).ToList();
             metadata.FuncDecls = AllFunctionsMetadata.Select(x => x.GetJson()).ToList();
@@ -120,6 +123,7 @@ namespace HapetFrontend.Parsing.PostPrepare
 
     internal class MetadataJson
     {
+        public string Version { get; set; }
         public List<ClassDeclJson> ClassDecls { get; set; }
         public List<StructDeclJson> StructDecls { get; set; }
         public List<FuncDeclJson> FuncDecls { get; set; }

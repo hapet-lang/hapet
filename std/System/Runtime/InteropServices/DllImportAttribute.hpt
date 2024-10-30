@@ -7,6 +7,5 @@ public sealed class DllImportAttribute : Attribute
 
     public DllImportAttribute()
     {
-        byte[] a = new byte[3];
     }
 }

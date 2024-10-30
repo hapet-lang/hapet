@@ -80,12 +80,12 @@ namespace HapetCompiler.Toolchains
         private bool GenerateAndCompileCode(Compiler compiler, PostPrepare postPreparer, IErrorHandler errorHandler)
         {
             var generator = new LlvmCodeGenerator();
-            bool success = generator.GenerateCode(compiler, postPreparer, errorHandler, false, true);
+            bool success = generator.GenerateCode(compiler, postPreparer, errorHandler);
             if (!success)
                 return false;
 
             // TODO: config parameters normally
-            return generator.CompileCode(Enumerable.Empty<string>(), Enumerable.Empty<string>(), errorHandler, true);
+            return generator.CompileCode(Enumerable.Empty<string>(), Enumerable.Empty<string>(), errorHandler);
         }
     }
 }

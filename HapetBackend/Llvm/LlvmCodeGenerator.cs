@@ -1,13 +1,8 @@
-﻿using HapetBackend.Llvm.Linkers;
-using HapetBackend.Llvm.Linkers.Windows;
+﻿using HapetBackend.Llvm.Linkers.Windows;
 using HapetFrontend;
 using HapetFrontend.Entities;
 using HapetFrontend.Parsing.PostPrepare;
-using LLVMSharp;
 using LLVMSharp.Interop;
-using System;
-using System.Reflection;
-using System.Runtime.InteropServices;
 
 namespace HapetBackend.Llvm
 {
@@ -21,7 +16,6 @@ namespace HapetBackend.Llvm
 		/// </summary>
 		private string _outDir;
 		private string _targetFile;
-		private bool _emitDebugInfo;
 		private string _targetTriple;
 
 		private LLVMModuleRef _module;
@@ -48,7 +42,7 @@ namespace HapetBackend.Llvm
 			throw new NotImplementedException();
 		}
 
-		public unsafe bool GenerateCode(Compiler compiler, PostPrepare postPreparer, IErrorHandler errorHandler, bool optimize, bool outputIntermediateFile)
+		public unsafe bool GenerateCode(Compiler compiler, PostPrepare postPreparer, IErrorHandler errorHandler)
 		{
 			LLVM.InitializeAllTargetMCs();
 			LLVM.InitializeAllTargets();
@@ -61,17 +55,17 @@ namespace HapetBackend.Llvm
 			this._errorHandler = errorHandler ?? throw new ArgumentNullException(nameof(errorHandler));
 			this._outDir = _compiler.CurrentProjectSettings.OutputDirectory;
 			this._targetFile = _compiler.CurrentProjectSettings.ProjectName;
-			this._emitDebugInfo = !optimize;
 
 			if (_compiler.MainFunction == null && (_compiler.CurrentProjectSettings.TargetFormat == TargetFormat.Console || _compiler.CurrentProjectSettings.TargetFormat == TargetFormat.Windowed))
 			{
 				_errorHandler.ReportError("Main function could not be found...");
+				OnGenerateCodeExit();
 				return false;
 			}
 
 			this._targetTriple = GetTargetTriple(_compiler.CurrentProjectSettings.TargetPlatformData);
 
-			_module = LLVMModuleRef.CreateWithName("hapetlang-module"); // TODO: project name here
+			_module = LLVMModuleRef.CreateWithName($"{_compiler.CurrentProjectSettings.ProjectName}-module");
 			_module.Target = _targetTriple;
 
 			var target = LLVMTargetRef.GetTargetFromTriple(_targetTriple);
@@ -116,7 +110,7 @@ namespace HapetBackend.Llvm
 				Directory.CreateDirectory(_outDir);
 
 			// create .ll file
-			if (outputIntermediateFile)
+			if (_compiler.CurrentProjectSettings.OutputIrFile)
 			{
 				_module.PrintToFile(Path.Combine(_outDir, _targetFile + ".ll"));
 			}
@@ -130,17 +124,22 @@ namespace HapetBackend.Llvm
 			}
 			else
 			{
-                // TODO: info that the out file was not generated due errors
-                return false;
+				// info that the out file was not generated due errors
+				_errorHandler.ReportError("Object file could not be generated due to some errors...");
+				OnGenerateCodeExit();
+				return false;
             }
-
-			// TODO: dispose before every return!!!
-			_builder.Dispose();
-			_module.Dispose();
+			OnGenerateCodeExit();
 			return true;
 		}
 
-		public bool CompileCode(IEnumerable<string> libraryIncludeDirectories, IEnumerable<string> libraries, IErrorHandler errorHandler, bool printLikerArgs)
+		private void OnGenerateCodeExit()
+		{
+			_builder.Dispose();
+			_module.Dispose();
+		}
+
+		public bool CompileCode(IEnumerable<string> libraryIncludeDirectories, IEnumerable<string> libraries, IErrorHandler errorHandler)
 		{
 			if (!string.IsNullOrWhiteSpace(_outDir) && !Directory.Exists(_outDir))
 				Directory.CreateDirectory(_outDir);
@@ -152,7 +151,7 @@ namespace HapetBackend.Llvm
 			{
 				case TargetPlatform.Win86:
 				case TargetPlatform.Win64:
-					return WinLinker.Link(_compiler, exeFile, objFile, libraryIncludeDirectories, libraries, errorHandler, printLikerArgs);
+					return WinLinker.Link(_compiler, exeFile, objFile, libraryIncludeDirectories, libraries, errorHandler, _compiler.CurrentProjectSettings.Verbose);
 				case TargetPlatform.Linux86:
 				case TargetPlatform.Linux64:
 					// TODO: ... 

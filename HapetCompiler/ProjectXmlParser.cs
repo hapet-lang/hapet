@@ -68,6 +68,12 @@ namespace HapetCompiler
 
 			// setting unsafe code allowence
 			_projectSettings.AllowUnsafeCode = GetValueOrDefault<bool>("AllowUnsafeCode", false);
+			// setting llvm ir code outputance
+			_projectSettings.OutputIrFile = GetValueOrDefault<bool>("OutputIrFile", false);
+			// setting verbose enablence :)
+			_projectSettings.Verbose = GetValueOrDefault<bool>("Verbose", false);
+			// setting the optimization level
+			_projectSettings.Optimization = GetValueOrDefault<int>("Optimization", 3);
 
 			// setting target format
 			_projectSettings.TargetFormat = GetValueOrDefault<TargetFormat>("TargetFormat", TargetFormat.Console);

@@ -67,12 +67,13 @@ namespace HapetFrontend
         /// <summary>
         /// Path to the project (absolute!) (used usually for calc namespaces)
         /// </summary>
-        public string ProjectPath { get; set; } 
+        public string ProjectPath { get; set; }
 
-        /// <summary>
-        /// The name of the project that is going to be compiled
-        /// </summary>
-        public string ProjectName { get; set; }
+		#region PropertyGroup
+		/// <summary>
+		/// The name of the project that is going to be compiled
+		/// </summary>
+		public string ProjectName { get; set; }
 		/// <summary>
 		/// The version of the project that is going to be compiled
 		/// </summary>
@@ -91,6 +92,19 @@ namespace HapetFrontend
 		public bool AllowUnsafeCode { get; set; }
 
 		/// <summary>
+		/// If true - debug data will be printed
+		/// </summary>
+		public bool Verbose { get; set; }
+		/// <summary>
+		/// If true - LLVM IR file would be outputed to out folder
+		/// </summary>
+		public bool OutputIrFile { get; set; }
+		/// <summary>
+		/// The optimization level of the project
+		/// </summary>
+		public int Optimization { get; set; }
+
+		/// <summary>
 		/// 'true' if Debug conf. 'false' if Release
 		/// </summary>
 		public bool IsDebug => ProjectConfiguration == "Debug";
@@ -102,6 +116,7 @@ namespace HapetFrontend
 		/// The format of output - library, console or windowed
 		/// </summary>
 		public TargetFormat TargetFormat { get; set; }
+		#endregion
 
 
 		/// <summary>
