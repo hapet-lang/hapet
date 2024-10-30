@@ -59,7 +59,7 @@ namespace HapetFrontend.Parsing
 				if (sizeExprs.Any(x => x == null))
 				{
 					// error here. because size was not defined and elements are also were not
-					ReportMessage(type.Location, $"Array creation requires its size or elements to be specified");
+					ReportMessage(new Location(type.Location.Beginning, CurrentToken.Location.Ending), $"Array creation requires its size or elements to be specified");
 				}
 				return new AstArrayCreateExpr(type, sizeExprs, new List<AstExpression>(), new Location(beg, CurrentToken.Location.Ending));
 			}
@@ -74,7 +74,8 @@ namespace HapetFrontend.Parsing
 
 				var elements = ParseArrayElementsExpression();
 
-				// TODO: print warning here if sizeExpr is null and elements.Count == 0, that empty array will be created
+				// print warning here if sizeExpr is null and elements.Count == 0, that empty array will be created
+				ReportMessage(new Location(beg, CurrentToken.Location.Ending), $"Size of the array and its elements were not specified. Empty array will be created!", Entities.ReportType.Warning);
 
 				// count parsed elements and set the size if the sizeExpr was null
 				if (sizeExprs.Last() == null)
