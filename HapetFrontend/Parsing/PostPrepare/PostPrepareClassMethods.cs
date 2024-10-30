@@ -34,7 +34,7 @@ namespace HapetFrontend.Parsing.PostPrepare
 												    x.Name.Name.EndsWith($"::{classDecl.Name.Name}_dtor")));
 			foreach (var fnc in specialFuncs)
 			{
-				_compiler.ErrorHandler.ReportError(_currentSourceFile.Text, fnc.Name, $"Function with the name is not allowed in the {classDecl.Name.Name} class");
+				_compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, fnc.Name, $"Function with the name is not allowed in the {classDecl.Name.Name} class");
 			}
 
 			PostPrepareGenerateClassInitializer(classDecl);
@@ -171,7 +171,7 @@ namespace HapetFrontend.Parsing.PostPrepare
 			}
 			else
 			{
-				_compiler.ErrorHandler.ReportError(_currentSourceFile.Text, dtors[1], "Only one destructor could be declared in a class");
+				_compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, dtors[1], "Only one destructor could be declared in a class");
 			}
 		}
 	}

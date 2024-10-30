@@ -9,7 +9,7 @@ using System.Text;
 
 namespace HapetCompiler
 {
-	class ConsoleErrorHandler : IErrorHandler
+	class ConsoleMessageHandler : IMessageHandler
 	{
 		public bool HasErrors { get; set; }
 
@@ -21,67 +21,78 @@ namespace HapetCompiler
 
 		private const int _maxPrintErrorSize = 10;
 
-		public ConsoleErrorHandler(int linesBeforeError, int linesAfterError, bool printLocation)
+		public ConsoleMessageHandler(int linesBeforeError, int linesAfterError, bool printLocation)
 		{
 			this.LinesBeforeError = linesBeforeError;
 			this.LinesAfterError = linesAfterError;
 			this.DoPrintLocation = printLocation;
 		}
 
-		public void ReportError(string text, ILocation location, string message, List<Error> subErrors, [CallerFilePath] string callingFunctionFile = "", [CallerMemberName] string callingFunctionName = "", [CallerLineNumber] int callLineNumber = 0)
+		public void ReportMessage(string text, ILocation location, string message, List<CompilerMessage> subMessages, ReportType reportType = ReportType.Error, [CallerFilePath] string callingFunctionFile = "", [CallerMemberName] string callingFunctionName = "", [CallerLineNumber] int callLineNumber = 0)
 		{
-			ReportError(new Error
+			ReportMessage(new CompilerMessage
 			{
 				Location = location,
 				Message = message,
-				SubErrors = subErrors,
+				SubMessages = subMessages,
 				File = callingFunctionFile,
 				LineNumber = callLineNumber,
-				Function = callingFunctionName
+				Function = callingFunctionName,
+				ReportType = reportType,
 			});
 		}
 
-		public void ReportError(string message, [CallerFilePath] string callingFunctionFile = "", [CallerMemberName] string callingFunctionName = "", [CallerLineNumber] int callLineNumber = 0)
+		public void ReportMessage(string message, ReportType reportType = ReportType.Error, [CallerFilePath] string callingFunctionFile = "", [CallerMemberName] string callingFunctionName = "", [CallerLineNumber] int callLineNumber = 0)
 		{
-			HasErrors = true;
+			// getting the print color from message type
+			ConsoleColor printColor = GetColorByReportType(reportType);
+
 #if DEBUG && PRINT_SRC_LOCATION
             Log($"{callingFunctionFile}:{callLineNumber} - {callingFunctionName}()", ConsoleColor.DarkYellow);
 #endif
-
-			Log(message, ConsoleColor.Red);
+			Log(message, printColor);
 		}
 
-		public void ReportError(Error error)
+		public void ReportMessage(CompilerMessage message)
 		{
-			HasErrors = true;
+			ReportMessageInternal(message);
+		}
+
+		private void ReportMessageInternal(CompilerMessage message)
+		{
+			if (message.ReportType == ReportType.Error)
+				HasErrors = true;
 
 #if DEBUG && PRINT_SRC_LOCATION
             Log($"{error.File}:{error.LineNumber} - {error.Function}()", ConsoleColor.DarkYellow);
 #endif
 
-			if (error.Location != null)
-			{
-				var text = TextProvider.GetText(error.Location);
+			// getting the print color from message type
+			ConsoleColor printColor = GetColorByReportType(message.ReportType);
 
-				TokenLocation beginning = error.Location.Beginning;
-				TokenLocation end = error.Location.Ending;
+			if (message.Location != null)
+			{
+				var text = TextProvider.GetText(message.Location);
+
+				TokenLocation beginning = message.Location.Beginning;
+				TokenLocation end = message.Location.Ending;
 
 				// location, message
 				LogInline($"{beginning}: \n", ConsoleColor.White);
-				Log(error.Message, ConsoleColor.Red);
+				Log(message.Message, printColor);
 
 				if (DoPrintLocation)
-					PrintLocation(text, error.Location, linesBefore: LinesBeforeError, linesAfter: LinesAfterError);
+					PrintLocation(text, message.Location, linesBefore: LinesBeforeError, linesAfter: LinesAfterError);
 			}
 			else
 			{
-				Log(error.Message, ConsoleColor.Red);
+				Log(message.Message, printColor);
 			}
 
 			// details
-			if (error.Details != null)
+			if (message.Details != null)
 			{
-				foreach (var d in error.Details)
+				foreach (var d in message.Details)
 				{
 					Console.WriteLine("|");
 
@@ -103,13 +114,13 @@ namespace HapetCompiler
 				}
 			}
 
-			if (error.SubErrors?.Count > 0)
+			if (message.SubMessages?.Count > 0)
 			{
 				Log("| Related:", ConsoleColor.White);
 
-				foreach (var e in error.SubErrors)
+				foreach (var e in message.SubMessages)
 				{
-					ReportError(e);
+					ReportMessage(e);
 				}
 			}
 		}
@@ -280,6 +291,18 @@ namespace HapetCompiler
 			Console.Error.Write(message);
 			Console.ForegroundColor = colf;
 			Console.BackgroundColor = colb;
+		}
+
+		private ConsoleColor GetColorByReportType(ReportType reportType)
+		{
+			ConsoleColor outColor = ConsoleColor.Red;
+			switch (reportType)
+			{
+				case ReportType.Info: outColor = ConsoleColor.Blue; break;
+				case ReportType.Warning: outColor = ConsoleColor.Yellow; break;
+				case ReportType.Error: outColor = ConsoleColor.Red; break;
+			}
+			return outColor;
 		}
 	}
 }

@@ -56,7 +56,7 @@ namespace HapetFrontend.Parsing
 
 		[SkipInStackFrame]
 		[DebuggerStepThrough]
-		public bool Expect(TokenType type, ErrorMessageResolver customErrorMessage, bool skipNewLine = false)
+		public bool Expect(TokenType type, MessageResolver customErrorMessage, bool skipNewLine = false)
 		{
 			var tok = PeekToken();
 			while (skipNewLine && tok.Type == TokenType.NewLine)
@@ -78,22 +78,22 @@ namespace HapetFrontend.Parsing
 
 		[SkipInStackFrame]
 		[DebuggerStepThrough]
-		public Token Consume(TokenType type, ErrorMessageResolver customErrorMessage, bool skipNewLine = false)
+		public Token Consume(TokenType type, MessageResolver customMessage, bool skipNewLine = false)
 		{
-			if (!Expect(type, customErrorMessage, skipNewLine))
+			if (!Expect(type, customMessage, skipNewLine))
 				NextToken();
 			return CurrentToken;
 		}
 
 		[SkipInStackFrame]
 		[DebuggerStepThrough]
-		public Token ConsumeUntil(TokenType type, ErrorMessageResolver customErrorMessage, bool skipNewLine = false)
+		public Token ConsumeUntil(TokenType type, MessageResolver customMessage, bool skipNewLine = false)
 		{
 			var tok = PeekToken();
 			while (tok.Type != type)
 			{
 				if (!skipNewLine || tok.Type != TokenType.NewLine)
-					ReportError(tok.Location, customErrorMessage?.Invoke(tok));
+					ReportError(tok.Location, customMessage?.Invoke(tok));
 
 				NextToken();
 				tok = PeekToken();
@@ -102,7 +102,7 @@ namespace HapetFrontend.Parsing
 					break;
 			}
 
-			if (!Expect(type, customErrorMessage))
+			if (!Expect(type, customMessage))
 				NextToken();
 			return CurrentToken;
 		}

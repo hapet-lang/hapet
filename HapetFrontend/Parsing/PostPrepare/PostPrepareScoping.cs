@@ -4,6 +4,7 @@ using HapetFrontend.Ast.Expressions;
 using HapetFrontend.Ast.Statements;
 using HapetFrontend.Entities;
 using HapetFrontend.Scoping;
+using System.Security.Cryptography.X509Certificates;
 
 namespace HapetFrontend.Parsing.PostPrepare
 {
@@ -62,7 +63,7 @@ namespace HapetFrontend.Parsing.PostPrepare
 				{
 					fieldDecl.ContainingParent = classDecl;
 
-					// TODO: if it is public field/property - it should be visible in the scope in which var's class is
+					// if it is public field/property - it should be visible in the scope in which var's class is
 					classDecl.SubScope.DefineDeclSymbol(fieldDecl.Name.Name, fieldDecl);
 
 					// setting already defined to 'true' because of some shite with access types
@@ -85,7 +86,7 @@ namespace HapetFrontend.Parsing.PostPrepare
 				{
 					fieldDecl.ContainingParent = structDecl;
 
-					// TODO: if it is public field/property - it should be visible in the scope in which var's class is
+					// if it is public field/property - it should be visible in the scope in which var's class is
 					structDecl.SubScope.DefineDeclSymbol(fieldDecl.Name.Name, fieldDecl);
 
 					// setting already defined to 'true' because of some shite with access types
@@ -93,7 +94,8 @@ namespace HapetFrontend.Parsing.PostPrepare
 				}
 				else
 				{
-					// TODO: error - unexpected decl in struct type
+					// error - unexpected decl in struct type
+					_compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, decl, $"Unexpected declaration in struct");
 				}
 			}
 		}
@@ -130,17 +132,19 @@ namespace HapetFrontend.Parsing.PostPrepare
 			}
 			else
 			{
+				// WARN!!!! do not set the scope the same as func scope because its params would be visible in class or smth
+				// creating a Scope in which the params would be
+				var paramsBlockScope = new Scoping.Scope($"params_{funcDecl.Name.Name}_scope", funcDecl.Scope);
+
 				// defining parameters in the func scope
 				foreach (var p in funcDecl.Parameters)
 				{
 					// settings the block scope to the parameters (so they are in the scope of the block)
-					// TODO: WARN!!!! do not set the scope the same as func scope because its params would be visible in class or smth
-					// create an empty ast (?) and set its scope to params
-					SetScopeAndParent(p, funcDecl);
+					SetScopeAndParent(p, funcDecl, paramsBlockScope);
 					PostPrepareParamScoping(p);
 				}
 				// return type is the same
-				SetScopeAndParent(funcDecl.Returns, funcDecl); // TODO: WARN!!! the same as above
+				SetScopeAndParent(funcDecl.Returns, funcDecl, paramsBlockScope);
 				PostPrepareExprScoping(funcDecl.Returns);
 			}
 		}
@@ -307,7 +311,7 @@ namespace HapetFrontend.Parsing.PostPrepare
 			// error if it is not an expr
 			if (unExpr.SubExpr is not AstExpression expr)
 			{
-				_compiler.ErrorHandler.ReportError(_currentSourceFile.Text, unExpr.SubExpr, $"Expression expected after {unExpr.Operator}");
+				_compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, unExpr.SubExpr, $"Expression expected after {unExpr.Operator}");
 				return;
 			}
 			PostPrepareExprScoping(expr);
@@ -321,13 +325,13 @@ namespace HapetFrontend.Parsing.PostPrepare
 			// error if it is not an expr
 			if (binExpr.Left is not AstExpression leftExpr)
 			{
-				_compiler.ErrorHandler.ReportError(_currentSourceFile.Text, binExpr.Left, $"Expression expected before {binExpr.Operator}");
+				_compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, binExpr.Left, $"Expression expected before {binExpr.Operator}");
 				return;
 			}
 			// error if it is not an expr
 			if (binExpr.Right is not AstExpression rightExpr)
 			{
-				_compiler.ErrorHandler.ReportError(_currentSourceFile.Text, binExpr.Right, $"Expression expected after {binExpr.Operator}");
+				_compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, binExpr.Right, $"Expression expected after {binExpr.Operator}");
 				return;
 			}
 			PostPrepareExprScoping(leftExpr);
@@ -392,7 +396,7 @@ namespace HapetFrontend.Parsing.PostPrepare
 			// error if it is not an exprv
 			if (castExpr.SubExpression is not AstExpression subExpr)
 			{
-				_compiler.ErrorHandler.ReportError(_currentSourceFile.Text, castExpr.SubExpression, $"Expression expected");
+				_compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, castExpr.SubExpression, $"Expression expected");
 				return;
 			}
 			PostPrepareExprScoping(subExpr);
@@ -401,7 +405,7 @@ namespace HapetFrontend.Parsing.PostPrepare
 			// error if it is not an expr
 			if (castExpr.TypeExpr is not AstExpression typeExpr)
 			{
-				_compiler.ErrorHandler.ReportError(_currentSourceFile.Text, castExpr.TypeExpr, $"Expression expected as a result type");
+				_compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, castExpr.TypeExpr, $"Expression expected as a result type");
 				return;
 			}
 			PostPrepareExprScoping(typeExpr);

@@ -21,7 +21,7 @@ namespace HapetFrontend
 		/// </summary>
 		private Dictionary<string, Scope> _nameSpaces = new Dictionary<string, Scope>();
 
-		public IErrorHandler ErrorHandler { get; }
+		public IMessageHandler MessageHandler { get; }
 		public CompilerSettings CurrentProjectSettings { get; }
 		public static int AssemblyPointerSize { get; set; }
 
@@ -32,12 +32,12 @@ namespace HapetFrontend
 		/// </summary>
 		public AstFuncDecl MainFunction { get; set; }
 
-		public Compiler(CompilerSettings projectSettings, IErrorHandler errorHandler)
+		public Compiler(CompilerSettings projectSettings, IMessageHandler messageHandler)
 		{
 			CurrentProjectSettings = projectSettings;
 
-			ErrorHandler = errorHandler;
-			ErrorHandler.TextProvider = this;
+			MessageHandler = messageHandler;
+			MessageHandler.TextProvider = this;
 		}
 
 		public void InitGlobalScope()
@@ -49,7 +49,7 @@ namespace HapetFrontend
 
 		public ProgramFile AddFile(string fileName)
 		{
-			if (!CompilerUtils.ValidateFilePath("", fileName, false, ErrorHandler, null, out string filePath))
+			if (!CompilerUtils.ValidateFilePath("", fileName, false, MessageHandler, null, out string filePath))
 			{
 				return null;
 			}
@@ -59,21 +59,21 @@ namespace HapetFrontend
 				return _files[filePath];
 			}
 
-			var file = ParseFile(filePath, ErrorHandler);
+			var file = ParseFile(filePath, MessageHandler);
 			if (file == null)
 				return null;
 
 			return file;
 		}
 
-		private ProgramFile ParseFile(string fileName, IErrorHandler eh)
+		private ProgramFile ParseFile(string fileName, IMessageHandler mh)
 		{
-			var lexer = Lexer.FromFile(fileName, eh);
+			var lexer = Lexer.FromFile(fileName, mh);
 
 			if (lexer == null)
 				return null;
 
-			var parser = new Parser(lexer, eh);
+			var parser = new Parser(lexer, mh);
 
 			var file = new ProgramFile(fileName, lexer.Text);
 			_files[fileName] = file;
@@ -110,7 +110,7 @@ namespace HapetFrontend
 				}
 				else if (s != null)
 				{
-					eh.ReportError(lexer.Text, s, "This type of statement is not allowed in global scope");
+					mh.ReportMessage(lexer.Text, s, "This type of statement is not allowed in global scope");
 				}
 			}
 		}
@@ -121,7 +121,7 @@ namespace HapetFrontend
 			{
 				if (s is AstNamespaceStmt nsStmt)
 				{
-					ns = nsStmt.NameExpression.TryFlatten(ErrorHandler, file);
+					ns = nsStmt.NameExpression.TryFlatten(MessageHandler, file);
 					file.Statements.Remove(s);
 					return;
 				}

@@ -79,7 +79,7 @@ namespace HapetFrontend.Parsing.PostPrepare
 				{
 					// renaming func name from 'Anime' to 'Anime(int, float)'
 					string newName = $"{funcDecl.ContainingClass.Name.Name}::{funcDecl.Name.Name}{funcDecl.Parameters.GetParamsString()}";
-					// TODO: if it is public func - it should be visible in the scope in which func's class is
+					// if it is public func - it should be visible in the scope in which func's class is
 					funcDecl.ContainingClass.SubScope.DefineDeclSymbol(newName, funcDecl);
 					funcDecl.Name = funcDecl.Name.GetCopy(newName);
 				}
@@ -119,7 +119,7 @@ namespace HapetFrontend.Parsing.PostPrepare
 					// get the default value for the type (no need to infer)
 					varDecl.Initializer = AstDefaultExpr.GetDefaultValueForType(varDecl.Type.OutType, varDecl.Initializer);
 					if (varDecl.Initializer == null)
-						_compiler.ErrorHandler.ReportError(_currentSourceFile.Text, varDecl, "Default value for the type was not found");
+						_compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, varDecl, "Default value for the type was not found");
 				}
 				else
 				{
@@ -182,7 +182,7 @@ namespace HapetFrontend.Parsing.PostPrepare
 					PostPrepareNestedExprInference(nestExpr);
 					break;
 				case AstDefaultExpr defaultExpr:
-					_compiler.ErrorHandler.ReportError(_currentSourceFile.Text, defaultExpr, "(Compiler exception) The default had to be infered previously by caller");
+					_compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, defaultExpr, "(Compiler exception) The default had to be infered previously by caller");
 					break;
 				case AstArrayExpr arrayExpr:
 					PostPrepareArrayExprInference(arrayExpr);
@@ -213,8 +213,7 @@ namespace HapetFrontend.Parsing.PostPrepare
 				case AstCaseStmt caseStmt:
 					PostPrepareCaseStmtInference(caseStmt);
 					break;
-				case AstBreakContStmt breakContStmt:
-					PostPrepareBreakContStmtInference(breakContStmt);
+				case AstBreakContStmt _:
 					break;
 				case AstReturnStmt returnStmt:
 					PostPrepareReturnStmtInference(returnStmt);
@@ -250,12 +249,12 @@ namespace HapetFrontend.Parsing.PostPrepare
 			var operators = unExpr.Scope.GetUnaryOperators(unExpr.Operator, (unExpr.SubExpr as AstExpression).OutType);
 			if (operators.Count == 0)
 			{
-				_compiler.ErrorHandler.ReportError(_currentSourceFile.Text, unExpr, $"Undefined operator {unExpr.Operator} for type {(unExpr.SubExpr as AstExpression).OutType}");
+				_compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, unExpr, $"Undefined operator {unExpr.Operator} for type {(unExpr.SubExpr as AstExpression).OutType}");
 			}
 			else if (operators.Count > 1)
 			{
 				// TODO: tell em where are the operators defined
-				_compiler.ErrorHandler.ReportError(_currentSourceFile.Text, unExpr, $"Too many operators {unExpr.Operator} defined for type {(unExpr.SubExpr as AstExpression).OutType}");
+				_compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, unExpr, $"Too many operators {unExpr.Operator} defined for type {(unExpr.SubExpr as AstExpression).OutType}");
 			}
 			else
 			{
@@ -272,12 +271,12 @@ namespace HapetFrontend.Parsing.PostPrepare
 			var operators = binExpr.Scope.GetBinaryOperators(binExpr.Operator, (binExpr.Left as AstExpression).OutType, (binExpr.Right as AstExpression).OutType);
 			if (operators.Count == 0)
 			{
-				_compiler.ErrorHandler.ReportError(_currentSourceFile.Text, binExpr, $"Undefined operator {binExpr.Operator} for types {(binExpr.Left as AstExpression).OutType} and {(binExpr.Right as AstExpression).OutType}");
+				_compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, binExpr, $"Undefined operator {binExpr.Operator} for types {(binExpr.Left as AstExpression).OutType} and {(binExpr.Right as AstExpression).OutType}");
 			}
 			else if (operators.Count > 1)
 			{
 				// TODO: tell em where are the operators defined
-				_compiler.ErrorHandler.ReportError(_currentSourceFile.Text, binExpr, $"Too many operators {binExpr.Operator} defined for types {(binExpr.Left as AstExpression).OutType} and {(binExpr.Right as AstExpression).OutType}");
+				_compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, binExpr, $"Too many operators {binExpr.Operator} defined for types {(binExpr.Left as AstExpression).OutType} and {(binExpr.Right as AstExpression).OutType}");
 			}
 			else
 			{
@@ -391,7 +390,7 @@ namespace HapetFrontend.Parsing.PostPrepare
 			// TODO: check in 'usings' via similar way as upper
 
 			// TODO: really give them a error? or mb there is smth harder?
-			_compiler.ErrorHandler.ReportError(_currentSourceFile.Text, idExpr, "The type could not be inferred...");
+			_compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, idExpr, "The type could not be inferred...");
 		}
 
 		private void PostPrepareCallExprInference(AstCallExpr callExpr)
@@ -451,7 +450,7 @@ namespace HapetFrontend.Parsing.PostPrepare
 				else
 				{
 					// error here: the function call could not be infered
-					_compiler.ErrorHandler.ReportError(_currentSourceFile.Text, callExpr, $"The function call could not be inferred");
+					_compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, callExpr, $"The function call could not be inferred");
 				}
 
 				callExpr.FuncName = callExpr.FuncName.GetCopy(newName);
@@ -468,7 +467,7 @@ namespace HapetFrontend.Parsing.PostPrepare
 			else
 			{
 				// error here
-				_compiler.ErrorHandler.ReportError(_currentSourceFile.Text, callExpr, $"The function could not be found in the scope");
+				_compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, callExpr, $"The function could not be found in the scope");
 			}
 
 			// setting call expr out type
@@ -480,7 +479,7 @@ namespace HapetFrontend.Parsing.PostPrepare
 			else
 			{
 				// error here
-				_compiler.ErrorHandler.ReportError(_currentSourceFile.Text, callExpr, $"The calling thing has to be a function");
+				_compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, callExpr, $"The calling thing has to be a function");
 			}
 		}
 
@@ -514,14 +513,14 @@ namespace HapetFrontend.Parsing.PostPrepare
 
 				if (leftSideScope == null)
 				{
-					_compiler.ErrorHandler.ReportError(_currentSourceFile.Text, nestExpr.LeftPart, "The type of the expression has to be a class or a struct");
+					_compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, nestExpr.LeftPart, "The type of the expression has to be a class or a struct");
 					return;
 				}
 
 				// here could only be an AstIdExpr because AstCallExpr and AstExpression would be in 'if' block upper
 				if (nestExpr.RightPart is not AstIdExpr idExpr)
 				{
-					_compiler.ErrorHandler.ReportError(_currentSourceFile.Text, nestExpr.RightPart, "The expressions has to be an identifier");
+					_compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, nestExpr.RightPart, "The expressions has to be an identifier");
 					return;
 				}
 
@@ -534,7 +533,7 @@ namespace HapetFrontend.Parsing.PostPrepare
 				}
 				else
 				{
-					_compiler.ErrorHandler.ReportError(_currentSourceFile.Text, idExpr, $"The type could not be infered in {leftSideScope} scope...");
+					_compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, idExpr, $"The type could not be infered in {leftSideScope} scope...");
 				}
 			}
 		}
@@ -593,7 +592,7 @@ namespace HapetFrontend.Parsing.PostPrepare
 			else
 			{
 				// error because expected an array 
-				_compiler.ErrorHandler.ReportError(_currentSourceFile.Text, arrayAccExpr.ObjectName, $"Array/String type expected to be indexed");
+				_compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, arrayAccExpr.ObjectName, $"Array/String type expected to be indexed");
 			}
 			arrayAccExpr.OutType = outType;
 		}
@@ -610,7 +609,7 @@ namespace HapetFrontend.Parsing.PostPrepare
 					// get the default value for the type (no need to infer)
 					assignStmt.Value = AstDefaultExpr.GetDefaultValueForType(assignStmt.Target.OutType, assignStmt.Value);
 					if (assignStmt.Value == null)
-						_compiler.ErrorHandler.ReportError(_currentSourceFile.Text, assignStmt, "Default value for the type was not found");
+						_compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, assignStmt, "Default value for the type was not found");
 				}
 				else
 				{
@@ -632,7 +631,7 @@ namespace HapetFrontend.Parsing.PostPrepare
 				// error if it is not a bool type because it has to be
 				if (forStmt.SecondParam.OutType is not BoolType)
 				{
-					_compiler.ErrorHandler.ReportError(_currentSourceFile.Text, forStmt.SecondParam, "Type of the expression has to be boolean type");
+					_compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, forStmt.SecondParam, "Type of the expression has to be boolean type");
 				}
 			}
 			if (forStmt.ThirdParam != null)
@@ -648,7 +647,7 @@ namespace HapetFrontend.Parsing.PostPrepare
 			// error if it is not a bool type because it has to be
 			if (whileStmt.ConditionParam.OutType is not BoolType)
 			{
-				_compiler.ErrorHandler.ReportError(_currentSourceFile.Text, whileStmt.ConditionParam, "Type of the expression has to be boolean type");
+				_compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, whileStmt.ConditionParam, "Type of the expression has to be boolean type");
 			}
 
 			PostPrepareExprInference(whileStmt.Body);
@@ -661,7 +660,7 @@ namespace HapetFrontend.Parsing.PostPrepare
 			// error if it is not a bool type because it has to be
 			if (ifStmt.Condition.OutType is not BoolType)
 			{
-				_compiler.ErrorHandler.ReportError(_currentSourceFile.Text, ifStmt.Condition, "Type of the expression has to be boolean type");
+				_compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, ifStmt.Condition, "Type of the expression has to be boolean type");
 			}
 
 			PostPrepareExprInference(ifStmt.BodyTrue);
@@ -684,7 +683,7 @@ namespace HapetFrontend.Parsing.PostPrepare
 				if (cc.DefaultCase)
 				{
 					if (thereWasADefaultCase)
-						_compiler.ErrorHandler.ReportError(_currentSourceFile.Text, cc.Pattern, "Only one 'default' case is allowed");
+						_compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, cc.Pattern, "Only one 'default' case is allowed");
 					thereWasADefaultCase = true;
 					continue; // do not check for pattern in default expr...
 				}
@@ -695,7 +694,7 @@ namespace HapetFrontend.Parsing.PostPrepare
 				// check that the value is a const 
 				if (cc.Pattern.OutValue == null)
 				{
-					_compiler.ErrorHandler.ReportError(_currentSourceFile.Text, cc.Pattern, "Only constant values allowed in 'case' statements");
+					_compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, cc.Pattern, "Only constant values allowed in 'case' statements");
 				}
 			}
 		}
@@ -709,14 +708,6 @@ namespace HapetFrontend.Parsing.PostPrepare
 				PostPrepareExprInference(caseStmt.Body);
 		}
 
-		private void PostPrepareBreakContStmtInference(AstBreakContStmt breakContStmt)
-		{
-			// there is no inferences but just checks if it is in switch-case
-			AstStatement currentParent = breakContStmt.NormalParent;
-			// TODO: check if the breakContStmt is for switch-case via loop and error if there is nothing
-			// TODO: also check if there is something after and warn! (add warnings to error handler?)
-		}
-
 		private void PostPrepareReturnStmtInference(AstReturnStmt returnStmt)
 		{
 			if (returnStmt.ReturnExpression != null)
@@ -727,7 +718,7 @@ namespace HapetFrontend.Parsing.PostPrepare
 			}
 			else if (returnStmt.ReturnExpression == null && _currentFunction.Returns.OutType is not VoidType)
 			{
-				_compiler.ErrorHandler.ReportError(_currentSourceFile.Text, returnStmt, $"Empty 'return' statement in function that has to return {_currentFunction.Returns.OutType}");
+				_compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, returnStmt, $"Empty 'return' statement in function that has to return {_currentFunction.Returns.OutType}");
 			}
 		}
 
@@ -740,7 +731,7 @@ namespace HapetFrontend.Parsing.PostPrepare
 				// all attr params has to be const values
 				if (a.OutValue == null)
 				{
-					_compiler.ErrorHandler.ReportError(_currentSourceFile.Text, a, $"Parameter value has to be compile time available");
+					_compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, a, $"Parameter value has to be compile time available");
 				}
 			}
 		}

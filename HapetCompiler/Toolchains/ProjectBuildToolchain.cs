@@ -24,15 +24,15 @@ namespace HapetCompiler.Toolchains
             _cmdArgs = args;
 		}
 
-        public int Build(string projectPath, IErrorHandler errorHandler)
+        public int Build(string projectPath, IMessageHandler messageHandler)
         {
             // creating settings instance for the project
             CompilerSettings currentProjectSettings = new CompilerSettings();
 
             // parsing project .hptproj file
-            var projectParser = new ProjectXmlParser(projectPath, currentProjectSettings, errorHandler);
+            var projectParser = new ProjectXmlParser(projectPath, currentProjectSettings, messageHandler);
             projectParser.UpdateSettings(); // setting compiler settings from project
-            if (errorHandler.HasErrors)
+            if (messageHandler.HasErrors)
             {
                 return (int)CompilerErrors.ProjectFileParseError; // proj file parsing errors
             }
@@ -41,10 +41,10 @@ namespace HapetCompiler.Toolchains
             Compiler.AssemblyPointerSize = currentProjectSettings.TargetPlatformData.PointerSize;
 
             // creating the compiler and post preparer
-            var compiler = new Compiler(currentProjectSettings, errorHandler);
+            var compiler = new Compiler(currentProjectSettings, messageHandler);
             compiler.InitGlobalScope();
             var postPreparer = new PostPrepare(compiler);
-            errorHandler.TextProvider = compiler;
+			messageHandler.TextProvider = compiler;
 
             var allFilesInProjectFolder = (new DirectoryInfo(Path.GetDirectoryName(currentProjectSettings.ProjectPath))).EnumerateFiles("*", SearchOption.AllDirectories);
             foreach (var file in allFilesInProjectFolder)
@@ -53,21 +53,21 @@ namespace HapetCompiler.Toolchains
 				    compiler.AddFile(file.FullName);
 			}
 
-            if (errorHandler.HasErrors)
+            if (messageHandler.HasErrors)
             {
                 return (int)CompilerErrors.ParsingError; // parsing errors
             }
 
             // post prepare
             postPreparer.StartPreparation();
-            if (errorHandler.HasErrors)
+            if (messageHandler.HasErrors)
             {
                 return (int)CompilerErrors.PostPrepareError; // post prepare errors
             }
 
             // code gen
-            bool codeGenOk = GenerateAndCompileCode(compiler, postPreparer, errorHandler);
-            if (errorHandler.HasErrors || !codeGenOk)
+            bool codeGenOk = GenerateAndCompileCode(compiler, postPreparer, messageHandler);
+            if (messageHandler.HasErrors || !codeGenOk)
             {
                 return (int)CompilerErrors.CodeGenerationError; // code generation errors
             }
@@ -75,15 +75,15 @@ namespace HapetCompiler.Toolchains
             return (int)CompilerErrors.Ok;
         }
 
-        private bool GenerateAndCompileCode(Compiler compiler, PostPrepare postPreparer, IErrorHandler errorHandler)
+        private bool GenerateAndCompileCode(Compiler compiler, PostPrepare postPreparer, IMessageHandler messageHandler)
         {
             var generator = new LlvmCodeGenerator();
-            bool success = generator.GenerateCode(compiler, postPreparer, errorHandler);
+            bool success = generator.GenerateCode(compiler, postPreparer, messageHandler);
             if (!success)
                 return false;
 
             // TODO: config parameters normally
-            return generator.CompileCode(Enumerable.Empty<string>(), Enumerable.Empty<string>(), errorHandler);
+            return generator.CompileCode(Enumerable.Empty<string>(), Enumerable.Empty<string>(), messageHandler);
         }
     }
 }

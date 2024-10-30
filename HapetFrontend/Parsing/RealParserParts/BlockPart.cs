@@ -40,6 +40,7 @@ namespace HapetFrontend.Parsing
 					if (next.Type == TokenType.CloseBrace || next.Type == TokenType.EOF)
 						break;
 
+					// save the statment name to warn if there is something after it
 					switch (s)
 					{
 						case AstReturnStmt:
@@ -47,12 +48,6 @@ namespace HapetFrontend.Parsing
 							break;
 						case AstBreakContStmt bc:
 							foundBrStatement = bc.IsBreak ? "break" : "continue";
-							break;
-
-						default:
-							// TODO: do i really need this shite?
-							//if (!Expect(TokenType.NewLine, ErrMsg("\\n", "after statement")))
-							//	RecoverStatement();
 							break;
 					}
 

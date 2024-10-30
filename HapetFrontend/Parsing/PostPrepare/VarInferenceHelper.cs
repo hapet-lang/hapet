@@ -44,7 +44,7 @@ namespace HapetFrontend.Parsing.PostPrepare
 
             if (neededType == null)
             {
-				_compiler.ErrorHandler.ReportError(_currentSourceFile.Text, expr, $"The required type of the expr could not be evaluated");
+				_compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, expr, $"The required type of the expr could not be evaluated");
                 return expr;
 			}
 
@@ -104,7 +104,7 @@ namespace HapetFrontend.Parsing.PostPrepare
 					) // place here other exceptions
                 {
                     string typeName = exprType?.ToString() ?? "[Unresolved]";
-					_compiler.ErrorHandler.ReportError(_currentSourceFile.Text, expr, $"Type {typeName} cannot be implicitly casted into {neededType}");
+					_compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, expr, $"Type {typeName} cannot be implicitly casted into {neededType}");
                 }
                 outExpr = expr;
             }

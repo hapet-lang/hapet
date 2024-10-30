@@ -7,14 +7,14 @@ namespace HapetBackend.Llvm.Linkers.Windows
 {
 	public static partial class WinLinker
 	{
-		public static bool Link(Compiler compiler, string targetFile, string objFile, IEnumerable<string> libraryIncludeDirectories, IEnumerable<string> libraries, IErrorHandler errorHandler, bool printLinkerArgs)
+		public static bool Link(Compiler compiler, string targetFile, string objFile, IEnumerable<string> libraryIncludeDirectories, IEnumerable<string> libraries, IMessageHandler messageHandler, bool printLinkerArgs)
 		{
 			if (compiler is null)
 				throw new ArgumentNullException(nameof(compiler));
 			if (libraryIncludeDirectories is null)
 				throw new ArgumentNullException(nameof(libraryIncludeDirectories));
-			if (errorHandler is null)
-				throw new ArgumentNullException(nameof(errorHandler));
+			if (messageHandler is null)
+				throw new ArgumentNullException(nameof(messageHandler));
 
 			string target = null;
 			switch (compiler.CurrentProjectSettings.TargetPlatformData.TargetPlatform)
@@ -76,7 +76,7 @@ namespace HapetBackend.Llvm.Linkers.Windows
 				lldArgs.Add($"/DLL"); // TODO: is it ok?
 
 			// link platform specific shite
-			if (!LinkPlatformLibraries(compiler, lldArgs, errorHandler, target))
+			if (!LinkPlatformLibraries(compiler, lldArgs, messageHandler, target))
 				return false;
 
 			foreach (var linc in libraries)
@@ -91,19 +91,19 @@ namespace HapetBackend.Llvm.Linkers.Windows
 			string vsBinFolder = FindVisualStudioBinaryDirectory();
 			if (vsBinFolder == null || !Directory.Exists(vsBinFolder))
 			{
-				errorHandler.ReportError("Couldn't find Visual Studio binary directory");
+				messageHandler.ReportMessage("Couldn't find Visual Studio binary directory");
 				return false;
 			}
 			string vsLinkerFolder = $"{vsBinFolder}\\Host{target}\\{target}";
 			if (!Directory.Exists(vsLinkerFolder))
 			{
-				errorHandler.ReportError("Couldn't find Visual Studio host bin directory");
+				messageHandler.ReportMessage("Couldn't find Visual Studio host bin directory");
 				return false;
 			}
 			string vsLinkerFile = $"{vsLinkerFolder}\\link.exe";
 			if (!File.Exists(vsLinkerFile))
 			{
-				errorHandler.ReportError("Couldn't find Visual Studio linker file");
+				messageHandler.ReportMessage("Couldn't find Visual Studio linker file");
 				return false;
 			}
 

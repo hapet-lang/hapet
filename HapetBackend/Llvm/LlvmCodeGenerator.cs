@@ -8,7 +8,7 @@ namespace HapetBackend.Llvm
 {
 	public partial class LlvmCodeGenerator 
 	{
-		private IErrorHandler _errorHandler;
+		private IMessageHandler _messageHandler;
 		private Compiler _compiler;
 		private PostPrepare _postPreparer;
 		/// <summary>
@@ -42,7 +42,7 @@ namespace HapetBackend.Llvm
 			throw new NotImplementedException();
 		}
 
-		public unsafe bool GenerateCode(Compiler compiler, PostPrepare postPreparer, IErrorHandler errorHandler)
+		public unsafe bool GenerateCode(Compiler compiler, PostPrepare postPreparer, IMessageHandler messageHandler)
 		{
 			LLVM.InitializeAllTargetMCs();
 			LLVM.InitializeAllTargets();
@@ -52,13 +52,13 @@ namespace HapetBackend.Llvm
 
 			this._compiler = compiler ?? throw new ArgumentNullException(nameof(compiler));
 			this._postPreparer = postPreparer ?? throw new ArgumentNullException(nameof(postPreparer));
-			this._errorHandler = errorHandler ?? throw new ArgumentNullException(nameof(errorHandler));
+			this._messageHandler = messageHandler ?? throw new ArgumentNullException(nameof(messageHandler));
 			this._outDir = _compiler.CurrentProjectSettings.OutputDirectory;
 			this._targetFile = _compiler.CurrentProjectSettings.ProjectName;
 
 			if (_compiler.MainFunction == null && (_compiler.CurrentProjectSettings.TargetFormat == TargetFormat.Console || _compiler.CurrentProjectSettings.TargetFormat == TargetFormat.Windowed))
 			{
-				_errorHandler.ReportError("Main function could not be found...");
+				_messageHandler.ReportMessage("Main function could not be found...");
 				OnGenerateCodeExit();
 				return false;
 			}
@@ -116,7 +116,7 @@ namespace HapetBackend.Llvm
 			}
 
 			// do not generate exe/dll if there are errors
-			if (!errorHandler.HasErrors)
+			if (!_messageHandler.HasErrors)
 			{
                 // emit machine code to object file
                 var objFile = Path.Combine(_outDir, $"{_targetFile}{_compiler.CurrentProjectSettings.TargetPlatformData.ObjectFileExtension}");
@@ -125,7 +125,7 @@ namespace HapetBackend.Llvm
 			else
 			{
 				// info that the out file was not generated due errors
-				_errorHandler.ReportError("Object file could not be generated due to some errors...");
+				_messageHandler.ReportMessage("Object file could not be generated due to some errors...");
 				OnGenerateCodeExit();
 				return false;
             }
@@ -139,7 +139,7 @@ namespace HapetBackend.Llvm
 			_module.Dispose();
 		}
 
-		public bool CompileCode(IEnumerable<string> libraryIncludeDirectories, IEnumerable<string> libraries, IErrorHandler errorHandler)
+		public bool CompileCode(IEnumerable<string> libraryIncludeDirectories, IEnumerable<string> libraries, IMessageHandler messageHandler)
 		{
 			if (!string.IsNullOrWhiteSpace(_outDir) && !Directory.Exists(_outDir))
 				Directory.CreateDirectory(_outDir);
@@ -151,7 +151,7 @@ namespace HapetBackend.Llvm
 			{
 				case TargetPlatform.Win86:
 				case TargetPlatform.Win64:
-					return WinLinker.Link(_compiler, exeFile, objFile, libraryIncludeDirectories, libraries, errorHandler, _compiler.CurrentProjectSettings.Verbose);
+					return WinLinker.Link(_compiler, exeFile, objFile, libraryIncludeDirectories, libraries, messageHandler, _compiler.CurrentProjectSettings.Verbose);
 				case TargetPlatform.Linux86:
 				case TargetPlatform.Linux64:
 					// TODO: ... 

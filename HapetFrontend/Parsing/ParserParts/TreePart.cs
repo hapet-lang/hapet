@@ -11,13 +11,13 @@ namespace HapetFrontend.Parsing
 	{
 		public AstStatement ParseExpression(
 			bool allowCommaForTuple, 
-			bool allowFunctionDeclaration = false, 
-			ErrorMessageResolver errorMessage = null, 
+			bool allowFunctionDeclaration = false,
+			MessageResolver message = null, 
 			bool allowPointerExpressions = false)
 		{
-			errorMessage = errorMessage ?? (t => $"Unexpected token '{t}' in expression");
+			message = message ?? (t => $"Unexpected token '{t}' in expression");
 
-			var expr = ParseOrExpression(allowCommaForTuple, allowFunctionDeclaration, errorMessage, allowPointerExpressions);
+			var expr = ParseOrExpression(allowCommaForTuple, allowFunctionDeclaration, message, allowPointerExpressions);
 
 			return expr;
 		}
@@ -25,39 +25,39 @@ namespace HapetFrontend.Parsing
 		[DebuggerStepThrough]
 		private AstStatement ParseOrExpression(
 			bool allowCommaForTuple, 
-			bool allowFunctionDeclaration, 
-			ErrorMessageResolver e, 
+			bool allowFunctionDeclaration,
+			MessageResolver message, 
 			bool allowPointerExpressions = false)
 		{
-			return ParseBinaryLeftAssociativeExpression(ParseAndExpression, allowCommaForTuple, allowFunctionDeclaration, e, allowPointerExpressions,
+			return ParseBinaryLeftAssociativeExpression(ParseAndExpression, allowCommaForTuple, allowFunctionDeclaration, message, allowPointerExpressions,
 				(TokenType.LogicalOr, "||"));
 		}
 
 		[DebuggerStepThrough]
 		private AstStatement ParseAndExpression(
 			bool allowCommaForTuple, 
-			bool allowFunctionDeclaration, 
-			ErrorMessageResolver e, 
+			bool allowFunctionDeclaration,
+			MessageResolver message, 
 			bool allowPointerExpressions = false)
 		{
-			return ParseBinaryLeftAssociativeExpression(ParseIsExpression, allowCommaForTuple, allowFunctionDeclaration, e, allowPointerExpressions,
+			return ParseBinaryLeftAssociativeExpression(ParseIsExpression, allowCommaForTuple, allowFunctionDeclaration, message, allowPointerExpressions,
 				(TokenType.LogicalAnd, "&&"));
 		}
 
 		private AstStatement ParseIsExpression(
 			bool allowCommaForTuple, 
-			bool allowFunctionDeclaration, 
-			ErrorMessageResolver errorMessage, 
+			bool allowFunctionDeclaration,
+			MessageResolver message, 
 			bool allowPointerExpressions = false)
 		{
-			var lhs = ParseAsExpression(allowCommaForTuple, allowFunctionDeclaration, errorMessage, allowPointerExpressions);
+			var lhs = ParseAsExpression(allowCommaForTuple, allowFunctionDeclaration, message, allowPointerExpressions);
 			AstStatement rhs = null;
 
 			while (CheckToken(TokenType.KwIs))
 			{
 				var _is = NextToken();
 				SkipNewlines();
-				rhs = ParseAsExpression(allowCommaForTuple, allowFunctionDeclaration, errorMessage, allowPointerExpressions);
+				rhs = ParseAsExpression(allowCommaForTuple, allowFunctionDeclaration, message, allowPointerExpressions);
 				lhs = new AstBinaryExpr("is", lhs, rhs, new Location(lhs.Beginning, rhs.Ending));
 			}
 			return lhs;
@@ -65,18 +65,18 @@ namespace HapetFrontend.Parsing
 
 		private AstStatement ParseAsExpression(
 			bool allowCommaForTuple, 
-			bool allowFunctionDeclaration, 
-			ErrorMessageResolver errorMessage, 
+			bool allowFunctionDeclaration,
+			MessageResolver message, 
 			bool allowPointerExpressions = false)
 		{
-			var lhs = ParseInExpression(allowCommaForTuple, allowFunctionDeclaration, errorMessage, allowPointerExpressions);
+			var lhs = ParseInExpression(allowCommaForTuple, allowFunctionDeclaration, message, allowPointerExpressions);
 			AstStatement rhs = null;
 
 			while (CheckToken(TokenType.KwAs))
 			{
 				var _as = NextToken();
 				SkipNewlines();
-				rhs = ParseInExpression(allowCommaForTuple, allowFunctionDeclaration, errorMessage, allowPointerExpressions);
+				rhs = ParseInExpression(allowCommaForTuple, allowFunctionDeclaration, message, allowPointerExpressions);
 				// lhs = new AstBinaryExpr("as", lhs, rhs, new Location(lhs.Beginning, rhs.Ending));
 				// TODO: do i really have to use Cast?
 				lhs = new AstCastExpr(rhs, lhs, new Location(lhs.Beginning, rhs.Ending));
@@ -86,18 +86,18 @@ namespace HapetFrontend.Parsing
 
 		private AstStatement ParseInExpression(
 			bool allowCommaForTuple, 
-			bool allowFunctionDeclaration, 
-			ErrorMessageResolver errorMessage, 
+			bool allowFunctionDeclaration,
+			MessageResolver message, 
 			bool allowPointerExpressions = false)
 		{
-			var lhs = ParseComparisonExpression(allowCommaForTuple, allowFunctionDeclaration, errorMessage, allowPointerExpressions);
+			var lhs = ParseComparisonExpression(allowCommaForTuple, allowFunctionDeclaration, message, allowPointerExpressions);
 			AstStatement rhs = null;
 
 			while (CheckToken(TokenType.KwIn))
 			{
 				var _in = NextToken();
 				SkipNewlines();
-				rhs = ParseComparisonExpression(allowCommaForTuple, allowFunctionDeclaration, errorMessage, allowPointerExpressions);
+				rhs = ParseComparisonExpression(allowCommaForTuple, allowFunctionDeclaration, message, allowPointerExpressions);
 				lhs = new AstBinaryExpr("in", lhs, rhs, new Location(lhs.Beginning, rhs.Ending));
 			}
 			return lhs;
@@ -106,11 +106,11 @@ namespace HapetFrontend.Parsing
 		[DebuggerStepThrough]
 		private AstStatement ParseComparisonExpression(
 			bool allowCommaForTuple, 
-			bool allowFunctionDeclaration, 
-			ErrorMessageResolver e, 
+			bool allowFunctionDeclaration,
+			MessageResolver message, 
 			bool allowPointerExpressions = false)
 		{
-			return ParseBinaryLeftAssociativeExpression(ParseBitAndOrExpression, allowCommaForTuple, allowFunctionDeclaration, e, allowPointerExpressions,
+			return ParseBinaryLeftAssociativeExpression(ParseBitAndOrExpression, allowCommaForTuple, allowFunctionDeclaration, message, allowPointerExpressions,
 				(TokenType.Less, "<"),
 				(TokenType.LessEqual, "<="),
 				(TokenType.Greater, ">"),
@@ -122,11 +122,11 @@ namespace HapetFrontend.Parsing
 		[DebuggerStepThrough]
 		private AstStatement ParseBitAndOrExpression(
 			bool allowCommaForTuple, 
-			bool allowFunctionDeclaration, 
-			ErrorMessageResolver e, 
+			bool allowFunctionDeclaration,
+			MessageResolver message, 
 			bool allowPointerExpressions = false)
 		{
-			return ParseBinaryLeftAssociativeExpression(ParseBitShiftExpression, allowCommaForTuple, allowFunctionDeclaration, e, allowPointerExpressions,
+			return ParseBinaryLeftAssociativeExpression(ParseBitShiftExpression, allowCommaForTuple, allowFunctionDeclaration, message, allowPointerExpressions,
 				(TokenType.Ampersand, "&"),
 				(TokenType.VerticalSlash, "|"));
 		}
@@ -135,10 +135,10 @@ namespace HapetFrontend.Parsing
 		private AstStatement ParseBitShiftExpression(
 			bool allowCommaForTuple, 
 			bool allowFunctionDeclaration,
-			ErrorMessageResolver e, 
+			MessageResolver message, 
 			bool allowPointerExpressions = false)
 		{
-			return ParseBinaryLeftAssociativeExpression(ParseAddSubExpression, allowCommaForTuple, allowFunctionDeclaration, e, allowPointerExpressions,
+			return ParseBinaryLeftAssociativeExpression(ParseAddSubExpression, allowCommaForTuple, allowFunctionDeclaration, message, allowPointerExpressions,
 				(TokenType.LessLess, "<<"),
 				(TokenType.GreaterGreater, ">>"));
 		}
@@ -146,11 +146,11 @@ namespace HapetFrontend.Parsing
 		[DebuggerStepThrough]
 		private AstStatement ParseAddSubExpression(
 			bool allowCommaForTuple, 
-			bool allowFunctionDeclaration, 
-			ErrorMessageResolver e,
+			bool allowFunctionDeclaration,
+			MessageResolver message,
 			bool allowPointerExpressions = false)
 		{
-			return ParseBinaryLeftAssociativeExpression(ParseMulDivExpression, allowCommaForTuple, allowFunctionDeclaration, e, allowPointerExpressions,
+			return ParseBinaryLeftAssociativeExpression(ParseMulDivExpression, allowCommaForTuple, allowFunctionDeclaration, message, allowPointerExpressions,
 				(TokenType.Plus, "+"),
 				(TokenType.Minus, "-"));
 		}
@@ -158,11 +158,11 @@ namespace HapetFrontend.Parsing
 		[DebuggerStepThrough]
 		private AstStatement ParseMulDivExpression(
 			bool allowCommaForTuple, 
-			bool allowFunctionDeclaration, 
-			ErrorMessageResolver e, 
+			bool allowFunctionDeclaration,
+			MessageResolver message, 
 			bool allowPointerExpressions = false)
 		{
-			return ParseBinaryLeftAssociativeExpression(ParseUnaryExpression, allowCommaForTuple, allowFunctionDeclaration, e, allowPointerExpressions,
+			return ParseBinaryLeftAssociativeExpression(ParseUnaryExpression, allowCommaForTuple, allowFunctionDeclaration, message, allowPointerExpressions,
 				(TokenType.Asterisk, "*"),
 				(TokenType.ForwardSlash, "/"),
 				(TokenType.Percent, "%"));
@@ -172,11 +172,11 @@ namespace HapetFrontend.Parsing
 		[DebuggerStepThrough]
 		private AstStatement ParseBinaryExpression(
 			bool allowCommaForTuple, 
-			bool allowFunctionDeclaration, 
-			ErrorMessageResolver e, 
+			bool allowFunctionDeclaration,
+			MessageResolver message, 
 			bool allowPointerExpressions = false)
 		{
-			return ParseBinaryLeftAssociativeExpression(ParseUnaryExpression, allowCommaForTuple, allowFunctionDeclaration, e, allowPointerExpressions,
+			return ParseBinaryLeftAssociativeExpression(ParseUnaryExpression, allowCommaForTuple, allowFunctionDeclaration, message, allowPointerExpressions,
 				(TokenType.Asterisk, "*"),
 				(TokenType.ForwardSlash, "/"),
 				(TokenType.Percent, "%"));
@@ -186,12 +186,12 @@ namespace HapetFrontend.Parsing
 		private AstStatement ParseBinaryLeftAssociativeExpression(
 			ExpressionParser sub, 
 			bool allowCommaForTuple, 
-			bool allowFunctionDeclaration, 
-			ErrorMessageResolver errorMessage, 
+			bool allowFunctionDeclaration,
+			MessageResolver message, 
 			bool allowPointerExpressions, 
 			params (TokenType, string)[] types)
 		{
-			return ParseLeftAssociativeExpression(sub, allowCommaForTuple, allowFunctionDeclaration, errorMessage, allowPointerExpressions, type =>
+			return ParseLeftAssociativeExpression(sub, allowCommaForTuple, allowFunctionDeclaration, message, allowPointerExpressions, type =>
 			{
 				foreach (var (t, o) in types)
 				{
@@ -206,11 +206,11 @@ namespace HapetFrontend.Parsing
 			ExpressionParser sub,
 			bool allowCommaForTuple,
 			bool allowFunctionDeclaration,
-			ErrorMessageResolver errorMessage,
+			MessageResolver message,
 			bool allowPointerExpressions,
 			Func<TokenType, string> tokenMapping)
 		{
-			var lhs = sub(allowCommaForTuple, allowFunctionDeclaration, errorMessage, allowPointerExpressions);
+			var lhs = sub(allowCommaForTuple, allowFunctionDeclaration, message, allowPointerExpressions);
 			AstStatement rhs = null;
 
 			while (true)
@@ -225,15 +225,15 @@ namespace HapetFrontend.Parsing
 
 				NextToken();
 				SkipNewlines();
-				rhs = sub(allowCommaForTuple, allowFunctionDeclaration, errorMessage, allowPointerExpressions);
+				rhs = sub(allowCommaForTuple, allowFunctionDeclaration, message, allowPointerExpressions);
 				lhs = new AstBinaryExpr(op, lhs, rhs, new Location(lhs.Beginning, rhs.Ending));
 			}
 		}
 
 		private AstStatement ParseUnaryExpression(
 			bool allowCommaForTuple, 
-			bool allowFunctionDeclaration, 
-			ErrorMessageResolver errorMessage = null,
+			bool allowFunctionDeclaration,
+			MessageResolver message = null,
 			bool allowPointerExpressions = false)
 		{
 			var next = PeekToken();
@@ -242,7 +242,7 @@ namespace HapetFrontend.Parsing
 				NextToken();
 				SkipNewlines();
 
-				var sub = ParseUnaryExpression(allowCommaForTuple, allowFunctionDeclaration, errorMessage, allowPointerExpressions);
+				var sub = ParseUnaryExpression(allowCommaForTuple, allowFunctionDeclaration, message, allowPointerExpressions);
 				if (sub is not AstExpression expr)
 				{
 					ReportError(sub.Location, $"Expression expected after '&'");
@@ -254,7 +254,7 @@ namespace HapetFrontend.Parsing
 			{
 				NextToken();
 				SkipNewlines();
-				var sub = ParseUnaryExpression(allowCommaForTuple, allowFunctionDeclaration, errorMessage, allowPointerExpressions);
+				var sub = ParseUnaryExpression(allowCommaForTuple, allowFunctionDeclaration, message, allowPointerExpressions);
 				if (sub is not AstExpression expr)
 				{
 					ReportError(sub.Location, $"Expression expected after '*'");
@@ -266,7 +266,7 @@ namespace HapetFrontend.Parsing
 			{
 				NextToken();
 				SkipNewlines();
-				var sub = ParseUnaryExpression(allowCommaForTuple, allowFunctionDeclaration, errorMessage, allowPointerExpressions);
+				var sub = ParseUnaryExpression(allowCommaForTuple, allowFunctionDeclaration, message, allowPointerExpressions);
 				string op = "";
 				switch (next.Type)
 				{
@@ -279,20 +279,20 @@ namespace HapetFrontend.Parsing
 			{
 				NextToken();
 				SkipNewlines();
-				var sub = ParseUnaryExpression(allowCommaForTuple, allowFunctionDeclaration, errorMessage, allowPointerExpressions);
+				var sub = ParseUnaryExpression(allowCommaForTuple, allowFunctionDeclaration, message, allowPointerExpressions);
 				return new AstUnaryExpr("!", sub, new Location(next.Location, sub.Ending));
 			}
 
-			return ParsePostUnaryExpression(allowCommaForTuple, allowFunctionDeclaration, errorMessage, allowPointerExpressions);
+			return ParsePostUnaryExpression(allowCommaForTuple, allowFunctionDeclaration, message, allowPointerExpressions);
 		}
 
 		private AstStatement ParsePostUnaryExpression(
 			bool allowCommaForTuple, 
-			bool allowFunctionDeclaration, 
-			ErrorMessageResolver errorMessage, 
+			bool allowFunctionDeclaration,
+			MessageResolver message, 
 			bool allowPointerExpressions = false)
 		{
-			var expr = ParseAtomicExpression(allowCommaForTuple, allowFunctionDeclaration, errorMessage, true, allowPointerExpressions);
+			var expr = ParseAtomicExpression(allowCommaForTuple, allowFunctionDeclaration, message, true, allowPointerExpressions);
 
 			bool breakLoop = false;
 			while (!breakLoop)
@@ -403,8 +403,8 @@ namespace HapetFrontend.Parsing
 
 		private AstStatement ParseAtomicExpression(
 			bool allowCommaForTuple, 
-			bool allowFunctionDeclaration, 
-			ErrorMessageResolver errorMessage, 
+			bool allowFunctionDeclaration,
+			MessageResolver message, 
 			bool allowArrayExpressions = true,
 			bool allowPointerExpressions = false)
 		{
@@ -488,7 +488,7 @@ namespace HapetFrontend.Parsing
 							return ParseEmptyExpression();
 						}
 
-						var expr = ParseExpression(allowCommaForTuple, allowFunctionDeclaration, errorMessage);
+						var expr = ParseExpression(allowCommaForTuple, allowFunctionDeclaration, message);
 						if (expr is AstIdExpr idExpr)
 						{
 							idExpr.Suffix = "~";
@@ -567,7 +567,7 @@ namespace HapetFrontend.Parsing
 
 				default:
 					//NextToken();
-					ReportError(token.Location, errorMessage?.Invoke(token) ?? $"Failed to parse expression, unpexpected token ({token.Type}) {token.Data}");
+					ReportError(token.Location, message?.Invoke(token) ?? $"Failed to parse expression, unpexpected token ({token.Type}) {token.Data}");
 					return ParseEmptyExpression();
 			}
 		}

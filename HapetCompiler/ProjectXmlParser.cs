@@ -9,23 +9,23 @@ namespace HapetCompiler
 		private readonly string _projectPath = string.Empty;
 		private readonly string _projectPathAbsolute = string.Empty;
 		private readonly CompilerSettings _projectSettings = null;
-		private readonly IErrorHandler _errorHandler = null;
+		private readonly IMessageHandler _messageHandler = null;
 
 		private Dictionary<string, string> _propertyGroupData = new Dictionary<string, string>();
 
 		// TODO: this class also should get args from cmd that would have bigger priority over defined in .hptproj file
-		public ProjectXmlParser(string projectPath, CompilerSettings projectSettings, IErrorHandler errorHandler)
+		public ProjectXmlParser(string projectPath, CompilerSettings projectSettings, IMessageHandler messageHandler)
 		{
 			_projectPath = projectPath;
 			_projectPathAbsolute = Path.GetFullPath(_projectPath);
 			_projectSettings = projectSettings;
-			_errorHandler = errorHandler;
+			_messageHandler = messageHandler;
 
 			XmlDocument projDoc = new XmlDocument();
 			projDoc.Load(_projectPath);
 			if (projDoc == null)
 			{
-				_errorHandler.ReportError($"Project file {_projectPath} could not be parsed");
+				_messageHandler.ReportMessage($"Project file {_projectPath} could not be parsed");
 				return;
 			}
 
@@ -113,7 +113,7 @@ namespace HapetCompiler
 							if (item.ToString().ToLower().Equals(value.Trim().ToLower()))
 								return item;
 						}
-						_errorHandler.ReportError($"The value '{value}' is invalid for the '{key}' tag");
+						_messageHandler.ReportMessage($"The value '{value}' is invalid for the '{key}' tag");
 					}
 				}
 				else
@@ -123,9 +123,9 @@ namespace HapetCompiler
 			}
 			catch (Exception ex)
 			{
-				_errorHandler.ReportError($"Compiler error while inferencing '{key}' tag: {ex}");
+				_messageHandler.ReportMessage($"Compiler error while inferencing '{key}' tag: {ex}");
 			}
-			_errorHandler.ReportError($"Compiler error while inferencing '{key}' tag");
+			_messageHandler.ReportMessage($"Compiler error while inferencing '{key}' tag");
 			return defaultValue;
 		}
 	}

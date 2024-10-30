@@ -90,7 +90,7 @@ namespace HapetFrontend
 		}
 		#endregion
 
-		public static bool ValidateFilePath(string dir, string filePath, bool isRel, IErrorHandler eh, (string file, ILocation loc)? from, out string path)
+		public static bool ValidateFilePath(string dir, string filePath, bool isRel, IMessageHandler mh, (string file, ILocation loc)? from, out string path)
 		{
 			path = filePath;
 
@@ -101,7 +101,7 @@ namespace HapetFrontend
 			}
 			else if (extension != ".hpt")
 			{
-				eh.ReportError($"Invalid extension '{extension}'. Hapet source files must have the extension .hpt");
+				mh.ReportMessage($"Invalid extension '{extension}'. Hapet source files must have the extension .hpt");
 				return false;
 			}
 
@@ -117,11 +117,11 @@ namespace HapetFrontend
 			{
 				if (from != null)
 				{
-					eh.ReportError(from.Value.file, from.Value.loc, $"File '{path}' does not exist");
+					mh.ReportMessage(from.Value.file, from.Value.loc, $"File '{path}' does not exist");
 				}
 				else
 				{
-					eh.ReportError($"File '{path}' does not exist");
+					mh.ReportMessage($"File '{path}' does not exist");
 				}
 
 				return false;

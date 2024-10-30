@@ -22,18 +22,18 @@ namespace HapetFrontend.Parsing
 		private Token peek = null;
 
 		public string Text => _text;
-		private IErrorHandler _errorHandler;
+		private IMessageHandler _messageHandler;
 
-		public static Lexer FromFile(string fileName, IErrorHandler errorHandler)
+		public static Lexer FromFile(string fileName, IMessageHandler messageHandler)
 		{
 			if (!File.Exists(fileName))
 			{
-				errorHandler.ReportError($"'{fileName}' could not be found.");
+				messageHandler.ReportMessage($"'{fileName}' could not be found.");
 				return null;
 			}
 			return new Lexer
 			{
-				_errorHandler = errorHandler,
+				_messageHandler = messageHandler,
 				_text = File.ReadAllText(fileName, Encoding.UTF8)
 					.Replace("\r\n", "\n", StringComparison.InvariantCulture)
 					.Replace("\t", "    ", StringComparison.InvariantCulture),
@@ -47,11 +47,11 @@ namespace HapetFrontend.Parsing
 			};
 		}
 
-		public static Lexer FromString(string str, IErrorHandler errorHandler, string fileName = "string")
+		public static Lexer FromString(string str, IMessageHandler messageHandler, string fileName = "string")
 		{
 			return new Lexer
 			{
-				_errorHandler = errorHandler,
+				_messageHandler = messageHandler,
 				_text = str.Replace("\r\n", "\n", StringComparison.InvariantCulture),
 				_location = new TokenLocation
 				{

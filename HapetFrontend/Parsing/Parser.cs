@@ -6,11 +6,11 @@ namespace HapetFrontend.Parsing
 {
 	public partial class Parser
 	{
-		public delegate string ErrorMessageResolver(Token t);
-		private delegate AstStatement ExpressionParser(bool allowCommaForTuple, bool allowFunctionExpression, ErrorMessageResolver e, bool allowPointerExpressions);
+		public delegate string MessageResolver(Token t);
+		private delegate AstStatement ExpressionParser(bool allowCommaForTuple, bool allowFunctionExpression, MessageResolver e, bool allowPointerExpressions);
 
 		private ILexer _lexer;
-		private IErrorHandler _errorHandler;
+		private IMessageHandler _messageHandler;
 
 		private Token _lastNonWhitespace = null;
 
@@ -19,10 +19,10 @@ namespace HapetFrontend.Parsing
 
 		private StringBuilder _docString = new StringBuilder();
 
-		public Parser(ILexer lex, IErrorHandler errHandler)
+		public Parser(ILexer lex, IMessageHandler messageHandler)
 		{
 			_lexer = lex;
-			_errorHandler = errHandler;
+			_messageHandler = messageHandler;
 		}
 
 		#region Docs

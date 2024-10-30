@@ -9,7 +9,7 @@ namespace HapetCompiler.Toolchains
 			_cmdArgs = args;
 		}
 
-		public int Restore(string projectPath, IErrorHandler errorHandler)
+		public int Restore(string projectPath, IMessageHandler messageHandler)
 		{
 			return 0;
 		}

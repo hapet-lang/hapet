@@ -51,7 +51,7 @@ namespace HapetFrontend.Parsing
 				{
 					if (_location.Index >= _text.Length)
 					{
-						_errorHandler.ReportError(_text, new Location(_location), $"Unexpected end of file while parsing string literal");
+						_messageHandler.ReportMessage(_text, new Location(_location), $"Unexpected end of file while parsing string literal");
 						token.Data = sb.ToString();
 						return;
 					}
@@ -78,7 +78,7 @@ namespace HapetFrontend.Parsing
 
 			if (!foundEnd)
 			{
-				_errorHandler.ReportError(_text, new Location(_location), $"Unexpected end of string literal");
+				_messageHandler.ReportMessage(_text, new Location(_location), $"Unexpected end of string literal");
 			}
 
 			token.Data = sb.ToString();

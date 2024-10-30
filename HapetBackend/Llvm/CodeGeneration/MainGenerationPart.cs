@@ -163,23 +163,23 @@ namespace HapetBackend.Llvm
 			// many checks are here
 			if (dllImportAttr == null) 
 			{
-				_errorHandler.ReportError(_currentSourceFile.Text, funcDecl, $"'DllImportAttribute' has to be specified when function is 'extern'");
+				_messageHandler.ReportMessage(_currentSourceFile.Text, funcDecl, $"'DllImportAttribute' has to be specified when function is 'extern'");
 				return;
 			}
 			if (dllImportAttr.Parameters.Count < 2)
 			{
-				_errorHandler.ReportError(_currentSourceFile.Text, dllImportAttr, $"Both 'DllName' and 'EntryPoint' has to be specified");
+				_messageHandler.ReportMessage(_currentSourceFile.Text, dllImportAttr, $"Both 'DllName' and 'EntryPoint' has to be specified");
 				return;
 			}
 			// TODO: the types has to be checked in type inference
 			if (dllImportAttr.Parameters[0].OutValue is not string)
 			{
-				_errorHandler.ReportError(_currentSourceFile.Text, dllImportAttr.Parameters[0], $"Out type of the expr has to be string");
+				_messageHandler.ReportMessage(_currentSourceFile.Text, dllImportAttr.Parameters[0], $"Out type of the expr has to be string");
 				return;
 			}
 			if (dllImportAttr.Parameters[1].OutValue is not string)
 			{
-				_errorHandler.ReportError(_currentSourceFile.Text, dllImportAttr.Parameters[1], $"Out type of the expr has to be string");
+				_messageHandler.ReportMessage(_currentSourceFile.Text, dllImportAttr.Parameters[1], $"Out type of the expr has to be string");
 				return;
 			}
 			string dllName = dllImportAttr.Parameters[0].OutValue as string; 

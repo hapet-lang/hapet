@@ -27,21 +27,21 @@ namespace HapetFrontend.Ast.Expressions
 		/// <summary>
 		/// The function tries to flatten NestedExpr to smth like 'anm.dawt.Arrw'
 		/// </summary>
-		/// <param name="errorHandler">Error handler</param>
+		/// <param name="messageHandler">Message handler</param>
 		/// <param name="file">The file that is currently preparing (to get text for error)</param>
 		/// <returns>Flatten string</returns>
-		public string TryFlatten(IErrorHandler errorHandler, ProgramFile file)
+		public string TryFlatten(IMessageHandler messageHandler, ProgramFile file)
 		{
 			if (RightPart is not AstIdExpr idExpr)
 			{
-				errorHandler.ReportError(file.Text, RightPart, "The expression expected to be an identifier");
+				messageHandler.ReportMessage(file.Text, RightPart, "The expression expected to be an identifier");
 				return string.Empty;
 			}
 
 			if (LeftPart == null)
 				return string.Empty;
 
-			return $"{LeftPart.TryFlatten(errorHandler, file)}.{idExpr.Name}";
+			return $"{LeftPart.TryFlatten(messageHandler, file)}.{idExpr.Name}";
 		}
 	}
 }

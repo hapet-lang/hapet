@@ -5,7 +5,7 @@ namespace HapetBackend.Llvm.Linkers.Windows
 {
 	public static partial class WinLinker
 	{
-		private static bool LinkPlatformLibraries(Compiler compiler, List<string> lldArgs, IErrorHandler errorHandler, string target)
+		private static bool LinkPlatformLibraries(Compiler compiler, List<string> lldArgs, IMessageHandler messageHandler, string target)
 		{
 			// platform libraries
 			switch (compiler.CurrentProjectSettings.TargetPlatformData.TargetPlatform)
@@ -22,7 +22,7 @@ namespace HapetBackend.Llvm.Linkers.Windows
 									var winSdk = FindWindowsSdk(target);
 									if (winSdk == null)
 									{
-										errorHandler.ReportError("Couldn't find windows sdk");
+										messageHandler.ReportMessage("Couldn't find windows sdk");
 										return false;
 									}
 									if (winSdk.UcrtPath != null)
@@ -33,7 +33,7 @@ namespace HapetBackend.Llvm.Linkers.Windows
 									var msvcLibPath = FindVisualStudioLibraryDirectory();
 									if (msvcLibPath == null)
 									{
-										errorHandler.ReportError("Couldn't find Visual Studio library directory");
+										messageHandler.ReportMessage("Couldn't find Visual Studio library directory");
 										return false;
 									}
 									if (msvcLibPath != null)
