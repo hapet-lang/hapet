@@ -37,11 +37,11 @@ namespace HapetBackend.Llvm
 			switch (arch.TargetPlatform)
 			{
 				case TargetPlatform.Win86:
-					return "i386-pc-windows-msvc";
+					return "i686-pc-windows-msvc";
 				case TargetPlatform.Win64:
 					return "x86_64-pc-windows-msvc";
 				case TargetPlatform.Linux86:
-					return "i386-pc-linux-gnu";
+					return "i686-pc-linux-gnu";
 				case TargetPlatform.Linux64:
 					return "x86_64-pc-linux-gnu";
 			}
