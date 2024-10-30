@@ -68,7 +68,7 @@ namespace HapetFrontend.Parsing
 			if (tok.Type != type)
 			{
 				string message = customErrorMessage?.Invoke(tok) ?? $"Unexpected Token ({tok.Type}) {tok.Data}, expected {type}";
-				ReportError(tok.Location, message);
+				ReportMessage(tok.Location, message);
 				return false;
 			}
 
@@ -93,7 +93,7 @@ namespace HapetFrontend.Parsing
 			while (tok.Type != type)
 			{
 				if (!skipNewLine || tok.Type != TokenType.NewLine)
-					ReportError(tok.Location, customMessage?.Invoke(tok));
+					ReportMessage(tok.Location, customMessage?.Invoke(tok));
 
 				NextToken();
 				tok = PeekToken();

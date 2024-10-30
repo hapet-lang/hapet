@@ -1,4 +1,5 @@
 ﻿using HapetFrontend.Ast;
+using HapetFrontend.Entities;
 using System.Diagnostics;
 
 namespace HapetFrontend.Parsing
@@ -6,17 +7,17 @@ namespace HapetFrontend.Parsing
 	public partial class Parser
 	{
 		[DebuggerStepThrough]
-		public void ReportError(TokenLocation Location, string message)
+		public void ReportMessage(TokenLocation Location, string message, ReportType reportType = ReportType.Error)
 		{
 			var (callingFunctionName, callingFunctionFile, callLineNumber) = CompilerUtils.GetCallingFunction().GetValueOrDefault(("", "", -1));
-			_messageHandler.ReportMessage(_lexer.Text, new Location(Location), message, null, Entities.ReportType.Error, callingFunctionFile, callingFunctionName, callLineNumber);
+			_messageHandler.ReportMessage(_lexer.Text, new Location(Location), message, null, reportType, callingFunctionFile, callingFunctionName, callLineNumber);
 		}
 
 		[DebuggerStepThrough]
-		public void ReportError(ILocation Location, string message)
+		public void ReportMessage(ILocation Location, string message, ReportType reportType = ReportType.Error)
 		{
 			var (callingFunctionName, callingFunctionFile, callLineNumber) = CompilerUtils.GetCallingFunction().GetValueOrDefault(("", "", -1));
-			_messageHandler.ReportMessage(_lexer.Text, Location, message, null, Entities.ReportType.Error, callingFunctionFile, callingFunctionName, callLineNumber);
+			_messageHandler.ReportMessage(_lexer.Text, Location, message, null, reportType, callingFunctionFile, callingFunctionName, callLineNumber);
 		}
 
 		[DebuggerStepThrough]

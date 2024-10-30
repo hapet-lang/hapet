@@ -19,14 +19,14 @@ namespace HapetFrontend.Parsing
 			if (!CheckToken(TokenType.Identifier))
 			{
 				// better error location
-				ReportError(PeekToken().Location, $"Expected class name after 'class' keyword");
+				ReportMessage(PeekToken().Location, $"Expected class name after 'class' keyword");
 			}
 			else
 			{
 				var nest = ParseIdentifierExpression(allowDots: false);
 				if (nest.RightPart is not AstIdExpr idExpr)
 				{
-					ReportError(nest.Location, $"Class name expected to be an identifier");
+					ReportMessage(nest.Location, $"Class name expected to be an identifier");
 					return new AstClassDecl(new AstIdExpr("unknown"), declarations, "", beg);
 				}
 				className = idExpr;
@@ -92,7 +92,7 @@ namespace HapetFrontend.Parsing
 				else
 				{
 					NextToken();
-					ReportError(next.Location, $"Unexpected token {next} at end of class member");
+					ReportMessage(next.Location, $"Unexpected token {next} at end of class member");
 				}
 			}
 

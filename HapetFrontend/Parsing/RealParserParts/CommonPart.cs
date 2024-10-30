@@ -19,7 +19,7 @@ namespace HapetFrontend.Parsing
 			var next = PeekToken();
 			if (next.Type != identType)
 			{
-				ReportError(next.Location, customMessage?.Invoke(next) ?? "Expected identifier");
+				ReportMessage(next.Location, customMessage?.Invoke(next) ?? "Expected identifier");
 				return new AstNestedExpr(new AstIdExpr("anon", new Location(next.Location)), iniNested, next.Location);
 			}
 			NextToken();
@@ -32,7 +32,7 @@ namespace HapetFrontend.Parsing
 			{
 				if (!allowDots)
 				{
-					ReportError(PeekToken().Location, "The '.' was not expected here");
+					ReportMessage(PeekToken().Location, "The '.' was not expected here");
 				}
 
 				NextToken();
@@ -44,7 +44,7 @@ namespace HapetFrontend.Parsing
 				}
 				else
 				{
-					ReportError(PeekToken().Location, "Expected identifier after '.'");
+					ReportMessage(PeekToken().Location, "Expected identifier after '.'");
 				}
 			}
 
@@ -65,7 +65,7 @@ namespace HapetFrontend.Parsing
 
 				if (initializer is not AstExpression)
 				{
-					ReportError(initializer.Location, $"Variable initializer has to be an expresssion");
+					ReportMessage(initializer.Location, $"Variable initializer has to be an expresssion");
 				}
 
 				var varDecl = new AstVarDecl(udecl.Type, udecl.Name, initializer as AstExpression, docString, Location: new Location(udecl.Beginning, end));
@@ -108,7 +108,7 @@ namespace HapetFrontend.Parsing
 			}
 			// TODO: properties with { get; set; }
 
-			ReportError(PeekToken().Location, $"Unexpected token"); // TODO: better error message?
+			ReportMessage(PeekToken().Location, $"Unexpected token"); // TODO: better error message?
 			return udecl;
 		}
 	}

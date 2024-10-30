@@ -24,7 +24,7 @@ namespace HapetFrontend.Parsing
 				}
 				else
 				{
-					ReportError(e, $"Name of argument must be an identifier");
+					ReportMessage(e, $"Name of argument must be an identifier");
 				}
 
 				Consume(TokenType.Equal, ErrMsg(":", "after name in argument"));
@@ -68,7 +68,7 @@ namespace HapetFrontend.Parsing
 				else
 				{
 					NextToken();
-					ReportError(next.Location, $"Failed to parse argument list, expected ',' or ')'");
+					ReportMessage(next.Location, $"Failed to parse argument list, expected ',' or ')'");
 				}
 			}
 			end = Consume(TokenType.CloseParen, ErrMsg(")", "at end of argument list")).Location;
@@ -103,7 +103,7 @@ namespace HapetFrontend.Parsing
 					var probName = ParseExpression(allowCommaForTuple);
 					if (probName is not AstIdExpr)
 					{
-						ReportError(probName.Location, $"Parameter name has to be an identifier");
+						ReportMessage(probName.Location, $"Parameter name has to be an identifier");
 					}
 					pname = probName as AstIdExpr;
 					ptype = e;
@@ -127,7 +127,7 @@ namespace HapetFrontend.Parsing
 					var probDefVal = ParseExpression(allowCommaForTuple);
 					if (probDefVal is not AstExpression)
 					{
-						ReportError(probDefVal.Location, $"Parameter default value has to be an expression");
+						ReportMessage(probDefVal.Location, $"Parameter default value has to be an expression");
 					}
 					defaultValue = probDefVal as AstExpression;
 					end = defaultValue.Ending;
@@ -167,7 +167,7 @@ namespace HapetFrontend.Parsing
 				{
 					NextToken();
 					SkipNewlines();
-					ReportError(next.Location, $"Expected ',' or ')/]', got '{next}'");
+					ReportMessage(next.Location, $"Expected ',' or ')/]', got '{next}'");
 				}
 			}
 
@@ -198,7 +198,7 @@ namespace HapetFrontend.Parsing
 					{
 						p.Name = p.Type as AstIdExpr;
 						if (p.Name == null)
-							ReportError(p.Type.Location, $"Lambda argument name must be an identifier");
+							ReportMessage(p.Type.Location, $"Lambda argument name must be an identifier");
 						p.Type = null;
 					}
 				}

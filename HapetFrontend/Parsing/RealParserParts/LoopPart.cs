@@ -68,7 +68,7 @@ namespace HapetFrontend.Parsing
             if (!CheckToken(TokenType.CloseParen))
                 condition = ParseExpression(true, false) as AstExpression; // TODO: error if it is not an expr
 			else
-                ReportError(PeekToken().Location, $"Condition of 'while' loop expected");
+				ReportMessage(PeekToken().Location, $"Condition of 'while' loop expected");
             var end = Consume(TokenType.CloseParen, ErrMsg("')'", "after the condition"));
 
             SkipNewlines();

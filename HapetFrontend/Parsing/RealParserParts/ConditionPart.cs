@@ -25,7 +25,7 @@ namespace HapetFrontend.Parsing
 			if (!CheckToken(TokenType.CloseParen))
 				condition = ParseExpression(true, false) as AstExpression; // TODO: error if it is not an expr
 			else
-				ReportError(PeekToken().Location, $"Condition of 'if' statement expected");
+				ReportMessage(PeekToken().Location, $"Condition of 'if' statement expected");
 			var end = Consume(TokenType.CloseParen, ErrMsg("')'", "after the condition"));
 
 			SkipNewlines();
@@ -87,7 +87,7 @@ namespace HapetFrontend.Parsing
 			if (!CheckToken(TokenType.CloseParen))
 				condition = ParseExpression(true, false) as AstExpression; // TODO: error if it is not an expr
 			else
-				ReportError(PeekToken().Location, $"Condition of 'switch' statement expected");
+				ReportMessage(PeekToken().Location, $"Condition of 'switch' statement expected");
 			var end = Consume(TokenType.CloseParen, ErrMsg("')'", "after the condition"));
 
 			SkipNewlines();
@@ -177,7 +177,7 @@ namespace HapetFrontend.Parsing
 				if (!CheckToken(TokenType.CloseParen))
 					pattern = ParseExpression(true, false) as AstExpression; // TODO: error if it is not an expr
 				else
-					ReportError(PeekToken().Location, $"Condition of 'case' statement expected");
+					ReportMessage(PeekToken().Location, $"Condition of 'case' statement expected");
 				end = Consume(TokenType.CloseParen, ErrMsg("')'", "after the pattern"));
 			}
 

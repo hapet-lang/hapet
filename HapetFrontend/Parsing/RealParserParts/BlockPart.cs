@@ -14,6 +14,7 @@ namespace HapetFrontend.Parsing
 			// the string is used to check if BR found in the block
 			// so do not accept any statements after it
 			string foundBrStatement = string.Empty;
+			bool afterBrStatementReported = false;
 
 			SkipNewlines();
 			while (true)
@@ -29,10 +30,13 @@ namespace HapetFrontend.Parsing
 					{
 						statements.Add(s);
 					}
-					else
+					else if (!afterBrStatementReported)
 					{
 						// TODO: print warning that the line won't be accepted
 						// TODO: print the warning only once, do not spam
+						afterBrStatementReported = true;
+
+
 					}
 
 					next = PeekToken();

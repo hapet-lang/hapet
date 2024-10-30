@@ -35,7 +35,7 @@ namespace HapetFrontend.Parsing
 			//}
 			// TODO: upper shite is probably not possible
 
-			ReportError(PeekToken().Location, $"Unexpected token. Expected '=' or '\\n'");
+			ReportMessage(PeekToken().Location, $"Unexpected token. Expected '=' or '\\n'");
 			return new AstVarDecl(expr as AstIdExpr, null, null, docString, Location: expr);
 		}
 	}

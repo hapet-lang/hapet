@@ -48,7 +48,7 @@ namespace HapetFrontend.Parsing
 			// because it has to be declaration
 			if (expr is not AstDeclaration)
 			{
-				ReportError(expr.Location, $"The statement after {tknType} has to be a declaration");
+				ReportMessage(expr.Location, $"The statement after {tknType} has to be a declaration");
 				return ParseEmptyExpression();
 			}
 			(expr as AstDeclaration).SpecialKeys.Add(tknType);

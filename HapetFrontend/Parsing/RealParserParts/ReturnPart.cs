@@ -24,7 +24,7 @@ namespace HapetFrontend.Parsing
 			// so there is no need to generate exception twice :)
 			if (expr is not AstExpression && expr is not AstEmptyStmt)
 			{
-				ReportError(expr.Location, "Code ");
+				ReportMessage(expr.Location, "Code ");
 				return ParseEmptyExpression();
 			}
 

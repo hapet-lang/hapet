@@ -20,7 +20,7 @@ namespace HapetFrontend.Parsing
 			{
                 if (type is not AstExpression expr)
                 {
-                    ReportError(type.Location, $"Expression expected as a type name");
+					ReportMessage(type.Location, $"Expression expected as a type name");
                     return ParseEmptyExpression();
                 }
                 return ParseArrayExpr(expr, beg);
@@ -29,7 +29,7 @@ namespace HapetFrontend.Parsing
 			{
 				if (type is not AstNestedExpr nestExpr)
 				{
-                    ReportError(type.Location, $"Unexpected token as a type name");
+					ReportMessage(type.Location, $"Unexpected token as a type name");
                     return ParseEmptyExpression();
                 }
 				var args = ParseArgumentList(out var _);
@@ -37,7 +37,7 @@ namespace HapetFrontend.Parsing
 			}
 
 			// error here that unexpected token .. after typeName
-			ReportError(PeekToken().Location, $"Unexpected token after a type name");
+			ReportMessage(PeekToken().Location, $"Unexpected token after a type name");
 			return ParseEmptyExpression();
 		}
 	}

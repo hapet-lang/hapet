@@ -23,7 +23,7 @@ namespace HapetFrontend.Parsing
 			var next = PeekToken();
 			if (expectNewline && next.Type != TokenType.NewLine && next.Type != TokenType.EOF)
 			{
-				ReportError(next.Location, $"Expected newline after statement");
+				ReportMessage(next.Location, $"Expected newline after statement");
 				RecoverStatement();
 			}
 			return stmt;
@@ -97,7 +97,7 @@ namespace HapetFrontend.Parsing
 
 							if (val is not AstExpression valExpr)
 							{
-								ReportError(val.Location, $"The right side of variable assignment has to be an expression");
+								ReportMessage(val.Location, $"The right side of variable assignment has to be an expression");
 								return stmt;
 							}
 

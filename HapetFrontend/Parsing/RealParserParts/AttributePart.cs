@@ -22,7 +22,7 @@ namespace HapetFrontend.Parsing
 			if (!CheckToken(TokenType.Identifier))
 			{
 				// better error location
-				ReportError(PeekToken().Location, $"Expected attribute name");
+				ReportMessage(PeekToken().Location, $"Expected attribute name");
 			}
 			else
 			{

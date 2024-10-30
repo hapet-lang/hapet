@@ -27,7 +27,7 @@ namespace HapetFrontend.Parsing
 						if (arraySize is not AstExpression expr)
 						{
 							// error here. it has to be an expr
-							ReportError(arraySize.Location, $"Expression expected to be as an array size");
+							ReportMessage(arraySize.Location, $"Expression expected to be as an array size");
 							return ParseEmptyExpression();
 						}
 
@@ -48,7 +48,7 @@ namespace HapetFrontend.Parsing
 			// check for size exprs
 			if (sizeExprs.Count == 0)
 			{
-				ReportError(type.Location, $"Array size has to be specified!!!");
+				ReportMessage(type.Location, $"Array size has to be specified!!!");
 			}
 
 			SkipNewlines();
@@ -59,7 +59,7 @@ namespace HapetFrontend.Parsing
 				if (sizeExprs.Any(x => x == null))
 				{
 					// error here. because size was not defined and elements are also were not
-					ReportError(type.Location, $"Array creation requires its size or elements to be specified");
+					ReportMessage(type.Location, $"Array creation requires its size or elements to be specified");
 				}
 				return new AstArrayCreateExpr(type, sizeExprs, new List<AstExpression>(), new Location(beg, CurrentToken.Location.Ending));
 			}
@@ -69,7 +69,7 @@ namespace HapetFrontend.Parsing
 				bool allExceptTheLastAreNotNull = sizeExprs.SkipLast(1).All(x => x != null);
 				if (!allExceptTheLastAreNotNull)
 				{
-					ReportError(new Location(sizesBeg, sizesEnd), $"Only the last size could be not specified");
+					ReportMessage(new Location(sizesBeg, sizesEnd), $"Only the last size could be not specified");
 				}
 
 				var elements = ParseArrayElementsExpression();
@@ -84,7 +84,7 @@ namespace HapetFrontend.Parsing
 			}
 
 			// error here like unexpected token
-			ReportError(PeekToken().Location, $"Unexpected token after array creation expression");
+			ReportMessage(PeekToken().Location, $"Unexpected token after array creation expression");
 			return ParseEmptyExpression();
 		}
 
@@ -105,7 +105,7 @@ namespace HapetFrontend.Parsing
 				if (expr is not AstExpression exprexpr)
 				{
 					// error here. it has to be
-					ReportError(expr.Location, $"Array element expected to be an expression");
+					ReportMessage(expr.Location, $"Array element expected to be an expression");
 					break;
 				}
 				values.Add(exprexpr);
@@ -122,7 +122,7 @@ namespace HapetFrontend.Parsing
 				}
 				else
 				{
-					ReportError(next.Location, "Unexpected token in array elements expression");
+					ReportMessage(next.Location, "Unexpected token in array elements expression");
 					NextToken();
 				}
 			}

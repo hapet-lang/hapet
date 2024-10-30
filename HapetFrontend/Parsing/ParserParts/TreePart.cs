@@ -245,7 +245,7 @@ namespace HapetFrontend.Parsing
 				var sub = ParseUnaryExpression(allowCommaForTuple, allowFunctionDeclaration, message, allowPointerExpressions);
 				if (sub is not AstExpression expr)
 				{
-					ReportError(sub.Location, $"Expression expected after '&'");
+					ReportMessage(sub.Location, $"Expression expected after '&'");
 					return sub;
 				}
 				return new AstAddressOfExpr(expr, new Location(next.Location, sub.Ending));
@@ -257,7 +257,7 @@ namespace HapetFrontend.Parsing
 				var sub = ParseUnaryExpression(allowCommaForTuple, allowFunctionDeclaration, message, allowPointerExpressions);
 				if (sub is not AstExpression expr)
 				{
-					ReportError(sub.Location, $"Expression expected after '*'");
+					ReportMessage(sub.Location, $"Expression expected after '*'");
 					return sub;
 				}
 				return new AstPointerExpr(expr, true, new Location(next.Location, sub.Ending));
@@ -311,12 +311,12 @@ namespace HapetFrontend.Parsing
 							var args = ParseArgumentList(out var end);
 							if (expr is not AstNestedExpr nestExpr)
 							{
-								ReportError(expr.Location, $"Indentifier expected");
+								ReportMessage(expr.Location, $"Indentifier expected");
 								return expr;
 							}
 							if (nestExpr.RightPart is not AstIdExpr idExpr)
 							{
-								ReportError(nestExpr.Location, $"Indentifier expected as the func name");
+								ReportMessage(nestExpr.Location, $"Indentifier expected as the func name");
 								return expr;
 							}
 							expr = new AstCallExpr(nestExpr.LeftPart, idExpr.GetCopy(), args, new Location(expr.Beginning, end));
@@ -362,31 +362,31 @@ namespace HapetFrontend.Parsing
 								else
 								{
 									NextToken();
-									ReportError(next.Location, $"Failed to parse operator [], expected ',' or ']'");
+									ReportMessage(next.Location, $"Failed to parse operator [], expected ',' or ']'");
 									//RecoverExpression();
 								}
 							}
 							var end = Consume(TokenType.CloseBracket, ErrMsg("]", "at end of [] operator")).Location;
 							if (args.Count == 0)
 							{
-								ReportError(end, "At least one argument required");
+								ReportMessage(end, "At least one argument required");
 								args.Add(ParseEmptyExpression());
 							}
 							else if (args.Count > 1)
 							{
 								// TODO: mb allow them multiple args in []?
-								ReportError(end, "Too many arguments passed");
+								ReportMessage(end, "Too many arguments passed");
 							}
 
 							if (expr is not AstNestedExpr nestExpr)
 							{
-								ReportError(expr.Location, $"Indentifier expected before an array access");
+								ReportMessage(expr.Location, $"Indentifier expected before an array access");
 								return expr;
 							}
 
 							if (args.First() is not AstExpression firstExpr)
 							{
-								ReportError(args.First().Location, $"Expression expected as index of element in [...]");
+								ReportMessage(args.First().Location, $"Expression expected as index of element in [...]");
 								return expr;
 							}
 							var arrAcc = new AstArrayAccessExpr(nestExpr, firstExpr, new Location(expr.Beginning, end));
@@ -470,7 +470,7 @@ namespace HapetFrontend.Parsing
 							var name = ParseIdentifierExpression(allowDots: false);
 							if (name.RightPart is not AstIdExpr idExpr)
 							{
-								ReportError(id.Location, $"Identifier expected as a name of declaration");
+								ReportMessage(id.Location, $"Identifier expected as a name of declaration");
 								return id;
 							}
 							return new UnknownDecl(id, idExpr, new Location(token.Location));
@@ -484,7 +484,7 @@ namespace HapetFrontend.Parsing
 						NextToken();
 						if (!CheckToken(TokenType.Identifier))
 						{
-							ReportError(PeekToken().Location, $"Identifier expected after '~'");
+							ReportMessage(PeekToken().Location, $"Identifier expected after '~'");
 							return ParseEmptyExpression();
 						}
 
@@ -495,7 +495,7 @@ namespace HapetFrontend.Parsing
 						}
 						else
 						{
-							ReportError(PeekToken().Location, $"This type of expr was not expected after '~'");
+							ReportMessage(PeekToken().Location, $"This type of expr was not expected after '~'");
 						}
 						return expr;
 					}
@@ -567,7 +567,7 @@ namespace HapetFrontend.Parsing
 
 				default:
 					//NextToken();
-					ReportError(token.Location, message?.Invoke(token) ?? $"Failed to parse expression, unpexpected token ({token.Type}) {token.Data}");
+					ReportMessage(token.Location, message?.Invoke(token) ?? $"Failed to parse expression, unpexpected token ({token.Type}) {token.Data}");
 					return ParseEmptyExpression();
 			}
 		}
