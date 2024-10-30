@@ -150,7 +150,8 @@ namespace HapetBackend.Llvm
 					default:
 						{
 							// error here (internal compiler error, should not happen) (if not && and ||)
-							_messageHandler.ReportMessage($"Compiler error (should not happen): unexpected operator {op.Name}");
+							if (op.Name != "&&" && op.Name != "||")
+								_messageHandler.ReportMessage($"Compiler error (should not happen): unexpected operator {op.Name}");
 							theFunc = null;
 							break;
 						}

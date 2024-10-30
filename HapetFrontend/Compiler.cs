@@ -6,6 +6,7 @@ using HapetFrontend.Parsing;
 using HapetFrontend.Parsing.PostPrepare;
 using HapetFrontend.Scoping;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 
 namespace HapetFrontend
 {
@@ -24,6 +25,7 @@ namespace HapetFrontend
 		public IMessageHandler MessageHandler { get; }
 		public CompilerSettings CurrentProjectSettings { get; }
 		public static int AssemblyPointerSize { get; set; }
+		public Stopwatch CompilationStopwatch { get; set; }
 
 		public Scope GlobalScope { get; private set; }
 

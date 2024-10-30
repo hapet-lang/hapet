@@ -40,6 +40,7 @@ namespace HapetCompiler.Toolchains
             // creating the compiler and post preparer
             var compiler = new Compiler(currentProjectSettings, messageHandler);
             compiler.InitGlobalScope();
+            compiler.CompilationStopwatch = stopwatch;
             var postPreparer = new PostPrepare(compiler);
 			messageHandler.TextProvider = compiler;
 

@@ -3,6 +3,7 @@ using HapetFrontend;
 using HapetFrontend.Entities;
 using HapetFrontend.Parsing.PostPrepare;
 using LLVMSharp.Interop;
+using System.Diagnostics;
 
 namespace HapetBackend.Llvm
 {
@@ -93,6 +94,8 @@ namespace HapetBackend.Llvm
 			if (!string.IsNullOrWhiteSpace(_outDir) && !Directory.Exists(_outDir))
 				Directory.CreateDirectory(_outDir);
 
+			messageHandler.ReportMessage($"{CompilerUtils.GetPrettyTimeString(_compiler.CompilationStopwatch.Elapsed)} Emmiting...", ReportType.Info);
+
 			// create .ll file
 			if (_compiler.CurrentProjectSettings.OutputIrFile)
 			{
@@ -125,6 +128,8 @@ namespace HapetBackend.Llvm
 
 		public bool CompileCode(IEnumerable<string> libraryIncludeDirectories, IEnumerable<string> libraries, IMessageHandler messageHandler)
 		{
+			messageHandler.ReportMessage($"{CompilerUtils.GetPrettyTimeString(_compiler.CompilationStopwatch.Elapsed)} Linking...", ReportType.Info);
+
 			if (!string.IsNullOrWhiteSpace(_outDir) && !Directory.Exists(_outDir))
 				Directory.CreateDirectory(_outDir);
 
