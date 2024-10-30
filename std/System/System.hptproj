@@ -5,6 +5,6 @@
 		<AllowUnsafeCode>true</AllowUnsafeCode>
 
         <TargetFormat>Library</TargetFormat>
-        <TargetPlatform>win-32</TargetPlatform>
+        <!--<TargetPlatform>win-32</TargetPlatform>-->
 	</PropertyGroup>
 </Project>

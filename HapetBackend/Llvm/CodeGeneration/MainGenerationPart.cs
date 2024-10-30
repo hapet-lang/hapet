@@ -75,7 +75,7 @@ namespace HapetBackend.Llvm
 					// for win-x86 callconv is that
 					if (_compiler.CurrentProjectSettings.TargetPlatformData.TargetPlatform == HapetFrontend.TargetPlatform.Win86)
 					{
-						lfunc.FunctionCallConv = (uint)LLVMCallConv.LLVMX86StdcallCallConv; // X86_StdCall
+						lfunc.FunctionCallConv = (uint)LLVMCallConv.LLVMCCallConv; // cdecl
 					}
 				}
 				else

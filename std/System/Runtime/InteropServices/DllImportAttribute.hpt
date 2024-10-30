@@ -2,13 +2,11 @@ using System;
 
 public sealed class DllImportAttribute : Attribute
 {
-    // public string DllName;
-    // public string EntryPoint;
+    public string DllName;
+    public string EntryPoint;
 
     public DllImportAttribute()
     {
-        // string a = "asd";
-        // byte[] b = new byte[3];
-        int c = 333;
+        byte[] a = new byte[3];
     }
 }
