@@ -67,9 +67,26 @@ namespace HapetFrontend.Parsing.PostPrepare
 				case IntType when exprType is IntType:
 				case CharType when exprType is IntType:
                     {
-                        // allow if the var type size is bigger
-                        // TODO: do not allow if signes are different or something like that. idk :)
-                        if (neededType.GetSize() > exprType.GetSize())
+                        bool? isFirstSigned = neededType switch
+                        {
+                            FloatType => null,
+                            IntType i => i.Signed,
+                            CharType => false,
+                            _ => null,
+                        };
+						bool? isSecondSigned = exprType switch
+						{
+							FloatType => null,
+							IntType i => i.Signed,
+							CharType => false,
+							_ => null,
+						};
+
+						// do not allow if signes are different or something like that. idk :)
+						// allow if the var type size is bigger
+						if (neededType.GetSize() > exprType.GetSize() && 
+                            (isFirstSigned != null && isSecondSigned != null) &&
+                            (isFirstSigned == isSecondSigned))
                         {
 							outExpr = cst;
                             break;
