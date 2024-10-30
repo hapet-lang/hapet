@@ -19,7 +19,7 @@ namespace HapetBackend.Llvm.Linkers.Windows
 							case TargetPlatform.Win86:
 							case TargetPlatform.Win64:
 								{
-									var winSdk = FindWindowsSdk(target);
+									var winSdk = FindWindowsSdk(target, messageHandler);
 									if (winSdk == null)
 									{
 										messageHandler.ReportMessage("Couldn't find windows sdk");

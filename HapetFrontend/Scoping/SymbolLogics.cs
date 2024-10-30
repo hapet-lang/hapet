@@ -88,7 +88,7 @@ namespace HapetFrontend.Scoping
         {
 			NamespaceSymbol nsSymbol = GetSymbol(ns, searchUsedScopes, searchParentScope) as NamespaceSymbol;
             if (nsSymbol == null)
-                return null; // TODO: error here somehow ?
+                return null;
 
             return nsSymbol.Scope.GetSymbol($"{ns}.{symbol}", searchUsedScopes, searchParentScope) as DeclSymbol;
 		}

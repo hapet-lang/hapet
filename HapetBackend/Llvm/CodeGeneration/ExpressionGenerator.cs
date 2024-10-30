@@ -622,9 +622,7 @@ namespace HapetBackend.Llvm
 			// WARN: this strange code is not just for 'fun'
 			// when creating nested 'if' stmts it would be easier to read LLVM IR code with that shite
 			// so for example if we have two nested 'if' stmts it would look like this:
-			// if1.cond: ...
 			// if1.body: ...
-			//   if2.cond: ...
 			//   if2.body: ...
 			//   if2.end: ...
 			// if1.else
@@ -633,18 +631,12 @@ namespace HapetBackend.Llvm
 
 			_ifCounter++;
 
-			var bbCond = _lastFunctionValueRef.AppendBasicBlock($"if{_ifCounter}.cond"); // TODO: WARN: cond block is redunant
 			var bbBody = _lastFunctionValueRef.AppendBasicBlock($"if{_ifCounter}.body");
 
 			// creating other blocks
 			var bbElse = _context.CreateBasicBlock($"if{_ifCounter}.else");
 			var bbEnd = _context.CreateBasicBlock($"if{_ifCounter}.end");
 
-			// directly br into loop condition
-			_builder.BuildBr(bbCond);
-
-			// condition
-			_builder.PositionAtEnd(bbCond);
 			if (stmt.Condition != null)
 			{
 				// building the condition
@@ -826,7 +818,6 @@ namespace HapetBackend.Llvm
 
 		private void GenerateReturnStmt(AstReturnStmt returnStmt)
 		{
-			// TODO: also check if return expr is empty and method has to return smth - error it
 			LLVMValueRef result = null;
 			if (returnStmt.ReturnExpression != null)
                 result = GenerateExpressionCode(returnStmt.ReturnExpression);
@@ -834,7 +825,7 @@ namespace HapetBackend.Llvm
             // return logics
             if (result != null)
             {
-                // TODO: return value (what did i mean by this?? ahahaha)
+                // return value
                 _builder.BuildRet(result);
             }
             else if (_currentFunction.Returns.OutType is VoidType)

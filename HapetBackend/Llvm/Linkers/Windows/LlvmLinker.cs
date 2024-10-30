@@ -78,7 +78,7 @@ namespace HapetBackend.Llvm.Linkers.Windows
 			if (compiler.CurrentProjectSettings.TargetFormat == TargetFormat.Console || compiler.CurrentProjectSettings.TargetFormat == TargetFormat.Windowed)
 				lldArgs.Add($"/subsystem:console"); // WARN: always console because the want 'int main(int argc, char*[] argv)'
 			else
-				lldArgs.Add($"/DLL"); // TODO: is it ok?
+				lldArgs.Add($"/DLL"); // TODO: is it ok for linux and other?
 
 			// link platform specific shite
 			if (!LinkPlatformLibraries(compiler, lldArgs, messageHandler, target))

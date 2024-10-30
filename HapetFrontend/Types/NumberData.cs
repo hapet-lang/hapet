@@ -81,35 +81,12 @@ namespace HapetFrontend.Types
 			return StringValue;
 		}
 
-		// TODO: why do you want to use it? just get size, sign and value and alloc it
-		//public ulong ToUlong()
-		//{
-		//	if (IntValue > long.MaxValue)
-		//		return (ulong)IntValue;
-
-		//	unsafe
-		//	{
-		//		long p = (long)IntValue;
-		//		return *(ulong*)&p;
-		//	}
-		//}
-
-		//public long ToLong()
-		//{
-		//	return (long)IntValue;
-		//}
-
 		public double ToDouble()
 		{
 			if (Type == NumberType.Int)
 				return (double)IntValue;
 			else
 				return DoubleValue;
-		}
-
-		public uint ToUInt()
-		{
-			return (uint)IntValue;
 		}
 
 		public ulong ToULong()

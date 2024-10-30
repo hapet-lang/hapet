@@ -107,24 +107,8 @@ namespace HapetBackend.Llvm
 			rttiTypeInfoCode = HapetTypeToLLVMType(sTypeInfoCode);
 		}
 
-		private HapetType NormalizeType(HapetType type)
-		{
-			return type switch
-			{
-				// TODO: do i need it???
-				//ReferenceType r => ReferenceType.GetRefType(NormalizeType(r.TargetType)),
-				//PointerType r => PointerType.GetPointerType(NormalizeType(r.TargetType)),
-				//ArrayType r => ArrayType.GetArrayType(NormalizeType(r.TargetType), r.Length),
-				//TupleType r => TupleType.GetTuple(r.Members.Select(m => (NormalizeType(m.type), m.name)).ToArray()),
-				//FunctionType r => new FunctionType(r.Declaration.Parameters.Select(m => (m.name, NormalizeType(m.type), m.defaultValue)).ToArray(), NormalizeType(r.ReturnType)),
-				_ => type,
-			};
-		}
-
 		private LLVMTypeRef HapetTypeToLLVMType(HapetType ht)
 		{
-			ht = NormalizeType(ht);
-
 			if (_typeMap.TryGetValue(ht, out var tt)) 
 				return tt;
 
@@ -186,32 +170,6 @@ namespace HapetBackend.Llvm
 
 				case PointerType p:
 					{
-						// TODO: check it
-						//if (p.TargetType == CheezType.Any)
-						//{
-						//	var str = LLVM.StructCreateNamed(context, $"^{p.TargetType.ToString()}");
-						//	LLVM.StructSetBody(str, new LLVMTypeRef[] {
-						//		LLVM.Int8Type().GetPointerTo(),
-						//		rttiTypeInfoPtr
-						//	}, false);
-						//	return str;
-						//}
-						//else if (p.TargetType is TraitType)
-						//{
-						//	var str = LLVM.StructCreateNamed(context, $"^{p.TargetType.ToString()}");
-						//	LLVM.StructSetBody(str, new LLVMTypeRef[] {
-						//		LLVM.Int8Type().GetPointerTo(),
-						//		LLVM.Int8Type().GetPointerTo()
-						//	}, false);
-						//	return str;
-						//}
-						//else
-						//{
-						//	if (p.TargetType == VoidType.Instance)
-						//		return LLVM.Int8Type().GetPointerTo();
-						//	return HapetTypeToLLVMType(p.TargetType).GetPointerTo();
-						//}
-
 						if (p.TargetType == VoidType.Instance)
 							return ((LLVMTypeRef)_context.Int8Type).GetPointerTo();
 						return HapetTypeToLLVMType(p.TargetType).GetPointerTo();
@@ -219,30 +177,6 @@ namespace HapetBackend.Llvm
 
 				case ReferenceType r:
 					{
-						// TODO: check it
-						//if (r.TargetType == CheezType.Any)
-						//{
-						//	var str = LLVM.StructCreateNamed(context, $"&{r.TargetType.ToString()}");
-						//	LLVM.StructSetBody(str, new LLVMTypeRef[] {
-						//		LLVM.Int8Type().GetPointerTo(),
-						//		rttiTypeInfoPtr
-						//	}, false);
-						//	return str;
-						//}
-						//else if (r.TargetType is TraitType)
-						//{
-						//	var str = LLVM.StructCreateNamed(context, $"&{r.TargetType.ToString()}");
-						//	LLVM.StructSetBody(str, new LLVMTypeRef[] {
-						//		LLVM.Int8Type().GetPointerTo(),
-						//		LLVM.Int8Type().GetPointerTo()
-						//	}, false);
-						//	return str;
-						//}
-						//else
-						//{
-						//	return HapetTypeToLLVMType(r.TargetType).GetPointerTo();
-						//}
-
 						return HapetTypeToLLVMType(r.TargetType).GetPointerTo();
 					}
 

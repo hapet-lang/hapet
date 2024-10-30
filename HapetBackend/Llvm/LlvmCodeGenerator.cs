@@ -25,23 +25,6 @@ namespace HapetBackend.Llvm
 		private LLVMBuilderRef _rawBuilder;
 		private LLVMTypeRef _voidPointerType;
 
-		// TODO: mb move it to settings?
-		private string GetTargetTriple(PlatformData arch)
-		{
-			switch (arch.TargetPlatform)
-			{
-				case TargetPlatform.Win86:
-					return "i686-pc-windows-msvc";
-				case TargetPlatform.Win64:
-					return "x86_64-pc-windows-msvc";
-				case TargetPlatform.Linux86:
-					return "i686-pc-linux-gnu";
-				case TargetPlatform.Linux64:
-					return "x86_64-pc-linux-gnu";
-			}
-			throw new NotImplementedException();
-		}
-
 		public unsafe bool GenerateCode(Compiler compiler, PostPrepare postPreparer, IMessageHandler messageHandler)
 		{
 			LLVM.InitializeAllTargetMCs();
@@ -63,7 +46,8 @@ namespace HapetBackend.Llvm
 				return false;
 			}
 
-			this._targetTriple = GetTargetTriple(_compiler.CurrentProjectSettings.TargetPlatformData);
+			// getting the target LLVM triple
+			this._targetTriple = CompilerSettings.GetTargetTriple(_compiler.CurrentProjectSettings.TargetPlatformData);
 
 			_module = LLVMModuleRef.CreateWithName($"{_compiler.CurrentProjectSettings.ProjectName}-module");
 			_module.Target = _targetTriple;

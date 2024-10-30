@@ -17,10 +17,6 @@ namespace HapetFrontend.Parsing
 			var beg = Consume(TokenType.KwFor, ErrMsg("keyword 'for'", "at beginning of 'for' loop"));
 
 			// parse arguments
-			if (!CheckToken(TokenType.OpenParen))
-			{
-				// TODO: error excepted open paren
-			}
 			Consume(TokenType.OpenParen, ErrMsg("'('", "at the begining of 'for' loop statement"));
 
 			// if there is a first param
@@ -30,7 +26,12 @@ namespace HapetFrontend.Parsing
 
 			// if there is a second param
 			if (!CheckToken(TokenType.Semicolon))
-				second = ParseExpression(true, false) as AstExpression; // TODO: error if it is not an expr
+			{
+				var expr = ParseExpression(true, false);
+				if (expr is not AstExpression)
+					ReportMessage(expr, $"Expression expected as the second parameter");
+				second = expr as AstExpression;
+			}
 			Consume(TokenType.Semicolon, ErrMsg("';'", "after the second argument"));
 
 			// if there is a third param
@@ -71,15 +72,16 @@ namespace HapetFrontend.Parsing
             var beg = Consume(TokenType.KwWhile, ErrMsg("keyword 'while'", "at beginning of 'while' loop"));
 
             // parse arguments
-            if (!CheckToken(TokenType.OpenParen))
-            {
-                // TODO: error excepted open paren
-            }
             Consume(TokenType.OpenParen, ErrMsg("'('", "at the begining of 'while' loop statement"));
 
             // if there is a condition param
             if (!CheckToken(TokenType.CloseParen))
-                condition = ParseExpression(true, false) as AstExpression; // TODO: error if it is not an expr
+			{
+				var expr = ParseExpression(true, false);
+				if (expr is not AstExpression)
+					ReportMessage(expr, $"Expression expected as 'while' statement parameter");
+				condition = expr as AstExpression;
+			}
 			else
 				ReportMessage(PeekToken().Location, $"Condition of 'while' loop expected");
             var end = Consume(TokenType.CloseParen, ErrMsg("')'", "after the condition"));

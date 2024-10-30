@@ -1,4 +1,5 @@
-﻿using Microsoft.Win32;
+﻿using HapetFrontend.Entities;
+using Microsoft.Win32;
 using System.Security.AccessControl;
 
 namespace HapetBackend.Llvm.Linkers.Windows
@@ -51,7 +52,7 @@ namespace HapetBackend.Llvm.Linkers.Windows
 			return version;
 		}
 
-		internal static HapetWindowsSdk FindWindowsSdk(string target)
+		internal static HapetWindowsSdk FindWindowsSdk(string target, IMessageHandler messageHandler)
 		{
 			using (var localMachine = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Default))
 			using (var roots = localMachine.OpenSubKey(@"SOFTWARE\Microsoft\Windows Kits\Installed Roots", RegistryRights.ReadKey))
@@ -67,6 +68,8 @@ namespace HapetBackend.Llvm.Linkers.Windows
 				if (sdk.Version == null)
 					return null;
 
+				string sdkBinPath = Path.Combine(sdk.Path, "bin");
+
 				List<string> excludedVersions = new List<string>();
 				string prevVersion = null;
 
@@ -75,10 +78,11 @@ namespace HapetBackend.Llvm.Linkers.Windows
 				{
 					excludedVersions.Add(prevVersion);
 
-					prevVersion = GetLatestSdkVersion(Path.Combine(sdk.Path, "bin"), excludedVersions.ToArray());
+					prevVersion = GetLatestSdkVersion(sdkBinPath, excludedVersions.ToArray());
 					if (prevVersion == null)
 					{
-						// TODO: error!!! 
+						// error!!! 
+						messageHandler.ReportMessage($"Required path {Path.Combine(sdk.Path, "Lib", "vsversion", "ucrt", target)} could not be found");
 						break;
 					}
 					sdk.UcrtPath = Path.Combine(sdk.Path, "Lib", prevVersion, "ucrt", target);
@@ -93,10 +97,11 @@ namespace HapetBackend.Llvm.Linkers.Windows
 				{
 					excludedVersions.Add(prevVersion);
 
-					prevVersion = GetLatestSdkVersion(Path.Combine(sdk.Path, "bin"), excludedVersions.ToArray());
+					prevVersion = GetLatestSdkVersion(sdkBinPath, excludedVersions.ToArray());
 					if (prevVersion == null)
 					{
-						// TODO: error!!! 
+						// error!!! 
+						messageHandler.ReportMessage($"Required path {Path.Combine(sdk.Path, "Lib", "vsversion", "um", target)} could not be found");
 						break;
 					}
 					sdk.UmPath = Path.Combine(sdk.Path, "Lib", prevVersion, "um", target);
