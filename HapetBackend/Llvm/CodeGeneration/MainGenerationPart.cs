@@ -99,6 +99,7 @@ namespace HapetBackend.Llvm
 			{
 				// getting the func
 				LLVMValueRef lfunc = _valueMap[funcDecl.GetSymbol];
+				_lastFunctionValueRef = lfunc;
 
 				// check if there is no implementation and it is not an extern shite
 				if (funcDecl.Body == null && !funcDecl.SpecialKeys.Contains(TokenType.KwExtern))
