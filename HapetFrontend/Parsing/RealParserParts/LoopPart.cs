@@ -40,12 +40,25 @@ namespace HapetFrontend.Parsing
 
 			SkipNewlines();
 
-			// TODO: check if there is not only a '{' but could be a ';'
-			// because exprs like 'for (;;) ;' should also be handled
-			// if there is no '{' just create an empty block
-
 			// parsing the block
-			body = ParseBlockExpression();
+			if (CheckToken(TokenType.OpenBrace))
+			{
+				body = ParseBlockExpression();
+			}
+			else if (CheckToken(TokenType.Semicolon))
+			{
+				// check if there is not only a '{' but could be a ';'
+				// because exprs like 'for (;;) ;' should also be handled
+				// if there is no '{' just create an empty block
+				NextToken();
+				body = new AstBlockExpr(new List<AstStatement>(), PeekToken().Location);
+			}
+			else
+			{
+				// getting only one stmt if there are no braces
+				var onlyStmt = ParseStatement(false);
+				body = new AstBlockExpr(new List<AstStatement>() { onlyStmt }, onlyStmt);
+			}
 
 			return new AstForStmt(first, second, third, body, new Location(beg.Location, end.Location));
 		}
@@ -73,14 +86,27 @@ namespace HapetFrontend.Parsing
 
             SkipNewlines();
 
-            // TODO: check if there is not only a '{' but could be a ';'
-            // because exprs like 'while (false) ;' should also be handled
-            // if there is no '{' just create an empty block
+			// parsing the block
+			if (CheckToken(TokenType.OpenBrace))
+			{
+				body = ParseBlockExpression();
+			}
+			else if (CheckToken(TokenType.Semicolon))
+			{
+				// check if there is not only a '{' but could be a ';'
+				// because exprs like 'while (false) ;' should also be handled
+				// if there is no '{' just create an empty block
+				NextToken();
+				body = new AstBlockExpr(new List<AstStatement>(), PeekToken().Location);
+			}
+			else
+			{
+				// getting only one stmt if there are no braces
+				var onlyStmt = ParseStatement(false);
+				body = new AstBlockExpr(new List<AstStatement>() { onlyStmt }, onlyStmt);
+			}
 
-            // parsing the block
-            body = ParseBlockExpression();
-
-            return new AstWhileStmt(condition, body, new Location(beg.Location, end.Location));
+			return new AstWhileStmt(condition, body, new Location(beg.Location, end.Location));
         }
     }
 }

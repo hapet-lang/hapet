@@ -15,29 +15,34 @@ namespace HapetFrontend.Parsing
 			var beg = Consume(TokenType.KwIf, ErrMsg("keyword 'if'", "at beginning of 'if' statement"));
 
 			// parse arguments
-			if (!CheckToken(TokenType.OpenParen))
-			{
-				// TODO: error excepted open paren
-			}
 			Consume(TokenType.OpenParen, ErrMsg("'('", "at the begining of 'if' statement"));
 
 			// if there is a condition param
 			if (!CheckToken(TokenType.CloseParen))
-				condition = ParseExpression(true, false) as AstExpression; // TODO: error if it is not an expr
+			{
+				var expr = ParseExpression(true, false);
+				if (expr is not AstExpression)
+					ReportMessage(expr, $"Expression expected as 'if' statement condition");
+				condition = expr as AstExpression;
+			}
 			else
 				ReportMessage(PeekToken().Location, $"Condition of 'if' statement expected");
 			var end = Consume(TokenType.CloseParen, ErrMsg("')'", "after the condition"));
 
 			SkipNewlines();
 
-			// TODO: check if there is not only a '{' but could be a ';'
-			// because exprs like 'if (false) ;' should also be handled
-			// if there is no '{' just create an empty block
-
 			// parsing the block
 			if (CheckToken(TokenType.OpenBrace))
 			{
 				bodyTrue = ParseBlockExpression();
+			}
+			else if (CheckToken(TokenType.Semicolon))
+			{
+				// check if there is not only a '{' but could be a ';'
+				// because exprs like 'if (false) ;' should also be handled
+				// if there is no '{' just create an empty block
+				NextToken();
+				bodyTrue = new AstBlockExpr(new List<AstStatement>(), PeekToken().Location);
 			}
 			else
 			{
@@ -77,15 +82,16 @@ namespace HapetFrontend.Parsing
 			var beg = Consume(TokenType.KwSwitch, ErrMsg("keyword 'switch'", "at beginning of 'switch' statement"));
 
 			// parse arguments
-			if (!CheckToken(TokenType.OpenParen))
-			{
-				// TODO: error excepted open paren
-			}
 			Consume(TokenType.OpenParen, ErrMsg("'('", "at the begining of 'switch' statement"));
 
 			// if there is a condition param
 			if (!CheckToken(TokenType.CloseParen))
-				condition = ParseExpression(true, false) as AstExpression; // TODO: error if it is not an expr
+			{
+				var expr = ParseExpression(true, false);
+				if (expr is not AstExpression)
+					ReportMessage(expr, $"Expression expected as 'switch' statement parameter");
+				condition = expr as AstExpression;
+			}
 			else
 				ReportMessage(PeekToken().Location, $"Condition of 'switch' statement expected");
 			var end = Consume(TokenType.CloseParen, ErrMsg("')'", "after the condition"));
@@ -123,7 +129,8 @@ namespace HapetFrontend.Parsing
 						}
 						else
 						{
-							// TODO: error here. all the statements have to be cases
+							// error here. all the statements have to be cases
+							ReportMessage(s, $"The statement expected to be a 'case'");
 						}
 						continue;
 					}
@@ -132,9 +139,18 @@ namespace HapetFrontend.Parsing
 
 				return new AstSwitchStmt(condition, cases, new Location(beg.Location, end.Location));
 			}
+			else if (CheckToken(TokenType.Semicolon))
+			{
+				// check if there is not only a '{' but could be a ';'
+				// because exprs like 'switch (asd) ;' should also be handled
+				// if there is no '{' just create an empty block
+				NextToken();
+				return new AstSwitchStmt(condition, new List<AstCaseStmt>(), new Location(beg.Location, end.Location));
+			}
 			else
 			{
-				// TODO: error here. it has to have braces
+				// error here. it has to have braces
+				ReportMessage(new Location(beg.Location, end.Location), $"Cases expected after the 'switch' statements");
 				return ParseEmptyExpression();
 			}
 		}
@@ -146,18 +162,18 @@ namespace HapetFrontend.Parsing
 			bool isDefault = false;
 			bool isFalling = false;
 
-			Token beg;
-			Token end;
+			TokenLocation beg;
+			TokenLocation end;
 
 			// the case could start with 'default' word
 			if (CheckToken(TokenType.KwDefault))
 			{
 				isDefault = true;
-				beg = Consume(TokenType.KwDefault, ErrMsg("keyword 'default'", "at beginning of 'default' case statement"));
+				beg = Consume(TokenType.KwDefault, ErrMsg("keyword 'default'", "at beginning of 'default' case statement")).Location;
 			}
 			else
 			{
-				beg = Consume(TokenType.KwCase, ErrMsg("keyword 'case'", "at beginning of 'case' statement"));
+				beg = Consume(TokenType.KwCase, ErrMsg("keyword 'case'", "at beginning of 'case' statement")).Location;
 			}
 
 			// by default :)
@@ -167,18 +183,19 @@ namespace HapetFrontend.Parsing
 			if (!isDefault)
 			{
 				// parse arguments
-				if (!CheckToken(TokenType.OpenParen))
-				{
-					// TODO: error excepted open paren
-				}
 				Consume(TokenType.OpenParen, ErrMsg("'('", "at the begining of 'case' statement"));
 
 				// if there is a condition param
 				if (!CheckToken(TokenType.CloseParen))
-					pattern = ParseExpression(true, false) as AstExpression; // TODO: error if it is not an expr
+				{
+					var expr = ParseExpression(true, false);
+					if (expr is not AstExpression)
+						ReportMessage(expr, $"Expression expected as 'case' statement parameter");
+					pattern = expr as AstExpression;
+				}
 				else
 					ReportMessage(PeekToken().Location, $"Condition of 'case' statement expected");
-				end = Consume(TokenType.CloseParen, ErrMsg("')'", "after the pattern"));
+				end = Consume(TokenType.CloseParen, ErrMsg("')'", "after the pattern")).Location;
 			}
 
 			SkipNewlines();
@@ -199,7 +216,7 @@ namespace HapetFrontend.Parsing
 				body = new AstBlockExpr(new List<AstStatement>() { onlyStmt }, onlyStmt);
 			}
 
-			var cs = new AstCaseStmt(pattern, body);
+			var cs = new AstCaseStmt(pattern, body, new Location(beg, end));
 			cs.DefaultCase = isDefault;
 			cs.FallingCase = isFalling;
 			return cs;
