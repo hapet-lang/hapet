@@ -53,12 +53,24 @@ namespace HapetFrontend.Scoping
 			return true;
 		}
 
-		public ISymbol GetSymbol(string name, bool searchUsedScopes = true, bool searchParentScope = true)
+		public ISymbol GetSymbol(string name, bool searchUsedScopes = true, bool searchParentScope = true, bool searchPartNamespace = false)
         {
             if (_symbolTable.ContainsKey(name))
             {
                 var v = _symbolTable[name];
                 return v;
+            }
+
+            // this cringe is used to search a part namespace
+            if (searchPartNamespace)
+            {
+                foreach (var k in _symbolTable.Keys)
+                {
+                    if (k.StartsWith(name))
+                    {
+						return _symbolTable[k];
+					}
+                }
             }
 
             if (_usedScopes != null && searchUsedScopes)
@@ -79,7 +91,7 @@ namespace HapetFrontend.Scoping
             }
 
             if (searchParentScope)
-                return Parent?.GetSymbol(name);
+                return Parent?.GetSymbol(name, searchUsedScopes, searchParentScope, searchPartNamespace);
             return null;
         }
 
@@ -91,6 +103,20 @@ namespace HapetFrontend.Scoping
                 return null;
 
             return nsSymbol.Scope.GetSymbol($"{ns}.{symbol}", searchUsedScopes, searchParentScope) as DeclSymbol;
+		}
+
+        public bool IsStringNamespaceOrPart(string testString, bool searchUsedScopes = true, bool searchParentScope = true)
+        {
+			NamespaceSymbol nsSymbol = GetSymbol(testString, searchUsedScopes, searchParentScope) as NamespaceSymbol;
+			if (nsSymbol != null)
+				return true;
+
+			// it is probably a part
+			NamespaceSymbol nsSymbolPart = GetSymbol(testString, searchUsedScopes, searchParentScope, true) as NamespaceSymbol;
+			if (nsSymbolPart != null)
+				return true;
+
+			return false;
 		}
 
 		public AstClassDecl GetClass(string name)

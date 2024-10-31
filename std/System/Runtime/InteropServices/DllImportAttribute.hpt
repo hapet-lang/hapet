@@ -5,8 +5,6 @@ public sealed class DllImportAttribute : Attribute
     public string DllName;
     public string EntryPoint;
 
-    public Attribute attrrr;
-
     public DllImportAttribute()
     {
     }

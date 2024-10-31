@@ -2,6 +2,7 @@
 using HapetFrontend.Ast.Declarations;
 using HapetFrontend.Ast.Expressions;
 using HapetFrontend.Ast.Statements;
+using HapetFrontend.Entities;
 using HapetFrontend.Scoping;
 using HapetFrontend.Types;
 using System;
@@ -588,6 +589,8 @@ namespace HapetFrontend.Parsing.PostPrepare
 			else
 			{
 				Scope leftSideScope = null;
+				bool foundNs = false;
+				InternalNormalizeLeftPartIfItIsANamespaceWithType(nestExpr, ref foundNs);
 				PostPrepareExprInference(nestExpr.LeftPart);
 				if (nestExpr.LeftPart.OutType is PointerType ptr && ptr.TargetType is ClassType classT)
 					leftSideScope = classT.Declaration.SubScope;
@@ -622,6 +625,58 @@ namespace HapetFrontend.Parsing.PostPrepare
 				else
 				{
 					_compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, idExpr, $"The type could not be infered in {leftSideScope} scope...");
+				}
+			}
+		}
+
+		// :)
+		/// <summary>
+		/// This shite is used to join namespace with type (if exist) to a one AstIdExpr as a right part
+		/// If we have AstNested like 'System.Runtime.InteropServices.DllImportAttribute.DllName'
+		/// I would like to have 'System.Runtime.InteropServices.DllImportAttribute' as one AstId
+		/// Because it is just a type
+		/// </summary>
+		/// <param name="nestExpr">The shite</param>
+		private void InternalNormalizeLeftPartIfItIsANamespaceWithType(AstNestedExpr nestExpr, ref bool found)
+		{
+			string flatten = nestExpr.TryFlatten(null, null);
+			if (string.IsNullOrWhiteSpace(flatten))
+				return; // no need to normalize this shite :)
+
+			if (nestExpr.LeftPart == null)
+				return;
+
+			InternalNormalizeLeftPartIfItIsANamespaceWithType(nestExpr.LeftPart, ref found);
+
+			// check is it namespace
+			string leftString = (nestExpr.LeftPart.RightPart as AstIdExpr).Name;
+			bool foundNs = nestExpr.Scope.IsStringNamespaceOrPart(leftString);
+			// go all over the usings
+			foreach (var usng in _currentSourceFile.Usings)
+			{
+				// getting ns string
+				var ns = usng.FlattenNamespace;
+				if (nestExpr.Scope.IsStringNamespaceOrPart($"{ns}.{leftString}"))
+				{
+					foundNs = true;
+					break;
+				}
+			}
+
+			// check is it namespace
+			if (foundNs)
+			{
+				// if it is a namespace - join with current right side and try again
+				nestExpr.RightPart = (nestExpr.RightPart as AstIdExpr).GetCopy($"{leftString}.{(nestExpr.RightPart as AstIdExpr).Name}");
+			}
+			else
+			{
+				if (!found)
+				{
+					// if it is not a namespace - then probably type is done
+					nestExpr.LeftPart.LeftPart = null;
+					nestExpr.LeftPart.RightPart.Location = nestExpr.LeftPart.Location;
+					found = true;
 				}
 			}
 		}
