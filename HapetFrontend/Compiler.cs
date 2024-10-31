@@ -80,6 +80,8 @@ namespace HapetFrontend
 			var file = new ProgramFile(fileName, lexer.Text);
 			_files[fileName] = file;
 
+			// the list is to handle attributes
+			List<AstAttributeStmt> foundAttributes = new List<AstAttributeStmt>();
 			while (true)
 			{
 				var s = parser.ParseStatement();
@@ -109,6 +111,18 @@ namespace HapetFrontend
 				{
 					s.SourceFile = file;
 					file.Statements.Add(s);
+
+					// add previously found attributes into the declaration
+					if (s is AstDeclaration decl)
+						decl.Attributes.AddRange(foundAttributes);
+
+					// clear attributes
+					foundAttributes.Clear();
+				}
+				else if (s is AstAttributeStmt attr)
+				{
+					// we found an attr - add it to list and use it when find a decl
+					foundAttributes.Add(attr);
 				}
 				else if (s != null)
 				{

@@ -12,11 +12,6 @@ namespace HapetFrontend.Ast.Declarations
 		public AstExpression DefaultValue { get; set; }
 
 		/// <summary>
-		/// Attributes that are applied to the param decl
-		/// </summary>
-		public List<AstAttributeStmt> Attributes { get; } = new List<AstAttributeStmt>();
-
-		/// <summary>
 		/// The function in which the parameter presented
 		/// </summary>
 		public AstFuncDecl ContainingFunction { get; set; }

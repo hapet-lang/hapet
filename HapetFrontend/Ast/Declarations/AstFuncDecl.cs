@@ -23,11 +23,6 @@ namespace HapetFrontend.Ast.Declarations
 		/// </summary>
 		public AstClassDecl ContainingClass { get; set; }
 
-        /// <summary>
-        /// Attributes that are applied to the func decl
-        /// </summary>
-        public List<AstAttributeStmt> Attributes { get; } = new List<AstAttributeStmt>();
-
 		public AstFuncDecl(List<AstParamDecl> parameters, AstExpression returns, AstBlockExpr body, AstIdExpr name, string doc = "", ILocation Location = null) : base(name, doc, Location)
 		{
 			Type = new AstIdExpr("func", Location);

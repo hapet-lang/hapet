@@ -14,11 +14,6 @@ namespace HapetFrontend.Ast.Declarations
 		public List<AstDeclaration> Declarations { get; } = new List<AstDeclaration>();
 
 		/// <summary>
-		/// Attributes that are applied to the struct decl
-		/// </summary>
-		public List<AstAttributeStmt> Attributes { get; } = new List<AstAttributeStmt>();
-
-		/// <summary>
 		/// The inner scope of the struct. Used to get access to it's content
 		/// </summary>
 		public Scope SubScope { get; set; }

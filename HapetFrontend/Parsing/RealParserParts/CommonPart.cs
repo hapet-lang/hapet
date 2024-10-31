@@ -2,6 +2,7 @@
 using HapetFrontend.Ast.Declarations;
 using HapetFrontend.Ast.Expressions;
 using HapetFrontend.Ast.Statements;
+using System.Collections.Generic;
 using System.Text;
 
 namespace HapetFrontend.Parsing
@@ -69,6 +70,7 @@ namespace HapetFrontend.Parsing
 				}
 
 				var varDecl = new AstVarDecl(udecl.Type, udecl.Name, initializer as AstExpression, docString, Location: new Location(udecl.Beginning, end));
+				varDecl.Attributes.AddRange(attrs);
 				varDecl.SpecialKeys.AddRange(udecl.SpecialKeys);
 				return varDecl;
 			}
@@ -77,6 +79,7 @@ namespace HapetFrontend.Parsing
 			{
 				// do not get the next token
 				var varDecl = new AstVarDecl(udecl.Type, udecl.Name, null, docString, Location: new Location(udecl.Beginning, end));
+				varDecl.Attributes.AddRange(attrs);
 				varDecl.SpecialKeys.AddRange(udecl.SpecialKeys);
 				return varDecl;
 			}

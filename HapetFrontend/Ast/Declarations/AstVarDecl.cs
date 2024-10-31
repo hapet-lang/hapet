@@ -18,11 +18,6 @@ namespace HapetFrontend.Ast.Declarations
 		/// </summary>
 		public AstDeclaration ContainingParent { get; set; }
 
-		/// <summary>
-		/// Attributes that are applied to fields and properties!
-		/// </summary>
-		public List<AstAttributeStmt> Attributes { get; } = new List<AstAttributeStmt>();
-
 		public AstVarDecl(AstExpression type, AstIdExpr name, AstExpression ini = null, string doc = "", ILocation Location = null) : base(name, doc, Location)
 		{
 			Type = type;

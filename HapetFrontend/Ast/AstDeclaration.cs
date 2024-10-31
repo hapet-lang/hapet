@@ -1,4 +1,5 @@
 ﻿using HapetFrontend.Ast.Expressions;
+using HapetFrontend.Ast.Statements;
 using HapetFrontend.Parsing;
 using HapetFrontend.Scoping;
 
@@ -11,8 +12,14 @@ namespace HapetFrontend.Ast
 
 		public string Documentation { get; set; }
 
-		// like public/static/virtual
+		/// <summary>
+		/// Keys like public/static/virtual and other
+		/// </summary>
 		public List<TokenType> SpecialKeys { get; private set; } = new List<TokenType>();
+		/// <summary>
+		/// Attributes that are applied to the decl
+		/// </summary>
+		public List<AstAttributeStmt> Attributes { get; } = new List<AstAttributeStmt>();
 
 		/// <summary>
 		/// Getting symbol of itself

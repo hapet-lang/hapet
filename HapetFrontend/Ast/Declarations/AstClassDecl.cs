@@ -19,11 +19,6 @@ namespace HapetFrontend.Ast.Declarations
 		public List<AstNestedExpr> InheritedFrom { get; set; } = new List<AstNestedExpr>();
 
 		/// <summary>
-		/// Attributes that are applied to the class decl
-		/// </summary>
-		public List<AstAttributeStmt> Attributes { get; } = new List<AstAttributeStmt>();
-
-		/// <summary>
 		/// The inner scope of the class. Used to get access to it's content
 		/// </summary>
 		public Scope SubScope { get; set; }
