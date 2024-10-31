@@ -1,4 +1,5 @@
 ﻿using HapetFrontend.Ast.Expressions;
+using HapetFrontend.Ast.Statements;
 using HapetFrontend.Parsing;
 using HapetFrontend.Types;
 
@@ -17,6 +18,11 @@ namespace HapetFrontend.Ast.Declarations
 		/// </summary>
 		public AstDeclaration ContainingParent { get; set; }
 
+		/// <summary>
+		/// Attributes that are applied to fields and properties!
+		/// </summary>
+		public List<AstAttributeStmt> Attributes { get; } = new List<AstAttributeStmt>();
+
 		public AstVarDecl(AstExpression type, AstIdExpr name, AstExpression ini = null, string doc = "", ILocation Location = null) : base(name, doc, Location)
 		{
 			Type = type;
@@ -25,11 +31,13 @@ namespace HapetFrontend.Ast.Declarations
 
 		internal VarDeclJson GetJson()
 		{
+			var attributes = Attributes.Select(x => x.GetJson()).ToList();
 			return new VarDeclJson()
 			{
 				Type = Type.OutType.ToString(),
 				Name = Name.Name,
 				SpecialKeys = SpecialKeys,
+				Attributes = attributes,
 				DocString = Documentation
 			};
 		}
@@ -41,6 +49,7 @@ namespace HapetFrontend.Ast.Declarations
 		public string Name { get; set; }
 
         public List<TokenType> SpecialKeys { get; set; }
+		public List<AttributeJson> Attributes { get; set; }
 
 		public string DocString { get; set; }
     }

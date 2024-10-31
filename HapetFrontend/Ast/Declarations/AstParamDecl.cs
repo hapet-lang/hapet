@@ -1,11 +1,20 @@
 ﻿using HapetFrontend.Ast.Expressions;
+using HapetFrontend.Ast.Statements;
 using HapetFrontend.Parsing;
 
 namespace HapetFrontend.Ast.Declarations
 {
 	public class AstParamDecl : AstDeclaration
 	{
+		/// <summary>
+		/// Default value of the parameter
+		/// </summary>
 		public AstExpression DefaultValue { get; set; }
+
+		/// <summary>
+		/// Attributes that are applied to the param decl
+		/// </summary>
+		public List<AstAttributeStmt> Attributes { get; } = new List<AstAttributeStmt>();
 
 		/// <summary>
 		/// The function in which the parameter presented
@@ -26,12 +35,14 @@ namespace HapetFrontend.Ast.Declarations
 
         internal ParamDeclJson GetJson()
         {
-            return new ParamDeclJson()
+			var attributes = Attributes.Select(x => x.GetJson()).ToList();
+			return new ParamDeclJson()
             {
                 Type = Type.OutType.ToString(),
                 Name = Name.Name,
-                SpecialKeys = SpecialKeys,
-                DocString = Documentation
+                SpecialKeys = SpecialKeys, // need it for 'ref', 'out' and other shite
+				Attributes = attributes,
+				DocString = Documentation
             };
         }
     }
@@ -42,7 +53,8 @@ namespace HapetFrontend.Ast.Declarations
         public string Name { get; set; }
 
         public List<TokenType> SpecialKeys { get; set; }
+		public List<AttributeJson> Attributes { get; set; }
 
-        public string DocString { get; set; }
+		public string DocString { get; set; }
     }
 }

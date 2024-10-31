@@ -1,4 +1,5 @@
 ﻿using HapetFrontend.Ast.Expressions;
+using HapetFrontend.Ast.Statements;
 using HapetFrontend.Parsing;
 using HapetFrontend.Scoping;
 using HapetFrontend.Types;
@@ -11,6 +12,11 @@ namespace HapetFrontend.Ast.Declarations
 		/// Declarations that are in the struct
 		/// </summary>
 		public List<AstDeclaration> Declarations { get; } = new List<AstDeclaration>();
+
+		/// <summary>
+		/// Attributes that are applied to the struct decl
+		/// </summary>
+		public List<AstAttributeStmt> Attributes { get; } = new List<AstAttributeStmt>();
 
 		/// <summary>
 		/// The inner scope of the struct. Used to get access to it's content
@@ -26,11 +32,13 @@ namespace HapetFrontend.Ast.Declarations
         internal StructDeclJson GetJson()
         {
             var fields = Declarations.Where(x => x is AstVarDecl).Select(x => (x as AstVarDecl).GetJson()).ToList();
-            return new StructDeclJson()
+			var attributes = Attributes.Select(x => x.GetJson()).ToList();
+			return new StructDeclJson()
             {
                 Fields = fields,
                 Name = Name.Name,
                 SpecialKeys = SpecialKeys,
+				Attributes = attributes,
                 DocString = Documentation
             };
         }
@@ -42,7 +50,8 @@ namespace HapetFrontend.Ast.Declarations
         public string Name { get; set; }
 
         public List<TokenType> SpecialKeys { get; set; }
+		public List<AttributeJson> Attributes { get; set; }
 
-        public string DocString { get; set; }
+		public string DocString { get; set; }
     }
 }

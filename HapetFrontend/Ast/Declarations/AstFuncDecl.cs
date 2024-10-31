@@ -41,13 +41,15 @@ namespace HapetFrontend.Ast.Declarations
         internal FuncDeclJson GetJson()
         {
             var parameters = Parameters.Select(x => x.GetJson()).ToList();
+            var attributes = Attributes.Select(x => x.GetJson()).ToList();
             return new FuncDeclJson()
             {
                 Parameters = parameters,
                 ReturnType = Returns.OutType.ToString(),
                 Name = Name.Name,
                 SpecialKeys = SpecialKeys,
-                CallingConvention = CallingConvention,
+                Attributes = attributes,
+				CallingConvention = CallingConvention,
                 DocString = Documentation
             };
         }
@@ -60,6 +62,7 @@ namespace HapetFrontend.Ast.Declarations
         public string Name { get; set; }
 
         public List<TokenType> SpecialKeys { get; set; }
+        public List<AttributeJson> Attributes { get; set; }
 
 		public CallingConvention CallingConvention { get; set; }
 

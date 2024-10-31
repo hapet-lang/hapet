@@ -1,4 +1,7 @@
-﻿using HapetFrontend.Ast.Expressions;
+﻿using HapetFrontend.Ast.Declarations;
+using HapetFrontend.Ast.Expressions;
+using HapetFrontend.Parsing;
+using System.Xml.Linq;
 
 namespace HapetFrontend.Ast.Statements
 {
@@ -19,5 +22,20 @@ namespace HapetFrontend.Ast.Statements
 			AttributeName = attrName;
 			Parameters = parameters;
 		}
+
+		internal AttributeJson GetJson()
+		{
+			return new AttributeJson()
+			{
+				Name = AttributeName.TryFlatten(null, null),
+				Values = Parameters.Select(x => x.OutValue).ToList()
+			};
+		}
+	}
+
+	internal class AttributeJson
+	{
+		public string Name { get; set; }
+		public List<object> Values { get; set; }
 	}
 }

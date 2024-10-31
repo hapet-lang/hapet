@@ -369,20 +369,22 @@ namespace HapetFrontend.Parsing.PostPrepare
 
 			// searching for the name with current class name
 			// works only for functions
-			string currentClassName = _currentClass.Name.Name;
-			var smblInLocalClass = idExpr.Scope.GetSymbol($"{currentClassName}::{name}");
+			string nameWithClass = $"{_currentClass.Name.Name}::{name}";
+			var smblInLocalClass = idExpr.Scope.GetSymbol(nameWithClass);
 			if (smblInLocalClass is DeclSymbol typed2)
 			{
+				idExpr.Name = nameWithClass;
 				idExpr.OutType = typed2.Decl.Type.OutType;
 				return;
 			}
 
 			// searching for the name with namespace
 			// works only for types/objects
-			string currentFileNamespace = _currentSourceFile.Namespace;
-			var smblInLocalFile = idExpr.Scope.GetSymbol($"{currentFileNamespace}.{name}");
+			string nameWithNamespace = $"{_currentSourceFile.Namespace}.{name}";
+			var smblInLocalFile = idExpr.Scope.GetSymbol(nameWithNamespace);
 			if (smblInLocalFile is DeclSymbol typed3)
 			{
+				idExpr.Name = nameWithNamespace;
 				idExpr.OutType = typed3.Decl.Type.OutType;
 				return;
 			}
@@ -724,7 +726,14 @@ namespace HapetFrontend.Parsing.PostPrepare
 
 		private void PostPrepareAttributeStmtInference(AstAttributeStmt attrStmt)
 		{
-			PostPrepareExprInference(attrStmt.AttributeName);
+			// purified type string with namespace in it!
+			// we need this so when saving the attributes into metafile 
+			// we would know namespace of the attribute and so on.
+			// (kostyl?)
+			var newTypeAst = attrStmt.AttributeName.GetTypeAstId(_compiler.MessageHandler, _currentSourceFile);
+			PostPrepareExprInference(newTypeAst);
+			attrStmt.AttributeName.SetTypeAstId(newTypeAst);
+
 			foreach (var a in attrStmt.Parameters)
 			{
 				PostPrepareExprInference(a);
