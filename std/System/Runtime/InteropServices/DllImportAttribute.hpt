@@ -7,5 +7,11 @@ public sealed class DllImportAttribute : Attribute
 
     public DllImportAttribute()
     {
+        bool a = true;
+        bool b = !a;
+        if (a || b)
+        {
+            int g = 3;
+        }
     }
 }

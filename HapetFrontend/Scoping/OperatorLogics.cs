@@ -60,12 +60,21 @@ namespace HapetFrontend.Scoping
 		}
 
 		/// <summary>
-		/// Getting all the built in operators
+		/// Getting all the built in binary operators
 		/// </summary>
 		/// <returns>The built in operators</returns>
 		public List<BuiltInBinaryOperator> GetBuiltInBinaryOperators()
 		{
 			return _binaryOperatorTable.SelectMany(x => x.Value).Where(x => x is BuiltInBinaryOperator).Select(x => x as BuiltInBinaryOperator).ToList();
+		}
+
+		/// <summary>
+		/// Getting all the built in unary operators
+		/// </summary>
+		/// <returns>The built in operators</returns>
+		public List<BuiltInUnaryOperator> GetBuiltInUnaryOperators()
+		{
+			return _unaryOperatorTable.SelectMany(x => x.Value).Where(x => x is BuiltInUnaryOperator).Select(x => x as BuiltInUnaryOperator).ToList();
 		}
 
 		/// <summary>

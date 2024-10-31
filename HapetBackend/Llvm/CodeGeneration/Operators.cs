@@ -6,6 +6,13 @@ namespace HapetBackend.Llvm
 	public partial class LlvmCodeGenerator
 	{
 		private Dictionary<(string, HapetType, HapetType), Func<LLVMBuilderRef, LLVMValueRef, LLVMValueRef, string, LLVMValueRef>> builtInBinOperators;
+		private Dictionary<(string, HapetType), Func<LLVMBuilderRef, LLVMValueRef, string, LLVMValueRef>> builtInUnOperators;
+
+		private void InitOperators()
+		{
+			InitBinaryOperators();
+			InitUnaryOperators();
+		}
 
 		private unsafe Func<LLVMBuilderRef, LLVMValueRef, LLVMValueRef, string, LLVMValueRef> GetICompare(LLVMIntPredicate pred)
 		{
@@ -25,7 +32,7 @@ namespace HapetBackend.Llvm
 			};
 		}
 
-		private void InitOperators()
+		private void InitBinaryOperators()
 		{
 			builtInBinOperators = new Dictionary<(string, HapetType, HapetType), Func<LLVMBuilderRef, LLVMValueRef, LLVMValueRef, string, LLVMValueRef>>();
 			var globalScope = _compiler.GlobalScope;
@@ -158,6 +165,44 @@ namespace HapetBackend.Llvm
 				}
 				if (theFunc != null)
 					builtInBinOperators.Add((op.Name, op.LhsType, op.RhsType), theFunc);
+			}
+		}
+
+		private void InitUnaryOperators()
+		{
+			builtInUnOperators = new Dictionary<(string, HapetType), Func<LLVMBuilderRef, LLVMValueRef, string, LLVMValueRef>>();
+			var globalScope = _compiler.GlobalScope;
+			var allBuiltInOperators = globalScope.GetBuiltInUnaryOperators();
+			foreach (var op in allBuiltInOperators)
+			{
+				Func<LLVMBuilderRef, LLVMValueRef, string, LLVMValueRef> theFunc;
+				switch (op.Name)
+				{
+					case "!":
+						{
+							// '!' op can only be applied to 'bool' type
+							if (op.ResultType is BoolType && op.SubExprType is BoolType) theFunc = LlvmExtensions.BuildNot;
+							else theFunc = null;
+							break;
+						}
+					case "-":
+						{
+							// negating numbers (do we need this for char type?)
+							if (op.ResultType is FloatType) theFunc = LlvmExtensions.BuildFNeg;
+							else if (op.ResultType is IntType) theFunc = LlvmExtensions.BuildNeg;
+							else theFunc = null;
+							break;
+						}
+					default:
+						{
+							// error here (internal compiler error, should not happen)
+							_messageHandler.ReportMessage($"Compiler error (should not happen): unexpected operator {op.Name}");
+							theFunc = null;
+							break;
+						}
+				}
+				if (theFunc != null)
+					builtInUnOperators.Add((op.Name, op.SubExprType), theFunc);
 			}
 		}
 	}

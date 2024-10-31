@@ -57,6 +57,22 @@ namespace HapetBackend.Llvm
 			return LLVM.BuildURem(builder, left, right, marshaledName);
 		}
 
+		public unsafe static LLVMValueRef BuildNot(LLVMBuilderRef builder, LLVMValueRef value, string op)
+		{
+			using var marshaledName = new MarshaledString(op.AsSpan());
+			return LLVM.BuildNot(builder, value, marshaledName);
+		}
+		public unsafe static LLVMValueRef BuildNeg(LLVMBuilderRef builder, LLVMValueRef value, string op)
+		{
+			using var marshaledName = new MarshaledString(op.AsSpan());
+			return LLVM.BuildNeg(builder, value, marshaledName);
+		}
+		public unsafe static LLVMValueRef BuildFNeg(LLVMBuilderRef builder, LLVMValueRef value, string op)
+		{
+			using var marshaledName = new MarshaledString(op.AsSpan());
+			return LLVM.BuildFNeg(builder, value, marshaledName);
+		}
+
 		public unsafe static LLVMValueRef BuildAnd(LLVMBuilderRef builder, LLVMValueRef left, LLVMValueRef right, string op)
 		{
 			using var marshaledName = new MarshaledString(op.AsSpan());
