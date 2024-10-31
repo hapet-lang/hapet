@@ -112,6 +112,10 @@ namespace HapetFrontend
 					s.SourceFile = file;
 					file.Statements.Add(s);
 
+					// if it is a 'using' add it to the list
+					if (s is AstUsingStmt usng)
+						file.Usings.Add(usng);
+
 					// add previously found attributes into the declaration
 					if (s is AstDeclaration decl)
 						decl.Attributes.AddRange(foundAttributes);

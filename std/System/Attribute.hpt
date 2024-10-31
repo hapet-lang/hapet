@@ -1,4 +1,11 @@
+using System.Runtime.InteropServices;
+
 public abstract class Attribute
 {
-    
+    public DllImportAttribute attrrr;
+
+    public Attribute()
+    {
+        this.attrrr = new DllImportAttribute();
+    }
 }

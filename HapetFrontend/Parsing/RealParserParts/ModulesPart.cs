@@ -17,7 +17,7 @@ namespace HapetFrontend.Parsing
 
 			if (expr is not AstNestedExpr)
 			{
-				ReportMessage(expr.Location, "Module name/path expected after 'using' keyword");
+				ReportMessage(expr.Location, "Namespace name/path expected after 'using' keyword");
 				return ParseEmptyExpression();
 			}
 

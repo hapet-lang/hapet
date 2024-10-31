@@ -23,7 +23,7 @@ namespace HapetFrontend.Ast.Expressions
 			AstStructDecl strStruct = new AstStructDecl(new AstIdExpr("string.type"), ""); // TODO: doc string
 			// TODO: doc string
 			AstVarDecl sizeField = new AstVarDecl(new AstNestedExpr(new AstIdExpr("int"), null), new AstIdExpr("Length"), new AstNumberExpr((NumberData)0), "");
-			AstVarDecl bufField = new AstVarDecl(new AstNestedExpr(new AstPointerExpr(new AstIdExpr("char")), null), new AstIdExpr("Buffer"), new AstNullExpr(), "");
+			AstVarDecl bufField = new AstVarDecl(new AstNestedExpr(new AstPointerExpr(new AstIdExpr("char")), null), new AstIdExpr("Buffer"), new AstNullExpr(StringType.Instance), "");
 			strStruct.Declarations.Add(sizeField);
 			strStruct.Declarations.Add(bufField);
 			return strStruct;

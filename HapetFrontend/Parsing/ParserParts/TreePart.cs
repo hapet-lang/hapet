@@ -425,7 +425,8 @@ namespace HapetFrontend.Parsing
 
 				case TokenType.KwNull:
 					NextToken();
-					return new AstNullExpr(new Location(token.Location));
+					// TODO: remove this shite of creating ptr to int and infer the 'null' type in post prepare!!!
+					return new AstNullExpr(PointerType.GetPointerType(IntType.GetIntType(1, false)), new Location(token.Location)); 
 
 				case TokenType.OpenBracket:
 					return ParseAttributeStatement();

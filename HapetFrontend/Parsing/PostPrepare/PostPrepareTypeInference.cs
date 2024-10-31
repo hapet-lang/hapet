@@ -378,6 +378,38 @@ namespace HapetFrontend.Parsing.PostPrepare
 				return;
 			}
 
+			// it is a func
+			if (name.Contains("::"))
+			{
+				// for example 'System.Attribute::Attrbute_ctor(...)'
+				string[] nameAndFunc = name.Split("::");
+				if (nameAndFunc.Length != 2)
+				{
+					// TODO: error 
+					return;
+				}
+
+				// recursively infer left part of func call
+				AstIdExpr leftPartId = new AstIdExpr(nameAndFunc[0]);
+				leftPartId.Scope = idExpr.Scope;
+				PostPrepareIdentifierInference(leftPartId);
+				// it has to be a class (or mb struct)
+				if (leftPartId.OutType is not ClassType clsTp)
+				{
+					// TODO: error 
+					return;
+				}
+
+				var fullFuncName = $"{idExpr.Name}::{nameAndFunc[1]}";
+				var funcInAnotherClass = clsTp.Declaration.SubScope.GetSymbol(fullFuncName);
+				if (funcInAnotherClass is DeclSymbol typed4)
+				{
+					idExpr.Name = fullFuncName;
+					idExpr.OutType = typed4.Decl.Type.OutType;
+					return;
+				}
+			}
+
 			// searching for the name with namespace
 			// works only for types/objects
 			string nameWithNamespace = $"{_currentSourceFile.Namespace}.{name}";
@@ -388,6 +420,60 @@ namespace HapetFrontend.Parsing.PostPrepare
 				idExpr.OutType = typed3.Decl.Type.OutType;
 				return;
 			}
+
+			// check if it is smth like 'System.Attribute' where 'System' is ns and 'Attribute' is a class
+			if (name.Split('.').Length > 1)
+			{
+				string[] splitted = name.Split('.');
+				var leftPart = string.Join('.', splitted.SkipLast(1));
+				var rightPart = splitted.Last();
+
+				// getting a symbol from namespace
+				var includedSmbl = idExpr.Scope.GetSymbolInNamespace(leftPart, rightPart);
+				if (includedSmbl is DeclSymbol typed4)
+				{
+					// do not change name because it already contains namespace
+					idExpr.OutType = typed4.Decl.Type.OutType;
+					return;
+				}
+			}
+
+			// go all over the usings
+			foreach (var usng in _currentSourceFile.Usings)
+			{
+				// getting ns string
+				var ns = usng.FlattenNamespace;
+
+				// check if it is smth like 'Runtime.InteropServices.DllImportAttribute'
+				// where 'Runtime.InteropServices' is PART! of ns and 'DllImportAttribute' is a class
+				if (name.Split('.').Length > 1)
+				{
+					string[] splitted = name.Split('.');
+					var leftPart = string.Join('.', splitted.SkipLast(1));
+					var rightPart = splitted.Last();
+
+					// getting a symbol from namespace
+					var includedSmbl = idExpr.Scope.GetSymbolInNamespace($"{ns}.{leftPart}", rightPart);
+					if (includedSmbl is DeclSymbol typed4)
+					{
+						// do not change name because it already contains namespace
+						idExpr.OutType = typed4.Decl.Type.OutType;
+						return;
+					}
+				}
+
+				// try just get the name from using namespace
+				string fullNameWithNs = $"{ns}.{name}";
+				var usedSmbl = idExpr.Scope.GetSymbolInNamespace(ns, name);
+				if (usedSmbl is DeclSymbol typed5)
+				{
+					idExpr.Name = fullNameWithNs;
+					idExpr.OutType = typed5.Decl.Type.OutType;
+					return;
+				}
+			}
+
+			
 
 			// TODO: check in 'usings' via similar way as upper
 

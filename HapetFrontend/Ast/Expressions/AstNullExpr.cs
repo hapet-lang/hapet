@@ -1,13 +1,19 @@
-﻿using System.Diagnostics;
+﻿using HapetFrontend.Types;
+using System.Diagnostics;
 
 namespace HapetFrontend.Ast.Expressions
 {
 	public class AstNullExpr : AstExpression
 	{
+		/// <summary>
+		/// The target type of null
+		/// </summary>
+		public HapetType Target { get; set; }
+
 		[DebuggerStepThrough]
-		public AstNullExpr(ILocation Location = null) : base(Location)
+		public AstNullExpr(HapetType target, ILocation Location = null) : base(Location)
 		{
-			// TODO: do i need to set here outtype to ptr?
+			Target = target;
 		}
 	}
 }

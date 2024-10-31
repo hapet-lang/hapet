@@ -44,6 +44,8 @@ namespace HapetBackend.Llvm
 				case AstArrayCreateExpr arrayCreateExpr: return GenerateArrayCreateExprCode(arrayCreateExpr);
 				case AstArrayAccessExpr arrayAccessExpr: return GenerateArrayAccessExprCode(arrayAccessExpr, getPtr);
 
+				case AstNullExpr nullExpr: return GenerateNullExprCode(nullExpr);
+
 				// statements
 				case AstAssignStmt assignStmt: GenerateAssignStmt(assignStmt); return null;
 				case AstForStmt forStmt: GenerateForStmt(forStmt); return null;
@@ -109,6 +111,7 @@ namespace HapetBackend.Llvm
 			_messageHandler.ReportMessage(_currentSourceFile.Text, binExpr, $"The expr {binExpr} is not implemented");
 			return new LLVMValueRef();
 		}
+
 		private LLVMValueRef GeneratePointerExprCode(AstPointerExpr expr)
 		{
 			if (expr.IsDereference)
@@ -177,13 +180,15 @@ namespace HapetBackend.Llvm
 					args.Add(GenerateExpressionCode(a));
 				}
 
-				var ctorName = $"{classType.Declaration.Name.Name}_ctor" + expr.Arguments.GetArgsString(PointerType.GetPointerType(classType));
-				var ctorSymbol = classType.Declaration.Scope.GetSymbol(ctorName) as DeclSymbol;
+				// getting class ctor
+				string onlyName = classType.Declaration.Name.Name.Split('.').Last();
+				var ctorName = $"{classType.Declaration.Name.Name}::{onlyName}_ctor" + expr.Arguments.GetArgsString(PointerType.GetPointerType(classType));
+				var ctorSymbol = classType.Declaration.SubScope.GetSymbol(ctorName) as DeclSymbol;
 
 				// error if ctor not found
 				if (ctorSymbol == null)
 				{
-					_messageHandler.ReportMessage(_currentSourceFile.Text, expr, $"Constructor with specified argument types was not found in the {classType.Declaration.Name.Name} class");
+					_messageHandler.ReportMessage(_currentSourceFile.Text, expr.TypeName, $"Constructor with specified argument types was not found in the {classType.Declaration.Name.Name} class");
 					return v;
 				}
 
@@ -374,6 +379,11 @@ namespace HapetBackend.Llvm
 
 			_messageHandler.ReportMessage(_currentSourceFile.Text, expr, $"Could not generate access code for the {expr.ObjectName.OutType} type");
 			return null;
+		}
+
+		private unsafe LLVMValueRef GenerateNullExprCode(AstNullExpr expr)
+		{
+			return LLVM.ConstPointerNull(HapetTypeToLLVMType(expr.Target));
 		}
 
 		// statements

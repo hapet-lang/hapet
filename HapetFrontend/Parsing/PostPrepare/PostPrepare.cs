@@ -28,14 +28,20 @@ namespace HapetFrontend.Parsing.PostPrepare
 			_compiler = compiler;
 		}
 
-		public void StartPreparation()
+		public int StartPreparation()
 		{
 			PostPrepareClassMethods();
 			PostPrepareScoping();
-			PostPrepareMetadata();
+
+			// generate metadata file
+			int result = PostPrepareMetadata();
+			if (result != 0)
+				return result;
+
             PostPrepareTypeInference();
 
 			SearchForMainFunction();
+			return 0;
 		}
 
 		private void SearchForMainFunction()

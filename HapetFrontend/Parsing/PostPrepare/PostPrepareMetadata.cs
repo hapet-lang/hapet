@@ -1,4 +1,5 @@
 ﻿using HapetFrontend.Ast.Declarations;
+using HapetFrontend.Entities;
 using Newtonsoft.Json;
 
 namespace HapetFrontend.Parsing.PostPrepare
@@ -11,14 +12,21 @@ namespace HapetFrontend.Parsing.PostPrepare
 
         // TODO: some changes should be done in the file when impl 'using' and class inheritance
 
-        private void PostPrepareMetadata()
+        private int PostPrepareMetadata()
         {
             PostPrepareMetadataTypes();
             PostPrepareMetadataTypeFields();
             PostPrepareMetadataFunctions();
 
-            // creating the file
-            PostPrepareMetadataCreate();
+            // if there were errors while preparing for metafile
+			if (_compiler.MessageHandler.HasErrors)
+			{
+				return (int)CompilerErrors.PostPrepareMetafileError; // post prepare errors
+			}
+
+			// creating the file
+			PostPrepareMetadataCreate();
+            return 0;
         }
 
         private void PostPrepareMetadataTypes()

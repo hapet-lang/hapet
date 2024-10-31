@@ -28,7 +28,8 @@ namespace HapetFrontend.Ast.Expressions
 					outExpr = new AstCharExpr("", orig);
 					break;
 				case ClassType:
-					outExpr = new AstNullExpr(orig);
+				case PointerType:
+					outExpr = new AstNullExpr(tp, orig);
 					break;
 				// TODO: other shite
 				default:

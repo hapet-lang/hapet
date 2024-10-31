@@ -58,11 +58,11 @@ namespace HapetCompiler.Toolchains
 			messageHandler.ReportMessage($"{CompilerUtils.GetPrettyTimeString(stopwatch.Elapsed)} Post preparation...", ReportType.Info);
 
 			// post prepare
-			postPreparer.StartPreparation();
-            if (messageHandler.HasErrors)
-            {
+			int ppResult = postPreparer.StartPreparation();
+            if (ppResult != 0)
+				return ppResult; // post prepare errors
+			if (messageHandler.HasErrors)
                 return (int)CompilerErrors.PostPrepareError; // post prepare errors
-            }
 
 			messageHandler.ReportMessage($"{CompilerUtils.GetPrettyTimeString(stopwatch.Elapsed)} Code generation...", ReportType.Info);
 

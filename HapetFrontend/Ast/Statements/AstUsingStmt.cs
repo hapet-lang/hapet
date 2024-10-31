@@ -5,13 +5,24 @@ namespace HapetFrontend.Ast.Statements
 	public class AstUsingStmt : AstStatement
 	{
 		/// <summary>
-		/// The module to be imported. Could be <see cref="AstNestedExpr"/>
+		/// The namespace to be used. Could be <see cref="AstNestedExpr"/>
 		/// </summary>
-		public AstNestedExpr Module { get; set; }
+		public AstNestedExpr Namespace { get; set; }
 
-		public AstUsingStmt(AstNestedExpr module, ILocation Location = null) : base(Location)
+		// used to search symbols in it
+		private string _flattenNamespace;
+		public string FlattenNamespace
 		{
-			Module = module;
+			get
+			{
+				_flattenNamespace ??= Namespace.TryFlatten(null, null);
+				return _flattenNamespace;
+			}
+		}
+
+		public AstUsingStmt(AstNestedExpr ns, ILocation Location = null) : base(Location)
+		{
+			Namespace = ns;
 		}
 	}
 }
