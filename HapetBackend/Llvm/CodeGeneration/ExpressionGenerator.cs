@@ -31,6 +31,7 @@ namespace HapetBackend.Llvm
 				case AstVarDecl varDecl: GenerateVarDeclCode(varDecl); return null;
 
 				case AstBlockExpr blockExpr: return GenerateBlockExprCode(blockExpr);
+				case AstUnaryExpr unExpr: return GenerateUnaryExprCode(unExpr);
 				case AstBinaryExpr binExpr: return GenerateBinaryExprCode(binExpr);
 				case AstPointerExpr pointerExpr: return GeneratePointerExprCode(pointerExpr);
 				case AstAddressOfExpr addrExpr: return GenerateAddressOfExprCode(addrExpr);
@@ -74,84 +75,40 @@ namespace HapetBackend.Llvm
 			return result;
 		}
 
+		private LLVMValueRef GenerateUnaryExprCode(AstUnaryExpr unExpr)
+		{
+			if (unExpr.ActualOperator is BuiltInUnaryOperator)
+			{
+				var expr = (unExpr.SubExpr as AstExpression);
+				var value = GenerateExpressionCode(expr);
+
+				var uo = builtInUnOperators[(unExpr.Operator, expr.OutType)];
+				var val = uo(_builder, value, "unOp");
+				return val;
+			}
+			// TODO: check other operators (user implemented)
+			_messageHandler.ReportMessage(_currentSourceFile.Text, unExpr, $"The expr {unExpr} is not implemented");
+			return new LLVMValueRef();
+		}
+
 		private LLVMValueRef GenerateBinaryExprCode(AstBinaryExpr binExpr)
 		{
 			if (binExpr.ActualOperator is BuiltInBinaryOperator)
 			{
-				if (binExpr.Operator == "&&")
-				{
-					return GenerateAndExpr(binExpr);
-				}
-				else if (binExpr.Operator == "||")
-				{
-					return GenerateOrExpr(binExpr);
-				}
-				else
-				{
-					var leftExpr = (binExpr.Left as AstExpression);
-					var left = GenerateExpressionCode(leftExpr);
+				var leftExpr = (binExpr.Left as AstExpression);
+				var left = GenerateExpressionCode(leftExpr);
 
-					var rightExpr = (binExpr.Right as AstExpression);
-					var right = GenerateExpressionCode(rightExpr);
+				var rightExpr = (binExpr.Right as AstExpression);
+				var right = GenerateExpressionCode(rightExpr);
 
-					var bo = builtInBinOperators[(binExpr.Operator, leftExpr.OutType, rightExpr.OutType)];
-					var val = bo(_builder, left, right, "binOp");
-					return val;
-				} 
+				var bo = builtInBinOperators[(binExpr.Operator, leftExpr.OutType, rightExpr.OutType)];
+				var val = bo(_builder, left, right, "binOp");
+				return val;
 			}
-			// TODO: check other operators
+			// TODO: check other operators (user implemented)
 			_messageHandler.ReportMessage(_currentSourceFile.Text, binExpr, $"The expr {binExpr} is not implemented");
 			return new LLVMValueRef();
 		}
-
-		private LLVMValueRef GenerateAndExpr(AstBinaryExpr bin)
-		{
-			// TODO: ... check it pls, idk what is going on here
-			// and use GenerateVarDeclCode
-			var result = CreateLocalVariable(BoolType.Instance);
-
-			//var bbRight = basicBlock.InsertBasicBlock("_and_right");
-			//var bbEnd = basicBlock.InsertBasicBlock("_and_end");
-
-			//var left = GenerateExpressionCode(bin.Left as AstExpression, basicBlock);
-			//_builder.CreateStore(left, result);
-			//_builder.CreateCondBr(builder.CreateLoad(result, ""), bbRight, bbEnd);
-
-			//_builder.PositionAtEnd(bbRight);
-			//var right = GenerateExpressionCode(bin.Right as AstExpression, bbRight);
-			//_builder.CreateStore(right, result);
-			//_builder.CreateBr(bbEnd);
-
-			//_builder.PositionAtEnd(bbEnd);
-
-			//result = _builder.BuildLoad2(result.TypeOf, result, "");
-			return result;
-		}
-
-		private LLVMValueRef GenerateOrExpr(AstBinaryExpr bin)
-		{
-			// TODO: ... check it pls, idk what is going on here
-			// and use GenerateVarDeclCode
-			var result = CreateLocalVariable(BoolType.Instance);
-
-			//var bbRight = LLVM.AppendBasicBlock(currentLLVMFunction, "_or_right");
-			//var bbEnd = LLVM.AppendBasicBlock(currentLLVMFunction, "_or_end");
-
-			//var left = GenerateExpression(bin.Left, true);
-			//builder.CreateStore(left, result);
-			//builder.CreateCondBr(builder.CreateLoad(result, ""), bbEnd, bbRight);
-
-			//builder.PositionBuilderAtEnd(bbRight);
-			//var right = GenerateExpression(bin.Right, true);
-			//builder.CreateStore(right, result);
-			//builder.CreateBr(bbEnd);
-
-			//builder.PositionBuilderAtEnd(bbEnd);
-
-			//result = builder.CreateLoad(result, "");
-			return result;
-		}
-
 		private LLVMValueRef GeneratePointerExprCode(AstPointerExpr expr)
 		{
 			if (expr.IsDereference)

@@ -153,12 +153,23 @@ namespace HapetBackend.Llvm
 							else theFunc = GetICompare(LLVMIntPredicate.LLVMIntUGE); // here is also char type, so it is ok
 							break;
 						}
-					// && and || are not checked here
+					case "&&":
+						{
+							// bool and 
+							if (op.ResultType is BoolType && op.RhsType is BoolType && op.LhsType is BoolType) theFunc = LlvmExtensions.BuildAnd;
+							else theFunc = null;
+							break;
+						}
+					case "||":
+						{
+							// bool or 
+							if (op.ResultType is BoolType && op.RhsType is BoolType && op.LhsType is BoolType) theFunc = LlvmExtensions.BuildOr;
+							else theFunc = null;
+							break;
+						}
 					default:
 						{
-							// error here (internal compiler error, should not happen) (if not && and ||)
-							if (op.Name != "&&" && op.Name != "||")
-								_messageHandler.ReportMessage($"Compiler error (should not happen): unexpected operator {op.Name}");
+							_messageHandler.ReportMessage($"Compiler error (should not happen): unexpected operator {op.Name}");
 							theFunc = null;
 							break;
 						}
