@@ -115,6 +115,7 @@ namespace HapetFrontend.Parsing
 				var prop = PreparePropertyDecl(udecl, docString);
 				prop.Attributes.AddRange(attrs);
 				// special keys are added inside PreparePropertyDecl
+				return prop;
 			}
 
 			ReportMessage(PeekToken().Location, $"Unexpected token"); // TODO: better error message?

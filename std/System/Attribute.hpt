@@ -1,3 +1,4 @@
 public abstract class Attribute
 {
+    public int Prop1 { get; set; }
 }

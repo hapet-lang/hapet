@@ -45,9 +45,9 @@ namespace HapetFrontend.Parsing
 				}
 				SkipNewlines();
 			}
-			else if (CheckToken(TokenType.KwSet))
+			if (CheckToken(TokenType.KwSet))
 			{
-				Consume(TokenType.KwGet, ErrMsg("keyword 'set'", "..."));
+				Consume(TokenType.KwSet, ErrMsg("keyword 'set'", "..."));
 				SkipNewlines();
 				hasSet = true;
 
