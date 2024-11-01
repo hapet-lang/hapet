@@ -18,6 +18,7 @@ namespace HapetFrontend.Parsing
 
 			if (expr is UnknownDecl udecl)
 			{
+				SkipNewlines();
 				var result = PrepareUnknownDecl(udecl, docString, allowCommaTuple, _foundAttributes);
 				// clearing found attr because they were applied to the decl
 				_foundAttributes.Clear();

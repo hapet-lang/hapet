@@ -103,13 +103,19 @@ namespace HapetFrontend.Parsing
 						func.Name = udecl.Name;
 						func.Returns = udecl.Type;
 					}
-					func.Attributes.AddRange(attrs); // TODO: WARNING: attr are only applied to the func decl now!!! apply them also to fields and other
+					func.Attributes.AddRange(attrs);
 					func.SpecialKeys.AddRange(udecl.SpecialKeys);
 					return func;
 				}
 				// TODO: could there be a lambda???
 			}
-			// TODO: properties with { get; set; }
+			// properties 
+			else if (CheckToken(TokenType.OpenBrace))
+			{
+				var prop = PreparePropertyDecl(udecl, docString);
+				prop.Attributes.AddRange(attrs);
+				// special keys are added inside PreparePropertyDecl
+			}
 
 			ReportMessage(PeekToken().Location, $"Unexpected token"); // TODO: better error message?
 			return udecl;

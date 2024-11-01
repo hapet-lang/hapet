@@ -113,6 +113,9 @@ namespace HapetFrontend.Parsing
 		KwDefault,
 		KwNew,
 
+		KwGet, // 'get' in properties
+		KwSet, // 'set' in properties
+
 		KwIn,
 		KwIs,
 		KwAs,
