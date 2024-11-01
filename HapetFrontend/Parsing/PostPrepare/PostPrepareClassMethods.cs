@@ -29,6 +29,13 @@ namespace HapetFrontend.Parsing.PostPrepare
 			var allFuncs = classDecl.Declarations.Where(x => x is AstFuncDecl).Select(x => x as AstFuncDecl);
 
 			// error if user created a func with the initializer name
+			var propFuncs = allFuncs.Where(x => x.Name.Name.StartsWith($"get_") || x.Name.Name.StartsWith($"set_"));
+			foreach (var fnc in propFuncs)
+			{
+				_compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, fnc.Name, $"Functions with the name that starts with 'get_' or 'set_' are not allowed");
+			}
+
+			// error if user created a func with the initializer name
 			var specialFuncs = allFuncs.Where(x => (x.Name.Name.EndsWith($"::{classDecl.Name.Name}_ini") || 
 												    x.Name.Name.EndsWith($"::{classDecl.Name.Name}_ctor") ||
 												    x.Name.Name.EndsWith($"::{classDecl.Name.Name}_dtor")));

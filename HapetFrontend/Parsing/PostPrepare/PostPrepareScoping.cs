@@ -59,7 +59,28 @@ namespace HapetFrontend.Parsing.PostPrepare
 
 					PostPrepareFunctionScoping(funcDecl);
 				}
-				else if (decl is AstVarDecl fieldDecl) // field or property
+				else if (decl is AstPropertyDecl propDecl) // property
+				{
+					propDecl.ContainingParent = classDecl;
+
+					if (propDecl.GetBlock != null)
+					{
+						SetScopeAndParent(propDecl.GetBlock, propDecl);
+						PostPrepareExprScoping(propDecl.GetBlock);
+					}
+					if (propDecl.SetBlock != null)
+					{
+						SetScopeAndParent(propDecl.SetBlock, propDecl);
+						PostPrepareExprScoping(propDecl.SetBlock);
+					}
+
+					// declare it where the propa is going to be unboxed
+					// classDecl.SubScope.DefineDeclSymbol(fieldDecl.Name.Name, fieldDecl);
+
+					// setting already defined to 'true' because of some shite with access types
+					PostPrepareVarScoping(propDecl, true);
+				}
+				else if (decl is AstVarDecl fieldDecl) // field 
 				{
 					fieldDecl.ContainingParent = classDecl;
 

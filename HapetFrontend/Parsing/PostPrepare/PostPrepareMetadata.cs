@@ -15,8 +15,8 @@ namespace HapetFrontend.Parsing.PostPrepare
         private int PostPrepareMetadata()
         {
             PostPrepareMetadataTypes();
-            PostPrepareMetadataTypeFields();
             PostPrepareMetadataFunctions();
+            PostPrepareMetadataTypeFields();
 
             // if there were errors while preparing for metafile
 			if (_compiler.MessageHandler.HasErrors)

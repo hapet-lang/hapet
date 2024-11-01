@@ -46,6 +46,19 @@ namespace HapetFrontend.Parsing.PostPrepare
 			{
 				PostPrepareFunctionInference(decl);
 			}
+
+			/// some shite is already inferrenced in <see cref="PostPrepareMetadataTypeFields"/>
+			foreach (var decl in classDecl.Declarations.Where(x => x is AstPropertyDecl).Select(x => x as AstPropertyDecl))
+			{
+				if (decl.GetBlock != null)
+				{
+					PostPrepareExprInference(decl.GetBlock);
+				}
+				if (decl.SetBlock != null)
+				{
+					PostPrepareExprInference(decl.SetBlock);
+				}
+			}
 		}
 
 		private void PostPrepareStructInference(AstStructDecl structDecl)

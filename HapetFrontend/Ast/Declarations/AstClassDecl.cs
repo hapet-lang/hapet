@@ -33,11 +33,13 @@ namespace HapetFrontend.Ast.Declarations
 
         internal ClassDeclJson GetJson()
         {
-			var fields = Declarations.Where(x => x is AstVarDecl).Select(x => (x as AstVarDecl).GetJson()).ToList();
+			var fields = Declarations.Where(x => x is AstVarDecl && x is not AstPropertyDecl).Select(x => (x as AstVarDecl).GetJson()).ToList();
+			var props = Declarations.Where(x => x is AstPropertyDecl).Select(x => (x as AstPropertyDecl).GetJsonPropa()).ToList();
 			var attributes = Attributes.Select(x => x.GetJson()).ToList();
 			return new ClassDeclJson()
             {
                 Fields = fields,
+				Properties = props,
                 Name = Name.Name,
                 SpecialKeys = SpecialKeys,
 				Attributes = attributes,
@@ -50,6 +52,7 @@ namespace HapetFrontend.Ast.Declarations
 	internal class ClassDeclJson
 	{
 		public List<VarDeclJson> Fields { get; set; }
+		public List<PropertyDeclJson> Properties { get; set; }
         public string Name { get; set; }
 
         public List<TokenType> SpecialKeys { get; set; }
