@@ -26,7 +26,12 @@ namespace HapetFrontend.Parsing.PostPrepare
 
 			// creating the file
 			PostPrepareMetadataCreate();
-            return 0;
+
+			// WARN: removing all properties after saving to file
+			/// unwrapping props is done in <see cref="PostPrepareClassProperties"/>
+			RemoveAllProperties();
+
+			return 0;
         }
 
         private void PostPrepareMetadataTypes()
@@ -127,6 +132,14 @@ namespace HapetFrontend.Parsing.PostPrepare
             var outFolderPath = _compiler.CurrentProjectSettings.OutputDirectory;
             var projectName = _compiler.CurrentProjectSettings.ProjectName;
             File.WriteAllText($"{outFolderPath}/{projectName}.json", sz);
+        }
+
+        private void RemoveAllProperties()
+        {
+            foreach (var cls in AllClassesMetadata)
+            {
+                cls.Declarations.RemoveAll(x => x is AstPropertyDecl);
+            }
         }
     }
 

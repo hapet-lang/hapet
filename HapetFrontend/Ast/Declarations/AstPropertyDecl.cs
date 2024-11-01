@@ -53,6 +53,81 @@ namespace HapetFrontend.Ast.Declarations
 				DocString = Documentation
 			};
 		}
+
+		public AstVarDecl GetField()
+		{
+			var field = new AstVarDecl(Type, Name.GetCopy($"field_{Name.Name}"), Initializer, Documentation, Location)
+			{
+				ContainingParent = ContainingParent,
+				Parent = Parent,
+				Scope = Scope,
+				SourceFile = SourceFile,
+			};
+			field.Attributes.AddRange(Attributes);
+			field.SpecialKeys.Add(TokenType.KwPrivate);
+			return field;
+		}
+
+		public AstFuncDecl GetSetFunction()
+		{
+			// the func is - 'void set_Prop(PropType value)'
+			AstFuncDecl func = new AstFuncDecl(
+				new List<AstParamDecl>() 
+				{ 
+					new AstParamDecl(Type, new AstIdExpr("value")) 
+				}, 
+				new AstIdExpr("void"), 
+				null, 
+				new AstIdExpr($"set_{Name.Name}"),
+				"",
+				Location);
+			func.SpecialKeys.AddRange(SpecialKeys);
+			func.ContainingClass = ContainingParent as AstClassDecl; // it has to be
+
+			if (SetBlock == null)
+			{
+				var setBlock = new AstBlockExpr(new List<AstStatement>()
+				{
+					// the stmt is - 'this.field_Prop = value'
+					new AstAssignStmt(new AstNestedExpr(new AstIdExpr($"field_{Name.Name}"), new AstNestedExpr(new AstIdExpr("this"), null)), new AstIdExpr("value"), Location),
+				}, Location);
+				func.Body = setBlock;
+			}
+			else
+			{
+				func.Body = SetBlock;
+			}
+			return func;
+		}
+
+		public AstFuncDecl GetGetFunction()
+		{
+			// the func is - 'PropType get_Prop()'
+			AstFuncDecl func = new AstFuncDecl(
+				new List<AstParamDecl>(),
+				Type,
+				null,
+				new AstIdExpr($"get_{Name.Name}"),
+				"",
+				Location);
+			func.SpecialKeys.AddRange(SpecialKeys);
+			func.ContainingClass = ContainingParent as AstClassDecl; // it has to be
+
+			if (GetBlock == null)
+			{
+				var getBlock = new AstBlockExpr(new List<AstStatement>()
+				{
+					// the stmt is - 'return this.field_Prop'
+					new AstReturnStmt(new AstNestedExpr(new AstIdExpr($"field_{Name.Name}"), new AstNestedExpr(new AstIdExpr("this"), null)), Location),
+				}, Location);
+				func.Body = getBlock;
+			}
+			else
+			{
+				func.Body = GetBlock;
+			}
+			return func;
+		}
 	}
 
 	internal class PropertyDeclJson

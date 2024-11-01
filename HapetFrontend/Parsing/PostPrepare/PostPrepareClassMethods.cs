@@ -35,6 +35,12 @@ namespace HapetFrontend.Parsing.PostPrepare
 				_compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, fnc.Name, $"Functions with the name that starts with 'get_' or 'set_' are not allowed");
 			}
 
+			// generate prop's fields and funcs
+			/// removing props is done in <see cref="RemoveAllProperties"/>
+			PostPrepareClassProperties(classDecl);
+			// get funcs again after this :) sorry
+			allFuncs = classDecl.Declarations.Where(x => x is AstFuncDecl).Select(x => x as AstFuncDecl);
+
 			// error if user created a func with the initializer name
 			var specialFuncs = allFuncs.Where(x => (x.Name.Name.EndsWith($"::{classDecl.Name.Name}_ini") || 
 												    x.Name.Name.EndsWith($"::{classDecl.Name.Name}_ctor") ||
@@ -180,6 +186,37 @@ namespace HapetFrontend.Parsing.PostPrepare
 			{
 				_compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, dtors[1], "Only one destructor could be declared in a class");
 			}
+		}
+
+		/// <summary>
+		/// Function to unwrap all the props
+		/// </summary>
+		/// <param name="classDecl">The class with props</param>
+		private void PostPrepareClassProperties(AstClassDecl classDecl)
+		{
+			List<AstDeclaration> declarationsToAdd = new List<AstDeclaration>();
+			foreach (var prop in classDecl.Declarations.Where(x => x is AstPropertyDecl).Select(x => x as AstPropertyDecl))
+			{
+				if (prop.GetBlock == null && prop.SetBlock == null)
+				{
+					// need to create a field :(
+					AstVarDecl propField = prop.GetField();
+					declarationsToAdd.Add(propField);
+				}
+				if (prop.HasGet)
+				{
+					// need to create a 'get' method
+					AstFuncDecl getFunc = prop.GetGetFunction();
+					declarationsToAdd.Add(getFunc);
+				}
+				if (prop.HasSet)
+				{
+					// need to create a 'set' method
+					AstFuncDecl setFunc = prop.GetSetFunction();
+					declarationsToAdd.Add(setFunc);
+				}
+			}
+			classDecl.Declarations.AddRange(declarationsToAdd);
 		}
 	}
 }

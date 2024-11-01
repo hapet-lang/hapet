@@ -92,6 +92,10 @@ namespace HapetFrontend.Parsing
 
 			// creating the property ast
 			var theProperty = new AstPropertyDecl(udecl.Type, udecl.Name, initializer as AstExpression, docString, new Location(beg, end));
+			theProperty.HasGet = hasGet;
+			theProperty.HasSet = hasSet;
+			theProperty.GetBlock = getBody;
+			theProperty.SetBlock = setBody;
 			theProperty.SpecialKeys.AddRange(udecl.SpecialKeys);
 
 			// do some checks because they could be done here, not in pp

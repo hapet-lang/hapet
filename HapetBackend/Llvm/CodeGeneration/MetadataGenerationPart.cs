@@ -12,8 +12,8 @@ namespace HapetBackend.Llvm
 		private void GenerateMetadataShite()
 		{
 			GenerateMetadataShiteTypes();
-			GenerateMetadataShiteFields();
 			GenerateMetadataShiteFuncs();
+			GenerateMetadataShiteFields();
 		}
 
 		// TODO: mb refactor somehow?
@@ -51,13 +51,12 @@ namespace HapetBackend.Llvm
 				entryTypes.Add(_context.Int8Type.GetPointerTo());
 				entryHapetTypes.Add(PointerType.GetPointerType(IntType.GetIntType(1, false)));
 
-				foreach (var decl in cls.Declarations)
+				// getting all field except props
+				foreach (var decl in cls.Declarations.Where(x => x is AstVarDecl && x is not AstPropertyDecl))
 				{
-					if (decl is AstVarDecl fieldDecl)
-					{
-						entryTypes.Add(HapetTypeToLLVMType(fieldDecl.Type.OutType));
-						entryHapetTypes.Add(fieldDecl.Type.OutType);
-					}
+					var fieldDecl = decl as AstVarDecl;
+					entryTypes.Add(HapetTypeToLLVMType(fieldDecl.Type.OutType));
+					entryHapetTypes.Add(fieldDecl.Type.OutType);
 				}
 
 				_structTypeElementsMap.Add(cls.Type.OutType, entryHapetTypes);
