@@ -23,6 +23,7 @@ namespace HapetFrontend
 
 		public static string GetArgsString(this List<AstArgumentExpr> args, HapetType containingClass = null)
 		{
+			// WARN: ':' is used so linker would work :)))
 			StringBuilder sb = new StringBuilder();
 			sb.Append('(');
 
@@ -31,7 +32,7 @@ namespace HapetFrontend
 			{
 				sb.Append(containingClass.ToString());
 				if (args.Count > 0)
-					sb.Append(", ");
+					sb.Append(':');
 			}
 
 			for (int i = 0; i < args.Count; i++)
@@ -40,7 +41,7 @@ namespace HapetFrontend
 				sb.Append(a.OutType.ToString());
 
 				if (i != args.Count - 1)
-					sb.Append(", ");
+					sb.Append(':');
 			}
 			sb.Append(')');
 			return sb.ToString();
@@ -48,6 +49,7 @@ namespace HapetFrontend
 
 		public static string GetParamsString(this List<AstParamDecl> pars)
 		{
+			// WARN: ':' is used so linker would work :)))
 			StringBuilder sb = new StringBuilder();
 			sb.Append('(');
 			for (int i = 0; i < pars.Count; i++)
@@ -56,7 +58,7 @@ namespace HapetFrontend
 				sb.Append(p.Type.OutType.ToString());
 
 				if (i != pars.Count - 1)
-					sb.Append(", ");
+					sb.Append(':');
 			}
 			sb.Append(')');
 			return sb.ToString();
