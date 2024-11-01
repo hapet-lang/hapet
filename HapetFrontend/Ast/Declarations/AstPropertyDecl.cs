@@ -15,18 +15,8 @@ namespace HapetFrontend.Ast.Declarations
 	/// Prop { get {...} set; }			=> could not be, error
 	/// Prop { get; set {...} }			=> could not be, error
 	/// </summary>
-	public class AstPropertyDecl : AstDeclaration
+	public class AstPropertyDecl : AstVarDecl
 	{
-		/// <summary>
-		/// A value to init the var
-		/// </summary>
-		public AstExpression Initializer { get; set; }
-		/// <summary>
-		/// The class/struct/interface that contains the var
-		/// Used only for fields and properties!!!
-		/// </summary>
-		public AstDeclaration ContainingParent { get; set; }
-
 		/// <summary>
 		/// True if 'get' is declared
 		/// </summary>
@@ -45,13 +35,11 @@ namespace HapetFrontend.Ast.Declarations
 		/// </summary>
 		public AstBlockExpr SetBlock { get; set; }
 
-		public AstPropertyDecl(AstExpression type, AstIdExpr name, AstExpression ini = null, string doc = "", ILocation Location = null) : base(name, doc, Location)
+		public AstPropertyDecl(AstExpression type, AstIdExpr name, AstExpression ini = null, string doc = "", ILocation Location = null) : base(type, name, ini, doc, Location)
 		{
-			Type = type;
-			Initializer = ini;
 		}
 
-		internal PropertyDeclJson GetJson()
+		internal PropertyDeclJson GetJsonPropa()
 		{
 			var attributes = Attributes.Select(x => x.GetJson()).ToList();
 			return new PropertyDeclJson()
