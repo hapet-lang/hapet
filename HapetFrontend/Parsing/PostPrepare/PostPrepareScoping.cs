@@ -74,8 +74,8 @@ namespace HapetFrontend.Parsing.PostPrepare
 						PostPrepareExprScoping(propDecl.SetBlock);
 					}
 
-					// declare it where the propa is going to be unboxed
-					// classDecl.SubScope.DefineDeclSymbol(fieldDecl.Name.Name, fieldDecl);
+					// if it is public field/property - it should be visible in the scope in which var's class is
+					classDecl.SubScope.DefineDeclSymbol(propDecl.Name.Name, propDecl);
 
 					// setting already defined to 'true' because of some shite with access types
 					PostPrepareVarScoping(propDecl, true);

@@ -23,6 +23,11 @@ namespace HapetFrontend.Ast.Expressions
 		/// </summary>
 		public string Suffix { get; set; }
 
+		/// <summary>
+		/// Is the ast an access to a property
+		/// </summary>
+		public bool IsProperty { get; set; }
+
 		public AstIdExpr(string name, ILocation Location = null) : base(Location)
 		{
 			this.Name = name;

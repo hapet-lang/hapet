@@ -634,6 +634,13 @@ namespace HapetFrontend.Parsing.PostPrepare
 				{
 					idExpr.OutType = typed.Decl.Type.OutType;
 					nestExpr.OutType = idExpr.OutType;
+
+					// say that the ast is an access to a property
+					if (typed.Decl is AstPropertyDecl)
+					{
+						idExpr.IsProperty = true;
+						nestExpr.IsProperty = true;
+					}
 				}
 				else
 				{
