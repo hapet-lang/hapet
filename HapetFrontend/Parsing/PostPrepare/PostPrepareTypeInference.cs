@@ -113,7 +113,7 @@ namespace HapetFrontend.Parsing.PostPrepare
 			}
 		}
 
-		private void PostPrepareVarInference(AstVarDecl varDecl)
+		private void PostPrepareVarInference(AstVarDecl varDecl, bool allowSpecialKeys = false)
 		{
 			PostPrepareExprInference(varDecl.Type);
 
@@ -141,6 +141,22 @@ namespace HapetFrontend.Parsing.PostPrepare
 					PostPrepareExprInference(varDecl.Initializer);
 				}
 				PostPrepareVariableAssign(varDecl);
+			}
+
+			// special keys could not be allowed when the var is declared in BlockExpr
+			if (!allowSpecialKeys)
+			{
+				foreach (var kk in varDecl.SpecialKeys)
+				{
+					// TODO: better error with token location somehow?
+					_compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, new Location(varDecl.Beginning, varDecl.Name.Ending), $"Token {kk} is not allowed here");
+				}
+			}
+
+			// check for const value that it is compile time evaluated
+			if ((varDecl.Initializer == null || varDecl.Initializer.OutValue == null) && varDecl.SpecialKeys.Contains(TokenType.KwConst))
+			{
+				_compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, varDecl, $"The const field has to have compile time evaluated value");
 			}
 		}
 

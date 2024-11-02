@@ -317,10 +317,12 @@ namespace HapetBackend.Llvm
 
 		private uint GetElementIndex(string name, List<AstDeclaration> decls)
 		{
+			// getting pure decls without consts and statics
+			var pureDecls = decls.Where(x => !x.SpecialKeys.Contains(TokenType.KwStatic) && !x.SpecialKeys.Contains(TokenType.KwConst)).ToList();
 			// search for the name in decl
-			for (uint i = 0; i < decls.Count; ++i)
+			for (uint i = 0; i < pureDecls.Count; ++i)
 			{
-				var decl = decls[(int)i];
+				var decl = pureDecls[(int)i];
 				if (decl.Name.Name == name)
 				{
 					return i; // getting the field index

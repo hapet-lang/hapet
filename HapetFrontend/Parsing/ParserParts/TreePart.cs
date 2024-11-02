@@ -555,6 +555,7 @@ namespace HapetFrontend.Parsing
 				case TokenType.KwAsync:
 					return ParseSyncKeys(token.Type);
 
+				case TokenType.KwConst:
 				case TokenType.KwStatic:
 					return ParseInstancingKeys(token.Type);
 

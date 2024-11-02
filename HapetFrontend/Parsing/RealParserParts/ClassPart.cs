@@ -91,8 +91,9 @@ namespace HapetFrontend.Parsing
 				}
 				else
 				{
-					NextToken();
-					ReportMessage(next.Location, $"Unexpected token {next} at end of class member");
+					// no need for errors!
+					//NextToken();
+					//ReportMessage(next.Location, $"Unexpected token {next} at end of class member");
 				}
 			}
 

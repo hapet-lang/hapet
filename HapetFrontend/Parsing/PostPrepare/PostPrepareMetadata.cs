@@ -79,7 +79,7 @@ namespace HapetFrontend.Parsing.PostPrepare
 						foreach (var decl in classDecl.Declarations.Where(x => x is AstVarDecl).Select(x => x as AstVarDecl))
                         {
                             // field or property
-                            PostPrepareVarInference(decl);
+                            PostPrepareVarInference(decl, true);
                         }
                     }
                     else if (stmt is AstStructDecl structDecl)

@@ -1,4 +1,5 @@
 public abstract class Attribute
 {
-    public int Prop1 { get; set; }
+    public int Prop1 { get; set; } = TEST_CONST;
+    public const int TEST_CONST = 55;
 }

@@ -125,6 +125,10 @@ namespace HapetFrontend.Parsing.PostPrepare
 				if (foundPropa)
 					continue;
 
+				// no need to do this for consts and statics
+				if (decl.SpecialKeys.Contains(TokenType.KwStatic) || decl.SpecialKeys.Contains(TokenType.KwConst))
+					continue;
+
 				// creating field assing statement
 				var target = new AstNestedExpr(decl.Name.GetCopy(), new AstNestedExpr(new AstIdExpr("this"), null), decl);
 				AstExpression fieldInitializer;

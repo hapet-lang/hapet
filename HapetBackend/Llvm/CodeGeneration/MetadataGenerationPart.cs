@@ -1,6 +1,8 @@
 ﻿using HapetFrontend.Ast.Declarations;
+using HapetFrontend.Parsing;
 using HapetFrontend.Types;
 using LLVMSharp.Interop;
+using System.Xml.Linq;
 
 namespace HapetBackend.Llvm
 {
@@ -52,11 +54,28 @@ namespace HapetBackend.Llvm
 				entryHapetTypes.Add(PointerType.GetPointerType(IntType.GetIntType(1, false)));
 
 				// getting all field except props
-				foreach (var decl in cls.Declarations.Where(x => x is AstVarDecl && x is not AstPropertyDecl))
+				foreach (var decl in cls.Declarations.Where(x => x is AstVarDecl && x is not AstPropertyDecl).Select(x => x as AstVarDecl))
 				{
-					var fieldDecl = decl as AstVarDecl;
-					entryTypes.Add(HapetTypeToLLVMType(fieldDecl.Type.OutType));
-					entryHapetTypes.Add(fieldDecl.Type.OutType);
+					// check for const/static fields
+					if (decl.SpecialKeys.Contains(TokenType.KwStatic))
+					{
+						// creating a static field of the class
+
+					}
+					else if (decl.SpecialKeys.Contains(TokenType.KwConst))
+					{
+						// creating a const field of the class
+						// TODO: consts should not create a variable in LLVM IR 
+						// just use their values where needed
+						var globConst = _module.AddGlobal(HapetTypeToLLVMType(decl.Type.OutType), $"{cls.Type.OutType}::{decl.Name.Name}");
+						globConst.Initializer = HapetValueToLLVMValue(decl.Type.OutType, decl.Initializer.OutValue);
+					}
+					else
+					{
+						// if it is non const/static - create a field in struct
+						entryTypes.Add(HapetTypeToLLVMType(decl.Type.OutType));
+						entryHapetTypes.Add(decl.Type.OutType);
+					}
 				}
 
 				_structTypeElementsMap.Add(cls.Type.OutType, entryHapetTypes);
