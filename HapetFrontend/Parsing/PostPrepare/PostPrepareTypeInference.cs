@@ -264,19 +264,8 @@ namespace HapetFrontend.Parsing.PostPrepare
 					if (itWasPropa)
 					{
 						AstIdExpr propaName = (asgn.Target.RightPart as AstIdExpr);
-						// WARN: we need these two same errors!!!
-						if (asgn.Target.LeftPart.OutType is not PointerType ptrT)
-						{
-							_compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, asgn.Target.LeftPart, $"Type of the expr expected to be a pointer to a class");
-							return;
-						}
-						if (ptrT.TargetType is not ClassType clsT)
-						{
-							_compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, asgn.Target.LeftPart, $"Type of the expr expected to be a pointer to a class");
-							return;
-						}
-						// creating a call with name 'RootNamespace.TheClass::set_Prop(RootNamespace.TheClass*:PropType)'
-						var fncCall = new AstCallExpr(asgn.Target.LeftPart, propaName.GetCopy($"{clsT}::set_{propaName.Name}({asgn.Target.LeftPart.OutType}:{propaName.OutType})"), new List<AstArgumentExpr>() { new AstArgumentExpr(asgn.Value) }, asgn);
+						// creating a call 
+						var fncCall = new AstCallExpr(asgn.Target.LeftPart, propaName.GetCopy($"set_{propaName.Name}"), new List<AstArgumentExpr>() { new AstArgumentExpr(asgn.Value) }, asgn);
 						SetScopeAndParent(fncCall, asgn.Target.NormalParent, asgn.Target.Scope);
 						PostPrepareCallExprInference(fncCall);
 						repls.Add(asgn, fncCall);
@@ -456,7 +445,7 @@ namespace HapetFrontend.Parsing.PostPrepare
 					return;
 				}
 
-				var fullFuncName = $"{idExpr.Name}::{nameAndFunc[1]}";
+				var fullFuncName = $"{clsTp}::{nameAndFunc[1]}";
 				var funcInAnotherClass = clsTp.Declaration.SubScope.GetSymbol(fullFuncName);
 				if (funcInAnotherClass is DeclSymbol typed4)
 				{
@@ -602,23 +591,12 @@ namespace HapetFrontend.Parsing.PostPrepare
 			}
 
 			// setting parameters
-			var sym = callExpr.Scope.GetSymbol(callExpr.FuncName.Name);
-			if (sym is DeclSymbol typed && typed.Decl is AstFuncDecl funcDecl)
+			if (callExpr.FuncName.OutType is FunctionType ft)
 			{
 				// checking if it is a static func
-				callExpr.StaticCall = funcDecl.SpecialKeys.Contains(TokenType.KwStatic);
-			}
-			else
-			{
-				// error here
-				_compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, callExpr, $"The function could not be found in the scope");
-			}
-
-			// setting call expr out type
-			if (callExpr.FuncName.OutType is FunctionType funcType)
-			{
+				callExpr.StaticCall = ft.Declaration.SpecialKeys.Contains(TokenType.KwStatic);
 				// call expr type is the same as func return type
-				callExpr.OutType = funcType.Declaration.Returns.OutType;
+				callExpr.OutType = ft.Declaration.Returns.OutType;
 			}
 			else
 			{

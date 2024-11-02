@@ -26,6 +26,7 @@ namespace HapetFrontend.Parsing.PostPrepare
 
 		private void PostPrepareClassMethodsInternal(AstClassDecl classDecl)
 		{
+			// getting all functions in the class
 			var allFuncs = classDecl.Declarations.Where(x => x is AstFuncDecl).Select(x => x as AstFuncDecl);
 
 			// error if user created a func with the initializer name
@@ -33,6 +34,23 @@ namespace HapetFrontend.Parsing.PostPrepare
 			foreach (var fnc in propFuncs)
 			{
 				_compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, fnc.Name, $"Functions with the name that starts with 'get_' or 'set_' are not allowed");
+			}
+
+			// getting all props in the class
+			var allProps = classDecl.Declarations.Where(x => x is AstPropertyDecl).Select(x => x as AstPropertyDecl);
+			var allFields = classDecl.Declarations.Where(x => x is AstVarDecl varD && x is not AstPropertyDecl).Select(x => x as AstVarDecl);
+			foreach (var pp in allProps)
+			{
+				// check if there is already a field named like 'field_Prop'
+				// error in this situation because we probably going to generate the field
+				// also check if the prop is really going to gen field
+				var theField = allFields.FirstOrDefault(x => x.Name.Name == $"field_{pp.Name.Name}");
+				if (theField != null)
+				{
+					// also check if the prop is really going to gen field
+					if (pp.GetBlock == null && pp.SetBlock == null)
+						_compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, theField, $"Please rename the field because a property named {pp.Name} is going to generate the field");
+				}
 			}
 
 			// generate prop's fields and funcs
@@ -84,9 +102,29 @@ namespace HapetFrontend.Parsing.PostPrepare
 		{
 			// gettings all field decls and init them
 			var allVarDecls = classDecl.Declarations.Where(x => x is AstVarDecl).Select(x => x as AstVarDecl);
+			// we need to get all props from class. why?
+			// read comment below where it used
+			var allProps = classDecl.Declarations.Where(x => x is AstPropertyDecl).Select(x => x as AstPropertyDecl);
 			List<AstStatement> iniBlockStatements = new List<AstStatement>();
 			foreach (AstVarDecl decl in allVarDecls)
 			{
+				// if the field is for property generated
+				// we don't need to initialize property directly
+				// we would initialize it using property 'set' method
+				// that is also prepared below :)
+				bool foundPropa = false;
+				foreach (var pp in allProps)
+				{
+					// if the field has the proper name and (!) the property is really compiler generated
+					if (decl.Name.Name == $"field_{pp.Name.Name}" && pp.GetBlock == null && pp.SetBlock == null)
+					{
+						foundPropa = true;
+						break;
+					}
+				}
+				if (foundPropa)
+					continue;
+
 				// creating field assing statement
 				var target = new AstNestedExpr(decl.Name.GetCopy(), new AstNestedExpr(new AstIdExpr("this"), null), decl);
 				AstExpression fieldInitializer;
@@ -97,7 +135,7 @@ namespace HapetFrontend.Parsing.PostPrepare
 				var assign = new AstAssignStmt(target, fieldInitializer, decl);
 				iniBlockStatements.Add(assign);
 
-				// we don't need it anymore
+				// we don't need the initializer anymore
 				decl.Initializer = null;
             }
 			// the block with all field inits
