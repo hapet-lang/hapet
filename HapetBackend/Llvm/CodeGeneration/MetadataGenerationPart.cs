@@ -60,7 +60,11 @@ namespace HapetBackend.Llvm
 					if (decl.SpecialKeys.Contains(TokenType.KwStatic))
 					{
 						// creating a static field of the class
-
+						var globStatic = _module.AddGlobal(HapetTypeToLLVMType(decl.Type.OutType), $"{cls.Type.OutType}::{decl.Name.Name}");
+						if (decl.Initializer != null)
+						{
+							globStatic.Initializer = GenerateExpressionCode(decl.Initializer);
+						}
 					}
 					else if (decl.SpecialKeys.Contains(TokenType.KwConst))
 					{
