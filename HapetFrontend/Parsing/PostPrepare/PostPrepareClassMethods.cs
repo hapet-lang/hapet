@@ -53,6 +53,22 @@ namespace HapetFrontend.Parsing.PostPrepare
 				}
 			}
 
+			// getting all fields and props and error if there are equal names
+			var allFieldsAndProps = classDecl.Declarations.Where(x => x is AstVarDecl).Select(x => x as AstVarDecl).ToList();
+			for (int i = 0; i < allFieldsAndProps.Count; ++i)
+			{
+				for (int j = i; j < allFieldsAndProps.Count; ++j)
+				{
+					if (j == i)
+						continue;
+					if (allFieldsAndProps[i].Name.Name == allFieldsAndProps[j].Name.Name)
+					{
+						// TODO: show previous field decl
+						_compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, allFieldsAndProps[j], $"Fields and properties cannot have the same names in a class");
+					}
+				}
+			}
+
 			// generate prop's fields and funcs
 			/// removing props is done in <see cref="RemoveAllProperties"/>
 			PostPrepareClassProperties(classDecl);
