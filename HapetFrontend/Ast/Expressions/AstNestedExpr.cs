@@ -18,11 +18,6 @@ namespace HapetFrontend.Ast.Expressions
 		/// </summary>
 		public AstExpression RightPart { get; set; }
 
-		/// <summary>
-		/// Is the ast an access to a property
-		/// </summary>
-		public bool IsProperty { get; set; }
-
 		public AstNestedExpr(AstExpression rightPart, AstNestedExpr leftPart, ILocation Location = null) : base(Location)
 		{
 			this.RightPart = rightPart;

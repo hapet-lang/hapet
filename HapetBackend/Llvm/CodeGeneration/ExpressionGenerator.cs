@@ -400,7 +400,7 @@ namespace HapetBackend.Llvm
 
 			AssignToVar(theVar, stmt.Target.OutType, stmt.Value);
 
-			// TODO: WARN: always returns null because Assign is a stmt and does not returns anything. could be changed to expr
+			// TODO: WARN: Assign is a stmt and does not returns anything. could be changed to expr
 			// so stmts like 'a = (b = 3);' would be allowed...
 		}
 

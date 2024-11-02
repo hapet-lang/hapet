@@ -193,7 +193,7 @@ namespace HapetFrontend.Parsing.PostPrepare
 					PostPrepareCastExprInference(castExpr);
 					break;
 				case AstNestedExpr nestExpr:
-					PostPrepareNestedExprInference(nestExpr);
+					PostPrepareNestedExprInference(nestExpr, out bool _);
 					break;
 				case AstDefaultExpr defaultExpr:
 					_compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, defaultExpr, "(Compiler exception) The default had to be infered previously by caller");
@@ -210,7 +210,8 @@ namespace HapetFrontend.Parsing.PostPrepare
 
 				// statements
 				case AstAssignStmt assignStmt:
-					PostPrepareAssignStmtInference(assignStmt);
+					_compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, assignStmt, "(Compiler exception) The statement has to be handled by block expr");
+					// PostPrepareAssignStmtInference(assignStmt, out bool _);
 					break;
 				case AstForStmt forStmt:
 					PostPrepareForStmtInference(forStmt);
@@ -247,12 +248,53 @@ namespace HapetFrontend.Parsing.PostPrepare
 
 		private void PostPrepareBlockInference(AstBlockExpr blockExpr)
 		{
+			// list of all replacements that should be done
+			// so all Propa assigns would be replaced with func calls
+			Dictionary<AstAssignStmt, AstCallExpr> repls = new Dictionary<AstAssignStmt, AstCallExpr>();
+			// go all over the statements
 			foreach (var stmt in blockExpr.Statements)
 			{
 				if (stmt == null)
 					continue;
 
-				PostPrepareExprInference(stmt);
+				// we need to handle the statements to replaces props with calls
+				if (stmt is AstAssignStmt asgn)
+				{
+					PostPrepareAssignStmtInference(asgn, out bool itWasPropa);
+					if (itWasPropa)
+					{
+						AstIdExpr propaName = (asgn.Target.RightPart as AstIdExpr);
+						// WARN: we need these two same errors!!!
+						if (asgn.Target.LeftPart.OutType is not PointerType ptrT)
+						{
+							_compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, asgn.Target.LeftPart, $"Type of the expr expected to be a pointer to a class");
+							return;
+						}
+						if (ptrT.TargetType is not ClassType clsT)
+						{
+							_compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, asgn.Target.LeftPart, $"Type of the expr expected to be a pointer to a class");
+							return;
+						}
+						// creating a call with name 'RootNamespace.TheClass::set_Prop(RootNamespace.TheClass*:PropType)'
+						var fncCall = new AstCallExpr(asgn.Target.LeftPart, propaName.GetCopy($"{clsT}::set_{propaName.Name}({asgn.Target.LeftPart.OutType}:{propaName.OutType})"), new List<AstArgumentExpr>() { new AstArgumentExpr(asgn.Value) }, asgn);
+						SetScopeAndParent(fncCall, asgn.Target.NormalParent, asgn.Target.Scope);
+						PostPrepareCallExprInference(fncCall);
+						repls.Add(asgn, fncCall);
+					}
+				}
+				else
+				{
+					PostPrepareExprInference(stmt);
+				}
+			}
+
+			// begin all replacements
+			foreach (var pair in repls)
+			{
+				// replace the assign statement
+				int assignIndex = blockExpr.Statements.IndexOf(pair.Key);
+				blockExpr.Statements.Remove(pair.Key);
+				blockExpr.Statements.Insert(assignIndex, pair.Value);
 			}
 		}
 
@@ -592,7 +634,7 @@ namespace HapetFrontend.Parsing.PostPrepare
 			castExpr.OutType = (castExpr.TypeExpr as AstExpression).OutType;
 		}
 
-		private void PostPrepareNestedExprInference(AstNestedExpr nestExpr)
+		private void PostPrepareNestedExprInference(AstNestedExpr nestExpr, out bool itWasPropa, bool propaSet = false)
 		{
 			if (nestExpr.LeftPart == null)
 			{
@@ -618,6 +660,7 @@ namespace HapetFrontend.Parsing.PostPrepare
 				if (leftSideScope == null)
 				{
 					_compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, nestExpr.LeftPart, "The type of the expression has to be a class or a struct");
+					itWasPropa = false;
 					return;
 				}
 
@@ -625,6 +668,7 @@ namespace HapetFrontend.Parsing.PostPrepare
 				if (nestExpr.RightPart is not AstIdExpr idExpr)
 				{
 					_compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, nestExpr.RightPart, "The expressions has to be an identifier");
+					itWasPropa = false;
 					return;
 				}
 
@@ -635,11 +679,24 @@ namespace HapetFrontend.Parsing.PostPrepare
 					idExpr.OutType = typed.Decl.Type.OutType;
 					nestExpr.OutType = idExpr.OutType;
 
-					// say that the ast is an access to a property
+					// if the ast is an access to a property
 					if (typed.Decl is AstPropertyDecl)
 					{
-						idExpr.IsProperty = true;
-						nestExpr.IsProperty = true;
+						// if getting property to set smth
+						if (propaSet)
+						{
+							itWasPropa = true;
+							return;
+						}
+						else
+						{
+							// if getting propa to get
+							var fncCall = new AstCallExpr(nestExpr.LeftPart, idExpr.GetCopy($"get_{idExpr}"), null, nestExpr);
+							SetScopeAndParent(fncCall, nestExpr.RightPart.NormalParent, nestExpr.RightPart.Scope);
+							nestExpr.LeftPart = null;
+							nestExpr.RightPart = fncCall;
+							PostPrepareCallExprInference(fncCall);
+						}
 					}
 				}
 				else
@@ -647,6 +704,7 @@ namespace HapetFrontend.Parsing.PostPrepare
 					_compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, idExpr, $"The type could not be infered in {leftSideScope} scope...");
 				}
 			}
+			itWasPropa = false;
 		}
 
 		// :)
@@ -761,9 +819,10 @@ namespace HapetFrontend.Parsing.PostPrepare
 		}
 
 		// statements
-		private void PostPrepareAssignStmtInference(AstAssignStmt assignStmt)
+		private void PostPrepareAssignStmtInference(AstAssignStmt assignStmt, out bool itWasPropa)
 		{
-			PostPrepareExprInference(assignStmt.Target);
+			// propaSet is true only here
+			PostPrepareNestedExprInference(assignStmt.Target, out itWasPropa, true);
 
 			if (assignStmt.Value != null)
 			{
