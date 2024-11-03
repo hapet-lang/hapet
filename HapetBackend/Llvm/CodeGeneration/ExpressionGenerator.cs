@@ -149,12 +149,32 @@ namespace HapetBackend.Llvm
 		private LLVMValueRef GenerateIdExpr(AstIdExpr expr, bool getPtr = false)
 		{
 			LLVMValueRef v = default;
-			v = _valueMap[expr.FindSymbol];
-			// return the ptr to the val. used for AstAddressOf or storing values
-			if (getPtr)
+			// check that the symbol is a declaration
+			if (expr.FindSymbol is not DeclSymbol declSymbol)
 				return v;
-			var loaded = _builder.BuildLoad2(HapetTypeToLLVMType(expr.OutType), v, expr.Name);
-			return loaded;
+			var theDecl = declSymbol.Decl;
+
+            // check if it const/static shite
+            if (theDecl is AstVarDecl varDecl && (theDecl.SpecialKeys.Contains(TokenType.KwStatic) || theDecl.SpecialKeys.Contains(TokenType.KwConst)))
+			{
+				if (varDecl.ContainingParent is not AstClassDecl classDecl)
+					return v;
+				var varName = $"{classDecl.Type.OutType}::{varDecl.Name.Name}";
+                v = _module.GetNamedGlobal(varName);
+                if (getPtr)
+                    return v;
+                var loaded = _builder.BuildLoad2(HapetTypeToLLVMType(expr.OutType), v, expr.Name);
+                return loaded;
+            }
+			else
+			{
+                v = _valueMap[expr.FindSymbol];
+                // return the ptr to the val. used for AstAddressOf or storing values
+                if (getPtr)
+                    return v;
+                var loaded = _builder.BuildLoad2(HapetTypeToLLVMType(expr.OutType), v, expr.Name);
+                return loaded;
+            }
 		}
 
 		private unsafe LLVMValueRef GenerateNewExpr(AstNewExpr expr)

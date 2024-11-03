@@ -2,6 +2,7 @@
 using HapetFrontend.Parsing;
 using HapetFrontend.Types;
 using LLVMSharp.Interop;
+using System;
 using System.Xml.Linq;
 
 namespace HapetBackend.Llvm
@@ -65,7 +66,8 @@ namespace HapetBackend.Llvm
 						{
 							globStatic.Initializer = GenerateExpressionCode(decl.Initializer);
 						}
-					}
+                        _valueMap[decl.GetSymbol] = globStatic;
+                    }
 					else if (decl.SpecialKeys.Contains(TokenType.KwConst))
 					{
 						// creating a const field of the class
@@ -73,7 +75,8 @@ namespace HapetBackend.Llvm
 						// just use their values where needed
 						var globConst = _module.AddGlobal(HapetTypeToLLVMType(decl.Type.OutType), $"{cls.Type.OutType}::{decl.Name.Name}");
 						globConst.Initializer = HapetValueToLLVMValue(decl.Type.OutType, decl.Initializer.OutValue);
-					}
+                        _valueMap[decl.GetSymbol] = globConst;
+                    }
 					else
 					{
 						// if it is non const/static - create a field in struct
