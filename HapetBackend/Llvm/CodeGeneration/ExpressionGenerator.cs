@@ -292,7 +292,14 @@ namespace HapetBackend.Llvm
 					leftPartDeclarations = classT.Declaration.Declarations.Where(x => x is AstVarDecl).ToList();
 					leftPartType = classT;
                 }
-				else if (expr.LeftPart.OutType is StructType structT)
+                // this is usually when accesing static/const values
+                // like 'Attribute.CoonstField'
+                else if (expr.LeftPart.OutType is ClassType classTT)
+                {
+                    leftPartDeclarations = classTT.Declaration.Declarations.Where(x => x is AstVarDecl).ToList();
+                    leftPartType = classTT;
+                }
+                else if (expr.LeftPart.OutType is StructType structT)
 				{
 					leftPartDeclarations = structT.Declaration.Declarations;
 					leftPartType = structT;
@@ -311,31 +318,54 @@ namespace HapetBackend.Llvm
 				// getting index of the element and the element itself
 				if (leftPartDeclarations != null && leftPartType != null)
 				{
-					// getting the index of the element
-					uint elementIndex = GetElementIndex(idExpr.Name, leftPartDeclarations);
+					if (IsStaticOrConstElement(idExpr.Name, leftPartDeclarations, out AstVarDecl theDecl))
+					{
+                        // static/const elements are accessed in different way
+                        if (theDecl.ContainingParent is not AstClassDecl classDecl)
+                            return default;
+                        var varName = $"{classDecl.Type.OutType}::{theDecl.Name.Name}";
+                        var v = _module.GetNamedGlobal(varName);
+                        if (getPtr)
+                            return v;
+                        var loaded = _builder.BuildLoad2(HapetTypeToLLVMType(expr.OutType), v, $"{idExpr.Name}Loaded");
+                        return loaded;
+                    }
+					else
+					{
+                        // getting the index of the element
+                        uint elementIndex = GetElementIndex(idExpr.Name, leftPartDeclarations);
 
-					// this is because the first field in class - is it reflection data (?)
-					if (leftPartType is ClassType)
-						elementIndex += 1;
+                        // this is because the first field in class - is it reflection data (?)
+                        if (leftPartType is ClassType)
+                            elementIndex += 1;
 
-					var tp = HapetTypeToLLVMType(leftPartType);
-					var ret = _builder.BuildStructGEP2(tp, leftPart, elementIndex, idExpr.Name);
-					// if we need ptr for the shite. usually used to store some values inside vars
-					if (getPtr)
-						return ret;
-					// loading the field because it is not registered in _typeMap like a normal variable.
-					// it should be ok for all types of the fields including classes and other shite
-					var retLoaded = _builder.BuildLoad2(HapetTypeToLLVMType(idExpr.OutType), ret, $"{idExpr.Name}Loaded");
-					return retLoaded;
+                        var tp = HapetTypeToLLVMType(leftPartType);
+                        var ret = _builder.BuildStructGEP2(tp, leftPart, elementIndex, idExpr.Name);
+                        // if we need ptr for the shite. usually used to store some values inside vars
+                        if (getPtr)
+                            return ret;
+                        // loading the field because it is not registered in _typeMap like a normal variable.
+                        // it should be ok for all types of the fields including classes and other shite
+                        var retLoaded = _builder.BuildLoad2(HapetTypeToLLVMType(idExpr.OutType), ret, $"{idExpr.Name}Loaded");
+                        return retLoaded;
+                    }
 				}
 
 				// TODO: strings and other
 			}
             _messageHandler.ReportMessage(_currentSourceFile.Text, expr, $"The nested expr could not be generated, fatal :^( ");
-			return null;
+			return default;
 		}
 
-		private uint GetElementIndex(string name, List<AstDeclaration> decls)
+        private bool IsStaticOrConstElement(string name, List<AstDeclaration> decls, out AstVarDecl decl)
+        {
+            // getting pure decls with consts and statics
+            var pureDecls = decls.Where(x => x.SpecialKeys.Contains(TokenType.KwStatic) || x.SpecialKeys.Contains(TokenType.KwConst)).ToList();
+			decl = pureDecls.FirstOrDefault(x => x.Name.Name == name) as AstVarDecl;
+            return decl != null;
+        }
+
+        private uint GetElementIndex(string name, List<AstDeclaration> decls)
 		{
 			// getting pure decls without consts and statics
 			var pureDecls = decls.Where(x => !x.SpecialKeys.Contains(TokenType.KwStatic) && !x.SpecialKeys.Contains(TokenType.KwConst)).ToList();

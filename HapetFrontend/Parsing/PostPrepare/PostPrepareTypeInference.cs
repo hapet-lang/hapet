@@ -643,7 +643,11 @@ namespace HapetFrontend.Parsing.PostPrepare
 				PostPrepareExprInference(nestExpr.LeftPart);
 				if (nestExpr.LeftPart.OutType is PointerType ptr && ptr.TargetType is ClassType classT)
 					leftSideScope = classT.Declaration.SubScope;
-				else if (nestExpr.LeftPart.OutType is StructType structt)
+                // this is usually when accesing static/const values
+				// like 'Attribute.CoonstField'
+                else if (nestExpr.LeftPart.OutType is ClassType classTT)
+                    leftSideScope = classTT.Declaration.SubScope; 
+                else if (nestExpr.LeftPart.OutType is StructType structt)
 					leftSideScope = structt.Declaration.SubScope;
 				else if (nestExpr.LeftPart.OutType is StringType)
 					leftSideScope = AstStringExpr.StringStruct.SubScope;
