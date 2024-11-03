@@ -265,6 +265,9 @@ namespace HapetBackend.Llvm
 
 		private unsafe LLVMValueRef GenerateNestedExpr(AstNestedExpr expr, bool getPtr = false)
 		{
+			// the var is used to check when static/const field is accessed from an object
+			bool accessingFromAnObject = false;
+
 			if (expr.LeftPart == null)
 			{
 				// func call, ident or pure expr
@@ -291,6 +294,7 @@ namespace HapetBackend.Llvm
                 {
 					leftPartDeclarations = classT.Declaration.Declarations.Where(x => x is AstVarDecl).ToList();
 					leftPartType = classT;
+                    accessingFromAnObject = true;
                 }
                 // this is usually when accesing static/const values
                 // like 'Attribute.CoonstField'
@@ -318,8 +322,15 @@ namespace HapetBackend.Llvm
 				// getting index of the element and the element itself
 				if (leftPartDeclarations != null && leftPartType != null)
 				{
+					// check if the field is static/const
 					if (IsStaticOrConstElement(idExpr.Name, leftPartDeclarations, out AstVarDecl theDecl))
 					{
+						// if accessing from an object - give em a warning :)
+						if (accessingFromAnObject)
+						{
+                            _messageHandler.ReportMessage(_currentSourceFile.Text, idExpr, $"Const/static fields should not be accessed from an object", null, HapetFrontend.Entities.ReportType.Warning);
+                        }
+
                         // static/const elements are accessed in different way
                         if (theDecl.ContainingParent is not AstClassDecl classDecl)
                             return default;

@@ -7,7 +7,10 @@ public sealed class DllImportAttribute : Attribute
 
     public DllImportAttribute()
     {
+        Attribute aa = new Attribute();
         int a = System.Attribute.TEST_CONST;
         int b = Attribute.TestStatic;
+
+        int c = aa.TEST_CONST;
     }
 }
