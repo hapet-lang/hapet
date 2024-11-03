@@ -355,7 +355,7 @@ namespace HapetBackend.Llvm
 						// usually this happens when user tries to access non static/const field from a class/struct name
 						if (leftPart == default)
 						{
-                            _messageHandler.ReportMessage(_currentSourceFile.Text, idExpr, $"The element '{idExpr.Name}' could not be accessed");
+                            _messageHandler.ReportMessage(_currentSourceFile.Text, idExpr, $"The element '{idExpr.Name}' could not be accessed. You are probably trying to access a non static/const field");
 							return default;
                         }
 
