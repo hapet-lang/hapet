@@ -59,14 +59,14 @@ namespace HapetBackend.Llvm
 				default:
 				{
 					_messageHandler.ReportMessage(_currentSourceFile.Text, expr, $"The expr {expr} is not implemented");
-					return new LLVMValueRef();
+					return default;
 				}
 			}
 		}
 
 		private LLVMValueRef GenerateBlockExprCode(AstBlockExpr blockExpr)
 		{
-			LLVMValueRef result = null;
+			LLVMValueRef result = default;
 			foreach (var stmt in blockExpr.Statements)
 			{
 				if (stmt == null)
@@ -83,14 +83,17 @@ namespace HapetBackend.Llvm
 			{
 				var expr = (unExpr.SubExpr as AstExpression);
 				var value = GenerateExpressionCode(expr);
+                // return if the value was not properly generated
+                if (value == default)
+                    return default;
 
-				var uo = builtInUnOperators[(unExpr.Operator, expr.OutType)];
+                var uo = builtInUnOperators[(unExpr.Operator, expr.OutType)];
 				var val = uo(_builder, value, "unOp");
 				return val;
 			}
 			// TODO: check other operators (user implemented)
 			_messageHandler.ReportMessage(_currentSourceFile.Text, unExpr, $"The expr {unExpr} is not implemented");
-			return new LLVMValueRef();
+			return default;
 		}
 
 		private LLVMValueRef GenerateBinaryExprCode(AstBinaryExpr binExpr)
@@ -99,17 +102,23 @@ namespace HapetBackend.Llvm
 			{
 				var leftExpr = (binExpr.Left as AstExpression);
 				var left = GenerateExpressionCode(leftExpr);
+				// return if the value was not properly generated
+				if (left == default)
+					return default;
 
-				var rightExpr = (binExpr.Right as AstExpression);
+                var rightExpr = (binExpr.Right as AstExpression);
 				var right = GenerateExpressionCode(rightExpr);
+                // return if the value was not properly generated
+                if (right == default)
+                    return default;
 
-				var bo = builtInBinOperators[(binExpr.Operator, leftExpr.OutType, rightExpr.OutType)];
+                var bo = builtInBinOperators[(binExpr.Operator, leftExpr.OutType, rightExpr.OutType)];
 				var val = bo(_builder, left, right, "binOp");
 				return val;
 			}
 			// TODO: check other operators (user implemented)
 			_messageHandler.ReportMessage(_currentSourceFile.Text, binExpr, $"The expr {binExpr} is not implemented");
-			return new LLVMValueRef();
+			return default;
 		}
 
 		private LLVMValueRef GeneratePointerExprCode(AstPointerExpr expr)
@@ -127,7 +136,7 @@ namespace HapetBackend.Llvm
 				// internal error here
 				_messageHandler.ReportMessage(_currentSourceFile.Text, expr, $"Internal compiler error (AstPointerExpr could not be generated here)");
 			}
-			return null;
+			return default;
 		}
 
 		private LLVMValueRef GenerateAddressOfExprCode(AstAddressOfExpr addrExpr)
@@ -143,7 +152,7 @@ namespace HapetBackend.Llvm
 			}
 			// internal error here
 			_messageHandler.ReportMessage(_currentSourceFile.Text, addrExpr, $"Internal compiler error (AstAddressOfExpr could not be generated here)");
-			return null;
+			return default;
 		}
 
 		private LLVMValueRef GenerateIdExpr(AstIdExpr expr, bool getPtr = false)
@@ -279,7 +288,7 @@ namespace HapetBackend.Llvm
 				if (expr.RightPart is not AstIdExpr idExpr)
 				{
                     _messageHandler.ReportMessage(_currentSourceFile.Text, expr.RightPart, $"The part of the expression has to be an identifier");
-					return null;
+					return default;
                 }
 
 				// we need to get 'struct' elements by ref to access it's elements
@@ -343,6 +352,13 @@ namespace HapetBackend.Llvm
                     }
 					else
 					{
+						// usually this happens when user tries to access non static/const field from a class/struct name
+						if (leftPart == default)
+						{
+                            _messageHandler.ReportMessage(_currentSourceFile.Text, idExpr, $"The element '{idExpr.Name}' could not be accessed");
+							return default;
+                        }
+
                         // getting the index of the element
                         uint elementIndex = GetElementIndex(idExpr.Name, leftPartDeclarations);
 
@@ -409,7 +425,7 @@ namespace HapetBackend.Llvm
 			}
 
 			// the buffer to be indexed
-			LLVMValueRef buffer = null;
+			LLVMValueRef buffer = default;
 
 			// for now they are identical
 			if (expr.ObjectName.OutType is ArrayType || expr.ObjectName.OutType is StringType)
@@ -427,7 +443,7 @@ namespace HapetBackend.Llvm
 			}
 
 			// if the gotten buffer is not null
-			if (buffer != null)
+			if (buffer != default)
 			{
 				// getting an element from the arrayBuf
 				LLVMValueRef llvmElementIndex = GenerateExpressionCode(expr.ParameterExpr);
@@ -441,7 +457,7 @@ namespace HapetBackend.Llvm
 			}
 
 			_messageHandler.ReportMessage(_currentSourceFile.Text, expr, $"Could not generate access code for the {expr.ObjectName.OutType} type");
-			return null;
+			return default;
 		}
 
 		private unsafe LLVMValueRef GenerateNullExprCode(AstNullExpr expr)

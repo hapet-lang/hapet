@@ -429,6 +429,9 @@ namespace HapetBackend.Llvm
 		{
 			// generate the initializer value
 			var x = GenerateExpressionCode(value);
+			// return if the value is cringe and was not generated properly
+			if (x == default)
+				return;
 			// just storing initializer value in the var
 			_builder.BuildStore(x, varPtr);
 		}
