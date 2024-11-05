@@ -26,7 +26,17 @@ namespace HapetFrontend.Ast.Declarations
 			Declarations = declarations;
 		}
 
-        internal StructDeclJson GetJson()
+		public void ChangeSize(int size)
+		{
+			(Type.OutType as StructType).ChangeSize(size);
+		}
+
+		public void ChangeAlignment(int alignment)
+		{
+			(Type.OutType as StructType).ChangeAlignment(alignment);
+		}
+
+		internal StructDeclJson GetJson()
         {
             var fields = Declarations.Where(x => x is AstVarDecl).Select(x => (x as AstVarDecl).GetJson()).ToList();
 			var attributes = Attributes.Select(x => x.GetJson()).ToList();

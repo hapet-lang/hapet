@@ -84,13 +84,20 @@ namespace HapetFrontend.Parsing.PostPrepare
                     }
                     else if (stmt is AstStructDecl structDecl)
                     {
-                        // infer fields at first
-                        foreach (var decl in structDecl.Declarations.Where(x => x is AstVarDecl).Select(x => x as AstVarDecl))
+						List<int> memberAlignments = new List<int>();
+
+						// infer fields at first
+						foreach (var decl in structDecl.Declarations.Where(x => x is AstVarDecl).Select(x => x as AstVarDecl))
                         {
                             // field 
                             PostPrepareVarInference(decl);
-                        }
-                    }
+
+                            // calc struct alignment
+                            memberAlignments.Add(decl.Type.OutType.GetAlignment());
+						}
+                        var maxOfAll = memberAlignments.Max();
+						structDecl.ChangeAlignment(Math.Min(maxOfAll, 8)); // WARN: 8 is a max alignment value for structs
+					}
                 }
             }
         }

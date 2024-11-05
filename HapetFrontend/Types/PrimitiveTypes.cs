@@ -369,7 +369,7 @@ namespace HapetFrontend.Types
 
 		// array size is like that because of the array struct:
 		// { int32, ptr }
-		private ArrayType(HapetType target) : base(4 + PointerType.PointerSize, 4)
+		private ArrayType(HapetType target) : base(4 + PointerType.PointerSize, PointerType.PointerSize)
 		{
 			TargetType = target;
 		}
@@ -492,7 +492,7 @@ namespace HapetFrontend.Types
 				// string size is like that because of the string struct:
 				// { int32, ptr }
 				if (_instance == null)
-					_instance = new StringType(4 + PointerType.PointerSize, 4);
+					_instance = new StringType(4 + PointerType.PointerSize, PointerType.PointerSize);
 				return _instance; 
 			} 
 		} 

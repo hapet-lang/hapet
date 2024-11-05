@@ -1,5 +1,7 @@
 public struct AnimeStruct
 {
+    char F2;
     int Field1;
+    byte Nng;
     string Field22;
 }

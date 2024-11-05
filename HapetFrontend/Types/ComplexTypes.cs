@@ -92,9 +92,19 @@ namespace HapetFrontend.Types
 		public override string TypeName => "struct";
 
 		public StructType(AstStructDecl decl)
-			: base()
+			: base() // TODO: WARN: hard coded struct alignment (probably undependent on platform target)
 		{
 			Declaration = decl;
+		}
+
+		public void ChangeSize(int size)
+		{
+			_size = size;
+		}
+
+		public void ChangeAlignment(int alignment)
+		{
+			_alignment = alignment;
 		}
 
 		public override string ToString()

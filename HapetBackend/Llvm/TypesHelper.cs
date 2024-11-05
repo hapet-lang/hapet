@@ -212,6 +212,8 @@ namespace HapetBackend.Llvm
 
 				case StructType s:
 					{
+						// TODO: enable packing if there is a proper attribute
+
 						var name = $"struct.{s.Declaration.Name.Name}";
 
 						var llvmType = _context.CreateNamedStruct(name);
@@ -220,9 +222,9 @@ namespace HapetBackend.Llvm
 						// WARN: this shite with alignment is done like 'LayoutKind.Sequential' in C#
 						// so all the members are going to be aligned properly by their types
 						var memTypes = new List<LLVMTypeRef>(s.Declaration.Declarations.Count);
-						var offsets = new uint[s.Declaration.Declarations.Count];
+						// var offsets = new uint[s.Declaration.Declarations.Count];
 						int currentSize = 0;
-						int i = 0;
+						// int i = 0;
 						foreach (var mem in s.Declaration.Declarations)
 						{
 							// if current offset is shity for the member type
@@ -231,23 +233,24 @@ namespace HapetBackend.Llvm
 							{
 								// add padding
 								int padding = mem.Type.OutType.GetAlignment() - currentSize % mem.Type.OutType.GetAlignment();
-								memTypes.Add(LLVM.ArrayType(LLVM.Int8Type(), (uint)padding));
+								// memTypes.Add(LLVM.ArrayType(LLVM.Int8Type(), (uint)padding));
 								currentSize += padding;
 							}
 
-							offsets[i] = (uint)memTypes.Count;
+							// offsets[i] = (uint)memTypes.Count;
 							memTypes.Add(HapetTypeToLLVMType(mem.Type.OutType));
 							currentSize += (int)((_targetData.SizeOfTypeInBits(memTypes.Last()) + 7) / 8);
-							i += 1;
+							// i += 1;
 						}
 						// add padding at the end
 						if (currentSize % s.GetAlignment() != 0)
 						{
 							// add padding
 							int padding = s.GetAlignment() - currentSize % s.GetAlignment();
-							memTypes.Add(LLVM.ArrayType(LLVM.Int8Type(), (uint)padding));
+							// memTypes.Add(LLVM.ArrayType(LLVM.Int8Type(), (uint)padding));
 							currentSize += padding;
 						}
+						s.ChangeSize(currentSize);
 
 						// structMemberOffsets[s] = offsets;
 
