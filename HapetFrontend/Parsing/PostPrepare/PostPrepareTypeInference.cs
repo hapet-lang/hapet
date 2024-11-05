@@ -648,6 +648,9 @@ namespace HapetFrontend.Parsing.PostPrepare
 
 		private void PostPrepareNestedExprInference(AstNestedExpr nestExpr, out bool itWasPropa, bool propaSet = false)
 		{
+			// the var is used to check when static/const field is accessed from an object
+			bool accessingFromAnObject = false;
+
 			bool foundNs = false;
 			// normalizing types with their namespaces
 			InternalNormalizeLeftPartIfItIsANamespaceWithType(nestExpr, ref foundNs);
@@ -662,7 +665,10 @@ namespace HapetFrontend.Parsing.PostPrepare
 				Scope leftSideScope = null;
 				PostPrepareExprInference(nestExpr.LeftPart);
 				if (nestExpr.LeftPart.OutType is PointerType ptr && ptr.TargetType is ClassType classT)
+				{
 					leftSideScope = classT.Declaration.SubScope;
+					accessingFromAnObject = true;
+				}
                 // this is usually when accesing static/const values
 				// like 'Attribute.CoonstField'
                 else if (nestExpr.LeftPart.OutType is ClassType classTT)
@@ -696,6 +702,12 @@ namespace HapetFrontend.Parsing.PostPrepare
 				{
 					idExpr.OutType = typed.Decl.Type.OutType;
 					nestExpr.OutType = idExpr.OutType;
+
+					// check if the var is a static/const field and user is accessing it from an object
+					if (typed.Decl is AstVarDecl varDecl && (varDecl.SpecialKeys.Contains(TokenType.KwStatic) || varDecl.SpecialKeys.Contains(TokenType.KwConst)) && accessingFromAnObject) // if accessing from an object - give em a warning :)
+					{
+						_compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, idExpr, $"Const/static fields should not be accessed from an object", null, HapetFrontend.Entities.ReportType.Warning);
+					}
 
 					// if the ast is an access to a property
 					if (typed.Decl is AstPropertyDecl)
