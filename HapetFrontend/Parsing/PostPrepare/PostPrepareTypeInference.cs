@@ -42,6 +42,18 @@ namespace HapetFrontend.Parsing.PostPrepare
 		{
 			_currentClass = classDecl;
 
+			// check that all decls in the class are also static
+			if (classDecl.SpecialKeys.Contains(TokenType.KwStatic))
+			{
+				foreach (var dd in classDecl.Declarations)
+				{
+					if (!dd.SpecialKeys.Contains(TokenType.KwStatic))
+					{
+						_compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, dd, "The declaration has to be 'static' because it is declared in a 'static' class");
+					}
+				}
+			}
+
 			/// fields should be already inferred in <see cref="PostPrepareMetadataTypes"/> and <see cref="PostPrepareMetadataTypeFields"/>
 			foreach (var decl in classDecl.Declarations.Where(x => x is AstFuncDecl).Select(x => x as AstFuncDecl))
 			{
