@@ -585,7 +585,7 @@ namespace HapetFrontend.Parsing.PostPrepare
 					else
 					{
 						// if it is a non static func defined in local class
-						newName = $"{_currentClass.Name.Name}::{callExpr.FuncName.Name}{callExpr.Arguments.GetArgsString(callExpr.TypeOrObjectName.OutType)}";
+						newName = $"{_currentClass.Name.Name}::{callExpr.FuncName.Name}{callExpr.Arguments.GetArgsString(PointerType.GetPointerType(_currentClass.Type.OutType))}";
 						accessingFromAnObject = true;
 					}
 				}
@@ -607,6 +607,17 @@ namespace HapetFrontend.Parsing.PostPrepare
 					// if we are calling like 'A.Anime()' where 'A' is a class
 					// we need to rename the func name call like that:
 					newName = $"{clsTpStatic.Declaration.Name.Name}::{callExpr.FuncName.Name}{callExpr.Arguments.GetArgsString()}";
+					// check if the decl exists. if not - it could be non static method call from a class name
+					if (clsTpStatic.Declaration.SubScope.GetSymbol(newName) == null)
+					{
+						// getting the name but without object first param
+						newName = $"{clsTpStatic.Declaration.Name.Name}::{callExpr.FuncName.Name}{callExpr.Arguments.GetArgsString(PointerType.GetPointerType(clsTpStatic))}";
+						// error because user tries to access non static method from a class name
+						if (clsTpStatic.Declaration.SubScope.GetSymbol(newName) != null)
+						{
+							_compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, callExpr.FuncName, $"The non-static method could only be accessed from an object");
+						}
+					}
 				}
 				else
 				{

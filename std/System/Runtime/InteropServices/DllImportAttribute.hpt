@@ -17,5 +17,9 @@ public sealed class DllImportAttribute : Attribute
         System.Attribute.StaticMethod();
         Attribute.StaticMethod();
         aa.StaticMethod();
+
+        aa.NonStaticMethod();
+        // System.Attribute.NonStaticMethod();
+        // Attribute.NonStaticMethod();
     }
 }

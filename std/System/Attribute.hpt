@@ -8,6 +8,11 @@ public abstract class Attribute
 
     public static void StaticMethod()
     {
+
+    }
+
+    public void NonStaticMethod()
+    {
         
     }
 }
