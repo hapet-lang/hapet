@@ -587,6 +587,11 @@ namespace HapetFrontend.Parsing.PostPrepare
 						// if it is a non static func defined in local class
 						newName = $"{_currentClass.Name.Name}::{callExpr.FuncName.Name}{callExpr.Arguments.GetArgsString(PointerType.GetPointerType(_currentClass.Type.OutType))}";
 						accessingFromAnObject = true;
+						// we need to create this one because code generator requires the parameter of this shite
+						callExpr.TypeOrObjectName = new AstNestedExpr(new AstIdExpr("this"), null, callExpr);
+						SetScopeAndParent(callExpr.TypeOrObjectName, callExpr);
+						PostPrepareExprScoping(callExpr.TypeOrObjectName);
+						PostPrepareExprInference(callExpr.TypeOrObjectName);
 					}
 				}
 				else if (callExpr.TypeOrObjectName.OutType is PointerType ptrTp && ptrTp.TargetType is ClassType clsTp)

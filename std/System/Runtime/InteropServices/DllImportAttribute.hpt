@@ -21,5 +21,22 @@ public sealed class DllImportAttribute : Attribute
         aa.NonStaticMethod();
         // System.Attribute.NonStaticMethod();
         // Attribute.NonStaticMethod();
+
+        TestFunc();
+        this.TestFunc();
+
+        TestStaticFunc();
+        this.TestStaticFunc();
+        DllImportAttribute.TestStaticFunc();
+    }
+
+    private void TestFunc()
+    {
+
+    }
+
+    private static void TestStaticFunc()
+    {
+
     }
 }
