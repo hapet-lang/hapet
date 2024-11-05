@@ -6,6 +6,7 @@ using HapetFrontend.Entities;
 using HapetFrontend.Scoping;
 using HapetFrontend.Types;
 using System;
+using System.Xml.Linq;
 
 namespace HapetFrontend.Parsing.PostPrepare
 {
@@ -544,6 +545,9 @@ namespace HapetFrontend.Parsing.PostPrepare
 
 		private void PostPrepareCallExprInference(AstCallExpr callExpr)
 		{
+			// the var is used to check when static method is accessed from an object
+			bool accessingFromAnObject = false;
+
 			// usually when in the same class
 			if (callExpr.TypeOrObjectName != null)
 			{
@@ -582,6 +586,7 @@ namespace HapetFrontend.Parsing.PostPrepare
 					{
 						// if it is a non static func defined in local class
 						newName = $"{_currentClass.Name.Name}::{callExpr.FuncName.Name}{callExpr.Arguments.GetArgsString(callExpr.TypeOrObjectName.OutType)}";
+						accessingFromAnObject = true;
 					}
 				}
 				else if (callExpr.TypeOrObjectName.OutType is PointerType ptrTp && ptrTp.TargetType is ClassType clsTp)
@@ -589,6 +594,13 @@ namespace HapetFrontend.Parsing.PostPrepare
 					// if we are calling like 'a.Anime()' where 'a' is an object
 					// we need to rename the func name call like that:
 					newName = $"{clsTp.Declaration.Name.Name}::{callExpr.FuncName.Name}{callExpr.Arguments.GetArgsString(callExpr.TypeOrObjectName.OutType)}";
+					// check if the decl exists. if not - it could be static method call from an object
+					if (clsTp.Declaration.SubScope.GetSymbol(newName) == null)
+					{
+						// getting the name but without object first param
+						newName = $"{clsTp.Declaration.Name.Name}::{callExpr.FuncName.Name}{callExpr.Arguments.GetArgsString()}";
+					}
+					accessingFromAnObject = true;
 				}
 				else if (callExpr.TypeOrObjectName.OutType is ClassType clsTpStatic)
 				{
@@ -613,6 +625,12 @@ namespace HapetFrontend.Parsing.PostPrepare
 				callExpr.StaticCall = ft.Declaration.SpecialKeys.Contains(TokenType.KwStatic);
 				// call expr type is the same as func return type
 				callExpr.OutType = ft.Declaration.Returns.OutType;
+
+				// warn if accessing from an object
+				if (accessingFromAnObject && callExpr.StaticCall)
+				{
+					_compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, callExpr.FuncName, $"Static methods should not be accessed from an object", null, ReportType.Warning);
+				}
 			}
 			else
 			{
@@ -630,6 +648,10 @@ namespace HapetFrontend.Parsing.PostPrepare
 
 		private void PostPrepareNestedExprInference(AstNestedExpr nestExpr, out bool itWasPropa, bool propaSet = false)
 		{
+			bool foundNs = false;
+			// normalizing types with their namespaces
+			InternalNormalizeLeftPartIfItIsANamespaceWithType(nestExpr, ref foundNs);
+
 			if (nestExpr.LeftPart == null)
 			{
 				PostPrepareExprInference(nestExpr.RightPart);
@@ -638,8 +660,6 @@ namespace HapetFrontend.Parsing.PostPrepare
 			else
 			{
 				Scope leftSideScope = null;
-				bool foundNs = false;
-				InternalNormalizeLeftPartIfItIsANamespaceWithType(nestExpr, ref foundNs);
 				PostPrepareExprInference(nestExpr.LeftPart);
 				if (nestExpr.LeftPart.OutType is PointerType ptr && ptr.TargetType is ClassType classT)
 					leftSideScope = classT.Declaration.SubScope;
@@ -744,6 +764,7 @@ namespace HapetFrontend.Parsing.PostPrepare
 			{
 				// if it is a namespace - join with current right side and try again
 				nestExpr.RightPart = (nestExpr.RightPart as AstIdExpr).GetCopy($"{leftString}.{(nestExpr.RightPart as AstIdExpr).Name}");
+				nestExpr.LeftPart = null;
 			}
 			else
 			{

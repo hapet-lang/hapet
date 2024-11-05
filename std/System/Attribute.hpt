@@ -5,4 +5,9 @@ public abstract class Attribute
     public static int TestStatic = 475;
     public int Test123 = TEST_CONST;
     public string TestNonStatic = "asd";
+
+    public static void StaticMethod()
+    {
+        
+    }
 }

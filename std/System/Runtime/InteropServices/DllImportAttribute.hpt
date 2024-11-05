@@ -12,6 +12,10 @@ public sealed class DllImportAttribute : Attribute
         int b = Attribute.TestStatic;
 
         int c = aa.TEST_CONST;
-        int d = System.Attribute.Test123;
+        // int d = System.Attribute.Test123;
+
+        System.Attribute.StaticMethod();
+        Attribute.StaticMethod();
+        aa.StaticMethod();
     }
 }
