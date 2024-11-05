@@ -18,10 +18,12 @@ namespace HapetFrontend.Ast.Declarations
 		/// </summary>
 		public Scope SubScope { get; set; }
 
-		public AstStructDecl(AstIdExpr name, string doc = "", ILocation Location = null) : base(name, doc, Location)
+		public AstStructDecl(AstIdExpr name, List<AstDeclaration> declarations, string doc = "", ILocation Location = null) : base(name, doc, Location)
 		{
 			Type = new AstIdExpr("struct", Location);
 			Type.OutType = new StructType(this);
+
+			Declarations = declarations;
 		}
 
         internal StructDeclJson GetJson()

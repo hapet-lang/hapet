@@ -20,7 +20,7 @@ namespace HapetFrontend.Ast.Expressions
 		private static AstStructDecl GenerateStringStructExpr()
 		{
 			// creating the struct and its scope
-			AstStructDecl strStruct = new AstStructDecl(new AstIdExpr("string.type"), ""); // TODO: doc string
+			AstStructDecl strStruct = new AstStructDecl(new AstIdExpr("string.type"), new List<AstDeclaration>(), ""); // TODO: doc string
 			// TODO: doc string
 			AstVarDecl sizeField = new AstVarDecl(new AstNestedExpr(new AstIdExpr("int"), null), new AstIdExpr("Length"), new AstNumberExpr((NumberData)0), "");
 			AstVarDecl bufField = new AstVarDecl(new AstNestedExpr(new AstPointerExpr(new AstIdExpr("char")), null), new AstIdExpr("Buffer"), new AstNullExpr(StringType.Instance), "");

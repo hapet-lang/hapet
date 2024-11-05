@@ -194,7 +194,7 @@ namespace HapetBackend.Llvm
 						return funcType;
 					}
 
-					// TODO: check it
+				// TODO: check it
 				//case EnumType e:
 				//	{
 				//		var llvmType = _context.CreateNamedStruct($"enum.{e}");
@@ -210,68 +210,73 @@ namespace HapetBackend.Llvm
 				//		return llvmType;
 				//	}
 
-				//case StructType s:
-				//	{
-				//		var name = $"struct.{s.Declaration.Name.Name}";
+				case StructType s:
+					{
+						var name = $"struct.{s.Declaration.Name.Name}";
 
-				//		var llvmType = _context.CreateNamedStruct(name);
-				//		typeMap[s] = llvmType;
+						var llvmType = _context.CreateNamedStruct(name);
+						_typeMap[s] = llvmType;
 
-				//		var memTypes = new List<LLVMTypeRef>(s.Declaration.Declarations.Count);
-				//		var offsets = new uint[s.Declaration.Declarations.Count];
-				//		int currentSize = 0;
-				//		int i = 0;
-				//		foreach (var mem in s.Declaration.Declarations)
-				//		{
-				//			if (currentSize % mem.Type.OutType.GetAlignment() != 0)
-				//			{
-				//				// add padding
-				//				int padding = mem.Type.OutType.GetAlignment() - currentSize % mem.Type.OutType.GetAlignment();
-				//				memTypes.Add(LLVM.ArrayType(LLVM.Int8Type(), (uint)padding));
-				//				currentSize += padding;
-				//			}
+						// WARN: this shite with alignment is done like 'LayoutKind.Sequential' in C#
+						// so all the members are going to be aligned properly by their types
+						var memTypes = new List<LLVMTypeRef>(s.Declaration.Declarations.Count);
+						var offsets = new uint[s.Declaration.Declarations.Count];
+						int currentSize = 0;
+						int i = 0;
+						foreach (var mem in s.Declaration.Declarations)
+						{
+							// if current offset is shity for the member type
+							// we need to append a padding
+							if (currentSize % mem.Type.OutType.GetAlignment() != 0)
+							{
+								// add padding
+								int padding = mem.Type.OutType.GetAlignment() - currentSize % mem.Type.OutType.GetAlignment();
+								memTypes.Add(LLVM.ArrayType(LLVM.Int8Type(), (uint)padding));
+								currentSize += padding;
+							}
 
-				//			offsets[i] = (uint)memTypes.Count;
-				//			memTypes.Add(HapetTypeToLLVMType(mem.Type.OutType));
-				//			currentSize += (int)((_targetData.SizeOfTypeInBits(memTypes.Last()) + 7) / 8);
-				//			i += 1;
-				//		}
-				//		if (currentSize % s.GetAlignment() != 0)
-				//		{
-				//			// add padding
-				//			int padding = s.GetAlignment() - currentSize % s.GetAlignment();
-				//			memTypes.Add(LLVM.ArrayType(LLVM.Int8Type(), (uint)padding));
-				//			currentSize += padding;
-				//		}
+							offsets[i] = (uint)memTypes.Count;
+							memTypes.Add(HapetTypeToLLVMType(mem.Type.OutType));
+							currentSize += (int)((_targetData.SizeOfTypeInBits(memTypes.Last()) + 7) / 8);
+							i += 1;
+						}
+						// add padding at the end
+						if (currentSize % s.GetAlignment() != 0)
+						{
+							// add padding
+							int padding = s.GetAlignment() - currentSize % s.GetAlignment();
+							memTypes.Add(LLVM.ArrayType(LLVM.Int8Type(), (uint)padding));
+							currentSize += padding;
+						}
 
-				//		structMemberOffsets[s] = offsets;
+						// structMemberOffsets[s] = offsets;
 
-				//		llvmType.StructSetBody(memTypes.ToArray(), false);
+						llvmType.StructSetBody(memTypes.ToArray(), false);
 
-				//		// TODO: offsets checks
-				//		//foreach (var m in s.Declaration.Declarations)
-				//		//{
-				//		//	int myOffset = m.Type.Offset;
-				//		//	int llvmOffset = (int)LLVM.OffsetOfElement(_targetData, llvmType, offsets[m.Index]);
+						// TODO: idk what is it
+						//foreach (var m in s.Declaration.Declarations)
+						//{
+						//	int myOffset = m.Type.Offset;
+						//	int llvmOffset = (int)LLVM.OffsetOfElement(_targetData, llvmType, offsets[m.Index]);
 
-				//		//	if (myOffset != llvmOffset)
-				//		//	{
-				//		//		System.Console.WriteLine($"[ERROR] {s.Declaration.Name}: offset mismatch at {m.Index}: cheez {myOffset}, llvm {llvmOffset}");
-				//		//	}
-				//		//}
+						//	if (myOffset != llvmOffset)
+						//	{
+						//		System.Console.WriteLine($"[ERROR] {s.Declaration.Name}: offset mismatch at {m.Index}: cheez {myOffset}, llvm {llvmOffset}");
+						//	}
+						//}
 
-				//		if (_targetData.SizeOfTypeInBits(llvmType) / 8ul != (ulong)s.GetSize())
-				//		{
-				//			System.Console.WriteLine($"[ERROR] {s.Declaration.Name}: struct size mismatch: cheez {s.GetSize()}, llvm {_targetData.SizeOfTypeInBits(llvmType) / 8}");
-				//		}
+						//if (_targetData.SizeOfTypeInBits(llvmType) / 8ul != (ulong)s.GetSize())
+						//{
+						//	System.Console.WriteLine($"[ERROR] {s.Declaration.Name}: struct size mismatch: cheez {s.GetSize()}, llvm {_targetData.SizeOfTypeInBits(llvmType) / 8}");
+						//}
 
-				//		if (_targetData.PreferredAlignmentOfType(llvmType) != (uint)s.GetAlignment()) // TODO: here was a directive check
-				//		{
-				//			System.Console.WriteLine($"[WARNING] {s.Declaration.Name}: struct alignment mismatch: cheez {s.GetAlignment()}, llvm {_targetData.PreferredAlignmentOfType(llvmType)}");
-				//		}
+						//if (_targetData.PreferredAlignmentOfType(llvmType) != (uint)s.GetAlignment()) // TODO: here was a directive check
+						//{
+						//	System.Console.WriteLine($"[WARNING] {s.Declaration.Name}: struct alignment mismatch: cheez {s.GetAlignment()}, llvm {_targetData.PreferredAlignmentOfType(llvmType)}");
+						//}
 
-				//		return llvmType;
-				//	}
+						return llvmType;
+					}
 
 				case TupleType t:
 					{

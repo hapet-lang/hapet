@@ -84,10 +84,14 @@ namespace HapetFrontend.Parsing.PostPrepare
 				_compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, fnc.Name, $"Function with the name is not allowed in the {classDecl.Name.Name} class");
 			}
 
-			PostPrepareGenerateClassInitializer(classDecl);
-			// passing all the existing ctors
-			PostPrepareGenerateClassConstructor(classDecl, allFuncs.Where(x => x.ClassFunctionType == Enums.ClassFunctionType.Ctor).ToList());
-			PostPrepareGenerateClassDestructor(classDecl, allFuncs.Where(x => x.ClassFunctionType == Enums.ClassFunctionType.Dtor).ToList());
+			// generating all the shite only if the class is not static
+			if (!classDecl.SpecialKeys.Contains(TokenType.KwStatic))
+			{
+				PostPrepareGenerateClassInitializer(classDecl);
+				// passing all the existing ctors
+				PostPrepareGenerateClassConstructor(classDecl, allFuncs.Where(x => x.ClassFunctionType == Enums.ClassFunctionType.Ctor).ToList());
+				PostPrepareGenerateClassDestructor(classDecl, allFuncs.Where(x => x.ClassFunctionType == Enums.ClassFunctionType.Dtor).ToList());
+			}
 
 			// adding 'this' param as first
 			foreach (var decl in classDecl.Declarations)

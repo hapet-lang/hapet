@@ -535,10 +535,10 @@ namespace HapetFrontend.Parsing
 				case TokenType.OpenParen:
 					return ParseTupleExpression(allowFunctionDeclaration, allowCommaForTuple);
 
-				// TODO: ...
-				//case TokenType.KwStruct:
-				//	return ParseStructDeclaration();
+				case TokenType.KwStruct:
+					return ParseStructDeclaration();
 
+				// TODO: ...
 				//case TokenType.KwEnum:
 				//	return ParseEnumDeclaration();
 
