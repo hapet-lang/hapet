@@ -83,14 +83,25 @@ namespace HapetFrontend.Parsing.PostPrepare
 						};
 
 						// do not allow if signes are different or something like that. idk :)
-						// allow if the var type size is bigger
-						if (neededType.GetSize() > exprType.GetSize() && 
+						// allow if the var type size is bigger or equal
+						if (neededType.GetSize() >= exprType.GetSize() && 
                             (isFirstSigned != null && isSecondSigned != null) &&
-                            (isFirstSigned == isSecondSigned))
+                            (isFirstSigned.Value == isSecondSigned.Value))
                         {
 							outExpr = cst;
                             break;
 						}
+
+                        // allow shite like:
+                        // byte a = 5;
+                        // int b = a;
+                        if (neededType.GetSize() > exprType.GetSize() &&
+                            (isFirstSigned != null && isSecondSigned != null) &&
+                            (isFirstSigned.Value && !isSecondSigned.Value))
+                        {
+                            outExpr = cst;
+                            break;
+                        }
 
                         // there is no way to implicitly cast non-compiletime values
                         if (expr.OutValue == null)
