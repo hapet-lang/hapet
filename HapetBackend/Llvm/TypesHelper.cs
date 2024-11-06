@@ -1,5 +1,6 @@
 ﻿using HapetFrontend.Ast;
 using HapetFrontend.Ast.Declarations;
+using HapetFrontend.Helpers;
 using HapetFrontend.Parsing;
 using HapetFrontend.Scoping;
 using HapetFrontend.Types;
@@ -221,8 +222,26 @@ namespace HapetBackend.Llvm
                         // enable packing if there is a proper attribute
                         // getting attribute if it exists
                         var layoutAttr = s.Declaration.Attributes.FirstOrDefault(x => x.AttributeName.TryFlatten(null, null) == "System.Runtime.InteropServices.StructLayoutAttribute");
-						int packNumber = layoutAttr == null ? 0 : (int)((NumberData)layoutAttr.Parameters.First().OutValue).IntValue;
+						int packNumber = 0;
+						if (layoutAttr != null)
+						{
+							var thePackParam = layoutAttr.Parameters.First();
+                            packNumber = (int)((NumberData)thePackParam.OutValue).IntValue;
+							// check for 0 and other shite
+							if (packNumber <= 0)
+							{
+                                _messageHandler.ReportMessage(_currentSourceFile.Text, thePackParam, $"The 'Pack' value could not be less than 1");
+								packNumber = 0;
+                            }
+							else if (!Funcad.IsPowerOfTwo(packNumber))
+							{
+                                // if it is not a power of two
+                                _messageHandler.ReportMessage(_currentSourceFile.Text, thePackParam, $"The 'Pack' value has to be a power of two");
+                                packNumber = 0;
+                            }
+                        }
 
+						// creating the struct
 						var name = $"struct.{s.Declaration.Name.Name}";
 
 						var llvmType = _context.CreateNamedStruct(name);

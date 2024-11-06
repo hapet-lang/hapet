@@ -1,5 +1,6 @@
 ﻿using HapetFrontend.Ast;
 using HapetFrontend.Entities;
+using HapetFrontend.Helpers;
 using System.Diagnostics;
 
 namespace HapetFrontend.Parsing

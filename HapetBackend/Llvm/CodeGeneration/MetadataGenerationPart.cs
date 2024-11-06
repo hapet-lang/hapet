@@ -29,14 +29,16 @@ namespace HapetBackend.Llvm
 			// all over the classes
 			foreach (var cls in _postPreparer.AllClassesMetadata)
 			{
+				_currentSourceFile = cls.SourceFile;
 				// doing that we are registering the type in dict
 				var _ = HapetTypeToLLVMType(cls.Type.OutType);
 			}
 			// all over the structs
 			foreach (var str in _postPreparer.AllStructsMetadata)
 			{
-				// doing that we are registering the type in dict
-				var _ = HapetTypeToLLVMType(str.Type.OutType);
+                _currentSourceFile = str.SourceFile;
+                // doing that we are registering the type in dict
+                var _ = HapetTypeToLLVMType(str.Type.OutType);
 			}
 		}
 
@@ -45,7 +47,9 @@ namespace HapetBackend.Llvm
 		{
 			foreach (var cls in _postPreparer.AllClassesMetadata)
 			{
-				var classStruct = HapetTypeToLLVMType(cls.Type.OutType);
+                _currentSourceFile = cls.SourceFile;
+
+                var classStruct = HapetTypeToLLVMType(cls.Type.OutType);
 
 				var entryTypes = new List<LLVMTypeRef>();
 				var entryHapetTypes = new List<HapetType>();
@@ -95,7 +99,8 @@ namespace HapetBackend.Llvm
 		{
 			foreach (var func in _postPreparer.AllFunctionsMetadata)
 			{
-				GenerateFuncCode(func, null, true);
+                _currentSourceFile = func.SourceFile;
+                GenerateFuncCode(func, null, true);
 			}
 		}
 	}
