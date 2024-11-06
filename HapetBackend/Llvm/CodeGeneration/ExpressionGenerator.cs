@@ -357,6 +357,10 @@ namespace HapetBackend.Llvm
                         if (leftPartType is ClassType)
                             elementIndex += 1;
 
+						// getting normal element index when user used custom struct alignment
+						if (leftPartType is StructType strT && strT.IsUserDefinedAlignment)
+							elementIndex = _structOffsets[strT][elementIndex];
+
                         var tp = HapetTypeToLLVMType(leftPartType);
                         var ret = _builder.BuildStructGEP2(tp, leftPart, elementIndex, idExpr.Name);
                         // if we need ptr for the shite. usually used to store some values inside vars

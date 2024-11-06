@@ -23,6 +23,11 @@ namespace HapetBackend.Llvm
 		/// </summary>
         private Dictionary<HapetType, List<HapetType>> _structTypeElementsMap = new Dictionary<HapetType, List<HapetType>>();
 
+        /// <summary>
+        /// Struct offsets mapping when StructLayoutAttribute used
+        /// </summary>
+        private Dictionary<HapetType, uint[]> _structOffsets = new Dictionary<HapetType, uint[]>();
+
 		// cringe
 		// this is because all arrays are the same in LLVM IR
 		private LLVMTypeRef _llvmArrayType = null;
@@ -226,18 +231,22 @@ namespace HapetBackend.Llvm
 						if (layoutAttr != null)
 						{
 							var thePackParam = layoutAttr.Parameters.First();
-                            packNumber = (int)((NumberData)thePackParam.OutValue).IntValue;
+                            var tmpPack = (int)((NumberData)thePackParam.OutValue).IntValue;
 							// check for 0 and other shite
-							if (packNumber <= 0)
+							if (tmpPack <= 0)
 							{
                                 _messageHandler.ReportMessage(_currentSourceFile.Text, thePackParam, $"The 'Pack' value could not be less than 1");
-								packNumber = 0;
                             }
-							else if (!Funcad.IsPowerOfTwo(packNumber))
+							else if (!Funcad.IsPowerOfTwo(tmpPack))
 							{
                                 // if it is not a power of two
                                 _messageHandler.ReportMessage(_currentSourceFile.Text, thePackParam, $"The 'Pack' value has to be a power of two");
-                                packNumber = 0;
+                            }
+							else
+							{
+								// if everything is ok :)
+                                packNumber = tmpPack;
+                                s.IsUserDefinedAlignment = true;
                             }
                         }
 
@@ -283,7 +292,8 @@ namespace HapetBackend.Llvm
 							memTypes.Add(LLVM.ArrayType(LLVM.Int8Type(), (uint)padding));
 							currentSize += padding;
 						}
-						// structMemberOffsets[s] = offsets;
+						// saving the offsets so we can access struct elements easily in the future
+                        _structOffsets[s] = offsets;
 
 						llvmType.StructSetBody(memTypes.ToArray(), packNumber >= 1);
 

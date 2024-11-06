@@ -91,6 +91,11 @@ namespace HapetFrontend.Types
 
 		public override string TypeName => "struct";
 
+        /// <summary>
+        /// The property is set to 'true' in code gen when StructLayoutAttribute found
+        /// </summary>
+        public bool IsUserDefinedAlignment { get; set; } = false;
+
 		public StructType(AstStructDecl decl)
 			: base() // TODO: WARN: hard coded struct alignment (probably undependent on platform target)
 		{
