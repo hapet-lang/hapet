@@ -1,18 +1,3 @@
 public abstract class Attribute
 {
-    public int Prop1 { get; set; } = 22;
-    public const int TEST_CONST = 55;
-    public static int TestStatic = 475;
-    public int Test123 = TEST_CONST;
-    public string TestNonStatic = "asd";
-
-    public static void StaticMethod()
-    {
-
-    }
-
-    public void NonStaticMethod()
-    {
-        
-    }
 }

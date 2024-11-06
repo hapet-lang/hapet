@@ -1,0 +1,11 @@
+using System;
+
+public sealed class StructLayoutAttribute : Attribute
+{
+    // TODO: make the field required
+    public int Pack;
+
+    public StructLayoutAttribute()
+    {
+    }
+}

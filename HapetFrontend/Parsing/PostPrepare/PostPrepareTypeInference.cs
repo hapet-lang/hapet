@@ -42,8 +42,10 @@ namespace HapetFrontend.Parsing.PostPrepare
 		{
 			_currentClass = classDecl;
 
-			// check that all decls in the class are also static
-			if (classDecl.SpecialKeys.Contains(TokenType.KwStatic))
+            /// WARN: attributes are inferrenced in <see cref="PostPrepareMetadataTypes"/>
+
+            // check that all decls in the class are also static
+            if (classDecl.SpecialKeys.Contains(TokenType.KwStatic))
 			{
 				foreach (var dd in classDecl.Declarations)
 				{
@@ -76,10 +78,12 @@ namespace HapetFrontend.Parsing.PostPrepare
 
 		private void PostPrepareStructInference(AstStructDecl structDecl)
 		{
-			/// should be already inferred in <see cref="PostPrepareMetadataTypes"/> and <see cref="PostPrepareMetadataTypeFields"/>
-		}
+            /// WARN: should be already inferred in <see cref="PostPrepareMetadataTypes"/> and <see cref="PostPrepareMetadataTypeFields"/>
 
-		private void PostPrepareFunctionInference(AstFuncDecl funcDecl, bool forMetadata = false)
+            /// WARN: attributes are inferrenced in <see cref="PostPrepareMetadataTypes"/>
+        }
+
+        private void PostPrepareFunctionInference(AstFuncDecl funcDecl, bool forMetadata = false)
 		{
 			_currentFunction = funcDecl;
 
@@ -91,15 +95,19 @@ namespace HapetFrontend.Parsing.PostPrepare
 				foreach (var a in funcDecl.Attributes)
 				{
 					PostPrepareExprInference(a);
-
-					// TODO: many checks here (like fields and so on):
 				}
 
 				// inferencing parameters 
 				foreach (var p in funcDecl.Parameters)
 				{
 					PostPrepareParamInference(p);
-				}
+
+                    // inferencing attrs
+                    foreach (var a in p.Attributes)
+                    {
+                        PostPrepareExprInference(a);
+                    }
+                }
 
 				// if the containing class is empty - it is external func
 				if (funcDecl.ContainingClass != null)
@@ -1022,6 +1030,11 @@ namespace HapetFrontend.Parsing.PostPrepare
 					_compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, a, $"Parameter value has to be compile time available");
 				}
 			}
+
+			// TODO: check attr fields to be filled
+			// check for required attrs
+			// check that not too much params
+			// check that param types are equal to attr fields
 		}
 	}
 }

@@ -6,6 +6,7 @@ using HapetFrontend.Types;
 using LLVMSharp.Interop;
 using System;
 using System.Diagnostics;
+using System.Runtime.InteropServices;
 
 namespace HapetBackend.Llvm
 {
@@ -212,7 +213,15 @@ namespace HapetBackend.Llvm
 
 				case StructType s:
 					{
-						// TODO: enable packing if there is a proper attribute
+                        // the main logics with offsets
+                        // No Attribute: Call StructSetBody with 'false', LLVM will set offsets by its own.
+                        // Attribute [StructLayout(Pack = 1)]: Call StructSetBody with 'true', minimal pack.
+                        // Attribute [StructLayout(Pack = 2, 4, and etc.)]: Call StructSetBody with 'true', set offsets by my own.
+
+                        // enable packing if there is a proper attribute
+                        // getting attribute if it exists
+                        var layoutAttr = s.Declaration.Attributes.FirstOrDefault(x => x.AttributeName.TryFlatten(null, null) == "System.Runtime.InteropServices.StructLayoutAttribute");
+						int packNumber = layoutAttr == null ? 0 : (int)((NumberData)layoutAttr.Parameters.First().OutValue).IntValue;
 
 						var name = $"struct.{s.Declaration.Name.Name}";
 
@@ -222,63 +231,52 @@ namespace HapetBackend.Llvm
 						// WARN: this shite with alignment is done like 'LayoutKind.Sequential' in C#
 						// so all the members are going to be aligned properly by their types
 						var memTypes = new List<LLVMTypeRef>(s.Declaration.Declarations.Count);
-						// var offsets = new uint[s.Declaration.Declarations.Count];
+						var offsets = new uint[s.Declaration.Declarations.Count];
 						int currentSize = 0;
-						// int i = 0;
+						int i = 0;
 						foreach (var mem in s.Declaration.Declarations)
 						{
-							// if current offset is shity for the member type
-							// we need to append a padding
-							if (currentSize % mem.Type.OutType.GetAlignment() != 0)
+                            // we need to get a minimal type alignment size depending on pack
+                            int typeAlignment = Math.Min(mem.Type.OutType.GetAlignment(), packNumber);
+
+                            // if current offset is shity for the member type
+                            // we need to append a padding
+                            // WARN: create offsets only if pack is set or bigger than 1
+                            if (packNumber > 1 && currentSize % typeAlignment != 0)
 							{
 								// add padding
-								int padding = mem.Type.OutType.GetAlignment() - currentSize % mem.Type.OutType.GetAlignment();
-								// memTypes.Add(LLVM.ArrayType(LLVM.Int8Type(), (uint)padding));
+								int padding = typeAlignment - currentSize % typeAlignment;
+								memTypes.Add(LLVM.ArrayType(LLVM.Int8Type(), (uint)padding));
 								currentSize += padding;
 							}
 
-							// offsets[i] = (uint)memTypes.Count;
+							offsets[i] = (uint)memTypes.Count;
 							memTypes.Add(HapetTypeToLLVMType(mem.Type.OutType));
 							currentSize += (int)((_targetData.SizeOfTypeInBits(memTypes.Last()) + 7) / 8);
-							// i += 1;
+							i += 1;
 						}
-						// add padding at the end
-						if (currentSize % s.GetAlignment() != 0)
+                        // add padding at the end
+                        // WARN: create offsets only if pack is set or bigger than 1
+                        if (packNumber > 1 && currentSize % packNumber != 0)
 						{
 							// add padding
-							int padding = s.GetAlignment() - currentSize % s.GetAlignment();
-							// memTypes.Add(LLVM.ArrayType(LLVM.Int8Type(), (uint)padding));
+							int padding = packNumber - currentSize % packNumber;
+							memTypes.Add(LLVM.ArrayType(LLVM.Int8Type(), (uint)padding));
 							currentSize += padding;
 						}
-						s.ChangeSize(currentSize);
-
 						// structMemberOffsets[s] = offsets;
 
-						llvmType.StructSetBody(memTypes.ToArray(), false);
+						llvmType.StructSetBody(memTypes.ToArray(), packNumber >= 1);
 
-						// TODO: idk what is it
-						//foreach (var m in s.Declaration.Declarations)
-						//{
-						//	int myOffset = m.Type.Offset;
-						//	int llvmOffset = (int)LLVM.OffsetOfElement(_targetData, llvmType, offsets[m.Index]);
+						// getting size of the struct that is calced inside LLVM
+                        s.ChangeSize((int)LLVM.ABISizeOfType(_targetData, llvmType));
+						// getting the alignment of the struct
+						if (packNumber >= 1)
+                            s.ChangeAlignment(packNumber);
+						else
+                            s.ChangeAlignment((int)LLVM.ABIAlignmentOfType(_targetData, llvmType));
 
-						//	if (myOffset != llvmOffset)
-						//	{
-						//		System.Console.WriteLine($"[ERROR] {s.Declaration.Name}: offset mismatch at {m.Index}: cheez {myOffset}, llvm {llvmOffset}");
-						//	}
-						//}
-
-						//if (_targetData.SizeOfTypeInBits(llvmType) / 8ul != (ulong)s.GetSize())
-						//{
-						//	System.Console.WriteLine($"[ERROR] {s.Declaration.Name}: struct size mismatch: cheez {s.GetSize()}, llvm {_targetData.SizeOfTypeInBits(llvmType) / 8}");
-						//}
-
-						//if (_targetData.PreferredAlignmentOfType(llvmType) != (uint)s.GetAlignment()) // TODO: here was a directive check
-						//{
-						//	System.Console.WriteLine($"[WARNING] {s.Declaration.Name}: struct alignment mismatch: cheez {s.GetAlignment()}, llvm {_targetData.PreferredAlignmentOfType(llvmType)}");
-						//}
-
-						return llvmType;
+                        return llvmType;
 					}
 
 				case TupleType t:

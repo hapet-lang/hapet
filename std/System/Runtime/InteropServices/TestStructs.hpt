@@ -1,3 +1,7 @@
+
+// no - size: 32, align: 8
+// pack 1 - size: 23, align: 1
+// pack 2 - size 24, align: 2
 public struct AnimeStruct
 {
     char F2;

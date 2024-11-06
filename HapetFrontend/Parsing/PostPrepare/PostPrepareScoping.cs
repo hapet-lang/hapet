@@ -47,7 +47,14 @@ namespace HapetFrontend.Parsing.PostPrepare
 			var classScope = new Scoping.Scope($"{classDecl.Name.Name}_scope", classDecl.Scope);
 			classDecl.SubScope = classScope; // setting the sub scope
 
-			foreach (var decl in classDecl.Declarations)
+            // scoping class attrs
+            foreach (var a in classDecl.Attributes)
+            {
+                SetScopeAndParent(a, classDecl);
+                PostPrepareExprScoping(a);
+            }
+
+            foreach (var decl in classDecl.Declarations)
 			{
 				SetScopeAndParent(decl, classDecl, classScope);
 
@@ -99,7 +106,14 @@ namespace HapetFrontend.Parsing.PostPrepare
 			var structScope = new Scoping.Scope($"{structDecl.Name.Name}_scope", structDecl.Scope);
 			structDecl.SubScope = structScope;
 
-			foreach (var decl in structDecl.Declarations)
+            // scoping struct attrs
+            foreach (var a in structDecl.Attributes)
+            {
+                SetScopeAndParent(a, structDecl);
+                PostPrepareExprScoping(a);
+            }
+
+            foreach (var decl in structDecl.Declarations)
 			{
 				SetScopeAndParent(decl, structDecl, structScope);
 
@@ -146,7 +160,14 @@ namespace HapetFrontend.Parsing.PostPrepare
 					// settings the block scope to the parameters (so they are in the scope of the block)
 					SetScopeAndParent(p, funcDecl, blockScope);
 					PostPrepareParamScoping(p);
-				}
+
+                    // scoping param attrs
+                    foreach (var a in p.Attributes)
+                    {
+                        SetScopeAndParent(a, p);
+                        PostPrepareExprScoping(a);
+                    }
+                }
 				// return type is the same
 				SetScopeAndParent(funcDecl.Returns, funcDecl, blockScope);
 				PostPrepareExprScoping(funcDecl.Returns);

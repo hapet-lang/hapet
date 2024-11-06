@@ -7,36 +7,5 @@ public sealed class DllImportAttribute : Attribute
 
     public DllImportAttribute()
     {
-        Attribute aa = new Attribute();
-        int a = System.Attribute.TEST_CONST;
-        int b = Attribute.TestStatic;
-
-        int c = aa.TEST_CONST;
-        // int d = System.Attribute.Test123;
-
-        System.Attribute.StaticMethod();
-        Attribute.StaticMethod();
-        aa.StaticMethod();
-
-        aa.NonStaticMethod();
-        // System.Attribute.NonStaticMethod();
-        // Attribute.NonStaticMethod();
-
-        TestFunc();
-        this.TestFunc();
-
-        TestStaticFunc();
-        this.TestStaticFunc();
-        DllImportAttribute.TestStaticFunc();
-    }
-
-    private void TestFunc()
-    {
-
-    }
-
-    private static void TestStaticFunc()
-    {
-
     }
 }

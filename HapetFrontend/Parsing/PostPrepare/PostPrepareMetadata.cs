@@ -48,18 +48,28 @@ namespace HapetFrontend.Parsing.PostPrepare
 						// creating a new class name with namespace
 						string newClassName = $"{file.Namespace}.{classDecl.Name.Name}";
                         classDecl.Name = classDecl.Name.GetCopy(newClassName);
-
                         file.NamespaceScope.DefineDeclSymbol(classDecl.Name.Name, classDecl);
 						AllClassesMetadata.Add(classDecl);
+
+                        // inferencing attrs
+                        foreach (var a in classDecl.Attributes)
+                        {
+                            PostPrepareExprInference(a);
+                        }
                     }
                     else if (stmt is AstStructDecl structDecl)
                     {
                         // creating a new struct name with namespace
                         string newClassName = $"{file.Namespace}.{structDecl.Name.Name}";
                         structDecl.Name = structDecl.Name.GetCopy(newClassName);
-
                         file.NamespaceScope.DefineDeclSymbol(structDecl.Name.Name, structDecl);
 						AllStructsMetadata.Add(structDecl);
+
+                        // inferencing attrs
+                        foreach (var a in structDecl.Attributes)
+                        {
+                            PostPrepareExprInference(a);
+                        }
                     }
                 }
             }
