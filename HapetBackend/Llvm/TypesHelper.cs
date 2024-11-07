@@ -201,21 +201,20 @@ namespace HapetBackend.Llvm
 						return funcType;
 					}
 
-				// TODO: check it
-				//case EnumType e:
-				//	{
-				//		var llvmType = _context.CreateNamedStruct($"enum.{e}");
+				case EnumType e:
+					{
+						foreach (var decl in e.Declaration.Declarations)
+						{
+							// creating a static field of the enum
+							var globStatic = _module.AddGlobal(HapetTypeToLLVMType(decl.Type.OutType), $"{e}::{decl.Name.Name}");
+							if (decl.Initializer == null)
+								_messageHandler.ReportMessage(_currentSourceFile.Text, decl, $"Enum field initializer could not be null");
+							globStatic.Initializer = GenerateExpressionCode(decl.Initializer);
+							_valueMap[decl.GetSymbol] = globStatic;
+						}
 
-				//		// TODO: here was some shite with tags
-				//		var restSize = e.GetSize();
-				//		llvmType.StructSetBody(new LLVMTypeRef[]
-				//		{
-				//			LLVM.ArrayType(LLVM.Int8Type(), (uint)0),
-				//			LLVM.ArrayType(LLVM.Int8Type(), (uint)restSize)
-				//		}, false);
-
-				//		return llvmType;
-				//	}
+						return null;
+					}
 
 				case StructType s:
 					{

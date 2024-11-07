@@ -40,6 +40,13 @@ namespace HapetBackend.Llvm
                 // doing that we are registering the type in dict
                 var _ = HapetTypeToLLVMType(str.Type.OutType);
 			}
+			// all over the enums
+			foreach (var enm in _postPreparer.AllEnumsMetadata)
+			{
+				_currentSourceFile = enm.SourceFile;
+				// doing that we are registering the type in dict
+				var _ = HapetTypeToLLVMType(enm.Type.OutType);
+			}
 		}
 
 		// TODO: mb refactor somehow?
