@@ -42,6 +42,22 @@ namespace HapetFrontend.Parsing.PostPrepare
             HapetType exprType = expr.OutType;
             AstExpression outExpr = null;
 
+			// cringe error (probably should not be here)
+            // this error is for shite like:
+            // int a = TestEnum;
+            // where TestEnum is a enum
+			if (expr is AstNestedExpr nestt && nestt.RightPart.OutType is EnumType)
+			{
+				_compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, expr, $"Enum type itself could not be assigned to anything");
+				return expr;
+			}
+
+			// change expr type if it is an enum field
+			if (expr is AstNestedExpr nest && nest.LeftPart.OutType is EnumType enmT)
+            {
+                exprType = enmT;
+			}
+
             if (neededType == null)
             {
 				_compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, expr, $"The required type of the expr could not be evaluated");

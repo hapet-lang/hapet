@@ -723,6 +723,8 @@ namespace HapetFrontend.Parsing.PostPrepare
                     leftSideScope = classTT.Declaration.SubScope; 
                 else if (nestExpr.LeftPart.OutType is StructType structt)
 					leftSideScope = structt.Declaration.SubScope;
+				else if (nestExpr.LeftPart.OutType is EnumType enumT)
+					leftSideScope = enumT.Declaration.SubScope;
 				else if (nestExpr.LeftPart.OutType is StringType)
 					leftSideScope = AstStringExpr.StringStruct.SubScope;
 				else if (nestExpr.LeftPart.OutType is ArrayType)
@@ -902,6 +904,13 @@ namespace HapetFrontend.Parsing.PostPrepare
 		{
 			// propaSet is true only here
 			PostPrepareNestedExprInference(assignStmt.Target, out itWasPropa, true);
+
+			// cringe error when user tries to assign something directly into enum field
+			if (assignStmt.Target.LeftPart != null && assignStmt.Target.LeftPart.OutType is EnumType)
+			{
+				_compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, assignStmt, "Nothing could be assigned to enum field");
+				return;
+			}
 
 			if (assignStmt.Value != null)
 			{

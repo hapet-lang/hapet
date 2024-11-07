@@ -8,6 +8,7 @@ using HapetFrontend.Parsing;
 using HapetFrontend.Scoping;
 using HapetFrontend.Types;
 using LLVMSharp.Interop;
+using System;
 using System.Text;
 
 namespace HapetBackend.Llvm
@@ -164,6 +165,10 @@ namespace HapetBackend.Llvm
 				return v;
 			var theDecl = declSymbol.Decl;
 
+			// return default because user tries to access enum field - no need to do anything here
+			if (theDecl is AstEnumDecl)
+				return v;
+
             // check if it const/static shite
             if (theDecl is AstVarDecl varDecl && (theDecl.SpecialKeys.Contains(TokenType.KwStatic) || theDecl.SpecialKeys.Contains(TokenType.KwConst)))
 			{
@@ -314,6 +319,11 @@ namespace HapetBackend.Llvm
 					leftPartDeclarations = structT.Declaration.Declarations;
 					leftPartType = structT;
 				}
+				else if (expr.LeftPart.OutType is EnumType enumT)
+				{
+					leftPartDeclarations = enumT.Declaration.Declarations.Select(x => x as AstDeclaration).ToList();
+					leftPartType = enumT;
+				}
 				else if (expr.LeftPart.OutType is ArrayType arrayT)
 				{
 					leftPartDeclarations = AstArrayExpr.ArrayStruct.Declarations;
@@ -328,8 +338,18 @@ namespace HapetBackend.Llvm
 				// getting index of the element and the element itself
 				if (leftPartDeclarations != null && leftPartType != null)
 				{
+					// this is different for enums
+					if (leftPartType is EnumType enumT)
+					{
+						var enumFieldName = $"{enumT}::{idExpr.Name}";
+						var v = _module.GetNamedGlobal(enumFieldName);
+						if (getPtr)
+							return v;
+						var loaded = _builder.BuildLoad2(HapetTypeToLLVMType(expr.OutType), v, $"{idExpr.Name}Loaded");
+						return loaded;
+					}
 					// check if the field is static/const
-					if (IsStaticOrConstElement(idExpr.Name, leftPartDeclarations, out AstVarDecl theDecl))
+					else if (IsStaticOrConstElement(idExpr.Name, leftPartDeclarations, out AstVarDecl theDecl))
 					{
                         // static/const elements are accessed in different way
                         if (theDecl.ContainingParent is not AstClassDecl classDecl)

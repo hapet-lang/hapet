@@ -99,6 +99,18 @@ namespace HapetBackend.Llvm
 				_structTypeElementsMap.Add(cls.Type.OutType, entryHapetTypes);
 				classStruct.StructSetBody(entryTypes.ToArray(), false);
 			}
+			foreach (var enm in _postPreparer.AllEnumsMetadata)
+			{
+				foreach (var decl in enm.Declarations)
+				{
+					// creating a static field of the enum
+					var globStatic = _module.AddGlobal(HapetTypeToLLVMType(decl.Type.OutType), $"{enm.Type.OutType}::{decl.Name.Name}");
+					if (decl.Initializer == null)
+						_messageHandler.ReportMessage(_currentSourceFile.Text, decl, $"Enum field initializer could not be null");
+					globStatic.Initializer = GenerateExpressionCode(decl.Initializer);
+					_valueMap[decl.GetSymbol] = globStatic;
+				}
+			}
 			// TODO: structs and other shite
 		}
 

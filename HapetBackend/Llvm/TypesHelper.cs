@@ -203,17 +203,7 @@ namespace HapetBackend.Llvm
 
 				case EnumType e:
 					{
-						foreach (var decl in e.Declaration.Declarations)
-						{
-							// creating a static field of the enum
-							var globStatic = _module.AddGlobal(HapetTypeToLLVMType(decl.Type.OutType), $"{e}::{decl.Name.Name}");
-							if (decl.Initializer == null)
-								_messageHandler.ReportMessage(_currentSourceFile.Text, decl, $"Enum field initializer could not be null");
-							globStatic.Initializer = GenerateExpressionCode(decl.Initializer);
-							_valueMap[decl.GetSymbol] = globStatic;
-						}
-
-						return null;
+						return _context.GetIntType(4 * 8); // TODO: there could be a different int type of enum!!!
 					}
 
 				case StructType s:

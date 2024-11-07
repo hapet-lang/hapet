@@ -9,4 +9,5 @@ public struct AnimeStruct
     int Field1;
     byte Nng;
     string Field22;
+    Anime222 FFaa;
 }

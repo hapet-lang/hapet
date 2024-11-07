@@ -10,5 +10,6 @@ public sealed class DllImportAttribute : Attribute
         AnimeStruct aa = new AnimeStruct();
         aa.Nng = 4;
         int ccc = aa.Nng;
+        aa.FFaa = Anime222.Field4;
     }
 }

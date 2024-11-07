@@ -63,6 +63,7 @@ namespace HapetFrontend.Parsing
 					fieldEnd = ini.Ending;
 				}
 				// the declaration
+				// TODO: here could be a different number type!!!
 				AstVarDecl decl = new AstVarDecl(new AstNestedExpr(new AstIdExpr("int"), null, id), id.RightPart as AstIdExpr, ini, "", new Location(id.Beginning, fieldEnd));
 
 				declarations.Add(decl);
