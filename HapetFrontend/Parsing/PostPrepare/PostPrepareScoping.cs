@@ -27,6 +27,10 @@ namespace HapetFrontend.Parsing.PostPrepare
 					{
 						PostPrepareStructScoping(structDecl);
 					}
+					else if (stmt is AstEnumDecl enumDecl)
+					{
+						PostPrepareEnumScoping(enumDecl);
+					}
 				}
 			}
 		}
@@ -132,6 +136,32 @@ namespace HapetFrontend.Parsing.PostPrepare
 					// error - unexpected decl in struct type
 					_compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, decl, $"Unexpected declaration in struct");
 				}
+			}
+		}
+
+		private void PostPrepareEnumScoping(AstEnumDecl enumDecl)
+		{
+			enumDecl.SourceFile = _currentSourceFile;
+			var enumScope = new Scoping.Scope($"{enumDecl.Name.Name}_scope", enumDecl.Scope);
+			enumDecl.SubScope = enumScope;
+
+			// scoping struct attrs
+			foreach (var a in enumDecl.Attributes)
+			{
+				SetScopeAndParent(a, enumDecl);
+				PostPrepareExprScoping(a);
+			}
+
+			foreach (var decl in enumDecl.Declarations)
+			{
+				SetScopeAndParent(decl, enumDecl, enumScope);
+				decl.ContainingParent = enumDecl;
+
+				// if it is public field/property - it should be visible in the scope in which var's class is
+				enumDecl.SubScope.DefineDeclSymbol(decl.Name.Name, decl);
+
+				// setting already defined to 'true' because of some shite with access types
+				PostPrepareVarScoping(decl, true);
 			}
 		}
 

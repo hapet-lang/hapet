@@ -29,6 +29,10 @@ namespace HapetFrontend.Parsing.PostPrepare
 					{
 						PostPrepareStructInference(structDecl);
 					}
+					else if (stmt is AstEnumDecl enumDecl)
+					{
+						PostPrepareEnumInference(enumDecl);
+					}
 				}
 			}
 		}
@@ -84,7 +88,14 @@ namespace HapetFrontend.Parsing.PostPrepare
             /// WARN: attributes are inferrenced in <see cref="PostPrepareMetadataTypes"/>
         }
 
-        private void PostPrepareFunctionInference(AstFuncDecl funcDecl, bool forMetadata = false)
+		private void PostPrepareEnumInference(AstEnumDecl enumDecl)
+		{
+			/// WARN: should be already inferred in <see cref="PostPrepareMetadataTypes"/> and <see cref="PostPrepareMetadataTypeFields"/>
+
+			/// WARN: attributes are inferrenced in <see cref="PostPrepareMetadataTypes"/>
+		}
+
+		private void PostPrepareFunctionInference(AstFuncDecl funcDecl, bool forMetadata = false)
 		{
 			_currentFunction = funcDecl;
 

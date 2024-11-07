@@ -52,6 +52,7 @@ namespace HapetFrontend.Parsing
 				// getting decl parts
 				AstExpression ini = null;
 				var id = ParseIdentifierExpression(allowDots: false);
+				TokenLocation fieldEnd = id.Ending;
 				if (CheckToken(TokenType.Equal))
 				{
 					NextToken();
@@ -59,9 +60,10 @@ namespace HapetFrontend.Parsing
 					if (initStmt is not AstExpression)
 						ReportMessage(initStmt.Location, $"Enum field initializer expected to be an expression");
 					ini = initStmt as AstExpression;
+					fieldEnd = ini.Ending;
 				}
 				// the declaration
-				AstVarDecl decl = new AstVarDecl(new AstNestedExpr(new AstIdExpr("int"), null, id), id.RightPart as AstIdExpr, ini, "", id);
+				AstVarDecl decl = new AstVarDecl(new AstNestedExpr(new AstIdExpr("int"), null, id), id.RightPart as AstIdExpr, ini, "", new Location(id.Beginning, fieldEnd));
 
 				declarations.Add(decl);
 

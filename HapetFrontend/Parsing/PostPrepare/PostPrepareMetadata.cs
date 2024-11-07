@@ -1,5 +1,7 @@
 ﻿using HapetFrontend.Ast.Declarations;
+using HapetFrontend.Ast.Expressions;
 using HapetFrontend.Entities;
+using HapetFrontend.Types;
 using Newtonsoft.Json;
 
 namespace HapetFrontend.Parsing.PostPrepare
@@ -8,6 +10,7 @@ namespace HapetFrontend.Parsing.PostPrepare
     {
         public List<AstClassDecl> AllClassesMetadata { get; } = new List<AstClassDecl>();
 		public List<AstStructDecl> AllStructsMetadata { get; } = new List<AstStructDecl>();
+		public List<AstEnumDecl> AllEnumsMetadata { get; } = new List<AstEnumDecl>();
 		public List<AstFuncDecl> AllFunctionsMetadata { get; } = new List<AstFuncDecl>();
 
         // TODO: some changes should be done in the file when impl 'using' and class inheritance
@@ -71,7 +74,21 @@ namespace HapetFrontend.Parsing.PostPrepare
                             PostPrepareExprInference(a);
                         }
                     }
-                }
+					else if (stmt is AstEnumDecl enumDecl)
+					{
+						// creating a new enum name with namespace
+						string newClassName = $"{file.Namespace}.{enumDecl.Name.Name}";
+						enumDecl.Name = enumDecl.Name.GetCopy(newClassName);
+						file.NamespaceScope.DefineDeclSymbol(enumDecl.Name.Name, enumDecl);
+						AllEnumsMetadata.Add(enumDecl);
+
+						// inferencing attrs
+						foreach (var a in enumDecl.Attributes)
+						{
+							PostPrepareExprInference(a);
+						}
+					}
+				}
             }
         }
 
@@ -94,21 +111,59 @@ namespace HapetFrontend.Parsing.PostPrepare
                     }
                     else if (stmt is AstStructDecl structDecl)
                     {
-						List<int> memberAlignments = new List<int>();
-
 						// infer fields at first
 						foreach (var decl in structDecl.Declarations.Where(x => x is AstVarDecl).Select(x => x as AstVarDecl))
                         {
                             // field 
                             PostPrepareVarInference(decl);
-
-                            // calc struct alignment
-                            memberAlignments.Add(decl.Type.OutType.GetAlignment());
 						}
-                        var maxOfAll = memberAlignments.Max();
-						structDecl.ChangeAlignment(Math.Min(maxOfAll, 8)); // WARN: 8 is a max alignment value for structs
 					}
-                }
+					else if (stmt is AstEnumDecl enumDecl)
+					{
+                        // generating all the values of fields
+                        int currentValue = 0;
+                        List<int> allValues = new List<int>(enumDecl.Declarations.Count);
+
+						// infer fields at first
+						foreach (var decl in enumDecl.Declarations)
+						{
+							// field 
+							PostPrepareVarInference(decl);
+                            if (decl.Initializer == null)
+                            {
+                                decl.Initializer = new AstNumberExpr(NumberData.FromInt(currentValue));
+                                // warn if the value already exists in enum
+                                if (allValues.Contains(currentValue))
+                                {
+									_compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, decl, "Enum field with the same value already exists", null, ReportType.Warning);
+								}
+                                allValues.Add(currentValue);
+								currentValue++;
+							}
+                            else
+                            {
+                                if (decl.Initializer.OutValue == null)
+                                {
+									_compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, decl.Initializer, "The initializer has to be compile time evaluated!");
+                                    continue;
+								}
+                                else if (decl.Initializer.OutValue is not NumberData)
+                                {
+									_compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, decl.Initializer, "The initializer has to be numeric type");
+									continue;
+								}
+                                var userDefinedValue = (int)((NumberData)decl.Initializer.OutValue).IntValue;
+								// warn if the value already exists in enum
+								if (allValues.Contains(userDefinedValue))
+								{
+									_compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, decl, "Enum field with the same value already exists", null, ReportType.Warning);
+								}
+								allValues.Add(userDefinedValue);
+								currentValue = userDefinedValue + 1; // getting value for the next field
+							}
+						}
+					}
+				}
             }
         }
 
@@ -142,6 +197,7 @@ namespace HapetFrontend.Parsing.PostPrepare
             // serialize all unreflected
             metadata.ClassDecls = AllClassesMetadata.Where(x => !x.SpecialKeys.Contains(TokenType.KwUnreflected)).Select(x => x.GetJson()).ToList();
             metadata.StructDecls = AllStructsMetadata.Where(x => !x.SpecialKeys.Contains(TokenType.KwUnreflected)).Select(x => x.GetJson()).ToList();
+            metadata.EnumDecls = AllEnumsMetadata.Where(x => !x.SpecialKeys.Contains(TokenType.KwUnreflected)).Select(x => x.GetJson()).ToList();
             metadata.FuncDecls = AllFunctionsMetadata.Where(x => !x.SpecialKeys.Contains(TokenType.KwUnreflected)).Select(x => x.GetJson()).ToList();
 
             // WARN: take care about the shite that is goin on here
@@ -165,6 +221,7 @@ namespace HapetFrontend.Parsing.PostPrepare
         public string Version { get; set; }
         public List<ClassDeclJson> ClassDecls { get; set; }
         public List<StructDeclJson> StructDecls { get; set; }
+        public List<EnumDeclJson> EnumDecls { get; set; }
         public List<FuncDeclJson> FuncDecls { get; set; }
     }
 }
