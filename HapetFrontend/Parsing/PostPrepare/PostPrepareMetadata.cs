@@ -121,9 +121,6 @@ namespace HapetFrontend.Parsing.PostPrepare
 					}
 					else if (stmt is AstEnumDecl enumDecl)
 					{
-                        // TODO: check here [Flags] attribute so generate 0, 1, 2, 4 and etc. 
-                        // Also check is the amount of flags is not bigger than 32
-
                         // generating all the values of fields
                         int currentValue = 0;
                         List<int> allValues = new List<int>(enumDecl.Declarations.Count);
