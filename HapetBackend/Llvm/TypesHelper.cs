@@ -203,7 +203,7 @@ namespace HapetBackend.Llvm
 
 				case EnumType e:
 					{
-						return _context.GetIntType(4 * 8); // TODO: there could be a different int type of enum!!!
+						return _context.GetIntType(((uint)e.Declaration.InheritedType.OutType.GetSize()) * 8);
 					}
 
 				case StructType s:

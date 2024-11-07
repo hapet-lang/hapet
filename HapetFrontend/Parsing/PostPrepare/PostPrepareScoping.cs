@@ -58,7 +58,14 @@ namespace HapetFrontend.Parsing.PostPrepare
                 PostPrepareExprScoping(a);
             }
 
-            foreach (var decl in classDecl.Declarations)
+			// Scoping inheritance
+			foreach (var inh in classDecl.InheritedFrom)
+			{
+				SetScopeAndParent(inh, classDecl);
+				PostPrepareExprScoping(inh);
+			}
+
+			foreach (var decl in classDecl.Declarations)
 			{
 				SetScopeAndParent(decl, classDecl, classScope);
 
@@ -150,6 +157,12 @@ namespace HapetFrontend.Parsing.PostPrepare
 			{
 				SetScopeAndParent(a, enumDecl);
 				PostPrepareExprScoping(a);
+			}
+
+			if (enumDecl.InheritedType != null)
+			{
+				SetScopeAndParent(enumDecl.InheritedType, enumDecl);
+				PostPrepareExprScoping(enumDecl.InheritedType);
 			}
 
 			foreach (var decl in enumDecl.Declarations)

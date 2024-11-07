@@ -46,6 +46,10 @@ namespace HapetFrontend.Parsing.PostPrepare
             // this error is for shite like:
             // int a = TestEnum;
             // where TestEnum is a enum
+            // TODO: cringe check because
+            // AnimeEnum a = AnimeEnum.Test1;
+            // AnimeEnum b = a;
+            // has to work but it won't because of this check!!!
 			if (expr is AstNestedExpr nestt && nestt.RightPart.OutType is EnumType)
 			{
 				_compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, expr, $"Enum type itself could not be assigned to anything");

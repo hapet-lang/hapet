@@ -1,7 +1,7 @@
 using System;
 
 [FlagsAttribute]
-public enum Anime222
+public enum Anime222 : short
 {
     Field1,
     Field2,

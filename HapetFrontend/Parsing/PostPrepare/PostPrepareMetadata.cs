@@ -20,6 +20,7 @@ namespace HapetFrontend.Parsing.PostPrepare
             PostPrepareMetadataTypes();
             PostPrepareMetadataFunctions();
             PostPrepareMetadataTypeFields();
+            PostPrepareMetadataTypeShite();
 
             // if there were errors while preparing for metafile
 			if (_compiler.MessageHandler.HasErrors)
@@ -134,7 +135,7 @@ namespace HapetFrontend.Parsing.PostPrepare
 							PostPrepareVarInference(decl);
                             if (decl.Initializer == null)
                             {
-                                decl.Initializer = new AstNumberExpr(NumberData.FromInt(currentValue));
+                                decl.Initializer = PostPrepareExpressionWithType(decl.Type.OutType, new AstNumberExpr(NumberData.FromInt(currentValue)));
                                 // warn if the value already exists in enum
                                 if (allValues.Contains(currentValue))
                                 {
@@ -189,6 +190,42 @@ namespace HapetFrontend.Parsing.PostPrepare
                 }
             }
         }
+
+        private void PostPrepareMetadataTypeShite()
+        {
+			foreach (var (path, file) in _compiler.GetFiles())
+			{
+				_currentSourceFile = file;
+				foreach (var stmt in file.Statements)
+				{
+					if (stmt is AstClassDecl classDecl)
+					{
+						_currentClass = classDecl;
+
+						foreach (var inh in classDecl.InheritedFrom)
+						{
+							PostPrepareExprInference(inh);
+						}
+					}
+					else if (stmt is AstStructDecl _)
+					{
+						
+					}
+					else if (stmt is AstEnumDecl enumDecl)
+					{
+						if (enumDecl.InheritedType != null)
+						{
+                            PostPrepareExprInference(enumDecl.InheritedType);
+                            // only int type inheritance allowed for enums
+                            if (enumDecl.InheritedType.OutType is not IntType)
+                            {
+								_compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, enumDecl.InheritedType, "The type has to be integer type");
+							}
+						}
+					}
+				}
+			}
+		}
 
         private void PostPrepareMetadataCreate()
         {

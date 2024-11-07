@@ -19,6 +19,11 @@ namespace HapetFrontend.Ast.Declarations
 		/// </summary>
 		public Scope SubScope { get; set; }
 
+		/// <summary>
+		/// The numeric type from which the enum inherits. Default is 'int'
+		/// </summary>
+		public AstNestedExpr InheritedType { get; set; }
+
 		public AstEnumDecl(AstIdExpr name, List<AstVarDecl> declarations, string doc = "", ILocation Location = null) : base(name, doc, Location)
 		{
 			Type = new AstIdExpr("enum", Location);
@@ -39,6 +44,7 @@ namespace HapetFrontend.Ast.Declarations
 				Name = Name.Name,
 				SpecialKeys = SpecialKeys,
 				Attributes = attributes,
+				InheritedType = InheritedType.OutType,
 				DocString = Documentation
 			};
 		}
@@ -52,6 +58,7 @@ namespace HapetFrontend.Ast.Declarations
 
 		public List<TokenType> SpecialKeys { get; set; }
 		public List<AttributeJson> Attributes { get; set; }
+		public HapetType InheritedType { get; set; }
 
 		public string DocString { get; set; }
 	}

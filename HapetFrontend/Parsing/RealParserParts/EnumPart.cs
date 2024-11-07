@@ -10,7 +10,10 @@ namespace HapetFrontend.Parsing
 		{
 			TokenLocation beg = null, end = null;
 			var declarations = new List<AstVarDecl>();
+			var inherited = new List<AstNestedExpr>();
 			AstIdExpr enumName = null;
+
+			AstNestedExpr enumType = new AstNestedExpr(new AstIdExpr("int"), null, null);
 
 			beg = Consume(TokenType.KwEnum, ErrMsg("keyword 'enum'", "at beginning of enum type")).Location;
 
@@ -30,7 +33,34 @@ namespace HapetFrontend.Parsing
 				}
 				enumName = idExpr;
 			}
+			// checking for inheritance
+			if (CheckToken(TokenType.Colon))
+			{
+				Consume(TokenType.Colon, ErrMsg(":", "before inherited type"));
+				SkipNewlines();
+
+				while (CheckToken(TokenType.Identifier))
+				{
+					var ident = ParseIdentifierExpression();
+					inherited.Add(ident);
+					// if there is something else
+					if (CheckToken(TokenType.Comma))
+					{
+						Consume(TokenType.Comma, ErrMsg(",", "before the next inherited type"));
+						continue;
+					}
+
+					// if there is nothing else
+					break;
+				}
+			}
 			SkipNewlines();
+
+			// error if there are more than 1 inherited type
+			if (inherited.Count > 1)
+				ReportMessage(inherited[1], $"Only one inherited type is allowed for enums");
+			else if (inherited.Count == 1)
+				enumType = inherited[0];
 
 			ConsumeUntil(TokenType.OpenBrace, ErrMsg("{", "at beginning of enum body"), true);
 
@@ -63,8 +93,8 @@ namespace HapetFrontend.Parsing
 					fieldEnd = ini.Ending;
 				}
 				// the declaration
-				// TODO: here could be a different number type!!!
-				AstVarDecl decl = new AstVarDecl(new AstNestedExpr(new AstIdExpr("int"), null, id), id.RightPart as AstIdExpr, ini, "", new Location(id.Beginning, fieldEnd));
+				// here could be a different number type!!!
+				AstVarDecl decl = new AstVarDecl(enumType, id.RightPart as AstIdExpr, ini, "", new Location(id.Beginning, fieldEnd));
 
 				declarations.Add(decl);
 
@@ -93,7 +123,9 @@ namespace HapetFrontend.Parsing
 			end = Consume(TokenType.CloseBrace, ErrMsg("}", "at end of enum declaration")).Location;
 
 			// TODO: doc string
-			return new AstEnumDecl(enumName, declarations, "", new Location(beg, end));
+			var enm = new AstEnumDecl(enumName, declarations, "", new Location(beg, end));
+			enm.InheritedType = enumType;
+			return enm;
 		}
 	}
 }
