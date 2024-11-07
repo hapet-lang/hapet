@@ -1,0 +1,9 @@
+public enum Anime222
+{
+    Field1,
+    Field2,
+    Field3 = 6,
+    Field4,
+    Field5 = 1,
+    Field6
+}

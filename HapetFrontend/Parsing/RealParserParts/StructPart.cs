@@ -12,7 +12,7 @@ namespace HapetFrontend.Parsing
 			var declarations = new List<AstDeclaration>();
 			AstIdExpr structName = null;
 
-			beg = Consume(TokenType.KwStruct, ErrMsg("keyword 'class'", "at beginning of class type")).Location;
+			beg = Consume(TokenType.KwStruct, ErrMsg("keyword 'struct'", "at beginning of struct type")).Location;
 
 			// struct name
 			if (!CheckToken(TokenType.Identifier))

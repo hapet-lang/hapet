@@ -538,9 +538,8 @@ namespace HapetFrontend.Parsing
 				case TokenType.KwStruct:
 					return ParseStructDeclaration();
 
-				// TODO: ...
-				//case TokenType.KwEnum:
-				//	return ParseEnumDeclaration();
+				case TokenType.KwEnum:
+					return ParseEnumDeclaration();
 
 				case TokenType.KwClass:
 					return ParseClassDeclaration();
