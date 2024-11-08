@@ -47,11 +47,20 @@ namespace HapetFrontend.Helpers
 			return sb.ToString();
 		}
 
-		public static string GetParamsString(this List<AstParamDecl> pars)
+		public static string GetParamsString(this List<AstParamDecl> pars, HapetType containingClass = null)
 		{
 			// WARN: ':' is used so linker would work :)))
 			StringBuilder sb = new StringBuilder();
 			sb.Append('(');
+
+			// class is passed as a first parameter
+			if (containingClass != null)
+			{
+				sb.Append(containingClass.ToString());
+				if (pars.Count > 0)
+					sb.Append(':');
+			}
+
 			for (int i = 0; i < pars.Count; i++)
 			{
 				var p = pars[i];

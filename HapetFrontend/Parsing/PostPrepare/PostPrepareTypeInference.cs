@@ -168,22 +168,9 @@ namespace HapetFrontend.Parsing.PostPrepare
 				PostPrepareExprInference(varDecl.Type);
 			}
 
+			// pp assign value
 			if (varDecl.Initializer != null)
-			{
-				if (varDecl.Initializer is AstDefaultExpr)
-				{
-					// get the default value for the type (no need to infer)
-					varDecl.Initializer = AstDefaultExpr.GetDefaultValueForType(varDecl.Type.OutType, varDecl.Initializer);
-					if (varDecl.Initializer == null)
-						_compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, varDecl, "Default value for the type was not found");
-				}
-				else
-				{
-					// if it is not a default
-					PostPrepareExprInference(varDecl.Initializer);
-				}
-				PostPrepareVariableAssign(varDecl);
-			}
+				varDecl.Initializer = PostPrepareVarValueAssign(varDecl.Initializer, varDecl.Type.OutType);
 
 			// special keys could not be allowed when the var is declared in BlockExpr
 			if (!allowSpecialKeys)
@@ -611,6 +598,7 @@ namespace HapetFrontend.Parsing.PostPrepare
 			}
 			else
 			{
+				/// WARN!!! almost the same as in <see cref="PostPrepareVarValueAssign"/>
 				string newName = string.Empty;
 				// renaming func call name from 'Anime' to 'Anime(int, float)' WITH OBJECT AS FIRST PARAM
 				if (callExpr.TypeOrObjectName == null)
@@ -689,10 +677,15 @@ namespace HapetFrontend.Parsing.PostPrepare
 					_compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, callExpr.FuncName, $"Static methods should not be accessed from an object", null, ReportType.Warning);
 				}
 			}
+			else if (callExpr.FuncName.OutType is DelegateType dt)
+			{
+				// call expr type is the same as func return type
+				callExpr.OutType = dt.Declaration.Returns.OutType;
+			}
 			else
 			{
 				// error here
-				_compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, callExpr, $"The calling thing has to be a function");
+				_compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, callExpr, $"The calling thing has to be a function or a delegate");
 			}
 		}
 
@@ -920,23 +913,9 @@ namespace HapetFrontend.Parsing.PostPrepare
 				_compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, assignStmt, "Nothing could be assigned to enum field");
 				return;
 			}
-
+			// pp assign value
 			if (assignStmt.Value != null)
-			{
-				if (assignStmt.Value is AstDefaultExpr)
-				{
-					// get the default value for the type (no need to infer)
-					assignStmt.Value = AstDefaultExpr.GetDefaultValueForType(assignStmt.Target.OutType, assignStmt.Value);
-					if (assignStmt.Value == null)
-						_compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, assignStmt, "Default value for the type was not found");
-				}
-				else
-				{
-					// if it is not a default
-					PostPrepareExprInference(assignStmt.Value);
-				}
-				PostPrepareVariableAssign(assignStmt);
-			}
+				assignStmt.Value = PostPrepareVarValueAssign(assignStmt.Value, assignStmt.Target.OutType);
 		}
 
 		private void PostPrepareForStmtInference(AstForStmt forStmt)
@@ -1031,7 +1010,9 @@ namespace HapetFrontend.Parsing.PostPrepare
 		{
 			if (returnStmt.ReturnExpression != null)
 			{
-				PostPrepareExprInference(returnStmt.ReturnExpression);
+				// do not infer this shite
+				if (_currentFunction.Returns.OutType is not DelegateType)
+					PostPrepareExprInference(returnStmt.ReturnExpression);
 				// casting to func return type
 				returnStmt.ReturnExpression = PostPrepareExpressionWithType(_currentFunction.Returns.OutType, returnStmt.ReturnExpression);
 			}
@@ -1103,6 +1084,24 @@ namespace HapetFrontend.Parsing.PostPrepare
 					}
 				}
 			}
+		}
+
+		private AstExpression PostPrepareVarValueAssign(AstExpression value, HapetType targetType)
+		{
+			if (value is AstDefaultExpr)
+			{
+				// get the default value for the type (no need to infer)
+				value = AstDefaultExpr.GetDefaultValueForType(targetType, value);
+				if (value == null)
+					_compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, value, "Default value for the type was not found");
+			}
+			// do not infer the expr if target is a delegate
+			else if (targetType is not DelegateType)
+			{
+				// if it is not a default
+				PostPrepareExprInference(value);
+			}
+			return PostPrepareExpressionWithType(targetType, value);
 		}
 	}
 }

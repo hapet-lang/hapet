@@ -12,7 +12,7 @@ public sealed class DllImportAttribute : Attribute
         AnimeDelll tst = new AnimeDelll();
         AnimeDelegate animeDeleg = TestFunc;
         int result = tst.CallDelegate(animeDeleg, 6);
-        int result2 = tst.CallDelegate(TestFunc, 7);
+        // int result2 = tst.CallDelegate(TestFunc, 7);
     }
 
     private int TestFunc(int b)

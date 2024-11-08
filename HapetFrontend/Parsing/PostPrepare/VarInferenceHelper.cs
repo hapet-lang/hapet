@@ -2,6 +2,9 @@
 using HapetFrontend.Ast.Declarations;
 using HapetFrontend.Ast.Expressions;
 using HapetFrontend.Ast.Statements;
+using HapetFrontend.Entities;
+using HapetFrontend.Helpers;
+using HapetFrontend.Scoping;
 using HapetFrontend.Types;
 
 namespace HapetFrontend.Parsing.PostPrepare
@@ -57,7 +60,7 @@ namespace HapetFrontend.Parsing.PostPrepare
 			}
 
 			// change expr type if it is an enum field
-			if (expr is AstNestedExpr nest && nest.LeftPart.OutType is EnumType enmT)
+			if (expr is AstNestedExpr nest && nest.LeftPart != null && nest.LeftPart.OutType is EnumType enmT)
             {
                 exprType = enmT;
 			}
@@ -66,6 +69,12 @@ namespace HapetFrontend.Parsing.PostPrepare
             {
 				_compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, expr, $"The required type of the expr could not be evaluated");
                 return expr;
+			}
+
+			// assigning function to delegates is made different
+			if (neededType is DelegateType delT)
+			{
+				return PostPrepareDelegateWithType(expr, delT);
 			}
 
             var tpName = new AstIdExpr(neededType.TypeName);
@@ -163,5 +172,124 @@ namespace HapetFrontend.Parsing.PostPrepare
             }
             return outExpr;
         }
+
+        private AstExpression PostPrepareDelegateWithType(AstExpression value, DelegateType targetType)
+        {
+			// if user assigns a delegate to another
+			if (value.OutType is DelegateType)
+			{
+				return value;
+			}
+
+			// the var is used to check when static method is accessed from an object
+			bool accessingFromAnObject = false;
+			var delegateParams = targetType.Declaration.Parameters;
+
+			// when assigning to a delegate type - function name is expected
+			if (value is not AstNestedExpr nestFuncName)
+			{
+				_compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, value, $"Function name expected to be here");
+				return value;
+			}
+			// when assigning to a delegate type - function name is expected
+			if (nestFuncName.RightPart is not AstIdExpr idFuncName)
+			{
+				_compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, value, $"Function name expected to an identifier");
+				return value;
+			}
+
+			// usually when in the same class
+			if (nestFuncName.LeftPart != null)
+			{
+				// resolve the object on which func is gotten
+				PostPrepareExprInference(nestFuncName.LeftPart);
+			}
+
+			/// WARN!!! almost the same as in <see cref="PostPrepareCallExprInference"/>
+			string newName = string.Empty;
+			// renaming func call name from 'Anime' to 'Anime(int, float)' WITH OBJECT AS FIRST PARAM
+			if (nestFuncName.LeftPart == null)
+			{
+				// if the type/object name is not presented - the function is in the same class
+				// but we need to know is it static or not
+				newName = $"{_currentClass.Name.Name}::{idFuncName.Name}{delegateParams.GetParamsString()}";
+				var smbl2 = idFuncName.Scope.GetSymbol(newName);
+				if (smbl2 is DeclSymbol)
+				{
+					// static func defined in local class
+				}
+				else
+				{
+					// if it is a non static func defined in local class
+					newName = $"{_currentClass.Name.Name}::{idFuncName.Name}{delegateParams.GetParamsString(PointerType.GetPointerType(_currentClass.Type.OutType))}";
+					accessingFromAnObject = true;
+					// we need to create this one because code generator requires the parameter of this shite
+					nestFuncName.LeftPart = new AstNestedExpr(new AstIdExpr("this"), null, value);
+					SetScopeAndParent(nestFuncName.LeftPart, value);
+					PostPrepareExprScoping(nestFuncName.LeftPart);
+					PostPrepareExprInference(nestFuncName.LeftPart);
+				}
+			}
+			else if (nestFuncName.LeftPart.OutType is PointerType ptrTp && ptrTp.TargetType is ClassType clsTp)
+			{
+				// if we are calling like 'a.Anime()' where 'a' is an object
+				// we need to rename the func name call like that:
+				newName = $"{clsTp.Declaration.Name.Name}::{idFuncName.Name}{delegateParams.GetParamsString(nestFuncName.LeftPart.OutType)}";
+				// check if the decl exists. if not - it could be static method call from an object
+				if (clsTp.Declaration.SubScope.GetSymbol(newName) == null)
+				{
+					// getting the name but without object first param
+					newName = $"{clsTp.Declaration.Name.Name}::{idFuncName.Name}{delegateParams.GetParamsString()}";
+				}
+				accessingFromAnObject = true;
+			}
+			else if (nestFuncName.LeftPart.OutType is ClassType clsTpStatic)
+			{
+				// if we are calling like 'A.Anime()' where 'A' is a class
+				// we need to rename the func name call like that:
+				newName = $"{clsTpStatic.Declaration.Name.Name}::{idFuncName.Name}{delegateParams.GetParamsString()}";
+				// check if the decl exists. if not - it could be non static method call from a class name
+				if (clsTpStatic.Declaration.SubScope.GetSymbol(newName) == null)
+				{
+					// getting the name but without object first param
+					newName = $"{clsTpStatic.Declaration.Name.Name}::{idFuncName.Name}{delegateParams.GetParamsString(PointerType.GetPointerType(clsTpStatic))}";
+					// error because user tries to access non static method from a class name
+					if (clsTpStatic.Declaration.SubScope.GetSymbol(newName) != null)
+					{
+						_compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, idFuncName, $"The non-static method could only be accessed from an object");
+					}
+				}
+			}
+			else
+			{
+				// error here: the function call could not be infered
+				_compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, value, $"The function could not be inferred");
+			}
+
+			nestFuncName.RightPart = idFuncName.GetCopy(newName);
+			PostPrepareIdentifierInference(nestFuncName.RightPart as AstIdExpr);
+
+			// setting parameters
+			if (nestFuncName.RightPart.OutType is FunctionType ft)
+			{
+				// checking if it is a static func
+				bool isStaticFunc = ft.Declaration.SpecialKeys.Contains(TokenType.KwStatic);
+				// call expr type is the same as func return type
+				nestFuncName.OutType = ft.Declaration.Returns.OutType;
+
+				// warn if accessing from an object
+				if (accessingFromAnObject && isStaticFunc)
+				{
+					_compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, value, $"Static methods should not be accessed from an object", null, ReportType.Warning);
+				}
+			}
+			else
+			{
+				// error here
+				_compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, value, $"The thing has to be a function");
+			}
+
+			return value;
+		}
     }
 }

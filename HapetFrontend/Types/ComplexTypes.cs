@@ -252,17 +252,7 @@ namespace HapetFrontend.Types
 
 		public override string ToString()
 		{
-			var args = string.Join(", ", Declaration.Parameters.Select(p =>
-			{
-				if (p.Name != null)
-					return $"{p.Type} {p.Name.Name}";
-				return p.Type.ToString();
-			}));
-
-			if (Declaration.Returns.OutType != VoidType.Instance)
-				return $"({Declaration.Returns} {Declaration.Name.Name}({args}))";
-			else
-				return $"(void {Declaration.Name.Name}({args}))";
+			return $"{Declaration.Name.Name}";
 		}
 
 		public override bool Equals(object obj)
