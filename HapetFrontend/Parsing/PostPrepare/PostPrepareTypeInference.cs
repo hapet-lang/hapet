@@ -583,6 +583,42 @@ namespace HapetFrontend.Parsing.PostPrepare
 				PostPrepareExprInference(callExpr.TypeOrObjectName);
 			}
 
+			// TODO: resolve functions as args directly
+			// but there is a problem:
+			/*
+				public class Anime
+				{
+					public delegate int Cringe(int a);
+					public delegate int Cringe22();
+
+					public void CallC(Cringe cr)
+					{
+						cr(2);
+					}
+
+					public void CallC(Cringe22 cr)
+					{
+						cr();
+					}
+
+					private int CringeFunc(int a)
+					{
+						return 1;
+					}
+
+					private int CringeFunc()
+					{
+						return 1;
+					}
+
+					private void Test()
+					{
+						CallC(CringeFunc);
+						CallC(CringeFunc);
+					}
+				}
+			 */
+
 			// resolve args
 			foreach (var a in callExpr.Arguments)
 			{
