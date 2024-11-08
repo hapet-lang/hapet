@@ -181,6 +181,11 @@ namespace HapetBackend.Llvm
                 var loaded = _builder.BuildLoad2(HapetTypeToLLVMType(expr.OutType), v, expr.Name);
                 return loaded;
             }
+			// this check is done to generate proper delegate
+			else if (expr.OutType is FunctionType && theDecl is AstFuncDecl)
+			{
+				// TODO: :)
+			}
 			else
 			{
                 v = _valueMap[expr.FindSymbol];
@@ -296,7 +301,6 @@ namespace HapetBackend.Llvm
 
 				// we need to get 'struct' elements by ref to access it's elements
 				bool getByRef = (expr.LeftPart.OutType is StructType) || (expr.LeftPart.OutType is ArrayType) || (expr.LeftPart.OutType is StringType);
-				// TODO: check if it is a part of a module name :))))
 				var leftPart = GenerateExpressionCode(expr.LeftPart, getByRef);
 
 				// getting struct/class/interface declarations and the type

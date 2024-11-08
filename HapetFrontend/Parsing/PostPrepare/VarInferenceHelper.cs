@@ -275,7 +275,10 @@ namespace HapetFrontend.Parsing.PostPrepare
 				// checking if it is a static func
 				bool isStaticFunc = ft.Declaration.SpecialKeys.Contains(TokenType.KwStatic);
 				// call expr type is the same as func return type
-				nestFuncName.OutType = ft.Declaration.Returns.OutType;
+				nestFuncName.OutType = ft;
+
+				// no need anymore
+				nestFuncName.LeftPart = null;
 
 				// warn if accessing from an object
 				if (accessingFromAnObject && isStaticFunc)

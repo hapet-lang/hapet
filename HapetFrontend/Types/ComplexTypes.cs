@@ -200,7 +200,7 @@ namespace HapetFrontend.Types
 			}));
 
 			if (Declaration.Returns.OutType != VoidType.Instance)
-				return $"({Declaration.Returns} {Declaration.Name.Name}({args}))";
+				return $"({Declaration.Returns.OutType} {Declaration.Name.Name}({args}))";
 			else
 				return $"(void {Declaration.Name.Name}({args}))";
 		}

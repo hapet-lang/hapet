@@ -201,6 +201,24 @@ namespace HapetBackend.Llvm
 						return funcType;
 					}
 
+				case DelegateType d:
+					{
+						var paramTypes = d.Declaration.Parameters.Select(rt => HapetTypeToLLVMType(rt.Type.OutType)).ToList();
+						var returnType = HapetTypeToLLVMType(d.Declaration.Returns.OutType);
+						var funcType = LLVMTypeRef.CreateFunction(returnType, paramTypes.ToArray(), false);
+
+						// fields of delegate struct
+						var objectPtr = HapetTypeToLLVMType(PointerType.GetPointerType(IntType.GetIntType(1, false))); // ptr to func object
+						var funcPtr = funcType.GetPointerTo();
+
+						var str = _context.CreateNamedStruct($"delegate.{d.Declaration.Name.Name}");
+						str.StructSetBody(new LLVMTypeRef[] {
+							((LLVMTypeRef)funcPtr),
+							((LLVMTypeRef)objectPtr)
+						}, false);
+						return str;
+					}
+
 				case EnumType e:
 					{
 						return _context.GetIntType(((uint)e.Declaration.InheritedType.OutType.GetSize()) * 8);
