@@ -90,6 +90,7 @@ namespace HapetFrontend.Parsing
 		KwEnum,
 		KwInterface,
 		KwClass,
+		KwDelegate,
 
 		KwIf,
 		KwElse,

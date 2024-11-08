@@ -238,6 +238,7 @@ namespace HapetFrontend.Parsing
 				case "class": token.Type = TokenType.KwClass; break;
 				case "struct": token.Type = TokenType.KwStruct; break;
 				case "enum": token.Type = TokenType.KwEnum; break;
+				case "delegate": token.Type = TokenType.KwDelegate; break;
 
 				case "true": token.Type = TokenType.KwTrue; break;
 				case "false": token.Type = TokenType.KwFalse; break;

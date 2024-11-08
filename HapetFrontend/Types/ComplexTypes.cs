@@ -237,4 +237,61 @@ namespace HapetFrontend.Types
 			return hash.ToHashCode();
 		}
 	}
+
+	public class DelegateType : HapetType
+	{
+		public AstDelegateDecl Declaration { get; set; }
+
+		public override string TypeName => "delegate";
+
+		public DelegateType(AstDelegateDecl decl)
+			: base(PointerType.PointerSize, PointerType.PointerAlignment)
+		{
+			Declaration = decl;
+		}
+
+		public override string ToString()
+		{
+			var args = string.Join(", ", Declaration.Parameters.Select(p =>
+			{
+				if (p.Name != null)
+					return $"{p.Type} {p.Name.Name}";
+				return p.Type.ToString();
+			}));
+
+			if (Declaration.Returns.OutType != VoidType.Instance)
+				return $"({Declaration.Returns} {Declaration.Name.Name}({args}))";
+			else
+				return $"(void {Declaration.Name.Name}({args}))";
+		}
+
+		public override bool Equals(object obj)
+		{
+			if (obj is FunctionType f)
+			{
+				if (Declaration.Returns.OutType != f.Declaration.Returns.OutType)
+					return false;
+
+				if (Declaration.Parameters.Count != f.Declaration.Parameters.Count)
+					return false;
+
+				for (int i = 0; i < Declaration.Parameters.Count; i++)
+					if (this.Declaration.Parameters[i].Type.OutType != f.Declaration.Parameters[i].Type.OutType)
+						return false;
+
+				return true;
+			}
+
+			return false;
+		}
+
+		public override int GetHashCode()
+		{
+			var hash = new HashCode();
+			foreach (var p in Declaration.Parameters)
+				hash.Add(p.Type.OutType);
+			hash.Add(Declaration.Returns.OutType);
+			return hash.ToHashCode();
+		}
+	}
 }

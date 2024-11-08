@@ -1,0 +1,9 @@
+public class AnimeDelll
+{
+    public int CallDelegate(AnimeDelegate del, int val)
+    {
+        return del(val)
+    }
+}
+
+public delegate int AnimeDelegate(int a);
