@@ -182,8 +182,6 @@ namespace HapetFrontend.Parsing.PostPrepare
 		{
 			_currentFunction = funcDecl;
 
-			funcDecl.SourceFile = _currentSourceFile;
-
 			// scoping func attrs
 			foreach (var a in funcDecl.Attributes)
 			{
@@ -243,6 +241,13 @@ namespace HapetFrontend.Parsing.PostPrepare
 		{
 			SetScopeAndParent(varDecl.Name, varDecl);
 			SetScopeAndParent(varDecl.Type, varDecl);
+
+			// scoping var attrs
+			foreach (var a in varDecl.Attributes)
+			{
+				SetScopeAndParent(a, varDecl);
+				PostPrepareExprScoping(a);
+			}
 
 			PostPrepareExprScoping(varDecl.Type);
 			if (varDecl.Initializer != null)
@@ -375,7 +380,6 @@ namespace HapetFrontend.Parsing.PostPrepare
 			if (string.IsNullOrWhiteSpace(scopename))
 				scopename = $"block_{_blockCounter++}_scope";
 
-			blockExpr.SourceFile = _currentSourceFile;
 			var blockScope = new Scoping.Scope(scopename, blockExpr.Scope);
 
 			foreach (var stmt in blockExpr.Statements)
@@ -670,6 +674,7 @@ namespace HapetFrontend.Parsing.PostPrepare
 			anotherScope ??= parent.Scope;
 			child.Scope = anotherScope;
 			child.Parent = parent;
+			child.SourceFile = _currentSourceFile;
 		}
 	}
 }

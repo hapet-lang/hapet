@@ -54,12 +54,6 @@ namespace HapetFrontend.Parsing.PostPrepare
                         classDecl.Name = classDecl.Name.GetCopy(newClassName);
                         file.NamespaceScope.DefineDeclSymbol(classDecl.Name.Name, classDecl);
 						AllClassesMetadata.Add(classDecl);
-
-                        // inferencing attrs
-                        foreach (var a in classDecl.Attributes)
-                        {
-                            PostPrepareExprInference(a);
-                        }
                     }
                     else if (stmt is AstStructDecl structDecl)
                     {
@@ -68,12 +62,6 @@ namespace HapetFrontend.Parsing.PostPrepare
                         structDecl.Name = structDecl.Name.GetCopy(newClassName);
                         file.NamespaceScope.DefineDeclSymbol(structDecl.Name.Name, structDecl);
 						AllStructsMetadata.Add(structDecl);
-
-                        // inferencing attrs
-                        foreach (var a in structDecl.Attributes)
-                        {
-                            PostPrepareExprInference(a);
-                        }
                     }
 					else if (stmt is AstEnumDecl enumDecl)
 					{
@@ -82,12 +70,6 @@ namespace HapetFrontend.Parsing.PostPrepare
 						enumDecl.Name = enumDecl.Name.GetCopy(newClassName);
 						file.NamespaceScope.DefineDeclSymbol(enumDecl.Name.Name, enumDecl);
 						AllEnumsMetadata.Add(enumDecl);
-
-						// inferencing attrs
-						foreach (var a in enumDecl.Attributes)
-						{
-							PostPrepareExprInference(a);
-						}
 					}
 				}
             }
@@ -190,6 +172,15 @@ namespace HapetFrontend.Parsing.PostPrepare
 
         private void PostPrepareMetadataTypeShite()
         {
+            foreach (var fnc in AllFunctionsMetadata)
+            {
+				// inferencing attrs
+				foreach (var a in fnc.Attributes)
+				{
+					PostPrepareExprInference(a);
+				}
+			}
+
 			foreach (var (path, file) in _compiler.GetFiles())
 			{
 				_currentSourceFile = file;
@@ -203,10 +194,30 @@ namespace HapetFrontend.Parsing.PostPrepare
 						{
 							PostPrepareExprInference(inh);
 						}
+
+						// infer fields and props attibutes
+						foreach (var decl in classDecl.Declarations.Where(x => x is AstVarDecl).Select(x => x as AstVarDecl))
+						{
+							// inferencing attrs
+							foreach (var a in decl.Attributes)
+							{
+								PostPrepareExprInference(a);
+							}
+						}
+
+						// inferencing attrs
+						foreach (var a in classDecl.Attributes)
+						{
+							PostPrepareExprInference(a);
+						}
 					}
-					else if (stmt is AstStructDecl _)
+					else if (stmt is AstStructDecl structDecl)
 					{
-						
+						// inferencing attrs
+						foreach (var a in structDecl.Attributes)
+						{
+							PostPrepareExprInference(a);
+						}
 					}
 					else if (stmt is AstEnumDecl enumDecl)
 					{
@@ -218,6 +229,12 @@ namespace HapetFrontend.Parsing.PostPrepare
                             {
 								_compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, enumDecl.InheritedType, "The type has to be integer type");
 							}
+						}
+
+						// inferencing attrs
+						foreach (var a in enumDecl.Attributes)
+						{
+							PostPrepareExprInference(a);
 						}
 					}
 				}

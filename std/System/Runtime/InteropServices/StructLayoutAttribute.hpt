@@ -2,7 +2,7 @@ using System;
 
 public sealed class StructLayoutAttribute : Attribute
 {
-    // TODO: make the field required
+    [RequiredAttribute]
     public int Pack;
 
     public StructLayoutAttribute()

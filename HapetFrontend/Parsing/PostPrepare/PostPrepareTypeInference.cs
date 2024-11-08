@@ -103,12 +103,6 @@ namespace HapetFrontend.Parsing.PostPrepare
 			// if not - infer only body because func decl already infered from metadata :)
 			if (forMetadata)
 			{
-				// inferencing attrs
-				foreach (var a in funcDecl.Attributes)
-				{
-					PostPrepareExprInference(a);
-				}
-
 				// inferencing parameters 
 				foreach (var p in funcDecl.Parameters)
 				{
@@ -1042,20 +1036,58 @@ namespace HapetFrontend.Parsing.PostPrepare
 			PostPrepareExprInference(newTypeAst);
 			attrStmt.AttributeName.SetTypeAstId(newTypeAst);
 
-			foreach (var a in attrStmt.Parameters)
+			// TODO: check that the shite is inherited from 'System.Attribute'
+			// getting all the fields of attribuute class decl
+			var attrDeclFields = (attrStmt.AttributeName.OutType as ClassType).Declaration.Declarations.Where(x => x is AstVarDecl).Select(x => x as AstVarDecl).ToList();
+			// check that not too much params
+			if (attrStmt.Parameters.Count > attrDeclFields.Count)
 			{
-				PostPrepareExprInference(a);
-				// all attr params has to be const values
-				if (a.OutValue == null)
-				{
-					_compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, a, $"Parameter value has to be compile time available");
-				}
+				var beg = attrStmt.Parameters[attrDeclFields.Count].Beginning;
+				var end = attrStmt.Parameters[attrStmt.Parameters.Count - 1].Ending;
+				_compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, new Location(beg, end), $"Too many parameters were specified. Attribute has only {attrDeclFields.Count} fields but You specified {attrStmt.Parameters.Count} parameters");
 			}
 
-			// TODO: check attr fields to be filled
-			// check for required attrs
-			// check that not too much params
-			// check that param types are equal to attr fields
+			for (int i = 0; i < attrDeclFields.Count; ++i)
+			{
+				var theAttrField = attrDeclFields[i];
+
+				// check that param exists for the field 
+				if (i < attrStmt.Parameters.Count)
+				{
+					// inferrencing the param
+					var a = attrStmt.Parameters[i];
+					PostPrepareExprInference(a);
+					// all attr params has to be const values
+					if (a.OutValue == null)
+						_compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, a, $"Parameter value has to be compile time available");
+
+					// is going to error if they are different types :)
+					attrStmt.Parameters[i] = PostPrepareExpressionWithType(theAttrField.Type.OutType, a);
+				}
+				else
+				{
+					// this cringe is done because current attribute requires RequiredAttribute to be inferred
+					foreach (var aa in theAttrField.Attributes)
+					{
+						if (aa.AttributeName.OutType == null)
+						{
+							var savedSourceFile = _currentSourceFile;
+							_currentSourceFile = theAttrField.SourceFile;
+							PostPrepareAttributeStmtInference(aa);
+							_currentSourceFile = savedSourceFile;
+						}
+					}
+
+					// check if the field is required but there are no more params - error
+					string reqAttrName = "System.RequiredAttribute";
+					var reqAttr = theAttrField.Attributes.FirstOrDefault(x => x.AttributeName.TryFlatten(_compiler.MessageHandler, _currentSourceFile) == reqAttrName);
+					if (reqAttr != null)
+					{
+						// there was a required attr and no param for the field - error
+						_compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, attrStmt.Ending, $"Parameter for the '{theAttrField.Name.Name}' field has to be specified because it is marked as 'Required'");
+					}
+				}
+			}
 		}
 	}
 }

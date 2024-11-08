@@ -2,7 +2,9 @@ using System;
 
 public sealed class DllImportAttribute : Attribute
 {
+    [RequiredAttribute]
     public string DllName;
+    [RequiredAttribute]
     public string EntryPoint;
 
     public DllImportAttribute()
