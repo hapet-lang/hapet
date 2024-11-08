@@ -108,6 +108,7 @@ namespace HapetFrontend
 				if (s is AstEnumDecl ||
 					s is AstStructDecl ||
 					s is AstClassDecl ||
+					s is AstDelegateDecl ||
 					s is AstUsingStmt)
 				{
 					s.SourceFile = file;

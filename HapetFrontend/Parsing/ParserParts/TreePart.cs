@@ -535,6 +535,9 @@ namespace HapetFrontend.Parsing
 				case TokenType.OpenParen:
 					return ParseTupleExpression(allowFunctionDeclaration, allowCommaForTuple);
 
+				case TokenType.KwDelegate:
+					return ParseDelegateDeclaration();
+
 				case TokenType.KwStruct:
 					return ParseStructDeclaration();
 
