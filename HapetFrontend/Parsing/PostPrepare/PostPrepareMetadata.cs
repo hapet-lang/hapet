@@ -3,6 +3,7 @@ using HapetFrontend.Ast.Expressions;
 using HapetFrontend.Entities;
 using HapetFrontend.Types;
 using Newtonsoft.Json;
+using System;
 
 namespace HapetFrontend.Parsing.PostPrepare
 {
@@ -18,9 +19,10 @@ namespace HapetFrontend.Parsing.PostPrepare
         private int PostPrepareMetadata()
         {
             PostPrepareMetadataTypes();
+            PostPrepareMetadataInheritance();
             PostPrepareMetadataFunctions();
             PostPrepareMetadataTypeFields();
-            PostPrepareMetadataTypeShite();
+            PostPrepareMetadataAttributes();
 
             // if there were errors while preparing for metafile
 			if (_compiler.MessageHandler.HasErrors)
@@ -32,6 +34,7 @@ namespace HapetFrontend.Parsing.PostPrepare
 			PostPrepareMetadataCreate();
 
 			// WARN: removing all properties after saving to file
+            // removing them only now because we need them to be presented in metadata
 			/// unwrapping props is done in <see cref="PostPrepareClassProperties"/>
 			RemoveAllProperties();
 
@@ -75,168 +78,171 @@ namespace HapetFrontend.Parsing.PostPrepare
             }
         }
 
-        private void PostPrepareMetadataTypeFields()
+        private void PostPrepareMetadataInheritance()
         {
-            foreach (var (path, file) in _compiler.GetFiles())
+            // resolve inheritance shite of classes
+            foreach (var cls in AllClassesMetadata)
             {
-                _currentSourceFile = file;
-                foreach (var stmt in file.Statements)
-                {
-                    if (stmt is AstClassDecl classDecl)
-                    {
-						_currentClass = classDecl;
-						// infer fields and props at first
-						foreach (var decl in classDecl.Declarations.Where(x => x is AstVarDecl).Select(x => x as AstVarDecl))
-                        {
-                            // field or property
-                            PostPrepareVarInference(decl, true);
-                        }
-                    }
-                    else if (stmt is AstStructDecl structDecl)
-                    {
-						// infer fields at first
-						foreach (var decl in structDecl.Declarations.Where(x => x is AstVarDecl).Select(x => x as AstVarDecl))
-                        {
-                            // field 
-                            PostPrepareVarInference(decl);
-						}
-					}
-					else if (stmt is AstEnumDecl enumDecl)
-					{
-                        // generating all the values of fields
-                        int currentValue = 0;
-                        List<int> allValues = new List<int>(enumDecl.Declarations.Count);
+				_currentSourceFile = cls.SourceFile;
+				_currentClass = cls;
+				foreach (var inh in cls.InheritedFrom)
+				{
+					PostPrepareExprInference(inh);
+				}
+			}
+			// resolve inheritance shite of enums
+			foreach (var enm in AllEnumsMetadata)
+            {
+				_currentSourceFile = enm.SourceFile;
+				if (enm.InheritedType == null)
+					continue;
+				PostPrepareExprInference(enm.InheritedType);
+				// only int type inheritance allowed for enums
+				if (enm.InheritedType.OutType is not IntType)
+				{
+					_compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, enm.InheritedType, "The type has to be integer type");
+				}
+			}
+        }
 
-						// infer fields at first
-						foreach (var decl in enumDecl.Declarations)
+		private void PostPrepareMetadataTypeFields()
+        {
+			// resolve all fields of classes
+			foreach (var cls in AllClassesMetadata)
+			{
+				_currentSourceFile = cls.SourceFile;
+				_currentClass = cls;
+				// infer fields and props at first
+				foreach (var decl in cls.Declarations.Where(x => x is AstVarDecl).Select(x => x as AstVarDecl))
+				{
+					// field or property
+					PostPrepareVarInference(decl, true);
+				}
+			}
+			// resolve all fields of structs
+			foreach (var str in AllStructsMetadata)
+			{
+				_currentSourceFile = str.SourceFile;
+				// infer fields at first
+				foreach (var decl in str.Declarations.Where(x => x is AstVarDecl).Select(x => x as AstVarDecl))
+				{
+					// field 
+					PostPrepareVarInference(decl);
+				}
+			}
+			foreach (var enm in AllEnumsMetadata)
+			{
+				_currentSourceFile = enm.SourceFile;
+				// generating all the values of fields
+				int currentValue = 0;
+				List<int> allValues = new List<int>(enm.Declarations.Count);
+
+				// infer fields at first
+				foreach (var decl in enm.Declarations)
+				{
+					// field 
+					PostPrepareVarInference(decl);
+					// this shite is to generate values for enum fields
+					if (decl.Initializer == null)
+					{
+						decl.Initializer = PostPrepareExpressionWithType(decl.Type.OutType, new AstNumberExpr(NumberData.FromInt(currentValue)));
+						// warn if the value already exists in enum
+						if (allValues.Contains(currentValue))
 						{
-							// field 
-							PostPrepareVarInference(decl);
-                            if (decl.Initializer == null)
-                            {
-                                decl.Initializer = PostPrepareExpressionWithType(decl.Type.OutType, new AstNumberExpr(NumberData.FromInt(currentValue)));
-                                // warn if the value already exists in enum
-                                if (allValues.Contains(currentValue))
-                                {
-									_compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, decl, "Enum field with the same value already exists", null, ReportType.Warning);
-								}
-                                allValues.Add(currentValue);
-								currentValue++;
-							}
-                            else
-                            {
-                                if (decl.Initializer.OutValue == null)
-                                {
-									_compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, decl.Initializer, "The initializer has to be compile time evaluated!");
-                                    continue;
-								}
-                                else if (decl.Initializer.OutValue is not NumberData)
-                                {
-									_compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, decl.Initializer, "The initializer has to be numeric type");
-									continue;
-								}
-                                var userDefinedValue = (int)((NumberData)decl.Initializer.OutValue).IntValue;
-								// warn if the value already exists in enum
-								if (allValues.Contains(userDefinedValue))
-								{
-									_compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, decl, "Enum field with the same value already exists", null, ReportType.Warning);
-								}
-								allValues.Add(userDefinedValue);
-								currentValue = userDefinedValue + 1; // getting value for the next field
-							}
+							_compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, decl, "Enum field with the same value already exists", null, ReportType.Warning);
 						}
+						allValues.Add(currentValue);
+						currentValue++;
+					}
+					else
+					{
+						if (decl.Initializer.OutValue == null)
+						{
+							_compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, decl.Initializer, "The initializer has to be compile time evaluated!");
+							continue;
+						}
+						else if (decl.Initializer.OutValue is not NumberData)
+						{
+							_compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, decl.Initializer, "The initializer has to be numeric type");
+							continue;
+						}
+						var userDefinedValue = (int)((NumberData)decl.Initializer.OutValue).IntValue;
+						// warn if the value already exists in enum
+						if (allValues.Contains(userDefinedValue))
+						{
+							_compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, decl, "Enum field with the same value already exists", null, ReportType.Warning);
+						}
+						allValues.Add(userDefinedValue);
+						currentValue = userDefinedValue + 1; // getting value for the next field
 					}
 				}
-            }
+			}
         }
 
         private void PostPrepareMetadataFunctions()
         {
-            foreach (var (path, file) in _compiler.GetFiles())
-            {
-                _currentSourceFile = file;
-                foreach (var stmt in file.Statements)
-                {
-                    if (stmt is AstClassDecl classDecl)
-                    {
-						_currentClass = classDecl;
-						foreach (var decl in classDecl.Declarations.Where(x => x is AstFuncDecl).Select(x => x as AstFuncDecl))
-                        {
-                            PostPrepareFunctionInference(decl, true);
-							AllFunctionsMetadata.Add(decl);
-                        }
-                    }
-                }
-            }
+			foreach (var cls in AllClassesMetadata)
+			{
+				_currentSourceFile = cls.SourceFile;
+				_currentClass = cls;
+				foreach (var decl in cls.Declarations.Where(x => x is AstFuncDecl).Select(x => x as AstFuncDecl))
+				{
+					PostPrepareFunctionInference(decl, true);
+					AllFunctionsMetadata.Add(decl);
+				}
+			}
         }
 
-        private void PostPrepareMetadataTypeShite()
+        private void PostPrepareMetadataAttributes()
         {
+			// inferrencing attribtues of functions
             foreach (var fnc in AllFunctionsMetadata)
             {
+				_currentSourceFile = fnc.SourceFile;
 				// inferencing attrs
 				foreach (var a in fnc.Attributes)
 				{
 					PostPrepareExprInference(a);
 				}
 			}
-
-			foreach (var (path, file) in _compiler.GetFiles())
+			// inferrencing attribtues of classes
+			foreach (var cls in AllClassesMetadata)
 			{
-				_currentSourceFile = file;
-				foreach (var stmt in file.Statements)
+				_currentSourceFile = cls.SourceFile;
+				_currentClass = cls;
+				// infer fields and props attibutes
+				foreach (var decl in cls.Declarations.Where(x => x is AstVarDecl).Select(x => x as AstVarDecl))
 				{
-					if (stmt is AstClassDecl classDecl)
+					// inferencing attrs
+					foreach (var a in decl.Attributes)
 					{
-						_currentClass = classDecl;
-
-						foreach (var inh in classDecl.InheritedFrom)
-						{
-							PostPrepareExprInference(inh);
-						}
-
-						// infer fields and props attibutes
-						foreach (var decl in classDecl.Declarations.Where(x => x is AstVarDecl).Select(x => x as AstVarDecl))
-						{
-							// inferencing attrs
-							foreach (var a in decl.Attributes)
-							{
-								PostPrepareExprInference(a);
-							}
-						}
-
-						// inferencing attrs
-						foreach (var a in classDecl.Attributes)
-						{
-							PostPrepareExprInference(a);
-						}
+						PostPrepareExprInference(a);
 					}
-					else if (stmt is AstStructDecl structDecl)
-					{
-						// inferencing attrs
-						foreach (var a in structDecl.Attributes)
-						{
-							PostPrepareExprInference(a);
-						}
-					}
-					else if (stmt is AstEnumDecl enumDecl)
-					{
-						if (enumDecl.InheritedType != null)
-						{
-                            PostPrepareExprInference(enumDecl.InheritedType);
-                            // only int type inheritance allowed for enums
-                            if (enumDecl.InheritedType.OutType is not IntType)
-                            {
-								_compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, enumDecl.InheritedType, "The type has to be integer type");
-							}
-						}
-
-						// inferencing attrs
-						foreach (var a in enumDecl.Attributes)
-						{
-							PostPrepareExprInference(a);
-						}
-					}
+				}
+				// inferencing attrs
+				foreach (var a in cls.Attributes)
+				{
+					PostPrepareExprInference(a);
+				}
+			}
+			// inferrencing attribtues of structs
+			foreach (var str in AllStructsMetadata)
+			{
+				_currentSourceFile = str.SourceFile;
+				// inferencing attrs
+				foreach (var a in str.Attributes)
+				{
+					PostPrepareExprInference(a);
+				}
+			}
+			// inferrencing attribtues of enums
+			foreach (var enm in AllEnumsMetadata)
+			{
+				_currentSourceFile = enm.SourceFile;
+				// inferencing attrs
+				foreach (var a in enm.Attributes)
+				{
+					PostPrepareExprInference(a);
 				}
 			}
 		}
