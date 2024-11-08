@@ -31,6 +31,10 @@ namespace HapetFrontend.Parsing.PostPrepare
 					{
 						PostPrepareEnumScoping(enumDecl);
 					}
+					else if (stmt is AstDelegateDecl delegateDecl)
+					{
+						PostPrepareDelegateScoping(delegateDecl);
+					}
 				}
 			}
 		}
@@ -176,6 +180,31 @@ namespace HapetFrontend.Parsing.PostPrepare
 				// setting already defined to 'true' because of some shite with access types
 				PostPrepareVarScoping(decl, true);
 			}
+		}
+
+		private void PostPrepareDelegateScoping(AstDelegateDecl delegateDecl)
+		{
+			// scoping delegate attrs
+			foreach (var a in delegateDecl.Attributes)
+			{
+				SetScopeAndParent(a, delegateDecl);
+				PostPrepareExprScoping(a);
+			}
+
+			// WARN!!!! do not set the scope the same as delegate scope because its params would be visible in class or smth
+			// creating a Scope in which the params would be
+			var paramsBlockScope = new Scoping.Scope($"params_{delegateDecl.Name.Name}_scope", delegateDecl.Scope);
+
+			// defining parameters in the delegate scope
+			foreach (var p in delegateDecl.Parameters)
+			{
+				// settings the block scope to the parameters (so they are in the scope of the block)
+				SetScopeAndParent(p, delegateDecl, paramsBlockScope);
+				PostPrepareParamScoping(p);
+			}
+			// return type is the same
+			SetScopeAndParent(delegateDecl.Returns, delegateDecl, paramsBlockScope);
+			PostPrepareExprScoping(delegateDecl.Returns);
 		}
 
 		private void PostPrepareFunctionScoping(AstFuncDecl funcDecl)

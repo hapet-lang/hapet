@@ -12,6 +12,7 @@ namespace HapetFrontend.Parsing.PostPrepare
         public List<AstClassDecl> AllClassesMetadata { get; } = new List<AstClassDecl>();
 		public List<AstStructDecl> AllStructsMetadata { get; } = new List<AstStructDecl>();
 		public List<AstEnumDecl> AllEnumsMetadata { get; } = new List<AstEnumDecl>();
+		public List<AstDelegateDecl> AllDelegatesMetadata { get; } = new List<AstDelegateDecl>();
 		public List<AstFuncDecl> AllFunctionsMetadata { get; } = new List<AstFuncDecl>();
 
         // TODO: some changes should be done in the file when impl 'using' and class inheritance
@@ -73,6 +74,14 @@ namespace HapetFrontend.Parsing.PostPrepare
 						enumDecl.Name = enumDecl.Name.GetCopy(newClassName);
 						file.NamespaceScope.DefineDeclSymbol(enumDecl.Name.Name, enumDecl);
 						AllEnumsMetadata.Add(enumDecl);
+					}
+					else if (stmt is AstDelegateDecl delegateDecl)
+					{
+						// creating a new delegate name with namespace
+						string newClassName = $"{file.Namespace}.{delegateDecl.Name.Name}";
+						delegateDecl.Name = delegateDecl.Name.GetCopy(newClassName);
+						file.NamespaceScope.DefineDeclSymbol(delegateDecl.Name.Name, delegateDecl);
+						AllDelegatesMetadata.Add(delegateDecl);
 					}
 				}
             }
@@ -181,6 +190,13 @@ namespace HapetFrontend.Parsing.PostPrepare
 
         private void PostPrepareMetadataFunctions()
         {
+			// inferrencing delegates
+			foreach (var del in AllDelegatesMetadata)
+			{
+				_currentSourceFile = del.SourceFile;
+				PostPrepareDelegateInference(del);
+			}
+			// inferrencing funcs
 			foreach (var cls in AllClassesMetadata)
 			{
 				_currentSourceFile = cls.SourceFile;
@@ -203,6 +219,15 @@ namespace HapetFrontend.Parsing.PostPrepare
 				foreach (var a in fnc.Attributes)
 				{
 					PostPrepareExprInference(a);
+				}
+				// inferencing params attrs
+				foreach (var p in fnc.Parameters)
+				{
+					// inferencing attrs
+					foreach (var a in p.Attributes)
+					{
+						PostPrepareExprInference(a);
+					}
 				}
 			}
 			// inferrencing attribtues of classes
@@ -245,6 +270,25 @@ namespace HapetFrontend.Parsing.PostPrepare
 					PostPrepareExprInference(a);
 				}
 			}
+			// inferrencing attribtues of delegates
+			foreach (var del in AllDelegatesMetadata)
+			{
+				_currentSourceFile = del.SourceFile;
+				// inferencing attrs
+				foreach (var a in del.Attributes)
+				{
+					PostPrepareExprInference(a);
+				}
+				// inferencing params attrs
+				foreach (var p in del.Parameters)
+				{
+					// inferencing attrs
+					foreach (var a in p.Attributes)
+					{
+						PostPrepareExprInference(a);
+					}
+				}
+			}
 		}
 
         private void PostPrepareMetadataCreate()
@@ -282,6 +326,7 @@ namespace HapetFrontend.Parsing.PostPrepare
         public List<ClassDeclJson> ClassDecls { get; set; }
         public List<StructDeclJson> StructDecls { get; set; }
         public List<EnumDeclJson> EnumDecls { get; set; }
+        public List<DelegateDeclJson> DelegateDecls { get; set; }
         public List<FuncDeclJson> FuncDecls { get; set; }
     }
 }

@@ -33,6 +33,10 @@ namespace HapetFrontend.Parsing.PostPrepare
 					{
 						PostPrepareEnumInference(enumDecl);
 					}
+					else if (stmt is AstDelegateDecl delegateDecl)
+					{
+						PostPrepareDelegateInference(delegateDecl);
+					}
 				}
 			}
 		}
@@ -47,10 +51,10 @@ namespace HapetFrontend.Parsing.PostPrepare
 		{
 			_currentClass = classDecl;
 
-            /// WARN: attributes are inferrenced in <see cref="PostPrepareMetadataTypes"/>
+			/// WARN: attributes are inferrenced in <see cref="PostPrepareMetadataAttributes"/>
 
-            // check that all decls in the class are also static
-            if (classDecl.SpecialKeys.Contains(TokenType.KwStatic))
+			// check that all decls in the class are also static
+			if (classDecl.SpecialKeys.Contains(TokenType.KwStatic))
 			{
 				foreach (var dd in classDecl.Declarations)
 				{
@@ -83,20 +87,37 @@ namespace HapetFrontend.Parsing.PostPrepare
 
 		private void PostPrepareStructInference(AstStructDecl structDecl)
 		{
-            /// WARN: should be already inferred in <see cref="PostPrepareMetadataTypes"/> and <see cref="PostPrepareMetadataTypeFields"/>
-
-            /// WARN: attributes are inferrenced in <see cref="PostPrepareMetadataTypes"/>
-        }
+			/// WARN: should be already inferred in <see cref="PostPrepareMetadataTypes"/> and <see cref="PostPrepareMetadataTypeFields"/>
+			/// WARN: attributes are inferrenced in <see cref="PostPrepareMetadataAttributes"/>
+		}
 
 		private void PostPrepareEnumInference(AstEnumDecl enumDecl)
 		{
 			/// WARN: should be already inferred in <see cref="PostPrepareMetadataTypes"/> and <see cref="PostPrepareMetadataTypeFields"/>
+			/// WARN: attributes are inferrenced in <see cref="PostPrepareMetadataAttributes"/>
+		}
 
-			/// WARN: attributes are inferrenced in <see cref="PostPrepareMetadataTypes"/>
+		private void PostPrepareDelegateInference(AstDelegateDecl delegateDecl)
+		{
+			/// WARN: should be already inferred in <see cref="PostPrepareMetadataTypes"/> and <see cref="PostPrepareMetadataTypeFields"/>
+			/// WARN: attributes are inferrenced in <see cref="PostPrepareMetadataAttributes"/>
+
+			// inferencing parameters 
+			foreach (var p in delegateDecl.Parameters)
+			{
+				PostPrepareParamInference(p);
+			}
+
+			// inferencing return type 
+			{
+				PostPrepareExprInference(delegateDecl.Returns);
+			}
 		}
 
 		private void PostPrepareFunctionInference(AstFuncDecl funcDecl, bool forMetadata = false)
 		{
+			/// WARN: attributes are inferrenced in <see cref="PostPrepareMetadataAttributes"/>
+			
 			_currentFunction = funcDecl;
 
 			// if the function inference is for metadata - infer everything except body
@@ -107,12 +128,6 @@ namespace HapetFrontend.Parsing.PostPrepare
 				foreach (var p in funcDecl.Parameters)
 				{
 					PostPrepareParamInference(p);
-
-                    // inferencing attrs
-                    foreach (var a in p.Attributes)
-                    {
-                        PostPrepareExprInference(a);
-                    }
                 }
 
 				// if the containing class is empty - it is external func
