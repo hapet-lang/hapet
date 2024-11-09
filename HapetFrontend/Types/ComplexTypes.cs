@@ -289,7 +289,7 @@ namespace HapetFrontend.Types
 
 		public override bool Equals(object obj)
 		{
-			if (obj is FunctionType f)
+			if (obj is DelegateType f)
 			{
 				if (Declaration.Returns.OutType != f.Declaration.Returns.OutType)
 					return false;
