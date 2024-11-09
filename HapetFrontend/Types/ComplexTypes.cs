@@ -192,20 +192,52 @@ namespace HapetFrontend.Types
 
 		public override string ToString()
 		{
-			var args = string.Join(", ", Declaration.Parameters.Select(p =>
-			{
-				if (p.Name != null)
-					return $"{p.Type} {p.Name.Name}";
-				return p.Type.ToString();
-			}));
+            if (Declaration.Returns.OutType != VoidType.Instance)
+                return $"({Declaration.Returns.OutType}:{Declaration.Name.Name})";
+            else
+                return $"(void:{Declaration.Name.Name})";
+        }
 
-			if (Declaration.Returns.OutType != VoidType.Instance)
-				return $"({Declaration.Returns.OutType} {Declaration.Name.Name}({args}))";
-			else
-				return $"(void {Declaration.Name.Name}({args}))";
-		}
+		/// <summary>
+		/// Returns string with return type and args types but without name of func
+		/// </summary>
+		/// <returns></returns>
+		public string ToCringeString()
+		{
+            string args;
 
-		public override bool Equals(object obj)
+            if (IsStaticFunction())
+            {
+                // the func is static...
+                args = string.Join(":", Declaration.Parameters.Select(p =>
+                {
+                    return p.Type.OutType.ToString();
+                }));
+            }
+            else
+            {
+                // the func is non-static...
+                // skip the first param with class object ptr
+                args = string.Join(":", Declaration.Parameters.Skip(1).Select(p =>
+                {
+                    return p.Type.OutType.ToString();
+                }));
+            }
+
+            if (Declaration.Returns.OutType != VoidType.Instance)
+                return $"({Declaration.Returns.OutType}:({args}))";
+            else
+                return $"(void:({args}))";
+        }
+
+		public bool IsStaticFunction()
+		{
+			return (Declaration.Parameters.FirstOrDefault() == null ||
+				(Declaration.Parameters.FirstOrDefault().Type.OutType is not PointerType && Declaration.Parameters.FirstOrDefault().Name.Name != "this"));
+
+        }
+
+        public override bool Equals(object obj)
 		{
 			if (obj is FunctionType f)
 			{

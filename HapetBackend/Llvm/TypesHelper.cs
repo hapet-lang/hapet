@@ -28,6 +28,11 @@ namespace HapetBackend.Llvm
         /// </summary>
         private Dictionary<HapetType, uint[]> _structOffsets = new Dictionary<HapetType, uint[]>();
 
+		/// <summary>
+		/// Anon delegate name to type mappings. Used when creating a delegate and assigning a func to it
+		/// </summary>
+		private Dictionary<string, LLVMTypeRef> _delegateAnonTypes = new Dictionary<string, LLVMTypeRef>();
+
 		// cringe
 		// this is because all arrays are the same in LLVM IR
 		private LLVMTypeRef _llvmArrayType = null;

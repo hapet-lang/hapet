@@ -157,7 +157,7 @@ namespace HapetBackend.Llvm
 			return default;
 		}
 
-		private LLVMValueRef GenerateIdExpr(AstIdExpr expr, bool getPtr = false)
+		private unsafe LLVMValueRef GenerateIdExpr(AstIdExpr expr, bool getPtr = false)
 		{
 			LLVMValueRef v = default;
 			// check that the symbol is a declaration
@@ -182,13 +182,67 @@ namespace HapetBackend.Llvm
                 return loaded;
             }
 			// this check is done to generate proper delegate
-			else if (expr.OutType is FunctionType && theDecl is AstFuncDecl)
+			else if (expr.OutType is FunctionType fncType && theDecl is AstFuncDecl fncDecl)
 			{
-				// TODO: :)
-			}
+				// this whole shite is done to create anon delegate of the specified function
+				LLVMTypeRef delegateIrType;
+                if (_delegateAnonTypes.TryGetValue(fncType.ToCringeString(), out LLVMTypeRef irType))
+				{
+					delegateIrType = irType;
+                }
+				else
+				{
+                    List<LLVMTypeRef> paramTypes;
+                    // creating anon delegate type
+                    if (fncType.IsStaticFunction())
+                    {
+                        // the func is static...
+                        paramTypes = fncDecl.Parameters.Select(rt => HapetTypeToLLVMType(rt.Type.OutType)).ToList();
+                    }
+                    else
+                    {
+                        // the func is non-static...
+                        // skip the first param with class object ptr
+                        paramTypes = fncDecl.Parameters.Skip(1).Select(rt => HapetTypeToLLVMType(rt.Type.OutType)).ToList();
+                    }
+                    var returnType = HapetTypeToLLVMType(fncDecl.Returns.OutType);
+                    var funcType = LLVMTypeRef.CreateFunction(returnType, paramTypes.ToArray(), false);
+
+                    // fields of delegate struct
+                    var objectPtr = HapetTypeToLLVMType(PointerType.GetPointerType(IntType.GetIntType(1, false))); // ptr to func object
+                    var funcPtr = funcType.GetPointerTo();
+
+                    delegateIrType = _context.CreateNamedStruct($"delegate.anon.{fncType.ToCringeString()}");
+                    delegateIrType.StructSetBody(new LLVMTypeRef[] {
+                            ((LLVMTypeRef)funcPtr),
+                            ((LLVMTypeRef)objectPtr)
+                        }, false);
+					_delegateAnonTypes[fncType.ToCringeString()] = delegateIrType;
+                }
+				// by default it is a nullptr
+				LLVMValueRef ptrToObject = LLVM.ConstPointerNull(HapetTypeToLLVMType(IntType.GetIntType(1, false)));
+				LLVMValueRef ptrToFunc = _valueMap[declSymbol]; // mb ptr to?
+                var allocatedDelegate = _builder.BuildAlloca(delegateIrType, "anonAllocated");
+				// if it is not a static func - get ptr to class
+				if (!fncType.IsStaticFunction())
+				{
+                    ptrToObject = _valueMap[expr.Scope.GetSymbol("this")];
+                }
+                // the 1 is because delegate struct has object field as it's 1 param
+                var objPtr = _builder.BuildStructGEP2(delegateIrType, allocatedDelegate, 1, "objectPtr");
+                _builder.BuildStore(ptrToObject, objPtr);
+                // setting the func ptr
+                var funcPtrr = _builder.BuildStructGEP2(delegateIrType, allocatedDelegate, 0, "funcPtr");
+                _builder.BuildStore(ptrToFunc, funcPtrr);
+
+                if (getPtr)
+                    return allocatedDelegate;
+                var loaded = _builder.BuildLoad2(delegateIrType, allocatedDelegate, expr.Name);
+                return loaded;
+            }
 			else
 			{
-                v = _valueMap[expr.FindSymbol];
+                v = _valueMap[declSymbol];
                 // return the ptr to the val. used for AstAddressOf or storing values
                 if (getPtr)
                     return v;
