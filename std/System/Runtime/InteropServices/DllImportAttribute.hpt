@@ -15,7 +15,7 @@ public sealed class DllImportAttribute : Attribute
         // int result2 = tst.CallDelegate(TestFunc, 7);
     }
 
-    private int TestFunc(int b)
+    private static int TestFunc(int b)
     {
         return b + 5;
     }

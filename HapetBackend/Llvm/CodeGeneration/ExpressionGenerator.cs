@@ -302,27 +302,60 @@ namespace HapetBackend.Llvm
 
 		private unsafe LLVMValueRef GenerateCallExpr(AstCallExpr expr)
 		{
-			var hptType = expr.FuncName.OutType as HapetFrontend.Types.FunctionType;
-			var hapetFunc = _valueMap[hptType.Declaration.GetSymbol];
-			LLVMTypeRef funcType = _typeMap[expr.FuncName.OutType];
-
-			// args shite
-			List<LLVMValueRef> args = new List<LLVMValueRef>();
-			if (!expr.StaticCall)
+			if (expr.FuncName.OutType is FunctionType fncType)
 			{
-				args.Add(GenerateExpressionCode(expr.TypeOrObjectName));
-			}
-			foreach (var a in expr.Arguments)
+                var hapetFunc = _valueMap[fncType.Declaration.GetSymbol];
+                LLVMTypeRef funcType = _typeMap[expr.FuncName.OutType];
+
+                // args shite
+                List<LLVMValueRef> args = new List<LLVMValueRef>();
+                if (!expr.StaticCall)
+                {
+                    args.Add(GenerateExpressionCode(expr.TypeOrObjectName));
+                }
+                foreach (var a in expr.Arguments)
+                {
+                    args.Add(GenerateExpressionCode(a));
+                }
+
+                // the return name has to be empty if ret value of func is void
+                string funcRetName = "";
+                if (fncType.Declaration.Returns.OutType is not VoidType)
+                    funcRetName = $"{expr.FuncName.Name}ReturnValue";
+
+                return _builder.BuildCall2(funcType, hapetFunc, args.ToArray(), funcRetName);
+            }
+			else if (expr.FuncName.OutType is DelegateType delType)
 			{
-				args.Add(GenerateExpressionCode(a));
-			}
+				var hapetDelegate = GenerateIdExpr(expr.FuncName, true);
+                LLVMTypeRef delegateType = _typeMap[expr.FuncName.OutType];
 
-			// the return name has to be empty if ret value of func is void
-			string funcRetName = "";
-			if (hptType.Declaration.Returns.OutType is not VoidType)
-				funcRetName = $"{expr.FuncName.Name}ReturnValue";
+                // args shite
+                List<LLVMValueRef> args = new List<LLVMValueRef>();
+                foreach (var a in expr.Arguments)
+                {
+                    args.Add(GenerateExpressionCode(a));
+                }
 
-			return _builder.BuildCall2(funcType, hapetFunc, args.ToArray(), funcRetName);
+				var loadedDelegate = _builder.BuildLoad2(delegateType, hapetDelegate, $"delegateLoaded");
+				// TODO: also load object pointer when delegate has non-static method :)
+                var theRealFuncExtracted = _builder.BuildExtractValue(loadedDelegate, 0, "funcExtracted");
+
+                // the return name has to be empty if ret value of func is void
+                string funcRetName = "";
+                if (delType.Declaration.Returns.OutType is not VoidType)
+                    funcRetName = $"{expr.FuncName.Name}ReturnValue";
+
+				// getting the function type to call
+                var funcType = GetFunctionTypeOfDelegate(delType);
+
+                return _builder.BuildCall2(funcType, theRealFuncExtracted, args.ToArray(), funcRetName);
+            }
+			else
+			{
+                _messageHandler.ReportMessage(_currentSourceFile.Text, expr, $"Call of {expr.FuncName.OutType} is not supported");
+				return default;
+            }
 		}
 
 		private unsafe LLVMValueRef GenerateArgumentExpr(AstArgumentExpr expr)

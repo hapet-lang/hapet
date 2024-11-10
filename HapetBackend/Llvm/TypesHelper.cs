@@ -208,12 +208,10 @@ namespace HapetBackend.Llvm
 
 				case DelegateType d:
 					{
-						var paramTypes = d.Declaration.Parameters.Select(rt => HapetTypeToLLVMType(rt.Type.OutType)).ToList();
-						var returnType = HapetTypeToLLVMType(d.Declaration.Returns.OutType);
-						var funcType = LLVMTypeRef.CreateFunction(returnType, paramTypes.ToArray(), false);
+						var funcType = GetFunctionTypeOfDelegate(d);
 
-						// fields of delegate struct
-						var objectPtr = HapetTypeToLLVMType(PointerType.GetPointerType(IntType.GetIntType(1, false))); // ptr to func object
+                        // fields of delegate struct
+                        var objectPtr = HapetTypeToLLVMType(PointerType.GetPointerType(IntType.GetIntType(1, false))); // ptr to func object
 						var funcPtr = funcType.GetPointerTo();
 
 						var str = _context.CreateNamedStruct($"delegate.{d.Declaration.Name.Name}");
@@ -482,6 +480,13 @@ namespace HapetBackend.Llvm
 			// just storing initializer value in the var
 			_builder.BuildStore(x, varPtr);
 		}
+
+		private LLVMTypeRef GetFunctionTypeOfDelegate(DelegateType del)
+		{
+            var paramTypes = del.Declaration.Parameters.Select(rt => HapetTypeToLLVMType(rt.Type.OutType)).ToList();
+            var returnType = HapetTypeToLLVMType(del.Declaration.Returns.OutType);
+            return LLVMTypeRef.CreateFunction(returnType, paramTypes.ToArray(), false);
+        }
 
 		#region Mallocs
 		private LLVMValueRef GetMalloc(int typeSize, int amount)

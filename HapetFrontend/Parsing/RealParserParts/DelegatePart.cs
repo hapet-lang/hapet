@@ -44,6 +44,10 @@ namespace HapetFrontend.Parsing
 			var parameters = ParseParameterList(TokenType.OpenParen, TokenType.CloseParen, out var pbeg, out var pend, true);
 			var end = Consume(TokenType.Semicolon, ErrMsg("token ';'", "at the end of delegate declaration")).Location;
 
+			// TODO: probably needed when allowing delegates for non-static funcs
+			//// all delegates have ptr to a class object as their first param
+			//parameters.Insert(0, new AstParamDecl(new AstNestedExpr(new AstPointerExpr(new AstIdExpr("byte")), null), new AstIdExpr("this")));
+
 			// TODO: doc string
 			return new AstDelegateDecl(parameters, returnType, delegateName, Location: new Location(beg, end));
 		}
