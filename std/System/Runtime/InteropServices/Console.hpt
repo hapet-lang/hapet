@@ -1,0 +1,5 @@
+public static class Console
+{
+    [DllImportAttribute("", "puts")]
+    public extern static int Puts(byte* data);
+}
