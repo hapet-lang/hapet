@@ -6,6 +6,7 @@ namespace HapetFrontend.Ast.Expressions
 	{
 		public string Name { get; set; }
 
+		private ISymbol _foundSymbol = null;
 		/// <summary>
 		/// Getting symbol of itself
 		/// </summary>
@@ -13,8 +14,14 @@ namespace HapetFrontend.Ast.Expressions
 		{
 			get
 			{
-				return Scope.GetSymbol(Name);
-			} 
+				if (_foundSymbol == null)
+					_foundSymbol = Scope.GetSymbol(Name);
+				return _foundSymbol;
+            }
+			set
+			{
+                _foundSymbol = value;
+            }
 		}
 
 		/// <summary>

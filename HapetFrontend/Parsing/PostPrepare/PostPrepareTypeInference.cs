@@ -454,7 +454,8 @@ namespace HapetFrontend.Parsing.PostPrepare
 			if (smbl is DeclSymbol typed)
 			{
 				idExpr.OutType = typed.Decl.Type.OutType;
-				return;
+                idExpr.FindSymbol = smbl;
+                return;
 			}
 
 			// searching for the name with current class name
@@ -465,7 +466,8 @@ namespace HapetFrontend.Parsing.PostPrepare
 			{
 				idExpr.Name = nameWithClass;
 				idExpr.OutType = typed2.Decl.Type.OutType;
-				return;
+				idExpr.FindSymbol = smblInLocalClass;
+                return;
 			}
 
 			// it is a func
@@ -496,7 +498,8 @@ namespace HapetFrontend.Parsing.PostPrepare
 				{
 					idExpr.Name = fullFuncName;
 					idExpr.OutType = typed4.Decl.Type.OutType;
-					return;
+                    idExpr.FindSymbol = funcInAnotherClass;
+                    return;
 				}
 			}
 
@@ -508,7 +511,8 @@ namespace HapetFrontend.Parsing.PostPrepare
 			{
 				idExpr.Name = nameWithNamespace;
 				idExpr.OutType = typed3.Decl.Type.OutType;
-				return;
+                idExpr.FindSymbol = smblInLocalFile;
+                return;
 			}
 
 			// check if it is smth like 'System.Attribute' where 'System' is ns and 'Attribute' is a class
@@ -524,7 +528,8 @@ namespace HapetFrontend.Parsing.PostPrepare
 				{
 					// do not change name because it already contains namespace
 					idExpr.OutType = typed4.Decl.Type.OutType;
-					return;
+                    idExpr.FindSymbol = includedSmbl;
+                    return;
 				}
 			}
 
@@ -548,7 +553,8 @@ namespace HapetFrontend.Parsing.PostPrepare
 					{
 						// do not change name because it already contains namespace
 						idExpr.OutType = typed4.Decl.Type.OutType;
-						return;
+                        idExpr.FindSymbol = includedSmbl;
+                        return;
 					}
 				}
 
@@ -559,11 +565,10 @@ namespace HapetFrontend.Parsing.PostPrepare
 				{
 					idExpr.Name = fullNameWithNs;
 					idExpr.OutType = typed5.Decl.Type.OutType;
-					return;
+                    idExpr.FindSymbol = usedSmbl;
+                    return;
 				}
 			}
-
-			
 
 			// TODO: check in 'usings' via similar way as upper
 

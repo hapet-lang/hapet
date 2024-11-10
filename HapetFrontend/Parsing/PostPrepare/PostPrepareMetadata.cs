@@ -302,6 +302,7 @@ namespace HapetFrontend.Parsing.PostPrepare
             metadata.ClassDecls = AllClassesMetadata.Where(x => !x.SpecialKeys.Contains(TokenType.KwUnreflected)).Select(x => x.GetJson()).ToList();
             metadata.StructDecls = AllStructsMetadata.Where(x => !x.SpecialKeys.Contains(TokenType.KwUnreflected)).Select(x => x.GetJson()).ToList();
             metadata.EnumDecls = AllEnumsMetadata.Where(x => !x.SpecialKeys.Contains(TokenType.KwUnreflected)).Select(x => x.GetJson()).ToList();
+            metadata.DelegateDecls = AllDelegatesMetadata.Where(x => !x.SpecialKeys.Contains(TokenType.KwUnreflected)).Select(x => x.GetJson()).ToList();
             metadata.FuncDecls = AllFunctionsMetadata.Where(x => !x.SpecialKeys.Contains(TokenType.KwUnreflected)).Select(x => x.GetJson()).ToList();
 
             // WARN: take care about the shite that is goin on here

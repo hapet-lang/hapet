@@ -237,7 +237,7 @@ namespace HapetBackend.Llvm
 
                 if (getPtr)
                     return allocatedDelegate;
-                var loaded = _builder.BuildLoad2(delegateIrType, allocatedDelegate, expr.Name);
+                var loaded = _builder.BuildLoad2(delegateIrType, allocatedDelegate, "anonDelegateLoaded");
                 return loaded;
             }
 			else
@@ -321,7 +321,7 @@ namespace HapetBackend.Llvm
                 // the return name has to be empty if ret value of func is void
                 string funcRetName = "";
                 if (fncType.Declaration.Returns.OutType is not VoidType)
-                    funcRetName = $"{expr.FuncName.Name}ReturnValue";
+                    funcRetName = $"funcReturnValue";
 
                 return _builder.BuildCall2(funcType, hapetFunc, args.ToArray(), funcRetName);
             }
@@ -344,7 +344,7 @@ namespace HapetBackend.Llvm
                 // the return name has to be empty if ret value of func is void
                 string funcRetName = "";
                 if (delType.Declaration.Returns.OutType is not VoidType)
-                    funcRetName = $"{expr.FuncName.Name}ReturnValue";
+                    funcRetName = $"funcReturnValue";
 
 				// getting the function type to call
                 var funcType = GetFunctionTypeOfDelegate(delType);

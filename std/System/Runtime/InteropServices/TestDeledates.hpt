@@ -4,6 +4,11 @@ public class AnimeDelll
     {
         return del(val)
     }
+
+    private static int TestFunc(int b)
+    {
+        return b + 5;
+    }
 }
 
 public delegate int AnimeDelegate(int a);
