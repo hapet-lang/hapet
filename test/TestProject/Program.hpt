@@ -4,13 +4,7 @@ public static class Program
 {
 	public static int Main(string[] args)
 	{
-        // Anime a = new Anime();
-        // int rett = a.Calc(3, 5);
-
-		int rett = 0;
-
+		int rett = 4;
 		return rett;
 	}
-
-	public extern static void* malloc(int size);
 }

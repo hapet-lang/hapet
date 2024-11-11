@@ -1,4 +1,5 @@
 ﻿using HapetFrontend;
+using HapetFrontend.Types;
 using LLVMSharp.Interop;
 
 namespace HapetBackend.Llvm
@@ -77,14 +78,16 @@ namespace HapetBackend.Llvm
 
             _builder.PositionAtEnd(pars);
 			// var stringParams = GenerateNormalStringParam(paramTypes, lfunc);
-            _builder.BuildBr(main);
+			var parsss = new LLVMValueRef[] { LLVM.ConstPointerNull(HapetTypeToLLVMType(ArrayType.GetArrayType(StringType.Instance))) };
+
+			_builder.BuildBr(main);
 
             _builder.PositionAtEnd(main);
 
 			{ // call main function
 				var hapetMain = _valueMap[_compiler.MainFunction.GetSymbol];
 				LLVMTypeRef funcType = _typeMap[_compiler.MainFunction.Type.OutType];
-				var exitCode = _builder.BuildCall2(funcType, hapetMain, Array.Empty<LLVMValueRef>(), "exitCode");
+				var exitCode = _builder.BuildCall2(funcType, hapetMain, parsss, "exitCode");
 				_builder.BuildRet(exitCode);
 			}
 		}
