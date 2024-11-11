@@ -38,9 +38,7 @@ namespace HapetFrontend
 		public Compiler(CompilerSettings projectSettings, IMessageHandler messageHandler)
 		{
 			CurrentProjectSettings = projectSettings;
-
 			MessageHandler = messageHandler;
-			MessageHandler.TextProvider = this;
 		}
 
 		public void InitGlobalScope()

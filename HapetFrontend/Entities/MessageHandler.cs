@@ -10,6 +10,7 @@ namespace HapetFrontend.Entities
 
 	public class CompilerMessage
 	{
+		public string FileText { get; set; }
 		public ILocation Location { get; set; }
 		public string Message { get; set; }
 		public string File { get; set; }
@@ -41,7 +42,6 @@ namespace HapetFrontend.Entities
 	public interface IMessageHandler
 	{
 		bool HasErrors { get; set; }
-		ITextOnLocationProvider TextProvider { get; set; }
 
 		void ReportMessage(string message, ReportType reportType = ReportType.Error, [CallerFilePath] string callingFunctionFile = "", [CallerMemberName] string callingFunctionName = "", [CallerLineNumber] int callLineNumber = 0);
 		void ReportMessage(string text, ILocation location, string message, List<CompilerMessage> subMessages = null, ReportType reportType = ReportType.Error, [CallerFilePath] string callingFunctionFile = "", [CallerMemberName] string callingFunctionName = "", [CallerLineNumber] int callLineNumber = 0);

@@ -42,8 +42,6 @@ namespace HapetCompiler.Toolchains
             var compiler = new Compiler(currentProjectSettings, messageHandler);
             compiler.InitGlobalScope();
             compiler.CompilationStopwatch = stopwatch;
-            var postPreparer = new PostPrepare(compiler);
-			messageHandler.TextProvider = compiler;
 
             var allFilesInProjectFolder = (new DirectoryInfo(Path.GetDirectoryName(currentProjectSettings.ProjectPath))).EnumerateFiles("*", SearchOption.AllDirectories);
             foreach (var file in allFilesInProjectFolder)
@@ -59,6 +57,7 @@ namespace HapetCompiler.Toolchains
 			messageHandler.ReportMessage($"{Funcad.GetPrettyTimeString(stopwatch.Elapsed)} Post preparation...", ReportType.Info);
 
 			// post prepare
+			var postPreparer = new PostPrepare(compiler);
 			int ppResult = postPreparer.StartPreparation();
             if (ppResult != 0)
 				return ppResult; // post prepare errors

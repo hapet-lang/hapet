@@ -13,8 +13,6 @@ namespace HapetCompiler
 	{
 		public bool HasErrors { get; set; }
 
-		public ITextOnLocationProvider TextProvider { get; set; }
-
 		public int LinesBeforeError { get; set; } = 1;
 		public int LinesAfterError { get; set; } = 1;
 		public bool DoPrintLocation { get; set; } = true;
@@ -32,6 +30,7 @@ namespace HapetCompiler
 		{
 			ReportMessage(new CompilerMessage
 			{
+				FileText = text,
 				Location = location,
 				Message = message,
 				SubMessages = subMessages,
@@ -72,8 +71,6 @@ namespace HapetCompiler
 
 			if (message.Location != null)
 			{
-				var text = TextProvider.GetText(message.Location);
-
 				TokenLocation beginning = message.Location.Beginning;
 				TokenLocation end = message.Location.Ending;
 
@@ -82,7 +79,7 @@ namespace HapetCompiler
 				Log(message.Message, printColor);
 
 				if (DoPrintLocation)
-					PrintLocation(text, message.Location, linesBefore: LinesBeforeError, linesAfter: LinesAfterError, highlightColor: printColor);
+					PrintLocation(message.FileText, message.Location, linesBefore: LinesBeforeError, linesAfter: LinesAfterError, highlightColor: printColor);
 			}
 			else
 			{
@@ -104,12 +101,10 @@ namespace HapetCompiler
 
 					if (d.location != null)
 					{
-						var detailText = TextProvider.GetText(d.location);
-
 						Log($"{d.location.Beginning}: ", ConsoleColor.White);
 
 						if (DoPrintLocation)
-							PrintLocation(detailText, d.location, linesBefore: 0, highlightColor: ConsoleColor.Green);
+							PrintLocation(message.FileText, d.location, linesBefore: 0, highlightColor: ConsoleColor.Green);
 					}
 				}
 			}
