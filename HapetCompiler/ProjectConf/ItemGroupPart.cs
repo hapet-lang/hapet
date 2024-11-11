@@ -18,8 +18,7 @@ namespace HapetCompiler.ProjectConf
 					// skip comments
 					if (childnode is XmlComment)
 						continue;
-					var loc = NodeLocationFinder.GetLocationOfNode(_projectFileText, childnode);
-
+					
 					// TODO: check conditions
 					switch (childnode.Name)
 					{
@@ -29,7 +28,8 @@ namespace HapetCompiler.ProjectConf
 							}
 						default:
 							{
-								_messageHandler.ReportMessage($"Unexpected tag {childnode.Name}");
+                                var loc = NodeLocationFinder.GetLocationOfNode(_projectFileText, childnode, _projectPathAbsolute);
+                                _messageHandler.ReportMessage(_projectFileText, loc, $"Unexpected tag {childnode.Name}");
 								break;
 							}
 					}

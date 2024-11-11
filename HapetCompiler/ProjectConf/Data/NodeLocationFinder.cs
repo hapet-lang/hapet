@@ -5,27 +5,23 @@ namespace HapetCompiler.ProjectConf.Data
 {
 	public static class NodeLocationFinder
 	{
-		public static Location GetLocationOfNode(string text, XmlNode node)
+		public static Location GetLocationOfNode(string text, XmlNode node, string projectPath)
 		{
 			(int, int) loc = FindNodeLocation(text, node);
 			int lineNumberBegin = text.Substring(0, loc.Item1).Where(x => x == '\n').ToList().Count + 1;
 			int lineNumberEnd = text.Substring(0, loc.Item2).Where(x => x == '\n').ToList().Count + 1;
 
-			int columnNumberBegin;
 			int currentBeginIndex = loc.Item1;
 			while (text.Length > currentBeginIndex && text[currentBeginIndex] != '\n')
 				currentBeginIndex--;
-			columnNumberBegin = loc.Item1 - currentBeginIndex;
 
-			int columnNumberEnd;
 			int currentEndIndex = loc.Item2;
 			while (text.Length > currentEndIndex && text[currentEndIndex] != '\n')
 				currentEndIndex--;
-			columnNumberEnd = loc.Item2 - currentEndIndex;
 
 			return new Location(
-				new TokenLocation() { Line = lineNumberBegin, End = columnNumberBegin }, 
-				new TokenLocation() { Line = lineNumberEnd, End = columnNumberEnd });
+				new TokenLocation() { Line = lineNumberBegin, End = loc.Item1, Index = loc.Item1, LineStartIndex = currentBeginIndex, File = projectPath }, 
+				new TokenLocation() { Line = lineNumberEnd, End = loc.Item2, Index = loc.Item2, LineStartIndex = currentEndIndex, File = projectPath });
 		}
 
 		public static (int, int) FindNodeLocation(string text, XmlNode node)
@@ -56,7 +52,8 @@ namespace HapetCompiler.ProjectConf.Data
 					{
 						currentCharPosition++;
 					}
-					endNeededTag = currentCharPosition;
+                    currentCharPosition++;
+                    endNeededTag = currentCharPosition;
 					return (beginNeededTag, endNeededTag);
 				}
 				else
@@ -66,7 +63,8 @@ namespace HapetCompiler.ProjectConf.Data
 					{
 						currentCharPosition++;
 					}
-				}
+                    currentCharPosition++;
+                }
 			}
 
 			return (0, 0);
@@ -117,7 +115,13 @@ namespace HapetCompiler.ProjectConf.Data
 			}
 		}
 
-		private static void SkipNode(string text, bool isComment, ref int currentCharPosition)
+        /// <summary>
+        /// Skips a node
+        /// </summary>
+        /// <param name="text">The text of xml file</param>
+        /// <param name="isComment">Is it a comment node</param>
+        /// <param name="currentCharPosition">Char position from which we need to skip a node</param>
+        private static void SkipNode(string text, bool isComment, ref int currentCharPosition)
 		{
 			if (isComment)
 			{
@@ -142,8 +146,13 @@ namespace HapetCompiler.ProjectConf.Data
 				else
 				{
 					currentCharPosition++;
-					// real cringe
-					while (true)
+					// skipping content of tags
+                    while (!text.Substring(currentCharPosition).StartsWith("<"))
+                    {
+                        currentCharPosition++;
+                    }
+                    // real cringe
+                    while (true)
 					{
 						SkipWhitespaces(text, ref currentCharPosition);
 						if (text.Substring(currentCharPosition).StartsWith("<!--"))

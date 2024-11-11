@@ -1,6 +1,7 @@
 ﻿using HapetCompiler.ProjectConf.Data;
 using HapetFrontend;
 using HapetFrontend.Entities;
+using System;
 using System.Xml;
 
 namespace HapetCompiler.ProjectConf
@@ -28,7 +29,7 @@ namespace HapetCompiler.ProjectConf
         {
             _projectPath = projectPath;
             _projectPathAbsolute = Path.GetFullPath(_projectPath);
-            _projectFileText = File.ReadAllText(_projectPath);
+            _projectFileText = File.ReadAllText(_projectPath).Replace("\t", "    ");
 			_projectSettings = projectSettings;
             _projectData = projectData;
             _messageHandler = messageHandler;
@@ -58,7 +59,8 @@ namespace HapetCompiler.ProjectConf
                 // TODO: ...
                 else
                 {
-                    _messageHandler.ReportMessage($"Unexpected tag {xnode.Name} in {_projectPath}");
+                    var loc = NodeLocationFinder.GetLocationOfNode(_projectFileText, xnode, _projectPathAbsolute);
+                    _messageHandler.ReportMessage(_projectFileText, loc, $"Unexpected tag {xnode.Name}");
                 }
             }
 

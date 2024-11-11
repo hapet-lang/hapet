@@ -1,6 +1,7 @@
 ﻿using HapetFrontend;
 using System.Xml.Linq;
 using System.Xml;
+using HapetCompiler.ProjectConf.Data;
 
 namespace HapetCompiler.ProjectConf
 {
@@ -9,7 +10,7 @@ namespace HapetCompiler.ProjectConf
 		/// <summary>
 		/// Data of <PropertyGroup> tag
 		/// </summary>
-		private Dictionary<string, string> _propertyGroupData = new Dictionary<string, string>();
+		private Dictionary<string, (string, XmlNode)> _propertyGroupData = new Dictionary<string, (string, XmlNode)>();
 
 		private void PreparePropertyGroups()
 		{
@@ -24,7 +25,7 @@ namespace HapetCompiler.ProjectConf
 					if (childnode is XmlComment)
 						continue;
 					// TODO: check conditions
-					_propertyGroupData.Add(childnode.Name, childnode.FirstChild.Value);
+					_propertyGroupData.Add(childnode.Name, (childnode.FirstChild.Value, childnode));
 				}
 			}
 			UpdateSettings();
@@ -72,10 +73,11 @@ namespace HapetCompiler.ProjectConf
 		{
 			try
 			{
-				if (_propertyGroupData.TryGetValue(key, out var value))
+				if (_propertyGroupData.TryGetValue(key, out var tuple))
 				{
-					// TODO: better casts. like at least int could be checked and other
-					if (typeof(bool) == typeof(T))
+					string value = tuple.Item1;
+                    // TODO: better casts. like at least int could be checked and other
+                    if (typeof(bool) == typeof(T))
 					{
 						return (T)(object)(value == "true");
 					}
@@ -88,7 +90,8 @@ namespace HapetCompiler.ProjectConf
 						bool parsed = int.TryParse(value, out int outV);
 						if (!parsed)
 						{
-							_messageHandler.ReportMessage($"The value '{value}' could not be parsed to int");
+                            var loc = NodeLocationFinder.GetLocationOfNode(_projectFileText, tuple.Item2, _projectPathAbsolute);
+                            _messageHandler.ReportMessage(_projectFileText, loc, $"The value '{value}' could not be parsed to int");
 							return (T)(object)0;
 						}
 						return (T)(object)outV;
@@ -100,7 +103,8 @@ namespace HapetCompiler.ProjectConf
 							if (item.ToString().ToLower().Equals(value.Trim().ToLower()))
 								return item;
 						}
-						_messageHandler.ReportMessage($"The value '{value}' is invalid for the '{key}' tag");
+                        var loc = NodeLocationFinder.GetLocationOfNode(_projectFileText, tuple.Item2, _projectPathAbsolute);
+                        _messageHandler.ReportMessage(_projectFileText, loc, $"The value '{value}' is invalid for the '{key}' tag");
 					}
 				}
 				else
