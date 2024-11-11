@@ -1,4 +1,5 @@
-﻿using HapetFrontend;
+﻿using HapetCompiler.ProjectConf.Data;
+using HapetFrontend;
 using HapetFrontend.Entities;
 using System.Xml;
 
@@ -9,6 +10,7 @@ namespace HapetCompiler.ProjectConf
         private readonly string _projectPath = string.Empty;
         private readonly string _projectPathAbsolute = string.Empty;
         private readonly CompilerSettings _projectSettings = null;
+        private readonly ProjectData _projectData = null;
         private readonly IMessageHandler _messageHandler = null;
 
 		/// <summary>
@@ -21,11 +23,12 @@ namespace HapetCompiler.ProjectConf
 		private List<XmlElement> _itemGroups = new List<XmlElement>();
 
         // TODO: this class also should get args from cmd that would have bigger priority over defined in .hptproj file
-        public ProjectXmlParser(string projectPath, CompilerSettings projectSettings, IMessageHandler messageHandler)
+        public ProjectXmlParser(string projectPath, CompilerSettings projectSettings, ProjectData projectData, IMessageHandler messageHandler)
         {
             _projectPath = projectPath;
             _projectPathAbsolute = Path.GetFullPath(_projectPath);
             _projectSettings = projectSettings;
+            _projectData = projectData;
             _messageHandler = messageHandler;
 
             XmlDocument projDoc = new XmlDocument();

@@ -5,6 +5,7 @@ using HapetFrontend.Parsing.PostPrepare;
 using System.Diagnostics;
 using HapetFrontend.Helpers;
 using HapetCompiler.ProjectConf;
+using HapetCompiler.ProjectConf.Data;
 
 namespace HapetCompiler.Toolchains
 {
@@ -23,10 +24,11 @@ namespace HapetCompiler.Toolchains
 
 			messageHandler.ReportMessage($"{Funcad.GetPrettyTimeString(stopwatch.Elapsed)} Project preparation...", ReportType.Info);
 
-			// creating settings instance for the project
+			// creating settings instances for the project
 			CompilerSettings currentProjectSettings = new CompilerSettings();
-            // parsing project .hptproj file
-            var projectParser = new ProjectXmlParser(projectPath, currentProjectSettings, messageHandler);
+            ProjectData currentProjectData = new ProjectData();
+			// parsing project .hptproj file
+			var projectParser = new ProjectXmlParser(projectPath, currentProjectSettings, currentProjectData, messageHandler);
             projectParser.PrepareProjectFile(); // setting compiler settings from project
             if (messageHandler.HasErrors)
             {

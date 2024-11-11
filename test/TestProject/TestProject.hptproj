@@ -3,11 +3,15 @@
 		<ProjectName>TestProject</ProjectName>
 		<ProjectVersion>1.0.0</ProjectVersion>
 		<AllowUnsafeCode>false</AllowUnsafeCode>
-		
+
 		<OutputIrFile>true</OutputIrFile>
 		<Optimization>0</Optimization>
 
         <TargetPlatform>win-32</TargetPlatform>
         <TargetFormat>Console</TargetFormat>
 	</PropertyGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="../../std/System/System.hptproj" />
+	</ItemGroup>
 </Project>
