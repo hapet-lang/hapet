@@ -4,6 +4,7 @@ using HapetFrontend;
 using HapetFrontend.Parsing.PostPrepare;
 using System.Diagnostics;
 using HapetFrontend.Helpers;
+using HapetCompiler.ProjectConf;
 
 namespace HapetCompiler.Toolchains
 {
@@ -27,7 +28,7 @@ namespace HapetCompiler.Toolchains
 
             // parsing project .hptproj file
             var projectParser = new ProjectXmlParser(projectPath, currentProjectSettings, messageHandler);
-            projectParser.UpdateSettings(); // setting compiler settings from project
+            projectParser.PrepareProjectFile(); // setting compiler settings from project
             if (messageHandler.HasErrors)
             {
                 return (int)CompilerErrors.ProjectFileParseError; // proj file parsing errors
