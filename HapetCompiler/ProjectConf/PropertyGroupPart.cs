@@ -1,9 +1,35 @@
 ﻿using HapetFrontend;
+using System.Xml.Linq;
+using System.Xml;
 
 namespace HapetCompiler.ProjectConf
 {
 	internal partial class ProjectXmlParser
 	{
+		/// <summary>
+		/// Data of <PropertyGroup> tag
+		/// </summary>
+		private Dictionary<string, string> _propertyGroupData = new Dictionary<string, string>();
+
+		private void PreparePropertyGroups()
+		{
+			// go all over the prop groups
+			foreach (var xnode in _propertyGroups)
+			{
+				// TODO: check conditions
+				// go all over the project settings
+				foreach (XmlNode childnode in xnode.ChildNodes)
+				{
+					// skip comments
+					if (childnode is XmlComment)
+						continue;
+					// TODO: check conditions
+					_propertyGroupData.Add(childnode.Name, childnode.FirstChild.Value);
+				}
+			}
+			UpdateSettings();
+		}
+
 		private void UpdateSettings()
 		{
 			// setting project name

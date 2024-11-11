@@ -25,7 +25,6 @@ namespace HapetCompiler.Toolchains
 
 			// creating settings instance for the project
 			CompilerSettings currentProjectSettings = new CompilerSettings();
-
             // parsing project .hptproj file
             var projectParser = new ProjectXmlParser(projectPath, currentProjectSettings, messageHandler);
             projectParser.PrepareProjectFile(); // setting compiler settings from project
@@ -35,10 +34,8 @@ namespace HapetCompiler.Toolchains
             }
 
             messageHandler.ReportMessage($"{Funcad.GetPrettyTimeString(stopwatch.Elapsed)} Parsing...", ReportType.Info);
-
 			// setting pointer size for the whole assembly
 			Compiler.AssemblyPointerSize = currentProjectSettings.TargetPlatformData.PointerSize;
-
             // creating the compiler and post preparer
             var compiler = new Compiler(currentProjectSettings, messageHandler);
             compiler.InitGlobalScope();
@@ -76,8 +73,6 @@ namespace HapetCompiler.Toolchains
             }
 
 			messageHandler.ReportMessage($"{Funcad.GetPrettyTimeString(stopwatch.Elapsed)} Done...", ReportType.Info);
-
-
             return (int)CompilerErrors.Ok;
         }
 

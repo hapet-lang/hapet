@@ -2,5 +2,9 @@
 {
 	internal partial class ProjectXmlParser
 	{
+		private void PrepareItemGroups()
+		{
+
+		}
 	}
 }

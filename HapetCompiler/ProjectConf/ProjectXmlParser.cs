@@ -11,14 +11,14 @@ namespace HapetCompiler.ProjectConf
         private readonly CompilerSettings _projectSettings = null;
         private readonly IMessageHandler _messageHandler = null;
 
-        /// <summary>
-        /// Data of <PropertyGroup> tag
-        /// </summary>
-        private Dictionary<string, string> _propertyGroupData = new Dictionary<string, string>();
-        /// <summary>
-        /// All <ItemGroup> tags in .hptproj
-        /// </summary>
-        private List<XmlElement> _itemGroups = new List<XmlElement>();
+		/// <summary>
+		/// All <PropertyGroup> tags in .hptproj
+		/// </summary>
+		private List<XmlElement> _propertyGroups = new List<XmlElement>();
+		/// <summary>
+		/// All <ItemGroup> tags in .hptproj
+		/// </summary>
+		private List<XmlElement> _itemGroups = new List<XmlElement>();
 
         // TODO: this class also should get args from cmd that would have bigger priority over defined in .hptproj file
         public ProjectXmlParser(string projectPath, CompilerSettings projectSettings, IMessageHandler messageHandler)
@@ -42,15 +42,9 @@ namespace HapetCompiler.ProjectConf
                 // check that the tag is PropertyGroup
                 if (xnode.Name == "PropertyGroup")
                 {
-                    // go all over the project settings
-                    foreach (XmlNode childnode in xnode.ChildNodes)
-                    {
-                        // skip comments
-                        if (childnode is XmlComment)
-                            continue;
-                        _propertyGroupData.Add(childnode.Name, childnode.FirstChild.Value);
-                    }
-                }
+					// just add it and prepare in another file
+					_propertyGroups.Add(xnode);
+				}
                 else if (xnode.Name == "ItemGroup")
                 {
                     // just add it and prepare in another file
@@ -69,7 +63,8 @@ namespace HapetCompiler.ProjectConf
 
         public void PrepareProjectFile()
         {
-            UpdateSettings();
+            PreparePropertyGroups();
+            PrepareItemGroups();
 		}
     }
 }
