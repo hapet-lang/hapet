@@ -9,6 +9,7 @@ namespace HapetCompiler.ProjectConf
     {
         private readonly string _projectPath = string.Empty;
         private readonly string _projectPathAbsolute = string.Empty;
+        private readonly string _projectFileText = string.Empty;
         private readonly CompilerSettings _projectSettings = null;
         private readonly ProjectData _projectData = null;
         private readonly IMessageHandler _messageHandler = null;
@@ -27,11 +28,12 @@ namespace HapetCompiler.ProjectConf
         {
             _projectPath = projectPath;
             _projectPathAbsolute = Path.GetFullPath(_projectPath);
-            _projectSettings = projectSettings;
+            _projectFileText = File.ReadAllText(_projectPath);
+			_projectSettings = projectSettings;
             _projectData = projectData;
             _messageHandler = messageHandler;
 
-            XmlDocument projDoc = new XmlDocument();
+			XmlDocument projDoc = new XmlDocument();
             projDoc.Load(_projectPath);
             if (projDoc == null)
             {

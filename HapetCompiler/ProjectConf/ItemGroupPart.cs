@@ -1,4 +1,5 @@
-﻿using LLVMSharp;
+﻿using HapetCompiler.ProjectConf.Data;
+using LLVMSharp;
 using System.Xml;
 
 namespace HapetCompiler.ProjectConf
@@ -17,6 +18,8 @@ namespace HapetCompiler.ProjectConf
 					// skip comments
 					if (childnode is XmlComment)
 						continue;
+					var loc = NodeLocationFinder.GetLocationOfNode(_projectFileText, childnode);
+
 					// TODO: check conditions
 					switch (childnode.Name)
 					{
