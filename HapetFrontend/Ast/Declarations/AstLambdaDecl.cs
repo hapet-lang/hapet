@@ -1,5 +1,6 @@
 ﻿using HapetFrontend.Ast.Expressions;
 using HapetFrontend.Types;
+using Newtonsoft.Json;
 
 namespace HapetFrontend.Ast.Declarations
 {
@@ -9,6 +10,7 @@ namespace HapetFrontend.Ast.Declarations
 		public AstExpression ReturnType { get; set; }
 		public AstBlockExpr Body { get; set; }
 
+		[JsonIgnore]
 		public FunctionType FunctionType => OutType as FunctionType;
 
 		public AstLambdaDecl(List<AstParamDecl> parameters, AstBlockExpr body, AstExpression retType, ILocation location = null)

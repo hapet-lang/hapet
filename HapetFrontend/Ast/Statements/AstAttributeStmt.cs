@@ -61,7 +61,7 @@ namespace HapetFrontend.Ast.Statements
 					// TODO: anything else?
 				}
 			}
-			return new AstAttributeStmt(new AstNestedExpr(new AstIdExpr(Name), null), pars);
+			return new AstAttributeStmt(Parser.ParseType(Name) as AstNestedExpr, pars);
 		}
 	}
 }

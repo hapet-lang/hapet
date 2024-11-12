@@ -40,6 +40,7 @@ namespace HapetFrontend.Parsing
 				_location = new TokenLocation
 				{
 					File = fileName,
+					FileForMetadata = $".../{Path.GetFileName(fileName)}",
 					Line = 1,
 					Index = 0,
 					LineStartIndex = 0
@@ -56,6 +57,7 @@ namespace HapetFrontend.Parsing
 				_location = new TokenLocation
 				{
 					File = fileName,
+					FileForMetadata = "unknown.hpt",
 					Line = 1,
 				}
 			};

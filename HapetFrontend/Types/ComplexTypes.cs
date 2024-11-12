@@ -1,9 +1,11 @@
 ﻿using HapetFrontend.Ast.Declarations;
+using Newtonsoft.Json;
 
 namespace HapetFrontend.Types
 {
 	public class ClassType : HapetType
 	{
+		[JsonIgnore]
 		public AstClassDecl Declaration { get; }
 
 		public override string TypeName => "class";
@@ -87,6 +89,7 @@ namespace HapetFrontend.Types
 
 	public class StructType : HapetType
 	{
+		[JsonIgnore]
 		public AstStructDecl Declaration { get; }
 
 		public override string TypeName => "struct";
@@ -153,6 +156,7 @@ namespace HapetFrontend.Types
 
 	public class EnumType : HapetType
 	{
+		[JsonIgnore]
 		public AstEnumDecl Declaration { get; set; }
 
 		public override string TypeName => "enum";
@@ -180,6 +184,7 @@ namespace HapetFrontend.Types
 
 	public class FunctionType : HapetType
 	{
+		[JsonIgnore]
 		public AstFuncDecl Declaration { get; set; }
 
 		public override string TypeName => "func";
@@ -272,6 +277,7 @@ namespace HapetFrontend.Types
 
 	public class DelegateType : HapetType
 	{
+		[JsonIgnore]
 		public AstDelegateDecl Declaration { get; set; }
 
 		public override string TypeName => "delegate";

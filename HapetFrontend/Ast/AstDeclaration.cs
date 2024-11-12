@@ -2,11 +2,15 @@
 using HapetFrontend.Ast.Statements;
 using HapetFrontend.Parsing;
 using HapetFrontend.Scoping;
+using Newtonsoft.Json;
 
 namespace HapetFrontend.Ast
 {
 	public abstract class AstDeclaration : AstStatement
 	{
+		/// <summary>
+		/// Could not be nested because of tuples!!!
+		/// </summary>
 		public AstExpression Type { get; set; }
 		public AstIdExpr Name { get; set; }
 
@@ -24,6 +28,7 @@ namespace HapetFrontend.Ast
 		/// <summary>
 		/// Getting symbol of itself
 		/// </summary>
+		[JsonIgnore]
 		public virtual ISymbol GetSymbol
 		{
 			get

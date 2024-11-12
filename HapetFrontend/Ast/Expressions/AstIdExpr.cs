@@ -1,4 +1,5 @@
 ﻿using HapetFrontend.Scoping;
+using Newtonsoft.Json;
 
 namespace HapetFrontend.Ast.Expressions
 {
@@ -6,10 +7,12 @@ namespace HapetFrontend.Ast.Expressions
 	{
 		public string Name { get; set; }
 
+		[JsonIgnore]
 		private ISymbol _foundSymbol = null;
 		/// <summary>
 		/// Getting symbol of itself
 		/// </summary>
+		[JsonIgnore]
 		public ISymbol FindSymbol 
 		{
 			get

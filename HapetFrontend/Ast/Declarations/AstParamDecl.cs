@@ -1,8 +1,7 @@
 ﻿using HapetFrontend.Ast.Expressions;
 using HapetFrontend.Ast.Statements;
 using HapetFrontend.Parsing;
-using System.Collections.Generic;
-using System.Text.Json.Serialization;
+using Newtonsoft.Json;
 
 namespace HapetFrontend.Ast.Declarations
 {
@@ -16,6 +15,7 @@ namespace HapetFrontend.Ast.Declarations
 		/// <summary>
 		/// The function in which the parameter presented
 		/// </summary>
+		[JsonIgnore]
 		public AstFuncDecl ContainingFunction { get; set; }
 
 		public AstParamDecl(AstExpression type, AstIdExpr name, AstExpression defaultValue = null, string doc = "", ILocation Location = null) : base(name, doc, Location)
@@ -57,7 +57,7 @@ namespace HapetFrontend.Ast.Declarations
 		public AstParamDecl GetAst()
 		{
 			// TODO: WARN! default value is not saving yet!!!
-			var pr = new AstParamDecl(new AstIdExpr(Type), new AstIdExpr(Name), null, DocString);
+			var pr = new AstParamDecl(Parser.ParseType(Type), new AstIdExpr(Name), null, DocString);
 			pr.SpecialKeys.AddRange(SpecialKeys);
 			pr.Attributes.AddRange(Attributes.Select(x => x.GetAst()));
 			return pr;

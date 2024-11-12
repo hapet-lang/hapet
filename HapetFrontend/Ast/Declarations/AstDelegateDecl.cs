@@ -49,7 +49,7 @@ namespace HapetFrontend.Ast.Declarations
 
 		public AstDelegateDecl GetAst()
 		{
-			var decl = new AstDelegateDecl(Parameters.Select(x => x.GetAst()).ToList(), new AstIdExpr(ReturnType), new AstIdExpr(Name), DocString);
+			var decl = new AstDelegateDecl(Parameters.Select(x => x.GetAst()).ToList(), Parser.ParseType(ReturnType), new AstIdExpr(Name), DocString);
 			decl.SpecialKeys.AddRange(SpecialKeys);
 			decl.Attributes.AddRange(Attributes.Select(x => x.GetAst()));
 			return decl;

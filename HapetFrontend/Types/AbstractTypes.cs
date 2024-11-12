@@ -1,4 +1,5 @@
 ﻿using HapetFrontend.Ast.Declarations;
+using Newtonsoft.Json;
 
 namespace HapetFrontend.Types
 {
@@ -32,6 +33,7 @@ namespace HapetFrontend.Types
 	/// </summary>
 	public class VarType : AbstractType
 	{
+		[JsonIgnore]
 		public AstVarDecl Declaration { get; }
 
 		public override string TypeName => "var";

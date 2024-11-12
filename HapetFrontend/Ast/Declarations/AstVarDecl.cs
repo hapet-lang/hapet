@@ -2,6 +2,7 @@
 using HapetFrontend.Ast.Statements;
 using HapetFrontend.Parsing;
 using HapetFrontend.Types;
+using Newtonsoft.Json;
 
 namespace HapetFrontend.Ast.Declarations
 {
@@ -16,6 +17,7 @@ namespace HapetFrontend.Ast.Declarations
 		/// The class/struct/interface that contains the var
 		/// Used only for fields and properties!!!
 		/// </summary>
+		[JsonIgnore]
 		public AstDeclaration ContainingParent { get; set; }
 
 		public AstVarDecl(AstExpression type, AstIdExpr name, AstExpression ini = null, string doc = "", ILocation Location = null) : base(name, doc, Location)
@@ -50,7 +52,7 @@ namespace HapetFrontend.Ast.Declarations
 
 		public AstVarDecl GetAst()
 		{
-			var decl = new AstVarDecl(new AstIdExpr(Type), new AstIdExpr(Name), null, DocString);
+			var decl = new AstVarDecl(Parser.ParseType(Type), new AstIdExpr(Name), null, DocString);
 			decl.SpecialKeys.AddRange(SpecialKeys);
 			decl.Attributes.AddRange(Attributes.Select(x => x.GetAst()));
 			return decl;

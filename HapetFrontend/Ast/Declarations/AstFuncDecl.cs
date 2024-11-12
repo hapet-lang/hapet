@@ -4,6 +4,7 @@ using HapetFrontend.Enums;
 using HapetFrontend.Parsing;
 using HapetFrontend.Scoping;
 using HapetFrontend.Types;
+using Newtonsoft.Json;
 using System.Text;
 
 namespace HapetFrontend.Ast.Declarations
@@ -16,11 +17,13 @@ namespace HapetFrontend.Ast.Declarations
 		public List<AstParamDecl> Parameters { get; set; }
 		public AstExpression Returns { get; set; }
 
+		[JsonIgnore]
 		public AstBlockExpr Body { get; set; }
 
 		/// <summary>
 		/// The class that contains the function
 		/// </summary>
+		[JsonIgnore]
 		public AstClassDecl ContainingClass { get; set; }
 
 		public AstFuncDecl(List<AstParamDecl> parameters, AstExpression returns, AstBlockExpr body, AstIdExpr name, string doc = "", ILocation Location = null) : base(name, doc, Location)
@@ -65,7 +68,7 @@ namespace HapetFrontend.Ast.Declarations
 
         public AstFuncDecl GetAst()
         {
-            var decl = new AstFuncDecl(Parameters.Select(x => x.GetAst()).ToList(), new AstIdExpr(ReturnType), null, new AstIdExpr(Name), DocString);
+            var decl = new AstFuncDecl(Parameters.Select(x => x.GetAst()).ToList(), Parser.ParseType(ReturnType), null, new AstIdExpr(Name), DocString);
             decl.SpecialKeys.AddRange(SpecialKeys);
             decl.Attributes.AddRange(Attributes.Select(x => x.GetAst()));
             decl.CallingConvention = CallingConvention;

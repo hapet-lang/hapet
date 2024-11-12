@@ -47,7 +47,7 @@ namespace HapetCompiler.Toolchains
             resolver.ResolveProjectShite(currentProjectData, currentProjectSettings, compiler, postPreparer);
 
             // gen ast shite
-			compiler.GenerateAstTree();
+            compiler.GenerateAstTree();
 			if (messageHandler.HasErrors)
                 return (int)CompilerErrors.ParsingError; // parsing errors
 

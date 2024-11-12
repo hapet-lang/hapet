@@ -156,7 +156,7 @@ namespace HapetFrontend.Ast.Declarations
 
 		public AstPropertyDecl GetAst()
 		{
-			var decl = new AstPropertyDecl(new AstIdExpr(Type), new AstIdExpr(Name), null, DocString);
+			var decl = new AstPropertyDecl(Parser.ParseType(Type), new AstIdExpr(Name), null, DocString);
 			decl.HasGet = HasGet;
 			decl.HasSet = HasSet;
 			decl.SpecialKeys.AddRange(SpecialKeys);
