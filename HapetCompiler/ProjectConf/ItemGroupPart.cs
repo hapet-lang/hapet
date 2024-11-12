@@ -1,6 +1,7 @@
 ﻿using HapetCompiler.ProjectConf.Data;
 using LLVMSharp;
 using System.Xml;
+using System.Linq;
 
 namespace HapetCompiler.ProjectConf
 {
@@ -24,6 +25,9 @@ namespace HapetCompiler.ProjectConf
 					{
 						case "ProjectReference":
 							{
+								// TODO: checks and errors that the attr exists
+								string thePathToProject = childnode.Attributes.GetNamedItem("Include").Value;
+								_projectData.ProjectReferences.Add(thePathToProject);
 								break;
 							}
 						default:

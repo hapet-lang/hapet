@@ -48,7 +48,18 @@ namespace HapetFrontend
 			GlobalScope.DefineBuiltInOperators();
 		}
 
-		public ProgramFile AddFile(string fileName)
+		public void GenerateAstTree()
+		{
+			// getting all files in project folder
+			var allFilesInProjectFolder = (new DirectoryInfo(Path.GetDirectoryName(CurrentProjectSettings.ProjectPath))).EnumerateFiles("*", SearchOption.AllDirectories);
+			foreach (var file in allFilesInProjectFolder)
+			{
+				if (Path.GetExtension(file.FullName) == ".hpt")
+					AddFile(file.FullName);
+			}
+		}
+
+		private ProgramFile AddFile(string fileName)
 		{
 			if (!CompilerUtils.ValidateFilePath("", fileName, false, MessageHandler, null, out string filePath))
 			{
@@ -97,7 +108,6 @@ namespace HapetFrontend
 			var nsScope = GetNamespaceScope(normalNamespace);
 			file.NamespaceScope = nsScope;
 			file.Namespace = normalNamespace;
-			file.Module = $"{file.Namespace}.{Path.GetFileNameWithoutExtension(file.Name)}";
 
 			return file;
 

@@ -17,11 +17,6 @@ namespace HapetFrontend.Entities
 		public string Namespace { get; set; }
 
         /// <summary>
-        /// Filename with namespace to be represented as module
-        /// </summary>
-        public string Module { get; set; }
-
-        /// <summary>
         /// To grab the text only once and store it here
         /// </summary>
         public string Text { get; }
