@@ -2,6 +2,7 @@ using TestProject.Sub;
 
 public static class Program
 {
+	// public static float Anime22222 { get; set; }
 	public static int Main(string[] args)
 	{
 		int rett = 4;

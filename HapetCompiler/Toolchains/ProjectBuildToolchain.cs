@@ -6,6 +6,7 @@ using System.Diagnostics;
 using HapetFrontend.Helpers;
 using HapetCompiler.ProjectConf;
 using HapetCompiler.ProjectConf.Data;
+using HapetCompiler.Resolvers;
 
 namespace HapetCompiler.Toolchains
 {
@@ -39,7 +40,13 @@ namespace HapetCompiler.Toolchains
             var compiler = new Compiler(currentProjectSettings, messageHandler);
             compiler.InitGlobalScope();
             compiler.CompilationStopwatch = stopwatch;
-            compiler.GenerateAstTree();
+
+            // references
+            ProjectReferencesResolver resolver = new ProjectReferencesResolver();
+            resolver.ResolveProjectShite(currentProjectData, compiler);
+
+            // gen ast shite
+			compiler.GenerateAstTree();
 			if (messageHandler.HasErrors)
                 return (int)CompilerErrors.ParsingError; // parsing errors
 

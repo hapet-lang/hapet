@@ -36,7 +36,7 @@ namespace HapetFrontend.Ast.Declarations
 		}
 	}
 
-	internal class DelegateDeclJson
+	public class DelegateDeclJson
 	{
 		public List<ParamDeclJson> Parameters { get; set; }
 		public string ReturnType { get; set; }

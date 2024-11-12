@@ -50,7 +50,7 @@ namespace HapetFrontend.Ast.Declarations
 		}
 	}
 
-	internal class EnumDeclJson
+	public class EnumDeclJson
 	{
 		public List<string> Fields { get; set; }
 		public List<BigInteger> Values { get; set; }

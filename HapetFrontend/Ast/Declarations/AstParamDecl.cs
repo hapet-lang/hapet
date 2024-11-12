@@ -42,7 +42,7 @@ namespace HapetFrontend.Ast.Declarations
         }
     }
 
-    internal class ParamDeclJson
+    public class ParamDeclJson
     {
         public string Type { get; set; }
         public string Name { get; set; }

@@ -38,7 +38,7 @@ namespace HapetFrontend.Ast.Declarations
 		}
     }
 
-    internal class VarDeclJson
+    public class VarDeclJson
     {
 		public string Type { get; set; }
 		public string Name { get; set; }

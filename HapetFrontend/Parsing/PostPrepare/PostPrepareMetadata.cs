@@ -321,7 +321,7 @@ namespace HapetFrontend.Parsing.PostPrepare
         }
     }
 
-    internal class MetadataJson
+    public class MetadataJson
     {
         public string Version { get; set; }
         public List<ClassDeclJson> ClassDecls { get; set; }

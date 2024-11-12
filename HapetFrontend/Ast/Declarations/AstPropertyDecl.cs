@@ -65,6 +65,9 @@ namespace HapetFrontend.Ast.Declarations
 			};
 			field.Attributes.AddRange(Attributes);
 			field.SpecialKeys.Add(TokenType.KwPrivate);
+			// if the propa is static - make the field also static
+			if (SpecialKeys.Contains(TokenType.KwStatic))
+				field.SpecialKeys.Add(TokenType.KwStatic);
 			return field;
 		}
 
@@ -86,10 +89,14 @@ namespace HapetFrontend.Ast.Declarations
 
 			if (SetBlock == null)
 			{
+				// left part is null if it is a static propa
+				AstNestedExpr leftPart = null;
+				if (!SpecialKeys.Contains(TokenType.KwStatic))
+					leftPart = new AstNestedExpr(new AstIdExpr("this"), null);
 				var setBlock = new AstBlockExpr(new List<AstStatement>()
 				{
 					// the stmt is - 'this.field_Prop = value'
-					new AstAssignStmt(new AstNestedExpr(new AstIdExpr($"field_{Name.Name}"), new AstNestedExpr(new AstIdExpr("this"), null)), new AstIdExpr("value"), Location),
+					new AstAssignStmt(new AstNestedExpr(new AstIdExpr($"field_{Name.Name}"), leftPart), new AstIdExpr("value"), Location),
 				}, Location);
 				func.Body = setBlock;
 			}
@@ -115,10 +122,14 @@ namespace HapetFrontend.Ast.Declarations
 
 			if (GetBlock == null)
 			{
+				// left part is null if it is a static propa
+				AstNestedExpr leftPart = null;
+				if (!SpecialKeys.Contains(TokenType.KwStatic))
+					leftPart = new AstNestedExpr(new AstIdExpr("this"), null);
 				var getBlock = new AstBlockExpr(new List<AstStatement>()
 				{
 					// the stmt is - 'return this.field_Prop'
-					new AstReturnStmt(new AstNestedExpr(new AstIdExpr($"field_{Name.Name}"), new AstNestedExpr(new AstIdExpr("this"), null)), Location),
+					new AstReturnStmt(new AstNestedExpr(new AstIdExpr($"field_{Name.Name}"), leftPart), Location),
 				}, Location);
 				func.Body = getBlock;
 			}
@@ -130,7 +141,7 @@ namespace HapetFrontend.Ast.Declarations
 		}
 	}
 
-	internal class PropertyDeclJson
+	public class PropertyDeclJson
 	{
 		public string Type { get; set; }
 		public string Name { get; set; }

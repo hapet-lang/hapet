@@ -51,7 +51,7 @@ namespace HapetFrontend.Ast.Declarations
         }
     }
 
-    internal class StructDeclJson
+    public class StructDeclJson
     {
         public List<VarDeclJson> Fields { get; set; }
         public string Name { get; set; }

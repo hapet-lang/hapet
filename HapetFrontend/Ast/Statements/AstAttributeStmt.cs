@@ -33,7 +33,7 @@ namespace HapetFrontend.Ast.Statements
 		}
 	}
 
-	internal class AttributeJson
+	public class AttributeJson
 	{
 		public string Name { get; set; }
 		public List<object> Values { get; set; }

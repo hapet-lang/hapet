@@ -30,6 +30,13 @@ namespace HapetCompiler.ProjectConf
 								_projectData.ProjectReferences.Add(thePathToProject);
 								break;
 							}
+						case "Reference":
+							{
+								// TODO: checks and errors that the attr exists
+								string thePathToDll = childnode.Attributes.GetNamedItem("Include").Value;
+								_projectData.References.Add(thePathToDll);
+								break;
+							}
 						default:
 							{
                                 var loc = NodeLocationFinder.GetLocationOfNode(_projectFileText, childnode, _projectPathAbsolute);

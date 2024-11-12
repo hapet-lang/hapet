@@ -50,7 +50,7 @@ namespace HapetFrontend.Ast.Declarations
         }
     }
 
-    internal class FuncDeclJson
+    public class FuncDeclJson
     {
         public List<ParamDeclJson> Parameters { get; set; }
         public string ReturnType { get; set; }

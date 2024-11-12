@@ -6,12 +6,14 @@
 
 		<OutputIrFile>true</OutputIrFile>
 		<Optimization>0</Optimization>
+		<Verbose>true</Verbose>
 
         <TargetPlatform>win-32</TargetPlatform>
         <TargetFormat>Console</TargetFormat>
 	</PropertyGroup>
 
 	<ItemGroup>
-		<ProjectReference Include="../../std/System/System.hptproj" />
+		<!--<ProjectReference Include="../../std/System/System.hptproj" />-->
+		<Reference Include="System" />
 	</ItemGroup>
 </Project>
