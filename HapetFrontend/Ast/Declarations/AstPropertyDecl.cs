@@ -153,5 +153,15 @@ namespace HapetFrontend.Ast.Declarations
 		public List<AttributeJson> Attributes { get; set; }
 
 		public string DocString { get; set; }
+
+		public AstPropertyDecl GetAst()
+		{
+			var decl = new AstPropertyDecl(new AstIdExpr(Type), new AstIdExpr(Name), null, DocString);
+			decl.HasGet = HasGet;
+			decl.HasSet = HasSet;
+			decl.SpecialKeys.AddRange(SpecialKeys);
+			decl.Attributes.AddRange(Attributes.Select(x => x.GetAst()));
+			return decl;
+		}
 	}
 }

@@ -44,7 +44,7 @@ namespace HapetFrontend.Ast.Declarations
 				Name = Name.Name,
 				SpecialKeys = SpecialKeys,
 				Attributes = attributes,
-				InheritedType = InheritedType.OutType,
+				InheritedType = InheritedType.OutType.ToString(),
 				DocString = Documentation
 			};
 		}
@@ -58,8 +58,23 @@ namespace HapetFrontend.Ast.Declarations
 
 		public List<TokenType> SpecialKeys { get; set; }
 		public List<AttributeJson> Attributes { get; set; }
-		public HapetType InheritedType { get; set; }
+		public string InheritedType { get; set; }
 
 		public string DocString { get; set; }
+
+		public AstEnumDecl GetAst()
+		{
+			var fields = new List<AstVarDecl>();
+			for (int i = 0; i < Fields.Count; i++)
+			{
+				var v = new AstVarDecl(new AstIdExpr(InheritedType), new AstIdExpr(Fields[i]), new AstNumberExpr(NumberData.FromInt(Values[i])));
+				fields.Add(v);
+			}
+			var decl = new AstEnumDecl(new AstIdExpr(Name), fields, DocString);
+			decl.SpecialKeys.AddRange(SpecialKeys);
+			decl.Attributes.AddRange(Attributes.Select(x => x.GetAst()));
+			decl.InheritedType = new AstNestedExpr(new AstIdExpr(InheritedType), null);
+			return decl;
+		}
 	}
 }

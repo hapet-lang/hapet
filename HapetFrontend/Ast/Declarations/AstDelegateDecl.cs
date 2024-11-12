@@ -46,5 +46,13 @@ namespace HapetFrontend.Ast.Declarations
 		public List<AttributeJson> Attributes { get; set; }
 
 		public string DocString { get; set; }
+
+		public AstDelegateDecl GetAst()
+		{
+			var decl = new AstDelegateDecl(Parameters.Select(x => x.GetAst()).ToList(), new AstIdExpr(ReturnType), new AstIdExpr(Name), DocString);
+			decl.SpecialKeys.AddRange(SpecialKeys);
+			decl.Attributes.AddRange(Attributes.Select(x => x.GetAst()));
+			return decl;
+		}
 	}
 }

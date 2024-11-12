@@ -1,6 +1,8 @@
 ﻿using HapetFrontend.Ast.Expressions;
 using HapetFrontend.Ast.Statements;
 using HapetFrontend.Parsing;
+using System.Collections.Generic;
+using System.Text.Json.Serialization;
 
 namespace HapetFrontend.Ast.Declarations
 {
@@ -51,5 +53,14 @@ namespace HapetFrontend.Ast.Declarations
 		public List<AttributeJson> Attributes { get; set; }
 
 		public string DocString { get; set; }
+
+		public AstParamDecl GetAst()
+		{
+			// TODO: WARN! default value is not saving yet!!!
+			var pr = new AstParamDecl(new AstIdExpr(Type), new AstIdExpr(Name), null, DocString);
+			pr.SpecialKeys.AddRange(SpecialKeys);
+			pr.Attributes.AddRange(Attributes.Select(x => x.GetAst()));
+			return pr;
+		}
     }
 }

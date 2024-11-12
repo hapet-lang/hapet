@@ -62,5 +62,14 @@ namespace HapetFrontend.Ast.Declarations
 		public CallingConvention CallingConvention { get; set; }
 
         public string DocString { get; set; }
-    }
+
+        public AstFuncDecl GetAst()
+        {
+            var decl = new AstFuncDecl(Parameters.Select(x => x.GetAst()).ToList(), new AstIdExpr(ReturnType), null, new AstIdExpr(Name), DocString);
+            decl.SpecialKeys.AddRange(SpecialKeys);
+            decl.Attributes.AddRange(Attributes.Select(x => x.GetAst()));
+            decl.CallingConvention = CallingConvention;
+			return decl;
+        }
+	}
 }
