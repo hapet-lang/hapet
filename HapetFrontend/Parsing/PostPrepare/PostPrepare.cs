@@ -46,25 +46,19 @@ namespace HapetFrontend.Parsing.PostPrepare
 
 		private void SearchForMainFunction()
 		{
-			foreach (var (path, file) in _compiler.GetFiles())
+			foreach (var clsDecl in _serializeClassesMetadata)
 			{
-				foreach (var stmt in file.Statements)
+				foreach (var decl in clsDecl.Declarations)
 				{
-					if (stmt is not AstClassDecl)
+					if (decl is not AstFuncDecl)
 						continue;
 
-					foreach (var decl in (stmt as AstClassDecl).Declarations)
+					var funcDecl = decl as AstFuncDecl;
+					if (funcDecl.Name.Name.EndsWith("Main(string[])") &&
+						funcDecl.Returns.OutType == IntType.GetIntType(4, true) &&
+						funcDecl.Parameters.Count == 1)
 					{
-						if (decl is not AstFuncDecl)
-							continue;
-
-						var funcDecl = decl as AstFuncDecl;
-						if (funcDecl.Name.Name.EndsWith("Main(string[])") &&
-							funcDecl.Returns.OutType == IntType.GetIntType(4, true) &&
-							funcDecl.Parameters.Count == 1)
-						{
-							_compiler.MainFunction = funcDecl;
-						}
+						_compiler.MainFunction = funcDecl;
 					}
 				}
 			}

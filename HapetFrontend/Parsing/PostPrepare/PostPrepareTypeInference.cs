@@ -16,28 +16,25 @@ namespace HapetFrontend.Parsing.PostPrepare
 		private void PostPrepareTypeInference()
 		{
 			PostPrepareInternalShiteInference();
-			foreach (var (path, file) in _compiler.GetFiles())
+			foreach (var classDecl in AllClassesMetadata)
 			{
-				_currentSourceFile = file;
-				foreach (var stmt in file.Statements)
-				{
-					if (stmt is AstClassDecl classDecl)
-					{
-						PostPrepareClassInference(classDecl);
-					}
-					else if (stmt is AstStructDecl structDecl)
-					{
-						PostPrepareStructInference(structDecl);
-					}
-					else if (stmt is AstEnumDecl enumDecl)
-					{
-						PostPrepareEnumInference(enumDecl);
-					}
-					else if (stmt is AstDelegateDecl delegateDecl)
-					{
-						PostPrepareDelegateInference(delegateDecl);
-					}
-				}
+				_currentSourceFile = classDecl.SourceFile;
+				PostPrepareClassInference(classDecl);
+			}
+			foreach (var structDecl in AllStructsMetadata)
+			{
+				_currentSourceFile = structDecl.SourceFile;
+				PostPrepareStructInference(structDecl);
+			}
+			foreach (var enumDecl in AllEnumsMetadata)
+			{
+				_currentSourceFile = enumDecl.SourceFile;
+				PostPrepareEnumInference(enumDecl);
+			}
+			foreach (var delegateDecl in AllDelegatesMetadata)
+			{
+				_currentSourceFile = delegateDecl.SourceFile;
+				PostPrepareDelegateInference(delegateDecl);
 			}
 		}
 
@@ -131,7 +128,7 @@ namespace HapetFrontend.Parsing.PostPrepare
                 }
 
 				// if the containing class is empty - it is external func
-				if (funcDecl.ContainingClass != null)
+				if (funcDecl.ContainingClass != null && !funcDecl.Name.Name.Contains("::"))
 				{
 					// renaming func name from 'Anime' to 'Anime(int, float)'
 					string newName = $"{funcDecl.ContainingClass.Name.Name}::{funcDecl.Name.Name}{funcDecl.Parameters.GetParamsString()}";

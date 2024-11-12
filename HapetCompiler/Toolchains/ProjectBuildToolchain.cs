@@ -38,12 +38,13 @@ namespace HapetCompiler.Toolchains
 			Compiler.AssemblyPointerSize = currentProjectSettings.TargetPlatformData.PointerSize;
             // creating the compiler and post preparer
             var compiler = new Compiler(currentProjectSettings, messageHandler);
-            compiler.InitGlobalScope();
+			var postPreparer = new PostPrepare(compiler);
+			compiler.InitGlobalScope();
             compiler.CompilationStopwatch = stopwatch;
 
             // references
             ProjectReferencesResolver resolver = new ProjectReferencesResolver();
-            resolver.ResolveProjectShite(currentProjectData, compiler);
+            resolver.ResolveProjectShite(currentProjectData, currentProjectSettings, compiler, postPreparer);
 
             // gen ast shite
 			compiler.GenerateAstTree();
@@ -52,7 +53,6 @@ namespace HapetCompiler.Toolchains
 
 			messageHandler.ReportMessage($"{Funcad.GetPrettyTimeString(stopwatch.Elapsed)} Post preparation...", ReportType.Info);
 			// post prepare
-			var postPreparer = new PostPrepare(compiler);
 			int ppResult = postPreparer.StartPreparation();
             if (ppResult != 0)
 				return ppResult; // post prepare errors

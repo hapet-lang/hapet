@@ -15,13 +15,19 @@ namespace HapetFrontend.Parsing.PostPrepare
 		public List<AstDelegateDecl> AllDelegatesMetadata { get; } = new List<AstDelegateDecl>();
 		public List<AstFuncDecl> AllFunctionsMetadata { get; } = new List<AstFuncDecl>();
 
-        // TODO: some changes should be done in the file when impl 'using' and class inheritance
+		private List<AstClassDecl> _serializeClassesMetadata { get; } = new List<AstClassDecl>();
+		private List<AstStructDecl> _serializeStructsMetadata { get; } = new List<AstStructDecl>();
+		private List<AstEnumDecl> _serializeEnumsMetadata { get; } = new List<AstEnumDecl>();
+		private List<AstDelegateDecl> _serializeDelegatesMetadata { get; } = new List<AstDelegateDecl>();
+		private List<AstFuncDecl> _serializeFunctionsMetadata { get; } = new List<AstFuncDecl>();
 
-        private int PostPrepareMetadata()
+		// TODO: some changes should be done in the file when impl 'using' and class inheritance
+		private int PostPrepareMetadata()
         {
             PostPrepareMetadataTypes();
             PostPrepareMetadataInheritance();
-            PostPrepareMetadataFunctions();
+			PostPrepareMetadataDelegates();
+			PostPrepareMetadataFunctions();
             PostPrepareMetadataTypeFields();
             PostPrepareMetadataAttributes();
 
@@ -58,7 +64,8 @@ namespace HapetFrontend.Parsing.PostPrepare
                         classDecl.Name = classDecl.Name.GetCopy(newClassName);
                         file.NamespaceScope.DefineDeclSymbol(classDecl.Name.Name, classDecl);
 						AllClassesMetadata.Add(classDecl);
-                    }
+						_serializeClassesMetadata.Add(classDecl);
+					}
                     else if (stmt is AstStructDecl structDecl)
                     {
                         // creating a new struct name with namespace
@@ -66,7 +73,8 @@ namespace HapetFrontend.Parsing.PostPrepare
                         structDecl.Name = structDecl.Name.GetCopy(newClassName);
                         file.NamespaceScope.DefineDeclSymbol(structDecl.Name.Name, structDecl);
 						AllStructsMetadata.Add(structDecl);
-                    }
+						_serializeStructsMetadata.Add(structDecl);
+					}
 					else if (stmt is AstEnumDecl enumDecl)
 					{
 						// creating a new enum name with namespace
@@ -74,6 +82,7 @@ namespace HapetFrontend.Parsing.PostPrepare
 						enumDecl.Name = enumDecl.Name.GetCopy(newClassName);
 						file.NamespaceScope.DefineDeclSymbol(enumDecl.Name.Name, enumDecl);
 						AllEnumsMetadata.Add(enumDecl);
+						_serializeEnumsMetadata.Add(enumDecl);
 					}
 					else if (stmt is AstDelegateDecl delegateDecl)
 					{
@@ -82,6 +91,7 @@ namespace HapetFrontend.Parsing.PostPrepare
 						delegateDecl.Name = delegateDecl.Name.GetCopy(newClassName);
 						file.NamespaceScope.DefineDeclSymbol(delegateDecl.Name.Name, delegateDecl);
 						AllDelegatesMetadata.Add(delegateDecl);
+						_serializeDelegatesMetadata.Add(delegateDecl);
 					}
 				}
             }
@@ -188,16 +198,21 @@ namespace HapetFrontend.Parsing.PostPrepare
 			}
         }
 
-        private void PostPrepareMetadataFunctions()
-        {
+		private void PostPrepareMetadataDelegates()
+		{
 			// inferrencing delegates
 			foreach (var del in AllDelegatesMetadata)
 			{
 				_currentSourceFile = del.SourceFile;
 				PostPrepareDelegateInference(del);
 			}
+		}
+
+        private void PostPrepareMetadataFunctions()
+        {
 			// inferrencing funcs
-			foreach (var cls in AllClassesMetadata)
+			// WARN! _serializeClassesMetadata is used because we don't won't external funcs to be inferred like that
+			foreach (var cls in _serializeClassesMetadata) 
 			{
 				_currentSourceFile = cls.SourceFile;
 				_currentClass = cls;
@@ -205,6 +220,7 @@ namespace HapetFrontend.Parsing.PostPrepare
 				{
 					PostPrepareFunctionInference(decl, true);
 					AllFunctionsMetadata.Add(decl);
+					_serializeFunctionsMetadata.Add(decl);
 				}
 			}
         }
@@ -299,11 +315,11 @@ namespace HapetFrontend.Parsing.PostPrepare
 			MetadataJson metadata = new MetadataJson();
             metadata.Version = projectVersion;
             // serialize all unreflected
-            metadata.ClassDecls = AllClassesMetadata.Where(x => !x.SpecialKeys.Contains(TokenType.KwUnreflected)).Select(x => x.GetJson()).ToList();
-            metadata.StructDecls = AllStructsMetadata.Where(x => !x.SpecialKeys.Contains(TokenType.KwUnreflected)).Select(x => x.GetJson()).ToList();
-            metadata.EnumDecls = AllEnumsMetadata.Where(x => !x.SpecialKeys.Contains(TokenType.KwUnreflected)).Select(x => x.GetJson()).ToList();
-            metadata.DelegateDecls = AllDelegatesMetadata.Where(x => !x.SpecialKeys.Contains(TokenType.KwUnreflected)).Select(x => x.GetJson()).ToList();
-            metadata.FuncDecls = AllFunctionsMetadata.Where(x => !x.SpecialKeys.Contains(TokenType.KwUnreflected)).Select(x => x.GetJson()).ToList();
+            metadata.ClassDecls = _serializeClassesMetadata.Where(x => !x.SpecialKeys.Contains(TokenType.KwUnreflected)).Select(x => x.GetJson()).ToList();
+            metadata.StructDecls = _serializeStructsMetadata.Where(x => !x.SpecialKeys.Contains(TokenType.KwUnreflected)).Select(x => x.GetJson()).ToList();
+            metadata.EnumDecls = _serializeEnumsMetadata.Where(x => !x.SpecialKeys.Contains(TokenType.KwUnreflected)).Select(x => x.GetJson()).ToList();
+            metadata.DelegateDecls = _serializeDelegatesMetadata.Where(x => !x.SpecialKeys.Contains(TokenType.KwUnreflected)).Select(x => x.GetJson()).ToList();
+            metadata.FuncDecls = _serializeFunctionsMetadata.Where(x => !x.SpecialKeys.Contains(TokenType.KwUnreflected)).Select(x => x.GetJson()).ToList();
 
             // WARN: take care about the shite that is goin on here
             var sz = JsonConvert.SerializeObject(metadata, Formatting.Indented);

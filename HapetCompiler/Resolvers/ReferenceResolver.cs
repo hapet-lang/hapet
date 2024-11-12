@@ -11,14 +11,23 @@ namespace HapetCompiler.Resolvers
 			foreach (var r in _projectData.References)
 			{
 				string fileName = $"{r}.json";
-				if (!File.Exists(fileName))
+				string outFolder = _projectSettings.OutputDirectory;
+				string theAssemblyPath;
+
+				// mb some other checks?
+				if (File.Exists(fileName))
+					theAssemblyPath = fileName;
+				else if (File.Exists($"{outFolder}/{fileName}"))
+					theAssemblyPath = $"{outFolder}/{fileName}";
+				else
 				{
 					_compiler.MessageHandler.ReportMessage($"File {fileName} could not be found. Please check project references properly");
 					continue;
 				}
-				var metadata = JsonConvert.DeserializeObject<MetadataJson>(fileName);
-				var postPreparer = new PostPrepare(_compiler);
-				postPreparer.PostPrepareExternalMetadata(metadata);
+
+				var jsonText = File.ReadAllText(theAssemblyPath);
+				var metadata = JsonConvert.DeserializeObject<MetadataJson>(jsonText);
+				_postPreparer.PostPrepareExternalMetadata(metadata, fileName);
 			}
 		}
 	}

@@ -42,7 +42,7 @@ namespace HapetCompiler.ProjectConf
 			_projectSettings.ProjectConfiguration = GetValueOrDefault("ProjectConfiguration", "Debug");
 			// setting project out folder
 			var outDirRelative = GetValueOrDefault("OutputDirectory", $"./bin/{_projectSettings.ProjectConfiguration}");
-			_projectSettings.OutputDirectory = $"{Path.GetDirectoryName(_projectPathAbsolute).Replace("\\", "/").TrimEnd('/')}/{outDirRelative.Replace("\\", "/")}";
+			_projectSettings.OutputDirectory = $"{Path.GetDirectoryName(_projectPathAbsolute).Replace("\\", "/").TrimEnd('/')}/{outDirRelative.Replace("\\", "/").TrimEnd('/')}";
 			// WARN: creating the dir here!!!
 			if (!Directory.Exists(_projectSettings.OutputDirectory)) Directory.CreateDirectory(_projectSettings.OutputDirectory);
 			// setting the root namespace
