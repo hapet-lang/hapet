@@ -46,6 +46,9 @@ namespace HapetCompiler
 			// getting the print color from message type
 			ConsoleColor printColor = GetColorByReportType(reportType);
 
+			if (reportType == ReportType.Error)
+				HasErrors = true;
+
 #if DEBUG && PRINT_SRC_LOCATION
             Log($"{callingFunctionFile}:{callLineNumber} - {callingFunctionName}()", ConsoleColor.DarkYellow);
 #endif

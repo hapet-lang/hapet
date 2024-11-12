@@ -35,10 +35,18 @@ namespace HapetCompiler.ProjectConf
             _messageHandler = messageHandler;
 
 			XmlDocument projDoc = new XmlDocument();
-            projDoc.Load(_projectPath);
-            if (projDoc == null)
+            try
             {
-                _messageHandler.ReportMessage($"Project file {_projectPath} could not be parsed");
+				projDoc.Load(_projectPath);
+			}
+			catch (Exception e)
+            {
+				_messageHandler.ReportMessage($"Exception while parsing {_projectPathAbsolute}:\n{e.Message}");
+				return;
+			}
+            if (projDoc.DocumentElement == null)
+            {
+                _messageHandler.ReportMessage($"Project file {_projectPathAbsolute} could not be parsed");
                 return;
             }
 
