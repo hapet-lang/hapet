@@ -128,10 +128,13 @@ namespace HapetFrontend.Parsing.PostPrepare
                 }
 
 				// if the containing class is empty - it is external func
-				if (funcDecl.ContainingClass != null && !funcDecl.Name.Name.Contains("::"))
+				if (funcDecl.ContainingClass != null)
 				{
-					// renaming func name from 'Anime' to 'Anime(int, float)'
-					string newName = $"{funcDecl.ContainingClass.Name.Name}::{funcDecl.Name.Name}{funcDecl.Parameters.GetParamsString()}";
+					// it could already contain all the shite if the func is imported from another assembly :)
+					string newName = funcDecl.Name.Name;
+					if (!funcDecl.Name.Name.Contains("::"))
+						// renaming func name from 'Anime' to 'Anime(int, float)'
+						newName = $"{funcDecl.ContainingClass.Name.Name}::{funcDecl.Name.Name}{funcDecl.Parameters.GetParamsString()}";
 					// if it is public func - it should be visible in the scope in which func's class is
 					funcDecl.ContainingClass.SubScope.DefineDeclSymbol(newName, funcDecl);
 					funcDecl.Name = funcDecl.Name.GetCopy(newName);

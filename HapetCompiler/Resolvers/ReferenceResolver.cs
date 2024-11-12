@@ -27,8 +27,11 @@ namespace HapetCompiler.Resolvers
 
 				var jsonText = File.ReadAllText(theAssemblyPath);
 				var metadata = JsonConvert.DeserializeObject<MetadataJson>(jsonText);
-				_postPreparer.PostPrepareExternalMetadata(metadata, fileName);
-			}
+				// supressing all the warnings from included project
+				_postPreparer.SupressWarnings = true;
+                _postPreparer.PostPrepareExternalMetadata(metadata, r);
+                _postPreparer.SupressWarnings = false;
+            }
 		}
 	}
 }

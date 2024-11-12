@@ -34,8 +34,12 @@ namespace HapetFrontend.Parsing.PostPrepare
 				fnc.ContainingClass = theClass;
 			}
 
+            // we need to do this to know locations of the asts
+            _externalProjectName = $"Referenced assembly '.../{fileName}'";
 			PostPrepareExternalScoping();
-			PostPrepareExternalMetadataInternal();
+            _externalProjectName = null;
+
+            PostPrepareExternalMetadataInternal();
 		}
 
 		/// <summary>

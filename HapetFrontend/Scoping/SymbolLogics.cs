@@ -66,7 +66,7 @@ namespace HapetFrontend.Scoping
             {
                 foreach (var k in _symbolTable.Keys)
                 {
-                    if (k.StartsWith(name))
+                    if (k.StartsWith(name) && _symbolTable[k] is NamespaceSymbol)
                     {
 						return _symbolTable[k];
 					}

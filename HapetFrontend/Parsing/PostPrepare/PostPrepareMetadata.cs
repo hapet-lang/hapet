@@ -327,21 +327,21 @@ namespace HapetFrontend.Parsing.PostPrepare
             var projectName = _compiler.CurrentProjectSettings.ProjectName;
             File.WriteAllText($"{outFolderPath}/{projectName}.json", sz);
 
-			MetadataJsonTest metadata2 = new MetadataJsonTest();
-			metadata2.Version = projectVersion;
-			// serialize all unreflected
-			metadata2.ClassDecls = _serializeClassesMetadata;
-			metadata2.StructDecls = _serializeStructsMetadata;
-			metadata2.EnumDecls = _serializeEnumsMetadata;
-			metadata2.DelegateDecls = _serializeDelegatesMetadata;
-			// metadata2.FuncDecls = _serializeFunctionsMetadata;
-			var sz2 = JsonConvert.SerializeObject(metadata2, Formatting.Indented);
-			var outFolderPath2 = _compiler.CurrentProjectSettings.OutputDirectory;
-			var projectName2 = _compiler.CurrentProjectSettings.ProjectName;
-			File.WriteAllText($"{outFolderPath2}/{projectName2}22.json", sz2);
+			//MetadataJsonTest metadata2 = new MetadataJsonTest();
+			//metadata2.Version = projectVersion;
+			//// serialize all unreflected
+			//metadata2.ClassDecls = _serializeClassesMetadata;
+			//metadata2.StructDecls = _serializeStructsMetadata;
+			//metadata2.EnumDecls = _serializeEnumsMetadata;
+			//metadata2.DelegateDecls = _serializeDelegatesMetadata;
+			//// metadata2.FuncDecls = _serializeFunctionsMetadata;
+			//var sz2 = JsonConvert.SerializeObject(metadata2, Formatting.Indented);
+			//var outFolderPath2 = _compiler.CurrentProjectSettings.OutputDirectory;
+			//var projectName2 = _compiler.CurrentProjectSettings.ProjectName;
+			//File.WriteAllText($"{outFolderPath2}/{projectName2}22.json", sz2);
 
-			var tst = File.ReadAllText($"{outFolderPath2}/{projectName2}22.json");
-			var sz222 = JsonConvert.DeserializeObject<MetadataJsonTest>(tst);
+			//var tst = File.ReadAllText($"{outFolderPath2}/{projectName2}22.json");
+			//var sz222 = JsonConvert.DeserializeObject<MetadataJsonTest>(tst);
 		}
 
         private void RemoveAllProperties()

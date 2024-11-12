@@ -2,6 +2,8 @@
 using HapetFrontend.Ast.Expressions;
 using HapetFrontend.Parsing;
 using HapetFrontend.Types;
+using Newtonsoft.Json.Linq;
+using System.Numerics;
 using System.Xml.Linq;
 
 namespace HapetFrontend.Ast.Statements
@@ -26,11 +28,26 @@ namespace HapetFrontend.Ast.Statements
 
 		internal AttributeJson GetJson()
 		{
-			return new AttributeJson()
+            List<object> pars = new List<object>();
+            foreach (var v in Parameters.Select(x => x.OutValue))
+            {
+                if (v is NumberData nd)
+                {
+					if (nd.Type == Enums.NumberType.Float)
+						pars.Add(nd.DoubleValue);
+					else
+                        pars.Add(nd.IntValue);
+                }
+                else
+                {
+                    pars.Add(v);
+                }
+            }
+            return new AttributeJson()
 			{
 				Name = AttributeName.TryFlatten(null, null),
-				Values = Parameters.Select(x => x.OutValue).ToList()
-			};
+				Values = pars,
+            };
 		}
 	}
 
@@ -44,21 +61,26 @@ namespace HapetFrontend.Ast.Statements
 			List<AstExpression> pars = new List<AstExpression>();
 			foreach (var v in Values)
 			{
-				if (v is int v1)
+				switch (v)
 				{
-					pars.Add(new AstNumberExpr(NumberData.FromInt(v1)));
-				}
-				else if (v is double v2)
-				{
-					pars.Add(new AstNumberExpr(NumberData.FromDouble(v2)));
-				}
-				else if (v is string str)
-				{
-					pars.Add(new AstStringExpr(str));
-				}
-				else
-				{
-					// TODO: anything else?
+                    case int:
+                        pars.Add(new AstNumberExpr(NumberData.FromInt((int)v)));
+                        break;
+                    case long:
+                        pars.Add(new AstNumberExpr(NumberData.FromInt((long)v)));
+                        break;
+                    case float:
+                        pars.Add(new AstNumberExpr(NumberData.FromDouble((float)v)));
+                        break;
+                    case double:
+                        pars.Add(new AstNumberExpr(NumberData.FromDouble((double)v)));
+						break;
+                    case string s:
+                        pars.Add(new AstStringExpr(s));
+                        break;
+					default:
+                        // TODO: anything else?
+                        break;
 				}
 			}
 			return new AstAttributeStmt(Parser.ParseType(Name) as AstNestedExpr, pars);

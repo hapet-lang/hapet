@@ -9,7 +9,6 @@ namespace HapetFrontend.Ast
 	{
 		[JsonIgnore]
 		public string File { get; set; }
-		public string FileForMetadata { get; set; }
 		public int Line { get; set; }
 		public int Index { get; set; }
 		public int End { get; set; }
@@ -32,7 +31,6 @@ namespace HapetFrontend.Ast
 			return new TokenLocation
 			{
 				File = File,
-				FileForMetadata = FileForMetadata,
 				Line = Line,
 				Index = Index,
 				End = End,

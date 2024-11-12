@@ -26,7 +26,7 @@ namespace HapetCompiler
 			this.DoPrintLocation = printLocation;
 		}
 
-		public void ReportMessage(string text, ILocation location, string message, List<CompilerMessage> subMessages, ReportType reportType = ReportType.Error, [CallerFilePath] string callingFunctionFile = "", [CallerMemberName] string callingFunctionName = "", [CallerLineNumber] int callLineNumber = 0)
+        public void ReportMessage(string text, ILocation location, string message, List<CompilerMessage> subMessages, ReportType reportType = ReportType.Error, [CallerFilePath] string callingFunctionFile = "", [CallerMemberName] string callingFunctionName = "", [CallerLineNumber] int callLineNumber = 0)
 		{
 			ReportMessage(new CompilerMessage
 			{
@@ -78,7 +78,7 @@ namespace HapetCompiler
 				TokenLocation end = message.Location.Ending;
 
 				// location, message
-				LogInline($"{beginning}: \n", ConsoleColor.White);
+				LogInline($"{(beginning)}: \n", ConsoleColor.White);
 				Log(message.Message, printColor);
 
 				if (DoPrintLocation)
@@ -127,6 +127,9 @@ namespace HapetCompiler
 		{
 			TokenLocation beginning = location.Beginning;
 			TokenLocation end = location.Ending;
+
+			if (string.IsNullOrWhiteSpace(text) || beginning == null || end == null)
+				return;
 
 			int index = beginning.Index;
 			int lineNumber = beginning.Line;

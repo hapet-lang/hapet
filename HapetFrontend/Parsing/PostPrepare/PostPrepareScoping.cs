@@ -10,6 +10,13 @@ namespace HapetFrontend.Parsing.PostPrepare
 {
 	public partial class PostPrepare
 	{
+		/// <summary>
+		/// This kostyl is used to set TokenLocations on asts that were included from other projects/libraries
+		/// TODO: there is a normal workaround for it. Just when deserializing metadata - we need to set normal 
+		/// token locations relatively to .json file
+		/// </summary>
+		private string _externalProjectName = null;
+
 		private void PostPrepareScoping()
 		{
 			PostPrepareInternalShiteScoping();
@@ -704,6 +711,11 @@ namespace HapetFrontend.Parsing.PostPrepare
 			child.Scope = anotherScope;
 			child.Parent = parent;
 			child.SourceFile = _currentSourceFile;
+
+			if (_externalProjectName != null && child.Location == null)
+			{
+				child.Location = new Location(new TokenLocation() { File = _externalProjectName });
+            }
 		}
 	}
 }
