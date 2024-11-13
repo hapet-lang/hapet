@@ -1,4 +1,5 @@
-﻿using HapetFrontend.Ast;
+﻿using HapetFrontend;
+using HapetFrontend.Ast;
 using HapetFrontend.Entities;
 using System;
 using System.Collections.Generic;
@@ -64,6 +65,14 @@ namespace HapetCompiler
 		{
 			if (message.ReportType == ReportType.Error)
 				HasErrors = true;
+
+			// do not report warning messages from other assemblies
+			// TODO: you can get a parameter from cmd to enable the warnings :)
+			if (message.ReportType == ReportType.Warning &&
+				string.IsNullOrWhiteSpace(message.FileText))
+			{
+				return;
+			}
 
 #if DEBUG && PRINT_SRC_LOCATION
             Log($"{error.File}:{error.LineNumber} - {error.Function}()", ConsoleColor.DarkYellow);
