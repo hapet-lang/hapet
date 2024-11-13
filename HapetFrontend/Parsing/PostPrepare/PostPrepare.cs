@@ -23,13 +23,6 @@ namespace HapetFrontend.Parsing.PostPrepare
 		/// </summary>
 		private AstFuncDecl _currentFunction;
 
-		/// <summary>
-		/// Used to supress all warnings while post preparing
-		/// This is needed when including other projects metadata into current one
-		/// SO their warnings won't be shown
-		/// </summary>
-		public bool SupressWarnings { get; set; }
-
 		public PostPrepare(Compiler compiler)
 		{
 			_compiler = compiler;

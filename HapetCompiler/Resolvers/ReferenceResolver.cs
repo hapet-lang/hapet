@@ -38,10 +38,7 @@ namespace HapetCompiler.Resolvers
 
 				var jsonText = File.ReadAllText(theAssemblyPath);
 				var metadata = JsonConvert.DeserializeObject<MetadataJson>(jsonText);
-				// supressing all the warnings from included project
-				_postPreparer.SupressWarnings = true;
                 _postPreparer.PostPrepareExternalMetadata(metadata, r);
-                _postPreparer.SupressWarnings = false;
 
 				PathsToLinkWith.Add(pathToLink);
 				// TODO: is there .lib file when we are on linux?
