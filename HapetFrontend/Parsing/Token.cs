@@ -135,5 +135,9 @@ namespace HapetFrontend.Parsing
 		KwPartial,
 		KwExtern,
 		KwSealed,
+
+		// used only inside compiler to know
+		// that the func is imported from another assembly
+		KwImported,
 	}
 }

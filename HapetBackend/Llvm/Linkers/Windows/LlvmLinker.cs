@@ -114,7 +114,7 @@ namespace HapetBackend.Llvm.Linkers.Windows
 			}
 
 			if (verbose)
-				Console.WriteLine("[LINKER] " + vsLinkerFile + string.Join(" ", lldArgs.Select(a => $"\"{a}\"")));
+				Console.WriteLine("[LINKER] " + vsLinkerFile + " " + string.Join(" ", lldArgs.Select(a => $"\"{a}\"")));
 
 			var process = Funcad.StartProcess(vsLinkerFile, lldArgs,
 							stdout: (s, e) => 

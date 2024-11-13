@@ -66,9 +66,18 @@ namespace HapetBackend.Llvm
 			{
 				// declaring global func
 				LLVMValueRef lfunc = _module.AddFunction(funcName, funcType.Value);
-				// make the function dllexport when it is not 'unreflected'
-				if (!funcDecl.SpecialKeys.Contains(TokenType.KwUnreflected))
+				
+				if (funcDecl.SpecialKeys.Contains(TokenType.KwImported))
 				{
+					// this is an imported function from another assembly
+					lfunc.Linkage = LLVMLinkage.LLVMExternalLinkage;
+					lfunc.DLLStorageClass = LLVMDLLStorageClass.LLVMDLLImportStorageClass;
+
+					// TODO: do I need to define calling convention here like below?
+				}
+				else if (!funcDecl.SpecialKeys.Contains(TokenType.KwUnreflected))
+				{
+					// make the function dllexport when it is not 'unreflected'
 					lfunc.Linkage = LLVMLinkage.LLVMExternalLinkage;
 					lfunc.DLLStorageClass = LLVMDLLStorageClass.LLVMDLLExportStorageClass;
 					
@@ -80,6 +89,7 @@ namespace HapetBackend.Llvm
 				}
 				else
 				{
+					// unreflected function
 					lfunc.Linkage = LLVMLinkage.LLVMInternalLinkage;
 				}
 

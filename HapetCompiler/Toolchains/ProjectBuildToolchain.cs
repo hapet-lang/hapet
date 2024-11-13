@@ -61,7 +61,7 @@ namespace HapetCompiler.Toolchains
 
 			messageHandler.ReportMessage($"{Funcad.GetPrettyTimeString(stopwatch.Elapsed)} Code generation...", ReportType.Info);
 			// code gen
-			bool codeGenOk = GenerateAndCompileCode(compiler, postPreparer, messageHandler);
+			bool codeGenOk = GenerateAndCompileCode(compiler, postPreparer, resolver, messageHandler);
             if (messageHandler.HasErrors || !codeGenOk)
                 return (int)CompilerErrors.CodeGenerationError; // code generation errors
 
@@ -70,7 +70,7 @@ namespace HapetCompiler.Toolchains
             return (int)CompilerErrors.Ok;
         }
 
-        private bool GenerateAndCompileCode(Compiler compiler, PostPrepare postPreparer, IMessageHandler messageHandler)
+        private static bool GenerateAndCompileCode(Compiler compiler, PostPrepare postPreparer, ProjectReferencesResolver resolver, IMessageHandler messageHandler)
         {
             var generator = new LlvmCodeGenerator();
             bool success = generator.GenerateCode(compiler, postPreparer, messageHandler);
@@ -78,7 +78,7 @@ namespace HapetCompiler.Toolchains
                 return false;
 
             // TODO: config parameters normally
-            return generator.CompileCode(Enumerable.Empty<string>(), Enumerable.Empty<string>(), messageHandler);
+            return generator.CompileCode(resolver.PathsToLinkWith, resolver.LibrariesToLinkWith, messageHandler);
         }
     }
 }

@@ -118,6 +118,8 @@ namespace HapetFrontend.Parsing.PostPrepare
 				_currentClass = cls;
 				foreach (var decl in cls.Declarations.Where(x => x is AstFuncDecl).Select(x => x as AstFuncDecl))
 				{
+					// set that the function is imported from another assembly
+					decl.SpecialKeys.Add(TokenType.KwImported);
 					PostPrepareFunctionInference(decl, true);
 					AllFunctionsMetadata.Add(decl);
 				}
