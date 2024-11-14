@@ -15,10 +15,10 @@ namespace HapetCompiler.Resolvers
 
 		private void ResolveReferences()
 		{
+			string outFolder = _projectSettings.OutputDirectory;
 			foreach (var r in _projectData.References)
 			{
 				string fileName = $"{r}.json";
-				string outFolder = _projectSettings.OutputDirectory;
 				string theAssemblyPath;
 				string pathToLink;
 

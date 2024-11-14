@@ -13,7 +13,7 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<!--<ProjectReference Include="../../std/System/System.hptproj" />-->
-		<Reference Include="System" />
+		<ProjectReference Include="../../std/System/System.hptproj" />
+		<!--<Reference Include="System" />-->
 	</ItemGroup>
 </Project>
