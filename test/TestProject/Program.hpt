@@ -6,13 +6,11 @@ public static class Program
 	// public static float Anime22222 { get; set; }
 	public static int Main(string[] args)
 	{
-		Anime222 aaa = Anime222.Field3;
-		AnimeStruct stttr = new AnimeStruct();
+		AnimeDelll tst = new AnimeDelll();
+        AnimeDelegate animeDeleg = DllImportAttribute.TestFunc;
+        int result = tst.CallDelegate(animeDeleg, 6);
 
-		DllImportAttribute di = new DllImportAttribute();
-		int nn = di.TestFunc(5);
-
-		int rett = 4 + nn;
+		int rett = 4 + result;
 		return rett;
 	}
 }
