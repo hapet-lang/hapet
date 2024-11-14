@@ -1,4 +1,6 @@
 ﻿using HapetFrontend;
+using HapetFrontend.Ast.Declarations;
+using HapetFrontend.Scoping;
 using HapetFrontend.Types;
 using LLVMSharp.Interop;
 
@@ -77,8 +79,25 @@ namespace HapetBackend.Llvm
 			_builder.BuildBr(pars);
 
             _builder.PositionAtEnd(pars);
-			// var stringParams = GenerateNormalStringParam(paramTypes, lfunc);
-			var parsss = new LLVMValueRef[] { LLVM.ConstPointerNull(HapetTypeToLLVMType(ArrayType.GetArrayType(StringType.Instance))) };
+
+			// generating params allocs
+			List<LLVMValueRef> mainFuncParams = new List<LLVMValueRef>();
+			for (int i = 0; i < _compiler.MainFunction.Parameters.Count; ++i)
+			{
+				var p = _compiler.MainFunction.Parameters[i];
+				var addrAlloca = _builder.BuildAlloca(HapetTypeToLLVMType(p.Type.OutType), $"{p.Name.Name}.addr");
+				_builder.BuildStore(lfunc.GetParam((uint)i), addrAlloca);
+				_valueMap[p.GetSymbol] = addrAlloca;
+				mainFuncParams.Add(_builder.BuildLoad2(HapetTypeToLLVMType(p.Type.OutType), addrAlloca));
+			}
+
+			// calling proper function to create normal string array from this shite of C
+			var nativeDecl = _compiler.MainFunction.Scope.GetSymbolInNamespace("System.Text", "Native");
+			var getParamsSymbol = (nativeDecl.Decl as AstClassDecl).SubScope.GetSymbol("System.Text.Native::GetParametersArray(int:byte**)") as DeclSymbol;
+			var getParamsFunc = _valueMap[getParamsSymbol];
+			LLVMTypeRef getParamsFuncType = _typeMap[getParamsSymbol.Decl.Type.OutType];
+			LLVMValueRef stringArray = _builder.BuildCall2(getParamsFuncType, getParamsFunc, mainFuncParams.ToArray(), "stringArr");
+			var parsss = new LLVMValueRef[] { stringArray };
 
 			_builder.BuildBr(main);
 
