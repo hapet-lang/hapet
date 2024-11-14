@@ -33,7 +33,6 @@ namespace HapetCompiler.Toolchains
             if (messageHandler.HasErrors)
                 return (int)CompilerErrors.ProjectFileParseError; // proj file parsing errors
 
-            messageHandler.ReportMessage($"{Funcad.GetPrettyTimeString(stopwatch.Elapsed)} Parsing...", ReportType.Info);
 			// setting pointer size for the whole assembly
 			Compiler.AssemblyPointerSize = currentProjectSettings.TargetPlatformData.PointerSize;
             // creating the compiler and post preparer
@@ -46,8 +45,9 @@ namespace HapetCompiler.Toolchains
             ProjectReferencesResolver resolver = new ProjectReferencesResolver();
             resolver.ResolveProjectShite(currentProjectData, currentProjectSettings, compiler, postPreparer);
 
-            // gen ast shite
-            compiler.GenerateAstTree();
+			messageHandler.ReportMessage($"{Funcad.GetPrettyTimeString(stopwatch.Elapsed)} Parsing...", ReportType.Info);
+			// gen ast shite
+			compiler.GenerateAstTree();
 			if (messageHandler.HasErrors)
                 return (int)CompilerErrors.ParsingError; // parsing errors
 

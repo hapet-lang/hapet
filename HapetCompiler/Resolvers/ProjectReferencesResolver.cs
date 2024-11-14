@@ -1,6 +1,9 @@
 ﻿using HapetCompiler.ProjectConf.Data;
 using HapetFrontend;
+using HapetFrontend.Entities;
+using HapetFrontend.Helpers;
 using HapetFrontend.Parsing.PostPrepare;
+using System.Diagnostics;
 
 namespace HapetCompiler.Resolvers
 {
@@ -20,6 +23,7 @@ namespace HapetCompiler.Resolvers
 
 			// TODO: project references
 
+			compiler.MessageHandler.ReportMessage($"{Funcad.GetPrettyTimeString(compiler.CompilationStopwatch.Elapsed)} Resolving references...", ReportType.Info);
 			ResolveReferences();
 		}
 	}

@@ -1,4 +1,7 @@
-﻿using HapetFrontend.Parsing.PostPrepare;
+﻿using HapetFrontend.Entities;
+using HapetFrontend.Helpers;
+using HapetFrontend;
+using HapetFrontend.Parsing.PostPrepare;
 using LLVMSharp;
 using Newtonsoft.Json;
 using System.Reflection;
@@ -18,6 +21,8 @@ namespace HapetCompiler.Resolvers
 				string outFolder = _projectSettings.OutputDirectory;
 				string theAssemblyPath;
 				string pathToLink;
+
+				_compiler.MessageHandler.ReportMessage($"{Funcad.GetPrettyTimeString(_compiler.CompilationStopwatch.Elapsed)}   Resolving '{r}'...", ReportType.Info);
 
 				// mb some other checks?
 				if (File.Exists(fileName))
