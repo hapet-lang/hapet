@@ -69,6 +69,12 @@ namespace HapetFrontend
         /// </summary>
         public string ProjectPath { get; set; }
 
+		/// <summary>
+		/// 'true' when another project is build the current one (project reference). 
+		/// 'false' if it is the main project that user started to compile
+		/// </summary>
+		public bool IsReferencedCompilation { get; set; }
+
 		#region PropertyGroup
 		/// <summary>
 		/// The name of the project that is going to be compiled

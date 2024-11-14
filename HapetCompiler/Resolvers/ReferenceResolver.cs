@@ -22,7 +22,8 @@ namespace HapetCompiler.Resolvers
 				string theAssemblyPath;
 				string pathToLink;
 
-				_compiler.MessageHandler.ReportMessage($"{Funcad.GetPrettyTimeString(_compiler.CompilationStopwatch.Elapsed)}   Resolving '{r}'...", ReportType.Info);
+				if (!_projectSettings.IsReferencedCompilation)
+					_compiler.MessageHandler.ReportMessage($"{Funcad.GetPrettyTimeString(_compiler.CompilationStopwatch.Elapsed)}   Resolving '{r}'...", ReportType.Info);
 
 				// mb some other checks?
 				if (File.Exists(fileName))
