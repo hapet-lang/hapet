@@ -96,12 +96,13 @@ namespace HapetBackend.Llvm
 			var getParamsSymbol = (nativeDecl.Decl as AstClassDecl).SubScope.GetSymbol("System.Text.Native::GetParametersArray(int:byte**)") as DeclSymbol;
 			var getParamsFunc = _valueMap[getParamsSymbol];
 			LLVMTypeRef getParamsFuncType = _typeMap[getParamsSymbol.Decl.Type.OutType];
-			LLVMValueRef stringArray = _builder.BuildCall2(getParamsFuncType, getParamsFunc, mainFuncParams.ToArray(), "stringArr");
-			var parsss = new LLVMValueRef[] { stringArray };
 
 			_builder.BuildBr(main);
 
             _builder.PositionAtEnd(main);
+
+			LLVMValueRef stringArray = _builder.BuildCall2(getParamsFuncType, getParamsFunc, mainFuncParams.ToArray(), "stringArr");
+			var parsss = new LLVMValueRef[] { stringArray };
 
 			{ // call main function
 				var hapetMain = _valueMap[_compiler.MainFunction.GetSymbol];
