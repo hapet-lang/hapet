@@ -15,7 +15,6 @@ namespace HapetFrontend.Parsing.PostPrepare
 	{
 		private void PostPrepareTypeInference()
 		{
-			PostPrepareInternalShiteInference();
 			foreach (var classDecl in AllClassesMetadata)
 			{
 				_currentSourceFile = classDecl.SourceFile;
@@ -36,12 +35,6 @@ namespace HapetFrontend.Parsing.PostPrepare
 				_currentSourceFile = delegateDecl.SourceFile;
 				PostPrepareDelegateInference(delegateDecl);
 			}
-		}
-
-		private void PostPrepareInternalShiteInference()
-		{
-			PostPrepareStructInference(AstStringExpr.StringStruct);
-			PostPrepareStructInference(AstArrayExpr.ArrayStruct);
 		}
 
 		private void PostPrepareClassInference(AstClassDecl classDecl)
@@ -255,8 +248,8 @@ namespace HapetFrontend.Parsing.PostPrepare
 
 				// statements
 				case AstAssignStmt assignStmt:
-					_compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, assignStmt, "(Compiler exception) The statement has to be handled by block expr");
-					// PostPrepareAssignStmtInference(assignStmt, out bool _);
+					// _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, assignStmt, "(Compiler exception) The statement has to be handled by block expr");
+					PostPrepareAssignStmtInference(assignStmt, out bool _);
 					break;
 				case AstForStmt forStmt:
 					PostPrepareForStmtInference(forStmt);

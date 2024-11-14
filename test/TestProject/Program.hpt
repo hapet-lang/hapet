@@ -6,11 +6,7 @@ public static class Program
 	// public static float Anime22222 { get; set; }
 	public static int Main(string[] args)
 	{
-		AnimeDelll tst = new AnimeDelll();
-        AnimeDelegate animeDeleg = DllImportAttribute.TestFunc;
-        int result = tst.CallDelegate(animeDeleg, 6);
-
-		int rett = 4 + result;
+		int rett = 4 + 3;
 		return rett;
 	}
 }

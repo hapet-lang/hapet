@@ -1,0 +1,14 @@
+public class Encoding
+{
+    public static int GetByteCount(byte* chars)
+    {
+        int charsAmount = 0;
+        byte currChar = chars[charsAmount];
+        while (currChar != 0)
+        {
+            charsAmount += 1;
+            currChar = chars[charsAmount];
+        }
+        return charsAmount;
+    }
+}

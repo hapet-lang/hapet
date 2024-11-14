@@ -24,7 +24,8 @@ namespace HapetFrontend.Parsing.PostPrepare
 		// TODO: some changes should be done in the file when impl 'using' and class inheritance
 		private int PostPrepareMetadata()
         {
-            PostPrepareMetadataTypes();
+			PostPrepareInternalShiteInference();
+			PostPrepareMetadataTypes();
             PostPrepareMetadataInheritance();
 			PostPrepareMetadataDelegates();
 			PostPrepareMetadataFunctions();
@@ -48,7 +49,15 @@ namespace HapetFrontend.Parsing.PostPrepare
 			return 0;
         }
 
-        private void PostPrepareMetadataTypes()
+		private void PostPrepareInternalShiteInference()
+		{
+			_compiler.GlobalScope.DefineDeclSymbol(AstStringExpr.StringStruct.Name.Name, AstStringExpr.StringStruct);
+			AllStructsMetadata.Add(AstStringExpr.StringStruct);
+			_compiler.GlobalScope.DefineDeclSymbol(AstArrayExpr.ArrayStruct.Name.Name, AstArrayExpr.ArrayStruct);
+			AllStructsMetadata.Add(AstArrayExpr.ArrayStruct);
+		}
+
+		private void PostPrepareMetadataTypes()
         {
             foreach (var (path, file) in _compiler.GetFiles())
             {

@@ -1,0 +1,14 @@
+using System.Text;
+
+public class Native
+{
+    public static string[] GetParametersArray(int argc, byte** argv)
+    {
+        string[] arr = new string[argc];
+		for (int i = 0; i < argc; i += 1)
+		{
+            arr[i] = UTF8Encoding.GetString(argv[i]);
+        }
+        return arr;
+    }
+}
