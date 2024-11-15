@@ -75,7 +75,8 @@ namespace HapetFrontend.Parsing
 				var elements = ParseArrayElementsExpression();
 
 				// print warning here if sizeExpr is null and elements.Count == 0, that empty array will be created
-				ReportMessage(new Location(beg, CurrentToken.Location.Ending), $"Size of the array and its elements were not specified. Empty array will be created!", Entities.ReportType.Warning);
+				if (sizeExprs.Last() == null && elements.Count == 0)
+					ReportMessage(new Location(beg, CurrentToken.Location.Ending), $"Size of the array and its elements were not specified. Empty array will be created!", Entities.ReportType.Warning);
 
 				// count parsed elements and set the size if the sizeExpr was null
 				if (sizeExprs.Last() == null)
