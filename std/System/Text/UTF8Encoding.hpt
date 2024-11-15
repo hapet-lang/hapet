@@ -1,5 +1,6 @@
 public class UTF8Encoding : Encoding
 {
+    // https://stackoverflow.com/questions/73758747/looking-for-the-description-of-the-algorithm-to-convert-utf8-to-utf16
     public static string GetString(byte* chars)
     {
         int charsAmount = Encoding.GetByteCount(chars);
@@ -61,7 +62,7 @@ public class UTF8Encoding : Encoding
     public static byte* GetBytesUnsafe(string str)
     {
         int utf8CharsAmount = GetAmountOfUtf8Bytes(str);
-        byte[] bytes = new byte[utf8CharsAmount];
+        byte[] bytes = new byte[utf8CharsAmount + 1];
 
         int currentUtf8Element = 0;
         for (int i = 0; i < str.Length; i += 1)
@@ -101,6 +102,7 @@ public class UTF8Encoding : Encoding
                 currentUtf8Element += 4;
             }
         }
+        bytes[utf8CharsAmount] = 0;
         return bytes.Buffer;
     }
 
