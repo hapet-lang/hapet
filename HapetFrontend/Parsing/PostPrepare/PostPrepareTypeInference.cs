@@ -1052,7 +1052,14 @@ namespace HapetFrontend.Parsing.PostPrepare
 			}
 			else if (returnStmt.ReturnExpression == null && _currentFunction.Returns.OutType is not VoidType)
 			{
-				_compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, returnStmt, $"Empty 'return' statement in function that has to return {_currentFunction.Returns.OutType}");
+				if (returnStmt.Location == null)
+				{
+					// it is a manually added 'return' statement
+					var theFunc = returnStmt.FindContainingFunction();
+					_compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, theFunc.Name, $"Not enough 'return {_currentFunction.Returns.OutType}' statements in function");
+				}
+				else
+					_compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, returnStmt, $"Empty 'return' statement in function that has to return {_currentFunction.Returns.OutType}");
 			}
 		}
 

@@ -1,4 +1,5 @@
-﻿using HapetFrontend.Entities;
+﻿using HapetFrontend.Ast.Declarations;
+using HapetFrontend.Entities;
 using HapetFrontend.Scoping;
 using Newtonsoft.Json;
 
@@ -44,5 +45,21 @@ namespace HapetFrontend.Ast
 		{
 			this.Location = Location;
 		}
+
+		#region Helper functions
+		public AstFuncDecl FindContainingFunction()
+		{
+			var currentParent = NormalParent;
+			while (currentParent != null)
+			{
+				if (currentParent is AstFuncDecl funcDecl)
+				{
+					return funcDecl;
+				}
+				currentParent = currentParent.NormalParent;
+			}
+			return null;
+		}
+		#endregion
 	}
 }
