@@ -6,7 +6,8 @@ public static class Program
 {
 	public static int Main(string[] args)
 	{
+		string a = args[0];
 		int rett = 4 + 3;
-		return rett;
+		return a.Length;
 	}
 }
