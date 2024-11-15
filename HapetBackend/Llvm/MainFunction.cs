@@ -82,13 +82,12 @@ namespace HapetBackend.Llvm
 
 			// generating params allocs
 			List<LLVMValueRef> mainFuncParams = new List<LLVMValueRef>();
-			for (int i = 0; i < _compiler.MainFunction.Parameters.Count; ++i)
+			for (int i = 0; i < paramTypes.Length; ++i)
 			{
-				var p = _compiler.MainFunction.Parameters[i];
-				var addrAlloca = _builder.BuildAlloca(HapetTypeToLLVMType(p.Type.OutType), $"{p.Name.Name}.addr");
+				var pType = paramTypes[i];
+				var addrAlloca = _builder.BuildAlloca(pType, $"p{i}.addr");
 				_builder.BuildStore(lfunc.GetParam((uint)i), addrAlloca);
-				_valueMap[p.GetSymbol] = addrAlloca;
-				mainFuncParams.Add(_builder.BuildLoad2(HapetTypeToLLVMType(p.Type.OutType), addrAlloca));
+				mainFuncParams.Add(_builder.BuildLoad2(pType, addrAlloca));
 			}
 
 			// calling proper function to create normal string array from this shite of C
@@ -101,8 +100,9 @@ namespace HapetBackend.Llvm
 
             _builder.PositionAtEnd(main);
 
-			LLVMValueRef stringArray = _builder.BuildCall2(getParamsFuncType, getParamsFunc, mainFuncParams.ToArray(), "stringArr");
-			var parsss = new LLVMValueRef[] { stringArray };
+			//LLVMValueRef stringArray = _builder.BuildCall2(getParamsFuncType, getParamsFunc, mainFuncParams.ToArray(), "stringArr");
+			//var parsss = new LLVMValueRef[] { stringArray };
+			var parsss = new LLVMValueRef[] { LLVM.ConstPointerNull(HapetTypeToLLVMType(ArrayType.GetArrayType(StringType.Instance))) };
 
 			{ // call main function
 				var hapetMain = _valueMap[_compiler.MainFunction.GetSymbol];
