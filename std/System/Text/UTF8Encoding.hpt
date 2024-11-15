@@ -41,6 +41,7 @@ public class UTF8Encoding : Encoding
             {
                 // TODO: error
             }
+            charsAmount += 1;
             currChar = chars[charsAmount];
         }
 
