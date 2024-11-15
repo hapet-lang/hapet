@@ -218,11 +218,24 @@ namespace HapetFrontend.Parsing
 				{
 					if (list[0].Type is AstNestedExpr)
 					{
-						// probably a cast 
-						var expr = list[0].Type;
-						expr.Location = new Location(beg, end);
-						var sub = ParseExpression(allowCommaForTuple, false);
-						return new AstCastExpr(expr, sub, new Location(beg, sub.Ending));
+						var next = PeekToken();
+						// WARN: could be better checks?
+						var castNextToken = new TokenType[] { TokenType.OpenParen, TokenType.Identifier, 
+							TokenType.NumberLiteral, TokenType.StringLiteral, TokenType.CharLiteral };
+						if (castNextToken.Contains(next.Type))
+						{
+							// probably a cast 
+							var expr = list[0].Type;
+							expr.Location = new Location(beg, end);
+							var sub = ParseExpression(allowCommaForTuple, false);
+							return new AstCastExpr(expr, sub, new Location(beg, sub.Ending));
+						}
+						else
+						{
+							// probably just smth like
+							// a = (b) + (c)
+							return list[0].Type;
+						}
 					}
 					else
 					{
