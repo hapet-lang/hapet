@@ -36,7 +36,24 @@ public class UTF8Encoding : Encoding
             }
             else if ((currChar & 0xF8) == 0xF0)
             {
-                // TODO: surrogates
+                // surrogates
+                charsAmount += 1;
+                byte currChar2 = chars[charsAmount];
+                charsAmount += 1;
+                byte currChar3 = chars[charsAmount];
+                charsAmount += 1;
+                byte currChar4 = chars[charsAmount];
+
+                uint cp = (((uint)(currChar & 0x07)) << 18) | (((uint)(currChar2 & 0x3F)) << 12) | (((uint)(currChar3 & 0x3F)) << 6) | ((uint)(currChar4 & 0x3F));
+                cp -= (uint)0x10000;
+
+                ushort high = (ushort)(0xD800 + (ushort)((cp >> 10) & (uint)0x3FF));
+                ushort low  = (ushort)(0xDC00 + (ushort)(cp & (uint)0x3FF));
+
+                realChars[realCharsAmount] = high;
+                realCharsAmount += 1;
+                realChars[realCharsAmount] = low;
+                realCharsAmount += 1;
             }
             else
             {
