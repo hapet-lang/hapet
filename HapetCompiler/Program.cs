@@ -14,7 +14,7 @@ namespace HapetCompiler
 			
 			if (args.Length == 0)
 			{
-				messageHandler.ReportMessage("hapet command must be specified. For example 'hapet build ...");
+				messageHandler.ReportMessage("hapet command must be specified. For example 'hapet build ...'");
 				return (int)CompilerErrors.HapetCommandError;
 			}
 
