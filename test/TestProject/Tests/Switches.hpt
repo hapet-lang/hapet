@@ -1,0 +1,27 @@
+public static class Switches
+{
+	public static void Test()
+	{
+		int a;
+		int b = 2;
+
+		switch (b)
+		{
+			case (0)
+			{
+				a = 2;
+			}
+			case (2)
+			case (3)
+			{
+				a = 4;
+			}
+			default
+			{
+				a = 33;
+			}
+		}
+
+        // TODO: assert 'a'
+	}
+}

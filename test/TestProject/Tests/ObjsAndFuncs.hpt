@@ -1,0 +1,17 @@
+public static class ObjsAndFuncs
+{
+	public static void Test()
+	{
+		TestClassFuncs tst = new TestClassFuncs();
+		float b = tst.GetVal(7);
+        // TODO: assert
+	}
+}
+
+public class TestClassFuncs
+{
+	public float GetVal(int a)
+	{
+		return 3.14 + a;
+	}
+}

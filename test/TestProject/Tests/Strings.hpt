@@ -1,0 +1,19 @@
+public static class Strings
+{
+	public static void Test()
+	{
+		char a = 'g';
+		char a2 = 'н';
+
+		string s = "test string";
+		string s2 = "test string2";
+
+		s2[0] = 'r';
+
+		// fifth symbol in s is 's' and it is 115
+		// zero symbol in s2 is 'r' and it is 114
+		int tst = s[5] + s2[0] + s2.Length;
+
+        // TODO: assert
+	}
+}

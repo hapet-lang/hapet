@@ -1,0 +1,22 @@
+public static class ObjsAndFields
+{
+	public static void Test()
+	{
+		TestClassFields tst = new TestClassFields();
+		float b = tst.GetVal();
+        // TODO: assert
+	}
+}
+
+public class TestClassFields
+{
+	public int InsideField1; // default value here (0)
+	public int InsideField2 = 4;
+	public int InsideField3; // inited when used
+
+	public float GetVal()
+	{
+		this.InsideField3 = 1;
+		return 3.14 + (float)this.InsideField1 + (float)this.InsideField2 + (float)this.InsideField3;
+	}
+}

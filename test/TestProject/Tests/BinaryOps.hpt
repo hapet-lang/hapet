@@ -1,0 +1,24 @@
+public static class BinaryOps
+{
+	public static void Test()
+	{
+		int a;
+        a = 44;
+
+        double b = 5.63;
+        int c = 3;
+        int d = (int)a - c;
+
+        int e = d + c;
+        int f = d - c;
+        int g = d / c;
+        int h = d * c;
+        int i = d % c;
+        int j = d >> 2;
+        int k = d << 2;
+        int l = d | 2;
+        int m = d & 2;
+
+        // TODO: assert
+	}
+}
