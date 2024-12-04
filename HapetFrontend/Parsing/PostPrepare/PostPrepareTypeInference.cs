@@ -587,8 +587,20 @@ namespace HapetFrontend.Parsing.PostPrepare
 
 		private void TryAssignConstValueToExpr(AstExpression expr, AstDeclaration decl)
 		{
-			if (decl is AstVarDecl varDecl)
+			// TODO: other shite like 'static'
+			// assign out value only from consts
+			if (decl is AstVarDecl varDecl && varDecl.SpecialKeys.Contains(TokenType.KwConst))
 			{
+				// skip this shite - inferer will error it somewhere
+				if (varDecl.Initializer == null)
+					return;
+
+				// check that the initializer is not yet infered - infer it
+				// TODO: possible circular access!!!
+				if (varDecl.Initializer.OutType == null)
+				{
+					PostPrepareExprInference(varDecl.Initializer);
+				}
 				expr.OutValue = varDecl.Initializer.OutValue;
 			}
 		}
