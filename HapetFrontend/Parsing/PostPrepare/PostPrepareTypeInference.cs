@@ -187,7 +187,7 @@ namespace HapetFrontend.Parsing.PostPrepare
 			// check for const value that it is compile time evaluated
 			if ((varDecl.Initializer == null || varDecl.Initializer.OutValue == null) && varDecl.SpecialKeys.Contains(TokenType.KwConst))
 			{
-				_compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, varDecl, $"The const field has to have compile time evaluated value");
+				_compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, varDecl.Name, $"The const field has to have compile time evaluated value");
 			}
 		}
 
@@ -752,6 +752,7 @@ namespace HapetFrontend.Parsing.PostPrepare
 			{
 				PostPrepareExprInference(nestExpr.RightPart);
 				nestExpr.OutType = nestExpr.RightPart.OutType;
+				nestExpr.OutValue = nestExpr.RightPart.OutValue;
 			}
 			else
 			{
@@ -797,6 +798,7 @@ namespace HapetFrontend.Parsing.PostPrepare
 				{
 					idExpr.OutType = typed.Decl.Type.OutType;
 					nestExpr.OutType = idExpr.OutType;
+					nestExpr.OutValue = idExpr.OutValue; // TODO: check it: is it correct way?
 
 					// check if the var is a static/const field and user is accessing it from an object
 					if (typed.Decl is AstVarDecl varDecl && (varDecl.SpecialKeys.Contains(TokenType.KwStatic) || varDecl.SpecialKeys.Contains(TokenType.KwConst)) && accessingFromAnObject) // if accessing from an object - give em a warning :)

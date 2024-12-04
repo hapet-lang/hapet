@@ -14,6 +14,9 @@ public class TestClassFields
 	public int InsideField2 = 4;
 	public int InsideField3; // inited when used
 
+	public const int ConstField1 = 1;
+	public const int ConstField2 = ConstField1;
+
 	public float GetVal()
 	{
 		this.InsideField3 = 1;
