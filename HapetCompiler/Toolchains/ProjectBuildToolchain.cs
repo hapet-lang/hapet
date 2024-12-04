@@ -50,6 +50,8 @@ namespace HapetCompiler.Toolchains
             // references
             ProjectReferencesResolver resolver = new ProjectReferencesResolver();
             resolver.ResolveProjectShite(ProjectData, ProjectSettings, compiler, postPreparer);
+			if (messageHandler.HasErrors)
+				return (int)CompilerErrors.ProjectReferencesError; // references errors
 
 			if (!referenced)
 				messageHandler.ReportMessage($"{Funcad.GetPrettyTimeString(stopwatch.Elapsed)} Parsing...", ReportType.Info);
