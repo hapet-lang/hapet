@@ -48,9 +48,9 @@ namespace HapetFrontend.Parsing.PostPrepare
 			{
 				foreach (var dd in classDecl.Declarations)
 				{
-					if (!dd.SpecialKeys.Contains(TokenType.KwStatic))
+					if (!dd.SpecialKeys.Contains(TokenType.KwStatic) && !dd.SpecialKeys.Contains(TokenType.KwConst))
 					{
-						_compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, dd, "The declaration has to be 'static' because it is declared in a 'static' class");
+						_compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, dd, "The declaration has to be 'static' or 'const' because it is declared in a 'static' class");
 					}
 				}
 			}
@@ -456,7 +456,8 @@ namespace HapetFrontend.Parsing.PostPrepare
 			if (smbl is DeclSymbol typed)
 			{
 				idExpr.OutType = typed.Decl.Type.OutType;
-                idExpr.FindSymbol = smbl;
+				TryAssignConstValueToExpr(idExpr, typed.Decl);
+				idExpr.FindSymbol = smbl;
                 return;
 			}
 
@@ -468,6 +469,7 @@ namespace HapetFrontend.Parsing.PostPrepare
 			{
 				idExpr.Name = nameWithClass;
 				idExpr.OutType = typed2.Decl.Type.OutType;
+				TryAssignConstValueToExpr(idExpr, typed2.Decl);
 				idExpr.FindSymbol = smblInLocalClass;
                 return;
 			}
@@ -500,7 +502,8 @@ namespace HapetFrontend.Parsing.PostPrepare
 				{
 					idExpr.Name = fullFuncName;
 					idExpr.OutType = typed4.Decl.Type.OutType;
-                    idExpr.FindSymbol = funcInAnotherClass;
+					TryAssignConstValueToExpr(idExpr, typed4.Decl);
+					idExpr.FindSymbol = funcInAnotherClass;
                     return;
 				}
 			}
@@ -513,7 +516,8 @@ namespace HapetFrontend.Parsing.PostPrepare
 			{
 				idExpr.Name = nameWithNamespace;
 				idExpr.OutType = typed3.Decl.Type.OutType;
-                idExpr.FindSymbol = smblInLocalFile;
+				TryAssignConstValueToExpr(idExpr, typed3.Decl);
+				idExpr.FindSymbol = smblInLocalFile;
                 return;
 			}
 
@@ -530,7 +534,8 @@ namespace HapetFrontend.Parsing.PostPrepare
 				{
 					// do not change name because it already contains namespace
 					idExpr.OutType = typed4.Decl.Type.OutType;
-                    idExpr.FindSymbol = includedSmbl;
+					TryAssignConstValueToExpr(idExpr, typed4.Decl);
+					idExpr.FindSymbol = includedSmbl;
                     return;
 				}
 			}
@@ -555,7 +560,8 @@ namespace HapetFrontend.Parsing.PostPrepare
 					{
 						// do not change name because it already contains namespace
 						idExpr.OutType = typed4.Decl.Type.OutType;
-                        idExpr.FindSymbol = includedSmbl;
+						TryAssignConstValueToExpr(idExpr, typed4.Decl);
+						idExpr.FindSymbol = includedSmbl;
                         return;
 					}
 				}
@@ -567,7 +573,8 @@ namespace HapetFrontend.Parsing.PostPrepare
 				{
 					idExpr.Name = fullNameWithNs;
 					idExpr.OutType = typed5.Decl.Type.OutType;
-                    idExpr.FindSymbol = usedSmbl;
+					TryAssignConstValueToExpr(idExpr, typed5.Decl);
+					idExpr.FindSymbol = usedSmbl;
                     return;
 				}
 			}
@@ -576,6 +583,14 @@ namespace HapetFrontend.Parsing.PostPrepare
 
 			// TODO: really give them a error? or mb there is smth harder?
 			_compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, idExpr, "The type could not be inferred...");
+		}
+
+		private void TryAssignConstValueToExpr(AstExpression expr, AstDeclaration decl)
+		{
+			if (decl is AstVarDecl varDecl)
+			{
+				expr.OutValue = varDecl.Initializer.OutValue;
+			}
 		}
 
 		private void PostPrepareCallExprInference(AstCallExpr callExpr)

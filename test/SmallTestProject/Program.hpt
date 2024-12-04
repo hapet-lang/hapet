@@ -4,13 +4,11 @@ using TestProject.Sub;
 
 public static class Program
 {
+	public const int ConstField1 = 1;
+	public const int ConstField2 = ConstField1;
+
 	public static int Main(string[] args)
 	{
-		string a = args[0];
-		string myString = "ElinaАйрат";
-		byte* dataToPuts = UTF8Encoding.GetBytesUnsafe(myString);
-		Console.Puts(dataToPuts);
-		int rett = 4 + 3;
-		return a.Length;
+		return 0;
 	}
 }
