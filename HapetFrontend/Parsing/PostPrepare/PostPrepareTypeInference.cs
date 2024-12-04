@@ -167,7 +167,12 @@ namespace HapetFrontend.Parsing.PostPrepare
 
 			// change variable type to a normal one
 			if (varDecl.Type.OutType is VarType)
-				varDecl.Type.OutType = varDecl.Initializer.OutType;
+			{
+				if (varDecl.Initializer == null)
+					_compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, varDecl, $"Variable declaration with 'var' key has to have an initializer");
+				else
+					varDecl.Type.OutType = varDecl.Initializer.OutType;
+			}
 
 			// special keys could not be allowed when the var is declared in BlockExpr
 			if (!allowSpecialKeys)
