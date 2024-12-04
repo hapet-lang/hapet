@@ -21,7 +21,7 @@ public class UTF8Encoding : Encoding
                 charsAmount += 1;
                 byte currChar2 = chars[charsAmount];
 
-                realChars[realCharsAmount] = (ushort)(((ushort)currChar & 0x1F) << 6) | (currChar2 & 0x3F);
+                realChars[realCharsAmount] = (ushort)((((ushort)currChar & 0x1F) << 6) | (currChar2 & 0x3F));
                 realCharsAmount += 1;
             }
             else if ((currChar & 0xF0) == 0xE0)

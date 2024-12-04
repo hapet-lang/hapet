@@ -227,7 +227,7 @@ namespace HapetFrontend.Parsing
 							// probably a cast 
 							var expr = list[0].Type;
 							expr.Location = new Location(beg, end);
-							var sub = ParseExpression(allowCommaForTuple, false);
+							var sub = ParsePostUnaryExpression(allowCommaForTuple, false, null);
 							return new AstCastExpr(expr, sub, new Location(beg, sub.Ending));
 						}
 						else

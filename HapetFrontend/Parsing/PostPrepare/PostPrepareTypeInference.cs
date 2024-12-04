@@ -842,8 +842,12 @@ namespace HapetFrontend.Parsing.PostPrepare
 
 			InternalNormalizeLeftPartIfItIsANamespaceWithType(nestExpr.LeftPart, ref found);
 
+			// this could be a func call or array access
+			if (nestExpr.LeftPart.RightPart is not AstIdExpr idExpr)
+				return;
+
 			// check is it namespace
-			string leftString = (nestExpr.LeftPart.RightPart as AstIdExpr).Name;
+			string leftString = idExpr.Name;
 			bool foundNs = nestExpr.Scope.IsStringNamespaceOrPart(leftString);
 			// go all over the usings
 			foreach (var usng in _currentSourceFile.Usings)
