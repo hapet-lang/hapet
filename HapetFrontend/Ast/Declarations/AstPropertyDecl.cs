@@ -5,15 +5,15 @@ using HapetFrontend.Parsing;
 namespace HapetFrontend.Ast.Declarations
 {
 	/// <summary>
-	/// Ast for properties:
-	/// Prop { get; set; }				=> (field_Prop, get_Prop(), set_Prop(...))
-	/// Prop { get; }					=> (field_Prop, get_Prop())
-	/// Prop { set; }					=> could not be, error
-	/// Prop { get {...} set {...} }	=> (get_Prop(), set_Prop(...))
-	/// Prop { get {...} }				=> (get_Prop())
-	/// Prop { set {...} }				=> (set_Prop(...))
-	/// Prop { get {...} set; }			=> could not be, error
-	/// Prop { get; set {...} }			=> could not be, error
+	/// Ast for properties: <br />
+	/// Prop { get; set; }				=> (field_Prop, get_Prop(), set_Prop(...)) <br />
+	/// Prop { get; }					=> (field_Prop, get_Prop()) <br />
+	/// Prop { set; }					=> could not be, error <br />
+	/// Prop { get {...} set {...} }	=> (get_Prop(), set_Prop(...)) <br />
+	/// Prop { get {...} }				=> (get_Prop()) <br />
+	/// Prop { set {...} }				=> (set_Prop(...)) <br />
+	/// Prop { get {...} set; }			=> could not be, error <br />
+	/// Prop { get; set {...} }			=> could not be, error <br />
 	/// </summary>
 	public class AstPropertyDecl : AstVarDecl
 	{

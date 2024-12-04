@@ -31,7 +31,8 @@ namespace HapetFrontend.Parsing.PostPrepare
             PostPrepareMetadataInheritance();
 			PostPrepareMetadataDelegates();
 			PostPrepareMetadataFunctions();
-            PostPrepareMetadataTypeFields();
+			PostPrepareMetadataTypeFieldDecls();
+            PostPrepareMetadataTypeFieldInits();
             PostPrepareMetadataAttributes();
 
             // if there were errors while preparing for metafile
@@ -154,7 +155,61 @@ namespace HapetFrontend.Parsing.PostPrepare
 			}
         }
 
-		private void PostPrepareMetadataTypeFields()
+		/// <summary>
+		/// We need to infer all decl at first and only then - their intializers
+		/// </summary>
+		private void PostPrepareMetadataTypeFieldDecls()
+		{
+			void InternalVarPP(AstVarDecl decl)
+			{
+				PostPrepareExprInference(decl.Type);
+
+				if (decl.Type.OutType is ClassType)
+				{
+					// the var is actually a pointer to the class
+					var astPtr = new AstPointerExpr(decl.Type, false, decl.Type.Location);
+					astPtr.Scope = decl.Type.Scope;
+					decl.Type = astPtr;
+					PostPrepareExprInference(decl.Type);
+				}
+			}
+
+			// resolve all fields of classes
+			foreach (var cls in AllClassesMetadata)
+			{
+				_currentSourceFile = cls.SourceFile;
+				_currentClass = cls;
+				// infer fields and props at first
+				foreach (var decl in cls.Declarations.Where(x => x is AstVarDecl).Select(x => x as AstVarDecl))
+				{
+					// field or property
+					InternalVarPP(decl);
+				}
+			}
+			// resolve all fields of structs
+			foreach (var str in AllStructsMetadata)
+			{
+				_currentSourceFile = str.SourceFile;
+				// infer fields at first
+				foreach (var decl in str.Declarations.Where(x => x is AstVarDecl).Select(x => x as AstVarDecl))
+				{
+					// field 
+					InternalVarPP(decl);
+				}
+			}
+			foreach (var enm in AllEnumsMetadata)
+			{
+				_currentSourceFile = enm.SourceFile;
+				// infer fields at first
+				foreach (var decl in enm.Declarations)
+				{
+					// field 
+					InternalVarPP(decl);
+				}
+			}
+		}
+
+		private void PostPrepareMetadataTypeFieldInits()
         {
 			// resolve all fields of classes
 			foreach (var cls in AllClassesMetadata)
