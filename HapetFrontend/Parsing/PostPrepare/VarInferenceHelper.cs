@@ -95,14 +95,14 @@ namespace HapetFrontend.Parsing.PostPrepare
                 case IntType when exprType is CharType:
 				case IntType when exprType is IntType:
 				case CharType when exprType is IntType:
-                    {
-                        bool? isFirstSigned = neededType switch
-                        {
-                            FloatType => null,
-                            IntType i => i.Signed,
-                            CharType => false,
-                            _ => null,
-                        };
+					{
+						bool? isFirstSigned = neededType switch
+						{
+							FloatType => null,
+							IntType i => i.Signed,
+							CharType => false,
+							_ => null,
+						};
 						bool? isSecondSigned = exprType switch
 						{
 							FloatType => null,
@@ -113,24 +113,35 @@ namespace HapetFrontend.Parsing.PostPrepare
 
 						// do not allow if signes are different or something like that. idk :)
 						// allow if the var type size is bigger or equal
-						if (neededType.GetSize() >= exprType.GetSize() && 
-                            (isFirstSigned != null && isSecondSigned != null) &&
-                            (isFirstSigned.Value == isSecondSigned.Value))
-                        {
+						if (neededType.GetSize() >= exprType.GetSize() &&
+							(isFirstSigned != null && isSecondSigned != null) &&
+							(isFirstSigned.Value == isSecondSigned.Value))
+						{
 							outExpr = cst;
-                            break;
+							break;
 						}
 
-                        // allow shite like:
-                        // byte a = 5;
-                        // int b = a;
-                        if (neededType.GetSize() > exprType.GetSize() &&
-                            (isFirstSigned != null && isSecondSigned != null) &&
-                            (isFirstSigned.Value && !isSecondSigned.Value))
-                        {
-                            outExpr = cst;
-                            break;
-                        }
+						// allow shite like:
+						// byte a = 5;
+						// int b = a;
+						if (neededType.GetSize() > exprType.GetSize() &&
+							(isFirstSigned != null && isSecondSigned != null) &&
+							(isFirstSigned.Value && !isSecondSigned.Value))
+						{
+							outExpr = cst;
+							break;
+						}
+
+						// allow to cast all int values to float
+						// int b = 3;
+						// float a = b;
+						if (neededType.GetSize() >= exprType.GetSize() &&
+							neededType is FloatType &&
+							(exprType is IntType || exprType is CharType))
+						{
+							outExpr = cst;
+							break;
+						}
 
                         // there is no way to implicitly cast non-compiletime values
                         if (expr.OutValue == null)
