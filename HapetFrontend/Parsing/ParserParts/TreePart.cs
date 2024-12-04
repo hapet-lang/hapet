@@ -319,18 +319,18 @@ namespace HapetFrontend.Parsing
 								ReportMessage(nestExpr.Location, $"Indentifier expected as the func name");
 								return expr;
 							}
-							expr = new AstCallExpr(nestExpr.LeftPart, idExpr.GetCopy(), args, new Location(expr.Beginning, end));
+							var callExpr = new AstCallExpr(nestExpr.LeftPart, idExpr.GetCopy(), args, new Location(expr.Beginning, end));
+							expr = new AstNestedExpr(callExpr, null, callExpr);
 
 							// check for dots after this!!! there could be a.asd().asd().ddd().d.lll()
 							// for better understand imagine we have 'anime.Asd().dwd.Lmao();'
 							// and this is the first entry. So we already parsed here 'anime.Asd()' 
-							// and need to check the reset shite
+							// and need to check the rest shite
 							if (CheckToken(TokenType.Period))
 							{
 								NextToken();
-								var currNest = new AstNestedExpr(expr as AstCallExpr, null, expr);
 								// here we are getting the rest 'dwd.Lmao'
-								expr = ParseIdentifierExpression(iniNested: currNest);
+								expr = ParseIdentifierExpression(iniNested: expr as AstNestedExpr);
 								// so after this the upper loop will check if there is a OpenParent and so on
 								// if there is no OpenParen - then just NestedExpr will be returned
 							}
@@ -390,7 +390,20 @@ namespace HapetFrontend.Parsing
 								return expr;
 							}
 							var arrAcc = new AstArrayAccessExpr(nestExpr, firstExpr, new Location(expr.Beginning, end));
-							expr = new AstNestedExpr(arrAcc, null, new Location(expr.Beginning, end));
+							expr = new AstNestedExpr(arrAcc, null, arrAcc);
+
+							// check for dots after this!!! there could be a.arr[i].Length
+							// for better understand imagine we have 'a.arr[i].Length;'
+							// and this is the first entry. So we already parsed here 'a.arr[i]' 
+							// and need to check the rest shite
+							if (CheckToken(TokenType.Period))
+							{
+								NextToken();
+								// here we are getting the rest '.Length'
+								expr = ParseIdentifierExpression(iniNested: expr as AstNestedExpr);
+								// so after this the upper loop will check if there is a OpenParent and so on
+								// if there is no OpenParen - then just NestedExpr will be returned
+							}
 						}
 						break;
 

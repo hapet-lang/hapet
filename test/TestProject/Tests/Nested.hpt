@@ -1,0 +1,17 @@
+public static class Nested
+{
+	public static void Test()
+	{
+		int len = GetArray().Length;
+
+        int[][] tmp = new int[4][3];
+        int len2 = tmp[1].Length;
+
+        // TODO: assert 'summ'
+	}
+
+    private static int[] GetArray()
+    {
+        return new int[4];
+    }
+}
