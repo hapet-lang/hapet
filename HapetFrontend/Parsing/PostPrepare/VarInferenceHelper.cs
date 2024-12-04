@@ -71,6 +71,11 @@ namespace HapetFrontend.Parsing.PostPrepare
                 return expr;
 			}
 
+			// no need for any casts if it is 'var' shite
+			// just return back the expr
+			if (neededType is VarType)
+				return expr;
+
 			// assigning function to delegates is made different
 			if (neededType is DelegateType delT)
 			{

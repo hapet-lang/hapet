@@ -1,4 +1,5 @@
 ﻿using HapetFrontend.Ast;
+using HapetFrontend.Ast.Declarations;
 using HapetFrontend.Ast.Expressions;
 using HapetFrontend.Ast.Statements;
 
@@ -6,6 +7,13 @@ namespace HapetFrontend.Parsing
 {
     public partial class Parser
 	{
+		/// <summary>
+		/// This shite is used to store vars that contain results of func calls
+		/// For better understanding <see cref="ParsePostUnaryExpression"/>
+		/// </summary>
+		private readonly List<AstVarDecl> _varDeclsOfFuncCalls = new List<AstVarDecl>();
+		private int _currentVarDeclIndex = 0;
+
 		private AstBlockExpr ParseBlockExpression()
 		{
 			var statements = new List<AstStatement>();
@@ -28,6 +36,7 @@ namespace HapetFrontend.Parsing
 				{
 					if (string.IsNullOrWhiteSpace(foundBrStatement))
 					{
+						statements.AddRange(_varDeclsOfFuncCalls);
 						statements.Add(s);
 					}
 					else if (!afterBrStatementReported)
@@ -37,6 +46,7 @@ namespace HapetFrontend.Parsing
 						afterBrStatementReported = true;
 						ReportMessage(s, $"All the statements after '{foundBrStatement}' won't be accepted by compiler!", Entities.ReportType.Warning);
 					}
+					_varDeclsOfFuncCalls.Clear();
 
 					next = PeekToken();
 
@@ -60,6 +70,8 @@ namespace HapetFrontend.Parsing
 
 			var end = Consume(TokenType.CloseBrace, ErrMsg("}", "at end of block expression")).Location;
 
+			// reset the index
+			_currentVarDeclIndex = 0;
 			return new AstBlockExpr(statements, new Location(beg, end));
 		}
 	}

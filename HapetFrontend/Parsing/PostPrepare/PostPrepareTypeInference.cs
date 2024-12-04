@@ -165,6 +165,10 @@ namespace HapetFrontend.Parsing.PostPrepare
 			if (varDecl.Initializer != null)
 				varDecl.Initializer = PostPrepareVarValueAssign(varDecl.Initializer, varDecl.Type.OutType);
 
+			// change variable type to a normal one
+			if (varDecl.Type.OutType is VarType)
+				varDecl.Type.OutType = varDecl.Initializer.OutType;
+
 			// special keys could not be allowed when the var is declared in BlockExpr
 			if (!allowSpecialKeys)
 			{

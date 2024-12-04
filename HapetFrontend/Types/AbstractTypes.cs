@@ -33,16 +33,14 @@ namespace HapetFrontend.Types
 	/// </summary>
 	public class VarType : AbstractType
 	{
-		[JsonIgnore]
-		public AstVarDecl Declaration { get; }
+		public static VarType Instance { get; } = new VarType();
 
 		public override string TypeName => "var";
 
-		public VarType(AstVarDecl decl)
+		private VarType()
 		{
-			Declaration = decl;
 		}
 
-		public override string ToString() => $"{Declaration.Name.Name}";
+		public override string ToString() => $"var";
 	}
 }

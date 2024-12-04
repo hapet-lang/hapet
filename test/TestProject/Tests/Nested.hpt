@@ -2,10 +2,11 @@ public static class Nested
 {
 	public static void Test()
 	{
-		int len = GetArray().Length;
-
         int[][] tmp = new int[4][3];
-        int len2 = tmp[1].Length;
+        int len2 = tmp.Length;
+        int len3 = tmp[1].Length;
+
+		int len = GetArray().Length;
 
         // TODO: assert 'summ'
 	}
