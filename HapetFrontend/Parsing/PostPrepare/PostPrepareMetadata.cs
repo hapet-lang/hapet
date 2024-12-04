@@ -1,5 +1,7 @@
-﻿using HapetFrontend.Ast.Declarations;
+﻿using HapetFrontend.Ast;
+using HapetFrontend.Ast.Declarations;
 using HapetFrontend.Ast.Expressions;
+using HapetFrontend.Ast.Statements;
 using HapetFrontend.Entities;
 using HapetFrontend.Types;
 using Newtonsoft.Json;
@@ -64,44 +66,63 @@ namespace HapetFrontend.Parsing.PostPrepare
                 _currentSourceFile = file;
                 foreach (var stmt in file.Statements)
                 {
-                    if (stmt is AstClassDecl classDecl)
+					// just skip allowed statements
+					if (stmt is AstUsingStmt)
+					{
+						continue;
+					}
+
+					if (stmt is not AstDeclaration decl)
+					{
+						_compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, stmt, $"The statement expected to be a declaration");
+						continue;
+					}
+
+					string newName;
+                    if (decl is AstClassDecl classDecl)
                     {
 						_currentClass = classDecl;
 
 						// creating a new class name with namespace
-						string newClassName = $"{file.Namespace}.{classDecl.Name.Name}";
-                        classDecl.Name = classDecl.Name.GetCopy(newClassName);
-                        file.NamespaceScope.DefineDeclSymbol(classDecl.Name.Name, classDecl);
+						newName = $"{file.Namespace}.{classDecl.Name.Name}";
 						AllClassesMetadata.Add(classDecl);
 						_serializeClassesMetadata.Add(classDecl);
 					}
-                    else if (stmt is AstStructDecl structDecl)
+                    else if (decl is AstStructDecl structDecl)
                     {
-                        // creating a new struct name with namespace
-                        string newClassName = $"{file.Namespace}.{structDecl.Name.Name}";
-                        structDecl.Name = structDecl.Name.GetCopy(newClassName);
-                        file.NamespaceScope.DefineDeclSymbol(structDecl.Name.Name, structDecl);
+						// creating a new struct name with namespace
+						newName = $"{file.Namespace}.{structDecl.Name.Name}";
 						AllStructsMetadata.Add(structDecl);
 						_serializeStructsMetadata.Add(structDecl);
 					}
-					else if (stmt is AstEnumDecl enumDecl)
+					else if (decl is AstEnumDecl enumDecl)
 					{
 						// creating a new enum name with namespace
-						string newClassName = $"{file.Namespace}.{enumDecl.Name.Name}";
-						enumDecl.Name = enumDecl.Name.GetCopy(newClassName);
-						file.NamespaceScope.DefineDeclSymbol(enumDecl.Name.Name, enumDecl);
+						newName = $"{file.Namespace}.{enumDecl.Name.Name}";
 						AllEnumsMetadata.Add(enumDecl);
 						_serializeEnumsMetadata.Add(enumDecl);
 					}
-					else if (stmt is AstDelegateDecl delegateDecl)
+					else if (decl is AstDelegateDecl delegateDecl)
 					{
 						// creating a new delegate name with namespace
-						string newClassName = $"{file.Namespace}.{delegateDecl.Name.Name}";
-						delegateDecl.Name = delegateDecl.Name.GetCopy(newClassName);
-						file.NamespaceScope.DefineDeclSymbol(delegateDecl.Name.Name, delegateDecl);
+						newName = $"{file.Namespace}.{delegateDecl.Name.Name}";
 						AllDelegatesMetadata.Add(delegateDecl);
 						_serializeDelegatesMetadata.Add(delegateDecl);
 					}
+					else
+					{
+						_compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, decl.Name, $"The declaration type is not allowed in namespace scope");
+						continue;
+					}
+
+					// TODO: check for partial :)
+					decl.Name = decl.Name.GetCopy(newName);
+					var smbl = file.NamespaceScope.GetSymbol(decl.Name.Name);
+					// TODO: better error like where is the first decl?
+					if (smbl != null)
+						_compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, decl.Name, $"Namespace '{file.Namespace}' already contains declaration with the name");
+					else
+						file.NamespaceScope.DefineDeclSymbol(decl.Name.Name, decl);
 				}
             }
         }
