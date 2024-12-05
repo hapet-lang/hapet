@@ -123,50 +123,8 @@ namespace HapetFrontend.Parsing.PostPrepare
 
 		private void PostPrepareGenerateClassInitializer(AstClassDecl classDecl)
 		{
-			// gettings all field decls and init them
-			var allVarDecls = classDecl.Declarations.Where(x => x is AstVarDecl).Select(x => x as AstVarDecl);
-			// we need to get all props from class. why?
-			// read comment below where it used
-			var allProps = classDecl.Declarations.Where(x => x is AstPropertyDecl).Select(x => x as AstPropertyDecl);
-			List<AstStatement> iniBlockStatements = new List<AstStatement>();
-			foreach (AstVarDecl decl in allVarDecls)
-			{
-				// if the field is for property generated
-				// we don't need to initialize property directly
-				// we would initialize it using property 'set' method
-				// that is also prepared below :)
-				bool foundPropa = false;
-				foreach (var pp in allProps)
-				{
-					// if the field has the proper name and (!) the property is really compiler generated
-					if (decl.Name.Name == $"field_{pp.Name.Name}" && pp.GetBlock == null && pp.SetBlock == null)
-					{
-						foundPropa = true;
-						break;
-					}
-				}
-				if (foundPropa)
-					continue;
-
-				// no need to do this for consts and statics
-				if (decl.SpecialKeys.Contains(TokenType.KwStatic) || decl.SpecialKeys.Contains(TokenType.KwConst))
-					continue;
-
-				// creating field assing statement
-				var target = new AstNestedExpr(decl.Name.GetCopy(), new AstNestedExpr(new AstIdExpr("this"), null), decl);
-				AstExpression fieldInitializer;
-				if (decl.Initializer != null)
-					fieldInitializer = decl.Initializer;
-				else
-					fieldInitializer = new AstDefaultExpr(decl);
-				var assign = new AstAssignStmt(target, fieldInitializer, decl);
-				iniBlockStatements.Add(assign);
-
-				// we don't need the initializer anymore
-				decl.Initializer = null;
-            }
 			// the block with all field inits
-			var iniBlock = new AstBlockExpr(iniBlockStatements);
+			var iniBlock = GetFieldsToInitialize(classDecl, false);
 
 			// the ini func
 			var iniDecl = new AstFuncDecl(new List<AstParamDecl>(),
@@ -255,12 +213,24 @@ namespace HapetFrontend.Parsing.PostPrepare
 
 		private void PostPrepareGenerateClassStaticConstructor(AstClassDecl classDecl, List<AstFuncDecl> ctors)
 		{
+			// we need to add a static var to check that the stor was called
+			string theVarName = $"__is_{classDecl.Name.Name}_stor_called";
+			var theVar = new AstVarDecl(new AstNestedExpr(new AstIdExpr("bool"), null), new AstIdExpr(theVarName));
+			theVar.SpecialKeys.Add(TokenType.KwStatic);
+			classDecl.Declarations.Add(theVar);
+
+			// creating the ini block for fields
+			var iniBlock = GetFieldsToInitialize(classDecl, true);
+			// set 'true' to the var
+			var varAssign = new AstAssignStmt(new AstNestedExpr(new AstIdExpr(theVarName), null), new AstIdExpr("true"));
+			iniBlock.Statements.Add(varAssign);
+			AstIfStmt checkForInited = new AstIfStmt(new AstUnaryExpr("!", new AstIdExpr(theVarName)), iniBlock, null);
+
 			if (ctors.Count == 0)
 			{
 				// there is no dtor. need to create one
 				List<AstStatement> storBlockStatements = new List<AstStatement>();
-
-				// TODO: do i need to place here something?
+				storBlockStatements.Add(checkForInited);
 
 				// the block with 
 				var storBlock = new AstBlockExpr(storBlockStatements);
@@ -285,10 +255,8 @@ namespace HapetFrontend.Parsing.PostPrepare
 				if (ctorFunc.SpecialKeys.Count > 1)
 					_compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, ctorFunc.Name, $"Static constructor can only have 'static' keyword. Other keywords will be ignored!", null, Entities.ReportType.Warning);
 
-				// TODO: do i need to insert smth here? probably need to extern 'free' and call it at the end
-				//ct.Body.Statements.Insert(0, new AstCallExpr(
-				//	new AstNestedExpr(new AstIdExpr("this"), null),
-				//	new AstIdExpr($"{classDecl.Name.Name}_ini")));
+				// add check into user defined stor
+				ctorFunc.Body.Statements.Insert(0, checkForInited);
 			}
 			else
 			{
@@ -325,6 +293,64 @@ namespace HapetFrontend.Parsing.PostPrepare
 				}
 			}
 			classDecl.Declarations.AddRange(declarationsToAdd);
+		}
+
+		private AstBlockExpr GetFieldsToInitialize(AstClassDecl classDecl, bool forStatic)
+		{
+			// gettings all field decls and init them
+			var allVarDecls = classDecl.Declarations.Where(x => x is AstVarDecl).Select(x => x as AstVarDecl);
+			// we need to get all props from class. why?
+			// read comment below where it used
+			var allProps = classDecl.Declarations.Where(x => x is AstPropertyDecl).Select(x => x as AstPropertyDecl);
+			List<AstStatement> iniBlockStatements = new List<AstStatement>();
+			foreach (AstVarDecl decl in allVarDecls)
+			{
+				// if the field is for property generated
+				// we don't need to initialize property directly
+				// we would initialize it using property 'set' method
+				// that is also prepared below :)
+				bool foundPropa = false;
+				foreach (var pp in allProps)
+				{
+					// if the field has the proper name and (!) the property is really compiler generated
+					if (decl.Name.Name == $"field_{pp.Name.Name}" && pp.GetBlock == null && pp.SetBlock == null)
+					{
+						foundPropa = true;
+						break;
+					}
+				}
+				if (foundPropa)
+					continue;
+
+				// for static we need to get only static fields/props
+				if (forStatic)
+				{
+					// need to do this for statics
+					if (!decl.SpecialKeys.Contains(TokenType.KwStatic))
+						continue;
+				}
+				else
+				{
+					// no need to do this for consts and statics
+					if (decl.SpecialKeys.Contains(TokenType.KwStatic) || decl.SpecialKeys.Contains(TokenType.KwConst))
+						continue;
+				}
+
+				// creating field assing statement
+				var target = new AstNestedExpr(decl.Name.GetCopy(), null, decl);
+				AstExpression fieldInitializer;
+				if (decl.Initializer != null)
+					fieldInitializer = decl.Initializer;
+				else
+					fieldInitializer = new AstDefaultExpr(decl);
+				var assign = new AstAssignStmt(target, fieldInitializer, decl);
+				iniBlockStatements.Add(assign);
+
+				// we don't need the initializer anymore
+				decl.Initializer = null;
+			}
+			// the block with all field inits
+			return new AstBlockExpr(iniBlockStatements);
 		}
 	}
 }
