@@ -281,6 +281,10 @@ namespace HapetFrontend.Parsing.PostPrepare
 				var ctorFunc = ctors[0];
 				ctorFunc.Name = ctorFunc.Name.GetCopy($"{ctorFunc.Name.Name}_stor");
 
+				// stor can only have 'static' kw
+				if (ctorFunc.SpecialKeys.Count > 1)
+					_compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, ctorFunc.Name, $"Static constructor can only have 'static' keyword. Other keywords will be ignored!", null, Entities.ReportType.Warning);
+
 				// TODO: do i need to insert smth here? probably need to extern 'free' and call it at the end
 				//ct.Body.Statements.Insert(0, new AstCallExpr(
 				//	new AstNestedExpr(new AstIdExpr("this"), null),

@@ -8,4 +8,9 @@ public class SuppressStaticCtorCallAttribute : Attribute
     public SuppressStaticCtorCallAttribute()
     {
     }
+
+    static SuppressStaticCtorCallAttribute()
+    {
+        int a = 3;
+    }
 }
