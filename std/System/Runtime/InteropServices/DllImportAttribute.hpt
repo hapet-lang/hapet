@@ -1,5 +1,6 @@
 using System;
 
+[SuppressStaticCtorCallAttribute]
 public sealed class DllImportAttribute : Attribute
 {
     [RequiredAttribute]

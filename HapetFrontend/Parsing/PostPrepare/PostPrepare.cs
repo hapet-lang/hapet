@@ -1,4 +1,5 @@
 ﻿using HapetFrontend.Ast.Declarations;
+using HapetFrontend.Ast.Expressions;
 using HapetFrontend.Entities;
 using HapetFrontend.Types;
 
@@ -41,6 +42,7 @@ namespace HapetFrontend.Parsing.PostPrepare
             PostPrepareTypeInference();
 
 			SearchForMainFunction();
+			CallAllStaticCtors();
 			return 0;
 		}
 
@@ -61,6 +63,33 @@ namespace HapetFrontend.Parsing.PostPrepare
 						_compiler.MainFunction = funcDecl;
 					}
 				}
+			}
+		}
+
+		private void CallAllStaticCtors()
+		{
+			if (_compiler.MainFunction == null)
+				return;
+
+			var unique = _allUsedClassesInProgram.Distinct();
+			foreach (var cls in unique)
+			{
+				// check that the class has suppress stor call attr
+				// and skip the class without calling it's stor
+				string suppressAttrName = "System.SuppressStaticCtorCallAttribute";
+				var suppressAttr = cls.Attributes.FirstOrDefault(x => x.AttributeName.TryFlatten(_compiler.MessageHandler, _currentSourceFile) == suppressAttrName);
+				if (suppressAttr != null)
+					continue;
+
+				// creating stor call ast
+				string funcName = $"{cls.Name.Name.Split('.').Last()}_stor";
+				var call = new AstCallExpr(new AstNestedExpr(cls.Name.GetCopy(), null), new AstIdExpr(funcName));
+				SetScopeAndParent(call, _compiler.MainFunction.Body, _compiler.MainFunction.Body.SubScope);
+				PostPrepareExprScoping(call);
+				PostPrepareExprInference(call);
+
+				// TODO: sort the static ctors calls by hierarchy
+				_compiler.MainFunction.Body.Statements.Insert(0, call);
 			}
 		}
 	}

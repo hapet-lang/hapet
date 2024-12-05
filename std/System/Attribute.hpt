@@ -1,3 +1,4 @@
+[SuppressStaticCtorCallAttribute]
 public abstract class Attribute
 {
 }

@@ -2,6 +2,7 @@
 // should be treated as a bitfield (or set of flags).
 // An IDE may use this information to provide a richer
 // development experience.
+[SuppressStaticCtorCallAttribute]
 public class FlagsAttribute : Attribute
 {
     public FlagsAttribute()

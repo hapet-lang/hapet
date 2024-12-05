@@ -1,3 +1,6 @@
+using System;
+
+[SuppressStaticCtorCallAttribute]
 public static class Console
 {
     [DllImportAttribute("", "puts")]

@@ -1,3 +1,6 @@
+using System;
+
+[SuppressStaticCtorCallAttribute]
 public class UTF8Encoding : Encoding
 {
     // https://stackoverflow.com/questions/73758747/looking-for-the-description-of-the-algorithm-to-convert-utf8-to-utf16

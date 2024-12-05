@@ -211,6 +211,7 @@ namespace HapetFrontend.Parsing.PostPrepare
 			}
 		}
 
+		private List<AstClassDecl> _allUsedClassesInProgram = new List<AstClassDecl>();
 		private void PostPrepareGenerateClassStaticConstructor(AstClassDecl classDecl, List<AstFuncDecl> ctors)
 		{
 			// we need to add a static var to check that the stor was called

@@ -168,7 +168,13 @@ namespace HapetBackend.Llvm
 		{
 			// creating extern call of C func
 			string dllImportAttrFullName = "System.Runtime.InteropServices.DllImportAttribute"; // WARN: hard cock
-			var dllImportAttr = funcDecl.Attributes.FirstOrDefault(x => x.AttributeName.OutType.ToString() == dllImportAttrFullName);
+			var dllImportAttr = funcDecl.Attributes.FirstOrDefault(x => 
+			{
+				// could be if an attr was not infered properly
+				if (x.AttributeName.OutType == null)
+					return false;
+				return x.AttributeName.OutType.ToString() == dllImportAttrFullName;
+			});
 
 			// many checks are here
 			if (dllImportAttr == null) 

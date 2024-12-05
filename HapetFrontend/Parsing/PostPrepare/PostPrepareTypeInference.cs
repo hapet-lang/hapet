@@ -457,6 +457,7 @@ namespace HapetFrontend.Parsing.PostPrepare
 			{
 				idExpr.OutType = typed.Decl.Type.OutType;
 				TryAssignConstValueToExpr(idExpr, typed.Decl);
+				TrySaveClassUsage(typed.Decl);
 				idExpr.FindSymbol = smbl;
                 return;
 			}
@@ -470,6 +471,7 @@ namespace HapetFrontend.Parsing.PostPrepare
 				idExpr.Name = nameWithClass;
 				idExpr.OutType = typed2.Decl.Type.OutType;
 				TryAssignConstValueToExpr(idExpr, typed2.Decl);
+				TrySaveClassUsage(typed2.Decl);
 				idExpr.FindSymbol = smblInLocalClass;
                 return;
 			}
@@ -503,6 +505,7 @@ namespace HapetFrontend.Parsing.PostPrepare
 					idExpr.Name = fullFuncName;
 					idExpr.OutType = typed4.Decl.Type.OutType;
 					TryAssignConstValueToExpr(idExpr, typed4.Decl);
+					TrySaveClassUsage(typed4.Decl);
 					idExpr.FindSymbol = funcInAnotherClass;
                     return;
 				}
@@ -517,6 +520,7 @@ namespace HapetFrontend.Parsing.PostPrepare
 				idExpr.Name = nameWithNamespace;
 				idExpr.OutType = typed3.Decl.Type.OutType;
 				TryAssignConstValueToExpr(idExpr, typed3.Decl);
+				TrySaveClassUsage(typed3.Decl);
 				idExpr.FindSymbol = smblInLocalFile;
                 return;
 			}
@@ -535,6 +539,7 @@ namespace HapetFrontend.Parsing.PostPrepare
 					// do not change name because it already contains namespace
 					idExpr.OutType = typed4.Decl.Type.OutType;
 					TryAssignConstValueToExpr(idExpr, typed4.Decl);
+					TrySaveClassUsage(typed4.Decl);
 					idExpr.FindSymbol = includedSmbl;
                     return;
 				}
@@ -561,6 +566,7 @@ namespace HapetFrontend.Parsing.PostPrepare
 						// do not change name because it already contains namespace
 						idExpr.OutType = typed4.Decl.Type.OutType;
 						TryAssignConstValueToExpr(idExpr, typed4.Decl);
+						TrySaveClassUsage(typed4.Decl);
 						idExpr.FindSymbol = includedSmbl;
                         return;
 					}
@@ -574,6 +580,7 @@ namespace HapetFrontend.Parsing.PostPrepare
 					idExpr.Name = fullNameWithNs;
 					idExpr.OutType = typed5.Decl.Type.OutType;
 					TryAssignConstValueToExpr(idExpr, typed5.Decl);
+					TrySaveClassUsage(typed5.Decl);
 					idExpr.FindSymbol = usedSmbl;
                     return;
 				}
@@ -585,9 +592,13 @@ namespace HapetFrontend.Parsing.PostPrepare
 			_compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, idExpr, "The type could not be inferred...");
 		}
 
+		/// <summary>
+		/// This shite helps us to move OutValue from one to another
+		/// </summary>
+		/// <param name="expr">The main expr</param>
+		/// <param name="decl">The decl that could have OutValue</param>
 		private void TryAssignConstValueToExpr(AstExpression expr, AstDeclaration decl)
 		{
-			// TODO: other shite like 'static'
 			// assign out value only from consts
 			if (decl is AstVarDecl varDecl && varDecl.SpecialKeys.Contains(TokenType.KwConst))
 			{
@@ -602,6 +613,19 @@ namespace HapetFrontend.Parsing.PostPrepare
 					PostPrepareExprInference(varDecl.Initializer);
 				}
 				expr.OutValue = varDecl.Initializer.OutValue;
+			}
+		}
+
+		/// <summary>
+		/// Saves class usage to know which were used by the program. 
+		/// This would be used to call static ctors :)
+		/// </summary>
+		/// <param name="decl">The decl to check and mark</param>
+		private void TrySaveClassUsage(AstDeclaration decl)
+		{
+			if (decl is AstClassDecl clsDecl)
+			{
+				_allUsedClassesInProgram.Add(clsDecl);
 			}
 		}
 
@@ -1114,6 +1138,10 @@ namespace HapetFrontend.Parsing.PostPrepare
 			var newTypeAst = attrStmt.AttributeName.GetTypeAstId(_compiler.MessageHandler, _currentSourceFile);
 			PostPrepareExprInference(newTypeAst);
 			attrStmt.AttributeName.SetTypeAstId(newTypeAst);
+
+			// check that the attr ast was infered properly
+			if (attrStmt.AttributeName.OutType == null)
+				return;
 
 			// TODO: check that the shite is inherited from 'System.Attribute'
 			// getting all the fields of attribuute class decl

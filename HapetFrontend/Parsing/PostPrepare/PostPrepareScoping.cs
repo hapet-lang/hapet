@@ -417,6 +417,7 @@ namespace HapetFrontend.Parsing.PostPrepare
 				scopename = $"block_{_blockCounter++}_scope";
 
 			var blockScope = new Scoping.Scope(scopename, blockExpr.Scope);
+			blockExpr.SubScope = blockScope; // setting the sub scope
 
 			foreach (var stmt in blockExpr.Statements)
 			{
