@@ -340,6 +340,12 @@ namespace HapetFrontend.Parsing.PostPrepare
 			{
 				unExpr.ActualOperator = operators[0];
 				unExpr.OutType = unExpr.ActualOperator.ResultType;
+
+				// if the value could be evaluated at the compile time
+				if ((unExpr.SubExpr as AstExpression).OutValue != null)
+				{
+					unExpr.OutValue = unExpr.ActualOperator.Execute((unExpr.SubExpr as AstExpression).OutValue);
+				}
 			}
 		}
 
@@ -390,6 +396,12 @@ namespace HapetFrontend.Parsing.PostPrepare
 						binExpr.Right = PostPrepareExpressionWithType(castingType, rightExpr);
 					else
 						binExpr.Left = PostPrepareExpressionWithType(castingType, leftExpr);
+				}
+
+				// if the value could be evaluated at the compile time
+				if (leftExpr.OutValue != null && rightExpr.OutValue != null)
+				{
+					binExpr.OutValue = binExpr.ActualOperator.Execute(leftExpr.OutValue, rightExpr.OutValue);
 				}
 			}
 		}

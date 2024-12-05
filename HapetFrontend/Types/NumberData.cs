@@ -89,9 +89,16 @@ namespace HapetFrontend.Types
 				return DoubleValue;
 		}
 
-		public ulong ToULong()
+		public unsafe ulong ToULong()
 		{
-			return (ulong)IntValue;
+			if (IntValue > long.MaxValue)
+				return (ulong)IntValue;
+
+			unsafe
+			{
+				long p = (long)IntValue;
+				return *(ulong*)&p;
+			}
 		}
 
 		public NumberData Negate()

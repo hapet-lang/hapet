@@ -4,21 +4,12 @@ using TestProject.Sub;
 
 public static class Program
 {
-	//public const int ConstField3 = ConstField2;
-	//public const int ConstField2 = ConstField1;
-	//public const int ConstField1 = 1;
-
-	public static int StaticField1 = TestFunc();
-	//public const int ConstField1 = TestFunc();
-	
+	public const int ConstField3 = -ConstField2;
+	public const int ConstField2 = ConstField1 + 4;
+	public const int ConstField1 = 1;
 
 	public static int Main(string[] args)
 	{
 		return 0;
-	}
-
-	public static int TestFunc()
-	{
-		return 1;
 	}
 }
