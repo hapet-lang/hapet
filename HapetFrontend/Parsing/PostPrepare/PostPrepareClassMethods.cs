@@ -78,12 +78,15 @@ namespace HapetFrontend.Parsing.PostPrepare
 			// error if user created a func with the initializer name
 			var specialFuncs = allFuncs.Where(x => (x.Name.Name.EndsWith($"::{classDecl.Name.Name}_ini") || 
 												    x.Name.Name.EndsWith($"::{classDecl.Name.Name}_ctor") ||
+												    x.Name.Name.EndsWith($"::{classDecl.Name.Name}_stor") || // static ctor
 												    x.Name.Name.EndsWith($"::{classDecl.Name.Name}_dtor")));
 			foreach (var fnc in specialFuncs)
 			{
 				_compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, fnc.Name, $"Function with the name is not allowed in the {classDecl.Name.Name} class");
 			}
 
+			// static ctor is always generated
+			PostPrepareGenerateClassStaticConstructor(classDecl, allFuncs.Where(x => x.ClassFunctionType == Enums.ClassFunctionType.StaticCtor).ToList());
 			// generating all the shite only if the class is not static
 			if (!classDecl.SpecialKeys.Contains(TokenType.KwStatic))
 			{
@@ -239,7 +242,7 @@ namespace HapetFrontend.Parsing.PostPrepare
 				var dtorFunc = dtors[0];
 				dtorFunc.Name = dtorFunc.Name.GetCopy($"{dtorFunc.Name.Name}_dtor");
 
-				// TODO: do i need to insert smth here? probably need to extern 'delete' and call it at the end
+				// TODO: do i need to insert smth here? probably need to extern 'free' and call it at the end
 				//ct.Body.Statements.Insert(0, new AstCallExpr(
 				//	new AstNestedExpr(new AstIdExpr("this"), null),
 				//	new AstIdExpr($"{classDecl.Name.Name}_ini")));
@@ -247,6 +250,45 @@ namespace HapetFrontend.Parsing.PostPrepare
 			else
 			{
 				_compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, dtors[1], "Only one destructor could be declared in a class");
+			}
+		}
+
+		private void PostPrepareGenerateClassStaticConstructor(AstClassDecl classDecl, List<AstFuncDecl> ctors)
+		{
+			if (ctors.Count == 0)
+			{
+				// there is no dtor. need to create one
+				List<AstStatement> storBlockStatements = new List<AstStatement>();
+
+				// TODO: do i need to place here something?
+
+				// the block with 
+				var storBlock = new AstBlockExpr(storBlockStatements);
+
+				// the ctor func
+				var storDecl = new AstFuncDecl(new List<AstParamDecl>(),
+				new AstIdExpr("void"),
+				storBlock,
+				new AstIdExpr($"{classDecl.Name.Name}_stor"));
+				storDecl.SpecialKeys.Add(TokenType.KwPublic); // stor is public
+				storDecl.SpecialKeys.Add(TokenType.KwStatic); // stor is static
+				storDecl.ClassFunctionType = Enums.ClassFunctionType.Dtor;
+				storDecl.ContainingClass = classDecl;
+				classDecl.Declarations.Add(storDecl);
+			}
+			else if (ctors.Count == 1)
+			{
+				var dtorFunc = ctors[0];
+				dtorFunc.Name = dtorFunc.Name.GetCopy($"{dtorFunc.Name.Name}_stor");
+
+				// TODO: do i need to insert smth here? probably need to extern 'free' and call it at the end
+				//ct.Body.Statements.Insert(0, new AstCallExpr(
+				//	new AstNestedExpr(new AstIdExpr("this"), null),
+				//	new AstIdExpr($"{classDecl.Name.Name}_ini")));
+			}
+			else
+			{
+				_compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, ctors[1], "Only one static constructor could be declared in a class");
 			}
 		}
 

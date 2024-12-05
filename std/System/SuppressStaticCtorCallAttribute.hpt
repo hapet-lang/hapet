@@ -1,0 +1,11 @@
+// Custom attribute to indicate that the class'
+// static ctor won't be called.
+// Use the attribute if the class doesn't 
+// have any static shite.
+[SuppressStaticCtorCallAttribute]
+public class SuppressStaticCtorCallAttribute : Attribute
+{
+    public SuppressStaticCtorCallAttribute()
+    {
+    }
+}

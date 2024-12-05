@@ -6,5 +6,6 @@
 		Initializer = 1,
 		Ctor = 2,
 		Dtor = 3,
+		StaticCtor = 4,
 	}
 }
