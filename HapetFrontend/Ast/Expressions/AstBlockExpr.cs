@@ -2,7 +2,7 @@
 
 namespace HapetFrontend.Ast.Expressions
 {
-    public class AstBlockExpr : AstStatement
+    public class AstBlockExpr : AstExpression
     {
         /// <summary>
         /// The statements that are in the block

@@ -26,6 +26,14 @@ namespace HapetFrontend.Parsing.PostPrepare
 
 		private void PostPrepareClassMethodsInternal(AstClassDecl classDecl)
 		{
+			// check that all decls in the class are also static
+			if (classDecl.SpecialKeys.Contains(TokenType.KwStatic))
+			{
+				var foundNonStatic = classDecl.Declarations.FirstOrDefault(dd => !dd.SpecialKeys.Contains(TokenType.KwStatic) && !dd.SpecialKeys.Contains(TokenType.KwConst));
+				if (foundNonStatic != null)
+					_compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, foundNonStatic, "The declaration has to be 'static' or 'const' because it is declared in a 'static' class");
+			}
+
 			// getting all functions in the class
 			var allFuncs = classDecl.Declarations.Where(x => x is AstFuncDecl).Select(x => x as AstFuncDecl);
 
@@ -349,6 +357,16 @@ namespace HapetFrontend.Parsing.PostPrepare
 					fieldInitializer = decl.Initializer;
 				else
 					fieldInitializer = new AstDefaultExpr(decl);
+
+				/// this is a kostyl that is described here <see cref="Parser.ParseClassDeclaration"/>
+				if (fieldInitializer is AstBlockExpr blckExpr)
+				{
+					// skip last because the last one is the real value to be applied into variable 
+					iniBlockStatements.AddRange(blckExpr.Statements.SkipLast(1));
+					fieldInitializer = blckExpr.Statements.Last() as AstExpression; // TODO: checks here?
+				}
+
+				// creating the assign
 				var assign = new AstAssignStmt(target, fieldInitializer, decl);
 				iniBlockStatements.Add(assign);
 
