@@ -1,4 +1,5 @@
 ﻿using HapetFrontend.Ast.Declarations;
+using HapetFrontend.Ast.Expressions;
 using HapetFrontend.Parsing;
 using HapetFrontend.Types;
 using LLVMSharp.Interop;
@@ -76,6 +77,11 @@ namespace HapetBackend.Llvm
 						if (decl.Initializer != null)
 						{
 							globStatic.Initializer = GenerateExpressionCode(decl.Initializer);
+						}
+						else
+						{
+							// set default value to it
+							globStatic.Initializer = GenerateExpressionCode(AstDefaultExpr.GetDefaultValueForType(decl.Type.OutType, null));
 						}
                         _valueMap[decl.GetSymbol] = globStatic;
                     }

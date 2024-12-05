@@ -5,6 +5,7 @@
 [SuppressStaticCtorCallAttribute]
 public class SuppressStaticCtorCallAttribute : Attribute
 {
+    public static bool Stattttt;
     public SuppressStaticCtorCallAttribute()
     {
     }
