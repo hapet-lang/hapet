@@ -255,8 +255,12 @@ namespace HapetFrontend.Parsing.PostPrepare
 				if (ctorFunc.SpecialKeys.Count > 1)
 					_compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, ctorFunc.Name, $"Static constructor can only have 'static' keyword. Other keywords will be ignored!", null, Entities.ReportType.Warning);
 
+				// move all user code under 'if' stmt
+				checkForInited.BodyTrue.Statements.AddRange(ctorFunc.Body.Statements);
+				ctorFunc.Body.Statements.Clear();
+
 				// add check into user defined stor
-				ctorFunc.Body.Statements.Insert(0, checkForInited);
+				ctorFunc.Body.Statements.Add(checkForInited);
 			}
 			else
 			{
