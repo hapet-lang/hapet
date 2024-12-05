@@ -10,7 +10,7 @@ public static class Program
 
 	public static int StaticField1 = TestFunc();
 	//public const int ConstField1 = TestFunc();
-	public int NormalField1 = TestFunc();
+	
 
 	public static int Main(string[] args)
 	{

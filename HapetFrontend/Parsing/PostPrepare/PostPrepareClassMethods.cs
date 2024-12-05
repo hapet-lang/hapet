@@ -366,6 +366,7 @@ namespace HapetFrontend.Parsing.PostPrepare
 					fieldInitializer = blckExpr.Statements.Last() as AstExpression; // TODO: checks here?
 				}
 
+				// TODO: !!! check that non-static functions are not used in field initializers!!!
 				// creating the assign
 				var assign = new AstAssignStmt(target, fieldInitializer, decl);
 				iniBlockStatements.Add(assign);
