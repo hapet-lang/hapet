@@ -788,6 +788,7 @@ namespace HapetFrontend.Parsing.PostPrepare
 			PostPrepareExprInference(castExpr.SubExpression as AstExpression);
 			PostPrepareExprInference(castExpr.TypeExpr as AstExpression);
 			castExpr.OutType = (castExpr.TypeExpr as AstExpression).OutType;
+			castExpr.OutValue = castExpr.OutValue; // WARN: is it ok just to pass the value?
 		}
 
 		private void PostPrepareNestedExprInference(AstNestedExpr nestExpr, out bool itWasPropa, bool propaSet = false)

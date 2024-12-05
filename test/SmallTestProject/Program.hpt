@@ -7,6 +7,7 @@ public static class Program
 	public const int ConstField3 = -ConstField2;
 	public const int ConstField2 = ConstField1 + 4;
 	public const int ConstField1 = 1;
+	public const int ConstField4 = default;
 
 	public static int Main(string[] args)
 	{
