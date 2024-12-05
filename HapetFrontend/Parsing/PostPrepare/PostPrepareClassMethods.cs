@@ -223,9 +223,10 @@ namespace HapetFrontend.Parsing.PostPrepare
 		private void PostPrepareGenerateClassStaticConstructor(AstClassDecl classDecl, List<AstFuncDecl> ctors)
 		{
 			// we need to add a static var to check that the stor was called
-			string theVarName = $"__is_{classDecl.Name.Name}_stor_called";
+			string theVarName = $"__is_{_currentSourceFile.Namespace}.{classDecl.Name.Name}_stor_called";
 			var theVar = new AstVarDecl(new AstNestedExpr(new AstIdExpr("bool"), null), new AstIdExpr(theVarName));
 			theVar.SpecialKeys.Add(TokenType.KwStatic);
+			theVar.SpecialKeys.Add(TokenType.KwUnreflected);
 			classDecl.Declarations.Add(theVar);
 
 			// creating the ini block for fields
