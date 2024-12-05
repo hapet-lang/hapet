@@ -222,7 +222,7 @@ namespace HapetFrontend.Parsing.PostPrepare
 			// creating the ini block for fields
 			var iniBlock = GetFieldsToInitialize(classDecl, true);
 			// set 'true' to the var
-			var varAssign = new AstAssignStmt(new AstNestedExpr(new AstIdExpr(theVarName), null), new AstIdExpr("true"));
+			var varAssign = new AstAssignStmt(new AstNestedExpr(new AstIdExpr(theVarName), null), new AstBoolExpr(true));
 			iniBlock.Statements.Add(varAssign);
 			AstIfStmt checkForInited = new AstIfStmt(new AstUnaryExpr("!", new AstIdExpr(theVarName)), iniBlock, null);
 
@@ -337,7 +337,8 @@ namespace HapetFrontend.Parsing.PostPrepare
 				}
 
 				// creating field assing statement
-				var target = new AstNestedExpr(decl.Name.GetCopy(), null, decl);
+				var objectName = forStatic ? null : new AstNestedExpr(new AstIdExpr("this"), null);
+				var target = new AstNestedExpr(decl.Name.GetCopy(), objectName, decl);
 				AstExpression fieldInitializer;
 				if (decl.Initializer != null)
 					fieldInitializer = decl.Initializer;
