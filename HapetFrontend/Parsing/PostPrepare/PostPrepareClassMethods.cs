@@ -272,14 +272,14 @@ namespace HapetFrontend.Parsing.PostPrepare
 				new AstIdExpr($"{classDecl.Name.Name}_stor"));
 				storDecl.SpecialKeys.Add(TokenType.KwPublic); // stor is public
 				storDecl.SpecialKeys.Add(TokenType.KwStatic); // stor is static
-				storDecl.ClassFunctionType = Enums.ClassFunctionType.Dtor;
+				storDecl.ClassFunctionType = Enums.ClassFunctionType.StaticCtor;
 				storDecl.ContainingClass = classDecl;
 				classDecl.Declarations.Add(storDecl);
 			}
 			else if (ctors.Count == 1)
 			{
-				var dtorFunc = ctors[0];
-				dtorFunc.Name = dtorFunc.Name.GetCopy($"{dtorFunc.Name.Name}_stor");
+				var ctorFunc = ctors[0];
+				ctorFunc.Name = ctorFunc.Name.GetCopy($"{ctorFunc.Name.Name}_stor");
 
 				// TODO: do i need to insert smth here? probably need to extern 'free' and call it at the end
 				//ct.Body.Statements.Insert(0, new AstCallExpr(
