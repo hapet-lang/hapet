@@ -71,7 +71,10 @@ namespace HapetFrontend.Parsing.PostPrepare
 			if (_compiler.MainFunction == null)
 				return;
 
-			var unique = _allUsedClassesInProgram.Distinct();
+			// also add main's func class
+			_allUsedClassesInProgram.Add(_compiler.MainFunction.ContainingClass);
+			// WARN! ToList is required! because _allUsedClassesInProgram is going to be modified below for no reason
+			var unique = _allUsedClassesInProgram.Distinct().ToList();
 			foreach (var cls in unique)
 			{
 				// check that the class has suppress stor call attr
