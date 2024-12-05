@@ -31,8 +31,17 @@ namespace HapetFrontend.Parsing.PostPrepare
 
 		public int StartPreparation()
 		{
+			// we are checking for errors after each function 
+			// because some steps won't work properly without previous
+			// 0 is returned because normal error is going to be
+			// returned in the caller shite
+
 			PostPrepareClassMethods();
+			if (_compiler.MessageHandler.HasErrors)
+				return 0;
 			PostPrepareScoping();
+			if (_compiler.MessageHandler.HasErrors)
+				return 0;
 
 			// generate metadata file
 			int result = PostPrepareMetadata();
@@ -40,8 +49,12 @@ namespace HapetFrontend.Parsing.PostPrepare
 				return result;
 
             PostPrepareTypeInference();
+			if (_compiler.MessageHandler.HasErrors)
+				return 0;
 
 			SearchForMainFunction();
+			if (_compiler.MessageHandler.HasErrors)
+				return 0;
 			CallAllStaticCtors();
 			return 0;
 		}
