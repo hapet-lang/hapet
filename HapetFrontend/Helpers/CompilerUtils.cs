@@ -21,7 +21,16 @@ namespace HapetFrontend.Helpers
 					   .TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
 		}
 
-		public static string GetArgsString(this List<AstArgumentExpr> args, HapetType containingClass = null)
+        public static void ReplaceWithCasts(this List<AstArgumentExpr> args, List<AstExpression> casts)
+        {
+            for (int i = 0; i < args.Count; ++i)
+			{
+				args[i].Expr = casts[i];
+				args[i].OutType = casts[i].OutType;
+            }
+        }
+
+        public static string GetArgsString(this List<AstArgumentExpr> args, HapetType containingClass = null)
 		{
 			// WARN: ':' is used so linker would work :)))
 			StringBuilder sb = new StringBuilder();

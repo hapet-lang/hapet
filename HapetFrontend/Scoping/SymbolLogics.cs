@@ -145,7 +145,7 @@ namespace HapetFrontend.Scoping
             return null;
         }
 
-        public DeclSymbol GetFuncFromCandidates(string name, List<AstExpression> args, PostPrepare postPrepare)
+        public DeclSymbol GetFuncFromCandidates(string name, List<AstExpression> args, PostPrepare postPrepare, out List<AstExpression> castsToBeDone)
         {
             // getting only the Class::AndFuncName without params
             var splitted = name.Split('(');
@@ -153,6 +153,7 @@ namespace HapetFrontend.Scoping
 
             int bestScore = int.MaxValue;
             DeclSymbol bestMatch = null;
+            castsToBeDone = new List<AstExpression>();
 
             List<DeclSymbol> candidates = GetCandidates(classWithFuncName);
             foreach (var cand in candidates)
@@ -166,6 +167,7 @@ namespace HapetFrontend.Scoping
                     continue;
 
                 int score = 0;
+                List<AstExpression> casts = new List<AstExpression>();
                 for (int i = 0; i < args.Count; ++i)
                 {
                     var arg = args[i];
@@ -174,20 +176,23 @@ namespace HapetFrontend.Scoping
                     if (arg.OutType == par.Type.OutType)
                     {
                         score += 0;
+                        casts.Add(arg);
                         continue;
                     }
 
                     PostPrepare.CastResult castResult = new PostPrepare.CastResult();
-                    postPrepare.PostPrepareExpressionWithType(par.Type.OutType, arg, castResult);
+                    var cst = postPrepare.PostPrepareExpressionWithType(par.Type.OutType, arg, castResult);
                     if (castResult.CouldBeCasted)
                     {
                         score += 1;
+                        casts.Add(cst);
                         continue;
                     }
                     // TODO: do we need to check narrow too?
 
                     // if nothing - set max val and break
                     score = int.MaxValue;
+                    casts.Add(null);
                     break;
                 }
 
@@ -196,6 +201,7 @@ namespace HapetFrontend.Scoping
                 {
                     bestScore = score;
                     bestMatch = cand;
+                    castsToBeDone = casts;
                 }
                 else if (score == bestScore && score != int.MaxValue)
                 {
