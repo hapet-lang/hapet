@@ -11,6 +11,22 @@ namespace HapetFrontend.Parsing.PostPrepare
 {
     public partial class PostPrepare
     {
+		public class CastResult
+		{
+            /// <summary>
+            /// true if could be casted implicitly like
+			/// short a = 3;
+			/// int b = a;
+            /// </summary>
+            public bool CouldBeCasted { get; set; }
+			/// <summary>
+			/// true if could be narrowed like
+			/// int a = 4214244;
+			/// short b = a;
+			/// </summary>
+			public bool CouldBeNarrowed { get; set; }
+		}
+
         /// <summary>
         /// The method is used to prepare correct assignment.
         /// Like 'float a = 6;' should be allowed and 'int a = 6.0;' should not be allowed
@@ -40,7 +56,7 @@ namespace HapetFrontend.Parsing.PostPrepare
         /// <param name="neededType">The type that should be outed</param>
         /// <param name="expr">The expr to be casted</param>
         /// <returns>Casted expr</returns>
-        private AstExpression PostPrepareExpressionWithType(HapetType neededType, AstExpression expr)
+        public AstExpression PostPrepareExpressionWithType(HapetType neededType, AstExpression expr, CastResult castResult = null)
         {
             HapetType exprType = expr.OutType;
             AstExpression outExpr = null;
@@ -55,7 +71,8 @@ namespace HapetFrontend.Parsing.PostPrepare
             // has to work but it won't because of this check!!!
 			if (expr is AstNestedExpr nestt && nestt.RightPart.OutType is EnumType)
 			{
-				_compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, expr, $"Enum type itself could not be assigned to anything");
+				if (castResult == null)
+					_compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, expr, $"Enum type itself could not be assigned to anything");
 				return expr;
 			}
 
@@ -67,7 +84,8 @@ namespace HapetFrontend.Parsing.PostPrepare
 
             if (neededType == null)
             {
-				_compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, expr, $"The required type of the expr could not be evaluated");
+                if (castResult == null)
+                    _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, expr, $"The required type of the expr could not be evaluated");
                 return expr;
 			}
 
@@ -101,7 +119,11 @@ namespace HapetFrontend.Parsing.PostPrepare
 				case IntType when exprType is IntType:
 				case CharType when exprType is IntType:
 					{
-						bool? isFirstSigned = neededType switch
+						// numeric types could be narrowed
+						if (castResult != null)
+							castResult.CouldBeNarrowed = true;
+
+                        bool? isFirstSigned = neededType switch
 						{
 							FloatType => null,
 							IntType i => i.Signed,
@@ -154,15 +176,23 @@ namespace HapetFrontend.Parsing.PostPrepare
 
 						// it the value is in range of the target - then it could be easily casted :)
 						if (expr.OutValue is char charData)
-                        {
-                            // getting a NumberData from char UTF-16 value to normally check ranging
-                            var newNumData = NumberData.FromInt(((short)charData));
-                            if (newNumData.IsInRangeOfType(neededType))
+						{
+							// getting a NumberData from char UTF-16 value to normally check ranging
+							var newNumData = NumberData.FromInt(((short)charData));
+							if (newNumData.IsInRangeOfType(neededType))
+							{
+								if (castResult != null)
+									castResult.CouldBeCasted = true;
 								outExpr = cst;
+							}
 						}
 						// it the value is in range of the target - then it could be easily casted :)
 						else if (expr.OutValue is NumberData numData && numData.IsInRangeOfType(neededType))
-							outExpr = cst;
+						{
+                            if (castResult != null)
+                                castResult.CouldBeCasted = true;
+                            outExpr = cst;
+                        }
 
 						break;
                     }
@@ -177,7 +207,12 @@ namespace HapetFrontend.Parsing.PostPrepare
 					) // place here other exceptions
                 {
                     string typeName = exprType?.ToString() ?? "[Unresolved]";
-					_compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, expr, $"Type {typeName} cannot be implicitly casted into {neededType}");
+                    if (castResult == null)
+                        _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, expr, $"Type {typeName} cannot be implicitly casted into {neededType}");
+                }
+				else if (castResult != null)
+                {
+					castResult.CouldBeCasted = true;
                 }
                 outExpr = expr;
             }
@@ -185,6 +220,8 @@ namespace HapetFrontend.Parsing.PostPrepare
             else if (neededType == exprType && outExpr == null)
             {
                 outExpr = expr;
+                if (castResult != null)
+                    castResult.CouldBeCasted = true;
             }
             return outExpr;
         }

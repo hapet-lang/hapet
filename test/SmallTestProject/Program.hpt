@@ -9,7 +9,7 @@ public static class Program
 
 	public static int Main(string[] args)
 	{
-		int b = Program.Summ(3, 5);
+		int b = Summ(3, 5);
 		return b;
 	}
 }

@@ -1,7 +1,9 @@
 ﻿using HapetFrontend.Ast;
 using HapetFrontend.Ast.Declarations;
+using HapetFrontend.Ast.Expressions;
 using HapetFrontend.Ast.Statements;
 using HapetFrontend.Entities;
+using HapetFrontend.Parsing.PostPrepare;
 using HapetFrontend.Types;
 using System.Xml.Linq;
 
@@ -141,6 +143,81 @@ namespace HapetFrontend.Scoping
             if (sym is AstEnumDecl s)
                 return s;
             return null;
+        }
+
+        public DeclSymbol GetFuncFromCandidates(string name, List<AstExpression> args, PostPrepare postPrepare)
+        {
+            // getting only the Class::AndFuncName without params
+            var splitted = name.Split('(');
+            string classWithFuncName = splitted[0];
+
+            int bestScore = int.MaxValue;
+            DeclSymbol bestMatch = null;
+
+            List<DeclSymbol> candidates = GetCandidates(classWithFuncName);
+            foreach (var cand in candidates)
+            {
+                // skip non funcs
+                if (cand.Decl is not AstFuncDecl funcDecl)
+                    continue;
+
+                // skip if different amount of params/args
+                if (funcDecl.Parameters.Count != args.Count)
+                    continue;
+
+                int score = 0;
+                for (int i = 0; i < args.Count; ++i)
+                {
+                    var arg = args[i];
+                    var par = funcDecl.Parameters[i];
+
+                    if (arg.OutType == par.Type.OutType)
+                    {
+                        score += 0;
+                        continue;
+                    }
+
+                    PostPrepare.CastResult castResult = new PostPrepare.CastResult();
+                    postPrepare.PostPrepareExpressionWithType(par.Type.OutType, arg, castResult);
+                    if (castResult.CouldBeCasted)
+                    {
+                        score += 1;
+                        continue;
+                    }
+                    // TODO: do we need to check narrow too?
+
+                    // if nothing - set max val and break
+                    score = int.MaxValue;
+                    break;
+                }
+
+                // getting the best candidate
+                if (score < bestScore)
+                {
+                    bestScore = score;
+                    bestMatch = cand;
+                }
+                else if (score == bestScore && score != int.MaxValue)
+                {
+                    // TODO: ambiguous error here that there are two func and we dk which one to call
+                }
+            }
+            return bestMatch;
+        }
+
+        private List<DeclSymbol> GetCandidates(string classWithFuncName, List<DeclSymbol> cands = null)
+        {
+            List<DeclSymbol> candidates = cands ?? new List<DeclSymbol>();
+            // search for the func in the scope
+            foreach (var k in _symbolTable.Keys)
+            {
+                if (k.StartsWith(classWithFuncName) && _symbolTable[k] is DeclSymbol ds)
+                    candidates.Add(ds);
+            }
+            // search in parent scope
+            if (Parent != null)
+                Parent.GetCandidates(classWithFuncName, candidates);
+            return candidates;
         }
     }
 }

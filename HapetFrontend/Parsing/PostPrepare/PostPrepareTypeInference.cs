@@ -446,7 +446,12 @@ namespace HapetFrontend.Parsing.PostPrepare
 
 			// the argument type is the same as its expr type
 			argumentExpr.OutType = argumentExpr.Expr.OutType;
-		}
+            // if the value could be evaluated at the compile time
+            if (argumentExpr.Expr.OutValue != null)
+            {
+                argumentExpr.OutValue = argumentExpr.Expr.OutValue;
+            }
+        }
 
 		private void PostPrepareIdentifierInference(AstIdExpr idExpr)
 		{
@@ -692,7 +697,6 @@ namespace HapetFrontend.Parsing.PostPrepare
 			}
 			else
 			{
-				/// WARN!!! almost the same as in <see cref="PostPrepareVarValueAssign"/>
 				string newName = string.Empty;
 				// renaming func call name from 'Anime' to 'Anime(int, float)' WITH OBJECT AS FIRST PARAM
 				if (callExpr.TypeOrObjectName == null)
@@ -700,52 +704,87 @@ namespace HapetFrontend.Parsing.PostPrepare
 					// if the type/object name is not presented - the function is in the same class
 					// but we need to know is it static or not
 					newName = $"{_currentClass.Name.Name}::{callExpr.FuncName.Name}{callExpr.Arguments.GetArgsString()}";
-					var smbl2 = callExpr.FuncName.Scope.GetSymbol(newName);
-					if (smbl2 is DeclSymbol)
+					var smbl2 = callExpr.FuncName.Scope.GetFuncFromCandidates(newName, callExpr.Arguments.Select(x => x as AstExpression).ToList(), this);
+					if (smbl2 is DeclSymbol ds && ds.Decl is AstFuncDecl funcDecl)
 					{
 						// static func defined in local class
-					}
+						newName = funcDecl.Name.Name;
+                    }
 					else
 					{
-						// if it is a non static func defined in local class
-						newName = $"{_currentClass.Name.Name}::{callExpr.FuncName.Name}{callExpr.Arguments.GetArgsString(PointerType.GetPointerType(_currentClass.Type.OutType))}";
-						accessingFromAnObject = true;
-						// we need to create this one because code generator requires the parameter of this shite
-						callExpr.TypeOrObjectName = new AstNestedExpr(new AstIdExpr("this"), null, callExpr);
-						SetScopeAndParent(callExpr.TypeOrObjectName, callExpr);
-						PostPrepareExprScoping(callExpr.TypeOrObjectName);
-						PostPrepareExprInference(callExpr.TypeOrObjectName);
-					}
+                        accessingFromAnObject = true;
+                        // we need to create this one because code generator requires the parameter of this shite
+                        callExpr.TypeOrObjectName = new AstNestedExpr(new AstIdExpr("this"), null, callExpr);
+                        SetScopeAndParent(callExpr.TypeOrObjectName, callExpr);
+                        PostPrepareExprScoping(callExpr.TypeOrObjectName);
+                        PostPrepareExprInference(callExpr.TypeOrObjectName);
+
+                        // if it is a non static func defined in local class
+                        newName = $"{_currentClass.Name.Name}::{callExpr.FuncName.Name}{callExpr.Arguments.GetArgsString(PointerType.GetPointerType(_currentClass.Type.OutType))}";
+						List<AstExpression> argsWithClassParam = new List<AstExpression>(callExpr.Arguments);
+						argsWithClassParam.Insert(0, callExpr.TypeOrObjectName);
+                        smbl2 = callExpr.FuncName.Scope.GetFuncFromCandidates(newName, argsWithClassParam, this);
+                        if (smbl2 is DeclSymbol ds2 && ds2.Decl is AstFuncDecl funcDecl2)
+                            newName = funcDecl2.Name.Name;
+						// TODO: else - error ?
+                    }
 				}
 				else if (callExpr.TypeOrObjectName.OutType is PointerType ptrTp && ptrTp.TargetType is ClassType clsTp)
 				{
 					// if we are calling like 'a.Anime()' where 'a' is an object
 					// we need to rename the func name call like that:
 					newName = $"{clsTp.Declaration.Name.Name}::{callExpr.FuncName.Name}{callExpr.Arguments.GetArgsString(callExpr.TypeOrObjectName.OutType)}";
-					// check if the decl exists. if not - it could be static method call from an object
-					if (clsTp.Declaration.SubScope.GetSymbol(newName) == null)
+
+                    List<AstExpression> argsWithClassParam = new List<AstExpression>(callExpr.Arguments);
+                    argsWithClassParam.Insert(0, callExpr.TypeOrObjectName);
+                    var smbl2 = clsTp.Declaration.SubScope.GetFuncFromCandidates(newName, argsWithClassParam, this);
+
+                    // check if the decl exists. if not - it could be static method call from an object
+                    if (smbl2 is DeclSymbol ds && ds.Decl is AstFuncDecl funcDecl)
+                    {
+                        newName = funcDecl.Name.Name;
+                    }
+					else
 					{
-						// getting the name but without object first param
-						newName = $"{clsTp.Declaration.Name.Name}::{callExpr.FuncName.Name}{callExpr.Arguments.GetArgsString()}";
-					}
-					accessingFromAnObject = true;
+                        // getting the name but without object first param
+                        newName = $"{clsTp.Declaration.Name.Name}::{callExpr.FuncName.Name}{callExpr.Arguments.GetArgsString()}";
+                        smbl2 = clsTp.Declaration.SubScope.GetFuncFromCandidates(newName, callExpr.Arguments.Select(x => x as AstExpression).ToList(), this);
+                        if (smbl2 is DeclSymbol ds2 && ds2.Decl is AstFuncDecl funcDecl2)
+                            newName = funcDecl2.Name.Name;
+                        // TODO: else - error ?
+                    }
+                    accessingFromAnObject = true;
 				}
 				else if (callExpr.TypeOrObjectName.OutType is ClassType clsTpStatic)
 				{
 					// if we are calling like 'A.Anime()' where 'A' is a class
 					// we need to rename the func name call like that:
 					newName = $"{clsTpStatic.Declaration.Name.Name}::{callExpr.FuncName.Name}{callExpr.Arguments.GetArgsString()}";
-					// check if the decl exists. if not - it could be non static method call from a class name
-					if (clsTpStatic.Declaration.SubScope.GetSymbol(newName) == null)
+
+                    var smbl2 = clsTpStatic.Declaration.SubScope.GetFuncFromCandidates(newName, callExpr.Arguments.Select(x => x as AstExpression).ToList(), this);
+
+                    // check if the decl exists. if not - it could be non static method call from a class name
+                    if (smbl2 is DeclSymbol ds && ds.Decl is AstFuncDecl funcDecl)
+                    {
+                        newName = funcDecl.Name.Name;
+                    }
+					else
 					{
-						// getting the name but without object first param
-						newName = $"{clsTpStatic.Declaration.Name.Name}::{callExpr.FuncName.Name}{callExpr.Arguments.GetArgsString(PointerType.GetPointerType(clsTpStatic))}";
-						// error because user tries to access non static method from a class name
-						if (clsTpStatic.Declaration.SubScope.GetSymbol(newName) != null)
-						{
-							_compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, callExpr.FuncName, $"The non-static method could only be accessed from an object");
-						}
-					}
+                        // getting the name but without object first param
+                        newName = $"{clsTpStatic.Declaration.Name.Name}::{callExpr.FuncName.Name}{callExpr.Arguments.GetArgsString(PointerType.GetPointerType(clsTpStatic))}";
+
+                        List<AstExpression> argsWithClassParam = new List<AstExpression>(callExpr.Arguments);
+						var pseudoClassArg = new AstPointerExpr(callExpr.TypeOrObjectName, false, callExpr.TypeOrObjectName);
+						PostPrepareExprInference(pseudoClassArg);
+                        argsWithClassParam.Insert(0, pseudoClassArg);
+                        smbl2 = clsTpStatic.Declaration.SubScope.GetFuncFromCandidates(newName, argsWithClassParam, this);
+
+                        // error because user tries to access non static method from a class name
+                        if (smbl2 != null)
+                        {
+                            _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, callExpr.FuncName, $"The non-static method could only be accessed from an object");
+                        }
+                    }
 				}
 				else
 				{
