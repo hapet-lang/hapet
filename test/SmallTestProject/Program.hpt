@@ -4,21 +4,12 @@ using TestProject.Sub;
 
 public static class Program
 {
+	[DllImportAttribute("TestProject", "cringe_sum")]
+	public static extern short Summ(short n1, short n2);
+
 	public static int Main(string[] args)
 	{
-		switch (4)
-		{
-			case (1)
-			{
-				if (args.Length == 2)
-					break;
-				int a = args.Length;
-			}
-			case (2)
-			{
-
-			}
-		}
-		return 0;
+		int b = Program.Summ(3, 5);
+		return b;
 	}
 }

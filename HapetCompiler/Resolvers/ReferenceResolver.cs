@@ -5,56 +5,40 @@ using HapetFrontend.Parsing.PostPrepare;
 using LLVMSharp;
 using Newtonsoft.Json;
 using System.Reflection;
+using HapetBackend.Llvm.Linkers;
 
 namespace HapetCompiler.Resolvers
 {
-	internal partial class ProjectReferencesResolver
-	{
-		public List<string> PathsToLinkWith { get; } = new List<string>();
-		public List<string> LibrariesToLinkWith { get; } = new List<string>();
+    internal partial class ProjectReferencesResolver
+    {
+        public List<string> PathsToLinkWith { get; } = new List<string>();
+        public List<string> LibrariesToLinkWith { get; } = new List<string>();
 
-		private void ResolveReferences()
-		{
-			string outFolder = _projectSettings.OutputDirectory;
-			foreach (var r in _projectData.References)
-			{
-				string fileName = $"{r}.json";
-				string theAssemblyPath;
-				string pathToLink;
+        private void ResolveReferences()
+        {
+            string outFolder = _projectSettings.OutputDirectory;
+            foreach (var r in _projectData.References)
+            {
+                if (!_projectSettings.IsReferencedCompilation)
+                    _compiler.MessageHandler.ReportMessage($"{Funcad.GetPrettyTimeString(_compiler.CompilationStopwatch.Elapsed)}   Resolving '{r}'...", ReportType.Info);
 
-				if (!_projectSettings.IsReferencedCompilation)
-					_compiler.MessageHandler.ReportMessage($"{Funcad.GetPrettyTimeString(_compiler.CompilationStopwatch.Elapsed)}   Resolving '{r}'...", ReportType.Info);
+                // getting the proper data
+                bool isOk = LinkHelper.GetLibraryPaths(r, outFolder, out (string, string) data);
+                if (!isOk)
+                {
+                    _compiler.MessageHandler.ReportMessage($"Assembly {r} could not be found. Please check project references properly");
+                    continue;
+                }
 
-				// mb some other checks?
-				if (File.Exists(fileName))
-				{
-					pathToLink = Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
-					theAssemblyPath = fileName;
-				}
-				else if (File.Exists($"{outFolder}/{fileName}"))
-				{
-					pathToLink = outFolder;
-					theAssemblyPath = $"{outFolder}/{fileName}";
-				}
-				else
-				{
-					_compiler.MessageHandler.ReportMessage($"File {fileName} could not be found. Please check project references properly");
-					continue;
-				}
-
-				var jsonText = File.ReadAllText(theAssemblyPath);
-				var metadata = JsonConvert.DeserializeObject<MetadataJson>(jsonText);
+                var fullPathToTheFile = $"{data.Item1}/{data.Item2}.json";
+                var jsonText = File.ReadAllText(fullPathToTheFile);
+                var metadata = JsonConvert.DeserializeObject<MetadataJson>(jsonText);
                 _postPreparer.PostPrepareExternalMetadata(metadata, r);
 
-				PathsToLinkWith.Add(pathToLink);
-				// TODO: is there .lib file when we are on linux?
-				string fullPathToLib = $"{pathToLink}/{r}.lib";
-				if (!File.Exists(fullPathToLib))
-				{
-					_compiler.MessageHandler.ReportMessage($"File {fullPathToLib} could not be found. Please check project references properly");
-				}
-				LibrariesToLinkWith.Add($"{r}.lib");
-			}
-		}
-	}
+                PathsToLinkWith.Add(data.Item1);
+                // TODO: is there .lib file when we are on linux?
+                LibrariesToLinkWith.Add($"{data.Item2}.lib");
+            }
+        }
+    }
 }

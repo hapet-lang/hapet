@@ -188,30 +188,23 @@ namespace HapetBackend.Llvm
 			LLVMTypeRef funcType;
 			LLVMValueRef funcValue;
 
-			// check if import from staticly linked shite
-			if (string.IsNullOrWhiteSpace(dllName))
-			{
-				// the same type
-				funcType = HapetTypeToLLVMType(funcDecl.Type.OutType);
+			// check if there is a dll to be linked with!
+			if (!string.IsNullOrWhiteSpace(dllName))
+                _libsToBeLinked.Add(dllName);
 
-				// declaring external global func
-				funcValue = _module.AddFunction(entryPoint, funcType);
-				funcValue.Linkage = LLVMLinkage.LLVMExternalLinkage;
-				funcValue.DLLStorageClass = LLVMDLLStorageClass.LLVMDLLImportStorageClass;
+            // the same type
+            funcType = HapetTypeToLLVMType(funcDecl.Type.OutType);
+			// declaring external global func
+			funcValue = _module.AddFunction(entryPoint, funcType);
+			funcValue.Linkage = LLVMLinkage.LLVMExternalLinkage;
+			funcValue.DLLStorageClass = LLVMDLLStorageClass.LLVMDLLImportStorageClass;
 
-				// setting parameter names
-				for (int i = 0; i < funcDecl.Parameters.Count; ++i)
-				{
-					var p = funcDecl.Parameters[i];
-					if (p.Name != null)
-						funcValue.Params[i].Name = p.Name.Name;
-				}
-			}
-			else
+			// setting parameter names
+			for (int i = 0; i < funcDecl.Parameters.Count; ++i)
 			{
-				funcType = null;
-				funcValue = null;
-				// TODO: import from DLL
+				var p = funcDecl.Parameters[i];
+				if (p.Name != null)
+					funcValue.Params[i].Name = p.Name.Name;
 			}
 
 			// generating params
