@@ -819,7 +819,8 @@ namespace HapetBackend.Llvm
 
 			if (stmt.BodyTrue != null &&
 				stmt.BodyTrue.Statements.Count > 0 &&
-				(stmt.BodyTrue.Statements.Last() is AstReturnStmt))
+				(stmt.BodyTrue.Statements.Last() is AstReturnStmt ||
+                stmt.BodyTrue.Statements.Last() is AstBreakContStmt))
 			{
 				// if the last statement of the block is already
 				// a return then there is no
@@ -842,7 +843,8 @@ namespace HapetBackend.Llvm
 
 				if (stmt.BodyFalse != null &&
 					stmt.BodyFalse.Statements.Count > 0 &&
-					(stmt.BodyFalse.Statements.Last() is AstReturnStmt))
+					(stmt.BodyFalse.Statements.Last() is AstReturnStmt ||
+                    stmt.BodyFalse.Statements.Last() is AstBreakContStmt))
 				{
 					// if the last statement of the block is already
 					// a return then there is no
@@ -870,10 +872,14 @@ namespace HapetBackend.Llvm
 			// checking if there is a user defined default case
 			bool userDefinedDefaultCase = stmt.Cases.Any(x => x.DefaultCase);
 
-			var bbDefault = _context.CreateBasicBlock($"switch{_switchCounter}.default");
+            var prevLoopEnd = _currentLoopEnd;
+
+            var bbDefault = _context.CreateBasicBlock($"switch{_switchCounter}.default");
 			var bbEnd = _context.CreateBasicBlock($"switch{_switchCounter}.end");
 
-			var subExprOfSwitch = GenerateExpressionCode(stmt.SubExpression);
+            _currentLoopEnd = bbEnd;
+
+            var subExprOfSwitch = GenerateExpressionCode(stmt.SubExpression);
 			// this cringe shite is because the default case always exists even if user has not defined it!!!
 			var theSwitchValueRef = _builder.BuildSwitch(subExprOfSwitch, bbDefault, (uint)(userDefinedDefaultCase ? stmt.Cases.Count : stmt.Cases.Count + 1));
 
@@ -908,7 +914,22 @@ namespace HapetBackend.Llvm
 				// generating the block
 				// TODO: the return value could be used for returnable switch-case exprs :))
 				var _ = GenerateExpressionCode(cc.Body);
-				_builder.BuildBr(bbEnd);
+
+                if (cc.Body != null &&
+                    cc.Body.Statements.Count > 0 &&
+					(cc.Body.Statements.Last() is AstReturnStmt ||
+                    cc.Body.Statements.Last() is AstBreakContStmt))
+                {
+                    // if the last statement of the block is already
+                    // a return or break or continue then there is no
+                    // need to create our own!!!
+                    // so this case is empty
+                }
+                else
+                {
+                    // setting br into end block from body block
+                    _builder.BuildBr(bbEnd);
+                }
 
 				// there is no pattern in default case
 				if (!cc.DefaultCase)
@@ -943,7 +964,10 @@ namespace HapetBackend.Llvm
 			// the end block
 			LLVM.AppendExistingBasicBlock(_lastFunctionValueRef, bbEnd);
 			_builder.PositionAtEnd(bbEnd);
-		}
+
+			// restoring prev block
+			_currentLoopEnd = prevLoopEnd;
+        }
 
 		private void GenerateBreakContStmt(AstBreakContStmt stmt)
 		{
@@ -952,7 +976,7 @@ namespace HapetBackend.Llvm
 			{
 				if (_currentLoopEnd == null)
 				{
-					_messageHandler.ReportMessage(_currentSourceFile.Text, stmt, $"Loop to break could not be found");
+					_messageHandler.ReportMessage(_currentSourceFile.Text, stmt, $"Loop/switch to break could not be found");
 					return;
 				}
 				_builder.BuildBr(_currentLoopEnd);

@@ -4,13 +4,21 @@ using TestProject.Sub;
 
 public static class Program
 {
-	public const int ConstField3 = -ConstField2;
-	public const int ConstField2 = ConstField1 + 4;
-	public const int ConstField1 = 1;
-	public const int ConstField4 = default;
-
 	public static int Main(string[] args)
 	{
+		switch (4)
+		{
+			case (1)
+			{
+				if (args.Length == 2)
+					break;
+				int a = args.Length;
+			}
+			case (2)
+			{
+
+			}
+		}
 		return 0;
 	}
 }
