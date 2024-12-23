@@ -455,14 +455,14 @@ namespace HapetFrontend.Parsing.PostPrepare
             }
         }
 
-		private void PostPrepareIdentifierInference(AstIdExpr idExpr)
+		private void PostPrepareIdentifierInference(AstIdExpr idExpr, bool fromCallExpr = false)
 		{
 			string name = idExpr.Name;
 
 			var smbl = idExpr.Scope.GetSymbol(name);
 			if (smbl is DeclSymbol typed)
 			{
-				if (!CheckIfCouldBeAccessed(idExpr, typed.Decl) && !(typed.Decl is AstBuiltInTypeDecl))
+				if (!CheckIfCouldBeAccessed(idExpr, typed.Decl) && !(typed.Decl is AstBuiltInTypeDecl) && !fromCallExpr)
                     _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, idExpr, $"The declaration could not be accessed from here");
                 idExpr.OutType = typed.Decl.Type.OutType;
 				TryAssignConstValueToExpr(idExpr, typed.Decl);
@@ -477,7 +477,7 @@ namespace HapetFrontend.Parsing.PostPrepare
 			var smblInLocalClass = idExpr.Scope.GetSymbol(nameWithClass);
 			if (smblInLocalClass is DeclSymbol typed2)
 			{
-                if (!CheckIfCouldBeAccessed(idExpr, typed2.Decl) && !(typed2.Decl is AstBuiltInTypeDecl))
+                if (!CheckIfCouldBeAccessed(idExpr, typed2.Decl) && !(typed2.Decl is AstBuiltInTypeDecl) && !fromCallExpr)
                     _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, idExpr, $"The declaration could not be accessed from here");
                 idExpr.Name = nameWithClass;
 				idExpr.OutType = typed2.Decl.Type.OutType;
@@ -500,7 +500,7 @@ namespace HapetFrontend.Parsing.PostPrepare
 
 				// recursively infer left part of func call
 				AstIdExpr leftPartId = idExpr.GetCopy(nameAndFunc[0]);
-				PostPrepareIdentifierInference(leftPartId);
+				PostPrepareIdentifierInference(leftPartId, fromCallExpr);
 				// it has to be a class (or mb struct)
 				if (leftPartId.OutType is not ClassType clsTp)
 				{
@@ -512,7 +512,7 @@ namespace HapetFrontend.Parsing.PostPrepare
 				var funcInAnotherClass = clsTp.Declaration.SubScope.GetSymbol(fullFuncName);
 				if (funcInAnotherClass is DeclSymbol typed4)
 				{
-                    if (!CheckIfCouldBeAccessed(idExpr, typed4.Decl) && !(typed4.Decl is AstBuiltInTypeDecl))
+                    if (!CheckIfCouldBeAccessed(idExpr, typed4.Decl) && !(typed4.Decl is AstBuiltInTypeDecl) && !fromCallExpr)
                         _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, idExpr, $"The declaration could not be accessed from here");
                     idExpr.Name = fullFuncName;
 					idExpr.OutType = typed4.Decl.Type.OutType;
@@ -529,7 +529,7 @@ namespace HapetFrontend.Parsing.PostPrepare
 			var smblInLocalFile = idExpr.Scope.GetSymbol(nameWithNamespace);
 			if (smblInLocalFile is DeclSymbol typed3)
 			{
-                if (!CheckIfCouldBeAccessed(idExpr, typed3.Decl) && !(typed3.Decl is AstBuiltInTypeDecl))
+                if (!CheckIfCouldBeAccessed(idExpr, typed3.Decl) && !(typed3.Decl is AstBuiltInTypeDecl) && !fromCallExpr)
                     _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, idExpr, $"The declaration could not be accessed from here");
                 idExpr.Name = nameWithNamespace;
 				idExpr.OutType = typed3.Decl.Type.OutType;
@@ -550,7 +550,7 @@ namespace HapetFrontend.Parsing.PostPrepare
 				var includedSmbl = idExpr.Scope.GetSymbolInNamespace(leftPart, rightPart);
 				if (includedSmbl is DeclSymbol typed4)
 				{
-                    if (!CheckIfCouldBeAccessed(idExpr, typed4.Decl) && !(typed4.Decl is AstBuiltInTypeDecl))
+                    if (!CheckIfCouldBeAccessed(idExpr, typed4.Decl) && !(typed4.Decl is AstBuiltInTypeDecl) && !fromCallExpr)
                         _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, idExpr, $"The declaration could not be accessed from here");
                     // do not change name because it already contains namespace
                     idExpr.OutType = typed4.Decl.Type.OutType;
@@ -579,7 +579,7 @@ namespace HapetFrontend.Parsing.PostPrepare
 					var includedSmbl = idExpr.Scope.GetSymbolInNamespace($"{ns}.{leftPart}", rightPart);
 					if (includedSmbl is DeclSymbol typed4)
 					{
-                        if (!CheckIfCouldBeAccessed(idExpr, typed4.Decl) && !(typed4.Decl is AstBuiltInTypeDecl))
+                        if (!CheckIfCouldBeAccessed(idExpr, typed4.Decl) && !(typed4.Decl is AstBuiltInTypeDecl) && !fromCallExpr)
                             _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, idExpr, $"The declaration could not be accessed from here");
                         // do not change name because it already contains namespace
                         idExpr.OutType = typed4.Decl.Type.OutType;
@@ -595,7 +595,7 @@ namespace HapetFrontend.Parsing.PostPrepare
 				var usedSmbl = idExpr.Scope.GetSymbolInNamespace(ns, name);
 				if (usedSmbl is DeclSymbol typed5)
 				{
-                    if (!CheckIfCouldBeAccessed(idExpr, typed5.Decl) && !(typed5.Decl is AstBuiltInTypeDecl))
+                    if (!CheckIfCouldBeAccessed(idExpr, typed5.Decl) && !(typed5.Decl is AstBuiltInTypeDecl) && !fromCallExpr)
                         _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, idExpr, $"The declaration could not be accessed from here");
                     idExpr.Name = fullNameWithNs;
 					idExpr.OutType = typed5.Decl.Type.OutType;
@@ -819,7 +819,7 @@ namespace HapetFrontend.Parsing.PostPrepare
 				_compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, callExpr, $"The function call could not be inferred");
 			}
 			callExpr.FuncName = callExpr.FuncName.GetCopy(newName);
-			PostPrepareIdentifierInference(callExpr.FuncName);
+			PostPrepareIdentifierInference(callExpr.FuncName, true);
 
 			// setting parameters
 			if (callExpr.FuncName.OutType is FunctionType ft)
@@ -1298,7 +1298,8 @@ namespace HapetFrontend.Parsing.PostPrepare
 				return asm1 == asm2;
 			}
 
-			if (accessee.SpecialKeys.Contains(TokenType.KwPrivate))
+			// they are the same 
+			if (accessee.SpecialKeys.Contains(TokenType.KwPrivate) || accessee.SpecialKeys.Contains(TokenType.KwUnreflected))
 			{
 				// this shite could be accessable in the same namespace
 				if (accessee is AstClassDecl ||
