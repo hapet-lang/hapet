@@ -158,7 +158,9 @@ namespace HapetFrontend.Parsing.PostPrepare
 			{
 				if (varDecl.Initializer == null)
 					_compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, varDecl, $"Variable declaration with 'var' key has to have an initializer");
-				else
+				else if (varDecl.Initializer.OutType is VoidType)
+                    _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, varDecl, $"Variable declaration cannot have 'void' type");
+                else
 					varDecl.Type.OutType = varDecl.Initializer.OutType;
 			}
 
