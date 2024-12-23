@@ -5,4 +5,7 @@ public static class Marshal
 {
     [DllImportAttribute("", "malloc")]
     public extern static void* Malloc(int size);
+
+    [DllImportAttribute("", "free")]
+    public extern static void Free(void* ptr);
 }

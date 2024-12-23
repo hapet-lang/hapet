@@ -1334,6 +1334,13 @@ namespace HapetFrontend.Parsing.PostPrepare
                 }
 			}
 
+			// could be a usual variable/param
+			if (accessee is AstParamDecl ||
+				(accessee is AstVarDecl vd2 && vd2.ContainingParent == null))
+			{
+				return true;
+			}
+
 			return false;
 		}
 	}
