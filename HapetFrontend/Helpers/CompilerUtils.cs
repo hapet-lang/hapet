@@ -47,7 +47,7 @@ namespace HapetFrontend.Helpers
 			for (int i = 0; i < args.Count; i++)
 			{
 				var a = args[i];
-				sb.Append(a.OutType.ToString());
+				sb.Append(a.OutType != null ? a.OutType.ToString() : string.Empty);
 
 				if (i != args.Count - 1)
 					sb.Append(':');
