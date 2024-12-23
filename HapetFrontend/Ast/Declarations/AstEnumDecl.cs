@@ -15,11 +15,6 @@ namespace HapetFrontend.Ast.Declarations
 		public List<AstVarDecl> Declarations { get; } = new List<AstVarDecl>();
 
 		/// <summary>
-		/// The inner scope of the enum. Used to get access to it's content
-		/// </summary>
-		public Scope SubScope { get; set; }
-
-		/// <summary>
 		/// The numeric type from which the enum inherits. Default is 'int'
 		/// </summary>
 		public AstNestedExpr InheritedType { get; set; }

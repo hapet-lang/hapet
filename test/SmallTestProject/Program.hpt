@@ -7,7 +7,7 @@ public static class Program
 {
 	public static int Main(string[] args)
 	{
-		var a = Test1();
+		Test1();
 		TestClass.Test2();
 		TestClass.Test3();
 		return 0;

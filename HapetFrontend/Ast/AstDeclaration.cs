@@ -25,10 +25,16 @@ namespace HapetFrontend.Ast
 		/// </summary>
 		public List<AstAttributeStmt> Attributes { get; } = new List<AstAttributeStmt>();
 
-		/// <summary>
-		/// Getting symbol of itself
-		/// </summary>
-		[JsonIgnore]
+        /// <summary>
+        /// The inner scope of the decl. Used to get access to it's content
+		/// Not for every decl!!!
+        /// </summary>
+        public Scope SubScope { get; set; }
+
+        /// <summary>
+        /// Getting symbol of itself
+        /// </summary>
+        [JsonIgnore]
 		public virtual ISymbol GetSymbol
 		{
 			get

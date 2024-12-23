@@ -13,11 +13,6 @@ namespace HapetFrontend.Ast.Declarations
 		/// </summary>
 		public List<AstDeclaration> Declarations { get; } = new List<AstDeclaration>();
 
-		/// <summary>
-		/// The inner scope of the struct. Used to get access to it's content
-		/// </summary>
-		public Scope SubScope { get; set; }
-
 		public AstStructDecl(AstIdExpr name, List<AstDeclaration> declarations, string doc = "", ILocation Location = null) : base(name, doc, Location)
 		{
 			Type = new AstIdExpr("struct", Location);

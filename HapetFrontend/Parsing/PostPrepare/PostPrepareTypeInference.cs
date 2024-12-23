@@ -700,8 +700,10 @@ namespace HapetFrontend.Parsing.PostPrepare
 				var smbl2 = callExpr.FuncName.Scope.GetFuncFromCandidates(newName, callExpr.Arguments.Select(x => x.Expr).ToList(), this, out var casts);
 				if (smbl2 is DeclSymbol ds && ds.Decl is AstFuncDecl funcDecl)
 				{
-					// static func defined in local class
-					newName = funcDecl.Name.Name;
+                    if (!CheckIfCouldBeAccessed(callExpr, funcDecl))
+                        _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, callExpr.FuncName, $"The function could not be accessed from here");
+                    // static func defined in local class
+                    newName = funcDecl.Name.Name;
 					callExpr.Arguments.ReplaceWithCasts(casts);
                 }
 				else
@@ -720,6 +722,8 @@ namespace HapetFrontend.Parsing.PostPrepare
                     smbl2 = callExpr.FuncName.Scope.GetFuncFromCandidates(newName, argsWithClassParam, this, out var casts2);
                     if (smbl2 is DeclSymbol ds2 && ds2.Decl is AstFuncDecl funcDecl2)
 					{
+                        if (!CheckIfCouldBeAccessed(callExpr, funcDecl2))
+                            _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, callExpr.FuncName, $"The function could not be accessed from here");
                         newName = funcDecl2.Name.Name;
                         callExpr.Arguments.ReplaceWithCasts(casts2.Skip(1).ToList()); // skip because the first param is an object
                     }
@@ -740,6 +744,8 @@ namespace HapetFrontend.Parsing.PostPrepare
                 // check if the decl exists. if not - it could be static method call from an object
                 if (smbl2 is DeclSymbol ds && ds.Decl is AstFuncDecl funcDecl)
                 {
+                    if (!CheckIfCouldBeAccessed(callExpr, funcDecl))
+                        _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, callExpr.FuncName, $"The function could not be accessed from here");
                     newName = funcDecl.Name.Name;
                     callExpr.Arguments.ReplaceWithCasts(casts.Skip(1).ToList()); // skip because the first param is an object
                 }
@@ -750,6 +756,8 @@ namespace HapetFrontend.Parsing.PostPrepare
                     smbl2 = clsTp.Declaration.SubScope.GetFuncFromCandidates(newName, callExpr.Arguments.Select(x => x.Expr).ToList(), this, out var casts2);
                     if (smbl2 is DeclSymbol ds2 && ds2.Decl is AstFuncDecl funcDecl2)
 					{
+                        if (!CheckIfCouldBeAccessed(callExpr, funcDecl2))
+                            _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, callExpr.FuncName, $"The function could not be accessed from here");
                         newName = funcDecl2.Name.Name;
                         callExpr.Arguments.ReplaceWithCasts(casts2);
                     }
@@ -769,6 +777,8 @@ namespace HapetFrontend.Parsing.PostPrepare
                 // check if the decl exists. if not - it could be non static method call from a class name
                 if (smbl2 is DeclSymbol ds && ds.Decl is AstFuncDecl funcDecl)
                 {
+					if (!CheckIfCouldBeAccessed(callExpr, funcDecl))
+                        _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, callExpr.FuncName, $"The function could not be accessed from here");
                     newName = funcDecl.Name.Name;
                     callExpr.Arguments.ReplaceWithCasts(casts);
                 }
@@ -1255,6 +1265,62 @@ namespace HapetFrontend.Parsing.PostPrepare
 				PostPrepareExprInference(value);
 			}
 			return PostPrepareExpressionWithType(targetType, value);
+		}
+
+		private bool CheckIfCouldBeAccessed(AstStatement accessor, AstDeclaration accessee)
+		{
+			// could be accessed from everyone
+			if (accessee.SpecialKeys.Contains(TokenType.KwPublic))
+				return true;
+
+			// TODO: check protected
+			// TODO: check private protected
+			// TODO: check protected internal
+
+			if (accessee.SpecialKeys.Contains(TokenType.KwInternal))
+			{
+				// check just by root namespace names
+				string asm1 = accessor.SourceFile.Namespace.Split(".").First();
+				string asm2 = accessee.SourceFile.Namespace.Split(".").First();
+				return asm1 == asm2;
+			}
+
+			if (accessee.SpecialKeys.Contains(TokenType.KwPrivate))
+			{
+				// this shite could be accessable in the same namespace
+				if (accessee is AstClassDecl ||
+					accessee is AstStructDecl ||
+					accessee is AstEnumDecl ||
+					accessee is AstDelegateDecl) // TODO: interface also
+				{
+                    return accessor.SourceFile.Namespace == accessee.SourceFile.Namespace;
+                }
+				else
+				{
+					// if the decl has child shite
+                    if (accessee.SubScope != null)
+					{
+						return accessee.SubScope.IsParentOf(accessor.Scope);
+                    }
+
+					// if the decl is func of field 
+					// and accessed in the same class
+					var parent = accessee switch
+					{
+						AstVarDecl vd => vd.ContainingParent,
+						AstFuncDecl fd => fd.ContainingClass,
+						_ => null
+					};
+					if (parent != null)
+					{
+						return parent.Scope.IsParentOf(accessor.Scope);
+					}
+
+                    return false;
+                }
+			}
+
+			return false;
 		}
 	}
 }

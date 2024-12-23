@@ -18,11 +18,6 @@ namespace HapetFrontend.Ast.Declarations
 		/// </summary>
 		public List<AstNestedExpr> InheritedFrom { get; set; } = new List<AstNestedExpr>();
 
-		/// <summary>
-		/// The inner scope of the class. Used to get access to it's content
-		/// </summary>
-		public Scope SubScope { get; set; }
-
 		public AstClassDecl(AstIdExpr name, List<AstDeclaration> declarations, string doc = "", ILocation Location = null) : base(name, doc, Location) 
 		{
 			Type = new AstIdExpr("class", Location);
