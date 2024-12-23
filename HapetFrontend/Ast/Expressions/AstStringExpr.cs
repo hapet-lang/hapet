@@ -26,7 +26,8 @@ namespace HapetFrontend.Ast.Expressions
 			AstVarDecl bufField = new AstVarDecl(new AstNestedExpr(new AstPointerExpr(new AstIdExpr("char")), null), new AstIdExpr("Buffer"), new AstNullExpr(StringType.Instance), "");
 			strStruct.Declarations.Add(sizeField);
 			strStruct.Declarations.Add(bufField);
-			return strStruct;
+			strStruct.SpecialKeys.Add(Parsing.TokenType.KwPublic);
+            return strStruct;
 		}
 
 		// the string struct is always like that

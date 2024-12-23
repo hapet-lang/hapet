@@ -1,4 +1,4 @@
-public static class TestClass
+private static class TestClass
 {
 	private static void Test2()
 	{

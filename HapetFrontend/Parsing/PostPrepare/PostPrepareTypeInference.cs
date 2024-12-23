@@ -462,7 +462,9 @@ namespace HapetFrontend.Parsing.PostPrepare
 			var smbl = idExpr.Scope.GetSymbol(name);
 			if (smbl is DeclSymbol typed)
 			{
-				idExpr.OutType = typed.Decl.Type.OutType;
+				if (!CheckIfCouldBeAccessed(idExpr, typed.Decl) && !(typed.Decl is AstBuiltInTypeDecl))
+                    _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, idExpr, $"The declaration could not be accessed from here");
+                idExpr.OutType = typed.Decl.Type.OutType;
 				TryAssignConstValueToExpr(idExpr, typed.Decl);
 				TrySaveClassUsage(typed.Decl);
 				idExpr.FindSymbol = smbl;
@@ -475,7 +477,9 @@ namespace HapetFrontend.Parsing.PostPrepare
 			var smblInLocalClass = idExpr.Scope.GetSymbol(nameWithClass);
 			if (smblInLocalClass is DeclSymbol typed2)
 			{
-				idExpr.Name = nameWithClass;
+                if (!CheckIfCouldBeAccessed(idExpr, typed2.Decl) && !(typed2.Decl is AstBuiltInTypeDecl))
+                    _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, idExpr, $"The declaration could not be accessed from here");
+                idExpr.Name = nameWithClass;
 				idExpr.OutType = typed2.Decl.Type.OutType;
 				TryAssignConstValueToExpr(idExpr, typed2.Decl);
 				TrySaveClassUsage(typed2.Decl);
@@ -495,8 +499,7 @@ namespace HapetFrontend.Parsing.PostPrepare
 				}
 
 				// recursively infer left part of func call
-				AstIdExpr leftPartId = new AstIdExpr(nameAndFunc[0]);
-				leftPartId.Scope = idExpr.Scope;
+				AstIdExpr leftPartId = idExpr.GetCopy(nameAndFunc[0]);
 				PostPrepareIdentifierInference(leftPartId);
 				// it has to be a class (or mb struct)
 				if (leftPartId.OutType is not ClassType clsTp)
@@ -509,7 +512,9 @@ namespace HapetFrontend.Parsing.PostPrepare
 				var funcInAnotherClass = clsTp.Declaration.SubScope.GetSymbol(fullFuncName);
 				if (funcInAnotherClass is DeclSymbol typed4)
 				{
-					idExpr.Name = fullFuncName;
+                    if (!CheckIfCouldBeAccessed(idExpr, typed4.Decl) && !(typed4.Decl is AstBuiltInTypeDecl))
+                        _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, idExpr, $"The declaration could not be accessed from here");
+                    idExpr.Name = fullFuncName;
 					idExpr.OutType = typed4.Decl.Type.OutType;
 					TryAssignConstValueToExpr(idExpr, typed4.Decl);
 					TrySaveClassUsage(typed4.Decl);
@@ -524,7 +529,9 @@ namespace HapetFrontend.Parsing.PostPrepare
 			var smblInLocalFile = idExpr.Scope.GetSymbol(nameWithNamespace);
 			if (smblInLocalFile is DeclSymbol typed3)
 			{
-				idExpr.Name = nameWithNamespace;
+                if (!CheckIfCouldBeAccessed(idExpr, typed3.Decl) && !(typed3.Decl is AstBuiltInTypeDecl))
+                    _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, idExpr, $"The declaration could not be accessed from here");
+                idExpr.Name = nameWithNamespace;
 				idExpr.OutType = typed3.Decl.Type.OutType;
 				TryAssignConstValueToExpr(idExpr, typed3.Decl);
 				TrySaveClassUsage(typed3.Decl);
@@ -543,8 +550,10 @@ namespace HapetFrontend.Parsing.PostPrepare
 				var includedSmbl = idExpr.Scope.GetSymbolInNamespace(leftPart, rightPart);
 				if (includedSmbl is DeclSymbol typed4)
 				{
-					// do not change name because it already contains namespace
-					idExpr.OutType = typed4.Decl.Type.OutType;
+                    if (!CheckIfCouldBeAccessed(idExpr, typed4.Decl) && !(typed4.Decl is AstBuiltInTypeDecl))
+                        _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, idExpr, $"The declaration could not be accessed from here");
+                    // do not change name because it already contains namespace
+                    idExpr.OutType = typed4.Decl.Type.OutType;
 					TryAssignConstValueToExpr(idExpr, typed4.Decl);
 					TrySaveClassUsage(typed4.Decl);
 					idExpr.FindSymbol = includedSmbl;
@@ -570,8 +579,10 @@ namespace HapetFrontend.Parsing.PostPrepare
 					var includedSmbl = idExpr.Scope.GetSymbolInNamespace($"{ns}.{leftPart}", rightPart);
 					if (includedSmbl is DeclSymbol typed4)
 					{
-						// do not change name because it already contains namespace
-						idExpr.OutType = typed4.Decl.Type.OutType;
+                        if (!CheckIfCouldBeAccessed(idExpr, typed4.Decl) && !(typed4.Decl is AstBuiltInTypeDecl))
+                            _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, idExpr, $"The declaration could not be accessed from here");
+                        // do not change name because it already contains namespace
+                        idExpr.OutType = typed4.Decl.Type.OutType;
 						TryAssignConstValueToExpr(idExpr, typed4.Decl);
 						TrySaveClassUsage(typed4.Decl);
 						idExpr.FindSymbol = includedSmbl;
@@ -584,7 +595,9 @@ namespace HapetFrontend.Parsing.PostPrepare
 				var usedSmbl = idExpr.Scope.GetSymbolInNamespace(ns, name);
 				if (usedSmbl is DeclSymbol typed5)
 				{
-					idExpr.Name = fullNameWithNs;
+                    if (!CheckIfCouldBeAccessed(idExpr, typed5.Decl) && !(typed5.Decl is AstBuiltInTypeDecl))
+                        _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, idExpr, $"The declaration could not be accessed from here");
+                    idExpr.Name = fullNameWithNs;
 					idExpr.OutType = typed5.Decl.Type.OutType;
 					TryAssignConstValueToExpr(idExpr, typed5.Decl);
 					TrySaveClassUsage(typed5.Decl);

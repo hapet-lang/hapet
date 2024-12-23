@@ -24,7 +24,8 @@ namespace HapetFrontend.Ast.Expressions
 			AstVarDecl bufField = new AstVarDecl(new AstNestedExpr(new AstPointerExpr(new AstIdExpr("byte")), null), new AstIdExpr("Buffer"), new AstNullExpr(ArrayType.GetArrayType(IntType.GetIntType(1, false))), "");
 			arrStruct.Declarations.Add(sizeField);
 			arrStruct.Declarations.Add(bufField);
-			return arrStruct;
+            arrStruct.SpecialKeys.Add(Parsing.TokenType.KwPublic);
+            return arrStruct;
 		}
 
 		// the array struct is always like that
