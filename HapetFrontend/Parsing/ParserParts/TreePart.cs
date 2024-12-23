@@ -325,20 +325,31 @@ namespace HapetFrontend.Parsing
 							// but if we do not allocate any var - so how would we get the ptr?
 							// to solve the problem we implicitly create a varialbe that would contain return value
 							// so 'Anime().Length;' -> 'var a = Anime(); a.Length;'
-							var callExpr = new AstCallExpr(nestExpr.LeftPart, idExpr.GetCopy(), args, new Location(expr.Beginning, end));
-							string nameOfVar = $"__tmp_f_call_{_currentVarDeclIndex}";
-							var varDecl = new AstVarDecl(
-								new AstNestedExpr(new AstIdExpr("var", callExpr), null, callExpr), 
-								new AstIdExpr(nameOfVar, callExpr), 
-								callExpr, "", callExpr);
-							_varDeclsOfFuncCalls.Add(varDecl);
-							expr = new AstNestedExpr(new AstIdExpr(nameOfVar, callExpr), null, callExpr);
+							// WARN! create the var only if there are dots after it!
+							// because the func could be void
+							bool dotsAfter = CheckToken(TokenType.Period);
+
+                            var callExpr = new AstCallExpr(nestExpr.LeftPart, idExpr.GetCopy(), args, new Location(expr.Beginning, end));
+							if (dotsAfter)
+							{
+                                string nameOfVar = $"__tmp_f_call_{_currentVarDeclIndex}";
+                                var varDecl = new AstVarDecl(
+                                    new AstNestedExpr(new AstIdExpr("var", callExpr), null, callExpr),
+                                    new AstIdExpr(nameOfVar, callExpr),
+                                    callExpr, "", callExpr);
+                                _varDeclsOfFuncCalls.Add(varDecl);
+                                expr = new AstNestedExpr(new AstIdExpr(nameOfVar, callExpr), null, callExpr);
+                            }
+							else
+							{
+                                expr = new AstNestedExpr(callExpr, null, callExpr);
+                            }	
 
 							// check for dots after this!!! there could be a.asd().asd().ddd().d.lll()
 							// for better understand imagine we have 'anime.Asd().dwd.Lmao();'
 							// and this is the first entry. So we already parsed here 'anime.Asd()' 
 							// and need to check the rest shite
-							if (CheckToken(TokenType.Period))
+							if (dotsAfter)
 							{
 								NextToken();
 								// here we are getting the rest 'dwd.Lmao'
