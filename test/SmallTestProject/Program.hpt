@@ -7,14 +7,6 @@ public static class Program
 {
 	public static int Main(string[] args)
 	{
-		Test1();
-		TestClass.Test2();
-		TestClass.Test3();
 		return 0;
-	}
-
-	private static void Test1()
-	{
-
 	}
 }
