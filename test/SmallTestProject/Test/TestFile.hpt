@@ -1,0 +1,12 @@
+public static class TestClass
+{
+	private static void Test2()
+	{
+
+	}
+
+    internal static void Test3()
+	{
+
+	}
+}

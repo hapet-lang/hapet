@@ -574,6 +574,7 @@ namespace HapetFrontend.Parsing
 
 				// custom shite
 				case TokenType.KwPublic:
+				case TokenType.KwInternal:
 				case TokenType.KwProtected:
 				case TokenType.KwPrivate:
 				case TokenType.KwUnreflected:

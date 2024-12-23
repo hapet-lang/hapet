@@ -122,6 +122,7 @@ namespace HapetFrontend.Parsing
 		KwAs,
 
 		KwPublic,
+		KwInternal,
 		KwProtected,
 		KwPrivate,
 		KwUnreflected,

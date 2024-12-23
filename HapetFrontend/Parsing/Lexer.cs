@@ -270,6 +270,7 @@ namespace HapetFrontend.Parsing
 				case "as": token.Type = TokenType.KwAs; break;
 
 				case "public": token.Type = TokenType.KwPublic; break;
+				case "internal": token.Type = TokenType.KwInternal; break;
 				case "protected": token.Type = TokenType.KwProtected; break;
 				case "private": token.Type = TokenType.KwPrivate; break;
 				case "unreflected": token.Type = TokenType.KwUnreflected; break;
