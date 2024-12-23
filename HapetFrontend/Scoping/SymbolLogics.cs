@@ -155,17 +155,21 @@ namespace HapetFrontend.Scoping
             DeclSymbol bestMatch = null;
             castsToBeDone = new List<AstExpression>();
 
-            List<DeclSymbol> candidates = GetCandidates(classWithFuncName);
+            // skip non funcs
+            // skip if different amount of params/args
+            List<DeclSymbol> candidates = GetCandidates(classWithFuncName)
+                .Where(x => (x.Decl is AstFuncDecl funcDecl && funcDecl.Parameters.Count == args.Count)).ToList();
+
+            // return the only candidate
+            if (candidates.Count == 1)
+            {
+                castsToBeDone.AddRange(args);
+                return candidates[0];
+            }
+
             foreach (var cand in candidates)
             {
-                // skip non funcs
-                if (cand.Decl is not AstFuncDecl funcDecl)
-                    continue;
-
-                // skip if different amount of params/args
-                if (funcDecl.Parameters.Count != args.Count)
-                    continue;
-
+                var funcDecl = cand.Decl as AstFuncDecl;
                 int score = 0;
                 List<AstExpression> casts = new List<AstExpression>();
                 for (int i = 0; i < args.Count; ++i)
@@ -188,7 +192,12 @@ namespace HapetFrontend.Scoping
                         casts.Add(cst);
                         continue;
                     }
-                    // TODO: do we need to check narrow too?
+                    else if (castResult.CouldBeNarrowed)
+                    {
+                        score += 2;
+                        casts.Add(arg);
+                        continue;
+                    }
 
                     // if nothing - set max val and break
                     score = int.MaxValue;
