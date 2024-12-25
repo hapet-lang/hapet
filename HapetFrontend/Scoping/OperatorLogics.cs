@@ -88,7 +88,10 @@ namespace HapetFrontend.Scoping
 		{
 			var result = new List<IBinaryOperator>();
 			int level = int.MaxValue;
-			GetBinaryOperatorsInternal(name, lhs, rhs, result, ref level);
+			// this is a kostyl to search for any ptr bin ops
+			var searchTypeL = lhs is PointerType ? PointerType.NullLiteralType : lhs;
+			var searchTypeR = rhs is PointerType ? PointerType.NullLiteralType : rhs;
+			GetBinaryOperatorsInternal(name, searchTypeL, searchTypeR, result, ref level);
 			return result;
 		}
 
@@ -136,7 +139,9 @@ namespace HapetFrontend.Scoping
 		{
 			var result = new List<IUnaryOperator>();
 			int level = int.MaxValue;
-			GetUnaryOperatorsInternal(name, sub, result, ref level);
+            // this is a kostyl to search for any ptr un ops
+            var searchType = sub is PointerType ? PointerType.NullLiteralType : sub;
+            GetUnaryOperatorsInternal(name, searchType, result, ref level);
 			return result;
 		}
 

@@ -260,13 +260,15 @@ namespace HapetFrontend.Types
 
 		public override string ToString()
 		{
-			return $"{TargetType}*";
+			return $"{(TargetType == null ? "null" : TargetType)}*";
 		}
 
 		public override bool Equals(object obj)
 		{
 			if (obj is PointerType p)
-				return TargetType == p.TargetType;
+			{
+                return TargetType == p.TargetType;
+            }
 			return false;
 		}
 
@@ -277,6 +279,9 @@ namespace HapetFrontend.Types
 
 			if (concrete is PointerType p)
 			{
+				if (TargetType == null && p.TargetType == null)
+					return 0;
+
 				var targetMatch = this.TargetType.Match(p.TargetType);
 				if (targetMatch == -1)
 					return -1;
@@ -325,7 +330,7 @@ namespace HapetFrontend.Types
 
 		public override string ToString()
 		{
-			return $"&{TargetType}";
+			return $"&{(TargetType == null ? "null" : TargetType)}";
 		}
 
 		public override int Match(HapetType concrete)

@@ -200,13 +200,17 @@ namespace HapetFrontend.Parsing.PostPrepare
                 case PointerType ptr when ptr.TargetType is ClassType && exprType is ClassType:
                 // just setting null to a pointer
                 case PointerType when expr is AstNullExpr:
-					{
+				// casting ptrs to null ptrs (?)
+                case PointerType when exprType is PointerType ptr1 && ptr1.TargetType == null:
+                case PointerType ptr2 when exprType is PointerType && ptr2.TargetType == null:
+                    {
                         outExpr = expr;
                         if (castResult != null)
                             castResult.CouldBeCasted = true;
                         break;
                     }
                 // ptr casts
+                case PointerType when exprType is PointerType:
                 case PointerType when exprType is IntPtrType:
 				case IntPtrType when exprType is PointerType:
 					{

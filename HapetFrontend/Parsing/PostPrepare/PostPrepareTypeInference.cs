@@ -376,13 +376,13 @@ namespace HapetFrontend.Parsing.PostPrepare
 				var rightExpr = (binExpr.Right as AstExpression);
 
 				// creating cast to result type if it is not a bool expr
-				if (leftExpr.OutType != binExpr.OutType && binExpr.OutType is not BoolType)
+				if (leftExpr.OutType != binExpr.OutType && binExpr.OutType is not BoolType && binExpr.OutType is not PointerType)
 				{
 					// cast if they are not the same haha
 					binExpr.Left = PostPrepareExpressionWithType(binExpr.OutType, leftExpr);
 				}
 				// creating cast to result type if it is not a bool expr
-				if (rightExpr.OutType != binExpr.OutType && binExpr.OutType is not BoolType)
+				if (rightExpr.OutType != binExpr.OutType && binExpr.OutType is not BoolType && binExpr.OutType is not PointerType)
 				{
 					// cast if they are not the same haha
 					binExpr.Right = PostPrepareExpressionWithType(binExpr.OutType, rightExpr);

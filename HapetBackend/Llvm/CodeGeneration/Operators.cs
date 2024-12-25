@@ -14,7 +14,22 @@ namespace HapetBackend.Llvm
 			InitUnaryOperators();
 		}
 
-		private unsafe Func<LLVMBuilderRef, LLVMValueRef, LLVMValueRef, string, LLVMValueRef> GetICompare(LLVMIntPredicate pred)
+		private Func<LLVMBuilderRef, LLVMValueRef, LLVMValueRef, string, LLVMValueRef> GetBinOp(string op, HapetType l, HapetType r)
+		{
+            // this is a kostyl to search for any ptr bin ops
+            var searchL = l is PointerType ? PointerType.NullLiteralType : l;
+			var searchR = r is PointerType ? PointerType.NullLiteralType : r;
+			return builtInBinOperators[(op, searchL, searchR)];
+        }
+
+        private Func<LLVMBuilderRef, LLVMValueRef, string, LLVMValueRef> GetUnOp(string op, HapetType t)
+        {
+            // this is a kostyl to search for any ptr bin ops
+            var searchT = t is PointerType ? PointerType.NullLiteralType : t;
+            return builtInUnOperators[(op, searchT)];
+        }
+
+        private unsafe Func<LLVMBuilderRef, LLVMValueRef, LLVMValueRef, string, LLVMValueRef> GetICompare(LLVMIntPredicate pred)
 		{
 			return (a, b, c, d) =>
 			{
@@ -46,6 +61,20 @@ namespace HapetBackend.Llvm
 						{
 							// checking if the result type of the OP is float - then use FAdd
 							if (op.ResultType is FloatType) theFunc = LlvmExtensions.BuildFAdd;
+							// special logics for ptrs
+							else if (op.ResultType is PointerType)
+							{
+								theFunc = (LLVMBuilderRef builder, LLVMValueRef left, LLVMValueRef right, string oper) =>
+								{
+									var leftV = CreateCast(builder, left, op.LhsType, IntPtrType.Instance);
+									var rightV = CreateCast(builder, right, op.RhsType, IntPtrType.Instance);
+
+									// getting add func for the new types
+                                    var binOp = GetBinOp(op.Name, IntPtrType.Instance, IntPtrType.Instance);
+									var res = binOp(builder, leftV, rightV, oper);
+									return CreateCast(builder, res, IntPtrType.Instance, op.ResultType);
+                                };
+                            }
 							else theFunc = LlvmExtensions.BuildAdd;
 							break;
 						}
@@ -53,7 +82,21 @@ namespace HapetBackend.Llvm
 						{
 							// checking if the result type of the OP is float - then use FSub
 							if (op.ResultType is FloatType) theFunc = LlvmExtensions.BuildFSub;
-							else theFunc = LlvmExtensions.BuildSub;
+                            // special logics for ptrs
+                            else if (op.ResultType is PointerType)
+                            {
+                                theFunc = (LLVMBuilderRef builder, LLVMValueRef left, LLVMValueRef right, string oper) =>
+                                {
+                                    var leftV = CreateCast(builder, left, op.LhsType, IntPtrType.Instance);
+                                    var rightV = CreateCast(builder, right, op.RhsType, IntPtrType.Instance);
+
+                                    // getting sub func for the new types
+                                    var binOp = GetBinOp(op.Name, IntPtrType.Instance, IntPtrType.Instance);
+                                    var res = binOp(builder, leftV, rightV, oper);
+                                    return CreateCast(builder, res, IntPtrType.Instance, op.ResultType);
+                                };
+                            }
+                            else theFunc = LlvmExtensions.BuildSub;
 							break;
 						}
 					case "*":

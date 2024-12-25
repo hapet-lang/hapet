@@ -182,9 +182,9 @@ namespace HapetBackend.Llvm
 
 				case PointerType p:
 					{
-						if (p.TargetType == VoidType.Instance)
+						if (p.TargetType == null || p.TargetType == VoidType.Instance)
 							return ((LLVMTypeRef)_context.Int8Type).GetPointerTo();
-						return HapetTypeToLLVMType(p.TargetType).GetPointerTo();
+                        return HapetTypeToLLVMType(p.TargetType).GetPointerTo();
 					}
 
 				case ReferenceType r:
@@ -392,24 +392,38 @@ namespace HapetBackend.Llvm
 			return result;
 		}
 
-		private LLVMValueRef CreateCast(LLVMValueRef val, HapetType inType, HapetType outType)
+		private LLVMValueRef CreateCast(LLVMBuilderRef builder, LLVMValueRef val, HapetType inType, HapetType outType)
 		{
-			if (inType is IntType intType && intType.Signed)
+            if (inType is PointerType)
+            {
+                if (outType is IntPtrType)
+                {
+                    return builder.BuildPtrToInt(val, HapetTypeToLLVMType(outType));
+                }
+            }
+            else if (inType is IntPtrType)
+            {
+                if (outType is PointerType)
+                {
+                    return builder.BuildIntToPtr(val, HapetTypeToLLVMType(outType));
+                }
+            }
+            else if (inType is IntType intType && intType.Signed)
 			{
 				if (outType is FloatType floatType)
 				{
-					return _builder.BuildSIToFP(val, HapetTypeToLLVMType(floatType));
+					return builder.BuildSIToFP(val, HapetTypeToLLVMType(floatType));
 				}
 				else if (outType is IntType || outType is CharType)
 				{
 					if (inType.GetSize() > outType.GetSize())
 					{
-						return _builder.BuildTruncOrBitCast(val, HapetTypeToLLVMType(outType));
+						return builder.BuildTruncOrBitCast(val, HapetTypeToLLVMType(outType));
 					}
 					else if (inType.GetSize() < outType.GetSize())
 					{
 						// for signed and unsigned they are the same
-						return _builder.BuildSExtOrBitCast(val, HapetTypeToLLVMType(outType));
+						return builder.BuildSExtOrBitCast(val, HapetTypeToLLVMType(outType));
 					}
 					// if the same size just return it
 					return val;
@@ -420,17 +434,17 @@ namespace HapetBackend.Llvm
 			{
 				if (outType is FloatType floatType)
 				{
-					return _builder.BuildUIToFP(val, HapetTypeToLLVMType(floatType));
+					return builder.BuildUIToFP(val, HapetTypeToLLVMType(floatType));
 				}
 				else if (outType is IntType || outType is CharType)
 				{
 					if (inType.GetSize() > outType.GetSize())
 					{
-						return _builder.BuildTruncOrBitCast(val, HapetTypeToLLVMType(outType));
+						return builder.BuildTruncOrBitCast(val, HapetTypeToLLVMType(outType));
 					}
 					else if (inType.GetSize() < outType.GetSize())
 					{
-						return _builder.BuildZExtOrBitCast(val, HapetTypeToLLVMType(outType));
+						return builder.BuildZExtOrBitCast(val, HapetTypeToLLVMType(outType));
 					}
 					// if the same size just return it
 					return val;
@@ -441,36 +455,36 @@ namespace HapetBackend.Llvm
 			{
 				if (outType is IntType intType1 && intType1.Signed)
 				{
-					return _builder.BuildFPToSI(val, HapetTypeToLLVMType(intType1));
+					return builder.BuildFPToSI(val, HapetTypeToLLVMType(intType1));
 				}
 				else if ((outType is IntType intType3 && !intType3.Signed) || outType is CharType)
 				{
-					return _builder.BuildFPToUI(val, HapetTypeToLLVMType(outType));
+					return builder.BuildFPToUI(val, HapetTypeToLLVMType(outType));
 				}
 				else if (outType is FloatType floatType)
 				{
 					if (inType.GetSize() > floatType.GetSize())
 					{
-						return _builder.BuildFPTrunc(val, HapetTypeToLLVMType(floatType));
+						return builder.BuildFPTrunc(val, HapetTypeToLLVMType(floatType));
 					}
 					else
 					{
-						return _builder.BuildFPExt(val, HapetTypeToLLVMType(floatType));
+						return builder.BuildFPExt(val, HapetTypeToLLVMType(floatType));
 					}
 				}
 				// TODO: ...
 			}
-			// TODO: ...
-			return val;
+            // TODO: ...
+            return val;
 		}
 
-		/// <summary>
-		/// Assigns value to a variable
-		/// </summary>
-		/// <param name="varPtr">The variable</param>
-		/// <param name="varType">The type of variable</param>
-		/// <param name="value">The value that needs to be assigned</param>
-		private void AssignToVar(LLVMValueRef varPtr, HapetType varType, AstExpression value)
+        /// <summary>
+        /// Assigns value to a variable
+        /// </summary>
+        /// <param name="varPtr">The variable</param>
+        /// <param name="varType">The type of variable</param>
+        /// <param name="value">The value that needs to be assigned</param>
+        private void AssignToVar(LLVMValueRef varPtr, HapetType varType, AstExpression value)
 		{
 			// generate the initializer value
 			var x = GenerateExpressionCode(value);

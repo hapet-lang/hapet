@@ -89,7 +89,7 @@ namespace HapetBackend.Llvm
                 if (value == default)
                     return default;
 
-                var uo = builtInUnOperators[(unExpr.Operator, expr.OutType)];
+                var uo = GetUnOp(unExpr.Operator, expr.OutType);
 				var val = uo(_builder, value, "unOp");
 				return val;
 			}
@@ -114,7 +114,7 @@ namespace HapetBackend.Llvm
                 if (right == default)
                     return default;
 
-                var bo = builtInBinOperators[(binExpr.Operator, leftExpr.OutType, rightExpr.OutType)];
+                var bo = GetBinOp(binExpr.Operator, leftExpr.OutType, rightExpr.OutType);
 				var val = bo(_builder, left, right, "binOp");
 				return val;
 			}
@@ -367,7 +367,7 @@ namespace HapetBackend.Llvm
 		private unsafe LLVMValueRef GenerateCastExpr(AstCastExpr expr)
 		{
 			var sub = GenerateExpressionCode(expr.SubExpression as AstExpression);
-			return CreateCast(sub, (expr.SubExpression as AstExpression).OutType, expr.OutType);
+			return CreateCast(_builder, sub, (expr.SubExpression as AstExpression).OutType, expr.OutType);
 		}
 
 		private unsafe LLVMValueRef GenerateNestedExpr(AstNestedExpr expr, bool getPtr = false)
