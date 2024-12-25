@@ -196,24 +196,33 @@ namespace HapetFrontend.Parsing.PostPrepare
 
 						break;
                     }
-					// TODO: other checks also. warn: class and class should be checked properly!!!
-			}
+                // usually when 'Anime a = new Anime();'
+                case PointerType ptr when ptr.TargetType is ClassType && exprType is ClassType:
+                // just setting null to a pointer
+                case PointerType when expr is AstNullExpr:
+					{
+                        outExpr = expr;
+                        castResult.CouldBeCasted = true;
+                        break;
+                    }
+                // ptr casts
+                case PointerType when exprType is IntPtrType:
+				case IntPtrType when exprType is PointerType:
+					{
+                        outExpr = cst;
+                        castResult.CouldBeCasted = true;
+                        break;
+					}
+                    // TODO: other checks also. warn: class and class should be checked properly!!!
+            }
 
             // if there is no way to cast
             if (neededType != exprType && outExpr == null)
             {
-                if (!(neededType is PointerType ptr1 && ptr1.TargetType is ClassType && exprType is ClassType) && // usually when 'Anime a = new Anime();'
-                    !(neededType is PointerType && expr is AstNullExpr) // just setting null to a pointer
-					) // place here other exceptions
-                {
-                    string typeName = exprType?.ToString() ?? "[Unresolved]";
-                    if (castResult == null)
-                        _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, expr, $"Type {typeName} cannot be implicitly casted into {neededType}");
-                }
-				else if (castResult != null)
-                {
-					castResult.CouldBeCasted = true;
-                }
+                string typeName = exprType?.ToString() ?? "[Unresolved]";
+                if (castResult == null)
+                    _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, expr, $"Type {typeName} cannot be implicitly casted into {neededType}");
+
                 outExpr = expr;
             }
             // if the types are equal - no need to cast anything, so return orig

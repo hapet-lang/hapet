@@ -148,7 +148,9 @@ namespace HapetFrontend.Scoping
                     CharType.DefaultType,
 					FloatType.GetFloatType(2),
 				    FloatType.GetFloatType(4),
-				    FloatType.GetFloatType(8)
+				    FloatType.GetFloatType(8),
+                    IntPtrType.Instance,
+                    PtrDiffType.Instance
 				};
 			foreach (var type in numTypes)
             {
