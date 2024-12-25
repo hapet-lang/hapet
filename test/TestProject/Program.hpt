@@ -9,11 +9,20 @@ public static class Program
 		string a = args[0];
 		string myString = "ElinaАйрат";
 		byte* dataToPuts = UTF8Encoding.GetBytesUnsafe(myString);
-		uintptr ptr = dataToPuts + 1000;
+		uintptr ptr = dataToPuts + 0;
 		Marshal.Free((void*)ptr);
 		Console.Puts(dataToPuts);
+
+		TestCls222 tt = new TestCls222();
+		tt.Anime322 = 4142;
+		Marshal.Free((void*)tt);
 
 		int rett = 4 + 3;
 		return a.Length;
 	}
+}
+
+public class TestCls222
+{
+	public int Anime322 { get; set; }
 }
