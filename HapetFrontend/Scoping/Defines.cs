@@ -27,7 +27,8 @@ namespace HapetFrontend.Scoping
             DefineTypeSymbol("void", VoidType.Instance);
 
             DefineTypeSymbol("var", VarType.Instance);
-            DefineTypeSymbol("intptr", IntPtrType.Instance);
+            DefineTypeSymbol("uintptr", IntPtrType.Instance);
+            DefineTypeSymbol("ptrdiff", PtrDiffType.Instance);
             // DefineTypeSymbol("type", CheezType.Type); // TODO: ...
             // DefineTypeSymbol("Code", CheezType.Code); // TODO: do i need it?
         }

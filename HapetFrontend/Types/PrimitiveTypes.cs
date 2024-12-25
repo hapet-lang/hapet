@@ -32,7 +32,7 @@ namespace HapetFrontend.Types
 
 		public override string TypeName => ToString();
 
-		private IntType(int size, int align, bool sign) : base(size, align)
+		protected IntType(int size, int align, bool sign) : base(size, align)
 		{
 			Signed = sign;
 		}
@@ -504,7 +504,7 @@ namespace HapetFrontend.Types
 		public override string ToString() => "string";
 	}
 
-    public class IntPtrType : HapetType
+    public class IntPtrType : IntType
     {
         private static IntPtrType _instance;
         public static IntPtrType Instance
@@ -518,11 +518,31 @@ namespace HapetFrontend.Types
                 return _instance;
             }
         }
-        public static IntPtrType LiteralType { get; } = new IntPtrType(0, 0);
 
-        public override string TypeName => "intptr";
+        public override string TypeName => "uintptr";
 
-        private IntPtrType(int size, int align) : base(size, align) { }
-        public override string ToString() => "intptr";
+        private IntPtrType(int size, int align) : base(size, align, false) { }
+        public override string ToString() => "uintptr";
+    }
+
+    public class PtrDiffType : IntType
+    {
+        private static PtrDiffType _instance;
+        public static PtrDiffType Instance
+        {
+            get
+            {
+                // ptrdiff size is like that because of the ptrdiff struct:
+                // { ptr }
+                if (_instance == null)
+                    _instance = new PtrDiffType(PointerType.PointerSize, PointerType.PointerSize);
+                return _instance;
+            }
+        }
+
+        public override string TypeName => "ptrdiff";
+
+        private PtrDiffType(int size, int align) : base(size, align, true) { }
+        public override string ToString() => "ptrdiff";
     }
 }
