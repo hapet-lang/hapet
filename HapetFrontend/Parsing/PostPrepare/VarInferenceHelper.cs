@@ -202,7 +202,8 @@ namespace HapetFrontend.Parsing.PostPrepare
                 case PointerType when expr is AstNullExpr:
 					{
                         outExpr = expr;
-                        castResult.CouldBeCasted = true;
+                        if (castResult != null)
+                            castResult.CouldBeCasted = true;
                         break;
                     }
                 // ptr casts
@@ -210,7 +211,8 @@ namespace HapetFrontend.Parsing.PostPrepare
 				case IntPtrType when exprType is PointerType:
 					{
                         outExpr = cst;
-                        castResult.CouldBeCasted = true;
+                        if (castResult != null)
+                            castResult.CouldBeCasted = true;
                         break;
 					}
                     // TODO: other checks also. warn: class and class should be checked properly!!!
