@@ -375,6 +375,38 @@ namespace HapetFrontend.Parsing.PostPrepare
 				var leftExpr = (binExpr.Left as AstExpression);
 				var rightExpr = (binExpr.Right as AstExpression);
 
+				// if smth with pointers :(((
+				if (binExpr.OutType is PointerType)
+				{
+                    // we need to multiply one of the expr by size of ptr type size
+					if (leftExpr.OutType is PointerType ptrT)
+					{
+						// error if bin op with void*
+						if (ptrT.TargetType is VoidType)
+                            _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, binExpr, $"Operator {binExpr.ActualOperator.Name} could not be used with void*");
+                        var parent = rightExpr.NormalParent;
+                        var mulK = new AstNumberExpr((NumberData)ptrT.TargetType.GetSize(), null, rightExpr);
+						SetScopeAndParent(mulK, parent);
+                        rightExpr = new AstBinaryExpr("*", rightExpr, mulK, rightExpr);
+                        SetScopeAndParent(rightExpr, parent);
+                        PostPrepareExprInference(rightExpr);
+                        binExpr.Right = rightExpr;
+                    }
+					else if (rightExpr.OutType is PointerType ptrT2)
+					{
+                        // error if bin op with void*
+                        if (ptrT2.TargetType is VoidType)
+                            _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, binExpr, $"Operator {binExpr.ActualOperator.Name} could not be used with void*");
+                        var parent = leftExpr.NormalParent;
+                        var mulK = new AstNumberExpr((NumberData)ptrT2.TargetType.GetSize(), null, leftExpr);
+                        SetScopeAndParent(mulK, parent);
+                        leftExpr = new AstBinaryExpr("*", leftExpr, mulK, leftExpr);
+                        SetScopeAndParent(leftExpr, parent);
+                        PostPrepareExprInference(leftExpr);
+						binExpr.Left = leftExpr;
+                    }
+				}
+
 				// creating cast to result type if it is not a bool expr
 				if (leftExpr.OutType != binExpr.OutType && binExpr.OutType is not BoolType && binExpr.OutType is not PointerType)
 				{

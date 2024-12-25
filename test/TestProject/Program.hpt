@@ -9,7 +9,7 @@ public static class Program
 		string a = args[0];
 		string myString = "ElinaАйрат";
 		byte* dataToPuts = UTF8Encoding.GetBytesUnsafe(myString);
-		Marshal.Free((void*)dataToPuts + 1000);
+		Marshal.Free((void*)(dataToPuts + 1000));
 		Console.Puts(dataToPuts);
 
 		int rett = 4 + 3;
