@@ -503,4 +503,26 @@ namespace HapetFrontend.Types
 		private StringType(int size, int align) : base(size, align) { }
 		public override string ToString() => "string";
 	}
+
+    public class IntPtrType : HapetType
+    {
+        private static IntPtrType _instance;
+        public static IntPtrType Instance
+        {
+            get
+            {
+                // intptr size is like that because of the intptr struct:
+                // { ptr }
+                if (_instance == null)
+                    _instance = new IntPtrType(PointerType.PointerSize, PointerType.PointerSize);
+                return _instance;
+            }
+        }
+        public static IntPtrType LiteralType { get; } = new IntPtrType(0, 0);
+
+        public override string TypeName => "intptr";
+
+        private IntPtrType(int size, int align) : base(size, align) { }
+        public override string ToString() => "intptr";
+    }
 }
