@@ -36,8 +36,9 @@ namespace HapetBackend.Llvm
                 // doing that we are registering the type in dict
                 var _ = HapetTypeToLLVMType(cls.Type.OutType);
 
-                // reg type info
-                _typeInfoDictionary.Add(cls.Type.OutType as ClassType, GenerateTypeInfoConst(cls.Type.OutType as ClassType));
+                // reg type info if non static
+                if (!cls.SpecialKeys.Contains(TokenType.KwStatic))
+                    _typeInfoDictionary.Add(cls.Type.OutType as ClassType, GenerateTypeInfoConst(cls.Type.OutType as ClassType));
             }
             // all over the structs
             foreach (var str in _postPreparer.AllStructsMetadata)
