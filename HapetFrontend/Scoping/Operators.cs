@@ -151,7 +151,7 @@ namespace HapetFrontend.Scoping
 			Execution = exe;
 		}
 
-		public int Accepts(HapetType lhs, HapetType rhs)
+		public virtual int Accepts(HapetType lhs, HapetType rhs)
 		{
 			var ml = LhsType.Match(lhs);
 			var mr = RhsType.Match(rhs);
@@ -172,7 +172,20 @@ namespace HapetFrontend.Scoping
 		}
 	}
 
-	public class BuiltInUnaryOperator : IUnaryOperator
+    public class BuiltInCommonBinaryOperator : BuiltInBinaryOperator
+    {
+        public BuiltInCommonBinaryOperator(string name, HapetType resType, HapetType lhs, HapetType rhs, CompileTimeExecution exe = null)
+			: base(name, resType, lhs, rhs, exe)
+        {
+        }
+
+        public override int Accepts(HapetType lhs, HapetType rhs)
+        {
+			return (LhsType.GetType() == lhs.GetType() && RhsType.GetType() == rhs.GetType()) ? 0 : -1;
+        }
+    }
+
+    public class BuiltInUnaryOperator : IUnaryOperator
 	{
 		public HapetType SubExprType { get; private set; }
 		public HapetType ResultType { get; private set; }

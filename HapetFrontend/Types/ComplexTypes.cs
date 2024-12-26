@@ -10,6 +10,8 @@ namespace HapetFrontend.Types
 
 		public override string TypeName => "class";
 
+		public static ClassType LiteralType = new ClassType(null);
+
 		public ClassType(AstClassDecl decl)
 			: base()
 		{
@@ -18,7 +20,7 @@ namespace HapetFrontend.Types
 
 		public override string ToString()
 		{
-			return $"{Declaration.Name.Name}";
+			return $"{(Declaration != null ? Declaration.Name.Name : "null")}";
 		}
 
 		public override int Match(HapetType concrete)
