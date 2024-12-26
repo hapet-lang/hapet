@@ -164,7 +164,7 @@ namespace HapetBackend.Llvm
 			LLVMTypeRef typeInfoType = GetTypeInfoType();
 			// idk wtf is that shite :)
             LLVMValueRef parentRef = parent == null ? 
-				(LLVMValueRef)LLVM.ConstPointerCast(LLVM.ConstPointerNull(typeInfoType), LLVMTypeRef.CreatePointer(typeInfoType, 0)) : 
+				(LLVMValueRef)LLVMValueRef.CreateConstPointerNull(LLVMTypeRef.CreatePointer(LLVMTypeRef.Int8, 0)) : 
 				GenerateTypeInfoConst(parent);
 
             var globConst = _module.AddGlobal(typeInfoType, $"TypeInfo::{cls.Declaration.Name.Name}");

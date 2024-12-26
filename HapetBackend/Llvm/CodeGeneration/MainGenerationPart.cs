@@ -132,6 +132,19 @@ namespace HapetBackend.Llvm
 				_builder.BuildBr(bbBody);
 				_builder.PositionAtEnd(bbBody);
 
+				// if the func is initializer - set up type data ptr!!!
+				if (funcDecl.ClassFunctionType == HapetFrontend.Enums.ClassFunctionType.Initializer)
+				{
+                    // create an array of ptrs:
+                    // [ptrToTypeInfo, ptrToVtable]
+
+                    // allocating memory for the data in array
+                    var allocated = GetMalloc(HapetType.PointerSize, 2);
+                    var ptrToType = _builder.BuildGEP2(LLVMTypeRef.CreatePointer(GetTypeInfoType(), 0), allocated, new LLVMValueRef[] { LLVMValueRef.CreateConstInt(LLVMTypeRef.Int32, 0) }, $"elementPtr{0}");
+					var containingClass = funcDecl.ContainingClass.Type.OutType as ClassType;
+                    _builder.BuildStore(_typeInfoDictionary[containingClass], ptrToType);
+                }
+
 				// different behaviour when extern func
 				if (funcDecl.SpecialKeys.Contains(TokenType.KwExtern))
 				{
