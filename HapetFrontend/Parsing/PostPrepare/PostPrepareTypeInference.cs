@@ -380,7 +380,12 @@ namespace HapetFrontend.Parsing.PostPrepare
 				{
 					case "as":
 						{
-							break;
+							// we need to change right part to pointer to a class
+							// so bitcast would be possible
+							rightExpr.OutType = PointerType.GetPointerType(rightExpr.OutType);
+                            binExpr.OutType = rightExpr.OutType;
+							// TODO: check for inheritance!!!
+                            break;
 						}
 					default:
 						{

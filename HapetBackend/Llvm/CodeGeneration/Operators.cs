@@ -212,7 +212,9 @@ namespace HapetBackend.Llvm
 						}
 					default:
 						{
-							_messageHandler.ReportMessage($"Compiler error (should not happen): unexpected operator {op.Name}");
+							// skip as/is/in
+							if (op.Name != "as" && op.Name != "is" && op.Name != "in")
+								_messageHandler.ReportMessage($"Compiler error (should not happen): unexpected operator {op.Name}");
 							theFunc = null;
 							break;
 						}

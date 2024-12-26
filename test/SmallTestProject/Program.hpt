@@ -7,8 +7,9 @@ public static class Program
 {
 	public static int Main(string[] args)
 	{
-		var dr = new Derived();
+		Derived dr = new Derived();
 		BaseCls bs = dr as BaseCls;
+		Derived dr222 = bs as Derived;
 		return 0;
 	}
 }

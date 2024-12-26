@@ -102,21 +102,33 @@ namespace HapetBackend.Llvm
 		{
 			if (binExpr.ActualOperator is BuiltInBinaryOperator)
 			{
-				var leftExpr = (binExpr.Left as AstExpression);
-				var left = GenerateExpressionCode(leftExpr);
-				// return if the value was not properly generated
-				if (left == default)
-					return default;
-
-                var rightExpr = (binExpr.Right as AstExpression);
-				var right = GenerateExpressionCode(rightExpr);
+                var leftExpr = (binExpr.Left as AstExpression);
+                var left = GenerateExpressionCode(leftExpr);
                 // return if the value was not properly generated
-                if (right == default)
+                if (left == default)
                     return default;
 
-                var bo = GetBinOp(binExpr.Operator, leftExpr.OutType, rightExpr.OutType);
-				var val = bo(_builder, left, right, "binOp");
-				return val;
+                // CRINGE :) special cases for as/is/in
+                switch (binExpr.ActualOperator.Name)
+				{
+					case "as":
+						{
+                            var rightExpr = (binExpr.Right as AstExpression);
+                            return _builder.BuildBitCast(left, HapetTypeToLLVMType(rightExpr.OutType), "castedAs");
+						}
+					default:
+						{
+                            var rightExpr = (binExpr.Right as AstExpression);
+                            var right = GenerateExpressionCode(rightExpr);
+                            // return if the value was not properly generated
+                            if (right == default)
+                                return default;
+
+                            var bo = GetBinOp(binExpr.Operator, leftExpr.OutType, rightExpr.OutType);
+                            var val = bo(_builder, left, right, "binOp");
+                            return val;
+						}
+				}
 			}
 			// TODO: check other operators (user implemented)
 			_messageHandler.ReportMessage(_currentSourceFile.Text, binExpr, $"The expr {binExpr} is not implemented");
