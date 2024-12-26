@@ -64,7 +64,26 @@ namespace HapetBackend.Llvm
 
 				// TODO: entry for type info
 				entryTypes.Add(_context.Int8Type.GetPointerTo());
-				entryHapetTypes.Add(PointerType.GetPointerType(IntType.GetIntType(1, false)));
+				entryHapetTypes.Add(PointerType.GetPointerType(IntPtrType.Instance));
+
+				// get all fields from base classes/interfaces
+				foreach (var bs in cls.InheritedFrom)
+				{
+					if (bs.OutType is not ClassType clsType)
+						continue;
+					// get all fields that are not static and const
+					var bFields = cls.Declarations
+						.Where(x => (x is AstVarDecl && x is not AstPropertyDecl) && 
+							(!x.SpecialKeys.Contains(TokenType.KwStatic) && 
+							!x.SpecialKeys.Contains(TokenType.KwConst)))
+						.Select(x => x as AstVarDecl);
+					foreach (var f in bFields)
+					{
+                        // if it is non const/static - create a field in struct
+                        entryTypes.Add(HapetTypeToLLVMType(f.Type.OutType));
+                        entryHapetTypes.Add(f.Type.OutType);
+                    }
+                }
 
 				// getting all field except props
 				foreach (var decl in cls.Declarations.Where(x => x is AstVarDecl && x is not AstPropertyDecl).Select(x => x as AstVarDecl))

@@ -77,9 +77,7 @@ namespace HapetFrontend.Parsing
 				var _as = NextToken();
 				SkipNewlines();
 				rhs = ParseInExpression(allowCommaForTuple, allowFunctionDeclaration, message, allowPointerExpressions);
-				// lhs = new AstBinaryExpr("as", lhs, rhs, new Location(lhs.Beginning, rhs.Ending));
-				// TODO: do i really have to use Cast?
-				lhs = new AstCastExpr(rhs, lhs, new Location(lhs.Beginning, rhs.Ending));
+				lhs = new AstBinaryExpr("as", lhs, rhs, new Location(lhs.Beginning, rhs.Ending));
 			}
 			return lhs;
 		}

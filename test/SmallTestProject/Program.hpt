@@ -7,6 +7,17 @@ public static class Program
 {
 	public static int Main(string[] args)
 	{
+		var dr = new Derived();
 		return 0;
 	}
+}
+
+public class BaseCls
+{
+	public int Field1;
+}
+
+public class Derived : BaseCls
+{
+	public int Field2;
 }
