@@ -10,6 +10,8 @@ namespace HapetBackend.Llvm
 {
 	public partial class LlvmCodeGenerator
 	{
+		private readonly Dictionary<ClassType, LLVMValueRef> _typeInfoDictionary = new Dictionary<ClassType, LLVMValueRef>();
+
 		/// <summary>
 		/// Inits some dicts and other shite with metadata types :)
 		/// </summary>
@@ -33,7 +35,10 @@ namespace HapetBackend.Llvm
 				_currentSourceFile = cls.SourceFile;
 				// doing that we are registering the type in dict
 				var _ = HapetTypeToLLVMType(cls.Type.OutType);
-			}
+
+				// reg type info
+				_typeInfoDictionary.Add(cls.Type.OutType as ClassType, GenerateTypeInfoConst(cls.Type.OutType as ClassType));
+            }
 			// all over the structs
 			foreach (var str in _postPreparer.AllStructsMetadata)
 			{
@@ -147,5 +152,37 @@ namespace HapetBackend.Llvm
                 GenerateFuncCode(func, null, true);
 			}
 		}
-	}
+
+        #region Additional shite for classes
+		private unsafe LLVMValueRef GenerateTypeInfoConst(ClassType cls)
+		{
+			if (_typeInfoDictionary.ContainsKey(cls))
+				return _typeInfoDictionary[cls];
+
+			// create if does not exists
+			ClassType parent = cls.Declaration.InheritedFrom.FirstOrDefault(x => x.OutType is ClassType)?.OutType as ClassType;
+			LLVMTypeRef typeInfoType = GetTypeInfoType();
+			// idk wtf is that shite :)
+            LLVMValueRef parentRef = parent == null ? 
+				(LLVMValueRef)LLVM.ConstPointerCast(LLVM.ConstPointerNull(typeInfoType), LLVMTypeRef.CreatePointer(typeInfoType, 0)) : 
+				GenerateTypeInfoConst(parent);
+
+            var globConst = _module.AddGlobal(typeInfoType, $"TypeInfo::{cls.Declaration.Name.Name}");
+            globConst.Initializer = LLVMValueRef.CreateConstStruct(new LLVMValueRef[] { parentRef }, false);
+			return globConst;
+        }
+
+		private LLVMTypeRef _typeInfoType;
+        private LLVMTypeRef GetTypeInfoType()
+		{
+			if (_typeInfoType != null)
+				return _typeInfoType;
+
+            _typeInfoType = _context.CreateNamedStruct($"type.info");
+            var parent = LLVMTypeRef.CreatePointer(LLVMTypeRef.Int8, 0); // parent
+            _typeInfoType.StructSetBody(new LLVMTypeRef[] { parent }, false);
+			return _typeInfoType;
+        }
+        #endregion
+    }
 }
