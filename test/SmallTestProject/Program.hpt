@@ -7,7 +7,7 @@ public static class Program
 {
 	public static int Main(string[] args)
 	{
-		Derived dr = new Derived();
+		DerivedTwice dr = new DerivedTwice();
 		BaseCls bs = dr as BaseCls;
 		Derived dr222 = bs as Derived;
 		return 0;
@@ -22,4 +22,9 @@ public class BaseCls
 public class Derived : BaseCls
 {
 	public int Field2;
+}
+
+public class DerivedTwice : Derived
+{
+	public int Field3;
 }
