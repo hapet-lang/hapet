@@ -163,13 +163,23 @@ namespace HapetBackend.Llvm
 			ClassType parent = cls.Declaration.InheritedFrom.FirstOrDefault(x => x.OutType is ClassType)?.OutType as ClassType;
 			LLVMTypeRef typeInfoType = GetTypeInfoType();
 			// idk wtf is that shite :)
+			var ptrT = LLVMTypeRef.CreatePointer(_context.Int8Type, 0);
+            var nullPtr = LLVMValueRef.CreateConstPointerNull(ptrT);
             LLVMValueRef parentRef = parent == null ? 
-				(LLVMValueRef)LLVMValueRef.CreateConstPointerNull(LLVMTypeRef.CreatePointer(LLVMTypeRef.Int8, 0)) : 
+					(LLVMValueRef)LLVMValueRef.CreateConstStruct(new LLVMValueRef[] { LLVMValueRef.CreateConstPointerCast(nullPtr, ptrT) }, false) : 
 				GenerateTypeInfoConst(parent);
 
             var globConst = _module.AddGlobal(typeInfoType, $"TypeInfo::{cls.Declaration.Name.Name}");
             globConst.Initializer = LLVMValueRef.CreateConstStruct(new LLVMValueRef[] { parentRef }, false);
-			return globConst;
+            globConst.Linkage = (LLVMLinkage.LLVMInternalLinkage);
+
+
+            // Отладочная информация
+            Console.WriteLine("Структура type.info: " + typeInfoType.PrintToString());
+            Console.WriteLine("Тип nullPointer: " + nullPtr.TypeOf.PrintToString());
+            Console.WriteLine("Тип инициализатора: " + parentRef.TypeOf.PrintToString());
+            Console.WriteLine("Тип глобальной переменной: " + globConst.TypeOf.PrintToString());
+            return globConst;
         }
 
 		private LLVMTypeRef _typeInfoType;
@@ -179,7 +189,7 @@ namespace HapetBackend.Llvm
 				return _typeInfoType;
 
             _typeInfoType = _context.CreateNamedStruct($"type.info");
-            var parent = LLVMTypeRef.CreatePointer(LLVMTypeRef.Int8, 0); // parent
+            var parent = LLVMTypeRef.CreatePointer(_context.Int8Type, 0); // parent
             _typeInfoType.StructSetBody(new LLVMTypeRef[] { parent }, false);
 			return _typeInfoType;
         }
