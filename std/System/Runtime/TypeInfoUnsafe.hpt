@@ -1,0 +1,7 @@
+public struct TypeInfoUnsafe
+{
+    byte* Name;
+    TypeInfoUnsafe* Parent;
+    TypeInfoUnsafe** Interfaces;
+    byte InterfaceCount;
+}
