@@ -119,46 +119,54 @@ namespace HapetBackend.Llvm
                             // TODO: check inheritance
                             if (true)
                             {
-                                var ptrToTypeInfo = GetTypeInfoPtr(HapetTypeToLLVMType(leftType.TargetType), left);
+                                //var ptrToTypeInfo = GetTypeInfoPtr(HapetTypeToLLVMType(leftType.TargetType), left);
                                 var ptrToCastTypeInfo = _typeInfoDictionary[(rightExpr.OutType as PointerType).TargetType as ClassType];
-                                var result = _builder.BuildAlloca(HapetTypeToLLVMType(rightExpr.OutType), "castResult");
-                                var currentTypeInfo = _builder.BuildAlloca(LLVMTypeRef.CreatePointer(GetTypeInfoType(), 0), "currTypeInfo");
-                                _builder.BuildStore(ptrToTypeInfo, currentTypeInfo);
+                                //var result = _builder.BuildAlloca(HapetTypeToLLVMType(rightExpr.OutType), "castResult");
+                                //var currentTypeInfo = _builder.BuildAlloca(LLVMTypeRef.CreatePointer(GetTypeInfoType(), 0), "currTypeInfo");
+                                //_builder.BuildStore(ptrToTypeInfo, currentTypeInfo);
 
-                                var bbSuccess = _lastFunctionValueRef.AppendBasicBlock($"cast.success");
-                                var bbCheck = _lastFunctionValueRef.AppendBasicBlock($"cast.check");
-                                var bbFail = _lastFunctionValueRef.AppendBasicBlock($"cast.fail");
-                                var bbLoop = _lastFunctionValueRef.AppendBasicBlock($"cast.loop");
-                                var bbEnd = _lastFunctionValueRef.AppendBasicBlock($"cast.end");
+                                //var bbSuccess = _lastFunctionValueRef.AppendBasicBlock($"cast.success");
+                                //var bbCheck = _lastFunctionValueRef.AppendBasicBlock($"cast.check");
+                                //var bbFail = _lastFunctionValueRef.AppendBasicBlock($"cast.fail");
+                                //var bbLoop = _lastFunctionValueRef.AppendBasicBlock($"cast.loop");
+                                //var bbEnd = _lastFunctionValueRef.AppendBasicBlock($"cast.end");
 
-                                var cmp = _builder.BuildICmp(LLVMIntPredicate.LLVMIntEQ, ptrToTypeInfo, ptrToCastTypeInfo);
-                                _builder.BuildCondBr(cmp, bbSuccess, bbCheck);
+                                //var cmp = _builder.BuildICmp(LLVMIntPredicate.LLVMIntEQ, ptrToTypeInfo, ptrToCastTypeInfo);
+                                //_builder.BuildCondBr(cmp, bbSuccess, bbCheck);
 
-                                _builder.PositionAtEnd(bbCheck);
-                                var currLoaded = _builder.BuildLoad2(LLVMTypeRef.CreatePointer(GetTypeInfoType(), 0), currentTypeInfo, "currLoaded");
-                                var parentTypeInfo = GetParentTypeInfoPtr(currLoaded);
-                                _builder.BuildStore(parentTypeInfo, currentTypeInfo); // store new one
-                                var typeInfoNull = LLVMValueRef.CreateConstPointerNull(LLVMTypeRef.CreatePointer(GetTypeInfoType(), 0));
-                                var nullCmp = _builder.BuildICmp(LLVMIntPredicate.LLVMIntEQ, parentTypeInfo, typeInfoNull);
-                                _builder.BuildCondBr(nullCmp, bbFail, bbLoop);
+                                //_builder.PositionAtEnd(bbCheck);
+                                //var currLoaded = _builder.BuildLoad2(LLVMTypeRef.CreatePointer(GetTypeInfoType(), 0), currentTypeInfo, "currLoaded");
+                                //var parentTypeInfo = GetParentTypeInfoPtr(currLoaded);
+                                //_builder.BuildStore(parentTypeInfo, currentTypeInfo); // store new one
+                                //var typeInfoNull = LLVMValueRef.CreateConstPointerNull(LLVMTypeRef.CreatePointer(GetTypeInfoType(), 0));
+                                //var nullCmp = _builder.BuildICmp(LLVMIntPredicate.LLVMIntEQ, parentTypeInfo, typeInfoNull);
+                                //_builder.BuildCondBr(nullCmp, bbFail, bbLoop);
 
-                                _builder.PositionAtEnd(bbLoop);
-                                var cmpLoop = _builder.BuildICmp(LLVMIntPredicate.LLVMIntEQ, parentTypeInfo, ptrToCastTypeInfo);
-                                _builder.BuildCondBr(cmpLoop, bbSuccess, bbCheck);
+                                //_builder.PositionAtEnd(bbLoop);
+                                //var cmpLoop = _builder.BuildICmp(LLVMIntPredicate.LLVMIntEQ, parentTypeInfo, ptrToCastTypeInfo);
+                                //_builder.BuildCondBr(cmpLoop, bbSuccess, bbCheck);
 
-                                _builder.PositionAtEnd(bbFail);
+                                //_builder.PositionAtEnd(bbFail);
                                 var castTypeNull = LLVMValueRef.CreateConstPointerNull(HapetTypeToLLVMType(rightExpr.OutType));
-                                _builder.BuildStore(castTypeNull, result);
-                                _builder.BuildBr(bbEnd);
+                                //_builder.BuildStore(castTypeNull, result);
+                                //_builder.BuildBr(bbEnd);
 
-                                _builder.PositionAtEnd(bbSuccess);
+                                //_builder.PositionAtEnd(bbSuccess);
                                 var casted = _builder.BuildBitCast(left, HapetTypeToLLVMType(rightExpr.OutType), "castedAs");
-                                _builder.BuildStore(casted, result);
-                                _builder.BuildBr(bbEnd);
+                                //_builder.BuildStore(casted, result);
+                                //_builder.BuildBr(bbEnd);
 
-                                _builder.PositionAtEnd(bbEnd);
+                                //_builder.PositionAtEnd(bbEnd);
 
-                                return _builder.BuildLoad2(HapetTypeToLLVMType(rightExpr.OutType), result);
+                                //return _builder.BuildLoad2(HapetTypeToLLVMType(rightExpr.OutType), result);
+
+                                // WARN: hard cock
+                                var typeConverter = _currentFunction.Scope.GetSymbolInNamespace("System.Runtime.Conversion", "TypeConverter");
+                                var downcasterSymbol = (typeConverter.Decl as AstClassDecl).SubScope.GetSymbol("System.Runtime.Conversion.TypeConverter::CanBeDowncasted(void*:System.Runtime.TypeInfoUnsafe*)") as DeclSymbol;
+                                var downcasterFunc = _valueMap[downcasterSymbol];
+                                LLVMTypeRef funcType = _typeMap[downcasterSymbol.Decl.Type.OutType];
+                                var canBeDowncasted = _builder.BuildCall2(funcType, downcasterFunc, new LLVMValueRef[] { left, ptrToCastTypeInfo }, "canBeDowncasted");
+                                return _builder.BuildSelect(canBeDowncasted, casted, castTypeNull, "castResult");
                             }
                             return _builder.BuildBitCast(left, HapetTypeToLLVMType(rightExpr.OutType), "castedAs");
                         }
