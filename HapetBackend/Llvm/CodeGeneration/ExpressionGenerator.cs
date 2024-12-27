@@ -14,95 +14,95 @@ using System.Xml.Linq;
 
 namespace HapetBackend.Llvm
 {
-	public partial class LlvmCodeGenerator
-	{
-		private LLVMValueRef GenerateExpressionCode(AstStatement expr, bool getPtr = false)
-		{
-			// if the value already evaluated (usually literals or consts)
-			if (expr is AstExpression realExpr && realExpr.OutValue != null)
-			{
-				var result = HapetValueToLLVMValue(realExpr.OutType, realExpr.OutValue);
-				if (result.Handle.ToInt64() != 0)
-					return result;
-			}
+    public partial class LlvmCodeGenerator
+    {
+        private LLVMValueRef GenerateExpressionCode(AstStatement expr, bool getPtr = false)
+        {
+            // if the value already evaluated (usually literals or consts)
+            if (expr is AstExpression realExpr && realExpr.OutValue != null)
+            {
+                var result = HapetValueToLLVMValue(realExpr.OutType, realExpr.OutValue);
+                if (result.Handle.ToInt64() != 0)
+                    return result;
+            }
 
-			switch (expr)
-			{
-				// special case at least for 'for' loop
-				// when 'for (int i = 0;...)' where 'int i' 
-				// would not be handled by blockExpr
-				case AstVarDecl varDecl: GenerateVarDeclCode(varDecl); return null;
+            switch (expr)
+            {
+                // special case at least for 'for' loop
+                // when 'for (int i = 0;...)' where 'int i' 
+                // would not be handled by blockExpr
+                case AstVarDecl varDecl: GenerateVarDeclCode(varDecl); return null;
 
-				case AstBlockExpr blockExpr: return GenerateBlockExprCode(blockExpr);
-				case AstUnaryExpr unExpr: return GenerateUnaryExprCode(unExpr);
-				case AstBinaryExpr binExpr: return GenerateBinaryExprCode(binExpr);
-				case AstPointerExpr pointerExpr: return GeneratePointerExprCode(pointerExpr);
-				case AstAddressOfExpr addrExpr: return GenerateAddressOfExprCode(addrExpr);
-				case AstIdExpr idExpr: return GenerateIdExpr(idExpr, getPtr);
-				case AstNewExpr newExpr: return GenerateNewExpr(newExpr);
-				case AstCallExpr callExpr: return GenerateCallExpr(callExpr);
-				case AstArgumentExpr argExpr: return GenerateArgumentExpr(argExpr);
-				case AstCastExpr castExpr: return GenerateCastExpr(castExpr);
-				case AstNestedExpr nestExpr: return GenerateNestedExpr(nestExpr, getPtr);
-				case AstArrayCreateExpr arrayCreateExpr: return GenerateArrayCreateExprCode(arrayCreateExpr);
-				case AstArrayAccessExpr arrayAccessExpr: return GenerateArrayAccessExprCode(arrayAccessExpr, getPtr);
+                case AstBlockExpr blockExpr: return GenerateBlockExprCode(blockExpr);
+                case AstUnaryExpr unExpr: return GenerateUnaryExprCode(unExpr);
+                case AstBinaryExpr binExpr: return GenerateBinaryExprCode(binExpr);
+                case AstPointerExpr pointerExpr: return GeneratePointerExprCode(pointerExpr);
+                case AstAddressOfExpr addrExpr: return GenerateAddressOfExprCode(addrExpr);
+                case AstIdExpr idExpr: return GenerateIdExpr(idExpr, getPtr);
+                case AstNewExpr newExpr: return GenerateNewExpr(newExpr);
+                case AstCallExpr callExpr: return GenerateCallExpr(callExpr);
+                case AstArgumentExpr argExpr: return GenerateArgumentExpr(argExpr);
+                case AstCastExpr castExpr: return GenerateCastExpr(castExpr);
+                case AstNestedExpr nestExpr: return GenerateNestedExpr(nestExpr, getPtr);
+                case AstArrayCreateExpr arrayCreateExpr: return GenerateArrayCreateExprCode(arrayCreateExpr);
+                case AstArrayAccessExpr arrayAccessExpr: return GenerateArrayAccessExprCode(arrayAccessExpr, getPtr);
 
-				case AstNullExpr nullExpr: return GenerateNullExprCode(nullExpr);
+                case AstNullExpr nullExpr: return GenerateNullExprCode(nullExpr);
 
-				// statements
-				case AstAssignStmt assignStmt: GenerateAssignStmt(assignStmt); return null;
-				case AstForStmt forStmt: GenerateForStmt(forStmt); return null;
-				case AstWhileStmt whileStmt: GenerateWhileStmt(whileStmt); return null;
-				case AstIfStmt ifStmt: GenerateIfStmt(ifStmt); return null;
-				case AstSwitchStmt switchStmt: GenerateSwitchStmt(switchStmt); return null;
-				case AstBreakContStmt breakContStmt: GenerateBreakContStmt(breakContStmt); return null;
-				case AstReturnStmt returnStmt: GenerateReturnStmt(returnStmt); return null;
-				// TODO: check other expressions
+                // statements
+                case AstAssignStmt assignStmt: GenerateAssignStmt(assignStmt); return null;
+                case AstForStmt forStmt: GenerateForStmt(forStmt); return null;
+                case AstWhileStmt whileStmt: GenerateWhileStmt(whileStmt); return null;
+                case AstIfStmt ifStmt: GenerateIfStmt(ifStmt); return null;
+                case AstSwitchStmt switchStmt: GenerateSwitchStmt(switchStmt); return null;
+                case AstBreakContStmt breakContStmt: GenerateBreakContStmt(breakContStmt); return null;
+                case AstReturnStmt returnStmt: GenerateReturnStmt(returnStmt); return null;
+                // TODO: check other expressions
 
-				default:
-				{
-					_messageHandler.ReportMessage(_currentSourceFile.Text, expr, $"The expr {expr} is not implemented");
-					return default;
-				}
-			}
-		}
+                default:
+                    {
+                        _messageHandler.ReportMessage(_currentSourceFile.Text, expr, $"The expr {expr} is not implemented");
+                        return default;
+                    }
+            }
+        }
 
-		private LLVMValueRef GenerateBlockExprCode(AstBlockExpr blockExpr)
-		{
-			LLVMValueRef result = default;
-			foreach (var stmt in blockExpr.Statements)
-			{
-				if (stmt == null)
-					continue;
+        private LLVMValueRef GenerateBlockExprCode(AstBlockExpr blockExpr)
+        {
+            LLVMValueRef result = default;
+            foreach (var stmt in blockExpr.Statements)
+            {
+                if (stmt == null)
+                    continue;
 
-				GenerateExpressionCode(stmt);
-			}
-			return result;
-		}
+                GenerateExpressionCode(stmt);
+            }
+            return result;
+        }
 
-		private LLVMValueRef GenerateUnaryExprCode(AstUnaryExpr unExpr)
-		{
-			if (unExpr.ActualOperator is BuiltInUnaryOperator)
-			{
-				var expr = (unExpr.SubExpr as AstExpression);
-				var value = GenerateExpressionCode(expr);
+        private LLVMValueRef GenerateUnaryExprCode(AstUnaryExpr unExpr)
+        {
+            if (unExpr.ActualOperator is BuiltInUnaryOperator)
+            {
+                var expr = (unExpr.SubExpr as AstExpression);
+                var value = GenerateExpressionCode(expr);
                 // return if the value was not properly generated
                 if (value == default)
                     return default;
 
                 var uo = GetUnOp(unExpr.Operator, expr.OutType);
-				var val = uo(_builder, value, "unOp");
-				return val;
-			}
-			// TODO: check other operators (user implemented)
-			_messageHandler.ReportMessage(_currentSourceFile.Text, unExpr, $"The expr {unExpr} is not implemented");
-			return default;
-		}
+                var val = uo(_builder, value, "unOp");
+                return val;
+            }
+            // TODO: check other operators (user implemented)
+            _messageHandler.ReportMessage(_currentSourceFile.Text, unExpr, $"The expr {unExpr} is not implemented");
+            return default;
+        }
 
-		private LLVMValueRef GenerateBinaryExprCode(AstBinaryExpr binExpr)
-		{
-			if (binExpr.ActualOperator is BuiltInBinaryOperator)
-			{
+        private LLVMValueRef GenerateBinaryExprCode(AstBinaryExpr binExpr)
+        {
+            if (binExpr.ActualOperator is BuiltInBinaryOperator)
+            {
                 var leftExpr = (binExpr.Left as AstExpression);
                 var left = GenerateExpressionCode(leftExpr);
                 // return if the value was not properly generated
@@ -111,19 +111,19 @@ namespace HapetBackend.Llvm
 
                 // CRINGE :) special cases for as/is/in
                 switch (binExpr.ActualOperator.Name)
-				{
-					case "as":
-						{
+                {
+                    case "as":
+                        {
                             var rightExpr = (binExpr.Right as AstExpression);
-							var leftType = leftExpr.OutType as PointerType;
+                            var leftType = leftExpr.OutType as PointerType;
                             // TODO: check inheritance
                             if (true)
-							{
-								var ptrToTypeInfo = GetTypeInfoPtr(HapetTypeToLLVMType(leftType.TargetType), left);
-								var ptrToCastTypeInfo = _typeInfoDictionary[(rightExpr.OutType as PointerType).TargetType as ClassType];
+                            {
+                                var ptrToTypeInfo = GetTypeInfoPtr(HapetTypeToLLVMType(leftType.TargetType), left);
+                                var ptrToCastTypeInfo = _typeInfoDictionary[(rightExpr.OutType as PointerType).TargetType as ClassType];
                                 var result = _builder.BuildAlloca(HapetTypeToLLVMType(rightExpr.OutType), "castResult");
                                 var currentTypeInfo = _builder.BuildAlloca(LLVMTypeRef.CreatePointer(GetTypeInfoType(), 0), "currTypeInfo");
-								_builder.BuildStore(ptrToTypeInfo, currentTypeInfo);
+                                _builder.BuildStore(ptrToTypeInfo, currentTypeInfo);
 
                                 var bbSuccess = _lastFunctionValueRef.AppendBasicBlock($"cast.success");
                                 var bbCheck = _lastFunctionValueRef.AppendBasicBlock($"cast.check");
@@ -132,11 +132,11 @@ namespace HapetBackend.Llvm
                                 var bbEnd = _lastFunctionValueRef.AppendBasicBlock($"cast.end");
 
                                 var cmp = _builder.BuildICmp(LLVMIntPredicate.LLVMIntEQ, ptrToTypeInfo, ptrToCastTypeInfo);
-								_builder.BuildCondBr(cmp, bbSuccess, bbCheck);
+                                _builder.BuildCondBr(cmp, bbSuccess, bbCheck);
 
                                 _builder.PositionAtEnd(bbCheck);
-								var currLoaded = _builder.BuildLoad2(LLVMTypeRef.CreatePointer(GetTypeInfoType(), 0), currentTypeInfo, "currLoaded");
-								var parentTypeInfo = GetParentTypeInfoPtr(currLoaded);
+                                var currLoaded = _builder.BuildLoad2(LLVMTypeRef.CreatePointer(GetTypeInfoType(), 0), currentTypeInfo, "currLoaded");
+                                var parentTypeInfo = GetParentTypeInfoPtr(currLoaded);
                                 _builder.BuildStore(parentTypeInfo, currentTypeInfo); // store new one
                                 var typeInfoNull = LLVMValueRef.CreateConstPointerNull(LLVMTypeRef.CreatePointer(GetTypeInfoType(), 0));
                                 var nullCmp = _builder.BuildICmp(LLVMIntPredicate.LLVMIntEQ, parentTypeInfo, typeInfoNull);
@@ -149,21 +149,21 @@ namespace HapetBackend.Llvm
                                 _builder.PositionAtEnd(bbFail);
                                 var castTypeNull = LLVMValueRef.CreateConstPointerNull(HapetTypeToLLVMType(rightExpr.OutType));
                                 _builder.BuildStore(castTypeNull, result);
-								_builder.BuildBr(bbEnd);
+                                _builder.BuildBr(bbEnd);
 
-								_builder.PositionAtEnd(bbSuccess);
+                                _builder.PositionAtEnd(bbSuccess);
                                 var casted = _builder.BuildBitCast(left, HapetTypeToLLVMType(rightExpr.OutType), "castedAs");
                                 _builder.BuildStore(casted, result);
                                 _builder.BuildBr(bbEnd);
 
                                 _builder.PositionAtEnd(bbEnd);
 
-								return _builder.BuildLoad2(HapetTypeToLLVMType(rightExpr.OutType), result);
+                                return _builder.BuildLoad2(HapetTypeToLLVMType(rightExpr.OutType), result);
                             }
                             return _builder.BuildBitCast(left, HapetTypeToLLVMType(rightExpr.OutType), "castedAs");
-						}
-					default:
-						{
+                        }
+                    default:
+                        {
                             var rightExpr = (binExpr.Right as AstExpression);
                             var right = GenerateExpressionCode(rightExpr);
                             // return if the value was not properly generated
@@ -173,83 +173,83 @@ namespace HapetBackend.Llvm
                             var bo = GetBinOp(binExpr.Operator, leftExpr.OutType, rightExpr.OutType);
                             var val = bo(_builder, left, right, "binOp");
                             return val;
-						}
-				}
-			}
-			// TODO: check other operators (user implemented)
-			_messageHandler.ReportMessage(_currentSourceFile.Text, binExpr, $"The expr {binExpr} is not implemented");
-			return default;
-		}
+                        }
+                }
+            }
+            // TODO: check other operators (user implemented)
+            _messageHandler.ReportMessage(_currentSourceFile.Text, binExpr, $"The expr {binExpr} is not implemented");
+            return default;
+        }
 
-		private LLVMValueRef GeneratePointerExprCode(AstPointerExpr expr)
-		{
-			if (expr.IsDereference)
-			{
-				var theVar = GenerateExpressionCode(expr.SubExpression);
-				var loaded = _builder.BuildLoad2(HapetTypeToLLVMType(expr.SubExpression.OutType), theVar, $"derefed");
-				return loaded;
-			}
-			else
-			{
-				// idk what to do here :_(
-				// anyway it should not happen...
-				// internal error here
-				_messageHandler.ReportMessage(_currentSourceFile.Text, expr, $"Internal compiler error (AstPointerExpr could not be generated here)");
-			}
-			return default;
-		}
+        private LLVMValueRef GeneratePointerExprCode(AstPointerExpr expr)
+        {
+            if (expr.IsDereference)
+            {
+                var theVar = GenerateExpressionCode(expr.SubExpression);
+                var loaded = _builder.BuildLoad2(HapetTypeToLLVMType(expr.SubExpression.OutType), theVar, $"derefed");
+                return loaded;
+            }
+            else
+            {
+                // idk what to do here :_(
+                // anyway it should not happen...
+                // internal error here
+                _messageHandler.ReportMessage(_currentSourceFile.Text, expr, $"Internal compiler error (AstPointerExpr could not be generated here)");
+            }
+            return default;
+        }
 
-		private LLVMValueRef GenerateAddressOfExprCode(AstAddressOfExpr addrExpr)
-		{
-			// TODO: should be better. probably there won't be only AstNestedExpr or AstIdExpr but something else...
-			if (addrExpr.SubExpression is AstNestedExpr nestExpr)
-			{
-				return GenerateNestedExpr(nestExpr, true);
-			}
-			else if (addrExpr.SubExpression is AstIdExpr idExpr)
-			{
-				return GenerateIdExpr(idExpr, true);
-			}
-			// internal error here
-			_messageHandler.ReportMessage(_currentSourceFile.Text, addrExpr, $"Internal compiler error (AstAddressOfExpr could not be generated here)");
-			return default;
-		}
+        private LLVMValueRef GenerateAddressOfExprCode(AstAddressOfExpr addrExpr)
+        {
+            // TODO: should be better. probably there won't be only AstNestedExpr or AstIdExpr but something else...
+            if (addrExpr.SubExpression is AstNestedExpr nestExpr)
+            {
+                return GenerateNestedExpr(nestExpr, true);
+            }
+            else if (addrExpr.SubExpression is AstIdExpr idExpr)
+            {
+                return GenerateIdExpr(idExpr, true);
+            }
+            // internal error here
+            _messageHandler.ReportMessage(_currentSourceFile.Text, addrExpr, $"Internal compiler error (AstAddressOfExpr could not be generated here)");
+            return default;
+        }
 
-		private unsafe LLVMValueRef GenerateIdExpr(AstIdExpr expr, bool getPtr = false)
-		{
-			LLVMValueRef v = default;
-			// check that the symbol is a declaration
-			if (expr.FindSymbol is not DeclSymbol declSymbol)
-				return v;
-			var theDecl = declSymbol.Decl;
+        private unsafe LLVMValueRef GenerateIdExpr(AstIdExpr expr, bool getPtr = false)
+        {
+            LLVMValueRef v = default;
+            // check that the symbol is a declaration
+            if (expr.FindSymbol is not DeclSymbol declSymbol)
+                return v;
+            var theDecl = declSymbol.Decl;
 
-			// return default because user tries to access enum field - no need to do anything here
-			if (theDecl is AstEnumDecl)
-				return v;
+            // return default because user tries to access enum field - no need to do anything here
+            if (theDecl is AstEnumDecl)
+                return v;
 
             // check if it const/static shite
             if (theDecl is AstVarDecl varDecl && (theDecl.SpecialKeys.Contains(TokenType.KwStatic) || theDecl.SpecialKeys.Contains(TokenType.KwConst)))
-			{
-				if (varDecl.ContainingParent is not AstClassDecl classDecl)
-					return v;
-				var varName = $"{classDecl.Type.OutType}::{varDecl.Name.Name}";
+            {
+                if (varDecl.ContainingParent is not AstClassDecl classDecl)
+                    return v;
+                var varName = $"{classDecl.Type.OutType}::{varDecl.Name.Name}";
                 v = _module.GetNamedGlobal(varName);
                 if (getPtr)
                     return v;
                 var loaded = _builder.BuildLoad2(HapetTypeToLLVMType(expr.OutType), v, expr.Name);
                 return loaded;
             }
-			// this check is done to generate proper delegate
-			else if (expr.OutType is FunctionType fncType && theDecl is AstFuncDecl fncDecl)
-			{
-				// this whole shite is done to create anon delegate of the specified function
-				LLVMTypeRef delegateIrType;
+            // this check is done to generate proper delegate
+            else if (expr.OutType is FunctionType fncType && theDecl is AstFuncDecl fncDecl)
+            {
+                // this whole shite is done to create anon delegate of the specified function
+                LLVMTypeRef delegateIrType;
                 if (_delegateAnonTypes.TryGetValue(fncType.ToCringeString(), out LLVMTypeRef irType))
-				{
-					delegateIrType = irType;
+                {
+                    delegateIrType = irType;
                 }
-				else
-				{
+                else
+                {
                     List<LLVMTypeRef> paramTypes;
                     // creating anon delegate type
                     if (fncType.IsStaticFunction())
@@ -275,15 +275,15 @@ namespace HapetBackend.Llvm
                             ((LLVMTypeRef)funcPtr),
                             ((LLVMTypeRef)objectPtr)
                         }, false);
-					_delegateAnonTypes[fncType.ToCringeString()] = delegateIrType;
+                    _delegateAnonTypes[fncType.ToCringeString()] = delegateIrType;
                 }
-				// by default it is a nullptr
-				LLVMValueRef ptrToObject = LLVM.ConstPointerNull(HapetTypeToLLVMType(IntType.GetIntType(1, false)));
-				LLVMValueRef ptrToFunc = _valueMap[declSymbol]; // mb ptr to?
+                // by default it is a nullptr
+                LLVMValueRef ptrToObject = LLVM.ConstPointerNull(HapetTypeToLLVMType(IntType.GetIntType(1, false)));
+                LLVMValueRef ptrToFunc = _valueMap[declSymbol]; // mb ptr to?
                 var allocatedDelegate = _builder.BuildAlloca(delegateIrType, "anonAllocated");
-				// if it is not a static func - get ptr to class
-				if (!fncType.IsStaticFunction())
-				{
+                // if it is not a static func - get ptr to class
+                if (!fncType.IsStaticFunction())
+                {
                     ptrToObject = _valueMap[expr.Scope.GetSymbol("this")];
                 }
                 // the 1 is because delegate struct has object field as it's 1 param
@@ -298,8 +298,8 @@ namespace HapetBackend.Llvm
                 var loaded = _builder.BuildLoad2(delegateIrType, allocatedDelegate, "anonDelegateLoaded");
                 return loaded;
             }
-			else
-			{
+            else
+            {
                 v = _valueMap[declSymbol];
                 // return the ptr to the val. used for AstAddressOf or storing values
                 if (getPtr)
@@ -307,61 +307,61 @@ namespace HapetBackend.Llvm
                 var loaded = _builder.BuildLoad2(HapetTypeToLLVMType(expr.OutType), v, expr.Name);
                 return loaded;
             }
-		}
+        }
 
-		private unsafe LLVMValueRef GenerateNewExpr(AstNewExpr expr)
-		{
-			LLVMValueRef v = default;
-			if (expr.OutType is ClassType classType)
-			{
-				// TODO: some shite with alignment here
-				int structSize = 0;
-				List<HapetType> structElements = _structTypeElementsMap[classType];
-				foreach (var elem in structElements)
-				{
-					structSize += elem.GetSize();
+        private unsafe LLVMValueRef GenerateNewExpr(AstNewExpr expr)
+        {
+            LLVMValueRef v = default;
+            if (expr.OutType is ClassType classType)
+            {
+                // TODO: some shite with alignment here
+                int structSize = 0;
+                List<HapetType> structElements = _structTypeElementsMap[classType];
+                foreach (var elem in structElements)
+                {
+                    structSize += elem.GetSize();
                 }
 
-				// allocating memory for struct
-				v = GetMalloc(structSize, 1);
+                // allocating memory for struct
+                v = GetMalloc(structSize, 1);
 
-				// other args
-				List<LLVMValueRef> args = new List<LLVMValueRef>() { v };
-				foreach (var a in expr.Arguments)
-				{
-					args.Add(GenerateExpressionCode(a));
-				}
+                // other args
+                List<LLVMValueRef> args = new List<LLVMValueRef>() { v };
+                foreach (var a in expr.Arguments)
+                {
+                    args.Add(GenerateExpressionCode(a));
+                }
 
-				// getting class ctor
-				string onlyName = classType.Declaration.Name.Name.Split('.').Last();
-				var ctorName = $"{classType.Declaration.Name.Name}::{onlyName}_ctor" + expr.Arguments.GetArgsString(PointerType.GetPointerType(classType));
-				var ctorSymbol = classType.Declaration.SubScope.GetSymbol(ctorName) as DeclSymbol;
+                // getting class ctor
+                string onlyName = classType.Declaration.Name.Name.Split('.').Last();
+                var ctorName = $"{classType.Declaration.Name.Name}::{onlyName}_ctor" + expr.Arguments.GetArgsString(PointerType.GetPointerType(classType));
+                var ctorSymbol = classType.Declaration.SubScope.GetSymbol(ctorName) as DeclSymbol;
 
-				// error if ctor not found
-				if (ctorSymbol == null)
-				{
-					_messageHandler.ReportMessage(_currentSourceFile.Text, expr.TypeName, $"Constructor with specified argument types was not found in the {classType.Declaration.Name.Name} class");
-					return v;
-				}
+                // error if ctor not found
+                if (ctorSymbol == null)
+                {
+                    _messageHandler.ReportMessage(_currentSourceFile.Text, expr.TypeName, $"Constructor with specified argument types was not found in the {classType.Declaration.Name.Name} class");
+                    return v;
+                }
 
-				var ctorFunc = _valueMap[ctorSymbol];
-				LLVMTypeRef ctorType = _typeMap[ctorSymbol.Decl.Type.OutType];
-				_builder.BuildCall2(ctorType, ctorFunc, args.ToArray());  // calling ctor
+                var ctorFunc = _valueMap[ctorSymbol];
+                LLVMTypeRef ctorType = _typeMap[ctorSymbol.Decl.Type.OutType];
+                _builder.BuildCall2(ctorType, ctorFunc, args.ToArray());  // calling ctor
 
-				return v;
-			}
-			else
-			{
-				// TODO: other also could be created 
-			}
+                return v;
+            }
+            else
+            {
+                // TODO: other also could be created 
+            }
 
-			return v;
-		}
+            return v;
+        }
 
-		private unsafe LLVMValueRef GenerateCallExpr(AstCallExpr expr)
-		{
-			if (expr.FuncName.OutType is FunctionType fncType)
-			{
+        private unsafe LLVMValueRef GenerateCallExpr(AstCallExpr expr)
+        {
+            if (expr.FuncName.OutType is FunctionType fncType)
+            {
                 var hapetFunc = _valueMap[fncType.Declaration.GetSymbol];
                 LLVMTypeRef funcType = _typeMap[expr.FuncName.OutType];
 
@@ -383,9 +383,9 @@ namespace HapetBackend.Llvm
 
                 return _builder.BuildCall2(funcType, hapetFunc, args.ToArray(), funcRetName);
             }
-			else if (expr.FuncName.OutType is DelegateType delType)
-			{
-				var hapetDelegate = GenerateIdExpr(expr.FuncName, true);
+            else if (expr.FuncName.OutType is DelegateType delType)
+            {
+                var hapetDelegate = GenerateIdExpr(expr.FuncName, true);
                 LLVMTypeRef delegateType = _typeMap[expr.FuncName.OutType];
 
                 // args shite
@@ -395,8 +395,8 @@ namespace HapetBackend.Llvm
                     args.Add(GenerateExpressionCode(a));
                 }
 
-				var loadedDelegate = _builder.BuildLoad2(delegateType, hapetDelegate, $"delegateLoaded");
-				// TODO: also load object pointer when delegate has non-static method :)
+                var loadedDelegate = _builder.BuildLoad2(delegateType, hapetDelegate, $"delegateLoaded");
+                // TODO: also load object pointer when delegate has non-static method :)
                 var theRealFuncExtracted = _builder.BuildExtractValue(loadedDelegate, 0, "funcExtracted");
 
                 // the return name has to be empty if ret value of func is void
@@ -404,57 +404,57 @@ namespace HapetBackend.Llvm
                 if (delType.Declaration.Returns.OutType is not VoidType)
                     funcRetName = $"funcReturnValue";
 
-				// getting the function type to call
+                // getting the function type to call
                 var funcType = GetFunctionTypeOfDelegate(delType);
 
                 return _builder.BuildCall2(funcType, theRealFuncExtracted, args.ToArray(), funcRetName);
             }
-			else
-			{
+            else
+            {
                 _messageHandler.ReportMessage(_currentSourceFile.Text, expr, $"Call of {expr.FuncName.OutType} is not supported");
-				return default;
+                return default;
             }
-		}
+        }
 
-		private unsafe LLVMValueRef GenerateArgumentExpr(AstArgumentExpr expr)
-		{
-			// TODO: handle arg name and index
-			return GenerateExpressionCode(expr.Expr);
-		}
+        private unsafe LLVMValueRef GenerateArgumentExpr(AstArgumentExpr expr)
+        {
+            // TODO: handle arg name and index
+            return GenerateExpressionCode(expr.Expr);
+        }
 
-		private unsafe LLVMValueRef GenerateCastExpr(AstCastExpr expr)
-		{
-			var sub = GenerateExpressionCode(expr.SubExpression as AstExpression);
-			return CreateCast(_builder, sub, (expr.SubExpression as AstExpression).OutType, expr.OutType);
-		}
+        private unsafe LLVMValueRef GenerateCastExpr(AstCastExpr expr)
+        {
+            var sub = GenerateExpressionCode(expr.SubExpression as AstExpression);
+            return CreateCast(_builder, sub, (expr.SubExpression as AstExpression).OutType, expr.OutType);
+        }
 
-		private unsafe LLVMValueRef GenerateNestedExpr(AstNestedExpr expr, bool getPtr = false)
-		{
-			if (expr.LeftPart == null)
-			{
-				// func call, ident or pure expr
-				return GenerateExpressionCode(expr.RightPart, getPtr);
-			}
-			else
-			{
-				// if really has to be an AstIdExpr
-				if (expr.RightPart is not AstIdExpr idExpr)
-				{
+        private unsafe LLVMValueRef GenerateNestedExpr(AstNestedExpr expr, bool getPtr = false)
+        {
+            if (expr.LeftPart == null)
+            {
+                // func call, ident or pure expr
+                return GenerateExpressionCode(expr.RightPart, getPtr);
+            }
+            else
+            {
+                // if really has to be an AstIdExpr
+                if (expr.RightPart is not AstIdExpr idExpr)
+                {
                     _messageHandler.ReportMessage(_currentSourceFile.Text, expr.RightPart, $"The part of the expression has to be an identifier");
-					return default;
+                    return default;
                 }
 
-				// we need to get 'struct' elements by ref to access it's elements
-				bool getByRef = (expr.LeftPart.OutType is StructType) || (expr.LeftPart.OutType is ArrayType) || (expr.LeftPart.OutType is StringType);
-				var leftPart = GenerateExpressionCode(expr.LeftPart, getByRef);
+                // we need to get 'struct' elements by ref to access it's elements
+                bool getByRef = (expr.LeftPart.OutType is StructType) || (expr.LeftPart.OutType is ArrayType) || (expr.LeftPart.OutType is StringType);
+                var leftPart = GenerateExpressionCode(expr.LeftPart, getByRef);
 
-				// getting struct/class/interface declarations and the type
-				HapetType leftPartType = null;
-				List<AstDeclaration> leftPartDeclarations = null;
+                // getting struct/class/interface declarations and the type
+                HapetType leftPartType = null;
+                List<AstDeclaration> leftPartDeclarations = null;
                 if (expr.LeftPart.OutType is PointerType ptr && ptr.TargetType is ClassType classT)
                 {
-					leftPartDeclarations = classT.Declaration.Declarations.Where(x => x is AstVarDecl).ToList();
-					leftPartType = classT;
+                    leftPartDeclarations = classT.Declaration.Declarations.Where(x => x is AstVarDecl).ToList();
+                    leftPartType = classT;
                 }
                 // this is usually when accesing static/const values
                 // like 'Attribute.CoonstField'
@@ -464,42 +464,42 @@ namespace HapetBackend.Llvm
                     leftPartType = classTT;
                 }
                 else if (expr.LeftPart.OutType is StructType structT)
-				{
-					leftPartDeclarations = structT.Declaration.Declarations;
-					leftPartType = structT;
-				}
-				else if (expr.LeftPart.OutType is EnumType enumT)
-				{
-					leftPartDeclarations = enumT.Declaration.Declarations.Select(x => x as AstDeclaration).ToList();
-					leftPartType = enumT;
-				}
-				else if (expr.LeftPart.OutType is ArrayType arrayT)
-				{
-					leftPartDeclarations = AstArrayExpr.ArrayStruct.Declarations;
-					leftPartType = arrayT;
-				}
-				else if (expr.LeftPart.OutType is StringType stringT)
-				{
-					leftPartDeclarations = AstStringExpr.StringStruct.Declarations;
-					leftPartType = stringT;
-				}
+                {
+                    leftPartDeclarations = structT.Declaration.Declarations;
+                    leftPartType = structT;
+                }
+                else if (expr.LeftPart.OutType is EnumType enumT)
+                {
+                    leftPartDeclarations = enumT.Declaration.Declarations.Select(x => x as AstDeclaration).ToList();
+                    leftPartType = enumT;
+                }
+                else if (expr.LeftPart.OutType is ArrayType arrayT)
+                {
+                    leftPartDeclarations = AstArrayExpr.ArrayStruct.Declarations;
+                    leftPartType = arrayT;
+                }
+                else if (expr.LeftPart.OutType is StringType stringT)
+                {
+                    leftPartDeclarations = AstStringExpr.StringStruct.Declarations;
+                    leftPartType = stringT;
+                }
 
-				// getting index of the element and the element itself
-				if (leftPartDeclarations != null && leftPartType != null)
-				{
-					// this is different for enums
-					if (leftPartType is EnumType enumT)
-					{
-						var enumFieldName = $"{enumT}::{idExpr.Name}";
-						var v = _module.GetNamedGlobal(enumFieldName);
-						if (getPtr)
-							return v;
-						var loaded = _builder.BuildLoad2(HapetTypeToLLVMType(expr.OutType), v, $"{idExpr.Name}Loaded");
-						return loaded;
-					}
-					// check if the field is static/const
-					else if (IsStaticOrConstElement(idExpr.Name, leftPartDeclarations, out AstVarDecl theDecl))
-					{
+                // getting index of the element and the element itself
+                if (leftPartDeclarations != null && leftPartType != null)
+                {
+                    // this is different for enums
+                    if (leftPartType is EnumType enumT)
+                    {
+                        var enumFieldName = $"{enumT}::{idExpr.Name}";
+                        var v = _module.GetNamedGlobal(enumFieldName);
+                        if (getPtr)
+                            return v;
+                        var loaded = _builder.BuildLoad2(HapetTypeToLLVMType(expr.OutType), v, $"{idExpr.Name}Loaded");
+                        return loaded;
+                    }
+                    // check if the field is static/const
+                    else if (IsStaticOrConstElement(idExpr.Name, leftPartDeclarations, out AstVarDecl theDecl))
+                    {
                         // static/const elements are accessed in different way
                         if (theDecl.ContainingParent is not AstClassDecl classDecl)
                             return default;
@@ -510,13 +510,13 @@ namespace HapetBackend.Llvm
                         var loaded = _builder.BuildLoad2(HapetTypeToLLVMType(expr.OutType), v, $"{idExpr.Name}Loaded");
                         return loaded;
                     }
-					else
-					{
-						// usually this happens when user tries to access non static/const field from a class/struct name
-						if (leftPart == default)
-						{
+                    else
+                    {
+                        // usually this happens when user tries to access non static/const field from a class/struct name
+                        if (leftPart == default)
+                        {
                             _messageHandler.ReportMessage(_currentSourceFile.Text, idExpr, $"The element '{idExpr.Name}' could not be accessed. You are probably trying to access a non static/const field");
-							return default;
+                            return default;
                         }
 
                         // getting the index of the element
@@ -526,9 +526,9 @@ namespace HapetBackend.Llvm
                         if (leftPartType is ClassType)
                             elementIndex += 1;
 
-						// getting normal element index when user used custom struct alignment
-						if (leftPartType is StructType strT && strT.IsUserDefinedAlignment)
-							elementIndex = _structOffsets[strT][elementIndex];
+                        // getting normal element index when user used custom struct alignment
+                        if (leftPartType is StructType strT && strT.IsUserDefinedAlignment)
+                            elementIndex = _structOffsets[strT][elementIndex];
 
                         var tp = HapetTypeToLLVMType(leftPartType);
                         var ret = _builder.BuildStructGEP2(tp, leftPart, elementIndex, idExpr.Name);
@@ -540,214 +540,214 @@ namespace HapetBackend.Llvm
                         var retLoaded = _builder.BuildLoad2(HapetTypeToLLVMType(idExpr.OutType), ret, $"{idExpr.Name}Loaded");
                         return retLoaded;
                     }
-				}
+                }
 
-				// TODO: strings and other
-			}
+                // TODO: strings and other
+            }
             _messageHandler.ReportMessage(_currentSourceFile.Text, expr, $"The nested expr could not be generated, fatal :^( ");
-			return default;
-		}
+            return default;
+        }
 
         private bool IsStaticOrConstElement(string name, List<AstDeclaration> decls, out AstVarDecl decl)
         {
             // getting pure decls with consts and statics
             var pureDecls = decls.Where(x => x.SpecialKeys.Contains(TokenType.KwStatic) || x.SpecialKeys.Contains(TokenType.KwConst)).ToList();
-			decl = pureDecls.FirstOrDefault(x => x.Name.Name == name) as AstVarDecl;
+            decl = pureDecls.FirstOrDefault(x => x.Name.Name == name) as AstVarDecl;
             return decl != null;
         }
 
         private uint GetElementIndex(string name, List<AstDeclaration> decls)
-		{
-			// getting pure decls without consts and statics
-			var pureDecls = decls.Where(x => !x.SpecialKeys.Contains(TokenType.KwStatic) && !x.SpecialKeys.Contains(TokenType.KwConst)).ToList();
-			// search for the name in decl
-			for (uint i = 0; i < pureDecls.Count; ++i)
-			{
-				var decl = pureDecls[(int)i];
-				if (decl.Name.Name == name)
-				{
-					return i; // getting the field index
-				}
-			}
-			return 0;
-		}
+        {
+            // getting pure decls without consts and statics
+            var pureDecls = decls.Where(x => !x.SpecialKeys.Contains(TokenType.KwStatic) && !x.SpecialKeys.Contains(TokenType.KwConst)).ToList();
+            // search for the name in decl
+            for (uint i = 0; i < pureDecls.Count; ++i)
+            {
+                var decl = pureDecls[(int)i];
+                if (decl.Name.Name == name)
+                {
+                    return i; // getting the field index
+                }
+            }
+            return 0;
+        }
 
-		private LLVMValueRef GenerateArrayCreateExprCode(AstArrayCreateExpr expr)
-		{
-			// TODO: check if it could be allocated on stack
+        private LLVMValueRef GenerateArrayCreateExprCode(AstArrayCreateExpr expr)
+        {
+            // TODO: check if it could be allocated on stack
 
-			var cloned = expr.Clone() as AstArrayCreateExpr;
-			return GenerateArrayInternal(cloned);
-		}
+            var cloned = expr.Clone() as AstArrayCreateExpr;
+            return GenerateArrayInternal(cloned);
+        }
 
-		private LLVMValueRef GenerateArrayAccessExprCode(AstArrayAccessExpr expr, bool getPtr = false)
-		{
-			if (expr.ParameterExpr.OutType is not IntType)
-			{
-				// error here? i cannot access array if it is not an int type
-				_messageHandler.ReportMessage(_currentSourceFile.Text, expr.ParameterExpr, $"Type of the index has to be an integer type");
-			}
+        private LLVMValueRef GenerateArrayAccessExprCode(AstArrayAccessExpr expr, bool getPtr = false)
+        {
+            if (expr.ParameterExpr.OutType is not IntType)
+            {
+                // error here? i cannot access array if it is not an int type
+                _messageHandler.ReportMessage(_currentSourceFile.Text, expr.ParameterExpr, $"Type of the index has to be an integer type");
+            }
 
-			// the buffer to be indexed
-			LLVMValueRef buffer = default;
+            // the buffer to be indexed
+            LLVMValueRef buffer = default;
 
-			// for now they are identical
-			if (expr.ObjectName.OutType is ArrayType || expr.ObjectName.OutType is StringType)
-			{
-				// getting arrayBuf from struct and pointer to it
-				LLVMValueRef ptrToArray = GenerateExpressionCode(expr.ObjectName, true);
-				var ptrToBuffer = _builder.BuildStructGEP2(HapetTypeToLLVMType(expr.ObjectName.OutType), ptrToArray, 1, "arrayBuf");
-				buffer = _builder.BuildLoad2(HapetTypeToLLVMType(expr.OutType).GetPointerTo(), ptrToBuffer);
-			}
-			else if (expr.ObjectName.OutType is PointerType)
-			{
-				// getting pointer to the var
-				LLVMValueRef ptrToPtr = GenerateExpressionCode(expr.ObjectName, true);
-				buffer = _builder.BuildLoad2(HapetTypeToLLVMType(expr.ObjectName.OutType), ptrToPtr);
-			}
+            // for now they are identical
+            if (expr.ObjectName.OutType is ArrayType || expr.ObjectName.OutType is StringType)
+            {
+                // getting arrayBuf from struct and pointer to it
+                LLVMValueRef ptrToArray = GenerateExpressionCode(expr.ObjectName, true);
+                var ptrToBuffer = _builder.BuildStructGEP2(HapetTypeToLLVMType(expr.ObjectName.OutType), ptrToArray, 1, "arrayBuf");
+                buffer = _builder.BuildLoad2(HapetTypeToLLVMType(expr.OutType).GetPointerTo(), ptrToBuffer);
+            }
+            else if (expr.ObjectName.OutType is PointerType)
+            {
+                // getting pointer to the var
+                LLVMValueRef ptrToPtr = GenerateExpressionCode(expr.ObjectName, true);
+                buffer = _builder.BuildLoad2(HapetTypeToLLVMType(expr.ObjectName.OutType), ptrToPtr);
+            }
 
-			// if the gotten buffer is not null
-			if (buffer != default)
-			{
-				// getting an element from the arrayBuf
-				LLVMValueRef llvmElementIndex = GenerateExpressionCode(expr.ParameterExpr);
-				var arrayEl = _builder.BuildGEP2(HapetTypeToLLVMType(expr.OutType), buffer, new LLVMValueRef[] { llvmElementIndex });
+            // if the gotten buffer is not null
+            if (buffer != default)
+            {
+                // getting an element from the arrayBuf
+                LLVMValueRef llvmElementIndex = GenerateExpressionCode(expr.ParameterExpr);
+                var arrayEl = _builder.BuildGEP2(HapetTypeToLLVMType(expr.OutType), buffer, new LLVMValueRef[] { llvmElementIndex });
 
-				if (getPtr)
-					return arrayEl;
+                if (getPtr)
+                    return arrayEl;
 
-				var retLoaded = _builder.BuildLoad2(HapetTypeToLLVMType(expr.OutType), arrayEl);
-				return retLoaded;
-			}
+                var retLoaded = _builder.BuildLoad2(HapetTypeToLLVMType(expr.OutType), arrayEl);
+                return retLoaded;
+            }
 
-			_messageHandler.ReportMessage(_currentSourceFile.Text, expr, $"Could not generate access code for the {expr.ObjectName.OutType} type");
-			return default;
-		}
+            _messageHandler.ReportMessage(_currentSourceFile.Text, expr, $"Could not generate access code for the {expr.ObjectName.OutType} type");
+            return default;
+        }
 
-		private unsafe LLVMValueRef GenerateNullExprCode(AstNullExpr expr)
-		{
-			return LLVM.ConstPointerNull(HapetTypeToLLVMType(expr.Target));
-		}
+        private unsafe LLVMValueRef GenerateNullExprCode(AstNullExpr expr)
+        {
+            return LLVM.ConstPointerNull(HapetTypeToLLVMType(expr.Target));
+        }
 
-		// statements
-		private void GenerateAssignStmt(AstAssignStmt stmt)
-		{
-			LLVMValueRef theVar = GenerateNestedExpr(stmt.Target, true);
+        // statements
+        private void GenerateAssignStmt(AstAssignStmt stmt)
+        {
+            LLVMValueRef theVar = GenerateNestedExpr(stmt.Target, true);
 
-			// check for initializer
-			if (stmt.Value == null)
-			{
-				// error here!!!!! it could not be null
-				_messageHandler.ReportMessage(_currentSourceFile.Text, stmt, $"Expression expected on the right side of assignment");
-			}
+            // check for initializer
+            if (stmt.Value == null)
+            {
+                // error here!!!!! it could not be null
+                _messageHandler.ReportMessage(_currentSourceFile.Text, stmt, $"Expression expected on the right side of assignment");
+            }
 
-			AssignToVar(theVar, stmt.Target.OutType, stmt.Value);
+            AssignToVar(theVar, stmt.Target.OutType, stmt.Value);
 
-			// TODO: WARN: Assign is a stmt and does not returns anything. could be changed to expr
-			// so stmts like 'a = (b = 3);' would be allowed...
-		}
+            // TODO: WARN: Assign is a stmt and does not returns anything. could be changed to expr
+            // so stmts like 'a = (b = 3);' would be allowed...
+        }
 
-		private static ulong _forCounter = 0;
-		// these blocks are needed for break and continue statements
-		private LLVMBasicBlockRef _currentLoopInc = null;
-		private LLVMBasicBlockRef _currentLoopEnd = null;
-		private unsafe void GenerateForStmt(AstForStmt stmt)
-		{
-			// WARN: this strange code is not just for 'fun'
-			// when creating nested 'for' loops it would be easier to read LLVM IR code with that shite
-			// so for example if we have two nested 'for' loops it would look like this:
-			// for1.cond: ...
-			// for1.body: ...
-			//   for2.cond: ...
-			//   for2.body: ...
-			//   for2.inc: ...
-			//   for2.end: ...
-			// for1.inc: ...
-			// for1.end: ...
+        private static ulong _forCounter = 0;
+        // these blocks are needed for break and continue statements
+        private LLVMBasicBlockRef _currentLoopInc = null;
+        private LLVMBasicBlockRef _currentLoopEnd = null;
+        private unsafe void GenerateForStmt(AstForStmt stmt)
+        {
+            // WARN: this strange code is not just for 'fun'
+            // when creating nested 'for' loops it would be easier to read LLVM IR code with that shite
+            // so for example if we have two nested 'for' loops it would look like this:
+            // for1.cond: ...
+            // for1.body: ...
+            //   for2.cond: ...
+            //   for2.body: ...
+            //   for2.inc: ...
+            //   for2.end: ...
+            // for1.inc: ...
+            // for1.end: ...
 
-			_forCounter++;
+            _forCounter++;
 
-			// saving previous blocks because of nesting
-			var prevForInc = _currentLoopInc;
-			var prevForEnd = _currentLoopEnd;
+            // saving previous blocks because of nesting
+            var prevForInc = _currentLoopInc;
+            var prevForEnd = _currentLoopEnd;
 
-			if (stmt.FirstParam != null)
-				GenerateExpressionCode(stmt.FirstParam);
+            if (stmt.FirstParam != null)
+                GenerateExpressionCode(stmt.FirstParam);
 
-			var bbCond = _lastFunctionValueRef.AppendBasicBlock($"for{_forCounter}.cond");
-			var bbBody = _lastFunctionValueRef.AppendBasicBlock($"for{_forCounter}.body");
+            var bbCond = _lastFunctionValueRef.AppendBasicBlock($"for{_forCounter}.cond");
+            var bbBody = _lastFunctionValueRef.AppendBasicBlock($"for{_forCounter}.body");
 
-			// creating other blocks
-			var bbInc = _context.CreateBasicBlock($"for{_forCounter}.inc");
-			var bbEnd = _context.CreateBasicBlock($"for{_forCounter}.end");
+            // creating other blocks
+            var bbInc = _context.CreateBasicBlock($"for{_forCounter}.inc");
+            var bbEnd = _context.CreateBasicBlock($"for{_forCounter}.end");
 
-			// directly br into loop condition
-			_builder.BuildBr(bbCond);
+            // directly br into loop condition
+            _builder.BuildBr(bbCond);
 
-			_currentLoopInc = bbInc;
-			_currentLoopEnd = bbEnd;
+            _currentLoopInc = bbInc;
+            _currentLoopEnd = bbEnd;
 
-			// condition
-			_builder.PositionAtEnd(bbCond);
-			if (stmt.SecondParam != null)
-			{
-				// building the condition
-				var cmp = GenerateExpressionCode(stmt.SecondParam);
-				_builder.BuildCondBr(cmp, bbBody, bbEnd);
-			}
-			else
-			{
-				// if the second param is null - just move to the body block
-				_builder.BuildBr(bbBody);
-			}
+            // condition
+            _builder.PositionAtEnd(bbCond);
+            if (stmt.SecondParam != null)
+            {
+                // building the condition
+                var cmp = GenerateExpressionCode(stmt.SecondParam);
+                _builder.BuildCondBr(cmp, bbBody, bbEnd);
+            }
+            else
+            {
+                // if the second param is null - just move to the body block
+                _builder.BuildBr(bbBody);
+            }
 
-			// body
-			_builder.PositionAtEnd(bbBody);
-			if (stmt.Body != null)
-			{
-				// generating body code
-				GenerateExpressionCode(stmt.Body);
-			}
+            // body
+            _builder.PositionAtEnd(bbBody);
+            if (stmt.Body != null)
+            {
+                // generating body code
+                GenerateExpressionCode(stmt.Body);
+            }
 
-			// appending them sooner
-			LLVM.AppendExistingBasicBlock(_lastFunctionValueRef, bbInc);
-			LLVM.AppendExistingBasicBlock(_lastFunctionValueRef, bbEnd);
+            // appending them sooner
+            LLVM.AppendExistingBasicBlock(_lastFunctionValueRef, bbInc);
+            LLVM.AppendExistingBasicBlock(_lastFunctionValueRef, bbEnd);
 
-			
-			if (stmt.Body != null && 
-				stmt.Body.Statements.Count > 0 &&
-				(stmt.Body.Statements.Last() is AstReturnStmt ||
-				stmt.Body.Statements.Last() is AstBreakContStmt))
-			{
-				// if the last statement of the block is already
-				// a return or break or continue then there is no
-				// need to create our own!!!
-				// so this case is empty
-			}
-			else
-			{
-				// setting br without condition into inc block from body block
-				_builder.BuildBr(bbInc);
-			}
 
-			// inc
-			_builder.PositionAtEnd(bbInc);
-			if (stmt.ThirdParam != null)
-			{
-				// generating inc code
-				GenerateExpressionCode(stmt.ThirdParam);
-			}
-			_builder.BuildBr(bbCond);
-			_builder.PositionAtEnd(bbEnd);
+            if (stmt.Body != null &&
+                stmt.Body.Statements.Count > 0 &&
+                (stmt.Body.Statements.Last() is AstReturnStmt ||
+                stmt.Body.Statements.Last() is AstBreakContStmt))
+            {
+                // if the last statement of the block is already
+                // a return or break or continue then there is no
+                // need to create our own!!!
+                // so this case is empty
+            }
+            else
+            {
+                // setting br without condition into inc block from body block
+                _builder.BuildBr(bbInc);
+            }
 
-			// restoring prev blocks
-			_currentLoopInc = prevForInc;
-			_currentLoopEnd = prevForEnd;
-		}
+            // inc
+            _builder.PositionAtEnd(bbInc);
+            if (stmt.ThirdParam != null)
+            {
+                // generating inc code
+                GenerateExpressionCode(stmt.ThirdParam);
+            }
+            _builder.BuildBr(bbCond);
+            _builder.PositionAtEnd(bbEnd);
+
+            // restoring prev blocks
+            _currentLoopInc = prevForInc;
+            _currentLoopEnd = prevForEnd;
+        }
 
         private static ulong _whileCounter = 0;
         private unsafe void GenerateWhileStmt(AstWhileStmt stmt)
-		{
+        {
             // WARN: this strange code is not just for 'fun'
             // when creating nested 'while' loops it would be easier to read LLVM IR code with that shite
             // so for example if we have two nested 'while' loops it would look like this:
@@ -761,8 +761,8 @@ namespace HapetBackend.Llvm
             _whileCounter++;
 
             // saving previous blocks because of nesting
-			// WARN: for 'while' loops there are no Inc block
-			// so the Cond block is used directly
+            // WARN: for 'while' loops there are no Inc block
+            // so the Cond block is used directly
             var prevWhileInc = _currentLoopInc;
             var prevWhileEnd = _currentLoopEnd;
 
@@ -816,166 +816,166 @@ namespace HapetBackend.Llvm
                 _builder.BuildBr(bbCond);
             }
 
-			// appending them sooner
-			LLVM.AppendExistingBasicBlock(_lastFunctionValueRef, bbEnd);
+            // appending them sooner
+            LLVM.AppendExistingBasicBlock(_lastFunctionValueRef, bbEnd);
 
-			_builder.PositionAtEnd(bbEnd);
+            _builder.PositionAtEnd(bbEnd);
 
             // restoring prev blocks
             _currentLoopInc = prevWhileInc;
             _currentLoopEnd = prevWhileEnd;
         }
 
-		private static ulong _ifCounter = 0;
-		private unsafe void GenerateIfStmt(AstIfStmt stmt)
-		{
-			// WARN: this strange code is not just for 'fun'
-			// when creating nested 'if' stmts it would be easier to read LLVM IR code with that shite
-			// so for example if we have two nested 'if' stmts it would look like this:
-			// if1.body: ...
-			//   if2.body: ...
-			//   if2.end: ...
-			// if1.else
-			//	 ...
-			// if1.end: ...
+        private static ulong _ifCounter = 0;
+        private unsafe void GenerateIfStmt(AstIfStmt stmt)
+        {
+            // WARN: this strange code is not just for 'fun'
+            // when creating nested 'if' stmts it would be easier to read LLVM IR code with that shite
+            // so for example if we have two nested 'if' stmts it would look like this:
+            // if1.body: ...
+            //   if2.body: ...
+            //   if2.end: ...
+            // if1.else
+            //	 ...
+            // if1.end: ...
 
-			_ifCounter++;
+            _ifCounter++;
 
-			var bbBody = _lastFunctionValueRef.AppendBasicBlock($"if{_ifCounter}.body");
+            var bbBody = _lastFunctionValueRef.AppendBasicBlock($"if{_ifCounter}.body");
 
-			// creating other blocks
-			var bbElse = _context.CreateBasicBlock($"if{_ifCounter}.else");
-			var bbEnd = _context.CreateBasicBlock($"if{_ifCounter}.end");
+            // creating other blocks
+            var bbElse = _context.CreateBasicBlock($"if{_ifCounter}.else");
+            var bbEnd = _context.CreateBasicBlock($"if{_ifCounter}.end");
 
-			if (stmt.Condition != null)
-			{
-				// building the condition
-				var cmp = GenerateExpressionCode(stmt.Condition);
-				if (stmt.BodyFalse != null)
-				{
-					_builder.BuildCondBr(cmp, bbBody, bbElse);
-				}
-				else
-				{
-					// going directly to end block because there is no else block
-					_builder.BuildCondBr(cmp, bbBody, bbEnd);
-				}
-			}
-			else
-			{
-				// if the second param is null (should not happen!!! - checked in Parsing) - just move to the body block
-				_builder.BuildBr(bbBody);
-			}
+            if (stmt.Condition != null)
+            {
+                // building the condition
+                var cmp = GenerateExpressionCode(stmt.Condition);
+                if (stmt.BodyFalse != null)
+                {
+                    _builder.BuildCondBr(cmp, bbBody, bbElse);
+                }
+                else
+                {
+                    // going directly to end block because there is no else block
+                    _builder.BuildCondBr(cmp, bbBody, bbEnd);
+                }
+            }
+            else
+            {
+                // if the second param is null (should not happen!!! - checked in Parsing) - just move to the body block
+                _builder.BuildBr(bbBody);
+            }
 
-			// body
-			_builder.PositionAtEnd(bbBody);
-			if (stmt.BodyTrue != null)
-			{
-				// generating body code
-				GenerateExpressionCode(stmt.BodyTrue);
-			}
+            // body
+            _builder.PositionAtEnd(bbBody);
+            if (stmt.BodyTrue != null)
+            {
+                // generating body code
+                GenerateExpressionCode(stmt.BodyTrue);
+            }
 
-			if (stmt.BodyTrue != null &&
-				stmt.BodyTrue.Statements.Count > 0 &&
-				(stmt.BodyTrue.Statements.Last() is AstReturnStmt ||
+            if (stmt.BodyTrue != null &&
+                stmt.BodyTrue.Statements.Count > 0 &&
+                (stmt.BodyTrue.Statements.Last() is AstReturnStmt ||
                 stmt.BodyTrue.Statements.Last() is AstBreakContStmt))
-			{
-				// if the last statement of the block is already
-				// a return then there is no
-				// need to create our own!!!
-				// so this case is empty
-			}
-			else
-			{
-				// setting br without condition into inc block from body block
-				_builder.BuildBr(bbEnd);
-			}
+            {
+                // if the last statement of the block is already
+                // a return then there is no
+                // need to create our own!!!
+                // so this case is empty
+            }
+            else
+            {
+                // setting br without condition into inc block from body block
+                _builder.BuildBr(bbEnd);
+            }
 
-			// else
-			if (stmt.BodyFalse != null)
-			{
-				LLVM.AppendExistingBasicBlock(_lastFunctionValueRef, bbElse);
-				_builder.PositionAtEnd(bbElse);
-				// generating else code
-				GenerateExpressionCode(stmt.BodyFalse);
+            // else
+            if (stmt.BodyFalse != null)
+            {
+                LLVM.AppendExistingBasicBlock(_lastFunctionValueRef, bbElse);
+                _builder.PositionAtEnd(bbElse);
+                // generating else code
+                GenerateExpressionCode(stmt.BodyFalse);
 
-				if (stmt.BodyFalse != null &&
-					stmt.BodyFalse.Statements.Count > 0 &&
-					(stmt.BodyFalse.Statements.Last() is AstReturnStmt ||
+                if (stmt.BodyFalse != null &&
+                    stmt.BodyFalse.Statements.Count > 0 &&
+                    (stmt.BodyFalse.Statements.Last() is AstReturnStmt ||
                     stmt.BodyFalse.Statements.Last() is AstBreakContStmt))
-				{
-					// if the last statement of the block is already
-					// a return then there is no
-					// need to create our own!!!
-					// so this case is empty
-				}
-				else
-				{
-					// setting br without condition into inc block from body block
-					_builder.BuildBr(bbEnd);
-				}
-			}
+                {
+                    // if the last statement of the block is already
+                    // a return then there is no
+                    // need to create our own!!!
+                    // so this case is empty
+                }
+                else
+                {
+                    // setting br without condition into inc block from body block
+                    _builder.BuildBr(bbEnd);
+                }
+            }
 
-			// appending them sooner
-			LLVM.AppendExistingBasicBlock(_lastFunctionValueRef, bbEnd);
+            // appending them sooner
+            LLVM.AppendExistingBasicBlock(_lastFunctionValueRef, bbEnd);
 
-			_builder.PositionAtEnd(bbEnd);
-		}
+            _builder.PositionAtEnd(bbEnd);
+        }
 
-		private static ulong _switchCounter = 0;
-		private unsafe void GenerateSwitchStmt(AstSwitchStmt stmt)
-		{
-			_switchCounter++;
+        private static ulong _switchCounter = 0;
+        private unsafe void GenerateSwitchStmt(AstSwitchStmt stmt)
+        {
+            _switchCounter++;
 
-			// checking if there is a user defined default case
-			bool userDefinedDefaultCase = stmt.Cases.Any(x => x.DefaultCase);
+            // checking if there is a user defined default case
+            bool userDefinedDefaultCase = stmt.Cases.Any(x => x.DefaultCase);
 
             var prevLoopEnd = _currentLoopEnd;
 
             var bbDefault = _context.CreateBasicBlock($"switch{_switchCounter}.default");
-			var bbEnd = _context.CreateBasicBlock($"switch{_switchCounter}.end");
+            var bbEnd = _context.CreateBasicBlock($"switch{_switchCounter}.end");
 
             _currentLoopEnd = bbEnd;
 
             var subExprOfSwitch = GenerateExpressionCode(stmt.SubExpression);
-			// this cringe shite is because the default case always exists even if user has not defined it!!!
-			var theSwitchValueRef = _builder.BuildSwitch(subExprOfSwitch, bbDefault, (uint)(userDefinedDefaultCase ? stmt.Cases.Count : stmt.Cases.Count + 1));
+            // this cringe shite is because the default case always exists even if user has not defined it!!!
+            var theSwitchValueRef = _builder.BuildSwitch(subExprOfSwitch, bbDefault, (uint)(userDefinedDefaultCase ? stmt.Cases.Count : stmt.Cases.Count + 1));
 
-			// counter for the names of the cases
-			int caseCounter = 0;
+            // counter for the names of the cases
+            int caseCounter = 0;
 
-			// this list holds all the falling cases.
-			// when the non-falling occured all the falling are also going to be prepared
-			List<AstCaseStmt> fallingCases = new List<AstCaseStmt>();
-			foreach (var cc in stmt.Cases)
-			{
-				// just wait for a normal case
-				if (cc.FallingCase)
-				{
-					fallingCases.Add(cc);
-					continue;
-				}
+            // this list holds all the falling cases.
+            // when the non-falling occured all the falling are also going to be prepared
+            List<AstCaseStmt> fallingCases = new List<AstCaseStmt>();
+            foreach (var cc in stmt.Cases)
+            {
+                // just wait for a normal case
+                if (cc.FallingCase)
+                {
+                    fallingCases.Add(cc);
+                    continue;
+                }
 
-				// creating a block for the case
-				LLVMBasicBlockRef currBb;
-				if (cc.DefaultCase)
-				{
-					LLVM.AppendExistingBasicBlock(_lastFunctionValueRef, bbDefault);
-					currBb = bbDefault;
-				}
-				else
-				{
-					currBb = _lastFunctionValueRef.AppendBasicBlock($"switch{_switchCounter}.case{caseCounter++}");
-				}
-				_builder.PositionAtEnd(currBb);
+                // creating a block for the case
+                LLVMBasicBlockRef currBb;
+                if (cc.DefaultCase)
+                {
+                    LLVM.AppendExistingBasicBlock(_lastFunctionValueRef, bbDefault);
+                    currBb = bbDefault;
+                }
+                else
+                {
+                    currBb = _lastFunctionValueRef.AppendBasicBlock($"switch{_switchCounter}.case{caseCounter++}");
+                }
+                _builder.PositionAtEnd(currBb);
 
-				// generating the block
-				// TODO: the return value could be used for returnable switch-case exprs :))
-				var _ = GenerateExpressionCode(cc.Body);
+                // generating the block
+                // TODO: the return value could be used for returnable switch-case exprs :))
+                var _ = GenerateExpressionCode(cc.Body);
 
                 if (cc.Body != null &&
                     cc.Body.Statements.Count > 0 &&
-					(cc.Body.Statements.Last() is AstReturnStmt ||
+                    (cc.Body.Statements.Last() is AstReturnStmt ||
                     cc.Body.Statements.Last() is AstBreakContStmt))
                 {
                     // if the last statement of the block is already
@@ -989,71 +989,71 @@ namespace HapetBackend.Llvm
                     _builder.BuildBr(bbEnd);
                 }
 
-				// there is no pattern in default case
-				if (!cc.DefaultCase)
-				{
-					// the pattern of the case
-					var patt = GenerateExpressionCode(cc.Pattern);
-					// creating the LLVM case 
-					theSwitchValueRef.AddCase(patt, currBb);
-				}
+                // there is no pattern in default case
+                if (!cc.DefaultCase)
+                {
+                    // the pattern of the case
+                    var patt = GenerateExpressionCode(cc.Pattern);
+                    // creating the LLVM case 
+                    theSwitchValueRef.AddCase(patt, currBb);
+                }
 
-				// going through all the falling cases
-				foreach (var fc in fallingCases)
-				{
-					// the pattern of the case
-					var pattFc = GenerateExpressionCode(fc.Pattern);
-					// creating the LLVM case 
-					theSwitchValueRef.AddCase(pattFc, currBb);
-				}
-				// clear the falling cases
-				fallingCases.Clear();
-			}
+                // going through all the falling cases
+                foreach (var fc in fallingCases)
+                {
+                    // the pattern of the case
+                    var pattFc = GenerateExpressionCode(fc.Pattern);
+                    // creating the LLVM case 
+                    theSwitchValueRef.AddCase(pattFc, currBb);
+                }
+                // clear the falling cases
+                fallingCases.Clear();
+            }
 
-			// if user has not been defined its 'default' case
-			if (!userDefinedDefaultCase)
-			{
-				// just braking into end block
-				LLVM.AppendExistingBasicBlock(_lastFunctionValueRef, bbDefault);
-				_builder.PositionAtEnd(bbDefault);
-				_builder.BuildBr(bbEnd);
-			}
+            // if user has not been defined its 'default' case
+            if (!userDefinedDefaultCase)
+            {
+                // just braking into end block
+                LLVM.AppendExistingBasicBlock(_lastFunctionValueRef, bbDefault);
+                _builder.PositionAtEnd(bbDefault);
+                _builder.BuildBr(bbEnd);
+            }
 
-			// the end block
-			LLVM.AppendExistingBasicBlock(_lastFunctionValueRef, bbEnd);
-			_builder.PositionAtEnd(bbEnd);
+            // the end block
+            LLVM.AppendExistingBasicBlock(_lastFunctionValueRef, bbEnd);
+            _builder.PositionAtEnd(bbEnd);
 
-			// restoring prev block
-			_currentLoopEnd = prevLoopEnd;
+            // restoring prev block
+            _currentLoopEnd = prevLoopEnd;
         }
 
-		private void GenerateBreakContStmt(AstBreakContStmt stmt)
-		{
-			// just generating shite that jumps between blocks :)
-			if (stmt.IsBreak)
-			{
-				if (_currentLoopEnd == null)
-				{
-					_messageHandler.ReportMessage(_currentSourceFile.Text, stmt, $"Loop/switch to break could not be found");
-					return;
-				}
-				_builder.BuildBr(_currentLoopEnd);
-			}
-			else
-			{
-				if (_currentLoopInc == null)
-				{
-					_messageHandler.ReportMessage(_currentSourceFile.Text, stmt, $"Loop to continue could not be found");
-					return;
-				}
-				_builder.BuildBr(_currentLoopInc);
-			}
-		}
+        private void GenerateBreakContStmt(AstBreakContStmt stmt)
+        {
+            // just generating shite that jumps between blocks :)
+            if (stmt.IsBreak)
+            {
+                if (_currentLoopEnd == null)
+                {
+                    _messageHandler.ReportMessage(_currentSourceFile.Text, stmt, $"Loop/switch to break could not be found");
+                    return;
+                }
+                _builder.BuildBr(_currentLoopEnd);
+            }
+            else
+            {
+                if (_currentLoopInc == null)
+                {
+                    _messageHandler.ReportMessage(_currentSourceFile.Text, stmt, $"Loop to continue could not be found");
+                    return;
+                }
+                _builder.BuildBr(_currentLoopInc);
+            }
+        }
 
-		private void GenerateReturnStmt(AstReturnStmt returnStmt)
-		{
-			LLVMValueRef result = null;
-			if (returnStmt.ReturnExpression != null)
+        private void GenerateReturnStmt(AstReturnStmt returnStmt)
+        {
+            LLVMValueRef result = null;
+            if (returnStmt.ReturnExpression != null)
                 result = GenerateExpressionCode(returnStmt.ReturnExpression);
 
             // return logics
