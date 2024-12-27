@@ -44,12 +44,9 @@ namespace HapetBackend.Llvm
             if (_typeInfoType != null)
                 return _typeInfoType;
 
-            _typeInfoType = _context.CreateNamedStruct($"type.info");
-            var typeName = LLVMTypeRef.CreatePointer(_context.Int8Type, 0); // name
-            var parent = LLVMTypeRef.CreatePointer(_typeInfoType, 0); // parent
-            var interfaces = LLVMTypeRef.CreatePointer(LLVMTypeRef.CreatePointer(_typeInfoType, 0), 0); // interfaces
-            var interfaceCount = _context.Int8Type; // interfaceCount
-            _typeInfoType.StructSetBody(new LLVMTypeRef[] { typeName, parent, interfaces, interfaceCount }, false);
+            // WARN: hard cock
+            var typeInfoUnsafeDecl = _currentSourceFile.NamespaceScope.GetSymbolInNamespace("System.Runtime", "TypeInfoUnsafe");
+            _typeInfoType = _typeMap[typeInfoUnsafeDecl.Decl.Type.OutType];
             return _typeInfoType;
         }
 

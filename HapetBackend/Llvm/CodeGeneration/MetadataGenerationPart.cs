@@ -18,6 +18,7 @@ namespace HapetBackend.Llvm
             GenerateMetadataShiteTypes();
             GenerateMetadataShiteFuncs();
             GenerateMetadataShiteFields();
+            GenerateMetadataShiteAfterAll();
         }
 
         // TODO: mb refactor somehow?
@@ -33,10 +34,6 @@ namespace HapetBackend.Llvm
                 _currentSourceFile = cls.SourceFile;
                 // doing that we are registering the type in dict
                 var _ = HapetTypeToLLVMType(cls.Type.OutType);
-
-                // reg type info if non static
-                if (!cls.SpecialKeys.Contains(TokenType.KwStatic))
-                    _typeInfoDictionary.Add(cls.Type.OutType as ClassType, GenerateTypeInfoConst(cls.Type.OutType as ClassType));
             }
             // all over the structs
             foreach (var str in _postPreparer.AllStructsMetadata)
@@ -149,6 +146,16 @@ namespace HapetBackend.Llvm
             {
                 _currentSourceFile = func.SourceFile;
                 GenerateFuncCode(func, null, true);
+            }
+        }
+
+        private void GenerateMetadataShiteAfterAll()
+        {
+            foreach (var cls in _postPreparer.AllClassesMetadata)
+            {
+                // reg type info if non static
+                if (!cls.SpecialKeys.Contains(TokenType.KwStatic))
+                    _typeInfoDictionary.Add(cls.Type.OutType as ClassType, GenerateTypeInfoConst(cls.Type.OutType as ClassType));
             }
         }
     }
