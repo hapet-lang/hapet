@@ -12,6 +12,8 @@ namespace HapetFrontend.Types
 
 		public static ClassType LiteralType = new ClassType(null);
 
+		public bool IsInterface { get; set; }
+
 		public ClassType(AstClassDecl decl)
 			: base()
 		{
