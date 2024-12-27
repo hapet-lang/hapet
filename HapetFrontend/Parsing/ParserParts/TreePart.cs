@@ -399,18 +399,12 @@ namespace HapetFrontend.Parsing
 								ReportMessage(end, "Too many arguments passed");
 							}
 
-							if (expr is not AstNestedExpr nestExpr)
-							{
-								ReportMessage(expr.Location, $"Indentifier expected before an array access");
-								return expr;
-							}
-
 							if (args.First() is not AstExpression firstExpr)
 							{
 								ReportMessage(args.First().Location, $"Expression expected as index of element in [...]");
 								return expr;
 							}
-							var arrAcc = new AstArrayAccessExpr(nestExpr, firstExpr, new Location(expr.Beginning, end));
+							var arrAcc = new AstArrayAccessExpr(expr as AstExpression, firstExpr, new Location(expr.Beginning, end));
 							expr = new AstNestedExpr(arrAcc, null, arrAcc);
 
 							// check for dots after this!!! there could be a.arr[i].Length

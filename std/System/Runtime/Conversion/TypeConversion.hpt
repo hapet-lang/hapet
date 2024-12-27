@@ -2,17 +2,18 @@ using System.Runtime;
 
 public static class TypeConversion
 {
-    public static bool CanBeConverted(void* obj, TypeInfoUnsafe* type)
+    public static bool CanBeDowncasted(void* obj, TypeInfoUnsafe* type)
     {
         uintptr fullInfo = ((uintptr*)obj)[0];
         uintptr typeInfo = ((uintptr*)fullInfo)[0];
         uintptr currTypeInfo = typeInfo;
 
-        while (currTypeInfo != null)
+        while (currTypeInfo != (uintptr)0)
         {
             if (currTypeInfo == (uintptr)type)
                 return true;
-            currTypeInfo = (uintptr)(((TypeInfoUnsafe*)currTypeInfo)[0]).Parent;
+            TypeInfoUnsafe a = (((TypeInfoUnsafe*)currTypeInfo)[0]);
+            currTypeInfo = (uintptr)a.Parent;
         }
         return false;
     }

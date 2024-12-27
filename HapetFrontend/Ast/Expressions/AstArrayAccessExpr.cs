@@ -5,9 +5,9 @@ namespace HapetFrontend.Ast.Expressions
 	public class AstArrayAccessExpr : AstExpression
 	{
 		/// <summary>
-		/// The object on which indexing is done
+		/// The expression on which indexing is done
 		/// </summary>
-		public AstNestedExpr ObjectName { get; set; }
+		public AstExpression ObjectName { get; set; }
 		/// <summary>
 		/// It could be not only an Int. but also a String (for dicts) and other shite
 		/// For ndim arrays use nested of this
@@ -15,7 +15,7 @@ namespace HapetFrontend.Ast.Expressions
 		public AstExpression ParameterExpr { get; set; }
 
 		[DebuggerStepThrough]
-		public AstArrayAccessExpr(AstNestedExpr objectName, AstExpression parameterExpr, ILocation Location = null) : base(Location)
+		public AstArrayAccessExpr(AstExpression objectName, AstExpression parameterExpr, ILocation Location = null) : base(Location)
 		{
 			ObjectName = objectName;
 			ParameterExpr = parameterExpr;

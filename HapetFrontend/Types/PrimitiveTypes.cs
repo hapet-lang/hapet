@@ -90,7 +90,7 @@ namespace HapetFrontend.Types
 			if (concrete is ReferenceType r)
 				concrete = r.TargetType;
 
-			if (concrete is IntType t)
+			if (concrete is IntType t && concrete is not IntPtrType && concrete is not PtrDiffType)
 			{
 				if (t.Signed != this.Signed)
 					return -1;
@@ -528,6 +528,23 @@ namespace HapetFrontend.Types
 
         private IntPtrType(int size, int align) : base(size, align, false) { }
         public override string ToString() => "uintptr";
+
+        public override int Match(HapetType concrete)
+        {
+            if (concrete is ReferenceType r)
+                concrete = r.TargetType;
+
+            if (concrete is IntPtrType t)
+            {
+                if (t.Signed != this.Signed)
+                    return -1;
+
+                if (concrete.GetSize() != this.GetSize())
+                    return -1;
+                return 0;
+            }
+            return -1;
+        }
     }
 
     public class PtrDiffType : IntType
@@ -549,5 +566,22 @@ namespace HapetFrontend.Types
 
         private PtrDiffType(int size, int align) : base(size, align, true) { }
         public override string ToString() => "ptrdiff";
+
+        public override int Match(HapetType concrete)
+        {
+            if (concrete is ReferenceType r)
+                concrete = r.TargetType;
+
+            if (concrete is PtrDiffType t)
+            {
+                if (t.Signed != this.Signed)
+                    return -1;
+
+                if (concrete.GetSize() != this.GetSize())
+                    return -1;
+                return 0;
+            }
+            return -1;
+        }
     }
 }
