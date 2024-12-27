@@ -5,6 +5,8 @@ namespace HapetBackend.Llvm
 {
     public partial class LlvmCodeGenerator
     {
+        private readonly Dictionary<ClassType, LLVMValueRef> _typeInfoDictionary = new Dictionary<ClassType, LLVMValueRef>();
+
         #region Type info 
         private unsafe LLVMValueRef GenerateTypeInfoConst(ClassType cls)
         {
@@ -74,6 +76,27 @@ namespace HapetBackend.Llvm
 
             amount = interfaces.Count;
             return interfacesArray;
+        }
+        #endregion
+
+        #region Loaders
+        private LLVMValueRef GetTypeInfoPtr(LLVMTypeRef strType, LLVMValueRef ptrToStr)
+        {
+            var zeroRef = LLVMValueRef.CreateConstInt(_context.Int32Type, 0);
+            var ptrToFullTypeInfo = _builder.BuildGEP2(strType, ptrToStr, new LLVMValueRef[] { zeroRef, zeroRef }, "fullTypeInfo");
+            var ptrToFullTypeInfoLoaded = _builder.BuildLoad2(LLVMTypeRef.CreatePointer(HapetTypeToLLVMType(IntPtrType.Instance), 0), ptrToFullTypeInfo, "fullTypeInfoLoaded");
+            var ptrToTypeInfo = _builder.BuildGEP2(LLVMTypeRef.CreatePointer(HapetTypeToLLVMType(IntPtrType.Instance), 0), ptrToFullTypeInfoLoaded, new LLVMValueRef[] { zeroRef }, "typeInfo");
+            var ptrToTypeInfoLoaded = _builder.BuildLoad2(LLVMTypeRef.CreatePointer(GetTypeInfoType(), 0), ptrToTypeInfo, "typeInfoLoaded");
+            return ptrToTypeInfoLoaded;
+        }
+
+        private LLVMValueRef GetParentTypeInfoPtr(LLVMValueRef ptrToTypeInfo)
+        {
+            var zeroRef = LLVMValueRef.CreateConstInt(_context.Int32Type, 0);
+            var oneRef = LLVMValueRef.CreateConstInt(_context.Int32Type, 1);
+            var ptrToTypeInfoParent = _builder.BuildGEP2(GetTypeInfoType(), ptrToTypeInfo, new LLVMValueRef[] { zeroRef, oneRef }, "typeInfo");
+            var ptrToTypeInfoLoadedParent = _builder.BuildLoad2(LLVMTypeRef.CreatePointer(GetTypeInfoType(), 0), ptrToTypeInfoParent, "typeInfoLoaded");
+            return ptrToTypeInfoLoadedParent;
         }
         #endregion
     }

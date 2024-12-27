@@ -10,8 +10,6 @@ namespace HapetBackend.Llvm
 {
     public partial class LlvmCodeGenerator
     {
-        private readonly Dictionary<ClassType, LLVMValueRef> _typeInfoDictionary = new Dictionary<ClassType, LLVMValueRef>();
-
         /// <summary>
         /// Inits some dicts and other shite with metadata types :)
         /// </summary>
