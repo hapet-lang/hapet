@@ -231,8 +231,9 @@ namespace HapetFrontend.Parsing.PostPrepare
 				// body scope is the same
 				SetScopeAndParent(funcDecl.Body, funcDecl);
 				var blockScope = PostPrepareBlockScoping(funcDecl.Body, $"{funcDecl.Name.Name}_scope");
-				// defining parameters in the func scope
-				foreach (var p in funcDecl.Parameters)
+				funcDecl.SubScope = blockScope;
+                // defining parameters in the func scope
+                foreach (var p in funcDecl.Parameters)
 				{
 					// settings the block scope to the parameters (so they are in the scope of the block)
 					SetScopeAndParent(p, funcDecl, blockScope);
@@ -254,9 +255,9 @@ namespace HapetFrontend.Parsing.PostPrepare
 				// WARN!!!! do not set the scope the same as func scope because its params would be visible in class or smth
 				// creating a Scope in which the params would be
 				var paramsBlockScope = new Scoping.Scope($"params_{funcDecl.Name.Name}_scope", funcDecl.Scope);
-
-				// defining parameters in the func scope
-				foreach (var p in funcDecl.Parameters)
+                funcDecl.SubScope = paramsBlockScope;
+                // defining parameters in the func scope
+                foreach (var p in funcDecl.Parameters)
 				{
 					// settings the block scope to the parameters (so they are in the scope of the block)
 					SetScopeAndParent(p, funcDecl, paramsBlockScope);
