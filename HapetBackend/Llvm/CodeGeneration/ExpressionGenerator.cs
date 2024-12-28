@@ -40,7 +40,7 @@ namespace HapetBackend.Llvm
                 case AstAddressOfExpr addrExpr: return GenerateAddressOfExprCode(addrExpr);
                 case AstIdExpr idExpr: return GenerateIdExpr(idExpr, getPtr);
                 case AstNewExpr newExpr: return GenerateNewExpr(newExpr);
-                case AstCallExpr callExpr: return GenerateCallExpr(callExpr);
+                case AstCallExpr callExpr: return GenerateCallExpr(callExpr, getPtr);
                 case AstArgumentExpr argExpr: return GenerateArgumentExpr(argExpr);
                 case AstCastExpr castExpr: return GenerateCastExpr(castExpr);
                 case AstNestedExpr nestExpr: return GenerateNestedExpr(nestExpr, getPtr);
@@ -366,12 +366,23 @@ namespace HapetBackend.Llvm
             return v;
         }
 
-        private unsafe LLVMValueRef GenerateCallExpr(AstCallExpr expr)
+        private unsafe LLVMValueRef GenerateCallExpr(AstCallExpr expr, bool getPtr = false)
         {
+            // creating a variable to store function result. for what?
+            // because in some places in code generation we need for var pointer
+            // but if we do not allocate any var - so how would we get the ptr?
+            // to solve the problem we implicitly create a varialbe that would contain return value
+            // so 'Anime().Length;' -> 'var a = Anime(); a.Length;'
+            // WARN! create the var only if the func has non void ret type!!!
+
             if (expr.FuncName.OutType is FunctionType fncType)
             {
                 var hapetFunc = _valueMap[fncType.Declaration.GetSymbol];
                 LLVMTypeRef funcType = _typeMap[expr.FuncName.OutType];
+
+                LLVMValueRef varPtr = default;
+                if (fncType.Declaration.Returns.OutType is not VoidType)
+                    varPtr = CreateLocalVariable(fncType.Declaration.Returns.OutType, "funcRetHolder");
 
                 // args shite
                 List<LLVMValueRef> args = new List<LLVMValueRef>();
@@ -385,16 +396,28 @@ namespace HapetBackend.Llvm
                 }
 
                 // the return name has to be empty if ret value of func is void
-                string funcRetName = "";
+                // also save the ret value into a var
                 if (fncType.Declaration.Returns.OutType is not VoidType)
-                    funcRetName = $"funcReturnValue";
+                {
+                    // save the value
+                    LLVMValueRef ret = _builder.BuildCall2(funcType, hapetFunc, args.ToArray(), $"funcReturnValue");
+                    _builder.BuildStore(ret, varPtr);
 
-                return _builder.BuildCall2(funcType, hapetFunc, args.ToArray(), funcRetName);
+                    if (getPtr)
+                        return varPtr;
+                    return _builder.BuildLoad2(HapetTypeToLLVMType(fncType.Declaration.Returns.OutType), varPtr, "holderLoaded");
+                }
+
+                return _builder.BuildCall2(funcType, hapetFunc, args.ToArray());
             }
             else if (expr.FuncName.OutType is DelegateType delType)
             {
                 var hapetDelegate = GenerateIdExpr(expr.FuncName, true);
                 LLVMTypeRef delegateType = _typeMap[expr.FuncName.OutType];
+
+                LLVMValueRef varPtr = default;
+                if (delType.Declaration.Returns.OutType is not VoidType)
+                    varPtr = CreateLocalVariable(delType.Declaration.Returns.OutType, "delRetHolder");
 
                 // args shite
                 List<LLVMValueRef> args = new List<LLVMValueRef>();
@@ -406,16 +429,22 @@ namespace HapetBackend.Llvm
                 var loadedDelegate = _builder.BuildLoad2(delegateType, hapetDelegate, $"delegateLoaded");
                 // TODO: also load object pointer when delegate has non-static method :)
                 var theRealFuncExtracted = _builder.BuildExtractValue(loadedDelegate, 0, "funcExtracted");
-
-                // the return name has to be empty if ret value of func is void
-                string funcRetName = "";
-                if (delType.Declaration.Returns.OutType is not VoidType)
-                    funcRetName = $"funcReturnValue";
-
                 // getting the function type to call
                 var funcType = GetFunctionTypeOfDelegate(delType);
 
-                return _builder.BuildCall2(funcType, theRealFuncExtracted, args.ToArray(), funcRetName);
+                // the return name has to be empty if ret value of func is void
+                // also save the ret value into a var
+                if (delType.Declaration.Returns.OutType is not VoidType)
+                {
+                    LLVMValueRef ret = _builder.BuildCall2(funcType, theRealFuncExtracted, args.ToArray(), $"delReturnValue");
+                    _builder.BuildStore(ret, varPtr);
+
+                    if (getPtr)
+                        return varPtr;
+                    return _builder.BuildLoad2(HapetTypeToLLVMType(delType.Declaration.Returns.OutType), varPtr, "holderLoaded");
+                }
+
+                return _builder.BuildCall2(funcType, theRealFuncExtracted, args.ToArray());
             }
             else
             {

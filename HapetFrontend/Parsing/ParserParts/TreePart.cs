@@ -318,30 +318,10 @@ namespace HapetFrontend.Parsing
 								return expr;
 							}
 
-							// creating a variable to store function result. for what?
-							// because in some places in code generation we need for var pointer
-							// but if we do not allocate any var - so how would we get the ptr?
-							// to solve the problem we implicitly create a varialbe that would contain return value
-							// so 'Anime().Length;' -> 'var a = Anime(); a.Length;'
-							// WARN! create the var only if there are dots after it!
-							// because the func could be void
 							bool dotsAfter = CheckToken(TokenType.Period);
 
                             var callExpr = new AstCallExpr(nestExpr.LeftPart, idExpr.GetCopy(), args, new Location(expr.Beginning, end));
-							if (false)
-							{
-                                string nameOfVar = $"__tmp_f_call_{_currentVarDeclIndex}";
-                                var varDecl = new AstVarDecl(
-                                    new AstNestedExpr(new AstIdExpr("var", callExpr), null, callExpr),
-                                    new AstIdExpr(nameOfVar, callExpr),
-                                    callExpr, "", callExpr);
-                                _varDeclsOfFuncCalls.Add(varDecl);
-                                expr = new AstNestedExpr(new AstIdExpr(nameOfVar, callExpr), null, callExpr);
-                            }
-							else
-							{
-                                expr = new AstNestedExpr(callExpr, null, callExpr);
-                            }	
+                            expr = new AstNestedExpr(callExpr, null, callExpr);
 
 							// check for dots after this!!! there could be a.asd().asd().ddd().d.lll()
 							// for better understand imagine we have 'anime.Asd().dwd.Lmao();'

@@ -72,20 +72,6 @@ namespace HapetFrontend.Parsing
 					continue;
 				}
 
-				// this check if because user can create a field with func call initer:
-				// public int A = AnimeFunc();
-				// but any func call is going to be unboxed into multiple lines
-				// so we create a block and set there all the lines :)
-				if (_varDeclsOfFuncCalls.Count > 0 && decl is AstVarDecl vDecl && vDecl.Initializer != null)
-				{
-					List<AstStatement> statements = new List<AstStatement>();
-					statements.AddRange(_varDeclsOfFuncCalls);
-					statements.Add(vDecl.Initializer); // and the last one is the real value to be assigned
-					AstBlockExpr initBlock = new AstBlockExpr(statements, vDecl.Initializer);
-					vDecl.Initializer = initBlock;
-					_varDeclsOfFuncCalls.Clear();
-				}
-
 				declarations.Add(decl);
 
 				next = PeekToken();
