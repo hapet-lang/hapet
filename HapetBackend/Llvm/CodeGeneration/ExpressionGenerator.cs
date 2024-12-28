@@ -42,7 +42,7 @@ namespace HapetBackend.Llvm
                 case AstNewExpr newExpr: return GenerateNewExpr(newExpr);
                 case AstCallExpr callExpr: return GenerateCallExpr(callExpr, getPtr);
                 case AstArgumentExpr argExpr: return GenerateArgumentExpr(argExpr);
-                case AstCastExpr castExpr: return GenerateCastExpr(castExpr);
+                case AstCastExpr castExpr: return GenerateCastExpr(castExpr, getPtr);
                 case AstNestedExpr nestExpr: return GenerateNestedExpr(nestExpr, getPtr);
                 case AstArrayCreateExpr arrayCreateExpr: return GenerateArrayCreateExprCode(arrayCreateExpr, getPtr);
                 case AstArrayAccessExpr arrayAccessExpr: return GenerateArrayAccessExprCode(arrayAccessExpr, getPtr);
@@ -459,10 +459,17 @@ namespace HapetBackend.Llvm
             return GenerateExpressionCode(expr.Expr);
         }
 
-        private unsafe LLVMValueRef GenerateCastExpr(AstCastExpr expr)
+        private unsafe LLVMValueRef GenerateCastExpr(AstCastExpr expr, bool getPtr = false)
         {
-            var sub = GenerateExpressionCode(expr.SubExpression as AstExpression);
-            return CreateCast(_builder, sub, (expr.SubExpression as AstExpression).OutType, expr.OutType);
+            var sub = GenerateExpressionCode(expr.SubExpression as AstExpression, false);
+            var val = CreateCast(_builder, sub, (expr.SubExpression as AstExpression).OutType, expr.OutType);
+            if (getPtr)
+            {
+                LLVMValueRef varPtr = CreateLocalVariable(expr.OutType, "castHolder");
+                _builder.BuildStore(val, varPtr);
+                return varPtr;
+            }
+            return val;
         }
 
         private unsafe LLVMValueRef GenerateNestedExpr(AstNestedExpr expr, bool getPtr = false)

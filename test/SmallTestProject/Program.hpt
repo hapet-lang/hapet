@@ -16,15 +16,16 @@ public static class Program
 			//return 1;
 
 		int len = GetArray().Length;
+		int a = GetArray()[0][0];
 		return 0;
 	}
 
-	private static int[] GetArray()
+	private static int[][] GetArray()
     {
-        return new int[4];
+        return new int[4][5];
     }
 }
-/*
+
 public class BaseCls
 {
 	public int Field1;
@@ -38,4 +39,4 @@ public class Derived : BaseCls
 public class DerivedTwice : Derived
 {
 	public int Field3;
-}*/
+}
