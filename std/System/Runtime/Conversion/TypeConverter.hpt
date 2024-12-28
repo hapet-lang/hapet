@@ -4,17 +4,17 @@ public static class TypeConverter
 {
     public static bool CanBeDowncasted(void* obj, TypeInfoUnsafe* type)
     {
-        uintptr fullInfo = ((uintptr*)obj)[0];
-        uintptr typeInfo = ((uintptr*)fullInfo)[0];
-        // uintptr currTypeInfo = typeInfo;
+        TypeInfoUnsafe** fullInfo = ((TypeInfoUnsafe***)obj)[0];
+        TypeInfoUnsafe* typeInfo = ((TypeInfoUnsafe**)fullInfo)[0];
+        TypeInfoUnsafe* currTypeInfo = typeInfo;
 
-        //while (currTypeInfo != (uintptr)0)
-        //{
-        //    if (currTypeInfo == (uintptr)type)
-        //        return true;
-        //    TypeInfoUnsafe a = (((TypeInfoUnsafe*)currTypeInfo)[0]);
-        //    currTypeInfo = (uintptr)a.Parent;
-        //}
+        while ((uintptr)currTypeInfo != (uintptr)0)
+        {
+            if ((uintptr)currTypeInfo == (uintptr)type)
+                return true;
+            TypeInfoUnsafe a = (((TypeInfoUnsafe*)currTypeInfo)[0]);
+            currTypeInfo = (TypeInfoUnsafe*)a.Parent;
+        }
         return false;
     }
 }

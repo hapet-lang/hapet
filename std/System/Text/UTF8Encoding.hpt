@@ -131,6 +131,28 @@ public class UTF8Encoding : Encoding
         return bytes.Buffer;
     }
 
+    public static byte* GetBytesUnsafe(uintptr ptr)
+    {
+        byte[] bytes = new byte[21];
+        ulong dd = 1;
+        for (int i = 0; i < 20; i += 1)
+        {
+            if (i == 19)
+            {
+                byte el = (byte)(ptr / dd);
+                bytes[i] = el + (byte)48;
+            }
+            else
+            {
+                dd *= (ulong)10;
+                byte el = (byte)((ptr % dd) / (dd / (ulong)10));
+                bytes[i] = el + (byte)48;
+            }
+        }
+        bytes[20] = 0;
+        return bytes.Buffer;
+    }
+
     // original: https://www.onlinegdb.com/r1TVL6w6L
     private static int GetAmountOfUtf8Bytes(string str)
     {

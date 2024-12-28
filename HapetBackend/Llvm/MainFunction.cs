@@ -100,9 +100,9 @@ namespace HapetBackend.Llvm
 
             _builder.PositionAtEnd(main);
 
-			LLVMValueRef stringArray = _builder.BuildCall2(getParamsFuncType, getParamsFunc, mainFuncParams.ToArray(), "stringArr");
-			var parsss = new LLVMValueRef[] { stringArray };
-			//var parsss = new LLVMValueRef[] { LLVM.ConstPointerNull(HapetTypeToLLVMType(ArrayType.GetArrayType(StringType.Instance))) };
+			// LLVMValueRef stringArray = _builder.BuildCall2(getParamsFuncType, getParamsFunc, mainFuncParams.ToArray(), "stringArr");
+			//var parsss = new LLVMValueRef[] { stringArray };
+			var parsss = new LLVMValueRef[] { LLVM.ConstPointerNull(HapetTypeToLLVMType(ArrayType.GetArrayType(StringType.Instance))) };
 
 			{ // call main function
 				var hapetMain = _valueMap[_compiler.MainFunction.GetSymbol];

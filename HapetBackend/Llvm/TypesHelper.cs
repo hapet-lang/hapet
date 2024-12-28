@@ -401,14 +401,16 @@ namespace HapetBackend.Llvm
                     return builder.BuildPtrToInt(val, HapetTypeToLLVMType(outType));
                 }
             }
-            else if (inType is IntPtrType)
+            if (inType is IntPtrType)
             {
                 if (outType is PointerType)
                 {
                     return builder.BuildIntToPtr(val, HapetTypeToLLVMType(outType));
                 }
             }
-            else if (inType is IntType intType && intType.Signed)
+
+
+            if (inType is IntType intType && intType.Signed)
 			{
 				if (outType is FloatType floatType)
 				{
