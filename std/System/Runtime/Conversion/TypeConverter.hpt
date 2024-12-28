@@ -6,7 +6,7 @@ public static class TypeConverter
     {
         uintptr fullInfo = ((uintptr*)obj)[0];
         uintptr typeInfo = ((uintptr*)fullInfo)[0];
-        uintptr currTypeInfo = typeInfo;
+        // uintptr currTypeInfo = typeInfo;
 
         //while (currTypeInfo != (uintptr)0)
         //{

@@ -10,20 +10,17 @@ public static class Program
 		// DerivedTwice dr = new DerivedTwice();
 		// BaseCls bs = dr as BaseCls;
 
-		//BaseCls bs = new BaseCls();
+		BaseCls bs = new BaseCls();
 		//Derived dr222 = bs as Derived;
+
+		uintptr fullInfo = ((uintptr*)bs)[0];
+        uintptr typeInfo = ((uintptr*)fullInfo)[0];
+
 		//if ((uintptr)dr222 == (uintptr)0)
 			//return 1;
-
-		int len = GetArray().Length;
-		int a = GetArray()[0][0];
 		return 0;
 	}
 
-	private static int[][] GetArray()
-    {
-        return new int[4][5];
-    }
 }
 
 public class BaseCls
