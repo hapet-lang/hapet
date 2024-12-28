@@ -328,7 +328,7 @@ namespace HapetFrontend.Parsing
 							bool dotsAfter = CheckToken(TokenType.Period);
 
                             var callExpr = new AstCallExpr(nestExpr.LeftPart, idExpr.GetCopy(), args, new Location(expr.Beginning, end));
-							if (dotsAfter)
+							if (false)
 							{
                                 string nameOfVar = $"__tmp_f_call_{_currentVarDeclIndex}";
                                 var varDecl = new AstVarDecl(

@@ -44,7 +44,7 @@ namespace HapetBackend.Llvm
                 case AstArgumentExpr argExpr: return GenerateArgumentExpr(argExpr);
                 case AstCastExpr castExpr: return GenerateCastExpr(castExpr);
                 case AstNestedExpr nestExpr: return GenerateNestedExpr(nestExpr, getPtr);
-                case AstArrayCreateExpr arrayCreateExpr: return GenerateArrayCreateExprCode(arrayCreateExpr);
+                case AstArrayCreateExpr arrayCreateExpr: return GenerateArrayCreateExprCode(arrayCreateExpr, getPtr);
                 case AstArrayAccessExpr arrayAccessExpr: return GenerateArrayAccessExprCode(arrayAccessExpr, getPtr);
 
                 case AstNullExpr nullExpr: return GenerateNullExprCode(nullExpr);
@@ -580,12 +580,12 @@ namespace HapetBackend.Llvm
             return 0;
         }
 
-        private LLVMValueRef GenerateArrayCreateExprCode(AstArrayCreateExpr expr)
+        private LLVMValueRef GenerateArrayCreateExprCode(AstArrayCreateExpr expr, bool getPtr = false)
         {
             // TODO: check if it could be allocated on stack
 
             var cloned = expr.Clone() as AstArrayCreateExpr;
-            return GenerateArrayInternal(cloned);
+            return GenerateArrayInternal(cloned, getPtr);
         }
 
         private LLVMValueRef GenerateArrayAccessExprCode(AstArrayAccessExpr expr, bool getPtr = false)

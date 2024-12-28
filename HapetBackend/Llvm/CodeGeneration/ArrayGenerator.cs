@@ -13,7 +13,7 @@ namespace HapetBackend.Llvm
 		/// </summary>
 		/// <param name="expr">The array expr</param>
 		/// <returns>Array struct</returns>
-		private unsafe LLVMValueRef GenerateArrayInternal(AstArrayCreateExpr expr)
+		private unsafe LLVMValueRef GenerateArrayInternal(AstArrayCreateExpr expr, bool getPtr = false)
 		{
 			AstExpression currentSizeExpr = expr.SizeExprs.Last();
 			LLVMValueRef currentArraySizeValueRef = GenerateExpressionCode(currentSizeExpr);
@@ -134,7 +134,10 @@ namespace HapetBackend.Llvm
 			var len = _builder.BuildStructGEP2(arrayTypeRef, theArrayItself, 0, "arrayLen");
 			_builder.BuildStore(currentArraySizeValueRef, len);
 
-			var theArrayItselfLoaded = _builder.BuildLoad2(HapetTypeToLLVMType(ArrayType.GetArrayType(expr.TypeName.OutType)), theArrayItself, "theArrayLoaded");
+			if (getPtr)
+				return theArrayItself;
+
+            var theArrayItselfLoaded = _builder.BuildLoad2(HapetTypeToLLVMType(ArrayType.GetArrayType(expr.TypeName.OutType)), theArrayItself, "theArrayLoaded");
 			return theArrayItselfLoaded;
 		}
 	}

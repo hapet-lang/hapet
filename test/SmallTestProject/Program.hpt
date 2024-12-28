@@ -9,14 +9,22 @@ public static class Program
 	{
 		// DerivedTwice dr = new DerivedTwice();
 		// BaseCls bs = dr as BaseCls;
-		BaseCls bs = new BaseCls();
-		Derived dr222 = bs as Derived;
+
+		//BaseCls bs = new BaseCls();
+		//Derived dr222 = bs as Derived;
 		//if ((uintptr)dr222 == (uintptr)0)
 			//return 1;
+
+		int len = GetArray().Length;
 		return 0;
 	}
-}
 
+	private static int[] GetArray()
+    {
+        return new int[4];
+    }
+}
+/*
 public class BaseCls
 {
 	public int Field1;
@@ -30,4 +38,4 @@ public class Derived : BaseCls
 public class DerivedTwice : Derived
 {
 	public int Field3;
-}
+}*/
