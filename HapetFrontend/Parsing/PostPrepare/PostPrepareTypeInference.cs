@@ -1365,7 +1365,8 @@ namespace HapetFrontend.Parsing.PostPrepare
 					// if the decl has child shite
                     if (accessee.SubScope != null)
 					{
-						return accessee.SubScope.IsParentOf(accessor.Scope);
+						if (accessee.SubScope.IsParentOf(accessor.Scope))
+							return true;
                     }
 
 					// if the decl is func of field 
