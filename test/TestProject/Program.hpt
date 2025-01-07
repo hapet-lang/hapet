@@ -6,7 +6,7 @@ public static class Program
 {
 	public static int Main(string[] args)
 	{
-		string a = args[0];
+		/*string a = args[0];
 		string myString = "ElinaАйрат";
 		byte* dataToPuts = UTF8Encoding.GetBytesUnsafe(myString);
 		uintptr ptr = dataToPuts + 0;
@@ -18,7 +18,8 @@ public static class Program
 		Marshal.Free((void*)tt);
 
 		int rett = 4 + 3;
-		return a.Length;
+		return a.Length;*/
+		return 0;
 	}
 }
 

@@ -4,6 +4,9 @@ public static class TypeConverter
 {
     public static bool CanBeDowncasted(void* obj, TypeInfoUnsafe* type)
     {
+        if ((uintptr)obj == (uintptr)0)
+            return false;
+
         TypeInfoUnsafe** fullInfo = ((TypeInfoUnsafe***)obj)[0];
         TypeInfoUnsafe* typeInfo = ((TypeInfoUnsafe**)fullInfo)[0];
         TypeInfoUnsafe* currTypeInfo = typeInfo;
