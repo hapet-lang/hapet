@@ -995,7 +995,7 @@ namespace HapetFrontend.Parsing.PostPrepare
 				}
 				else
 				{
-					_compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, idExpr, $"The type could not be infered in {leftSideScope} scope...");
+					_compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, idExpr, $"The symbol could not be found in {nestExpr.LeftPart.OutType}");
 				}
 			}
 			itWasPropa = false;
