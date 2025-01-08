@@ -26,6 +26,21 @@ namespace HapetFrontend.Ast.Declarations
 			Initializer = ini;
 		}
 
+		public AstVarDecl GetCopyForAnotherClass(AstClassDecl decl)
+		{
+			var varDecl = new AstVarDecl(Type, Name, Initializer, Documentation, Location)
+			{
+				Parent = decl,
+				Scope = decl.SubScope,
+				SourceFile = decl.SourceFile,
+				ContainingParent = decl
+			};
+			varDecl.Attributes.AddRange(Attributes);
+			varDecl.SpecialKeys.AddRange(SpecialKeys);
+			return varDecl;
+
+        }
+
 		internal VarDeclJson GetJson()
 		{
 			var attributes = Attributes.Select(x => x.GetJson()).ToList();

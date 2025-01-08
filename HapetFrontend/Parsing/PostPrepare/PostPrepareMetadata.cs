@@ -32,6 +32,7 @@ namespace HapetFrontend.Parsing.PostPrepare
 			PostPrepareMetadataDelegates();
 			PostPrepareMetadataFunctions();
 			PostPrepareMetadataTypeFieldDecls();
+			PostPrepareMetadataTypeInheritedFieldDecls();
             PostPrepareMetadataTypeFieldInits();
             PostPrepareMetadataAttributes();
 
@@ -209,7 +210,57 @@ namespace HapetFrontend.Parsing.PostPrepare
 			}
 		}
 
-		private void PostPrepareMetadataTypeFieldInits()
+		private void PostPrepareMetadataTypeInheritedFieldDecls()
+		{
+			static void CopyInheritedFields(AstClassDecl decl)
+			{
+				if (decl.InheritedFieldsCopied)
+					return;
+
+				// we need to save them into a separate list 
+				// to save their inheritance order
+				List<AstDeclaration> inheritedFieldDecls = new List<AstDeclaration>();
+
+				// all over the inherited shite
+				foreach (var inh in decl.InheritedFrom)
+				{
+					var inhDecl = (inh.OutType as ClassType).Declaration;
+					CopyInheritedFields(inhDecl);
+
+					// all over the parent fields - copy them
+					foreach (var fieldDecl in inhDecl.Declarations.Where(x => x is AstVarDecl).Select(x => x as AstVarDecl))
+					{
+						// skip props
+						if (fieldDecl is AstPropertyDecl)
+							continue;
+
+						// skip consts/statics
+						if (fieldDecl.SpecialKeys.Contains(TokenType.KwStatic) || fieldDecl.SpecialKeys.Contains(TokenType.KwConst))
+							continue;
+
+						// change parent and scope
+						var newVar = fieldDecl.GetCopyForAnotherClass(decl);
+                        inheritedFieldDecls.Add(newVar);
+						// define the symbol
+                        decl.SubScope.DefineDeclSymbol(newVar.Name.Name, newVar);
+                    }
+                }
+
+				// insert them at the beginning
+				decl.Declarations.InsertRange(0, inheritedFieldDecls);
+			}
+
+			// resolve all inherited fields of classes
+			foreach (var cls in AllClassesMetadata)
+			{
+				_currentSourceFile = cls.SourceFile;
+				_currentClass = cls;
+
+				CopyInheritedFields(cls);
+            }
+		}
+
+        private void PostPrepareMetadataTypeFieldInits()
         {
 			// resolve all fields of classes
 			foreach (var cls in AllClassesMetadata)
