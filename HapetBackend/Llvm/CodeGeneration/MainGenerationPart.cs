@@ -12,247 +12,256 @@ using System.Xml.Linq;
 
 namespace HapetBackend.Llvm
 {
-	public partial class LlvmCodeGenerator
-	{
-		private ProgramFile _currentSourceFile;
-		private AstFuncDecl _currentFunction;
+    public partial class LlvmCodeGenerator
+    {
+        private ProgramFile _currentSourceFile;
+        private AstFuncDecl _currentFunction;
 
-		private void GenerateCode()
-		{
-			foreach (var (path, file) in _compiler.GetFiles())
-			{
-				_currentSourceFile = file;
+        private void GenerateCode()
+        {
+            foreach (var (path, file) in _compiler.GetFiles())
+            {
+                _currentSourceFile = file;
 
-				foreach (var stmt in file.Statements)
-				{
-					if (stmt is AstClassDecl classDecl)
-					{
-						GenerateClassCode(classDecl);
-					}
-				}
-			}
-		}
+                foreach (var stmt in file.Statements)
+                {
+                    if (stmt is AstClassDecl classDecl)
+                    {
+                        GenerateClassCode(classDecl);
+                    }
+                }
+            }
+        }
 
-		private unsafe void GenerateClassCode(AstClassDecl classDecl)
-		{
-			var funcs = new Dictionary<AstFuncDecl, LLVMTypeRef>();
-			foreach (var decl in classDecl.Declarations)
-			{
-				if (decl is AstFuncDecl funcDecl)
-				{
-					// defining global func
-					var funcType = HapetTypeToLLVMType(funcDecl.Type.OutType);
-					funcs.Add(funcDecl, funcType);
-				}
-			}
+        private unsafe void GenerateClassCode(AstClassDecl classDecl)
+        {
+            var funcs = new Dictionary<AstFuncDecl, LLVMTypeRef>();
+            foreach (var decl in classDecl.Declarations)
+            {
+                if (decl is AstFuncDecl funcDecl)
+                {
+                    // defining global func
+                    var funcType = HapetTypeToLLVMType(funcDecl.Type.OutType);
+                    funcs.Add(funcDecl, funcType);
+                }
+            }
 
-			foreach (var (funcDecl, funcType) in funcs)
-			{
-				GenerateFuncCode(funcDecl, funcType);
-			}
-		}
+            foreach (var (funcDecl, funcType) in funcs)
+            {
+                GenerateFuncCode(funcDecl, funcType);
+            }
+        }
 
-		private LLVMValueRef _lastFunctionValueRef = default;
-		private unsafe void GenerateFuncCode(AstFuncDecl funcDecl, LLVMTypeRef? funcType = null, bool forMetadata = false)
-		{
-			_currentFunction = funcDecl;
+        private LLVMValueRef _lastFunctionValueRef = default;
+        private unsafe void GenerateFuncCode(AstFuncDecl funcDecl, LLVMTypeRef? funcType = null, bool forMetadata = false)
+        {
+            _currentFunction = funcDecl;
 
-			funcType ??= HapetTypeToLLVMType(funcDecl.Type.OutType);
+            funcType ??= HapetTypeToLLVMType(funcDecl.Type.OutType);
 
-			string funcName = funcDecl.Name.Name;
+            string funcName = funcDecl.Name.Name;
 
-			// if it is for metadata - only 'declares' would be generated that would be replaced with 'defines' in the future
-			if (forMetadata)
-			{
-				// declaring global func
-				LLVMValueRef lfunc = _module.AddFunction(funcName, funcType.Value);
-				
-				if (funcDecl.SpecialKeys.Contains(TokenType.KwImported))
-				{
-					// this is an imported function from another assembly
-					lfunc.Linkage = LLVMLinkage.LLVMExternalLinkage;
-					lfunc.DLLStorageClass = LLVMDLLStorageClass.LLVMDLLImportStorageClass;
+            // if it is for metadata - only 'declares' would be generated that would be replaced with 'defines' in the future
+            if (forMetadata)
+            {
+                // declaring global func
+                LLVMValueRef lfunc = _module.AddFunction(funcName, funcType.Value);
 
-					// TODO: do I need to define calling convention here like below?
-				}
-				else if (!funcDecl.SpecialKeys.Contains(TokenType.KwUnreflected))
-				{
-					// make the function dllexport when it is not 'unreflected'
-					lfunc.Linkage = LLVMLinkage.LLVMExternalLinkage;
-					lfunc.DLLStorageClass = LLVMDLLStorageClass.LLVMDLLExportStorageClass;
-					
-					// for win-x86 callconv is that
-					if (_compiler.CurrentProjectSettings.TargetPlatformData.TargetPlatform == HapetFrontend.TargetPlatform.Win86)
-					{
-						lfunc.FunctionCallConv = (uint)LLVMCallConv.LLVMCCallConv; // cdecl
-					}
-				}
-				else
-				{
-					// unreflected function
-					lfunc.Linkage = LLVMLinkage.LLVMInternalLinkage;
-				}
+                if (funcDecl.SpecialKeys.Contains(TokenType.KwImported))
+                {
+                    // this is an imported function from another assembly
+                    lfunc.Linkage = LLVMLinkage.LLVMExternalLinkage;
+                    lfunc.DLLStorageClass = LLVMDLLStorageClass.LLVMDLLImportStorageClass;
 
-				// caching the function											 
-				_valueMap[funcDecl.GetSymbol] = lfunc;
-				_lastFunctionValueRef = lfunc;
+                    // TODO: do I need to define calling convention here like below?
+                }
+                else if (!funcDecl.SpecialKeys.Contains(TokenType.KwUnreflected))
+                {
+                    // make the function dllexport when it is not 'unreflected'
+                    lfunc.Linkage = LLVMLinkage.LLVMExternalLinkage;
+                    lfunc.DLLStorageClass = LLVMDLLStorageClass.LLVMDLLExportStorageClass;
 
-				// setting parameter names
-				for (int i = 0; i < funcDecl.Parameters.Count; ++i)
-				{
-					var p = funcDecl.Parameters[i];
-					if (p.Name != null)
-						lfunc.Params[i].Name = p.Name.Name;
-				}
-			}
-			else
-			{
-				// getting the func
-				LLVMValueRef lfunc = _valueMap[funcDecl.GetSymbol];
-				_lastFunctionValueRef = lfunc;
+                    // for win-x86 callconv is that
+                    if (_compiler.CurrentProjectSettings.TargetPlatformData.TargetPlatform == HapetFrontend.TargetPlatform.Win86)
+                    {
+                        lfunc.FunctionCallConv = (uint)LLVMCallConv.LLVMCCallConv; // cdecl
+                    }
+                }
+                else
+                {
+                    // unreflected function
+                    lfunc.Linkage = LLVMLinkage.LLVMInternalLinkage;
+                }
 
-				// check if there is no implementation and it is not an extern shite
-				if (funcDecl.Body == null && !funcDecl.SpecialKeys.Contains(TokenType.KwExtern))
-					return;
+                // caching the function											 
+                _valueMap[funcDecl.GetSymbol] = lfunc;
+                _lastFunctionValueRef = lfunc;
 
-				// params body
-				var paramsBody = lfunc.AppendBasicBlock("params");
-				_builder.PositionAtEnd(paramsBody);
-				// generating params allocs
-				for (int i = 0; i < funcDecl.Parameters.Count; ++i)
-				{
-					var p = funcDecl.Parameters[i];
-					var addrAlloca = _builder.BuildAlloca(HapetTypeToLLVMType(p.Type.OutType), $"{p.Name.Name}.addr");
-					_builder.BuildStore(lfunc.GetParam((uint)i), addrAlloca);
-					_valueMap[p.GetSymbol] = addrAlloca;
-				}
+                // setting parameter names
+                for (int i = 0; i < funcDecl.Parameters.Count; ++i)
+                {
+                    var p = funcDecl.Parameters[i];
+                    if (p.Name != null)
+                        lfunc.Params[i].Name = p.Name.Name;
+                }
+            }
+            else
+            {
+                // getting the func
+                LLVMValueRef lfunc = _valueMap[funcDecl.GetSymbol];
+                _lastFunctionValueRef = lfunc;
 
-				// function body
-				var bbBody = lfunc.AppendBasicBlock("entry");
-				_builder.BuildBr(bbBody);
-				_builder.PositionAtEnd(bbBody);
+                // check if there is no implementation and it is not an extern shite
+                if (funcDecl.Body == null && !funcDecl.SpecialKeys.Contains(TokenType.KwExtern))
+                    return;
 
-				// if the func is initializer - set up type data ptr!!!
-				if (funcDecl.ClassFunctionType == HapetFrontend.Enums.ClassFunctionType.Initializer)
-				{
-					// create an array of ptrs:
-					// [ptrToTypeInfo, ptrToVtable]
+                // params body
+                var paramsBody = lfunc.AppendBasicBlock("params");
+                _builder.PositionAtEnd(paramsBody);
+                // generating params allocs
+                for (int i = 0; i < funcDecl.Parameters.Count; ++i)
+                {
+                    var p = funcDecl.Parameters[i];
+                    var addrAlloca = _builder.BuildAlloca(HapetTypeToLLVMType(p.Type.OutType), $"{p.Name.Name}.addr");
+                    _builder.BuildStore(lfunc.GetParam((uint)i), addrAlloca);
+                    _valueMap[p.GetSymbol] = addrAlloca;
+                }
 
-					// allocating memory for the data in array
-					var allocated = GetMalloc(HapetType.PointerSize, 2);
-					var ptrToType = _builder.BuildGEP2(LLVMTypeRef.CreatePointer(GetTypeInfoType(), 0), allocated, new LLVMValueRef[] { LLVMValueRef.CreateConstInt(LLVMTypeRef.Int32, 0) }, $"elementPtr{0}");
-					var containingClass = funcDecl.ContainingClass.Type.OutType as ClassType;
-					_builder.BuildStore(_typeInfoDictionary[containingClass], ptrToType);
+                // function body
+                var bbBody = lfunc.AppendBasicBlock("entry");
+                _builder.BuildBr(bbBody);
+                _builder.PositionAtEnd(bbBody);
 
-					// save the array into first field
-					var tp = HapetTypeToLLVMType(containingClass);
-					var thisObj = GenerateExpressionCode(new AstIdExpr("this", funcDecl)
-					{
-						Scope = funcDecl.SubScope,
-						Parent = funcDecl,
-						OutType = PointerType.GetPointerType(containingClass),
-						SourceFile = funcDecl.SourceFile
-					});
-					var fti = _builder.BuildStructGEP2(tp, thisObj, 0, "fullTypeInfoPtr");
-					_builder.BuildStore(allocated, fti);
-				}
+                // if the func is initializer - set up type data ptr!!!
+                if (funcDecl.ClassFunctionType == HapetFrontend.Enums.ClassFunctionType.Initializer)
+                {
+                    // create an array of ptrs:
+                    // [ptrToTypeInfo, ptrToVtable]
+                    //
+                    //		  example class
+                    //		{ ptr, ..., ... }   
+                    //		   ↓
+                    //		[ ptr, ptr ]
+                    //		   |
+                    //		   |
+                    //		   ↓
+                    //		"TypeInfoStruct"
 
-				// different behaviour when extern func
-				if (funcDecl.SpecialKeys.Contains(TokenType.KwExtern))
-				{
-					// when extern func
-					GenerateExternFunctionBody(funcDecl);
-				}
-				else
-				{
-					// genereting inside stuff of the function
-					GenerateBlockExprCode(funcDecl.Body);
-				}
+                    // allocating memory for the data in array
+                    var allocated = GetMalloc(HapetType.PointerSize, 2);
+                    var ptrToType = _builder.BuildGEP2(LLVMTypeRef.CreatePointer(GetTypeInfoType(), 0), allocated, new LLVMValueRef[] { LLVMValueRef.CreateConstInt(LLVMTypeRef.Int32, 0) }, $"elementPtr{0}");
+                    var containingClass = funcDecl.ContainingClass.Type.OutType as ClassType;
+                    _builder.BuildStore(_typeInfoDictionary[containingClass], ptrToType);
 
-				lfunc.VerifyFunction(LLVMVerifierFailureAction.LLVMPrintMessageAction);
-			}			
-		}
+                    // save the array into first field
+                    var tp = HapetTypeToLLVMType(containingClass);
+                    var thisObj = GenerateExpressionCode(new AstIdExpr("this", funcDecl)
+                    {
+                        Scope = funcDecl.SubScope,
+                        Parent = funcDecl,
+                        OutType = PointerType.GetPointerType(containingClass),
+                        SourceFile = funcDecl.SourceFile
+                    });
+                    var fti = _builder.BuildStructGEP2(tp, thisObj, 0, "fullTypeInfoPtr");
+                    _builder.BuildStore(allocated, fti);
+                }
 
-		private void GenerateVarDeclCode(AstVarDecl varDecl)
-		{
-			// alloca new var in basicBlock
-			var varPtr = CreateLocalVariable(varDecl.Type.OutType, varDecl.Name.Name);
+                // different behaviour when extern func
+                if (funcDecl.SpecialKeys.Contains(TokenType.KwExtern))
+                {
+                    // when extern func
+                    GenerateExternFunctionBody(funcDecl);
+                }
+                else
+                {
+                    // genereting inside stuff of the function
+                    GenerateBlockExprCode(funcDecl.Body);
+                }
 
-			// check for initializer and try to evaluate expr
-			if (varDecl.Initializer != null)
-			{
-				AssignToVar(varPtr, varDecl.Type.OutType, varDecl.Initializer);
-			}
+                lfunc.VerifyFunction(LLVMVerifierFailureAction.LLVMPrintMessageAction);
+            }
+        }
 
-			// _refMap[varDecl.GetSymbol] = varPtr;
-			// _valueMap[varDecl.GetSymbol] = _builder.BuildLoad2(HapetTypeToLLVMType(varDecl.Type.OutType), varPtr, varDecl.Name.Name);
-			_valueMap[varDecl.GetSymbol] = varPtr;
-		}
+        private void GenerateVarDeclCode(AstVarDecl varDecl)
+        {
+            // alloca new var in basicBlock
+            var varPtr = CreateLocalVariable(varDecl.Type.OutType, varDecl.Name.Name);
 
-		private void GenerateExternFunctionBody(AstFuncDecl funcDecl)
-		{
-			// creating extern call of C func
-			string dllImportAttrFullName = "System.Runtime.InteropServices.DllImportAttribute"; // WARN: hard cock
-			var dllImportAttr = funcDecl.Attributes.FirstOrDefault(x => 
-			{
-				// could be if an attr was not infered properly
-				if (x.AttributeName.OutType == null)
-					return false;
-				return x.AttributeName.OutType.ToString() == dllImportAttrFullName;
-			});
+            // check for initializer and try to evaluate expr
+            if (varDecl.Initializer != null)
+            {
+                AssignToVar(varPtr, varDecl.Type.OutType, varDecl.Initializer);
+            }
 
-			// many checks are here
-			if (dllImportAttr == null) 
-			{
-				_messageHandler.ReportMessage(_currentSourceFile.Text, funcDecl, $"'DllImportAttribute' has to be specified when function is 'extern'");
-				return;
-			}
-			string dllName = dllImportAttr.Parameters[0].OutValue as string; 
-			string entryPoint = dllImportAttr.Parameters[1].OutValue as string;
+            // _refMap[varDecl.GetSymbol] = varPtr;
+            // _valueMap[varDecl.GetSymbol] = _builder.BuildLoad2(HapetTypeToLLVMType(varDecl.Type.OutType), varPtr, varDecl.Name.Name);
+            _valueMap[varDecl.GetSymbol] = varPtr;
+        }
 
-			LLVMTypeRef funcType;
-			LLVMValueRef funcValue;
+        private void GenerateExternFunctionBody(AstFuncDecl funcDecl)
+        {
+            // creating extern call of C func
+            string dllImportAttrFullName = "System.Runtime.InteropServices.DllImportAttribute"; // WARN: hard cock
+            var dllImportAttr = funcDecl.Attributes.FirstOrDefault(x =>
+            {
+                // could be if an attr was not infered properly
+                if (x.AttributeName.OutType == null)
+                    return false;
+                return x.AttributeName.OutType.ToString() == dllImportAttrFullName;
+            });
 
-			// check if there is a dll to be linked with!
-			if (!string.IsNullOrWhiteSpace(dllName))
+            // many checks are here
+            if (dllImportAttr == null)
+            {
+                _messageHandler.ReportMessage(_currentSourceFile.Text, funcDecl, $"'DllImportAttribute' has to be specified when function is 'extern'");
+                return;
+            }
+            string dllName = dllImportAttr.Parameters[0].OutValue as string;
+            string entryPoint = dllImportAttr.Parameters[1].OutValue as string;
+
+            LLVMTypeRef funcType;
+            LLVMValueRef funcValue;
+
+            // check if there is a dll to be linked with!
+            if (!string.IsNullOrWhiteSpace(dllName))
                 _libsToBeLinked.Add(dllName);
 
             // the same type
             funcType = HapetTypeToLLVMType(funcDecl.Type.OutType);
-			// declaring external global func
-			funcValue = _module.AddFunction(entryPoint, funcType);
-			funcValue.Linkage = LLVMLinkage.LLVMExternalLinkage;
-			funcValue.DLLStorageClass = LLVMDLLStorageClass.LLVMDLLImportStorageClass;
+            // declaring external global func
+            funcValue = _module.AddFunction(entryPoint, funcType);
+            funcValue.Linkage = LLVMLinkage.LLVMExternalLinkage;
+            funcValue.DLLStorageClass = LLVMDLLStorageClass.LLVMDLLImportStorageClass;
 
-			// setting parameter names
-			for (int i = 0; i < funcDecl.Parameters.Count; ++i)
-			{
-				var p = funcDecl.Parameters[i];
-				if (p.Name != null)
-					funcValue.Params[i].Name = p.Name.Name;
-			}
+            // setting parameter names
+            for (int i = 0; i < funcDecl.Parameters.Count; ++i)
+            {
+                var p = funcDecl.Parameters[i];
+                if (p.Name != null)
+                    funcValue.Params[i].Name = p.Name.Name;
+            }
 
-			// generating params
-			List<LLVMValueRef> parameters = new List<LLVMValueRef>();
-			for (int i = 0; i < funcDecl.Parameters.Count; ++i)
-			{
-				var p = funcDecl.Parameters[i];
-				var vptr = _valueMap[p.GetSymbol];
-				var loaded = _builder.BuildLoad2(HapetTypeToLLVMType(p.Type.OutType), vptr, p.Name.Name);
-				parameters.Add(loaded);
-			}
+            // generating params
+            List<LLVMValueRef> parameters = new List<LLVMValueRef>();
+            for (int i = 0; i < funcDecl.Parameters.Count; ++i)
+            {
+                var p = funcDecl.Parameters[i];
+                var vptr = _valueMap[p.GetSymbol];
+                var loaded = _builder.BuildLoad2(HapetTypeToLLVMType(p.Type.OutType), vptr, p.Name.Name);
+                parameters.Add(loaded);
+            }
 
-			// if there is smth to return
-			if (funcDecl.Returns.OutType is VoidType)
-			{
-				_builder.BuildCall2(funcType, funcValue, parameters.ToArray());
-				_builder.BuildRetVoid();
-			}
-			else
-			{
-				var v = _builder.BuildCall2(funcType, funcValue, parameters.ToArray(), $"{entryPoint}Result");
-				_builder.BuildRet(v);
-			}
-		}
-	}
+            // if there is smth to return
+            if (funcDecl.Returns.OutType is VoidType)
+            {
+                _builder.BuildCall2(funcType, funcValue, parameters.ToArray());
+                _builder.BuildRetVoid();
+            }
+            else
+            {
+                var v = _builder.BuildCall2(funcType, funcValue, parameters.ToArray(), $"{entryPoint}Result");
+                _builder.BuildRet(v);
+            }
+        }
+    }
 }

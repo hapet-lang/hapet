@@ -63,7 +63,6 @@ namespace HapetBackend.Llvm
                 var entryTypes = new List<LLVMTypeRef>();
                 var entryHapetTypes = new List<HapetType>();
 
-                // TODO: entry for type info
                 entryTypes.Add(_context.Int8Type.GetPointerTo());
                 entryHapetTypes.Add(PointerType.GetPointerType(IntPtrType.Instance));
 
