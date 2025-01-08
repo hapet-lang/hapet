@@ -13,8 +13,9 @@ public static class Program
 
 		BaseCls bs = new BaseCls();
 		Derived dr222 = bs as Derived;
+		BaseCls bs2 = dr222 as BaseCls;
 
-		if ((uintptr)dr222 == (uintptr)0)
+		if ((uintptr)bs2 == (uintptr)0)
 			return 1;
 		return 0;
 	}

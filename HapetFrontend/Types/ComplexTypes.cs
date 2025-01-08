@@ -34,7 +34,18 @@ namespace HapetFrontend.Types
 			}
 			return -1;
 		}
-	}
+
+        public bool IsInheritedFrom(ClassType type, bool checkParents = true)
+        {
+			foreach (var expr in Declaration.InheritedFrom)
+			{
+				var outT = expr.OutType as ClassType;
+                if (outT == type || outT.IsInheritedFrom(type))
+					return true;
+			}
+			return false;
+        }
+    }
 
 	/// <summary>
 	/// Doesn't have Ast shite in it but being created every time like a new instance
