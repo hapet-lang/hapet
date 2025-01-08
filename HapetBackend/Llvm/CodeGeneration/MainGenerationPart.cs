@@ -145,7 +145,7 @@ namespace HapetBackend.Llvm
                     //		   |
                     //		   |
                     //		   ↓
-                    //		"TypeInfoStruct"
+                    //	"TypeInfoStruct"
 
                     // allocating memory for the data in array
                     var allocated = GetMalloc(HapetType.PointerSize, 2);
