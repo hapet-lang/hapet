@@ -18,9 +18,9 @@ public class BaseCls
 {
 	public int Field1;
 
-	public BaseCls()
+	public BaseCls(int ddd)
 	{
-		this.Field1 = 13;
+		this.Field1 = ddd;
 	}
 }
 
@@ -28,7 +28,7 @@ public class Derived : BaseCls
 {
 	public int Field2;
 
-	public Derived()
+	public Derived() : base(41)
 	{
 
 	}

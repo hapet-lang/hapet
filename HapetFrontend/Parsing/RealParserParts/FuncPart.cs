@@ -18,13 +18,19 @@ namespace HapetFrontend.Parsing
             AstBlockExpr body = null;
             AstBaseCtorStmt baseCtorCall = null;
 
+            SkipNewlines();
+
             // check for base ctor call
             if (CheckToken(TokenType.Colon))
             {
+                NextToken();
+                SkipNewlines();
                 var bsTkn = Consume(TokenType.KwBase, ErrMsg("'base'", "after ':'"));
                 var args = ParseArgumentList(out var end);
                 baseCtorCall = new AstBaseCtorStmt(args, new Location(bsTkn.Location, end));
             }
+
+            SkipNewlines();
 
             if (CheckToken(TokenType.Semicolon))
                 NextToken(); // do nothing

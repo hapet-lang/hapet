@@ -184,7 +184,7 @@ namespace HapetFrontend.Parsing
 
             // function expression
             // hash identifier for directives
-            if (allowFunctionDeclaration && CheckTokens(TokenType.OpenBrace, TokenType.Semicolon))
+            if (allowFunctionDeclaration && CheckTokens(TokenType.OpenBrace, TokenType.Semicolon, TokenType.Colon))
             {
                 return ParseFuncDeclaration(list, new Location(beg, end));
             }
