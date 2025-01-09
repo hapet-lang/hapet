@@ -224,6 +224,13 @@ namespace HapetFrontend.Parsing.PostPrepare
                 PostPrepareExprScoping(a);
             }
 
+            // base ctor call scoping
+            if (funcDecl.BaseCtorCall != null)
+            {
+                SetScopeAndParent(funcDecl.BaseCtorCall, funcDecl);
+                PostPrepareExprScoping(funcDecl.BaseCtorCall);
+            }
+
             // TODO: refactor similar shite!
             if (funcDecl.Body != null)
             {
@@ -399,6 +406,9 @@ namespace HapetFrontend.Parsing.PostPrepare
                     break;
                 case AstAttributeStmt attrStmt:
                     PostPrepareAttributeStmtScoping(attrStmt);
+                    break;
+                case AstBaseCtorStmt baseStmt:
+                    PostPrepareBaseCtorStmtScoping(baseStmt);
                     break;
                 // TODO: check other expressions
 
@@ -694,6 +704,15 @@ namespace HapetFrontend.Parsing.PostPrepare
             foreach (var a in attrStmt.Parameters)
             {
                 SetScopeAndParent(a, attrStmt);
+                PostPrepareExprScoping(a);
+            }
+        }
+
+        private void PostPrepareBaseCtorStmtScoping(AstBaseCtorStmt baseCtor)
+        {
+            foreach (var a in baseCtor.Arguments)
+            {
+                SetScopeAndParent(a, baseCtor);
                 PostPrepareExprScoping(a);
             }
         }
