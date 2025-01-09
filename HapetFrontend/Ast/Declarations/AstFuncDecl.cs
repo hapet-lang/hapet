@@ -26,6 +26,11 @@ namespace HapetFrontend.Ast.Declarations
 		[JsonIgnore]
 		public AstClassDecl ContainingClass { get; set; }
 
+        /// <summary>
+        /// Statement of calling base ctor. Used only for ctors!!!!
+        /// </summary>
+        public AstBaseCtorStmt BaseCtorCall { get; set; }
+
 		public AstFuncDecl(List<AstParamDecl> parameters, AstExpression returns, AstBlockExpr body, AstIdExpr name, string doc = "", ILocation Location = null) : base(name, doc, Location)
 		{
 			Type = new AstIdExpr("func", Location);

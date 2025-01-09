@@ -261,6 +261,7 @@ namespace HapetFrontend.Parsing
 				case "const": token.Type = TokenType.KwConst; break;
 				case "default": token.Type = TokenType.KwDefault; break;
 				case "new": token.Type = TokenType.KwNew; break;
+				case "base": token.Type = TokenType.KwBase; break;
 
 				case "get": token.Type = TokenType.KwGet; break;
 				case "set": token.Type = TokenType.KwSet; break;

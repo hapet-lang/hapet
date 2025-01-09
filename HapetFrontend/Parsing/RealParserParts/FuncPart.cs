@@ -1,6 +1,7 @@
 ﻿using HapetFrontend.Ast;
 using HapetFrontend.Ast.Declarations;
 using HapetFrontend.Ast.Expressions;
+using HapetFrontend.Ast.Statements;
 
 namespace HapetFrontend.Parsing
 {
@@ -15,12 +16,21 @@ namespace HapetFrontend.Parsing
 			}
 
 			AstBlockExpr body = null;
+			AstBaseCtorStmt baseCtorCall = null;
+
+			// check for base ctor call
+			if (CheckToken(TokenType.Colon))
+			{
+                var bsTkn = Consume(TokenType.KwBase, ErrMsg("'base'", "after ':'"));
+                var args = ParseArgumentList(out var end);
+				baseCtorCall = new AstBaseCtorStmt(args, new Location(bsTkn.Location, end));
+            }
 
 			if (CheckToken(TokenType.Semicolon))
 				NextToken(); // do nothing
 			else
 				body = ParseBlockExpression();
-			return new AstFuncDecl(parameters, null, body, null, Location: new Location(paramsLocation.Beginning, body?.Ending ?? paramsLocation.Ending));
+			return new AstFuncDecl(parameters, null, body, null, Location: new Location(paramsLocation.Beginning, body?.Ending ?? paramsLocation.Ending)) { BaseCtorCall = baseCtorCall };
 		}
 
 		private AstLambdaDecl ParseLambdaDeclaration(List<AstParamDecl> parameters, TokenLocation beg, bool allowCommaForTuple)
