@@ -128,11 +128,13 @@ namespace HapetFrontend.Parsing.PostPrepare
             }
             else
             {
-                // inferring only body
+                // inferring body
                 if (funcDecl.Body != null)
-                {
                     PostPrepareBlockInference(funcDecl.Body);
-                }
+
+                // inferring base ctor call
+                if (funcDecl.BaseCtorCall != null)
+                    PostPrepareExprInference(funcDecl.BaseCtorCall);
             }
         }
 
@@ -272,6 +274,9 @@ namespace HapetFrontend.Parsing.PostPrepare
                     break;
                 case AstAttributeStmt attrStmt:
                     PostPrepareAttributeStmtInference(attrStmt);
+                    break;
+                case AstBaseCtorStmt baseStmt:
+                    PostPrepareBaseCtorStmtInference(baseStmt);
                     break;
                 // TODO: check other expressions
 
@@ -715,38 +720,38 @@ namespace HapetFrontend.Parsing.PostPrepare
             // TODO: resolve functions as args directly
             // but there is a problem:
             /*
-				public class Anime
-				{
-					public delegate int Cringe(int a);
-					public delegate int Cringe22();
+                public class Anime
+                {
+                    public delegate int Cringe(int a);
+                    public delegate int Cringe22();
 
-					public void CallC(Cringe cr)
-					{
-						cr(2);
-					}
+                    public void CallC(Cringe cr)
+                    {
+                        cr(2);
+                    }
 
-					public void CallC(Cringe22 cr)
-					{
-						cr();
-					}
+                    public void CallC(Cringe22 cr)
+                    {
+                        cr();
+                    }
 
-					private int CringeFunc(int a)
-					{
-						return 1;
-					}
+                    private int CringeFunc(int a)
+                    {
+                        return 1;
+                    }
 
-					private int CringeFunc()
-					{
-						return 1;
-					}
+                    private int CringeFunc()
+                    {
+                        return 1;
+                    }
 
-					private void Test()
-					{
-						CallC(CringeFunc);
-						CallC(CringeFunc);
-					}
-				}
-			 */
+                    private void Test()
+                    {
+                        CallC(CringeFunc);
+                        CallC(CringeFunc);
+                    }
+                }
+             */
 
             // resolve args
             foreach (var a in callExpr.Arguments)
@@ -1310,6 +1315,15 @@ namespace HapetFrontend.Parsing.PostPrepare
                         _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, attrStmt.Ending, $"Parameter for the '{theAttrField.Name.Name}' field has to be specified because it is marked as 'Required'");
                     }
                 }
+            }
+        }
+
+        private void PostPrepareBaseCtorStmtInference(AstBaseCtorStmt baseStmt)
+        {
+            // resolve args
+            foreach (var a in baseStmt.Arguments)
+            {
+                PostPrepareExprInference(a);
             }
         }
 
