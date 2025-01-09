@@ -302,26 +302,30 @@ namespace HapetBackend.Llvm
                     structSize += elem.GetSize();
                 }
 
-                // allocating memory for struct
-                v = GetMalloc(structSize, 1);
-
-                // other args
-                List<LLVMValueRef> args = new List<LLVMValueRef>() { v };
-                foreach (var a in expr.Arguments)
-                {
-                    args.Add(GenerateExpressionCode(a));
-                }
-
                 // getting class ctor
                 string onlyName = classType.Declaration.Name.Name.Split('.').Last();
                 var ctorName = $"{classType.Declaration.Name.Name}::{onlyName}_ctor" + expr.Arguments.GetArgsString(PointerType.GetPointerType(classType));
-                var ctorSymbol = classType.Declaration.SubScope.GetSymbol(ctorName) as DeclSymbol;
+                List<AstExpression> argsWithClassParam = new List<AstExpression>(expr.Arguments);
+                argsWithClassParam.Insert(0, new AstIdExpr("this") { OutType = PointerType.GetPointerType(classType) });
+                var ctorSymbol = classType.Declaration.SubScope.GetFuncFromCandidates(ctorName, argsWithClassParam, _postPreparer, out var casts);
 
                 // error if ctor not found
                 if (ctorSymbol == null)
                 {
                     _messageHandler.ReportMessage(_currentSourceFile.Text, expr.TypeName, $"Constructor with specified argument types was not found in the {classType.Declaration.Name.Name} class");
                     return v;
+                }
+
+                // replace with casts to required
+                expr.Arguments.ReplaceWithCasts(casts.Skip(1).ToList());
+
+                // allocating memory for struct
+                v = GetMalloc(structSize, 1);
+                // other args
+                List<LLVMValueRef> args = new List<LLVMValueRef>() { v };
+                foreach (var a in expr.Arguments)
+                {
+                    args.Add(GenerateExpressionCode(a));
                 }
 
                 var ctorFunc = _valueMap[ctorSymbol];
@@ -1095,23 +1099,28 @@ namespace HapetBackend.Llvm
 
         private void GenerateBaseCtorStmt(AstBaseCtorStmt baseStmt)
         {
-            // args shite
-            List<LLVMValueRef> args = new List<LLVMValueRef>();
-            args.Add(GenerateExpressionCode(baseStmt.ThisArgument));
-            foreach (var a in baseStmt.Arguments)
-            {
-                args.Add(GenerateExpressionCode(a));
-            }
-
             string onlyName = baseStmt.BaseType.Declaration.Name.Name.Split('.').Last();
             var ctorName = $"{baseStmt.BaseType.Declaration.Name.Name}::{onlyName}_ctor" + baseStmt.Arguments.GetArgsString(PointerType.GetPointerType(baseStmt.BaseType));
-            var ctorSymbol = baseStmt.BaseType.Declaration.SubScope.GetSymbol(ctorName) as DeclSymbol;
+            List<AstExpression> argsWithClassParam = new List<AstExpression>(baseStmt.Arguments);
+            argsWithClassParam.Insert(0, baseStmt.ThisArgument);
+            var ctorSymbol = baseStmt.BaseType.Declaration.SubScope.GetFuncFromCandidates(ctorName, argsWithClassParam, _postPreparer, out var casts);
 
             // error if ctor not found
             if (ctorSymbol == null)
             {
                 _messageHandler.ReportMessage(_currentSourceFile.Text, baseStmt, $"Constructor with specified argument types was not found in the {baseStmt.BaseType} class");
                 return;
+            }
+
+            // replace with casts to required
+            baseStmt.Arguments.ReplaceWithCasts(casts.Skip(1).ToList());
+
+            // args shite
+            List<LLVMValueRef> args = new List<LLVMValueRef>();
+            args.Add(GenerateExpressionCode(baseStmt.ThisArgument));
+            foreach (var a in baseStmt.Arguments)
+            {
+                args.Add(GenerateExpressionCode(a));
             }
 
             var ctorFunc = _valueMap[ctorSymbol];

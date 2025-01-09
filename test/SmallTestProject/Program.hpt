@@ -8,6 +8,7 @@ public static class Program
 {
 	public static int Main(string[] args)
 	{
+		var b = new BaseCls(4);
 		Derived dr222 = new Derived();
 		return dr222.Field1;
 	}
@@ -18,7 +19,7 @@ public class BaseCls
 {
 	public int Field1;
 
-	public BaseCls(int ddd)
+	public BaseCls(short ddd)
 	{
 		this.Field1 = ddd;
 	}

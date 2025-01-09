@@ -160,13 +160,6 @@ namespace HapetFrontend.Scoping
             List<DeclSymbol> candidates = GetCandidates(classWithFuncName)
                 .Where(x => (x.Decl is AstFuncDecl funcDecl && funcDecl.Parameters.Count == args.Count)).ToList();
 
-            // return the only candidate
-            if (candidates.Count == 1)
-            {
-                castsToBeDone.AddRange(args);
-                return candidates[0];
-            }
-
             foreach (var cand in candidates)
             {
                 var funcDecl = cand.Decl as AstFuncDecl;
