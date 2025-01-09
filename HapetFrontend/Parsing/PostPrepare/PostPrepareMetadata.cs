@@ -248,7 +248,9 @@ namespace HapetFrontend.Parsing.PostPrepare
 
 				// insert them at the beginning
 				decl.Declarations.InsertRange(0, inheritedFieldDecls);
-			}
+
+				decl.InheritedFieldsCopied = true;
+            }
 
 			// resolve all inherited fields of classes
 			foreach (var cls in AllClassesMetadata)

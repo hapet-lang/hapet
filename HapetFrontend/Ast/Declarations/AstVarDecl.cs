@@ -53,6 +53,11 @@ namespace HapetFrontend.Ast.Declarations
 				DocString = Documentation
 			};
 		}
+
+        public override string ToString()
+        {
+            return $"{Type.OutType?.ToString()} {Name.Name}";
+        }
     }
 
     public class VarDeclJson

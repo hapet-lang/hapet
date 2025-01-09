@@ -20,7 +20,7 @@ public class BaseCls
 
 	public BaseCls()
 	{
-		Field1 = 13;
+		this.Field1 = 13;
 	}
 }
 
