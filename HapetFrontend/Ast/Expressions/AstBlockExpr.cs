@@ -9,12 +9,12 @@ namespace HapetFrontend.Ast.Expressions
         /// </summary>
         public List<AstStatement> Statements { get; set; }
 
-		/// <summary>
-		/// The inner scope of the block. Used to get access to it's content
-		/// </summary>
-		public Scope SubScope { get; set; }
+        /// <summary>
+        /// The inner scope of the block. Used to get access to it's content
+        /// </summary>
+        public Scope SubScope { get; set; }
 
-		public AstBlockExpr(List<AstStatement> statements, ILocation Location = null) : base(Location: Location)
+        public AstBlockExpr(List<AstStatement> statements, ILocation Location = null) : base(Location: Location)
         {
             Statements = statements;
         }

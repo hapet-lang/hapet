@@ -11,7 +11,7 @@ namespace HapetFrontend.Scoping
 {
     public partial class Scope
     {
-		public bool DefineLocalSymbol(ISymbol symbol, string name = null)
+        public bool DefineLocalSymbol(ISymbol symbol, string name = null)
         {
             name ??= symbol.Name;
             if (name == "_")
@@ -31,31 +31,31 @@ namespace HapetFrontend.Scoping
 
         private bool DefineTypeSymbol(string name, HapetType tp)
         {
-			return DefineSymbol(new DeclSymbol(name, new AstBuiltInTypeDecl(tp)));
-		}
+            return DefineSymbol(new DeclSymbol(name, new AstBuiltInTypeDecl(tp)));
+        }
 
-		public bool DefineNamespaceSymbol(string name, Scope nsScope)
-		{
-			return DefineSymbol(new NamespaceSymbol(name, nsScope));
-		}
+        public bool DefineNamespaceSymbol(string name, Scope nsScope)
+        {
+            return DefineSymbol(new NamespaceSymbol(name, nsScope));
+        }
 
-		public bool DefineDeclSymbol(string name, AstDeclaration decl)
-		{
-			return DefineSymbol(new DeclSymbol(name, decl));
-		}
+        public bool DefineDeclSymbol(string name, AstDeclaration decl)
+        {
+            return DefineSymbol(new DeclSymbol(name, decl));
+        }
 
         public bool RenameSymbol(string oldName, string newName)
         {
-			if (!_symbolTable.TryGetValue(oldName, out var other))
-				return false;
+            if (!_symbolTable.TryGetValue(oldName, out var other))
+                return false;
 
-			_symbolTable[newName] = other;
-			_symbolTable.Remove(oldName);
+            _symbolTable[newName] = other;
+            _symbolTable.Remove(oldName);
 
-			return true;
-		}
+            return true;
+        }
 
-		public ISymbol GetSymbol(string name, bool searchUsedScopes = true, bool searchParentScope = true, bool searchPartNamespace = false)
+        public ISymbol GetSymbol(string name, bool searchUsedScopes = true, bool searchParentScope = true, bool searchPartNamespace = false)
         {
             if (_symbolTable.ContainsKey(name))
             {
@@ -70,8 +70,8 @@ namespace HapetFrontend.Scoping
                 {
                     if (k.StartsWith(name) && _symbolTable[k] is NamespaceSymbol)
                     {
-						return _symbolTable[k];
-					}
+                        return _symbolTable[k];
+                    }
                 }
             }
 
@@ -98,30 +98,30 @@ namespace HapetFrontend.Scoping
         }
 
         // to get decl in namespace
-		public DeclSymbol GetSymbolInNamespace(string ns, string symbol, bool searchUsedScopes = true, bool searchParentScope = true)
+        public DeclSymbol GetSymbolInNamespace(string ns, string symbol, bool searchUsedScopes = true, bool searchParentScope = true)
         {
-			NamespaceSymbol nsSymbol = GetSymbol(ns, searchUsedScopes, searchParentScope) as NamespaceSymbol;
+            NamespaceSymbol nsSymbol = GetSymbol(ns, searchUsedScopes, searchParentScope) as NamespaceSymbol;
             if (nsSymbol == null)
                 return null;
 
             return nsSymbol.Scope.GetSymbol($"{ns}.{symbol}", searchUsedScopes, searchParentScope) as DeclSymbol;
-		}
+        }
 
         public bool IsStringNamespaceOrPart(string testString, bool searchUsedScopes = true, bool searchParentScope = true)
         {
-			NamespaceSymbol nsSymbol = GetSymbol(testString, searchUsedScopes, searchParentScope) as NamespaceSymbol;
-			if (nsSymbol != null)
-				return true;
+            NamespaceSymbol nsSymbol = GetSymbol(testString, searchUsedScopes, searchParentScope) as NamespaceSymbol;
+            if (nsSymbol != null)
+                return true;
 
-			// it is probably a part
-			NamespaceSymbol nsSymbolPart = GetSymbol(testString, searchUsedScopes, searchParentScope, true) as NamespaceSymbol;
-			if (nsSymbolPart != null)
-				return true;
+            // it is probably a part
+            NamespaceSymbol nsSymbolPart = GetSymbol(testString, searchUsedScopes, searchParentScope, true) as NamespaceSymbol;
+            if (nsSymbolPart != null)
+                return true;
 
-			return false;
-		}
+            return false;
+        }
 
-		public AstClassDecl GetClass(string name)
+        public AstClassDecl GetClass(string name)
         {
             var sym = GetSymbol(name);
             if (sym is AstClassDecl s)

@@ -1,8 +1,8 @@
 ﻿namespace HapetFrontend.Enums
 {
-	public enum NumberType
-	{
-		Float,
-		Int
-	}
+    public enum NumberType
+    {
+        Float,
+        Int
+    }
 }

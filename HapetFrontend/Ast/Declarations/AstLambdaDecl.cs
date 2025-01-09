@@ -5,20 +5,20 @@ using Newtonsoft.Json;
 namespace HapetFrontend.Ast.Declarations
 {
     public class AstLambdaDecl : AstExpression
-	{
-		public List<AstParamDecl> Parameters { get; set; }
-		public AstExpression ReturnType { get; set; }
-		public AstBlockExpr Body { get; set; }
+    {
+        public List<AstParamDecl> Parameters { get; set; }
+        public AstExpression ReturnType { get; set; }
+        public AstBlockExpr Body { get; set; }
 
-		[JsonIgnore]
-		public FunctionType FunctionType => OutType as FunctionType;
+        [JsonIgnore]
+        public FunctionType FunctionType => OutType as FunctionType;
 
-		public AstLambdaDecl(List<AstParamDecl> parameters, AstBlockExpr body, AstExpression retType, ILocation location = null)
-			: base(location)
-		{
-			this.Parameters = parameters;
-			this.ReturnType = retType;
-			this.Body = body;
-		}
-	}
+        public AstLambdaDecl(List<AstParamDecl> parameters, AstBlockExpr body, AstExpression retType, ILocation location = null)
+            : base(location)
+        {
+            this.Parameters = parameters;
+            this.ReturnType = retType;
+            this.Body = body;
+        }
+    }
 }

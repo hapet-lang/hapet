@@ -8,34 +8,34 @@ using System.Xml.Linq;
 
 namespace HapetFrontend.Ast.Statements
 {
-	public class AstAttributeStmt : AstStatement
-	{
-		/// <summary>
-		/// The name of the attribute
-		/// </summary>
-		public AstNestedExpr AttributeName { get; set; }
+    public class AstAttributeStmt : AstStatement
+    {
+        /// <summary>
+        /// The name of the attribute
+        /// </summary>
+        public AstNestedExpr AttributeName { get; set; }
 
-		/// <summary>
-		/// Parameters of the attribute
-		/// </summary>
-		public List<AstExpression> Parameters { get; set; }
+        /// <summary>
+        /// Parameters of the attribute
+        /// </summary>
+        public List<AstExpression> Parameters { get; set; }
 
-		public AstAttributeStmt(AstNestedExpr attrName, List<AstExpression> parameters, ILocation Location = null) : base(Location)
-		{
-			AttributeName = attrName;
-			Parameters = parameters;
-		}
+        public AstAttributeStmt(AstNestedExpr attrName, List<AstExpression> parameters, ILocation Location = null) : base(Location)
+        {
+            AttributeName = attrName;
+            Parameters = parameters;
+        }
 
-		internal AttributeJson GetJson()
-		{
+        internal AttributeJson GetJson()
+        {
             List<object> pars = new List<object>();
             foreach (var v in Parameters.Select(x => x.OutValue))
             {
                 if (v is NumberData nd)
                 {
-					if (nd.Type == Enums.NumberType.Float)
-						pars.Add(nd.DoubleValue);
-					else
+                    if (nd.Type == Enums.NumberType.Float)
+                        pars.Add(nd.DoubleValue);
+                    else
                         pars.Add(nd.IntValue);
                 }
                 else
@@ -44,25 +44,25 @@ namespace HapetFrontend.Ast.Statements
                 }
             }
             return new AttributeJson()
-			{
-				Name = AttributeName.TryFlatten(null, null),
-				Values = pars,
+            {
+                Name = AttributeName.TryFlatten(null, null),
+                Values = pars,
             };
-		}
-	}
+        }
+    }
 
-	public class AttributeJson
-	{
-		public string Name { get; set; }
-		public List<object> Values { get; set; }
+    public class AttributeJson
+    {
+        public string Name { get; set; }
+        public List<object> Values { get; set; }
 
-		public AstAttributeStmt GetAst()
-		{
-			List<AstExpression> pars = new List<AstExpression>();
-			foreach (var v in Values)
-			{
-				switch (v)
-				{
+        public AstAttributeStmt GetAst()
+        {
+            List<AstExpression> pars = new List<AstExpression>();
+            foreach (var v in Values)
+            {
+                switch (v)
+                {
                     case int:
                         pars.Add(new AstNumberExpr(NumberData.FromInt((int)v)));
                         break;
@@ -74,16 +74,16 @@ namespace HapetFrontend.Ast.Statements
                         break;
                     case double:
                         pars.Add(new AstNumberExpr(NumberData.FromDouble((double)v)));
-						break;
+                        break;
                     case string s:
                         pars.Add(new AstStringExpr(s));
                         break;
-					default:
+                    default:
                         // TODO: anything else?
                         break;
-				}
-			}
-			return new AstAttributeStmt(Parser.ParseType(Name) as AstNestedExpr, pars);
-		}
-	}
+                }
+            }
+            return new AstAttributeStmt(Parser.ParseType(Name) as AstNestedExpr, pars);
+        }
+    }
 }

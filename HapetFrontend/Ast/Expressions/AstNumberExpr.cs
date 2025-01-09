@@ -3,26 +3,26 @@ using System.Diagnostics;
 
 namespace HapetFrontend.Ast.Expressions
 {
-	public class AstNumberExpr : AstExpression
-	{
-		public NumberData Data { get; private set; }
-		public string Suffix { get; set; }
+    public class AstNumberExpr : AstExpression
+    {
+        public NumberData Data { get; private set; }
+        public string Suffix { get; set; }
 
-		[DebuggerStepThrough]
-		public AstNumberExpr(NumberData data, string suffix = null, ILocation Location = null) : base(Location)
-		{
-			Data = data;
-			OutValue = data;
-			this.Suffix = suffix;
+        [DebuggerStepThrough]
+        public AstNumberExpr(NumberData data, string suffix = null, ILocation Location = null) : base(Location)
+        {
+            Data = data;
+            OutValue = data;
+            this.Suffix = suffix;
 
-			if (data.Type == Enums.NumberType.Float)
-			{
-				OutType = FloatType.DefaultType;
-			}
-			else
-			{
-				OutType = IntType.DefaultType;
-			}
-		}
-	}
+            if (data.Type == Enums.NumberType.Float)
+            {
+                OutType = FloatType.DefaultType;
+            }
+            else
+            {
+                OutType = IntType.DefaultType;
+            }
+        }
+    }
 }

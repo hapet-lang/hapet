@@ -10,36 +10,36 @@ using System.Text;
 namespace HapetFrontend.Ast.Declarations
 {
     public class AstFuncDecl : AstDeclaration
-	{
-		public CallingConvention CallingConvention { get; set; } = CallingConvention.Default;
+    {
+        public CallingConvention CallingConvention { get; set; } = CallingConvention.Default;
         public ClassFunctionType ClassFunctionType { get; set; } = ClassFunctionType.Default;
 
-		public List<AstParamDecl> Parameters { get; set; }
-		public AstExpression Returns { get; set; }
+        public List<AstParamDecl> Parameters { get; set; }
+        public AstExpression Returns { get; set; }
 
-		[JsonIgnore]
-		public AstBlockExpr Body { get; set; }
+        [JsonIgnore]
+        public AstBlockExpr Body { get; set; }
 
-		/// <summary>
-		/// The class that contains the function
-		/// </summary>
-		[JsonIgnore]
-		public AstClassDecl ContainingClass { get; set; }
+        /// <summary>
+        /// The class that contains the function
+        /// </summary>
+        [JsonIgnore]
+        public AstClassDecl ContainingClass { get; set; }
 
         /// <summary>
         /// Statement of calling base ctor. Used only for ctors!!!!
         /// </summary>
         public AstBaseCtorStmt BaseCtorCall { get; set; }
 
-		public AstFuncDecl(List<AstParamDecl> parameters, AstExpression returns, AstBlockExpr body, AstIdExpr name, string doc = "", ILocation Location = null) : base(name, doc, Location)
-		{
-			Type = new AstIdExpr("func", Location);
-			Type.OutType = new FunctionType(this);
+        public AstFuncDecl(List<AstParamDecl> parameters, AstExpression returns, AstBlockExpr body, AstIdExpr name, string doc = "", ILocation Location = null) : base(name, doc, Location)
+        {
+            Type = new AstIdExpr("func", Location);
+            Type.OutType = new FunctionType(this);
 
-			Body = body;
-			Parameters = parameters;
-			Returns = returns;
-		}
+            Body = body;
+            Parameters = parameters;
+            Returns = returns;
+        }
 
         internal FuncDeclJson GetJson()
         {
@@ -52,7 +52,7 @@ namespace HapetFrontend.Ast.Declarations
                 Name = Name.Name,
                 SpecialKeys = SpecialKeys,
                 Attributes = attributes,
-				CallingConvention = CallingConvention,
+                CallingConvention = CallingConvention,
                 DocString = Documentation
             };
         }
@@ -67,7 +67,7 @@ namespace HapetFrontend.Ast.Declarations
         public List<TokenType> SpecialKeys { get; set; }
         public List<AttributeJson> Attributes { get; set; }
 
-		public CallingConvention CallingConvention { get; set; }
+        public CallingConvention CallingConvention { get; set; }
 
         public string DocString { get; set; }
 
@@ -77,7 +77,7 @@ namespace HapetFrontend.Ast.Declarations
             decl.SpecialKeys.AddRange(SpecialKeys);
             decl.Attributes.AddRange(Attributes.Select(x => x.GetAst()));
             decl.CallingConvention = CallingConvention;
-			return decl;
+            return decl;
         }
-	}
+    }
 }

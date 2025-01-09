@@ -9,7 +9,7 @@ namespace HapetFrontend.Ast.Statements
 		/// The condition param of 'while' loop. Could be pure <see cref="AstExpression"/>.
 		/// Has to return <see cref="BoolType"/>
 		/// </summary>
-		public AstExpression ConditionParam { get; set; } 
+		public AstExpression ConditionParam { get; set; }
 
         /// <summary>
         /// The body of for loop

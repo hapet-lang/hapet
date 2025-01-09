@@ -5,120 +5,120 @@ using HapetFrontend.Ast.Statements;
 
 namespace HapetFrontend.Parsing
 {
-	public partial class Parser
-	{
-		public AstStatement ParseStatement(bool expectNewline = true)
-		{
-			var stmt = ParseStatementHelper();
+    public partial class Parser
+    {
+        public AstStatement ParseStatement(bool expectNewline = true)
+        {
+            var stmt = ParseStatementHelper();
 
-			if (stmt == null)
-				return null;
+            if (stmt == null)
+                return null;
 
-			if (CheckToken(TokenType.Semicolon))
-			{
-				// TODO: haha is this cringe?
-				Consume(TokenType.Semicolon, ErrMsg(";", "at the end of the statement"));
-			}
+            if (CheckToken(TokenType.Semicolon))
+            {
+                // TODO: haha is this cringe?
+                Consume(TokenType.Semicolon, ErrMsg(";", "at the end of the statement"));
+            }
 
-			var next = PeekToken();
-			if (expectNewline && next.Type != TokenType.NewLine && next.Type != TokenType.EOF)
-			{
-				ReportMessage(next.Location, $"Expected newline after statement");
-				RecoverStatement();
-			}
-			return stmt;
-		}
+            var next = PeekToken();
+            if (expectNewline && next.Type != TokenType.NewLine && next.Type != TokenType.EOF)
+            {
+                ReportMessage(next.Location, $"Expected newline after statement");
+                RecoverStatement();
+            }
+            return stmt;
+        }
 
-		public AstStatement ParseStatementHelper()
-		{
-			SkipNewlines();
-			var token = PeekToken();
-			switch (token.Type)
-			{
-				case TokenType.EOF:
-					return null;
+        public AstStatement ParseStatementHelper()
+        {
+            SkipNewlines();
+            var token = PeekToken();
+            switch (token.Type)
+            {
+                case TokenType.EOF:
+                    return null;
 
-				case TokenType.KwReturn:
-					return ParseReturnStatement();
-				
-				case TokenType.KwWhile:
-					return ParseWhileStatement();
-				case TokenType.KwFor:
-					return ParseForStatement();
-				case TokenType.KwIf:
-					return ParseIfStatement();
+                case TokenType.KwReturn:
+                    return ParseReturnStatement();
 
-				case TokenType.KwSwitch:
-					return ParseSwitchStatement();
-				case TokenType.KwCase:
-					return ParseCaseStatement();
+                case TokenType.KwWhile:
+                    return ParseWhileStatement();
+                case TokenType.KwFor:
+                    return ParseForStatement();
+                case TokenType.KwIf:
+                    return ParseIfStatement();
 
-				case TokenType.KwContinue:
-				case TokenType.KwBreak:
-					NextToken();
-					return new AstBreakContStmt(token.Type == TokenType.KwBreak, new Location(token.Location));
+                case TokenType.KwSwitch:
+                    return ParseSwitchStatement();
+                case TokenType.KwCase:
+                    return ParseCaseStatement();
 
-				case TokenType.KwUsing:
-					return ParseUsingStatement();
-				case TokenType.KwNamespace:
-					return ParseNamespaceStatement();
+                case TokenType.KwContinue:
+                case TokenType.KwBreak:
+                    NextToken();
+                    return new AstBreakContStmt(token.Type == TokenType.KwBreak, new Location(token.Location));
 
-				case TokenType.OpenBrace:
-					return ParseBlockExpression();
+                case TokenType.KwUsing:
+                    return ParseUsingStatement();
+                case TokenType.KwNamespace:
+                    return ParseNamespaceStatement();
 
-				default:
-					{
-						var stmt = ParseExpression(true, false, null, true); // anyway it should return AstStatement, not AstExpression
-						if (stmt is AstEmptyStmt)
-						{
-							NextToken();
-							return stmt;
-						}
-						if (stmt is UnknownDecl udecl)
-						{
-							return PrepareUnknownDecl(udecl, "", true, new List<AstAttributeStmt>()); // TODO: doc string?
-						}
-						if (CheckTokens(TokenType.Equal, TokenType.AddEq, TokenType.SubEq, TokenType.MulEq, TokenType.DivEq, TokenType.ModEq))
-						{
-							var currT = NextToken();
-							var x = currT.Type;
-							string op = null;
-							switch (x)
-							{
-								case TokenType.AddEq: op = "+"; break;
-								case TokenType.SubEq: op = "-"; break;
-								case TokenType.MulEq: op = "*"; break;
-								case TokenType.DivEq: op = "/"; break;
-								case TokenType.ModEq: op = "%"; break;
-							}
-							SkipNewlines();
+                case TokenType.OpenBrace:
+                    return ParseBlockExpression();
 
-							var val = ParseExpression(true);
+                default:
+                    {
+                        var stmt = ParseExpression(true, false, null, true); // anyway it should return AstStatement, not AstExpression
+                        if (stmt is AstEmptyStmt)
+                        {
+                            NextToken();
+                            return stmt;
+                        }
+                        if (stmt is UnknownDecl udecl)
+                        {
+                            return PrepareUnknownDecl(udecl, "", true, new List<AstAttributeStmt>()); // TODO: doc string?
+                        }
+                        if (CheckTokens(TokenType.Equal, TokenType.AddEq, TokenType.SubEq, TokenType.MulEq, TokenType.DivEq, TokenType.ModEq))
+                        {
+                            var currT = NextToken();
+                            var x = currT.Type;
+                            string op = null;
+                            switch (x)
+                            {
+                                case TokenType.AddEq: op = "+"; break;
+                                case TokenType.SubEq: op = "-"; break;
+                                case TokenType.MulEq: op = "*"; break;
+                                case TokenType.DivEq: op = "/"; break;
+                                case TokenType.ModEq: op = "%"; break;
+                            }
+                            SkipNewlines();
 
-							if (val is not AstExpression valExpr)
-							{
-								ReportMessage(val.Location, $"The right side of variable assignment has to be an expression");
-								return stmt;
-							}
+                            var val = ParseExpression(true);
 
-							if (stmt is AstNestedExpr id && currT.Type != TokenType.Equal)
-							{
-								// expand ops like 'a += b' into 'a = a + b'
-								var binOpExpr = new AstBinaryExpr(op, id, val, new Location(id.Location.Beginning, val.Location.Ending));
-								return new AstAssignStmt(id, binOpExpr, new Location(stmt.Beginning, val.Ending));
-							}
-							else if (stmt is AstNestedExpr nestId && currT.Type == TokenType.Equal)
-							{
+                            if (val is not AstExpression valExpr)
+                            {
+                                ReportMessage(val.Location, $"The right side of variable assignment has to be an expression");
+                                return stmt;
+                            }
+
+                            if (stmt is AstNestedExpr id && currT.Type != TokenType.Equal)
+                            {
+                                // expand ops like 'a += b' into 'a = a + b'
+                                var binOpExpr = new AstBinaryExpr(op, id, val, new Location(id.Location.Beginning, val.Location.Ending));
+                                return new AstAssignStmt(id, binOpExpr, new Location(stmt.Beginning, val.Ending));
+                            }
+                            else if (stmt is AstNestedExpr nestId && currT.Type == TokenType.Equal)
+                            {
                                 return new AstAssignStmt(nestId, valExpr, new Location(stmt.Beginning, val.Ending));
                             }
-						}
-						else
-						{
-							return stmt;
-						}
-						return stmt;
-					}
-			}
-		}
-	}
+                        }
+                        else
+                        {
+                            return stmt;
+                        }
+                        return stmt;
+                    }
+            }
+        }
+    }
 }

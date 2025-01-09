@@ -30,23 +30,23 @@ namespace HapetFrontend.Helpers
             return $"{showM}:{showS}:{showMs}";
         }
 
-		public static void CopyFilesRecursively(string sourcePath, string targetPath)
-		{
-			//Now Create all of the directories
-			foreach (string dirPath in Directory.GetDirectories(sourcePath, "*", SearchOption.AllDirectories))
-			{
-				Directory.CreateDirectory(dirPath.Replace(sourcePath, targetPath));
-			}
+        public static void CopyFilesRecursively(string sourcePath, string targetPath)
+        {
+            //Now Create all of the directories
+            foreach (string dirPath in Directory.GetDirectories(sourcePath, "*", SearchOption.AllDirectories))
+            {
+                Directory.CreateDirectory(dirPath.Replace(sourcePath, targetPath));
+            }
 
-			//Copy all the files & Replaces any files with the same name
-			foreach (string newPath in Directory.GetFiles(sourcePath, "*.*", SearchOption.AllDirectories))
-			{
-				File.Copy(newPath, newPath.Replace(sourcePath, targetPath), true);
-			}
-		}
+            //Copy all the files & Replaces any files with the same name
+            foreach (string newPath in Directory.GetFiles(sourcePath, "*.*", SearchOption.AllDirectories))
+            {
+                File.Copy(newPath, newPath.Replace(sourcePath, targetPath), true);
+            }
+        }
 
-		#region Process shite
-		public static Process StartProcess(string exe, List<string> argList = null, string workingDirectory = null, DataReceivedEventHandler stdout = null, DataReceivedEventHandler stderr = null)
+        #region Process shite
+        public static Process StartProcess(string exe, List<string> argList = null, string workingDirectory = null, DataReceivedEventHandler stdout = null, DataReceivedEventHandler stderr = null)
         {
             argList = argList ?? new List<string>();
             var args = string.Join(" ", argList.Select(a =>

@@ -3,31 +3,31 @@ using HapetFrontend.Ast.Expressions;
 
 namespace HapetFrontend.Parsing
 {
-	public partial class Parser
-	{
-		public static AstExpression ParseType(string tp)
-		{
-			var lexer = Lexer.FromString(tp, null);
-			var parser = new Parser(lexer, null);
+    public partial class Parser
+    {
+        public static AstExpression ParseType(string tp)
+        {
+            var lexer = Lexer.FromString(tp, null);
+            var parser = new Parser(lexer, null);
 
-			AstExpression id = parser.ParseIdentifierExpression();
+            AstExpression id = parser.ParseIdentifierExpression();
 
-			// if it is a pointer or array type
-			while (parser.CheckToken(TokenType.Asterisk) || parser.CheckToken(TokenType.ArrayDef))
-			{
-				if (parser.CheckToken(TokenType.ArrayDef))
-				{
-					var arrExpr = new AstArrayExpr(id, new Location(id.Beginning, parser.CurrentToken.Location.Ending));
-					id = arrExpr;
-				}
-				else
-				{
-					var ptrExpr = new AstPointerExpr(id, false, new Location(id.Beginning, parser.CurrentToken.Location.Ending));
-					id = ptrExpr;
-				}
-				parser.NextToken();
-			}
-			return id;
-		}
-	}
+            // if it is a pointer or array type
+            while (parser.CheckToken(TokenType.Asterisk) || parser.CheckToken(TokenType.ArrayDef))
+            {
+                if (parser.CheckToken(TokenType.ArrayDef))
+                {
+                    var arrExpr = new AstArrayExpr(id, new Location(id.Beginning, parser.CurrentToken.Location.Ending));
+                    id = arrExpr;
+                }
+                else
+                {
+                    var ptrExpr = new AstPointerExpr(id, false, new Location(id.Beginning, parser.CurrentToken.Location.Ending));
+                    id = ptrExpr;
+                }
+                parser.NextToken();
+            }
+            return id;
+        }
+    }
 }

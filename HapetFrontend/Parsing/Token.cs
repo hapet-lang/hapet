@@ -2,181 +2,181 @@
 
 namespace HapetFrontend.Parsing
 {
-	public class Token
-	{
-		public TokenType Type { get; set; }
-		public TokenLocation Location { get; set; }
-		public object Data { get; set; }
+    public class Token
+    {
+        public TokenType Type { get; set; }
+        public TokenLocation Location { get; set; }
+        public object Data { get; set; }
 
-		/// <summary>
-		/// Like 0x 0b $ @
-		/// </summary>
-		public string Suffix { get; set; } 
+        /// <summary>
+        /// Like 0x 0b $ @
+        /// </summary>
+        public string Suffix { get; set; }
 
-		public override string ToString()
-		{
-			return $"({Location.Line}:{Location.Index - Location.LineStartIndex}) ({Type}) {Data}";
-		}
-	}
+        public override string ToString()
+        {
+            return $"({Location.Line}:{Location.Index - Location.LineStartIndex}) ({Type}) {Data}";
+        }
+    }
 
-	public enum TokenType : short
-	{
-		Unknown,
+    public enum TokenType : short
+    {
+        Unknown,
 
-		NewLine,
-		EOF,
+        NewLine,
+        EOF,
 
-		DocComment,
+        DocComment,
 
-		StringLiteral,
-		CharLiteral,
-		NumberLiteral,
+        StringLiteral,
+        CharLiteral,
+        NumberLiteral,
 
-		Identifier,
-		DollarIdentifier,
-		SharpIdentifier,
-		AtSignIdentifier,
+        Identifier,
+        DollarIdentifier,
+        SharpIdentifier,
+        AtSignIdentifier,
 
-		Tilda,           // ~
-		Semicolon,		 // ;
-		Colon,			 // :
-		Comma,			 // ,
-		Period,			 // .
-		PeriodPeriod,	 // ..
-		Equal,			 // =
-		Ampersand,		 // &
-		Hat,			 // ^
-		Bang,			 // !
-		VerticalSlash,   // |
+        Tilda,           // ~
+        Semicolon,       // ;
+        Colon,           // :
+        Comma,           // ,
+        Period,          // .
+        PeriodPeriod,    // ..
+        Equal,           // =
+        Ampersand,       // &
+        Hat,             // ^
+        Bang,            // !
+        VerticalSlash,   // |
 
-		Plus,
-		Minus,
-		Asterisk,		 // *
-		ForwardSlash,
-		Percent,
+        Plus,
+        Minus,
+        Asterisk,        // *
+        ForwardSlash,
+        Percent,
 
-		LessLess,		 // <<
-		GreaterGreater,  // >>
+        LessLess,        // <<
+        GreaterGreater,  // >>
 
-		AddEq,
-		SubEq,
-		MulEq,
-		DivEq,
-		ModEq,
+        AddEq,
+        SubEq,
+        MulEq,
+        DivEq,
+        ModEq,
 
-		Less,
-		LessEqual,
-		Greater,
-		GreaterEqual,
-		DoubleEqual,
-		NotEqual,
+        Less,
+        LessEqual,
+        Greater,
+        GreaterEqual,
+        DoubleEqual,
+        NotEqual,
 
-		LogicalOr,		 // ||
-		LogicalAnd,		 // &&
+        LogicalOr,       // ||
+        LogicalAnd,      // &&
 
-		Arrow,			 // =>
+        Arrow,           // =>
 
-		OpenParen,		 // (
-		CloseParen,		 // )
-		OpenBrace,		 // {
-		CloseBrace,		 // }
-		OpenBracket,	 // [
-		CloseBracket,    // ]
+        OpenParen,       // (
+        CloseParen,      // )
+        OpenBrace,       // {
+        CloseBrace,      // }
+        OpenBracket,     // [
+        CloseBracket,    // ]
 
-		ArrayDef,		 // []
+        ArrayDef,        // []
 
-		// words
-		KwStruct,
-		KwEnum,
-		KwInterface,
-		KwClass,
-		KwDelegate,
+        // words
+        KwStruct,
+        KwEnum,
+        KwInterface,
+        KwClass,
+        KwDelegate,
 
-		KwIf,
-		KwElse,
-		KwSwitch,
-		KwCase,
-		KwFor,
-		KwForeach, // would be used anywhere?
+        KwIf,
+        KwElse,
+        KwSwitch,
+        KwCase,
+        KwFor,
+        KwForeach, // would be used anywhere?
         KwWhile,
-		KwDo, // would be used anywhere?
-		KwGoto, // would be used anywhere?
+        KwDo, // would be used anywhere?
+        KwGoto, // would be used anywhere?
 
-		// exceptions
+        // exceptions
         KwTry,
-		KwCatch,
-		KwFinally,
-		KwThrow,
+        KwCatch,
+        KwFinally,
+        KwThrow,
 
-		KwLock,
-		KwChecked, // would be used anywhere?
-		KwUnchecked, // would be used anywhere?
+        KwLock,
+        KwChecked, // would be used anywhere?
+        KwUnchecked, // would be used anywhere?
 
-		KwTrue,
-		KwFalse,
-		KwNull,
+        KwTrue,
+        KwFalse,
+        KwNull,
 
-		KwUsing,
-		KwNamespace,
+        KwUsing,
+        KwNamespace,
 
-		KwBreak,
-		KwContinue,
-		KwReturn,
-		KwYield,
+        KwBreak,
+        KwContinue,
+        KwReturn,
+        KwYield,
 
-		KwConst,
-		KwReadonly,
-		KwUnsafe,
-		KwVolatile, // would be used anywhere?
-		KwGlobal, // would be used anywhere?
+        KwConst,
+        KwReadonly,
+        KwUnsafe,
+        KwVolatile, // would be used anywhere?
+        KwGlobal, // would be used anywhere?
         KwDefault,
-		KwNew,
-		KwBase,
-		KwSizeof,
-		KwAlignof,
-		KwTypeof,
-		KwNameof,
+        KwNew,
+        KwBase,
+        KwSizeof,
+        KwAlignof,
+        KwTypeof,
+        KwNameof,
 
-		KwGet, // 'get' in properties
-		KwSet, // 'set' in properties
+        KwGet, // 'get' in properties
+        KwSet, // 'set' in properties
 
-		KwIn,
-		KwIs,
-		KwAs,
-		KwRef, // would be used anywhere?
+        KwIn,
+        KwIs,
+        KwAs,
+        KwRef, // would be used anywhere?
         KwOut, // would be used anywhere?
         KwParams, // would be used anywhere?
 
         KwPublic,
-		KwInternal,
-		KwProtected,
-		KwPrivate,
-		KwUnreflected,
+        KwInternal,
+        KwProtected,
+        KwPrivate,
+        KwUnreflected,
 
-		KwAsync,
-		KwAwait,
+        KwAsync,
+        KwAwait,
 
-		KwStatic,		
-		KwAbstract,
-		KwVirtual,
-		KwOverride,
-		KwPartial,
-		KwExtern,
-		KwSealed,
+        KwStatic,
+        KwAbstract,
+        KwVirtual,
+        KwOverride,
+        KwPartial,
+        KwExtern,
+        KwSealed,
 
-		// used only inside compiler to know
-		// that the func is imported from another assembly
-		KwImported,
+        // used only inside compiler to know
+        // that the func is imported from another assembly
+        KwImported,
 
-		// for events
-		KwEvent,
-		KwAdd,
-		KwRemove,
+        // for events
+        KwEvent,
+        KwAdd,
+        KwRemove,
 
-		// for overriding casts
-		KwExplicit,
-		KwImplicit,
+        // for overriding casts
+        KwExplicit,
+        KwImplicit,
         // for overriding operators
         KwOperator,
-	}
+    }
 }
