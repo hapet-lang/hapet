@@ -252,16 +252,34 @@ namespace HapetFrontend.Parsing
 				case "switch": token.Type = TokenType.KwSwitch; break;
 				case "case": token.Type = TokenType.KwCase; break;
 				case "for": token.Type = TokenType.KwFor; break;
+				case "foreach": token.Type = TokenType.KwForeach; break;
 				case "while": token.Type = TokenType.KwWhile; break;
+				case "do": token.Type = TokenType.KwDo; break;
+				case "goto": token.Type = TokenType.KwGoto; break;
+
+				// exceptions
+				case "try": token.Type = TokenType.KwTry; break;
+				case "catch": token.Type = TokenType.KwCatch; break;
+				case "finally": token.Type = TokenType.KwFinally; break;
+				case "throw": token.Type = TokenType.KwThrow; break;
 
 				case "break": token.Type = TokenType.KwBreak; break;
 				case "continue": token.Type = TokenType.KwContinue; break;
 				case "return": token.Type = TokenType.KwReturn; break;
+				case "yield": token.Type = TokenType.KwYield; break;
 
 				case "const": token.Type = TokenType.KwConst; break;
+				case "readonly": token.Type = TokenType.KwReadonly; break;
+				case "unsafe": token.Type = TokenType.KwUnsafe; break;
+				case "volatile": token.Type = TokenType.KwVolatile; break;
+				case "global": token.Type = TokenType.KwGlobal; break;
 				case "default": token.Type = TokenType.KwDefault; break;
 				case "new": token.Type = TokenType.KwNew; break;
 				case "base": token.Type = TokenType.KwBase; break;
+				case "sizeof": token.Type = TokenType.KwSizeof; break;
+				case "alignof": token.Type = TokenType.KwAlignof; break;
+				case "typeof": token.Type = TokenType.KwTypeof; break;
+				case "nameof": token.Type = TokenType.KwNameof; break;
 
 				case "get": token.Type = TokenType.KwGet; break;
 				case "set": token.Type = TokenType.KwSet; break;
@@ -269,6 +287,9 @@ namespace HapetFrontend.Parsing
 				case "in": token.Type = TokenType.KwIn; break;
 				case "is": token.Type = TokenType.KwIs; break;
 				case "as": token.Type = TokenType.KwAs; break;
+				case "ref": token.Type = TokenType.KwRef; break;
+				case "out": token.Type = TokenType.KwOut; break;
+				case "params": token.Type = TokenType.KwParams; break;
 
 				case "public": token.Type = TokenType.KwPublic; break;
 				case "internal": token.Type = TokenType.KwInternal; break;
@@ -277,15 +298,26 @@ namespace HapetFrontend.Parsing
 				case "unreflected": token.Type = TokenType.KwUnreflected; break;
 
 				case "async": token.Type = TokenType.KwAsync; break;
+				case "await": token.Type = TokenType.KwAwait; break;
 
 				case "static": token.Type = TokenType.KwStatic; break;
-
 				case "abstract": token.Type = TokenType.KwAbstract; break;
 				case "virtual": token.Type = TokenType.KwVirtual; break;
 				case "override": token.Type = TokenType.KwOverride; break;
 				case "partial": token.Type = TokenType.KwPartial; break;
 				case "extern": token.Type = TokenType.KwExtern; break;
 				case "sealed": token.Type = TokenType.KwSealed; break;
+
+				// for events
+				case "event": token.Type = TokenType.KwEvent; break;
+				case "add": token.Type = TokenType.KwAdd; break;
+				case "remove": token.Type = TokenType.KwRemove; break;
+
+				// for overriding casts
+				case "explicit": token.Type = TokenType.KwExplicit; break;
+				case "implicit": token.Type = TokenType.KwImplicit; break;
+				// for overriding operators
+				case "operator": token.Type = TokenType.KwOperator; break;
 			}
 		}
 

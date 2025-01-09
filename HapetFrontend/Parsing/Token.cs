@@ -97,7 +97,20 @@ namespace HapetFrontend.Parsing
 		KwSwitch,
 		KwCase,
 		KwFor,
-		KwWhile,
+		KwForeach, // would be used anywhere?
+        KwWhile,
+		KwDo, // would be used anywhere?
+		KwGoto, // would be used anywhere?
+
+		// exceptions
+        KwTry,
+		KwCatch,
+		KwFinally,
+		KwThrow,
+
+		KwLock,
+		KwChecked, // would be used anywhere?
+		KwUnchecked, // would be used anywhere?
 
 		KwTrue,
 		KwFalse,
@@ -109,11 +122,20 @@ namespace HapetFrontend.Parsing
 		KwBreak,
 		KwContinue,
 		KwReturn,
+		KwYield,
 
 		KwConst,
-		KwDefault,
+		KwReadonly,
+		KwUnsafe,
+		KwVolatile, // would be used anywhere?
+		KwGlobal, // would be used anywhere?
+        KwDefault,
 		KwNew,
 		KwBase,
+		KwSizeof,
+		KwAlignof,
+		KwTypeof,
+		KwNameof,
 
 		KwGet, // 'get' in properties
 		KwSet, // 'set' in properties
@@ -121,14 +143,18 @@ namespace HapetFrontend.Parsing
 		KwIn,
 		KwIs,
 		KwAs,
+		KwRef, // would be used anywhere?
+        KwOut, // would be used anywhere?
+        KwParams, // would be used anywhere?
 
-		KwPublic,
+        KwPublic,
 		KwInternal,
 		KwProtected,
 		KwPrivate,
 		KwUnreflected,
 
 		KwAsync,
+		KwAwait,
 
 		KwStatic,		
 		KwAbstract,
@@ -141,5 +167,16 @@ namespace HapetFrontend.Parsing
 		// used only inside compiler to know
 		// that the func is imported from another assembly
 		KwImported,
+
+		// for events
+		KwEvent,
+		KwAdd,
+		KwRemove,
+
+		// for overriding casts
+		KwExplicit,
+		KwImplicit,
+        // for overriding operators
+        KwOperator,
 	}
 }
