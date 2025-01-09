@@ -9,8 +9,8 @@ namespace HapetFrontend.Ast.Statements
         /// </summary>
         public List<AstArgumentExpr> Arguments { get; set; }
 
-        public AstBaseCtorStmt(List<AstArgumentExpr> arguments = null, ILocation Location = null)
-            : base(Location)
+        public AstBaseCtorStmt(List<AstArgumentExpr> arguments = null, ILocation location = null)
+            : base(location)
         {
             this.Arguments = arguments ?? new List<AstArgumentExpr>();
         }

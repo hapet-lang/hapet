@@ -160,9 +160,10 @@ namespace HapetFrontend.Parsing.PostPrepare
 
                 // the ctor func
                 var ctorDecl = new AstFuncDecl(new List<AstParamDecl>(),
-                new AstIdExpr("void"),
-                ctorBlock,
-                new AstIdExpr($"{classDecl.Name.Name}_ctor"));
+                    new AstIdExpr("void"),
+                    ctorBlock,
+                    new AstIdExpr($"{classDecl.Name.Name}_ctor"));
+                ctorDecl.BaseCtorCall = new AstBaseCtorStmt(location: ctorDecl.Name);
                 ctorDecl.SpecialKeys.Add(TokenType.KwPublic); // default ctor is public
                 ctorDecl.ClassFunctionType = Enums.ClassFunctionType.Ctor;
                 ctorDecl.ContainingClass = classDecl;
@@ -177,6 +178,10 @@ namespace HapetFrontend.Parsing.PostPrepare
                     ct.Body.Statements.Insert(0, new AstCallExpr(
                         new AstNestedExpr(new AstIdExpr("this"), null),
                         new AstIdExpr($"{classDecl.Name.Name}_ini")));
+
+                    // if the base ctor call is empty - create one with no params
+                    if (ct.BaseCtorCall == null)
+                        ct.BaseCtorCall = new AstBaseCtorStmt(location: ct.Name);
                 }
             }
         }

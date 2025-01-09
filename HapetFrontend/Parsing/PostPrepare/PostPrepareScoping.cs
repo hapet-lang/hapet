@@ -4,7 +4,6 @@ using HapetFrontend.Ast.Expressions;
 using HapetFrontend.Ast.Statements;
 using HapetFrontend.Entities;
 using HapetFrontend.Scoping;
-using System.Security.Cryptography.X509Certificates;
 
 namespace HapetFrontend.Parsing.PostPrepare
 {
