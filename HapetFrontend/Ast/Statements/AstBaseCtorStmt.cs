@@ -1,4 +1,5 @@
 ﻿using HapetFrontend.Ast.Expressions;
+using HapetFrontend.Types;
 
 namespace HapetFrontend.Ast.Statements
 {
@@ -8,6 +9,16 @@ namespace HapetFrontend.Ast.Statements
         /// The arguments to be passed into base ctor
         /// </summary>
         public List<AstArgumentExpr> Arguments { get; set; }
+
+        /// <summary>
+        /// The type of base class
+        /// </summary>
+        public ClassType BaseType { get; set; }
+
+        /// <summary>
+        /// Instance of current class. Needed for generation part
+        /// </summary>
+        public AstIdExpr ThisArgument { get; set; }
 
         public AstBaseCtorStmt(List<AstArgumentExpr> arguments = null, ILocation location = null)
             : base(location)

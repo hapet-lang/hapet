@@ -132,9 +132,25 @@ namespace HapetFrontend.Parsing.PostPrepare
                 if (funcDecl.Body != null)
                     PostPrepareBlockInference(funcDecl.Body);
 
-                // inferring base ctor call
-                if (funcDecl.BaseCtorCall != null)
+                // check if the class if inherited from smth
+                if (funcDecl.ClassFunctionType == Enums.ClassFunctionType.Ctor &&
+                    funcDecl.ContainingClass.InheritedFrom.Count > 0 &&
+                    funcDecl.BaseCtorCall != null &&
+                    funcDecl.ContainingClass.InheritedFrom[0].OutType is ClassType baseType)
+                {
                     PostPrepareExprInference(funcDecl.BaseCtorCall);
+
+                    // preparing shite for easier code gen
+                    funcDecl.BaseCtorCall.BaseType = baseType;
+                    var thisArg = new AstIdExpr("this", funcDecl.BaseCtorCall);
+                    SetScopeAndParent(thisArg, funcDecl.Body, funcDecl.Body.SubScope);
+                    PostPrepareExprInference(thisArg);
+                    funcDecl.BaseCtorCall.ThisArgument = thisArg;
+
+                    // we need to insert it into block so it would be generated normally
+                    // but why to the index 1? - https://stackoverflow.com/questions/140490/base-constructor-in-c-sharp-which-gets-called-first
+                    funcDecl.Body.Statements.Insert(1, funcDecl.BaseCtorCall);
+                }
             }
         }
 

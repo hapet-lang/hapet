@@ -57,6 +57,7 @@ namespace HapetBackend.Llvm
                 case AstSwitchStmt switchStmt: GenerateSwitchStmt(switchStmt); return null;
                 case AstBreakContStmt breakContStmt: GenerateBreakContStmt(breakContStmt); return null;
                 case AstReturnStmt returnStmt: GenerateReturnStmt(returnStmt); return null;
+                case AstBaseCtorStmt baseStmt: GenerateBaseCtorStmt(baseStmt); return null;
                 // TODO: check other expressions
 
                 default:
@@ -1090,6 +1091,32 @@ namespace HapetBackend.Llvm
                 _messageHandler.ReportMessage(_currentSourceFile.Text, returnStmt, "The 'return' statement returns a type that does not match the type specified in the function declaration");
                 _builder.BuildRetVoid();
             }
+        }
+
+        private void GenerateBaseCtorStmt(AstBaseCtorStmt baseStmt)
+        {
+            // args shite
+            List<LLVMValueRef> args = new List<LLVMValueRef>();
+            args.Add(GenerateExpressionCode(baseStmt.ThisArgument));
+            foreach (var a in baseStmt.Arguments)
+            {
+                args.Add(GenerateExpressionCode(a));
+            }
+
+            string onlyName = baseStmt.BaseType.Declaration.Name.Name.Split('.').Last();
+            var ctorName = $"{baseStmt.BaseType.Declaration.Name.Name}::{onlyName}_ctor" + baseStmt.Arguments.GetArgsString(PointerType.GetPointerType(baseStmt.BaseType));
+            var ctorSymbol = baseStmt.BaseType.Declaration.SubScope.GetSymbol(ctorName) as DeclSymbol;
+
+            // error if ctor not found
+            if (ctorSymbol == null)
+            {
+                _messageHandler.ReportMessage(_currentSourceFile.Text, baseStmt, $"Constructor with specified argument types was not found in the {baseStmt.BaseType} class");
+                return;
+            }
+
+            var ctorFunc = _valueMap[ctorSymbol];
+            LLVMTypeRef ctorType = _typeMap[ctorSymbol.Decl.Type.OutType];
+            _builder.BuildCall2(ctorType, ctorFunc, args.ToArray());
         }
     }
 }
