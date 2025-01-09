@@ -15,14 +15,14 @@ namespace HapetCompiler.ProjectConf
         private readonly ProjectData _projectData = null;
         private readonly IMessageHandler _messageHandler = null;
 
-		/// <summary>
-		/// All <PropertyGroup> tags in .hptproj
-		/// </summary>
-		private List<XmlElement> _propertyGroups = new List<XmlElement>();
-		/// <summary>
-		/// All <ItemGroup> tags in .hptproj
-		/// </summary>
-		private List<XmlElement> _itemGroups = new List<XmlElement>();
+        /// <summary>
+        /// All <PropertyGroup> tags in .hptproj
+        /// </summary>
+        private List<XmlElement> _propertyGroups = new List<XmlElement>();
+        /// <summary>
+        /// All <ItemGroup> tags in .hptproj
+        /// </summary>
+        private List<XmlElement> _itemGroups = new List<XmlElement>();
 
         // TODO: this class also should get args from cmd that would have bigger priority over defined in .hptproj file
         public ProjectXmlParser(string projectPath, CompilerSettings projectSettings, ProjectData projectData, IMessageHandler messageHandler)
@@ -30,20 +30,20 @@ namespace HapetCompiler.ProjectConf
             _projectPath = projectPath;
             _projectPathAbsolute = Path.GetFullPath(_projectPath);
             _projectFileText = File.ReadAllText(_projectPath).Replace("\t", "    ");
-			_projectSettings = projectSettings;
+            _projectSettings = projectSettings;
             _projectData = projectData;
             _messageHandler = messageHandler;
 
-			XmlDocument projDoc = new XmlDocument();
+            XmlDocument projDoc = new XmlDocument();
             try
             {
-				projDoc.Load(_projectPath);
-			}
-			catch (Exception e)
+                projDoc.Load(_projectPath);
+            }
+            catch (Exception e)
             {
-				_messageHandler.ReportMessage($"Exception while parsing {_projectPathAbsolute}:\n{e.Message}");
-				return;
-			}
+                _messageHandler.ReportMessage($"Exception while parsing {_projectPathAbsolute}:\n{e.Message}");
+                return;
+            }
             if (projDoc.DocumentElement == null)
             {
                 _messageHandler.ReportMessage($"Project file {_projectPathAbsolute} could not be parsed");
@@ -56,9 +56,9 @@ namespace HapetCompiler.ProjectConf
                 // check that the tag is PropertyGroup
                 if (xnode.Name == "PropertyGroup")
                 {
-					// just add it and prepare in another file
-					_propertyGroups.Add(xnode);
-				}
+                    // just add it and prepare in another file
+                    _propertyGroups.Add(xnode);
+                }
                 else if (xnode.Name == "ItemGroup")
                 {
                     // just add it and prepare in another file
@@ -80,6 +80,6 @@ namespace HapetCompiler.ProjectConf
         {
             PreparePropertyGroups();
             PrepareItemGroups();
-		}
+        }
     }
 }
