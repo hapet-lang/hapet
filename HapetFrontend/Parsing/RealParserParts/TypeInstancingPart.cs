@@ -32,8 +32,8 @@ namespace HapetFrontend.Parsing
                     ReportMessage(type.Location, $"Unexpected token as a type name");
                     return ParseEmptyExpression();
                 }
-                var args = ParseArgumentList(out var _);
-                return new AstNewExpr(nestExpr, args, Location: new Location(beg));
+                var args = ParseArgumentList(out var end);
+                return new AstNewExpr(nestExpr, args, Location: new Location(beg, end));
             }
 
             // error here that unexpected token .. after typeName

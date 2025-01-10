@@ -503,6 +503,14 @@ namespace HapetFrontend.Parsing.PostPrepare
             // the type of newExpr is the same as the type of its name expr
             newExpr.OutType = newExpr.TypeName.OutType;
 
+            // error if they trying to create an instance from interface of an abstract class
+            if (newExpr.TypeName.OutType is ClassType clsType && 
+                (clsType.Declaration.IsInterface || 
+                clsType.Declaration.SpecialKeys.Contains(TokenType.KwAbstract)))
+            {
+                _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, newExpr, $"An instance of an interface or an abstract class could not be created");
+            }
+
             foreach (var a in newExpr.Arguments)
             {
                 PostPrepareExprInference(a);

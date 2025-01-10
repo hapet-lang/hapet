@@ -8,7 +8,7 @@ public static class Program
 {
 	public static int Main(string[] args)
 	{
-		var b = new BaseCls(4);
+		var aaa = new ISosahtung();
 		Derived dr222 = new Derived();
 		return dr222.Field1;
 	}
