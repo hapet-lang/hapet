@@ -8,16 +8,16 @@ public static class Program
 {
 	public static int Main(string[] args)
 	{
-		var aaa = new ISosahtung();
 		Derived dr222 = new Derived();
-		return dr222.Field1;
+		var aaa = dr222 as ISosahtung;
+		return aaa.Anime322;
 	}
 
 }
 
 public interface ISosahtung
 {
-	string Anime322;
+	short Anime322;
 }
 
 public class BaseCls
@@ -34,7 +34,7 @@ public class Derived : BaseCls, ISosahtung
 {
 	public int Field2;
 
-	public string Anime322;
+	public short Anime322;
 
 	public Derived() : base(41)
 	{

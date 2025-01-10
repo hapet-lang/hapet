@@ -242,7 +242,7 @@ namespace HapetFrontend.Parsing.PostPrepare
                         if (fieldDecl.SpecialKeys.Contains(TokenType.KwAbstract))
                         {
                             // search for the defined field
-                            var alreadyDefined = decl.Declarations.FirstOrDefault(x => x.Name.Name == fieldDecl.Name.Name);
+                            var alreadyDefined = decl.Declarations.FirstOrDefault(x => x.Name.Name == fieldDecl.Name.Name && x.Type.OutType == fieldDecl.Type.OutType);
                             if (alreadyDefined == null)
                             {
                                 // error - abstract field was not defined in derived class
