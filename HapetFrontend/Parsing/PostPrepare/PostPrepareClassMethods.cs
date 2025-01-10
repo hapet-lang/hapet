@@ -77,6 +77,16 @@ namespace HapetFrontend.Parsing.PostPrepare
                 }
             }
 
+            // getting all fields and mark them abstract if it is an interface
+            if (classDecl.IsInterface)
+            {
+                foreach (var f in allFields)
+                {
+                    // add abstract key to the field if it is an interface
+                    f.SpecialKeys.Add(TokenType.KwAbstract);
+                }
+            }
+
             // generate prop's fields and funcs
             /// removing props is done in <see cref="RemoveAllProperties"/>
             PostPrepareClassProperties(classDecl);
@@ -131,6 +141,10 @@ namespace HapetFrontend.Parsing.PostPrepare
 
         private void PostPrepareGenerateClassInitializer(AstClassDecl classDecl)
         {
+            // skip if it is an interface
+            if (classDecl.IsInterface)
+                return;
+
             // the block with all field inits
             var iniBlock = GetFieldsToInitialize(classDecl, false);
 
@@ -147,6 +161,10 @@ namespace HapetFrontend.Parsing.PostPrepare
 
         private void PostPrepareGenerateClassConstructor(AstClassDecl classDecl, List<AstFuncDecl> ctors)
         {
+            // skip if it is an interface
+            if (classDecl.IsInterface)
+                return;
+
             if (ctors.Count == 0)
             {
                 // there is no ctor. need to create one
@@ -188,6 +206,10 @@ namespace HapetFrontend.Parsing.PostPrepare
 
         private void PostPrepareGenerateClassDestructor(AstClassDecl classDecl, List<AstFuncDecl> dtors)
         {
+            // skip if it is an interface
+            if (classDecl.IsInterface)
+                return;
+
             if (dtors.Count == 0)
             {
                 // there is no dtor. need to create one
@@ -227,6 +249,10 @@ namespace HapetFrontend.Parsing.PostPrepare
         private List<AstClassDecl> _allUsedClassesInProgram = new List<AstClassDecl>();
         private void PostPrepareGenerateClassStaticConstructor(AstClassDecl classDecl, List<AstFuncDecl> ctors)
         {
+            // skip interfaces
+            if (classDecl.IsInterface)
+                return;
+
             // we need to add a static var to check that the stor was called
             string theVarName = $"__is_{_currentSourceFile.Namespace}.{classDecl.Name.Name}_stor_called";
             var theVar = new AstVarDecl(new AstNestedExpr(new AstIdExpr("bool"), null), new AstIdExpr(theVarName));
@@ -296,18 +322,27 @@ namespace HapetFrontend.Parsing.PostPrepare
                 {
                     // need to create a field :(
                     AstVarDecl propField = prop.GetField();
+                    // add abstract key to the field if it is an interface
+                    if (classDecl.IsInterface)
+                        propField.SpecialKeys.Add(TokenType.KwAbstract);
                     declarationsToAdd.Add(propField);
                 }
                 if (prop.HasGet)
                 {
                     // need to create a 'get' method
                     AstFuncDecl getFunc = prop.GetGetFunction();
+                    // add abstract key to the method if it is an interface
+                    if (classDecl.IsInterface)
+                        getFunc.SpecialKeys.Add(TokenType.KwAbstract);
                     declarationsToAdd.Add(getFunc);
                 }
                 if (prop.HasSet)
                 {
                     // need to create a 'set' method
                     AstFuncDecl setFunc = prop.GetSetFunction();
+                    // add abstract key to the method if it is an interface
+                    if (classDecl.IsInterface)
+                        setFunc.SpecialKeys.Add(TokenType.KwAbstract);
                     declarationsToAdd.Add(setFunc);
                 }
             }

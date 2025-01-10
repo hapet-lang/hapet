@@ -15,6 +15,11 @@ public static class Program
 
 }
 
+public interface ISosahtung
+{
+	int Anime322;
+}
+
 public class BaseCls
 {
 	public int Field1;
@@ -25,7 +30,7 @@ public class BaseCls
 	}
 }
 
-public class Derived : BaseCls
+public class Derived : BaseCls, ISosahtung
 {
 	public int Field2;
 

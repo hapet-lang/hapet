@@ -552,6 +552,7 @@ namespace HapetFrontend.Parsing
                 case TokenType.KwEnum:
                     return ParseEnumDeclaration();
 
+                case TokenType.KwInterface:
                 case TokenType.KwClass:
                     return ParseClassDeclaration();
 

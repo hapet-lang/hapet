@@ -12,8 +12,18 @@ namespace HapetFrontend.Parsing
             var declarations = new List<AstDeclaration>();
             var inherited = new List<AstNestedExpr>();
             AstIdExpr className = null;
+            bool isInterface = false;
 
-            beg = Consume(TokenType.KwClass, ErrMsg("keyword 'class'", "at beginning of class type")).Location;
+            // check if it is an interface decl
+            if (CheckToken(TokenType.KwClass))
+            {
+                beg = Consume(TokenType.KwClass, ErrMsg("keyword 'class'", "at beginning of class type")).Location;
+            }
+            else
+            {
+                beg = Consume(TokenType.KwInterface, ErrMsg("keyword 'class'", "at beginning of class type")).Location;
+                isInterface = true;
+            }
 
             // class name
             if (!CheckToken(TokenType.Identifier))
@@ -27,7 +37,7 @@ namespace HapetFrontend.Parsing
                 if (nest.RightPart is not AstIdExpr idExpr)
                 {
                     ReportMessage(nest.Location, $"Class name expected to be an identifier");
-                    return new AstClassDecl(new AstIdExpr("unknown"), declarations, "", beg);
+                    return new AstClassDecl(new AstIdExpr("unknown"), declarations, "", beg) { IsInterface = isInterface };
                 }
                 className = idExpr;
             }
@@ -100,7 +110,7 @@ namespace HapetFrontend.Parsing
             end = Consume(TokenType.CloseBrace, ErrMsg("}", "at end of class declaration")).Location;
 
             // TODO: doc string
-            return new AstClassDecl(className, declarations, "", new Location(beg, end)) { InheritedFrom = inherited };
+            return new AstClassDecl(className, declarations, "", new Location(beg, end)) { InheritedFrom = inherited, IsInterface = isInterface };
         }
     }
 }

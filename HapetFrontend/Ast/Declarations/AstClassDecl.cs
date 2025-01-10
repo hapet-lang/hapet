@@ -19,6 +19,11 @@ namespace HapetFrontend.Ast.Declarations
         public List<AstNestedExpr> InheritedFrom { get; set; } = new List<AstNestedExpr>();
 
         /// <summary>
+        /// 'true' if the declaration is an interface
+        /// </summary>
+        public bool IsInterface { get; set; }
+
+        /// <summary>
         /// To check if inherited fields already copied to current declaration
         /// </summary>
         public bool InheritedFieldsCopied { get; set; }

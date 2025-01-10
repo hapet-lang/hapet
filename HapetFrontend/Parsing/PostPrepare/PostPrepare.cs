@@ -90,6 +90,10 @@ namespace HapetFrontend.Parsing.PostPrepare
             var unique = _allUsedClassesInProgram.Distinct().ToList();
             foreach (var cls in unique)
             {
+                // skip interfaces
+                if (cls.IsInterface)
+                    continue;
+
                 // check that the class has suppress stor call attr
                 // and skip the class without calling it's stor
                 string suppressAttrName = "System.SuppressStaticCtorCallAttribute";
