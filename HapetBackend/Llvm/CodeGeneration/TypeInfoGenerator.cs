@@ -14,7 +14,7 @@ namespace HapetBackend.Llvm
                 return _typeInfoDictionary[cls];
 
             // create if does not exists
-            ClassType parent = cls.Declaration.InheritedFrom.FirstOrDefault(x => x.OutType is ClassType clss && !clss.IsInterface)?.OutType as ClassType;
+            ClassType parent = cls.Declaration.InheritedFrom.FirstOrDefault(x => x.OutType is ClassType clss && !clss.Declaration.IsInterface)?.OutType as ClassType;
             LLVMTypeRef typeInfoType = GetTypeInfoType();
 
             // name param
@@ -53,7 +53,7 @@ namespace HapetBackend.Llvm
         private LLVMValueRef GetInterfacesArray(ClassType cls, out int amount)
         {
             LLVMTypeRef arrayElementType = LLVMTypeRef.CreatePointer(GetTypeInfoType(), 0);
-            List<ClassType> interfaces = cls.Declaration.InheritedFrom.Where(x => x.OutType is ClassType clss && clss.IsInterface).Select(x => x.OutType as ClassType).ToList();
+            List<ClassType> interfaces = cls.Declaration.InheritedFrom.Where(x => x.OutType is ClassType clss && clss.Declaration.IsInterface).Select(x => x.OutType as ClassType).ToList();
             if (interfaces.Count == 0)
             {
                 amount = 0;
