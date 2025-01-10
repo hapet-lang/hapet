@@ -212,7 +212,7 @@ namespace HapetFrontend.Parsing.PostPrepare
 
         private void PostPrepareMetadataTypeInheritedFieldDecls()
         {
-            static void CopyInheritedFields(AstClassDecl decl)
+            void CopyInheritedFields(AstClassDecl decl)
             {
                 if (decl.InheritedFieldsCopied)
                     return;
@@ -238,11 +238,31 @@ namespace HapetFrontend.Parsing.PostPrepare
                         if (fieldDecl.SpecialKeys.Contains(TokenType.KwStatic) || fieldDecl.SpecialKeys.Contains(TokenType.KwConst))
                             continue;
 
+                        // interface or just an abstract field
+                        if (fieldDecl.SpecialKeys.Contains(TokenType.KwAbstract))
+                        {
+                            // search for the defined field
+                            var alreadyDefined = decl.Declarations.FirstOrDefault(x => x.Name.Name == fieldDecl.Name.Name);
+                            if (alreadyDefined == null)
+                            {
+                                // error - abstract field was not defined in derived class
+                                _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, inh, 
+                                    $"The {decl.Type.OutType} type does not have an implementation of {fieldDecl.Name.Name} field");
+                                continue;
+                            }
+
+                            // set to the new place
+                            decl.Declarations.Remove(alreadyDefined);
+                            inheritedFieldDecls.Add(alreadyDefined);
+                            continue;
+                        }
+
                         // change parent and scope
                         var newVar = fieldDecl.GetCopyForAnotherClass(decl);
-                        inheritedFieldDecls.Add(newVar);
                         // define the symbol
                         decl.SubScope.DefineDeclSymbol(newVar.Name.Name, newVar);
+
+                        inheritedFieldDecls.Add(newVar);
                     }
                 }
 

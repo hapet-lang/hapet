@@ -17,7 +17,7 @@ public static class Program
 
 public interface ISosahtung
 {
-	int Anime322;
+	string Anime322;
 }
 
 public class BaseCls
@@ -33,6 +33,8 @@ public class BaseCls
 public class Derived : BaseCls, ISosahtung
 {
 	public int Field2;
+
+	public string Anime322;
 
 	public Derived() : base(41)
 	{
