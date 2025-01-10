@@ -5,6 +5,9 @@ public class Encoding
 {
     public static int GetByteCount(byte* chars)
     {
+        if ((uintptr)chars == (uintptr)0)
+            return 0;
+
         int charsAmount = 0;
         byte currChar = chars[charsAmount];
         while (currChar != 0)

@@ -19,10 +19,10 @@ namespace HapetFrontend.Ast.Expressions
                     outExpr = new AstStringExpr("", null, orig);
                     break;
                 case IntType:
-                    outExpr = new AstNumberExpr(NumberData.FromInt(0), null, orig);
+                    outExpr = new AstNumberExpr(NumberData.FromInt(0), null, tp, orig);
                     break;
                 case FloatType:
-                    outExpr = new AstNumberExpr(NumberData.FromDouble(0), null, orig);
+                    outExpr = new AstNumberExpr(NumberData.FromDouble(0), null, tp, orig);
                     break;
                 case CharType:
                     outExpr = new AstCharExpr("", orig);

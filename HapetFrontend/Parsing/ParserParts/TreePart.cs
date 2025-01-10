@@ -519,7 +519,7 @@ namespace HapetFrontend.Parsing
 
                 case TokenType.NumberLiteral:
                     NextToken();
-                    return new AstNumberExpr((NumberData)token.Data, token.Suffix, new Location(token.Location));
+                    return new AstNumberExpr((NumberData)token.Data, token.Suffix, null, new Location(token.Location));
 
                 case TokenType.KwTrue:
                     NextToken();

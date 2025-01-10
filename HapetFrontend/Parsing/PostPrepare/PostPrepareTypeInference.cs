@@ -420,7 +420,7 @@ namespace HapetFrontend.Parsing.PostPrepare
                                     if (ptrT.TargetType is VoidType)
                                         _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, binExpr, $"Operator {binExpr.ActualOperator.Name} could not be used with void*");
                                     var parent = rightExpr.NormalParent;
-                                    var mulK = new AstNumberExpr((NumberData)ptrT.TargetType.GetSize(), null, rightExpr);
+                                    var mulK = new AstNumberExpr((NumberData)ptrT.TargetType.GetSize(), null, null, rightExpr);
                                     SetScopeAndParent(mulK, parent);
                                     rightExpr = new AstBinaryExpr("*", rightExpr, mulK, rightExpr);
                                     SetScopeAndParent(rightExpr, parent);
@@ -433,7 +433,7 @@ namespace HapetFrontend.Parsing.PostPrepare
                                     if (ptrT2.TargetType is VoidType)
                                         _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, binExpr, $"Operator {binExpr.ActualOperator.Name} could not be used with void*");
                                     var parent = leftExpr.NormalParent;
-                                    var mulK = new AstNumberExpr((NumberData)ptrT2.TargetType.GetSize(), null, leftExpr);
+                                    var mulK = new AstNumberExpr((NumberData)ptrT2.TargetType.GetSize(), null, null, leftExpr);
                                     SetScopeAndParent(mulK, parent);
                                     leftExpr = new AstBinaryExpr("*", leftExpr, mulK, leftExpr);
                                     SetScopeAndParent(leftExpr, parent);

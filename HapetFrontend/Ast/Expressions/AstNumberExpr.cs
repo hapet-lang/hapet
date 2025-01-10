@@ -9,20 +9,25 @@ namespace HapetFrontend.Ast.Expressions
         public string Suffix { get; set; }
 
         [DebuggerStepThrough]
-        public AstNumberExpr(NumberData data, string suffix = null, ILocation Location = null) : base(Location)
+        public AstNumberExpr(NumberData data, string suffix = null, HapetType numberType = null, ILocation Location = null) : base(Location)
         {
             Data = data;
             OutValue = data;
             this.Suffix = suffix;
 
-            if (data.Type == Enums.NumberType.Float)
+            if (numberType == null)
             {
-                OutType = FloatType.DefaultType;
+                if (data.Type == Enums.NumberType.Float)
+                {
+                    OutType = FloatType.DefaultType;
+                }
+                else
+                {
+                    OutType = IntType.DefaultType;
+                }
             }
             else
-            {
-                OutType = IntType.DefaultType;
-            }
+                OutType = numberType;
         }
     }
 }

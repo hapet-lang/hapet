@@ -23,10 +23,10 @@ namespace HapetBackend.Llvm
             LLVMValueRef allocated;
             if (expr.SizeExprs.Count > 1)
                 // allocating memory for the array
-                allocated = GetMalloc(currentArraySizeValueRef, ArrayType.GetArrayType(expr.TypeName.OutType).GetSize());
+                allocated = GetMalloc(ArrayType.GetArrayType(expr.TypeName.OutType).GetSize(), currentArraySizeValueRef);
             else
                 // allocating memory for the data in array
-                allocated = GetMalloc(currentArraySizeValueRef, expr.TypeName.OutType.GetSize());
+                allocated = GetMalloc(expr.TypeName.OutType.GetSize(), currentArraySizeValueRef);
 
             // different generation depending on ini elements
             if (expr.Elements.Count > 0)

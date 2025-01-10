@@ -374,7 +374,7 @@ namespace HapetFrontend.Types
 
         // array size is like that because of the array struct:
         // { int32, ptr }
-        private ArrayType(HapetType target) : base(4 + PointerType.PointerSize, PointerType.PointerSize)
+        private ArrayType(HapetType target, int size) : base(size, PointerType.PointerSize)
         {
             TargetType = target;
         }
@@ -388,7 +388,23 @@ namespace HapetFrontend.Types
             if (existing != null)
                 return existing;
 
-            var type = new ArrayType(targetType);
+            int size;
+            if (PointerType.PointerSize > 4)
+            {
+                // { int, __, uintptr }
+                size = 4 + 4 + PointerType.PointerSize;
+            }
+            else if (PointerType.PointerSize < 4)
+            {
+                // { int, uintptr, __ }
+                size = 4 + 4;
+            }
+            else
+            {
+                // { int, uintptr }
+                size = 4 + PointerType.PointerSize;
+            }
+            var type = new ArrayType(targetType, size);
 
             _types[targetType] = type;
             return type;
@@ -497,7 +513,25 @@ namespace HapetFrontend.Types
                 // string size is like that because of the string struct:
                 // { int32, ptr }
                 if (_instance == null)
-                    _instance = new StringType(4 + PointerType.PointerSize, PointerType.PointerSize);
+                {
+                    int size;
+                    if (PointerType.PointerSize > 4)
+                    {
+                        // { int, __, uintptr }
+                        size = 4 + 4 + PointerType.PointerSize;
+                    }
+                    else if (PointerType.PointerSize < 4)
+                    {
+                        // { int, uintptr, __ }
+                        size = 4 + 4;
+                    }
+                    else
+                    {
+                        // { int, uintptr }
+                        size = 4 + PointerType.PointerSize;
+                    }
+                    _instance = new StringType(size, PointerType.PointerSize);
+                }
                 return _instance;
             }
         }
