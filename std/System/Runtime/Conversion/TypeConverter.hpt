@@ -23,14 +23,14 @@ public static class TypeConverter
 
     public static int GetInterfaceOffset(void* obj, TypeInfoUnsafe* interfaceType)
     {
-        TypeInfoUnsafe** fullInfo = ((TypeInfoUnsafe***)obj)[0];
-        TypeInfoUnsafe* typeInfoPtr = ((TypeInfoUnsafe**)fullInfo)[0];
-        TypeInfoUnsafe typeInfo = *typeInfoPtr;
+        TypeInfoUnsafe** fullInfo = *((TypeInfoUnsafe***)obj);
+        TypeInfoUnsafe* typeInfoPtr = *((TypeInfoUnsafe**)fullInfo);
+        TypeInfoUnsafe typeInfo = *((TypeInfoUnsafe*)typeInfoPtr);
 
         int offset = 0;
         for (int i = 0; i < typeInfo.InterfaceCount; i += 1)
         {
-            var currIntf = typeInfo.Interfaces[i];
+            TypeInfoUnsafe* currIntf = typeInfo.Interfaces[i];
             if ((uintptr)currIntf == (uintptr)interfaceType)
             {
                 offset = typeInfo.InterfaceOffsets[i];
