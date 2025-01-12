@@ -5,6 +5,7 @@ using HapetFrontend.Entities;
 using HapetFrontend.Types;
 using System.Diagnostics;
 using System.Text;
+using System.Xml.Linq;
 
 namespace HapetFrontend.Helpers
 {
@@ -80,6 +81,15 @@ namespace HapetFrontend.Helpers
             }
             sb.Append(')');
             return sb.ToString();
+        }
+
+        public static List<AstDeclaration> GetStructFields(this List<AstDeclaration> delcs)
+        {
+            return delcs.Where(x =>
+                (x is AstVarDecl vD &&
+                !vD.SpecialKeys.Contains(Parsing.TokenType.KwStatic) &&
+                !vD.SpecialKeys.Contains(Parsing.TokenType.KwConst)) &&
+                x is not AstPropertyDecl).ToList();
         }
         #endregion
 

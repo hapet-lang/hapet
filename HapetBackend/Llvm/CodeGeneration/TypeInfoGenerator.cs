@@ -1,4 +1,5 @@
 ﻿using HapetFrontend.Ast.Declarations;
+using HapetFrontend.Helpers;
 using HapetFrontend.Types;
 using LLVMSharp.Interop;
 
@@ -107,7 +108,7 @@ namespace HapetBackend.Llvm
                 HapetType nextElementType = null;
                 foreach (var intf in inheritedInterfaces)
                 {
-                    var interfaceFields = intf.Declaration.Declarations.Where(x => x is AstVarDecl && x is not AstPropertyDecl).ToList();
+                    var interfaceFields = intf.Declaration.Declarations.GetStructFields();
                     if (interfaceFields.Count > 0)
                     {
                         nextElementType = interfaceFields[0].Type.OutType;
@@ -117,7 +118,7 @@ namespace HapetBackend.Llvm
                 // if there were no interfaces or they were without fields - try get our own field
                 if (nextElementType == null)
                 {
-                    var outFields = cls.Declaration.Declarations.Where(x => x is AstVarDecl && x is not AstPropertyDecl).ToList();
+                    var outFields = cls.Declaration.Declarations.GetStructFields();
                     if (outFields.Count > 0)
                     {
                         nextElementType = outFields[0].Type.OutType;
@@ -150,7 +151,7 @@ namespace HapetBackend.Llvm
                 HapetType nextElementType = null;
                 foreach (var intf in inheritedInterfaces.Skip(i + 1))
                 {
-                    var interfaceFields = intf.Declaration.Declarations.Where(x => x is AstVarDecl && x is not AstPropertyDecl).ToList();
+                    var interfaceFields = intf.Declaration.Declarations.GetStructFields();
                     if (interfaceFields.Count > 0)
                     {
                         nextElementType = interfaceFields[0].Type.OutType;
@@ -160,7 +161,7 @@ namespace HapetBackend.Llvm
                 // if there were no interfaces or they were without fields - try get our own field
                 if (nextElementType == null)
                 {
-                    var outFields = cls.Declaration.Declarations.Where(x => x is AstVarDecl && x is not AstPropertyDecl).ToList();
+                    var outFields = cls.Declaration.Declarations.GetStructFields();
                     if (outFields.Count > 0)
                     {
                         nextElementType = outFields[0].Type.OutType;

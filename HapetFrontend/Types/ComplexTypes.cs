@@ -1,4 +1,5 @@
 ﻿using HapetFrontend.Ast.Declarations;
+using HapetFrontend.Helpers;
 using Microsoft.VisualBasic.FileIO;
 using Newtonsoft.Json;
 using System.Drawing;
@@ -54,7 +55,7 @@ namespace HapetFrontend.Types
         /// <returns>The size</returns>
         public int GetStructSizeForInterfaceOffset(HapetType nextElement)
         {
-            var currClassFields = Declaration.Declarations.Where(x => x is AstVarDecl && x is not AstPropertyDecl).ToList();
+            var currClassFields = Declaration.Declarations.GetStructFields();
 
             int totalSize = 0;
             foreach (var inh in Declaration.InheritedFrom)
