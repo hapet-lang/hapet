@@ -101,7 +101,7 @@ namespace HapetBackend.Llvm
             if (cls.Declaration.InheritedFrom.Count > 0 && !(cls.Declaration.InheritedFrom[0].OutType as ClassType).Declaration.IsInterface)
             {
                 // if not include parent interfaces - just return its own
-                if (!includeParent)
+                if (includeParent)
                     parentClassInterfaces.AddRange(GetAllInterfaces(cls.Declaration.InheritedFrom[0].OutType as ClassType, true));
 
                 // we need to know the next field after base class fields for proper padding
