@@ -43,6 +43,16 @@ namespace HapetFrontend.Types
             }
             return false;
         }
+
+        /// <summary>
+        /// Returns the size of the class struct
+        /// </summary>
+        /// <param name="alignLast">Should the last element be aligned to its alignment</param>
+        /// <returns>The size</returns>
+        public int GetStructSize(bool alignLast = true)
+        {
+
+        }
     }
 
     /// <summary>

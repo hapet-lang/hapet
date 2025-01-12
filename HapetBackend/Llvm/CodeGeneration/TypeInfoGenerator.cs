@@ -53,7 +53,7 @@ namespace HapetBackend.Llvm
         private (LLVMValueRef, LLVMValueRef) GetInterfacesArray(ClassType cls, out int amount)
         {
             LLVMTypeRef arrayElementType = LLVMTypeRef.CreatePointer(GetTypeInfoType(), 0);
-            List<ClassType> interfaces = cls.Declaration.InheritedFrom.Where(x => x.OutType is ClassType clss && clss.Declaration.IsInterface).Select(x => x.OutType as ClassType).ToList();
+            List<(ClassType, int)> interfaces = GetAllInterfaces(cls);
             if (interfaces.Count == 0)
             {
                 amount = 0;
@@ -69,19 +69,61 @@ namespace HapetBackend.Llvm
             LLVMValueRef interfaceOffsetsArray = _module.AddGlobal(LLVMTypeRef.CreateArray(_context.Int32Type, (uint)(interfaces.Count)), $"TypeInfoInterfaceOffsetsArray::{cls.Declaration.Name.Name}");
             
             List<LLVMValueRef> intPtrs = new List<LLVMValueRef>(interfaces.Count);
+            List<LLVMValueRef> offsets = new List<LLVMValueRef>(interfaces.Count);
             foreach (var intf in interfaces)
             {
-                intPtrs.Add(GenerateTypeInfoConst(intf));
+                intPtrs.Add(GenerateTypeInfoConst(intf.Item1));
+                offsets.Add(LLVMValueRef.CreateConstInt(_context.Int32Type, (ulong)intf.Item2));
             }
 
             interfacesArray.Initializer = LLVMValueRef.CreateConstArray(arrayElementType, intPtrs.ToArray());
             interfacesArray.IsGlobalConstant = true;
 
-            // TODO:
+            interfaceOffsetsArray.Initializer = LLVMValueRef.CreateConstArray(_context.Int32Type, offsets.ToArray());
             interfaceOffsetsArray.IsGlobalConstant = true;
 
             amount = interfaces.Count;
             return (interfacesArray, interfaceOffsetsArray);
+        }
+
+        private List<(ClassType, int)> GetAllInterfaces(ClassType cls, bool includeParent = true)
+        {
+            List<(ClassType, int)> allInterfaces = new List<(ClassType, int)>();
+
+            // get parent class interfaces if the parent exists :)
+            int parentStructSize = 0;
+            List<(ClassType, int)> parentClassInterfaces = new List<(ClassType, int)>();
+            if (cls.Declaration.InheritedFrom.Count > 0 && !(cls.Declaration.InheritedFrom[0].OutType as ClassType).Declaration.IsInterface)
+            {
+                // if not include parent interfaces - just return its own
+                if (!includeParent)
+                    parentClassInterfaces.AddRange(GetAllInterfaces(cls.Declaration.InheritedFrom[0].OutType as ClassType, true));
+                parentStructSize = (cls.Declaration.InheritedFrom[0].OutType as ClassType).GetStructSize(true);
+            }
+            allInterfaces.AddRange(parentClassInterfaces);
+
+            // to store current offset to the interface fields
+            int currentTypeOffset = parentStructSize;
+
+            // go all over the curr class interfaces
+            foreach (var inh in cls.Declaration.InheritedFrom) 
+            {
+                var inhType = (inh.OutType as ClassType);
+                // skip the parent class - we need only interfaces :)
+                if (!inhType.Declaration.IsInterface)
+                    continue;
+
+                // skip interfaces that we already implemented in parent classes
+                if (parentClassInterfaces.Any(x => x.Item1 == inhType))
+                    continue;
+
+                allInterfaces.Add((inhType, currentTypeOffset));
+
+                // update offset
+                currentTypeOffset += inhType.GetStructSize(true);
+            }
+
+            return allInterfaces;
         }
         #endregion
 
