@@ -1,4 +1,5 @@
-﻿using HapetFrontend.Types;
+﻿using HapetFrontend.Ast.Declarations;
+using HapetFrontend.Types;
 using LLVMSharp.Interop;
 
 namespace HapetBackend.Llvm
@@ -86,8 +87,11 @@ namespace HapetBackend.Llvm
             return (interfacesArray, interfaceOffsetsArray);
         }
 
+        // TODO: refactor this cringe
         private List<(ClassType, int)> GetAllInterfaces(ClassType cls, bool includeParent = true)
         {
+            List<ClassType> inheritedInterfaces = cls.Declaration.InheritedFrom.Where(x => x.OutType is ClassType).Select(x => x.OutType as ClassType).ToList();
+
             List<(ClassType, int)> allInterfaces = new List<(ClassType, int)>();
 
             // get parent class interfaces if the parent exists :)
@@ -98,7 +102,29 @@ namespace HapetBackend.Llvm
                 // if not include parent interfaces - just return its own
                 if (!includeParent)
                     parentClassInterfaces.AddRange(GetAllInterfaces(cls.Declaration.InheritedFrom[0].OutType as ClassType, true));
-                parentStructSize = (cls.Declaration.InheritedFrom[0].OutType as ClassType).GetStructSize(true);
+
+                // we need to know the next field after base class fields for proper padding
+                HapetType nextElementType = null;
+                foreach (var intf in inheritedInterfaces)
+                {
+                    var interfaceFields = intf.Declaration.Declarations.Where(x => x is AstVarDecl && x is not AstPropertyDecl).ToList();
+                    if (interfaceFields.Count > 0)
+                    {
+                        nextElementType = interfaceFields[0].Type.OutType;
+                        break;
+                    }
+                }
+                // if there were no interfaces or they were without fields - try get our own field
+                if (nextElementType == null)
+                {
+                    var outFields = cls.Declaration.Declarations.Where(x => x is AstVarDecl && x is not AstPropertyDecl).ToList();
+                    if (outFields.Count > 0)
+                    {
+                        nextElementType = outFields[0].Type.OutType;
+                    }
+                }
+
+                parentStructSize = (cls.Declaration.InheritedFrom[0].OutType as ClassType).GetStructSizeForInterfaceOffset(nextElementType);
             }
             allInterfaces.AddRange(parentClassInterfaces);
 
@@ -106,21 +132,43 @@ namespace HapetBackend.Llvm
             int currentTypeOffset = parentStructSize;
 
             // go all over the curr class interfaces
-            foreach (var inh in cls.Declaration.InheritedFrom) 
+            for (int i = 0; i < inheritedInterfaces.Count; ++i) 
             {
-                var inhType = (inh.OutType as ClassType);
+                var inh = inheritedInterfaces[i];
+
                 // skip the parent class - we need only interfaces :)
-                if (!inhType.Declaration.IsInterface)
+                if (!inh.Declaration.IsInterface)
                     continue;
 
                 // skip interfaces that we already implemented in parent classes
-                if (parentClassInterfaces.Any(x => x.Item1 == inhType))
+                if (parentClassInterfaces.Any(x => x.Item1 == inh))
                     continue;
 
-                allInterfaces.Add((inhType, currentTypeOffset));
+                allInterfaces.Add((inh, currentTypeOffset));
+
+                // we need to know the next field after base class fields for proper padding
+                HapetType nextElementType = null;
+                foreach (var intf in inheritedInterfaces.Skip(i + 1))
+                {
+                    var interfaceFields = intf.Declaration.Declarations.Where(x => x is AstVarDecl && x is not AstPropertyDecl).ToList();
+                    if (interfaceFields.Count > 0)
+                    {
+                        nextElementType = interfaceFields[0].Type.OutType;
+                        break;
+                    }
+                }
+                // if there were no interfaces or they were without fields - try get our own field
+                if (nextElementType == null)
+                {
+                    var outFields = cls.Declaration.Declarations.Where(x => x is AstVarDecl && x is not AstPropertyDecl).ToList();
+                    if (outFields.Count > 0)
+                    {
+                        nextElementType = outFields[0].Type.OutType;
+                    }
+                }
 
                 // update offset
-                currentTypeOffset += inhType.GetStructSize(true);
+                currentTypeOffset += inh.GetStructSizeForInterfaceOffset(nextElementType);
             }
 
             return allInterfaces;
