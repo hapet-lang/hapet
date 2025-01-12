@@ -37,7 +37,7 @@ public class Derived : BaseCls, ISosahtung
 
 	public Derived() : base(41)
 	{
-
+		this.Anime322 = 444;
 	}
 }
 

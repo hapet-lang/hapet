@@ -63,27 +63,12 @@ namespace HapetBackend.Llvm
                 var entryTypes = new List<LLVMTypeRef>();
                 var entryHapetTypes = new List<HapetType>();
 
-                entryTypes.Add(_context.Int8Type.GetPointerTo());
-                entryHapetTypes.Add(PointerType.GetPointerType(IntPtrType.Instance));
-
-                // get all fields from base classes/interfaces
-                //foreach (var bs in cls.InheritedFrom)
-                //{
-                //    if (bs.OutType is not ClassType clsType)
-                //        continue;
-                //    // get all fields that are not static and const
-                //    var bFields = cls.Declarations
-                //        .Where(x => (x is AstVarDecl && x is not AstPropertyDecl) &&
-                //            (!x.SpecialKeys.Contains(TokenType.KwStatic) &&
-                //            !x.SpecialKeys.Contains(TokenType.KwConst)))
-                //        .Select(x => x as AstVarDecl);
-                //    foreach (var f in bFields)
-                //    {
-                //        // if it is non const/static - create a field in struct
-                //        entryTypes.Add(HapetTypeToLLVMType(f.Type.OutType));
-                //        entryHapetTypes.Add(f.Type.OutType);
-                //    }
-                //}
+                // add typeinfo field only for non-interfaces!!!
+                if (!cls.IsInterface)
+                {
+                    entryTypes.Add(_context.Int8Type.GetPointerTo());
+                    entryHapetTypes.Add(PointerType.GetPointerType(IntPtrType.Instance));
+                }
 
                 // getting all field except props
                 foreach (var decl in cls.Declarations.Where(x => x is AstVarDecl && x is not AstPropertyDecl).Select(x => x as AstVarDecl))
@@ -154,7 +139,7 @@ namespace HapetBackend.Llvm
             {
                 // reg type info if non static
                 if (!cls.SpecialKeys.Contains(TokenType.KwStatic))
-                    _typeInfoDictionary.Add(cls.Type.OutType as ClassType, GenerateTypeInfoConst(cls.Type.OutType as ClassType));
+                    GenerateTypeInfoConst(cls.Type.OutType as ClassType);
             }
         }
     }

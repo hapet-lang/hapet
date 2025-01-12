@@ -37,6 +37,8 @@ namespace HapetBackend.Llvm
             globConst.Linkage = (LLVMLinkage.LLVMInternalLinkage);
             globConst.IsGlobalConstant = true;
 
+            _typeInfoDictionary.Add(cls, globConst);
+
             return globConst;
         }
 
