@@ -7,15 +7,15 @@ public static class TypeConverter
         if ((uintptr)obj == (uintptr)0)
             return false;
 
-        TypeInfoUnsafe** fullInfo = ((TypeInfoUnsafe***)obj)[0];
-        TypeInfoUnsafe* typeInfo = ((TypeInfoUnsafe**)fullInfo)[0];
+        TypeInfoUnsafe** fullInfo = *((TypeInfoUnsafe***)obj);
+        TypeInfoUnsafe* typeInfo = *((TypeInfoUnsafe**)fullInfo);
         TypeInfoUnsafe* currTypeInfo = typeInfo;
 
         while ((uintptr)currTypeInfo != (uintptr)0)
         {
             if ((uintptr)currTypeInfo == (uintptr)type)
                 return true;
-            TypeInfoUnsafe a = (((TypeInfoUnsafe*)currTypeInfo)[0]);
+            TypeInfoUnsafe a = *((TypeInfoUnsafe*)currTypeInfo);
             currTypeInfo = (TypeInfoUnsafe*)a.Parent;
         }
         return false;
