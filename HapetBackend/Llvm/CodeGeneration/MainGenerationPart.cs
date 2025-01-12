@@ -132,40 +132,6 @@ namespace HapetBackend.Llvm
                 _builder.BuildBr(bbBody);
                 _builder.PositionAtEnd(bbBody);
 
-                // if the func is initializer - set up type data ptr!!!
-                if (funcDecl.ClassFunctionType == HapetFrontend.Enums.ClassFunctionType.Initializer)
-                {
-                    // create an array of ptrs:
-                    // [ptrToTypeInfo, ptrToVtable]
-                    //
-                    //		  example class
-                    //		{ ptr, ..., ... }   
-                    //		   ↓
-                    //		[ ptr, ptr ]
-                    //		   |
-                    //		   |
-                    //		   ↓
-                    //	"TypeInfoStruct"
-
-                    // allocating memory for the data in array
-                    var allocated = GetMalloc(HapetType.PointerSize, 2);
-                    var ptrToType = _builder.BuildGEP2(LLVMTypeRef.CreatePointer(GetTypeInfoType(), 0), allocated, new LLVMValueRef[] { LLVMValueRef.CreateConstInt(LLVMTypeRef.Int32, 0) }, $"elementPtr{0}");
-                    var containingClass = funcDecl.ContainingClass.Type.OutType as ClassType;
-                    _builder.BuildStore(_typeInfoDictionary[containingClass], ptrToType);
-
-                    // save the array into first field
-                    var tp = HapetTypeToLLVMType(containingClass);
-                    var thisObj = GenerateExpressionCode(new AstIdExpr("this", funcDecl)
-                    {
-                        Scope = funcDecl.SubScope,
-                        Parent = funcDecl,
-                        OutType = PointerType.GetPointerType(containingClass),
-                        SourceFile = funcDecl.SourceFile
-                    });
-                    var fti = _builder.BuildStructGEP2(tp, thisObj, 0, "fullTypeInfoPtr");
-                    _builder.BuildStore(allocated, fti);
-                }
-
                 // different behaviour when extern func
                 if (funcDecl.SpecialKeys.Contains(TokenType.KwExtern))
                 {

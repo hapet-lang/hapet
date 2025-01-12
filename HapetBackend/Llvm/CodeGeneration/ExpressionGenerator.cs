@@ -321,6 +321,32 @@ namespace HapetBackend.Llvm
 
                 // allocating memory for struct
                 v = GetMalloc(structSize, 1);
+
+                // set up type data ptr!!!
+                {
+                    // create an array of ptrs:
+                    // [ptrToTypeInfo, ptrToVtable]
+                    //
+                    //		  example class
+                    //		{ ptr, ..., ... }   
+                    //		   ↓
+                    //		[ ptr, ptr ]
+                    //		   |
+                    //		   |
+                    //		   ↓
+                    //	"TypeInfoStruct"
+
+                    // allocating memory for the data in array
+                    var allocated = GetMalloc(HapetType.PointerSize, 2);
+                    var ptrToType = _builder.BuildGEP2(LLVMTypeRef.CreatePointer(GetTypeInfoType(), 0), allocated, new LLVMValueRef[] { LLVMValueRef.CreateConstInt(LLVMTypeRef.Int32, 0) }, $"elementPtr{0}");
+                    _builder.BuildStore(_typeInfoDictionary[classType], ptrToType);
+
+                    // save the array into first field
+                    var tp = HapetTypeToLLVMType(classType);
+                    var fti = _builder.BuildStructGEP2(tp, v, 0, "fullTypeInfoPtr");
+                    _builder.BuildStore(allocated, fti);
+                }
+
                 // other args
                 List<LLVMValueRef> args = new List<LLVMValueRef>() { v };
                 foreach (var a in expr.Arguments)
