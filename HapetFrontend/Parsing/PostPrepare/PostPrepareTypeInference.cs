@@ -484,8 +484,22 @@ namespace HapetFrontend.Parsing.PostPrepare
         {
             // prepare the right side
             PostPrepareExprInference(pointerExpr.SubExpression);
-            // create a new pointer type from the right side and set the type to itself
-            pointerExpr.OutType = PointerType.GetPointerType(pointerExpr.SubExpression.OutType);
+            if (pointerExpr.IsDereference)
+            {
+                // if it is a deref - right type has to be a ptr
+                var rightType = pointerExpr.SubExpression.OutType as PointerType;
+                if (rightType == null)
+                {
+                    // TODO: error here
+                    return;
+                }
+                pointerExpr.OutType = rightType.TargetType;
+            }
+            else
+            {
+                // create a new pointer type from the right side and set the type to itself
+                pointerExpr.OutType = PointerType.GetPointerType(pointerExpr.SubExpression.OutType);
+            }
         }
 
         private void PostPrepareAddressOfExprInference(AstAddressOfExpr addrExpr)

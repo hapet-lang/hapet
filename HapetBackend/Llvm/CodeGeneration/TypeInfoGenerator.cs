@@ -27,11 +27,11 @@ namespace HapetBackend.Llvm
             var nullPtr = LLVMValueRef.CreateConstPointerNull(ptrT);
             LLVMValueRef parentRef = parent == null ? nullPtr : GenerateTypeInfoConst(parent);
             // interfaces
-            LLVMValueRef interfaces = GetInterfacesArray(cls, out int interfacesCount);
+            var (interfaces, interfaceOffsets) = GetInterfacesArray(cls, out int interfacesCount);
             LLVMValueRef interfacesCountRef = LLVMValueRef.CreateConstInt(_context.Int8Type, (ulong)interfacesCount);
 
             var globConst = _module.AddGlobal(typeInfoType, $"TypeInfo::{typeNameString}");
-            globConst.Initializer = LLVMValueRef.CreateConstNamedStruct(typeInfoType, new LLVMValueRef[] { typeName, parentRef, interfaces, interfacesCountRef });
+            globConst.Initializer = LLVMValueRef.CreateConstNamedStruct(typeInfoType, new LLVMValueRef[] { typeName, parentRef, interfaces, interfaceOffsets, interfacesCountRef });
             globConst.Linkage = (LLVMLinkage.LLVMInternalLinkage);
             globConst.IsGlobalConstant = true;
 
@@ -50,7 +50,7 @@ namespace HapetBackend.Llvm
             return _typeInfoType;
         }
 
-        private LLVMValueRef GetInterfacesArray(ClassType cls, out int amount)
+        private (LLVMValueRef, LLVMValueRef) GetInterfacesArray(ClassType cls, out int amount)
         {
             LLVMTypeRef arrayElementType = LLVMTypeRef.CreatePointer(GetTypeInfoType(), 0);
             List<ClassType> interfaces = cls.Declaration.InheritedFrom.Where(x => x.OutType is ClassType clss && clss.Declaration.IsInterface).Select(x => x.OutType as ClassType).ToList();
@@ -59,20 +59,29 @@ namespace HapetBackend.Llvm
                 amount = 0;
                 var ptrT = LLVMTypeRef.CreatePointer(arrayElementType, 0);
                 var nullPtr = LLVMValueRef.CreateConstPointerNull(ptrT);
-                return nullPtr;
+
+                var ptrTInt = LLVMTypeRef.CreatePointer(_context.Int32Type, 0);
+                var nullPtrInt = LLVMValueRef.CreateConstPointerNull(ptrTInt);
+                return (nullPtr, nullPtrInt);
             }
 
             LLVMValueRef interfacesArray = _module.AddGlobal(LLVMTypeRef.CreateArray(arrayElementType, (uint)(interfaces.Count)), $"TypeInfoInterfacesArray::{cls.Declaration.Name.Name}");
+            LLVMValueRef interfaceOffsetsArray = _module.AddGlobal(LLVMTypeRef.CreateArray(_context.Int32Type, (uint)(interfaces.Count)), $"TypeInfoInterfaceOffsetsArray::{cls.Declaration.Name.Name}");
+            
             List<LLVMValueRef> intPtrs = new List<LLVMValueRef>(interfaces.Count);
             foreach (var intf in interfaces)
             {
                 intPtrs.Add(GenerateTypeInfoConst(intf));
             }
+
             interfacesArray.Initializer = LLVMValueRef.CreateConstArray(arrayElementType, intPtrs.ToArray());
             interfacesArray.IsGlobalConstant = true;
 
+            // TODO:
+            interfaceOffsetsArray.IsGlobalConstant = true;
+
             amount = interfaces.Count;
-            return interfacesArray;
+            return (interfacesArray, interfaceOffsetsArray);
         }
         #endregion
 

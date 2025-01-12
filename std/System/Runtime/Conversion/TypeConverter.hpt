@@ -20,4 +20,13 @@ public static class TypeConverter
         }
         return false;
     }
+
+    public static int GetInterfaceOffset(void* obj, TypeInfoUnsafe* interfaceType)
+    {
+        TypeInfoUnsafe** fullInfo = ((TypeInfoUnsafe***)obj)[0];
+        TypeInfoUnsafe* typeInfoPtr = ((TypeInfoUnsafe**)fullInfo)[0];
+        TypeInfoUnsafe typeInfo = *typeInfoPtr;
+        
+        return 0;
+    }
 }
