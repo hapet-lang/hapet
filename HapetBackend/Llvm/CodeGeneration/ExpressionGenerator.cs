@@ -166,7 +166,7 @@ namespace HapetBackend.Llvm
             if (expr.IsDereference)
             {
                 var theVar = GenerateExpressionCode(expr.SubExpression);
-                var loaded = _builder.BuildLoad2(HapetTypeToLLVMType(expr.SubExpression.OutType), theVar, $"derefed");
+                var loaded = _builder.BuildLoad2(HapetTypeToLLVMType(expr.OutType), theVar, $"derefed");
                 return loaded;
             }
             else
