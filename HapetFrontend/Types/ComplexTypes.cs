@@ -47,44 +47,6 @@ namespace HapetFrontend.Types
             }
             return false;
         }
-
-        /// <summary>
-        /// Returns the size of the class struct to calc interface offset
-        /// </summary>
-        /// <param name="nextElement">We need the next element to properly calc the size of the shite</param>
-        /// <returns>The size</returns>
-        public int GetStructSizeForInterfaceOffset(HapetType nextElement)
-        {
-            var currClassFields = Declaration.Declarations.GetStructFields();
-
-            int totalSize = 0;
-            foreach (var inh in Declaration.InheritedFrom)
-            {
-                var next = currClassFields.Count > 0 ? currClassFields[0].Type.OutType : null;
-                totalSize += (inh.OutType as ClassType).GetStructSizeForInterfaceOffset(next);
-            }
-
-            // go all over the fields and calc the size
-            foreach (var field in currClassFields)
-            {
-                var fieldType = field.Type.OutType;
-
-                int fieldAlignment = fieldType.GetAlignment() == 0 ? fieldType.GetSize() : fieldType.GetAlignment();
-                int padding = (fieldAlignment - (totalSize % fieldAlignment)) % fieldAlignment;  // Alignment
-                totalSize += padding;  // Add padding for the alignment
-                totalSize += fieldType.GetSize();  // Add field size
-            }
-
-            // add proper padding for the next element
-            if (nextElement != null)
-            {
-                int fieldAlignment = nextElement.GetAlignment() == 0 ? nextElement.GetSize() : nextElement.GetAlignment();
-                int padding = (fieldAlignment - (totalSize % fieldAlignment)) % fieldAlignment;  // Alignment
-                totalSize += padding;  // Add padding for the alignment
-            }
-
-            return totalSize;
-        }
     }
 
     /// <summary>

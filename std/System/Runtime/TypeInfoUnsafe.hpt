@@ -3,6 +3,6 @@ public struct TypeInfoUnsafe
     byte* Name;
     TypeInfoUnsafe* Parent;
     TypeInfoUnsafe** Interfaces;
-    int* InterfaceOffsets;
+    int** InterfaceOffsets;
     byte InterfaceCount;
 }

@@ -23,6 +23,11 @@ namespace HapetFrontend.Ast.Declarations
         /// </summary>
         public bool IsInterface { get; set; }
 
+        /// <summary>
+        /// All original raw fields (including inherited) (for easier interface offset generation)
+        /// </summary>
+        public List<AstVarDecl> AllRawFields { get; set; }
+
         public AstClassDecl(AstIdExpr name, List<AstDeclaration> declarations, string doc = "", ILocation Location = null) : base(name, doc, Location)
         {
             Type = new AstIdExpr("class", Location);

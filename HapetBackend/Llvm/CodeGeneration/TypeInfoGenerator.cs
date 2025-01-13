@@ -2,6 +2,7 @@
 using HapetFrontend.Helpers;
 using HapetFrontend.Types;
 using LLVMSharp.Interop;
+using System.Xml.Linq;
 
 namespace HapetBackend.Llvm
 {
@@ -57,7 +58,7 @@ namespace HapetBackend.Llvm
         private (LLVMValueRef, LLVMValueRef) GetInterfacesArray(ClassType cls, out int amount)
         {
             LLVMTypeRef arrayElementType = LLVMTypeRef.CreatePointer(GetTypeInfoType(), 0);
-            List<(ClassType, int)> interfaces = GetAllInterfaces(cls);
+            List<(ClassType, int[])> interfaces = GetAllInterfacesWithOffsets(cls);
             if (interfaces.Count == 0)
             {
                 amount = 0;
@@ -70,69 +71,93 @@ namespace HapetBackend.Llvm
             }
 
             LLVMValueRef interfacesArray = _module.AddGlobal(LLVMTypeRef.CreateArray(arrayElementType, (uint)(interfaces.Count)), $"TypeInfoInterfacesArray::{cls.Declaration.Name.Name}");
-            LLVMValueRef interfaceOffsetsArray = _module.AddGlobal(LLVMTypeRef.CreateArray(_context.Int32Type, (uint)(interfaces.Count)), $"TypeInfoInterfaceOffsetsArray::{cls.Declaration.Name.Name}");
+            LLVMValueRef interfaceOffsetsArray = _module.AddGlobal(LLVMTypeRef.CreateArray(LLVMTypeRef.CreatePointer(_context.Int32Type, 0), (uint)(interfaces.Count)), $"TypeInfoInterfaceOffsetsArray::{cls.Declaration.Name.Name}");
             
             List<LLVMValueRef> intPtrs = new List<LLVMValueRef>(interfaces.Count);
-            List<LLVMValueRef> offsets = new List<LLVMValueRef>(interfaces.Count);
+            List<LLVMValueRef> offsetArrays = new List<LLVMValueRef>(interfaces.Count);
             foreach (var intf in interfaces)
             {
                 intPtrs.Add(GenerateTypeInfoConst(intf.Item1));
-                offsets.Add(LLVMValueRef.CreateConstInt(_context.Int32Type, (ulong)intf.Item2));
+
+                LLVMValueRef offsetsOfInterface = LLVMValueRef.CreateConstArray(_context.Int32Type, intf.Item2.Select(x => LLVMValueRef.CreateConstInt(_context.Int32Type, (ulong)x)).ToArray());
+                //LLVMValueRef constPtrCast = LLVMValueRef.CreateConstPointerCast(offsetsOfInterface, LLVMTypeRef.CreatePointer(_context.Int32Type, 0));
+                offsetArrays.Add(offsetsOfInterface);
             }
 
             interfacesArray.Initializer = LLVMValueRef.CreateConstArray(arrayElementType, intPtrs.ToArray());
             interfacesArray.IsGlobalConstant = true;
 
-            interfaceOffsetsArray.Initializer = LLVMValueRef.CreateConstArray(_context.Int32Type, offsets.ToArray());
+            interfaceOffsetsArray.Initializer = LLVMValueRef.CreateConstArray(LLVMTypeRef.CreatePointer(_context.Int32Type, 0), offsetArrays.ToArray());
             interfaceOffsetsArray.IsGlobalConstant = true;
 
             amount = interfaces.Count;
             return (interfacesArray, interfaceOffsetsArray);
         }
 
-        // TODO: refactor this cringe
-        private List<(ClassType, int)> GetAllInterfaces(ClassType cls, bool includeParent = true)
+        private List<(ClassType, int[])> GetAllInterfacesWithOffsets(ClassType cls)
+        {
+            // to calc offset up to the required element
+            int GetOffsetTo(List<AstVarDecl> allVars, int ind)
+            {
+                int totalSize = 0;
+                // go all over the fields and calc the size
+                for (int i = 0; i < ind; ++i)
+                {
+                    var field = allVars[i];
+                    var fieldType = field.Type.OutType;
+
+                    int fieldAlignment = fieldType.GetAlignment() == 0 ? fieldType.GetSize() : fieldType.GetAlignment();
+                    int padding = (fieldAlignment - (totalSize % fieldAlignment)) % fieldAlignment;  // Alignment
+                    totalSize += padding;  // Add padding for the alignment
+                    totalSize += fieldType.GetSize();  // Add field size
+
+                    // if it is the last iteration - add padding
+                    if (i + 1 == ind)
+                    {
+                        var nextElement = allVars[i + 1].Type.OutType;
+                        int fieldAlignmentLast = nextElement.GetAlignment() == 0 ? nextElement.GetSize() : nextElement.GetAlignment();
+                        int paddingLast = (fieldAlignmentLast - (totalSize % fieldAlignmentLast)) % fieldAlignmentLast;  // Alignment
+                        totalSize += paddingLast;  // Add padding for the alignment
+                    }
+                }
+                return totalSize;
+            }
+
+            List<(ClassType, int[])> allInterfacesWithOffsets = new List<(ClassType, int[])>();
+
+            var allClassFields = cls.Declaration.AllRawFields;
+            var allInterfaces = GetAllInterfaces(cls, true);
+
+            foreach (var intrf in allInterfaces)
+            {
+                List<int> offsets = new List<int>();
+                foreach (var iF in intrf.Declaration.AllRawFields)
+                {
+                    int fIndex = allClassFields.IndexOf(allClassFields.GetSameDeclByTypeAndName(iF));
+                    int offset = GetOffsetTo(allClassFields, fIndex);
+                    offsets.Add(offset);
+                }
+                allInterfacesWithOffsets.Add((intrf, offsets.ToArray()));
+            }
+
+            return allInterfacesWithOffsets;
+        }
+
+        private List<ClassType> GetAllInterfaces(ClassType cls, bool includeParent = true)
         {
             List<ClassType> inheritedInterfaces = cls.Declaration.InheritedFrom.Where(x => x.OutType is ClassType).Select(x => x.OutType as ClassType).ToList();
 
-            List<(ClassType, int)> allInterfaces = new List<(ClassType, int)>();
+            List<ClassType> allInterfaces = new List<ClassType>();
 
             // get parent class interfaces if the parent exists :)
-            int parentStructSize = 0;
-            List<(ClassType, int)> parentClassInterfaces = new List<(ClassType, int)>();
+            List<ClassType> parentClassInterfaces = new List<ClassType>();
             if (cls.Declaration.InheritedFrom.Count > 0 && !(cls.Declaration.InheritedFrom[0].OutType as ClassType).Declaration.IsInterface)
             {
-                // if not include parent interfaces - just return its own
+                // if include parent interfaces 
                 if (includeParent)
                     parentClassInterfaces.AddRange(GetAllInterfaces(cls.Declaration.InheritedFrom[0].OutType as ClassType, true));
-
-                // we need to know the next field after base class fields for proper padding
-                HapetType nextElementType = null;
-                foreach (var intf in inheritedInterfaces)
-                {
-                    var interfaceFields = intf.Declaration.Declarations.GetStructFields();
-                    if (interfaceFields.Count > 0)
-                    {
-                        nextElementType = interfaceFields[0].Type.OutType;
-                        break;
-                    }
-                }
-                // if there were no interfaces or they were without fields - try get our own field
-                if (nextElementType == null)
-                {
-                    var outFields = cls.Declaration.Declarations.GetStructFields();
-                    if (outFields.Count > 0)
-                    {
-                        nextElementType = outFields[0].Type.OutType;
-                    }
-                }
-
-                parentStructSize = (cls.Declaration.InheritedFrom[0].OutType as ClassType).GetStructSizeForInterfaceOffset(nextElementType);
             }
             allInterfaces.AddRange(parentClassInterfaces);
-
-            // to store current offset to the interface fields
-            int currentTypeOffset = parentStructSize;
 
             // go all over the curr class interfaces
             for (int i = 0; i < inheritedInterfaces.Count; ++i) 
@@ -143,35 +168,20 @@ namespace HapetBackend.Llvm
                 if (!inh.Declaration.IsInterface)
                     continue;
 
-                // skip interfaces that we already implemented in parent classes
-                if (parentClassInterfaces.Any(x => x.Item1 == inh))
+                // skip interfaces that we already implemented
+                if (allInterfaces.Any(x => x == inh))
                     continue;
+                allInterfaces.Add(inh);
 
-                allInterfaces.Add((inh, currentTypeOffset));
-
-                // we need to know the next field after base class fields for proper padding
-                HapetType nextElementType = null;
-                foreach (var intf in inheritedInterfaces.Skip(i + 1))
+                // get all interfaces of the curr one
+                var parentParents = GetAllInterfaces(inh, true);
+                foreach (var pp in parentParents)
                 {
-                    var interfaceFields = intf.Declaration.Declarations.GetStructFields();
-                    if (interfaceFields.Count > 0)
-                    {
-                        nextElementType = interfaceFields[0].Type.OutType;
-                        break;
-                    }
+                    // skip interfaces that we already implemented
+                    if (allInterfaces.Any(x => x == inh))
+                        continue;
+                    allInterfaces.Add(inh);
                 }
-                // if there were no interfaces or they were without fields - try get our own field
-                if (nextElementType == null)
-                {
-                    var outFields = cls.Declaration.Declarations.GetStructFields();
-                    if (outFields.Count > 0)
-                    {
-                        nextElementType = outFields[0].Type.OutType;
-                    }
-                }
-
-                // update offset
-                currentTypeOffset += inh.GetStructSizeForInterfaceOffset(nextElementType);
             }
 
             return allInterfaces;

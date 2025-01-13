@@ -346,15 +346,13 @@ namespace HapetFrontend.Parsing.PostPrepare
                 return inheritedFieldDecls;
             }
 
-            Dictionary<AstClassDecl, List<AstVarDecl>> pureDecls = new Dictionary<AstClassDecl, List<AstVarDecl>>();
-
             // resolve all inherited fields of classes
             foreach (var cls in AllClassesMetadata)
             {
                 _currentSourceFile = cls.SourceFile;
                 _currentClass = cls;
 
-                pureDecls.Add(cls, GetPreparedFields(cls));
+                cls.AllRawFields = GetPreparedFields(cls);
             }
 
             foreach (var cls in AllClassesMetadata)
@@ -362,7 +360,7 @@ namespace HapetFrontend.Parsing.PostPrepare
                 _currentSourceFile = cls.SourceFile;
                 _currentClass = cls;
 
-                CopyInheritedFields(cls, pureDecls[cls]);
+                CopyInheritedFields(cls, cls.AllRawFields);
             }
         }
 

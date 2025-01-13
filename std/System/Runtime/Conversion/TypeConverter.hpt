@@ -33,7 +33,7 @@ public static class TypeConverter
             TypeInfoUnsafe* currIntf = typeInfo.Interfaces[i];
             if ((uintptr)currIntf == (uintptr)interfaceType)
             {
-                offset = typeInfo.InterfaceOffsets[i];
+                //offset = typeInfo.InterfaceOffsets[i];
                 break;
             }
         }
