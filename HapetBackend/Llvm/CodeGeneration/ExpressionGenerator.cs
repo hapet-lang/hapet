@@ -583,20 +583,19 @@ namespace HapetBackend.Llvm
                         if (leftPartType is ClassType clsT && clsT.Declaration.IsInterface)
                         {
                             var ptrToTypeInfo = _typeInfoDictionary[clsT];
+                            var elementIndexValueRef = LLVMValueRef.CreateConstInt(_context.Int32Type, (ulong)elementIndex);
                             // WARN: hard cock
                             var typeConverter = _currentFunction.Scope.GetSymbolInNamespace("System.Runtime.Conversion", "TypeConverter");
-                            var offseterSymbol = (typeConverter.Decl as AstClassDecl).SubScope.GetSymbol("System.Runtime.Conversion.TypeConverter::GetInterfaceOffset(void*:System.Runtime.TypeInfoUnsafe*)") as DeclSymbol;
+                            var offseterSymbol = (typeConverter.Decl as AstClassDecl).SubScope.GetSymbol("System.Runtime.Conversion.TypeConverter::GetInterfaceOffset(void*:System.Runtime.TypeInfoUnsafe*:int)") as DeclSymbol;
                             var offseterFunc = _valueMap[offseterSymbol];
                             LLVMTypeRef funcType = _typeMap[offseterSymbol.Decl.Type.OutType];
-                            var offset = _builder.BuildCall2(funcType, offseterFunc, new LLVMValueRef[] { leftPart, ptrToTypeInfo }, "interfaceOffset");
+                            var offset = _builder.BuildCall2(funcType, offseterFunc, new LLVMValueRef[] { leftPart, ptrToTypeInfo, elementIndexValueRef }, "interfaceOffset");
 
                             // we need this to also skip TypeInfo ptr at the beginning of the class instance
                             var normalOffset = _builder.BuildAdd(offset, LLVMValueRef.CreateConstInt(_context.Int32Type, (ulong)HapetType.PointerSize), "offsetWithTypeInfoPtr");
 
                             // get ptr by offset
-                            var offseted = _builder.BuildGEP2(_context.Int8Type, leftPart, new LLVMValueRef[] { normalOffset }, "offsetedPtr");
-                            // get the element
-                            ret = _builder.BuildStructGEP2(tp, offseted, elementIndex, idExpr.Name);
+                            ret = _builder.BuildGEP2(_context.Int8Type, leftPart, new LLVMValueRef[] { normalOffset }, idExpr.Name);
                         }
                         else
                         {
@@ -630,7 +629,7 @@ namespace HapetBackend.Llvm
         private uint GetElementIndex(string name, List<AstDeclaration> decls)
         {
             // getting pure decls without consts and statics
-            var pureDecls = decls.Where(x => !x.SpecialKeys.Contains(TokenType.KwStatic) && !x.SpecialKeys.Contains(TokenType.KwConst)).ToList();
+            var pureDecls = decls.GetStructFields();
             // search for the name in decl
             for (uint i = 0; i < pureDecls.Count; ++i)
             {

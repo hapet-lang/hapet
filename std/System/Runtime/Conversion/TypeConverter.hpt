@@ -21,7 +21,7 @@ public static class TypeConverter
         return false;
     }
 
-    public static int GetInterfaceOffset(void* obj, TypeInfoUnsafe* interfaceType)
+    public static int GetInterfaceOffset(void* obj, TypeInfoUnsafe* interfaceType, int fieldIndex)
     {
         TypeInfoUnsafe** fullInfo = *((TypeInfoUnsafe***)obj);
         TypeInfoUnsafe* typeInfoPtr = *((TypeInfoUnsafe**)fullInfo);
@@ -33,7 +33,8 @@ public static class TypeConverter
             TypeInfoUnsafe* currIntf = typeInfo.Interfaces[i];
             if ((uintptr)currIntf == (uintptr)interfaceType)
             {
-                //offset = typeInfo.InterfaceOffsets[i];
+                var offsets = typeInfo.InterfaceOffsets[i];
+                offset = offsets[fieldIndex];
                 break;
             }
         }

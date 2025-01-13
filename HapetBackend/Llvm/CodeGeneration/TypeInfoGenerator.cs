@@ -80,7 +80,6 @@ namespace HapetBackend.Llvm
                 intPtrs.Add(GenerateTypeInfoConst(intf.Item1));
 
                 LLVMValueRef offsetsOfInterface = LLVMValueRef.CreateConstArray(_context.Int32Type, intf.Item2.Select(x => LLVMValueRef.CreateConstInt(_context.Int32Type, (ulong)x)).ToArray());
-                //LLVMValueRef constPtrCast = LLVMValueRef.CreateConstPointerCast(offsetsOfInterface, LLVMTypeRef.CreatePointer(_context.Int32Type, 0));
                 offsetArrays.Add(offsetsOfInterface);
             }
 
