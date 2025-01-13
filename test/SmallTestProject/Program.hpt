@@ -16,7 +16,7 @@ public static class Program
 
 public interface IBot
 {
-	short AnimeBot;
+	byte AnimeBot;
 }
 
 public interface ILoh
@@ -26,16 +26,16 @@ public interface ILoh
 
 public interface ISoh : ILoh, IBot
 {
-	short AnimeSoh;
+	int AnimeSoh;
 }
 
 public class BaseCls : ILoh
 {
-	public int Field1;
+	public string Field1;
 
 	public short AnimeLoh;
 
-	public BaseCls(short ddd)
+	public BaseCls(string ddd)
 	{
 		this.Field1 = ddd;
 	}
@@ -43,13 +43,13 @@ public class BaseCls : ILoh
 
 public class Derived : BaseCls, ISoh, IBot
 {
-	public int Field2;
+	public long Field2;
 
-	public short AnimeSoh;
+	public int AnimeSoh;
 
-	public short AnimeBot;
+	public byte AnimeBot;
 
-	public Derived() : base(41)
+	public Derived() : base("dasdasd")
 	{
 		this.AnimeSoh = 444;
 	}
