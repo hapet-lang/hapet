@@ -24,6 +24,19 @@ namespace HapetFrontend.Scoping
             return true;
         }
 
+        public bool RemoveLocalSymbol(ISymbol symbol, string name = null)
+        {
+            name ??= symbol.Name;
+            if (name == "_")
+                return true;
+
+            if (!_symbolTable.ContainsKey(name))
+                return false;
+
+            _symbolTable.Remove(name);
+            return true;
+        }
+
         public bool DefineSymbol(ISymbol symbol, string name = null)
         {
             return DefineLocalSymbol(symbol, name);
@@ -42,6 +55,11 @@ namespace HapetFrontend.Scoping
         public bool DefineDeclSymbol(string name, AstDeclaration decl)
         {
             return DefineSymbol(new DeclSymbol(name, decl));
+        }
+
+        public bool RemoveDeclSymbol(string name, AstDeclaration decl)
+        {
+            return RemoveLocalSymbol(new DeclSymbol(name, decl));
         }
 
         public bool RenameSymbol(string oldName, string newName)

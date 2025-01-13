@@ -3,6 +3,7 @@ using HapetFrontend.Ast.Declarations;
 using HapetFrontend.Ast.Expressions;
 using HapetFrontend.Ast.Statements;
 using HapetFrontend.Entities;
+using HapetFrontend.Helpers;
 using HapetFrontend.Types;
 using Newtonsoft.Json;
 using System;
@@ -212,65 +213,140 @@ namespace HapetFrontend.Parsing.PostPrepare
 
         private void PostPrepareMetadataTypeInheritedFieldDecls()
         {
-            void CopyInheritedFields(AstClassDecl decl)
+            void CopyInheritedFields(AstClassDecl decl, List<AstVarDecl> preparedDecls)
             {
-                if (decl.InheritedFieldsCopied)
-                    return;
+                var currDecls = decl.Declarations.GetStructFields();
 
-                // we need to save them into a separate list 
-                // to save their inheritance order
-                List<AstDeclaration> inheritedFieldDecls = new List<AstDeclaration>();
+                // remove all current fields
+                foreach (var fieldDecl in currDecls)
+                {
+                    decl.SubScope.RemoveDeclSymbol(fieldDecl.Name.Name, fieldDecl);
+                    decl.Declarations.Remove(fieldDecl);
+                }
+
+                List<AstDeclaration> toInsert = new List<AstDeclaration>();
+                // all over the parent fields - copy them
+                foreach (var fieldDecl in preparedDecls)
+                {
+                    // change parent and scope
+                    var newVar = fieldDecl.GetCopyForAnotherClass(decl);
+                    // define the symbol
+                    decl.SubScope.DefineDeclSymbol(newVar.Name.Name, newVar);
+
+                    toInsert.Add(newVar);
+                }
+
+                // insert them at the beginning
+                decl.Declarations.InsertRange(0, toInsert);
+            }
+
+            // to get all pure fields including inherited
+            List<AstVarDecl> GetPreparedFields(AstClassDecl decl)
+            {
+                List<AstVarDecl> inheritedFieldDecls = new List<AstVarDecl>();
+                List<AstVarDecl> currentFieldDecls = decl.Declarations.GetStructFields().Select(x => x as AstVarDecl).ToList();
 
                 // all over the inherited shite
                 foreach (var inh in decl.InheritedFrom)
                 {
                     var inhDecl = (inh.OutType as ClassType).Declaration;
-                    CopyInheritedFields(inhDecl);
-
-                    // all over the parent fields - copy them
-                    foreach (var fieldDecl in inhDecl.Declarations.Where(x => x is AstVarDecl).Select(x => x as AstVarDecl))
+                    // if the inh type is an interface
+                    if (inhDecl.IsInterface)
                     {
-                        // skip props
-                        if (fieldDecl is AstPropertyDecl)
-                            continue;
-
-                        // skip consts/statics
-                        if (fieldDecl.SpecialKeys.Contains(TokenType.KwStatic) || fieldDecl.SpecialKeys.Contains(TokenType.KwConst))
-                            continue;
-
-                        // interface or just an abstract field
-                        if (fieldDecl.SpecialKeys.Contains(TokenType.KwAbstract))
+                        // if we are also an interface - just add, no need to check implementations
+                        if (decl.IsInterface)
                         {
-                            // search for the defined field
-                            var alreadyDefined = decl.Declarations.FirstOrDefault(x => x.Name.Name == fieldDecl.Name.Name && x.Type.OutType == fieldDecl.Type.OutType);
-                            if (alreadyDefined == null)
-                            {
-                                // error - abstract field was not defined in derived class
-                                _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, inh, 
-                                    $"The {decl.Type.OutType} type does not have an implementation of {fieldDecl.Name.Name} field");
-                                continue;
-                            }
-
-                            // set to the new place
-                            decl.Declarations.Remove(alreadyDefined);
-                            inheritedFieldDecls.Add(alreadyDefined);
-                            continue;
+                            inheritedFieldDecls.AddRange(GetPreparedFields(inhDecl));
                         }
+                        else
+                        {
+                            // get all the fields of interface
+                            var inhFields = GetPreparedFields(inhDecl);
+                            foreach (var inhF in inhFields)
+                            {
+                                // check if the interface is already implemented in parent classes
+                                var definedInOneOfTheParents = inheritedFieldDecls.GetSameDeclByTypeAndName(inhF);
+                                // if the field was already presented previously
+                                if (definedInOneOfTheParents != null)
+                                {
+                                    // check if the already defined field is by the interface
+                                    bool isInherited = (definedInOneOfTheParents.ContainingParent.Type.OutType as ClassType).IsInheritedFrom(inhF.ContainingParent.Type.OutType as ClassType, true);
+                                    // if inherited - this is a parent cls already implemented the field - no need to warn
+                                    if (isInherited)
+                                    {
+                                        // need to check that we do not implement it also
+                                        var currF = currentFieldDecls.GetSameDeclByTypeAndName(inhF);
+                                        if (currF != null)
+                                        {
+                                            // the field is implemented in parent class and current class
+                                            // we need to error
+                                            _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, currF,
+                                                $"The {definedInOneOfTheParents.ContainingParent.Type.OutType} type already has an implementation of the field");
+                                            continue;
+                                        }
+                                        // else - everything is ok probably
+                                    }
+                                    else
+                                    {
+                                        // TODO: not todo. but C# allows shite like this:
+                                        /*
+                                            public interface IAnime
+                                            {
+                                                short Field111 { get; set; }
+                                            }
 
-                        // change parent and scope
-                        var newVar = fieldDecl.GetCopyForAnotherClass(decl);
-                        // define the symbol
-                        decl.SubScope.DefineDeclSymbol(newVar.Name.Name, newVar);
+                                            public class BaseCls
+                                            {
+                                                public short Field111 { get; set; }
+                                            }
 
-                        inheritedFieldDecls.Add(newVar);
+                                            public class Derived : BaseCls, IAnime
+                                            {
+
+                                            }
+                                         */
+                                        // but we can't because of interface offset calcs. md could be fixed somehow?
+
+                                        // we need to error
+                                        _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, definedInOneOfTheParents,
+                                            $"The {definedInOneOfTheParents.ContainingParent.Type.OutType} type already has a field that {decl.Type.OutType} type has to implement for {inh.OutType} interface");
+                                        continue;
+                                    }
+                                }
+                                else
+                                {
+                                    // if the field was not presented previously
+
+                                    // need to check that we do implement it
+                                    var currF = currentFieldDecls.GetSameDeclByTypeAndName(inhF);
+                                    if (currF == null)
+                                    {
+                                        // error - the field of the interface was not implemented
+                                        _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, inh,
+                                            $"The {decl.Type.OutType} type does not have an implementation of {inhF.Name.Name} field");
+                                    }
+                                    else
+                                    {
+                                        // add it to the new dictionary
+                                        currentFieldDecls.Remove(currF);
+                                        inheritedFieldDecls.Add(currF);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    else
+                    {
+                        // just add parent fields if it is a class
+                        inheritedFieldDecls.AddRange(GetPreparedFields(inhDecl));
                     }
                 }
 
-                // insert them at the beginning
-                decl.Declarations.InsertRange(0, inheritedFieldDecls);
-
-                decl.InheritedFieldsCopied = true;
+                inheritedFieldDecls.AddRange(currentFieldDecls);
+                return inheritedFieldDecls;
             }
+
+            Dictionary<AstClassDecl, List<AstVarDecl>> pureDecls = new Dictionary<AstClassDecl, List<AstVarDecl>>();
 
             // resolve all inherited fields of classes
             foreach (var cls in AllClassesMetadata)
@@ -278,7 +354,15 @@ namespace HapetFrontend.Parsing.PostPrepare
                 _currentSourceFile = cls.SourceFile;
                 _currentClass = cls;
 
-                CopyInheritedFields(cls);
+                pureDecls.Add(cls, GetPreparedFields(cls));
+            }
+
+            foreach (var cls in AllClassesMetadata)
+            {
+                _currentSourceFile = cls.SourceFile;
+                _currentClass = cls;
+
+                CopyInheritedFields(cls, pureDecls[cls]);
             }
         }
 

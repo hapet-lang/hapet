@@ -23,11 +23,6 @@ namespace HapetFrontend.Ast.Declarations
         /// </summary>
         public bool IsInterface { get; set; }
 
-        /// <summary>
-        /// To check if inherited fields already copied to current declaration
-        /// </summary>
-        public bool InheritedFieldsCopied { get; set; }
-
         public AstClassDecl(AstIdExpr name, List<AstDeclaration> declarations, string doc = "", ILocation Location = null) : base(name, doc, Location)
         {
             Type = new AstIdExpr("class", Location);

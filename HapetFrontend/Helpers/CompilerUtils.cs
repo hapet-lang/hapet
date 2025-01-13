@@ -91,6 +91,16 @@ namespace HapetFrontend.Helpers
                 !vD.SpecialKeys.Contains(Parsing.TokenType.KwConst)) &&
                 x is not AstPropertyDecl).ToList();
         }
+
+        public static AstDeclaration GetSameDeclByTypeAndName(this List<AstDeclaration> delcs, AstDeclaration decl)
+        {
+            return delcs.FirstOrDefault(x => x.Name.Name == decl.Name.Name && x.Type.OutType == decl.Type.OutType);
+        }
+
+        public static AstVarDecl GetSameDeclByTypeAndName(this List<AstVarDecl> delcs, AstDeclaration decl)
+        {
+            return delcs.FirstOrDefault(x => x.Name.Name == decl.Name.Name && x.Type.OutType == decl.Type.OutType);
+        }
         #endregion
 
         #region Parsing shite helpers
