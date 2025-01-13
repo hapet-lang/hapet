@@ -10,18 +10,30 @@ public static class Program
 	{
 		Derived dr222 = new Derived();
 		var aaa = dr222 as ISosahtung;
-		return aaa.Anime322;
+		return aaa.AnimeSoh;
 	}
 }
 
-public interface ISosahtung
+public interface IBot
 {
-	short Anime322;
+	short AnimeBot;
 }
 
-public class BaseCls
+public interface ILoh
+{
+	short AnimeLoh;
+}
+
+public interface ISoh : ILoh, IBot
+{
+	short AnimeSoh;
+}
+
+public class BaseCls : ILoh
 {
 	public int Field1;
+
+	public short AnimeLoh;
 
 	public BaseCls(short ddd)
 	{
@@ -29,19 +41,16 @@ public class BaseCls
 	}
 }
 
-public class Derived : BaseCls, ISosahtung
+public class Derived : BaseCls, ISoh, IBot
 {
 	public int Field2;
 
-	public short Anime322;
+	public short AnimeSoh;
+
+	public short AnimeBot;
 
 	public Derived() : base(41)
 	{
-		this.Anime322 = 444;
+		this.AnimeSoh = 444;
 	}
-}
-
-public class DerivedTwice : Derived
-{
-	public int Field3;
 }
