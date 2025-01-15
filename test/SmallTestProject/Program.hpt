@@ -10,7 +10,10 @@ public static class Program
 	{
 		Derived dr222 = new Derived();
 		var aaa = dr222 as ISoh;
-		return aaa.AnimeSoh;
+		var aaa2 = dr222 as IBot;
+		var aaa3 = dr222 as ILoh;
+		var aaa4 = dr222 as BaseCls;
+		return aaa.AnimeSoh + aaa2.AnimeBot + aaa3.AnimeLoh;
 	}
 }
 
