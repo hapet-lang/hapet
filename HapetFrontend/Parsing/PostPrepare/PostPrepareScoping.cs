@@ -451,7 +451,7 @@ namespace HapetFrontend.Parsing.PostPrepare
                 _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, unExpr.SubExpr, $"Expression expected after {unExpr.Operator}");
                 return;
             }
-            PostPrepareExprScoping(expr);
+            PostPrepareExprScoping(expr); 
         }
 
         private void PostPrepareBinaryExprScoping(AstBinaryExpr binExpr)
