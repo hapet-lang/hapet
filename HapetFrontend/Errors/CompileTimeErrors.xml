@@ -4,4 +4,24 @@
 		<Number>0000</Number>
 		<Text>Airat Abdrakov is a teapot :)</Text>
 	</Item>
+    
+    <!--Project errors-->
+    <Item>
+        <Number>0001</Number>
+        <Text>Full path to .hpt file not found</Text>
+    </Item>
+    <Item>
+        <Number>0002</Number>
+        <Text>Project file could not be parsed</Text>
+    </Item>
+    <Item>
+        <Number>0003</Number>
+        <Text>Unexpected tag in .hptproj file</Text>
+    </Item>
+
+    <!--Lexer errors-->
+    <Item>
+        <Number>1001</Number>
+        <Text>File could not be found by lexer</Text>
+    </Item>
 </Items>

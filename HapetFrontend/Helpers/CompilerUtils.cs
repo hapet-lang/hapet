@@ -2,6 +2,7 @@
 using HapetFrontend.Ast.Declarations;
 using HapetFrontend.Ast.Expressions;
 using HapetFrontend.Entities;
+using HapetFrontend.Errors;
 using HapetFrontend.Types;
 using System.Diagnostics;
 using System.Text;
@@ -134,16 +135,17 @@ namespace HapetFrontend.Helpers
         {
             path = filePath;
 
-            var extension = Path.GetExtension(path);
-            if (string.IsNullOrEmpty(extension))
-            {
-                path += ".hpt";
-            }
-            else if (extension != ".hpt")
-            {
-                mh.ReportMessage($"Invalid extension '{extension}'. Hapet source files must have the extension .hpt");
-                return false;
-            }
+            // TODO: check is obsolete probably - remove if everything would be ok :)
+            //var extension = Path.GetExtension(path);
+            //if (string.IsNullOrEmpty(extension))
+            //{
+            //    path += ".hpt";
+            //}
+            //else if (extension != ".hpt")
+            //{
+            //    mh.ReportMessage($"Invalid extension '{extension}'. Hapet source files must have the extension .hpt");
+            //    return false;
+            //}
 
             if (isRel)
             {
@@ -157,11 +159,11 @@ namespace HapetFrontend.Helpers
             {
                 if (from != null)
                 {
-                    mh.ReportMessage(from.Value.file, from.Value.loc, $"File '{path}' does not exist");
+                    mh.ReportMessage(from.Value.file, from.Value.loc, $"File '{path}' does not exist", ErrorCode.Get(CTEN.FullPathToHapetFileNotFound));
                 }
                 else
                 {
-                    mh.ReportMessage($"File '{path}' does not exist");
+                    mh.ReportMessage($"File '{path}' does not exist", ErrorCode.Get(CTEN.FullPathToHapetFileNotFound));
                 }
 
                 return false;

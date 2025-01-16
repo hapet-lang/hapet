@@ -1,5 +1,6 @@
 ﻿using HapetFrontend.Ast;
 using HapetFrontend.Entities;
+using HapetFrontend.Errors;
 using System.Text;
 
 namespace HapetFrontend.Parsing
@@ -28,7 +29,7 @@ namespace HapetFrontend.Parsing
         {
             if (!File.Exists(fileName))
             {
-                messageHandler.ReportMessage($"'{fileName}' could not be found.");
+                messageHandler.ReportMessage($"'{fileName}' could not be found.", ErrorCode.Get(CTEN.FileForLexerNotFound));
                 return null;
             }
             return new Lexer

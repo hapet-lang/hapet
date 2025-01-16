@@ -5,19 +5,19 @@ namespace HapetFrontend.Errors
 {
     public static class ErrorCode
     {
-        public static IXmlMessage Get(CompileTimeErrorNumber num)
+        public static IXmlMessage Get(CTEN num)
         {
             var errs = XmlMessageReader<XmlCompileTimeError>.GetCompileTimeErrors();
             return errs.First(x => x.RealNumber == (int)num);
         }
 
-        public static IXmlMessage Get(RunTimeErrorNumber num)
+        public static IXmlMessage Get(RTEN num)
         {
             var errs = XmlMessageReader<XmlRunTimeError>.GetRunTimeErrors();
             return errs.First(x => x.RealNumber == (int)num);
         }
 
-        public static IXmlMessage Get(CompileTimeWarningNumber num)
+        public static IXmlMessage Get(CTWN num)
         {
             var errs = XmlMessageReader<XmlCompileTimeWarning>.GetCompileTimeWarnings();
             return errs.First(x => x.RealNumber == (int)num);

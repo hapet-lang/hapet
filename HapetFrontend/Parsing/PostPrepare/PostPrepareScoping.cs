@@ -3,6 +3,7 @@ using HapetFrontend.Ast.Declarations;
 using HapetFrontend.Ast.Expressions;
 using HapetFrontend.Ast.Statements;
 using HapetFrontend.Entities;
+using HapetFrontend.Errors;
 using HapetFrontend.Scoping;
 
 namespace HapetFrontend.Parsing.PostPrepare
@@ -151,7 +152,7 @@ namespace HapetFrontend.Parsing.PostPrepare
                 else
                 {
                     // error - unexpected decl in struct type
-                    _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, decl, $"Unexpected declaration in struct");
+                    _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, decl, $"Unexpected declaration in struct", ErrorCode.Get(CTEN.UnexpectedDeclInStruct));
                 }
             }
         }
