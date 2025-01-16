@@ -1,4 +1,5 @@
 ﻿using HapetFrontend.Ast;
+using HapetFrontend.Errors;
 using System.Runtime.CompilerServices;
 
 namespace HapetFrontend.Entities
@@ -10,6 +11,7 @@ namespace HapetFrontend.Entities
 
     public class CompilerMessage
     {
+        public IXmlMessage XmlMessage { get; set; }
         public string FileText { get; set; }
         public ILocation Location { get; set; }
         public string Message { get; set; }
@@ -43,8 +45,8 @@ namespace HapetFrontend.Entities
     {
         bool HasErrors { get; set; }
 
-        void ReportMessage(string message, ReportType reportType = ReportType.Error, [CallerFilePath] string callingFunctionFile = "", [CallerMemberName] string callingFunctionName = "", [CallerLineNumber] int callLineNumber = 0);
-        void ReportMessage(string text, ILocation location, string message, List<CompilerMessage> subMessages = null, ReportType reportType = ReportType.Error, [CallerFilePath] string callingFunctionFile = "", [CallerMemberName] string callingFunctionName = "", [CallerLineNumber] int callLineNumber = 0);
+        void ReportMessage(string message, IXmlMessage xmlMessage, ReportType reportType = ReportType.Error, [CallerFilePath] string callingFunctionFile = "", [CallerMemberName] string callingFunctionName = "", [CallerLineNumber] int callLineNumber = 0);
+        void ReportMessage(string text, ILocation location, string message, IXmlMessage xmlMessage, List<CompilerMessage> subMessages = null, ReportType reportType = ReportType.Error, [CallerFilePath] string callingFunctionFile = "", [CallerMemberName] string callingFunctionName = "", [CallerLineNumber] int callLineNumber = 0);
         void ReportMessage(CompilerMessage message);
     }
 

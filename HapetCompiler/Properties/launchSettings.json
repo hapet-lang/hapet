@@ -2,7 +2,7 @@
   "profiles": {
     "HapetCompiler": {
       "commandName": "Project",
-      "commandLineArgs": "build \"../../../../../test/SmallTestProject/SmallTestProject.hptproj\"\r\n"
+      "commandLineArgs": "build \"../../../../../test/TestProject/TestProject.hptproj\"\r\n"
     }
   }
 }
