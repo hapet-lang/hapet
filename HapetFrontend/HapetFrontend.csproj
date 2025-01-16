@@ -8,6 +8,8 @@
 
 	<ItemGroup>
 	  <None Remove="Errors\CompileTimeErrors.xml" />
+	  <None Remove="Errors\CompileTimeWarnings.xml" />
+	  <None Remove="Errors\RunTimeErrors.xml" />
 	</ItemGroup>
 
 	<ItemGroup>
@@ -16,6 +18,12 @@
 
 	<ItemGroup>
 	  <Content Include="Errors\CompileTimeErrors.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </Content>
+	  <Content Include="Errors\CompileTimeWarnings.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </Content>
+	  <Content Include="Errors\RunTimeErrors.xml">
 	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 	  </Content>
 	</ItemGroup>

@@ -13,55 +13,39 @@ namespace HapetFrontend.Errors
 
         public static IXmlMessage Get(RunTimeErrorNumber num)
         {
-            var errs = XmlMessageReader<XmlCompileTimeError>.GetCompileTimeErrors();
+            var errs = XmlMessageReader<XmlRunTimeError>.GetRunTimeErrors();
             return errs.First(x => x.RealNumber == (int)num);
         }
 
         public static IXmlMessage Get(CompileTimeWarningNumber num)
         {
-            var errs = XmlMessageReader<XmlCompileTimeError>.GetCompileTimeErrors();
+            var errs = XmlMessageReader<XmlCompileTimeWarning>.GetCompileTimeWarnings();
             return errs.First(x => x.RealNumber == (int)num);
         }
-    }
-
-    public interface IXmlMessage
-    {
-        public string Number { get; set; }
-        public int RealNumber { get; }
-        public string Text { get; set; }
-
-        string GetName();
-    }
-
-    public class XmlCompileTimeError : IXmlMessage
-    {
-        public string Number { get; set; }
-
-        private int? _realNumber = null;
-        public int RealNumber 
-        {
-            get
-            {
-                if (!_realNumber.HasValue)
-                    _realNumber = int.Parse(Number, System.Globalization.NumberStyles.HexNumber);
-                return _realNumber.Value;
-            }
-        }
-        public string Text { get; set; }
-
-        internal static string Filename { get; } = "CompileTimeErrors.xml";
-
-        public string GetName() => $"CE{Number}";
     }
 
     public class XmlMessageReader<T> where T : IXmlMessage, new() 
     {
         private static XmlMessageReader<XmlCompileTimeError> _compileTimeErrors;
+        private static XmlMessageReader<XmlRunTimeError> _runTimeErrors;
+        private static XmlMessageReader<XmlCompileTimeWarning> _compileTimeWarnings;
 
         public static List<XmlCompileTimeError> GetCompileTimeErrors()
         {
             _compileTimeErrors ??= new XmlMessageReader<XmlCompileTimeError>(XmlCompileTimeError.Filename);
             return _compileTimeErrors.ReadData();
+        }
+
+        public static List<XmlRunTimeError> GetRunTimeErrors()
+        {
+            _runTimeErrors ??= new XmlMessageReader<XmlRunTimeError>(XmlRunTimeError.Filename);
+            return _runTimeErrors.ReadData();
+        }
+
+        public static List<XmlCompileTimeWarning> GetCompileTimeWarnings()
+        {
+            _compileTimeWarnings ??= new XmlMessageReader<XmlCompileTimeWarning>(XmlCompileTimeWarning.Filename);
+            return _compileTimeWarnings.ReadData();
         }
 
         private List<T> _data;
@@ -118,4 +102,78 @@ namespace HapetFrontend.Errors
             return _data;
         }
     }
+
+    #region Entities
+    public interface IXmlMessage
+    {
+        public string Number { get; set; }
+        public int RealNumber { get; }
+        public string Text { get; set; }
+
+        string GetName();
+    }
+
+    public class XmlCompileTimeError : IXmlMessage
+    {
+        public string Number { get; set; }
+
+        private int? _realNumber = null;
+        public int RealNumber
+        {
+            get
+            {
+                if (!_realNumber.HasValue)
+                    _realNumber = int.Parse(Number, System.Globalization.NumberStyles.HexNumber);
+                return _realNumber.Value;
+            }
+        }
+        public string Text { get; set; }
+
+        internal static string Filename { get; } = "CompileTimeErrors.xml";
+
+        public string GetName() => $"CE{Number}";
+    }
+
+    public class XmlRunTimeError : IXmlMessage
+    {
+        public string Number { get; set; }
+
+        private int? _realNumber = null;
+        public int RealNumber
+        {
+            get
+            {
+                if (!_realNumber.HasValue)
+                    _realNumber = int.Parse(Number, System.Globalization.NumberStyles.HexNumber);
+                return _realNumber.Value;
+            }
+        }
+        public string Text { get; set; }
+
+        internal static string Filename { get; } = "RunTimeErrors.xml";
+
+        public string GetName() => $"RE{Number}";
+    }
+
+    public class XmlCompileTimeWarning : IXmlMessage
+    {
+        public string Number { get; set; }
+
+        private int? _realNumber = null;
+        public int RealNumber
+        {
+            get
+            {
+                if (!_realNumber.HasValue)
+                    _realNumber = int.Parse(Number, System.Globalization.NumberStyles.HexNumber);
+                return _realNumber.Value;
+            }
+        }
+        public string Text { get; set; }
+
+        internal static string Filename { get; } = "CompileTimeWarnings.xml";
+
+        public string GetName() => $"CW{Number}";
+    }
+    #endregion
 }
