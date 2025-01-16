@@ -1,6 +1,7 @@
 ﻿using HapetFrontend.Ast;
 using HapetFrontend.Ast.Declarations;
 using HapetFrontend.Ast.Expressions;
+using HapetFrontend.Errors;
 
 namespace HapetFrontend.Parsing
 {
@@ -47,6 +48,12 @@ namespace HapetFrontend.Parsing
                 {
                     SkipNewlines();
                     continue;
+                }
+
+                // error - unexpected decl in struct type
+                if (decl is not AstVarDecl)
+                {
+                    ReportMessage(decl, $"Unexpected declaration in struct", ErrorCode.Get(CTEN.UnexpectedDeclInStruct));
                 }
 
                 declarations.Add(decl);

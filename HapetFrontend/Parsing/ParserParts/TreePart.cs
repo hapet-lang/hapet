@@ -224,7 +224,20 @@ namespace HapetFrontend.Parsing
                 NextToken();
                 SkipNewlines();
                 rhs = sub(allowCommaForTuple, allowFunctionDeclaration, message, allowPointerExpressions);
-                lhs = new AstBinaryExpr(op, lhs, rhs, new Location(lhs.Beginning, rhs.Ending));
+                var binExpr = new AstBinaryExpr(op, lhs, rhs, new Location(lhs.Beginning, rhs.Ending));
+
+                // error if it is not an expr
+                if (binExpr.Left is not AstExpression)
+                {
+                    ReportMessage(binExpr.Left, $"Expression expected before {binExpr.Operator}");
+                }
+                // error if it is not an expr
+                if (binExpr.Right is not AstExpression)
+                {
+                    ReportMessage(binExpr.Right, $"Expression expected after {binExpr.Operator}");
+                }
+
+                lhs = binExpr;
             }
         }
 
@@ -271,14 +284,26 @@ namespace HapetFrontend.Parsing
                     case TokenType.Plus: op = "+"; break;
                     case TokenType.Minus: op = "-"; break;
                 }
-                return new AstUnaryExpr(op, sub, new Location(next.Location, sub.Ending));
+                var un = new AstUnaryExpr(op, sub, new Location(next.Location, sub.Ending));
+                // error if it is not an expr
+                if (un.SubExpr is not AstExpression)
+                {
+                    ReportMessage(un.SubExpr, $"Expression expected after {un.Operator}");
+                }
+                return un;
             }
             else if (next.Type == TokenType.Bang)
             {
                 NextToken();
                 SkipNewlines();
                 var sub = ParseUnaryExpression(allowCommaForTuple, allowFunctionDeclaration, message, allowPointerExpressions);
-                return new AstUnaryExpr("!", sub, new Location(next.Location, sub.Ending));
+                var un = new AstUnaryExpr("!", sub, new Location(next.Location, sub.Ending));
+                // error if it is not an expr
+                if (un.SubExpr is not AstExpression)
+                {
+                    ReportMessage(un.SubExpr, $"Expression expected after {un.Operator}");
+                }
+                return un;
             }
 
             return ParsePostUnaryExpression(allowCommaForTuple, allowFunctionDeclaration, message, allowPointerExpressions);

@@ -228,7 +228,19 @@ namespace HapetFrontend.Parsing
                             var expr = list[0].Type;
                             expr.Location = new Location(beg, end);
                             var sub = ParsePostUnaryExpression(allowCommaForTuple, false, null);
-                            return new AstCastExpr(expr, sub, new Location(beg, sub.Ending));
+                            var cst = new AstCastExpr(expr, sub, new Location(beg, sub.Ending));
+
+                            // error if it is not an exprv
+                            if (cst.SubExpression is not AstExpression)
+                            {
+                                ReportMessage(cst.SubExpression, $"Expression expected");
+                            }
+                            // error if it is not an expr
+                            if (cst.TypeExpr is not AstExpression)
+                            {
+                                ReportMessage(cst.TypeExpr, $"Expression expected as a result type");
+                            }
+                            return cst;
                         }
                         else
                         {

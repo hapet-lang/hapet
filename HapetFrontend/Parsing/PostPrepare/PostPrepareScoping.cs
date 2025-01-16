@@ -139,21 +139,14 @@ namespace HapetFrontend.Parsing.PostPrepare
             {
                 SetScopeAndParent(decl, structDecl, structScope);
 
-                if (decl is AstVarDecl fieldDecl) // field 
-                {
-                    fieldDecl.ContainingParent = structDecl;
+                var fieldDecl = decl as AstVarDecl;
+                fieldDecl.ContainingParent = structDecl;
 
-                    // if it is public field/property - it should be visible in the scope in which var's class is
-                    structDecl.SubScope.DefineDeclSymbol(fieldDecl.Name.Name, fieldDecl);
+                // if it is public field/property - it should be visible in the scope in which var's class is
+                structDecl.SubScope.DefineDeclSymbol(fieldDecl.Name.Name, fieldDecl);
 
-                    // setting already defined to 'true' because of some shite with access types
-                    PostPrepareVarScoping(fieldDecl, true);
-                }
-                else
-                {
-                    // error - unexpected decl in struct type
-                    _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, decl, $"Unexpected declaration in struct", ErrorCode.Get(CTEN.UnexpectedDeclInStruct));
-                }
+                // setting already defined to 'true' because of some shite with access types
+                PostPrepareVarScoping(fieldDecl, true);
             }
         }
 
@@ -445,13 +438,8 @@ namespace HapetFrontend.Parsing.PostPrepare
         private void PostPrepareUnaryExprScoping(AstUnaryExpr unExpr)
         {
             SetScopeAndParent(unExpr.SubExpr, unExpr);
-            // error if it is not an expr
-            if (unExpr.SubExpr is not AstExpression expr)
-            {
-                _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, unExpr.SubExpr, $"Expression expected after {unExpr.Operator}");
-                return;
-            }
-            PostPrepareExprScoping(expr); 
+            
+            PostPrepareExprScoping(unExpr.SubExpr); 
         }
 
         private void PostPrepareBinaryExprScoping(AstBinaryExpr binExpr)
@@ -459,20 +447,9 @@ namespace HapetFrontend.Parsing.PostPrepare
             // these scopes are probably the same for the bin expr parts
             SetScopeAndParent(binExpr.Left, binExpr);
             SetScopeAndParent(binExpr.Right, binExpr);
-            // error if it is not an expr
-            if (binExpr.Left is not AstExpression leftExpr)
-            {
-                _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, binExpr.Left, $"Expression expected before {binExpr.Operator}");
-                return;
-            }
-            // error if it is not an expr
-            if (binExpr.Right is not AstExpression rightExpr)
-            {
-                _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, binExpr.Right, $"Expression expected after {binExpr.Operator}");
-                return;
-            }
-            PostPrepareExprScoping(leftExpr);
-            PostPrepareExprScoping(rightExpr);
+            
+            PostPrepareExprScoping(binExpr.Left);
+            PostPrepareExprScoping(binExpr.Right);
         }
 
         private void PostPreparePointerExprScoping(AstPointerExpr pointerExpr)
@@ -530,22 +507,10 @@ namespace HapetFrontend.Parsing.PostPrepare
         private void PostPrepareCastExprScoping(AstCastExpr castExpr)
         {
             SetScopeAndParent(castExpr.SubExpression, castExpr);
-            // error if it is not an exprv
-            if (castExpr.SubExpression is not AstExpression subExpr)
-            {
-                _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, castExpr.SubExpression, $"Expression expected");
-                return;
-            }
-            PostPrepareExprScoping(subExpr);
+            PostPrepareExprScoping(castExpr.SubExpression);
 
             SetScopeAndParent(castExpr.TypeExpr, castExpr);
-            // error if it is not an expr
-            if (castExpr.TypeExpr is not AstExpression typeExpr)
-            {
-                _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, castExpr.TypeExpr, $"Expression expected as a result type");
-                return;
-            }
-            PostPrepareExprScoping(typeExpr);
+            PostPrepareExprScoping(castExpr.TypeExpr);
         }
 
         private void PostPrepareNestedExprScoping(AstNestedExpr nestExpr)
