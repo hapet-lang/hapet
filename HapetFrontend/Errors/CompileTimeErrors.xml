@@ -24,4 +24,18 @@
         <Number>1001</Number>
         <Text>File could not be found by lexer</Text>
     </Item>
+
+    <!--Parser errors-->
+    <Item>
+        <Number>2001</Number>
+        <Text>Unexpected declaration in struct type</Text>
+    </Item>
+    <Item>
+        <Number>2002</Number>
+        <Text>Expressions expected in binary expression</Text>
+    </Item>
+    <Item>
+        <Number>2003</Number>
+        <Text>Expression expected in unary expression</Text>
+    </Item>
 </Items>

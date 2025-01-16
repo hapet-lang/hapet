@@ -2,6 +2,7 @@
 using HapetFrontend.Ast.Declarations;
 using HapetFrontend.Ast.Expressions;
 using HapetFrontend.Ast.Statements;
+using HapetFrontend.Errors;
 using HapetFrontend.Types;
 using System.Diagnostics;
 
@@ -229,12 +230,12 @@ namespace HapetFrontend.Parsing
                 // error if it is not an expr
                 if (binExpr.Left is not AstExpression)
                 {
-                    ReportMessage(binExpr.Left, $"Expression expected before {binExpr.Operator}");
+                    ReportMessage(binExpr.Left, $"Expression expected before {binExpr.Operator}", ErrorCode.Get(CTEN.ExprsExpectedInBinExpr));
                 }
                 // error if it is not an expr
                 if (binExpr.Right is not AstExpression)
                 {
-                    ReportMessage(binExpr.Right, $"Expression expected after {binExpr.Operator}");
+                    ReportMessage(binExpr.Right, $"Expression expected after {binExpr.Operator}", ErrorCode.Get(CTEN.ExprsExpectedInBinExpr));
                 }
 
                 lhs = binExpr;
@@ -256,7 +257,7 @@ namespace HapetFrontend.Parsing
                 var sub = ParseUnaryExpression(allowCommaForTuple, allowFunctionDeclaration, message, allowPointerExpressions);
                 if (sub is not AstExpression expr)
                 {
-                    ReportMessage(sub.Location, $"Expression expected after '&'");
+                    ReportMessage(sub.Location, $"Expression expected after '&'", ErrorCode.Get(CTEN.ExprExpectedInUnExpr));
                     return sub;
                 }
                 return new AstAddressOfExpr(expr, new Location(next.Location, sub.Ending));
@@ -268,7 +269,7 @@ namespace HapetFrontend.Parsing
                 var sub = ParseUnaryExpression(allowCommaForTuple, allowFunctionDeclaration, message, allowPointerExpressions);
                 if (sub is not AstExpression expr)
                 {
-                    ReportMessage(sub.Location, $"Expression expected after '*'");
+                    ReportMessage(sub.Location, $"Expression expected after '*'", ErrorCode.Get(CTEN.ExprExpectedInUnExpr));
                     return sub;
                 }
                 return new AstPointerExpr(expr, true, new Location(next.Location, sub.Ending));
@@ -288,7 +289,7 @@ namespace HapetFrontend.Parsing
                 // error if it is not an expr
                 if (un.SubExpr is not AstExpression)
                 {
-                    ReportMessage(un.SubExpr, $"Expression expected after {un.Operator}");
+                    ReportMessage(un.SubExpr, $"Expression expected after {un.Operator}", ErrorCode.Get(CTEN.ExprExpectedInUnExpr));
                 }
                 return un;
             }
@@ -301,7 +302,7 @@ namespace HapetFrontend.Parsing
                 // error if it is not an expr
                 if (un.SubExpr is not AstExpression)
                 {
-                    ReportMessage(un.SubExpr, $"Expression expected after {un.Operator}");
+                    ReportMessage(un.SubExpr, $"Expression expected after {un.Operator}", ErrorCode.Get(CTEN.ExprExpectedInUnExpr));
                 }
                 return un;
             }
