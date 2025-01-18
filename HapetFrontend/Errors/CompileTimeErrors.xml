@@ -102,4 +102,32 @@
         <Number>2013</Number>
         <Text>Call name expected to be an identifier</Text>
     </Item>
+    <Item>
+        <Number>2014</Number>
+        <Text>Unexpected token in array access expression</Text>
+    </Item>
+    <Item>
+        <Number>2015</Number>
+        <Text>Array access has to have args</Text>
+    </Item>
+    <Item>
+        <Number>2016</Number>
+        <Text>Array acces has to many args</Text>
+    </Item>
+    <Item>
+        <Number>2017</Number>
+        <Text>Array access argument is not an expression</Text>
+    </Item>
+    <Item>
+        <Number>2018</Number>
+        <Text>Declaration name expected to be an identifier</Text>
+    </Item>
+    <Item>
+        <Number>2019</Number>
+        <Text>Unexpected expression after tilda (~)</Text>
+    </Item>
+    <Item>
+        <Number>201A</Number>
+        <Text>Failed to parse an expression</Text>
+    </Item>
 </Items>

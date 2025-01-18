@@ -33,6 +33,13 @@
         ArrayElementsUnexpectedToken    = 0x2011,
         CallArgExprExpected             = 0x2012,
         CallNameIdentExpected           = 0x2013, // would be obsolete
+        ArrayAccUnexpectedToken         = 0x2014,
+        ArrayAccNoArgs                  = 0x2015,
+        ArrayAccTooManyArgs             = 0x2016, // could be obsolete
+        ArrayAccNotExpr                 = 0x2017,
+        DeclNameIsNotIdent              = 0x2018,
+        TildaUnexpectedExpr             = 0x2019, // would be obsolete
+        CommonFailToParse               = 0x201A,
 
         // post preparer errors up to 0x5000
 

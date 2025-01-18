@@ -389,25 +389,25 @@ namespace HapetFrontend.Parsing
                                 else
                                 {
                                     NextToken();
-                                    ReportMessage(next.Location, $"Failed to parse operator [], expected ',' or ']'");
+                                    ReportMessage(next.Location, $"Failed to parse operator [..], expected ',' or ']'", ErrorCode.Get(CTEN.ArrayAccUnexpectedToken));
                                     //RecoverExpression();
                                 }
                             }
-                            var end = Consume(TokenType.CloseBracket, ErrMsg("]", "at end of [] operator")).Location;
+                            var end = Consume(TokenType.CloseBracket, ErrMsg("]", "at end of [..] operator")).Location;
                             if (args.Count == 0)
                             {
-                                ReportMessage(end, "At least one argument required");
+                                ReportMessage(end, "At least one argument required", ErrorCode.Get(CTEN.ArrayAccNoArgs));
                                 args.Add(ParseEmptyExpression());
                             }
                             else if (args.Count > 1)
                             {
                                 // TODO: mb allow them multiple args in []?
-                                ReportMessage(end, "Too many arguments passed");
+                                ReportMessage(end, "Too many arguments passed", ErrorCode.Get(CTEN.ArrayAccTooManyArgs));
                             }
 
                             if (args.First() is not AstExpression firstExpr)
                             {
-                                ReportMessage(args.First().Location, $"Expression expected as index of element in [...]");
+                                ReportMessage(args.First().Location, $"Expression expected as index of element in [...]", ErrorCode.Get(CTEN.ArrayAccNotExpr));
                                 return expr;
                             }
                             var arrAcc = new AstArrayAccessExpr(expr as AstExpression, firstExpr, new Location(expr.Beginning, end));
@@ -505,7 +505,7 @@ namespace HapetFrontend.Parsing
                             var name = ParseIdentifierExpression(allowDots: false);
                             if (name.RightPart is not AstIdExpr idExpr)
                             {
-                                ReportMessage(id.Location, $"Identifier expected as a name of declaration");
+                                ReportMessage(id.Location, $"Identifier expected as a name of declaration", ErrorCode.Get(CTEN.DeclNameIsNotIdent));
                                 return id;
                             }
                             return new UnknownDecl(id, idExpr, new Location(token.Location));
@@ -517,11 +517,6 @@ namespace HapetFrontend.Parsing
                 case TokenType.Tilda:
                     {
                         NextToken();
-                        if (!CheckToken(TokenType.Identifier))
-                        {
-                            ReportMessage(PeekToken().Location, $"Identifier expected after '~'");
-                            return ParseEmptyExpression();
-                        }
 
                         var expr = ParseExpression(allowCommaForTuple, allowFunctionDeclaration, message);
                         if (expr is AstIdExpr idExpr)
@@ -530,7 +525,8 @@ namespace HapetFrontend.Parsing
                         }
                         else
                         {
-                            ReportMessage(PeekToken().Location, $"This type of expr was not expected after '~'");
+                            // TODO: not only idents are allowed: ~(3 + 4)
+                            ReportMessage(PeekToken().Location, $"This type of expr was not expected after '~'", ErrorCode.Get(CTEN.TildaUnexpectedExpr));
                         }
                         return expr;
                     }
@@ -607,7 +603,7 @@ namespace HapetFrontend.Parsing
 
                 default:
                     //NextToken();
-                    ReportMessage(token.Location, message?.Invoke(token) ?? $"Failed to parse expression, unpexpected token ({token.Type}) {token.Data}");
+                    ReportMessage(token.Location, message?.Invoke(token) ?? $"Failed to parse expression, unpexpected token ({token.Type}) {token.Data}", ErrorCode.Get(CTEN.CommonFailToParse));
                     return ParseEmptyExpression();
             }
         }
