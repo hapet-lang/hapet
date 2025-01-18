@@ -14,4 +14,8 @@
         <Number>2001</Number>
         <Text>Empty array creation</Text>
     </Item>
+    <Item>
+        <Number>2002</Number>
+        <Text>Statements would be ignored</Text>
+    </Item>
 </Items>

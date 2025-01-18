@@ -42,7 +42,8 @@
         CommonFailToParse               = 0x201A,
 
         // post preparer errors up to 0x5000
-
+        EnumCouldNotBeAssigned          = 0x3001,
+        RequiredTypeNotEvaluated        = 0x3002,
     }
 
     // Run Time Error Number
@@ -63,6 +64,7 @@
 
         // parser warnings up to 0x3000
         ArrayEmptyCreation              = 0x2001,
+        StmtsWouldBeIgnored             = 0x2002,
 
         // post preparer warnings up to 0x5000
     }

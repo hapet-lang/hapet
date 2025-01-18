@@ -3,6 +3,7 @@ using HapetFrontend.Ast.Declarations;
 using HapetFrontend.Ast.Expressions;
 using HapetFrontend.Ast.Statements;
 using HapetFrontend.Entities;
+using HapetFrontend.Errors;
 using HapetFrontend.Helpers;
 using HapetFrontend.Scoping;
 using HapetFrontend.Types;
@@ -72,7 +73,7 @@ namespace HapetFrontend.Parsing.PostPrepare
             if (expr is AstNestedExpr nestt && nestt.RightPart.OutType is EnumType)
             {
                 if (castResult == null)
-                    _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, expr, $"Enum type itself could not be assigned to anything");
+                    _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, expr, $"Enum type itself could not be assigned to anything", ErrorCode.Get(CTEN.EnumCouldNotBeAssigned));
                 return expr;
             }
 
@@ -85,7 +86,7 @@ namespace HapetFrontend.Parsing.PostPrepare
             if (neededType == null)
             {
                 if (castResult == null)
-                    _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, expr, $"The required type of the expr could not be evaluated");
+                    _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, expr, $"The required type of the expr could not be evaluated", ErrorCode.Get(CTEN.RequiredTypeNotEvaluated));
                 return expr;
             }
 

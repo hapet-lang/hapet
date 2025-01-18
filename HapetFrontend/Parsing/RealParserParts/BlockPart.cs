@@ -2,6 +2,7 @@
 using HapetFrontend.Ast.Declarations;
 using HapetFrontend.Ast.Expressions;
 using HapetFrontend.Ast.Statements;
+using HapetFrontend.Errors;
 
 namespace HapetFrontend.Parsing
 {
@@ -36,7 +37,7 @@ namespace HapetFrontend.Parsing
                         // print warning that the line won't be accepted
                         // print the warning only once, do not spam
                         afterBrStatementReported = true;
-                        ReportMessage(s, $"All the statements after '{foundBrStatement}' won't be accepted by compiler!", Entities.ReportType.Warning);
+                        ReportMessage(s, $"All the statements after '{foundBrStatement}' won't be accepted by compiler!", ErrorCode.Get(CTWN.StmtsWouldBeIgnored), Entities.ReportType.Warning);
                     }
 
                     next = PeekToken();
