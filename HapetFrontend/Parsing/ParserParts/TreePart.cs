@@ -335,12 +335,12 @@ namespace HapetFrontend.Parsing
                             var args = ParseArgumentList(out var end);
                             if (expr is not AstNestedExpr nestExpr)
                             {
-                                ReportMessage(expr.Location, $"Indentifier expected");
+                                ReportMessage(expr.Location, $"Indentifier expected", ErrorCode.Get(CTEN.CallArgExprExpected));
                                 return expr;
                             }
                             if (nestExpr.RightPart is not AstIdExpr idExpr)
                             {
-                                ReportMessage(nestExpr.Location, $"Indentifier expected as the func name");
+                                ReportMessage(nestExpr.Location, $"Indentifier expected as the func name", ErrorCode.Get(CTEN.CallNameIdentExpected));
                                 return expr;
                             }
 

@@ -4,4 +4,14 @@
 		<Number>0000</Number>
 		<Text>Airat Abdrakov is a teapot :)</Text>
 	</Item>
+
+    <!--Project warnings-->
+
+    <!--Lexer warnings-->
+
+    <!--Parser warnings-->
+    <Item>
+        <Number>2001</Number>
+        <Text>Empty array creation</Text>
+    </Item>
 </Items>

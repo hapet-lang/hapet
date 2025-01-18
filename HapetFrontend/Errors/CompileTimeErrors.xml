@@ -38,4 +38,68 @@
         <Number>2003</Number>
         <Text>Expression expected in unary expression</Text>
     </Item>
+    <Item>
+        <Number>2004</Number>
+        <Text>Argument name expected to be an identifier</Text>
+    </Item>
+    <Item>
+        <Number>2005</Number>
+        <Text>Failed to parse args</Text>
+    </Item>
+    <Item>
+        <Number>2006</Number>
+        <Text>Parameter name expected to be an identifier</Text>
+    </Item>
+    <Item>
+        <Number>2007</Number>
+        <Text>Param default value expected to be an expression</Text>
+    </Item>
+    <Item>
+        <Number>2008</Number>
+        <Text>Failed to parse parameters</Text>
+    </Item>
+    <Item>
+        <Number>2009</Number>
+        <Text>Lambda param name expected to be an expression</Text>
+    </Item>
+    <Item>
+        <Number>200A</Number>
+        <Text>Cast sub expected to be an expression</Text>
+    </Item>
+    <Item>
+        <Number>200B</Number>
+        <Text>Cast target expected to be an expression</Text>
+    </Item>
+    <Item>
+        <Number>200C</Number>
+        <Text>Array size expected to be an expression</Text>
+    </Item>
+    <Item>
+        <Number>200D</Number>
+        <Text>Array size has to be specified</Text>
+    </Item>
+    <Item>
+        <Number>200E</Number>
+        <Text>Only the last array size could be not specified</Text>
+    </Item>
+    <Item>
+        <Number>200F</Number>
+        <Text>Unexpected token in array definition</Text>
+    </Item>
+    <Item>
+        <Number>2010</Number>
+        <Text>Array elements expected to be expressions</Text>
+    </Item>
+    <Item>
+        <Number>2011</Number>
+        <Text>Unexpected token in array elements</Text>
+    </Item>
+    <Item>
+        <Number>2012</Number>
+        <Text>Call argument expected to be an expression</Text>
+    </Item>
+    <Item>
+        <Number>2013</Number>
+        <Text>Call name expected to be an identifier</Text>
+    </Item>
 </Items>

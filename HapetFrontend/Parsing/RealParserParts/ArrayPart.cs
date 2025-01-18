@@ -1,5 +1,6 @@
 ﻿using HapetFrontend.Ast;
 using HapetFrontend.Ast.Expressions;
+using HapetFrontend.Errors;
 using HapetFrontend.Types;
 
 namespace HapetFrontend.Parsing
@@ -27,7 +28,7 @@ namespace HapetFrontend.Parsing
                         if (arraySize is not AstExpression expr)
                         {
                             // error here. it has to be an expr
-                            ReportMessage(arraySize.Location, $"Expression expected to be as an array size");
+                            ReportMessage(arraySize.Location, $"Expression expected to be as an array size", ErrorCode.Get(CTEN.ArraySizeNotExpr));
                             return ParseEmptyExpression();
                         }
 
@@ -48,7 +49,7 @@ namespace HapetFrontend.Parsing
             // check for size exprs
             if (sizeExprs.Count == 0)
             {
-                ReportMessage(type.Location, $"Array size has to be specified!!!");
+                ReportMessage(type.Location, $"Array size has to be specified!!!", ErrorCode.Get(CTEN.ArraySizeNotSpecified));
             }
 
             SkipNewlines();
@@ -59,24 +60,25 @@ namespace HapetFrontend.Parsing
                 if (sizeExprs.Any(x => x == null))
                 {
                     // error here. because size was not defined and elements are also were not
-                    ReportMessage(new Location(type.Location.Beginning, CurrentToken.Location.Ending), $"Array creation requires its size or elements to be specified");
+                    ReportMessage(new Location(type.Location.Beginning, CurrentToken.Location.Ending), $"Array creation requires its size or elements to be specified", ErrorCode.Get(CTEN.ArraySizeNotSpecified));
                 }
                 return new AstArrayCreateExpr(type, sizeExprs, new List<AstExpression>(), new Location(beg, CurrentToken.Location.Ending));
             }
             else if (CheckToken(TokenType.OpenBrace))
             {
+                // TODO: could it be prepared like this 4real?
                 // allow only the last size to be null!!! because in other way it is very hard to prepare
                 bool allExceptTheLastAreNotNull = sizeExprs.SkipLast(1).All(x => x != null);
                 if (!allExceptTheLastAreNotNull)
                 {
-                    ReportMessage(new Location(sizesBeg, sizesEnd), $"Only the last size could be not specified");
+                    ReportMessage(new Location(sizesBeg, sizesEnd), $"Only the last size could be not specified", ErrorCode.Get(CTEN.ArrayNonLastNotSpecified));
                 }
 
                 var elements = ParseArrayElementsExpression();
 
                 // print warning here if sizeExpr is null and elements.Count == 0, that empty array will be created
                 if (sizeExprs.Last() == null && elements.Count == 0)
-                    ReportMessage(new Location(beg, CurrentToken.Location.Ending), $"Size of the array and its elements were not specified. Empty array will be created!", Entities.ReportType.Warning);
+                    ReportMessage(new Location(beg, CurrentToken.Location.Ending), $"Size of the array and its elements were not specified. Empty array will be created!", ErrorCode.Get(CTWN.ArrayEmptyCreation), Entities.ReportType.Warning);
 
                 // count parsed elements and set the size if the sizeExpr was null
                 if (sizeExprs.Last() == null)
@@ -86,7 +88,7 @@ namespace HapetFrontend.Parsing
             }
 
             // error here like unexpected token
-            ReportMessage(PeekToken().Location, $"Unexpected token after array creation expression");
+            ReportMessage(PeekToken().Location, $"Unexpected token after array creation expression", ErrorCode.Get(CTEN.ArrayUnexpectedToken));
             return ParseEmptyExpression();
         }
 
@@ -107,7 +109,7 @@ namespace HapetFrontend.Parsing
                 if (expr is not AstExpression exprexpr)
                 {
                     // error here. it has to be
-                    ReportMessage(expr.Location, $"Array element expected to be an expression");
+                    ReportMessage(expr.Location, $"Array element expected to be an expression", ErrorCode.Get(CTEN.ArrayElementNotExpr));
                     break;
                 }
                 values.Add(exprexpr);
@@ -124,7 +126,7 @@ namespace HapetFrontend.Parsing
                 }
                 else
                 {
-                    ReportMessage(next.Location, "Unexpected token in array elements expression");
+                    ReportMessage(next.Location, "Unexpected token in array elements expression", ErrorCode.Get(CTEN.ArrayElementsUnexpectedToken));
                     NextToken();
                 }
             }
