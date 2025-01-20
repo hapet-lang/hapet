@@ -2,6 +2,7 @@
 using HapetFrontend.Ast.Declarations;
 using HapetFrontend.Ast.Expressions;
 using HapetFrontend.Ast.Statements;
+using HapetFrontend.Errors;
 using HapetFrontend.Types;
 
 namespace HapetFrontend.Parsing.PostPrepare
@@ -31,7 +32,7 @@ namespace HapetFrontend.Parsing.PostPrepare
             {
                 var foundNonStatic = classDecl.Declarations.FirstOrDefault(dd => !dd.SpecialKeys.Contains(TokenType.KwStatic) && !dd.SpecialKeys.Contains(TokenType.KwConst));
                 if (foundNonStatic != null)
-                    _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, foundNonStatic, "The declaration has to be 'static' or 'const' because it is declared in a 'static' class");
+                    _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, foundNonStatic, [], ErrorCode.Get(CTEN.ClassStaticMemStatic));
             }
 
             // getting all functions in the class
@@ -41,7 +42,7 @@ namespace HapetFrontend.Parsing.PostPrepare
             var propFuncs = allFuncs.Where(x => x.Name.Name.StartsWith($"get_") || x.Name.Name.StartsWith($"set_"));
             foreach (var fnc in propFuncs)
             {
-                _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, fnc.Name, $"Functions with the name that starts with 'get_' or 'set_' are not allowed");
+                _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, fnc.Name, [], ErrorCode.Get(CTEN.ClassFuncGetSetName));
             }
 
             // getting all props in the class
@@ -57,7 +58,7 @@ namespace HapetFrontend.Parsing.PostPrepare
                 {
                     // also check if the prop is really going to gen field
                     if (pp.GetBlock == null && pp.SetBlock == null)
-                        _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, theField, $"Please rename the field because a property named {pp.Name} is going to generate the field");
+                        _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, theField, [pp.Name.Name], ErrorCode.Get(CTEN.ClassPropFieldExists));
                 }
             }
 
@@ -72,7 +73,7 @@ namespace HapetFrontend.Parsing.PostPrepare
                     if (allFieldsAndProps[i].Name.Name == allFieldsAndProps[j].Name.Name)
                     {
                         // TODO: show previous field decl
-                        _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, allFieldsAndProps[j], $"Fields and properties cannot have the same names in a class");
+                        _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, allFieldsAndProps[j], [], ErrorCode.Get(CTEN.ClassPropsFieldsSame));
                     }
                 }
             }
@@ -100,7 +101,7 @@ namespace HapetFrontend.Parsing.PostPrepare
                                                     x.Name.Name.EndsWith($"::{classDecl.Name.Name}_dtor")));
             foreach (var fnc in specialFuncs)
             {
-                _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, fnc.Name, $"Function with the name is not allowed in the {classDecl.Name.Name} class");
+                _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, fnc.Name, [classDecl.Name.Name], ErrorCode.Get(CTEN.ClassFuncNameNotAllowed));
             }
 
             // static ctor is always generated
@@ -242,7 +243,7 @@ namespace HapetFrontend.Parsing.PostPrepare
             }
             else
             {
-                _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, dtors[1], "Only one destructor could be declared in a class");
+                _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, dtors[1], [], ErrorCode.Get(CTEN.ClassDtorOnlyOne));
             }
         }
 
@@ -294,7 +295,7 @@ namespace HapetFrontend.Parsing.PostPrepare
 
                 // stor can only have 'static' kw
                 if (ctorFunc.SpecialKeys.Count > 1)
-                    _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, ctorFunc.Name, $"Static constructor can only have 'static' keyword. Other keywords will be ignored!", null, Entities.ReportType.Warning);
+                    _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, ctorFunc.Name, [], ErrorCode.Get(CTWN.StaticCtorKwsIgnored), null, Entities.ReportType.Warning);
 
                 // move all user code under 'if' stmt
                 checkForInited.BodyTrue.Statements.AddRange(ctorFunc.Body.Statements);
@@ -305,7 +306,7 @@ namespace HapetFrontend.Parsing.PostPrepare
             }
             else
             {
-                _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, ctors[1], "Only one static constructor could be declared in a class");
+                _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, ctors[1], [], ErrorCode.Get(CTEN.ClassStorOnlyOne));
             }
         }
 

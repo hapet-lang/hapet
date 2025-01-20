@@ -18,4 +18,10 @@
         <Number>2002</Number>
         <Text>All the statements after '{0}' would be ignored by compiler!</Text>
     </Item>
+
+	<!--Post prepare warnings-->
+	<Item>
+		<Number>3001</Number>
+		<Text>Static constructor can only have 'static' keyword. Other keywords will be ignored!</Text>
+	</Item>
 </Items>

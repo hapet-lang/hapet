@@ -205,4 +205,32 @@
 		<Number>3005</Number>
 		<Text>The element has to be an array type</Text>
 	</Item>
+	<Item>
+		<Number>3006</Number>
+		<Text>The declaration has to be 'static' or 'const' because it is declared in a 'static' class</Text>
+	</Item>
+	<Item>
+		<Number>3007</Number>
+		<Text>Functions with the name that starts with 'get_' or 'set_' are not allowed</Text>
+	</Item>
+	<Item>
+		<Number>3008</Number>
+		<Text>Please rename the field because a property named {0} is going to generate the field</Text>
+	</Item>
+	<Item>
+		<Number>3009</Number>
+		<Text>Fields and properties cannot have the same names in a class</Text>
+	</Item>
+	<Item>
+		<Number>300A</Number>
+		<Text>Function with the name is not allowed in the {0} class</Text>
+	</Item>
+	<Item>
+		<Number>300B</Number>
+		<Text>Only one destructor could be declared in a class</Text>
+	</Item>
+	<Item>
+		<Number>300C</Number>
+		<Text>Only one static constructor could be declared in a class</Text>
+	</Item>
 </Items>

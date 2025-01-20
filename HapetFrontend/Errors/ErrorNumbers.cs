@@ -59,6 +59,13 @@
         ArrayVarSizeAndVals             = 0x3003,
         ArraySizeAndValsDiffer          = 0x3004,
         ArrayTypeAsElement              = 0x3005,
+        ClassStaticMemStatic            = 0x3006,
+        ClassFuncGetSetName             = 0x3007,
+        ClassPropFieldExists            = 0x3008,
+        ClassPropsFieldsSame            = 0x3009,
+        ClassFuncNameNotAllowed         = 0x300A,
+        ClassDtorOnlyOne                = 0x300B,
+        ClassStorOnlyOne                = 0x300C,
     }
 
     // Run Time Error Number
@@ -82,5 +89,6 @@
         StmtsWouldBeIgnored             = 0x2002,
 
         // post preparer warnings up to 0x5000
+        StaticCtorKwsIgnored            = 0x3001,
     }
 }
