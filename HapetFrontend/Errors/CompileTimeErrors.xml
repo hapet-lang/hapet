@@ -128,7 +128,7 @@
     </Item>
     <Item>
         <Number>2017</Number>
-        <Text>Expression expected as index of an element in [...]</Text>
+        <Text>Expression expected as index of an element in [..]</Text>
     </Item>
     <Item>
         <Number>2018</Number>
@@ -331,14 +331,78 @@
 	</Item>
 	<Item>
 		<Number>3025</Number>
-		<Text>The function call could not be inferred</Text>
+		<Text>The function could not be inferred</Text>
 	</Item>
 	<Item>
 		<Number>3026</Number>
 		<Text>The calling thing has to be a function or a delegate</Text>
 	</Item>
+    <Item>
+        <Number>3027</Number>
+        <Text>The type of the expression has to be a class or a struct</Text>
+    </Item>
+    <Item>
+        <Number>3028</Number>
+        <Text>The symbol could not be found in {0}</Text>
+    </Item>
+    <Item>
+        <Number>3029</Number>
+        <Text>Array/String type expected to be indexed</Text>
+    </Item>
+    <Item>
+        <Number>302A</Number>
+        <Text>Nothing could be assigned to enum field</Text>
+    </Item>
+    <Item>
+        <Number>302B</Number>
+        <Text>Type of the expression expected to be boolean type</Text>
+    </Item>
+    <Item>
+        <Number>302C</Number>
+        <Text>Only one 'default' case is allowed</Text>
+    </Item>
+    <Item>
+        <Number>302D</Number>
+        <Text>Only constant values allowed in 'case' statements</Text>
+    </Item>
+    <Item>
+        <Number>302E</Number>
+        <Text>Not enough 'return {0}' statements in function</Text>
+    </Item>
+    <Item>
+        <Number>302F</Number>
+        <Text>An empty 'return' statement in function but is has to return {0}</Text>
+    </Item>
+    <Item>
+        <Number>3030</Number>
+        <Text>Too many parameters were specified. Attribute has only {0} fields but You specified {1} parameters</Text>
+    </Item>
+    <Item>
+        <Number>3031</Number>
+        <Text>Parameter value has to be compile time available</Text>
+    </Item>
+    <Item>
+        <Number>3032</Number>
+        <Text>Parameter for the '{0}' field has to be specified because it is marked as 'Required'</Text>
+    </Item>
+    <Item>
+        <Number>3033</Number>
+        <Text>Default value for the type was not found</Text>
+    </Item>
+    <Item>
+        <Number>3034</Number>
+        <Text>Type {0} cannot be implicitly casted into {1}</Text>
+    </Item>
+    <Item>
+        <Number>3035</Number>
+        <Text>Function name expected to be here</Text>
+    </Item>
+    <Item>
+        <Number>3036</Number>
+        <Text>The expression expected to be a function</Text>
+    </Item>
 
-	<!--Compiler errors-->
+    <!--Compiler errors-->
 	<Item>
 		<Number>5001</Number>
 		<Text>(Compiler exception) The default had to be infered previously by caller</Text>

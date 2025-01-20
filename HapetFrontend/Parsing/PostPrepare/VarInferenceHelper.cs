@@ -228,7 +228,7 @@ namespace HapetFrontend.Parsing.PostPrepare
             {
                 string typeName = exprType?.ToString() ?? "[Unresolved]";
                 if (castResult == null)
-                    _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, expr, $"Type {typeName} cannot be implicitly casted into {neededType}");
+                    _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, expr, [typeName, neededType.ToString()], ErrorCode.Get(CTEN.TypeCouldNotBeImplCasted));
 
                 outExpr = expr;
             }
@@ -259,13 +259,13 @@ namespace HapetFrontend.Parsing.PostPrepare
             // when assigning to a delegate type - function name is expected
             if (value is not AstNestedExpr nestFuncName)
             {
-                _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, value, $"Function name expected to be here");
+                _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, value, [], ErrorCode.Get(CTEN.DelegFuncNameExpected));
                 return value;
             }
             // when assigning to a delegate type - function name is expected
             if (nestFuncName.RightPart is not AstIdExpr idFuncName)
             {
-                _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, value, $"Function name expected to an identifier");
+                _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, value, [], ErrorCode.Get(CTEN.CommonIdentifierExpected));
                 return value;
             }
 
@@ -327,14 +327,14 @@ namespace HapetFrontend.Parsing.PostPrepare
                     // error because user tries to access non static method from a class name
                     if (clsTpStatic.Declaration.SubScope.GetSymbol(newName) != null)
                     {
-                        _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, idFuncName, $"The non-static method could only be accessed from an object");
+                        _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, idFuncName, [], ErrorCode.Get(CTEN.NonStaticFuncFromStatic));
                     }
                 }
             }
             else
             {
                 // error here: the function call could not be infered
-                _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, value, $"The function could not be inferred");
+                _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, value, [], ErrorCode.Get(CTEN.FuncNotInfered));
             }
 
             nestFuncName.RightPart = idFuncName.GetCopy(newName);
@@ -354,13 +354,13 @@ namespace HapetFrontend.Parsing.PostPrepare
                 // warn if accessing from an object
                 if (accessingFromAnObject && isStaticFunc)
                 {
-                    _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, value, $"Static methods should not be accessed from an object", null, ReportType.Warning);
+                    _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, value, [], ErrorCode.Get(CTWN.StaticFuncFromObject), null, ReportType.Warning);
                 }
             }
             else
             {
                 // error here
-                _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, value, $"The thing has to be a function");
+                _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, value, [], ErrorCode.Get(CTEN.ExprExpectedToBeFunc));
             }
 
             return value;

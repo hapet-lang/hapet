@@ -90,8 +90,24 @@
         FuncCouldNotBeAccessed          = 0x3022,
         FuncWithNameNotFound            = 0x3023,
         NonStaticFuncFromStatic         = 0x3024,
-        FuncCallNotInfered              = 0x3025,
+        FuncNotInfered                  = 0x3025,
         CallNotFuncOrDelegate           = 0x3026,
+        ExprNotClassOrStruct            = 0x3027,
+        SymbolNotFoundInType            = 0x3028,
+        NonStringOrArrayIndexed         = 0x3029,
+        EnumFieldAssigned               = 0x302A,
+        ExprIsNotBool                   = 0x302B,
+        MultipleDefaultCases            = 0x302C,
+        NonConstantCaseValue            = 0x302D,
+        NotEnoughReturns                = 0x302E,
+        EmptyReturnStmt                 = 0x302F,
+        WrongAttrArgs                   = 0x3030,
+        NonComptimeAttrArg              = 0x3031,
+        NonSpecifiedRequired            = 0x3032,
+        DefaultValueNotFound            = 0x3033,
+        TypeCouldNotBeImplCasted        = 0x3034,
+        DelegFuncNameExpected           = 0x3035, // could be obsolete
+        ExprExpectedToBeFunc            = 0x3036,
 
         // compiler errors up to 0x6000
         DefaultWasNotInfered            = 0x5001,
@@ -121,5 +137,6 @@
         StaticCtorKwsIgnored            = 0x3001,
         EnumHasSameValue                = 0x3002,
         StaticFuncFromObject            = 0x3003,
+        StaticFieldFromObject           = 0x3004,
     }
 }

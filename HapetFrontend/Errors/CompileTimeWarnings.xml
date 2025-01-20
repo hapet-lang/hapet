@@ -32,4 +32,8 @@
 		<Number>3003</Number>
 		<Text>Static methods should not be accessed from an object!</Text>
 	</Item>
+    <Item>
+        <Number>3004</Number>
+        <Text>Const/static fields should not be accessed from an object!</Text>
+    </Item>
 </Items>

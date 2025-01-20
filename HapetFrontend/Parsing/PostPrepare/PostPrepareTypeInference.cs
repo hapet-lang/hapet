@@ -917,7 +917,7 @@ namespace HapetFrontend.Parsing.PostPrepare
             else
             {
                 // error here: the function call could not be infered
-                _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, callExpr, [], ErrorCode.Get(CTEN.FuncCallNotInfered));
+                _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, callExpr, [], ErrorCode.Get(CTEN.FuncNotInfered));
             }
             callExpr.FuncName = callExpr.FuncName.GetCopy(newName);
             PostPrepareIdentifierInference(callExpr.FuncName, true);
@@ -996,7 +996,7 @@ namespace HapetFrontend.Parsing.PostPrepare
 
                 if (leftSideScope == null)
                 {
-                    _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, nestExpr.LeftPart, "The type of the expression has to be a class or a struct");
+                    _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, nestExpr.LeftPart, [], ErrorCode.Get(CTEN.ExprNotClassOrStruct));
                     itWasPropa = false;
                     return;
                 }
@@ -1004,7 +1004,7 @@ namespace HapetFrontend.Parsing.PostPrepare
                 // here could only be an AstIdExpr because AstCallExpr and AstExpression would be in 'if' block upper
                 if (nestExpr.RightPart is not AstIdExpr idExpr)
                 {
-                    _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, nestExpr.RightPart, "The expressions has to be an identifier");
+                    _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, nestExpr.RightPart, [], ErrorCode.Get(CTEN.CommonIdentifierExpected));
                     itWasPropa = false;
                     return;
                 }
@@ -1020,7 +1020,7 @@ namespace HapetFrontend.Parsing.PostPrepare
                     // check if the var is a static/const field and user is accessing it from an object
                     if (typed.Decl is AstVarDecl varDecl && (varDecl.SpecialKeys.Contains(TokenType.KwStatic) || varDecl.SpecialKeys.Contains(TokenType.KwConst)) && accessingFromAnObject) // if accessing from an object - give em a warning :)
                     {
-                        _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, idExpr, $"Const/static fields should not be accessed from an object", null, HapetFrontend.Entities.ReportType.Warning);
+                        _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, idExpr, [], ErrorCode.Get(CTWN.StaticFieldFromObject), null, HapetFrontend.Entities.ReportType.Warning);
                     }
 
                     // if the ast is an access to a property
@@ -1045,7 +1045,7 @@ namespace HapetFrontend.Parsing.PostPrepare
                 }
                 else
                 {
-                    _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, idExpr, $"The symbol could not be found in {nestExpr.LeftPart.OutType}");
+                    _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, idExpr, [nestExpr.LeftPart.OutType.ToString()], ErrorCode.Get(CTEN.SymbolNotFoundInType));
                 }
             }
             itWasPropa = false;
@@ -1162,7 +1162,7 @@ namespace HapetFrontend.Parsing.PostPrepare
             else
             {
                 // error because expected an array 
-                _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, arrayAccExpr.ObjectName, $"Array/String type expected to be indexed");
+                _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, arrayAccExpr.ObjectName, [], ErrorCode.Get(CTEN.NonStringOrArrayIndexed));
             }
             arrayAccExpr.OutType = outType;
         }
@@ -1176,7 +1176,7 @@ namespace HapetFrontend.Parsing.PostPrepare
             // cringe error when user tries to assign something directly into enum field
             if (assignStmt.Target.LeftPart != null && assignStmt.Target.LeftPart.OutType is EnumType)
             {
-                _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, assignStmt, "Nothing could be assigned to enum field");
+                _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, assignStmt, [], ErrorCode.Get(CTEN.EnumFieldAssigned));
                 return;
             }
             // pp assign value
@@ -1195,7 +1195,7 @@ namespace HapetFrontend.Parsing.PostPrepare
                 // error if it is not a bool type because it has to be
                 if (forStmt.SecondParam.OutType is not BoolType)
                 {
-                    _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, forStmt.SecondParam, "Type of the expression has to be boolean type");
+                    _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, forStmt.SecondParam, [], ErrorCode.Get(CTEN.ExprIsNotBool));
                 }
             }
             if (forStmt.ThirdParam != null)
@@ -1211,7 +1211,7 @@ namespace HapetFrontend.Parsing.PostPrepare
             // error if it is not a bool type because it has to be
             if (whileStmt.ConditionParam.OutType is not BoolType)
             {
-                _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, whileStmt.ConditionParam, "Type of the expression has to be boolean type");
+                _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, whileStmt.ConditionParam, [], ErrorCode.Get(CTEN.ExprIsNotBool));
             }
 
             PostPrepareExprInference(whileStmt.Body);
@@ -1224,7 +1224,7 @@ namespace HapetFrontend.Parsing.PostPrepare
             // error if it is not a bool type because it has to be
             if (ifStmt.Condition.OutType is not BoolType)
             {
-                _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, ifStmt.Condition, "Type of the expression has to be boolean type");
+                _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, ifStmt.Condition, [], ErrorCode.Get(CTEN.ExprIsNotBool));
             }
 
             PostPrepareExprInference(ifStmt.BodyTrue);
@@ -1247,7 +1247,7 @@ namespace HapetFrontend.Parsing.PostPrepare
                 if (cc.DefaultCase)
                 {
                     if (thereWasADefaultCase)
-                        _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, cc.Pattern, "Only one 'default' case is allowed");
+                        _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, cc.Pattern, [], ErrorCode.Get(CTEN.MultipleDefaultCases));
                     thereWasADefaultCase = true;
                     continue; // do not check for pattern in default expr...
                 }
@@ -1258,7 +1258,7 @@ namespace HapetFrontend.Parsing.PostPrepare
                 // check that the value is a const 
                 if (cc.Pattern.OutValue == null)
                 {
-                    _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, cc.Pattern, "Only constant values allowed in 'case' statements");
+                    _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, cc.Pattern, [], ErrorCode.Get(CTEN.NonConstantCaseValue));
                 }
             }
         }
@@ -1284,14 +1284,15 @@ namespace HapetFrontend.Parsing.PostPrepare
             }
             else if (returnStmt.ReturnExpression == null && _currentFunction.Returns.OutType is not VoidType)
             {
+                // TODO: better return stmts checks. like in if/else blocks and so on
                 if (returnStmt.Location == null)
                 {
                     // it is a manually added 'return' statement
                     var theFunc = returnStmt.FindContainingFunction();
-                    _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, theFunc.Name, $"Not enough 'return {_currentFunction.Returns.OutType}' statements in function");
+                    _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, theFunc.Name, [_currentFunction.Returns.OutType.ToString()], ErrorCode.Get(CTEN.NotEnoughReturns));
                 }
                 else
-                    _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, returnStmt, $"Empty 'return' statement in function that has to return {_currentFunction.Returns.OutType}");
+                    _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, returnStmt, [_currentFunction.Returns.OutType.ToString()], ErrorCode.Get(CTEN.EmptyReturnStmt));
             }
         }
 
@@ -1317,7 +1318,7 @@ namespace HapetFrontend.Parsing.PostPrepare
             {
                 var beg = attrStmt.Parameters[attrDeclFields.Count].Beginning;
                 var end = attrStmt.Parameters[attrStmt.Parameters.Count - 1].Ending;
-                _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, new Location(beg, end), $"Too many parameters were specified. Attribute has only {attrDeclFields.Count} fields but You specified {attrStmt.Parameters.Count} parameters");
+                _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, new Location(beg, end), [attrDeclFields.Count.ToString(), attrStmt.Parameters.Count.ToString()], ErrorCode.Get(CTEN.WrongAttrArgs));
             }
 
             for (int i = 0; i < attrDeclFields.Count; ++i)
@@ -1332,7 +1333,7 @@ namespace HapetFrontend.Parsing.PostPrepare
                     PostPrepareExprInference(a);
                     // all attr params has to be const values
                     if (a.OutValue == null)
-                        _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, a, $"Parameter value has to be compile time available");
+                        _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, a, [], ErrorCode.Get(CTEN.NonComptimeAttrArg));
 
                     // is going to error if they are different types :)
                     attrStmt.Parameters[i] = PostPrepareExpressionWithType(theAttrField.Type.OutType, a);
@@ -1357,7 +1358,7 @@ namespace HapetFrontend.Parsing.PostPrepare
                     if (reqAttr != null)
                     {
                         // there was a required attr and no param for the field - error
-                        _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, attrStmt.Ending, $"Parameter for the '{theAttrField.Name.Name}' field has to be specified because it is marked as 'Required'");
+                        _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, attrStmt.Ending, [theAttrField.Name.Name], ErrorCode.Get(CTEN.NonSpecifiedRequired));
                     }
                 }
             }
@@ -1379,7 +1380,7 @@ namespace HapetFrontend.Parsing.PostPrepare
                 // get the default value for the type (no need to infer)
                 value = AstDefaultExpr.GetDefaultValueForType(targetType, value);
                 if (value == null)
-                    _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, value, "Default value for the type was not found");
+                    _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, value, [], ErrorCode.Get(CTEN.DefaultValueNotFound));
             }
             // do not infer the expr if target is a delegate
             else if (targetType is not DelegateType)
