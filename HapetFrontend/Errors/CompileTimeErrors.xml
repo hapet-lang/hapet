@@ -233,4 +233,40 @@
 		<Number>300C</Number>
 		<Text>Only one static constructor could be declared in a class</Text>
 	</Item>
+	<Item>
+		<Number>300D</Number>
+		<Text>The statement expected to be a declaration</Text>
+	</Item>
+	<Item>
+		<Number>300E</Number>
+		<Text>The declaration type is not allowed in namespace scope</Text>
+	</Item>
+	<Item>
+		<Number>300F</Number>
+		<Text>Namespace '{0}' already contains a declaration with the name</Text>
+	</Item>
+	<Item>
+		<Number>3010</Number>
+		<Text>Enum type expected to be an integer</Text>
+	</Item>
+	<Item>
+		<Number>3011</Number>
+		<Text>The {0} type already has an implementation of the field</Text>
+	</Item>
+	<Item>
+		<Number>3012</Number>
+		<Text>The {0} type already has a field that {1} type has to implement for {2} interface</Text>
+	</Item>
+	<Item>
+		<Number>3013</Number>
+		<Text>The {0} type does not have an implementation of {1} field</Text>
+	</Item>
+	<Item>
+		<Number>3014</Number>
+		<Text>The initializer has to be compile time evaluated</Text>
+	</Item>
+	<Item>
+		<Number>3015</Number>
+		<Text>The initializer has to be numeric type</Text>
+	</Item>
 </Items>

@@ -24,4 +24,8 @@
 		<Number>3001</Number>
 		<Text>Static constructor can only have 'static' keyword. Other keywords will be ignored!</Text>
 	</Item>
+	<Item>
+		<Number>3002</Number>
+		<Text>Enum field with the same value already exists!</Text>
+	</Item>
 </Items>

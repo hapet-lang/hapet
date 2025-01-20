@@ -66,6 +66,15 @@
         ClassFuncNameNotAllowed         = 0x300A,
         ClassDtorOnlyOne                = 0x300B,
         ClassStorOnlyOne                = 0x300C,
+        StmtExpectedToBeDecl            = 0x300D,
+        DeclNotAllowedInNamespace       = 0x300E,
+        NamespaceAlreadyContains        = 0x300F,
+        EnumTypeNotInt                  = 0x3010,
+        FieldAlreadyDefined             = 0x3011,
+        DoubleInterfaceCringe           = 0x3012, // would be obsolete
+        NoFieldImplementation           = 0x3013,
+        EnumIniNotComptime              = 0x3014,
+        EnumIniNotNumber                = 0x3015,
     }
 
     // Run Time Error Number
@@ -90,5 +99,6 @@
 
         // post preparer warnings up to 0x5000
         StaticCtorKwsIgnored            = 0x3001,
+        EnumHasSameValue                = 0x3002,
     }
 }

@@ -3,6 +3,7 @@ using HapetFrontend.Ast.Declarations;
 using HapetFrontend.Ast.Expressions;
 using HapetFrontend.Ast.Statements;
 using HapetFrontend.Entities;
+using HapetFrontend.Errors;
 using HapetFrontend.Helpers;
 using HapetFrontend.Types;
 using Newtonsoft.Json;
@@ -77,7 +78,7 @@ namespace HapetFrontend.Parsing.PostPrepare
 
                     if (stmt is not AstDeclaration decl)
                     {
-                        _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, stmt, $"The statement expected to be a declaration");
+                        _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, stmt, [], ErrorCode.Get(CTEN.StmtExpectedToBeDecl));
                         continue;
                     }
 
@@ -114,7 +115,7 @@ namespace HapetFrontend.Parsing.PostPrepare
                     }
                     else
                     {
-                        _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, decl.Name, $"The declaration type is not allowed in namespace scope");
+                        _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, decl.Name, [], ErrorCode.Get(CTEN.DeclNotAllowedInNamespace));
                         continue;
                     }
 
@@ -123,7 +124,7 @@ namespace HapetFrontend.Parsing.PostPrepare
                     var smbl = file.NamespaceScope.GetSymbol(decl.Name.Name);
                     // TODO: better error like where is the first decl?
                     if (smbl != null)
-                        _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, decl.Name, $"Namespace '{file.Namespace}' already contains declaration with the name");
+                        _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, decl.Name, [file.Namespace], ErrorCode.Get(CTEN.NamespaceAlreadyContains));
                     else
                         file.NamespaceScope.DefineDeclSymbol(decl.Name.Name, decl);
                 }
@@ -152,7 +153,7 @@ namespace HapetFrontend.Parsing.PostPrepare
                 // only int type inheritance allowed for enums
                 if (enm.InheritedType.OutType is not IntType)
                 {
-                    _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, enm.InheritedType, "The type has to be integer type");
+                    _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, enm.InheritedType, [], ErrorCode.Get(CTEN.EnumTypeNotInt));
                 }
             }
         }
@@ -281,7 +282,7 @@ namespace HapetFrontend.Parsing.PostPrepare
                                             // the field is implemented in parent class and current class
                                             // we need to error
                                             _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, currF,
-                                                $"The {definedInOneOfTheParents.ContainingParent.Type.OutType} type already has an implementation of the field");
+                                                [definedInOneOfTheParents.ContainingParent.Type.OutType.ToString()], ErrorCode.Get(CTEN.FieldAlreadyDefined));
                                             continue;
                                         }
                                         // else - everything is ok probably
@@ -309,7 +310,8 @@ namespace HapetFrontend.Parsing.PostPrepare
 
                                         // we need to error
                                         _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, definedInOneOfTheParents,
-                                            $"The {definedInOneOfTheParents.ContainingParent.Type.OutType} type already has a field that {decl.Type.OutType} type has to implement for {inh.OutType} interface");
+                                            [definedInOneOfTheParents.ContainingParent.Type.OutType.ToString(), decl.Type.OutType.ToString(), inh.OutType.ToString()], 
+                                            ErrorCode.Get(CTEN.DoubleInterfaceCringe));
                                         continue;
                                     }
                                 }
@@ -323,7 +325,7 @@ namespace HapetFrontend.Parsing.PostPrepare
                                     {
                                         // error - the field of the interface was not implemented
                                         _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, inh,
-                                            $"The {decl.Type.OutType} type does not have an implementation of {inhF.Name.Name} field");
+                                            [decl.Type.OutType.ToString(), inhF.Name.Name], ErrorCode.Get(CTEN.NoFieldImplementation));
                                     }
                                     else
                                     {
@@ -408,7 +410,7 @@ namespace HapetFrontend.Parsing.PostPrepare
                         // warn if the value already exists in enum
                         if (allValues.Contains(currentValue))
                         {
-                            _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, decl, "Enum field with the same value already exists", null, ReportType.Warning);
+                            _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, decl, [], ErrorCode.Get(CTWN.EnumHasSameValue), null, ReportType.Warning);
                         }
                         allValues.Add(currentValue);
                         currentValue++;
@@ -417,19 +419,19 @@ namespace HapetFrontend.Parsing.PostPrepare
                     {
                         if (decl.Initializer.OutValue == null)
                         {
-                            _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, decl.Initializer, "The initializer has to be compile time evaluated!");
+                            _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, decl.Initializer, [], ErrorCode.Get(CTEN.EnumIniNotComptime));
                             continue;
                         }
                         else if (decl.Initializer.OutValue is not NumberData)
                         {
-                            _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, decl.Initializer, "The initializer has to be numeric type");
+                            _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, decl.Initializer, [], ErrorCode.Get(CTEN.EnumIniNotNumber));
                             continue;
                         }
                         var userDefinedValue = (int)((NumberData)decl.Initializer.OutValue).IntValue;
                         // warn if the value already exists in enum
                         if (allValues.Contains(userDefinedValue))
                         {
-                            _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, decl, "Enum field with the same value already exists", null, ReportType.Warning);
+                            _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, decl, [], ErrorCode.Get(CTWN.EnumHasSameValue), null, ReportType.Warning);
                         }
                         allValues.Add(userDefinedValue);
                         currentValue = userDefinedValue + 1; // getting value for the next field
