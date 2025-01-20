@@ -28,6 +28,10 @@
         <Number>1001</Number>
         <Text>'{0}' could not be found</Text>
     </Item>
+	<Item>
+		<Number>1002</Number>
+		<Text>Unexpected end while parsing string literal</Text>
+	</Item>
 
     <!--Parser errors-->
     <Item>
@@ -150,6 +154,32 @@
 		<Number>201D</Number>
 		<Text>Unexpected token '{0}' in expression</Text>
 	</Item>
+	<Item>
+		<Number>201F</Number>
+		<Text>Identifier expected to be here</Text>
+	</Item>
+	<Item>
+		<Number>2020</Number>
+		<Text>The '.' was not expected here</Text>
+	</Item>
+	<Item>
+		<Number>2021</Number>
+		<Text>Identifier expected after '.'</Text>
+	</Item>
+	<Item>
+		<Number>2022</Number>
+		<Text>Variable initializer has to be an expresssion</Text>
+	</Item>
+	<Item>
+		<Number>2023</Number>
+		<Text>Unexpected token</Text>
+	</Item>
+	<Item>
+		<Number>2024</Number>
+		<Text>This type of statement is not allowed in global scope</Text>
+	</Item>
+	
+	
 
 	<!--Post prepare errors-->
     <Item>
@@ -160,4 +190,19 @@
         <Number>3002</Number>
         <Text>Required type of the expression could not be evaluated</Text>
     </Item>
+	<Item>
+		<Number>3003</Number>
+		<Text>Array cannot has initialization values when its size is not a const</Text>
+	</Item>
+	<Item>
+		<Number>3004</Number>
+		<Text>
+			Array initialization values amount and its size are different but they have to be the same. \n
+			You set {0} in array definition but there are {1} elements presented
+		</Text>
+	</Item>
+	<Item>
+		<Number>3005</Number>
+		<Text>The element has to be an array type</Text>
+	</Item>
 </Items>

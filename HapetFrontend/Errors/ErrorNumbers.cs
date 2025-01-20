@@ -13,6 +13,7 @@
 
         // lexer errors up to 0x2000
         FileForLexerNotFound            = 0x1001,
+        UnexpectedEndOfStringLit        = 0x1002,
 
         // parser errors up to 0x3000
         UnexpectedDeclInStruct          = 0x2001,
@@ -45,10 +46,19 @@
         CommonExpectedToken             = 0x201B,
         CommonUnexpectedToken           = 0x201C,
         CommonUnexpectedInExpr          = 0x201D,
+        CommonIdentifierExpected        = 0x201F,
+        CommonDotUnexpected             = 0x2020,
+        CommonIdentAfterDot             = 0x2021,
+        VarIniterExpr                   = 0x2022,
+        PureUnexpectedToken             = 0x2023,
+        StmtNotAllowedInGlobal          = 0x2024,
 
         // post preparer errors up to 0x5000
         EnumCouldNotBeAssigned          = 0x3001,
         RequiredTypeNotEvaluated        = 0x3002,
+        ArrayVarSizeAndVals             = 0x3003,
+        ArraySizeAndValsDiffer          = 0x3004,
+        ArrayTypeAsElement              = 0x3005,
     }
 
     // Run Time Error Number

@@ -2,6 +2,7 @@
 using HapetFrontend.Ast.Declarations;
 using HapetFrontend.Ast.Statements;
 using HapetFrontend.Entities;
+using HapetFrontend.Errors;
 using HapetFrontend.Helpers;
 using HapetFrontend.Parsing;
 using HapetFrontend.Parsing.PostPrepare;
@@ -140,7 +141,7 @@ namespace HapetFrontend
                 }
                 else if (s != null)
                 {
-                    mh.ReportMessage(lexer.Text, s, "This type of statement is not allowed in global scope");
+                    mh.ReportMessage(lexer.Text, s, [], ErrorCode.Get(CTEN.StmtNotAllowedInGlobal));
                 }
             }
         }

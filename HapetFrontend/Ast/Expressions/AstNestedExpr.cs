@@ -1,4 +1,5 @@
 ﻿using HapetFrontend.Entities;
+using HapetFrontend.Errors;
 using HapetFrontend.Parsing;
 
 namespace HapetFrontend.Ast.Expressions
@@ -35,7 +36,7 @@ namespace HapetFrontend.Ast.Expressions
             if (RightPart is not AstIdExpr idExpr)
             {
                 if (messageHandler != null)
-                    messageHandler.ReportMessage(file.Text, RightPart, "The expression expected to be an identifier");
+                    messageHandler.ReportMessage(file.Text, RightPart, [], ErrorCode.Get(CTEN.CommonIdentifierExpected));
                 return string.Empty;
             }
 

@@ -2,6 +2,7 @@
 using HapetFrontend.Ast.Declarations;
 using HapetFrontend.Ast.Expressions;
 using HapetFrontend.Ast.Statements;
+using HapetFrontend.Errors;
 using System.Collections.Generic;
 using System.Text;
 
@@ -20,7 +21,8 @@ namespace HapetFrontend.Parsing
             var next = PeekToken();
             if (next.Type != identType)
             {
-                ReportMessage(next.Location, customMessage?.Invoke(next) ?? "Expected identifier");
+                customMessage ??= new MessageResolver() { MessageArgs = [], XmlMessage = ErrorCode.Get(CTEN.CommonIdentifierExpected) };
+                ReportMessage(next.Location, customMessage.MessageArgs, customMessage.XmlMessage);
                 return new AstNestedExpr(new AstIdExpr("anon", new Location(next.Location)), iniNested, next.Location);
             }
             NextToken();
@@ -33,7 +35,7 @@ namespace HapetFrontend.Parsing
             {
                 if (!allowDots)
                 {
-                    ReportMessage(PeekToken().Location, "The '.' was not expected here");
+                    ReportMessage(PeekToken().Location, [], ErrorCode.Get(CTEN.CommonDotUnexpected));
                 }
 
                 NextToken();
@@ -45,7 +47,7 @@ namespace HapetFrontend.Parsing
                 }
                 else
                 {
-                    ReportMessage(PeekToken().Location, "Expected identifier after '.'");
+                    ReportMessage(PeekToken().Location, [], ErrorCode.Get(CTEN.CommonIdentAfterDot));
                 }
             }
 
@@ -66,7 +68,7 @@ namespace HapetFrontend.Parsing
 
                 if (initializer is not AstExpression)
                 {
-                    ReportMessage(initializer.Location, $"Variable initializer has to be an expresssion");
+                    ReportMessage(initializer.Location, [], ErrorCode.Get(CTEN.VarIniterExpr));
                 }
 
                 var varDecl = new AstVarDecl(udecl.Type, udecl.Name, initializer as AstExpression, docString, Location: new Location(udecl.Beginning, end));
@@ -122,7 +124,7 @@ namespace HapetFrontend.Parsing
                 return prop;
             }
 
-            ReportMessage(PeekToken().Location, $"Unexpected token"); // TODO: better error message?
+            ReportMessage(PeekToken().Location, [], ErrorCode.Get(CTEN.PureUnexpectedToken)); // TODO: better error message?
             return udecl;
         }
     }

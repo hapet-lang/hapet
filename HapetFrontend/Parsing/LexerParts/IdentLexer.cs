@@ -1,5 +1,6 @@
 ﻿using HapetFrontend.Ast;
 using HapetFrontend.Enums;
+using HapetFrontend.Errors;
 using HapetFrontend.Types;
 using System.Text;
 
@@ -51,7 +52,7 @@ namespace HapetFrontend.Parsing
                 {
                     if (_location.Index >= _text.Length)
                     {
-                        _messageHandler.ReportMessage(_text, new Location(_location), $"Unexpected end of file while parsing string literal");
+                        _messageHandler.ReportMessage(_text, new Location(_location), [], ErrorCode.Get(CTEN.UnexpectedEndOfStringLit));
                         token.Data = sb.ToString();
                         return;
                     }
@@ -78,7 +79,7 @@ namespace HapetFrontend.Parsing
 
             if (!foundEnd)
             {
-                _messageHandler.ReportMessage(_text, new Location(_location), $"Unexpected end of string literal");
+                _messageHandler.ReportMessage(_text, new Location(_location), [], ErrorCode.Get(CTEN.UnexpectedEndOfStringLit));
             }
 
             token.Data = sb.ToString();

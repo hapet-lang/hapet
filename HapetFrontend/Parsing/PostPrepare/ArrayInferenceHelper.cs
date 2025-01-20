@@ -1,5 +1,6 @@
 ﻿using HapetFrontend.Ast;
 using HapetFrontend.Ast.Expressions;
+using HapetFrontend.Errors;
 using HapetFrontend.Types;
 using System.Runtime.InteropServices;
 
@@ -17,13 +18,13 @@ namespace HapetFrontend.Parsing.PostPrepare
             {
                 // expected a const value to be used when creating an array with elements
                 // byte[] a2 = new byte[b] {1, b, 2, 4}; - would error in C#
-                _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, arrayExpr, $"Array cannot has initialization values when its size is not a const");
+                _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, arrayExpr, [], ErrorCode.Get(CTEN.ArrayVarSizeAndVals));
             }
             else if (arrayExpr.Elements.Count > 0 && currentSizeExpr.OutValue is NumberData numData && numData != arrayExpr.Elements.Count)
             {
                 //  byte[] a2 = new byte[3] {1, 1, 2, 4}; - would error in C#
                 _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, arrayExpr,
-                    $"Array initialization values amount and its size are different but they have to be the same. \nYou set {numData} in array def but there are {arrayExpr.Elements.Count} elements presented");
+                    [numData.ToString(), arrayExpr.Elements.Count.ToString()], ErrorCode.Get(CTEN.ArraySizeAndValsDiffer));
             }
 
             // if it is ndim array
@@ -38,7 +39,7 @@ namespace HapetFrontend.Parsing.PostPrepare
                         // the elements of ndim array have to be array typed
                         if (element is not AstArrayCreateExpr elementArrayExpr)
                         {
-                            _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, element, $"The element has to be an array type");
+                            _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, element, [], ErrorCode.Get(CTEN.ArrayTypeAsElement));
                             continue;
                         }
                         // it should be already prepared so just create new array type over it
