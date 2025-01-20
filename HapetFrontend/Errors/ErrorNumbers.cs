@@ -43,6 +43,7 @@
         CommonFailToParse               = 0x201A,
         CommonExpectedToken             = 0x201B,
         CommonUnexpectedToken           = 0x201C,
+        CommonUnexpectedInExpr          = 0x201D,
 
         // post preparer errors up to 0x5000
         EnumCouldNotBeAssigned          = 0x3001,

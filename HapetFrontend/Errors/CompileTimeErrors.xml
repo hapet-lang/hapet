@@ -132,15 +132,19 @@
     </Item>
     <Item>
         <Number>201A</Number>
-        <Text>Failed to parse an expression</Text>
+        <Text>Failed to parse expression, unpexpected token ({0}) {1}</Text>
     </Item>
 	<Item>
 		<Number>201B</Number>
 		<Text>Expected {0} {1}</Text>
 	</Item>
 	<Item>
-		<Number>201B</Number>
+		<Number>201C</Number>
 		<Text>Unexpected Token ({0}) {1}, expected {2}</Text>
+	</Item>
+	<Item>
+		<Number>201D</Number>
+		<Text>Unexpected token '{0}' in expression</Text>
 	</Item>
 
 	<!--Post prepare errors-->

@@ -16,7 +16,7 @@ namespace HapetFrontend.Parsing
             MessageResolver message = null,
             bool allowPointerExpressions = false)
         {
-            message = message ?? (t => $"Unexpected token '{t}' in expression");
+            message ??= new MessageResolver() { XmlMessage = ErrorCode.Get(CTEN.CommonUnexpectedInExpr) };
 
             var expr = ParseOrExpression(allowCommaForTuple, allowFunctionDeclaration, message, allowPointerExpressions);
 
@@ -602,8 +602,11 @@ namespace HapetFrontend.Parsing
                     return ParseImplementationKeys(token.Type);
 
                 default:
-                    //NextToken();
-                    ReportMessage(token.Location, message?.Invoke(token) ?? $"Failed to parse expression, unpexpected token ({token.Type}) {token.Data}", ErrorCode.Get(CTEN.CommonFailToParse));
+                    if (message != null)
+                        message.MessageArgs = [token.ToString()];
+                    else
+                        message = new MessageResolver() { MessageArgs = [token.Type.ToString(), token.Data.ToString()], XmlMessage = ErrorCode.Get(CTEN.CommonFailToParse) };
+                    ReportMessage(token.Location, message.MessageArgs, message.XmlMessage);
                     return ParseEmptyExpression();
             }
         }
