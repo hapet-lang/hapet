@@ -3,6 +3,7 @@ using HapetFrontend.Ast.Declarations;
 using HapetFrontend.Ast.Expressions;
 using HapetFrontend.Ast.Statements;
 using HapetFrontend.Entities;
+using HapetFrontend.Errors;
 using HapetFrontend.Helpers;
 using HapetFrontend.Scoping;
 using HapetFrontend.Types;
@@ -175,9 +176,9 @@ namespace HapetFrontend.Parsing.PostPrepare
             if (varDecl.Type.OutType is VarType)
             {
                 if (varDecl.Initializer == null)
-                    _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, varDecl, $"Variable declaration with 'var' key has to have an initializer");
+                    _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, varDecl, [], ErrorCode.Get(CTEN.VarVarNoIniter));
                 else if (varDecl.Initializer.OutType is VoidType)
-                    _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, varDecl, $"Variable declaration cannot have 'void' type");
+                    _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, varDecl, [], ErrorCode.Get(CTEN.VarVoidType));
                 else
                     varDecl.Type.OutType = varDecl.Initializer.OutType;
             }
@@ -188,14 +189,14 @@ namespace HapetFrontend.Parsing.PostPrepare
                 foreach (var kk in varDecl.SpecialKeys)
                 {
                     // TODO: better error with token location somehow?
-                    _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, new Location(varDecl.Beginning, varDecl.Name.Ending), $"Token {kk} is not allowed here");
+                    _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, new Location(varDecl.Beginning, varDecl.Name.Ending), [kk.ToString()], ErrorCode.Get(CTEN.VarTokenNotAllowed));
                 }
             }
 
             // check for const value that it is compile time evaluated
             if ((varDecl.Initializer == null || varDecl.Initializer.OutValue == null) && varDecl.SpecialKeys.Contains(TokenType.KwConst))
             {
-                _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, varDecl.Name, $"The const field has to have compile time evaluated value");
+                _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, varDecl.Name, [], ErrorCode.Get(CTEN.ConstValueNonComptime));
             }
         }
 
@@ -251,7 +252,7 @@ namespace HapetFrontend.Parsing.PostPrepare
                     PostPrepareNestedExprInference(nestExpr, out bool _);
                     break;
                 case AstDefaultExpr defaultExpr:
-                    _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, defaultExpr, "(Compiler exception) The default had to be infered previously by caller");
+                    _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, defaultExpr, [], ErrorCode.Get(CTEN.DefaultWasNotInfered));
                     break;
                 case AstArrayExpr arrayExpr:
                     PostPrepareArrayExprInference(arrayExpr);
@@ -352,12 +353,14 @@ namespace HapetFrontend.Parsing.PostPrepare
             var operators = unExpr.Scope.GetUnaryOperators(unExpr.Operator, (unExpr.SubExpr as AstExpression).OutType);
             if (operators.Count == 0)
             {
-                _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, unExpr, $"Undefined operator {unExpr.Operator} for type {(unExpr.SubExpr as AstExpression).OutType}");
+                _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, unExpr, 
+                    [unExpr.Operator, (unExpr.SubExpr as AstExpression).OutType.ToString()], ErrorCode.Get(CTEN.UndefOpForType));
             }
             else if (operators.Count > 1)
             {
                 // TODO: tell em where are the operators defined
-                _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, unExpr, $"Too many operators {unExpr.Operator} defined for type {(unExpr.SubExpr as AstExpression).OutType}");
+                _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, unExpr, 
+                    [unExpr.Operator, (unExpr.SubExpr as AstExpression).OutType.ToString()], ErrorCode.Get(CTEN.TooManyOpsForType));
             }
             else
             {
@@ -380,12 +383,16 @@ namespace HapetFrontend.Parsing.PostPrepare
             var operators = binExpr.Scope.GetBinaryOperators(binExpr.Operator, (binExpr.Left as AstExpression).OutType, (binExpr.Right as AstExpression).OutType);
             if (operators.Count == 0)
             {
-                _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, binExpr, $"Undefined operator {binExpr.Operator} for types {(binExpr.Left as AstExpression).OutType} and {(binExpr.Right as AstExpression).OutType}");
+                _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, binExpr, 
+                    [binExpr.Operator, (binExpr.Left as AstExpression).OutType.ToString(), (binExpr.Right as AstExpression).OutType.ToString()], 
+                    ErrorCode.Get(CTEN.BinUndefOpForTypes));
             }
             else if (operators.Count > 1)
             {
                 // TODO: tell em where are the operators defined
-                _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, binExpr, $"Too many operators {binExpr.Operator} defined for types {(binExpr.Left as AstExpression).OutType} and {(binExpr.Right as AstExpression).OutType}");
+                _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, binExpr, 
+                    [binExpr.Operator, (binExpr.Left as AstExpression).OutType.ToString(), (binExpr.Right as AstExpression).OutType.ToString()], 
+                    ErrorCode.Get(CTEN.BinTooManyOpsForTypes));
             }
             else
             {
@@ -418,7 +425,7 @@ namespace HapetFrontend.Parsing.PostPrepare
                                 {
                                     // error if bin op with void*
                                     if (ptrT.TargetType is VoidType)
-                                        _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, binExpr, $"Operator {binExpr.ActualOperator.Name} could not be used with void*");
+                                        _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, leftExpr, [binExpr.ActualOperator.Name], ErrorCode.Get(CTEN.OpUsedWithVoidPtr));
                                     var parent = rightExpr.NormalParent;
                                     var mulK = new AstNumberExpr((NumberData)ptrT.TargetType.GetSize(), null, null, rightExpr);
                                     SetScopeAndParent(mulK, parent);
@@ -431,7 +438,7 @@ namespace HapetFrontend.Parsing.PostPrepare
                                 {
                                     // error if bin op with void*
                                     if (ptrT2.TargetType is VoidType)
-                                        _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, binExpr, $"Operator {binExpr.ActualOperator.Name} could not be used with void*");
+                                        _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, rightExpr, [binExpr.ActualOperator.Name], ErrorCode.Get(CTEN.OpUsedWithVoidPtr));
                                     var parent = leftExpr.NormalParent;
                                     var mulK = new AstNumberExpr((NumberData)ptrT2.TargetType.GetSize(), null, null, leftExpr);
                                     SetScopeAndParent(mulK, parent);
@@ -522,7 +529,7 @@ namespace HapetFrontend.Parsing.PostPrepare
                 (clsType.Declaration.IsInterface || 
                 clsType.Declaration.SpecialKeys.Contains(TokenType.KwAbstract)))
             {
-                _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, newExpr, $"An instance of an interface or an abstract class could not be created");
+                _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, newExpr, [], ErrorCode.Get(CTEN.CreateInterfOrAbsCls));
             }
 
             foreach (var a in newExpr.Arguments)
@@ -557,7 +564,7 @@ namespace HapetFrontend.Parsing.PostPrepare
             if (smbl is DeclSymbol typed)
             {
                 if (!CheckIfCouldBeAccessed(idExpr, typed.Decl) && !(typed.Decl is AstBuiltInTypeDecl) && !fromCallExpr)
-                    _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, idExpr, $"The declaration could not be accessed from here");
+                    _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, idExpr, [], ErrorCode.Get(CTEN.DeclCouldNotBeAccessed));
                 idExpr.OutType = typed.Decl.Type.OutType;
                 TryAssignConstValueToExpr(idExpr, typed.Decl);
                 TrySaveClassUsage(typed.Decl);
@@ -572,7 +579,7 @@ namespace HapetFrontend.Parsing.PostPrepare
             if (smblInLocalClass is DeclSymbol typed2)
             {
                 if (!CheckIfCouldBeAccessed(idExpr, typed2.Decl) && !(typed2.Decl is AstBuiltInTypeDecl) && !fromCallExpr)
-                    _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, idExpr, $"The declaration could not be accessed from here");
+                    _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, idExpr, [], ErrorCode.Get(CTEN.DeclCouldNotBeAccessed));
                 idExpr.Name = nameWithClass;
                 idExpr.OutType = typed2.Decl.Type.OutType;
                 TryAssignConstValueToExpr(idExpr, typed2.Decl);
@@ -607,7 +614,7 @@ namespace HapetFrontend.Parsing.PostPrepare
                 if (funcInAnotherClass is DeclSymbol typed4)
                 {
                     if (!CheckIfCouldBeAccessed(idExpr, typed4.Decl) && !(typed4.Decl is AstBuiltInTypeDecl) && !fromCallExpr)
-                        _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, idExpr, $"The declaration could not be accessed from here");
+                        _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, idExpr, [], ErrorCode.Get(CTEN.DeclCouldNotBeAccessed));
                     idExpr.Name = fullFuncName;
                     idExpr.OutType = typed4.Decl.Type.OutType;
                     TryAssignConstValueToExpr(idExpr, typed4.Decl);
@@ -624,7 +631,7 @@ namespace HapetFrontend.Parsing.PostPrepare
             if (smblInLocalFile is DeclSymbol typed3)
             {
                 if (!CheckIfCouldBeAccessed(idExpr, typed3.Decl) && !(typed3.Decl is AstBuiltInTypeDecl) && !fromCallExpr)
-                    _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, idExpr, $"The declaration could not be accessed from here");
+                    _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, idExpr, [], ErrorCode.Get(CTEN.DeclCouldNotBeAccessed));
                 idExpr.Name = nameWithNamespace;
                 idExpr.OutType = typed3.Decl.Type.OutType;
                 TryAssignConstValueToExpr(idExpr, typed3.Decl);
@@ -645,7 +652,7 @@ namespace HapetFrontend.Parsing.PostPrepare
                 if (includedSmbl is DeclSymbol typed4)
                 {
                     if (!CheckIfCouldBeAccessed(idExpr, typed4.Decl) && !(typed4.Decl is AstBuiltInTypeDecl) && !fromCallExpr)
-                        _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, idExpr, $"The declaration could not be accessed from here");
+                        _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, idExpr, [], ErrorCode.Get(CTEN.DeclCouldNotBeAccessed));
                     // do not change name because it already contains namespace
                     idExpr.OutType = typed4.Decl.Type.OutType;
                     TryAssignConstValueToExpr(idExpr, typed4.Decl);
@@ -674,7 +681,7 @@ namespace HapetFrontend.Parsing.PostPrepare
                     if (includedSmbl is DeclSymbol typed4)
                     {
                         if (!CheckIfCouldBeAccessed(idExpr, typed4.Decl) && !(typed4.Decl is AstBuiltInTypeDecl) && !fromCallExpr)
-                            _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, idExpr, $"The declaration could not be accessed from here");
+                            _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, idExpr, [], ErrorCode.Get(CTEN.DeclCouldNotBeAccessed));
                         // do not change name because it already contains namespace
                         idExpr.OutType = typed4.Decl.Type.OutType;
                         TryAssignConstValueToExpr(idExpr, typed4.Decl);
@@ -690,7 +697,7 @@ namespace HapetFrontend.Parsing.PostPrepare
                 if (usedSmbl is DeclSymbol typed5)
                 {
                     if (!CheckIfCouldBeAccessed(idExpr, typed5.Decl) && !(typed5.Decl is AstBuiltInTypeDecl) && !fromCallExpr)
-                        _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, idExpr, $"The declaration could not be accessed from here");
+                        _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, idExpr, [], ErrorCode.Get(CTEN.DeclCouldNotBeAccessed));
                     idExpr.Name = fullNameWithNs;
                     idExpr.OutType = typed5.Decl.Type.OutType;
                     TryAssignConstValueToExpr(idExpr, typed5.Decl);
@@ -703,7 +710,7 @@ namespace HapetFrontend.Parsing.PostPrepare
             // TODO: check in 'usings' via similar way as upper
 
             // TODO: really give them a error? or mb there is smth harder?
-            _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, idExpr, "The type could not be inferred...");
+            _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, idExpr, [], ErrorCode.Get(CTEN.TypeCouldNotBeInfered));
         }
 
         /// <summary>
@@ -808,7 +815,7 @@ namespace HapetFrontend.Parsing.PostPrepare
                 if (smbl2 is DeclSymbol ds && ds.Decl is AstFuncDecl funcDecl)
                 {
                     if (!CheckIfCouldBeAccessed(callExpr, funcDecl))
-                        _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, callExpr.FuncName, $"The function could not be accessed from here");
+                        _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, callExpr.FuncName, [], ErrorCode.Get(CTEN.FuncCouldNotBeAccessed));
                     // static func defined in local class
                     newName = funcDecl.Name.Name;
                     callExpr.Arguments.ReplaceWithCasts(casts);
@@ -830,12 +837,12 @@ namespace HapetFrontend.Parsing.PostPrepare
                     if (smbl2 is DeclSymbol ds2 && ds2.Decl is AstFuncDecl funcDecl2)
                     {
                         if (!CheckIfCouldBeAccessed(callExpr, funcDecl2))
-                            _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, callExpr.FuncName, $"The function could not be accessed from here");
+                            _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, callExpr.FuncName, [], ErrorCode.Get(CTEN.FuncCouldNotBeAccessed));
                         newName = funcDecl2.Name.Name;
                         callExpr.Arguments.ReplaceWithCasts(casts2.Skip(1).ToList()); // skip because the first param is an object
                     }
                     else
-                        _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, callExpr.FuncName, $"Function with the name could not be found");
+                        _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, callExpr.FuncName, [], ErrorCode.Get(CTEN.FuncWithNameNotFound));
                 }
             }
             else if (callExpr.TypeOrObjectName.OutType is PointerType ptrTp && ptrTp.TargetType is ClassType clsTp)
@@ -852,7 +859,7 @@ namespace HapetFrontend.Parsing.PostPrepare
                 if (smbl2 is DeclSymbol ds && ds.Decl is AstFuncDecl funcDecl)
                 {
                     if (!CheckIfCouldBeAccessed(callExpr, funcDecl))
-                        _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, callExpr.FuncName, $"The function could not be accessed from here");
+                        _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, callExpr.FuncName, [], ErrorCode.Get(CTEN.FuncCouldNotBeAccessed));
                     newName = funcDecl.Name.Name;
                     callExpr.Arguments.ReplaceWithCasts(casts.Skip(1).ToList()); // skip because the first param is an object
                 }
@@ -864,12 +871,12 @@ namespace HapetFrontend.Parsing.PostPrepare
                     if (smbl2 is DeclSymbol ds2 && ds2.Decl is AstFuncDecl funcDecl2)
                     {
                         if (!CheckIfCouldBeAccessed(callExpr, funcDecl2))
-                            _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, callExpr.FuncName, $"The function could not be accessed from here");
+                            _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, callExpr.FuncName, [], ErrorCode.Get(CTEN.FuncCouldNotBeAccessed));
                         newName = funcDecl2.Name.Name;
                         callExpr.Arguments.ReplaceWithCasts(casts2);
                     }
                     else
-                        _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, callExpr.FuncName, $"Function with the name could not be found");
+                        _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, callExpr.FuncName, [], ErrorCode.Get(CTEN.FuncWithNameNotFound));
                 }
                 accessingFromAnObject = true;
             }
@@ -885,7 +892,7 @@ namespace HapetFrontend.Parsing.PostPrepare
                 if (smbl2 is DeclSymbol ds && ds.Decl is AstFuncDecl funcDecl)
                 {
                     if (!CheckIfCouldBeAccessed(callExpr, funcDecl))
-                        _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, callExpr.FuncName, $"The function could not be accessed from here");
+                        _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, callExpr.FuncName, [], ErrorCode.Get(CTEN.FuncCouldNotBeAccessed));
                     newName = funcDecl.Name.Name;
                     callExpr.Arguments.ReplaceWithCasts(casts);
                 }
@@ -902,15 +909,15 @@ namespace HapetFrontend.Parsing.PostPrepare
 
                     // error because user tries to access non static method from a class name
                     if (smbl2 != null)
-                        _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, callExpr.FuncName, $"The non-static method could only be accessed from an object");
+                        _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, callExpr.FuncName, [], ErrorCode.Get(CTEN.NonStaticFuncFromStatic));
                     else
-                        _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, callExpr.FuncName, $"Function with the name could not be found");
+                        _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, callExpr.FuncName, [], ErrorCode.Get(CTEN.FuncWithNameNotFound));
                 }
             }
             else
             {
                 // error here: the function call could not be infered
-                _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, callExpr, $"The function call could not be inferred");
+                _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, callExpr, [], ErrorCode.Get(CTEN.FuncCallNotInfered));
             }
             callExpr.FuncName = callExpr.FuncName.GetCopy(newName);
             PostPrepareIdentifierInference(callExpr.FuncName, true);
@@ -926,7 +933,7 @@ namespace HapetFrontend.Parsing.PostPrepare
                 // warn if accessing from an object
                 if (accessingFromAnObject && callExpr.StaticCall)
                 {
-                    _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, callExpr.FuncName, $"Static methods should not be accessed from an object", null, ReportType.Warning);
+                    _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, callExpr.FuncName, [], ErrorCode.Get(CTWN.StaticFuncFromObject), null, ReportType.Warning);
                 }
             }
             else if (callExpr.FuncName.OutType is DelegateType dt)
@@ -937,7 +944,7 @@ namespace HapetFrontend.Parsing.PostPrepare
             else
             {
                 // error here
-                _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, callExpr, $"The calling thing has to be a function or a delegate");
+                _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, callExpr, [], ErrorCode.Get(CTEN.CallNotFuncOrDelegate));
             }
         }
 

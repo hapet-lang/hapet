@@ -75,6 +75,26 @@
         NoFieldImplementation           = 0x3013,
         EnumIniNotComptime              = 0x3014,
         EnumIniNotNumber                = 0x3015,
+        VarVarNoIniter                  = 0x3016,
+        VarVoidType                     = 0x3017,
+        VarTokenNotAllowed              = 0x3018,
+        ConstValueNonComptime           = 0x3019,
+        UndefOpForType                  = 0x301A,
+        TooManyOpsForType               = 0x301B,
+        BinUndefOpForTypes              = 0x301C,
+        BinTooManyOpsForTypes           = 0x301D,
+        OpUsedWithVoidPtr               = 0x301E,
+        CreateInterfOrAbsCls            = 0x301F,
+        DeclCouldNotBeAccessed          = 0x3020,
+        TypeCouldNotBeInfered           = 0x3021,
+        FuncCouldNotBeAccessed          = 0x3022,
+        FuncWithNameNotFound            = 0x3023,
+        NonStaticFuncFromStatic         = 0x3024,
+        FuncCallNotInfered              = 0x3025,
+        CallNotFuncOrDelegate           = 0x3026,
+
+        // compiler errors up to 0x6000
+        DefaultWasNotInfered            = 0x5001,
     }
 
     // Run Time Error Number
@@ -100,5 +120,6 @@
         // post preparer warnings up to 0x5000
         StaticCtorKwsIgnored            = 0x3001,
         EnumHasSameValue                = 0x3002,
+        StaticFuncFromObject            = 0x3003,
     }
 }

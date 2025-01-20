@@ -28,4 +28,8 @@
 		<Number>3002</Number>
 		<Text>Enum field with the same value already exists!</Text>
 	</Item>
+	<Item>
+		<Number>3003</Number>
+		<Text>Static methods should not be accessed from an object!</Text>
+	</Item>
 </Items>
