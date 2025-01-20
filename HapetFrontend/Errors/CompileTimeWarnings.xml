@@ -12,10 +12,10 @@
     <!--Parser warnings-->
     <Item>
         <Number>2001</Number>
-        <Text>Empty array creation</Text>
+        <Text>Size of the array and its elements were not specified. Empty array will be created!</Text>
     </Item>
     <Item>
         <Number>2002</Number>
-        <Text>Statements would be ignored</Text>
+        <Text>All the statements after '{0}' would be ignored by compiler!</Text>
     </Item>
 </Items>

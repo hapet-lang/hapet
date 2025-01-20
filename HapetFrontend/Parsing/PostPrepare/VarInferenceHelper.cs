@@ -73,7 +73,7 @@ namespace HapetFrontend.Parsing.PostPrepare
             if (expr is AstNestedExpr nestt && nestt.RightPart.OutType is EnumType)
             {
                 if (castResult == null)
-                    _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, expr, $"Enum type itself could not be assigned to anything", ErrorCode.Get(CTEN.EnumCouldNotBeAssigned));
+                    _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, expr, [], ErrorCode.Get(CTEN.EnumCouldNotBeAssigned));
                 return expr;
             }
 
@@ -86,7 +86,7 @@ namespace HapetFrontend.Parsing.PostPrepare
             if (neededType == null)
             {
                 if (castResult == null)
-                    _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, expr, $"The required type of the expr could not be evaluated", ErrorCode.Get(CTEN.RequiredTypeNotEvaluated));
+                    _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, expr, [], ErrorCode.Get(CTEN.RequiredTypeNotEvaluated));
                 return expr;
             }
 

@@ -25,7 +25,7 @@ namespace HapetFrontend.Parsing
                 }
                 else
                 {
-                    ReportMessage(e, $"Name of argument must be an identifier", ErrorCode.Get(CTEN.ArgumentNameNotIdent));
+                    ReportMessage(e, [], ErrorCode.Get(CTEN.ArgumentNameNotIdent));
                 }
 
                 Consume(TokenType.Equal, ErrMsg(":", "after name in argument"));
@@ -69,7 +69,7 @@ namespace HapetFrontend.Parsing
                 else
                 {
                     NextToken();
-                    ReportMessage(next.Location, $"Failed to parse argument list, expected ',' or ')'", ErrorCode.Get(CTEN.FailedToParseArguments));
+                    ReportMessage(next.Location, [], ErrorCode.Get(CTEN.FailedToParseArguments));
                 }
             }
             end = Consume(TokenType.CloseParen, ErrMsg(")", "at end of argument list")).Location;
@@ -104,7 +104,7 @@ namespace HapetFrontend.Parsing
                     var probName = ParseExpression(allowCommaForTuple);
                     if (probName is not AstIdExpr)
                     {
-                        ReportMessage(probName.Location, $"Parameter name has to be an identifier", ErrorCode.Get(CTEN.ParameterNameNotIdent));
+                        ReportMessage(probName.Location, [], ErrorCode.Get(CTEN.ParameterNameNotIdent));
                     }
                     pname = probName as AstIdExpr;
                     ptype = e;
@@ -128,7 +128,7 @@ namespace HapetFrontend.Parsing
                     var probDefVal = ParseExpression(allowCommaForTuple);
                     if (probDefVal is not AstExpression)
                     {
-                        ReportMessage(probDefVal.Location, $"Parameter default value has to be an expression", ErrorCode.Get(CTEN.ParamDefaultNotExpr));
+                        ReportMessage(probDefVal.Location, [], ErrorCode.Get(CTEN.ParamDefaultNotExpr));
                     }
                     defaultValue = probDefVal as AstExpression;
                     end = defaultValue.Ending;
@@ -168,7 +168,7 @@ namespace HapetFrontend.Parsing
                 {
                     NextToken();
                     SkipNewlines();
-                    ReportMessage(next.Location, $"Expected ',' or ')/]', got '{next}'", ErrorCode.Get(CTEN.FailedToParseParameters));
+                    ReportMessage(next.Location, [next.ToString()], ErrorCode.Get(CTEN.FailedToParseParameters));
                 }
             }
 
@@ -199,7 +199,7 @@ namespace HapetFrontend.Parsing
                     {
                         p.Name = p.Type as AstIdExpr;
                         if (p.Name == null)
-                            ReportMessage(p.Type.Location, $"Lambda argument name must be an identifier", ErrorCode.Get(CTEN.LambdaParamNameNotIdent));
+                            ReportMessage(p.Type.Location, [], ErrorCode.Get(CTEN.LambdaParamNameNotIdent));
                         p.Type = null;
                     }
                 }
@@ -234,12 +234,12 @@ namespace HapetFrontend.Parsing
                             // error if it is not an expr
                             if (cst.SubExpression is not AstExpression)
                             {
-                                ReportMessage(cst.SubExpression, $"Expression expected", ErrorCode.Get(CTEN.CastSubNotExpr));
+                                ReportMessage(cst.SubExpression, [], ErrorCode.Get(CTEN.CastSubNotExpr));
                             }
                             // error if it is not an expr
                             if (cst.TypeExpr is not AstExpression)
                             {
-                                ReportMessage(cst.TypeExpr, $"Expression expected as a result type", ErrorCode.Get(CTEN.CastTargetNotExpr));
+                                ReportMessage(cst.TypeExpr, [], ErrorCode.Get(CTEN.CastTargetNotExpr));
                             }
                             return cst;
                         }

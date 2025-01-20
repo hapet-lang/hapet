@@ -17,6 +17,7 @@
         // parser errors up to 0x3000
         UnexpectedDeclInStruct          = 0x2001,
         ExprsExpectedInBinExpr          = 0x2002,
+        ExprsExpectedInBinExprR         = 0x201E,
         ExprExpectedInUnExpr            = 0x2003,
         ArgumentNameNotIdent            = 0x2004,
         FailedToParseArguments          = 0x2005,
@@ -32,7 +33,7 @@
         ArrayUnexpectedToken            = 0x200F,
         ArrayElementNotExpr             = 0x2010,
         ArrayElementsUnexpectedToken    = 0x2011,
-        CallArgExprExpected             = 0x2012,
+        CallTargetExprExpected          = 0x2012,
         CallNameIdentExpected           = 0x2013, // would be obsolete
         ArrayAccUnexpectedToken         = 0x2014,
         ArrayAccNoArgs                  = 0x2015,

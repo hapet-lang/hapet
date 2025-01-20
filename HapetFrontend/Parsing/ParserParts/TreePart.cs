@@ -230,12 +230,12 @@ namespace HapetFrontend.Parsing
                 // error if it is not an expr
                 if (binExpr.Left is not AstExpression)
                 {
-                    ReportMessage(binExpr.Left, $"Expression expected before {binExpr.Operator}", ErrorCode.Get(CTEN.ExprsExpectedInBinExpr));
+                    ReportMessage(binExpr.Left, [binExpr.Operator], ErrorCode.Get(CTEN.ExprsExpectedInBinExpr));
                 }
                 // error if it is not an expr
                 if (binExpr.Right is not AstExpression)
                 {
-                    ReportMessage(binExpr.Right, $"Expression expected after {binExpr.Operator}", ErrorCode.Get(CTEN.ExprsExpectedInBinExpr));
+                    ReportMessage(binExpr.Right, [binExpr.Operator], ErrorCode.Get(CTEN.ExprsExpectedInBinExprR));
                 }
 
                 lhs = binExpr;
@@ -257,7 +257,7 @@ namespace HapetFrontend.Parsing
                 var sub = ParseUnaryExpression(allowCommaForTuple, allowFunctionDeclaration, message, allowPointerExpressions);
                 if (sub is not AstExpression expr)
                 {
-                    ReportMessage(sub.Location, $"Expression expected after '&'", ErrorCode.Get(CTEN.ExprExpectedInUnExpr));
+                    ReportMessage(sub.Location, ["&"], ErrorCode.Get(CTEN.ExprExpectedInUnExpr));
                     return sub;
                 }
                 return new AstAddressOfExpr(expr, new Location(next.Location, sub.Ending));
@@ -269,7 +269,7 @@ namespace HapetFrontend.Parsing
                 var sub = ParseUnaryExpression(allowCommaForTuple, allowFunctionDeclaration, message, allowPointerExpressions);
                 if (sub is not AstExpression expr)
                 {
-                    ReportMessage(sub.Location, $"Expression expected after '*'", ErrorCode.Get(CTEN.ExprExpectedInUnExpr));
+                    ReportMessage(sub.Location, ["*"], ErrorCode.Get(CTEN.ExprExpectedInUnExpr));
                     return sub;
                 }
                 return new AstPointerExpr(expr, true, new Location(next.Location, sub.Ending));
@@ -289,7 +289,7 @@ namespace HapetFrontend.Parsing
                 // error if it is not an expr
                 if (un.SubExpr is not AstExpression)
                 {
-                    ReportMessage(un.SubExpr, $"Expression expected after {un.Operator}", ErrorCode.Get(CTEN.ExprExpectedInUnExpr));
+                    ReportMessage(un.SubExpr, [un.Operator], ErrorCode.Get(CTEN.ExprExpectedInUnExpr));
                 }
                 return un;
             }
@@ -302,7 +302,7 @@ namespace HapetFrontend.Parsing
                 // error if it is not an expr
                 if (un.SubExpr is not AstExpression)
                 {
-                    ReportMessage(un.SubExpr, $"Expression expected after {un.Operator}", ErrorCode.Get(CTEN.ExprExpectedInUnExpr));
+                    ReportMessage(un.SubExpr, [un.Operator], ErrorCode.Get(CTEN.ExprExpectedInUnExpr));
                 }
                 return un;
             }
@@ -332,15 +332,16 @@ namespace HapetFrontend.Parsing
                                 break;
                             }
 
+                            // TODO: not only nested should be allowed. tuples, lamdas and other shite
                             var args = ParseArgumentList(out var end);
                             if (expr is not AstNestedExpr nestExpr)
                             {
-                                ReportMessage(expr.Location, $"Indentifier expected", ErrorCode.Get(CTEN.CallArgExprExpected));
+                                ReportMessage(expr.Location, [], ErrorCode.Get(CTEN.CallTargetExprExpected));
                                 return expr;
                             }
                             if (nestExpr.RightPart is not AstIdExpr idExpr)
                             {
-                                ReportMessage(nestExpr.Location, $"Indentifier expected as the func name", ErrorCode.Get(CTEN.CallNameIdentExpected));
+                                ReportMessage(nestExpr.Location, [], ErrorCode.Get(CTEN.CallNameIdentExpected));
                                 return expr;
                             }
 
@@ -389,25 +390,25 @@ namespace HapetFrontend.Parsing
                                 else
                                 {
                                     NextToken();
-                                    ReportMessage(next.Location, $"Failed to parse operator [..], expected ',' or ']'", ErrorCode.Get(CTEN.ArrayAccUnexpectedToken));
+                                    ReportMessage(next.Location, [], ErrorCode.Get(CTEN.ArrayAccUnexpectedToken));
                                     //RecoverExpression();
                                 }
                             }
                             var end = Consume(TokenType.CloseBracket, ErrMsg("]", "at end of [..] operator")).Location;
                             if (args.Count == 0)
                             {
-                                ReportMessage(end, "At least one argument required", ErrorCode.Get(CTEN.ArrayAccNoArgs));
+                                ReportMessage(end, [], ErrorCode.Get(CTEN.ArrayAccNoArgs));
                                 args.Add(ParseEmptyExpression());
                             }
                             else if (args.Count > 1)
                             {
                                 // TODO: mb allow them multiple args in []?
-                                ReportMessage(end, "Too many arguments passed", ErrorCode.Get(CTEN.ArrayAccTooManyArgs));
+                                ReportMessage(end, [], ErrorCode.Get(CTEN.ArrayAccTooManyArgs));
                             }
 
                             if (args.First() is not AstExpression firstExpr)
                             {
-                                ReportMessage(args.First().Location, $"Expression expected as index of element in [...]", ErrorCode.Get(CTEN.ArrayAccNotExpr));
+                                ReportMessage(args.First().Location, [], ErrorCode.Get(CTEN.ArrayAccNotExpr));
                                 return expr;
                             }
                             var arrAcc = new AstArrayAccessExpr(expr as AstExpression, firstExpr, new Location(expr.Beginning, end));
@@ -505,7 +506,7 @@ namespace HapetFrontend.Parsing
                             var name = ParseIdentifierExpression(allowDots: false);
                             if (name.RightPart is not AstIdExpr idExpr)
                             {
-                                ReportMessage(id.Location, $"Identifier expected as a name of declaration", ErrorCode.Get(CTEN.DeclNameIsNotIdent));
+                                ReportMessage(id.Location, [], ErrorCode.Get(CTEN.DeclNameIsNotIdent));
                                 return id;
                             }
                             return new UnknownDecl(id, idExpr, new Location(token.Location));
@@ -526,7 +527,7 @@ namespace HapetFrontend.Parsing
                         else
                         {
                             // TODO: not only idents are allowed: ~(3 + 4)
-                            ReportMessage(PeekToken().Location, $"This type of expr was not expected after '~'", ErrorCode.Get(CTEN.TildaUnexpectedExpr));
+                            ReportMessage(PeekToken().Location, [], ErrorCode.Get(CTEN.TildaUnexpectedExpr));
                         }
                         return expr;
                     }
