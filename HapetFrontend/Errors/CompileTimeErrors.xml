@@ -178,7 +178,74 @@
 		<Number>2024</Number>
 		<Text>This type of statement is not allowed in global scope</Text>
 	</Item>
-	
+    <Item>
+        <Number>2025</Number>
+        <Text>Attribute name expected to be here</Text>
+    </Item>
+    <Item>
+        <Number>2026</Number>
+        <Text>Newline expected to be here</Text>
+    </Item>
+    <Item>
+        <Number>2027</Number>
+        <Text>The right side of variable assignment expected to be an expression</Text>
+    </Item>
+    <Item>
+        <Number>2028</Number>
+        <Text>Expected class name after 'class' keyword</Text>
+    </Item>
+    <Item>
+        <Number>2029</Number>
+        <Text>Class name expected to be an identifier</Text>
+    </Item>
+    <Item>
+        <Number>202A</Number>
+        <Text>Expression expected as 'if' statement condition</Text>
+    </Item>
+    <Item>
+        <Number>202B</Number>
+        <Text>Condition of 'if' statement expected</Text>
+    </Item>
+    <Item>
+        <Number>202C</Number>
+        <Text>Expression expected as 'switch' statement parameter</Text>
+    </Item>
+    <Item>
+        <Number>202D</Number>
+        <Text>Condition of 'switch' statement expected</Text>
+    </Item>
+    <Item>
+        <Number>202E</Number>
+        <Text>The statement expected as a 'case'</Text>
+    </Item>
+    <Item>
+        <Number>202F</Number>
+        <Text>Cases expected after the 'switch' statement</Text>
+    </Item>
+    <Item>
+        <Number>2030</Number>
+        <Text>Expression expected as 'case' statement parameter</Text>
+    </Item>
+    <Item>
+        <Number>2031</Number>
+        <Text>Condition of 'case' statement expected</Text>
+    </Item>
+    <Item>
+        <Number>2032</Number>
+        <Text>Unexpected token. Expected '=' or '\\n'</Text>
+    </Item>
+    <Item>
+        <Number>2033</Number>
+        <Text>Expected return type after 'delegate' keyword</Text>
+    </Item>
+    <Item>
+        <Number>2034</Number>
+        <Text>Expected delegate name after delegate return type</Text>
+    </Item>
+    <Item>
+        <Number>2035</Number>
+        <Text>Delegate name expected to be an identifier</Text>
+    </Item>
 	
 
 	<!--Post prepare errors-->

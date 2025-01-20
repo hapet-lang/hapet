@@ -1,6 +1,7 @@
 ﻿using HapetFrontend.Ast.Expressions;
 using HapetFrontend.Ast;
 using HapetFrontend.Ast.Statements;
+using HapetFrontend.Errors;
 
 namespace HapetFrontend.Parsing
 {
@@ -22,11 +23,11 @@ namespace HapetFrontend.Parsing
             {
                 var expr = ParseExpression(true, false);
                 if (expr is not AstExpression)
-                    ReportMessage(expr, $"Expression expected as 'if' statement condition");
+                    ReportMessage(expr, [], ErrorCode.Get(CTEN.IfStmtCondNotExpr));
                 condition = expr as AstExpression;
             }
             else
-                ReportMessage(PeekToken().Location, $"Condition of 'if' statement expected");
+                ReportMessage(PeekToken().Location, [], ErrorCode.Get(CTEN.IfStmtCondExpected));
             var end = Consume(TokenType.CloseParen, ErrMsg("')'", "after the condition"));
 
             SkipNewlines();
@@ -89,11 +90,11 @@ namespace HapetFrontend.Parsing
             {
                 var expr = ParseExpression(true, false);
                 if (expr is not AstExpression)
-                    ReportMessage(expr, $"Expression expected as 'switch' statement parameter");
+                    ReportMessage(expr, [], ErrorCode.Get(CTEN.SwitchStmtCondNotExpr));
                 condition = expr as AstExpression;
             }
             else
-                ReportMessage(PeekToken().Location, $"Condition of 'switch' statement expected");
+                ReportMessage(PeekToken().Location, [], ErrorCode.Get(CTEN.SwitchStmtCondExpected));
             var end = Consume(TokenType.CloseParen, ErrMsg("')'", "after the condition"));
 
             SkipNewlines();
@@ -130,7 +131,7 @@ namespace HapetFrontend.Parsing
                         else
                         {
                             // error here. all the statements have to be cases
-                            ReportMessage(s, $"The statement expected to be a 'case'");
+                            ReportMessage(s, [], ErrorCode.Get(CTEN.CaseExpectedToBeStmt));
                         }
                         continue;
                     }
@@ -150,7 +151,7 @@ namespace HapetFrontend.Parsing
             else
             {
                 // error here. it has to have braces
-                ReportMessage(new Location(beg.Location, end.Location), $"Cases expected after the 'switch' statements");
+                ReportMessage(new Location(beg.Location, end.Location), [], ErrorCode.Get(CTEN.CasesExpectedAfterSwitch));
                 return ParseEmptyExpression();
             }
         }
@@ -190,11 +191,11 @@ namespace HapetFrontend.Parsing
                 {
                     var expr = ParseExpression(true, false);
                     if (expr is not AstExpression)
-                        ReportMessage(expr, $"Expression expected as 'case' statement parameter");
+                        ReportMessage(expr, [], ErrorCode.Get(CTEN.CaseParamExprExpected));
                     pattern = expr as AstExpression;
                 }
                 else
-                    ReportMessage(PeekToken().Location, $"Condition of 'case' statement expected");
+                    ReportMessage(PeekToken().Location, [], ErrorCode.Get(CTEN.CaseParamExpected));
                 end = Consume(TokenType.CloseParen, ErrMsg("')'", "after the pattern")).Location;
             }
 

@@ -2,6 +2,7 @@
 using HapetFrontend.Ast.Declarations;
 using HapetFrontend.Ast.Expressions;
 using HapetFrontend.Ast.Statements;
+using HapetFrontend.Errors;
 
 namespace HapetFrontend.Parsing
 {
@@ -23,7 +24,7 @@ namespace HapetFrontend.Parsing
             var next = PeekToken();
             if (expectNewline && next.Type != TokenType.NewLine && next.Type != TokenType.EOF)
             {
-                ReportMessage(next.Location, $"Expected newline after statement");
+                ReportMessage(next.Location, [], ErrorCode.Get(CTEN.NewlineExpected));
                 RecoverStatement();
             }
             return stmt;
@@ -97,7 +98,7 @@ namespace HapetFrontend.Parsing
 
                             if (val is not AstExpression valExpr)
                             {
-                                ReportMessage(val.Location, $"The right side of variable assignment has to be an expression");
+                                ReportMessage(val.Location, [], ErrorCode.Get(CTEN.RightSideVarDeclNotExpr));
                                 return stmt;
                             }
 

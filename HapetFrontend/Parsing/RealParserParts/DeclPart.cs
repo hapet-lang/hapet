@@ -2,6 +2,7 @@
 using HapetFrontend.Ast.Declarations;
 using HapetFrontend.Ast.Expressions;
 using HapetFrontend.Ast.Statements;
+using HapetFrontend.Errors;
 using System.Diagnostics;
 
 namespace HapetFrontend.Parsing
@@ -36,7 +37,7 @@ namespace HapetFrontend.Parsing
             //}
             // TODO: upper shite is probably not possible
 
-            ReportMessage(PeekToken().Location, $"Unexpected token. Expected '=' or '\\n'");
+            ReportMessage(PeekToken().Location, [], ErrorCode.Get(CTEN.ExpectedEqualOrNewline));
             return new AstVarDecl(expr as AstIdExpr, null, null, docString, Location: expr);
         }
     }

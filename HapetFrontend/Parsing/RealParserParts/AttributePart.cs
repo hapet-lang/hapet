@@ -2,6 +2,7 @@
 using HapetFrontend.Ast.Declarations;
 using HapetFrontend.Ast.Expressions;
 using HapetFrontend.Ast.Statements;
+using HapetFrontend.Errors;
 using System.Xml.Linq;
 
 namespace HapetFrontend.Parsing
@@ -22,7 +23,7 @@ namespace HapetFrontend.Parsing
             if (!CheckToken(TokenType.Identifier))
             {
                 // better error location
-                ReportMessage(PeekToken().Location, $"Expected attribute name");
+                ReportMessage(PeekToken().Location, [], ErrorCode.Get(CTEN.AttrNameExpected));
             }
             else
             {

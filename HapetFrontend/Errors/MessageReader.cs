@@ -73,7 +73,7 @@ namespace HapetFrontend.Errors
             {
                 errDoc.Load(fullPath);
             }
-            catch (Exception e)
+            catch
             {
                 return _data;
             }

@@ -2,6 +2,7 @@
 using HapetFrontend.Ast.Expressions;
 using HapetFrontend.Ast;
 using System.Xml.Linq;
+using HapetFrontend.Errors;
 
 namespace HapetFrontend.Parsing
 {
@@ -17,7 +18,7 @@ namespace HapetFrontend.Parsing
             if (!CheckToken(TokenType.Identifier))
             {
                 // better error location
-                ReportMessage(PeekToken().Location, $"Expected return type after 'delegate' keyword");
+                ReportMessage(PeekToken().Location, [], ErrorCode.Get(CTEN.NoReturnTypeInDelegDecl));
             }
             else
             {
@@ -28,14 +29,14 @@ namespace HapetFrontend.Parsing
             if (!CheckToken(TokenType.Identifier))
             {
                 // better error location
-                ReportMessage(PeekToken().Location, $"Expected delegate name after delegate return type");
+                ReportMessage(PeekToken().Location, [], ErrorCode.Get(CTEN.NoDelegNameAfterReturnType));
             }
             else
             {
                 var nest = ParseIdentifierExpression(allowDots: false);
                 if (nest.RightPart is not AstIdExpr idExpr)
                 {
-                    ReportMessage(nest.Location, $"Delegate name expected to be an identifier");
+                    ReportMessage(nest.Location, [], ErrorCode.Get(CTEN.DelegNameIsNotIdent));
                     return new AstDelegateDecl(new List<AstParamDecl>(), returnType, new AstIdExpr("unknown"), "", beg);
                 }
                 delegateName = idExpr;

@@ -1,6 +1,7 @@
 ﻿using HapetFrontend.Ast;
 using HapetFrontend.Ast.Declarations;
 using HapetFrontend.Ast.Expressions;
+using HapetFrontend.Errors;
 
 namespace HapetFrontend.Parsing
 {
@@ -29,14 +30,14 @@ namespace HapetFrontend.Parsing
             if (!CheckToken(TokenType.Identifier))
             {
                 // better error location
-                ReportMessage(PeekToken().Location, $"Expected class name after 'class' keyword");
+                ReportMessage(PeekToken().Location, [], ErrorCode.Get(CTEN.ClassNameExpected));
             }
             else
             {
                 var nest = ParseIdentifierExpression(allowDots: false);
                 if (nest.RightPart is not AstIdExpr idExpr)
                 {
-                    ReportMessage(nest.Location, $"Class name expected to be an identifier");
+                    ReportMessage(nest.Location, [], ErrorCode.Get(CTEN.ClassNameNotIdent));
                     return new AstClassDecl(new AstIdExpr("unknown"), declarations, "", beg) { IsInterface = isInterface };
                 }
                 className = idExpr;
