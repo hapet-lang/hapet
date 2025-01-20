@@ -29,7 +29,7 @@ namespace HapetFrontend.Parsing
         {
             if (!File.Exists(fileName))
             {
-                messageHandler.ReportMessage($"'{fileName}' could not be found.", ErrorCode.Get(CTEN.FileForLexerNotFound));
+                messageHandler.ReportMessage([fileName], ErrorCode.Get(CTEN.FileForLexerNotFound));
                 return null;
             }
             return new Lexer

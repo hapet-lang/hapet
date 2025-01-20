@@ -42,12 +42,12 @@ namespace HapetCompiler.ProjectConf
             }
             catch (Exception e)
             {
-                _messageHandler.ReportMessage($"Exception while parsing {_projectPathAbsolute}:\n{e.Message}", ErrorCode.Get(CTEN.ProjectFileCouldNotBeParsed));
+                _messageHandler.ReportMessage([_projectPathAbsolute, e.Message], ErrorCode.Get(CTEN.ProjectFileException));
                 return;
             }
             if (projDoc.DocumentElement == null)
             {
-                _messageHandler.ReportMessage($"Project file {_projectPathAbsolute} could not be parsed", ErrorCode.Get(CTEN.ProjectFileCouldNotBeParsed));
+                _messageHandler.ReportMessage([_projectPathAbsolute], ErrorCode.Get(CTEN.ProjectFileCouldNotBeParsed));
                 return;
             }
 
@@ -69,7 +69,7 @@ namespace HapetCompiler.ProjectConf
                 else
                 {
                     var loc = NodeLocationFinder.GetLocationOfNode(_projectFileText, xnode, _projectPathAbsolute);
-                    _messageHandler.ReportMessage(_projectFileText, loc, $"Unexpected tag {xnode.Name}", ErrorCode.Get(CTEN.UnexpectedProjectFileTag));
+                    _messageHandler.ReportMessage(_projectFileText, loc, [xnode.Name], ErrorCode.Get(CTEN.UnexpectedProjectFileTag));
                 }
             }
 

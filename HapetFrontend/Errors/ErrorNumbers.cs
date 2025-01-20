@@ -9,6 +9,7 @@
         FullPathToHapetFileNotFound     = 0x0001,
         ProjectFileCouldNotBeParsed     = 0x0002,
         UnexpectedProjectFileTag        = 0x0003,
+        ProjectFileException            = 0x0004,
 
         // lexer errors up to 0x2000
         FileForLexerNotFound            = 0x1001,
@@ -40,6 +41,8 @@
         DeclNameIsNotIdent              = 0x2018,
         TildaUnexpectedExpr             = 0x2019, // would be obsolete
         CommonFailToParse               = 0x201A,
+        CommonExpectedToken             = 0x201B,
+        CommonUnexpectedToken           = 0x201C,
 
         // post preparer errors up to 0x5000
         EnumCouldNotBeAssigned          = 0x3001,

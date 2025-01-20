@@ -159,11 +159,11 @@ namespace HapetFrontend.Helpers
             {
                 if (from != null)
                 {
-                    mh.ReportMessage(from.Value.file, from.Value.loc, $"File '{path}' does not exist", ErrorCode.Get(CTEN.FullPathToHapetFileNotFound));
+                    mh.ReportMessage(from.Value.file, from.Value.loc, [path], ErrorCode.Get(CTEN.FullPathToHapetFileNotFound));
                 }
                 else
                 {
-                    mh.ReportMessage($"File '{path}' does not exist", ErrorCode.Get(CTEN.FullPathToHapetFileNotFound));
+                    mh.ReportMessage([path], ErrorCode.Get(CTEN.FullPathToHapetFileNotFound));
                 }
 
                 return false;

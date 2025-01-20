@@ -53,7 +53,7 @@ namespace HapetFrontend.Parsing
                 // error - unexpected decl in struct type
                 if (decl is not AstVarDecl)
                 {
-                    ReportMessage(decl, $"Unexpected declaration in struct", ErrorCode.Get(CTEN.UnexpectedDeclInStruct));
+                    ReportMessage(decl, [], ErrorCode.Get(CTEN.UnexpectedDeclInStruct));
                 }
 
                 declarations.Add(decl);

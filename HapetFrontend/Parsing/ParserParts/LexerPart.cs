@@ -1,4 +1,5 @@
 ﻿using HapetFrontend.Ast;
+using HapetFrontend.Errors;
 using HapetFrontend.Helpers;
 using System.Diagnostics;
 
@@ -68,8 +69,12 @@ namespace HapetFrontend.Parsing
 
             if (tok.Type != type)
             {
-                string message = customErrorMessage?.Invoke(tok) ?? $"Unexpected Token ({tok.Type}) {tok.Data}, expected {type}";
-                ReportMessage(tok.Location, message);
+                customErrorMessage ??= new MessageResolver() 
+                { 
+                    MessageArgs = [tok.Type.ToString(), tok.Data.ToString(), type.ToString()], 
+                    XmlMessage = ErrorCode.Get(CTEN.CommonUnexpectedToken) 
+                };
+                ReportMessage(tok.Location, customErrorMessage.MessageArgs, customErrorMessage.XmlMessage);
                 return false;
             }
 
@@ -94,7 +99,7 @@ namespace HapetFrontend.Parsing
             while (tok.Type != type)
             {
                 if (!skipNewLine || tok.Type != TokenType.NewLine)
-                    ReportMessage(tok.Location, customMessage?.Invoke(tok));
+                    ReportMessage(tok.Location, customMessage == null ? [] : customMessage.MessageArgs, customMessage?.XmlMessage);
 
                 NextToken();
                 tok = PeekToken();

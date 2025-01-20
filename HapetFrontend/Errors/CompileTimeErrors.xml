@@ -8,21 +8,25 @@
     <!--Project errors-->
     <Item>
         <Number>0001</Number>
-        <Text>Full path to .hpt file not found</Text>
+        <Text>File '{0}' does not exist</Text>
     </Item>
     <Item>
         <Number>0002</Number>
-        <Text>Project file could not be parsed</Text>
+        <Text>Project file {0} could not be parsed</Text>
     </Item>
     <Item>
         <Number>0003</Number>
-        <Text>Unexpected tag in .hptproj file</Text>
+        <Text>Unexpected tag {0}</Text>
     </Item>
+	<Item>
+		<Number>0004</Number>
+		<Text>Exception while parsing {0}:\n{1}</Text>
+	</Item>
 
     <!--Lexer errors-->
     <Item>
         <Number>1001</Number>
-        <Text>File could not be found by lexer</Text>
+        <Text>'{0}' could not be found</Text>
     </Item>
 
     <!--Parser errors-->
@@ -130,8 +134,16 @@
         <Number>201A</Number>
         <Text>Failed to parse an expression</Text>
     </Item>
+	<Item>
+		<Number>201B</Number>
+		<Text>Expected {0} {1}</Text>
+	</Item>
+	<Item>
+		<Number>201B</Number>
+		<Text>Unexpected Token ({0}) {1}, expected {2}</Text>
+	</Item>
 
-    <!--Post prepare errors-->
+	<!--Post prepare errors-->
     <Item>
         <Number>3001</Number>
         <Text>Enum itself could not be assigned</Text>

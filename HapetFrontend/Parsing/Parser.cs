@@ -1,12 +1,18 @@
 ﻿using HapetFrontend.Ast;
 using HapetFrontend.Entities;
+using HapetFrontend.Errors;
 using System.Text;
 
 namespace HapetFrontend.Parsing
 {
+    public class MessageResolver
+    {
+        public IXmlMessage XmlMessage { get; set; }
+        public string[] MessageArgs { get; set; }
+    }
+
     public partial class Parser
     {
-        public delegate string MessageResolver(Token t);
         private delegate AstStatement ExpressionParser(bool allowCommaForTuple, bool allowFunctionExpression, MessageResolver e, bool allowPointerExpressions);
 
         private ILexer _lexer;
