@@ -28,14 +28,14 @@ namespace HapetCompiler
             this.DoPrintLocation = printLocation;
         }
 
-        public void ReportMessage(string text, ILocation location, string message, IXmlMessage xmlMessage, List<CompilerMessage> subMessages, ReportType reportType = ReportType.Error, [CallerFilePath] string callingFunctionFile = "", [CallerMemberName] string callingFunctionName = "", [CallerLineNumber] int callLineNumber = 0)
+        public void ReportMessage(string text, ILocation location, string[] messageArgs, IXmlMessage xmlMessage, List<CompilerMessage> subMessages, ReportType reportType = ReportType.Error, [CallerFilePath] string callingFunctionFile = "", [CallerMemberName] string callingFunctionName = "", [CallerLineNumber] int callLineNumber = 0)
         {
             ReportMessage(new CompilerMessage
             {
                 XmlMessage = xmlMessage,
                 FileText = text,
                 Location = location,
-                Message = message,
+                MessageArgs = messageArgs,
                 SubMessages = subMessages,
                 File = callingFunctionFile,
                 LineNumber = callLineNumber,
@@ -44,7 +44,7 @@ namespace HapetCompiler
             });
         }
 
-        public void ReportMessage(string message, IXmlMessage xmlMessage, ReportType reportType = ReportType.Error, [CallerFilePath] string callingFunctionFile = "", [CallerMemberName] string callingFunctionName = "", [CallerLineNumber] int callLineNumber = 0)
+        public void ReportMessage(string[] messageArgs, IXmlMessage xmlMessage, ReportType reportType = ReportType.Error, [CallerFilePath] string callingFunctionFile = "", [CallerMemberName] string callingFunctionName = "", [CallerLineNumber] int callLineNumber = 0)
         {
             // getting the print color from message type
             ConsoleColor printColor = GetColorByReportType(reportType);
@@ -55,7 +55,7 @@ namespace HapetCompiler
 #if DEBUG && PRINT_SRC_LOCATION
             Log($"{callingFunctionFile}:{callLineNumber} - {callingFunctionName}()", ConsoleColor.DarkYellow);
 #endif
-            Log(message, xmlMessage, printColor);
+            Log(messageArgs, xmlMessage, printColor);
         }
 
         public void ReportMessage(CompilerMessage message)
@@ -90,14 +90,14 @@ namespace HapetCompiler
 
                 // location, message
                 LogInline($"{(beginning)}: \n", ConsoleColor.White);
-                Log(message.Message, message.XmlMessage, printColor);
+                Log(message.MessageArgs, message.XmlMessage, printColor);
 
                 if (DoPrintLocation)
                     PrintLocation(message.FileText, message.Location, linesBefore: LinesBeforeError, linesAfter: LinesAfterError, highlightColor: printColor);
             }
             else
             {
-                Log(message.Message, message.XmlMessage, printColor);
+                Log(message.MessageArgs, message.XmlMessage, printColor);
             }
 
             // details
@@ -110,12 +110,12 @@ namespace HapetCompiler
                     foreach (var line in d.message.Split('\n'))
                     {
                         if (!string.IsNullOrEmpty(line))
-                            Log("| " + line, message.XmlMessage, ConsoleColor.White);
+                            Log(["| " + line], null, ConsoleColor.White);
                     }
 
                     if (d.location != null)
                     {
-                        Log($"{d.location.Beginning}: ", message.XmlMessage, ConsoleColor.White);
+                        Log([$"{d.location.Beginning}: "], null, ConsoleColor.White);
 
                         if (DoPrintLocation)
                             PrintLocation(message.FileText, d.location, linesBefore: 0, highlightColor: ConsoleColor.Green);
@@ -125,7 +125,7 @@ namespace HapetCompiler
 
             if (message.SubMessages?.Count > 0)
             {
-                Log("| Related:", message.XmlMessage, ConsoleColor.White);
+                Log(["| Related:"], null, ConsoleColor.White);
 
                 foreach (var e in message.SubMessages)
                 {
@@ -168,7 +168,7 @@ namespace HapetCompiler
                 {
                     int line = lineNumber - 1 - i;
                     LogInline(string.Format(CultureInfo.InvariantCulture, $"{{0,{lineNumberWidth}}}> ", line), ConsoleColor.White);
-                    Log(previousLines[i], null, textColor);
+                    Log([previousLines[i]], null, textColor);
                 }
             }
 
@@ -190,7 +190,7 @@ namespace HapetCompiler
 
                     LogInline(part1, textColor);
                     LogInline(part2, highlightColor);
-                    Log(part3, null, textColor);
+                    Log([part3], null, textColor);
 
                     ls = le + 1;
                     i = ls;
@@ -207,7 +207,7 @@ namespace HapetCompiler
                 var str = new string(' ', index - lineStart + lineNumberWidth + 2) + firstChar;
                 if (end.End - index - 1 > 0)
                     str += new string(underlineChar, end.End - index - 1);
-                Log(str, null, GetDarkColor(highlightColor));
+                Log([str], null, GetDarkColor(highlightColor));
             }
 
             // lines after current line
@@ -222,7 +222,7 @@ namespace HapetCompiler
                         break;
                     var str = text.Substring(lineBegin, lineEnd - lineBegin);
                     LogInline(string.Format(CultureInfo.InvariantCulture, $"{{0,{lineNumberWidth}}}> ", line), ConsoleColor.White);
-                    Log(str, null, textColor);
+                    Log([str], null, textColor);
                     lineBegin = lineEnd + 1;
                 }
             }
@@ -283,7 +283,7 @@ namespace HapetCompiler
             return 0;
         }
 
-        private static void Log(string message, IXmlMessage xmlMessage, ConsoleColor foreground)
+        private static void Log(string[] messageArgs, IXmlMessage xmlMessage, ConsoleColor foreground)
         {
             var colf = Console.ForegroundColor;
             var colb = Console.BackgroundColor;
@@ -291,9 +291,12 @@ namespace HapetCompiler
 
             if (xmlMessage != null)
             {
-                Console.Error.WriteLine($"[{xmlMessage.GetName()}] {xmlMessage.Text}");
+                Console.Error.WriteLine($"[{xmlMessage.GetName()}] {string.Format(xmlMessage.Text, messageArgs)}");
             }
-            Console.Error.WriteLine(message);
+            else
+            {
+                Console.Error.WriteLine(messageArgs.FirstOrDefault());
+            }
 
             Console.ForegroundColor = colf;
             Console.BackgroundColor = colb;

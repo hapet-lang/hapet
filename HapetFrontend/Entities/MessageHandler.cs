@@ -14,7 +14,7 @@ namespace HapetFrontend.Entities
         public IXmlMessage XmlMessage { get; set; }
         public string FileText { get; set; }
         public ILocation Location { get; set; }
-        public string Message { get; set; }
+        public string[] MessageArgs { get; set; }
         public string File { get; set; }
         public string Function { get; set; }
         public int LineNumber { get; set; }
@@ -31,13 +31,13 @@ namespace HapetFrontend.Entities
             this.LineNumber = callLineNumber;
         }
 
-        public CompilerMessage(ILocation location, string message, [CallerFilePath] string callingFunctionFile = "", [CallerMemberName] string callingFunctionName = "", [CallerLineNumber] int callLineNumber = 0)
+        public CompilerMessage(ILocation location, string[] messageArgs, [CallerFilePath] string callingFunctionFile = "", [CallerMemberName] string callingFunctionName = "", [CallerLineNumber] int callLineNumber = 0)
         {
             this.File = callingFunctionFile;
             this.Function = callingFunctionName;
             this.LineNumber = callLineNumber;
             this.Location = location;
-            this.Message = message;
+            this.MessageArgs = messageArgs;
         }
     }
 
@@ -45,8 +45,8 @@ namespace HapetFrontend.Entities
     {
         bool HasErrors { get; set; }
 
-        void ReportMessage(string message, IXmlMessage xmlMessage, ReportType reportType = ReportType.Error, [CallerFilePath] string callingFunctionFile = "", [CallerMemberName] string callingFunctionName = "", [CallerLineNumber] int callLineNumber = 0);
-        void ReportMessage(string text, ILocation location, string message, IXmlMessage xmlMessage, List<CompilerMessage> subMessages = null, ReportType reportType = ReportType.Error, [CallerFilePath] string callingFunctionFile = "", [CallerMemberName] string callingFunctionName = "", [CallerLineNumber] int callLineNumber = 0);
+        void ReportMessage(string[] messageArgs, IXmlMessage xmlMessage, ReportType reportType = ReportType.Error, [CallerFilePath] string callingFunctionFile = "", [CallerMemberName] string callingFunctionName = "", [CallerLineNumber] int callLineNumber = 0);
+        void ReportMessage(string text, ILocation location, string[] messageArgs, IXmlMessage xmlMessage, List<CompilerMessage> subMessages = null, ReportType reportType = ReportType.Error, [CallerFilePath] string callingFunctionFile = "", [CallerMemberName] string callingFunctionName = "", [CallerLineNumber] int callLineNumber = 0);
         void ReportMessage(CompilerMessage message);
     }
 
