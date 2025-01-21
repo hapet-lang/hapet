@@ -83,13 +83,16 @@ namespace HapetFrontend.Errors
             }
 
             XmlElement errRoot = errDoc.DocumentElement;
-            foreach (XmlElement xnode in errRoot)
+            foreach (var xnode in errRoot.ChildNodes)
             {
+                if (xnode is not XmlElement element)
+                    continue;
+
                 // check that the tag is Item
-                if (xnode.Name == "Item")
+                if (element.Name == "Item")
                 {
                     T t = new T();
-                    foreach (XmlNode cn in xnode.ChildNodes)
+                    foreach (XmlNode cn in element.ChildNodes)
                     {
                         if (cn.Name == "Number") 
                             t.Number = cn.InnerText;
