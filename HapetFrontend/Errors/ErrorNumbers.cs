@@ -89,6 +89,11 @@
         NoGetAndNoSetBody               = 0x2047,
         ExpectedGetBody                 = 0x2048,
         ExpectedSetBody                 = 0x2049,
+        ExprExpectedAfterReturn         = 0x204A,
+        DeclExpectedAfterTheToken       = 0x204B,
+        StructDeclExpectedAfterKey      = 0x204C,
+        StructNameNotIdent              = 0x204D,
+        TheDeclNotAllowedInStruct       = 0x204E,
 
         // post preparer errors up to 0x5000
         EnumCouldNotBeAssigned          = 0x3001,
@@ -148,6 +153,41 @@
 
         // compiler errors up to 0x6000
         DefaultWasNotInfered            = 0x5001,
+        UnexpectedOperator              = 0x5002,
+        StmtNotImplemented              = 0x5003,
+        PtrExprCouldNotBeGenerated      = 0x5004,
+        AddrOfExprCouldNotBeGenerated   = 0x5005,
+        NestedCouldNotBeGenerated       = 0x5006,
+        ArrayAccessNotGenerate          = 0x5007,
+
+        // backend errors up to 0x8000
+        NoMainFunction                  = 0x6001, // TODO: move to PP
+        LLVMValidateError               = 0x6002,
+        NoObjectFileGenerated           = 0x6003,
+        CtorWithArgTypesNotFound        = 0x6004, // TODO: move to PP
+        TheTypeIsNotCallable            = 0x6005, // TODO: move to PP
+        PartExpectedToBeIdent           = 0x6006, // TODO: move to Parsing
+        NonStaticFieldAccess            = 0x6007, // TODO: move to PP
+        ArrayIndexNotInt                = 0x6008, // TODO: move to PP
+        NotExprInAssignment             = 0x6009, // TODO: move to PP
+        NoLoopToBreak                   = 0x600A,
+        NoLoopToContinue                = 0x600B,
+        ReturnTypeNoMatch               = 0x600C, // TODO: move to PP
+        ExternFuncNoAttr                = 0x600D, // TODO: move to PP
+        NullEnumFieldIni                = 0x600E, // TODO: move to PP
+        PackLessThanOne                 = 0x600F, // TODO: move to PP
+        PackNotPowerOfTwo               = 0x6010, // TODO: move to PP
+
+        // linker errors up to 0x9000
+        NoVisualStudio                  = 0x8001, // could be obsolete
+        NoVisualStudioHost              = 0x8002, // could be obsolete
+        NoVisualStudioLinker            = 0x8003, // could be obsolete
+        LinkerItselfError               = 0x8004,
+        FailedToLink                    = 0x8005,
+        NoWindowsSdk                    = 0x8006, // could be obsolete
+        NoVisualStudioLib               = 0x8007, // could be obsolete
+        RequiredPathNotFoundForLink     = 0x8008, // could be obsolete
+        AssemblyToLinkNotFound          = 0x8009,
     }
 
     // Run Time Error Number

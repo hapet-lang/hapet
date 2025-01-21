@@ -1,5 +1,6 @@
 ﻿using HapetFrontend.Ast;
 using HapetFrontend.Ast.Declarations;
+using HapetFrontend.Errors;
 using HapetFrontend.Helpers;
 using HapetFrontend.Parsing;
 using HapetFrontend.Scoping;
@@ -245,12 +246,12 @@ namespace HapetBackend.Llvm
                             // check for 0 and other shite
                             if (tmpPack <= 0)
                             {
-                                _messageHandler.ReportMessage(_currentSourceFile.Text, thePackParam, $"The 'Pack' value could not be less than 1");
+                                _messageHandler.ReportMessage(_currentSourceFile.Text, thePackParam, [], ErrorCode.Get(CTEN.PackLessThanOne));
                             }
                             else if (!Funcad.IsPowerOfTwo(tmpPack))
                             {
                                 // if it is not a power of two
-                                _messageHandler.ReportMessage(_currentSourceFile.Text, thePackParam, $"The 'Pack' value has to be a power of two");
+                                _messageHandler.ReportMessage(_currentSourceFile.Text, thePackParam, [], ErrorCode.Get(CTEN.PackNotPowerOfTwo));
                             }
                             else
                             {

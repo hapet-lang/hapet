@@ -1,5 +1,6 @@
 ﻿using HapetFrontend.Ast;
 using HapetFrontend.Ast.Statements;
+using HapetFrontend.Errors;
 
 namespace HapetFrontend.Parsing
 {
@@ -24,7 +25,7 @@ namespace HapetFrontend.Parsing
             // so there is no need to generate exception twice :)
             if (expr is not AstExpression && expr is not AstEmptyStmt)
             {
-                ReportMessage(expr.Location, "Code ");
+                ReportMessage(expr.Location, [], ErrorCode.Get(CTEN.ExprExpectedAfterReturn));
                 return ParseEmptyExpression();
             }
 

@@ -1,5 +1,6 @@
 ﻿using HapetFrontend.Ast.Declarations;
 using HapetFrontend.Ast.Expressions;
+using HapetFrontend.Errors;
 using HapetFrontend.Parsing;
 using HapetFrontend.Types;
 using LLVMSharp.Interop;
@@ -116,7 +117,7 @@ namespace HapetBackend.Llvm
                     // creating a static field of the enum
                     var globStatic = _module.AddGlobal(HapetTypeToLLVMType(decl.Type.OutType), $"{enm.Type.OutType}::{decl.Name.Name}");
                     if (decl.Initializer == null)
-                        _messageHandler.ReportMessage(_currentSourceFile.Text, decl, $"Enum field initializer could not be null");
+                        _messageHandler.ReportMessage(_currentSourceFile.Text, decl, [], ErrorCode.Get(CTEN.NullEnumFieldIni));
                     globStatic.Initializer = GenerateExpressionCode(decl.Initializer);
                     _valueMap[decl.GetSymbol] = globStatic;
                 }

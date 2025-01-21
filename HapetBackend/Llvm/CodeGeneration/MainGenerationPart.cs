@@ -2,6 +2,7 @@
 using HapetFrontend.Ast.Expressions;
 using HapetFrontend.Ast.Statements;
 using HapetFrontend.Entities;
+using HapetFrontend.Errors;
 using HapetFrontend.Parsing;
 using HapetFrontend.Scoping;
 using HapetFrontend.Types;
@@ -179,7 +180,7 @@ namespace HapetBackend.Llvm
             // many checks are here
             if (dllImportAttr == null)
             {
-                _messageHandler.ReportMessage(_currentSourceFile.Text, funcDecl, $"'DllImportAttribute' has to be specified when function is 'extern'");
+                _messageHandler.ReportMessage(_currentSourceFile.Text, funcDecl, [], ErrorCode.Get(CTEN.ExternFuncNoAttr));
                 return;
             }
             string dllName = dllImportAttr.Parameters[0].OutValue as string;

@@ -1,4 +1,5 @@
 ﻿using HapetFrontend.Entities;
+using HapetFrontend.Errors;
 using Microsoft.Win32;
 using System.Security.AccessControl;
 
@@ -82,7 +83,7 @@ namespace HapetBackend.Llvm.Linkers.Windows
                     if (prevVersion == null)
                     {
                         // error!!! 
-                        messageHandler.ReportMessage($"Required path {Path.Combine(sdk.Path, "Lib", "vsversion", "ucrt", target)} could not be found");
+                        messageHandler.ReportMessage([Path.Combine(sdk.Path, "Lib", "vsversion", "ucrt", target)], ErrorCode.Get(CTEN.RequiredPathNotFoundForLink));
                         break;
                     }
                     sdk.UcrtPath = Path.Combine(sdk.Path, "Lib", prevVersion, "ucrt", target);
@@ -101,7 +102,7 @@ namespace HapetBackend.Llvm.Linkers.Windows
                     if (prevVersion == null)
                     {
                         // error!!! 
-                        messageHandler.ReportMessage($"Required path {Path.Combine(sdk.Path, "Lib", "vsversion", "um", target)} could not be found");
+                        messageHandler.ReportMessage([Path.Combine(sdk.Path, "Lib", "vsversion", "um", target)], ErrorCode.Get(CTEN.RequiredPathNotFoundForLink));
                         break;
                     }
                     sdk.UmPath = Path.Combine(sdk.Path, "Lib", prevVersion, "um", target);

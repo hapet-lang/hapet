@@ -1,5 +1,6 @@
 ﻿using HapetFrontend;
 using HapetFrontend.Entities;
+using HapetFrontend.Errors;
 
 namespace HapetBackend.Llvm.Linkers.Windows
 {
@@ -22,7 +23,7 @@ namespace HapetBackend.Llvm.Linkers.Windows
                                     var winSdk = FindWindowsSdk(target, messageHandler);
                                     if (winSdk == null)
                                     {
-                                        messageHandler.ReportMessage("Couldn't find windows sdk");
+                                        messageHandler.ReportMessage([], ErrorCode.Get(CTEN.NoWindowsSdk));
                                         return false;
                                     }
                                     if (winSdk.UcrtPath != null)
@@ -33,7 +34,7 @@ namespace HapetBackend.Llvm.Linkers.Windows
                                     var msvcLibPath = FindVisualStudioLibraryDirectory();
                                     if (msvcLibPath == null)
                                     {
-                                        messageHandler.ReportMessage("Couldn't find Visual Studio library directory");
+                                        messageHandler.ReportMessage([], ErrorCode.Get(CTEN.NoVisualStudioLib));
                                         return false;
                                     }
                                     if (msvcLibPath != null)

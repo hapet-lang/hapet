@@ -1,5 +1,6 @@
 ﻿using HapetFrontend;
 using HapetFrontend.Entities;
+using HapetFrontend.Errors;
 using HapetFrontend.Helpers;
 using System.Reflection;
 using System.Runtime.InteropServices;
@@ -97,19 +98,19 @@ namespace HapetBackend.Llvm.Linkers.Windows
             string vsBinFolder = FindVisualStudioBinaryDirectory();
             if (vsBinFolder == null || !Directory.Exists(vsBinFolder))
             {
-                messageHandler.ReportMessage("Couldn't find Visual Studio binary directory");
+                messageHandler.ReportMessage([], ErrorCode.Get(CTEN.NoVisualStudio));
                 return false;
             }
             string vsLinkerFolder = $"{vsBinFolder}\\Host{target}\\{target}";
             if (!Directory.Exists(vsLinkerFolder))
             {
-                messageHandler.ReportMessage("Couldn't find Visual Studio host bin directory");
+                messageHandler.ReportMessage([], ErrorCode.Get(CTEN.NoVisualStudioHost));
                 return false;
             }
             string vsLinkerFile = $"{vsLinkerFolder}\\link.exe";
             if (!File.Exists(vsLinkerFile))
             {
-                messageHandler.ReportMessage("Couldn't find Visual Studio linker file");
+                messageHandler.ReportMessage([], ErrorCode.Get(CTEN.NoVisualStudioLinker));
                 return false;
             }
 
@@ -125,7 +126,7 @@ namespace HapetBackend.Llvm.Linkers.Windows
                             stderr: (s, e) =>
                             {
                                 if (e.Data != null)
-                                    messageHandler.ReportMessage($"[LINKER] error: {e.Data}", ReportType.Error);
+                                    messageHandler.ReportMessage([e.Data], ErrorCode.Get(CTEN.LinkerItselfError), ReportType.Error);
                             });
             process.WaitForExit();
             var result = process.ExitCode == 0;
@@ -133,11 +134,11 @@ namespace HapetBackend.Llvm.Linkers.Windows
             {
                 // print if it is not a referenced compilation
                 if (!_compiler.CurrentProjectSettings.IsReferencedCompilation)
-                    messageHandler.ReportMessage($"\t  Generated {filename}{outFileExtension}", ReportType.Info);
+                    messageHandler.ReportMessage([$"\t  Generated {filename}{outFileExtension}"], null, ReportType.Info);
             }
             else
             {
-                messageHandler.ReportMessage($"Failed to link", ReportType.Error);
+                messageHandler.ReportMessage([], ErrorCode.Get(CTEN.FailedToLink), ReportType.Error);
             }
 
             return result;

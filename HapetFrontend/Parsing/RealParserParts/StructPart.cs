@@ -19,14 +19,14 @@ namespace HapetFrontend.Parsing
             if (!CheckToken(TokenType.Identifier))
             {
                 // better error location
-                ReportMessage(PeekToken().Location, $"Expected struct name after 'struct' keyword");
+                ReportMessage(PeekToken().Location, [], ErrorCode.Get(CTEN.StructDeclExpectedAfterKey));
             }
             else
             {
                 var nest = ParseIdentifierExpression(allowDots: false);
                 if (nest.RightPart is not AstIdExpr idExpr)
                 {
-                    ReportMessage(nest.Location, $"Struct name expected to be an identifier");
+                    ReportMessage(nest.Location, [], ErrorCode.Get(CTEN.StructNameNotIdent));
                     return new AstStructDecl(new AstIdExpr("unknown"), declarations, "", beg);
                 }
                 structName = idExpr;
@@ -76,7 +76,7 @@ namespace HapetFrontend.Parsing
                 else if (decl is not AstVarDecl)
                 {
                     NextToken();
-                    ReportMessage(decl.Location, $"The declaration type is not allowed in struct type");
+                    ReportMessage(decl.Location, [], ErrorCode.Get(CTEN.TheDeclNotAllowedInStruct));
                 }
             }
 

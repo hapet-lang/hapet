@@ -3,6 +3,7 @@ using HapetFrontend.Ast;
 using HapetFrontend.Ast.Declarations;
 using HapetFrontend.Ast.Expressions;
 using HapetFrontend.Ast.Statements;
+using HapetFrontend.Errors;
 using HapetFrontend.Helpers;
 using HapetFrontend.Parsing;
 using HapetFrontend.Scoping;
@@ -62,7 +63,7 @@ namespace HapetBackend.Llvm
 
                 default:
                     {
-                        _messageHandler.ReportMessage(_currentSourceFile.Text, expr, $"The expr {expr} is not implemented");
+                        _messageHandler.ReportMessage(_currentSourceFile.Text, expr, [expr.ToString()], ErrorCode.Get(CTEN.StmtNotImplemented));
                         return default;
                     }
             }
@@ -96,7 +97,7 @@ namespace HapetBackend.Llvm
                 return val;
             }
             // TODO: check other operators (user implemented)
-            _messageHandler.ReportMessage(_currentSourceFile.Text, unExpr, $"The expr {unExpr} is not implemented");
+            _messageHandler.ReportMessage(_currentSourceFile.Text, unExpr, [unExpr.ToString()], ErrorCode.Get(CTEN.StmtNotImplemented));
             return default;
         }
 
@@ -157,7 +158,7 @@ namespace HapetBackend.Llvm
                 }
             }
             // TODO: check other operators (user implemented)
-            _messageHandler.ReportMessage(_currentSourceFile.Text, binExpr, $"The expr {binExpr} is not implemented");
+            _messageHandler.ReportMessage(_currentSourceFile.Text, binExpr, [binExpr.ToString()], ErrorCode.Get(CTEN.StmtNotImplemented));
             return default;
         }
 
@@ -174,7 +175,7 @@ namespace HapetBackend.Llvm
                 // idk what to do here :_(
                 // anyway it should not happen...
                 // internal error here
-                _messageHandler.ReportMessage(_currentSourceFile.Text, expr, $"Internal compiler error (AstPointerExpr could not be generated here)");
+                _messageHandler.ReportMessage(_currentSourceFile.Text, expr, [], ErrorCode.Get(CTEN.PtrExprCouldNotBeGenerated));
             }
             return default;
         }
@@ -191,7 +192,7 @@ namespace HapetBackend.Llvm
                 return GenerateIdExpr(idExpr, true);
             }
             // internal error here
-            _messageHandler.ReportMessage(_currentSourceFile.Text, addrExpr, $"Internal compiler error (AstAddressOfExpr could not be generated here)");
+            _messageHandler.ReportMessage(_currentSourceFile.Text, addrExpr, [], ErrorCode.Get(CTEN.AddrOfExprCouldNotBeGenerated));
             return default;
         }
 
@@ -312,7 +313,7 @@ namespace HapetBackend.Llvm
                 // error if ctor not found
                 if (ctorSymbol == null)
                 {
-                    _messageHandler.ReportMessage(_currentSourceFile.Text, expr.TypeName, $"Constructor with specified argument types was not found in the {classType.Declaration.Name.Name} class");
+                    _messageHandler.ReportMessage(_currentSourceFile.Text, expr.TypeName, [classType.Declaration.Name.Name], ErrorCode.Get(CTEN.CtorWithArgTypesNotFound));
                     return v;
                 }
 
@@ -450,7 +451,7 @@ namespace HapetBackend.Llvm
             }
             else
             {
-                _messageHandler.ReportMessage(_currentSourceFile.Text, expr, $"Call of {expr.FuncName.OutType} is not supported");
+                _messageHandler.ReportMessage(_currentSourceFile.Text, expr, [expr.FuncName.OutType.ToString()], ErrorCode.Get(CTEN.TheTypeIsNotCallable));
                 return default;
             }
         }
@@ -486,7 +487,7 @@ namespace HapetBackend.Llvm
                 // if really has to be an AstIdExpr
                 if (expr.RightPart is not AstIdExpr idExpr)
                 {
-                    _messageHandler.ReportMessage(_currentSourceFile.Text, expr.RightPart, $"The part of the expression has to be an identifier");
+                    _messageHandler.ReportMessage(_currentSourceFile.Text, expr.RightPart, [], ErrorCode.Get(CTEN.PartExpectedToBeIdent));
                     return default;
                 }
 
@@ -561,7 +562,7 @@ namespace HapetBackend.Llvm
                         // usually this happens when user tries to access non static/const field from a class/struct name
                         if (leftPart == default)
                         {
-                            _messageHandler.ReportMessage(_currentSourceFile.Text, idExpr, $"The element '{idExpr.Name}' could not be accessed. You are probably trying to access a non static/const field");
+                            _messageHandler.ReportMessage(_currentSourceFile.Text, idExpr, [idExpr.Name], ErrorCode.Get(CTEN.NonStaticFieldAccess));
                             return default;
                         }
 
@@ -614,7 +615,7 @@ namespace HapetBackend.Llvm
 
                 // TODO: strings and other
             }
-            _messageHandler.ReportMessage(_currentSourceFile.Text, expr, $"The nested expr could not be generated, fatal :^( ");
+            _messageHandler.ReportMessage(_currentSourceFile.Text, expr, [], ErrorCode.Get(CTEN.NestedCouldNotBeGenerated));
             return default;
         }
 
@@ -655,7 +656,7 @@ namespace HapetBackend.Llvm
             if (expr.ParameterExpr.OutType is not IntType)
             {
                 // error here? i cannot access array if it is not an int type
-                _messageHandler.ReportMessage(_currentSourceFile.Text, expr.ParameterExpr, $"Type of the index has to be an integer type");
+                _messageHandler.ReportMessage(_currentSourceFile.Text, expr.ParameterExpr, [], ErrorCode.Get(CTEN.ArrayIndexNotInt));
             }
 
             // the buffer to be indexed
@@ -690,7 +691,7 @@ namespace HapetBackend.Llvm
                 return retLoaded;
             }
 
-            _messageHandler.ReportMessage(_currentSourceFile.Text, expr, $"Could not generate access code for the {expr.ObjectName.OutType} type");
+            _messageHandler.ReportMessage(_currentSourceFile.Text, expr, [expr.ObjectName.OutType.ToString()], ErrorCode.Get(CTEN.ArrayAccessNotGenerate));
             return default;
         }
 
@@ -708,7 +709,7 @@ namespace HapetBackend.Llvm
             if (stmt.Value == null)
             {
                 // error here!!!!! it could not be null
-                _messageHandler.ReportMessage(_currentSourceFile.Text, stmt, $"Expression expected on the right side of assignment");
+                _messageHandler.ReportMessage(_currentSourceFile.Text, stmt, [], ErrorCode.Get(CTEN.NotExprInAssignment));
             }
 
             AssignToVar(theVar, stmt.Target.OutType, stmt.Value);
@@ -1104,7 +1105,7 @@ namespace HapetBackend.Llvm
             {
                 if (_currentLoopEnd == null)
                 {
-                    _messageHandler.ReportMessage(_currentSourceFile.Text, stmt, $"Loop/switch to break could not be found");
+                    _messageHandler.ReportMessage(_currentSourceFile.Text, stmt, [], ErrorCode.Get(CTEN.NoLoopToBreak));
                     return;
                 }
                 _builder.BuildBr(_currentLoopEnd);
@@ -1113,7 +1114,7 @@ namespace HapetBackend.Llvm
             {
                 if (_currentLoopInc == null)
                 {
-                    _messageHandler.ReportMessage(_currentSourceFile.Text, stmt, $"Loop to continue could not be found");
+                    _messageHandler.ReportMessage(_currentSourceFile.Text, stmt, [], ErrorCode.Get(CTEN.NoLoopToContinue));
                     return;
                 }
                 _builder.BuildBr(_currentLoopInc);
@@ -1142,7 +1143,7 @@ namespace HapetBackend.Llvm
             {
                 // error because the func is not void but with a type return
                 // but the 'return' statement was not found
-                _messageHandler.ReportMessage(_currentSourceFile.Text, returnStmt, "The 'return' statement returns a type that does not match the type specified in the function declaration");
+                _messageHandler.ReportMessage(_currentSourceFile.Text, returnStmt, [], ErrorCode.Get(CTEN.ReturnTypeNoMatch));
                 _builder.BuildRetVoid();
             }
         }
@@ -1162,7 +1163,7 @@ namespace HapetBackend.Llvm
             // error if ctor not found
             if (ctorSymbol == null)
             {
-                _messageHandler.ReportMessage(_currentSourceFile.Text, baseStmt, $"Constructor with specified argument types was not found in the {baseStmt.BaseType} class");
+                _messageHandler.ReportMessage(_currentSourceFile.Text, baseStmt, [baseStmt.BaseType.ToString()], ErrorCode.Get(CTEN.CtorWithArgTypesNotFound));
                 return;
             }
 

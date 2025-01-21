@@ -326,6 +326,26 @@
         <Number>2049</Number>
         <Text>The property expected to have body of 'set'</Text>
     </Item>
+    <Item>
+        <Number>204A</Number>
+        <Text>An expression expected after 'return' word</Text>
+    </Item>
+    <Item>
+        <Number>204B</Number>
+        <Text>The statement after {0} has to be a declaration</Text>
+    </Item>
+    <Item>
+        <Number>204C</Number>
+        <Text>Expected struct name after 'struct' keyword</Text>
+    </Item>
+    <Item>
+        <Number>204D</Number>
+        <Text>Struct name expected to be an identifier</Text>
+    </Item>
+    <Item>
+        <Number>204E</Number>
+        <Text>The declaration type is not allowed in struct type</Text>
+    </Item>
     
 
 	<!--Post prepare errors-->
@@ -554,4 +574,132 @@
 		<Number>5001</Number>
 		<Text>(Compiler exception) The default had to be infered previously by caller</Text>
 	</Item>
+    <Item>
+        <Number>5002</Number>
+        <Text>(Compiler exception) Unexpected operator {0}</Text>
+    </Item>
+    <Item>
+        <Number>5003</Number>
+        <Text>(Compiler exception) The {0} type of statement is not implemented yet</Text>
+    </Item>
+    <Item>
+        <Number>5004</Number>
+        <Text>(Compiler exception) AstPointerExpr could not be generated here</Text>
+    </Item>
+    <Item>
+        <Number>5005</Number>
+        <Text>(Compiler exception) AstAddressOfExpr could not be generated here</Text>
+    </Item>
+    <Item>
+        <Number>5006</Number>
+        <Text>(Compiler exception) The nested expr could not be generated, fatal :^( </Text>
+    </Item>
+    <Item>
+        <Number>5007</Number>
+        <Text>(Compiler exception) Could not generate access code for the {0} type</Text>
+    </Item>
+
+    <!--Backend errors-->
+    <Item>
+        <Number>6001</Number>
+        <Text>Main function could not be found</Text>
+    </Item>
+    <Item>
+        <Number>6002</Number>
+        <Text>[LLVM-validate-module] {0}</Text>
+    </Item>
+    <Item>
+        <Number>6003</Number>
+        <Text>Object file could not be generated due to some errors</Text>
+    </Item>
+    <Item>
+        <Number>6004</Number>
+        <Text>Constructor with specified argument types was not found in the {0} class</Text>
+    </Item>
+    <Item>
+        <Number>6005</Number>
+        <Text>Call of {0} is not supported</Text>
+    </Item>
+    <Item>
+        <Number>6006</Number>
+        <Text>The part of the expression has to be an identifier</Text>
+    </Item>
+    <Item>
+        <Number>6007</Number>
+        <Text>The element '{0}' could not be accessed. You are probably trying to access a non static/const field</Text>
+    </Item>
+    <Item>
+        <Number>6008</Number>
+        <Text>Type of the index has to be an integer type</Text>
+    </Item>
+    <Item>
+        <Number>6009</Number>
+        <Text>Expression expected on the right side of assignment</Text>
+    </Item>
+    <Item>
+        <Number>600A</Number>
+        <Text>Loop/switch to break could not be found</Text>
+    </Item>
+    <Item>
+        <Number>600B</Number>
+        <Text>Loop to continue could not be found</Text>
+    </Item>
+    <Item>
+        <Number>600C</Number>
+        <Text>The 'return' statement returns a type that does not match the type specified in the function declaration</Text>
+    </Item>
+    <Item>
+        <Number>600D</Number>
+        <Text>'DllImportAttribute' has to be specified when function is 'extern'</Text>
+    </Item>
+    <Item>
+        <Number>600E</Number>
+        <Text>Enum field initializer could not be null</Text>
+    </Item>
+    <Item>
+        <Number>600F</Number>
+        <Text>The 'Pack' value could not be less than 1</Text>
+    </Item>
+    <Item>
+        <Number>6010</Number>
+        <Text>The 'Pack' value expected to be a power of two</Text>
+    </Item>
+
+    <!--Linker errors-->
+    <Item>
+        <Number>8001</Number>
+        <Text>Couldn't find Visual Studio binary directory</Text>
+    </Item>
+    <Item>
+        <Number>8002</Number>
+        <Text>Couldn't find Visual Studio host bin directory</Text>
+    </Item>
+    <Item>
+        <Number>8003</Number>
+        <Text>Couldn't find Visual Studio linker file</Text>
+    </Item>
+    <Item>
+        <Number>8004</Number>
+        <Text>[LINKER] error: {0}</Text>
+    </Item>
+    <Item>
+        <Number>8005</Number>
+        <Text>Failed to link</Text>
+    </Item>
+    <Item>
+        <Number>8006</Number>
+        <Text>Couldn't find windows sdk</Text>
+    </Item>
+    <Item>
+        <Number>8007</Number>
+        <Text>Couldn't find Visual Studio library directory</Text>
+    </Item>
+    <Item>
+        <Number>8008</Number>
+        <Text>Required path {0} could not be found</Text>
+    </Item>
+    <Item>
+        <Number>8009</Number>
+        <Text>Assembly {0} could not be found. Please check extern functions properly</Text>
+    </Item>
 </Items>

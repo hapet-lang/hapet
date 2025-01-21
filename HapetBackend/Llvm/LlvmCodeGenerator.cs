@@ -2,6 +2,7 @@
 using HapetBackend.Llvm.Linkers.Windows;
 using HapetFrontend;
 using HapetFrontend.Entities;
+using HapetFrontend.Errors;
 using HapetFrontend.Helpers;
 using HapetFrontend.Parsing.PostPrepare;
 using LLVMSharp.Interop;
@@ -50,7 +51,7 @@ namespace HapetBackend.Llvm
 
             if (_compiler.MainFunction == null && (_compiler.CurrentProjectSettings.TargetFormat == TargetFormat.Console || _compiler.CurrentProjectSettings.TargetFormat == TargetFormat.Windowed))
             {
-                _messageHandler.ReportMessage("Main function could not be found...");
+                _messageHandler.ReportMessage([], ErrorCode.Get(CTEN.NoMainFunction));
                 OnGenerateCodeExit();
                 return false;
             }
@@ -94,7 +95,7 @@ namespace HapetBackend.Llvm
             {
                 if (!_module.TryVerify(LLVMVerifierFailureAction.LLVMReturnStatusAction, out string message))
                 {
-                    messageHandler.ReportMessage($"[LLVM-validate-module] {message}", ReportType.Error);
+                    messageHandler.ReportMessage([message], ErrorCode.Get(CTEN.LLVMValidateError), ReportType.Error);
                 }
             }
 
@@ -103,7 +104,7 @@ namespace HapetBackend.Llvm
                 Directory.CreateDirectory(_outDir);
 
             if (!_compiler.CurrentProjectSettings.IsReferencedCompilation)
-                messageHandler.ReportMessage($"{Funcad.GetPrettyTimeString(_compiler.CompilationStopwatch.Elapsed)} Emmiting...", ReportType.Info);
+                messageHandler.ReportMessage([$"{Funcad.GetPrettyTimeString(_compiler.CompilationStopwatch.Elapsed)} Emmiting..."], null, ReportType.Info);
 
             // create .ll file
             if (_compiler.CurrentProjectSettings.OutputIrFile)
@@ -121,7 +122,7 @@ namespace HapetBackend.Llvm
             else
             {
                 // info that the out file was not generated due errors
-                _messageHandler.ReportMessage("Object file could not be generated due to some errors...");
+                _messageHandler.ReportMessage([], ErrorCode.Get(CTEN.NoObjectFileGenerated));
                 OnGenerateCodeExit();
                 return false;
             }
@@ -139,7 +140,7 @@ namespace HapetBackend.Llvm
         {
             // no need to print info when it is a referenced build
             if (!_compiler.CurrentProjectSettings.IsReferencedCompilation)
-                messageHandler.ReportMessage($"{Funcad.GetPrettyTimeString(_compiler.CompilationStopwatch.Elapsed)} Linking...", ReportType.Info);
+                messageHandler.ReportMessage([$"{Funcad.GetPrettyTimeString(_compiler.CompilationStopwatch.Elapsed)} Linking..."], null, ReportType.Info);
 
             // if there is no out dir - create it
             if (!string.IsNullOrWhiteSpace(_outDir) && !Directory.Exists(_outDir))
@@ -157,7 +158,7 @@ namespace HapetBackend.Llvm
                 bool isOk = LinkHelper.GetLibraryPaths(r, _outDir, out (string, string) data);
                 if (!isOk)
                 {
-                    _compiler.MessageHandler.ReportMessage($"Assembly {r} could not be found. Please check extern functions properly");
+                    _compiler.MessageHandler.ReportMessage([r], ErrorCode.Get(CTEN.AssemblyToLinkNotFound));
                     continue;
                 }
                 libraryIncludeDirectories.Add(data.Item1);

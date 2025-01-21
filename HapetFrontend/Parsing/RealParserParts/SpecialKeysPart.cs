@@ -1,6 +1,7 @@
 ﻿using HapetFrontend.Ast;
 using HapetFrontend.Ast.Declarations;
 using HapetFrontend.Ast.Expressions;
+using HapetFrontend.Errors;
 
 namespace HapetFrontend.Parsing
 {
@@ -48,7 +49,7 @@ namespace HapetFrontend.Parsing
             // because it has to be declaration
             if (expr is not AstDeclaration)
             {
-                ReportMessage(expr.Location, $"The statement after {tknType} has to be a declaration");
+                ReportMessage(expr.Location, [tknType.ToString()], ErrorCode.Get(CTEN.DeclExpectedAfterTheToken));
                 return ParseEmptyExpression();
             }
             (expr as AstDeclaration).SpecialKeys.Add(tknType);

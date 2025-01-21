@@ -1,4 +1,5 @@
-﻿using HapetFrontend.Types;
+﻿using HapetFrontend.Errors;
+using HapetFrontend.Types;
 using LLVMSharp.Interop;
 
 namespace HapetBackend.Llvm
@@ -214,7 +215,7 @@ namespace HapetBackend.Llvm
                         {
                             // skip as/is/in
                             if (op.Name != "as" && op.Name != "is" && op.Name != "in")
-                                _messageHandler.ReportMessage($"Compiler error (should not happen): unexpected operator {op.Name}");
+                                _messageHandler.ReportMessage([op.Name], ErrorCode.Get(CTEN.UnexpectedOperator));
                             theFunc = null;
                             break;
                         }
@@ -252,7 +253,7 @@ namespace HapetBackend.Llvm
                     default:
                         {
                             // error here (internal compiler error, should not happen)
-                            _messageHandler.ReportMessage($"Compiler error (should not happen): unexpected operator {op.Name}");
+                            _messageHandler.ReportMessage([op.Name], ErrorCode.Get(CTEN.UnexpectedOperator));
                             theFunc = null;
                             break;
                         }
