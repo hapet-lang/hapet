@@ -10,6 +10,13 @@
         ProjectFileCouldNotBeParsed     = 0x0002,
         UnexpectedProjectFileTag        = 0x0003,
         ProjectFileException            = 0x0004,
+        NoHapetCommandSpecified         = 0x0005,
+        NoHapetProjectPathSpecified     = 0x0006,
+        NotFoundHapetCommand            = 0x0007,
+        ErrorInferencingProjTag         = 0x0008, // possible compiler error
+        TagNotParsedToInt               = 0x0009,
+        ValueInvalidForTag              = 0x000A,
+        AssemblyNotFound                = 0x000B,
 
         // lexer errors up to 0x2000
         FileForLexerNotFound            = 0x1001,

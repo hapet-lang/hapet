@@ -6,6 +6,7 @@ using LLVMSharp;
 using Newtonsoft.Json;
 using System.Reflection;
 using HapetBackend.Llvm.Linkers;
+using HapetFrontend.Errors;
 
 namespace HapetCompiler.Resolvers
 {
@@ -20,13 +21,13 @@ namespace HapetCompiler.Resolvers
             foreach (var r in _projectData.References)
             {
                 if (!_projectSettings.IsReferencedCompilation)
-                    _compiler.MessageHandler.ReportMessage($"{Funcad.GetPrettyTimeString(_compiler.CompilationStopwatch.Elapsed)}   Resolving '{r}'...", ReportType.Info);
+                    _compiler.MessageHandler.ReportMessage([$"{Funcad.GetPrettyTimeString(_compiler.CompilationStopwatch.Elapsed)}   Resolving '{r}'..."], null, ReportType.Info);
 
                 // getting the proper data
                 bool isOk = LinkHelper.GetLibraryPaths(r, outFolder, out (string, string) data);
                 if (!isOk)
                 {
-                    _compiler.MessageHandler.ReportMessage($"Assembly {r} could not be found. Please check project references properly");
+                    _compiler.MessageHandler.ReportMessage([r], ErrorCode.Get(CTEN.AssemblyNotFound));
                     continue;
                 }
 

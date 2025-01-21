@@ -27,7 +27,7 @@ namespace HapetCompiler.Toolchains
             stopwatch.Start();
 
             if (!referenced)
-                messageHandler.ReportMessage($"{Funcad.GetPrettyTimeString(stopwatch.Elapsed)} Project preparation...", ReportType.Info);
+                messageHandler.ReportMessage([$"{Funcad.GetPrettyTimeString(stopwatch.Elapsed)} Project preparation..."], null, ReportType.Info);
             // creating settings instances for the project
             ProjectSettings = new CompilerSettings();
             // saving that the build is referenced or not
@@ -54,14 +54,14 @@ namespace HapetCompiler.Toolchains
                 return (int)CompilerErrors.ProjectReferencesError; // references errors
 
             if (!referenced)
-                messageHandler.ReportMessage($"{Funcad.GetPrettyTimeString(stopwatch.Elapsed)} Parsing...", ReportType.Info);
+                messageHandler.ReportMessage([$"{Funcad.GetPrettyTimeString(stopwatch.Elapsed)} Parsing..."], null, ReportType.Info);
             // gen ast shite
             compiler.GenerateAstTree();
             if (messageHandler.HasErrors)
                 return (int)CompilerErrors.ParsingError; // parsing errors
 
             if (!referenced)
-                messageHandler.ReportMessage($"{Funcad.GetPrettyTimeString(stopwatch.Elapsed)} Post preparation...", ReportType.Info);
+                messageHandler.ReportMessage([$"{Funcad.GetPrettyTimeString(stopwatch.Elapsed)} Post preparation..."], null, ReportType.Info);
             // post prepare
             int ppResult = postPreparer.StartPreparation();
             if (ppResult != 0)
@@ -70,7 +70,7 @@ namespace HapetCompiler.Toolchains
                 return (int)CompilerErrors.PostPrepareError; // post prepare errors
 
             if (!referenced)
-                messageHandler.ReportMessage($"{Funcad.GetPrettyTimeString(stopwatch.Elapsed)} Code generation...", ReportType.Info);
+                messageHandler.ReportMessage([$"{Funcad.GetPrettyTimeString(stopwatch.Elapsed)} Code generation..."], null, ReportType.Info);
             // code gen
             bool codeGenOk = GenerateAndCompileCode(compiler, postPreparer, resolver, messageHandler);
             if (messageHandler.HasErrors || !codeGenOk)
@@ -78,7 +78,7 @@ namespace HapetCompiler.Toolchains
 
             // all is ok :)
             if (!referenced)
-                messageHandler.ReportMessage($"{Funcad.GetPrettyTimeString(stopwatch.Elapsed)} Done...", ReportType.Info);
+                messageHandler.ReportMessage([$"{Funcad.GetPrettyTimeString(stopwatch.Elapsed)} Done..."], null, ReportType.Info);
             return (int)CompilerErrors.Ok;
         }
 

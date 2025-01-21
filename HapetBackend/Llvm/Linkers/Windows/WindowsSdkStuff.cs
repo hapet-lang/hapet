@@ -53,9 +53,11 @@ namespace HapetBackend.Llvm.Linkers.Windows
             return version;
         }
 
+#pragma warning disable CA1416 // Проверка совместимости платформы
         internal static HapetWindowsSdk FindWindowsSdk(string target, IMessageHandler messageHandler)
         {
             using (var localMachine = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Default))
+
             using (var roots = localMachine.OpenSubKey(@"SOFTWARE\Microsoft\Windows Kits\Installed Roots", RegistryRights.ReadKey))
             {
                 var sdk = new HapetWindowsSdk();
@@ -111,5 +113,6 @@ namespace HapetBackend.Llvm.Linkers.Windows
                 return sdk;
             }
         }
+#pragma warning restore CA1416 // Проверка совместимости платформы
     }
 }

@@ -22,6 +22,34 @@
 		<Number>0004</Number>
 		<Text>Exception while parsing {0}:\n{1}</Text>
 	</Item>
+    <Item>
+        <Number>0005</Number>
+        <Text>hapet command must be specified. For example 'hapet build ...'</Text>
+    </Item>
+    <Item>
+        <Number>0006</Number>
+        <Text>Path to the project file must be specified. For example 'hapet {0} /path/to/project.hptproj'</Text>
+    </Item>
+    <Item>
+        <Number>0007</Number>
+        <Text>hapet command called {0} is not available</Text>
+    </Item>
+    <Item>
+        <Number>0008</Number>
+        <Text>Error while inferencing '{0}' tag{1}</Text>
+    </Item>
+    <Item>
+        <Number>0009</Number>
+        <Text>The value '{0}' could not be parsed to int</Text>
+    </Item>
+    <Item>
+        <Number>000A</Number>
+        <Text>The value '{0}' is invalid for the '{1}' tag</Text>
+    </Item>
+    <Item>
+        <Number>000B</Number>
+        <Text>Assembly {0} could not be found. Please check project references properly</Text>
+    </Item>
 
     <!--Lexer errors-->
     <Item>

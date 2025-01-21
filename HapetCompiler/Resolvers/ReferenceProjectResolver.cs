@@ -13,7 +13,7 @@ namespace HapetCompiler.Resolvers
             foreach (var r in _projectData.ProjectReferences)
             {
                 if (!_projectSettings.IsReferencedCompilation)
-                    _compiler.MessageHandler.ReportMessage($"{Funcad.GetPrettyTimeString(_compiler.CompilationStopwatch.Elapsed)}   Resolving '{Path.GetFileName(r)}'...", ReportType.Info);
+                    _compiler.MessageHandler.ReportMessage([$"{Funcad.GetPrettyTimeString(_compiler.CompilationStopwatch.Elapsed)}   Resolving '{Path.GetFileName(r)}'..."], null, ReportType.Info);
 
                 string projectPathNormalized = r.Replace("\\", "/").TrimStart('/');
                 string pathToReferenced = $"{currentProjectFolderPath}/{projectPathNormalized}"; // TODO: error if doesn't exists

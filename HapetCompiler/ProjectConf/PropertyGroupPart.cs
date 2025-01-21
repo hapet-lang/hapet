@@ -2,6 +2,7 @@
 using System.Xml.Linq;
 using System.Xml;
 using HapetCompiler.ProjectConf.Data;
+using HapetFrontend.Errors;
 
 namespace HapetCompiler.ProjectConf
 {
@@ -91,7 +92,7 @@ namespace HapetCompiler.ProjectConf
                         if (!parsed)
                         {
                             var loc = NodeLocationFinder.GetLocationOfNode(_projectFileText, tuple.Item2, _projectPathAbsolute);
-                            _messageHandler.ReportMessage(_projectFileText, loc, $"The value '{value}' could not be parsed to int");
+                            _messageHandler.ReportMessage(_projectFileText, loc, [value], ErrorCode.Get(CTEN.TagNotParsedToInt));
                             return (T)(object)0;
                         }
                         return (T)(object)outV;
@@ -104,7 +105,7 @@ namespace HapetCompiler.ProjectConf
                                 return item;
                         }
                         var loc = NodeLocationFinder.GetLocationOfNode(_projectFileText, tuple.Item2, _projectPathAbsolute);
-                        _messageHandler.ReportMessage(_projectFileText, loc, $"The value '{value}' is invalid for the '{key}' tag");
+                        _messageHandler.ReportMessage(_projectFileText, loc, [value, key], ErrorCode.Get(CTEN.ValueInvalidForTag));
                     }
                 }
                 else
@@ -114,9 +115,9 @@ namespace HapetCompiler.ProjectConf
             }
             catch (Exception ex)
             {
-                _messageHandler.ReportMessage($"Compiler error while inferencing '{key}' tag: {ex}");
+                _messageHandler.ReportMessage([key, $": {ex}"], ErrorCode.Get(CTEN.ErrorInferencingProjTag));
             }
-            _messageHandler.ReportMessage($"Compiler error while inferencing '{key}' tag");
+            _messageHandler.ReportMessage([key, ""], ErrorCode.Get(CTEN.ErrorInferencingProjTag));
             return defaultValue;
         }
     }

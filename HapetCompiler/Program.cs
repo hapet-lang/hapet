@@ -1,5 +1,6 @@
 ﻿using HapetCompiler.Toolchains;
 using HapetFrontend;
+using HapetFrontend.Errors;
 using System.Text;
 
 namespace HapetCompiler
@@ -14,7 +15,7 @@ namespace HapetCompiler
 
             if (args.Length == 0)
             {
-                messageHandler.ReportMessage("hapet command must be specified. For example 'hapet build ...'");
+                messageHandler.ReportMessage([], ErrorCode.Get(CTEN.NoHapetCommandSpecified));
                 return (int)CompilerErrors.HapetCommandError;
             }
 
@@ -24,7 +25,7 @@ namespace HapetCompiler
                     {
                         if (args.Length == 1)
                         {
-                            messageHandler.ReportMessage("Path to the project file must be specified. For example 'hapet build /path/to/project.hptproj'");
+                            messageHandler.ReportMessage(["build"], ErrorCode.Get(CTEN.NoHapetProjectPathSpecified));
                             return (int)CompilerErrors.HapetCommandParamsError;
                         }
                         // skip the first two args because they are already used
@@ -35,7 +36,7 @@ namespace HapetCompiler
                     {
                         if (args.Length == 1)
                         {
-                            messageHandler.ReportMessage("Path to the project file must be specified. For example 'hapet restore /path/to/project.hptproj'");
+                            messageHandler.ReportMessage(["restore"], ErrorCode.Get(CTEN.NoHapetProjectPathSpecified));
                             return (int)CompilerErrors.HapetCommandParamsError;
                         }
                         // skip the first two args because they are already used
@@ -43,7 +44,7 @@ namespace HapetCompiler
                         return projectToolchain.Restore(args[1], messageHandler);
                     }
             }
-            messageHandler.ReportMessage($"hapet command called {args[0]} is not available");
+            messageHandler.ReportMessage([args[0]], ErrorCode.Get(CTEN.NotFoundHapetCommand));
             return (int)CompilerErrors.HapetCommandError;
         }
     }

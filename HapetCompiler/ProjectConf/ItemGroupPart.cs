@@ -2,6 +2,7 @@
 using LLVMSharp;
 using System.Xml;
 using System.Linq;
+using HapetFrontend.Errors;
 
 namespace HapetCompiler.ProjectConf
 {
@@ -40,7 +41,7 @@ namespace HapetCompiler.ProjectConf
                         default:
                             {
                                 var loc = NodeLocationFinder.GetLocationOfNode(_projectFileText, childnode, _projectPathAbsolute);
-                                _messageHandler.ReportMessage(_projectFileText, loc, $"Unexpected tag {childnode.Name}");
+                                _messageHandler.ReportMessage(_projectFileText, loc, [childnode.Name], ErrorCode.Get(CTEN.UnexpectedProjectFileTag));
                                 break;
                             }
                     }
