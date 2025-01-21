@@ -1,6 +1,7 @@
 ﻿using HapetFrontend.Ast;
 using HapetFrontend.Ast.Expressions;
 using HapetFrontend.Ast.Statements;
+using HapetFrontend.Errors;
 using System.Collections.Generic;
 
 namespace HapetFrontend.Parsing
@@ -17,7 +18,7 @@ namespace HapetFrontend.Parsing
 
             if (expr is not AstNestedExpr)
             {
-                ReportMessage(expr.Location, "Namespace name/path expected after 'using' keyword");
+                ReportMessage(expr.Location, [], ErrorCode.Get(CTEN.NoNamespaceAfterUsing));
                 return ParseEmptyExpression();
             }
 
@@ -34,7 +35,7 @@ namespace HapetFrontend.Parsing
 
             if (expr is not AstNestedExpr)
             {
-                ReportMessage(expr.Location, "Namespace name/path expected after 'namespace' keyword");
+                ReportMessage(expr.Location, [], ErrorCode.Get(CTEN.NoNamespaceAfterNamespace));
                 return ParseEmptyExpression();
             }
 

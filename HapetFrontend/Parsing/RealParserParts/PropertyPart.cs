@@ -1,6 +1,7 @@
 ﻿using HapetFrontend.Ast.Declarations;
 using HapetFrontend.Ast;
 using HapetFrontend.Ast.Expressions;
+using HapetFrontend.Errors;
 
 namespace HapetFrontend.Parsing
 {
@@ -41,7 +42,7 @@ namespace HapetFrontend.Parsing
                 }
                 else
                 {
-                    ReportMessage(PeekToken().Location, $"Unexpected token after property's 'get'");
+                    ReportMessage(PeekToken().Location, [], ErrorCode.Get(CTEN.UnexpectedTokenAfterGet));
                 }
                 SkipNewlines();
             }
@@ -64,14 +65,14 @@ namespace HapetFrontend.Parsing
                 }
                 else
                 {
-                    ReportMessage(PeekToken().Location, $"Unexpected token after property's 'set'");
+                    ReportMessage(PeekToken().Location, [], ErrorCode.Get(CTEN.UnexpectedTokenAfterSet));
                 }
                 SkipNewlines();
 
                 // check if 'get' goes after 'set' and error
                 if (CheckToken(TokenType.KwGet))
                 {
-                    ReportMessage(PeekToken().Location, $"Keyword 'get' has to be before keyword 'set'");
+                    ReportMessage(PeekToken().Location, [], ErrorCode.Get(CTEN.GetNotBeforeSet));
                 }
             }
 
@@ -86,7 +87,7 @@ namespace HapetFrontend.Parsing
                 initializer = ParseExpression(true);
                 if (initializer is not AstExpression)
                 {
-                    ReportMessage(initializer.Location, $"Property initializer has to be an expresssion");
+                    ReportMessage(initializer.Location, [], ErrorCode.Get(CTEN.PropIniNotExpr));
                 }
             }
 
@@ -102,17 +103,17 @@ namespace HapetFrontend.Parsing
             if (!hasGet && hasSet && setBody == null)
             {
                 // the case is 'Prop { set; }' so we should error
-                ReportMessage(theProperty.Location, $"The property has to have 'get' keyword or body of 'set'");
+                ReportMessage(theProperty.Location, [], ErrorCode.Get(CTEN.NoGetAndNoSetBody));
             }
             else if (hasGet && hasSet && getBody == null && setBody != null)
             {
                 // the case is 'Prop { get; set {...} }' so we should error
-                ReportMessage(theProperty.Location, $"The property has to have body of 'get'");
+                ReportMessage(theProperty.Location, [], ErrorCode.Get(CTEN.ExpectedGetBody));
             }
             else if (hasGet && hasSet && getBody != null && setBody == null)
             {
                 // the case is 'Prop { get {...} set; }' so we should error
-                ReportMessage(theProperty.Location, $"The property has to have body of 'set'");
+                ReportMessage(theProperty.Location, [], ErrorCode.Get(CTEN.ExpectedSetBody));
             }
 
             return theProperty;

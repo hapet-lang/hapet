@@ -2,6 +2,7 @@
 using HapetFrontend.Ast.Statements;
 using HapetFrontend.Ast;
 using System.Collections.Generic;
+using HapetFrontend.Errors;
 
 namespace HapetFrontend.Parsing
 {
@@ -29,7 +30,7 @@ namespace HapetFrontend.Parsing
             {
                 var expr = ParseExpression(true, false);
                 if (expr is not AstExpression)
-                    ReportMessage(expr, $"Expression expected as the second parameter");
+                    ReportMessage(expr, [], ErrorCode.Get(CTEN.ForLoopSecondNotExpr));
                 second = expr as AstExpression;
             }
             Consume(TokenType.Semicolon, ErrMsg("';'", "after the second argument"));
@@ -79,11 +80,11 @@ namespace HapetFrontend.Parsing
             {
                 var expr = ParseExpression(true, false);
                 if (expr is not AstExpression)
-                    ReportMessage(expr, $"Expression expected as 'while' statement parameter");
+                    ReportMessage(expr, [], ErrorCode.Get(CTEN.WhileLoopParamNotExpr));
                 condition = expr as AstExpression;
             }
             else
-                ReportMessage(PeekToken().Location, $"Condition of 'while' loop expected");
+                ReportMessage(PeekToken().Location, [], ErrorCode.Get(CTEN.WhileLoopNoCondition));
             var end = Consume(TokenType.CloseParen, ErrMsg("')'", "after the condition"));
 
             SkipNewlines();

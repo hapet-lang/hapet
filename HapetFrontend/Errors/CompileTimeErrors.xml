@@ -246,7 +246,87 @@
         <Number>2035</Number>
         <Text>Delegate name expected to be an identifier</Text>
     </Item>
-	
+    <Item>
+        <Number>2036</Number>
+        <Text>Expression expected as a type name</Text>
+    </Item>
+    <Item>
+        <Number>2037</Number>
+        <Text>Unexpected token as a type name</Text>
+    </Item>
+    <Item>
+        <Number>2038</Number>
+        <Text>Unexpected token after a type name</Text>
+    </Item>
+    <Item>
+        <Number>2039</Number>
+        <Text>Expected enum name after 'enum' keyword</Text>
+    </Item>
+    <Item>
+        <Number>203A</Number>
+        <Text>Enum name expected to be an identifier</Text>
+    </Item>
+    <Item>
+        <Number>203B</Number>
+        <Text>Only one inherited type is allowed for enums</Text>
+    </Item>
+    <Item>
+        <Number>203C</Number>
+        <Text>Enum field initializer expected to be an expression</Text>
+    </Item>
+    <Item>
+        <Number>203D</Number>
+        <Text>This type of declaration is not allowed in enum type</Text>
+    </Item>
+    <Item>
+        <Number>203E</Number>
+        <Text>Expression expected as the second parameter</Text>
+    </Item>
+    <Item>
+        <Number>203F</Number>
+        <Text>Expression expected as 'while' statement parameter</Text>
+    </Item>
+    <Item>
+        <Number>2040</Number>
+        <Text>Condition of 'while' loop expected</Text>
+    </Item>
+    <Item>
+        <Number>2041</Number>
+        <Text>Namespace name/path expected after 'using' keyword</Text>
+    </Item>
+    <Item>
+        <Number>2042</Number>
+        <Text>Namespace name/path expected after 'namespace' keyword</Text>
+    </Item>
+    <Item>
+        <Number>2043</Number>
+        <Text>Unexpected token after property's 'get'</Text>
+    </Item>
+    <Item>
+        <Number>2044</Number>
+        <Text>Unexpected token after property's 'set'</Text>
+    </Item>
+    <Item>
+        <Number>2045</Number>
+        <Text>Keyword 'get' has to be before keyword 'set'</Text>
+    </Item>
+    <Item>
+        <Number>2046</Number>
+        <Text>Property initializer expected to be an expresssion</Text>
+    </Item>
+    <Item>
+        <Number>2047</Number>
+        <Text>The property expected to have 'get' keyword or body of 'set'</Text>
+    </Item>
+    <Item>
+        <Number>2048</Number>
+        <Text>The property expected to have body of 'get'</Text>
+    </Item>
+    <Item>
+        <Number>2049</Number>
+        <Text>The property expected to have body of 'set'</Text>
+    </Item>
+    
 
 	<!--Post prepare errors-->
     <Item>

@@ -1,6 +1,7 @@
 ﻿using HapetFrontend.Ast;
 using HapetFrontend.Ast.Declarations;
 using HapetFrontend.Ast.Expressions;
+using HapetFrontend.Errors;
 
 namespace HapetFrontend.Parsing
 {
@@ -21,14 +22,14 @@ namespace HapetFrontend.Parsing
             if (!CheckToken(TokenType.Identifier))
             {
                 // better error location
-                ReportMessage(PeekToken().Location, $"Expected enum name after 'enum' keyword");
+                ReportMessage(PeekToken().Location, [], ErrorCode.Get(CTEN.NoEnumNameAfterEnumWord));
             }
             else
             {
                 var nest = ParseIdentifierExpression(allowDots: false);
                 if (nest.RightPart is not AstIdExpr idExpr)
                 {
-                    ReportMessage(nest.Location, $"Enum name expected to be an identifier");
+                    ReportMessage(nest.Location, [], ErrorCode.Get(CTEN.EnumNameNotIdent));
                     return new AstEnumDecl(new AstIdExpr("unknown"), declarations, "", beg);
                 }
                 enumName = idExpr;
@@ -58,7 +59,7 @@ namespace HapetFrontend.Parsing
 
             // error if there are more than 1 inherited type
             if (inherited.Count > 1)
-                ReportMessage(inherited[1], $"Only one inherited type is allowed for enums");
+                ReportMessage(inherited[1], [], ErrorCode.Get(CTEN.ManyInhTypesInEnum));
             else if (inherited.Count == 1)
                 enumType = inherited[0];
 
@@ -75,7 +76,7 @@ namespace HapetFrontend.Parsing
                 if (!CheckToken(TokenType.Identifier))
                 {
                     NextToken();
-                    ReportMessage(CurrentToken.Location, $"Identified expected to be here");
+                    ReportMessage(CurrentToken.Location, [], ErrorCode.Get(CTEN.CommonIdentifierExpected));
                     continue;
                 }
 
@@ -88,7 +89,7 @@ namespace HapetFrontend.Parsing
                     NextToken();
                     var initStmt = ParseExpression(false, false, null, false);
                     if (initStmt is not AstExpression)
-                        ReportMessage(initStmt.Location, $"Enum field initializer expected to be an expression");
+                        ReportMessage(initStmt.Location, [], ErrorCode.Get(CTEN.EnumFieldIniNotExpr));
                     ini = initStmt as AstExpression;
                     fieldEnd = ini.Ending;
                 }
@@ -116,7 +117,7 @@ namespace HapetFrontend.Parsing
                 else if (decl is not AstVarDecl)
                 {
                     NextToken();
-                    ReportMessage(decl.Location, $"The declaration type is not allowed in enum type");
+                    ReportMessage(decl.Location, [], ErrorCode.Get(CTEN.ThisDeclNotAllowedInEnum));
                 }
             }
 
