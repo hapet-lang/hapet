@@ -135,18 +135,6 @@ namespace HapetFrontend.Helpers
         {
             path = filePath;
 
-            // TODO: check is obsolete probably - remove if everything would be ok :)
-            //var extension = Path.GetExtension(path);
-            //if (string.IsNullOrEmpty(extension))
-            //{
-            //    path += ".hpt";
-            //}
-            //else if (extension != ".hpt")
-            //{
-            //    mh.ReportMessage($"Invalid extension '{extension}'. Hapet source files must have the extension .hpt");
-            //    return false;
-            //}
-
             if (isRel)
             {
                 path = Path.Combine(dir, path);
