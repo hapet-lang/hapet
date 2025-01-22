@@ -1128,7 +1128,7 @@ namespace HapetBackend.Llvm
         private void GenerateBaseCtorStmt(AstBaseCtorStmt baseStmt)
         {
             // do not generate for interface or empty
-            if (baseStmt.BaseType != null || baseStmt.BaseType.Declaration.IsInterface)
+            if (baseStmt.BaseType == null || baseStmt.BaseType.Declaration.IsInterface)
                 return;
 
             string onlyName = baseStmt.BaseType.Declaration.Name.Name.Split('.').Last();

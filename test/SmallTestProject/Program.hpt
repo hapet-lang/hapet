@@ -55,7 +55,7 @@ public class Derived : BaseCls, ISoh, IBot
 	public Derived() : base("dasdasd")
 	{
 		this.AnimeSoh = 444;
-		this.AnimeBot = 2;
-		this.AnimeLoh = 3;
+		//this.AnimeBot = 2;
+		//this.AnimeLoh = 3;
 	}
 }

@@ -137,7 +137,8 @@ namespace HapetFrontend.Parsing.PostPrepare
                 if (funcDecl.ClassFunctionType == Enums.ClassFunctionType.Ctor &&
                     funcDecl.ContainingClass.InheritedFrom.Count > 0 &&
                     funcDecl.BaseCtorCall != null &&
-                    funcDecl.ContainingClass.InheritedFrom[0].OutType is ClassType baseType)
+                    funcDecl.ContainingClass.InheritedFrom[0].OutType is ClassType baseType &&
+                    !baseType.Declaration.IsInterface)
                 {
                     PostPrepareExprInference(funcDecl.BaseCtorCall);
 
