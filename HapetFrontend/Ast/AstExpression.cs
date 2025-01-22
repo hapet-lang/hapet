@@ -35,8 +35,7 @@ namespace HapetFrontend.Ast
 
         public override string ToString()
         {
-            // TODO: so the return type would be printed normally
-            return base.ToString();
+            return OutType.ToString();
         }
     }
 }
