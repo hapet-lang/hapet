@@ -1152,6 +1152,12 @@ namespace HapetFrontend.Parsing.PostPrepare
             PostPrepareExprInference(arrayAccExpr.ParameterExpr);
             PostPrepareExprInference(arrayAccExpr.ObjectName);
 
+            if (arrayAccExpr.ParameterExpr.OutType is not IntType)
+            {
+                // error here? i cannot access array if it is not an int type
+                _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, arrayAccExpr.ParameterExpr, [], ErrorCode.Get(CTEN.ArrayIndexNotInt));
+            }
+
             HapetType outType = null;
             if (arrayAccExpr.ObjectName.OutType is ArrayType arrayType)
                 outType = arrayType.TargetType;
@@ -1182,6 +1188,8 @@ namespace HapetFrontend.Parsing.PostPrepare
             // pp assign value
             if (assignStmt.Value != null)
                 assignStmt.Value = PostPrepareVarValueAssign(assignStmt.Value, assignStmt.Target.OutType);
+            else
+                _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, assignStmt, [], ErrorCode.Get(CTEN.NotExprInAssignment));
         }
 
         private void PostPrepareForStmtInference(AstForStmt forStmt)
@@ -1276,6 +1284,13 @@ namespace HapetFrontend.Parsing.PostPrepare
         {
             if (returnStmt.ReturnExpression != null)
             {
+                // if user tries to return smth but func ret type is void =^0
+                if (_currentFunction.Returns.OutType is VoidType)
+                {
+                    _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, _currentFunction.Name, [], ErrorCode.Get(CTEN.EmptyReturnExpected));
+                    return;
+                }
+
                 // do not infer this shite
                 if (_currentFunction.Returns.OutType is not DelegateType)
                     PostPrepareExprInference(returnStmt.ReturnExpression);

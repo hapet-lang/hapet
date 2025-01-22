@@ -116,8 +116,7 @@ namespace HapetBackend.Llvm
                 {
                     // creating a static field of the enum
                     var globStatic = _module.AddGlobal(HapetTypeToLLVMType(decl.Type.OutType), $"{enm.Type.OutType}::{decl.Name.Name}");
-                    if (decl.Initializer == null)
-                        _messageHandler.ReportMessage(_currentSourceFile.Text, decl, [], ErrorCode.Get(CTEN.NullEnumFieldIni));
+                    // decl.Initializer is checked in Metadata PP. could not be null
                     globStatic.Initializer = GenerateExpressionCode(decl.Initializer);
                     _valueMap[decl.GetSymbol] = globStatic;
                 }

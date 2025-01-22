@@ -158,6 +158,9 @@
         DelegFuncNameExpected           = 0x3035, // could be obsolete
         ExprExpectedToBeFunc            = 0x3036,
         NoMainFunction                  = 0x3037,
+        ArrayIndexNotInt                = 0x3038,
+        NotExprInAssignment             = 0x3039,
+        EmptyReturnExpected             = 0x303A,
 
         // compiler errors up to 0x6000
         DefaultWasNotInfered            = 0x5001,
@@ -172,19 +175,18 @@
 
         LLVMValidateError               = 0x6002,
         NoObjectFileGenerated           = 0x6003,
-        CtorWithArgTypesNotFound        = 0x6004, // TODO: move to PP
-        TheTypeIsNotCallable            = 0x6005, // TODO: move to PP
-        PartExpectedToBeIdent           = 0x6006, // TODO: move to Parsing
-        NonStaticFieldAccess            = 0x6007, // TODO: move to PP
-        ArrayIndexNotInt                = 0x6008, // TODO: move to PP
-        NotExprInAssignment             = 0x6009, // TODO: move to PP
+        CtorWithArgTypesNotFound        = 0x6004,
+        TheTypeIsNotCallable            = 0x6005,
+
+        NonStaticFieldAccess            = 0x6007, 
+
         NoLoopToBreak                   = 0x600A,
         NoLoopToContinue                = 0x600B,
-        ReturnTypeNoMatch               = 0x600C, // TODO: move to PP
-        ExternFuncNoAttr                = 0x600D, // TODO: move to PP
-        NullEnumFieldIni                = 0x600E, // TODO: move to PP
-        PackLessThanOne                 = 0x600F, // TODO: move to PP
-        PackNotPowerOfTwo               = 0x6010, // TODO: move to PP
+
+        ExternFuncNoAttr                = 0x600D,
+
+        PackLessThanOne                 = 0x600F,
+        PackNotPowerOfTwo               = 0x6010,
 
         // linker errors up to 0x9000
         NoVisualStudio                  = 0x8001, // could be obsolete

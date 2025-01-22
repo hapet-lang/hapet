@@ -600,6 +600,18 @@
 		<Number>3037</Number>
 		<Text>Main function could not be found</Text>
 	</Item>
+	<Item>
+		<Number>3038</Number>
+		<Text>Type of the index has to be an integer type</Text>
+	</Item>
+	<Item>
+		<Number>3039</Number>
+		<Text>Expression expected on the right side of assignment</Text>
+	</Item>
+	<Item>
+		<Number>303A</Number>
+		<Text>Return statement with no args expected</Text>
+	</Item>
 
     <!--Compiler errors-->
 	<Item>
@@ -649,22 +661,12 @@
         <Number>6005</Number>
         <Text>Call of {0} is not supported</Text>
     </Item>
-    <Item>
-        <Number>6006</Number>
-        <Text>The part of the expression has to be an identifier</Text>
-    </Item>
+	
     <Item>
         <Number>6007</Number>
         <Text>The element '{0}' could not be accessed. You are probably trying to access a non static/const field</Text>
     </Item>
-    <Item>
-        <Number>6008</Number>
-        <Text>Type of the index has to be an integer type</Text>
-    </Item>
-    <Item>
-        <Number>6009</Number>
-        <Text>Expression expected on the right side of assignment</Text>
-    </Item>
+
     <Item>
         <Number>600A</Number>
         <Text>Loop/switch to break could not be found</Text>
@@ -673,18 +675,12 @@
         <Number>600B</Number>
         <Text>Loop to continue could not be found</Text>
     </Item>
-    <Item>
-        <Number>600C</Number>
-        <Text>The 'return' statement returns a type that does not match the type specified in the function declaration</Text>
-    </Item>
+
     <Item>
         <Number>600D</Number>
         <Text>'DllImportAttribute' has to be specified when function is 'extern'</Text>
     </Item>
-    <Item>
-        <Number>600E</Number>
-        <Text>Enum field initializer could not be null</Text>
-    </Item>
+
     <Item>
         <Number>600F</Number>
         <Text>The 'Pack' value could not be less than 1</Text>

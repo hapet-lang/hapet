@@ -484,12 +484,8 @@ namespace HapetBackend.Llvm
             }
             else
             {
-                // if really has to be an AstIdExpr
-                if (expr.RightPart is not AstIdExpr idExpr)
-                {
-                    _messageHandler.ReportMessage(_currentSourceFile.Text, expr.RightPart, [], ErrorCode.Get(CTEN.PartExpectedToBeIdent));
-                    return default;
-                }
+                // checked in PP
+                var idExpr = expr.RightPart as AstIdExpr;
 
                 // we need to get 'struct' elements by ref to access it's elements
                 bool getByRef = (expr.LeftPart.OutType is StructType) || (expr.LeftPart.OutType is ArrayType) || (expr.LeftPart.OutType is StringType);
@@ -653,12 +649,6 @@ namespace HapetBackend.Llvm
 
         private LLVMValueRef GenerateArrayAccessExprCode(AstArrayAccessExpr expr, bool getPtr = false)
         {
-            if (expr.ParameterExpr.OutType is not IntType)
-            {
-                // error here? i cannot access array if it is not an int type
-                _messageHandler.ReportMessage(_currentSourceFile.Text, expr.ParameterExpr, [], ErrorCode.Get(CTEN.ArrayIndexNotInt));
-            }
-
             // the buffer to be indexed
             LLVMValueRef buffer = default;
 
@@ -704,13 +694,6 @@ namespace HapetBackend.Llvm
         private void GenerateAssignStmt(AstAssignStmt stmt)
         {
             LLVMValueRef theVar = GenerateNestedExpr(stmt.Target, true);
-
-            // check for initializer
-            if (stmt.Value == null)
-            {
-                // error here!!!!! it could not be null
-                _messageHandler.ReportMessage(_currentSourceFile.Text, stmt, [], ErrorCode.Get(CTEN.NotExprInAssignment));
-            }
 
             AssignToVar(theVar, stmt.Target.OutType, stmt.Value);
 
@@ -1143,7 +1126,7 @@ namespace HapetBackend.Llvm
             {
                 // error because the func is not void but with a type return
                 // but the 'return' statement was not found
-                _messageHandler.ReportMessage(_currentSourceFile.Text, returnStmt, [], ErrorCode.Get(CTEN.ReturnTypeNoMatch));
+                // WARN: should not happen - PP has to handle it
                 _builder.BuildRetVoid();
             }
         }
