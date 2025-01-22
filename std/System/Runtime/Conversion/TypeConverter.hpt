@@ -23,6 +23,10 @@ public static class TypeConverter
 
     public static int GetInterfaceOffset(void* obj, TypeInfoUnsafe* interfaceType, int fieldIndex)
     {
+        // TODO: throw exception
+        if ((uintptr)obj == (uintptr)0)
+            return 0;
+
         TypeInfoUnsafe** fullInfo = *((TypeInfoUnsafe***)obj);
         TypeInfoUnsafe* typeInfoPtr = *((TypeInfoUnsafe**)fullInfo);
         TypeInfoUnsafe typeInfo = *((TypeInfoUnsafe*)typeInfoPtr);

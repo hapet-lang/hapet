@@ -295,13 +295,7 @@ namespace HapetBackend.Llvm
             LLVMValueRef v = default;
             if (expr.OutType is ClassType classType)
             {
-                // TODO: some shite with alignment here
-                int structSize = 0;
-                List<HapetType> structElements = _structTypeElementsMap[classType];
-                foreach (var elem in structElements)
-                {
-                    structSize += elem.GetSize();
-                }
+                int structSize = classType.Declaration.GetSizeForAlloc();
 
                 // getting class ctor
                 string onlyName = classType.Declaration.Name.Name.Split('.').Last();

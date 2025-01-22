@@ -79,8 +79,11 @@ namespace HapetBackend.Llvm
             {
                 intPtrs.Add(GenerateTypeInfoConst(intf.Item1));
 
-                LLVMValueRef offsetsOfInterface = LLVMValueRef.CreateConstArray(_context.Int32Type, intf.Item2.Select(x => LLVMValueRef.CreateConstInt(_context.Int32Type, (ulong)x)).ToArray());
-                offsetArrays.Add(offsetsOfInterface);
+                LLVMValueRef interfaceOffsetsCurr = _module.AddGlobal(LLVMTypeRef.CreateArray(_context.Int32Type, (uint)(intf.Item2.Length)), $"TypeInfoInterfaceOffsets{offsetArrays.Count}::{cls.Declaration.Name.Name}");
+
+                interfaceOffsetsCurr.Initializer = LLVMValueRef.CreateConstArray(_context.Int32Type, intf.Item2.Select(x => LLVMValueRef.CreateConstInt(_context.Int32Type, (ulong)x)).ToArray());
+                interfaceOffsetsCurr.IsGlobalConstant = true;
+                offsetArrays.Add(interfaceOffsetsCurr);
             }
 
             interfacesArray.Initializer = LLVMValueRef.CreateConstArray(arrayElementType, intPtrs.ToArray());
