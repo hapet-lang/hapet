@@ -385,8 +385,6 @@ namespace HapetBackend.Llvm
             var llvmAlignment = _targetData.PreferredAlignmentOfType(type);
             if (alignment >= 0)
             {
-                // TODO: idk why do i need it.......
-                // Debug.Assert(alignment >= llvmAlignment && alignment % llvmAlignment == 0);
                 result.SetAlignment((uint)alignment);
             }
 

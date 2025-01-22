@@ -13,7 +13,7 @@ namespace HapetCompiler.ProjectConf
             // go all over the item groups
             foreach (var xnode in _itemGroups)
             {
-                // TODO: check conditions
+                // TODO: check conditions in project file
                 // go all over the project settings
                 foreach (XmlNode childnode in xnode.ChildNodes)
                 {
@@ -21,7 +21,7 @@ namespace HapetCompiler.ProjectConf
                     if (childnode is XmlComment)
                         continue;
 
-                    // TODO: check conditions
+                    // TODO: check conditions in project file tags
                     switch (childnode.Name)
                     {
                         case "ProjectReference":

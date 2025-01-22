@@ -18,14 +18,14 @@ namespace HapetCompiler.ProjectConf
             // go all over the prop groups
             foreach (var xnode in _propertyGroups)
             {
-                // TODO: check conditions
+                // TODO: check conditions in proj file tag
                 // go all over the project settings
                 foreach (XmlNode childnode in xnode.ChildNodes)
                 {
                     // skip comments
                     if (childnode is XmlComment)
                         continue;
-                    // TODO: check conditions
+                    // TODO: check conditions in proj file tag
                     _propertyGroupData.Add(childnode.Name, (childnode.FirstChild.Value, childnode));
                 }
             }

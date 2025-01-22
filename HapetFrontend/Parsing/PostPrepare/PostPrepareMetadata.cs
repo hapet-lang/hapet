@@ -25,7 +25,6 @@ namespace HapetFrontend.Parsing.PostPrepare
         private List<AstDelegateDecl> _serializeDelegatesMetadata { get; } = new List<AstDelegateDecl>();
         private List<AstFuncDecl> _serializeFunctionsMetadata { get; } = new List<AstFuncDecl>();
 
-        // TODO: some changes should be done in the file when impl 'using' and class inheritance
         private int PostPrepareMetadata()
         {
             PostPrepareInternalShiteInference();
@@ -553,7 +552,6 @@ namespace HapetFrontend.Parsing.PostPrepare
         {
             var projectVersion = _compiler.CurrentProjectSettings.ProjectVersion;
 
-            // TODO: probably should be sorted somehow by inheritance, idk
             MetadataJson metadata = new MetadataJson();
             metadata.Version = projectVersion;
             // serialize all unreflected

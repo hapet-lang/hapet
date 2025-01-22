@@ -405,7 +405,7 @@ namespace HapetFrontend.Parsing.PostPrepare
                 {
                     // skip last because the last one is the real value to be applied into variable 
                     iniBlockStatements.AddRange(blckExpr.Statements.SkipLast(1));
-                    fieldInitializer = blckExpr.Statements.Last() as AstExpression; // TODO: checks here?
+                    fieldInitializer = blckExpr.Statements.Last() as AstExpression;
                 }
 
                 // TODO: !!! check that non-static functions are not used in field initializers!!!

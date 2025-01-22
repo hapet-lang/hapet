@@ -117,7 +117,7 @@ namespace HapetFrontend.Types
         public bool IsUserDefinedAlignment { get; set; } = false;
 
         public StructType(AstStructDecl decl)
-            : base() // TODO: WARN: hard coded struct alignment (probably undependent on platform target)
+            : base()
         {
             Declaration = decl;
         }

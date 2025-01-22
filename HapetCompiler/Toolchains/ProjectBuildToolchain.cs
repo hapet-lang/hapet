@@ -89,7 +89,6 @@ namespace HapetCompiler.Toolchains
             if (!success)
                 return false;
 
-            // TODO: config parameters normally
             return generator.CompileCode(resolver.PathsToLinkWith, resolver.LibrariesToLinkWith, messageHandler);
         }
     }

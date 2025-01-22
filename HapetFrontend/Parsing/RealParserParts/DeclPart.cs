@@ -30,12 +30,6 @@ namespace HapetFrontend.Parsing
                 _foundAttributes.Add(attrStmt);
                 return new AstEmptyDecl(new AstIdExpr("attr"));
             }
-            //else if (expr is AstFuncDecl funcDecl)
-            //{
-            //	// already prepared func (probably ctor or dtor)
-            //	return funcDecl;
-            //}
-            // TODO: upper shite is probably not possible
 
             ReportMessage(PeekToken().Location, [], ErrorCode.Get(CTEN.ExpectedEqualOrNewline));
             return new AstVarDecl(expr as AstIdExpr, null, null, docString, Location: expr);

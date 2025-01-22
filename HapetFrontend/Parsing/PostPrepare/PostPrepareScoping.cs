@@ -683,7 +683,6 @@ namespace HapetFrontend.Parsing.PostPrepare
             }
         }
 
-        // TODO: recursively go through all of the statments and set Scope and Parent
 
         /// <summary>
         /// Sets parent and scope to a child

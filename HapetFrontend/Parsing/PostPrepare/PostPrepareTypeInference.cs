@@ -189,7 +189,6 @@ namespace HapetFrontend.Parsing.PostPrepare
             {
                 foreach (var kk in varDecl.SpecialKeys)
                 {
-                    // TODO: better error with token location somehow?
                     _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, new Location(varDecl.Beginning, varDecl.Name.Ending), [kk.ToString()], ErrorCode.Get(CTEN.VarTokenNotAllowed));
                 }
             }
@@ -708,8 +707,6 @@ namespace HapetFrontend.Parsing.PostPrepare
                 }
             }
 
-            // TODO: check in 'usings' via similar way as upper
-
             // TODO: really give them a error? or mb there is smth harder?
             _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, idExpr, [], ErrorCode.Get(CTEN.TypeCouldNotBeInfered));
         }
@@ -1016,7 +1013,7 @@ namespace HapetFrontend.Parsing.PostPrepare
                 {
                     idExpr.OutType = typed.Decl.Type.OutType;
                     nestExpr.OutType = idExpr.OutType;
-                    nestExpr.OutValue = idExpr.OutValue; // TODO: check it: is it correct way?
+                    nestExpr.OutValue = idExpr.OutValue;
 
                     // check if the var is a static/const field and user is accessing it from an object
                     if (typed.Decl is AstVarDecl varDecl && (varDecl.SpecialKeys.Contains(TokenType.KwStatic) || varDecl.SpecialKeys.Contains(TokenType.KwConst)) && accessingFromAnObject) // if accessing from an object - give em a warning :)
@@ -1432,7 +1429,7 @@ namespace HapetFrontend.Parsing.PostPrepare
                 if (accessee is AstClassDecl ||
                     accessee is AstStructDecl ||
                     accessee is AstEnumDecl ||
-                    accessee is AstDelegateDecl) // TODO: interface also
+                    accessee is AstDelegateDecl)
                 {
                     return accessor.SourceFile.Namespace == accessee.SourceFile.Namespace;
                 }
