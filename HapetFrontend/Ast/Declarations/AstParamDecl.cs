@@ -56,7 +56,6 @@ namespace HapetFrontend.Ast.Declarations
 
         public AstParamDecl GetAst()
         {
-            // TODO: WARN! default value is not saving yet!!!
             var pr = new AstParamDecl(Parser.ParseType(Type), new AstIdExpr(Name), null, DocString);
             pr.SpecialKeys.AddRange(SpecialKeys);
             pr.Attributes.AddRange(Attributes.Select(x => x.GetAst()));
