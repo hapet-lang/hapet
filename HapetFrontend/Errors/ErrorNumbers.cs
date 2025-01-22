@@ -157,6 +157,7 @@
         TypeCouldNotBeImplCasted        = 0x3034,
         DelegFuncNameExpected           = 0x3035, // could be obsolete
         ExprExpectedToBeFunc            = 0x3036,
+        NoMainFunction                  = 0x3037,
 
         // compiler errors up to 0x6000
         DefaultWasNotInfered            = 0x5001,
@@ -168,7 +169,7 @@
         ArrayAccessNotGenerate          = 0x5007,
 
         // backend errors up to 0x8000
-        NoMainFunction                  = 0x6001, // TODO: move to PP
+
         LLVMValidateError               = 0x6002,
         NoObjectFileGenerated           = 0x6003,
         CtorWithArgTypesNotFound        = 0x6004, // TODO: move to PP

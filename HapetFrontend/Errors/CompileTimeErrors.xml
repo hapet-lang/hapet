@@ -596,6 +596,10 @@
         <Number>3036</Number>
         <Text>The expression expected to be a function</Text>
     </Item>
+	<Item>
+		<Number>3037</Number>
+		<Text>Main function could not be found</Text>
+	</Item>
 
     <!--Compiler errors-->
 	<Item>
@@ -628,10 +632,7 @@
     </Item>
 
     <!--Backend errors-->
-    <Item>
-        <Number>6001</Number>
-        <Text>Main function could not be found</Text>
-    </Item>
+    
     <Item>
         <Number>6002</Number>
         <Text>[LLVM-validate-module] {0}</Text>

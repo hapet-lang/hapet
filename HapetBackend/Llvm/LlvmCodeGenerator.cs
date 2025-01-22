@@ -49,13 +49,6 @@ namespace HapetBackend.Llvm
             this._outDir = _compiler.CurrentProjectSettings.OutputDirectory;
             this._targetFile = _compiler.CurrentProjectSettings.ProjectName;
 
-            if (_compiler.MainFunction == null && (_compiler.CurrentProjectSettings.TargetFormat == TargetFormat.Console || _compiler.CurrentProjectSettings.TargetFormat == TargetFormat.Windowed))
-            {
-                _messageHandler.ReportMessage([], ErrorCode.Get(CTEN.NoMainFunction));
-                OnGenerateCodeExit();
-                return false;
-            }
-
             // getting the target LLVM triple
             this._targetTriple = CompilerSettings.GetTargetTriple(_compiler.CurrentProjectSettings.TargetPlatformData);
 

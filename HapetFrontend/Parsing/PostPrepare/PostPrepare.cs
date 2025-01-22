@@ -1,6 +1,7 @@
 ﻿using HapetFrontend.Ast.Declarations;
 using HapetFrontend.Ast.Expressions;
 using HapetFrontend.Entities;
+using HapetFrontend.Errors;
 using HapetFrontend.Types;
 
 namespace HapetFrontend.Parsing.PostPrepare
@@ -76,6 +77,12 @@ namespace HapetFrontend.Parsing.PostPrepare
                         _compiler.MainFunction = funcDecl;
                     }
                 }
+            }
+
+            // check for main func existance if required
+            if (_compiler.MainFunction == null && (_compiler.CurrentProjectSettings.TargetFormat == TargetFormat.Console || _compiler.CurrentProjectSettings.TargetFormat == TargetFormat.Windowed))
+            {
+                _compiler.MessageHandler.ReportMessage([], ErrorCode.Get(CTEN.NoMainFunction));
             }
         }
 
