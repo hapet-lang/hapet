@@ -4,6 +4,7 @@ using HapetFrontend.Helpers;
 using HapetFrontend.Parsing;
 using HapetFrontend.Scoping;
 using HapetFrontend.Types;
+using System.Collections.Generic;
 
 namespace HapetFrontend.Ast.Declarations
 {
@@ -64,6 +65,7 @@ namespace HapetFrontend.Ast.Declarations
         internal ClassDeclJson GetJson()
         {
             var fields = Declarations.Where(x => x is AstVarDecl && x is not AstPropertyDecl).Select(x => (x as AstVarDecl).GetJson()).ToList();
+            var inhs = InheritedFrom.Select(x => x.OutType.ToString()).ToList();
             var props = Declarations.Where(x => x is AstPropertyDecl).Select(x => (x as AstPropertyDecl).GetJsonPropa()).ToList();
             var attributes = Attributes.Select(x => x.GetJson()).ToList();
             return new ClassDeclJson()
@@ -71,6 +73,7 @@ namespace HapetFrontend.Ast.Declarations
                 Fields = fields,
                 Properties = props,
                 Name = Name.Name,
+                InheritedTypes = inhs,
                 SpecialKeys = SpecialKeys,
                 Attributes = attributes,
                 DocString = Documentation
@@ -85,6 +88,8 @@ namespace HapetFrontend.Ast.Declarations
         public List<PropertyDeclJson> Properties { get; set; }
         public string Name { get; set; }
 
+        public List<string> InheritedTypes { get; set; }
+
         public List<TokenType> SpecialKeys { get; set; }
         public List<AttributeJson> Attributes { get; set; }
 
@@ -98,6 +103,7 @@ namespace HapetFrontend.Ast.Declarations
             var decl = new AstClassDecl(new AstIdExpr(Name), allClassDecls, DocString);
             decl.SpecialKeys.AddRange(SpecialKeys);
             decl.Attributes.AddRange(Attributes.Select(x => x.GetAst()));
+            decl.InheritedFrom.AddRange(InheritedTypes.Select(x => new AstNestedExpr(new AstIdExpr(x), null)));
             return decl;
         }
     }
