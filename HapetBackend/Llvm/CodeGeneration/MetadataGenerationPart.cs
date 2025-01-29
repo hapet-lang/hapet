@@ -64,12 +64,9 @@ namespace HapetBackend.Llvm
                 var entryTypes = new List<LLVMTypeRef>();
                 var entryHapetTypes = new List<HapetType>();
 
-                // add typeinfo field only for non-interfaces!!!
-                if (!cls.IsInterface)
-                {
-                    entryTypes.Add(_context.Int8Type.GetPointerTo());
-                    entryHapetTypes.Add(PointerType.GetPointerType(IntPtrType.Instance));
-                }
+                // add typeinfo field 
+                entryTypes.Add(_context.Int8Type.GetPointerTo());
+                entryHapetTypes.Add(PointerType.GetPointerType(IntPtrType.Instance));
 
                 // getting all field except props
                 foreach (var decl in cls.Declarations.Where(x => x is AstVarDecl && x is not AstPropertyDecl).Select(x => x as AstVarDecl))
