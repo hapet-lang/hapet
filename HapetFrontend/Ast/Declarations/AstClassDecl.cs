@@ -29,6 +29,10 @@ namespace HapetFrontend.Ast.Declarations
         /// All original raw fields (including inherited) (for easier interface offset generation)
         /// </summary>
         public List<AstVarDecl> AllRawFields { get; set; }
+        /// <summary>
+        /// All original virtual methods (including inherited) 
+        /// </summary>
+        public List<AstFuncDecl> AllVirtualMethods { get; set; }
 
         public AstClassDecl(AstIdExpr name, List<AstDeclaration> declarations, string doc = "", ILocation Location = null) : base(name, doc, Location)
         {

@@ -136,7 +136,10 @@ namespace HapetBackend.Llvm
             {
                 // reg type info if non static
                 if (!cls.SpecialKeys.Contains(TokenType.KwStatic))
+                {
                     GenerateTypeInfoConst(cls.Type.OutType as ClassType);
+                    GenerateVirtualTableConst(cls.Type.OutType as ClassType);
+                }
             }
         }
     }

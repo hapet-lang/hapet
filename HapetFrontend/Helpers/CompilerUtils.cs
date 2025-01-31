@@ -93,6 +93,24 @@ namespace HapetFrontend.Helpers
                 x is not AstPropertyDecl).ToList();
         }
 
+        public static AstFuncDecl GetSameByNameAndTypes(this List<AstFuncDecl> delcs, AstFuncDecl searchFunc, out int index)
+        {
+            index = -1;
+            // there is already params type in name like
+            // TestClass::AnimeFunc(int:PivoCls)
+            string searchName = searchFunc.Name.Name.Split("::")[1];
+            for (int i = 0; i < delcs.Count; ++i)
+            {
+                var x = delcs[i];
+                if ((x.Name.Name.Split("::")[1] == searchName) && x.Returns.OutType == searchFunc.Returns.OutType)
+                {
+                    index = i;
+                    return x;
+                }
+            }
+            return null;
+        }
+
         public static AstDeclaration GetSameDeclByTypeAndName(this List<AstDeclaration> delcs, AstDeclaration decl)
         {
             return delcs.FirstOrDefault(x => x.Name.Name == decl.Name.Name && x.Type.OutType == decl.Type.OutType);
