@@ -125,17 +125,27 @@ namespace HapetBackend.Llvm
                             // check upcast
                             if (!isUpcast)
                             {
-                                var ptrToCastTypeInfo = _typeInfoDictionary[rightType];
-                                var castTypeNull = LLVMValueRef.CreateConstPointerNull(HapetTypeToLLVMType(rightExpr.OutType));
-                                var casted = _builder.BuildBitCast(left, HapetTypeToLLVMType(rightExpr.OutType), "castedAs");
+                                // swap them and check inheritance
+                                bool isDownCast = rightType.IsInheritedFrom(leftType);
+                                if (isDownCast)
+                                {
+                                    var ptrToCastTypeInfo = _typeInfoDictionary[rightType];
+                                    var castTypeNull = LLVMValueRef.CreateConstPointerNull(HapetTypeToLLVMType(rightExpr.OutType));
+                                    var casted = _builder.BuildBitCast(left, HapetTypeToLLVMType(rightExpr.OutType), "castedAs");
 
-                                // WARN: hard cock
-                                var typeConverter = _currentFunction.Scope.GetSymbolInNamespace("System.Runtime.Conversion", "TypeConverter");
-                                var downcasterSymbol = (typeConverter.Decl as AstClassDecl).SubScope.GetSymbol("System.Runtime.Conversion.TypeConverter::CanBeDowncasted(void*:System.Runtime.TypeInfoUnsafe*)") as DeclSymbol;
-                                var downcasterFunc = _valueMap[downcasterSymbol];
-                                LLVMTypeRef funcType = _typeMap[downcasterSymbol.Decl.Type.OutType];
-                                var canBeDowncasted = _builder.BuildCall2(funcType, downcasterFunc, new LLVMValueRef[] { left, ptrToCastTypeInfo }, "canBeDowncasted");
-                                return _builder.BuildSelect(canBeDowncasted, casted, castTypeNull, "castResult");
+                                    // WARN: hard cock
+                                    var typeConverter = _currentFunction.Scope.GetSymbolInNamespace("System.Runtime.Conversion", "TypeConverter");
+                                    var downcasterSymbol = (typeConverter.Decl as AstClassDecl).SubScope.GetSymbol("System.Runtime.Conversion.TypeConverter::CanBeDowncasted(void*:System.Runtime.TypeInfoUnsafe*)") as DeclSymbol;
+                                    var downcasterFunc = _valueMap[downcasterSymbol];
+                                    LLVMTypeRef funcType = _typeMap[downcasterSymbol.Decl.Type.OutType];
+                                    var canBeDowncasted = _builder.BuildCall2(funcType, downcasterFunc, new LLVMValueRef[] { left, ptrToCastTypeInfo }, "canBeDowncasted");
+                                    return _builder.BuildSelect(canBeDowncasted, casted, castTypeNull, "castResult");
+                                }
+                                else
+                                {
+                                    _messageHandler.ReportMessage(_currentSourceFile.Text, binExpr, [leftType.ToString(), rightType.ToString()], ErrorCode.Get(CTEN.TypeCouldNotBeConverted));
+                                    return default;
+                                }
                             }
                             else
                             {

@@ -644,7 +644,10 @@
     </Item>
 
     <!--Backend errors-->
-    
+	<Item>
+		<Number>6001</Number>
+		<Text>Type {0} could not be converted to type {1} anyhow</Text>
+	</Item>
     <Item>
         <Number>6002</Number>
         <Text>[LLVM-validate-module] {0}</Text>

@@ -172,7 +172,7 @@
         ArrayAccessNotGenerate          = 0x5007,
 
         // backend errors up to 0x8000
-
+        TypeCouldNotBeConverted         = 0x6001,
         LLVMValidateError               = 0x6002,
         NoObjectFileGenerated           = 0x6003,
         CtorWithArgTypesNotFound        = 0x6004,

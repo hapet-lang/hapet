@@ -42,7 +42,7 @@ namespace HapetFrontend.Types
             foreach (var expr in Declaration.InheritedFrom)
             {
                 var outT = expr.OutType as ClassType;
-                if (outT == type || outT.IsInheritedFrom(type))
+                if (outT == type || (checkParents && outT.IsInheritedFrom(type)))
                     return true;
             }
             return false;
