@@ -135,7 +135,11 @@ namespace HapetBackend.Llvm
 
                                     // WARN: hard cock
                                     var typeConverter = _currentFunction.Scope.GetSymbolInNamespace("System.Runtime.Conversion", "TypeConverter");
-                                    var downcasterSymbol = (typeConverter.Decl as AstClassDecl).SubScope.GetSymbol("System.Runtime.Conversion.TypeConverter::CanBeDowncasted(void*:System.Runtime.TypeInfoUnsafe*)") as DeclSymbol;
+                                    DeclSymbol downcasterSymbol;
+                                    if (rightType.Declaration.IsInterface)
+                                        downcasterSymbol = (typeConverter.Decl as AstClassDecl).SubScope.GetSymbol("System.Runtime.Conversion.TypeConverter::CanBeDowncastedInterface(void*:System.Runtime.TypeInfoUnsafe*)") as DeclSymbol;
+                                    else
+                                        downcasterSymbol = (typeConverter.Decl as AstClassDecl).SubScope.GetSymbol("System.Runtime.Conversion.TypeConverter::CanBeDowncasted(void*:System.Runtime.TypeInfoUnsafe*)") as DeclSymbol;
                                     var downcasterFunc = _valueMap[downcasterSymbol];
                                     LLVMTypeRef funcType = _typeMap[downcasterSymbol.Decl.Type.OutType];
                                     var canBeDowncasted = _builder.BuildCall2(funcType, downcasterFunc, new LLVMValueRef[] { left, ptrToCastTypeInfo }, "canBeDowncasted");
