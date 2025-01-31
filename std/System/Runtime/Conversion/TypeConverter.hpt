@@ -43,12 +43,12 @@ public static class TypeConverter
     private static bool TypeImplementsInterface(TypeInfoUnsafe* type, TypeInfoUnsafe* searchType, bool checkInh)
     {
         TypeInfoUnsafe a = *((TypeInfoUnsafe*)type);
-        int count = typeInfo.InterfaceCount;
+        int count = a.InterfaceCount;
         for (int i = 0; i < count; i += 1)
         {
-            TypeInfoUnsafe* currIntf = typeInfo.Interfaces[i];
+            TypeInfoUnsafe* currIntf = a.Interfaces[i];
             // if they are equal
-            if ((uintptr)currIntf == (uintptr)interfaceType)
+            if ((uintptr)currIntf == (uintptr)searchType)
                 return true;
 
             // check interface inheritance
