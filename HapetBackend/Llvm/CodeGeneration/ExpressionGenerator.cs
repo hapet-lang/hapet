@@ -121,7 +121,7 @@ namespace HapetBackend.Llvm
                             var leftType = (leftExpr.OutType as PointerType).TargetType as ClassType;
                             var rightType = (rightExpr.OutType as PointerType).TargetType as ClassType;
 
-                            // you would ask - wtf is rightIsInterface?
+                            // you would ask - wtf is anyIsInterface?
                             // then I would say:
                             /*
                                 class Program
@@ -143,14 +143,14 @@ namespace HapetBackend.Llvm
                                 class Derived : Base {}
                              */
                             // this shite has no compile time errors in c#...
-                            bool rightIsInterface = rightType.Declaration.IsInterface;
+                            bool anyIsInterface = rightType.Declaration.IsInterface || leftType.Declaration.IsInterface;
                             bool isUpcast = leftType.IsInheritedFrom(rightType);
                             // check upcast
-                            if (!isUpcast || rightIsInterface)
+                            if (!isUpcast || anyIsInterface)
                             {
                                 // swap them and check inheritance
                                 bool isDownCast = rightType.IsInheritedFrom(leftType);
-                                if (isDownCast || rightIsInterface)
+                                if (isDownCast || anyIsInterface)
                                 {
                                     var ptrToCastTypeInfo = _typeInfoDictionary[rightType];
                                     var castTypeNull = LLVMValueRef.CreateConstPointerNull(HapetTypeToLLVMType(rightExpr.OutType));
