@@ -121,13 +121,36 @@ namespace HapetBackend.Llvm
                             var leftType = (leftExpr.OutType as PointerType).TargetType as ClassType;
                             var rightType = (rightExpr.OutType as PointerType).TargetType as ClassType;
 
+                            // you would ask - wtf is rightIsInterface?
+                            // then I would say:
+                            /*
+                                class Program
+                                {
+                                    static void Main() 
+                                    {
+                                        Obj a = new Obj();
+                                        ILoh b = a as ILoh;
+                                        Debug.Assert(b != null);
+                                    }
+                                }
+
+                                interface IBot {}
+                                class Obj : IBot {}
+
+                                interface ILoh {}
+                                class Base : Obj, ILoh {}
+
+                                class Derived : Base {}
+                             */
+                            // this shite has no compile time errors in c#...
+                            bool rightIsInterface = rightType.Declaration.IsInterface;
                             bool isUpcast = leftType.IsInheritedFrom(rightType);
                             // check upcast
-                            if (!isUpcast)
+                            if (!isUpcast || rightIsInterface)
                             {
                                 // swap them and check inheritance
                                 bool isDownCast = rightType.IsInheritedFrom(leftType);
-                                if (isDownCast)
+                                if (isDownCast || rightIsInterface)
                                 {
                                     var ptrToCastTypeInfo = _typeInfoDictionary[rightType];
                                     var castTypeNull = LLVMValueRef.CreateConstPointerNull(HapetTypeToLLVMType(rightExpr.OutType));

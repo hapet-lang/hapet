@@ -12,8 +12,9 @@ public static class Program
 		var aaa = dr222 as ISoh;
 		var aaa2 = dr222 as IBot;
 		var aaa3 = dr222 as ILoh;
+		var ttt = aaa3 as BaseCls;
 		//var aaa4 = dr222 as BaseCls;
-		return aaa.AnimeSoh + aaa2.AnimeBot + aaa3.AnimeLoh;
+		return ttt.AnimeLoh;
 	}
 }
 
@@ -56,6 +57,6 @@ public class Derived : BaseCls, ISoh, IBot
 	{
 		this.AnimeSoh = 444;
 		//this.AnimeBot = 2;
-		//this.AnimeLoh = 3;
+		this.AnimeLoh = 3;
 	}
 }
