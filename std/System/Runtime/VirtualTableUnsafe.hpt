@@ -1,0 +1,9 @@
+public struct VirtualTableUnsafe
+{
+    VirtualTableUnsafe* Parent;
+    void** VirtualMethods; // ptr to malloc of ptrs to funcs
+    int VirtualMethodsCount;
+    void*** InterfaceMethods; // ptr to malloc of ptrs to mallocs of ptrs to funcs for each interface
+    int** InterfaceOffsets;
+    byte InterfaceCount;
+}
