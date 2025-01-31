@@ -21,6 +21,43 @@ public static class TypeConverter
         return false;
     }
 
+    public static bool CanBeDowncastedInterface(void* obj, TypeInfoUnsafe* type)
+    {
+        if ((uintptr)obj == (uintptr)0)
+            return false;
+
+        TypeInfoUnsafe** fullInfo = *((TypeInfoUnsafe***)obj);
+        TypeInfoUnsafe* typeInfo = *((TypeInfoUnsafe**)fullInfo);
+        TypeInfoUnsafe* currTypeInfo = typeInfo;
+
+        while ((uintptr)currTypeInfo != (uintptr)0)
+        {
+            if (TypeImplementsInterface(currTypeInfo, type, true))
+                return true;
+            TypeInfoUnsafe a = *((TypeInfoUnsafe*)currTypeInfo);
+            currTypeInfo = (TypeInfoUnsafe*)a.Parent;
+        }
+        return false;
+    }
+
+    private static bool TypeImplementsInterface(TypeInfoUnsafe* type, TypeInfoUnsafe* searchType, bool checkInh)
+    {
+        TypeInfoUnsafe a = *((TypeInfoUnsafe*)type);
+        int count = typeInfo.InterfaceCount;
+        for (int i = 0; i < count; i += 1)
+        {
+            TypeInfoUnsafe* currIntf = typeInfo.Interfaces[i];
+            // if they are equal
+            if ((uintptr)currIntf == (uintptr)interfaceType)
+                return true;
+
+            // check interface inheritance
+            if (TypeImplementsInterface(currIntf, searchType, true))
+                return true;
+        }
+        return false;
+    }
+
     public static int GetInterfaceOffset(void* obj, TypeInfoUnsafe* interfaceType, int fieldIndex)
     {
         // TODO: throw exception
