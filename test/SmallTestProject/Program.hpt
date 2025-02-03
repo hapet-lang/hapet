@@ -16,6 +16,7 @@ public static class Program
 public interface IBot
 {
 	byte AnimeBot();
+	byte AnimeBot222();
 }
 
 public interface ILoh
@@ -47,6 +48,7 @@ public class Derived : BaseCls, ISoh, IBot
 	public int AnimeSoh() { return 0; }
 
 	public byte AnimeBot() { return 0; }
+	public byte AnimeBot222() { return 3; }
 
 	public Derived() : base("dasdasd")
 	{

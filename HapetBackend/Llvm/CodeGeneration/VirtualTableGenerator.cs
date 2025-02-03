@@ -1,4 +1,6 @@
-﻿using HapetFrontend.Types;
+﻿using HapetFrontend.Ast.Declarations;
+using HapetFrontend.Helpers;
+using HapetFrontend.Types;
 using LLVMSharp.Interop;
 
 namespace HapetBackend.Llvm
@@ -25,9 +27,12 @@ namespace HapetBackend.Llvm
             // virtual methods
             var virtualMethods = GetVtableArray(cls, out int virtualMethodsCount);
             LLVMValueRef virtualMethodsCountRef = LLVMValueRef.CreateConstInt(_context.Int32Type, (ulong)virtualMethodsCount);
+            // interfaces
+            var (interfaces, interfaceOffsets) = GetVtableInterfacesArray(cls, out int interfacesCount);
+            LLVMValueRef interfacesCountRef = LLVMValueRef.CreateConstInt(_context.Int8Type, (ulong)interfacesCount);
 
             var globConst = _module.AddGlobal(virtualTableType, $"VirtualTable::{typeNameString}");
-            globConst.Initializer = LLVMValueRef.CreateConstNamedStruct(virtualTableType, new LLVMValueRef[] { parentRef, virtualMethods, virtualMethodsCountRef, nullPtr, nullPtr, virtualMethodsCountRef });
+            globConst.Initializer = LLVMValueRef.CreateConstNamedStruct(virtualTableType, new LLVMValueRef[] { parentRef, virtualMethods, virtualMethodsCountRef, interfaces, interfaceOffsets, interfacesCountRef });
             globConst.Linkage = (LLVMLinkage.LLVMInternalLinkage);
             globConst.IsGlobalConstant = true;
 
@@ -83,8 +88,8 @@ namespace HapetBackend.Llvm
 
         private (LLVMValueRef, LLVMValueRef) GetVtableInterfacesArray(ClassType cls, out int amount)
         {
-            LLVMTypeRef arrayElementType = LLVMTypeRef.CreatePointer(GetTypeInfoType(), 0);
-            List<(ClassType, int[])> interfaces = GetAllInterfacesWithOffsets(cls);
+            LLVMTypeRef arrayElementType = LLVMTypeRef.CreatePointer(GetVirtualTableType(), 0);
+            List<(ClassType, int[])> interfaces = GetAllInterfacesWithOffsetsForVtable(cls);
             if (interfaces.Count == 0)
             {
                 amount = 0;
@@ -96,16 +101,16 @@ namespace HapetBackend.Llvm
                 return (nullPtr, nullPtrInt);
             }
 
-            LLVMValueRef interfacesArray = _module.AddGlobal(LLVMTypeRef.CreateArray(arrayElementType, (uint)(interfaces.Count)), $"TypeInfoInterfacesArray::{cls.Declaration.Name.Name}");
-            LLVMValueRef interfaceOffsetsArray = _module.AddGlobal(LLVMTypeRef.CreateArray(LLVMTypeRef.CreatePointer(_context.Int32Type, 0), (uint)(interfaces.Count)), $"TypeInfoInterfaceOffsetsArray::{cls.Declaration.Name.Name}");
+            LLVMValueRef interfacesArray = _module.AddGlobal(LLVMTypeRef.CreateArray(arrayElementType, (uint)(interfaces.Count)), $"VirtualTableInterfacesArray::{cls.Declaration.Name.Name}");
+            LLVMValueRef interfaceOffsetsArray = _module.AddGlobal(LLVMTypeRef.CreateArray(LLVMTypeRef.CreatePointer(_context.Int32Type, 0), (uint)(interfaces.Count)), $"VirtualTableInterfaceOffsetsArray::{cls.Declaration.Name.Name}");
 
             List<LLVMValueRef> intPtrs = new List<LLVMValueRef>(interfaces.Count);
             List<LLVMValueRef> offsetArrays = new List<LLVMValueRef>(interfaces.Count);
             foreach (var intf in interfaces)
             {
-                intPtrs.Add(GenerateTypeInfoConst(intf.Item1));
+                intPtrs.Add(GenerateVirtualTableConst(intf.Item1));
 
-                LLVMValueRef interfaceOffsetsCurr = _module.AddGlobal(LLVMTypeRef.CreateArray(_context.Int32Type, (uint)(intf.Item2.Length)), $"TypeInfoInterfaceOffsets{offsetArrays.Count}::{cls.Declaration.Name.Name}");
+                LLVMValueRef interfaceOffsetsCurr = _module.AddGlobal(LLVMTypeRef.CreateArray(_context.Int32Type, (uint)(intf.Item2.Length)), $"VirtualTableInterfaceOffsets{offsetArrays.Count}::{cls.Declaration.Name.Name}");
 
                 interfaceOffsetsCurr.Initializer = LLVMValueRef.CreateConstArray(_context.Int32Type, intf.Item2.Select(x => LLVMValueRef.CreateConstInt(_context.Int32Type, (ulong)x)).ToArray());
                 interfaceOffsetsCurr.IsGlobalConstant = true;
@@ -120,6 +125,30 @@ namespace HapetBackend.Llvm
 
             amount = interfaces.Count;
             return (interfacesArray, interfaceOffsetsArray);
+        }
+
+        private List<(ClassType, int[])> GetAllInterfacesWithOffsetsForVtable(ClassType cls)
+        {
+            List<(ClassType, int[])> allInterfacesWithOffsets = new List<(ClassType, int[])>();
+
+            var allClassVirtuals = cls.Declaration.AllVirtualMethods;
+            var allInterfaces = GetAllInterfaces(cls, true);
+
+            foreach (var intrf in allInterfaces)
+            {
+                List<int> offsets = new List<int>();
+                for (int i = 0; i < intrf.Declaration.AllVirtualMethods.Count; ++i)
+                {
+                    var iM = intrf.Declaration.AllVirtualMethods[i];
+                    var m = allClassVirtuals.GetSameByNameAndTypes(iM, out int index);
+                    // TODO: check m for not null and error if null (compiler error)
+
+                    offsets.Add(index);
+                }
+                allInterfacesWithOffsets.Add((intrf, offsets.ToArray()));
+            }
+
+            return allInterfacesWithOffsets;
         }
         #endregion
     }
