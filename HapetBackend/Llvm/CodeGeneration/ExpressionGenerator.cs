@@ -405,7 +405,7 @@ namespace HapetBackend.Llvm
         private unsafe LLVMValueRef GenerateCallExpr(AstCallExpr expr, bool getPtr = false)
         {
             // the func is needed to handle virtual shite
-            static LLVMValueRef CreateCall(LLVMBuilderRef builder, LLVMTypeRef funcType, FunctionType hapetType, LLVMValueRef func, List<LLVMValueRef> args, string name = "")
+            LLVMValueRef CreateCall(LLVMBuilderRef builder, LLVMTypeRef funcType, FunctionType hapetType, LLVMValueRef func, List<LLVMValueRef> args, string name = "")
             {
                 var virtualMethod = hapetType.Declaration.ContainingClass.AllVirtualMethods.GetSameByNameAndTypes(hapetType.Declaration, out int index);
                 // if it is a virtual method call
@@ -413,13 +413,18 @@ namespace HapetBackend.Llvm
                 {
                     if (hapetType.Declaration.ContainingClass.IsInterface)
                     {
-
+                        // TODO:
                     }
                     else
                     {
-
+                        // WARN: hard cock
+                        var helper = _currentFunction.Scope.GetSymbolInNamespace("System.Runtime.Conversion", "VtableHelper");
+                        var methSymbol = (helper.Decl as AstClassDecl).SubScope.GetSymbol("System.Runtime.Conversion.VtableHelper::GetMethodByIndex(void*:int)") as DeclSymbol;
+                        var methFunc = _valueMap[methSymbol];
+                        LLVMTypeRef methType = _typeMap[methSymbol.Decl.Type.OutType];
+                        var funcToCall = _builder.BuildCall2(methType, methFunc, new LLVMValueRef[] { args[0], LLVMValueRef.CreateConstInt(_context.Int32Type, (ulong)index) }, "funcToCall");
+                        return builder.BuildCall2(funcType, funcToCall, args.ToArray(), name);
                     }
-                    return builder.BuildCall2(funcType, func, args.ToArray(), name);
                 }
                 return builder.BuildCall2(funcType, func, args.ToArray(), name);
             }

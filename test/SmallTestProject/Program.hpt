@@ -10,9 +10,9 @@ public static class Program
 	{
 		Derived dr222 = new Derived();
 		dr222.AnimeLoh();
-		ILoh l = (dr222 as ILoh);
-		l.AnimeLoh();
-		return 0;
+		//ILoh l = (dr222 as ILoh);
+		//l.AnimeLoh();
+		return dr222.AnimeLoh();
 	}
 }
 
@@ -36,7 +36,7 @@ public class BaseCls : ILoh
 {
 	public string Field1;
 
-	public short AnimeLoh() { return 0; }
+	public short AnimeLoh() { return 654; }
 
 	public BaseCls(string ddd)
 	{

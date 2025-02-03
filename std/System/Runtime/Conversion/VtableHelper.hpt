@@ -5,12 +5,12 @@ public static class VtableHelper
     public static void* GetMethodByIndex(void* obj, int index)
     {
         if ((uintptr)obj == (uintptr)0)
-            return false;
+            return null;
 
-        VirtualTableUnsafe** fullInfo = *((VirtualTableUnsafe***)obj);
-        VirtualTableUnsafe* vtablePtr = *((VirtualTableUnsafe**)fullInfo);
-        VirtualTableUnsafe vtable = *((VirtualTableUnsafe*)vtablePtr);
+        VirtualTableUnsafe** fullInfo = ((VirtualTableUnsafe***)obj)[0];
+        VirtualTableUnsafe* vtablePtr = fullInfo[1];
+        VirtualTableUnsafe vtable = *vtablePtr;
 
-        return vtablePtr.VirtualMethods[index];
+        return vtable.VirtualMethods[index];
     }
 }
