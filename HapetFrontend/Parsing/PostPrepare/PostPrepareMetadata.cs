@@ -579,7 +579,7 @@ namespace HapetFrontend.Parsing.PostPrepare
             }
 
             // inferrencing funcs
-            // WARN! _serializeClassesMetadata is used because we don't won't external funcs to be inferred like that
+            // WARN! _serializeClassesMetadata is used because we don't want external funcs to be inferred like that
             foreach (var cls in _serializeClassesMetadata)
             {
                 _currentSourceFile = cls.SourceFile;

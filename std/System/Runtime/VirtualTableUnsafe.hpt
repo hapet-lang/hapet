@@ -4,7 +4,6 @@ public struct VirtualTableUnsafe
     void** VirtualMethods; // ptr to malloc of ptrs to funcs
     int VirtualMethodsCount;
     VirtualTableUnsafe** Interfaces;
-    void*** InterfaceMethods; // ptr to malloc of ptrs to mallocs of ptrs to funcs for each interface :)
     int** InterfaceOffsets;
     byte InterfaceCount;
 }
