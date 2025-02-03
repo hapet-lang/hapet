@@ -173,17 +173,18 @@ namespace HapetBackend.Llvm
                 // skip interfaces that we already implemented
                 if (allInterfaces.Any(x => x == inh))
                     continue;
-                allInterfaces.Add(inh);
 
                 // get all interfaces of the curr one
                 var parentParents = GetAllInterfaces(inh, true);
                 foreach (var pp in parentParents)
                 {
                     // skip interfaces that we already implemented
-                    if (allInterfaces.Any(x => x == inh))
+                    if (allInterfaces.Any(x => x == pp))
                         continue;
-                    allInterfaces.Add(inh);
+                    allInterfaces.Add(pp);
                 }
+                // add it
+                allInterfaces.Add(inh);
             }
 
             return allInterfaces;
