@@ -86,6 +86,11 @@ namespace HapetFrontend.Parsing.PostPrepare
                     // add abstract key to the field if it is an interface
                     f.SpecialKeys.Add(TokenType.KwAbstract);
                 }
+                foreach (var f in allFuncs)
+                {
+                    // add abstract key to the field if it is an interface
+                    f.SpecialKeys.Add(TokenType.KwAbstract);
+                }
             }
 
             // generate prop's fields and funcs

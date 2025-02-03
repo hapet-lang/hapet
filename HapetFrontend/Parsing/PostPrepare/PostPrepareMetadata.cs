@@ -32,6 +32,7 @@ namespace HapetFrontend.Parsing.PostPrepare
             PostPrepareMetadataInheritance();
             PostPrepareMetadataDelegates();
             PostPrepareMetadataFunctions();
+            PostPrepareMetadataInheritedFunctions();
             PostPrepareMetadataTypeFieldDecls();
             PostPrepareMetadataTypeInheritedFieldDecls();
             PostPrepareMetadataTypeFieldInits();
@@ -451,12 +452,29 @@ namespace HapetFrontend.Parsing.PostPrepare
 
         private void PostPrepareMetadataFunctions()
         {
+            // inferrencing funcs
+            // WARN! _serializeClassesMetadata is used because we don't want external funcs to be inferred like that
+            foreach (var cls in _serializeClassesMetadata)
+            {
+                _currentSourceFile = cls.SourceFile;
+                _currentClass = cls;
+                foreach (var decl in cls.Declarations.Where(x => x is AstFuncDecl).Select(x => x as AstFuncDecl))
+                {
+                    PostPrepareFunctionInference(decl, true);
+                    AllFunctionsMetadata.Add(decl);
+                    _serializeFunctionsMetadata.Add(decl);
+                }
+            }
+        }
+
+        private void PostPrepareMetadataInheritedFunctions()
+        {
             // to get all virtual methods including inherited
             List<AstFuncDecl> GetPreparedVirtualMethods(AstClassDecl decl)
             {
                 List<AstFuncDecl> inheritedFuncDecls = new List<AstFuncDecl>();
                 List<AstFuncDecl> currentClassMethods = decl.Declarations.Where(x => x is AstFuncDecl).Select(x => x as AstFuncDecl).ToList();
-                
+
                 // all over the inherited shite
                 foreach (var inh in decl.InheritedFrom)
                 {
@@ -573,23 +591,15 @@ namespace HapetFrontend.Parsing.PostPrepare
                     inheritedFuncDecls.AddRange(currentClassMethods);
                 else
                     // add here only virtual shite
-                    inheritedFuncDecls.AddRange(currentClassMethods.Where(x => x.SpecialKeys.Contains(TokenType.KwAbstract) || 
+                    inheritedFuncDecls.AddRange(currentClassMethods.Where(x => x.SpecialKeys.Contains(TokenType.KwAbstract) ||
                                                                                x.SpecialKeys.Contains(TokenType.KwVirtual)));
                 return inheritedFuncDecls;
             }
 
-            // inferrencing funcs
-            // WARN! _serializeClassesMetadata is used because we don't want external funcs to be inferred like that
-            foreach (var cls in _serializeClassesMetadata)
+            foreach (var cls in AllClassesMetadata)
             {
                 _currentSourceFile = cls.SourceFile;
                 _currentClass = cls;
-                foreach (var decl in cls.Declarations.Where(x => x is AstFuncDecl).Select(x => x as AstFuncDecl))
-                {
-                    PostPrepareFunctionInference(decl, true);
-                    AllFunctionsMetadata.Add(decl);
-                    _serializeFunctionsMetadata.Add(decl);
-                }
 
                 cls.AllVirtualMethods = GetPreparedVirtualMethods(cls);
             }
