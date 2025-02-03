@@ -404,6 +404,26 @@ namespace HapetBackend.Llvm
 
         private unsafe LLVMValueRef GenerateCallExpr(AstCallExpr expr, bool getPtr = false)
         {
+            // the func is needed to handle virtual shite
+            static LLVMValueRef CreateCall(LLVMBuilderRef builder, LLVMTypeRef funcType, FunctionType hapetType, LLVMValueRef func, List<LLVMValueRef> args, string name = "")
+            {
+                var virtualMethod = hapetType.Declaration.ContainingClass.AllVirtualMethods.GetSameByNameAndTypes(hapetType.Declaration, out int index);
+                // if it is a virtual method call
+                if (virtualMethod != null)
+                {
+                    if (hapetType.Declaration.ContainingClass.IsInterface)
+                    {
+
+                    }
+                    else
+                    {
+
+                    }
+                    return builder.BuildCall2(funcType, func, args.ToArray(), name);
+                }
+                return builder.BuildCall2(funcType, func, args.ToArray(), name);
+            }
+
             // creating a variable to store function result. for what?
             // because in some places in code generation we need for var pointer
             // but if we do not allocate any var - so how would we get the ptr?
@@ -436,7 +456,7 @@ namespace HapetBackend.Llvm
                 if (fncType.Declaration.Returns.OutType is not VoidType)
                 {
                     // save the value
-                    LLVMValueRef ret = _builder.BuildCall2(funcType, hapetFunc, args.ToArray(), $"funcReturnValue");
+                    LLVMValueRef ret = CreateCall(_builder, funcType, fncType, hapetFunc, args, $"funcReturnValue");
                     _builder.BuildStore(ret, varPtr);
 
                     if (getPtr)
@@ -444,7 +464,7 @@ namespace HapetBackend.Llvm
                     return _builder.BuildLoad2(HapetTypeToLLVMType(fncType.Declaration.Returns.OutType), varPtr, "holderLoaded");
                 }
 
-                return _builder.BuildCall2(funcType, hapetFunc, args.ToArray());
+                return CreateCall(_builder, funcType, fncType, hapetFunc, args);
             }
             else if (expr.FuncName.OutType is DelegateType delType)
             {

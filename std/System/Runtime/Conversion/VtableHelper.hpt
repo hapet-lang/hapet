@@ -1,0 +1,16 @@
+using System.Runtime;
+
+public static class VtableHelper
+{
+    public static void* GetMethodByIndex(void* obj, int index)
+    {
+        if ((uintptr)obj == (uintptr)0)
+            return false;
+
+        VirtualTableUnsafe** fullInfo = *((VirtualTableUnsafe***)obj);
+        VirtualTableUnsafe* vtablePtr = *((VirtualTableUnsafe**)fullInfo);
+        VirtualTableUnsafe vtable = *((VirtualTableUnsafe*)vtablePtr);
+
+        return vtablePtr.VirtualMethods[index];
+    }
+}
