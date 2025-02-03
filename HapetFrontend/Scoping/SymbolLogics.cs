@@ -163,7 +163,7 @@ namespace HapetFrontend.Scoping
             return null;
         }
 
-        public DeclSymbol GetFuncFromCandidates(string name, List<AstExpression> args, PostPrepare postPrepare, out List<AstExpression> castsToBeDone)
+        public DeclSymbol GetFuncFromCandidates(string name, List<AstExpression> args, PostPrepare postPrepare, AstClassDecl clsToSearch, out List<AstExpression> castsToBeDone)
         {
             // getting only the Class::AndFuncName without params
             var splitted = name.Split('(');
@@ -175,8 +175,27 @@ namespace HapetFrontend.Scoping
 
             // skip non funcs
             // skip if different amount of params/args
-            List<DeclSymbol> candidates = GetCandidates(classWithFuncName)
-                .Where(x => (x.Decl is AstFuncDecl funcDecl && funcDecl.Parameters.Count == args.Count)).ToList();
+            // also get parent funcs
+            List<DeclSymbol> candidates = new List<DeclSymbol>();
+            if (clsToSearch != null)
+            {
+                var currCls = clsToSearch;
+                while (currCls != null)
+                {
+                    candidates.AddRange(GetCandidatesInScope(classWithFuncName, currCls.SubScope)
+                        .Where(x => (x.Decl is AstFuncDecl funcDecl && funcDecl.Parameters.Count == args.Count)).ToList());
+
+                    // cringe check for parent :)
+                    currCls = currCls.InheritedFrom.Count > 0 ?
+                        ((currCls.InheritedFrom[0].OutType as ClassType).Declaration.IsInterface ? null :
+                        (currCls.InheritedFrom[0].OutType as ClassType).Declaration) : null;
+                }
+            }
+            else
+            {
+                candidates.AddRange(GetCandidates(classWithFuncName)
+                        .Where(x => (x.Decl is AstFuncDecl funcDecl && funcDecl.Parameters.Count == args.Count)).ToList());
+            }
 
             foreach (var cand in candidates)
             {
@@ -243,6 +262,20 @@ namespace HapetFrontend.Scoping
             // search in parent scope
             if (Parent != null)
                 Parent.GetCandidates(classWithFuncName, candidates);
+            return candidates;
+        }
+
+        private List<DeclSymbol> GetCandidatesInScope(string classWithFuncName, Scope scopeToSearch, List<DeclSymbol> cands = null)
+        {
+            List<DeclSymbol> candidates = cands ?? new List<DeclSymbol>();
+            // search for the func in the scope
+            foreach (var k in scopeToSearch._symbolTable.Keys)
+            {
+                var onlyFuncName = classWithFuncName.Split("::")[1];
+                var firstKeyPart = k.Split("(")[0];
+                if ((k.StartsWith(classWithFuncName) || firstKeyPart.Contains(onlyFuncName)) && scopeToSearch._symbolTable[k] is DeclSymbol ds)
+                    candidates.Add(ds);
+            }
             return candidates;
         }
     }

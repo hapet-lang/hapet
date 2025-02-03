@@ -9,6 +9,7 @@ public static class Program
 	public static int Main(string[] args)
 	{
 		Derived dr222 = new Derived();
+		dr222.AnimeLoh();
 		return 0;
 	}
 }

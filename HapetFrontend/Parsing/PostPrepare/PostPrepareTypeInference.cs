@@ -809,7 +809,7 @@ namespace HapetFrontend.Parsing.PostPrepare
                 // if the type/object name is not presented - the function is in the same class
                 // but we need to know is it static or not
                 newName = $"{_currentClass.Name.Name}::{callExpr.FuncName.Name}{callExpr.Arguments.GetArgsString()}";
-                var smbl2 = callExpr.FuncName.Scope.GetFuncFromCandidates(newName, callExpr.Arguments.Select(x => x.Expr).ToList(), this, out var casts);
+                var smbl2 = callExpr.FuncName.Scope.GetFuncFromCandidates(newName, callExpr.Arguments.Select(x => x.Expr).ToList(), this, _currentClass, out var casts);
                 if (smbl2 is DeclSymbol ds && ds.Decl is AstFuncDecl funcDecl)
                 {
                     if (!CheckIfCouldBeAccessed(callExpr, funcDecl))
@@ -831,7 +831,8 @@ namespace HapetFrontend.Parsing.PostPrepare
                     newName = $"{_currentClass.Name.Name}::{callExpr.FuncName.Name}{callExpr.Arguments.GetArgsString(PointerType.GetPointerType(_currentClass.Type.OutType))}";
                     List<AstExpression> argsWithClassParam = new List<AstExpression>(callExpr.Arguments);
                     argsWithClassParam.Insert(0, callExpr.TypeOrObjectName);
-                    smbl2 = callExpr.FuncName.Scope.GetFuncFromCandidates(newName, argsWithClassParam, this, out var casts2);
+
+                    smbl2 = callExpr.FuncName.Scope.GetFuncFromCandidates(newName, argsWithClassParam, this, _currentClass, out var casts2);
                     if (smbl2 is DeclSymbol ds2 && ds2.Decl is AstFuncDecl funcDecl2)
                     {
                         if (!CheckIfCouldBeAccessed(callExpr, funcDecl2))
@@ -851,7 +852,7 @@ namespace HapetFrontend.Parsing.PostPrepare
 
                 List<AstExpression> argsWithClassParam = new List<AstExpression>(callExpr.Arguments);
                 argsWithClassParam.Insert(0, callExpr.TypeOrObjectName);
-                var smbl2 = clsTp.Declaration.SubScope.GetFuncFromCandidates(newName, argsWithClassParam, this, out var casts);
+                var smbl2 = clsTp.Declaration.SubScope.GetFuncFromCandidates(newName, argsWithClassParam, this, clsTp.Declaration, out var casts);
 
                 // check if the decl exists. if not - it could be static method call from an object
                 if (smbl2 is DeclSymbol ds && ds.Decl is AstFuncDecl funcDecl)
@@ -865,7 +866,7 @@ namespace HapetFrontend.Parsing.PostPrepare
                 {
                     // getting the name but without object first param
                     newName = $"{clsTp.Declaration.Name.Name}::{callExpr.FuncName.Name}{callExpr.Arguments.GetArgsString()}";
-                    smbl2 = clsTp.Declaration.SubScope.GetFuncFromCandidates(newName, callExpr.Arguments.Select(x => x.Expr).ToList(), this, out var casts2);
+                    smbl2 = clsTp.Declaration.SubScope.GetFuncFromCandidates(newName, callExpr.Arguments.Select(x => x.Expr).ToList(), this, clsTp.Declaration, out var casts2);
                     if (smbl2 is DeclSymbol ds2 && ds2.Decl is AstFuncDecl funcDecl2)
                     {
                         if (!CheckIfCouldBeAccessed(callExpr, funcDecl2))
@@ -884,7 +885,7 @@ namespace HapetFrontend.Parsing.PostPrepare
                 // we need to rename the func name call like that:
                 newName = $"{clsTpStatic.Declaration.Name.Name}::{callExpr.FuncName.Name}{callExpr.Arguments.GetArgsString()}";
 
-                var smbl2 = clsTpStatic.Declaration.SubScope.GetFuncFromCandidates(newName, callExpr.Arguments.Select(x => x.Expr).ToList(), this, out var casts);
+                var smbl2 = clsTpStatic.Declaration.SubScope.GetFuncFromCandidates(newName, callExpr.Arguments.Select(x => x.Expr).ToList(), this, clsTpStatic.Declaration, out var casts);
 
                 // check if the decl exists. if not - it could be non static method call from a class name
                 if (smbl2 is DeclSymbol ds && ds.Decl is AstFuncDecl funcDecl)
@@ -903,7 +904,7 @@ namespace HapetFrontend.Parsing.PostPrepare
                     var pseudoClassArg = new AstPointerExpr(callExpr.TypeOrObjectName, false, callExpr.TypeOrObjectName);
                     PostPrepareExprInference(pseudoClassArg);
                     argsWithClassParam.Insert(0, pseudoClassArg);
-                    smbl2 = clsTpStatic.Declaration.SubScope.GetFuncFromCandidates(newName, argsWithClassParam, this, out var _);
+                    smbl2 = clsTpStatic.Declaration.SubScope.GetFuncFromCandidates(newName, argsWithClassParam, this, clsTpStatic.Declaration, out var _);
 
                     // error because user tries to access non static method from a class name
                     if (smbl2 != null)
