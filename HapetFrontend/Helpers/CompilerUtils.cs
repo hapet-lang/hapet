@@ -93,22 +93,44 @@ namespace HapetFrontend.Helpers
                 x is not AstPropertyDecl).ToList();
         }
 
-        public static AstFuncDecl GetSameByNameAndTypes(this List<AstFuncDecl> delcs, AstFuncDecl searchFunc, out int index)
+        public static AstFuncDecl GetSameByNameAndTypes(this List<AstFuncDecl> delcs, AstFuncDecl searchFunc, out int index, bool skipFirst = true)
         {
             index = -1;
             // there is already params type in name like
             // TestClass::AnimeFunc(int:PivoCls)
             string searchName = searchFunc.Name.Name.Split("::")[1];
+            if (skipFirst)
+            {
+                // remove the first param
+                searchName = GetSkipped(searchName);
+            }
             for (int i = 0; i < delcs.Count; ++i)
             {
                 var x = delcs[i];
-                if ((x.Name.Name.Split("::")[1] == searchName) && x.Returns.OutType == searchFunc.Returns.OutType)
+                string currName = x.Name.Name.Split("::")[1];
+                if (skipFirst)
+                {
+                    // remove the first param
+                    currName = GetSkipped(currName);
+                }
+                if ((currName == searchName) && x.Returns.OutType == searchFunc.Returns.OutType)
                 {
                     index = i;
                     return x;
                 }
             }
             return null;
+
+            static string GetSkipped(string name)
+            {
+                var parenIndex = name.IndexOf('(');
+                var firstPart = name.Substring(0, parenIndex + 1);
+                var secondPart = name.Substring(parenIndex + 1);
+                var skipped = string.Concat(secondPart.SkipWhile(x => x != ':' && x != ')'));
+                if (skipped[0] == ':')
+                    skipped = skipped.Substring(1);
+                return $"{firstPart}{skipped}";
+            }
         }
 
         public static AstDeclaration GetSameDeclByTypeAndName(this List<AstDeclaration> delcs, AstDeclaration decl)

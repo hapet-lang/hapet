@@ -161,6 +161,9 @@
         ArrayIndexNotInt                = 0x3038,
         NotExprInAssignment             = 0x3039,
         EmptyReturnExpected             = 0x303A,
+        MethodAlreadyDefined            = 0x303B, // could be obsolete
+        DoubleInterfaceCringeMeth       = 0x303C, // would be obsolete
+        NoMethodImplementation          = 0x303D,
 
         // compiler errors up to 0x6000
         DefaultWasNotInfered            = 0x5001,

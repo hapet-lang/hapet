@@ -9,36 +9,30 @@ public static class Program
 	public static int Main(string[] args)
 	{
 		Derived dr222 = new Derived();
-		var aaa = dr222 as ISoh;
-		var aaa2 = dr222 as IBot;
-		var aaa3 = dr222 as ILoh;
-		var ttt = aaa2 as BaseCls;
-		var dndndnd = ttt as IBot;
-		//var aaa4 = dr222 as BaseCls;
-		return dndndnd.AnimeBot;
+		return 0;
 	}
 }
 
 public interface IBot
 {
-	byte AnimeBot;
+	byte AnimeBot();
 }
 
 public interface ILoh
 {
-	short AnimeLoh;
+	short AnimeLoh();
 }
 
 public interface ISoh : ILoh, IBot
 {
-	int AnimeSoh;
+	int AnimeSoh();
 }
 
 public class BaseCls : ILoh
 {
 	public string Field1;
 
-	public short AnimeLoh;
+	public short AnimeLoh() { return 0; }
 
 	public BaseCls(string ddd)
 	{
@@ -50,14 +44,11 @@ public class Derived : BaseCls, ISoh, IBot
 {
 	public long Field2;
 
-	public int AnimeSoh;
+	public int AnimeSoh() { return 0; }
 
-	public byte AnimeBot;
+	public byte AnimeBot() { return 0; }
 
 	public Derived() : base("dasdasd")
 	{
-		this.AnimeSoh = 444;
-		this.AnimeBot = 2;
-		this.AnimeLoh = 3;
 	}
 }

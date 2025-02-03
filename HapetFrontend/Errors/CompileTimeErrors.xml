@@ -612,6 +612,18 @@
 		<Number>303A</Number>
 		<Text>Return statement with no args expected</Text>
 	</Item>
+	<Item>
+		<Number>303B</Number>
+		<Text>The {0} type already has an implementation of the method. Shadowing is not allowed yet</Text>
+	</Item>
+	<Item>
+		<Number>303C</Number>
+		<Text>The {0} type already has a method that {1} type has to implement for {2} interface</Text>
+	</Item>
+	<Item>
+		<Number>303D</Number>
+		<Text>The {0} type does not have an implementation of {1} method</Text>
+	</Item>
 
     <!--Compiler errors-->
 	<Item>

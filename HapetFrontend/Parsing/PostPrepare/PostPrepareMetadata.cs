@@ -467,32 +467,33 @@ namespace HapetFrontend.Parsing.PostPrepare
                         // if we are also an interface - just add, no need to check implementations
                         if (decl.IsInterface)
                         {
-                            inheritedFieldDecls.AddRange(GetPreparedFields(inhDecl));
+                            // TODO: warn!!! check that method already exists in the list. it is possible probably
+                            inheritedFuncDecls.AddRange(GetPreparedVirtualMethods(inhDecl));
                         }
                         else
                         {
-                            // get all the fields of interface
-                            var inhFields = GetPreparedFields(inhDecl);
-                            foreach (var inhF in inhFields)
+                            // get all the methods of interface
+                            var inhMethods = GetPreparedVirtualMethods(inhDecl);
+                            foreach (var inhF in inhMethods)
                             {
                                 // check if the interface is already implemented in parent classes
-                                var definedInOneOfTheParents = inheritedFieldDecls.GetSameDeclByTypeAndName(inhF);
+                                var definedInOneOfTheParents = inheritedFuncDecls.GetSameByNameAndTypes(inhF, out int _);
                                 // if the field was already presented previously
                                 if (definedInOneOfTheParents != null)
                                 {
-                                    // check if the already defined field is by the interface
-                                    bool isInherited = (definedInOneOfTheParents.ContainingParent.Type.OutType as ClassType).IsInheritedFrom(inhF.ContainingParent.Type.OutType as ClassType, true);
-                                    // if inherited - this is a parent cls already implemented the field - no need to warn
+                                    // check if the already defined method is by the interface
+                                    bool isInherited = (definedInOneOfTheParents.ContainingClass.Type.OutType as ClassType).IsInheritedFrom(inhF.ContainingClass.Type.OutType as ClassType, true);
+                                    // if inherited - this is a parent cls already implemented the method - no need to warn
                                     if (isInherited)
                                     {
                                         // need to check that we do not implement it also
-                                        var currF = currentFieldDecls.GetSameDeclByTypeAndName(inhF);
+                                        var currF = currentClassMethods.GetSameByNameAndTypes(inhF, out int _);
                                         if (currF != null)
                                         {
-                                            // the field is implemented in parent class and current class
+                                            // the method is implemented in parent class and current class
                                             // we need to error
                                             _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, currF,
-                                                [definedInOneOfTheParents.ContainingParent.Type.OutType.ToString()], ErrorCode.Get(CTEN.FieldAlreadyDefined));
+                                                [definedInOneOfTheParents.ContainingClass.Type.OutType.ToString()], ErrorCode.Get(CTEN.MethodAlreadyDefined));
                                             continue;
                                         }
                                         // else - everything is ok probably
@@ -501,47 +502,46 @@ namespace HapetFrontend.Parsing.PostPrepare
                                     {
                                         // TODO: not todo. but C# allows shite like this:
                                         /*
-                                            public interface IAnime
+                                            public interface Anime322
                                             {
-                                                short Field111 { get; set; }
+                                                void Test();
                                             }
 
-                                            public class BaseCls
+                                            public class Animal
                                             {
-                                                public short Field111 { get; set; }
+                                                public void Test() { }
                                             }
 
-                                            public class Derived : BaseCls, IAnime
+                                            public class Cat : Animal, Anime322
                                             {
-
                                             }
                                          */
                                         // but we can't because of interface offset calcs. md could be fixed somehow?
 
                                         // we need to error
                                         _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, definedInOneOfTheParents,
-                                            [definedInOneOfTheParents.ContainingParent.Type.OutType.ToString(), decl.Type.OutType.ToString(), inh.OutType.ToString()],
-                                            ErrorCode.Get(CTEN.DoubleInterfaceCringe));
+                                            [definedInOneOfTheParents.ContainingClass.Type.OutType.ToString(), decl.Type.OutType.ToString(), inh.OutType.ToString()],
+                                            ErrorCode.Get(CTEN.DoubleInterfaceCringeMeth));
                                         continue;
                                     }
                                 }
                                 else
                                 {
-                                    // if the field was not presented previously
+                                    // if the method was not presented previously
 
                                     // need to check that we do implement it
-                                    var currF = currentFieldDecls.GetSameDeclByTypeAndName(inhF);
+                                    var currF = currentClassMethods.GetSameByNameAndTypes(inhF, out int _);
                                     if (currF == null)
                                     {
-                                        // error - the field of the interface was not implemented
+                                        // error - the method of the interface was not implemented
                                         _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, inh,
-                                            [decl.Type.OutType.ToString(), inhF.Name.Name], ErrorCode.Get(CTEN.NoFieldImplementation));
+                                            [decl.Type.OutType.ToString(), inhF.Name.Name], ErrorCode.Get(CTEN.NoMethodImplementation));
                                     }
                                     else
                                     {
                                         // add it to the new dictionary
-                                        currentFieldDecls.Remove(currF);
-                                        inheritedFieldDecls.Add(currF);
+                                        currentClassMethods.Remove(currF);
+                                        inheritedFuncDecls.Add(currF);
                                     }
                                 }
                             }
@@ -558,7 +558,7 @@ namespace HapetFrontend.Parsing.PostPrepare
                         {
                             // check for signatures
                             var overridedFnc = inheritedFuncDecls.GetSameByNameAndTypes(fCurr, out int fncIndex);
-                            // TODO: error here? we go all over the override funcs and not found the func to be overriden?
+                            // TODO: error here? we go all over the override funcs and found no func to be overriden?
                             if (overridedFnc == null)
                                 continue;
                             inheritedFuncDecls[fncIndex] = overridedFnc;
@@ -568,8 +568,14 @@ namespace HapetFrontend.Parsing.PostPrepare
                     }
                 }
 
-                inheritedFieldDecls.AddRange(currentFieldDecls);
-                return inheritedFieldDecls;
+                if (decl.IsInterface)
+                    // add here all shite because it is an interface
+                    inheritedFuncDecls.AddRange(currentClassMethods);
+                else
+                    // add here only virtual shite
+                    inheritedFuncDecls.AddRange(currentClassMethods.Where(x => x.SpecialKeys.Contains(TokenType.KwAbstract) || 
+                                                                               x.SpecialKeys.Contains(TokenType.KwVirtual)));
+                return inheritedFuncDecls;
             }
 
             // inferrencing funcs

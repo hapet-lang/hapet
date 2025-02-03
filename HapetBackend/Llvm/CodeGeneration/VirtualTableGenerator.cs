@@ -24,6 +24,8 @@ namespace HapetBackend.Llvm
             // virtual methods
             var virtualMethods = GetInterfacesArray(cls, out int virtualMethodsCount);
             LLVMValueRef virtualMethodsCountRef = LLVMValueRef.CreateConstInt(_context.Int32Type, (ulong)virtualMethodsCount);
+
+            return nullPtr;
         }
 
         private LLVMTypeRef _virtualTableType;
