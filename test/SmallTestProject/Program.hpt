@@ -10,9 +10,9 @@ public static class Program
 	{
 		Derived dr222 = new Derived();
 		dr222.AnimeLoh();
-		//ILoh l = (dr222 as ILoh);
-		//l.AnimeLoh();
-		return dr222.AnimeLoh();
+		ISoh l = (dr222 as ISoh);
+		l.AnimeLoh();
+		return l.AnimeLoh();
 	}
 }
 

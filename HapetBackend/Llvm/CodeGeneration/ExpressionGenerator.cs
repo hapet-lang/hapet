@@ -413,7 +413,14 @@ namespace HapetBackend.Llvm
                 {
                     if (hapetType.Declaration.ContainingClass.IsInterface)
                     {
-                        // TODO:
+                        // WARN: hard cock
+                        var helper = _currentFunction.Scope.GetSymbolInNamespace("System.Runtime.Conversion", "VtableHelper");
+                        var methSymbol = (helper.Decl as AstClassDecl).SubScope.GetSymbol("System.Runtime.Conversion.VtableHelper::GetInterfaceMethodByIndex(void*:System.Runtime.VirtualTableUnsafe*:int)") as DeclSymbol;
+                        var methFunc = _valueMap[methSymbol];
+                        LLVMTypeRef methType = _typeMap[methSymbol.Decl.Type.OutType];
+                        var vtableInfo = _virtualTableDictionary[hapetType.Declaration.ContainingClass.Type.OutType as ClassType];
+                        var funcToCall = _builder.BuildCall2(methType, methFunc, new LLVMValueRef[] { args[0], vtableInfo, LLVMValueRef.CreateConstInt(_context.Int32Type, (ulong)index) }, "funcToCall");
+                        return builder.BuildCall2(funcType, funcToCall, args.ToArray(), name);
                     }
                     else
                     {

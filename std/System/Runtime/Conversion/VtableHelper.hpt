@@ -13,4 +13,27 @@ public static class VtableHelper
 
         return vtable.VirtualMethods[index];
     }
+
+    public static void* GetInterfaceMethodByIndex(void* obj, VirtualTableUnsafe* interfaceVtable, int methodIndex)
+    {
+        if ((uintptr)obj == (uintptr)0)
+            return null;
+
+        VirtualTableUnsafe** fullInfo = ((VirtualTableUnsafe***)obj)[0];
+        VirtualTableUnsafe* vtablePtr = fullInfo[1];
+        VirtualTableUnsafe vtable = *vtablePtr;
+
+        int offset = 0;
+        for (int i = 0; i < vtable.InterfaceCount; i += 1)
+        {
+            VirtualTableUnsafe* currIntf = vtable.Interfaces[i];
+            if ((uintptr)currIntf == (uintptr)interfaceVtable)
+            {
+                var offsets = vtable.InterfaceOffsets[i];
+                offset = offsets[methodIndex];
+                break;
+            }
+        }
+        return vtable.VirtualMethods[offset];
+    }
 }
