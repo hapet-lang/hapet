@@ -508,7 +508,7 @@ namespace HapetFrontend.Parsing
                                 ReportMessage(id.Location, [], ErrorCode.Get(CTEN.DeclNameIsNotIdent));
                                 return id;
                             }
-                            return new UnknownDecl(id, idExpr, new Location(token.Location));
+                            return new UnknownDecl(id, idExpr, new Location(token.Location, name.Location.Ending));
                         }
 
                         return id;
