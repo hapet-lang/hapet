@@ -22,7 +22,7 @@ namespace HapetFrontend.Parsing
             }
             else
             {
-                beg = Consume(TokenType.KwInterface, ErrMsg("keyword 'class'", "at beginning of class type")).Location;
+                beg = Consume(TokenType.KwInterface, ErrMsg("keyword 'interface'", "at beginning of interface type")).Location;
                 isInterface = true;
             }
 
