@@ -190,6 +190,26 @@ namespace HapetFrontend.Scoping
                         ((currCls.InheritedFrom[0].OutType as ClassType).Declaration.IsInterface ? null :
                         (currCls.InheritedFrom[0].OutType as ClassType).Declaration) : null;
                 }
+
+                // go all over interfaces
+                currCls = clsToSearch;
+                while (currCls != null)
+                {
+                    foreach (var inh in currCls.InheritedFrom)
+                    {
+                        var inhDecl = (inh.OutType as ClassType).Declaration;
+                        if (!inhDecl.IsInterface)
+                            continue;
+
+                        candidates.AddRange(GetCandidatesInScope(classWithFuncName, inhDecl.SubScope)
+                            .Where(x => (x.Decl is AstFuncDecl funcDecl && funcDecl.Parameters.Count == args.Count)).ToList());
+                    }
+
+                    // cringe check for parent :)
+                    currCls = currCls.InheritedFrom.Count > 0 ?
+                        ((currCls.InheritedFrom[0].OutType as ClassType).Declaration.IsInterface ? null :
+                        (currCls.InheritedFrom[0].OutType as ClassType).Declaration) : null;
+                }
             }
             else
             {
