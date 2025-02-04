@@ -222,6 +222,7 @@
         // parser warnings up to 0x3000
         ArrayEmptyCreation              = 0x2001,
         StmtsWouldBeIgnored             = 0x2002,
+        FieldsInInterface               = 0x2003,
 
         // post preparer warnings up to 0x5000
         StaticCtorKwsIgnored            = 0x3001,

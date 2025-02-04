@@ -107,8 +107,15 @@ namespace HapetFrontend.Parsing
                     //ReportMessage(next.Location, $"Unexpected token {next} at end of class member");
                 }
             }
+            end = Consume(TokenType.CloseBrace, ErrMsg("}", "at end of declaration")).Location;
 
-            end = Consume(TokenType.CloseBrace, ErrMsg("}", "at end of class declaration")).Location;
+            if (isInterface)
+            {
+                // check if there are fields - warn user
+                var field = declarations.FirstOrDefault(x => x is AstVarDecl && x is not AstPropertyDecl);
+                if (field != null)
+                    ReportMessage(field.Location, [], ErrorCode.Get(CTWN.FieldsInInterface), reportType: Entities.ReportType.Warning);
+            }
 
             // TODO: doc string
             return new AstClassDecl(className, declarations, "", new Location(beg, end)) { InheritedFrom = inherited, IsInterface = isInterface };

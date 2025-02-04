@@ -18,6 +18,10 @@
         <Number>2002</Number>
         <Text>All the statements after '{0}' would be ignored by compiler!</Text>
     </Item>
+	<Item>
+		<Number>2003</Number>
+		<Text>Fields should not be defined in interfaces! Use it at Your own risk :)</Text>
+	</Item>
 
 	<!--Post prepare warnings-->
 	<Item>

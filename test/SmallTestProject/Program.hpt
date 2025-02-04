@@ -17,7 +17,7 @@ public static class Program
 
 public interface IBot
 {
-	byte AnimeBot { get; set; }
+	byte AnimeBot;
 	byte AnimeBot222 { get; set; }
 }
 
@@ -49,7 +49,7 @@ public class Derived : BaseCls, ISoh, IBot
 
 	public int AnimeSoh { get; set; }
 
-	public byte AnimeBot { get; set; }
+	public byte AnimeBot;
 	public byte AnimeBot222 { get; set; }
 
 	public Derived() : base("dasdasd")
