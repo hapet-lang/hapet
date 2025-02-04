@@ -35,7 +35,7 @@ public class BaseCls : ILoh
 {
 	public string Field1;
 
-	public short AnimeLoh { get; set; }
+	public short AnimeLoh { get; set; } = 44;
 
 	public BaseCls(string ddd)
 	{
