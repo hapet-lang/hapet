@@ -9,34 +9,33 @@ public static class Program
 	public static int Main(string[] args)
 	{
 		Derived dr222 = new Derived();
-		//dr222.AnimeLoh();
+		var tt = dr222.AnimeLoh;
 		ISoh l = (dr222 as ISoh);
-		l.AnimeLoh();
-		return l.AnimeLoh();
+		return l.AnimeLoh;
 	}
 }
 
 public interface IBot
 {
-	byte AnimeBot();
-	byte AnimeBot222();
+	byte AnimeBot { get; set; }
+	byte AnimeBot222 { get; set; }
 }
 
 public interface ILoh
 {
-	short AnimeLoh();
+	short AnimeLoh { get; set; }
 }
 
 public interface ISoh : ILoh, IBot
 {
-	int AnimeSoh();
+	int AnimeSoh { get; set; }
 }
 
 public class BaseCls : ILoh
 {
 	public string Field1;
 
-	public short AnimeLoh() { return 654; }
+	public short AnimeLoh { get; set; }
 
 	public BaseCls(string ddd)
 	{
@@ -48,10 +47,10 @@ public class Derived : BaseCls, ISoh, IBot
 {
 	public long Field2;
 
-	public int AnimeSoh() { return 0; }
+	public int AnimeSoh { get; set; }
 
-	public byte AnimeBot() { return 0; }
-	public byte AnimeBot222() { return 3; }
+	public byte AnimeBot { get; set; }
+	public byte AnimeBot222 { get; set; }
 
 	public Derived() : base("dasdasd")
 	{

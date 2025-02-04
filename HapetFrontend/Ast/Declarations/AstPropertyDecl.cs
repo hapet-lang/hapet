@@ -139,6 +139,26 @@ namespace HapetFrontend.Ast.Declarations
             }
             return func;
         }
+
+        public override AstVarDecl GetCopyForAnotherClass(AstClassDecl decl)
+        {
+            var varDecl = new AstPropertyDecl(Type, Name, Initializer, Documentation, Location)
+            {
+                Parent = decl,
+                Scope = decl.SubScope,
+                SourceFile = decl.SourceFile,
+                ContainingParent = decl
+            };
+            varDecl.Attributes.AddRange(Attributes);
+            varDecl.SpecialKeys.AddRange(SpecialKeys);
+
+            varDecl.HasGet = HasGet;
+            varDecl.HasSet = HasSet;
+            varDecl.GetBlock = GetBlock;
+            varDecl.SetBlock = SetBlock;
+
+            return varDecl;
+        }
     }
 
     public class PropertyDeclJson

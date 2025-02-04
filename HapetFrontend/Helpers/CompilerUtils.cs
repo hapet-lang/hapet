@@ -142,6 +142,11 @@ namespace HapetFrontend.Helpers
         {
             return delcs.FirstOrDefault(x => x.Name.Name == decl.Name.Name && x.Type.OutType == decl.Type.OutType);
         }
+
+        public static AstPropertyDecl GetSameDeclByTypeAndName(this List<AstPropertyDecl> delcs, AstDeclaration decl)
+        {
+            return delcs.FirstOrDefault(x => x.Name.Name == decl.Name.Name && x.Type.OutType == decl.Type.OutType);
+        }
         #endregion
 
         #region Parsing shite helpers

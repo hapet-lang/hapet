@@ -35,6 +35,7 @@ namespace HapetFrontend.Parsing.PostPrepare
             PostPrepareMetadataInheritedFunctions();
             PostPrepareMetadataTypeFieldDecls();
             PostPrepareMetadataTypeInheritedFieldDecls();
+            PostPrepareMetadataTypeInheritedPropsDecls();
             PostPrepareMetadataTypeFieldInits();
             PostPrepareMetadataAttributes();
 
@@ -363,6 +364,160 @@ namespace HapetFrontend.Parsing.PostPrepare
                 _currentClass = cls;
 
                 CopyInheritedFields(cls, cls.AllRawFields);
+            }
+        }
+
+        private void PostPrepareMetadataTypeInheritedPropsDecls()
+        {
+            void CopyInheritedProps(AstClassDecl decl, List<AstPropertyDecl> preparedDecls)
+            {
+                var currDecls = decl.Declarations.Where(x => x is AstPropertyDecl).Select(x => x as AstPropertyDecl).ToList();
+
+                // remove all current props
+                foreach (var fieldDecl in currDecls)
+                {
+                    decl.SubScope.RemoveDeclSymbol(fieldDecl.Name.Name, fieldDecl);
+                    decl.Declarations.Remove(fieldDecl);
+                }
+
+                List<AstDeclaration> toInsert = new List<AstDeclaration>();
+                // all over the parent fields - copy them
+                foreach (var propDecl in preparedDecls)
+                {
+                    // change parent and scope
+                    var newVar = propDecl.GetCopyForAnotherClass(decl);
+                    // define the symbol
+                    decl.SubScope.DefineDeclSymbol(newVar.Name.Name, newVar);
+
+                    toInsert.Add(newVar);
+                }
+
+                // insert them to the end
+                decl.Declarations.AddRange(toInsert);
+            }
+
+            // to get all pure props including inherited
+            List<AstPropertyDecl> GetPreparedProps(AstClassDecl decl)
+            {
+                List<AstPropertyDecl> inheritedPropDecls = new List<AstPropertyDecl>();
+                List<AstPropertyDecl> currentPropDecls = decl.Declarations.Where(x => x is AstPropertyDecl).Select(x => x as AstPropertyDecl).ToList();
+
+                // all over the inherited shite
+                foreach (var inh in decl.InheritedFrom)
+                {
+                    var inhDecl = (inh.OutType as ClassType).Declaration;
+                    // if the inh type is an interface
+                    if (inhDecl.IsInterface)
+                    {
+                        // if we are also an interface - just add, no need to check implementations
+                        if (decl.IsInterface)
+                        {
+                            inheritedPropDecls.AddRange(GetPreparedProps(inhDecl));
+                        }
+                        else
+                        {
+                            // get all the props of interface
+                            var inhFields = GetPreparedProps(inhDecl);
+                            foreach (var inhF in inhFields)
+                            {
+                                // check if the interface is already implemented in parent classes
+                                var definedInOneOfTheParents = inheritedPropDecls.GetSameDeclByTypeAndName(inhF);
+                                // if the prop was already presented previously
+                                if (definedInOneOfTheParents != null)
+                                {
+                                    // check if the already defined prop is by the interface
+                                    bool isInherited = (definedInOneOfTheParents.ContainingParent.Type.OutType as ClassType).IsInheritedFrom(inhF.ContainingParent.Type.OutType as ClassType, true);
+                                    // if inherited - this is a parent cls already implemented the prop - no need to warn
+                                    if (isInherited)
+                                    {
+                                        // need to check that we do not implement it also
+                                        var currF = currentPropDecls.GetSameDeclByTypeAndName(inhF);
+                                        if (currF != null)
+                                        {
+                                            // the prop is implemented in parent class and current class
+                                            // we need to error
+                                            _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, currF,
+                                                [definedInOneOfTheParents.ContainingParent.Type.OutType.ToString()], ErrorCode.Get(CTEN.FieldAlreadyDefined));
+                                            continue;
+                                        }
+                                        // else - everything is ok probably
+                                    }
+                                    else
+                                    {
+                                        // TODO: not todo. but C# allows shite like this:
+                                        /*
+                                            public interface IAnime
+                                            {
+                                                short Field111 { get; set; }
+                                            }
+
+                                            public class BaseCls
+                                            {
+                                                public short Field111 { get; set; }
+                                            }
+
+                                            public class Derived : BaseCls, IAnime
+                                            {
+
+                                            }
+                                         */
+                                        // but we can't because of interface offset calcs. md could be fixed somehow?
+
+                                        // we need to error
+                                        _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, definedInOneOfTheParents,
+                                            [definedInOneOfTheParents.ContainingParent.Type.OutType.ToString(), decl.Type.OutType.ToString(), inh.OutType.ToString()],
+                                            ErrorCode.Get(CTEN.DoubleInterfaceCringe));
+                                        continue;
+                                    }
+                                }
+                                else
+                                {
+                                    // if the prop was not presented previously
+
+                                    // need to check that we do implement it
+                                    var currF = currentPropDecls.GetSameDeclByTypeAndName(inhF);
+                                    if (currF == null)
+                                    {
+                                        // error - the prop of the interface was not implemented
+                                        _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, inh,
+                                            [decl.Type.OutType.ToString(), inhF.Name.Name], ErrorCode.Get(CTEN.NoFieldImplementation));
+                                    }
+                                    else
+                                    {
+                                        // add it to the new dictionary
+                                        currentPropDecls.Remove(currF);
+                                        inheritedPropDecls.Add(currF);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    else
+                    {
+                        // just add parent props if it is a class
+                        inheritedPropDecls.AddRange(GetPreparedProps(inhDecl));
+                    }
+                }
+
+                inheritedPropDecls.AddRange(currentPropDecls);
+                return inheritedPropDecls;
+            }
+
+            // resolve all inherited props of classes
+            foreach (var cls in AllClassesMetadata)
+            {
+                _currentSourceFile = cls.SourceFile;
+                _currentClass = cls;
+
+                cls.AllRawProps = GetPreparedProps(cls);
+            }
+
+            foreach (var cls in AllClassesMetadata)
+            {
+                _currentSourceFile = cls.SourceFile;
+                _currentClass = cls;
+
+                CopyInheritedProps(cls, cls.AllRawProps);
             }
         }
 

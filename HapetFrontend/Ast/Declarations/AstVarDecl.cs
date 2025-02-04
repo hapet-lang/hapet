@@ -26,7 +26,7 @@ namespace HapetFrontend.Ast.Declarations
             Initializer = ini;
         }
 
-        public AstVarDecl GetCopyForAnotherClass(AstClassDecl decl)
+        public virtual AstVarDecl GetCopyForAnotherClass(AstClassDecl decl)
         {
             var varDecl = new AstVarDecl(Type, Name, Initializer, Documentation, Location)
             {
@@ -38,7 +38,6 @@ namespace HapetFrontend.Ast.Declarations
             varDecl.Attributes.AddRange(Attributes);
             varDecl.SpecialKeys.AddRange(SpecialKeys);
             return varDecl;
-
         }
 
         internal VarDeclJson GetJson()

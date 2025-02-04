@@ -291,10 +291,13 @@ namespace HapetFrontend.Scoping
             // search for the func in the scope
             foreach (var k in scopeToSearch._symbolTable.Keys)
             {
-                var onlyFuncName = classWithFuncName.Split("::")[1];
-                var firstKeyPart = k.Split("(")[0];
-                if ((k.StartsWith(classWithFuncName) || firstKeyPart.Contains(onlyFuncName)) && scopeToSearch._symbolTable[k] is DeclSymbol ds)
-                    candidates.Add(ds);
+                if (scopeToSearch._symbolTable[k] is DeclSymbol ds && ds.Decl is AstFuncDecl)
+                {
+                    var onlyFuncName = classWithFuncName.Split("::")[1];
+                    var firstKeyPart = k.Split("(")[0].Split("::")[1];
+                    if ((k.StartsWith(classWithFuncName) || firstKeyPart == onlyFuncName))
+                        candidates.Add(ds);
+                }
             }
             return candidates;
         }
