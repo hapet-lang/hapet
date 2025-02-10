@@ -75,6 +75,11 @@
             return -1;
         }
 
+        public static string AsString(HapetType type)
+        {
+            return type == null ? "[Undefined]" : type.ToString();
+        }
+
         /// <summary>
         /// Returns the preferred type of two other types
         /// Usually used for Numeric types and for Binary expressions

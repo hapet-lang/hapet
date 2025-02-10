@@ -203,6 +203,16 @@ namespace HapetFrontend.Parsing.PostPrepare
         private void PostPrepareParamInference(AstParamDecl paramDecl)
         {
             PostPrepareExprInference(paramDecl.Type);
+
+            if (paramDecl.Type.OutType is ClassType)
+            {
+                // the var is actually a pointer to the class
+                var astPtr = new AstPointerExpr(paramDecl.Type, false, paramDecl.Type.Location);
+                astPtr.Scope = paramDecl.Type.Scope;
+                paramDecl.Type = astPtr;
+                PostPrepareExprInference(paramDecl.Type);
+            }
+
             if (paramDecl.DefaultValue != null)
                 PostPrepareExprInference(paramDecl.DefaultValue);
         }
@@ -384,14 +394,18 @@ namespace HapetFrontend.Parsing.PostPrepare
             if (operators.Count == 0)
             {
                 _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, binExpr, 
-                    [binExpr.Operator, (binExpr.Left as AstExpression).OutType.ToString(), (binExpr.Right as AstExpression).OutType.ToString()], 
+                    [binExpr.Operator, 
+                    HapetType.AsString((binExpr.Left as AstExpression).OutType), 
+                    HapetType.AsString((binExpr.Right as AstExpression).OutType)], 
                     ErrorCode.Get(CTEN.BinUndefOpForTypes));
             }
             else if (operators.Count > 1)
             {
                 // TODO: tell em where are the operators defined
                 _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, binExpr, 
-                    [binExpr.Operator, (binExpr.Left as AstExpression).OutType.ToString(), (binExpr.Right as AstExpression).OutType.ToString()], 
+                    [binExpr.Operator,
+                    HapetType.AsString((binExpr.Left as AstExpression).OutType),
+                    HapetType.AsString((binExpr.Right as AstExpression).OutType)], 
                     ErrorCode.Get(CTEN.BinTooManyOpsForTypes));
             }
             else
