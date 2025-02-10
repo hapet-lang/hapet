@@ -133,19 +133,29 @@ namespace HapetFrontend.Helpers
             }
         }
 
-        public static AstDeclaration GetSameDeclByTypeAndName(this List<AstDeclaration> delcs, AstDeclaration decl)
+        public static AstDeclaration GetSameDeclByTypeAndName(this List<AstDeclaration> decls, AstDeclaration decl)
         {
-            return delcs.FirstOrDefault(x => x.Name.Name == decl.Name.Name && x.Type.OutType == decl.Type.OutType);
+            return decls.FirstOrDefault(x => x.Name.Name == decl.Name.Name && x.Type.OutType == decl.Type.OutType);
         }
 
-        public static AstVarDecl GetSameDeclByTypeAndName(this List<AstVarDecl> delcs, AstDeclaration decl)
+        public static AstVarDecl GetSameDeclByTypeAndName(this List<AstVarDecl> decls, AstDeclaration decl)
         {
-            return delcs.FirstOrDefault(x => x.Name.Name == decl.Name.Name && x.Type.OutType == decl.Type.OutType);
+            return decls.FirstOrDefault(x => x.Name.Name == decl.Name.Name && x.Type.OutType == decl.Type.OutType);
         }
 
-        public static AstPropertyDecl GetSameDeclByTypeAndName(this List<AstPropertyDecl> delcs, AstDeclaration decl)
+        public static AstPropertyDecl GetSameDeclByTypeAndName(this List<AstPropertyDecl> decls, AstDeclaration decl, out int index)
         {
-            return delcs.FirstOrDefault(x => x.Name.Name == decl.Name.Name && x.Type.OutType == decl.Type.OutType);
+            for (int i = 0; i < decls.Count; ++i)
+            {
+                var x = decls[i];
+                if (x.Name.Name == decl.Name.Name && x.Type.OutType == decl.Type.OutType)
+                {
+                    index = i;
+                    return x;
+                }
+            }
+            index = -1;
+            return null;
         }
         #endregion
 

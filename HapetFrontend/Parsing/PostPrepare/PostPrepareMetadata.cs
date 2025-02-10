@@ -340,8 +340,9 @@ namespace HapetFrontend.Parsing.PostPrepare
                     }
                     else
                     {
+                        var parentFields = GetPreparedFields(inhDecl);
                         // just add parent fields if it is a class
-                        inheritedFieldDecls.AddRange(GetPreparedFields(inhDecl));
+                        inheritedFieldDecls.AddRange(parentFields);
                     }
                 }
 
@@ -421,7 +422,7 @@ namespace HapetFrontend.Parsing.PostPrepare
                             foreach (var inhF in inhFields)
                             {
                                 // check if the interface is already implemented in parent classes
-                                var definedInOneOfTheParents = inheritedPropDecls.GetSameDeclByTypeAndName(inhF);
+                                var definedInOneOfTheParents = inheritedPropDecls.GetSameDeclByTypeAndName(inhF, out int _);
                                 // if the prop was already presented previously
                                 if (definedInOneOfTheParents != null)
                                 {
@@ -431,7 +432,7 @@ namespace HapetFrontend.Parsing.PostPrepare
                                     if (isInherited)
                                     {
                                         // need to check that we do not implement it also
-                                        var currF = currentPropDecls.GetSameDeclByTypeAndName(inhF);
+                                        var currF = currentPropDecls.GetSameDeclByTypeAndName(inhF, out int _);
                                         if (currF != null)
                                         {
                                             // the prop is implemented in parent class and current class
@@ -475,7 +476,7 @@ namespace HapetFrontend.Parsing.PostPrepare
                                     // if the prop was not presented previously
 
                                     // need to check that we do implement it
-                                    var currF = currentPropDecls.GetSameDeclByTypeAndName(inhF);
+                                    var currF = currentPropDecls.GetSameDeclByTypeAndName(inhF, out int _);
                                     if (currF == null)
                                     {
                                         // error - the prop of the interface was not implemented
@@ -494,8 +495,38 @@ namespace HapetFrontend.Parsing.PostPrepare
                     }
                     else
                     {
+                        var parentProps = GetPreparedProps(inhDecl);
                         // just add parent props if it is a class
-                        inheritedPropDecls.AddRange(GetPreparedProps(inhDecl));
+                        inheritedPropDecls.AddRange(parentProps);
+
+                        // search for overrides in the current class 
+                        // and replace parent methods with our
+                        foreach (var fCurr in currentPropDecls.Where(x => x.SpecialKeys.Contains(TokenType.KwOverride)).ToArray())
+                        {
+                            // check for signatures
+                            var overridedProp = inheritedPropDecls.GetSameDeclByTypeAndName(fCurr, out int index);
+                            // TODO: error here? we go all over the override props and found no prop to be overriden?
+                            if (overridedProp == null)
+                                continue;
+                            inheritedPropDecls[index] = fCurr;
+                            // we need to remove it so it won't mess with us
+                            currentPropDecls.Remove(fCurr);
+                        }
+                    }
+                }
+
+                // check for shadowing
+                foreach (var currP in currentPropDecls)
+                {
+                    // skip virtual shite
+                    if (currP.SpecialKeys.Contains(TokenType.KwOverride))
+                        continue;
+                    var parentProp = inheritedPropDecls.GetSameDeclByTypeAndName(currP, out int _);
+                    if (parentProp != null)
+                    {
+                        // error - property shadowing
+                        _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, currP.Name,
+                            [$"{parentProp.ContainingParent.Name.Name}::{parentProp.Name.Name}"], ErrorCode.Get(CTEN.PropertyShadowing));
                     }
                 }
 
@@ -745,11 +776,15 @@ namespace HapetFrontend.Parsing.PostPrepare
                 foreach (var currM in currentClassMethods)
                 {
                     // skip virtual shite
-                    if (currM.SpecialKeys.Contains(TokenType.KwAbstract) || currM.SpecialKeys.Contains(TokenType.KwVirtual))
+                    if (currM.SpecialKeys.Contains(TokenType.KwOverride))
                         continue;
                     var parentFnc = inheritedFuncDecls.GetSameByNameAndTypes(currM, out int _);
                     if (parentFnc != null)
                     {
+                        // skip property functions - property would error by its own
+                        if (parentFnc.IsPropertyFunction)
+                            continue;
+
                         // error - function shadowing
                         _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, currM.Name,
                             [parentFnc.Type.OutType.ToString()], ErrorCode.Get(CTEN.FunctionShadowing));

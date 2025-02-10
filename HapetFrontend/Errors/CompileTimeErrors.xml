@@ -628,6 +628,10 @@
 		<Number>303E</Number>
 		<Text>The function shadows {0} function. Shadowing is not allowed here, buddy</Text>
 	</Item>
+	<Item>
+		<Number>303F</Number>
+		<Text>The property shadows {0} property. Shadowing is not allowed here, buddy</Text>
+	</Item>
 
     <!--Compiler errors-->
 	<Item>

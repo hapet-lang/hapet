@@ -31,6 +31,11 @@ namespace HapetFrontend.Ast.Declarations
         /// </summary>
         public AstBaseCtorStmt BaseCtorCall { get; set; }
 
+        /// <summary>
+        /// Used for easier infferencing. Mean that the func is a get/set func
+        /// </summary>
+        public bool IsPropertyFunction { get; set; }
+
         public AstFuncDecl(List<AstParamDecl> parameters, AstExpression returns, AstBlockExpr body, AstIdExpr name, string doc = "", ILocation Location = null) : base(name, doc, Location)
         {
             Type = new AstIdExpr("func", Location);

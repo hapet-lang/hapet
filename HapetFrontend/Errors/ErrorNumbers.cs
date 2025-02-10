@@ -165,6 +165,7 @@
         DoubleInterfaceCringeMeth       = 0x303C, // would be obsolete
         NoMethodImplementation          = 0x303D,
         FunctionShadowing               = 0x303E,
+        PropertyShadowing               = 0x303F,
 
         // compiler errors up to 0x6000
         DefaultWasNotInfered            = 0x5001,

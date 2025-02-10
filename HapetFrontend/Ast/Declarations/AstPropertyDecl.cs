@@ -86,6 +86,7 @@ namespace HapetFrontend.Ast.Declarations
                 Location);
             func.SpecialKeys.AddRange(SpecialKeys);
             func.ContainingClass = ContainingParent as AstClassDecl; // it has to be
+            func.IsPropertyFunction = true;
 
             if (SetBlock == null)
             {
@@ -119,6 +120,7 @@ namespace HapetFrontend.Ast.Declarations
                 Location);
             func.SpecialKeys.AddRange(SpecialKeys);
             func.ContainingClass = ContainingParent as AstClassDecl; // it has to be
+            func.IsPropertyFunction = true;
 
             if (GetBlock == null)
             {
