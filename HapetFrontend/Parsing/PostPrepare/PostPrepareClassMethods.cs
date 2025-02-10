@@ -131,7 +131,7 @@ namespace HapetFrontend.Parsing.PostPrepare
                 PostPrepareGenerateClassDestructor(classDecl, allFuncs.Where(x => x.ClassFunctionType == Enums.ClassFunctionType.Dtor).ToList());
             }
 
-            // adding 'this' param as first
+            // 
             foreach (var decl in classDecl.Declarations)
             {
                 if (decl is not AstFuncDecl funcDecl)
@@ -153,6 +153,10 @@ namespace HapetFrontend.Parsing.PostPrepare
                 {
                     funcDecl.Body.Statements.Add(new AstReturnStmt(null));
                 }
+
+                // adding virtual key to all overrides
+                if (funcDecl.SpecialKeys.Contains(TokenType.KwOverride))
+                    funcDecl.SpecialKeys.Add(TokenType.KwVirtual);
             }
         }
 

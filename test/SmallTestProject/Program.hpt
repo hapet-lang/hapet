@@ -10,7 +10,7 @@ public static class Program
 	{
 		Derived dr222 = new Derived();
 		BaseCls l = (dr222 as BaseCls);
-		return l.Field1;
+		return l.BaseMethod();
 	}
 }
 
@@ -40,7 +40,7 @@ public class Derived : BaseCls, ISoh
 	{
 	}
 
-	public int BaseMethod()
+	public override int BaseMethod()
 	{
 		return 23;
 	}

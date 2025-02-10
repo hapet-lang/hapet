@@ -734,7 +734,7 @@ namespace HapetFrontend.Parsing.PostPrepare
                             // TODO: error here? we go all over the override funcs and found no func to be overriden?
                             if (overridedFnc == null)
                                 continue;
-                            inheritedFuncDecls[fncIndex] = overridedFnc;
+                            inheritedFuncDecls[fncIndex] = fCurr;
                             // we need to remove it so it won't mess with us
                             currentClassMethods.Remove(fCurr);
                         }
