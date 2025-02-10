@@ -80,7 +80,7 @@ namespace HapetFrontend.Helpers
             for (int i = 0; i < pars.Count; i++)
             {
                 var p = pars[i];
-                sb.Append(p.Type.OutType.ToString());
+                sb.Append(p.Type.OutType == null ? "" : p.Type.OutType.ToString());
 
                 if (i != pars.Count - 1)
                     sb.Append(':');

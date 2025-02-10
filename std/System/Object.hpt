@@ -1,0 +1,42 @@
+public class Object
+{
+    public void GetType()
+    {
+        // TODO:
+    }
+
+    public virtual string ToString()
+    {
+        // TODO: get type name
+        return "";
+    }
+
+    public virtual bool Equals(Object obj)
+    {
+        return this == obj;
+    }
+
+    public static bool Equals(Object objA, Object objB)
+    {
+        if (objA == objB)
+        {
+            return true;
+        }
+        if (objA == null || objB == null)
+        {
+            return false;
+        }
+        return objA.Equals(objB);
+    }
+
+    public static bool ReferenceEquals(Object objA, Object objB)
+    {
+        return objA == objB;
+    }
+
+    public virtual int GetHashCode()
+    {
+        // TODO: 
+        return 0;
+    }
+}
