@@ -751,7 +751,7 @@ namespace HapetFrontend.Parsing.PostPrepare
                     if (parentFnc != null)
                     {
                         // error - function shadowing
-                        _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, currM,
+                        _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, currM.Name,
                             [parentFnc.Type.OutType.ToString()], ErrorCode.Get(CTEN.FunctionShadowing));
                     }
                 }
