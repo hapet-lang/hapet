@@ -8,51 +8,6 @@ public static class Program
 {
 	public static int Main(string[] args)
 	{
-		Derived dr222 = new Derived();
-		BaseCls l = (dr222 as BaseCls);
-		return l.BaseMethod();
-	}
-}
-
-public interface ISoh
-{
-
-}
-
-public abstract class BaseCls
-{
-	private int fff;
-	public abstract int Field1 { get; set; }
-
-	public BaseCls(int ddd)
-	{
-		this.Field1 = ddd;
-	}
-
-	public abstract int BaseMethod();
-}
-
-public class Derived : BaseCls, ISoh
-{
-	private int fff;
-	public override int Field1 
-	{ 
-		get
-		{
-			return this.fff;
-		}
-		set
-		{
-			this.fff = value;
-		}
-	}
-
-	public Derived() : base(44)
-	{
-	}
-
-	public override int BaseMethod()
-	{
-		return 23;
+		return 0;
 	}
 }
