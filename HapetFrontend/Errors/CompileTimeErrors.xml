@@ -640,6 +640,14 @@
 		<Number>3041</Number>
 		<Text>The type has to have {0} property implementation</Text>
 	</Item>
+	<Item>
+		<Number>3042</Number>
+		<Text>Abstract method cannot have body</Text>
+	</Item>
+	<Item>
+		<Number>3043</Number>
+		<Text>Abstract property cannot have get/set bodies</Text>
+	</Item>
 
     <!--Compiler errors-->
 	<Item>

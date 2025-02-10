@@ -21,6 +21,7 @@ public interface ISoh
 
 public abstract class BaseCls
 {
+	private int fff;
 	public abstract int Field1 { get; set; }
 
 	public BaseCls(int ddd)
@@ -28,10 +29,7 @@ public abstract class BaseCls
 		this.Field1 = ddd;
 	}
 
-	public abstract int BaseMethod()
-	{
-		return 22;
-	}
+	public abstract int BaseMethod();
 }
 
 public class Derived : BaseCls, ISoh

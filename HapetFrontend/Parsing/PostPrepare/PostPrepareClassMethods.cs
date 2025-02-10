@@ -157,6 +157,14 @@ namespace HapetFrontend.Parsing.PostPrepare
                 // adding virtual key to all overrides
                 if (funcDecl.SpecialKeys.Contains(TokenType.KwOverride))
                     funcDecl.SpecialKeys.Add(TokenType.KwVirtual);
+
+                // abs has to not have impl
+                if (funcDecl.SpecialKeys.Contains(TokenType.KwAbstract) &&
+                    funcDecl.Body != null && 
+                    !funcDecl.IsPropertyFunction)
+                {
+                    _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, funcDecl.Name, [], ErrorCode.Get(CTEN.AbsMethodWithBody));
+                }
             }
         }
 
@@ -365,6 +373,13 @@ namespace HapetFrontend.Parsing.PostPrepare
                     if (classDecl.IsInterface)
                         setFunc.SpecialKeys.Add(TokenType.KwAbstract);
                     declarationsToAdd.Add(setFunc);
+                }
+
+                // abs has to not have impl
+                if (prop.SpecialKeys.Contains(TokenType.KwAbstract) &&
+                    (prop.GetBlock != null || prop.SetBlock != null))
+                {
+                    _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, prop.Name, [], ErrorCode.Get(CTEN.AbsPropertyWithBody));
                 }
             }
             classDecl.Declarations.AddRange(declarationsToAdd);

@@ -168,6 +168,8 @@
         PropertyShadowing               = 0x303F,
         NoAbsMethodImpl                 = 0x3040,
         NoAbsPropertyImpl               = 0x3041,
+        AbsMethodWithBody               = 0x3042,
+        AbsPropertyWithBody             = 0x3043,
 
         // compiler errors up to 0x6000
         DefaultWasNotInfered            = 0x5001,
