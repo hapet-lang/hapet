@@ -42,8 +42,8 @@ public class Derived : BaseCls, ISoh
 	{
 	}
 
-	/*public override int BaseMethod()
+	public override int BaseMethod()
 	{
 		return 23;
-	}*/
+	}
 }

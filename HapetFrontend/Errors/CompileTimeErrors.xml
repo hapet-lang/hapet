@@ -632,6 +632,14 @@
 		<Number>303F</Number>
 		<Text>The property shadows {0} property. Shadowing is not allowed here, buddy</Text>
 	</Item>
+	<Item>
+		<Number>3040</Number>
+		<Text>The type has to have {0} method implementation</Text>
+	</Item>
+	<Item>
+		<Number>3041</Number>
+		<Text>The type has to have {0} property implementation</Text>
+	</Item>
 
     <!--Compiler errors-->
 	<Item>

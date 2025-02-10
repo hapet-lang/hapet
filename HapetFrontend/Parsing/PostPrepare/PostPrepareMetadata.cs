@@ -530,6 +530,25 @@ namespace HapetFrontend.Parsing.PostPrepare
                     }
                 }
 
+                // check if all implemented
+                if (!decl.IsInterface && !decl.SpecialKeys.Contains(TokenType.KwAbstract))
+                {
+                    // if it is not an interface nor abstract class - all abstract shite has to be implemented
+                    foreach (var p in inheritedPropDecls)
+                    {
+                        // skip overrided-abstract methods
+                        if (p.ContainingParent == decl)
+                            continue;
+
+                        if (p.SpecialKeys.Contains(TokenType.KwAbstract))
+                        {
+                            // error - implementation of method not found in curr class
+                            _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, decl.Name,
+                                [$"{p.ContainingParent.Name.Name}::{p.Name.Name}"], ErrorCode.Get(CTEN.NoAbsPropertyImpl));
+                        }
+                    }
+                }
+
                 inheritedPropDecls.AddRange(currentPropDecls);
                 return inheritedPropDecls;
             }
@@ -788,6 +807,29 @@ namespace HapetFrontend.Parsing.PostPrepare
                         // error - function shadowing
                         _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, currM.Name,
                             [parentFnc.Type.OutType.ToString()], ErrorCode.Get(CTEN.FunctionShadowing));
+                    }
+                }
+
+                // check if all implemented
+                if (!decl.IsInterface && !decl.SpecialKeys.Contains(TokenType.KwAbstract))
+                {
+                    // if it is not an interface nor abstract class - all abstract shite has to be implemented
+                    foreach (var m in inheritedFuncDecls)
+                    {
+                        // skip overrided-abstract methods
+                        if (m.ContainingClass == decl)
+                            continue;
+
+                        if (m.SpecialKeys.Contains(TokenType.KwAbstract))
+                        {
+                            // skip property functions - property would error by its own
+                            if (m.IsPropertyFunction)
+                                continue;
+
+                            // error - implementation of method not found in curr class
+                            _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, decl.Name,
+                                [m.Name.Name], ErrorCode.Get(CTEN.NoAbsMethodImpl));
+                        }
                     }
                 }
 

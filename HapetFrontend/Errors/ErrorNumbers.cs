@@ -166,6 +166,8 @@
         NoMethodImplementation          = 0x303D,
         FunctionShadowing               = 0x303E,
         PropertyShadowing               = 0x303F,
+        NoAbsMethodImpl                 = 0x3040,
+        NoAbsPropertyImpl               = 0x3041,
 
         // compiler errors up to 0x6000
         DefaultWasNotInfered            = 0x5001,
