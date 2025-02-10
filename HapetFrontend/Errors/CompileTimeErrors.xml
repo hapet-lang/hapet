@@ -624,6 +624,10 @@
 		<Number>303D</Number>
 		<Text>The {0} type does not have an implementation of {1} method</Text>
 	</Item>
+	<Item>
+		<Number>303E</Number>
+		<Text>The function shadows {0} function. Shadowing is not allowed here, buddy</Text>
+	</Item>
 
     <!--Compiler errors-->
 	<Item>

@@ -21,11 +21,16 @@ public interface ISoh
 
 public abstract class BaseCls
 {
-	public int Field1;
+	public abstract int Field1;
 
 	public BaseCls(int ddd)
 	{
 		this.Field1 = ddd;
+	}
+
+	public virtual int BaseMethod()
+	{
+		return 22;
 	}
 }
 
@@ -33,5 +38,10 @@ public class Derived : BaseCls, ISoh
 {
 	public Derived() : base(44)
 	{
+	}
+
+	public int BaseMethod()
+	{
+		return 23;
 	}
 }

@@ -727,7 +727,7 @@ namespace HapetFrontend.Parsing.PostPrepare
 
                         // search for overrides in the current class 
                         // and replace parent methods with our
-                        foreach (var fCurr in currentClassMethods.Where(x => x.SpecialKeys.Contains(TokenType.KwOverride)))
+                        foreach (var fCurr in currentClassMethods.Where(x => x.SpecialKeys.Contains(TokenType.KwOverride)).ToArray())
                         {
                             // check for signatures
                             var overridedFnc = inheritedFuncDecls.GetSameByNameAndTypes(fCurr, out int fncIndex);
@@ -738,6 +738,21 @@ namespace HapetFrontend.Parsing.PostPrepare
                             // we need to remove it so it won't mess with us
                             currentClassMethods.Remove(fCurr);
                         }
+                    }
+                }
+
+                // check for shadowing
+                foreach (var currM in currentClassMethods)
+                {
+                    // skip virtual shite
+                    if (currM.SpecialKeys.Contains(TokenType.KwAbstract) || currM.SpecialKeys.Contains(TokenType.KwVirtual))
+                        continue;
+                    var parentFnc = inheritedFuncDecls.GetSameByNameAndTypes(currM, out int _);
+                    if (parentFnc != null)
+                    {
+                        // error - function shadowing
+                        _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, currM,
+                            [parentFnc.Type.OutType.ToString()], ErrorCode.Get(CTEN.FunctionShadowing));
                     }
                 }
 

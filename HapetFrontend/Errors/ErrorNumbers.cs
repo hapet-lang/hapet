@@ -164,6 +164,7 @@
         MethodAlreadyDefined            = 0x303B, // could be obsolete
         DoubleInterfaceCringeMeth       = 0x303C, // would be obsolete
         NoMethodImplementation          = 0x303D,
+        FunctionShadowing               = 0x303E,
 
         // compiler errors up to 0x6000
         DefaultWasNotInfered            = 0x5001,
