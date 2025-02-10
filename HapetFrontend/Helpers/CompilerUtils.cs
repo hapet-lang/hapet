@@ -27,7 +27,12 @@ namespace HapetFrontend.Helpers
         {
             for (int i = 0; i < args.Count; ++i)
             {
-                args[i].Expr = casts[i];
+                // pass value of argument on cast!
+                AstExpression val = casts[i];
+                if (casts[i] is AstArgumentExpr argE)
+                    val = argE.Expr;
+
+                args[i].Expr = val;
                 args[i].OutType = casts[i].OutType;
             }
         }
