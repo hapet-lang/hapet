@@ -14,6 +14,7 @@ namespace HapetFrontend.Ast.Expressions
         public AstNullExpr(HapetType target, ILocation Location = null) : base(Location)
         {
             Target = target;
+            OutType = PointerType.NullLiteralType;
         }
     }
 }
