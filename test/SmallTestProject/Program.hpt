@@ -34,7 +34,18 @@ public abstract class BaseCls
 
 public class Derived : BaseCls, ISoh
 {
-	public override int Field1 { get; set; }
+	private int fff;
+	public override int Field1 
+	{ 
+		get
+		{
+			return this.fff;
+		}
+		set
+		{
+			this.fff = value;
+		}
+	}
 
 	public Derived() : base(44)
 	{

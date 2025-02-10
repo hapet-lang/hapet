@@ -164,8 +164,8 @@
         MethodAlreadyDefined            = 0x303B, // could be obsolete
         DoubleInterfaceCringeMeth       = 0x303C, // would be obsolete
         NoMethodImplementation          = 0x303D,
-        FunctionShadowing               = 0x303E,
-        PropertyShadowing               = 0x303F,
+        FunctionShadowing               = 0x303E, // would be obsolete
+        PropertyShadowing               = 0x303F, // would be obsolete
         NoAbsMethodImpl                 = 0x3040,
         NoAbsPropertyImpl               = 0x3041,
         AbsMethodWithBody               = 0x3042,
