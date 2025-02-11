@@ -1002,9 +1002,9 @@ namespace HapetFrontend.Parsing.PostPrepare
                 else if (nestExpr.LeftPart.OutType is EnumType enumT)
                     leftSideScope = enumT.Declaration.SubScope;
                 else if (nestExpr.LeftPart.OutType is StringType)
-                    leftSideScope = AstStringExpr.StringStruct.SubScope;
+                    leftSideScope = AstStringExpr.GetStringStruct(nestExpr.Scope).SubScope;
                 else if (nestExpr.LeftPart.OutType is ArrayType)
-                    leftSideScope = AstArrayExpr.ArrayStruct.SubScope;
+                    leftSideScope = AstArrayExpr.GetArrayStruct(nestExpr.Scope).SubScope;
                 // TODO: structs and other
 
                 if (leftSideScope == null)

@@ -19,7 +19,6 @@ namespace HapetFrontend.Parsing.PostPrepare
 
         private void PostPrepareScoping()
         {
-            PostPrepareInternalShiteScoping();
             foreach (var (path, file) in _compiler.GetFiles())
             {
                 _currentSourceFile = file;
@@ -44,14 +43,6 @@ namespace HapetFrontend.Parsing.PostPrepare
                     }
                 }
             }
-        }
-
-        private void PostPrepareInternalShiteScoping()
-        {
-            AstStringExpr.StringStruct.Scope = _compiler.GlobalScope;
-            PostPrepareStructScoping(AstStringExpr.StringStruct);
-            AstArrayExpr.ArrayStruct.Scope = _compiler.GlobalScope;
-            PostPrepareStructScoping(AstArrayExpr.ArrayStruct);
         }
 
         private void PostPrepareClassScoping(AstClassDecl classDecl)

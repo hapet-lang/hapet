@@ -1,4 +1,5 @@
 ﻿using HapetFrontend.Ast.Declarations;
+using HapetFrontend.Scoping;
 using HapetFrontend.Types;
 
 namespace HapetFrontend.Ast.Expressions
@@ -15,28 +16,9 @@ namespace HapetFrontend.Ast.Expressions
             SubExpression = sub;
         }
 
-        private static AstStructDecl GenerateArrayStructExpr()
+        public static AstStructDecl GetArrayStruct(Scope scope)
         {
-            // creating the struct and its scope
-            AstStructDecl arrStruct = new AstStructDecl(new AstIdExpr("array.type"), new List<AstDeclaration>(), ""); // TODO: doc string
-                                                                                                                      // TODO: doc string
-            AstVarDecl sizeField = new AstVarDecl(new AstNestedExpr(new AstIdExpr("int"), null), new AstIdExpr("Length"), new AstNumberExpr((NumberData)0), "");
-            AstVarDecl bufField = new AstVarDecl(new AstNestedExpr(new AstPointerExpr(new AstIdExpr("byte")), null), new AstIdExpr("Buffer"), new AstNullExpr(ArrayType.GetArrayType(IntType.GetIntType(1, false))), "");
-            arrStruct.Declarations.Add(sizeField);
-            arrStruct.Declarations.Add(bufField);
-            arrStruct.SpecialKeys.Add(Parsing.TokenType.KwPublic);
-            return arrStruct;
-        }
-
-        // the array struct is always like that
-        private static AstStructDecl _arrayStruct;
-        public static AstStructDecl ArrayStruct
-        {
-            get
-            {
-                _arrayStruct ??= GenerateArrayStructExpr();
-                return _arrayStruct;
-            }
+            return (scope.GetSymbolInNamespace("System", "Array") as DeclSymbol).Decl as AstStructDecl;
         }
     }
 }

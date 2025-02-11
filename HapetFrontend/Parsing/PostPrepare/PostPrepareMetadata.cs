@@ -27,7 +27,6 @@ namespace HapetFrontend.Parsing.PostPrepare
 
         private int PostPrepareMetadata()
         {
-            PostPrepareInternalShiteInference();
             PostPrepareMetadataTypes();
             PostPrepareMetadataInheritance();
             PostPrepareMetadataDelegates();
@@ -54,14 +53,6 @@ namespace HapetFrontend.Parsing.PostPrepare
             RemoveAllProperties();
 
             return 0;
-        }
-
-        private void PostPrepareInternalShiteInference()
-        {
-            _compiler.GlobalScope.DefineDeclSymbol(AstStringExpr.StringStruct.Name.Name, AstStringExpr.StringStruct);
-            AllStructsMetadata.Add(AstStringExpr.StringStruct);
-            _compiler.GlobalScope.DefineDeclSymbol(AstArrayExpr.ArrayStruct.Name.Name, AstArrayExpr.ArrayStruct);
-            AllStructsMetadata.Add(AstArrayExpr.ArrayStruct);
         }
 
         private void PostPrepareMetadataTypes()

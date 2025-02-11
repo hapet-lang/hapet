@@ -1,0 +1,5 @@
+public struct String
+{
+    int Length;
+    char* Buffer;
+}

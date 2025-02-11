@@ -583,12 +583,12 @@ namespace HapetBackend.Llvm
                 }
                 else if (expr.LeftPart.OutType is ArrayType arrayT)
                 {
-                    leftPartDeclarations = AstArrayExpr.ArrayStruct.Declarations;
+                    leftPartDeclarations = AstArrayExpr.GetArrayStruct(expr.Scope).Declarations;
                     leftPartType = arrayT;
                 }
                 else if (expr.LeftPart.OutType is StringType stringT)
                 {
-                    leftPartDeclarations = AstStringExpr.StringStruct.Declarations;
+                    leftPartDeclarations = AstStringExpr.GetStringStruct(expr.Scope).Declarations;
                     leftPartType = stringT;
                 }
 

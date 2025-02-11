@@ -1,4 +1,5 @@
 ﻿using HapetFrontend.Ast.Declarations;
+using HapetFrontend.Scoping;
 using HapetFrontend.Types;
 using System.Diagnostics;
 
@@ -17,28 +18,9 @@ namespace HapetFrontend.Ast.Expressions
             OutType = StringType.Instance;
         }
 
-        private static AstStructDecl GenerateStringStructExpr()
+        public static AstStructDecl GetStringStruct(Scope scope)
         {
-            // creating the struct and its scope
-            AstStructDecl strStruct = new AstStructDecl(new AstIdExpr("string.type"), new List<AstDeclaration>(), ""); // TODO: doc string
-                                                                                                                       // TODO: doc string
-            AstVarDecl sizeField = new AstVarDecl(new AstNestedExpr(new AstIdExpr("int"), null), new AstIdExpr("Length"), new AstNumberExpr((NumberData)0), "");
-            AstVarDecl bufField = new AstVarDecl(new AstNestedExpr(new AstPointerExpr(new AstIdExpr("char")), null), new AstIdExpr("Buffer"), new AstNullExpr(StringType.Instance), "");
-            strStruct.Declarations.Add(sizeField);
-            strStruct.Declarations.Add(bufField);
-            strStruct.SpecialKeys.Add(Parsing.TokenType.KwPublic);
-            return strStruct;
-        }
-
-        // the string struct is always like that
-        private static AstStructDecl _stringStruct;
-        public static AstStructDecl StringStruct
-        {
-            get
-            {
-                _stringStruct ??= GenerateStringStructExpr();
-                return _stringStruct;
-            }
+            return (scope.GetSymbolInNamespace("System", "String") as DeclSymbol).Decl as AstStructDecl;
         }
     }
 }
