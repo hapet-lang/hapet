@@ -9,7 +9,7 @@ public static class Program
 {
 	public static int Main(string[] args)
 	{
-		Anime a = new Anime();
+		var a = new Anime();
 		return a.Field1 + a.Field2;
 	}
 }

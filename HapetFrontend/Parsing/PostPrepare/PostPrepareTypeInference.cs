@@ -160,18 +160,8 @@ namespace HapetFrontend.Parsing.PostPrepare
         {
             PostPrepareExprInference(varDecl.Type);
 
-            if (varDecl.Type.OutType is ClassType)
-            {
-                // the var is actually a pointer to the class
-                var astPtr = new AstPointerExpr(varDecl.Type, false, varDecl.Type.Location);
-                astPtr.Scope = varDecl.Type.Scope;
-                varDecl.Type = astPtr;
-                PostPrepareExprInference(varDecl.Type);
-            }
-
-            // pp assign value
             if (varDecl.Initializer != null)
-                varDecl.Initializer = PostPrepareVarValueAssign(varDecl.Initializer, varDecl.Type.OutType);
+                PostPrepareExprInference(varDecl.Initializer);
 
             // change variable type to a normal one
             if (varDecl.Type.OutType is VarType)
@@ -183,6 +173,19 @@ namespace HapetFrontend.Parsing.PostPrepare
                 else
                     varDecl.Type.OutType = varDecl.Initializer.OutType;
             }
+
+            if (varDecl.Type.OutType is ClassType)
+            {
+                // the var is actually a pointer to the class
+                var astPtr = new AstPointerExpr(varDecl.Type, false, varDecl.Type.Location);
+                astPtr.OutType = PointerType.GetPointerType(astPtr.SubExpression.OutType);
+                astPtr.Scope = varDecl.Type.Scope;
+                varDecl.Type = astPtr;
+            }
+
+            // pp assign value
+            if (varDecl.Initializer != null)
+                varDecl.Initializer = PostPrepareVarValueAssign(varDecl.Initializer, varDecl.Type.OutType);
 
             // special keys could not be allowed when the var is declared in BlockExpr
             if (!allowSpecialKeys)
