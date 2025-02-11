@@ -158,6 +158,13 @@ namespace HapetFrontend.Parsing.PostPrepare
                 foreach (var inh in cls.InheritedFrom)
                 {
                     PostPrepareExprInference(inh);
+
+                    // check for sealed type
+                    if ((inh.OutType as ClassType).Declaration.SpecialKeys.Contains(TokenType.KwSealed))
+                    {
+                        // error - cannot inherit from sealed
+                        _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, inh, [], ErrorCode.Get(CTEN.DerivedFromSealed));
+                    }
                 }
 
                 // set System.Object inheritance if there is nothing

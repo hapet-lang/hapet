@@ -648,6 +648,10 @@
 		<Number>3043</Number>
 		<Text>Abstract property cannot have get/set bodies</Text>
 	</Item>
+	<Item>
+		<Number>3044</Number>
+		<Text>Sealed type cannot be derived</Text>
+	</Item>
 
     <!--Compiler errors-->
 	<Item>
