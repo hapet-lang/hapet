@@ -1,5 +1,6 @@
 ﻿using HapetFrontend.Ast;
 using HapetFrontend.Ast.Declarations;
+using HapetFrontend.Ast.Expressions;
 using HapetFrontend.Errors;
 using HapetFrontend.Helpers;
 using HapetFrontend.Parsing;
@@ -35,90 +36,10 @@ namespace HapetBackend.Llvm
         private Dictionary<string, LLVMTypeRef> _delegateAnonTypes = new Dictionary<string, LLVMTypeRef>();
 
         // cringe
-        // this is because all arrays are the same in LLVM IR
+        // cache
         private LLVMTypeRef _llvmArrayType = null;
-
-        // rtti stuff
-        private HapetType sTypeInfoAttribute;
-        private ClassType sTypeInfo;
-        private HapetType sTypeInfoInt;
-        private HapetType sTypeInfoVoid;
-        private HapetType sTypeInfoFloat;
-        private HapetType sTypeInfoBool;
-        private HapetType sTypeInfoChar;
-        private HapetType sTypeInfoString;
-        private HapetType sTypeInfoPointer;
-        private HapetType sTypeInfoReference;
-        private HapetType sTypeInfoArray;
-        private HapetType sTypeInfoTuple;
-        private HapetType sTypeInfoFunction;
-        private HapetType sTypeInfoStruct;
-        private HapetType sTypeInfoEnum;
-        private HapetType sTypeInfoClass;
-        private HapetType sTypeInfoType;
-        private HapetType sTypeInfoCode;
-
-        private LLVMTypeRef rttiTypeInfoAttribute;
-        private LLVMTypeRef rttiTypeInfoPtr;
-        private LLVMTypeRef rttiTypeInfoRef;
-        private LLVMTypeRef rttiTypeInfoInt;
-        private LLVMTypeRef rttiTypeInfoVoid;
-        private LLVMTypeRef rttiTypeInfoFloat;
-        private LLVMTypeRef rttiTypeInfoBool;
-        private LLVMTypeRef rttiTypeInfoChar;
-        private LLVMTypeRef rttiTypeInfoString;
-        private LLVMTypeRef rttiTypeInfoPointer;
-        private LLVMTypeRef rttiTypeInfoReference;
-        private LLVMTypeRef rttiTypeInfoArray;
-        private LLVMTypeRef rttiTypeInfoTuple;
-        private LLVMTypeRef rttiTypeInfoFunction;
-        private LLVMTypeRef rttiTypeInfoStruct;
-        private LLVMTypeRef rttiTypeInfoEnum;
-        private LLVMTypeRef rttiTypeInfoClass;
-        private LLVMTypeRef rttiTypeInfoType;
-        private LLVMTypeRef rttiTypeInfoCode;
-
-        private void InitTypeInfoLLVMTypes()
-        {
-            sTypeInfoAttribute = _compiler.GlobalScope.GetStruct("TypeInfoAttribute").Type.OutType;
-            sTypeInfo = _compiler.GlobalScope.GetClass("TypeInfo").Type.OutType as ClassType;
-            sTypeInfoInt = _compiler.GlobalScope.GetStruct("TypeInfoInt").Type.OutType;
-            sTypeInfoVoid = _compiler.GlobalScope.GetStruct("TypeInfoVoid").Type.OutType;
-            sTypeInfoFloat = _compiler.GlobalScope.GetStruct("TypeInfoFloat").Type.OutType;
-            sTypeInfoBool = _compiler.GlobalScope.GetStruct("TypeInfoBool").Type.OutType;
-            sTypeInfoChar = _compiler.GlobalScope.GetStruct("TypeInfoChar").Type.OutType;
-            sTypeInfoString = _compiler.GlobalScope.GetStruct("TypeInfoString").Type.OutType;
-            sTypeInfoPointer = _compiler.GlobalScope.GetStruct("TypeInfoPointer").Type.OutType;
-            sTypeInfoReference = _compiler.GlobalScope.GetStruct("TypeInfoReference").Type.OutType;
-            sTypeInfoArray = _compiler.GlobalScope.GetStruct("TypeInfoArray").Type.OutType;
-            sTypeInfoTuple = _compiler.GlobalScope.GetStruct("TypeInfoTuple").Type.OutType;
-            sTypeInfoFunction = _compiler.GlobalScope.GetStruct("TypeInfoFunction").Type.OutType;
-            sTypeInfoStruct = _compiler.GlobalScope.GetStruct("TypeInfoStruct").Type.OutType;
-            sTypeInfoEnum = _compiler.GlobalScope.GetStruct("TypeInfoEnum").Type.OutType;
-            sTypeInfoClass = _compiler.GlobalScope.GetStruct("TypeInfoClass").Type.OutType;
-            sTypeInfoType = _compiler.GlobalScope.GetStruct("TypeInfoType").Type.OutType;
-            sTypeInfoCode = _compiler.GlobalScope.GetStruct("TypeInfoCode").Type.OutType;
-
-            rttiTypeInfoPtr = HapetTypeToLLVMType(PointerType.GetPointerType(sTypeInfo));
-            rttiTypeInfoRef = HapetTypeToLLVMType(ReferenceType.GetRefType(sTypeInfo));
-            rttiTypeInfoInt = HapetTypeToLLVMType(sTypeInfoInt);
-            rttiTypeInfoVoid = HapetTypeToLLVMType(sTypeInfoVoid);
-            rttiTypeInfoFloat = HapetTypeToLLVMType(sTypeInfoFloat);
-            rttiTypeInfoBool = HapetTypeToLLVMType(sTypeInfoBool);
-            rttiTypeInfoChar = HapetTypeToLLVMType(sTypeInfoChar);
-            rttiTypeInfoString = HapetTypeToLLVMType(sTypeInfoString);
-            rttiTypeInfoPointer = HapetTypeToLLVMType(sTypeInfoPointer);
-            rttiTypeInfoReference = HapetTypeToLLVMType(sTypeInfoReference);
-            rttiTypeInfoArray = HapetTypeToLLVMType(sTypeInfoArray);
-            rttiTypeInfoTuple = HapetTypeToLLVMType(sTypeInfoTuple);
-            rttiTypeInfoFunction = HapetTypeToLLVMType(sTypeInfoFunction);
-            rttiTypeInfoStruct = HapetTypeToLLVMType(sTypeInfoStruct);
-            rttiTypeInfoEnum = HapetTypeToLLVMType(sTypeInfoEnum);
-            rttiTypeInfoClass = HapetTypeToLLVMType(sTypeInfoClass);
-            rttiTypeInfoAttribute = HapetTypeToLLVMType(sTypeInfoAttribute);
-            rttiTypeInfoType = HapetTypeToLLVMType(sTypeInfoType);
-            rttiTypeInfoCode = HapetTypeToLLVMType(sTypeInfoCode);
-        }
+        // cache
+        private LLVMTypeRef _llvmStringType = null;
 
         private LLVMTypeRef HapetTypeToLLVMType(HapetType ht)
         {
@@ -134,34 +55,16 @@ namespace HapetBackend.Llvm
         {
             switch (ht)
             {
-                case StringType s:
-                    {
-                        var charType = HapetTypeToLLVMType(CharType.DefaultType);
-                        var str = _context.CreateNamedStruct("string.type");
-                        str.StructSetBody(new LLVMTypeRef[] {
-                            ((LLVMTypeRef)_context.Int32Type),
-                            ((LLVMTypeRef)charType).GetPointerTo()
-                        }, false);
-                        return str;
-                    }
-
-                case ArrayType a:
-                    {
-                        // because all array types are the same in LLVM IR
-                        if (_llvmArrayType == null)
-                        {
-                            var arrayStruct = _context.CreateNamedStruct($"array.type");
-                            var arrayType = HapetTypeToLLVMType(IntType.GetIntType(1, false)); // byte
-                            arrayStruct.StructSetBody(new LLVMTypeRef[] { _context.Int32Type, arrayType.GetPointerTo() }, false);
-                            _llvmArrayType = arrayStruct;
-                        }
-                        return _llvmArrayType;
-                    }
-
                 case ClassType t:
                     {
                         return _context.CreateNamedStruct($"class.{t.Declaration.Name.Name}"); ;
                     }
+
+                case StringType:
+                    return _llvmStringType;
+
+                case ArrayType:
+                    return _llvmArrayType;
 
                 case BoolType b:
                     return _context.Int1Type;
