@@ -39,7 +39,7 @@ namespace HapetFrontend.Ast.Declarations
                 Name = Name.Name,
                 SpecialKeys = SpecialKeys,
                 Attributes = attributes,
-                InheritedType = InheritedType.OutType.ToString(),
+                InheritedType = HapetType.AsString(InheritedType.OutType),
                 DocString = Documentation
             };
         }

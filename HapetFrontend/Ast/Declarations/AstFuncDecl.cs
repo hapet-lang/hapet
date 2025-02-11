@@ -53,7 +53,7 @@ namespace HapetFrontend.Ast.Declarations
             return new FuncDeclJson()
             {
                 Parameters = parameters,
-                ReturnType = Returns.OutType.ToString(),
+                ReturnType = HapetType.AsString(Returns.OutType),
                 Name = Name.Name,
                 SpecialKeys = SpecialKeys,
                 Attributes = attributes,

@@ -1,6 +1,7 @@
 ﻿using HapetFrontend.Ast.Expressions;
 using HapetFrontend.Ast.Statements;
 using HapetFrontend.Parsing;
+using HapetFrontend.Types;
 
 namespace HapetFrontend.Ast.Declarations
 {
@@ -44,7 +45,7 @@ namespace HapetFrontend.Ast.Declarations
             var attributes = Attributes.Select(x => x.GetJson()).ToList();
             return new PropertyDeclJson()
             {
-                Type = Type.OutType.ToString(),
+                Type = HapetType.AsString(Type.OutType),
                 Name = Name.Name,
                 HasGet = HasGet,
                 HasSet = HasSet,

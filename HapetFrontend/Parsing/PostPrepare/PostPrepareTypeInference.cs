@@ -364,13 +364,13 @@ namespace HapetFrontend.Parsing.PostPrepare
             if (operators.Count == 0)
             {
                 _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, unExpr, 
-                    [unExpr.Operator, (unExpr.SubExpr as AstExpression).OutType.ToString()], ErrorCode.Get(CTEN.UndefOpForType));
+                    [unExpr.Operator, HapetType.AsString((unExpr.SubExpr as AstExpression).OutType)], ErrorCode.Get(CTEN.UndefOpForType));
             }
             else if (operators.Count > 1)
             {
                 // TODO: tell em where are the operators defined
                 _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, unExpr, 
-                    [unExpr.Operator, (unExpr.SubExpr as AstExpression).OutType.ToString()], ErrorCode.Get(CTEN.TooManyOpsForType));
+                    [unExpr.Operator, HapetType.AsString((unExpr.SubExpr as AstExpression).OutType)], ErrorCode.Get(CTEN.TooManyOpsForType));
             }
             else
             {
@@ -1058,7 +1058,7 @@ namespace HapetFrontend.Parsing.PostPrepare
                 }
                 else
                 {
-                    _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, idExpr, [nestExpr.LeftPart.OutType.ToString()], ErrorCode.Get(CTEN.SymbolNotFoundInType));
+                    _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, idExpr, [HapetType.AsString(nestExpr.LeftPart.OutType)], ErrorCode.Get(CTEN.SymbolNotFoundInType));
                 }
             }
             itWasPropa = false;
@@ -1317,10 +1317,10 @@ namespace HapetFrontend.Parsing.PostPrepare
                 {
                     // it is a manually added 'return' statement
                     var theFunc = returnStmt.FindContainingFunction();
-                    _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, theFunc.Name, [_currentFunction.Returns.OutType.ToString()], ErrorCode.Get(CTEN.NotEnoughReturns));
+                    _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, theFunc.Name, [HapetType.AsString(_currentFunction.Returns.OutType)], ErrorCode.Get(CTEN.NotEnoughReturns));
                 }
                 else
-                    _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, returnStmt, [_currentFunction.Returns.OutType.ToString()], ErrorCode.Get(CTEN.EmptyReturnStmt));
+                    _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, returnStmt, [HapetType.AsString(_currentFunction.Returns.OutType)], ErrorCode.Get(CTEN.EmptyReturnStmt));
             }
         }
 

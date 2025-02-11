@@ -170,7 +170,7 @@ namespace HapetBackend.Llvm
                                 }
                                 else
                                 {
-                                    _messageHandler.ReportMessage(_currentSourceFile.Text, binExpr, [leftType.ToString(), rightType.ToString()], ErrorCode.Get(CTEN.TypeCouldNotBeConverted));
+                                    _messageHandler.ReportMessage(_currentSourceFile.Text, binExpr, [HapetType.AsString(leftType), HapetType.AsString(rightType)], ErrorCode.Get(CTEN.TypeCouldNotBeConverted));
                                     return default;
                                 }
                             }
@@ -516,7 +516,7 @@ namespace HapetBackend.Llvm
             }
             else
             {
-                _messageHandler.ReportMessage(_currentSourceFile.Text, expr, [expr.FuncName.OutType.ToString()], ErrorCode.Get(CTEN.TheTypeIsNotCallable));
+                _messageHandler.ReportMessage(_currentSourceFile.Text, expr, [HapetType.AsString(expr.FuncName.OutType)], ErrorCode.Get(CTEN.TheTypeIsNotCallable));
                 return default;
             }
         }
@@ -746,7 +746,7 @@ namespace HapetBackend.Llvm
                 return retLoaded;
             }
 
-            _messageHandler.ReportMessage(_currentSourceFile.Text, expr, [expr.ObjectName.OutType.ToString()], ErrorCode.Get(CTEN.ArrayAccessNotGenerate));
+            _messageHandler.ReportMessage(_currentSourceFile.Text, expr, [HapetType.AsString(expr.ObjectName.OutType)], ErrorCode.Get(CTEN.ArrayAccessNotGenerate));
             return default;
         }
 
@@ -1211,7 +1211,7 @@ namespace HapetBackend.Llvm
             // error if ctor not found
             if (ctorSymbol == null)
             {
-                _messageHandler.ReportMessage(_currentSourceFile.Text, baseStmt, [baseStmt.BaseType.ToString()], ErrorCode.Get(CTEN.CtorWithArgTypesNotFound));
+                _messageHandler.ReportMessage(_currentSourceFile.Text, baseStmt, [HapetType.AsString(baseStmt.BaseType)], ErrorCode.Get(CTEN.CtorWithArgTypesNotFound));
                 return;
             }
 

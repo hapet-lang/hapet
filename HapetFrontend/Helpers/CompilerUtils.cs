@@ -46,7 +46,7 @@ namespace HapetFrontend.Helpers
             // class is passed as a first parameter
             if (containingClass != null)
             {
-                sb.Append(containingClass.ToString());
+                sb.Append(HapetType.AsString(containingClass));
                 if (args.Count > 0)
                     sb.Append(':');
             }
@@ -54,7 +54,7 @@ namespace HapetFrontend.Helpers
             for (int i = 0; i < args.Count; i++)
             {
                 var a = args[i];
-                sb.Append(a.OutType != null ? a.OutType.ToString() : string.Empty);
+                sb.Append(a.OutType != null ? HapetType.AsString(a.OutType) : string.Empty);
 
                 if (i != args.Count - 1)
                     sb.Append(':');
@@ -72,7 +72,7 @@ namespace HapetFrontend.Helpers
             // class is passed as a first parameter
             if (containingClass != null)
             {
-                sb.Append(containingClass.ToString());
+                sb.Append(HapetType.AsString(containingClass));
                 if (pars.Count > 0)
                     sb.Append(':');
             }
@@ -80,7 +80,7 @@ namespace HapetFrontend.Helpers
             for (int i = 0; i < pars.Count; i++)
             {
                 var p = pars[i];
-                sb.Append(p.Type.OutType == null ? "" : p.Type.OutType.ToString());
+                sb.Append(p.Type.OutType == null ? "" : HapetType.AsString(p.Type.OutType));
 
                 if (i != pars.Count - 1)
                     sb.Append(':');

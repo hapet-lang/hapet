@@ -65,6 +65,11 @@
             return base.GetHashCode();
         }
 
+        public override string ToString()
+        {
+            return base.ToString();
+        }
+
         public virtual int Match(HapetType concrete)
         {
             if (concrete is ReferenceType r)

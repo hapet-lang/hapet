@@ -226,9 +226,9 @@ namespace HapetFrontend.Parsing.PostPrepare
             // if there is no way to cast
             if (neededType != exprType && outExpr == null)
             {
-                string typeName = exprType?.ToString() ?? "[Unresolved]";
+                string typeName = HapetType.AsString(exprType);
                 if (castResult == null)
-                    _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, expr, [typeName, neededType.ToString()], ErrorCode.Get(CTEN.TypeCouldNotBeImplCasted));
+                    _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, expr, [typeName, HapetType.AsString(neededType)], ErrorCode.Get(CTEN.TypeCouldNotBeImplCasted));
 
                 outExpr = expr;
             }

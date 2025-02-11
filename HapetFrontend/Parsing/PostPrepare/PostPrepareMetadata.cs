@@ -283,7 +283,7 @@ namespace HapetFrontend.Parsing.PostPrepare
                                             // the field is implemented in parent class and current class
                                             // we need to error
                                             _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, currF,
-                                                [definedInOneOfTheParents.ContainingParent.Type.OutType.ToString()], ErrorCode.Get(CTEN.FieldAlreadyDefined));
+                                                [HapetType.AsString(definedInOneOfTheParents.ContainingParent.Type.OutType)], ErrorCode.Get(CTEN.FieldAlreadyDefined));
                                             continue;
                                         }
                                         // else - everything is ok probably
@@ -311,7 +311,9 @@ namespace HapetFrontend.Parsing.PostPrepare
 
                                         // we need to error
                                         _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, definedInOneOfTheParents,
-                                            [definedInOneOfTheParents.ContainingParent.Type.OutType.ToString(), decl.Type.OutType.ToString(), inh.OutType.ToString()], 
+                                            [HapetType.AsString(definedInOneOfTheParents.ContainingParent.Type.OutType),
+                                            HapetType.AsString(decl.Type.OutType),
+                                            HapetType.AsString(inh.OutType)], 
                                             ErrorCode.Get(CTEN.DoubleInterfaceCringe));
                                         continue;
                                     }
@@ -326,7 +328,7 @@ namespace HapetFrontend.Parsing.PostPrepare
                                     {
                                         // error - the field of the interface was not implemented
                                         _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, inh,
-                                            [decl.Type.OutType.ToString(), inhF.Name.Name], ErrorCode.Get(CTEN.NoFieldImplementation));
+                                            [HapetType.AsString(decl.Type.OutType), inhF.Name.Name], ErrorCode.Get(CTEN.NoFieldImplementation));
                                     }
                                     else
                                     {
@@ -438,7 +440,7 @@ namespace HapetFrontend.Parsing.PostPrepare
                                             // the prop is implemented in parent class and current class
                                             // we need to error
                                             _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, currF,
-                                                [definedInOneOfTheParents.ContainingParent.Type.OutType.ToString()], ErrorCode.Get(CTEN.FieldAlreadyDefined));
+                                                [HapetType.AsString(definedInOneOfTheParents.ContainingParent.Type.OutType)], ErrorCode.Get(CTEN.FieldAlreadyDefined));
                                             continue;
                                         }
                                         // else - everything is ok probably
@@ -466,7 +468,9 @@ namespace HapetFrontend.Parsing.PostPrepare
 
                                         // we need to error
                                         _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, definedInOneOfTheParents,
-                                            [definedInOneOfTheParents.ContainingParent.Type.OutType.ToString(), decl.Type.OutType.ToString(), inh.OutType.ToString()],
+                                            [HapetType.AsString(definedInOneOfTheParents.ContainingParent.Type.OutType),
+                                            HapetType.AsString(decl.Type.OutType),
+                                            HapetType.AsString(inh.OutType)],
                                             ErrorCode.Get(CTEN.DoubleInterfaceCringe));
                                         continue;
                                     }
@@ -481,7 +485,7 @@ namespace HapetFrontend.Parsing.PostPrepare
                                     {
                                         // error - the prop of the interface was not implemented
                                         _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, inh,
-                                            [decl.Type.OutType.ToString(), inhF.Name.Name], ErrorCode.Get(CTEN.NoFieldImplementation));
+                                            [HapetType.AsString(decl.Type.OutType), inhF.Name.Name], ErrorCode.Get(CTEN.NoFieldImplementation));
                                     }
                                     else
                                     {
@@ -716,7 +720,7 @@ namespace HapetFrontend.Parsing.PostPrepare
                                             // the method is implemented in parent class and current class
                                             // we need to error
                                             _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, currF,
-                                                [definedInOneOfTheParents.ContainingClass.Type.OutType.ToString()], ErrorCode.Get(CTEN.MethodAlreadyDefined));
+                                                [HapetType.AsString(definedInOneOfTheParents.ContainingClass.Type.OutType)], ErrorCode.Get(CTEN.MethodAlreadyDefined));
                                             continue;
                                         }
                                         // else - everything is ok probably
@@ -743,7 +747,9 @@ namespace HapetFrontend.Parsing.PostPrepare
 
                                         // we need to error
                                         _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, definedInOneOfTheParents,
-                                            [definedInOneOfTheParents.ContainingClass.Type.OutType.ToString(), decl.Type.OutType.ToString(), inh.OutType.ToString()],
+                                            [HapetType.AsString(definedInOneOfTheParents.ContainingClass.Type.OutType),
+                                            HapetType.AsString(decl.Type.OutType),
+                                            HapetType.AsString(inh.OutType)],
                                             ErrorCode.Get(CTEN.DoubleInterfaceCringeMeth));
                                         continue;
                                     }
@@ -758,7 +764,7 @@ namespace HapetFrontend.Parsing.PostPrepare
                                     {
                                         // error - the method of the interface was not implemented
                                         _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, inh,
-                                            [decl.Type.OutType.ToString(), inhF.Name.Name], ErrorCode.Get(CTEN.NoMethodImplementation));
+                                            [HapetType.AsString(decl.Type.OutType), inhF.Name.Name], ErrorCode.Get(CTEN.NoMethodImplementation));
                                     }
                                     else
                                     {
@@ -806,7 +812,7 @@ namespace HapetFrontend.Parsing.PostPrepare
 
                         // error - function shadowing
                         _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, currM.Name,
-                            [parentFnc.Type.OutType.ToString()], ErrorCode.Get(CTEN.FunctionShadowing));
+                            [HapetType.AsString(parentFnc.Type.OutType)], ErrorCode.Get(CTEN.FunctionShadowing));
                     }
                 }
 

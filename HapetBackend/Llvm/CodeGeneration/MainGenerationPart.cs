@@ -174,7 +174,7 @@ namespace HapetBackend.Llvm
                 // could be if an attr was not infered properly
                 if (x.AttributeName.OutType == null)
                     return false;
-                return x.AttributeName.OutType.ToString() == dllImportAttrFullName;
+                return HapetType.AsString(x.AttributeName.OutType) == dllImportAttrFullName;
             });
 
             // many checks are here

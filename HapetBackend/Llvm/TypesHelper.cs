@@ -326,7 +326,7 @@ namespace HapetBackend.Llvm
                     }
 
                 default:
-                    throw new NotImplementedException(ht.ToString());
+                    throw new NotImplementedException(HapetType.AsString(ht));
             }
         }
 

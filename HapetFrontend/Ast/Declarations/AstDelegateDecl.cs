@@ -27,7 +27,7 @@ namespace HapetFrontend.Ast.Declarations
             return new DelegateDeclJson()
             {
                 Parameters = parameters,
-                ReturnType = Returns.OutType.ToString(),
+                ReturnType = HapetType.AsString(Returns.OutType),
                 Name = Name.Name,
                 SpecialKeys = SpecialKeys,
                 Attributes = attributes,

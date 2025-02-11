@@ -1,6 +1,7 @@
 ﻿using HapetFrontend.Ast.Expressions;
 using HapetFrontend.Ast.Statements;
 using HapetFrontend.Parsing;
+using HapetFrontend.Types;
 using Newtonsoft.Json;
 
 namespace HapetFrontend.Ast.Declarations
@@ -35,7 +36,7 @@ namespace HapetFrontend.Ast.Declarations
             var attributes = Attributes.Select(x => x.GetJson()).ToList();
             return new ParamDeclJson()
             {
-                Type = Type.OutType.ToString(),
+                Type = HapetType.AsString(Type.OutType),
                 Name = Name.Name,
                 SpecialKeys = SpecialKeys, // need it for 'ref', 'out' and other shite
                 Attributes = attributes,

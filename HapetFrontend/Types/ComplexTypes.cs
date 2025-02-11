@@ -75,7 +75,7 @@ namespace HapetFrontend.Types
             var members = string.Join(", ", Members.Select(m =>
             {
                 if (m.name != null) return $"{m.type} {m.name}";
-                return m.type.ToString();
+                return HapetType.AsString(m.type);
             }));
             return $"({members})";
         }

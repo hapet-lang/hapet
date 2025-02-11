@@ -35,7 +35,7 @@ namespace HapetFrontend.Ast
 
         public override string ToString()
         {
-            return OutType.ToString();
+            return HapetType.AsString(OutType);
         }
     }
 }
