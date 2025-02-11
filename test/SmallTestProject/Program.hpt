@@ -9,6 +9,19 @@ public static class Program
 {
 	public static int Main(string[] args)
 	{
-		return 0;
+		Anime a = new Anime();
+		return a.Field1 + a.Field2;
+	}
+}
+
+public class Anime
+{
+	public int Field1;
+	public static int Field2;
+
+	public Anime()
+	{
+		Field1 = 2;
+		Field2 = 3;
 	}
 }

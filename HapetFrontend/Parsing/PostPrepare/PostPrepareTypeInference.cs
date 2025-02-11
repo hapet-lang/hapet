@@ -986,6 +986,21 @@ namespace HapetFrontend.Parsing.PostPrepare
                 PostPrepareExprInference(nestExpr.RightPart);
                 nestExpr.OutType = nestExpr.RightPart.OutType;
                 nestExpr.OutValue = nestExpr.RightPart.OutValue;
+
+                // kostyl to add 'this' as left part 
+                if (nestExpr.RightPart is AstIdExpr idExpr && 
+                    idExpr.FindSymbol is DeclSymbol dS && 
+                    dS.Decl is AstVarDecl vD && 
+                    (vD.ContainingParent is AstClassDecl || vD.ContainingParent is AstStructDecl) &&
+                    !vD.SpecialKeys.Contains(TokenType.KwStatic) &&
+                    !vD.SpecialKeys.Contains(TokenType.KwConst))
+                {
+                    var thisArg = new AstNestedExpr(new AstIdExpr("this", nestExpr), null, nestExpr);
+                    SetScopeAndParent(thisArg, nestExpr);
+                    PostPrepareExprScoping(thisArg);
+                    PostPrepareExprInference(thisArg);
+                    nestExpr.LeftPart = thisArg;
+                }
             }
             else
             {
