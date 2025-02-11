@@ -11,12 +11,12 @@ public class Object
         return "";
     }
 
-    public virtual bool Equals(Object obj)
+    public virtual bool Equals(object obj)
     {
         return this == obj;
     }
 
-    public static bool Equals(Object objA, Object objB)
+    public static bool Equals(object objA, object objB)
     {
         if (objA == objB)
         {
@@ -29,7 +29,7 @@ public class Object
         return objA.Equals(objB);
     }
 
-    public static bool ReferenceEquals(Object objA, Object objB)
+    public static bool ReferenceEquals(object objA, object objB)
     {
         return objA == objB;
     }

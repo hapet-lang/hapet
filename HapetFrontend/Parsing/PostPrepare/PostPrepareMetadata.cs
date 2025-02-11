@@ -125,9 +125,17 @@ namespace HapetFrontend.Parsing.PostPrepare
                     var smbl = file.NamespaceScope.GetSymbol(decl.Name.Name);
                     // TODO: better error like where is the first decl?
                     if (smbl != null)
+                    {
                         _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, decl.Name, [file.Namespace], ErrorCode.Get(CTEN.NamespaceAlreadyContains));
+                    }
                     else
+                    {
                         file.NamespaceScope.DefineDeclSymbol(decl.Name.Name, decl);
+
+                        // kostyl to create object alias :)
+                        if (newName == "System.Object")
+                            file.NamespaceScope.DefineDeclSymbol("System.object", decl);
+                    }
                 }
             }
         }
