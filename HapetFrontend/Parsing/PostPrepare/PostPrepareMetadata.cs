@@ -151,6 +151,19 @@ namespace HapetFrontend.Parsing.PostPrepare
                 {
                     PostPrepareExprInference(inh);
                 }
+
+                // set System.Object inheritance if there is nothing
+                if ((cls.InheritedFrom.Count <= 0 || 
+                    (cls.InheritedFrom[0].OutType as ClassType).Declaration.IsInterface) &&
+                    cls.Name.Name != "System.Object") // skip itself
+                {
+                    // set it only if there are not inheritances or only interfaces
+                    var nst = new AstNestedExpr(new AstIdExpr("System.Object", cls), null, cls);
+                    cls.InheritedFrom.Insert(0, nst);
+                    SetScopeAndParent(nst, cls);
+                    PostPrepareExprScoping(nst);
+                    PostPrepareExprInference(nst);
+                }
             }
             // resolve inheritance shite of enums
             foreach (var enm in AllEnumsMetadata)
