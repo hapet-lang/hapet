@@ -154,46 +154,74 @@ namespace HapetBackend.Llvm
                     case "==":
                         {
                             // checking if the result type of the OP is float
-                            if (op.ResultType is FloatType) theFunc = GetFCompare(LLVMRealPredicate.LLVMRealOEQ);
+                            if (op.RhsType is FloatType) theFunc = GetFCompare(LLVMRealPredicate.LLVMRealOEQ);
+                            // special logics for ptrs
+                            else if (op.RhsType is PointerType)
+                            {
+                                theFunc = (LLVMBuilderRef builder, LLVMValueRef left, LLVMValueRef right, string oper) =>
+                                {
+                                    var leftV = CreateCast(builder, left, op.LhsType, IntPtrType.Instance);
+                                    var rightV = CreateCast(builder, right, op.RhsType, IntPtrType.Instance);
+
+                                    // getting add func for the new types
+                                    var binOp = GetBinOp(op.Name, IntPtrType.Instance, IntPtrType.Instance);
+                                    var res = binOp(builder, leftV, rightV, oper);
+                                    return CreateCast(builder, res, IntPtrType.Instance, op.ResultType);
+                                };
+                            }
                             else theFunc = GetICompare(LLVMIntPredicate.LLVMIntEQ);
                             break;
                         }
                     case "!=":
                         {
                             // checking if the result type of the OP is float
-                            if (op.ResultType is FloatType) theFunc = GetFCompare(LLVMRealPredicate.LLVMRealONE);
+                            if (op.RhsType is FloatType) theFunc = GetFCompare(LLVMRealPredicate.LLVMRealONE);
+                            // special logics for ptrs
+                            else if (op.RhsType is PointerType)
+                            {
+                                theFunc = (LLVMBuilderRef builder, LLVMValueRef left, LLVMValueRef right, string oper) =>
+                                {
+                                    var leftV = CreateCast(builder, left, op.LhsType, IntPtrType.Instance);
+                                    var rightV = CreateCast(builder, right, op.RhsType, IntPtrType.Instance);
+
+                                    // getting add func for the new types
+                                    var binOp = GetBinOp(op.Name, IntPtrType.Instance, IntPtrType.Instance);
+                                    var res = binOp(builder, leftV, rightV, oper);
+                                    return CreateCast(builder, res, IntPtrType.Instance, op.ResultType);
+                                };
+                            }
                             else theFunc = GetICompare(LLVMIntPredicate.LLVMIntNE);
                             break;
                         }
                     case "<":
                         {
                             // checking if the result type of the OP is float
-                            if (op.ResultType is FloatType) theFunc = GetFCompare(LLVMRealPredicate.LLVMRealOLT);
-                            else if (op.ResultType is IntType intType && intType.Signed) theFunc = GetICompare(LLVMIntPredicate.LLVMIntSLT);
+                            if (op.RhsType is FloatType) theFunc = GetFCompare(LLVMRealPredicate.LLVMRealOLT);
+                            else if (op.RhsType is IntType intType && intType.Signed) theFunc = GetICompare(LLVMIntPredicate.LLVMIntSLT);
                             else theFunc = GetICompare(LLVMIntPredicate.LLVMIntULT); // here is also char type, so it is ok
                             break;
                         }
                     case "<=":
                         {
                             // checking if the result type of the OP is float
-                            if (op.ResultType is FloatType) theFunc = GetFCompare(LLVMRealPredicate.LLVMRealOLE);
-                            else if (op.ResultType is IntType intType && intType.Signed) theFunc = GetICompare(LLVMIntPredicate.LLVMIntSLE);
+                            if (op.RhsType is FloatType) theFunc = GetFCompare(LLVMRealPredicate.LLVMRealOLE);
+                            else if (op.RhsType is IntType intType && intType.Signed) theFunc = GetICompare(LLVMIntPredicate.LLVMIntSLE);
                             else theFunc = GetICompare(LLVMIntPredicate.LLVMIntULE); // here is also char type, so it is ok
                             break;
                         }
                     case ">":
                         {
                             // checking if the result type of the OP is float
-                            if (op.ResultType is FloatType) theFunc = GetFCompare(LLVMRealPredicate.LLVMRealOGT);
-                            else if (op.ResultType is IntType intType && intType.Signed) theFunc = GetICompare(LLVMIntPredicate.LLVMIntSGT);
+                            if (op.RhsType is FloatType) theFunc = GetFCompare(LLVMRealPredicate.LLVMRealOGT);
+                            else if (op.RhsType is IntType intType && intType.Signed) theFunc = GetICompare(LLVMIntPredicate.LLVMIntSGT);
                             else theFunc = GetICompare(LLVMIntPredicate.LLVMIntUGT); // here is also char type, so it is ok
                             break;
                         }
                     case ">=":
                         {
                             // checking if the result type of the OP is float
-                            if (op.ResultType is FloatType) theFunc = GetFCompare(LLVMRealPredicate.LLVMRealOGE);
-                            else if (op.ResultType is IntType intType && intType.Signed) theFunc = GetICompare(LLVMIntPredicate.LLVMIntSGE);
+                            if (op.RhsType is FloatType) theFunc = GetFCompare(LLVMRealPredicate.LLVMRealOGE);
+                            else if (op.RhsType is IntType intType && intType.Signed) theFunc = GetICompare(LLVMIntPredicate.LLVMIntSGE);
                             else theFunc = GetICompare(LLVMIntPredicate.LLVMIntUGE); // here is also char type, so it is ok
                             break;
                         }
