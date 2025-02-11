@@ -123,9 +123,20 @@ namespace HapetFrontend.Parsing.PostPrepare
                     {
                         file.NamespaceScope.DefineDeclSymbol(decl.Name.Name, decl);
 
-                        // kostyl to create object alias :)
+                        // kostyl to create aliases :)
                         if (newName == "System.Object")
+                        {
                             file.NamespaceScope.DefineDeclSymbol("System.object", decl);
+                        }
+                        else if (newName == "System.String")
+                        {
+                            decl.Type.OutType = StringType.GetInstance(decl as AstStructDecl);
+                            file.NamespaceScope.DefineDeclSymbol("System.string", decl);
+                        }
+                        else if (newName == "System.Array")
+                        {
+                            decl.Type.OutType = ArrayType.GetArrayType(PointerType.NullLiteralType, decl as AstStructDecl);
+                        }
                     }
                 }
             }

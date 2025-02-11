@@ -25,14 +25,6 @@ namespace HapetBackend.Llvm
         // TODO: mb refactor somehow?
         private void GenerateMetadataShiteTypes()
         {
-            // cringe kostyl :)
-            var arr = _postPreparer.AllStructsMetadata.First(x => x.Name.Name == "System.Array");
-            var arrLLVM = HapetTypeToLLVMType(arr.Type.OutType);
-            _llvmArrayType = arrLLVM;
-            var strg = _postPreparer.AllStructsMetadata.First(x => x.Name.Name == "System.String");
-            var strgLLVM = HapetTypeToLLVMType(strg.Type.OutType);
-            _llvmStringType = strgLLVM;
-
             // all over the classes
             foreach (var cls in _postPreparer.AllClassesMetadata)
             {

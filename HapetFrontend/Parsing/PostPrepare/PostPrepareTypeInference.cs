@@ -273,6 +273,9 @@ namespace HapetFrontend.Parsing.PostPrepare
                 case AstArrayAccessExpr arrayAccExpr:
                     PostPrepareArrayAccessExprInference(arrayAccExpr);
                     break;
+                case AstStringExpr stringExpr:
+                    stringExpr.OutType = StringType.GetInstance(stringExpr.Scope);
+                    break;
 
                 // statements
                 case AstAssignStmt assignStmt:
@@ -1124,7 +1127,7 @@ namespace HapetFrontend.Parsing.PostPrepare
         private void PostPrepareArrayExprInference(AstArrayExpr arrayExpr)
         {
             PostPrepareExprInference(arrayExpr.SubExpression);
-            arrayExpr.OutType = ArrayType.GetArrayType(arrayExpr.SubExpression.OutType);
+            arrayExpr.OutType = ArrayType.GetArrayType(arrayExpr.SubExpression.OutType, arrayExpr.Scope);
         }
 
         private void PostPrepareArrayCreateExprInference(AstArrayCreateExpr arrayExpr)
@@ -1143,7 +1146,7 @@ namespace HapetFrontend.Parsing.PostPrepare
             // preparing for ndim arrays
             while (sizeAmount > 1)
             {
-                expectingElementType = ArrayType.GetArrayType(expectingElementType);
+                expectingElementType = ArrayType.GetArrayType(expectingElementType, arrayExpr.Scope);
                 sizeAmount--;
             }
 

@@ -23,7 +23,6 @@ namespace HapetFrontend.Scoping
             DefineTypeSymbol("char16", CharType.DefaultType);
             DefineTypeSymbol("char", CharType.DefaultType);
             DefineTypeSymbol("bool", BoolType.Instance);
-            DefineTypeSymbol("string", StringType.Instance);
             DefineTypeSymbol("void", VoidType.Instance);
 
             DefineTypeSymbol("var", VarType.Instance);

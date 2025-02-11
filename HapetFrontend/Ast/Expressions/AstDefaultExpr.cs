@@ -17,6 +17,7 @@ namespace HapetFrontend.Ast.Expressions
             {
                 case StringType:
                     outExpr = new AstStringExpr("", null, orig);
+                    outExpr.OutType = StringType.GetInstance(orig.Scope);
                     break;
                 case IntType:
                     outExpr = new AstNumberExpr(NumberData.FromInt(0), null, tp, orig);

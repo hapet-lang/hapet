@@ -1,5 +1,6 @@
 ﻿using HapetFrontend.Ast.Declarations;
 using HapetFrontend.Ast.Expressions;
+using HapetFrontend.Scoping;
 using System.Numerics;
 
 namespace HapetFrontend.Types
@@ -364,7 +365,7 @@ namespace HapetFrontend.Types
         }
     }
 
-    public class ArrayType : HapetType
+    public class ArrayType : StructType
     {
         private static Dictionary<HapetType, ArrayType> _types = new Dictionary<HapetType, ArrayType>();
 
@@ -372,14 +373,17 @@ namespace HapetFrontend.Types
 
         public override string TypeName => $"array";
 
-        // array size is like that because of the array struct:
-        // { int32, ptr }
-        private ArrayType(HapetType target, int size) : base(size, PointerType.PointerSize)
+        private ArrayType(HapetType target, AstStructDecl arrStructDecl) : base(arrStructDecl)
         {
             TargetType = target;
         }
 
-        public static ArrayType GetArrayType(HapetType targetType)
+        public static ArrayType GetArrayType(HapetType targetType, Scope scope)
+        {
+            return GetArrayType(targetType, AstArrayExpr.GetArrayStruct(scope));
+        }
+
+        public static ArrayType GetArrayType(HapetType targetType, AstStructDecl arrStructDecl)
         {
             if (targetType == null)
                 return null;
@@ -388,23 +392,7 @@ namespace HapetFrontend.Types
             if (existing != null)
                 return existing;
 
-            int size;
-            if (PointerType.PointerSize > 4)
-            {
-                // { int, __, uintptr }
-                size = 4 + 4 + PointerType.PointerSize;
-            }
-            else if (PointerType.PointerSize < 4)
-            {
-                // { int, uintptr, __ }
-                size = 4 + 4;
-            }
-            else
-            {
-                // { int, uintptr }
-                size = 4 + PointerType.PointerSize;
-            }
-            var type = new ArrayType(targetType, size);
+            var type = new ArrayType(targetType, arrStructDecl);
 
             _types[targetType] = type;
             return type;
@@ -503,43 +491,26 @@ namespace HapetFrontend.Types
         };
     }
 
-    public class StringType : HapetType
+    public class StringType : StructType
     {
         private static StringType _instance;
-        public static StringType Instance
+        public static StringType GetInstance(Scope scope)
         {
-            get
-            {
-                // string size is like that because of the string struct:
-                // { int32, ptr }
-                if (_instance == null)
-                {
-                    int size;
-                    if (PointerType.PointerSize > 4)
-                    {
-                        // { int, __, uintptr }
-                        size = 4 + 4 + PointerType.PointerSize;
-                    }
-                    else if (PointerType.PointerSize < 4)
-                    {
-                        // { int, uintptr, __ }
-                        size = 4 + 4;
-                    }
-                    else
-                    {
-                        // { int, uintptr }
-                        size = 4 + PointerType.PointerSize;
-                    }
-                    _instance = new StringType(size, PointerType.PointerSize);
-                }
-                return _instance;
-            }
+            return GetInstance(AstStringExpr.GetStringStruct(scope));
         }
-        public static StringType LiteralType { get; } = new StringType(0, 0);
+        public static StringType GetInstance(AstStructDecl strDecl)
+        {
+            if (_instance == null)
+            {
+                _instance = new StringType(strDecl);
+            }
+            return _instance;
+        }
+        public static StringType LiteralType { get; } = new StringType(null);
 
         public override string TypeName => "string";
 
-        private StringType(int size, int align) : base(size, align) { }
+        private StringType(AstStructDecl astStructDecl) : base(astStructDecl) { }
         public override string ToString() => "string";
     }
 

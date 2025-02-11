@@ -15,15 +15,16 @@ namespace HapetBackend.Llvm
         /// <returns>Array struct</returns>
         private unsafe LLVMValueRef GenerateArrayInternal(AstArrayCreateExpr expr, bool getPtr = false)
         {
+            ArrayType arrType = ArrayType.GetArrayType(expr.TypeName.OutType, expr.Scope);
             AstExpression currentSizeExpr = expr.SizeExprs.Last();
             LLVMValueRef currentArraySizeValueRef = GenerateExpressionCode(currentSizeExpr);
-            LLVMTypeRef arrayTypeRef = HapetTypeToLLVMType(ArrayType.GetArrayType(expr.TypeName.OutType));
+            LLVMTypeRef arrayTypeRef = HapetTypeToLLVMType(arrType);
 
             // allocating mem for the array buf
             LLVMValueRef allocated;
             if (expr.SizeExprs.Count > 1)
                 // allocating memory for the array
-                allocated = GetMalloc(ArrayType.GetArrayType(expr.TypeName.OutType).GetSize(), currentArraySizeValueRef);
+                allocated = GetMalloc(arrType.GetSize(), currentArraySizeValueRef);
             else
                 // allocating memory for the data in array
                 allocated = GetMalloc(expr.TypeName.OutType.GetSize(), currentArraySizeValueRef);
@@ -98,7 +99,7 @@ namespace HapetBackend.Llvm
                 else
                 {
                     // just normal default values 
-                    var defaultVal = GenerateExpressionCode(AstDefaultExpr.GetDefaultValueForType(expr.TypeName.OutType, null));
+                    var defaultVal = GenerateExpressionCode(AstDefaultExpr.GetDefaultValueForType(expr.TypeName.OutType, expr.TypeName));
                     var arrayBufEl = _builder.BuildGEP2(HapetTypeToLLVMType(expr.TypeName.OutType), allocated, new LLVMValueRef[] { iLoadedForBody }, $"elementPtr");
                     _builder.BuildStore(defaultVal, arrayBufEl);
                 }
@@ -125,7 +126,7 @@ namespace HapetBackend.Llvm
             }
 
             // creating array variable
-            var theArrayItself = CreateLocalVariable(ArrayType.GetArrayType(expr.TypeName.OutType), "theArray");
+            var theArrayItself = CreateLocalVariable(arrType, "theArray");
 
             // the 1 is because ArrayType struct has buf field as it's 1 param
             var buf = _builder.BuildStructGEP2(arrayTypeRef, theArrayItself, 1, "arrayBuf");
@@ -137,7 +138,7 @@ namespace HapetBackend.Llvm
             if (getPtr)
                 return theArrayItself;
 
-            var theArrayItselfLoaded = _builder.BuildLoad2(HapetTypeToLLVMType(ArrayType.GetArrayType(expr.TypeName.OutType)), theArrayItself, "theArrayLoaded");
+            var theArrayItselfLoaded = _builder.BuildLoad2(HapetTypeToLLVMType(arrType), theArrayItself, "theArrayLoaded");
             return theArrayItselfLoaded;
         }
     }

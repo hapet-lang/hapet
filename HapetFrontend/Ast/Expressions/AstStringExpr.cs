@@ -15,7 +15,6 @@ namespace HapetFrontend.Ast.Expressions
         {
             this.OutValue = value;
             this.Suffix = suffix;
-            OutType = StringType.Instance;
         }
 
         public static AstStructDecl GetStringStruct(Scope scope)

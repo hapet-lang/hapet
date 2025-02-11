@@ -34,8 +34,8 @@
         {
         }
 
-        public int GetSize() => _size;
-        public int GetAlignment() => _alignment;
+        public virtual int GetSize() => _size;
+        public virtual int GetAlignment() => _alignment;
 
         public void SetSizeAndAlignment(int size, int align)
         {

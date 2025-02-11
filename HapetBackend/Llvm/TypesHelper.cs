@@ -35,16 +35,18 @@ namespace HapetBackend.Llvm
         /// </summary>
         private Dictionary<string, LLVMTypeRef> _delegateAnonTypes = new Dictionary<string, LLVMTypeRef>();
 
-        // cringe
-        // cache
-        private LLVMTypeRef _llvmArrayType = null;
-        // cache
-        private LLVMTypeRef _llvmStringType = null;
-
         private LLVMTypeRef HapetTypeToLLVMType(HapetType ht)
         {
             if (_typeMap.TryGetValue(ht, out var tt))
                 return tt;
+
+            // all array types are the same
+            if (ht is ArrayType)
+            {
+                var kw = _typeMap.Any(x => x.Key is ArrayType);
+                if (kw)
+                    return _typeMap.First(x => x.Key is ArrayType).Value;
+            }
 
             var t = HapetTypeToLLVMTypeHelper(ht);
             _typeMap[ht] = t;
@@ -59,12 +61,6 @@ namespace HapetBackend.Llvm
                     {
                         return _context.CreateNamedStruct($"class.{t.Declaration.Name.Name}"); ;
                     }
-
-                case StringType:
-                    return _llvmStringType;
-
-                case ArrayType:
-                    return _llvmArrayType;
 
                 case BoolType b:
                     return _context.Int1Type;
@@ -256,12 +252,14 @@ namespace HapetBackend.Llvm
                         var stringGlobArray = _module.AddGlobal(LLVMTypeRef.CreateArray(HapetTypeToLLVMType(CharType.DefaultType), (uint)theString.Length), "constString");
                         stringGlobArray.Initializer = LLVMValueRef.CreateConstArray(HapetTypeToLLVMType(CharType.DefaultType), elements);
 
+                        var stringType = StringType.GetInstance(_currentSourceFile.NamespaceScope);
+
                         // creating string variable
-                        var theStringItself = CreateLocalVariable(StringType.Instance, "theString");
+                        var theStringItself = CreateLocalVariable(stringType, "theString");
 
                         // it would work only with const string assignment. if you want smth like this to work
                         // if they are trying to store a char* in string
-                        var tp = HapetTypeToLLVMType(StringType.Instance);
+                        var tp = HapetTypeToLLVMType(stringType);
                         // the 1 is because StringType struct has buf field as it's 1 param
                         var buf = _builder.BuildStructGEP2(tp, theStringItself, 1, "strBuf");
                         _builder.BuildStore(stringGlobArray, buf);
@@ -270,7 +268,7 @@ namespace HapetBackend.Llvm
                         _builder.BuildStore(stringSizeValueRef, len);
 
                         // loading the string struct
-                        var theStringItselfLoaded = _builder.BuildLoad2(HapetTypeToLLVMType(StringType.Instance), theStringItself, "theStringLoaded");
+                        var theStringItselfLoaded = _builder.BuildLoad2(HapetTypeToLLVMType(stringType), theStringItself, "theStringLoaded");
                         return theStringItselfLoaded;
                     }
             }
