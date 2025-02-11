@@ -511,7 +511,6 @@ namespace HapetFrontend.Types
         public override string TypeName => "string";
 
         private StringType(AstStructDecl astStructDecl) : base(astStructDecl) { }
-        public override string ToString() => "string";
     }
 
     public class IntPtrType : IntType

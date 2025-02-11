@@ -94,11 +94,15 @@ namespace HapetFrontend.Parsing.PostPrepare
             {
                 classDecl.Scope.DefineDeclSymbol(classDecl.Name.Name, classDecl);
                 AllClassesMetadata.Add(classDecl);
+
+                PostPrepareAliases(classDecl.Name.Name, classDecl.Scope, classDecl);
             }
             foreach (var structDecl in _structs)
             {
                 structDecl.Scope.DefineDeclSymbol(structDecl.Name.Name, structDecl);
                 AllStructsMetadata.Add(structDecl);
+
+                PostPrepareAliases(structDecl.Name.Name, structDecl.Scope, structDecl);
             }
             foreach (var enumDecl in _enums)
             {

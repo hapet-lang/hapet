@@ -5,6 +5,7 @@ using HapetFrontend.Ast.Statements;
 using HapetFrontend.Entities;
 using HapetFrontend.Errors;
 using HapetFrontend.Helpers;
+using HapetFrontend.Scoping;
 using HapetFrontend.Types;
 using Newtonsoft.Json;
 using System;
@@ -24,6 +25,24 @@ namespace HapetFrontend.Parsing.PostPrepare
         private List<AstEnumDecl> _serializeEnumsMetadata { get; } = new List<AstEnumDecl>();
         private List<AstDelegateDecl> _serializeDelegatesMetadata { get; } = new List<AstDelegateDecl>();
         private List<AstFuncDecl> _serializeFunctionsMetadata { get; } = new List<AstFuncDecl>();
+
+        public static void PostPrepareAliases(string typeName, Scope scope, AstDeclaration decl)
+        {
+            // kostyl to create aliases :)
+            if (typeName == "System.Object")
+            {
+                scope.DefineDeclSymbol("System.object", decl);
+            }
+            else if (typeName == "System.String")
+            {
+                decl.Type.OutType = StringType.GetInstance(decl as AstStructDecl);
+                scope.DefineDeclSymbol("System.string", decl);
+            }
+            else if (typeName == "System.Array")
+            {
+                decl.Type.OutType = ArrayType.GetArrayType(PointerType.NullLiteralType, decl as AstStructDecl);
+            }
+        }
 
         private int PostPrepareMetadata()
         {
@@ -123,20 +142,7 @@ namespace HapetFrontend.Parsing.PostPrepare
                     {
                         file.NamespaceScope.DefineDeclSymbol(decl.Name.Name, decl);
 
-                        // kostyl to create aliases :)
-                        if (newName == "System.Object")
-                        {
-                            file.NamespaceScope.DefineDeclSymbol("System.object", decl);
-                        }
-                        else if (newName == "System.String")
-                        {
-                            decl.Type.OutType = StringType.GetInstance(decl as AstStructDecl);
-                            file.NamespaceScope.DefineDeclSymbol("System.string", decl);
-                        }
-                        else if (newName == "System.Array")
-                        {
-                            decl.Type.OutType = ArrayType.GetArrayType(PointerType.NullLiteralType, decl as AstStructDecl);
-                        }
+                        PostPrepareAliases(newName, file.NamespaceScope, decl);
                     }
                 }
             }

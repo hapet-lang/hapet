@@ -70,7 +70,7 @@ namespace HapetFrontend.Parsing.PostPrepare
                         continue;
 
                     var funcDecl = decl as AstFuncDecl;
-                    if (funcDecl.Name.Name.EndsWith("Main(string[])") &&
+                    if (funcDecl.Name.Name.EndsWith("Main(System.String[])") &&
                         funcDecl.Returns.OutType == IntType.GetIntType(4, true) &&
                         funcDecl.Parameters.Count == 1)
                     {
