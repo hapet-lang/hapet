@@ -917,7 +917,7 @@ namespace HapetFrontend.Parsing.PostPrepare
                 }
                 else
                 {
-                    // getting the name but without object first param
+                    // getting the name but with object first param
                     newName = $"{clsTpStatic.Declaration.Name.Name}::{callExpr.FuncName.Name}{callExpr.Arguments.GetArgsString(PointerType.GetPointerType(clsTpStatic))}";
 
                     List<AstExpression> argsWithClassParam = new List<AstExpression>(callExpr.Arguments);
@@ -940,6 +940,43 @@ namespace HapetFrontend.Parsing.PostPrepare
                 newName = $"{structType.Declaration.Name.Name}::{callExpr.FuncName.Name}{callExpr.Arguments.GetArgsString()}";
 
                 var smbl2 = structType.Declaration.SubScope.GetFuncFromCandidates(newName, callExpr.Arguments.Select(x => x.Expr).ToList(), this, structType.Declaration, out var casts);
+
+                // check if the decl exists. if not - it could be non static method call from a class name
+                if (smbl2 is DeclSymbol ds && ds.Decl is AstFuncDecl funcDecl)
+                {
+                    if (!CheckIfCouldBeAccessed(callExpr, funcDecl))
+                        _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, callExpr.FuncName, [], ErrorCode.Get(CTEN.FuncCouldNotBeAccessed));
+                    newName = funcDecl.Name.Name;
+                    callExpr.Arguments.ReplaceWithCasts(casts);
+                }
+                else
+                {
+                    // getting the name but with object first param
+                    newName = $"{structType.Declaration.Name.Name}::{callExpr.FuncName.Name}{callExpr.Arguments.GetArgsString(structType)}";
+
+                    List<AstExpression> argsWithStructParam = new List<AstExpression>(callExpr.Arguments);
+                    var pseudoStructArg = callExpr.TypeOrObjectName;
+                    argsWithStructParam.Insert(0, pseudoStructArg);
+                    smbl2 = structType.Declaration.SubScope.GetFuncFromCandidates(newName, argsWithStructParam, this, structType.Declaration, out var _);
+
+                    var declSymbolOfLeft = (callExpr.TypeOrObjectName.RightPart as AstIdExpr).FindSymbol as DeclSymbol;
+
+                    if (smbl2 is DeclSymbol ds2 && ds2.Decl is AstFuncDecl funcDecl2)
+                    {
+                        // error because user tries to access non static method from a class name
+                        if (declSymbolOfLeft.Decl is AstStructDecl)
+                            _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, callExpr.FuncName, [], ErrorCode.Get(CTEN.NonStaticFuncFromStatic));
+                        else
+                        {
+                            if (!CheckIfCouldBeAccessed(callExpr, funcDecl2))
+                                _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, callExpr.FuncName, [], ErrorCode.Get(CTEN.FuncCouldNotBeAccessed));
+                            newName = funcDecl2.Name.Name;
+                            callExpr.Arguments.ReplaceWithCasts(casts);
+                        }
+                    }
+                    else
+                        _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, callExpr.FuncName, [], ErrorCode.Get(CTEN.FuncWithNameNotFound));
+                }
             }
             else
             {
