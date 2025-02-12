@@ -407,18 +407,22 @@ namespace HapetBackend.Llvm
             // the func is needed to handle virtual shite
             LLVMValueRef CreateCall(LLVMBuilderRef builder, LLVMTypeRef funcType, FunctionType hapetType, LLVMValueRef func, List<LLVMValueRef> args, string name = "")
             {
-                var virtualMethod = hapetType.Declaration.ContainingClass.AllVirtualMethods.GetSameByNameAndTypes(hapetType.Declaration, out int index);
+                // TODO: remove when struct func calls
+                if (hapetType.Declaration.ContainingParent is not AstClassDecl clsDecl)
+                    return default;
+
+                var virtualMethod = clsDecl.AllVirtualMethods.GetSameByNameAndTypes(hapetType.Declaration, out int index);
                 // if it is a virtual method call
                 if (virtualMethod != null)
                 {
-                    if (hapetType.Declaration.ContainingClass.IsInterface)
+                    if (clsDecl.IsInterface)
                     {
                         // WARN: hard cock
                         var helper = _currentFunction.Scope.GetSymbolInNamespace("System.Runtime.Conversion", "VtableHelper");
                         var methSymbol = (helper.Decl as AstClassDecl).SubScope.GetSymbol("System.Runtime.Conversion.VtableHelper::GetInterfaceMethodByIndex(void*:System.Runtime.VirtualTableUnsafe*:int)") as DeclSymbol;
                         var methFunc = _valueMap[methSymbol];
                         LLVMTypeRef methType = _typeMap[methSymbol.Decl.Type.OutType];
-                        var vtableInfo = _virtualTableDictionary[hapetType.Declaration.ContainingClass.Type.OutType as ClassType];
+                        var vtableInfo = _virtualTableDictionary[clsDecl.Type.OutType as ClassType];
                         var funcToCall = _builder.BuildCall2(methType, methFunc, new LLVMValueRef[] { args[0], vtableInfo, LLVMValueRef.CreateConstInt(_context.Int32Type, (ulong)index) }, "funcToCall");
                         return builder.BuildCall2(funcType, funcToCall, args.ToArray(), name);
                     }

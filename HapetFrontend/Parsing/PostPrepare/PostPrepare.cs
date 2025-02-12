@@ -92,7 +92,7 @@ namespace HapetFrontend.Parsing.PostPrepare
                 return;
 
             // also add main's func class
-            _allUsedClassesInProgram.Add(_compiler.MainFunction.ContainingClass);
+            _allUsedClassesInProgram.Add(_compiler.MainFunction.ContainingParent as AstClassDecl);
             // WARN! ToList is required! because _allUsedClassesInProgram is going to be modified below for no reason
             var unique = _allUsedClassesInProgram.Distinct().ToList();
             foreach (var cls in unique)

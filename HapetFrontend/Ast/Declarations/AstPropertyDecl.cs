@@ -55,7 +55,7 @@ namespace HapetFrontend.Ast.Declarations
             };
         }
 
-        public AstVarDecl GetField()
+        public AstVarDecl GetField(bool forStruct)
         {
             var field = new AstVarDecl(Type, Name.GetCopy($"field_{Name.Name}"), Initializer, Documentation, Location)
             {
@@ -65,10 +65,16 @@ namespace HapetFrontend.Ast.Declarations
                 SourceFile = SourceFile,
             };
             field.Attributes.AddRange(Attributes);
-            field.SpecialKeys.Add(TokenType.KwPrivate);
-            // if the propa is static - make the field also static
-            if (SpecialKeys.Contains(TokenType.KwStatic))
-                field.SpecialKeys.Add(TokenType.KwStatic);
+
+            // no special keys for struct
+            if (!forStruct)
+            {
+                field.SpecialKeys.Add(TokenType.KwPrivate);
+                // if the propa is static - make the field also static
+                if (SpecialKeys.Contains(TokenType.KwStatic))
+                    field.SpecialKeys.Add(TokenType.KwStatic);
+            }
+            
             return field;
         }
 
@@ -86,7 +92,7 @@ namespace HapetFrontend.Ast.Declarations
                 "",
                 Location);
             func.SpecialKeys.AddRange(SpecialKeys);
-            func.ContainingClass = ContainingParent as AstClassDecl; // it has to be
+            func.ContainingParent = ContainingParent; // it has to be
             func.IsPropertyFunction = true;
 
             if (SetBlock == null)
@@ -120,7 +126,7 @@ namespace HapetFrontend.Ast.Declarations
                 "",
                 Location);
             func.SpecialKeys.AddRange(SpecialKeys);
-            func.ContainingClass = ContainingParent as AstClassDecl; // it has to be
+            func.ContainingParent = ContainingParent; // it has to be
             func.IsPropertyFunction = true;
 
             if (GetBlock == null)

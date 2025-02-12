@@ -24,7 +24,7 @@ namespace HapetFrontend.Ast.Declarations
         /// The class that contains the function
         /// </summary>
         [JsonIgnore]
-        public AstClassDecl ContainingClass { get; set; }
+        public AstDeclaration ContainingParent { get; set; }
 
         /// <summary>
         /// Statement of calling base ctor. Used only for ctors!!!!

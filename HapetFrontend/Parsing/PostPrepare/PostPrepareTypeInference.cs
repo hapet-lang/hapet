@@ -110,15 +110,15 @@ namespace HapetFrontend.Parsing.PostPrepare
                 }
 
                 // if the containing class is empty - it is external func
-                if (funcDecl.ContainingClass != null)
+                if (funcDecl.ContainingParent != null)
                 {
                     // it could already contain all the shite if the func is imported from another assembly :)
                     string newName = funcDecl.Name.Name;
                     if (!funcDecl.Name.Name.Contains("::"))
                         // renaming func name from 'Anime' to 'Anime(int, float)'
-                        newName = $"{funcDecl.ContainingClass.Name.Name}::{funcDecl.Name.Name}{funcDecl.Parameters.GetParamsString()}";
+                        newName = $"{funcDecl.ContainingParent.Name.Name}::{funcDecl.Name.Name}{funcDecl.Parameters.GetParamsString()}";
                     // if it is public func - it should be visible in the scope in which func's class is
-                    funcDecl.ContainingClass.SubScope.DefineDeclSymbol(newName, funcDecl);
+                    funcDecl.ContainingParent.SubScope.DefineDeclSymbol(newName, funcDecl);
                     funcDecl.Name = funcDecl.Name.GetCopy(newName);
                 }
 
@@ -135,9 +135,10 @@ namespace HapetFrontend.Parsing.PostPrepare
 
                 // check if the class if inherited from smth
                 if (funcDecl.ClassFunctionType == Enums.ClassFunctionType.Ctor &&
-                    funcDecl.ContainingClass.InheritedFrom.Count > 0 &&
+                    funcDecl.ContainingParent is AstClassDecl clsDecl &&
+                    clsDecl.InheritedFrom.Count > 0 &&
                     funcDecl.BaseCtorCall != null &&
-                    funcDecl.ContainingClass.InheritedFrom[0].OutType is ClassType baseType &&
+                    clsDecl.InheritedFrom[0].OutType is ClassType baseType &&
                     !baseType.Declaration.IsInterface)
                 {
                     PostPrepareExprInference(funcDecl.BaseCtorCall);
@@ -968,7 +969,7 @@ namespace HapetFrontend.Parsing.PostPrepare
                             _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, callExpr.FuncName, [], ErrorCode.Get(CTEN.NonStaticFuncFromStatic));
                         else
                         {
-                            if (!CheckIfCouldBeAccessed(callExpr, funcDecl2))
+                            if (!CheckIfCouldBeAccessed(callExpr, funcDecl2) && !funcDecl2.IsPropertyFunction)
                                 _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, callExpr.FuncName, [], ErrorCode.Get(CTEN.FuncCouldNotBeAccessed));
                             newName = funcDecl2.Name.Name;
                             callExpr.Arguments.ReplaceWithCasts(casts);
@@ -1528,7 +1529,7 @@ namespace HapetFrontend.Parsing.PostPrepare
                     var parent = accessee switch
                     {
                         AstVarDecl vd => vd.ContainingParent,
-                        AstFuncDecl fd => fd.ContainingClass,
+                        AstFuncDecl fd => fd.ContainingParent,
                         _ => null
                     };
                     if (parent != null)

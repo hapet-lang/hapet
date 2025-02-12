@@ -21,10 +21,110 @@ namespace HapetFrontend.Parsing.PostPrepare
                     {
                         PostPrepareClassMethodsInternal(classDecl);
                     }
+                    else if (stmt is AstStructDecl structDecl)
+                    {
+                        PostPrepareStructMethodsInternal(structDecl);
+                    }
                 }
             }
         }
 
+        /// <summary>
+        /// WARN!!! almost the same as <see cref="PostPrepareClassMethodsInternal"/>
+        /// Some changes made here - has to be also made in upper shite
+        /// </summary>
+        /// <param name="structDecl"></param>
+        private void PostPrepareStructMethodsInternal(AstStructDecl structDecl)
+        {
+            // getting all functions in the class
+            var allFuncs = structDecl.Declarations.Where(x => x is AstFuncDecl).Select(x => x as AstFuncDecl);
+
+            // error if user created a func with the initializer name
+            var propFuncs = allFuncs.Where(x => x.Name.Name.StartsWith($"get_") || x.Name.Name.StartsWith($"set_"));
+            foreach (var fnc in propFuncs)
+            {
+                _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, fnc.Name, [], ErrorCode.Get(CTEN.ClassFuncGetSetName));
+            }
+
+            // getting all props in the class
+            var allProps = structDecl.Declarations.Where(x => x is AstPropertyDecl).Select(x => x as AstPropertyDecl);
+            var allFields = structDecl.Declarations.Where(x => x is AstVarDecl varD && x is not AstPropertyDecl).Select(x => x as AstVarDecl);
+            foreach (var pp in allProps)
+            {
+                // check if there is already a field named like 'field_Prop'
+                // error in this situation because we probably going to generate the field
+                // also check if the prop is really going to gen field
+                var theField = allFields.FirstOrDefault(x => x.Name.Name == $"field_{pp.Name.Name}");
+                if (theField != null)
+                {
+                    // also check if the prop is really going to gen field
+                    if (pp.GetBlock == null && pp.SetBlock == null)
+                        _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, theField, [pp.Name.Name], ErrorCode.Get(CTEN.ClassPropFieldExists));
+                }
+            }
+
+            // getting all fields and props and error if there are equal names
+            var allFieldsAndProps = structDecl.Declarations.Where(x => x is AstVarDecl).Select(x => x as AstVarDecl).ToList();
+            for (int i = 0; i < allFieldsAndProps.Count; ++i)
+            {
+                for (int j = i; j < allFieldsAndProps.Count; ++j)
+                {
+                    if (j == i)
+                        continue;
+                    if (allFieldsAndProps[i].Name.Name == allFieldsAndProps[j].Name.Name)
+                    {
+                        // TODO: show previous field decl
+                        _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, allFieldsAndProps[j], [], ErrorCode.Get(CTEN.ClassPropsFieldsSame));
+                    }
+                }
+            }
+
+            // generate prop's fields and funcs
+            /// removing props is done in <see cref="RemoveAllProperties"/>
+            PostPrepareStructProperties(structDecl);
+
+            // 
+            foreach (var decl in structDecl.Declarations)
+            {
+                if (decl is not AstFuncDecl funcDecl)
+                    continue;
+
+                // adding 'this' param to func params
+                if (!funcDecl.SpecialKeys.Contains(TokenType.KwStatic))
+                {
+                    // creating the class instance 'this' param
+                    AstExpression paramType = structDecl.Name.GetCopy();
+                    AstIdExpr paramName = new AstIdExpr("this");
+                    AstParamDecl thisParam = new AstParamDecl(paramType, paramName);
+                    // adding the param as the func first param
+                    funcDecl.Parameters.Insert(0, thisParam);
+                }
+
+                // checking for 'return' existance at the end. if not - add
+                if (funcDecl.Body != null && funcDecl.Body.Statements.LastOrDefault() is not AstReturnStmt)
+                {
+                    funcDecl.Body.Statements.Add(new AstReturnStmt(null));
+                }
+
+                // adding virtual key to all overrides
+                if (funcDecl.SpecialKeys.Contains(TokenType.KwOverride))
+                    funcDecl.SpecialKeys.Add(TokenType.KwVirtual);
+
+                // abs has to not have impl
+                if (funcDecl.SpecialKeys.Contains(TokenType.KwAbstract) &&
+                    funcDecl.Body != null &&
+                    !funcDecl.IsPropertyFunction)
+                {
+                    _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, funcDecl.Name, [], ErrorCode.Get(CTEN.AbsMethodWithBody));
+                }
+            }
+        }
+
+        /// <summary>
+        /// WARN!!! almost the same as <see cref="PostPrepareStructMethodsInternal"/>
+        /// Some changes made here - has to be also made in upper shite
+        /// </summary>
+        /// <param name="classDecl"></param>
         private void PostPrepareClassMethodsInternal(AstClassDecl classDecl)
         {
             // check that all decls in the class are also static
@@ -184,7 +284,7 @@ namespace HapetFrontend.Parsing.PostPrepare
             new AstIdExpr($"{classDecl.Name.Name}_ini"));
             iniDecl.SpecialKeys.Add(TokenType.KwUnreflected); // ini is private because it is called inside ctors
             iniDecl.ClassFunctionType = Enums.ClassFunctionType.Initializer;
-            iniDecl.ContainingClass = classDecl;
+            iniDecl.ContainingParent = classDecl;
             classDecl.Declarations.Insert(0, iniDecl);
         }
 
@@ -213,7 +313,7 @@ namespace HapetFrontend.Parsing.PostPrepare
                 ctorDecl.BaseCtorCall = new AstBaseCtorStmt(location: ctorDecl.Name);
                 ctorDecl.SpecialKeys.Add(TokenType.KwPublic); // default ctor is public
                 ctorDecl.ClassFunctionType = Enums.ClassFunctionType.Ctor;
-                ctorDecl.ContainingClass = classDecl;
+                ctorDecl.ContainingParent = classDecl;
                 classDecl.Declarations.Insert(1, ctorDecl); // the first one has to be ini func
             }
             else
@@ -256,7 +356,7 @@ namespace HapetFrontend.Parsing.PostPrepare
                 new AstIdExpr($"{classDecl.Name.Name}_dtor"));
                 dtorDecl.SpecialKeys.Add(TokenType.KwPublic); // default dtor is public
                 dtorDecl.ClassFunctionType = Enums.ClassFunctionType.Dtor;
-                dtorDecl.ContainingClass = classDecl;
+                dtorDecl.ContainingParent = classDecl;
                 classDecl.Declarations.Add(dtorDecl);
             }
             else if (dtors.Count == 1)
@@ -313,7 +413,7 @@ namespace HapetFrontend.Parsing.PostPrepare
                 storDecl.SpecialKeys.Add(TokenType.KwPublic); // stor is public
                 storDecl.SpecialKeys.Add(TokenType.KwStatic); // stor is static
                 storDecl.ClassFunctionType = Enums.ClassFunctionType.StaticCtor;
-                storDecl.ContainingClass = classDecl;
+                storDecl.ContainingParent = classDecl;
                 classDecl.Declarations.Add(storDecl);
             }
             else if (ctors.Count == 1)
@@ -339,6 +439,44 @@ namespace HapetFrontend.Parsing.PostPrepare
         }
 
         /// <summary>
+        /// Function to unwrap all the props in struct
+        /// </summary>
+        /// <param name="structDecl">The struct with props</param>
+        private void PostPrepareStructProperties(AstStructDecl structDecl)
+        {
+            List<AstDeclaration> declarationsToAdd = new List<AstDeclaration>();
+            foreach (var prop in structDecl.Declarations.Where(x => x is AstPropertyDecl).Select(x => x as AstPropertyDecl))
+            {
+                if (prop.GetBlock == null && prop.SetBlock == null)
+                {
+                    // need to create a field :(
+                    AstVarDecl propField = prop.GetField(true);
+                    declarationsToAdd.Add(propField);
+                }
+                if (prop.HasGet)
+                {
+                    // need to create a 'get' method
+                    AstFuncDecl getFunc = prop.GetGetFunction();
+                    declarationsToAdd.Add(getFunc);
+                }
+                if (prop.HasSet)
+                {
+                    // need to create a 'set' method
+                    AstFuncDecl setFunc = prop.GetSetFunction();
+                    declarationsToAdd.Add(setFunc);
+                }
+
+                // abs has to not have impl
+                if (prop.SpecialKeys.Contains(TokenType.KwAbstract) &&
+                    (prop.GetBlock != null || prop.SetBlock != null))
+                {
+                    _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, prop.Name, [], ErrorCode.Get(CTEN.AbsPropertyWithBody));
+                }
+            }
+            structDecl.Declarations.AddRange(declarationsToAdd);
+        }
+
+        /// <summary>
         /// Function to unwrap all the props
         /// </summary>
         /// <param name="classDecl">The class with props</param>
@@ -350,7 +488,7 @@ namespace HapetFrontend.Parsing.PostPrepare
                 if (prop.GetBlock == null && prop.SetBlock == null)
                 {
                     // need to create a field :(
-                    AstVarDecl propField = prop.GetField();
+                    AstVarDecl propField = prop.GetField(false);
                     // add abstract key to the field if it is an interface
                     if (classDecl.IsInterface)
                         propField.SpecialKeys.Add(TokenType.KwAbstract);

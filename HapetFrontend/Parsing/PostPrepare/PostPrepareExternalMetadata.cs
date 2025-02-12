@@ -31,7 +31,7 @@ namespace HapetFrontend.Parsing.PostPrepare
                 string className = string.Concat(fnc.Name.Name.TakeWhile(x => x != ':'));
                 var theClass = _classes.FirstOrDefault(x => x.Name.Name == className); // TODO: error if null
                 theClass.Declarations.Add(fnc);
-                fnc.ContainingClass = theClass;
+                fnc.ContainingParent = theClass;
             }
 
             // we need to do this to know locations of the asts

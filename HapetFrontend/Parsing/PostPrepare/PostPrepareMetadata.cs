@@ -710,6 +710,16 @@ namespace HapetFrontend.Parsing.PostPrepare
                     _serializeFunctionsMetadata.Add(decl);
                 }
             }
+            foreach (var str in _serializeStructsMetadata)
+            {
+                _currentSourceFile = str.SourceFile;
+                foreach (var decl in str.Declarations.Where(x => x is AstFuncDecl).Select(x => x as AstFuncDecl))
+                {
+                    PostPrepareFunctionInference(decl, true);
+                    AllFunctionsMetadata.Add(decl);
+                    _serializeFunctionsMetadata.Add(decl);
+                }
+            }
         }
 
         private void PostPrepareMetadataInheritedFunctions()
@@ -745,7 +755,7 @@ namespace HapetFrontend.Parsing.PostPrepare
                                 if (definedInOneOfTheParents != null)
                                 {
                                     // check if the already defined method is by the interface
-                                    bool isInherited = (definedInOneOfTheParents.ContainingClass.Type.OutType as ClassType).IsInheritedFrom(inhF.ContainingClass.Type.OutType as ClassType, true);
+                                    bool isInherited = (definedInOneOfTheParents.ContainingParent.Type.OutType as ClassType).IsInheritedFrom(inhF.ContainingParent.Type.OutType as ClassType, true);
                                     // if inherited - this is a parent cls already implemented the method - no need to warn
                                     if (isInherited)
                                     {
@@ -756,7 +766,7 @@ namespace HapetFrontend.Parsing.PostPrepare
                                             // the method is implemented in parent class and current class
                                             // we need to error
                                             _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, currF,
-                                                [HapetType.AsString(definedInOneOfTheParents.ContainingClass.Type.OutType)], ErrorCode.Get(CTEN.MethodAlreadyDefined));
+                                                [HapetType.AsString(definedInOneOfTheParents.ContainingParent.Type.OutType)], ErrorCode.Get(CTEN.MethodAlreadyDefined));
                                             continue;
                                         }
                                         // else - everything is ok probably
@@ -783,7 +793,7 @@ namespace HapetFrontend.Parsing.PostPrepare
 
                                         // we need to error
                                         _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, definedInOneOfTheParents,
-                                            [HapetType.AsString(definedInOneOfTheParents.ContainingClass.Type.OutType),
+                                            [HapetType.AsString(definedInOneOfTheParents.ContainingParent.Type.OutType),
                                             HapetType.AsString(decl.Type.OutType),
                                             HapetType.AsString(inh.OutType)],
                                             ErrorCode.Get(CTEN.DoubleInterfaceCringeMeth));
@@ -859,7 +869,7 @@ namespace HapetFrontend.Parsing.PostPrepare
                     foreach (var m in inheritedFuncDecls)
                     {
                         // skip overrided-abstract methods
-                        if (m.ContainingClass == decl)
+                        if (m.ContainingParent == decl)
                             continue;
 
                         if (m.SpecialKeys.Contains(TokenType.KwAbstract))

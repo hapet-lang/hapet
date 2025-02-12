@@ -73,7 +73,7 @@ namespace HapetFrontend.Parsing.PostPrepare
 
                 if (decl is AstFuncDecl funcDecl)
                 {
-                    funcDecl.ContainingClass = classDecl;
+                    funcDecl.ContainingParent = classDecl;
 
                     /// defining in a scope is done in <see cref="PostPrepareFunctionInference"/>
 
@@ -130,14 +130,46 @@ namespace HapetFrontend.Parsing.PostPrepare
             {
                 SetScopeAndParent(decl, structDecl, structScope);
 
-                var fieldDecl = decl as AstVarDecl;
-                fieldDecl.ContainingParent = structDecl;
+                if (decl is AstFuncDecl funcDecl)
+                {
+                    funcDecl.ContainingParent = structDecl;
 
-                // if it is public field/property - it should be visible in the scope in which var's class is
-                structDecl.SubScope.DefineDeclSymbol(fieldDecl.Name.Name, fieldDecl);
+                    /// defining in a scope is done in <see cref="PostPrepareFunctionInference"/>
 
-                // setting already defined to 'true' because of some shite with access types
-                PostPrepareVarScoping(fieldDecl, true);
+                    PostPrepareFunctionScoping(funcDecl);
+                }
+                else if (decl is AstPropertyDecl propDecl) // property
+                {
+                    propDecl.ContainingParent = structDecl;
+
+                    if (propDecl.GetBlock != null)
+                    {
+                        SetScopeAndParent(propDecl.GetBlock, propDecl);
+                        PostPrepareExprScoping(propDecl.GetBlock);
+                    }
+                    if (propDecl.SetBlock != null)
+                    {
+                        SetScopeAndParent(propDecl.SetBlock, propDecl);
+                        PostPrepareExprScoping(propDecl.SetBlock);
+                    }
+
+                    // if it is public field/property - it should be visible in the scope in which var's class is
+                    structDecl.SubScope.DefineDeclSymbol(propDecl.Name.Name, propDecl);
+
+                    // setting already defined to 'true' because of some shite with access types
+                    PostPrepareVarScoping(propDecl, true);
+                }
+                else
+                {
+                    var fieldDecl = decl as AstVarDecl;
+                    fieldDecl.ContainingParent = structDecl;
+
+                    // if it is public field - it should be visible in the scope in which var's class is
+                    structDecl.SubScope.DefineDeclSymbol(fieldDecl.Name.Name, fieldDecl);
+
+                    // setting already defined to 'true' because of some shite with access types
+                    PostPrepareVarScoping(fieldDecl, true);
+                }
             }
         }
 
