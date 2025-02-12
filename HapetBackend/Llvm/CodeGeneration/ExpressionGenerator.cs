@@ -394,9 +394,39 @@ namespace HapetBackend.Llvm
 
                 return v;
             }
-            else
+            else if (expr.OutType is StructType structType)
             {
-                // TODO: other also could be created 
+                // getting struct ctor
+                string onlyName = structType.Declaration.Name.Name.Split('.').Last();
+                var ctorName = $"{structType.Declaration.Name.Name}::{onlyName}_ctor" + expr.Arguments.GetArgsString(PointerType.GetPointerType(structType));
+                List<AstExpression> argsWithClassParam = new List<AstExpression>(expr.Arguments);
+                argsWithClassParam.Insert(0, new AstIdExpr("this") { OutType = PointerType.GetPointerType(structType) });
+                var ctorSymbol = structType.Declaration.SubScope.GetFuncFromCandidates(ctorName, argsWithClassParam, _postPreparer, null, out var casts);
+
+                // error if ctor not found
+                if (ctorSymbol == null)
+                {
+                    _messageHandler.ReportMessage(_currentSourceFile.Text, expr.TypeName, [structType.Declaration.Name.Name], ErrorCode.Get(CTEN.CtorWithArgTypesNotFound));
+                    return v;
+                }
+
+                // replace with casts to required
+                expr.Arguments.ReplaceWithCasts(casts.Skip(1).ToList());
+
+                v = _builder.BuildAlloca(HapetTypeToLLVMType(structType), $"var_{structType.Declaration.Name.Name}");
+
+                // other args
+                List<LLVMValueRef> args = new List<LLVMValueRef>() { v };
+                foreach (var a in expr.Arguments)
+                {
+                    args.Add(GenerateExpressionCode(a));
+                }
+
+                var ctorFunc = _valueMap[ctorSymbol];
+                LLVMTypeRef ctorType = _typeMap[ctorSymbol.Decl.Type.OutType];
+                _builder.BuildCall2(ctorType, ctorFunc, args.ToArray());  // calling ctor
+
+                return _builder.BuildLoad2(HapetTypeToLLVMType(structType), v, "ctoredLoaded");
             }
 
             return v;
