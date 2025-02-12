@@ -13,6 +13,11 @@ namespace HapetFrontend.Ast.Declarations
         /// </summary>
         public List<AstDeclaration> Declarations { get; } = new List<AstDeclaration>();
 
+        /// <summary>
+        /// The list of types from which the current struct is inherited
+        /// </summary>
+        public List<AstNestedExpr> InheritedFrom { get; set; } = new List<AstNestedExpr>();
+
         public AstStructDecl(AstIdExpr name, List<AstDeclaration> declarations, string doc = "", ILocation Location = null) : base(name, doc, Location)
         {
             Type = new AstIdExpr("struct", Location);

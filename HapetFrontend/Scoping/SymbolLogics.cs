@@ -163,7 +163,7 @@ namespace HapetFrontend.Scoping
             return null;
         }
 
-        public DeclSymbol GetFuncFromCandidates(string name, List<AstExpression> args, PostPrepare postPrepare, AstClassDecl clsToSearch, out List<AstExpression> castsToBeDone)
+        public DeclSymbol GetFuncFromCandidates(string name, List<AstExpression> args, PostPrepare postPrepare, AstDeclaration declToSearch, out List<AstExpression> castsToBeDone)
         {
             // getting only the Class::AndFuncName without params
             var splitted = name.Split('(');
@@ -177,7 +177,7 @@ namespace HapetFrontend.Scoping
             // skip if different amount of params/args
             // also get parent funcs
             List<DeclSymbol> candidates = new List<DeclSymbol>();
-            if (clsToSearch != null)
+            if (declToSearch is AstClassDecl clsToSearch)
             {
                 var currCls = clsToSearch;
                 while (currCls != null)
@@ -209,6 +209,71 @@ namespace HapetFrontend.Scoping
                     currCls = currCls.InheritedFrom.Count > 0 ?
                         ((currCls.InheritedFrom[0].OutType as ClassType).Declaration.IsInterface ? null :
                         (currCls.InheritedFrom[0].OutType as ClassType).Declaration) : null;
+                }
+            }
+            else if (declToSearch is AstStructDecl strToSearch)
+            {
+                AstDeclaration currStr = strToSearch;
+                while (currStr != null)
+                {
+                    candidates.AddRange(GetCandidatesInScope(classWithFuncName, currStr.SubScope)
+                        .Where(x => (x.Decl is AstFuncDecl funcDecl && funcDecl.Parameters.Count == args.Count)).ToList());
+
+                    // cringe check for parent :)
+                    if (currStr is AstStructDecl currStrStruct)
+                    {
+                        // TODO: also could inherit structs
+                        currStr = currStrStruct.InheritedFrom.Count > 0 ?
+                            ((currStrStruct.InheritedFrom[0].OutType as ClassType).Declaration.IsInterface ? null :
+                            (currStrStruct.InheritedFrom[0].OutType as ClassType).Declaration) : null;
+                    }
+                    else if (currStr is AstClassDecl currStrClass)
+                    {
+                        currStr = currStrClass.InheritedFrom.Count > 0 ?
+                            ((currStrClass.InheritedFrom[0].OutType as ClassType).Declaration.IsInterface ? null :
+                            (currStrClass.InheritedFrom[0].OutType as ClassType).Declaration) : null;
+                    }
+                }
+
+                // go all over interfaces
+                currStr = strToSearch;
+                while (currStr != null)
+                {
+                    if (currStr is AstStructDecl currStrStruct)
+                    {
+                        foreach (var inh in currStrStruct.InheritedFrom)
+                        {
+                            // TODO: could be a struct inh
+                            var inhDecl = (inh.OutType as ClassType).Declaration;
+                            if (!inhDecl.IsInterface)
+                                continue;
+
+                            candidates.AddRange(GetCandidatesInScope(classWithFuncName, inhDecl.SubScope)
+                                .Where(x => (x.Decl is AstFuncDecl funcDecl && funcDecl.Parameters.Count == args.Count)).ToList());
+                        }
+
+                        // cringe check for parent :)
+                        currStr = currStrStruct.InheritedFrom.Count > 0 ?
+                            ((currStrStruct.InheritedFrom[0].OutType as ClassType).Declaration.IsInterface ? null :
+                            (currStrStruct.InheritedFrom[0].OutType as ClassType).Declaration) : null;
+                    }
+                    else if (currStr is AstClassDecl currStrClass)
+                    {
+                        foreach (var inh in currStrClass.InheritedFrom)
+                        {
+                            var inhDecl = (inh.OutType as ClassType).Declaration;
+                            if (!inhDecl.IsInterface)
+                                continue;
+
+                            candidates.AddRange(GetCandidatesInScope(classWithFuncName, inhDecl.SubScope)
+                                .Where(x => (x.Decl is AstFuncDecl funcDecl && funcDecl.Parameters.Count == args.Count)).ToList());
+                        }
+
+                        // cringe check for parent :)
+                        currStr = currStrClass.InheritedFrom.Count > 0 ?
+                            ((currStrClass.InheritedFrom[0].OutType as ClassType).Declaration.IsInterface ? null :
+                            (currStrClass.InheritedFrom[0].OutType as ClassType).Declaration) : null;
+                    } 
                 }
             }
             else

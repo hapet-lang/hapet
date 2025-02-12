@@ -933,6 +933,14 @@ namespace HapetFrontend.Parsing.PostPrepare
                         _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, callExpr.FuncName, [], ErrorCode.Get(CTEN.FuncWithNameNotFound));
                 }
             }
+            else if (callExpr.TypeOrObjectName.OutType is StructType structType)
+            {
+                // if we are calling like 'A.Anime()' where 'A' is a struct
+                // we need to rename the func name call like that:
+                newName = $"{structType.Declaration.Name.Name}::{callExpr.FuncName.Name}{callExpr.Arguments.GetArgsString()}";
+
+                var smbl2 = structType.Declaration.SubScope.GetFuncFromCandidates(newName, callExpr.Arguments.Select(x => x.Expr).ToList(), this, structType.Declaration, out var casts);
+            }
             else
             {
                 // error here: the function call could not be infered
