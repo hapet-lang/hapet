@@ -166,13 +166,17 @@ namespace HapetBackend.Llvm
                         var llvmType = _context.CreateNamedStruct(name);
                         _typeMap[s] = llvmType;
 
+                        var fieldDeclarations = s.Declaration.Declarations.
+                            Where(x => x is AstVarDecl && x is not AstPropertyDecl).
+                            Select(x => x as AstVarDecl).ToList();
+
                         // WARN: this shite with alignment is done like 'LayoutKind.Sequential' in C#
                         // so all the members are going to be aligned properly by their types
-                        var memTypes = new List<LLVMTypeRef>(s.Declaration.Declarations.Count);
-                        var offsets = new uint[s.Declaration.Declarations.Count];
+                        var memTypes = new List<LLVMTypeRef>(fieldDeclarations.Count);
+                        var offsets = new uint[fieldDeclarations.Count];
                         int currentSize = 0;
                         int i = 0;
-                        foreach (var mem in s.Declaration.Declarations)
+                        foreach (var mem in fieldDeclarations)
                         {
                             // we need to get a minimal type alignment size depending on pack
                             int typeAlignment = Math.Min(mem.Type.OutType.GetAlignment(), packNumber);

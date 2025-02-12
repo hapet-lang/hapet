@@ -623,15 +623,26 @@ namespace HapetFrontend.Parsing.PostPrepare
                 // recursively infer left part of func call
                 AstIdExpr leftPartId = idExpr.GetCopy(nameAndFunc[0]);
                 PostPrepareIdentifierInference(leftPartId, fromCallExpr);
+
                 // it has to be a class (or mb struct)
-                if (leftPartId.OutType is not ClassType clsTp)
+                string fullFuncName;
+                ISymbol funcInAnotherClass;
+                if (leftPartId.OutType is ClassType clsTp)
+                {
+                    fullFuncName = $"{clsTp}::{nameAndFunc[1]}";
+                    funcInAnotherClass = clsTp.Declaration.SubScope.GetSymbol(fullFuncName);
+                }
+                else if (leftPartId.OutType is StructType strTp)
+                {
+                    fullFuncName = $"{strTp}::{nameAndFunc[1]}";
+                    funcInAnotherClass = strTp.Declaration.SubScope.GetSymbol(fullFuncName);
+                }
+                else
                 {
                     // TODO: error 
                     return;
                 }
-
-                var fullFuncName = $"{clsTp}::{nameAndFunc[1]}";
-                var funcInAnotherClass = clsTp.Declaration.SubScope.GetSymbol(fullFuncName);
+                
                 if (funcInAnotherClass is DeclSymbol typed4)
                 {
                     if (!CheckIfCouldBeAccessed(idExpr, typed4.Decl) && !(typed4.Decl is AstBuiltInTypeDecl) && !fromCallExpr)

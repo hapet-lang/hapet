@@ -409,7 +409,7 @@ namespace HapetBackend.Llvm
             {
                 // TODO: remove when struct func calls
                 if (hapetType.Declaration.ContainingParent is not AstClassDecl clsDecl)
-                    return default;
+                    return builder.BuildCall2(funcType, func, args.ToArray(), name);
 
                 var virtualMethod = clsDecl.AllVirtualMethods.GetSameByNameAndTypes(hapetType.Declaration, out int index);
                 // if it is a virtual method call
