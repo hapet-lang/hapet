@@ -82,6 +82,23 @@ namespace HapetFrontend.Parsing.PostPrepare
             // generate prop's fields and funcs
             /// removing props is done in <see cref="RemoveAllProperties"/>
             PostPrepareStructProperties(structDecl);
+            // get funcs again after this :) sorry
+            allFuncs = structDecl.Declarations.Where(x => x is AstFuncDecl).Select(x => x as AstFuncDecl);
+
+            // error if user created a func with the initializer name
+            var specialFuncs = allFuncs.Where(x => (x.Name.Name.EndsWith($"::{structDecl.Name.Name}_ini") ||
+                                                    x.Name.Name.EndsWith($"::{structDecl.Name.Name}_ctor") ||
+                                                    x.Name.Name.EndsWith($"::{structDecl.Name.Name}_stor") || // static ctor
+                                                    x.Name.Name.EndsWith($"::{structDecl.Name.Name}_dtor")));
+            foreach (var fnc in specialFuncs)
+            {
+                _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, fnc.Name, [structDecl.Name.Name], ErrorCode.Get(CTEN.ClassFuncNameNotAllowed));
+            }
+
+            PostPrepareGenerateClassInitializer(structDecl);
+            // passing all the existing ctors
+            PostPrepareGenerateClassConstructor(structDecl, allFuncs.Where(x => x.ClassFunctionType == Enums.ClassFunctionType.Ctor).ToList());
+            PostPrepareGenerateClassDestructor(structDecl, allFuncs.Where(x => x.ClassFunctionType == Enums.ClassFunctionType.Dtor).ToList());
 
             // 
             foreach (var decl in structDecl.Declarations)
@@ -268,30 +285,34 @@ namespace HapetFrontend.Parsing.PostPrepare
             }
         }
 
-        private void PostPrepareGenerateClassInitializer(AstClassDecl classDecl)
+        private void PostPrepareGenerateClassInitializer(AstDeclaration decl)
         {
             // skip if it is an interface
-            if (classDecl.IsInterface)
+            if (decl is AstClassDecl clsDecl && clsDecl.IsInterface)
                 return;
 
             // the block with all field inits
-            var iniBlock = GetFieldsToInitialize(classDecl, false);
+            var iniBlock = GetFieldsToInitialize(decl, false);
 
             // the ini func
             var iniDecl = new AstFuncDecl(new List<AstParamDecl>(),
             new AstIdExpr("void"),
             iniBlock,
-            new AstIdExpr($"{classDecl.Name.Name}_ini"));
+            new AstIdExpr($"{decl.Name.Name}_ini"));
             iniDecl.SpecialKeys.Add(TokenType.KwUnreflected); // ini is private because it is called inside ctors
             iniDecl.ClassFunctionType = Enums.ClassFunctionType.Initializer;
-            iniDecl.ContainingParent = classDecl;
-            classDecl.Declarations.Insert(0, iniDecl);
+            iniDecl.ContainingParent = decl;
+
+            if (decl is AstClassDecl classDecl)
+                classDecl.Declarations.Insert(0, iniDecl);
+            else if (decl is AstStructDecl structDecl)
+                structDecl.Declarations.Insert(0, iniDecl);
         }
 
-        private void PostPrepareGenerateClassConstructor(AstClassDecl classDecl, List<AstFuncDecl> ctors)
+        private void PostPrepareGenerateClassConstructor(AstDeclaration decl, List<AstFuncDecl> ctors)
         {
             // skip if it is an interface
-            if (classDecl.IsInterface)
+            if (decl is AstClassDecl clsDecl && clsDecl.IsInterface)
                 return;
 
             if (ctors.Count == 0)
@@ -301,7 +322,7 @@ namespace HapetFrontend.Parsing.PostPrepare
                 // creating ini func call
                 ctorBlockStatements.Add(new AstCallExpr(
                     new AstNestedExpr(new AstIdExpr("this"), null),
-                    new AstIdExpr($"{classDecl.Name.Name}_ini")));
+                    new AstIdExpr($"{decl.Name.Name}_ini")));
                 // the block with call of ini func
                 var ctorBlock = new AstBlockExpr(ctorBlockStatements);
 
@@ -309,12 +330,16 @@ namespace HapetFrontend.Parsing.PostPrepare
                 var ctorDecl = new AstFuncDecl(new List<AstParamDecl>(),
                     new AstIdExpr("void"),
                     ctorBlock,
-                    new AstIdExpr($"{classDecl.Name.Name}_ctor"));
+                    new AstIdExpr($"{decl.Name.Name}_ctor"));
                 ctorDecl.BaseCtorCall = new AstBaseCtorStmt(location: ctorDecl.Name);
                 ctorDecl.SpecialKeys.Add(TokenType.KwPublic); // default ctor is public
                 ctorDecl.ClassFunctionType = Enums.ClassFunctionType.Ctor;
-                ctorDecl.ContainingParent = classDecl;
-                classDecl.Declarations.Insert(1, ctorDecl); // the first one has to be ini func
+                ctorDecl.ContainingParent = decl;
+
+                if (decl is AstClassDecl classDecl)
+                    classDecl.Declarations.Insert(1, ctorDecl); // the first one has to be ini func
+                else if (decl is AstStructDecl structDecl)
+                    structDecl.Declarations.Insert(1, ctorDecl); // the first one has to be ini func
             }
             else
             {
@@ -324,7 +349,7 @@ namespace HapetFrontend.Parsing.PostPrepare
                     // insert ini func call at the beginning of the func body
                     ct.Body.Statements.Insert(0, new AstCallExpr(
                         new AstNestedExpr(new AstIdExpr("this"), null),
-                        new AstIdExpr($"{classDecl.Name.Name}_ini")));
+                        new AstIdExpr($"{decl.Name.Name}_ini")));
 
                     // if the base ctor call is empty - create one with no params
                     if (ct.BaseCtorCall == null)
@@ -333,10 +358,10 @@ namespace HapetFrontend.Parsing.PostPrepare
             }
         }
 
-        private void PostPrepareGenerateClassDestructor(AstClassDecl classDecl, List<AstFuncDecl> dtors)
+        private void PostPrepareGenerateClassDestructor(AstDeclaration decl, List<AstFuncDecl> dtors)
         {
             // skip if it is an interface
-            if (classDecl.IsInterface)
+            if (decl is AstClassDecl clsDecl && clsDecl.IsInterface)
                 return;
 
             if (dtors.Count == 0)
@@ -353,11 +378,15 @@ namespace HapetFrontend.Parsing.PostPrepare
                 var dtorDecl = new AstFuncDecl(new List<AstParamDecl>(),
                 new AstIdExpr("void"),
                 dtorBlock,
-                new AstIdExpr($"{classDecl.Name.Name}_dtor"));
+                new AstIdExpr($"{decl.Name.Name}_dtor"));
                 dtorDecl.SpecialKeys.Add(TokenType.KwPublic); // default dtor is public
                 dtorDecl.ClassFunctionType = Enums.ClassFunctionType.Dtor;
-                dtorDecl.ContainingParent = classDecl;
-                classDecl.Declarations.Add(dtorDecl);
+                dtorDecl.ContainingParent = decl;
+
+                if (decl is AstClassDecl classDecl)
+                    classDecl.Declarations.Add(dtorDecl);
+                else if (decl is AstStructDecl structDecl)
+                    structDecl.Declarations.Add(dtorDecl);
             }
             else if (dtors.Count == 1)
             {
@@ -523,13 +552,29 @@ namespace HapetFrontend.Parsing.PostPrepare
             classDecl.Declarations.AddRange(declarationsToAdd);
         }
 
-        private AstBlockExpr GetFieldsToInitialize(AstClassDecl classDecl, bool forStatic)
+        private AstBlockExpr GetFieldsToInitialize(AstDeclaration declB, bool forStatic)
         {
             // gettings all field decls and init them
-            var allVarDecls = classDecl.Declarations.Where(x => x is AstVarDecl).Select(x => x as AstVarDecl);
+            IEnumerable<AstVarDecl> allVarDecls;
             // we need to get all props from class. why?
             // read comment below where it used
-            var allProps = classDecl.Declarations.Where(x => x is AstPropertyDecl).Select(x => x as AstPropertyDecl);
+            IEnumerable<AstPropertyDecl> allProps;
+            if (declB is AstClassDecl classDecl)
+            {
+                allVarDecls = classDecl.Declarations.Where(x => x is AstVarDecl).Select(x => x as AstVarDecl);
+                allProps = classDecl.Declarations.Where(x => x is AstPropertyDecl).Select(x => x as AstPropertyDecl);
+            }
+            else if (declB is AstStructDecl structDecl)
+            {
+                allVarDecls = structDecl.Declarations.Where(x => x is AstVarDecl).Select(x => x as AstVarDecl);
+                allProps = structDecl.Declarations.Where(x => x is AstPropertyDecl).Select(x => x as AstPropertyDecl);
+            }
+            else
+            {
+                // TODO: compiler error
+                return null;
+            }
+
             List<AstStatement> iniBlockStatements = new List<AstStatement>();
             foreach (AstVarDecl decl in allVarDecls)
             {
