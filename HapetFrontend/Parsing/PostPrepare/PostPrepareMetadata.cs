@@ -1012,6 +1012,10 @@ namespace HapetFrontend.Parsing.PostPrepare
             {
                 cls.Declarations.RemoveAll(x => x is AstPropertyDecl);
             }
+            foreach (var cls in AllStructsMetadata)
+            {
+                cls.Declarations.RemoveAll(x => x is AstPropertyDecl);
+            }
         }
     }
 

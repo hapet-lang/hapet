@@ -30,6 +30,10 @@ namespace HapetBackend.Llvm
                     {
                         GenerateClassCode(classDecl);
                     }
+                    else if (stmt is AstStructDecl structDecl)
+                    {
+                        GenerateStructCode(structDecl);
+                    }
                 }
             }
         }
@@ -38,6 +42,25 @@ namespace HapetBackend.Llvm
         {
             var funcs = new Dictionary<AstFuncDecl, LLVMTypeRef>();
             foreach (var decl in classDecl.Declarations)
+            {
+                if (decl is AstFuncDecl funcDecl)
+                {
+                    // defining global func
+                    var funcType = HapetTypeToLLVMType(funcDecl.Type.OutType);
+                    funcs.Add(funcDecl, funcType);
+                }
+            }
+
+            foreach (var (funcDecl, funcType) in funcs)
+            {
+                GenerateFuncCode(funcDecl, funcType);
+            }
+        }
+
+        private unsafe void GenerateStructCode(AstStructDecl structDecl)
+        {
+            var funcs = new Dictionary<AstFuncDecl, LLVMTypeRef>();
+            foreach (var decl in structDecl.Declarations)
             {
                 if (decl is AstFuncDecl funcDecl)
                 {

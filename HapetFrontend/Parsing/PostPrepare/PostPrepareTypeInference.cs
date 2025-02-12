@@ -68,6 +68,24 @@ namespace HapetFrontend.Parsing.PostPrepare
         {
             /// WARN: should be already inferred in <see cref="PostPrepareMetadataTypes"/> and <see cref="PostPrepareMetadataTypeFields"/>
             /// WARN: attributes are inferrenced in <see cref="PostPrepareMetadataAttributes"/>
+            /// 
+            foreach (var decl in structDecl.Declarations.Where(x => x is AstFuncDecl).Select(x => x as AstFuncDecl))
+            {
+                PostPrepareFunctionInference(decl);
+            }
+
+            /// some shite is already inferrenced in <see cref="PostPrepareMetadataTypeFields"/>
+            foreach (var decl in structDecl.Declarations.Where(x => x is AstPropertyDecl).Select(x => x as AstPropertyDecl))
+            {
+                if (decl.GetBlock != null)
+                {
+                    PostPrepareExprInference(decl.GetBlock);
+                }
+                if (decl.SetBlock != null)
+                {
+                    PostPrepareExprInference(decl.SetBlock);
+                }
+            }
         }
 
         private void PostPrepareEnumInference(AstEnumDecl enumDecl)

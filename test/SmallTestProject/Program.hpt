@@ -16,6 +16,6 @@ public static class Program
 
 public struct GG
 {
-	int Field1 { get; set; }
-	int Field2 { get; set; }
+	int Field1 { get; set; } = 5;
+	int Field2 { get; set; } = 3;
 }
