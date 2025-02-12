@@ -93,7 +93,7 @@ namespace HapetFrontend.Parsing.PostPrepare
                 if (!funcDecl.SpecialKeys.Contains(TokenType.KwStatic))
                 {
                     // creating the class instance 'this' param
-                    AstExpression paramType = structDecl.Name.GetCopy();
+                    AstExpression paramType = new AstPointerExpr(structDecl.Name.GetCopy(), false);
                     AstIdExpr paramName = new AstIdExpr("this");
                     AstParamDecl thisParam = new AstParamDecl(paramType, paramName);
                     // adding the param as the func first param

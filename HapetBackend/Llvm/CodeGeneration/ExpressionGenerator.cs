@@ -460,7 +460,11 @@ namespace HapetBackend.Llvm
                 List<LLVMValueRef> args = new List<LLVMValueRef>();
                 if (!expr.StaticCall)
                 {
-                    args.Add(GenerateExpressionCode(expr.TypeOrObjectName));
+                    // we need to get ptr of var when calling struct func
+                    if (expr.TypeOrObjectName.OutType is StructType)
+                        args.Add(GenerateExpressionCode(expr.TypeOrObjectName, true));
+                    else
+                        args.Add(GenerateExpressionCode(expr.TypeOrObjectName));
                 }
                 foreach (var a in expr.Arguments)
                 {
@@ -567,6 +571,11 @@ namespace HapetBackend.Llvm
                 {
                     leftPartDeclarations = classT.Declaration.Declarations.Where(x => x is AstVarDecl).ToList();
                     leftPartType = classT;
+                }
+                else if (expr.LeftPart.OutType is PointerType ptr2 && ptr2.TargetType is StructType strT)
+                {
+                    leftPartDeclarations = strT.Declaration.Declarations.Where(x => x is AstVarDecl).ToList();
+                    leftPartType = strT;
                 }
                 // this is usually when accesing static/const values
                 // like 'Attribute.CoonstField'

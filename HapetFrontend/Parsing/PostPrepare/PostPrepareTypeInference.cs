@@ -985,7 +985,8 @@ namespace HapetFrontend.Parsing.PostPrepare
                     newName = $"{structType.Declaration.Name.Name}::{callExpr.FuncName.Name}{callExpr.Arguments.GetArgsString(structType)}";
 
                     List<AstExpression> argsWithStructParam = new List<AstExpression>(callExpr.Arguments);
-                    var pseudoStructArg = callExpr.TypeOrObjectName;
+                    var pseudoStructArg = new AstPointerExpr(callExpr.TypeOrObjectName, false, callExpr.TypeOrObjectName);
+                    PostPrepareExprInference(pseudoStructArg);
                     argsWithStructParam.Insert(0, pseudoStructArg);
                     smbl2 = structType.Declaration.SubScope.GetFuncFromCandidates(newName, argsWithStructParam, this, structType.Declaration, out var _);
 
@@ -1087,6 +1088,11 @@ namespace HapetFrontend.Parsing.PostPrepare
                 if (nestExpr.LeftPart.OutType is PointerType ptr && ptr.TargetType is ClassType classT)
                 {
                     leftSideScope = classT.Declaration.SubScope;
+                    accessingFromAnObject = true;
+                }
+                if (nestExpr.LeftPart.OutType is PointerType ptr2 && ptr2.TargetType is StructType structT)
+                {
+                    leftSideScope = structT.Declaration.SubScope;
                     accessingFromAnObject = true;
                 }
                 // this is usually when accesing static/const values
