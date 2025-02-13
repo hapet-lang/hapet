@@ -199,17 +199,19 @@ namespace HapetFrontend.Parsing.PostPrepare
                     }
                 // usually when 'Anime a = new Anime();'
                 case PointerType ptr when ptr.TargetType is ClassType && exprType is ClassType:
-                // just setting null to a pointer
-                case PointerType when expr is AstNullExpr:
-                // casting ptrs to null ptrs (?)
-                case PointerType when exprType is PointerType ptr1 && ptr1.TargetType == null:
-                case PointerType ptr2 when exprType is PointerType && ptr2.TargetType == null:
+                // usually when 'Anime a = animeStructInstance;'
+                case PointerType ptr3 when ptr3.TargetType is ClassType && exprType is StructType:
                     {
                         outExpr = expr;
                         if (castResult != null)
                             castResult.CouldBeCasted = true;
                         break;
                     }
+                // just setting null to a pointer
+                case PointerType when expr is AstNullExpr:
+                // casting ptrs to null ptrs (?)
+                case PointerType when exprType is PointerType ptr1 && ptr1.TargetType == null:
+                case PointerType ptr2 when exprType is PointerType && ptr2.TargetType == null:
                 // ptr casts
                 case PointerType when exprType is PointerType:
                 case PointerType when exprType is IntPtrType:

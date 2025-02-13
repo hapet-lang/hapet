@@ -380,6 +380,17 @@ namespace HapetBackend.Llvm
                 }
                 // TODO: ...
             }
+            else if (inType is StructType) 
+            {
+                if (outType is ClassType clsT && clsT.Declaration.IsInterface)
+                {
+                    // cast from struct instance to an interface
+                }
+                else if (outType is ClassType clsT2 && clsT2.Declaration.Name.Name == "System.Object")
+                {
+                    // cast from struct instance to object
+                }
+            }
             // TODO: ...
             return val;
         }
