@@ -10,6 +10,7 @@ using LLVMSharp.Interop;
 using System;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
+using static System.Net.WebRequestMethods;
 
 namespace HapetBackend.Llvm
 {
@@ -411,16 +412,23 @@ namespace HapetBackend.Llvm
                 }
                 // TODO: ...
             }
-            else if (inType is StructType) 
+            else if (inType is StructType structType) 
             {
-                if (outType is ClassType clsT && clsT.Declaration.IsInterface)
-                {
-                    // cast from struct instance to an interface
-                }
-                else if (outType is ClassType clsT2 && clsT2.Declaration.Name.Name == "System.Object")
+                if (outType is ClassType clsT && (clsT.Declaration.Name.Name == "System.Object" || clsT.Declaration.IsInterface))
                 {
                     // cast from struct instance to object
                     var boxedTypeData = _boxedStructTypes[inType];
+                    int structSize = AstDeclaration.GetSizeForAlloc(structType.Declaration.Declarations.GetStructFields());
+                    // allocating memory for struct
+                    var v = GetMalloc(structSize, 1);
+                    // set up type data ptr!!!
+                    SetTypeInfo(v, structType);
+
+                    // storing struct into the alloced mem
+                    var offseted = _builder.BuildStructGEP2(_context.Int8Type, v, boxedTypeData.Item2, "offsetedPtr");
+                    _builder.BuildStore(val, offseted);
+
+                    return v; // return malloced
                 }
             }
             // TODO: ...
@@ -449,6 +457,33 @@ namespace HapetBackend.Llvm
             var paramTypes = del.Declaration.Parameters.Select(rt => HapetTypeToLLVMType(rt.Type.OutType)).ToList();
             var returnType = HapetTypeToLLVMType(del.Declaration.Returns.OutType);
             return LLVMTypeRef.CreateFunction(returnType, paramTypes.ToArray(), false);
+        }
+
+        private void SetTypeInfo(LLVMValueRef v, HapetType type)
+        {
+            // create an array of ptrs:
+            // [ptrToTypeInfo, ptrToVtable]
+            //
+            //		  example class
+            //		{ ptr, ..., ... }   
+            //		   ↓
+            //		[ ptr, ptr ]
+            //		   |     \
+            //		   |      ↓
+            //		   ↓   "VirtualTableStruct"
+            //	"TypeInfoStruct"
+
+            // allocating memory for the data in array
+            var allocated = GetMalloc(HapetType.PointerSize, 2);
+            var ptrToType = _builder.BuildGEP2(LLVMTypeRef.CreatePointer(GetTypeInfoType(), 0), allocated, new LLVMValueRef[] { LLVMValueRef.CreateConstInt(LLVMTypeRef.Int32, 0) }, $"elementPtr{0}");
+            _builder.BuildStore(_typeInfoDictionary[type], ptrToType);
+            var ptrToVtable = _builder.BuildGEP2(LLVMTypeRef.CreatePointer(GetVirtualTableType(), 0), allocated, new LLVMValueRef[] { LLVMValueRef.CreateConstInt(LLVMTypeRef.Int32, 1) }, $"elementPtr{1}");
+            _builder.BuildStore(_virtualTableDictionary[type], ptrToVtable);
+
+            // save the array into first field
+            var tp = HapetTypeToLLVMType(type);
+            var fti = _builder.BuildStructGEP2(tp, v, 0, "fullTypeInfoPtr");
+            _builder.BuildStore(allocated, fti);
         }
 
         #region Mallocs

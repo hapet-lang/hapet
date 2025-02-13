@@ -7,7 +7,7 @@ namespace HapetBackend.Llvm
 {
     public partial class LlvmCodeGenerator
     {
-        private readonly Dictionary<ClassType, LLVMValueRef> _virtualTableDictionary = new Dictionary<ClassType, LLVMValueRef>();
+        private readonly Dictionary<HapetType, LLVMValueRef> _virtualTableDictionary = new Dictionary<HapetType, LLVMValueRef>();
 
         #region Type info 
         private unsafe LLVMValueRef GenerateVirtualTableConst(ClassType cls)

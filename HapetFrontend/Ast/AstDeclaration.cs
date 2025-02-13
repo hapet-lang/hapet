@@ -1,7 +1,9 @@
-﻿using HapetFrontend.Ast.Expressions;
+﻿using HapetFrontend.Ast.Declarations;
+using HapetFrontend.Ast.Expressions;
 using HapetFrontend.Ast.Statements;
 using HapetFrontend.Parsing;
 using HapetFrontend.Scoping;
+using HapetFrontend.Types;
 using Newtonsoft.Json;
 
 namespace HapetFrontend.Ast
@@ -47,6 +49,30 @@ namespace HapetFrontend.Ast
         {
             this.Name = name;
             this.Documentation = doc;
+        }
+
+        /// <summary>
+        /// Returns the real struct size for allocation
+        /// Could be used only after <see cref="GenerateTypeInfoConst"/> from backend
+        /// </summary>
+        /// <returns>The size</returns>
+        public static int GetSizeForAlloc(List<AstDeclaration> fields, bool withTypeInfo = true)
+        {
+            if (withTypeInfo)
+                fields.Insert(0, new AstVarDecl(new AstIdExpr("uintptr") { OutType = PointerType.NullLiteralType }, new AstIdExpr("typeinfo")));
+            int totalSize = 0;
+            // go all over the fields and calc the size
+            for (int i = 0; i < fields.Count; ++i)
+            {
+                var field = fields[i];
+                var fieldType = field.Type.OutType;
+
+                int fieldAlignment = fieldType.GetAlignment() == 0 ? fieldType.GetSize() : fieldType.GetAlignment();
+                int padding = (fieldAlignment - (totalSize % fieldAlignment)) % fieldAlignment;  // Alignment
+                totalSize += padding;  // Add padding for the alignment
+                totalSize += fieldType.GetSize();  // Add field size
+            }
+            return totalSize;
         }
     }
 }

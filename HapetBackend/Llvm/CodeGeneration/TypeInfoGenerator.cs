@@ -8,20 +8,37 @@ namespace HapetBackend.Llvm
 {
     public partial class LlvmCodeGenerator
     {
-        private readonly Dictionary<ClassType, LLVMValueRef> _typeInfoDictionary = new Dictionary<ClassType, LLVMValueRef>();
+        private readonly Dictionary<HapetType, LLVMValueRef> _typeInfoDictionary = new Dictionary<HapetType, LLVMValueRef>();
 
         #region Type info 
-        private unsafe LLVMValueRef GenerateTypeInfoConst(ClassType cls)
+        private unsafe LLVMValueRef GenerateTypeInfoConst(HapetType type)
         {
-            if (_typeInfoDictionary.ContainsKey(cls))
-                return _typeInfoDictionary[cls];
+            if (_typeInfoDictionary.ContainsKey(type))
+                return _typeInfoDictionary[type];
 
             // create if does not exists
-            ClassType parent = cls.Declaration.InheritedFrom.FirstOrDefault(x => x.OutType is ClassType clss && !clss.Declaration.IsInterface)?.OutType as ClassType;
+            ClassType parent;
+            string typeNameString;
+            if (type is ClassType clsType)
+            {
+                parent = clsType.Declaration.InheritedFrom.FirstOrDefault(x => x.OutType is ClassType clss && !clss.Declaration.IsInterface)?.OutType as ClassType;
+                typeNameString = clsType.Declaration.Name.Name;
+            }
+            else if (type is StructType strType)
+            {
+                // TODO: struct parent
+                parent = strType.Declaration.InheritedFrom.FirstOrDefault(x => x.OutType is ClassType clss && !clss.Declaration.IsInterface)?.OutType as ClassType;
+                typeNameString = strType.Declaration.Name.Name;
+            }
+            else
+            {
+                // TODO: compiler error - could not generate type info 
+                return default;
+            }
+
             LLVMTypeRef typeInfoType = GetTypeInfoType();
 
             // name param
-            string typeNameString = cls.Declaration.Name.Name;
             LLVMValueRef typeName = _module.AddGlobal(LLVMTypeRef.CreateArray(_context.Int8Type, (uint)(typeNameString.Length + 1)), $"TypeInfoName::{typeNameString}");
             typeName.Initializer = _context.GetConstString(typeNameString, false);
             typeName.IsGlobalConstant = true;
@@ -30,7 +47,7 @@ namespace HapetBackend.Llvm
             var nullPtr = LLVMValueRef.CreateConstPointerNull(ptrT);
             LLVMValueRef parentRef = parent == null ? nullPtr : GenerateTypeInfoConst(parent);
             // interfaces
-            var (interfaces, interfaceOffsets) = GetInterfacesArray(cls, out int interfacesCount);
+            var (interfaces, interfaceOffsets) = GetInterfacesArray(type, out int interfacesCount);
             LLVMValueRef interfacesCountRef = LLVMValueRef.CreateConstInt(_context.Int8Type, (ulong)interfacesCount);
 
             var globConst = _module.AddGlobal(typeInfoType, $"TypeInfo::{typeNameString}");
@@ -38,7 +55,7 @@ namespace HapetBackend.Llvm
             globConst.Linkage = (LLVMLinkage.LLVMInternalLinkage);
             globConst.IsGlobalConstant = true;
 
-            _typeInfoDictionary.Add(cls, globConst);
+            _typeInfoDictionary.Add(type, globConst);
 
             return globConst;
         }
@@ -55,10 +72,10 @@ namespace HapetBackend.Llvm
             return _typeInfoType;
         }
 
-        private (LLVMValueRef, LLVMValueRef) GetInterfacesArray(ClassType cls, out int amount)
+        private (LLVMValueRef, LLVMValueRef) GetInterfacesArray(HapetType type, out int amount)
         {
             LLVMTypeRef arrayElementType = LLVMTypeRef.CreatePointer(GetTypeInfoType(), 0);
-            List<(ClassType, int[])> interfaces = GetAllInterfacesWithOffsets(cls);
+            List<(ClassType, int[])> interfaces = GetAllInterfacesWithOffsets(type);
             if (interfaces.Count == 0)
             {
                 amount = 0;
@@ -70,8 +87,24 @@ namespace HapetBackend.Llvm
                 return (nullPtr, nullPtrInt);
             }
 
-            LLVMValueRef interfacesArray = _module.AddGlobal(LLVMTypeRef.CreateArray(arrayElementType, (uint)(interfaces.Count)), $"TypeInfoInterfacesArray::{cls.Declaration.Name.Name}");
-            LLVMValueRef interfaceOffsetsArray = _module.AddGlobal(LLVMTypeRef.CreateArray(LLVMTypeRef.CreatePointer(_context.Int32Type, 0), (uint)(interfaces.Count)), $"TypeInfoInterfaceOffsetsArray::{cls.Declaration.Name.Name}");
+            string typeNameString;
+            if (type is ClassType clsType)
+            {
+                typeNameString = clsType.Declaration.Name.Name;
+            }
+            else if (type is StructType strType)
+            {
+                typeNameString = strType.Declaration.Name.Name;
+            }
+            else
+            {
+                // TODO: compiler error - could not generate type info 
+                amount = 0;
+                return (default, default);
+            }
+
+            LLVMValueRef interfacesArray = _module.AddGlobal(LLVMTypeRef.CreateArray(arrayElementType, (uint)(interfaces.Count)), $"TypeInfoInterfacesArray::{typeNameString}");
+            LLVMValueRef interfaceOffsetsArray = _module.AddGlobal(LLVMTypeRef.CreateArray(LLVMTypeRef.CreatePointer(_context.Int32Type, 0), (uint)(interfaces.Count)), $"TypeInfoInterfaceOffsetsArray::{typeNameString}");
             
             List<LLVMValueRef> intPtrs = new List<LLVMValueRef>(interfaces.Count);
             List<LLVMValueRef> offsetArrays = new List<LLVMValueRef>(interfaces.Count);
@@ -79,7 +112,7 @@ namespace HapetBackend.Llvm
             {
                 intPtrs.Add(GenerateTypeInfoConst(intf.Item1));
 
-                LLVMValueRef interfaceOffsetsCurr = _module.AddGlobal(LLVMTypeRef.CreateArray(_context.Int32Type, (uint)(intf.Item2.Length)), $"TypeInfoInterfaceOffsets{offsetArrays.Count}::{cls.Declaration.Name.Name}");
+                LLVMValueRef interfaceOffsetsCurr = _module.AddGlobal(LLVMTypeRef.CreateArray(_context.Int32Type, (uint)(intf.Item2.Length)), $"TypeInfoInterfaceOffsets{offsetArrays.Count}::{typeNameString}");
 
                 interfaceOffsetsCurr.Initializer = LLVMValueRef.CreateConstArray(_context.Int32Type, intf.Item2.Select(x => LLVMValueRef.CreateConstInt(_context.Int32Type, (ulong)x)).ToArray());
                 interfaceOffsetsCurr.IsGlobalConstant = true;
@@ -96,7 +129,7 @@ namespace HapetBackend.Llvm
             return (interfacesArray, interfaceOffsetsArray);
         }
 
-        private List<(ClassType, int[])> GetAllInterfacesWithOffsets(ClassType cls)
+        private List<(ClassType, int[])> GetAllInterfacesWithOffsets(HapetType type)
         {
             // to calc offset up to the required element
             int GetOffsetTo(List<AstVarDecl> allVars, int ind)
@@ -127,9 +160,15 @@ namespace HapetBackend.Llvm
 
             List<(ClassType, int[])> allInterfacesWithOffsets = new List<(ClassType, int[])>();
 
-            var allClassFields = cls.Declaration.AllRawFields;
-            var allInterfaces = GetAllInterfaces(cls, true);
+            List<AstVarDecl> allClassFields;
+            if (type is ClassType clsType)
+                allClassFields = clsType.Declaration.AllRawFields;
+            else if (type is StructType strType)
+                allClassFields = strType.Declaration.AllRawFields;
+            else
+                return new List<(ClassType, int[])>(); // TODO: compiler error
 
+            var allInterfaces = GetAllInterfaces(type, true);
             foreach (var intrf in allInterfaces)
             {
                 List<int> offsets = new List<int>();
@@ -145,19 +184,26 @@ namespace HapetBackend.Llvm
             return allInterfacesWithOffsets;
         }
 
-        private List<ClassType> GetAllInterfaces(ClassType cls, bool includeParent = true)
+        private List<ClassType> GetAllInterfaces(HapetType type, bool includeParent = true)
         {
-            List<ClassType> inheritedInterfaces = cls.Declaration.InheritedFrom.Where(x => x.OutType is ClassType).Select(x => x.OutType as ClassType).ToList();
+            List<ClassType> inheritedInterfaces;
+            if (type is ClassType clsType)
+                inheritedInterfaces = clsType.Declaration.InheritedFrom.Where(x => x.OutType is ClassType).Select(x => x.OutType as ClassType).ToList();
+            else if (type is StructType strType)
+                // TODO: parent could be a struct
+                inheritedInterfaces = strType.Declaration.InheritedFrom.Where(x => x.OutType is ClassType).Select(x => x.OutType as ClassType).ToList();
+            else
+                return new List<ClassType>();
 
             List<ClassType> allInterfaces = new List<ClassType>();
 
             // get parent class interfaces if the parent exists :)
             List<ClassType> parentClassInterfaces = new List<ClassType>();
-            if (cls.Declaration.InheritedFrom.Count > 0 && !(cls.Declaration.InheritedFrom[0].OutType as ClassType).Declaration.IsInterface)
+            if (inheritedInterfaces.Count > 0 && !inheritedInterfaces[0].Declaration.IsInterface)
             {
                 // if include parent interfaces 
                 if (includeParent)
-                    parentClassInterfaces.AddRange(GetAllInterfaces(cls.Declaration.InheritedFrom[0].OutType as ClassType, true));
+                    parentClassInterfaces.AddRange(GetAllInterfaces(inheritedInterfaces[0], true));
             }
             allInterfaces.AddRange(parentClassInterfaces);
 

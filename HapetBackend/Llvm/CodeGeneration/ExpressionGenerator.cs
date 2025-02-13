@@ -332,7 +332,7 @@ namespace HapetBackend.Llvm
             LLVMValueRef v = default;
             if (expr.OutType is ClassType classType)
             {
-                int structSize = classType.Declaration.GetSizeForAlloc();
+                int structSize = AstDeclaration.GetSizeForAlloc(classType.Declaration.Declarations.GetStructFields());
 
                 // getting class ctor
                 string onlyName = classType.Declaration.Name.Name.Split('.').Last();
@@ -355,31 +355,7 @@ namespace HapetBackend.Llvm
                 v = GetMalloc(structSize, 1);
 
                 // set up type data ptr!!!
-                {
-                    // create an array of ptrs:
-                    // [ptrToTypeInfo, ptrToVtable]
-                    //
-                    //		  example class
-                    //		{ ptr, ..., ... }   
-                    //		   ↓
-                    //		[ ptr, ptr ]
-                    //		   |     \
-                    //		   |      ↓
-                    //		   ↓   "VirtualTableStruct"
-                    //	"TypeInfoStruct"
-
-                    // allocating memory for the data in array
-                    var allocated = GetMalloc(HapetType.PointerSize, 2);
-                    var ptrToType = _builder.BuildGEP2(LLVMTypeRef.CreatePointer(GetTypeInfoType(), 0), allocated, new LLVMValueRef[] { LLVMValueRef.CreateConstInt(LLVMTypeRef.Int32, 0) }, $"elementPtr{0}");
-                    _builder.BuildStore(_typeInfoDictionary[classType], ptrToType);
-                    var ptrToVtable = _builder.BuildGEP2(LLVMTypeRef.CreatePointer(GetVirtualTableType(), 0), allocated, new LLVMValueRef[] { LLVMValueRef.CreateConstInt(LLVMTypeRef.Int32, 1) }, $"elementPtr{1}");
-                    _builder.BuildStore(_virtualTableDictionary[classType], ptrToVtable);
-
-                    // save the array into first field
-                    var tp = HapetTypeToLLVMType(classType);
-                    var fti = _builder.BuildStructGEP2(tp, v, 0, "fullTypeInfoPtr");
-                    _builder.BuildStore(allocated, fti);
-                }
+                SetTypeInfo(v, classType);
 
                 // other args
                 List<LLVMValueRef> args = new List<LLVMValueRef>() { v };

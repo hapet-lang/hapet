@@ -18,6 +18,19 @@ namespace HapetFrontend.Ast.Declarations
         /// </summary>
         public List<AstNestedExpr> InheritedFrom { get; set; } = new List<AstNestedExpr>();
 
+        /// <summary>
+        /// All original raw fields (including inherited) (for easier interface offset generation)
+        /// </summary>
+        public List<AstVarDecl> AllRawFields { get; set; }
+        /// <summary>
+        /// All original raw props (including inherited) (for easier inference)
+        /// </summary>
+        public List<AstPropertyDecl> AllRawProps { get; set; }
+        /// <summary>
+        /// All original virtual methods (including inherited) 
+        /// </summary>
+        public List<AstFuncDecl> AllVirtualMethods { get; set; }
+
         public AstStructDecl(AstIdExpr name, List<AstDeclaration> declarations, string doc = "", ILocation Location = null) : base(name, doc, Location)
         {
             Type = new AstIdExpr("struct", Location);
