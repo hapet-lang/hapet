@@ -51,7 +51,7 @@ namespace HapetFrontend.Parsing
                 }
 
                 // error - unexpected decl in struct type
-                if (decl is not AstVarDecl)
+                if (decl is not AstVarDecl && decl is not AstFuncDecl)
                 {
                     ReportMessage(decl, [], ErrorCode.Get(CTEN.UnexpectedDeclInStruct));
                 }
@@ -73,7 +73,7 @@ namespace HapetFrontend.Parsing
                     NextToken();
                     SkipNewlines();
                 }
-                else if (decl is not AstVarDecl)
+                else if (decl is not AstVarDecl && decl is not AstFuncDecl)
                 {
                     NextToken();
                     ReportMessage(decl.Location, [], ErrorCode.Get(CTEN.TheDeclNotAllowedInStruct));
