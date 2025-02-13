@@ -149,7 +149,7 @@ namespace HapetFrontend.Ast.Declarations
             return func;
         }
 
-        public override AstVarDecl GetCopyForAnotherClass(AstClassDecl decl)
+        public override AstVarDecl GetCopyForAnotherType(AstDeclaration decl)
         {
             var varDecl = new AstPropertyDecl(Type, Name, Initializer, Documentation, Location)
             {

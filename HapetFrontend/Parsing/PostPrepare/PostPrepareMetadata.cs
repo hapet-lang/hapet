@@ -251,15 +251,21 @@ namespace HapetFrontend.Parsing.PostPrepare
 
         private void PostPrepareMetadataTypeInheritedFieldDecls()
         {
-            void CopyInheritedFields(AstClassDecl decl, List<AstVarDecl> preparedDecls)
+            void CopyInheritedFields(AstDeclaration decl, List<AstVarDecl> preparedDecls)
             {
-                var currDecls = decl.Declarations.GetStructFields();
+                List<AstDeclaration> currDecls;
+                if (decl is AstClassDecl clsDecl)
+                    currDecls = clsDecl.Declarations;
+                else if (decl is AstStructDecl strDecl)
+                    currDecls = strDecl.Declarations;
+                else
+                    return;
 
                 // remove all current fields
-                foreach (var fieldDecl in currDecls)
+                foreach (var fieldDecl in currDecls.GetStructFields())
                 {
                     decl.SubScope.RemoveDeclSymbol(fieldDecl.Name.Name, fieldDecl);
-                    decl.Declarations.Remove(fieldDecl);
+                    currDecls.Remove(fieldDecl);
                 }
 
                 List<AstDeclaration> toInsert = new List<AstDeclaration>();
@@ -267,7 +273,7 @@ namespace HapetFrontend.Parsing.PostPrepare
                 foreach (var fieldDecl in preparedDecls)
                 {
                     // change parent and scope
-                    var newVar = fieldDecl.GetCopyForAnotherClass(decl);
+                    var newVar = fieldDecl.GetCopyForAnotherType(decl);
                     // define the symbol
                     decl.SubScope.DefineDeclSymbol(newVar.Name.Name, newVar);
 
@@ -275,24 +281,42 @@ namespace HapetFrontend.Parsing.PostPrepare
                 }
 
                 // insert them at the beginning
-                decl.Declarations.InsertRange(0, toInsert);
+                currDecls.InsertRange(0, toInsert);
             }
 
             // to get all pure fields including inherited
-            List<AstVarDecl> GetPreparedFields(AstClassDecl decl)
+            List<AstVarDecl> GetPreparedFields(AstDeclaration decl)
             {
+                List<AstNestedExpr> inheritedFrom;
+                bool isInterface = false;
                 List<AstVarDecl> inheritedFieldDecls = new List<AstVarDecl>();
-                List<AstVarDecl> currentFieldDecls = decl.Declarations.GetStructFields().Select(x => x as AstVarDecl).ToList();
+                List<AstVarDecl> currentFieldDecls;
+                if (decl is AstClassDecl clsDecl)
+                {
+                    currentFieldDecls = clsDecl.Declarations.GetStructFields().Select(x => x as AstVarDecl).ToList();
+                    inheritedFrom = clsDecl.InheritedFrom;
+                    isInterface = clsDecl.IsInterface;
+                }
+                else if (decl is AstStructDecl strDecl)
+                {
+                    currentFieldDecls = strDecl.Declarations.GetStructFields().Select(x => x as AstVarDecl).ToList();
+                    inheritedFrom = strDecl.InheritedFrom;
+                }
+                else
+                {
+                    return new List<AstVarDecl>();
+                }
 
                 // all over the inherited shite
-                foreach (var inh in decl.InheritedFrom)
+                foreach (var inh in inheritedFrom)
                 {
+                    // TODO: struct parent!
                     var inhDecl = (inh.OutType as ClassType).Declaration;
                     // if the inh type is an interface
                     if (inhDecl.IsInterface)
                     {
                         // if we are also an interface - just add, no need to check implementations
-                        if (decl.IsInterface)
+                        if (isInterface)
                         {
                             inheritedFieldDecls.AddRange(GetPreparedFields(inhDecl));
                         }
@@ -396,6 +420,12 @@ namespace HapetFrontend.Parsing.PostPrepare
 
                 cls.AllRawFields = GetPreparedFields(cls);
             }
+            foreach (var str in AllStructsMetadata)
+            {
+                _currentSourceFile = str.SourceFile;
+
+                str.AllRawFields = GetPreparedFields(str);
+            }
 
             foreach (var cls in AllClassesMetadata)
             {
@@ -404,19 +434,31 @@ namespace HapetFrontend.Parsing.PostPrepare
 
                 CopyInheritedFields(cls, cls.AllRawFields);
             }
+            foreach (var str in AllStructsMetadata)
+            {
+                _currentSourceFile = str.SourceFile;
+
+                CopyInheritedFields(str, str.AllRawFields);
+            }
         }
 
         private void PostPrepareMetadataTypeInheritedPropsDecls()
         {
-            void CopyInheritedProps(AstClassDecl decl, List<AstPropertyDecl> preparedDecls)
+            void CopyInheritedProps(AstDeclaration decl, List<AstPropertyDecl> preparedDecls)
             {
-                var currDecls = decl.Declarations.Where(x => x is AstPropertyDecl).Select(x => x as AstPropertyDecl).ToList();
+                List<AstDeclaration> currDecls;
+                if (decl is AstClassDecl clsDecl)
+                    currDecls = clsDecl.Declarations;
+                else if (decl is AstStructDecl strDecl)
+                    currDecls = strDecl.Declarations;
+                else
+                    return;
 
                 // remove all current props
-                foreach (var fieldDecl in currDecls)
+                foreach (var fieldDecl in currDecls.Where(x => x is AstPropertyDecl).Select(x => x as AstPropertyDecl).ToList())
                 {
                     decl.SubScope.RemoveDeclSymbol(fieldDecl.Name.Name, fieldDecl);
-                    decl.Declarations.Remove(fieldDecl);
+                    currDecls.Remove(fieldDecl);
                 }
 
                 List<AstDeclaration> toInsert = new List<AstDeclaration>();
@@ -424,7 +466,7 @@ namespace HapetFrontend.Parsing.PostPrepare
                 foreach (var propDecl in preparedDecls)
                 {
                     // change parent and scope
-                    var newVar = propDecl.GetCopyForAnotherClass(decl);
+                    var newVar = propDecl.GetCopyForAnotherType(decl);
                     // define the symbol
                     decl.SubScope.DefineDeclSymbol(newVar.Name.Name, newVar);
 
@@ -432,24 +474,42 @@ namespace HapetFrontend.Parsing.PostPrepare
                 }
 
                 // insert them to the end
-                decl.Declarations.AddRange(toInsert);
+                currDecls.AddRange(toInsert);
             }
 
             // to get all pure props including inherited
-            List<AstPropertyDecl> GetPreparedProps(AstClassDecl decl)
+            List<AstPropertyDecl> GetPreparedProps(AstDeclaration decl)
             {
                 List<AstPropertyDecl> inheritedPropDecls = new List<AstPropertyDecl>();
-                List<AstPropertyDecl> currentPropDecls = decl.Declarations.Where(x => x is AstPropertyDecl).Select(x => x as AstPropertyDecl).ToList();
+                List<AstNestedExpr> inheritedFrom;
+                bool isInterface = false;
+                List<AstPropertyDecl> currentPropDecls;
+                if (decl is AstClassDecl clsDecl)
+                {
+                    currentPropDecls = clsDecl.Declarations.Where(x => x is AstPropertyDecl).Select(x => x as AstPropertyDecl).ToList();
+                    inheritedFrom = clsDecl.InheritedFrom;
+                    isInterface = clsDecl.IsInterface;
+                }
+                else if (decl is AstStructDecl strDecl)
+                {
+                    currentPropDecls = strDecl.Declarations.Where(x => x is AstPropertyDecl).Select(x => x as AstPropertyDecl).ToList();
+                    inheritedFrom = strDecl.InheritedFrom;
+                }
+                else
+                {
+                    return new List<AstPropertyDecl>();
+                }
 
                 // all over the inherited shite
-                foreach (var inh in decl.InheritedFrom)
+                foreach (var inh in inheritedFrom)
                 {
+                    // TODO: struct parent!
                     var inhDecl = (inh.OutType as ClassType).Declaration;
                     // if the inh type is an interface
                     if (inhDecl.IsInterface)
                     {
                         // if we are also an interface - just add, no need to check implementations
-                        if (decl.IsInterface)
+                        if (isInterface)
                         {
                             inheritedPropDecls.AddRange(GetPreparedProps(inhDecl));
                         }
@@ -571,7 +631,7 @@ namespace HapetFrontend.Parsing.PostPrepare
                 }
 
                 // check if all implemented
-                if (!decl.IsInterface && !decl.SpecialKeys.Contains(TokenType.KwAbstract))
+                if (!isInterface && !decl.SpecialKeys.Contains(TokenType.KwAbstract))
                 {
                     // if it is not an interface nor abstract class - all abstract shite has to be implemented
                     foreach (var p in inheritedPropDecls)
@@ -601,6 +661,12 @@ namespace HapetFrontend.Parsing.PostPrepare
 
                 cls.AllRawProps = GetPreparedProps(cls);
             }
+            foreach (var str in AllStructsMetadata)
+            {
+                _currentSourceFile = str.SourceFile;
+
+                str.AllRawProps = GetPreparedProps(str);
+            }
 
             foreach (var cls in AllClassesMetadata)
             {
@@ -608,6 +674,12 @@ namespace HapetFrontend.Parsing.PostPrepare
                 _currentClass = cls;
 
                 CopyInheritedProps(cls, cls.AllRawProps);
+            }
+            foreach (var str in AllStructsMetadata)
+            {
+                _currentSourceFile = str.SourceFile;
+
+                CopyInheritedProps(str, str.AllRawProps);
             }
         }
 
@@ -725,20 +797,37 @@ namespace HapetFrontend.Parsing.PostPrepare
         private void PostPrepareMetadataInheritedFunctions()
         {
             // to get all virtual methods including inherited
-            List<AstFuncDecl> GetPreparedVirtualMethods(AstClassDecl decl)
+            List<AstFuncDecl> GetPreparedVirtualMethods(AstDeclaration decl)
             {
                 List<AstFuncDecl> inheritedFuncDecls = new List<AstFuncDecl>();
-                List<AstFuncDecl> currentClassMethods = decl.Declarations.Where(x => x is AstFuncDecl).Select(x => x as AstFuncDecl).ToList();
+                List<AstFuncDecl> currentClassMethods;
+                List<AstNestedExpr> inheritedFrom;
+                bool isInterface = false;
+                if (decl is AstClassDecl clsDecl)
+                {
+                    currentClassMethods = clsDecl.Declarations.Where(x => x is AstFuncDecl).Select(x => x as AstFuncDecl).ToList();
+                    inheritedFrom = clsDecl.InheritedFrom;
+                    isInterface = clsDecl.IsInterface;
+                }
+                else if (decl is AstStructDecl strDecl)
+                {
+                    currentClassMethods = strDecl.Declarations.Where(x => x is AstFuncDecl).Select(x => x as AstFuncDecl).ToList();
+                    inheritedFrom = strDecl.InheritedFrom;
+                }
+                else
+                {
+                    return new List<AstFuncDecl>();
+                }
 
                 // all over the inherited shite
-                foreach (var inh in decl.InheritedFrom)
+                foreach (var inh in inheritedFrom)
                 {
                     var inhDecl = (inh.OutType as ClassType).Declaration;
                     // if the inh type is an interface
                     if (inhDecl.IsInterface)
                     {
                         // if we are also an interface - just add, no need to check implementations
-                        if (decl.IsInterface)
+                        if (isInterface)
                         {
                             // TODO: warn!!! check that method already exists in the list. it is possible probably
                             inheritedFuncDecls.AddRange(GetPreparedVirtualMethods(inhDecl));
@@ -863,7 +952,7 @@ namespace HapetFrontend.Parsing.PostPrepare
                 }
 
                 // check if all implemented
-                if (!decl.IsInterface && !decl.SpecialKeys.Contains(TokenType.KwAbstract))
+                if (!isInterface && !decl.SpecialKeys.Contains(TokenType.KwAbstract))
                 {
                     // if it is not an interface nor abstract class - all abstract shite has to be implemented
                     foreach (var m in inheritedFuncDecls)
@@ -885,7 +974,7 @@ namespace HapetFrontend.Parsing.PostPrepare
                     }
                 }
 
-                if (decl.IsInterface)
+                if (isInterface)
                     // add here all shite because it is an interface
                     inheritedFuncDecls.AddRange(currentClassMethods);
                 else

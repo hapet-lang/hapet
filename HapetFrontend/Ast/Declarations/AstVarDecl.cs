@@ -26,7 +26,7 @@ namespace HapetFrontend.Ast.Declarations
             Initializer = ini;
         }
 
-        public virtual AstVarDecl GetCopyForAnotherClass(AstClassDecl decl)
+        public virtual AstVarDecl GetCopyForAnotherType(AstDeclaration decl)
         {
             var varDecl = new AstVarDecl(Type, Name, Initializer, Documentation, Location)
             {
