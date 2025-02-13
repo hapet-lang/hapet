@@ -197,9 +197,16 @@ namespace HapetBackend.Llvm
                             Where(x => x is AstVarDecl && x is not AstPropertyDecl).
                             Select(x => (x as AstVarDecl).Type.OutType).ToList();
                         fieldDeclarationsBoxed.Insert(0, PointerType.GetPointerType(IntPtrType.Instance)); // the same as in metadata gen
-                        var (offsetsBoxed, _, _) = CalcStructData(fieldDeclarationsBoxed, packNumber);
+                        var (offsetsBoxed, _, memTypesBoxed) = CalcStructData(fieldDeclarationsBoxed, packNumber);
+                        
+                        llvmTypeBoxed.StructSetBody(memTypesBoxed.ToArray(), packNumber >= 1);
+
+                        uint offs = 0;
+                        if (fieldDeclarationsBoxed.Count > 1)
+                            offs = (uint)_targetData.OffsetOfElement(llvmTypeBoxed, 1);
+
                         // offset to the first normal field
-                        _boxedStructTypes.Add(s, (llvmTypeBoxed, offsetsBoxed.Length > 1 ? offsetsBoxed[1] : 0));
+                        _boxedStructTypes.Add(s, (llvmTypeBoxed, offs));
 
                         return llvmType;
                     }
@@ -413,6 +420,7 @@ namespace HapetBackend.Llvm
                 else if (outType is ClassType clsT2 && clsT2.Declaration.Name.Name == "System.Object")
                 {
                     // cast from struct instance to object
+                    var boxedTypeData = _boxedStructTypes[inType];
                 }
             }
             // TODO: ...
