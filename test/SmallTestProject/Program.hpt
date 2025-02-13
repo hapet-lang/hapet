@@ -19,4 +19,9 @@ public struct GG
 {
 	int Field1 { get; set; } = 5;
 	int Field2 { get; set; } = 3;
+
+	public override int GetHashCode()
+	{
+		return 333;
+	}
 }

@@ -180,6 +180,34 @@ namespace HapetFrontend.Parsing.PostPrepare
                     PostPrepareExprInference(nst);
                 }
             }
+            // resolve inheritance shite of structs
+            foreach (var str in AllStructsMetadata)
+            {
+                _currentSourceFile = str.SourceFile;
+                foreach (var inh in str.InheritedFrom)
+                {
+                    PostPrepareExprInference(inh);
+
+                    // check for sealed type
+                    if ((inh.OutType as ClassType).Declaration.SpecialKeys.Contains(TokenType.KwSealed))
+                    {
+                        // error - cannot inherit from sealed
+                        _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, inh, [], ErrorCode.Get(CTEN.DerivedFromSealed));
+                    }
+                }
+
+                // set System.Object inheritance if there is nothing
+                if ((str.InheritedFrom.Count <= 0 ||
+                    (str.InheritedFrom[0].OutType as ClassType).Declaration.IsInterface))
+                {
+                    // set it only if there are not inheritances or only interfaces
+                    var nst = new AstNestedExpr(new AstIdExpr("System.Object", str), null, str);
+                    str.InheritedFrom.Insert(0, nst);
+                    SetScopeAndParent(nst, str);
+                    PostPrepareExprScoping(nst);
+                    PostPrepareExprInference(nst);
+                }
+            }
             // resolve inheritance shite of enums
             foreach (var enm in AllEnumsMetadata)
             {
