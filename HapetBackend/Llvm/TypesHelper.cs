@@ -425,7 +425,7 @@ namespace HapetBackend.Llvm
                     SetTypeInfo(v, structType);
 
                     // storing struct into the alloced mem
-                    var offseted = _builder.BuildStructGEP2(_context.Int8Type, v, boxedTypeData.Item2, "offsetedPtr");
+                    var offseted = _builder.BuildGEP2(_context.Int8Type, v, new LLVMValueRef[] { LLVMValueRef.CreateConstInt(_context.Int32Type, boxedTypeData.Item2) }, "offsetedPtr");
                     _builder.BuildStore(val, offseted);
 
                     return v; // return malloced
@@ -481,8 +481,18 @@ namespace HapetBackend.Llvm
             _builder.BuildStore(_virtualTableDictionary[type], ptrToVtable);
 
             // save the array into first field
-            var tp = HapetTypeToLLVMType(type);
-            var fti = _builder.BuildStructGEP2(tp, v, 0, "fullTypeInfoPtr");
+            LLVMTypeRef tp;
+            LLVMValueRef fti;
+            if (type is ClassType)
+            {
+                tp = HapetTypeToLLVMType(type);
+                fti = _builder.BuildStructGEP2(tp, v, 0, "fullTypeInfoPtr");
+            }
+            else
+            {
+                //tp = HapetTypeToLLVMType(type);
+                fti = _builder.BuildGEP2(_context.Int8Type, v, new LLVMValueRef[] { LLVMValueRef.CreateConstInt(_context.Int32Type, 0) }, "fullTypeInfoPtr");
+            }
             _builder.BuildStore(allocated, fti);
         }
 

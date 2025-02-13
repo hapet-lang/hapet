@@ -991,6 +991,12 @@ namespace HapetFrontend.Parsing.PostPrepare
 
                 cls.AllVirtualMethods = GetPreparedVirtualMethods(cls);
             }
+            foreach (var str in AllStructsMetadata)
+            {
+                _currentSourceFile = str.SourceFile;
+
+                str.AllVirtualMethods = GetPreparedVirtualMethods(str);
+            }
         }
 
         private void PostPrepareMetadataAttributes()
