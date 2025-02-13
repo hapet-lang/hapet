@@ -29,6 +29,10 @@ namespace HapetBackend.Llvm
         /// Struct offsets mapping when StructLayoutAttribute used
         /// </summary>
         private Dictionary<HapetType, uint[]> _structOffsets = new Dictionary<HapetType, uint[]>();
+        /// <summary>
+        /// Boxed struct mappings with the first param offset
+        /// </summary>
+        private Dictionary<HapetType, (LLVMTypeRef, uint)> _boxedStructTypes = new Dictionary<HapetType, (LLVMTypeRef, uint)>();
 
         /// <summary>
         /// Anon delegate name to type mappings. Used when creating a delegate and assigning a func to it
@@ -168,44 +172,10 @@ namespace HapetBackend.Llvm
 
                         var fieldDeclarations = s.Declaration.Declarations.
                             Where(x => x is AstVarDecl && x is not AstPropertyDecl).
-                            Select(x => x as AstVarDecl).ToList();
+                            Select(x => (x as AstVarDecl).Type.OutType).ToList();
 
-                        // WARN: this shite with alignment is done like 'LayoutKind.Sequential' in C#
-                        // so all the members are going to be aligned properly by their types
-                        var memTypes = new List<LLVMTypeRef>(fieldDeclarations.Count);
-                        var offsets = new uint[fieldDeclarations.Count];
-                        int currentSize = 0;
-                        int i = 0;
-                        foreach (var mem in fieldDeclarations)
-                        {
-                            // we need to get a minimal type alignment size depending on pack
-                            int typeAlignment = Math.Min(mem.Type.OutType.GetAlignment(), packNumber);
+                        var (offsets, sssize, memTypes) = CalcStructData(fieldDeclarations, packNumber);
 
-                            // if current offset is shity for the member type
-                            // we need to append a padding
-                            // WARN: create offsets only if pack is set or bigger than 1
-                            if (packNumber > 1 && currentSize % typeAlignment != 0)
-                            {
-                                // add padding
-                                int padding = typeAlignment - currentSize % typeAlignment;
-                                memTypes.Add(LLVM.ArrayType(LLVM.Int8Type(), (uint)padding));
-                                currentSize += padding;
-                            }
-
-                            offsets[i] = (uint)memTypes.Count;
-                            memTypes.Add(HapetTypeToLLVMType(mem.Type.OutType));
-                            currentSize += (int)((_targetData.SizeOfTypeInBits(memTypes.Last()) + 7) / 8);
-                            i += 1;
-                        }
-                        // add padding at the end
-                        // WARN: create offsets only if pack is set or bigger than 1
-                        if (packNumber > 1 && currentSize % packNumber != 0)
-                        {
-                            // add padding
-                            int padding = packNumber - currentSize % packNumber;
-                            memTypes.Add(LLVM.ArrayType(LLVM.Int8Type(), (uint)padding));
-                            currentSize += padding;
-                        }
                         // saving the offsets so we can access struct elements easily in the future
                         _structOffsets[s] = offsets;
 
@@ -218,6 +188,18 @@ namespace HapetBackend.Llvm
                             s.ChangeAlignment(packNumber);
                         else
                             s.ChangeAlignment((int)LLVM.ABIAlignmentOfType(_targetData, llvmType));
+
+
+                        // create a boxed type
+                        var nameBoxed = $"boxed.{s.Declaration.Name.Name}";
+                        var llvmTypeBoxed = _context.CreateNamedStruct(nameBoxed);
+                        var fieldDeclarationsBoxed = s.Declaration.Declarations.
+                            Where(x => x is AstVarDecl && x is not AstPropertyDecl).
+                            Select(x => (x as AstVarDecl).Type.OutType).ToList();
+                        fieldDeclarationsBoxed.Insert(0, PointerType.GetPointerType(IntPtrType.Instance)); // the same as in metadata gen
+                        var (offsetsBoxed, _, _) = CalcStructData(fieldDeclarationsBoxed, packNumber);
+                        // offset to the first normal field
+                        _boxedStructTypes.Add(s, (llvmTypeBoxed, offsetsBoxed.Length > 1 ? offsetsBoxed[1] : 0));
 
                         return llvmType;
                     }
@@ -277,6 +259,48 @@ namespace HapetBackend.Llvm
                     }
             }
             return new LLVMValueRef();
+        }
+
+        private unsafe (uint[], int, List<LLVMTypeRef>) CalcStructData(List<HapetType> decls, int packNumber)
+        {
+            // WARN: this shite with alignment is done like 'LayoutKind.Sequential' in C#
+            // so all the members are going to be aligned properly by their types
+            var memTypes = new List<LLVMTypeRef>(decls.Count);
+            var offsets = new uint[decls.Count];
+            int currentSize = 0;
+            int i = 0;
+            foreach (var mem in decls)
+            {
+                // we need to get a minimal type alignment size depending on pack
+                int typeAlignment = Math.Min(mem.GetAlignment(), packNumber);
+
+                // if current offset is shity for the member type
+                // we need to append a padding
+                // WARN: create offsets only if pack is set or bigger than 1
+                if (packNumber > 1 && currentSize % typeAlignment != 0)
+                {
+                    // add padding
+                    int padding = typeAlignment - currentSize % typeAlignment;
+                    memTypes.Add(LLVM.ArrayType(LLVM.Int8Type(), (uint)padding));
+                    currentSize += padding;
+                }
+
+                offsets[i] = (uint)memTypes.Count;
+                memTypes.Add(HapetTypeToLLVMType(mem));
+                currentSize += (int)((_targetData.SizeOfTypeInBits(memTypes.Last()) + 7) / 8);
+                i += 1;
+            }
+            // add padding at the end
+            // WARN: create offsets only if pack is set or bigger than 1
+            if (packNumber > 1 && currentSize % packNumber != 0)
+            {
+                // add padding
+                int padding = packNumber - currentSize % packNumber;
+                memTypes.Add(LLVM.ArrayType(LLVM.Int8Type(), (uint)padding));
+                currentSize += padding;
+            }
+
+            return (offsets, currentSize, memTypes);
         }
 
         private LLVMValueRef CreateLocalVariable(HapetType exprType, string name = "temp")
