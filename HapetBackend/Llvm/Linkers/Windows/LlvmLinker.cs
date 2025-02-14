@@ -13,12 +13,9 @@ namespace HapetBackend.Llvm.Linkers.Windows
 
         public static bool Link(Compiler compiler, string targetFile, string objFile, IEnumerable<string> libraryIncludeDirectories, IEnumerable<string> libraries, IMessageHandler messageHandler)
         {
-            if (compiler is null)
-                throw new ArgumentNullException(nameof(compiler));
-            if (libraryIncludeDirectories is null)
-                throw new ArgumentNullException(nameof(libraryIncludeDirectories));
-            if (messageHandler is null)
-                throw new ArgumentNullException(nameof(messageHandler));
+            ArgumentNullException.ThrowIfNull(compiler);
+            ArgumentNullException.ThrowIfNull(libraryIncludeDirectories);
+            ArgumentNullException.ThrowIfNull(messageHandler);
 
             _compiler = compiler;
             bool verbose = _compiler.CurrentProjectSettings.Verbose;

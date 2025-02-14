@@ -129,8 +129,14 @@ namespace HapetBackend.Llvm
             _module.Dispose();
         }
 
+#pragma warning disable CA1002 // Do not expose generic lists
         public bool CompileCode(List<string> libraryIncludeDirectories, List<string> libraries, IMessageHandler messageHandler)
+#pragma warning restore CA1002 // Do not expose generic lists
         {
+            ArgumentNullException.ThrowIfNull(messageHandler);
+            ArgumentNullException.ThrowIfNull(libraries);
+            ArgumentNullException.ThrowIfNull(libraryIncludeDirectories);
+
             // no need to print info when it is a referenced build
             if (!_compiler.CurrentProjectSettings.IsReferencedCompilation)
                 messageHandler.ReportMessage([$"{Funcad.GetPrettyTimeString(_compiler.CompilationStopwatch.Elapsed)} Linking..."], null, ReportType.Info);

@@ -227,7 +227,7 @@ namespace HapetBackend.Llvm
         {
             // ??? TOOD: why there is such check?
             if (type == IntType.LiteralType || type == FloatType.LiteralType)
-                throw new Exception();
+                throw new ArgumentException("Literal types are not allowed for conversion");
 
             switch (type)
             {

@@ -1,18 +1,25 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-	<PropertyGroup>
-		<TargetFramework>net8.0</TargetFramework>
-		<ImplicitUsings>enable</ImplicitUsings>
-		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-	</PropertyGroup>
+    <PropertyGroup>
+        <TargetFramework>net8.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+        <EnableNETAnalyzers>true</EnableNETAnalyzers>
+        <AnalysisMode>AllEnabledByDefault</AnalysisMode>
+    </PropertyGroup>
 
-	<ItemGroup>
-		<ProjectReference Include="..\HapetFrontend\HapetFrontend.csproj" />
-	</ItemGroup>
+    <ItemGroup>
+        <ProjectReference Include="..\HapetFrontend\HapetFrontend.csproj" />
+    </ItemGroup>
 
-	<ItemGroup>
-		<PackageReference Include="LLVMSharp" Version="16.0.0" />
-		<PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
-	</ItemGroup>
-	
+    <ItemGroup>
+        <PackageReference Include="LLVMSharp" Version="16.0.0" />
+        <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+
+        <PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="9.0.0">
+            <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
+        </PackageReference>
+    </ItemGroup>
+    
 </Project>

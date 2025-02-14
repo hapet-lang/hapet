@@ -13,8 +13,8 @@ namespace HapetBackend.Llvm
         #region Type info 
         private unsafe LLVMValueRef GenerateTypeInfoConst(HapetType type)
         {
-            if (_typeInfoDictionary.ContainsKey(type))
-                return _typeInfoDictionary[type];
+            if (_typeInfoDictionary.TryGetValue(type, out LLVMValueRef value))
+                return value;
 
             // create if does not exists
             ClassType parent;
@@ -129,7 +129,7 @@ namespace HapetBackend.Llvm
             return (interfacesArray, interfaceOffsetsArray);
         }
 
-        private List<(ClassType, int[])> GetAllInterfacesWithOffsets(HapetType type)
+        private static List<(ClassType, int[])> GetAllInterfacesWithOffsets(HapetType type)
         {
             // to calc offset up to the required element
             int GetOffsetTo(List<AstVarDecl> allVars, int ind)
@@ -184,7 +184,7 @@ namespace HapetBackend.Llvm
             return allInterfacesWithOffsets;
         }
 
-        private List<ClassType> GetAllInterfaces(HapetType type, bool includeParent = true)
+        private static List<ClassType> GetAllInterfaces(HapetType type, bool includeParent = true)
         {
             List<ClassType> inheritedInterfaces;
             if (type is ClassType clsType)

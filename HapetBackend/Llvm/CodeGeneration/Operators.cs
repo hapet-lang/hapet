@@ -30,7 +30,7 @@ namespace HapetBackend.Llvm
             return builtInUnOperators[(op, searchT)];
         }
 
-        private unsafe Func<LLVMBuilderRef, LLVMValueRef, LLVMValueRef, string, LLVMValueRef> GetICompare(LLVMIntPredicate pred)
+        private static unsafe Func<LLVMBuilderRef, LLVMValueRef, LLVMValueRef, string, LLVMValueRef> GetICompare(LLVMIntPredicate pred)
         {
             return (a, b, c, d) =>
             {
@@ -39,7 +39,7 @@ namespace HapetBackend.Llvm
             };
         }
 
-        private unsafe Func<LLVMBuilderRef, LLVMValueRef, LLVMValueRef, string, LLVMValueRef> GetFCompare(LLVMRealPredicate pred)
+        private static unsafe Func<LLVMBuilderRef, LLVMValueRef, LLVMValueRef, string, LLVMValueRef> GetFCompare(LLVMRealPredicate pred)
         {
             return (a, b, c, d) =>
             {

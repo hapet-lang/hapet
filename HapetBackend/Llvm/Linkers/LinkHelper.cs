@@ -29,6 +29,8 @@ namespace HapetBackend.Llvm.Linkers
             // relative to out folder
             else if (File.Exists($"{prjOutFolder}/{fileName}"))
             {
+                ArgumentNullException.ThrowIfNull(prjOutFolder);
+
                 pathToLink = prjOutFolder;
                 var dirName = Path.GetDirectoryName(fileName);
                 pathToLink = $"{pathToLink.Replace('\\', '/').TrimEnd('/')}/{dirName.Replace('\\', '/')}";

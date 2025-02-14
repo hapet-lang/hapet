@@ -7,7 +7,7 @@ namespace HapetBackend.Llvm.Linkers.Windows
 {
     public static partial class WinLinker
     {
-        internal class HapetWindowsSdk
+        internal sealed class HapetWindowsSdk
         {
             public string Version { get; set; }
             public string Path { get; set; }
@@ -96,7 +96,7 @@ namespace HapetBackend.Llvm.Linkers.Windows
 
                 while (sdk.UmPath == null ||
                     !Directory.Exists(sdk.UmPath) ||
-                    (new DirectoryInfo(sdk.UmPath)).GetFiles().FirstOrDefault(x => x.Name.Contains("kernel32")) == null) // if there is no kernel 32 lib
+                    (new DirectoryInfo(sdk.UmPath)).GetFiles().FirstOrDefault(x => x.Name.Contains("kernel32", StringComparison.InvariantCulture)) == null) // if there is no kernel 32 lib
                 {
                     excludedVersions.Add(prevVersion);
 

@@ -12,8 +12,8 @@ namespace HapetBackend.Llvm
         #region Type info 
         private unsafe LLVMValueRef GenerateVirtualTableConst(HapetType type)
         {
-            if (_virtualTableDictionary.ContainsKey(type))
-                return _virtualTableDictionary[type];
+            if (_virtualTableDictionary.TryGetValue(type, out LLVMValueRef value))
+                return value;
 
             // create if does not exists
             ClassType parent;
@@ -177,7 +177,7 @@ namespace HapetBackend.Llvm
             return (interfacesArray, interfaceOffsetsArray);
         }
 
-        private List<(ClassType, int[])> GetAllInterfacesWithOffsetsForVtable(HapetType type)
+        private static List<(ClassType, int[])> GetAllInterfacesWithOffsetsForVtable(HapetType type)
         {
             List<(ClassType, int[])> allInterfacesWithOffsets = new List<(ClassType, int[])>();
 

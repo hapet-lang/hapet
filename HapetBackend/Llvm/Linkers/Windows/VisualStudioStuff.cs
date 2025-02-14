@@ -23,7 +23,8 @@ namespace HapetBackend.Llvm.Linkers.Windows
             return value.Scan(pattern).Skip(1);
         }
 
-        public class VsWhere
+#pragma warning disable CA1812 // Class is not instantiated
+        internal sealed class VsWhere
         {
             public string instanceId { get; set; }
             public string installDate { get; set; }
@@ -40,6 +41,7 @@ namespace HapetBackend.Llvm.Linkers.Windows
             public string releaseNotes { get; set; }
             public string thirdPartyNotices { get; set; }
         }
+#pragma warning restore CA1812 // Class is not instantiated
 
         private static (int, string) FindVSInstallDirWithVsWhere(int skipLatest = 0)
         {

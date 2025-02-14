@@ -699,7 +699,7 @@ namespace HapetBackend.Llvm
             return default;
         }
 
-        private bool IsStaticOrConstElement(string name, List<AstDeclaration> decls, out AstVarDecl decl)
+        private static bool IsStaticOrConstElement(string name, List<AstDeclaration> decls, out AstVarDecl decl)
         {
             // getting pure decls with consts and statics
             var pureDecls = decls.Where(x => x.SpecialKeys.Contains(TokenType.KwStatic) || x.SpecialKeys.Contains(TokenType.KwConst)).ToList();
@@ -707,7 +707,7 @@ namespace HapetBackend.Llvm
             return decl != null;
         }
 
-        private uint GetElementIndex(string name, List<AstDeclaration> decls)
+        private static uint GetElementIndex(string name, List<AstDeclaration> decls)
         {
             // getting pure decls without consts and statics
             var pureDecls = decls.GetStructFields();
@@ -785,7 +785,7 @@ namespace HapetBackend.Llvm
             // so stmts like 'a = (b = 3);' would be allowed...
         }
 
-        private static ulong _forCounter = 0;
+        private static ulong _forCounter;
         // these blocks are needed for break and continue statements
         private LLVMBasicBlockRef _currentLoopInc = null;
         private LLVMBasicBlockRef _currentLoopEnd = null;
@@ -883,7 +883,7 @@ namespace HapetBackend.Llvm
             _currentLoopEnd = prevForEnd;
         }
 
-        private static ulong _whileCounter = 0;
+        private static ulong _whileCounter;
         private unsafe void GenerateWhileStmt(AstWhileStmt stmt)
         {
             // WARN: this strange code is not just for 'fun'
@@ -964,7 +964,7 @@ namespace HapetBackend.Llvm
             _currentLoopEnd = prevWhileEnd;
         }
 
-        private static ulong _ifCounter = 0;
+        private static ulong _ifCounter;
         private unsafe void GenerateIfStmt(AstIfStmt stmt)
         {
             // WARN: this strange code is not just for 'fun'
@@ -1037,8 +1037,7 @@ namespace HapetBackend.Llvm
                 // generating else code
                 GenerateExpressionCode(stmt.BodyFalse);
 
-                if (stmt.BodyFalse != null &&
-                    stmt.BodyFalse.Statements.Count > 0 &&
+                if (stmt.BodyFalse.Statements.Count > 0 &&
                     (stmt.BodyFalse.Statements.Last() is AstReturnStmt ||
                     stmt.BodyFalse.Statements.Last() is AstBreakContStmt))
                 {
@@ -1060,7 +1059,7 @@ namespace HapetBackend.Llvm
             _builder.PositionAtEnd(bbEnd);
         }
 
-        private static ulong _switchCounter = 0;
+        private static ulong _switchCounter;
         private unsafe void GenerateSwitchStmt(AstSwitchStmt stmt)
         {
             _switchCounter++;

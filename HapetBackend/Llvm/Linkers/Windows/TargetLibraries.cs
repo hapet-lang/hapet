@@ -37,8 +37,8 @@ namespace HapetBackend.Llvm.Linkers.Windows
                                         messageHandler.ReportMessage([], ErrorCode.Get(CTEN.NoVisualStudioLib));
                                         return false;
                                     }
-                                    if (msvcLibPath != null)
-                                        lldArgs.Add($@"-libpath:{msvcLibPath}\{target}");
+
+                                    lldArgs.Add($@"-libpath:{msvcLibPath}\{target}");
                                     break;
                                 }
 

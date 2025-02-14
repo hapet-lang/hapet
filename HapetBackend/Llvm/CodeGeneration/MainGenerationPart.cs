@@ -76,7 +76,7 @@ namespace HapetBackend.Llvm
             }
         }
 
-        private LLVMValueRef _lastFunctionValueRef = default;
+        private LLVMValueRef _lastFunctionValueRef;
         private unsafe void GenerateFuncCode(AstFuncDecl funcDecl, LLVMTypeRef? funcType = null, bool forMetadata = false)
         {
             _currentFunction = funcDecl;
