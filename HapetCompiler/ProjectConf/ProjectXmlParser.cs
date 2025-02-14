@@ -12,9 +12,9 @@ namespace HapetCompiler.ProjectConf
         private readonly string _projectPath = string.Empty;
         private readonly string _projectPathAbsolute = string.Empty;
         private readonly string _projectFileText = string.Empty;
-        private readonly CompilerSettings _projectSettings = null;
-        private readonly ProjectData _projectData = null;
-        private readonly IMessageHandler _messageHandler = null;
+        private readonly CompilerSettings _projectSettings;
+        private readonly ProjectData _projectData;
+        private readonly IMessageHandler _messageHandler;
 
         /// <summary>
         /// All <PropertyGroup> tags in .hptproj
@@ -30,12 +30,13 @@ namespace HapetCompiler.ProjectConf
         {
             _projectPath = projectPath;
             _projectPathAbsolute = Path.GetFullPath(_projectPath);
-            _projectFileText = File.ReadAllText(_projectPath).Replace("\t", "    ");
+            _projectFileText = File.ReadAllText(_projectPath).Replace("\t", "    ", StringComparison.InvariantCulture);
             _projectSettings = projectSettings;
             _projectData = projectData;
             _messageHandler = messageHandler;
 
             XmlDocument projDoc = new XmlDocument();
+#pragma warning disable CA1031 // Do not catch general exception types
             try
             {
                 projDoc.Load(_projectPath);
@@ -45,6 +46,7 @@ namespace HapetCompiler.ProjectConf
                 _messageHandler.ReportMessage([_projectPathAbsolute, e.Message], ErrorCode.Get(CTEN.ProjectFileException));
                 return;
             }
+#pragma warning restore CA1031 // Do not catch general exception types
             if (projDoc.DocumentElement == null)
             {
                 _messageHandler.ReportMessage([_projectPathAbsolute], ErrorCode.Get(CTEN.ProjectFileCouldNotBeParsed));

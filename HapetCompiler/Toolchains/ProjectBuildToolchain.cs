@@ -10,7 +10,7 @@ using HapetCompiler.Resolvers;
 
 namespace HapetCompiler.Toolchains
 {
-    internal class ProjectBuildToolchain
+    internal sealed class ProjectBuildToolchain
     {
         public CompilerSettings ProjectSettings { get; set; }
         public ProjectData ProjectData { get; set; }

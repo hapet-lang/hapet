@@ -11,7 +11,7 @@ using System.Text;
 
 namespace HapetCompiler
 {
-    class ConsoleMessageHandler : IMessageHandler
+    sealed class ConsoleMessageHandler : IMessageHandler
     {
         public bool HasErrors { get; set; }
 
@@ -105,7 +105,7 @@ namespace HapetCompiler
             {
                 foreach (var d in message.Details)
                 {
-                    Console.WriteLine("|");
+                    Console.WriteLine('|');
 
                     foreach (var line in d.message.Split('\n'))
                     {
@@ -291,7 +291,7 @@ namespace HapetCompiler
 
             if (xmlMessage != null)
             {
-                Console.Error.WriteLine($"[{xmlMessage.GetName()}] {string.Format(xmlMessage.Text, messageArgs)}");
+                Console.Error.WriteLine($"[{xmlMessage.GetName()}] {string.Format(CultureInfo.InvariantCulture, xmlMessage.Text, messageArgs)}");
             }
             else
             {
@@ -313,7 +313,7 @@ namespace HapetCompiler
             Console.BackgroundColor = colb;
         }
 
-        private ConsoleColor GetColorByReportType(ReportType reportType)
+        private static ConsoleColor GetColorByReportType(ReportType reportType)
         {
             ConsoleColor outColor = ConsoleColor.Red;
             switch (reportType)

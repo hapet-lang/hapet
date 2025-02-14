@@ -7,7 +7,7 @@ using System.Diagnostics;
 
 namespace HapetCompiler.Resolvers
 {
-    internal partial class ProjectReferencesResolver
+    internal sealed partial class ProjectReferencesResolver
     {
         private ProjectData _projectData;
         private CompilerSettings _projectSettings;

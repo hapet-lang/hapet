@@ -32,6 +32,9 @@ namespace HapetCompiler.ProjectConf.Data
         /// <returns>Start and end indexes of the tag in the text</returns>
         public static (int, int) FindNodeLocation(string text, XmlNode node)
         {
+            ArgumentNullException.ThrowIfNull(text);
+            ArgumentNullException.ThrowIfNull(node);
+
             // getting node indexes in the doc
             List<int> indexes = new List<int>();
             XmlNode currNode = node;
@@ -54,7 +57,7 @@ namespace HapetCompiler.ProjectConf.Data
                     SkipWhitespaces(text, ref currentCharPosition);
                     int beginNeededTag = currentCharPosition;
                     int endNeededTag;
-                    while (!text.Substring(currentCharPosition).StartsWith(">"))
+                    while (!text.Substring(currentCharPosition).StartsWith('>'))
                     {
                         currentCharPosition++;
                     }
@@ -65,7 +68,7 @@ namespace HapetCompiler.ProjectConf.Data
                 else
                 {
                     // just skip parent open tag (we don't need it)
-                    while (!text.Substring(currentCharPosition).StartsWith(">"))
+                    while (!text.Substring(currentCharPosition).StartsWith('>'))
                     {
                         currentCharPosition++;
                     }
@@ -107,7 +110,7 @@ namespace HapetCompiler.ProjectConf.Data
             while (alreadySkipped < amount)
             {
                 SkipWhitespaces(text, ref currentCharPosition);
-                if (text.Substring(currentCharPosition).StartsWith("<!--"))
+                if (text.Substring(currentCharPosition).StartsWith("<!--", StringComparison.InvariantCulture))
                 {
                     // comment parsing
                     SkipNode(text, true, ref currentCharPosition);
@@ -131,7 +134,7 @@ namespace HapetCompiler.ProjectConf.Data
         {
             if (isComment)
             {
-                while (!text.Substring(currentCharPosition).StartsWith("-->"))
+                while (!text.Substring(currentCharPosition).StartsWith("-->", StringComparison.InvariantCulture))
                 {
                     currentCharPosition++;
                 }
@@ -140,11 +143,11 @@ namespace HapetCompiler.ProjectConf.Data
             else
             {
                 // need to do it manually with first one
-                while (!text.Substring(currentCharPosition).StartsWith(">") && !text.Substring(currentCharPosition).StartsWith("/>"))
+                while (!text.Substring(currentCharPosition).StartsWith('>') && !text.Substring(currentCharPosition).StartsWith("/>", StringComparison.InvariantCulture))
                 {
                     currentCharPosition++;
                 }
-                if (text.Substring(currentCharPosition).StartsWith("/>"))
+                if (text.Substring(currentCharPosition).StartsWith("/>", StringComparison.InvariantCulture))
                 {
                     currentCharPosition += 2;
                     return;
@@ -153,7 +156,7 @@ namespace HapetCompiler.ProjectConf.Data
                 {
                     currentCharPosition++;
                     // skipping content of tags
-                    while (!text.Substring(currentCharPosition).StartsWith("<"))
+                    while (!text.Substring(currentCharPosition).StartsWith('<'))
                     {
                         currentCharPosition++;
                     }
@@ -161,14 +164,14 @@ namespace HapetCompiler.ProjectConf.Data
                     while (true)
                     {
                         SkipWhitespaces(text, ref currentCharPosition);
-                        if (text.Substring(currentCharPosition).StartsWith("<!--"))
+                        if (text.Substring(currentCharPosition).StartsWith("<!--", StringComparison.InvariantCulture))
                         {
                             // comment parsing
                             SkipNode(text, true, ref currentCharPosition);
                         }
-                        else if (text.Substring(currentCharPosition).StartsWith("</"))
+                        else if (text.Substring(currentCharPosition).StartsWith("</", StringComparison.InvariantCulture))
                         {
-                            while (!text.Substring(currentCharPosition).StartsWith(">"))
+                            while (!text.Substring(currentCharPosition).StartsWith('>'))
                             {
                                 currentCharPosition++;
                             }
