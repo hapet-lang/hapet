@@ -12,7 +12,8 @@ public static class Program
 		var a = new GG();
 		object b = (object)a;
 		var a2 = (GG)b;
-		return a.Field1 + a2.Field2 + b.GetHashCode() + a.Cringe();
+		var a3 = (IAnime)a2;
+		return a.Field1 + a2.Field2 + b.GetHashCode() + a.Cringe() + a3.Cringe() + a2.MineAnime();
 	}
 }
 
@@ -34,5 +35,10 @@ public struct GG : IAnime
 	public override int GetHashCode()
 	{
 		return 333;
+	}
+
+	public int MineAnime()
+	{
+		return 5;
 	}
 }

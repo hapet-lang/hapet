@@ -414,7 +414,6 @@ namespace HapetBackend.Llvm
             // the func is needed to handle virtual shite
             LLVMValueRef CreateCall(LLVMBuilderRef builder, LLVMTypeRef funcType, FunctionType hapetType, LLVMValueRef func, List<LLVMValueRef> args, string name = "")
             {
-                // TODO: remove when struct func calls
                 if (hapetType.Declaration.ContainingParent is not AstClassDecl clsDecl)
                     return builder.BuildCall2(funcType, func, args.ToArray(), name);
 
