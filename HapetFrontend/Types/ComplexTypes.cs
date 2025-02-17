@@ -36,17 +36,6 @@ namespace HapetFrontend.Types
             }
             return -1;
         }
-
-        public bool IsInheritedFrom(ClassType type, bool checkParents = true)
-        {
-            foreach (var expr in Declaration.InheritedFrom)
-            {
-                var outT = expr.OutType as ClassType;
-                if (outT == type || (checkParents && outT.IsInheritedFrom(type)))
-                    return true;
-            }
-            return false;
-        }
     }
 
     /// <summary>

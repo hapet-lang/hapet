@@ -12,19 +12,24 @@ public static class Program
 		var a = new GG();
 		object b = (object)a;
 		var a2 = (GG)b;
-		return a.Field1 + a2.Field2 + b.GetHashCode();
+		return a.Field1 + a2.Field2 + b.GetHashCode() + a.Cringe();
 	}
 }
 
 public interface IAnime
 {
-	void Cringe();
+	int Cringe();
 }
 
 public struct GG : IAnime
 {
 	int Field1 { get; set; } = 5;
 	int Field2 { get; set; } = 3;
+
+	public int Cringe()
+	{
+		return 5;
+	}
 
 	public override int GetHashCode()
 	{

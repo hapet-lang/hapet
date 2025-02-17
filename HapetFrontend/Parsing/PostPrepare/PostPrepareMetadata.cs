@@ -360,7 +360,7 @@ namespace HapetFrontend.Parsing.PostPrepare
                                 if (definedInOneOfTheParents != null)
                                 {
                                     // check if the already defined field is by the interface
-                                    bool isInherited = (definedInOneOfTheParents.ContainingParent.Type.OutType as ClassType).IsInheritedFrom(inhF.ContainingParent.Type.OutType as ClassType, true);
+                                    bool isInherited = definedInOneOfTheParents.ContainingParent.Type.OutType.IsInheritedFrom(inhF.ContainingParent.Type.OutType as ClassType, true);
                                     // if inherited - this is a parent cls already implemented the field - no need to warn
                                     if (isInherited)
                                     {
@@ -553,7 +553,7 @@ namespace HapetFrontend.Parsing.PostPrepare
                                 if (definedInOneOfTheParents != null)
                                 {
                                     // check if the already defined prop is by the interface
-                                    bool isInherited = (definedInOneOfTheParents.ContainingParent.Type.OutType as ClassType).IsInheritedFrom(inhF.ContainingParent.Type.OutType as ClassType, true);
+                                    bool isInherited = definedInOneOfTheParents.ContainingParent.Type.OutType.IsInheritedFrom(inhF.ContainingParent.Type.OutType as ClassType, true);
                                     // if inherited - this is a parent cls already implemented the prop - no need to warn
                                     if (isInherited)
                                     {
@@ -872,7 +872,7 @@ namespace HapetFrontend.Parsing.PostPrepare
                                 if (definedInOneOfTheParents != null)
                                 {
                                     // check if the already defined method is by the interface
-                                    bool isInherited = (definedInOneOfTheParents.ContainingParent.Type.OutType as ClassType).IsInheritedFrom(inhF.ContainingParent.Type.OutType as ClassType, true);
+                                    bool isInherited = definedInOneOfTheParents.ContainingParent.Type.OutType.IsInheritedFrom(inhF.ContainingParent.Type.OutType as ClassType, true);
                                     // if inherited - this is a parent cls already implemented the method - no need to warn
                                     if (isInherited)
                                     {
@@ -909,8 +909,9 @@ namespace HapetFrontend.Parsing.PostPrepare
                                         // but we can't because of interface offset calcs. md could be fixed somehow?
 
                                         // we need to error
-                                        _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, definedInOneOfTheParents,
+                                        _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, inh,
                                             [HapetType.AsString(definedInOneOfTheParents.ContainingParent.Type.OutType),
+                                            HapetType.AsString(definedInOneOfTheParents.Type.OutType),
                                             HapetType.AsString(decl.Type.OutType),
                                             HapetType.AsString(inh.OutType)],
                                             ErrorCode.Get(CTEN.DoubleInterfaceCringeMeth));
@@ -941,21 +942,26 @@ namespace HapetFrontend.Parsing.PostPrepare
                     }
                     else
                     {
-                        // just add parent fields if it is a class
-                        inheritedFuncDecls.AddRange(GetPreparedVirtualMethods(inhDecl));
-
-                        // search for overrides in the current class 
-                        // and replace parent methods with our
-                        foreach (var fCurr in currentClassMethods.Where(x => x.SpecialKeys.Contains(TokenType.KwOverride)).ToArray())
+                        // if we are not an interface, happens when:
+                        // interface IAnime : object
+                        if (!isInterface)
                         {
-                            // check for signatures
-                            var overridedFnc = inheritedFuncDecls.GetSameByNameAndTypes(fCurr, out int fncIndex);
-                            // TODO: error here? we go all over the override funcs and found no func to be overriden?
-                            if (overridedFnc == null)
-                                continue;
-                            inheritedFuncDecls[fncIndex] = fCurr;
-                            // we need to remove it so it won't mess with us
-                            currentClassMethods.Remove(fCurr);
+                            // just add parent funcs if it is a class
+                            inheritedFuncDecls.AddRange(GetPreparedVirtualMethods(inhDecl));
+
+                            // search for overrides in the current class 
+                            // and replace parent methods with our
+                            foreach (var fCurr in currentClassMethods.Where(x => x.SpecialKeys.Contains(TokenType.KwOverride)).ToArray())
+                            {
+                                // check for signatures
+                                var overridedFnc = inheritedFuncDecls.GetSameByNameAndTypes(fCurr, out int fncIndex);
+                                // TODO: error here? we go all over the override funcs and found no func to be overriden?
+                                if (overridedFnc == null)
+                                    continue;
+                                inheritedFuncDecls[fncIndex] = fCurr;
+                                // we need to remove it so it won't mess with us
+                                currentClassMethods.Remove(fCurr);
+                            }
                         }
                     }
                 }

@@ -1,4 +1,7 @@
-﻿namespace HapetFrontend.Types
+﻿using HapetFrontend.Ast.Expressions;
+using System.Xml.Linq;
+
+namespace HapetFrontend.Types
 {
     public abstract class HapetType
     {
@@ -131,6 +134,26 @@
                 outType = tookFirst ? first : second;
             }
             return outType;
+        }
+
+        // used for classes and structs
+        public bool IsInheritedFrom(ClassType type, bool checkParents = true)
+        {
+            List<AstNestedExpr> inhFrom;
+            if (this is ClassType clsT)
+                inhFrom = clsT.Declaration.InheritedFrom;
+            else if (this is ClassType strT)
+                inhFrom = strT.Declaration.InheritedFrom;
+            else
+                return false;
+
+            foreach (var expr in inhFrom)
+            {
+                var outT = expr.OutType as ClassType;
+                if (outT == type || (checkParents && outT.IsInheritedFrom(type)))
+                    return true;
+            }
+            return false;
         }
     }
 }
