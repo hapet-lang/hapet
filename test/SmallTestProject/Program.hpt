@@ -11,7 +11,8 @@ public static class Program
 	{
 		var a = new GG();
 		object b = (object)a;
-		return a.Field1 + a.Field2 + b.GetHashCode();
+		var a2 = (GG)b;
+		return a.Field1 + a2.Field2 + b.GetHashCode();
 	}
 }
 

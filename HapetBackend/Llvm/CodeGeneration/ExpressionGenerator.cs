@@ -142,6 +142,7 @@ namespace HapetBackend.Llvm
 
                                 class Derived : Base {}
                              */
+                            // https://habr.com/ru/articles/882888/
                             // this shite has no compile time errors in c#...
                             bool anyIsInterface = rightType.Declaration.IsInterface || leftType.Declaration.IsInterface;
                             bool isUpcast = leftType.IsInheritedFrom(rightType);
