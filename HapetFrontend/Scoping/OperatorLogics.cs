@@ -1,5 +1,6 @@
 ﻿using HapetFrontend.Ast.Declarations;
 using HapetFrontend.Types;
+using System.Collections.ObjectModel;
 
 namespace HapetFrontend.Scoping
 {
@@ -9,6 +10,11 @@ namespace HapetFrontend.Scoping
         private Dictionary<string, List<INaryOperator>> _naryOperatorTable = new Dictionary<string, List<INaryOperator>>();
         private Dictionary<string, List<IBinaryOperator>> _binaryOperatorTable = new Dictionary<string, List<IBinaryOperator>>();
         private Dictionary<string, List<IUnaryOperator>> _unaryOperatorTable = new Dictionary<string, List<IUnaryOperator>>();
+
+        public ReadOnlyDictionary<string, ISymbol> SymbolTable => new ReadOnlyDictionary<string, ISymbol>(_symbolTable);
+        public ReadOnlyDictionary<string, List<INaryOperator>> NaryOperatorTable => new ReadOnlyDictionary<string, List<INaryOperator>>(_naryOperatorTable);
+        public ReadOnlyDictionary<string, List<IBinaryOperator>> BinaryOperatorTable => new ReadOnlyDictionary<string, List<IBinaryOperator>>(_binaryOperatorTable);
+        public ReadOnlyDictionary<string, List<IUnaryOperator>> UnaryoperatorTable => new ReadOnlyDictionary<string, List<IUnaryOperator>>(_unaryOperatorTable);
 
         #region Operators gets
         /// <summary>
