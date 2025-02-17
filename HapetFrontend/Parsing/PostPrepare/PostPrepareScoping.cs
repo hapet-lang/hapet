@@ -126,6 +126,13 @@ namespace HapetFrontend.Parsing.PostPrepare
                 PostPrepareExprScoping(a);
             }
 
+            // Scoping inheritance
+            foreach (var inh in structDecl.InheritedFrom)
+            {
+                SetScopeAndParent(inh, structDecl);
+                PostPrepareExprScoping(inh);
+            }
+
             foreach (var decl in structDecl.Declarations)
             {
                 SetScopeAndParent(decl, structDecl, structScope);
