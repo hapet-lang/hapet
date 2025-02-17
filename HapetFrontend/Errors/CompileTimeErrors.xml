@@ -656,6 +656,10 @@
 		<Number>3045</Number>
 		<Text>Type {0} in interface list expected to be an interface</Text>
 	</Item>
+	<Item>
+		<Number>3046</Number>
+		<Text>Type {0} cannot derive from {1} type, probably because the second one is value typed</Text>
+	</Item>
 
     <!--Compiler errors-->
 	<Item>

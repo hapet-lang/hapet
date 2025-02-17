@@ -172,6 +172,7 @@
         AbsPropertyWithBody             = 0x3043,
         DerivedFromSealed               = 0x3044,
         NonInterfaceInhInStruct         = 0x3045,
+        CannotDeriveFromStruct          = 0x3046,
 
         // compiler errors up to 0x6000
         DefaultWasNotInfered            = 0x5001,

@@ -21,6 +21,10 @@ public interface IAnime
 {
 	int Cringe();
 }
+
+public class fnaoiwf : AAAA{
+	
+}
 public struct AAAA 
 {
 

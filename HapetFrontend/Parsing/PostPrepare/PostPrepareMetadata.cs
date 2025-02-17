@@ -159,6 +159,13 @@ namespace HapetFrontend.Parsing.PostPrepare
                 {
                     PostPrepareExprInference(inh);
 
+                    if (inh.OutType is not ClassType)
+                    {
+                        // error - cannot inherit from non class types
+                        _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, inh, [HapetType.AsString(cls.Type.OutType), HapetType.AsString(inh.OutType)], ErrorCode.Get(CTEN.CannotDeriveFromStruct));
+                        continue;
+                    }
+
                     // check for sealed type
                     if ((inh.OutType as ClassType).Declaration.SpecialKeys.Contains(TokenType.KwSealed))
                     {
@@ -169,7 +176,8 @@ namespace HapetFrontend.Parsing.PostPrepare
 
                 // set System.Object inheritance if there is nothing
                 if ((cls.InheritedFrom.Count <= 0 || 
-                    (cls.InheritedFrom[0].OutType as ClassType).Declaration.IsInterface) &&
+                    (cls.InheritedFrom[0].OutType is ClassType && 
+                    (cls.InheritedFrom[0].OutType as ClassType).Declaration.IsInterface)) &&
                     cls.Name.Name != "System.Object") // skip itself
                 {
                     // set it only if there are not inheritances or only interfaces
