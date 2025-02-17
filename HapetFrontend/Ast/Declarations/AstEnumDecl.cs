@@ -27,7 +27,7 @@ namespace HapetFrontend.Ast.Declarations
             Declarations = declarations;
         }
 
-        internal EnumDeclJson GetJson()
+        public EnumDeclJson GetJson()
         {
             var fields = Declarations.Select(x => x.Name.Name).ToList();
             var values = Declarations.Select(x => ((NumberData)(x.Initializer.OutValue)).IntValue).ToList();

@@ -46,7 +46,7 @@ namespace HapetFrontend.Ast.Declarations
             Declarations = declarations;
         }
 
-        internal ClassDeclJson GetJson()
+        public ClassDeclJson GetJson()
         {
             var fields = Declarations.Where(x => x is AstVarDecl && x is not AstPropertyDecl).Select(x => (x as AstVarDecl).GetJson()).ToList();
             var inhs = InheritedFrom.Select(x => HapetType.AsString(x.OutType)).ToList();

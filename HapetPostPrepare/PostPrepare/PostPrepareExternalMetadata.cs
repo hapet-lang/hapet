@@ -1,6 +1,7 @@
 ﻿using HapetFrontend.Ast;
 using HapetFrontend.Ast.Declarations;
 using HapetFrontend.Entities;
+using HapetFrontend.Parsing;
 using HapetFrontend.Scoping;
 
 namespace HapetPostPrepare

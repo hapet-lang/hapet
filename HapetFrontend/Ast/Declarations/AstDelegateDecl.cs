@@ -20,7 +20,7 @@ namespace HapetFrontend.Ast.Declarations
             Returns = returns;
         }
 
-        internal DelegateDeclJson GetJson()
+        public DelegateDeclJson GetJson()
         {
             var parameters = Parameters.Select(x => x.GetJson()).ToList();
             var attributes = Attributes.Select(x => x.GetJson()).ToList();

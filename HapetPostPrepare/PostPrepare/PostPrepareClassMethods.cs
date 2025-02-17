@@ -4,6 +4,8 @@ using HapetFrontend.Ast.Expressions;
 using HapetFrontend.Ast.Statements;
 using HapetFrontend.Errors;
 using HapetFrontend.Types;
+using HapetFrontend.Enums;
+using HapetFrontend.Parsing;
 
 namespace HapetPostPrepare
 {
@@ -97,8 +99,8 @@ namespace HapetPostPrepare
 
             PostPrepareGenerateClassInitializer(structDecl);
             // passing all the existing ctors
-            PostPrepareGenerateClassConstructor(structDecl, allFuncs.Where(x => x.ClassFunctionType == Enums.ClassFunctionType.Ctor).ToList());
-            PostPrepareGenerateClassDestructor(structDecl, allFuncs.Where(x => x.ClassFunctionType == Enums.ClassFunctionType.Dtor).ToList());
+            PostPrepareGenerateClassConstructor(structDecl, allFuncs.Where(x => x.ClassFunctionType == ClassFunctionType.Ctor).ToList());
+            PostPrepareGenerateClassDestructor(structDecl, allFuncs.Where(x => x.ClassFunctionType == ClassFunctionType.Dtor).ToList());
 
             // 
             foreach (var decl in structDecl.Declarations)
@@ -238,14 +240,14 @@ namespace HapetPostPrepare
             }
 
             // static ctor is always generated
-            PostPrepareGenerateClassStaticConstructor(classDecl, allFuncs.Where(x => x.ClassFunctionType == Enums.ClassFunctionType.StaticCtor).ToList());
+            PostPrepareGenerateClassStaticConstructor(classDecl, allFuncs.Where(x => x.ClassFunctionType == ClassFunctionType.StaticCtor).ToList());
             // generating all the shite only if the class is not static
             if (!classDecl.SpecialKeys.Contains(TokenType.KwStatic))
             {
                 PostPrepareGenerateClassInitializer(classDecl);
                 // passing all the existing ctors
-                PostPrepareGenerateClassConstructor(classDecl, allFuncs.Where(x => x.ClassFunctionType == Enums.ClassFunctionType.Ctor).ToList());
-                PostPrepareGenerateClassDestructor(classDecl, allFuncs.Where(x => x.ClassFunctionType == Enums.ClassFunctionType.Dtor).ToList());
+                PostPrepareGenerateClassConstructor(classDecl, allFuncs.Where(x => x.ClassFunctionType == ClassFunctionType.Ctor).ToList());
+                PostPrepareGenerateClassDestructor(classDecl, allFuncs.Where(x => x.ClassFunctionType == ClassFunctionType.Dtor).ToList());
             }
 
             // 
@@ -300,7 +302,7 @@ namespace HapetPostPrepare
             iniBlock,
             new AstIdExpr($"{decl.Name.Name}_ini"));
             iniDecl.SpecialKeys.Add(TokenType.KwUnreflected); // ini is private because it is called inside ctors
-            iniDecl.ClassFunctionType = Enums.ClassFunctionType.Initializer;
+            iniDecl.ClassFunctionType = ClassFunctionType.Initializer;
             iniDecl.ContainingParent = decl;
 
             if (decl is AstClassDecl classDecl)
@@ -333,7 +335,7 @@ namespace HapetPostPrepare
                     new AstIdExpr($"{decl.Name.Name}_ctor"));
                 ctorDecl.BaseCtorCall = new AstBaseCtorStmt(location: ctorDecl.Name);
                 ctorDecl.SpecialKeys.Add(TokenType.KwPublic); // default ctor is public
-                ctorDecl.ClassFunctionType = Enums.ClassFunctionType.Ctor;
+                ctorDecl.ClassFunctionType = ClassFunctionType.Ctor;
                 ctorDecl.ContainingParent = decl;
 
                 if (decl is AstClassDecl classDecl)
@@ -380,7 +382,7 @@ namespace HapetPostPrepare
                 dtorBlock,
                 new AstIdExpr($"{decl.Name.Name}_dtor"));
                 dtorDecl.SpecialKeys.Add(TokenType.KwPublic); // default dtor is public
-                dtorDecl.ClassFunctionType = Enums.ClassFunctionType.Dtor;
+                dtorDecl.ClassFunctionType = ClassFunctionType.Dtor;
                 dtorDecl.ContainingParent = decl;
 
                 if (decl is AstClassDecl classDecl)
@@ -441,7 +443,7 @@ namespace HapetPostPrepare
                 new AstIdExpr($"{classDecl.Name.Name}_stor"));
                 storDecl.SpecialKeys.Add(TokenType.KwPublic); // stor is public
                 storDecl.SpecialKeys.Add(TokenType.KwStatic); // stor is static
-                storDecl.ClassFunctionType = Enums.ClassFunctionType.StaticCtor;
+                storDecl.ClassFunctionType = ClassFunctionType.StaticCtor;
                 storDecl.ContainingParent = classDecl;
                 classDecl.Declarations.Add(storDecl);
             }
@@ -452,7 +454,7 @@ namespace HapetPostPrepare
 
                 // stor can only have 'static' kw
                 if (ctorFunc.SpecialKeys.Count > 1)
-                    _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, ctorFunc.Name, [], ErrorCode.Get(CTWN.StaticCtorKwsIgnored), null, Entities.ReportType.Warning);
+                    _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, ctorFunc.Name, [], ErrorCode.Get(CTWN.StaticCtorKwsIgnored), null, HapetFrontend.Entities.ReportType.Warning);
 
                 // move all user code under 'if' stmt
                 checkForInited.BodyTrue.Statements.AddRange(ctorFunc.Body.Statements);

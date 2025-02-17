@@ -46,7 +46,7 @@ namespace HapetFrontend.Ast.Declarations
             Returns = returns;
         }
 
-        internal FuncDeclJson GetJson()
+        public FuncDeclJson GetJson()
         {
             var parameters = Parameters.Select(x => x.GetJson()).ToList();
             var attributes = Attributes.Select(x => x.GetJson()).ToList();

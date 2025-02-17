@@ -50,7 +50,7 @@ namespace HapetPostPrepare
             _currentClass = classDecl;
 
             classDecl.SourceFile = _currentSourceFile;
-            var classScope = new Scoping.Scope($"{classDecl.Name.Name}_scope", classDecl.Scope);
+            var classScope = new Scope($"{classDecl.Name.Name}_scope", classDecl.Scope);
             classDecl.SubScope = classScope; // setting the sub scope
 
             // scoping class attrs
@@ -116,7 +116,7 @@ namespace HapetPostPrepare
         private void PostPrepareStructScoping(AstStructDecl structDecl)
         {
             structDecl.SourceFile = _currentSourceFile;
-            var structScope = new Scoping.Scope($"{structDecl.Name.Name}_scope", structDecl.Scope);
+            var structScope = new Scope($"{structDecl.Name.Name}_scope", structDecl.Scope);
             structDecl.SubScope = structScope;
 
             // scoping struct attrs
@@ -183,7 +183,7 @@ namespace HapetPostPrepare
         private void PostPrepareEnumScoping(AstEnumDecl enumDecl)
         {
             enumDecl.SourceFile = _currentSourceFile;
-            var enumScope = new Scoping.Scope($"{enumDecl.Name.Name}_scope", enumDecl.Scope);
+            var enumScope = new Scope($"{enumDecl.Name.Name}_scope", enumDecl.Scope);
             enumDecl.SubScope = enumScope;
 
             // scoping struct attrs
@@ -223,7 +223,7 @@ namespace HapetPostPrepare
 
             // WARN!!!! do not set the scope the same as delegate scope because its params would be visible in class or smth
             // creating a Scope in which the params would be
-            var paramsBlockScope = new Scoping.Scope($"params_{delegateDecl.Name.Name}_scope", delegateDecl.Scope);
+            var paramsBlockScope = new Scope($"params_{delegateDecl.Name.Name}_scope", delegateDecl.Scope);
 
             // defining parameters in the delegate scope
             foreach (var p in delegateDecl.Parameters)
@@ -284,7 +284,7 @@ namespace HapetPostPrepare
             {
                 // WARN!!!! do not set the scope the same as func scope because its params would be visible in class or smth
                 // creating a Scope in which the params would be
-                var paramsBlockScope = new Scoping.Scope($"params_{funcDecl.Name.Name}_scope", funcDecl.Scope);
+                var paramsBlockScope = new Scope($"params_{funcDecl.Name.Name}_scope", funcDecl.Scope);
                 funcDecl.SubScope = paramsBlockScope;
                 // defining parameters in the func scope
                 foreach (var p in funcDecl.Parameters)
@@ -450,7 +450,7 @@ namespace HapetPostPrepare
             if (string.IsNullOrWhiteSpace(scopename))
                 scopename = $"block_{_blockCounter++}_scope";
 
-            var blockScope = new Scoping.Scope(scopename, blockExpr.Scope);
+            var blockScope = new Scope(scopename, blockExpr.Scope);
             blockExpr.SubScope = blockScope; // setting the sub scope
 
             foreach (var stmt in blockExpr.Statements)
