@@ -3,7 +3,7 @@ using HapetFrontend.Ast.Declarations;
 using HapetFrontend.Entities;
 using HapetFrontend.Scoping;
 
-namespace HapetFrontend.Parsing.PostPrepare
+namespace HapetPostPrepare
 {
     public partial class PostPrepare
     {

@@ -4,7 +4,7 @@ using HapetFrontend.Errors;
 using HapetFrontend.Types;
 using System.Runtime.InteropServices;
 
-namespace HapetFrontend.Parsing.PostPrepare
+namespace HapetPostPrepare
 {
     public partial class PostPrepare
     {

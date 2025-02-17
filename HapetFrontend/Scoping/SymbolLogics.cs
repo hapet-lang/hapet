@@ -1,9 +1,6 @@
 ﻿using HapetFrontend.Ast;
 using HapetFrontend.Ast.Declarations;
-using HapetFrontend.Ast.Expressions;
-using HapetFrontend.Ast.Statements;
 using HapetFrontend.Entities;
-using HapetFrontend.Parsing.PostPrepare;
 using HapetFrontend.Types;
 using System.Xml.Linq;
 
@@ -299,7 +296,7 @@ namespace HapetFrontend.Scoping
                         continue;
                     }
 
-                    PostPrepare.CastResult castResult = new PostPrepare.CastResult();
+                    CastResult castResult = new CastResult();
                     var cst = postPrepare.PostPrepareExpressionWithType(par.Type.OutType, arg, castResult);
                     if (castResult.CouldBeCasted)
                     {

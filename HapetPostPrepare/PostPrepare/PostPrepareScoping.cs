@@ -6,7 +6,7 @@ using HapetFrontend.Entities;
 using HapetFrontend.Errors;
 using HapetFrontend.Scoping;
 
-namespace HapetFrontend.Parsing.PostPrepare
+namespace HapetPostPrepare
 {
     public partial class PostPrepare
     {

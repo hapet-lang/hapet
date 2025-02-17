@@ -10,7 +10,7 @@ using HapetFrontend.Types;
 using Newtonsoft.Json;
 using System;
 
-namespace HapetFrontend.Parsing.PostPrepare
+namespace HapetPostPrepare
 {
     public partial class PostPrepare
     {

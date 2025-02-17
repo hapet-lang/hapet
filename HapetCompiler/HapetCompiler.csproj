@@ -11,6 +11,7 @@
 
     <ItemGroup>
         <ProjectReference Include="..\HapetBackend\HapetBackend.csproj" />
+        <ProjectReference Include="..\HapetPostPrepare\HapetPostPrepare.csproj" />
         <ProjectReference Include="..\HapetFrontend\HapetFrontend.csproj" />
     </ItemGroup>
 

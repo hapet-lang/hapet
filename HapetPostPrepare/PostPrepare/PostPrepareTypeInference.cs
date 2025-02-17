@@ -10,7 +10,7 @@ using HapetFrontend.Types;
 using System;
 using System.Xml.Linq;
 
-namespace HapetFrontend.Parsing.PostPrepare
+namespace HapetPostPrepare
 {
     public partial class PostPrepare
     {

@@ -1,10 +1,11 @@
-﻿using HapetFrontend.Ast.Declarations;
+﻿using HapetFrontend;
+using HapetFrontend.Ast.Declarations;
 using HapetFrontend.Ast.Expressions;
 using HapetFrontend.Entities;
 using HapetFrontend.Errors;
 using HapetFrontend.Types;
 
-namespace HapetFrontend.Parsing.PostPrepare
+namespace HapetPostPrepare
 {
     public partial class PostPrepare
     {

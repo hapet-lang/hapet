@@ -8,26 +8,10 @@ using HapetFrontend.Helpers;
 using HapetFrontend.Scoping;
 using HapetFrontend.Types;
 
-namespace HapetFrontend.Parsing.PostPrepare
+namespace HapetPostPrepare
 {
     public partial class PostPrepare
     {
-        public class CastResult
-        {
-            /// <summary>
-            /// true if could be casted implicitly like
-			/// short a = 3;
-			/// int b = a;
-            /// </summary>
-            public bool CouldBeCasted { get; set; }
-            /// <summary>
-            /// true if could be narrowed like
-            /// int a = 4214244;
-            /// short b = a;
-            /// </summary>
-            public bool CouldBeNarrowed { get; set; }
-        }
-
         /// <summary>
         /// The method is used to prepare correct assignment.
         /// Like 'float a = 6;' should be allowed and 'int a = 6.0;' should not be allowed
