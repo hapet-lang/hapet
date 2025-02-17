@@ -9,44 +9,6 @@ public static class Program
 {
 	public static int Main(string[] args)
 	{
-		var a = new GG();
-		object b = (object)a;
-		var a2 = (GG)b;
-		var a3 = (IAnime)a2;
-		return a.Field1 + a2.Field2 + b.GetHashCode() + a.Cringe() + a3.Cringe() + a2.MineAnime();
-	}
-}
-
-public interface IAnime
-{
-	int Cringe();
-}
-
-public class fnaoiwf : AAAA{
-	
-}
-public struct AAAA 
-{
-
-}
-
-public struct GG : AAAA, IAnime
-{
-	int Field1 { get; set; } = 5;
-	int Field2 { get; set; } = 3;
-
-	public int Cringe()
-	{
-		return 5;
-	}
-
-	public override int GetHashCode()
-	{
-		return 333;
-	}
-
-	public int MineAnime()
-	{
-		return 5;
+		return 0;
 	}
 }
