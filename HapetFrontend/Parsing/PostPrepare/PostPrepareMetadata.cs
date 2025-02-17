@@ -188,6 +188,13 @@ namespace HapetFrontend.Parsing.PostPrepare
                 {
                     PostPrepareExprInference(inh);
 
+                    if (inh.OutType is not ClassType || !(inh.OutType as ClassType).Declaration.IsInterface)
+                    {
+                        // error - cannot inherit from non interfaces
+                        _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, inh, [HapetType.AsString(inh.OutType)], ErrorCode.Get(CTEN.NonInterfaceInhInStruct));
+                        continue;
+                    }
+
                     // check for sealed type
                     if ((inh.OutType as ClassType).Declaration.SpecialKeys.Contains(TokenType.KwSealed))
                     {
@@ -198,7 +205,8 @@ namespace HapetFrontend.Parsing.PostPrepare
 
                 // set System.Object inheritance if there is nothing
                 if ((str.InheritedFrom.Count <= 0 ||
-                    (str.InheritedFrom[0].OutType as ClassType).Declaration.IsInterface))
+                    (str.InheritedFrom[0].OutType is ClassType && 
+                    (str.InheritedFrom[0].OutType as ClassType).Declaration.IsInterface)))
                 {
                     // set it only if there are not inheritances or only interfaces
                     var nst = new AstNestedExpr(new AstIdExpr("System.Object", str), null, str);
@@ -338,7 +346,10 @@ namespace HapetFrontend.Parsing.PostPrepare
                 // all over the inherited shite
                 foreach (var inh in inheritedFrom)
                 {
-                    // TODO: struct parent!
+                    // it has to be a class type. if it is not - there was a error previously
+                    if (inh.OutType is not ClassType)
+                        break;
+
                     var inhDecl = (inh.OutType as ClassType).Declaration;
                     // if the inh type is an interface
                     if (inhDecl.IsInterface)
@@ -535,7 +546,10 @@ namespace HapetFrontend.Parsing.PostPrepare
                 // all over the inherited shite
                 foreach (var inh in inheritedFrom)
                 {
-                    // TODO: struct parent!
+                    // it has to be a class type. if it is not - there was a error previously
+                    if (inh.OutType is not ClassType)
+                        break;
+
                     var inhDecl = (inh.OutType as ClassType).Declaration;
                     // if the inh type is an interface
                     if (inhDecl.IsInterface)
@@ -859,6 +873,10 @@ namespace HapetFrontend.Parsing.PostPrepare
                 // all over the inherited shite
                 foreach (var inh in inheritedFrom)
                 {
+                    // it has to be a class type. if it is not - there was a error previously
+                    if (inh.OutType is not ClassType)
+                        break;
+
                     var inhDecl = (inh.OutType as ClassType).Declaration;
                     // if the inh type is an interface
                     if (inhDecl.IsInterface)

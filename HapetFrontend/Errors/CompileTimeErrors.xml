@@ -652,6 +652,10 @@
 		<Number>3044</Number>
 		<Text>Sealed type cannot be derived</Text>
 	</Item>
+	<Item>
+		<Number>3045</Number>
+		<Text>Type {0} in interface list expected to be an interface</Text>
+	</Item>
 
     <!--Compiler errors-->
 	<Item>

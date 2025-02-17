@@ -21,8 +21,12 @@ public interface IAnime
 {
 	int Cringe();
 }
+public struct AAAA 
+{
 
-public struct GG : IAnime
+}
+
+public struct GG : AAAA, IAnime
 {
 	int Field1 { get; set; } = 5;
 	int Field2 { get; set; } = 3;
