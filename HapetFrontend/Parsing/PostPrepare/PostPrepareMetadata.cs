@@ -408,21 +408,25 @@ namespace HapetFrontend.Parsing.PostPrepare
                                 }
                                 else
                                 {
-                                    // if the field was not presented previously
-
-                                    // need to check that we do implement it
-                                    var currF = currentFieldDecls.GetSameDeclByTypeAndName(inhF);
-                                    if (currF == null)
+                                    // if we are not an interface, happens when:
+                                    // interface IAnime : object
+                                    if (!isInterface)
                                     {
-                                        // error - the field of the interface was not implemented
-                                        _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, inh,
-                                            [HapetType.AsString(decl.Type.OutType), inhF.Name.Name], ErrorCode.Get(CTEN.NoFieldImplementation));
-                                    }
-                                    else
-                                    {
-                                        // add it to the new dictionary
-                                        currentFieldDecls.Remove(currF);
-                                        inheritedFieldDecls.Add(currF);
+                                        // if the field was not presented previously
+                                        // need to check that we do implement it
+                                        var currF = currentFieldDecls.GetSameDeclByTypeAndName(inhF);
+                                        if (currF == null)
+                                        {
+                                            // error - the field of the interface was not implemented
+                                            _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, inh,
+                                                [HapetType.AsString(decl.Type.OutType), inhF.Name.Name], ErrorCode.Get(CTEN.NoFieldImplementation));
+                                        }
+                                        else
+                                        {
+                                            // add it to the new dictionary
+                                            currentFieldDecls.Remove(currF);
+                                            inheritedFieldDecls.Add(currF);
+                                        }
                                     }
                                 }
                             }
@@ -623,22 +627,27 @@ namespace HapetFrontend.Parsing.PostPrepare
                     }
                     else
                     {
-                        var parentProps = GetPreparedProps(inhDecl);
-                        // just add parent props if it is a class
-                        inheritedPropDecls.AddRange(parentProps);
-
-                        // search for overrides in the current class 
-                        // and replace parent methods with our
-                        foreach (var fCurr in currentPropDecls.Where(x => x.SpecialKeys.Contains(TokenType.KwOverride)).ToArray())
+                        // if we are not an interface, happens when:
+                        // interface IAnime : object
+                        if (!isInterface)
                         {
-                            // check for signatures
-                            var overridedProp = inheritedPropDecls.GetSameDeclByTypeAndName(fCurr, out int index);
-                            // TODO: error here? we go all over the override props and found no prop to be overriden?
-                            if (overridedProp == null)
-                                continue;
-                            inheritedPropDecls[index] = fCurr;
-                            // we need to remove it so it won't mess with us
-                            currentPropDecls.Remove(fCurr);
+                            var parentProps = GetPreparedProps(inhDecl);
+                            // just add parent props if it is a class
+                            inheritedPropDecls.AddRange(parentProps);
+
+                            // search for overrides in the current class 
+                            // and replace parent methods with our
+                            foreach (var fCurr in currentPropDecls.Where(x => x.SpecialKeys.Contains(TokenType.KwOverride)).ToArray())
+                            {
+                                // check for signatures
+                                var overridedProp = inheritedPropDecls.GetSameDeclByTypeAndName(fCurr, out int index);
+                                // TODO: error here? we go all over the override props and found no prop to be overriden?
+                                if (overridedProp == null)
+                                    continue;
+                                inheritedPropDecls[index] = fCurr;
+                                // we need to remove it so it won't mess with us
+                                currentPropDecls.Remove(fCurr);
+                            }
                         }
                     }
                 }
