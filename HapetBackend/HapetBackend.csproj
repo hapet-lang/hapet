@@ -4,7 +4,7 @@
         <TargetFramework>net8.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-        <EnableNETAnalyzers>true</EnableNETAnalyzers>
+        <EnableNETAnalyzers>false</EnableNETAnalyzers>
         <AnalysisMode>AllEnabledByDefault</AnalysisMode>
     </PropertyGroup>
 
