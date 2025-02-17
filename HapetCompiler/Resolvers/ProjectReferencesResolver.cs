@@ -2,7 +2,7 @@
 using HapetFrontend;
 using HapetFrontend.Entities;
 using HapetFrontend.Helpers;
-using HapetFrontend.Parsing.PostPrepare;
+using HapetPostPrepare;
 using System.Diagnostics;
 
 namespace HapetCompiler.Resolvers

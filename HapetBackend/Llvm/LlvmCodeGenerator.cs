@@ -4,7 +4,7 @@ using HapetFrontend;
 using HapetFrontend.Entities;
 using HapetFrontend.Errors;
 using HapetFrontend.Helpers;
-using HapetFrontend.Parsing.PostPrepare;
+using HapetPostPrepare;
 using LLVMSharp.Interop;
 using Newtonsoft.Json;
 using System.Diagnostics;

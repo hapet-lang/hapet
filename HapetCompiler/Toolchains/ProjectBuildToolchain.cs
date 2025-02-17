@@ -1,12 +1,12 @@
 ﻿using HapetBackend.Llvm;
 using HapetFrontend.Entities;
 using HapetFrontend;
-using HapetFrontend.Parsing.PostPrepare;
 using System.Diagnostics;
 using HapetFrontend.Helpers;
 using HapetCompiler.ProjectConf;
 using HapetCompiler.ProjectConf.Data;
 using HapetCompiler.Resolvers;
+using HapetPostPrepare;
 
 namespace HapetCompiler.Toolchains
 {

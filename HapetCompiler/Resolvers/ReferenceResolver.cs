@@ -1,12 +1,11 @@
 ﻿using HapetFrontend.Entities;
 using HapetFrontend.Helpers;
-using HapetFrontend;
-using HapetFrontend.Parsing.PostPrepare;
 using LLVMSharp;
 using Newtonsoft.Json;
 using System.Reflection;
 using HapetBackend.Llvm.Linkers;
 using HapetFrontend.Errors;
+using HapetPostPrepare;
 
 namespace HapetCompiler.Resolvers
 {
