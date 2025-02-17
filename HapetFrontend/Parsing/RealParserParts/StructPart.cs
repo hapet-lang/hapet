@@ -11,6 +11,7 @@ namespace HapetFrontend.Parsing
         {
             TokenLocation beg = null, end = null;
             var declarations = new List<AstDeclaration>();
+            var inherited = new List<AstNestedExpr>();
             AstIdExpr structName = null;
 
             beg = Consume(TokenType.KwStruct, ErrMsg("keyword 'struct'", "at beginning of struct type")).Location;
@@ -30,6 +31,29 @@ namespace HapetFrontend.Parsing
                     return new AstStructDecl(new AstIdExpr("unknown"), declarations, "", beg);
                 }
                 structName = idExpr;
+            }
+            SkipNewlines();
+
+            // checking for inheritance
+            if (CheckToken(TokenType.Colon))
+            {
+                Consume(TokenType.Colon, ErrMsg(":", "before inherited types"));
+                SkipNewlines();
+
+                while (CheckToken(TokenType.Identifier))
+                {
+                    var ident = ParseIdentifierExpression();
+                    inherited.Add(ident);
+                    // if there is something else
+                    if (CheckToken(TokenType.Comma))
+                    {
+                        Consume(TokenType.Comma, ErrMsg(",", "before the next inherited type"));
+                        continue;
+                    }
+
+                    // if there is nothing else
+                    break;
+                }
             }
             SkipNewlines();
 
@@ -83,7 +107,7 @@ namespace HapetFrontend.Parsing
             end = Consume(TokenType.CloseBrace, ErrMsg("}", "at end of struct declaration")).Location;
 
             // TODO: doc string
-            return new AstStructDecl(structName, declarations, "", new Location(beg, end));
+            return new AstStructDecl(structName, declarations, "", new Location(beg, end)) { InheritedFrom = inherited };
         }
     }
 }

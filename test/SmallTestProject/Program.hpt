@@ -16,7 +16,12 @@ public static class Program
 	}
 }
 
-public struct GG
+public interface IAnime
+{
+	void Cringe();
+}
+
+public struct GG : IAnime
 {
 	int Field1 { get; set; } = 5;
 	int Field2 { get; set; } = 3;
