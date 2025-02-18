@@ -522,7 +522,7 @@ namespace HapetPostPrepare
                             }
 
                             // if the value could be evaluated at the compile time
-                            if (leftExpr.OutValue != null && rightExpr.OutValue != null && unExpr.ActualOperator.CanExecute)
+                            if (leftExpr.OutValue != null && rightExpr.OutValue != null && binExpr.ActualOperator.CanExecute)
                             {
                                 binExpr.OutValue = binExpr.ActualOperator.Execute(leftExpr.OutValue, rightExpr.OutValue);
                             }
