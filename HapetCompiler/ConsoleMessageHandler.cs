@@ -1,4 +1,6 @@
-﻿using HapetFrontend;
+﻿#define PRINT_SRC_LOCATION
+
+using HapetFrontend;
 using HapetFrontend.Ast;
 using HapetFrontend.Entities;
 using HapetFrontend.Errors;
@@ -53,7 +55,7 @@ namespace HapetCompiler
                 HasErrors = true;
 
 #if DEBUG && PRINT_SRC_LOCATION
-            Log($"{callingFunctionFile}:{callLineNumber} - {callingFunctionName}()", ConsoleColor.DarkYellow);
+            Log([$"{callingFunctionFile}:{callLineNumber} - {callingFunctionName}()"], null, ConsoleColor.DarkYellow);
 #endif
             Log(messageArgs, xmlMessage, printColor);
         }
@@ -77,7 +79,7 @@ namespace HapetCompiler
             }
 
 #if DEBUG && PRINT_SRC_LOCATION
-            Log($"{error.File}:{error.LineNumber} - {error.Function}()", ConsoleColor.DarkYellow);
+            Log([$"{message.File}:{message.LineNumber} - {message.Function}()"], null, ConsoleColor.DarkYellow);
 #endif
 
             // getting the print color from message type

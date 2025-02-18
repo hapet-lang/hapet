@@ -9,6 +9,21 @@ public static class Program
 {
 	public static int Main(string[] args)
 	{
-		return 0;
+		var a = new TestCls();
+		a.A = 4;
+		var b = new TestCls();
+		b.A = 6;
+
+		return a + b;
+	}
+}
+
+public class TestCls
+{
+	public int A { get; set; }
+
+	public static int operator +(TestCls a, TestCls b)
+	{
+		return a.A + b.A;
 	}
 }

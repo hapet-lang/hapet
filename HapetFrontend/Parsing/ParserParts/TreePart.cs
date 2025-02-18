@@ -607,6 +607,7 @@ namespace HapetFrontend.Parsing
                     else
                         message = new MessageResolver() { MessageArgs = [token.Type.ToString(), token.Data.ToString()], XmlMessage = ErrorCode.Get(CTEN.CommonFailToParse) };
                     ReportMessage(token.Location, message.MessageArgs, message.XmlMessage);
+                    NextToken(); // skip the token :)
                     return ParseEmptyExpression();
             }
         }

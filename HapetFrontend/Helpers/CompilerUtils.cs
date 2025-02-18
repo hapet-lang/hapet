@@ -166,6 +166,7 @@ namespace HapetFrontend.Helpers
 
         #region Parsing shite helpers
         [DebuggerStepThrough]
+        [SkipInStackFrame]
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Exception not required. This is for error reporting only.")]
         public static (string function, string file, int line)? GetCallingFunction()
         {

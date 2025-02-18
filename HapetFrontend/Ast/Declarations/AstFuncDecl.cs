@@ -36,9 +36,9 @@ namespace HapetFrontend.Ast.Declarations
         /// </summary>
         public bool IsPropertyFunction { get; set; }
 
-        public AstFuncDecl(List<AstParamDecl> parameters, AstExpression returns, AstBlockExpr body, AstIdExpr name, string doc = "", ILocation Location = null) : base(name, doc, Location)
+        public AstFuncDecl(List<AstParamDecl> parameters, AstExpression returns, AstBlockExpr body, AstIdExpr name, string doc = "", ILocation location = null) : base(name, doc, location)
         {
-            Type = new AstIdExpr("func", Location);
+            Type = new AstIdExpr("func", location);
             Type.OutType = new FunctionType(this);
 
             Body = body;

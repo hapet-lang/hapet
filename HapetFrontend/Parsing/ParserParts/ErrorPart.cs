@@ -9,6 +9,7 @@ namespace HapetFrontend.Parsing
     public partial class Parser
     {
         [DebuggerStepThrough]
+        [SkipInStackFrame]
         public void ReportMessage(TokenLocation Location, string[] messageArgs, IXmlMessage xmlMessage, ReportType reportType = ReportType.Error)
         {
             var (callingFunctionName, callingFunctionFile, callLineNumber) = CompilerUtils.GetCallingFunction().GetValueOrDefault(("", "", -1));
@@ -16,6 +17,7 @@ namespace HapetFrontend.Parsing
         }
 
         [DebuggerStepThrough]
+        [SkipInStackFrame]
         public void ReportMessage(ILocation Location, string[] messageArgs, IXmlMessage xmlMessage, ReportType reportType = ReportType.Error)
         {
             var (callingFunctionName, callingFunctionFile, callLineNumber) = CompilerUtils.GetCallingFunction().GetValueOrDefault(("", "", -1));
@@ -23,6 +25,7 @@ namespace HapetFrontend.Parsing
         }
 
         [DebuggerStepThrough]
+        [SkipInStackFrame]
         public static MessageResolver ErrMsg(string expect, string where = null)
         {
             return new MessageResolver()

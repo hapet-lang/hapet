@@ -124,6 +124,11 @@ namespace HapetFrontend.Parsing
                 return prop;
             }
 
+            // possible operator override
+            var result = ParseOperatorOverride(udecl);
+            if (result is AstOverloadDecl)
+                return result;
+
             ReportMessage(PeekToken().Location, [], ErrorCode.Get(CTEN.PureUnexpectedToken)); // TODO: better error message?
             return udecl;
         }
