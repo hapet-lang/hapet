@@ -607,6 +607,15 @@ namespace HapetPostPrepare
         {
             string name = idExpr.Name;
 
+            // kostyl to handle 'base.Anime()' calls
+            if (name == "base")
+            {
+                idExpr.OutType = PointerType.GetPointerType(_currentClass.InheritedFrom[0].OutType);
+                var smbl2 = idExpr.Scope.GetSymbol("this");
+                idExpr.FindSymbol = smbl2;
+                return;
+            }
+
             var smbl = idExpr.Scope.GetSymbol(name);
             if (smbl is DeclSymbol typed)
             {
