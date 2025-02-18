@@ -1,0 +1,20 @@
+public abstract class ValueType
+{
+    public override bool Equals(object obj)
+    {
+        // TODO:
+        return true;
+    }
+
+    public override int GetHashCode()
+    {
+        // TODO: 
+        return 0;
+    }
+
+    public override string ToString()
+    {
+        // TODO:
+        return base.ToString();
+    }
+}

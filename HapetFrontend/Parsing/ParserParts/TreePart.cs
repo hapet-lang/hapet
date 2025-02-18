@@ -470,6 +470,18 @@ namespace HapetFrontend.Parsing
                         return ParseNewExpression();
                     }
 
+                case TokenType.KwBase:
+                    {
+                        // this is when calling base func from child class like:
+                        // public override void Anime()
+                        // {
+                        //     base.Anime();
+                        // }
+                        NextToken();
+                        Consume(TokenType.Period, ErrMsg(".", "after 'base' word"));
+                        return ParseIdentifierExpression(iniNested: new AstNestedExpr(new AstIdExpr("base", CurrentToken.Location), null, CurrentToken.Location));
+                    }
+
                 case TokenType.Identifier:
                     {
                         var id = ParseIdentifierExpression();
@@ -602,9 +614,9 @@ namespace HapetFrontend.Parsing
                     return ParseImplementationKeys(token.Type);
 
                 default:
-                    if (message != null)
+                    if (message != null && message.MessageArgs == null)
                         message.MessageArgs = [token.ToString()];
-                    else
+                    else if (message == null)
                         message = new MessageResolver() { MessageArgs = [token.Type.ToString(), token.Data.ToString()], XmlMessage = ErrorCode.Get(CTEN.CommonFailToParse) };
                     ReportMessage(token.Location, message.MessageArgs, message.XmlMessage);
                     NextToken(); // skip the token :)

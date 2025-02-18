@@ -16,7 +16,8 @@ namespace HapetFrontend.Parsing
             return new AstEmptyStmt(new Location(loc.beg, loc.end));
         }
 
-        private AstNestedExpr ParseIdentifierExpression(MessageResolver customMessage = null, TokenType identType = TokenType.Identifier, bool allowDots = true, AstNestedExpr iniNested = null)
+        private AstNestedExpr ParseIdentifierExpression(MessageResolver customMessage = null, TokenType identType = TokenType.Identifier, 
+            bool allowDots = true, AstNestedExpr iniNested = null)
         {
             var next = PeekToken();
             if (next.Type != identType)
