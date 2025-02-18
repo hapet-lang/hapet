@@ -57,18 +57,18 @@ namespace HapetFrontend.Ast.Declarations
 
         public string DocString { get; set; }
 
-        public AstEnumDecl GetAst()
+        public AstEnumDecl GetAst(Compiler compiler)
         {
             var fields = new List<AstVarDecl>();
             for (int i = 0; i < Fields.Count; i++)
             {
-                var v = new AstVarDecl(Parser.ParseType(InheritedType), new AstIdExpr(Fields[i]), new AstNumberExpr(NumberData.FromInt(Values[i])));
+                var v = new AstVarDecl(Parser.ParseType(InheritedType, compiler), new AstIdExpr(Fields[i]), new AstNumberExpr(NumberData.FromInt(Values[i])));
                 fields.Add(v);
             }
             var decl = new AstEnumDecl(new AstIdExpr(Name), fields, DocString);
             decl.SpecialKeys.AddRange(SpecialKeys);
-            decl.Attributes.AddRange(Attributes.Select(x => x.GetAst()));
-            decl.InheritedType = Parser.ParseType(InheritedType) as AstNestedExpr;
+            decl.Attributes.AddRange(Attributes.Select(x => x.GetAst(compiler)));
+            decl.InheritedType = Parser.ParseType(InheritedType, compiler) as AstNestedExpr;
             return decl;
         }
     }

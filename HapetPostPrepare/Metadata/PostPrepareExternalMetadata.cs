@@ -19,20 +19,31 @@ namespace HapetPostPrepare
         public void PostPrepareExternalMetadata(MetadataJson metadata, string fileName)
         {
             // getting asts
-            _classes = metadata.ClassDecls.Select(x => x.GetAst()).ToList();
-            _structs = metadata.StructDecls.Select(x => x.GetAst()).ToList();
-            _enums = metadata.EnumDecls.Select(x => x.GetAst()).ToList();
-            _delegates = metadata.DelegateDecls.Select(x => x.GetAst()).ToList();
-            _funcs = metadata.FuncDecls.Select(x => x.GetAst()).ToList();
+            _classes = metadata.ClassDecls.Select(x => x.GetAst(_compiler)).ToList();
+            _structs = metadata.StructDecls.Select(x => x.GetAst(_compiler)).ToList();
+            _enums = metadata.EnumDecls.Select(x => x.GetAst(_compiler)).ToList();
+            _delegates = metadata.DelegateDecls.Select(x => x.GetAst(_compiler)).ToList();
+            _funcs = metadata.FuncDecls.Select(x => x.GetAst(_compiler)).ToList();
             _externalProjectFilename = fileName;
 
             // setting all functions into classes. So do not use _funcs anymore
             foreach (var fnc in _funcs)
             {
-                string className = string.Concat(fnc.Name.Name.TakeWhile(x => x != ':'));
-                var theClass = _classes.FirstOrDefault(x => x.Name.Name == className); // TODO: error if null
-                theClass.Declarations.Add(fnc);
-                fnc.ContainingParent = theClass;
+                string typeName = string.Concat(fnc.Name.Name.TakeWhile(x => x != ':'));
+
+                var theClass = _classes.FirstOrDefault(x => x.Name.Name == typeName); 
+                if (theClass != null)
+                {
+                    theClass.Declarations.Add(fnc);
+                    fnc.ContainingParent = theClass;
+                }
+                var theStruct = _structs.FirstOrDefault(x => x.Name.Name == typeName);
+                if (theStruct != null)
+                {
+                    theStruct.Declarations.Add(fnc);
+                    fnc.ContainingParent = theStruct;
+                }
+                // TODO: error if both are null
             }
 
             // we need to do this to know locations of the asts

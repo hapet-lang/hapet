@@ -42,7 +42,7 @@ namespace HapetPostPrepare
             }
             else if (typeName == "System.Array")
             {
-                decl.Type.OutType = ArrayType.GetArrayType(PointerType.NullLiteralType, decl as AstStructDecl);
+                decl.Type.OutType = new StructType(decl as AstStructDecl);
             }
         }
 

@@ -183,13 +183,13 @@ namespace HapetFrontend.Ast.Declarations
 
         public string DocString { get; set; }
 
-        public AstPropertyDecl GetAst()
+        public AstPropertyDecl GetAst(Compiler compiler)
         {
-            var decl = new AstPropertyDecl(Parser.ParseType(Type), new AstIdExpr(Name), null, DocString);
+            var decl = new AstPropertyDecl(Parser.ParseType(Type, compiler), new AstIdExpr(Name), null, DocString);
             decl.HasGet = HasGet;
             decl.HasSet = HasSet;
             decl.SpecialKeys.AddRange(SpecialKeys);
-            decl.Attributes.AddRange(Attributes.Select(x => x.GetAst()));
+            decl.Attributes.AddRange(Attributes.Select(x => x.GetAst(compiler)));
             return decl;
         }
     }

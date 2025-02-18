@@ -41,12 +41,16 @@ namespace HapetFrontend.Ast.Declarations
 
         public StructDeclJson GetJson()
         {
-            var fields = Declarations.Where(x => x is AstVarDecl).Select(x => (x as AstVarDecl).GetJson()).ToList();
+            var fields = Declarations.Where(x => x is AstVarDecl && x is not AstPropertyDecl).Select(x => (x as AstVarDecl).GetJson()).ToList();
+            var inhs = InheritedFrom.Select(x => HapetType.AsString(x.OutType)).ToList();
+            var props = Declarations.Where(x => x is AstPropertyDecl).Select(x => (x as AstPropertyDecl).GetJsonPropa()).ToList();
             var attributes = Attributes.Select(x => x.GetJson()).ToList();
             return new StructDeclJson()
             {
                 Fields = fields,
+                Properties = props,
                 Name = Name.Name,
+                InheritedTypes = inhs,
                 SpecialKeys = SpecialKeys,
                 Attributes = attributes,
                 DocString = Documentation
@@ -57,20 +61,25 @@ namespace HapetFrontend.Ast.Declarations
     public class StructDeclJson
     {
         public List<VarDeclJson> Fields { get; set; }
+        public List<PropertyDeclJson> Properties { get; set; }
         public string Name { get; set; }
+
+        public List<string> InheritedTypes { get; set; }
 
         public List<TokenType> SpecialKeys { get; set; }
         public List<AttributeJson> Attributes { get; set; }
 
         public string DocString { get; set; }
 
-        public AstStructDecl GetAst()
+        public AstStructDecl GetAst(Compiler compiler)
         {
             var allDecls = new List<AstDeclaration>();
-            allDecls.AddRange(Fields.Select(x => x.GetAst()));
+            allDecls.AddRange(Fields.Select(x => x.GetAst(compiler)));
+            allDecls.AddRange(Properties.Select(x => x.GetAst(compiler)));
             var decl = new AstStructDecl(new AstIdExpr(Name), allDecls, DocString);
             decl.SpecialKeys.AddRange(SpecialKeys);
-            decl.Attributes.AddRange(Attributes.Select(x => x.GetAst()));
+            decl.Attributes.AddRange(Attributes.Select(x => x.GetAst(compiler)));
+            decl.InheritedFrom.AddRange(InheritedTypes.Select(x => new AstNestedExpr(new AstIdExpr(x), null)));
             return decl;
         }
     }

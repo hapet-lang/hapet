@@ -122,11 +122,18 @@ namespace HapetPostPrepare
             // if not - infer only body because func decl already infered from metadata :)
             if (forMetadata)
             {
+
+                if (funcDecl.ContainingParent.Name.Name == "System.Array")
+                {
+                    int a = 3;
+                }
                 // inferencing parameters 
                 foreach (var p in funcDecl.Parameters)
                 {
                     PostPrepareParamInference(p);
                 }
+
+                
 
                 // if the containing class is empty - it is external func
                 if (funcDecl.ContainingParent != null)

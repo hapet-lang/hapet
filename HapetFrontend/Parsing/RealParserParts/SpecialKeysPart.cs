@@ -45,6 +45,11 @@ namespace HapetFrontend.Parsing
             {
                 expr = new UnknownDecl(null, idExpr2, expr);
             }
+            // probably only for overloading
+            else if (expr is AstNestedExpr nestExpr2)
+            {
+                expr = new UnknownDecl(nestExpr2, null, expr);
+            }
 
             // because it has to be declaration
             if (expr is not AstDeclaration)

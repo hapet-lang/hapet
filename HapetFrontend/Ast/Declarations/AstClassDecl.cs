@@ -78,14 +78,14 @@ namespace HapetFrontend.Ast.Declarations
 
         public string DocString { get; set; }
 
-        public AstClassDecl GetAst()
+        public AstClassDecl GetAst(Compiler compiler)
         {
             var allClassDecls = new List<AstDeclaration>();
-            allClassDecls.AddRange(Fields.Select(x => x.GetAst()));
-            allClassDecls.AddRange(Properties.Select(x => x.GetAst()));
+            allClassDecls.AddRange(Fields.Select(x => x.GetAst(compiler)));
+            allClassDecls.AddRange(Properties.Select(x => x.GetAst(compiler)));
             var decl = new AstClassDecl(new AstIdExpr(Name), allClassDecls, DocString);
             decl.SpecialKeys.AddRange(SpecialKeys);
-            decl.Attributes.AddRange(Attributes.Select(x => x.GetAst()));
+            decl.Attributes.AddRange(Attributes.Select(x => x.GetAst(compiler)));
             decl.InheritedFrom.AddRange(InheritedTypes.Select(x => new AstNestedExpr(new AstIdExpr(x), null)));
             return decl;
         }

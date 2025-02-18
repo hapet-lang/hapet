@@ -56,7 +56,7 @@ namespace HapetFrontend.Ast.Statements
         public string Name { get; set; }
         public List<object> Values { get; set; }
 
-        public AstAttributeStmt GetAst()
+        public AstAttributeStmt GetAst(Compiler compiler)
         {
             List<AstExpression> pars = new List<AstExpression>();
             foreach (var v in Values)
@@ -83,7 +83,7 @@ namespace HapetFrontend.Ast.Statements
                         break;
                 }
             }
-            return new AstAttributeStmt(Parser.ParseType(Name) as AstNestedExpr, pars);
+            return new AstAttributeStmt(Parser.ParseType(Name, compiler) as AstNestedExpr, pars);
         }
     }
 }

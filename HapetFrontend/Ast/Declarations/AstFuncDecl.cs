@@ -76,11 +76,11 @@ namespace HapetFrontend.Ast.Declarations
 
         public string DocString { get; set; }
 
-        public AstFuncDecl GetAst()
+        public AstFuncDecl GetAst(Compiler compiler)
         {
-            var decl = new AstFuncDecl(Parameters.Select(x => x.GetAst()).ToList(), Parser.ParseType(ReturnType), null, new AstIdExpr(Name), DocString);
+            var decl = new AstFuncDecl(Parameters.Select(x => x.GetAst(compiler)).ToList(), Parser.ParseType(ReturnType, compiler), null, new AstIdExpr(Name), DocString);
             decl.SpecialKeys.AddRange(SpecialKeys);
-            decl.Attributes.AddRange(Attributes.Select(x => x.GetAst()));
+            decl.Attributes.AddRange(Attributes.Select(x => x.GetAst(compiler)));
             decl.CallingConvention = CallingConvention;
             return decl;
         }

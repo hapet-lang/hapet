@@ -47,11 +47,11 @@ namespace HapetFrontend.Ast.Declarations
 
         public string DocString { get; set; }
 
-        public AstDelegateDecl GetAst()
+        public AstDelegateDecl GetAst(Compiler compiler)
         {
-            var decl = new AstDelegateDecl(Parameters.Select(x => x.GetAst()).ToList(), Parser.ParseType(ReturnType), new AstIdExpr(Name), DocString);
+            var decl = new AstDelegateDecl(Parameters.Select(x => x.GetAst(compiler)).ToList(), Parser.ParseType(ReturnType, compiler), new AstIdExpr(Name), DocString);
             decl.SpecialKeys.AddRange(SpecialKeys);
-            decl.Attributes.AddRange(Attributes.Select(x => x.GetAst()));
+            decl.Attributes.AddRange(Attributes.Select(x => x.GetAst(compiler)));
             return decl;
         }
     }

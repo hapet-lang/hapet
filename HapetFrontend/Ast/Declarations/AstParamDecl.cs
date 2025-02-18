@@ -55,11 +55,11 @@ namespace HapetFrontend.Ast.Declarations
 
         public string DocString { get; set; }
 
-        public AstParamDecl GetAst()
+        public AstParamDecl GetAst(Compiler compiler)
         {
-            var pr = new AstParamDecl(Parser.ParseType(Type), new AstIdExpr(Name), null, DocString);
+            var pr = new AstParamDecl(Parser.ParseType(Type, compiler), new AstIdExpr(Name), null, DocString);
             pr.SpecialKeys.AddRange(SpecialKeys);
-            pr.Attributes.AddRange(Attributes.Select(x => x.GetAst()));
+            pr.Attributes.AddRange(Attributes.Select(x => x.GetAst(compiler)));
             return pr;
         }
     }

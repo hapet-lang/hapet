@@ -5,10 +5,10 @@ namespace HapetFrontend.Parsing
 {
     public partial class Parser
     {
-        public static AstExpression ParseType(string tp)
+        public static AstExpression ParseType(string tp, Compiler compiler)
         {
-            var lexer = Lexer.FromString(tp, null);
-            var parser = new Parser(lexer, null);
+            var lexer = Lexer.FromString(tp, compiler.MessageHandler);
+            var parser = new Parser(lexer, compiler.MessageHandler);
 
             AstExpression id = parser.ParseIdentifierExpression();
 
