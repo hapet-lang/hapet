@@ -28,27 +28,11 @@ namespace HapetFrontend.Scoping
             DefineTypeSymbol("var", VarType.Instance);
             DefineTypeSymbol("uintptr", IntPtrType.Instance);
             DefineTypeSymbol("ptrdiff", PtrDiffType.Instance);
-            // DefineTypeSymbol("type", CheezType.Type); // TODO: ...
-            // DefineTypeSymbol("Code", CheezType.Code); // TODO: do i need it?
         }
 
         internal void DefineBuiltInOperators()
         {
             DefineLiteralOperators();
-
-            // TODO: ...
-            // DefinePointerOperators();
-
-            // TODO: ...
-            //DefineBinaryOperator(new BuiltInBinaryOperator("==", BoolType.Instance, CheezType.Type, CheezType.Type, (a, b) => a == b));
-            //DefineBinaryOperator(new BuiltInBinaryOperator("!=", BoolType.Instance, CheezType.Type, CheezType.Type, (a, b) => a != b));
-
-            DefineBinaryOperator(new BuiltInClassNullOperator("=="));
-            DefineBinaryOperator(new BuiltInClassNullOperator("!="));
-            DefineBinaryOperator(new BuiltInFunctionOperator("=="));
-            DefineBinaryOperator(new BuiltInFunctionOperator("!="));
-            DefineBinaryOperator(new BuiltInEnumCompareOperator("=="));
-            DefineBinaryOperator(new BuiltInEnumCompareOperator("!="));
         }
 
         private void DefineLiteralOperators()

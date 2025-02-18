@@ -411,7 +411,7 @@ namespace HapetPostPrepare
                 unExpr.OutType = unExpr.ActualOperator.ResultType;
 
                 // if the value could be evaluated at the compile time
-                if ((unExpr.SubExpr as AstExpression).OutValue != null)
+                if ((unExpr.SubExpr as AstExpression).OutValue != null && unExpr.ActualOperator.CanExecute)
                 {
                     unExpr.OutValue = unExpr.ActualOperator.Execute((unExpr.SubExpr as AstExpression).OutValue);
                 }
@@ -522,7 +522,7 @@ namespace HapetPostPrepare
                             }
 
                             // if the value could be evaluated at the compile time
-                            if (leftExpr.OutValue != null && rightExpr.OutValue != null)
+                            if (leftExpr.OutValue != null && rightExpr.OutValue != null && unExpr.ActualOperator.CanExecute)
                             {
                                 binExpr.OutValue = binExpr.ActualOperator.Execute(leftExpr.OutValue, rightExpr.OutValue);
                             }

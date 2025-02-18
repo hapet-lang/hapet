@@ -9,8 +9,9 @@ namespace HapetFrontend.Scoping
         HapetType ResultType { get; }
         string Name { get; }
 
-        int Accepts(params HapetType[] types);
+        bool CanExecute { get; }
 
+        int Accepts(params HapetType[] types);
         object Execute(params object[] args);
     }
 
@@ -21,8 +22,9 @@ namespace HapetFrontend.Scoping
         HapetType ResultType { get; }
         string Name { get; }
 
-        int Accepts(HapetType lhs, HapetType rhs);
+        bool CanExecute { get; }
 
+        int Accepts(HapetType lhs, HapetType rhs);
         object Execute(object left, object right);
     }
 
@@ -32,100 +34,10 @@ namespace HapetFrontend.Scoping
         HapetType ResultType { get; }
         string Name { get; }
 
+        bool CanExecute { get; }
+
         int Accepts(HapetType sub);
-
         object Execute(object value);
-    }
-
-    /// <summary>
-    /// To check if class is null
-    /// </summary>
-    public class BuiltInClassNullOperator : IBinaryOperator
-    {
-        public HapetType LhsType => null;
-        public HapetType RhsType => PointerType.NullLiteralType;
-        public HapetType ResultType => BoolType.Instance;
-
-        public string Name { get; private set; }
-
-        public BuiltInClassNullOperator(string name)
-        {
-            this.Name = name;
-        }
-
-        // TODO: probably should be in Execute
-        public int Accepts(HapetType lhs, HapetType rhs)
-        {
-            if (lhs is ClassType && rhs == PointerType.NullLiteralType)
-                return 0;
-            return -1;
-        }
-
-        public object Execute(object left, object right)
-        {
-            throw new NotImplementedException();
-        }
-    }
-
-    /// <summary>
-    /// Check if enums are equal
-    /// </summary>
-    public class BuiltInEnumCompareOperator : IBinaryOperator
-    {
-        public HapetType LhsType => null;
-        public HapetType RhsType => null;
-        public HapetType ResultType => BoolType.Instance;
-
-        public string Name { get; private set; }
-
-        public BuiltInEnumCompareOperator(string name)
-        {
-            this.Name = name;
-        }
-
-        // TODO: probably should be in Execute
-        public int Accepts(HapetType lhs, HapetType rhs)
-        {
-            if (lhs is EnumType f1 && rhs is EnumType f2 && f1 == f2)
-                return 0;
-            return -1;
-        }
-
-        public object Execute(object left, object right)
-        {
-            throw new NotImplementedException();
-        }
-    }
-
-
-    /// <summary>
-    /// To check if funcs are equal
-    /// </summary>
-    public class BuiltInFunctionOperator : IBinaryOperator
-    {
-        public HapetType LhsType => null;
-        public HapetType RhsType => null;
-        public HapetType ResultType => BoolType.Instance;
-
-        public string Name { get; private set; }
-
-        public BuiltInFunctionOperator(string name)
-        {
-            this.Name = name;
-        }
-
-        // TODO: probably should be in Execute
-        public int Accepts(HapetType lhs, HapetType rhs)
-        {
-            if (lhs is FunctionType f1 && rhs is FunctionType f2 && f1 == f2)
-                return 0;
-            return -1;
-        }
-
-        public object Execute(object left, object right)
-        {
-            throw new NotImplementedException();
-        }
     }
 
     /// <summary>
@@ -136,6 +48,8 @@ namespace HapetFrontend.Scoping
         public HapetType LhsType { get; private set; }
         public HapetType RhsType { get; private set; }
         public HapetType ResultType { get; private set; }
+
+        public bool CanExecute { get; set; }
 
         public string Name { get; private set; }
 
@@ -149,6 +63,8 @@ namespace HapetFrontend.Scoping
             LhsType = lhs;
             RhsType = rhs;
             Execution = exe;
+
+            CanExecute = exe != null;
         }
 
         public virtual int Accepts(HapetType lhs, HapetType rhs)
@@ -190,6 +106,8 @@ namespace HapetFrontend.Scoping
         public HapetType SubExprType { get; private set; }
         public HapetType ResultType { get; private set; }
 
+        public bool CanExecute { get; set; }
+
         public string Name { get; private set; }
 
         public delegate object CompileTimeExecution(object value);
@@ -200,7 +118,9 @@ namespace HapetFrontend.Scoping
             Name = name;
             ResultType = resType;
             SubExprType = sub;
-            this.Execution = exe;
+            Execution = exe;
+
+            CanExecute = exe != null;
         }
 
         public override string ToString()
