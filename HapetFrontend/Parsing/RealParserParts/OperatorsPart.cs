@@ -1,4 +1,7 @@
-﻿using HapetFrontend.Ast.Declarations;
+﻿using HapetFrontend.Ast;
+using HapetFrontend.Ast.Declarations;
+using HapetFrontend.Ast.Expressions;
+using HapetFrontend.Enums;
 
 namespace HapetFrontend.Parsing
 {
@@ -6,16 +9,21 @@ namespace HapetFrontend.Parsing
     {
         public AstOverloadDecl ParseOperatorOverride(UnknownDecl udecl)
         {
+            OverloadType overloadType = OverloadType.UnaryOperator;
             string op = null;
+            AstNestedExpr castType = null;
+
             List<AstParamDecl> paramDecls = null;
+            AstExpression returns = null;
+            AstBlockExpr body = null;
 
             // cast override
-            if ((CheckToken(TokenType.KwImplicit) || CheckToken(TokenType.KwExplicit)) && udecl.Type == null)
+            if ((CheckToken(TokenType.KwImplicit) || CheckToken(TokenType.KwExplicit)) && udecl.Name == null)
             {
                 // TODO:
             }
             // this is an operator override
-            else if (CheckToken(TokenType.KwOperator) && udecl.Type == null)
+            else if (CheckToken(TokenType.KwOperator) && udecl.Name == null)
             {
                 // skip 'operator' word
                 NextToken();
@@ -55,7 +63,13 @@ namespace HapetFrontend.Parsing
                 if (tpl is AstFuncDecl func)
                 {
                     paramDecls = func.Parameters;
+                    body = func.Body;
                 }
+
+                returns = udecl.Type;
+
+                // TODO: ... 
+                overloadType = OverloadType.BinaryOperator;
             }
             else
             {
@@ -63,8 +77,16 @@ namespace HapetFrontend.Parsing
                 return null;
             }
 
-            //var overload = new AstOverloadDecl(paramDecls, );
-            return null;
+            string name = AstOverloadDecl.GenerateName(overloadType, op, castType);
+            // TODO: doc string and better location
+            var overload = new AstOverloadDecl(paramDecls, returns, body, new AstIdExpr(name), "", udecl);
+
+            // set up shite
+            overload.CastType = castType;
+            overload.OverloadType = overloadType;
+            overload.Operator = op;
+
+            return overload;
         }
     }
 }
