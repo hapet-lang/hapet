@@ -219,7 +219,7 @@ namespace HapetPostPrepare
                     (str.InheritedFrom[0].OutType as ClassType).Declaration.IsInterface)))
                 {
                     // set it only if there are not inheritances or only interfaces
-                    var nst = new AstNestedExpr(new AstIdExpr("System.Object", str), null, str);
+                    var nst = new AstNestedExpr(new AstIdExpr("System.ValueType", str), null, str);
                     str.InheritedFrom.Insert(0, nst);
                     SetScopeAndParent(nst, str);
                     PostPrepareExprScoping(nst);
