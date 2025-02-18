@@ -49,11 +49,14 @@ namespace HapetFrontend.Parsing
         Bang,            // !
         VerticalSlash,   // |
 
-        Plus,
-        Minus,
+        Plus,            // +
+        Minus,           // -
         Asterisk,        // *
-        ForwardSlash,
-        Percent,
+        ForwardSlash,    // /
+        Percent,         // %
+
+        PlusPlus,        // ++
+        MinusMinus,      // --
 
         LessLess,        // <<
         GreaterGreater,  // >>

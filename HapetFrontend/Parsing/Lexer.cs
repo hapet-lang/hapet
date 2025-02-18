@@ -110,6 +110,8 @@ namespace HapetFrontend.Parsing
 
             switch (Current)
             {
+                case '+' when Next == '+': SimpleToken(ref token, TokenType.PlusPlus, 2); break;
+                case '-' when Next == '-': SimpleToken(ref token, TokenType.MinusMinus, 2); break;
                 case '=' when Next == '>': SimpleToken(ref token, TokenType.Arrow, 2); break;
                 case '=' when Next == '=': SimpleToken(ref token, TokenType.DoubleEqual, 2); break;
                 case '!' when Next == '=': SimpleToken(ref token, TokenType.NotEqual, 2); break;

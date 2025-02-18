@@ -18,11 +18,13 @@ namespace HapetFrontend.Parsing
                 string op = null;
                 switch (opToken.Type)
                 {
-                    case TokenType.AddEq: op = "+"; break;
-                    case TokenType.SubEq: op = "-"; break;
-                    case TokenType.MulEq: op = "*"; break;
-                    case TokenType.DivEq: op = "/"; break;
-                    case TokenType.ModEq: op = "%"; break;
+                    case TokenType.Equal: op = "+"; break;
+                    case TokenType.Minus: op = "-"; break;
+                    case TokenType.Asterisk: op = "*"; break;
+                    case TokenType.ForwardSlash: op = "/"; break;
+                    case TokenType.Percent: op = "%"; break;
+                    case TokenType.Bang: op = "!"; break;
+                    case TokenType.Tilda: op = "~"; break;
                 }
 
 
