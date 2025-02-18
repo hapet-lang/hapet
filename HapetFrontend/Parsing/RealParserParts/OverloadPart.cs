@@ -2,11 +2,17 @@
 using HapetFrontend.Ast.Declarations;
 using HapetFrontend.Ast.Expressions;
 using HapetFrontend.Enums;
+using HapetFrontend.Errors;
 
 namespace HapetFrontend.Parsing
 {
     public partial class Parser
     {
+        private static readonly TokenType[] AllowedUnOps = { TokenType.Plus, TokenType.Minus, TokenType.Bang, TokenType.Tilda, TokenType.PlusPlus, TokenType.MinusMinus };
+        private static readonly TokenType[] AllowedBinOps = { TokenType.Plus, TokenType.Minus, TokenType.ForwardSlash, TokenType.Asterisk, TokenType.Percent, 
+            TokenType.Ampersand, TokenType.VerticalSlash, TokenType.Hat, TokenType.GreaterGreater, TokenType.LessLess, TokenType.DoubleEqual, TokenType.NotEqual, 
+            TokenType.Less, TokenType.LessEqual, TokenType.Greater, TokenType.GreaterEqual, TokenType.LogicalAnd, TokenType.LogicalOr };
+
         public AstOverloadDecl ParseOperatorOverride(UnknownDecl udecl)
         {
             OverloadType overloadType = OverloadType.UnaryOperator;
@@ -68,8 +74,19 @@ namespace HapetFrontend.Parsing
                     body = func.Body;
                 }
 
-                // TODO: ... 
-                overloadType = OverloadType.BinaryOperator;
+                if (paramDecls == null)
+                    ReportMessage(opToken.Location, [], ErrorCode.Get(CTEN.ParamsAfterOverloadOperator));
+                else if (paramDecls.Count == 1)
+                    overloadType = OverloadType.UnaryOperator;
+                else if (paramDecls.Count == 2)
+                    overloadType = OverloadType.BinaryOperator;
+                else
+                    ReportMessage(opToken.Location, [], ErrorCode.Get(CTEN.TooManyParamsAfterOvOp));
+
+                if (overloadType == OverloadType.UnaryOperator && !AllowedUnOps.Contains(opToken.Type))
+                    ReportMessage(opToken.Location, [], ErrorCode.Get(CTEN.UnexpectedUnOpToOverload));
+                else if (overloadType == OverloadType.BinaryOperator && !AllowedBinOps.Contains(opToken.Type))
+                    ReportMessage(opToken.Location, [], ErrorCode.Get(CTEN.UnexpectedBinOpToOverload));
             }
             else
             {

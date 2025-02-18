@@ -374,6 +374,22 @@
         <Number>204E</Number>
         <Text>The declaration type is not allowed in struct type</Text>
     </Item>
+	<Item>
+		<Number>204F</Number>
+		<Text>Parameters expected after overloading operator</Text>
+	</Item>
+	<Item>
+		<Number>2050</Number>
+		<Text>Too many parameters after overloading operator</Text>
+	</Item>
+	<Item>
+		<Number>2051</Number>
+		<Text>Unexpected operator to be overloaded as unary operator</Text>
+	</Item>
+	<Item>
+		<Number>2052</Number>
+		<Text>Unexpected operator to be overloaded as binary operator</Text>
+	</Item>
     
 
 	<!--Post prepare errors-->

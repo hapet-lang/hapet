@@ -101,6 +101,10 @@
         StructDeclExpectedAfterKey      = 0x204C,
         StructNameNotIdent              = 0x204D,
         TheDeclNotAllowedInStruct       = 0x204E,
+        ParamsAfterOverloadOperator     = 0x204F,
+        TooManyParamsAfterOvOp          = 0x2050,
+        UnexpectedUnOpToOverload        = 0x2051,
+        UnexpectedBinOpToOverload       = 0x2052,
 
         // post preparer errors up to 0x5000
         EnumCouldNotBeAssigned          = 0x3001,
