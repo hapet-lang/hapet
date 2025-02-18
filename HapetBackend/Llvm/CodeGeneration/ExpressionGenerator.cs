@@ -412,9 +412,13 @@ namespace HapetBackend.Llvm
         private unsafe LLVMValueRef GenerateCallExpr(AstCallExpr expr, bool getPtr = false)
         {
             // the func is needed to handle virtual shite
-            LLVMValueRef CreateCall(LLVMBuilderRef builder, LLVMTypeRef funcType, FunctionType hapetType, LLVMValueRef func, List<LLVMValueRef> args, string name = "")
+            LLVMValueRef CreateCall(LLVMBuilderRef builder, LLVMTypeRef funcType, FunctionType hapetType, LLVMValueRef func, List<LLVMValueRef> args, bool isBaseCall, string name = "")
             {
                 if (hapetType.Declaration.ContainingParent is not AstClassDecl clsDecl)
+                    return builder.BuildCall2(funcType, func, args.ToArray(), name);
+
+                // for base func call - just call base func :)
+                if (isBaseCall)
                     return builder.BuildCall2(funcType, func, args.ToArray(), name);
 
                 var virtualMethod = clsDecl.AllVirtualMethods.GetSameByNameAndTypes(hapetType.Declaration, out int index);
@@ -477,12 +481,15 @@ namespace HapetBackend.Llvm
                     args.Add(GenerateExpressionCode(a));
                 }
 
+                // is that smth like 'base.Anime()' call
+                bool isBaseCall = expr.TypeOrObjectName == null ? false : expr.TypeOrObjectName.TryFlatten(_messageHandler, _currentSourceFile) == "base";
+
                 // the return name has to be empty if ret value of func is void
                 // also save the ret value into a var
                 if (fncType.Declaration.Returns.OutType is not VoidType)
                 {
                     // save the value
-                    LLVMValueRef ret = CreateCall(_builder, funcType, fncType, hapetFunc, args, $"funcReturnValue");
+                    LLVMValueRef ret = CreateCall(_builder, funcType, fncType, hapetFunc, args, isBaseCall, $"funcReturnValue");
                     _builder.BuildStore(ret, varPtr);
 
                     if (getPtr)
@@ -490,7 +497,7 @@ namespace HapetBackend.Llvm
                     return _builder.BuildLoad2(HapetTypeToLLVMType(fncType.Declaration.Returns.OutType), varPtr, "holderLoaded");
                 }
 
-                return CreateCall(_builder, funcType, fncType, hapetFunc, args);
+                return CreateCall(_builder, funcType, fncType, hapetFunc, args, isBaseCall);
             }
             else if (expr.FuncName.OutType is DelegateType delType)
             {
