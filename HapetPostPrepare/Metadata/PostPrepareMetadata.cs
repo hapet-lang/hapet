@@ -198,7 +198,9 @@ namespace HapetPostPrepare
                 {
                     PostPrepareExprInference(inh);
 
-                    if (inh.OutType is not ClassType || !(inh.OutType as ClassType).Declaration.IsInterface)
+                    if (inh.OutType is not ClassType || 
+                        (!(inh.OutType as ClassType).Declaration.IsInterface && 
+                        (inh.OutType as ClassType).Declaration.Name.Name != "System.ValueType"))
                     {
                         // error - cannot inherit from non interfaces
                         _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, inh, [HapetType.AsString(inh.OutType)], ErrorCode.Get(CTEN.NonInterfaceInhInStruct));
