@@ -14,16 +14,18 @@ namespace HapetFrontend.Parsing
             AstNestedExpr castType = null;
 
             List<AstParamDecl> paramDecls = null;
-            AstExpression returns = null;
             AstBlockExpr body = null;
 
+            // kostyl to always get type
+            AstExpression returns = udecl.Name == null ? udecl.Type : new AstNestedExpr(udecl.Name, null, udecl.Name);
+
             // cast override
-            if ((CheckToken(TokenType.KwImplicit) || CheckToken(TokenType.KwExplicit)) && udecl.Name == null)
+            if ((CheckToken(TokenType.KwImplicit) || CheckToken(TokenType.KwExplicit)))
             {
                 // TODO:
             }
             // this is an operator override
-            else if (CheckToken(TokenType.KwOperator) && udecl.Name == null)
+            else if (CheckToken(TokenType.KwOperator))
             {
                 // skip 'operator' word
                 NextToken();
@@ -65,8 +67,6 @@ namespace HapetFrontend.Parsing
                     paramDecls = func.Parameters;
                     body = func.Body;
                 }
-
-                returns = udecl.Type;
 
                 // TODO: ... 
                 overloadType = OverloadType.BinaryOperator;
