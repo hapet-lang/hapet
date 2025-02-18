@@ -22,7 +22,7 @@ public class TestCls
 {
 	public int A { get; set; }
 
-	public static int operator +(TestCls a, TestCls b)
+	public static SmallTestProject.TestCls operator +(TestCls a, TestCls b)
 	{
 		return a.A + b.A;
 	}

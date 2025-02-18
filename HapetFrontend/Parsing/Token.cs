@@ -61,18 +61,18 @@ namespace HapetFrontend.Parsing
         LessLess,        // <<
         GreaterGreater,  // >>
 
-        AddEq,
-        SubEq,
-        MulEq,
-        DivEq,
-        ModEq,
+        AddEq,           // +=
+        SubEq,           // -=
+        MulEq,           // *=
+        DivEq,           // /=
+        ModEq,           // %=
 
-        Less,
-        LessEqual,
-        Greater,
-        GreaterEqual,
-        DoubleEqual,
-        NotEqual,
+        Less,            // <
+        LessEqual,       // <=
+        Greater,         // >
+        GreaterEqual,    // >=
+        DoubleEqual,     // ==
+        NotEqual,        // !=
 
         LogicalOr,       // ||
         LogicalAnd,      // &&

@@ -36,7 +36,7 @@ namespace HapetFrontend.Parsing
                 NextToken(); // do nothing
             else
                 body = ParseBlockExpression();
-            return new AstFuncDecl(parameters, null, body, null, Location: new Location(paramsLocation.Beginning, body?.Ending ?? paramsLocation.Ending)) { BaseCtorCall = baseCtorCall };
+            return new AstFuncDecl(parameters, null, body, null, location: new Location(paramsLocation.Beginning, body?.Ending ?? paramsLocation.Ending)) { BaseCtorCall = baseCtorCall };
         }
 
         private AstLambdaDecl ParseLambdaDeclaration(List<AstParamDecl> parameters, TokenLocation beg, bool allowCommaForTuple)
