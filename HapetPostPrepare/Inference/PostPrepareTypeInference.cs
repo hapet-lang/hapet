@@ -3,6 +3,7 @@ using HapetFrontend.Ast.Declarations;
 using HapetFrontend.Ast.Expressions;
 using HapetFrontend.Ast.Statements;
 using HapetFrontend.Entities;
+using HapetFrontend.Enums;
 using HapetFrontend.Errors;
 using HapetFrontend.Helpers;
 using HapetFrontend.Parsing;
@@ -122,18 +123,22 @@ namespace HapetPostPrepare
             // if not - infer only body because func decl already infered from metadata :)
             if (forMetadata)
             {
-
-                if (funcDecl.ContainingParent.Name.Name == "System.Array")
-                {
-                    int a = 3;
-                }
                 // inferencing parameters 
                 foreach (var p in funcDecl.Parameters)
                 {
                     PostPrepareParamInference(p);
                 }
 
-                
+                // only for overloading funcs
+                if (funcDecl is AstOverloadDecl overDecl && overDecl.CastType != null)
+                {
+                    PostPrepareExprInference(overDecl.CastType);
+                }
+
+                // inferencing return type 
+                {
+                    PostPrepareExprInference(funcDecl.Returns);
+                }
 
                 // if the containing class is empty - it is external func
                 if (funcDecl.ContainingParent != null)
@@ -146,11 +151,23 @@ namespace HapetPostPrepare
                     // if it is public func - it should be visible in the scope in which func's class is
                     funcDecl.ContainingParent.SubScope.DefineDeclSymbol(newName, funcDecl);
                     funcDecl.Name = funcDecl.Name.GetCopy(newName);
-                }
 
-                // inferencing return type 
-                {
-                    PostPrepareExprInference(funcDecl.Returns);
+                    // register operator decl
+                    if (funcDecl is AstOverloadDecl overDecl2)
+                    {
+                        if (overDecl2.OverloadType == OverloadType.UnaryOperator)
+                        {
+                            var op = new UserDefinedUnaryOperator(overDecl2.Operator, overDecl2.Returns.OutType, overDecl2.Parameters[0].Type.OutType);
+                            op.Function = funcDecl.Type.OutType as FunctionType;
+                            funcDecl.ContainingParent.SubScope.DefineUnaryOperator(op);
+                        }
+                        else if (overDecl2.OverloadType == OverloadType.BinaryOperator)
+                        {
+                            var op = new UserDefinedBinaryOperator(overDecl2.Operator, overDecl2.Returns.OutType, overDecl2.Parameters[0].Type.OutType, overDecl2.Parameters[1].Type.OutType);
+                            op.Function = funcDecl.Type.OutType as FunctionType;
+                            funcDecl.ContainingParent.SubScope.DefineBinaryOperator(op);
+                        }
+                    }
                 }
             }
             else
