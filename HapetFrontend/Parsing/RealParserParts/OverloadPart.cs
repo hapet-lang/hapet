@@ -3,6 +3,7 @@ using HapetFrontend.Ast.Declarations;
 using HapetFrontend.Ast.Expressions;
 using HapetFrontend.Enums;
 using HapetFrontend.Errors;
+using Newtonsoft.Json.Linq;
 
 namespace HapetFrontend.Parsing
 {
@@ -17,7 +18,6 @@ namespace HapetFrontend.Parsing
         {
             OverloadType overloadType = OverloadType.UnaryOperator;
             string op = null;
-            AstNestedExpr castType = null;
 
             List<AstParamDecl> paramDecls = null;
             AstBlockExpr body = null;
@@ -28,7 +28,29 @@ namespace HapetFrontend.Parsing
             // cast override
             if ((CheckToken(TokenType.KwImplicit) || CheckToken(TokenType.KwExplicit)))
             {
-                // TODO:
+                // just check
+                var imex = NextToken();
+                if (imex.Type == TokenType.KwImplicit)
+                    overloadType = OverloadType.ImplicitCast;
+                else
+                    overloadType = OverloadType.ExplicitCast;
+
+                Consume(TokenType.KwOperator, ErrMsg("'operator'", "after implicit/explicit cast overloading"));
+
+                // getting cast result type
+                returns = ParseIdentifierExpression();
+
+                var tpl = ParseTupleExpression(true, true);
+                if (tpl is AstFuncDecl func)
+                {
+                    paramDecls = func.Parameters;
+                    body = func.Body;
+                }
+
+                if (paramDecls == null)
+                    ReportMessage(returns, [], ErrorCode.Get(CTEN.ParamsAfterOverloadOperator));
+                else if (paramDecls.Count > 1)
+                    ReportMessage(returns, [], ErrorCode.Get(CTEN.TooManyParamsAfterOvOp));
             }
             // this is an operator override
             else if (CheckToken(TokenType.KwOperator))
@@ -94,12 +116,11 @@ namespace HapetFrontend.Parsing
                 return null;
             }
 
-            string name = AstOverloadDecl.GenerateName(overloadType, op, castType);
+            string name = AstOverloadDecl.GenerateName(overloadType, op, returns as AstNestedExpr);
             // TODO: doc string and better location
             var overload = new AstOverloadDecl(paramDecls, returns, body, new AstIdExpr(name), "", udecl);
 
             // set up shite
-            overload.CastType = castType;
             overload.OverloadType = overloadType;
             overload.Operator = op;
 

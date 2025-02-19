@@ -95,6 +95,9 @@ namespace HapetPostPrepare
             cst.Scope = expr.Scope;
             cst.OutValue = expr.OutValue;
 
+            // check for user defined implicit casts
+            // TODO:
+
             switch (neededType)
             {
                 // default cringe casting

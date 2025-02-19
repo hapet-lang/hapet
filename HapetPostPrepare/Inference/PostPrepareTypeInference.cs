@@ -129,12 +129,6 @@ namespace HapetPostPrepare
                     PostPrepareParamInference(p);
                 }
 
-                // only for overloading funcs
-                if (funcDecl is AstOverloadDecl overDecl && overDecl.CastType != null)
-                {
-                    PostPrepareExprInference(overDecl.CastType);
-                }
-
                 // inferencing return type 
                 {
                     PostPrepareExprInference(funcDecl.Returns);
@@ -155,7 +149,10 @@ namespace HapetPostPrepare
                     // register operator decl
                     if (funcDecl is AstOverloadDecl overDecl2)
                     {
-                        if (overDecl2.OverloadType == OverloadType.UnaryOperator)
+                        if (overDecl2.OverloadType == OverloadType.UnaryOperator ||
+                            overDecl2.OverloadType == OverloadType.ImplicitCast ||
+                            overDecl2.OverloadType == OverloadType.ExplicitCast ||
+                            overDecl2.OverloadType == OverloadType.Indexer)
                         {
                             var op = new UserDefinedUnaryOperator(overDecl2.Operator, overDecl2.Returns.OutType, overDecl2.Parameters[0].Type.OutType);
                             op.Function = funcDecl.Type.OutType as FunctionType;
