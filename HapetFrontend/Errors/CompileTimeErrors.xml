@@ -676,6 +676,10 @@
 		<Number>3046</Number>
 		<Text>Type {0} cannot derive from {1} type, probably because the second one is value typed</Text>
 	</Item>
+	<Item>
+		<Number>3047</Number>
+		<Text>Ambiguous user defined conversions when converting from {0} to {1}</Text>
+	</Item>
 
     <!--Compiler errors-->
 	<Item>

@@ -29,7 +29,7 @@ namespace HapetFrontend.Types
 
         public override int Match(HapetType concrete)
         {
-            if (concrete is ClassType)
+            if (concrete is ClassType cls && cls == this)
             {
                 int score = 0;
                 return score;

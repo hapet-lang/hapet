@@ -177,6 +177,7 @@
         DerivedFromSealed               = 0x3044,
         NonInterfaceInhInStruct         = 0x3045,
         CannotDeriveFromStruct          = 0x3046,
+        AmbiguousCastOverloads          = 0x3047,
 
         // compiler errors up to 0x6000
         DefaultWasNotInfered            = 0x5001,

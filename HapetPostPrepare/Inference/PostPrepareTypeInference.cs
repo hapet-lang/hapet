@@ -159,8 +159,6 @@ namespace HapetPostPrepare
                     if (funcDecl is AstOverloadDecl overDecl2)
                     {
                         if (overDecl2.OverloadType == OverloadType.UnaryOperator ||
-                            overDecl2.OverloadType == OverloadType.ImplicitCast ||
-                            overDecl2.OverloadType == OverloadType.ExplicitCast ||
                             overDecl2.OverloadType == OverloadType.Indexer)
                         {
                             var op = new UserDefinedUnaryOperator(overDecl2.Operator, overDecl2.Returns.OutType, overDecl2.Parameters[0].Type.OutType);
@@ -170,6 +168,13 @@ namespace HapetPostPrepare
                         else if (overDecl2.OverloadType == OverloadType.BinaryOperator)
                         {
                             var op = new UserDefinedBinaryOperator(overDecl2.Operator, overDecl2.Returns.OutType, overDecl2.Parameters[0].Type.OutType, overDecl2.Parameters[1].Type.OutType);
+                            op.Function = funcDecl.Type.OutType as FunctionType;
+                            funcDecl.ContainingParent.SubScope.DefineBinaryOperator(op);
+                        }
+                        else if (overDecl2.OverloadType == OverloadType.ImplicitCast ||
+                            overDecl2.OverloadType == OverloadType.ExplicitCast)
+                        {
+                            var op = new UserDefinedBinaryOperator(overDecl2.Operator, overDecl2.Returns.OutType, overDecl2.Returns.OutType, overDecl2.Parameters[0].Type.OutType);
                             op.Function = funcDecl.Type.OutType as FunctionType;
                             funcDecl.ContainingParent.SubScope.DefineBinaryOperator(op);
                         }

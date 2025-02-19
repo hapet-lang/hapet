@@ -139,6 +139,9 @@ namespace HapetFrontend.Types
         // used for classes and structs
         public bool IsInheritedFrom(ClassType type, bool checkParents = true)
         {
+            if (type == null)
+                return false;
+
             List<AstNestedExpr> inhFrom;
             if (this is ClassType clsT)
                 inhFrom = clsT.Declaration.InheritedFrom;

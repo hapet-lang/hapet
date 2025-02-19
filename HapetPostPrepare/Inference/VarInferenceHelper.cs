@@ -3,6 +3,7 @@ using HapetFrontend.Ast.Declarations;
 using HapetFrontend.Ast.Expressions;
 using HapetFrontend.Ast.Statements;
 using HapetFrontend.Entities;
+using HapetFrontend.Enums;
 using HapetFrontend.Errors;
 using HapetFrontend.Helpers;
 using HapetFrontend.Parsing;
@@ -78,11 +79,18 @@ namespace HapetPostPrepare
             // no need for any casts if it is 'var' shite
             // just return back the expr
             if (neededType is VarType)
+            {
+                if (castResult != null)
+                    castResult.CouldBeCasted = true;
                 return expr;
+            }
 
             // assigning function to delegates is made different
             if (neededType is DelegateType delT)
             {
+                // TODO: not always could be casted - do it inside the func
+                if (castResult != null)
+                    castResult.CouldBeCasted = true;
                 return PostPrepareDelegateWithType(expr, delT);
             }
 
@@ -96,7 +104,22 @@ namespace HapetPostPrepare
             cst.OutValue = expr.OutValue;
 
             // check for user defined implicit casts
-            // TODO:
+            var castOps = expr.Scope.GetBinaryOperators("cast", neededType, exprType);
+            var implicitOps = castOps.Where(x => x is UserDefinedBinaryOperator userDef &&
+                                                 userDef.Function.Declaration is AstOverloadDecl overDecl &&
+                                                 overDecl.OverloadType == OverloadType.ImplicitCast).ToList();
+            // if there is an implicit cast - return it 
+            if (implicitOps.Count == 1)
+            {
+                if (castResult != null)
+                    castResult.CouldBeCasted = true;
+                return cst;
+            }
+            else if (implicitOps.Count > 1)
+            {
+                if (castResult == null)
+                    _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, expr, [HapetType.AsString(exprType), HapetType.AsString(neededType)], ErrorCode.Get(CTEN.AmbiguousCastOverloads));
+            }
 
             switch (neededType)
             {
@@ -186,10 +209,12 @@ namespace HapetPostPrepare
                         break;
                     }
                 // usually when 'Anime a = new Anime();'
+                // usually when 'object a = new Anime();'
                 case PointerType ptr when 
                     ptr.TargetType is ClassType cls1 && 
                     exprType is ClassType cls2 &&
-                    cls1 == cls2:
+                    (cls1 == cls2 || 
+                    cls2.IsInheritedFrom(cls1)):
                 // usually when 'object a = animeStructInstance;'
                 // usually when 'IAnime a = animeStructInstance;'
                 case PointerType ptr3 when 
@@ -210,7 +235,10 @@ namespace HapetPostPrepare
                 case PointerType when exprType is PointerType ptr1 && ptr1.TargetType == null:
                 case PointerType ptr2 when exprType is PointerType && ptr2.TargetType == null:
                 // ptr casts
-                case PointerType ptr3 when exprType is PointerType ptr4 && ptr3.TargetType == ptr4.TargetType:
+                case PointerType ptr3 when 
+                    exprType is PointerType ptr4 && 
+                    (ptr3.TargetType == ptr4.TargetType || 
+                    ptr4.TargetType.IsInheritedFrom(ptr3.TargetType as ClassType)):
                 case PointerType when exprType is IntPtrType:
                 case IntPtrType when exprType is PointerType:
                     {
