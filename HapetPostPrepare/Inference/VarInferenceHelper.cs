@@ -186,9 +186,18 @@ namespace HapetPostPrepare
                         break;
                     }
                 // usually when 'Anime a = new Anime();'
-                case PointerType ptr when ptr.TargetType is ClassType && exprType is ClassType:
-                // usually when 'Anime a = animeStructInstance;'
-                case PointerType ptr3 when ptr3.TargetType is ClassType && exprType is StructType:
+                case PointerType ptr when 
+                    ptr.TargetType is ClassType cls1 && 
+                    exprType is ClassType cls2 &&
+                    cls1 == cls2:
+                // usually when 'object a = animeStructInstance;'
+                // usually when 'IAnime a = animeStructInstance;'
+                case PointerType ptr3 when 
+                    ptr3.TargetType is ClassType cls3 && 
+                    exprType is StructType &&
+                    (cls3.Declaration.Name.Name == "System.Object" ||
+                    cls3.Declaration.Name.Name == "System.ValueType" ||
+                    cls3.Declaration.IsInterface):
                     {
                         outExpr = expr;
                         if (castResult != null)
@@ -201,7 +210,7 @@ namespace HapetPostPrepare
                 case PointerType when exprType is PointerType ptr1 && ptr1.TargetType == null:
                 case PointerType ptr2 when exprType is PointerType && ptr2.TargetType == null:
                 // ptr casts
-                case PointerType when exprType is PointerType:
+                case PointerType ptr3 when exprType is PointerType ptr4 && ptr3.TargetType == ptr4.TargetType:
                 case PointerType when exprType is IntPtrType:
                 case IntPtrType when exprType is PointerType:
                     {
