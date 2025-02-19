@@ -96,7 +96,19 @@ namespace HapetBackend.Llvm
                 var val = uo(_builder, value, "unOp");
                 return val;
             }
-            // TODO: check other operators (user implemented)
+            else if (unExpr.ActualOperator is UserDefinedUnaryOperator userDef)
+            {
+                var expr = (unExpr.SubExpr as AstExpression);
+                var value = GenerateExpressionCode(expr);
+                // return if the value was not properly generated
+                if (value == default)
+                    return default;
+
+                var fncType = _typeMap[userDef.Function];
+                var fncValue = _valueMap[userDef.Function.Declaration.GetSymbol];
+
+                return _builder.BuildCall2(fncType, fncValue, new LLVMValueRef[] { value }, "unOp");
+            }
             _messageHandler.ReportMessage(_currentSourceFile.Text, unExpr, [unExpr.ToString()], ErrorCode.Get(CTEN.StmtNotImplemented));
             return default;
         }
@@ -195,7 +207,24 @@ namespace HapetBackend.Llvm
                         }
                 }
             }
-            // TODO: check other operators (user implemented)
+            else if (binExpr.ActualOperator is UserDefinedBinaryOperator userDef)
+            {
+                var leftExpr = (binExpr.Left as AstExpression);
+                var left = GenerateExpressionCode(leftExpr);
+                // return if the value was not properly generated
+                if (left == default)
+                    return default;
+                var rightExpr = (binExpr.Right as AstExpression);
+                var right = GenerateExpressionCode(rightExpr);
+                // return if the value was not properly generated
+                if (right == default)
+                    return default;
+
+                var fncType = _typeMap[userDef.Function];
+                var fncValue = _valueMap[userDef.Function.Declaration.GetSymbol];
+
+                return _builder.BuildCall2(fncType, fncValue, new LLVMValueRef[] { left, right }, "binOp");
+            }
             _messageHandler.ReportMessage(_currentSourceFile.Text, binExpr, [binExpr.ToString()], ErrorCode.Get(CTEN.StmtNotImplemented));
             return default;
         }
@@ -460,7 +489,7 @@ namespace HapetBackend.Llvm
             if (expr.FuncName.OutType is FunctionType fncType)
             {
                 var hapetFunc = _valueMap[fncType.Declaration.GetSymbol];
-                LLVMTypeRef funcType = _typeMap[expr.FuncName.OutType];
+                LLVMTypeRef funcType = _typeMap[fncType];
 
                 LLVMValueRef varPtr = default;
                 if (fncType.Declaration.Returns.OutType is not VoidType)
