@@ -3,6 +3,11 @@ using HapetFrontend.Types;
 
 namespace HapetFrontend.Scoping
 {
+    public interface IUserDefinedOperator
+    {
+        FunctionType Function { get; set; }
+    }
+
     public interface INaryOperator
     {
         HapetType[] ArgTypes { get; }
@@ -101,7 +106,7 @@ namespace HapetFrontend.Scoping
         }
     }
 
-    public class UserDefinedBinaryOperator : IBinaryOperator
+    public class UserDefinedBinaryOperator : IBinaryOperator, IUserDefinedOperator
     {
         public HapetType LhsType { get; private set; }
         public HapetType RhsType { get; private set; }
@@ -182,7 +187,7 @@ namespace HapetFrontend.Scoping
         }
     }
 
-    public class UserDefinedUnaryOperator : IUnaryOperator
+    public class UserDefinedUnaryOperator : IUnaryOperator, IUserDefinedOperator
     {
         public HapetType SubExprType { get; private set; }
         public HapetType ResultType { get; private set; }

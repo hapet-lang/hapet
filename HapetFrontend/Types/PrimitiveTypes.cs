@@ -283,6 +283,9 @@ namespace HapetFrontend.Types
                 if (TargetType == null && p.TargetType == null)
                     return 0;
 
+                if (TargetType == null || p.TargetType == null)
+                    return -1;
+
                 var targetMatch = this.TargetType.Match(p.TargetType);
                 if (targetMatch == -1)
                     return -1;

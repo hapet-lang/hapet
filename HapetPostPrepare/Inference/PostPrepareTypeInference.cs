@@ -428,7 +428,8 @@ namespace HapetPostPrepare
                 unExpr.OutType = unExpr.ActualOperator.ResultType;
 
                 // if the value could be evaluated at the compile time
-                if ((unExpr.SubExpr as AstExpression).OutValue != null && unExpr.ActualOperator.CanExecute)
+                if ((unExpr.SubExpr as AstExpression).OutValue != null && 
+                    unExpr.ActualOperator.CanExecute)
                 {
                     unExpr.OutValue = unExpr.ActualOperator.Execute((unExpr.SubExpr as AstExpression).OutValue);
                 }
@@ -514,20 +515,28 @@ namespace HapetPostPrepare
                             }
 
                             // creating cast to result type if it is not a bool expr
-                            if (leftExpr.OutType != binExpr.OutType && binExpr.OutType is not BoolType && binExpr.OutType is not PointerType)
+                            if (leftExpr.OutType != binExpr.OutType && 
+                                binExpr.OutType is not BoolType && 
+                                binExpr.OutType is not PointerType &&
+                                binExpr.ActualOperator is not IUserDefinedOperator)
                             {
                                 // cast if they are not the same haha
                                 binExpr.Left = PostPrepareExpressionWithType(binExpr.OutType, leftExpr);
                             }
                             // creating cast to result type if it is not a bool expr
-                            if (rightExpr.OutType != binExpr.OutType && binExpr.OutType is not BoolType && binExpr.OutType is not PointerType)
+                            if (rightExpr.OutType != binExpr.OutType && 
+                                binExpr.OutType is not BoolType && 
+                                binExpr.OutType is not PointerType &&
+                                binExpr.ActualOperator is not IUserDefinedOperator)
                             {
                                 // cast if they are not the same haha
                                 binExpr.Right = PostPrepareExpressionWithType(binExpr.OutType, rightExpr);
                             }
 
                             // creating cast to result type if it is a bool expr and left and right are not the same types
-                            if (rightExpr.OutType != leftExpr.OutType && binExpr.OutType is BoolType)
+                            if (rightExpr.OutType != leftExpr.OutType && 
+                                binExpr.OutType is BoolType &&
+                                binExpr.ActualOperator is not IUserDefinedOperator)
                             {
                                 // cast if they are not the same haha
                                 HapetType castingType = HapetType.GetPreferredTypeOf(leftExpr.OutType, rightExpr.OutType, out bool tookLeft);
@@ -539,7 +548,9 @@ namespace HapetPostPrepare
                             }
 
                             // if the value could be evaluated at the compile time
-                            if (leftExpr.OutValue != null && rightExpr.OutValue != null && binExpr.ActualOperator.CanExecute)
+                            if (leftExpr.OutValue != null && 
+                                rightExpr.OutValue != null && 
+                                binExpr.ActualOperator.CanExecute)
                             {
                                 binExpr.OutValue = binExpr.ActualOperator.Execute(leftExpr.OutValue, rightExpr.OutValue);
                             }

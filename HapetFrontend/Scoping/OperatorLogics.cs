@@ -94,16 +94,44 @@ namespace HapetFrontend.Scoping
         {
             var result = new List<IBinaryOperator>();
             int level = int.MaxValue;
+
+            // at first - search for overloaded shite!!!
+            // search in left and right types for overloading
+            Scope toSearch = null;
+            switch (lhs)
+            {
+                case StructType st: toSearch = st.Declaration.SubScope; break;
+                case ClassType ct: toSearch = ct.Declaration.SubScope; break;
+                case PointerType pt when pt.TargetType is ClassType ct: toSearch = ct.Declaration.SubScope; break;
+            }
+            if (toSearch != null)
+                GetBinaryOperatorsInternal(toSearch, name, lhs, rhs, result, ref level);
+            switch (rhs)
+            {
+                case StructType st: toSearch = st.Declaration.SubScope; break;
+                case ClassType ct: toSearch = ct.Declaration.SubScope; break;
+                case PointerType pt when pt.TargetType is ClassType ct: toSearch = ct.Declaration.SubScope; break;
+            }
+            if (toSearch != null)
+                GetBinaryOperatorsInternal(toSearch, name, lhs, rhs, result, ref level);
+
+            // distinct because if the left and right types are the same
+            result = result.Distinct().ToList();
+
+            // return if found smth in overloaded shite
+            if (result.Count > 0)
+                return result;
+
             // this is a kostyl to search for any ptr bin ops
             var searchTypeL = lhs is PointerType ? PointerType.NullLiteralType : lhs;
             var searchTypeR = rhs is PointerType ? PointerType.NullLiteralType : rhs;
-            GetBinaryOperatorsInternal(name, searchTypeL, searchTypeR, result, ref level);
+            GetBinaryOperatorsInternal(this, name, searchTypeL, searchTypeR, result, ref level);
             return result;
         }
 
-        private void GetBinaryOperatorsInternal(string name, HapetType lhs, HapetType rhs, List<IBinaryOperator> result, ref int level, bool localOnly = false)
+        private static void GetBinaryOperatorsInternal(Scope scopeToSearch, string name, HapetType lhs, HapetType rhs, List<IBinaryOperator> result, ref int level, bool localOnly = false)
         {
-            if (_binaryOperatorTable.TryGetValue(name, out var ops))
+            if (scopeToSearch._binaryOperatorTable.TryGetValue(name, out var ops))
             {
                 foreach (var op in ops)
                 {
@@ -125,14 +153,15 @@ namespace HapetFrontend.Scoping
             }
             if (localOnly)
                 return;
-            if (_usedScopes != null && !localOnly)
+            if (scopeToSearch._usedScopes != null && !localOnly)
             {
-                foreach (var scope in _usedScopes)
+                foreach (var scope in scopeToSearch._usedScopes)
                 {
-                    scope.GetBinaryOperatorsInternal(name, lhs, rhs, result, ref level, true);
+                    GetBinaryOperatorsInternal(scope, name, lhs, rhs, result, ref level, true);
                 }
             }
-            Parent?.GetBinaryOperatorsInternal(name, lhs, rhs, result, ref level);
+            if (scopeToSearch.Parent != null)
+                GetBinaryOperatorsInternal(scopeToSearch.Parent, name, lhs, rhs, result, ref level);
         }
 
         /// <summary>
@@ -145,15 +174,35 @@ namespace HapetFrontend.Scoping
         {
             var result = new List<IUnaryOperator>();
             int level = int.MaxValue;
+
+            // at first - search for overloaded shite!!!
+            // search in sub type for overloading
+            Scope toSearch = null;
+            switch (sub)
+            {
+                case StructType st: toSearch = st.Declaration.SubScope; break;
+                case ClassType ct: toSearch = ct.Declaration.SubScope; break;
+                case PointerType pt when pt.TargetType is ClassType ct: toSearch = ct.Declaration.SubScope; break;
+            }
+            if (toSearch != null)
+                GetUnaryOperatorsInternal(toSearch, name, sub, result, ref level);
+
+            // distinct because if the left and right types are the same
+            result = result.Distinct().ToList();
+
+            // return if found smth in overloaded shite
+            if (result.Count > 0)
+                return result;
+
             // this is a kostyl to search for any ptr un ops
             var searchType = sub is PointerType ? PointerType.NullLiteralType : sub;
-            GetUnaryOperatorsInternal(name, searchType, result, ref level);
+            GetUnaryOperatorsInternal(this, name, searchType, result, ref level);
             return result;
         }
 
-        private void GetUnaryOperatorsInternal(string name, HapetType sub, List<IUnaryOperator> result, ref int level, bool localOnly = false)
+        private static void GetUnaryOperatorsInternal(Scope scopeToSearch, string name, HapetType sub, List<IUnaryOperator> result, ref int level, bool localOnly = false)
         {
-            if (_unaryOperatorTable.TryGetValue(name, out var ops))
+            if (scopeToSearch._unaryOperatorTable.TryGetValue(name, out var ops))
             {
                 foreach (var op in ops)
                 {
@@ -175,14 +224,15 @@ namespace HapetFrontend.Scoping
             }
             if (localOnly)
                 return;
-            if (_usedScopes != null && !localOnly)
+            if (scopeToSearch._usedScopes != null && !localOnly)
             {
-                foreach (var scope in _usedScopes)
+                foreach (var scope in scopeToSearch._usedScopes)
                 {
-                    scope.GetUnaryOperatorsInternal(name, sub, result, ref level, true);
+                    GetUnaryOperatorsInternal(scope, name, sub, result, ref level, true);
                 }
             }
-            Parent?.GetUnaryOperatorsInternal(name, sub, result, ref level);
+            if (scopeToSearch.Parent != null)
+                GetUnaryOperatorsInternal(scopeToSearch.Parent, name, sub, result, ref level);
         }
         #endregion
 
