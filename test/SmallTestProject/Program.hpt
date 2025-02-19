@@ -14,7 +14,9 @@ public static class Program
 		var b = new TestCls();
 		b.A = 6;
 
-		return a + b;
+		if (a && b)
+			return a + b;
+		return a * b;
 	}
 }
 
@@ -25,5 +27,15 @@ public class TestCls
 	public static int operator +(TestCls a, TestCls b)
 	{
 		return a.A + b.A;
+	}
+
+	public static int operator *(TestCls a, TestCls b)
+	{
+		return a.A + b.A + 6;
+	}
+
+	public static bool operator &&(TestCls a, TestCls b)
+	{
+		return a.A == b.A;
 	}
 }

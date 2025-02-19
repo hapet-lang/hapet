@@ -103,6 +103,9 @@ namespace HapetFrontend.Parsing
             overload.OverloadType = overloadType;
             overload.Operator = op;
 
+            overload.SpecialKeys.AddRange(udecl.SpecialKeys);
+            overload.Attributes.AddRange(udecl.Attributes);
+
             return overload;
         }
     }
