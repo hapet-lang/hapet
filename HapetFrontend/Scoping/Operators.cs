@@ -101,6 +101,49 @@ namespace HapetFrontend.Scoping
         }
     }
 
+    public class UserDefinedBinaryOperator : IBinaryOperator
+    {
+        public HapetType LhsType { get; private set; }
+        public HapetType RhsType { get; private set; }
+        public HapetType ResultType { get; private set; }
+
+        public FunctionType Function { get; set; }
+
+        public bool CanExecute { get; set; }
+
+        public string Name { get; private set; }
+
+        public UserDefinedBinaryOperator(string name, HapetType resType, HapetType lhs, HapetType rhs)
+        {
+            Name = name;
+            ResultType = resType;
+            LhsType = lhs;
+            RhsType = rhs;
+
+            CanExecute = false;
+        }
+
+        public virtual int Accepts(HapetType lhs, HapetType rhs)
+        {
+            var ml = LhsType.Match(lhs);
+            var mr = RhsType.Match(rhs);
+            if (ml == -1 || mr == -1)
+                return -1;
+
+            return ml + mr;
+        }
+
+        public override string ToString()
+        {
+            return $"({ResultType}) {LhsType} {Name} {RhsType}";
+        }
+
+        public object Execute(object left, object right)
+        {
+            return null;
+        }
+    }
+
     public class BuiltInUnaryOperator : IUnaryOperator
     {
         public HapetType SubExprType { get; private set; }
@@ -136,6 +179,42 @@ namespace HapetFrontend.Scoping
         public object Execute(object value)
         {
             return Execution?.Invoke(value);
+        }
+    }
+
+    public class UserDefinedUnaryOperator : IUnaryOperator
+    {
+        public HapetType SubExprType { get; private set; }
+        public HapetType ResultType { get; private set; }
+
+        public FunctionType Function { get; set; }
+
+        public bool CanExecute { get; set; }
+
+        public string Name { get; private set; }
+
+        public UserDefinedUnaryOperator(string name, HapetType resType, HapetType sub)
+        {
+            Name = name;
+            ResultType = resType;
+            SubExprType = sub;
+
+            CanExecute = false;
+        }
+
+        public int Accepts(HapetType sub)
+        {
+            return SubExprType.Match(sub);
+        }
+
+        public override string ToString()
+        {
+            return $"({ResultType}) {Name} {SubExprType}";
+        }
+
+        public object Execute(object value)
+        {
+            return null;
         }
     }
 }
