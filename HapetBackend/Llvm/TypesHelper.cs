@@ -1,6 +1,8 @@
 ﻿using HapetFrontend.Ast;
 using HapetFrontend.Ast.Declarations;
 using HapetFrontend.Ast.Expressions;
+using HapetFrontend.Entities;
+using HapetFrontend.Enums;
 using HapetFrontend.Errors;
 using HapetFrontend.Helpers;
 using HapetFrontend.Parsing;
@@ -330,6 +332,24 @@ namespace HapetBackend.Llvm
 
         private LLVMValueRef CreateCast(LLVMBuilderRef builder, LLVMValueRef val, HapetType inType, HapetType outType)
         {
+            // check user oveloads at first
+            /// almost the same as in <see cref="HapetPostPrepare.PostPrepare.PostPrepareExpressionWithType"/>
+            var castOps = _currentFunction.Scope.GetBinaryOperators("cast", outType, inType);
+            var allOps = castOps.Where(x => x is UserDefinedBinaryOperator userDef &&
+                                                 userDef.Function.Declaration is AstOverloadDecl overDecl &&
+                                                 (overDecl.OverloadType == OverloadType.ImplicitCast ||
+                                                 overDecl.OverloadType == OverloadType.ExplicitCast)).ToList();
+            // if there is a cast - do it 
+            if (allOps.Count == 1)
+            {
+                // TODO:
+            }
+            else if (allOps.Count > 1)
+            {
+                // TODO: get normal location somehow or make the error as out param of the func
+                _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, null, [HapetType.AsString(inType), HapetType.AsString(outType)], ErrorCode.Get(CTEN.AmbiguousCastOverloads));
+            }
+
             if (inType is PointerType)
             {
                 if (outType is IntPtrType)
