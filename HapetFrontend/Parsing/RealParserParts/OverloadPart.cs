@@ -35,6 +35,9 @@ namespace HapetFrontend.Parsing
                 else
                     overloadType = OverloadType.ExplicitCast;
 
+                // always 'cast' name to be able to store the operator in Scope 
+                op = "cast";
+
                 Consume(TokenType.KwOperator, ErrMsg("'operator'", "after implicit/explicit cast overloading"));
 
                 // getting cast result type

@@ -482,6 +482,12 @@ namespace HapetFrontend.Parsing
                         return ParseIdentifierExpression(iniNested: new AstNestedExpr(new AstIdExpr("base", CurrentToken.Location), null, CurrentToken.Location));
                     }
 
+                case TokenType.KwImplicit:
+                case TokenType.KwExplicit:
+                    {
+                        return ParseOperatorOverride(new UnknownDecl(null, null, PeekToken().Location));
+                    }
+
                 case TokenType.Identifier:
                     {
                         var id = ParseIdentifierExpression();

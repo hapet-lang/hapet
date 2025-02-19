@@ -30,6 +30,13 @@ namespace HapetFrontend.Parsing
                 _foundAttributes.Add(attrStmt);
                 return new AstEmptyDecl(new AstIdExpr("attr"));
             }
+            // because of implicit/explicit kws
+            else if (expr is AstOverloadDecl overDecl)
+            {
+                overDecl.Attributes.AddRange(_foundAttributes);
+                _foundAttributes.Clear();
+                return overDecl;
+            }
 
             ReportMessage(PeekToken().Location, [], ErrorCode.Get(CTEN.ExpectedEqualOrNewline));
             return new AstVarDecl(expr as AstIdExpr, null, null, docString, Location: expr);
