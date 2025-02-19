@@ -132,6 +132,15 @@ namespace HapetPostPrepare
                 // inferencing return type 
                 {
                     PostPrepareExprInference(funcDecl.Returns);
+
+                    if (funcDecl.Returns.OutType is ClassType)
+                    {
+                        // the return type is actually a pointer to the class
+                        var astPtr = new AstPointerExpr(funcDecl.Returns, false, funcDecl.Returns.Location);
+                        astPtr.OutType = PointerType.GetPointerType(astPtr.SubExpression.OutType);
+                        astPtr.Scope = funcDecl.Returns.Scope;
+                        funcDecl.Returns = astPtr;
+                    }
                 }
 
                 // if the containing class is empty - it is external func
