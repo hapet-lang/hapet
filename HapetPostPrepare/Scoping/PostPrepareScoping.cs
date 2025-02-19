@@ -255,13 +255,6 @@ namespace HapetPostPrepare
                 PostPrepareExprScoping(funcDecl.BaseCtorCall);
             }
 
-            // only for overloading funcs
-            if (funcDecl is AstOverloadDecl overDecl && overDecl.CastType != null)
-            {
-                SetScopeAndParent(overDecl.CastType, funcDecl);
-                PostPrepareExprScoping(overDecl.CastType);
-            }
-
             // TODO: refactor similar shite!
             if (funcDecl.Body != null)
             {

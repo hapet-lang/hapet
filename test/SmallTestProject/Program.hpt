@@ -10,13 +10,10 @@ public static class Program
 	public static int Main(string[] args)
 	{
 		var a = new TestCls();
-		a.A = 4;
-		var b = new TestCls();
-		b.A = 6;
+		a.A = 15;
+		TestCls2 b = a;
 
-		if (a && b)
-			return a + b;
-		return a * b;
+		return b.B;
 	}
 }
 
@@ -24,18 +21,15 @@ public class TestCls
 {
 	public int A { get; set; }
 
-	public static int operator +(TestCls a, TestCls b)
+	public static implicit operator TestCls2(TestCls a)
 	{
-		return a.A + b.A;
+		var bb = new TestCls2();
+		bb.B = a.A;
+		return bb;
 	}
+}
 
-	public static int operator *(TestCls a, TestCls b)
-	{
-		return a.A + b.A + 6;
-	}
-
-	public static bool operator &&(TestCls a, TestCls b)
-	{
-		return a.A == b.A;
-	}
+public class TestCls2
+{
+	public int B { get; set; }
 }
