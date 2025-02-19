@@ -39,7 +39,7 @@ namespace HapetFrontend.Parsing
                 var opToken = NextToken();
                 switch (opToken.Type)
                 {
-                    case TokenType.Equal: op = "+"; break;
+                    case TokenType.Plus: op = "+"; break;
                     case TokenType.Minus: op = "-"; break;
                     case TokenType.Asterisk: op = "*"; break;
                     case TokenType.ForwardSlash: op = "/"; break;
