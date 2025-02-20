@@ -1194,6 +1194,28 @@ namespace HapetPostPrepare
                     PostPrepareExprInference(thisArg, inInfo, ref outInfo);
                     nestExpr.LeftPart = thisArg;
                 }
+
+                // if getting indexer to set smth
+                if (outInfo.ItWasIndexer && inInfo.PropertySet)
+                {
+                    // just skip - it should be handled by AssignInferencer
+                    return;
+                }
+                else if (outInfo.ItWasIndexer)
+                {
+                    // reset
+                    outInfo.ItWasIndexer = false;
+
+                    // if getting indexer to get
+                    var fncName = new AstIdExpr("get_indexer__", nestExpr);
+                    fncName.Scope = nestExpr.Scope;
+                    var fncArg = new AstArgumentExpr(outInfo.IndexedIndex, null, nestExpr);
+                    var fncCall = new AstCallExpr(outInfo.IndexedObject, fncName, new List<AstArgumentExpr>() { fncArg }, nestExpr);
+                    SetScopeAndParent(fncCall, nestExpr.RightPart.NormalParent, nestExpr.RightPart.Scope);
+                    nestExpr.LeftPart = null;
+                    nestExpr.RightPart = fncCall;
+                    PostPrepareCallExprInference(fncCall, inInfo, ref outInfo);
+                }
             }
             else
             {
@@ -1416,6 +1438,9 @@ namespace HapetPostPrepare
                 if (smbl != null && smbl.Decl is AstFuncDecl funcDecl)
                 {
                     arrayAccExpr.OutType = funcDecl.Returns.OutType;
+                    outInfo.ItWasIndexer = true;
+                    outInfo.IndexedIndex = arrayAccExpr.ParameterExpr;
+                    outInfo.IndexedObject = arrayAccExpr.ObjectName as AstNestedExpr;
                     return; // everything is ok :)
                 }
             }
