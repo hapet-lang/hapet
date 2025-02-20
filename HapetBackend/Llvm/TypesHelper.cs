@@ -353,19 +353,29 @@ namespace HapetBackend.Llvm
                 _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, null, [HapetType.AsString(inType), HapetType.AsString(outType)], ErrorCode.Get(CTEN.AmbiguousCastOverloads));
             }
 
-            if (inType is PointerType)
+            if (inType is PointerType ptrT)
             {
                 if (outType is IntPtrType)
                 {
                     return builder.BuildPtrToInt(val, HapetTypeToLLVMType(outType));
                 }
-                else if (outType is ArrayType arrayType)
+                // like 'int[] a = null'
+                else if (ptrT.TargetType == null && outType is ArrayType arrayType)
                 {
                     var nullTarget = LLVMValueRef.CreateConstPointerNull(HapetTypeToLLVMType(arrayType.TargetType));
                     var v = _builder.BuildAlloca(HapetTypeToLLVMType(arrayType), $"nulled_array");
                     var buffer = _builder.BuildGEP2(HapetTypeToLLVMType(arrayType), v, new LLVMValueRef[] { LLVMValueRef.CreateConstInt(_context.Int32Type, 1) }, "arrBuffer");
                     _builder.BuildStore(nullTarget, buffer);
                     return _builder.BuildLoad2(HapetTypeToLLVMType(arrayType), v); // return loaded
+                }
+                // like 'string a = null'
+                else if (ptrT.TargetType == null && outType is StringType stringType)
+                {
+                    var nullTarget = LLVMValueRef.CreateConstPointerNull(HapetTypeToLLVMType(CharType.DefaultType));
+                    var v = _builder.BuildAlloca(HapetTypeToLLVMType(stringType), $"nulled_string");
+                    var buffer = _builder.BuildGEP2(HapetTypeToLLVMType(stringType), v, new LLVMValueRef[] { LLVMValueRef.CreateConstInt(_context.Int32Type, 1) }, "strBuffer");
+                    _builder.BuildStore(nullTarget, buffer);
+                    return _builder.BuildLoad2(HapetTypeToLLVMType(stringType), v); // return loaded
                 }
                 else if (outType is StructType structType)
                 {
