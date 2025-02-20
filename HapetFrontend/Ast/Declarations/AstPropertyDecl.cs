@@ -83,7 +83,7 @@ namespace HapetFrontend.Ast.Declarations
             // add indexer param if it is an indexer
             var prs = new List<AstParamDecl>() { new AstParamDecl(Type, new AstIdExpr("value")) };
             if (this is AstIndexerDecl indDecl)
-                prs.Insert(0, indDecl.IndexerParameter);
+                prs.Insert(0, indDecl.IndexerParameter.GetCopy());
 
             // the func is - 'void set_Prop(PropType value)'
             AstFuncDecl func = new AstFuncDecl(
@@ -122,7 +122,7 @@ namespace HapetFrontend.Ast.Declarations
             // add indexer param if it is an indexer
             var prs = new List<AstParamDecl>();
             if (this is AstIndexerDecl indDecl)
-                prs.Add(indDecl.IndexerParameter);
+                prs.Add(indDecl.IndexerParameter.GetCopy());
 
             // the func is - 'PropType get_Prop()'
             AstFuncDecl func = new AstFuncDecl(

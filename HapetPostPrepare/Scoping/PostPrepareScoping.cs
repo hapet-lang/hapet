@@ -94,6 +94,13 @@ namespace HapetPostPrepare
                         PostPrepareExprScoping(propDecl.SetBlock);
                     }
 
+                    // scoping indexer parameter
+                    if (propDecl is AstIndexerDecl indDecl)
+                    {
+                        SetScopeAndParent(indDecl.IndexerParameter, propDecl);
+                        PostPrepareExprScoping(indDecl.IndexerParameter);
+                    }
+
                     // if it is public field/property - it should be visible in the scope in which var's class is
                     classDecl.SubScope.DefineDeclSymbol(propDecl.Name.Name, propDecl);
 
@@ -158,6 +165,13 @@ namespace HapetPostPrepare
                     {
                         SetScopeAndParent(propDecl.SetBlock, propDecl);
                         PostPrepareExprScoping(propDecl.SetBlock);
+                    }
+
+                    // scoping indexer parameter
+                    if (propDecl is AstIndexerDecl indDecl)
+                    {
+                        SetScopeAndParent(indDecl.IndexerParameter, propDecl);
+                        PostPrepareExprScoping(indDecl.IndexerParameter);
                     }
 
                     // if it is public field/property - it should be visible in the scope in which var's class is

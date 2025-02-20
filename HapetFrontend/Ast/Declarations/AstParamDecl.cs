@@ -31,6 +31,18 @@ namespace HapetFrontend.Ast.Declarations
             return varDecl;
         }
 
+        public AstParamDecl GetCopy(string name = "")
+        {
+            AstIdExpr nm = Name;
+            if (!string.IsNullOrWhiteSpace(name))
+                nm = Name.GetCopy(name);
+
+            var np = new AstParamDecl(Type, nm, DefaultValue, Documentation, Location);
+            np.SpecialKeys.AddRange(SpecialKeys);
+            np.Attributes.AddRange(Attributes);
+            return np;
+        }
+
         internal ParamDeclJson GetJson()
         {
             var attributes = Attributes.Select(x => x.GetJson()).ToList();
