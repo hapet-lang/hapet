@@ -10,7 +10,7 @@ namespace HapetFrontend.Types
         public static VoidType Instance { get; } = new VoidType();
         public override string ToString() => "void";
 
-        public override string TypeName => "void";
+        public override string TypeName => ToString();
 
         private VoidType() : base(0, 0) { }
     }
@@ -20,7 +20,7 @@ namespace HapetFrontend.Types
         public static BoolType Instance { get; } = new BoolType();
         public override string ToString() => "bool";
 
-        public override string TypeName => "bool";
+        public override string TypeName => ToString();
 
         private BoolType() : base(1, 1) { }
     }
@@ -531,7 +531,7 @@ namespace HapetFrontend.Types
             }
         }
 
-        public override string TypeName => "uintptr";
+        public override string TypeName => ToString();
 
         private IntPtrType(int size, int align) : base(size, align, false) { }
         public override string ToString() => "uintptr";

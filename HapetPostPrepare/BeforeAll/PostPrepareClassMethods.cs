@@ -563,13 +563,13 @@ namespace HapetPostPrepare
             IEnumerable<AstPropertyDecl> allProps;
             if (declB is AstClassDecl classDecl)
             {
-                allVarDecls = classDecl.Declarations.Where(x => x is AstVarDecl).Select(x => x as AstVarDecl);
-                allProps = classDecl.Declarations.Where(x => x is AstPropertyDecl).Select(x => x as AstPropertyDecl);
+                allVarDecls = classDecl.Declarations.Where(x => x is AstVarDecl && x is not AstIndexerDecl).Select(x => x as AstVarDecl);
+                allProps = classDecl.Declarations.Where(x => x is AstPropertyDecl && x is not AstIndexerDecl).Select(x => x as AstPropertyDecl);
             }
             else if (declB is AstStructDecl structDecl)
             {
-                allVarDecls = structDecl.Declarations.Where(x => x is AstVarDecl).Select(x => x as AstVarDecl);
-                allProps = structDecl.Declarations.Where(x => x is AstPropertyDecl).Select(x => x as AstPropertyDecl);
+                allVarDecls = structDecl.Declarations.Where(x => x is AstVarDecl && x is not AstIndexerDecl).Select(x => x as AstVarDecl);
+                allProps = structDecl.Declarations.Where(x => x is AstPropertyDecl && x is not AstIndexerDecl).Select(x => x as AstPropertyDecl);
             }
             else
             {

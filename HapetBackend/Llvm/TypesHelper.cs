@@ -359,6 +359,14 @@ namespace HapetBackend.Llvm
                 {
                     return builder.BuildPtrToInt(val, HapetTypeToLLVMType(outType));
                 }
+                else if (outType is ArrayType arrayType)
+                {
+                    var nullTarget = LLVMValueRef.CreateConstPointerNull(HapetTypeToLLVMType(arrayType.TargetType));
+                    var v = _builder.BuildAlloca(HapetTypeToLLVMType(arrayType), $"nulled_array");
+                    var buffer = _builder.BuildGEP2(HapetTypeToLLVMType(arrayType), v, new LLVMValueRef[] { LLVMValueRef.CreateConstInt(_context.Int32Type, 1) }, "arrBuffer");
+                    _builder.BuildStore(nullTarget, buffer);
+                    return _builder.BuildLoad2(HapetTypeToLLVMType(arrayType), v); // return loaded
+                }
                 else if (outType is StructType structType)
                 {
                     // cast from object instance to struct
@@ -387,8 +395,8 @@ namespace HapetBackend.Llvm
                     var boxedTypeData = _boxedStructTypes[outType];
                     // getting struct from the alloced mem
                     var offseted = _builder.BuildGEP2(_context.Int8Type, val, new LLVMValueRef[] { LLVMValueRef.CreateConstInt(_context.Int32Type, boxedTypeData.Item2) }, "offsetedPtr");
-                    var castedOffseted = _builder.BuildBitCast(offseted, HapetTypeToLLVMType(PointerType.GetPointerType(structType)), "asddddd");
-                    var loadedData = _builder.BuildLoad2(HapetTypeToLLVMType(structType), castedOffseted, "asdasd");
+                    var castedOffseted = _builder.BuildBitCast(offseted, HapetTypeToLLVMType(PointerType.GetPointerType(structType)), "offseted");
+                    var loadedData = _builder.BuildLoad2(HapetTypeToLLVMType(structType), castedOffseted, "loaded");
                     _builder.BuildStore(loadedData, v);
                     _builder.BuildBr(bbEnd);
 

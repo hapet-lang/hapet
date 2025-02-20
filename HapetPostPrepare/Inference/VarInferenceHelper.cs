@@ -94,10 +94,23 @@ namespace HapetPostPrepare
                 return PostPrepareDelegateWithType(expr, delT);
             }
 
-            var tpName = new AstIdExpr(neededType.TypeName);
-            tpName.OutType = neededType;
-            tpName.Scope = expr.Scope;
 
+            AstExpression tpName;
+            if (neededType is ArrayType arrT)
+            {
+                var tpNameInside = new AstIdExpr(arrT.TargetType.ToString());
+                tpNameInside.OutType = arrT.TargetType;
+                tpNameInside.Scope = expr.Scope;
+                tpName = new AstArrayExpr(tpNameInside);
+                tpName.OutType = neededType;
+                tpName.Scope = expr.Scope;
+            }
+            else
+            {
+                tpName = new AstIdExpr(neededType.ToString());
+                tpName.OutType = neededType;
+                tpName.Scope = expr.Scope;
+            }
             var cst = new AstCastExpr(tpName, expr, expr);
             cst.OutType = neededType;
             cst.Scope = expr.Scope;
