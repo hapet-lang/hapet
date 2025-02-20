@@ -417,11 +417,14 @@ namespace HapetFrontend.Parsing
                                     return expr;
                                 }
 
+                                SkipNewlines();
+
                                 // TODO: doc 
-                                var indexer = new AstIndexerDecl(indexerDecl.Type, indexerDecl.Name.GetCopy("Indexer"), "", indexerDecl);
+                                var prop = PreparePropertyDecl(indexerDecl, "") as AstPropertyDecl;
+                                var indexer = new AstIndexerDecl(prop);
                                 indexer.IndexerParameter = new AstParamDecl(unknownDecl.Type, unknownDecl.Name, null, "", unknownDecl);
 
-                                return null;
+                                return indexer;
                             }
                             var arrAcc = new AstArrayAccessExpr(expr as AstExpression, firstExpr, new Location(expr.Beginning, end));
                             expr = new AstNestedExpr(arrAcc, null, arrAcc);

@@ -37,6 +37,13 @@ namespace HapetFrontend.Parsing
                 _foundAttributes.Clear();
                 return overDecl;
             }
+            // because of indexer overloading
+            else if (expr is AstIndexerDecl indexerDecl)
+            {
+                indexerDecl.Attributes.AddRange(_foundAttributes);
+                _foundAttributes.Clear();
+                return indexerDecl;
+            }
 
             ReportMessage(PeekToken().Location, [], ErrorCode.Get(CTEN.ExpectedEqualOrNewline));
             return new AstVarDecl(expr as AstIdExpr, null, null, docString, Location: expr);

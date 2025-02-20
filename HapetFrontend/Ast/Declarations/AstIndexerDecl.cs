@@ -13,5 +13,11 @@ namespace HapetFrontend.Ast.Declarations
             base(type, name, null, doc, Location)
         {
         }
+
+        public AstIndexerDecl(AstPropertyDecl prop) : base(prop.Type, prop.Name, prop.Initializer, prop.Documentation, prop.Location)
+        {
+            SpecialKeys.AddRange(prop.SpecialKeys);
+            Attributes.AddRange(prop.Attributes);
+        }
     }
 }
