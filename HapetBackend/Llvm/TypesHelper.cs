@@ -340,9 +340,12 @@ namespace HapetBackend.Llvm
                                                  (overDecl.OverloadType == OverloadType.ImplicitCast ||
                                                  overDecl.OverloadType == OverloadType.ExplicitCast)).ToList();
             // if there is a cast - do it 
-            if (allOps.Count == 1)
+            if (allOps.Count == 1 && allOps[0] is UserDefinedBinaryOperator castOp)
             {
-                // TODO:
+                var fncType = _typeMap[castOp.Function];
+                var fncValue = _valueMap[castOp.Function.Declaration.GetSymbol];
+
+                return _builder.BuildCall2(fncType, fncValue, new LLVMValueRef[] { val }, "castOp");
             }
             else if (allOps.Count > 1)
             {
