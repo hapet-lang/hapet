@@ -36,6 +36,8 @@ namespace HapetFrontend.Ast.Declarations
         /// </summary>
         public AstBlockExpr SetBlock { get; set; }
 
+        public override string AAAName => nameof(AstPropertyDecl);
+
         public AstPropertyDecl(AstExpression type, AstIdExpr name, AstExpression ini = null, string doc = "", ILocation Location = null) : base(type, name, ini, doc, Location)
         {
         }

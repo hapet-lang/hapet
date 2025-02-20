@@ -45,6 +45,8 @@ namespace HapetFrontend.Ast
             }
         }
 
+        public override string AAAName => nameof(AstDeclaration);
+
         public AstDeclaration(AstIdExpr name, string doc, ILocation Location = null) : base(Location)
         {
             this.Name = name;

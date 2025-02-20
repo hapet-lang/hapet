@@ -14,6 +14,8 @@ namespace HapetFrontend.Ast.Expressions
         /// </summary>
         public List<AstArgumentExpr> Arguments { get; set; }
 
+        public override string AAAName => nameof(AstNewExpr);
+
         public AstNewExpr(AstNestedExpr typeName, List<AstArgumentExpr> arguments = null, ILocation Location = null)
             : base(Location)
         {

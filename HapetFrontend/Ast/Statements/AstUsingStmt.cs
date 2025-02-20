@@ -20,6 +20,8 @@ namespace HapetFrontend.Ast.Statements
             }
         }
 
+        public override string AAAName => nameof(AstUsingStmt);
+
         public AstUsingStmt(AstNestedExpr ns, ILocation Location = null) : base(Location)
         {
             Namespace = ns;

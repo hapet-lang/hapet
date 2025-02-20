@@ -19,6 +19,8 @@ namespace HapetFrontend.Ast.Declarations
         /// </summary>
         public AstNestedExpr InheritedType { get; set; }
 
+        public override string AAAName => nameof(AstEnumDecl);
+
         public AstEnumDecl(AstIdExpr name, List<AstVarDecl> declarations, string doc = "", ILocation Location = null) : base(name, doc, Location)
         {
             Type = new AstIdExpr("enum", Location);

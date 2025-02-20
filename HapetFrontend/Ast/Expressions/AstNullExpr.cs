@@ -10,7 +10,8 @@ namespace HapetFrontend.Ast.Expressions
         /// </summary>
         public HapetType Target { get; set; }
 
-        [DebuggerStepThrough]
+        public override string AAAName => nameof(AstNullExpr);
+
         public AstNullExpr(HapetType target, ILocation Location = null) : base(Location)
         {
             Target = target;

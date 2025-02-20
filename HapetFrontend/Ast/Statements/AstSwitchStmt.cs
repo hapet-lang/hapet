@@ -14,6 +14,8 @@ namespace HapetFrontend.Ast.Statements
         /// </summary>
         public List<AstCaseStmt> Cases { get; set; }
 
+        public override string AAAName => nameof(AstSwitchStmt);
+
         public AstSwitchStmt(AstExpression sub, List<AstCaseStmt> cases, ILocation location = null) : base(location)
         {
             SubExpression = sub;

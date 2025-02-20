@@ -13,6 +13,8 @@ namespace HapetFrontend.Ast.Declarations
         [JsonIgnore]
         public FunctionType FunctionType => OutType as FunctionType;
 
+        public override string AAAName => nameof(AstLambdaDecl);
+
         public AstLambdaDecl(List<AstParamDecl> parameters, AstBlockExpr body, AstExpression retType, ILocation location = null)
             : base(location)
         {

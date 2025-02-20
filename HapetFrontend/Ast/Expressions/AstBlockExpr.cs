@@ -14,6 +14,8 @@ namespace HapetFrontend.Ast.Expressions
         /// </summary>
         public Scope SubScope { get; set; }
 
+        public override string AAAName => nameof(AstBlockExpr);
+
         public AstBlockExpr(List<AstStatement> statements, ILocation Location = null) : base(Location: Location)
         {
             Statements = statements;

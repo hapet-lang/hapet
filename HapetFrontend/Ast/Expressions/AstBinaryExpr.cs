@@ -11,7 +11,8 @@ namespace HapetFrontend.Ast.Expressions
 
         public IBinaryOperator ActualOperator { get; set; }
 
-        [DebuggerStepThrough]
+        public override string AAAName => nameof(AstBinaryExpr);
+
         public AstBinaryExpr(string op, AstStatement lhs, AstStatement rhs, ILocation Location = null) : base(Location)
         {
             Operator = op;

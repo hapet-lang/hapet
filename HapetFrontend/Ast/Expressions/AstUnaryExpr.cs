@@ -10,7 +10,8 @@ namespace HapetFrontend.Ast.Expressions
 
         public IUnaryOperator ActualOperator { get; set; } = null;
 
-        [DebuggerStepThrough]
+        public override string AAAName => nameof(AstUnaryExpr);
+
         public AstUnaryExpr(string op, AstStatement sub, ILocation Location = null) : base(Location)
         {
             Operator = op;

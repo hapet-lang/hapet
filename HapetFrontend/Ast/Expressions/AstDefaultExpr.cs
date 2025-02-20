@@ -5,7 +5,8 @@ namespace HapetFrontend.Ast.Expressions
 {
     public class AstDefaultExpr : AstExpression
     {
-        [DebuggerStepThrough]
+        public override string AAAName => nameof(AstDefaultExpr);
+
         public AstDefaultExpr(ILocation Location = null) : base(Location)
         {
         }

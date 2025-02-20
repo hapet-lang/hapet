@@ -11,6 +11,8 @@ namespace HapetFrontend.Ast.Expressions
         /// </summary>
         public AstExpression SubExpression { get; set; }
 
+        public override string AAAName => nameof(AstArrayExpr);
+
         public AstArrayExpr(AstExpression sub, ILocation Location = null) : base(Location)
         {
             SubExpression = sub;

@@ -27,6 +27,8 @@ namespace HapetFrontend.Ast.Statements
         /// </summary>
         public AstBlockExpr Body { get; set; }
 
+        public override string AAAName => nameof(AstForStmt);
+
         public AstForStmt(AstStatement first, AstExpression second, AstStatement third, AstBlockExpr body, ILocation location = null) : base(location)
         {
             FirstParam = first;

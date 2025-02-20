@@ -10,6 +10,8 @@ namespace HapetFrontend.Ast.Statements
         /// </summary>
         public AstNestedExpr NameExpression { get; set; }
 
+        public override string AAAName => nameof(AstNamespaceStmt);
+
         public AstNamespaceStmt(AstNestedExpr name, ILocation Location = null) : base(Location)
         {
             NameExpression = name;

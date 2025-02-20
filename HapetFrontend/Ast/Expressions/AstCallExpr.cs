@@ -22,6 +22,8 @@
         /// </summary>
         public List<AstArgumentExpr> Arguments { get; set; }
 
+        public override string AAAName => nameof(AstCallExpr);
+
         public AstCallExpr(AstNestedExpr typeOrObjectName, AstIdExpr funcName, List<AstArgumentExpr> arguments = null, ILocation Location = null)
             : base(Location)
         {

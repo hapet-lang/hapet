@@ -15,6 +15,8 @@
         /// </summary>
         public int Index { get; set; } = -1;
 
+        public override string AAAName => nameof(AstArgumentExpr);
+
         public AstArgumentExpr(AstExpression expr, AstIdExpr name = null, ILocation Location = null)
             : base(Location)
         {

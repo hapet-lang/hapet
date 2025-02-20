@@ -20,6 +20,8 @@ namespace HapetFrontend.Ast.Declarations
         [JsonIgnore]
         public AstDeclaration ContainingParent { get; set; }
 
+        public override string AAAName => nameof(AstVarDecl);
+
         public AstVarDecl(AstExpression type, AstIdExpr name, AstExpression ini = null, string doc = "", ILocation Location = null) : base(name, doc, Location)
         {
             Type = type;

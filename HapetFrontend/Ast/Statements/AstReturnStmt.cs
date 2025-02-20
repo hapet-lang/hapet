@@ -7,6 +7,8 @@
         /// </summary>
         public AstExpression ReturnExpression { get; set; }
 
+        public override string AAAName => nameof(AstReturnStmt);
+
         public AstReturnStmt(AstExpression expr, ILocation Location = null) : base(Location)
         {
             ReturnExpression = expr;

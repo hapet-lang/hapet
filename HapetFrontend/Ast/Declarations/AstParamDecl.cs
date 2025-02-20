@@ -19,6 +19,8 @@ namespace HapetFrontend.Ast.Declarations
         [JsonIgnore]
         public AstFuncDecl ContainingFunction { get; set; }
 
+        public override string AAAName => nameof(AstParamDecl);
+
         public AstParamDecl(AstExpression type, AstIdExpr name, AstExpression defaultValue = null, string doc = "", ILocation Location = null) : base(name, doc, Location)
         {
             Type = type;

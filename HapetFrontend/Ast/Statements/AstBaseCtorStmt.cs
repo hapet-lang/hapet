@@ -20,6 +20,8 @@ namespace HapetFrontend.Ast.Statements
         /// </summary>
         public AstIdExpr ThisArgument { get; set; }
 
+        public override string AAAName => nameof(AstBaseCtorStmt);
+
         public AstBaseCtorStmt(List<AstArgumentExpr> arguments = null, ILocation location = null)
             : base(location)
         {

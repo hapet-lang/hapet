@@ -13,6 +13,8 @@ namespace HapetFrontend.Ast.Declarations
         /// </summary>
         public string Operator { get; set; }
 
+        public override string AAAName => nameof(AstOverloadDecl);
+
         public AstOverloadDecl(List<AstParamDecl> parameters, AstExpression returns, AstBlockExpr body, AstIdExpr name, string doc = "", ILocation location = null) 
             : base(parameters, returns, body, name, doc, location)
         {

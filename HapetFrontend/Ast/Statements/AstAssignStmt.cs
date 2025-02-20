@@ -11,6 +11,8 @@ namespace HapetFrontend.Ast.Statements
         public AstNestedExpr Target { get; set; }
         public AstExpression Value { get; set; }
 
+        public override string AAAName => nameof(AstAssignStmt);
+
         public AstAssignStmt(AstNestedExpr target, AstExpression value, ILocation Location = null)
             : base(Location: Location)
         {

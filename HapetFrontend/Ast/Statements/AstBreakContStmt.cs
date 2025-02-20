@@ -7,6 +7,8 @@
         /// </summary>
         public bool IsBreak { get; set; }
 
+        public override string AAAName => nameof(AstBreakContStmt);
+
         public AstBreakContStmt(bool isBreak, ILocation Location = null) : base(Location)
         {
             IsBreak = isBreak;

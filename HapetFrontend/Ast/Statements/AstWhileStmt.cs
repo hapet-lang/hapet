@@ -16,6 +16,8 @@ namespace HapetFrontend.Ast.Statements
         /// </summary>
         public AstBlockExpr Body { get; set; }
 
+        public override string AAAName => nameof(AstWhileStmt);
+
         public AstWhileStmt(AstExpression condition, AstBlockExpr body, ILocation location = null) : base(location)
         {
             ConditionParam = condition;

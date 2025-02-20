@@ -15,6 +15,8 @@
         /// </summary>
         public bool IsDereference { get; set; } = false;
 
+        public override string AAAName => nameof(AstPointerExpr);
+
         public AstPointerExpr(AstExpression sub, bool isDeref = false, ILocation Location = null)
             : base(Location)
         {

@@ -33,6 +33,8 @@ namespace HapetFrontend.Ast.Expressions
         /// </summary>
         public string Suffix { get; set; }
 
+        public override string AAAName => nameof(AstIdExpr);
+
         public AstIdExpr(string name, ILocation Location = null) : base(Location)
         {
             this.Name = name;

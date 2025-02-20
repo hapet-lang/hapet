@@ -18,7 +18,8 @@ namespace HapetFrontend.Ast.Expressions
         /// </summary>
         public List<AstExpression> Elements { get; set; }
 
-        [DebuggerStepThrough]
+        public override string AAAName => nameof(AstArrayCreateExpr);
+
         public AstArrayCreateExpr(AstExpression type, List<AstExpression> sizeExprs, List<AstExpression> elements, ILocation Location = null) : base(Location)
         {
             TypeName = type;

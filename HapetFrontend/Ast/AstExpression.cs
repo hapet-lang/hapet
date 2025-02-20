@@ -29,6 +29,8 @@ namespace HapetFrontend.Ast
         /// </summary>
         public bool IsCompileTimeValue { get; protected set; } = false;
 
+        public override string AAAName => nameof(AstExpression);
+
         public AstExpression(ILocation Location = null) : base(Location)
         {
         }

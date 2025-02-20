@@ -8,7 +8,8 @@ namespace HapetFrontend.Ast.Expressions
         public NumberData Data { get; private set; }
         public string Suffix { get; set; }
 
-        [DebuggerStepThrough]
+        public override string AAAName => nameof(AstNumberExpr);
+
         public AstNumberExpr(NumberData data, string suffix = null, HapetType numberType = null, ILocation Location = null) : base(Location)
         {
             Data = data;

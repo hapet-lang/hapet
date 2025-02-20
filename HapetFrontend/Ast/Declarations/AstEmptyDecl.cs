@@ -9,6 +9,8 @@ namespace HapetFrontend.Ast.Declarations
     /// </summary>
     public class AstEmptyDecl : AstDeclaration
     {
+        public override string AAAName => nameof(AstEmptyDecl);
+
         public AstEmptyDecl(AstIdExpr name, string doc = "", ILocation Location = null) : base(name, doc, Location)
         {
         }

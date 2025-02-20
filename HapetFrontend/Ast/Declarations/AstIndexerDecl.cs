@@ -9,6 +9,8 @@ namespace HapetFrontend.Ast.Declarations
         /// </summary>
         public AstParamDecl IndexerParameter { get; set; }
 
+        public override string AAAName => nameof(AstIndexerDecl);
+
         public AstIndexerDecl(AstExpression type, AstIdExpr name, string doc = "", ILocation Location = null) : 
             base(type, name, null, doc, Location)
         {

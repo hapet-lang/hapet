@@ -41,6 +41,12 @@ namespace HapetFrontend.Ast
         [JsonIgnore]
         public AstStatement NormalParent => Parent as AstStatement;
 
+        /// <summary>
+        /// This propa is only used when debugging to see which ast i see
+        /// </summary>
+        [JsonIgnore]
+        public virtual string AAAName => nameof(AstStatement);
+
         public AstStatement(ILocation Location = null)
         {
             this.Location = Location;

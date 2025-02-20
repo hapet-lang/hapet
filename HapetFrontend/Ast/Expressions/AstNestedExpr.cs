@@ -19,6 +19,8 @@ namespace HapetFrontend.Ast.Expressions
         /// </summary>
         public AstExpression RightPart { get; set; }
 
+        public override string AAAName => nameof(AstNestedExpr);
+
         public AstNestedExpr(AstExpression rightPart, AstNestedExpr leftPart, ILocation Location = null) : base(Location)
         {
             this.RightPart = rightPart;

@@ -8,6 +8,8 @@ namespace HapetFrontend.Ast.Declarations
     /// </summary>
     public class UnknownDecl : AstDeclaration
     {
+        public override string AAAName => nameof(UnknownDecl);
+
         public UnknownDecl(AstNestedExpr type, AstIdExpr name, ILocation Location = null) : base(name, "", Location)
         {
             Type = type;

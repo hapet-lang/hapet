@@ -38,6 +38,8 @@ namespace HapetFrontend.Ast.Declarations
         /// </summary>
         public List<AstFuncDecl> AllVirtualMethods { get; set; }
 
+        public override string AAAName => nameof(AstClassDecl);
+
         public AstClassDecl(AstIdExpr name, List<AstDeclaration> declarations, string doc = "", ILocation Location = null) : base(name, doc, Location)
         {
             Type = new AstIdExpr("class", Location);

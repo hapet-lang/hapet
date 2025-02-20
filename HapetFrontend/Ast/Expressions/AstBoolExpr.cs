@@ -7,7 +7,8 @@ namespace HapetFrontend.Ast.Expressions
     {
         public bool BoolValue => (bool)OutValue;
 
-        [DebuggerStepThrough]
+        public override string AAAName => nameof(AstBoolExpr);
+
         public AstBoolExpr(bool value, ILocation Location = null) : base(Location)
         {
             this.OutType = BoolType.Instance;

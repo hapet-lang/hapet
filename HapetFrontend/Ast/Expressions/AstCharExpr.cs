@@ -8,7 +8,8 @@ namespace HapetFrontend.Ast.Expressions
         public char CharValue => (char)OutValue;
         public string RawValue { get; set; }
 
-        [DebuggerStepThrough]
+        public override string AAAName => nameof(AstCharExpr);
+
         public AstCharExpr(string rawValue, ILocation Location = null) : base(Location)
         {
             this.RawValue = rawValue;

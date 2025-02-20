@@ -8,6 +8,8 @@ namespace HapetFrontend.Ast.Declarations
     /// </summary>
     public class AstBuiltInTypeDecl : AstDeclaration
     {
+        public override string AAAName => nameof(AstBuiltInTypeDecl);
+
         public AstBuiltInTypeDecl(HapetType tp, string doc = "", ILocation Location = null) : base(null, doc, Location)
         {
             Type = new AstIdExpr(tp.TypeName, Location);

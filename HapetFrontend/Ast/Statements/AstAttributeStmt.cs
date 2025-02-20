@@ -20,6 +20,8 @@ namespace HapetFrontend.Ast.Statements
         /// </summary>
         public List<AstExpression> Parameters { get; set; }
 
+        public override string AAAName => nameof(AstAttributeStmt);
+
         public AstAttributeStmt(AstNestedExpr attrName, List<AstExpression> parameters, ILocation Location = null) : base(Location)
         {
             AttributeName = attrName;

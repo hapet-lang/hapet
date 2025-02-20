@@ -8,6 +8,8 @@ namespace HapetFrontend.Ast.Expressions
         public List<AstExpression> Values { get; set; }
         public List<AstParamDecl> Types { get; set; }
 
+        public override string AAAName => nameof(AstTupleExpr);
+
         public AstTupleExpr(List<AstParamDecl> values, ILocation Location)
             : base(Location)
         {
