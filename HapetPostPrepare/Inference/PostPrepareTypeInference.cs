@@ -402,7 +402,23 @@ namespace HapetPostPrepare
 
                         AstIdExpr propaName = (asgn.Target.RightPart as AstIdExpr);
                         // creating a call 
-                        var fncCall = new AstCallExpr(asgn.Target.LeftPart, propaName.GetCopy($"set_{propaName.Name}"), new List<AstArgumentExpr>() { new AstArgumentExpr(asgn.Value) }, asgn);
+                        var fncVal = new AstArgumentExpr(asgn.Value, null, asgn.Target);
+                        var fncCall = new AstCallExpr(asgn.Target.LeftPart, propaName.GetCopy($"set_{propaName.Name}"), new List<AstArgumentExpr>() { fncVal }, asgn);
+                        SetScopeAndParent(fncCall, asgn.Target.NormalParent, asgn.Target.Scope);
+                        PostPrepareCallExprInference(fncCall, inInfo, ref outInfo);
+                        repls.Add(asgn, fncCall);
+                    }
+                    else if (outInfo.ItWasIndexer)
+                    {
+                        // reset
+                        outInfo.ItWasIndexer = false;
+
+                        // if getting indexer to get
+                        var fncName = new AstIdExpr("set_indexer__", asgn.Target);
+                        fncName.Scope = asgn.Target.Scope;
+                        var fncArg = new AstArgumentExpr(outInfo.IndexedIndex, null, asgn.Target);
+                        var fncVal = new AstArgumentExpr(asgn.Value, null, asgn.Target);
+                        var fncCall = new AstCallExpr(outInfo.IndexedObject, fncName, new List<AstArgumentExpr>() { fncArg, fncVal }, asgn);
                         SetScopeAndParent(fncCall, asgn.Target.NormalParent, asgn.Target.Scope);
                         PostPrepareCallExprInference(fncCall, inInfo, ref outInfo);
                         repls.Add(asgn, fncCall);

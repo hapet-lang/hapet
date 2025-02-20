@@ -12,6 +12,7 @@ public static class Program
 		var a = new TestCls();
 		a.A = new int[] { 1, 2, 3 };
 
+		a[1] = 555;
 		return a[1];
 	}
 }
