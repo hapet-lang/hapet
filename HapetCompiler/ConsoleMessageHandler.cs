@@ -136,7 +136,7 @@ namespace HapetCompiler
             }
         }
 
-        private void PrintLocation(string text, ILocation location, bool underline = true, int linesBefore = 2, int linesAfter = 0, ConsoleColor highlightColor = ConsoleColor.Red, ConsoleColor textColor = ConsoleColor.DarkGreen)
+        private static void PrintLocation(string text, ILocation location, bool underline = true, int linesBefore = 2, int linesAfter = 0, ConsoleColor highlightColor = ConsoleColor.Red, ConsoleColor textColor = ConsoleColor.DarkGreen)
         {
             TokenLocation beginning = location.Beginning;
             TokenLocation end = location.Ending;

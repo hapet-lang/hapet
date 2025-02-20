@@ -9,6 +9,7 @@ using HapetFrontend.Helpers;
 using HapetFrontend.Parsing;
 using HapetFrontend.Scoping;
 using HapetFrontend.Types;
+using HapetPostPrepare.Entities;
 using Newtonsoft.Json;
 using System;
 
@@ -152,6 +153,10 @@ namespace HapetPostPrepare
 
         private void PostPrepareMetadataInheritance()
         {
+            // just handlers
+            InInfo inInfo = InInfo.Default;
+            OutInfo outInfo = OutInfo.Default;
+
             // resolve inheritance shite of classes
             foreach (var cls in AllClassesMetadata)
             {
@@ -159,7 +164,7 @@ namespace HapetPostPrepare
                 _currentClass = cls;
                 foreach (var inh in cls.InheritedFrom)
                 {
-                    PostPrepareExprInference(inh);
+                    PostPrepareExprInference(inh, inInfo, ref outInfo);
 
                     if (inh.OutType is not ClassType)
                     {
@@ -187,7 +192,7 @@ namespace HapetPostPrepare
                     cls.InheritedFrom.Insert(0, nst);
                     SetScopeAndParent(nst, cls);
                     PostPrepareExprScoping(nst);
-                    PostPrepareExprInference(nst);
+                    PostPrepareExprInference(nst, inInfo, ref outInfo);
                 }
             }
             // resolve inheritance shite of structs
@@ -196,7 +201,7 @@ namespace HapetPostPrepare
                 _currentSourceFile = str.SourceFile;
                 foreach (var inh in str.InheritedFrom)
                 {
-                    PostPrepareExprInference(inh);
+                    PostPrepareExprInference(inh, inInfo, ref outInfo);
 
                     if (inh.OutType is not ClassType || 
                         (!(inh.OutType as ClassType).Declaration.IsInterface && 
@@ -225,7 +230,7 @@ namespace HapetPostPrepare
                     str.InheritedFrom.Insert(0, nst);
                     SetScopeAndParent(nst, str);
                     PostPrepareExprScoping(nst);
-                    PostPrepareExprInference(nst);
+                    PostPrepareExprInference(nst, inInfo, ref outInfo);
                 }
             }
             // resolve inheritance shite of enums
@@ -234,7 +239,7 @@ namespace HapetPostPrepare
                 _currentSourceFile = enm.SourceFile;
                 if (enm.InheritedType == null)
                     continue;
-                PostPrepareExprInference(enm.InheritedType);
+                PostPrepareExprInference(enm.InheritedType, inInfo, ref outInfo);
                 // only int type inheritance allowed for enums
                 if (enm.InheritedType.OutType is not IntType)
                 {
@@ -248,9 +253,13 @@ namespace HapetPostPrepare
         /// </summary>
         private void PostPrepareMetadataTypeFieldDecls()
         {
+            // just handlers
+            InInfo inInfo = InInfo.Default;
+            OutInfo outInfo = OutInfo.Default;
+
             void InternalVarPP(AstVarDecl decl)
             {
-                PostPrepareExprInference(decl.Type);
+                PostPrepareExprInference(decl.Type, inInfo, ref outInfo);
 
                 if (decl.Type.OutType is ClassType)
                 {
@@ -258,7 +267,7 @@ namespace HapetPostPrepare
                     var astPtr = new AstPointerExpr(decl.Type, false, decl.Type.Location);
                     astPtr.Scope = decl.Type.Scope;
                     decl.Type = astPtr;
-                    PostPrepareExprInference(decl.Type);
+                    PostPrepareExprInference(decl.Type, inInfo, ref outInfo);
                 }
             }
 
@@ -748,6 +757,10 @@ namespace HapetPostPrepare
 
         private void PostPrepareMetadataTypeFieldInits()
         {
+            // just handlers
+            InInfo inInfo = InInfo.Default;
+            OutInfo outInfo = OutInfo.Default;
+
             // resolve all fields of classes
             foreach (var cls in AllClassesMetadata)
             {
@@ -757,7 +770,9 @@ namespace HapetPostPrepare
                 foreach (var decl in cls.Declarations.Where(x => x is AstVarDecl).Select(x => x as AstVarDecl))
                 {
                     // field or property
-                    PostPrepareVarInference(decl, true);
+                    inInfo.AllowSpecialKeys = true;
+                    PostPrepareVarInference(decl, inInfo, ref outInfo);
+                    inInfo.AllowSpecialKeys = false;
                 }
             }
             // resolve all fields of structs
@@ -768,7 +783,7 @@ namespace HapetPostPrepare
                 foreach (var decl in str.Declarations.Where(x => x is AstVarDecl).Select(x => x as AstVarDecl))
                 {
                     // field 
-                    PostPrepareVarInference(decl);
+                    PostPrepareVarInference(decl, inInfo, ref outInfo);
                 }
             }
             foreach (var enm in AllEnumsMetadata)
@@ -782,7 +797,7 @@ namespace HapetPostPrepare
                 foreach (var decl in enm.Declarations)
                 {
                     // field 
-                    PostPrepareVarInference(decl);
+                    PostPrepareVarInference(decl, inInfo, ref outInfo);
                     // this shite is to generate values for enum fields
                     if (decl.Initializer == null)
                     {
@@ -822,16 +837,24 @@ namespace HapetPostPrepare
 
         private void PostPrepareMetadataDelegates()
         {
+            // just handlers
+            InInfo inInfo = InInfo.Default;
+            OutInfo outInfo = OutInfo.Default;
+
             // inferrencing delegates
             foreach (var del in AllDelegatesMetadata)
             {
                 _currentSourceFile = del.SourceFile;
-                PostPrepareDelegateInference(del);
+                PostPrepareDelegateInference(del, inInfo, ref outInfo);
             }
         }
 
         private void PostPrepareMetadataFunctions()
         {
+            // just handlers
+            InInfo inInfo = InInfo.Default;
+            OutInfo outInfo = OutInfo.Default;
+
             // inferrencing funcs
             // WARN! _serializeClassesMetadata is used because we don't want external funcs to be inferred like that
             foreach (var cls in _serializeClassesMetadata)
@@ -840,7 +863,9 @@ namespace HapetPostPrepare
                 _currentClass = cls;
                 foreach (var decl in cls.Declarations.Where(x => x is AstFuncDecl).Select(x => x as AstFuncDecl))
                 {
-                    PostPrepareFunctionInference(decl, true);
+                    inInfo.ForMetadata = true;
+                    PostPrepareFunctionInference(decl, inInfo, ref outInfo);
+                    inInfo.ForMetadata = false;
                     AllFunctionsMetadata.Add(decl);
                     _serializeFunctionsMetadata.Add(decl);
                 }
@@ -850,7 +875,9 @@ namespace HapetPostPrepare
                 _currentSourceFile = str.SourceFile;
                 foreach (var decl in str.Declarations.Where(x => x is AstFuncDecl).Select(x => x as AstFuncDecl))
                 {
-                    PostPrepareFunctionInference(decl, true);
+                    inInfo.ForMetadata = true;
+                    PostPrepareFunctionInference(decl, inInfo, ref outInfo);
+                    inInfo.ForMetadata = false;
                     AllFunctionsMetadata.Add(decl);
                     _serializeFunctionsMetadata.Add(decl);
                 }
@@ -1074,6 +1101,10 @@ namespace HapetPostPrepare
 
         private void PostPrepareMetadataAttributes()
         {
+            // just handlers
+            InInfo inInfo = InInfo.Default;
+            OutInfo outInfo = OutInfo.Default;
+
             // inferrencing attribtues of functions
             foreach (var fnc in AllFunctionsMetadata)
             {
@@ -1081,7 +1112,7 @@ namespace HapetPostPrepare
                 // inferencing attrs
                 foreach (var a in fnc.Attributes)
                 {
-                    PostPrepareExprInference(a);
+                    PostPrepareExprInference(a, inInfo, ref outInfo);
                 }
                 // inferencing params attrs
                 foreach (var p in fnc.Parameters)
@@ -1089,7 +1120,7 @@ namespace HapetPostPrepare
                     // inferencing attrs
                     foreach (var a in p.Attributes)
                     {
-                        PostPrepareExprInference(a);
+                        PostPrepareExprInference(a, inInfo, ref outInfo);
                     }
                 }
             }
@@ -1104,13 +1135,13 @@ namespace HapetPostPrepare
                     // inferencing attrs
                     foreach (var a in decl.Attributes)
                     {
-                        PostPrepareExprInference(a);
+                        PostPrepareExprInference(a, inInfo, ref outInfo);
                     }
                 }
                 // inferencing attrs
                 foreach (var a in cls.Attributes)
                 {
-                    PostPrepareExprInference(a);
+                    PostPrepareExprInference(a, inInfo, ref outInfo);
                 }
             }
             // inferrencing attribtues of structs
@@ -1120,7 +1151,7 @@ namespace HapetPostPrepare
                 // inferencing attrs
                 foreach (var a in str.Attributes)
                 {
-                    PostPrepareExprInference(a);
+                    PostPrepareExprInference(a, inInfo, ref outInfo);
                 }
             }
             // inferrencing attribtues of enums
@@ -1130,7 +1161,7 @@ namespace HapetPostPrepare
                 // inferencing attrs
                 foreach (var a in enm.Attributes)
                 {
-                    PostPrepareExprInference(a);
+                    PostPrepareExprInference(a, inInfo, ref outInfo);
                 }
             }
             // inferrencing attribtues of delegates
@@ -1140,7 +1171,7 @@ namespace HapetPostPrepare
                 // inferencing attrs
                 foreach (var a in del.Attributes)
                 {
-                    PostPrepareExprInference(a);
+                    PostPrepareExprInference(a, inInfo, ref outInfo);
                 }
                 // inferencing params attrs
                 foreach (var p in del.Parameters)
@@ -1148,7 +1179,7 @@ namespace HapetPostPrepare
                     // inferencing attrs
                     foreach (var a in p.Attributes)
                     {
-                        PostPrepareExprInference(a);
+                        PostPrepareExprInference(a, inInfo, ref outInfo);
                     }
                 }
             }

@@ -3,6 +3,7 @@ using HapetFrontend.Ast.Declarations;
 using HapetFrontend.Entities;
 using HapetFrontend.Parsing;
 using HapetFrontend.Scoping;
+using HapetPostPrepare.Entities;
 
 namespace HapetPostPrepare
 {
@@ -101,6 +102,10 @@ namespace HapetPostPrepare
 
         private void PostPrepareExternalMetadataInternal()
         {
+            // just handlers
+            InInfo inInfo = InInfo.Default;
+            OutInfo outInfo = OutInfo.Default;
+
             /// like <see cref="PostPrepareMetadataTypes"/>
             foreach (var classDecl in _classes)
             {
@@ -136,7 +141,9 @@ namespace HapetPostPrepare
                 {
                     // set that the function is imported from another assembly
                     decl.SpecialKeys.Add(TokenType.KwImported);
-                    PostPrepareFunctionInference(decl, true);
+                    inInfo.ForMetadata = true;
+                    PostPrepareFunctionInference(decl, inInfo, ref outInfo);
+                    inInfo.ForMetadata = false;
                     AllFunctionsMetadata.Add(decl);
                 }
             }

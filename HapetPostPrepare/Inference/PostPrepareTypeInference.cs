@@ -9,6 +9,7 @@ using HapetFrontend.Helpers;
 using HapetFrontend.Parsing;
 using HapetFrontend.Scoping;
 using HapetFrontend.Types;
+using HapetPostPrepare.Entities;
 using System;
 using System.Xml.Linq;
 
@@ -18,29 +19,33 @@ namespace HapetPostPrepare
     {
         private void PostPrepareTypeInference()
         {
+            // just handlers
+            InInfo inInfo = InInfo.Default;
+            OutInfo outInfo = OutInfo.Default;
+
             foreach (var classDecl in AllClassesMetadata)
             {
                 _currentSourceFile = classDecl.SourceFile;
-                PostPrepareClassInference(classDecl);
+                PostPrepareClassInference(classDecl, inInfo, ref outInfo);
             }
             foreach (var structDecl in AllStructsMetadata)
             {
                 _currentSourceFile = structDecl.SourceFile;
-                PostPrepareStructInference(structDecl);
+                PostPrepareStructInference(structDecl, inInfo, ref outInfo);
             }
             foreach (var enumDecl in AllEnumsMetadata)
             {
                 _currentSourceFile = enumDecl.SourceFile;
-                PostPrepareEnumInference(enumDecl);
+                PostPrepareEnumInference(enumDecl, inInfo, ref outInfo);
             }
             foreach (var delegateDecl in AllDelegatesMetadata)
             {
                 _currentSourceFile = delegateDecl.SourceFile;
-                PostPrepareDelegateInference(delegateDecl);
+                PostPrepareDelegateInference(delegateDecl, inInfo, ref outInfo);
             }
         }
 
-        private void PostPrepareClassInference(AstClassDecl classDecl)
+        private void PostPrepareClassInference(AstClassDecl classDecl, InInfo inInfo, ref OutInfo outInfo)
         {
             _currentClass = classDecl;
 
@@ -49,7 +54,7 @@ namespace HapetPostPrepare
             /// fields should be already inferred in <see cref="PostPrepareMetadataTypes"/> and <see cref="PostPrepareMetadataTypeFields"/>
             foreach (var decl in classDecl.Declarations.Where(x => x is AstFuncDecl).Select(x => x as AstFuncDecl))
             {
-                PostPrepareFunctionInference(decl);
+                PostPrepareFunctionInference(decl, inInfo, ref outInfo);
             }
 
             /// some shite is already inferrenced in <see cref="PostPrepareMetadataTypeFields"/>
@@ -57,23 +62,23 @@ namespace HapetPostPrepare
             {
                 if (decl.GetBlock != null)
                 {
-                    PostPrepareExprInference(decl.GetBlock);
+                    PostPrepareExprInference(decl.GetBlock, inInfo, ref outInfo);
                 }
                 if (decl.SetBlock != null)
                 {
-                    PostPrepareExprInference(decl.SetBlock);
+                    PostPrepareExprInference(decl.SetBlock, inInfo, ref outInfo);
                 }
             }
         }
 
-        private void PostPrepareStructInference(AstStructDecl structDecl)
+        private void PostPrepareStructInference(AstStructDecl structDecl, InInfo inInfo, ref OutInfo outInfo)
         {
             /// WARN: should be already inferred in <see cref="PostPrepareMetadataTypes"/> and <see cref="PostPrepareMetadataTypeFields"/>
             /// WARN: attributes are inferrenced in <see cref="PostPrepareMetadataAttributes"/>
             /// 
             foreach (var decl in structDecl.Declarations.Where(x => x is AstFuncDecl).Select(x => x as AstFuncDecl))
             {
-                PostPrepareFunctionInference(decl);
+                PostPrepareFunctionInference(decl, inInfo, ref outInfo);
             }
 
             /// some shite is already inferrenced in <see cref="PostPrepareMetadataTypeFields"/>
@@ -81,22 +86,22 @@ namespace HapetPostPrepare
             {
                 if (decl.GetBlock != null)
                 {
-                    PostPrepareExprInference(decl.GetBlock);
+                    PostPrepareExprInference(decl.GetBlock, inInfo, ref outInfo);
                 }
                 if (decl.SetBlock != null)
                 {
-                    PostPrepareExprInference(decl.SetBlock);
+                    PostPrepareExprInference(decl.SetBlock, inInfo, ref outInfo);
                 }
             }
         }
 
-        private void PostPrepareEnumInference(AstEnumDecl enumDecl)
+        private void PostPrepareEnumInference(AstEnumDecl enumDecl, InInfo inInfo, ref OutInfo outInfo)
         {
             /// WARN: should be already inferred in <see cref="PostPrepareMetadataTypes"/> and <see cref="PostPrepareMetadataTypeFields"/>
             /// WARN: attributes are inferrenced in <see cref="PostPrepareMetadataAttributes"/>
         }
 
-        private void PostPrepareDelegateInference(AstDelegateDecl delegateDecl)
+        private void PostPrepareDelegateInference(AstDelegateDecl delegateDecl, InInfo inInfo, ref OutInfo outInfo)
         {
             /// WARN: should be already inferred in <see cref="PostPrepareMetadataTypes"/> and <see cref="PostPrepareMetadataTypeFields"/>
             /// WARN: attributes are inferrenced in <see cref="PostPrepareMetadataAttributes"/>
@@ -104,16 +109,16 @@ namespace HapetPostPrepare
             // inferencing parameters 
             foreach (var p in delegateDecl.Parameters)
             {
-                PostPrepareParamInference(p);
+                PostPrepareParamInference(p, inInfo, ref outInfo);
             }
 
             // inferencing return type 
             {
-                PostPrepareExprInference(delegateDecl.Returns);
+                PostPrepareExprInference(delegateDecl.Returns, inInfo, ref outInfo);
             }
         }
 
-        private void PostPrepareFunctionInference(AstFuncDecl funcDecl, bool forMetadata = false)
+        private void PostPrepareFunctionInference(AstFuncDecl funcDecl, InInfo inInfo, ref OutInfo outInfo)
         {
             /// WARN: attributes are inferrenced in <see cref="PostPrepareMetadataAttributes"/>
 
@@ -121,17 +126,17 @@ namespace HapetPostPrepare
 
             // if the function inference is for metadata - infer everything except body
             // if not - infer only body because func decl already infered from metadata :)
-            if (forMetadata)
+            if (inInfo.ForMetadata)
             {
                 // inferencing parameters 
                 foreach (var p in funcDecl.Parameters)
                 {
-                    PostPrepareParamInference(p);
+                    PostPrepareParamInference(p, inInfo, ref outInfo);
                 }
 
                 // inferencing return type 
                 {
-                    PostPrepareExprInference(funcDecl.Returns);
+                    PostPrepareExprInference(funcDecl.Returns, inInfo, ref outInfo);
 
                     if (funcDecl.Returns.OutType is ClassType)
                     {
@@ -184,7 +189,7 @@ namespace HapetPostPrepare
             {
                 // inferring body
                 if (funcDecl.Body != null)
-                    PostPrepareBlockInference(funcDecl.Body);
+                    PostPrepareBlockInference(funcDecl.Body, inInfo, ref outInfo);
 
                 // check if the class if inherited from smth
                 if (funcDecl.ClassFunctionType == HapetFrontend.Enums.ClassFunctionType.Ctor &&
@@ -194,13 +199,13 @@ namespace HapetPostPrepare
                     clsDecl.InheritedFrom[0].OutType is ClassType baseType &&
                     !baseType.Declaration.IsInterface)
                 {
-                    PostPrepareExprInference(funcDecl.BaseCtorCall);
+                    PostPrepareExprInference(funcDecl.BaseCtorCall, inInfo, ref outInfo);
 
                     // preparing shite for easier code gen
                     funcDecl.BaseCtorCall.BaseType = baseType;
                     var thisArg = new AstIdExpr("this", funcDecl.BaseCtorCall);
                     SetScopeAndParent(thisArg, funcDecl.Body, funcDecl.Body.SubScope);
-                    PostPrepareExprInference(thisArg);
+                    PostPrepareExprInference(thisArg, inInfo, ref outInfo);
                     funcDecl.BaseCtorCall.ThisArgument = thisArg;
 
                     // we need to insert it into block so it would be generated normally
@@ -210,12 +215,12 @@ namespace HapetPostPrepare
             }
         }
 
-        private void PostPrepareVarInference(AstVarDecl varDecl, bool allowSpecialKeys = false)
+        private void PostPrepareVarInference(AstVarDecl varDecl, InInfo inInfo, ref OutInfo outInfo)
         {
-            PostPrepareExprInference(varDecl.Type);
+            PostPrepareExprInference(varDecl.Type, inInfo, ref outInfo);
 
             if (varDecl.Initializer != null)
-                PostPrepareExprInference(varDecl.Initializer);
+                PostPrepareExprInference(varDecl.Initializer, inInfo, ref outInfo);
 
             // change variable type to a normal one
             if (varDecl.Type.OutType is VarType)
@@ -239,10 +244,10 @@ namespace HapetPostPrepare
 
             // pp assign value
             if (varDecl.Initializer != null)
-                varDecl.Initializer = PostPrepareVarValueAssign(varDecl.Initializer, varDecl.Type.OutType);
+                varDecl.Initializer = PostPrepareVarValueAssign(varDecl.Initializer, varDecl.Type.OutType, inInfo, ref outInfo);
 
             // special keys could not be allowed when the var is declared in BlockExpr
-            if (!allowSpecialKeys)
+            if (!inInfo.AllowSpecialKeys)
             {
                 foreach (var kk in varDecl.SpecialKeys)
                 {
@@ -257,9 +262,9 @@ namespace HapetPostPrepare
             }
         }
 
-        private void PostPrepareParamInference(AstParamDecl paramDecl)
+        private void PostPrepareParamInference(AstParamDecl paramDecl, InInfo inInfo, ref OutInfo outInfo)
         {
-            PostPrepareExprInference(paramDecl.Type);
+            PostPrepareExprInference(paramDecl.Type, inInfo, ref outInfo);
 
             if (paramDecl.Type.OutType is ClassType)
             {
@@ -267,14 +272,14 @@ namespace HapetPostPrepare
                 var astPtr = new AstPointerExpr(paramDecl.Type, false, paramDecl.Type.Location);
                 astPtr.Scope = paramDecl.Type.Scope;
                 paramDecl.Type = astPtr;
-                PostPrepareExprInference(paramDecl.Type);
+                PostPrepareExprInference(paramDecl.Type, inInfo, ref outInfo);
             }
 
             if (paramDecl.DefaultValue != null)
-                PostPrepareExprInference(paramDecl.DefaultValue);
+                PostPrepareExprInference(paramDecl.DefaultValue, inInfo, ref outInfo);
         }
 
-        private void PostPrepareExprInference(AstStatement expr)
+        private void PostPrepareExprInference(AstStatement expr, InInfo inInfo, ref OutInfo outInfo)
         {
             switch (expr)
             {
@@ -282,53 +287,53 @@ namespace HapetPostPrepare
                 // when 'for (int i = 0;...)' where 'int i' 
                 // would not be handled by blockExpr
                 case AstVarDecl varDecl:
-                    PostPrepareVarInference(varDecl);
+                    PostPrepareVarInference(varDecl, inInfo, ref outInfo);
                     break;
 
                 case AstBlockExpr blockExpr:
-                    PostPrepareBlockInference(blockExpr);
+                    PostPrepareBlockInference(blockExpr, inInfo, ref outInfo);
                     break;
                 case AstUnaryExpr unExpr:
-                    PostPrepareUnaryExprInference(unExpr);
+                    PostPrepareUnaryExprInference(unExpr, inInfo, ref outInfo);
                     break;
                 case AstBinaryExpr binExpr:
-                    PostPrepareBinaryExprInference(binExpr);
+                    PostPrepareBinaryExprInference(binExpr, inInfo, ref outInfo);
                     break;
                 case AstPointerExpr pointerExpr:
-                    PostPreparePointerExprInference(pointerExpr);
+                    PostPreparePointerExprInference(pointerExpr, inInfo, ref outInfo);
                     break;
                 case AstAddressOfExpr addrExpr:
-                    PostPrepareAddressOfExprInference(addrExpr);
+                    PostPrepareAddressOfExprInference(addrExpr, inInfo, ref outInfo);
                     break;
                 case AstNewExpr newExpr:
-                    PostPrepareNewExprInference(newExpr);
+                    PostPrepareNewExprInference(newExpr, inInfo, ref outInfo);
                     break;
                 case AstArgumentExpr argumentExpr:
-                    PostPrepareArgumentExprInference(argumentExpr);
+                    PostPrepareArgumentExprInference(argumentExpr, inInfo, ref outInfo);
                     break;
                 case AstIdExpr idExpr:
-                    PostPrepareIdentifierInference(idExpr);
+                    PostPrepareIdentifierInference(idExpr, inInfo, ref outInfo);
                     return;
                 case AstCallExpr callExpr:
-                    PostPrepareCallExprInference(callExpr);
+                    PostPrepareCallExprInference(callExpr, inInfo, ref outInfo);
                     break;
                 case AstCastExpr castExpr:
-                    PostPrepareCastExprInference(castExpr);
+                    PostPrepareCastExprInference(castExpr, inInfo, ref outInfo);
                     break;
                 case AstNestedExpr nestExpr:
-                    PostPrepareNestedExprInference(nestExpr, out bool _);
+                    PostPrepareNestedExprInference(nestExpr, inInfo, ref outInfo);
                     break;
                 case AstDefaultExpr defaultExpr:
                     _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, defaultExpr, [], ErrorCode.Get(CTEN.DefaultWasNotInfered));
                     break;
                 case AstArrayExpr arrayExpr:
-                    PostPrepareArrayExprInference(arrayExpr);
+                    PostPrepareArrayExprInference(arrayExpr, inInfo, ref outInfo);
                     break;
                 case AstArrayCreateExpr arrayCreateExpr:
-                    PostPrepareArrayCreateExprInference(arrayCreateExpr);
+                    PostPrepareArrayCreateExprInference(arrayCreateExpr, inInfo, ref outInfo);
                     break;
                 case AstArrayAccessExpr arrayAccExpr:
-                    PostPrepareArrayAccessExprInference(arrayAccExpr);
+                    PostPrepareArrayAccessExprInference(arrayAccExpr, inInfo, ref outInfo);
                     break;
                 case AstStringExpr stringExpr:
                     stringExpr.OutType = StringType.GetInstance(stringExpr.Scope);
@@ -337,33 +342,33 @@ namespace HapetPostPrepare
                 // statements
                 case AstAssignStmt assignStmt:
                     // _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, assignStmt, "(Compiler exception) The statement has to be handled by block expr");
-                    PostPrepareAssignStmtInference(assignStmt, out bool _);
+                    PostPrepareAssignStmtInference(assignStmt, inInfo, ref outInfo);
                     break;
                 case AstForStmt forStmt:
-                    PostPrepareForStmtInference(forStmt);
+                    PostPrepareForStmtInference(forStmt, inInfo, ref outInfo);
                     break;
                 case AstWhileStmt whileStmt:
-                    PostPrepareWhileStmtInference(whileStmt);
+                    PostPrepareWhileStmtInference(whileStmt, inInfo, ref outInfo);
                     break;
                 case AstIfStmt ifStmt:
-                    PostPrepareIfStmtInference(ifStmt);
+                    PostPrepareIfStmtInference(ifStmt, inInfo, ref outInfo);
                     break;
                 case AstSwitchStmt switchStmt:
-                    PostPrepareSwitchStmtInference(switchStmt);
+                    PostPrepareSwitchStmtInference(switchStmt, inInfo, ref outInfo);
                     break;
                 case AstCaseStmt caseStmt:
-                    PostPrepareCaseStmtInference(caseStmt);
+                    PostPrepareCaseStmtInference(caseStmt, inInfo, ref outInfo);
                     break;
                 case AstBreakContStmt _:
                     break;
                 case AstReturnStmt returnStmt:
-                    PostPrepareReturnStmtInference(returnStmt);
+                    PostPrepareReturnStmtInference(returnStmt, inInfo, ref outInfo);
                     break;
                 case AstAttributeStmt attrStmt:
-                    PostPrepareAttributeStmtInference(attrStmt);
+                    PostPrepareAttributeStmtInference(attrStmt, inInfo, ref outInfo);
                     break;
                 case AstBaseCtorStmt baseStmt:
-                    PostPrepareBaseCtorStmtInference(baseStmt);
+                    PostPrepareBaseCtorStmtInference(baseStmt, inInfo, ref outInfo);
                     break;
                 // TODO: check other expressions
 
@@ -375,7 +380,7 @@ namespace HapetPostPrepare
             }
         }
 
-        private void PostPrepareBlockInference(AstBlockExpr blockExpr)
+        private void PostPrepareBlockInference(AstBlockExpr blockExpr, InInfo inInfo, ref OutInfo outInfo)
         {
             // list of all replacements that should be done
             // so all Propa assigns would be replaced with func calls
@@ -389,20 +394,23 @@ namespace HapetPostPrepare
                 // we need to handle the statements to replaces props with calls
                 if (stmt is AstAssignStmt asgn)
                 {
-                    PostPrepareAssignStmtInference(asgn, out bool itWasPropa);
-                    if (itWasPropa)
+                    PostPrepareAssignStmtInference(asgn, inInfo, ref outInfo);
+                    if (outInfo.ItWasProperty)
                     {
+                        // reset
+                        outInfo.ItWasProperty = false;
+
                         AstIdExpr propaName = (asgn.Target.RightPart as AstIdExpr);
                         // creating a call 
                         var fncCall = new AstCallExpr(asgn.Target.LeftPart, propaName.GetCopy($"set_{propaName.Name}"), new List<AstArgumentExpr>() { new AstArgumentExpr(asgn.Value) }, asgn);
                         SetScopeAndParent(fncCall, asgn.Target.NormalParent, asgn.Target.Scope);
-                        PostPrepareCallExprInference(fncCall);
+                        PostPrepareCallExprInference(fncCall, inInfo, ref outInfo);
                         repls.Add(asgn, fncCall);
                     }
                 }
                 else
                 {
-                    PostPrepareExprInference(stmt);
+                    PostPrepareExprInference(stmt, inInfo, ref outInfo);
                 }
             }
 
@@ -416,10 +424,10 @@ namespace HapetPostPrepare
             }
         }
 
-        private void PostPrepareUnaryExprInference(AstUnaryExpr unExpr)
+        private void PostPrepareUnaryExprInference(AstUnaryExpr unExpr, InInfo inInfo, ref OutInfo outInfo)
         {
             // TODO: check for the right size for an existance value (compiletime evaluated) and do some shite (set unExpr OutValue)
-            PostPrepareExprInference(unExpr.SubExpr as AstExpression);
+            PostPrepareExprInference(unExpr.SubExpr as AstExpression, inInfo, ref outInfo);
             var operators = unExpr.Scope.GetUnaryOperators(unExpr.Operator, (unExpr.SubExpr as AstExpression).OutType);
             if (operators.Count == 0)
             {
@@ -446,11 +454,11 @@ namespace HapetPostPrepare
             }
         }
 
-        private void PostPrepareBinaryExprInference(AstBinaryExpr binExpr)
+        private void PostPrepareBinaryExprInference(AstBinaryExpr binExpr, InInfo inInfo, ref OutInfo outInfo)
         {
             // resolve the actual operator in the current scope
-            PostPrepareExprInference(binExpr.Left as AstExpression);
-            PostPrepareExprInference(binExpr.Right as AstExpression);
+            PostPrepareExprInference(binExpr.Left as AstExpression, inInfo, ref outInfo);
+            PostPrepareExprInference(binExpr.Right as AstExpression, inInfo, ref outInfo);
             var operators = binExpr.Scope.GetBinaryOperators(binExpr.Operator, (binExpr.Left as AstExpression).OutType, (binExpr.Right as AstExpression).OutType);
             if (operators.Count == 0)
             {
@@ -506,7 +514,7 @@ namespace HapetPostPrepare
                                     SetScopeAndParent(mulK, parent);
                                     rightExpr = new AstBinaryExpr("*", rightExpr, mulK, rightExpr);
                                     SetScopeAndParent(rightExpr, parent);
-                                    PostPrepareExprInference(rightExpr);
+                                    PostPrepareExprInference(rightExpr, inInfo, ref outInfo);
                                     binExpr.Right = rightExpr;
                                 }
                                 else if (rightExpr.OutType is PointerType ptrT2)
@@ -519,7 +527,7 @@ namespace HapetPostPrepare
                                     SetScopeAndParent(mulK, parent);
                                     leftExpr = new AstBinaryExpr("*", leftExpr, mulK, leftExpr);
                                     SetScopeAndParent(leftExpr, parent);
-                                    PostPrepareExprInference(leftExpr);
+                                    PostPrepareExprInference(leftExpr, inInfo, ref outInfo);
                                     binExpr.Left = leftExpr;
                                 }
                             }
@@ -572,10 +580,10 @@ namespace HapetPostPrepare
             }
         }
 
-        private void PostPreparePointerExprInference(AstPointerExpr pointerExpr)
+        private void PostPreparePointerExprInference(AstPointerExpr pointerExpr, InInfo inInfo, ref OutInfo outInfo)
         {
             // prepare the right side
-            PostPrepareExprInference(pointerExpr.SubExpression);
+            PostPrepareExprInference(pointerExpr.SubExpression, inInfo, ref outInfo);
             if (pointerExpr.IsDereference)
             {
                 // if it is a deref - right type has to be a ptr
@@ -594,18 +602,18 @@ namespace HapetPostPrepare
             }
         }
 
-        private void PostPrepareAddressOfExprInference(AstAddressOfExpr addrExpr)
+        private void PostPrepareAddressOfExprInference(AstAddressOfExpr addrExpr, InInfo inInfo, ref OutInfo outInfo)
         {
             // prepare the right side
-            PostPrepareExprInference(addrExpr.SubExpression);
+            PostPrepareExprInference(addrExpr.SubExpression, inInfo, ref outInfo);
             // create a new reference type from the right side and set the type to itself
             addrExpr.OutType = ReferenceType.GetRefType(addrExpr.SubExpression.OutType);
         }
 
-        private void PostPrepareNewExprInference(AstNewExpr newExpr)
+        private void PostPrepareNewExprInference(AstNewExpr newExpr, InInfo inInfo, ref OutInfo outInfo)
         {
             // prepare the right side
-            PostPrepareExprInference(newExpr.TypeName);
+            PostPrepareExprInference(newExpr.TypeName, inInfo, ref outInfo);
             // the type of newExpr is the same as the type of its name expr
             newExpr.OutType = newExpr.TypeName.OutType;
 
@@ -619,17 +627,17 @@ namespace HapetPostPrepare
 
             foreach (var a in newExpr.Arguments)
             {
-                PostPrepareExprInference(a);
+                PostPrepareExprInference(a, inInfo, ref outInfo);
             }
         }
 
-        private void PostPrepareArgumentExprInference(AstArgumentExpr argumentExpr)
+        private void PostPrepareArgumentExprInference(AstArgumentExpr argumentExpr, InInfo inInfo, ref OutInfo outInfo)
         {
-            PostPrepareExprInference(argumentExpr.Expr);
+            PostPrepareExprInference(argumentExpr.Expr, inInfo, ref outInfo);
 
             if (argumentExpr.Name != null)
             {
-                PostPrepareExprInference(argumentExpr.Name);
+                PostPrepareExprInference(argumentExpr.Name, inInfo, ref outInfo);
             }
 
             // the argument type is the same as its expr type
@@ -641,7 +649,7 @@ namespace HapetPostPrepare
             }
         }
 
-        private void PostPrepareIdentifierInference(AstIdExpr idExpr, bool fromCallExpr = false)
+        private void PostPrepareIdentifierInference(AstIdExpr idExpr, InInfo inInfo, ref OutInfo outInfo)
         {
             string name = idExpr.Name;
 
@@ -657,10 +665,10 @@ namespace HapetPostPrepare
             var smbl = idExpr.Scope.GetSymbol(name);
             if (smbl is DeclSymbol typed)
             {
-                if (!CheckIfCouldBeAccessed(idExpr, typed.Decl) && !(typed.Decl is AstBuiltInTypeDecl) && !fromCallExpr)
+                if (!CheckIfCouldBeAccessed(idExpr, typed.Decl) && !(typed.Decl is AstBuiltInTypeDecl) && !inInfo.FromCallExpr)
                     _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, idExpr, [], ErrorCode.Get(CTEN.DeclCouldNotBeAccessed));
                 idExpr.OutType = typed.Decl.Type.OutType;
-                TryAssignConstValueToExpr(idExpr, typed.Decl);
+                TryAssignConstValueToExpr(idExpr, typed.Decl, inInfo, ref outInfo);
                 TrySaveClassUsage(typed.Decl);
                 idExpr.FindSymbol = smbl;
                 return;
@@ -672,11 +680,11 @@ namespace HapetPostPrepare
             var smblInLocalClass = idExpr.Scope.GetSymbol(nameWithClass);
             if (smblInLocalClass is DeclSymbol typed2)
             {
-                if (!CheckIfCouldBeAccessed(idExpr, typed2.Decl) && !(typed2.Decl is AstBuiltInTypeDecl) && !fromCallExpr)
+                if (!CheckIfCouldBeAccessed(idExpr, typed2.Decl) && !(typed2.Decl is AstBuiltInTypeDecl) && !inInfo.FromCallExpr)
                     _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, idExpr, [], ErrorCode.Get(CTEN.DeclCouldNotBeAccessed));
                 idExpr.Name = nameWithClass;
                 idExpr.OutType = typed2.Decl.Type.OutType;
-                TryAssignConstValueToExpr(idExpr, typed2.Decl);
+                TryAssignConstValueToExpr(idExpr, typed2.Decl, inInfo, ref outInfo);
                 TrySaveClassUsage(typed2.Decl);
                 idExpr.FindSymbol = smblInLocalClass;
                 return;
@@ -695,7 +703,7 @@ namespace HapetPostPrepare
 
                 // recursively infer left part of func call
                 AstIdExpr leftPartId = idExpr.GetCopy(nameAndFunc[0]);
-                PostPrepareIdentifierInference(leftPartId, fromCallExpr);
+                PostPrepareIdentifierInference(leftPartId, inInfo, ref outInfo);
 
                 // it has to be a class (or mb struct)
                 string fullFuncName;
@@ -718,11 +726,11 @@ namespace HapetPostPrepare
                 
                 if (funcInAnotherClass is DeclSymbol typed4)
                 {
-                    if (!CheckIfCouldBeAccessed(idExpr, typed4.Decl) && !(typed4.Decl is AstBuiltInTypeDecl) && !fromCallExpr)
+                    if (!CheckIfCouldBeAccessed(idExpr, typed4.Decl) && !(typed4.Decl is AstBuiltInTypeDecl) && !inInfo.FromCallExpr)
                         _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, idExpr, [], ErrorCode.Get(CTEN.DeclCouldNotBeAccessed));
                     idExpr.Name = fullFuncName;
                     idExpr.OutType = typed4.Decl.Type.OutType;
-                    TryAssignConstValueToExpr(idExpr, typed4.Decl);
+                    TryAssignConstValueToExpr(idExpr, typed4.Decl, inInfo, ref outInfo);
                     TrySaveClassUsage(typed4.Decl);
                     idExpr.FindSymbol = funcInAnotherClass;
                     return;
@@ -735,11 +743,11 @@ namespace HapetPostPrepare
             var smblInLocalFile = idExpr.Scope.GetSymbol(nameWithNamespace);
             if (smblInLocalFile is DeclSymbol typed3)
             {
-                if (!CheckIfCouldBeAccessed(idExpr, typed3.Decl) && !(typed3.Decl is AstBuiltInTypeDecl) && !fromCallExpr)
+                if (!CheckIfCouldBeAccessed(idExpr, typed3.Decl) && !(typed3.Decl is AstBuiltInTypeDecl) && !inInfo.FromCallExpr)
                     _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, idExpr, [], ErrorCode.Get(CTEN.DeclCouldNotBeAccessed));
                 idExpr.Name = nameWithNamespace;
                 idExpr.OutType = typed3.Decl.Type.OutType;
-                TryAssignConstValueToExpr(idExpr, typed3.Decl);
+                TryAssignConstValueToExpr(idExpr, typed3.Decl, inInfo, ref outInfo);
                 TrySaveClassUsage(typed3.Decl);
                 idExpr.FindSymbol = smblInLocalFile;
                 return;
@@ -756,11 +764,11 @@ namespace HapetPostPrepare
                 var includedSmbl = idExpr.Scope.GetSymbolInNamespace(leftPart, rightPart);
                 if (includedSmbl is DeclSymbol typed4)
                 {
-                    if (!CheckIfCouldBeAccessed(idExpr, typed4.Decl) && !(typed4.Decl is AstBuiltInTypeDecl) && !fromCallExpr)
+                    if (!CheckIfCouldBeAccessed(idExpr, typed4.Decl) && !(typed4.Decl is AstBuiltInTypeDecl) && !inInfo.FromCallExpr)
                         _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, idExpr, [], ErrorCode.Get(CTEN.DeclCouldNotBeAccessed));
                     // do not change name because it already contains namespace
                     idExpr.OutType = typed4.Decl.Type.OutType;
-                    TryAssignConstValueToExpr(idExpr, typed4.Decl);
+                    TryAssignConstValueToExpr(idExpr, typed4.Decl, inInfo, ref outInfo);
                     TrySaveClassUsage(typed4.Decl);
                     idExpr.FindSymbol = includedSmbl;
                     return;
@@ -785,11 +793,11 @@ namespace HapetPostPrepare
                     var includedSmbl = idExpr.Scope.GetSymbolInNamespace($"{ns}.{leftPart}", rightPart);
                     if (includedSmbl is DeclSymbol typed4)
                     {
-                        if (!CheckIfCouldBeAccessed(idExpr, typed4.Decl) && !(typed4.Decl is AstBuiltInTypeDecl) && !fromCallExpr)
+                        if (!CheckIfCouldBeAccessed(idExpr, typed4.Decl) && !(typed4.Decl is AstBuiltInTypeDecl) && !inInfo.FromCallExpr)
                             _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, idExpr, [], ErrorCode.Get(CTEN.DeclCouldNotBeAccessed));
                         // do not change name because it already contains namespace
                         idExpr.OutType = typed4.Decl.Type.OutType;
-                        TryAssignConstValueToExpr(idExpr, typed4.Decl);
+                        TryAssignConstValueToExpr(idExpr, typed4.Decl, inInfo, ref outInfo);
                         TrySaveClassUsage(typed4.Decl);
                         idExpr.FindSymbol = includedSmbl;
                         return;
@@ -801,11 +809,11 @@ namespace HapetPostPrepare
                 var usedSmbl = idExpr.Scope.GetSymbolInNamespace(ns, name);
                 if (usedSmbl is DeclSymbol typed5)
                 {
-                    if (!CheckIfCouldBeAccessed(idExpr, typed5.Decl) && !(typed5.Decl is AstBuiltInTypeDecl) && !fromCallExpr)
+                    if (!CheckIfCouldBeAccessed(idExpr, typed5.Decl) && !(typed5.Decl is AstBuiltInTypeDecl) && !inInfo.FromCallExpr)
                         _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, idExpr, [], ErrorCode.Get(CTEN.DeclCouldNotBeAccessed));
                     idExpr.Name = fullNameWithNs;
                     idExpr.OutType = typed5.Decl.Type.OutType;
-                    TryAssignConstValueToExpr(idExpr, typed5.Decl);
+                    TryAssignConstValueToExpr(idExpr, typed5.Decl, inInfo, ref outInfo);
                     TrySaveClassUsage(typed5.Decl);
                     idExpr.FindSymbol = usedSmbl;
                     return;
@@ -821,7 +829,7 @@ namespace HapetPostPrepare
         /// </summary>
         /// <param name="expr">The main expr</param>
         /// <param name="decl">The decl that could have OutValue</param>
-        private void TryAssignConstValueToExpr(AstExpression expr, AstDeclaration decl)
+        private void TryAssignConstValueToExpr(AstExpression expr, AstDeclaration decl, InInfo inInfo, ref OutInfo outInfo)
         {
             // assign out value only from consts
             if (decl is AstVarDecl varDecl && varDecl.SpecialKeys.Contains(TokenType.KwConst))
@@ -834,7 +842,7 @@ namespace HapetPostPrepare
                 // TODO: possible circular access!!!
                 if (varDecl.Initializer.OutType == null)
                 {
-                    PostPrepareExprInference(varDecl.Initializer);
+                    PostPrepareExprInference(varDecl.Initializer, inInfo, ref outInfo);
                 }
                 expr.OutValue = varDecl.Initializer.OutValue;
             }
@@ -853,7 +861,7 @@ namespace HapetPostPrepare
             }
         }
 
-        private void PostPrepareCallExprInference(AstCallExpr callExpr)
+        private void PostPrepareCallExprInference(AstCallExpr callExpr, InInfo inInfo, ref OutInfo outInfo)
         {
             // skip if already inferred
             if (callExpr.OutType != null)
@@ -866,7 +874,7 @@ namespace HapetPostPrepare
             if (callExpr.TypeOrObjectName != null)
             {
                 // resolve the object on which func is called
-                PostPrepareExprInference(callExpr.TypeOrObjectName);
+                PostPrepareExprInference(callExpr.TypeOrObjectName, inInfo, ref outInfo);
             }
 
             // TODO: resolve functions as args directly
@@ -908,7 +916,7 @@ namespace HapetPostPrepare
             // resolve args
             foreach (var a in callExpr.Arguments)
             {
-                PostPrepareExprInference(a);
+                PostPrepareExprInference(a, inInfo, ref outInfo);
             }
 
             string newName = string.Empty;
@@ -934,7 +942,7 @@ namespace HapetPostPrepare
                     callExpr.TypeOrObjectName = new AstNestedExpr(new AstIdExpr("this"), null, callExpr);
                     SetScopeAndParent(callExpr.TypeOrObjectName, callExpr);
                     PostPrepareExprScoping(callExpr.TypeOrObjectName);
-                    PostPrepareExprInference(callExpr.TypeOrObjectName);
+                    PostPrepareExprInference(callExpr.TypeOrObjectName, inInfo, ref outInfo);
 
                     // if it is a non static func defined in local class
                     newName = $"{_currentClass.Name.Name}::{callExpr.FuncName.Name}{callExpr.Arguments.GetArgsString(PointerType.GetPointerType(_currentClass.Type.OutType))}";
@@ -1011,7 +1019,7 @@ namespace HapetPostPrepare
 
                     List<AstExpression> argsWithClassParam = new List<AstExpression>(callExpr.Arguments);
                     var pseudoClassArg = new AstPointerExpr(callExpr.TypeOrObjectName, false, callExpr.TypeOrObjectName);
-                    PostPrepareExprInference(pseudoClassArg);
+                    PostPrepareExprInference(pseudoClassArg, inInfo, ref outInfo);
                     argsWithClassParam.Insert(0, pseudoClassArg);
                     smbl2 = GetFuncFromCandidates(newName, argsWithClassParam, clsTpStatic.Declaration.SubScope, clsTpStatic.Declaration, out var _);
 
@@ -1045,7 +1053,7 @@ namespace HapetPostPrepare
 
                     List<AstExpression> argsWithStructParam = new List<AstExpression>(callExpr.Arguments);
                     var pseudoStructArg = new AstPointerExpr(callExpr.TypeOrObjectName, false, callExpr.TypeOrObjectName);
-                    PostPrepareExprInference(pseudoStructArg);
+                    PostPrepareExprInference(pseudoStructArg, inInfo, ref outInfo);
                     argsWithStructParam.Insert(0, pseudoStructArg);
                     smbl2 = GetFuncFromCandidates(newName, argsWithStructParam, structType.Declaration.SubScope, structType.Declaration, out casts);
 
@@ -1119,7 +1127,9 @@ namespace HapetPostPrepare
                 _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, callExpr, [], ErrorCode.Get(CTEN.FuncNotInfered));
             }
             callExpr.FuncName = callExpr.FuncName.GetCopy(newName);
-            PostPrepareIdentifierInference(callExpr.FuncName, true);
+            inInfo.FromCallExpr = true;
+            PostPrepareIdentifierInference(callExpr.FuncName, inInfo, ref outInfo);
+            inInfo.FromCallExpr = false;
 
             // setting parameters
             if (callExpr.FuncName.OutType is FunctionType ft)
@@ -1147,15 +1157,15 @@ namespace HapetPostPrepare
             }
         }
 
-        private void PostPrepareCastExprInference(AstCastExpr castExpr)
+        private void PostPrepareCastExprInference(AstCastExpr castExpr, InInfo inInfo, ref OutInfo outInfo)
         {
-            PostPrepareExprInference(castExpr.SubExpression as AstExpression);
-            PostPrepareExprInference(castExpr.TypeExpr as AstExpression);
+            PostPrepareExprInference(castExpr.SubExpression as AstExpression, inInfo, ref outInfo);
+            PostPrepareExprInference(castExpr.TypeExpr as AstExpression, inInfo, ref outInfo);
             castExpr.OutType = (castExpr.TypeExpr as AstExpression).OutType;
             castExpr.OutValue = castExpr.OutValue; // WARN: is it ok just to pass the value?
         }
 
-        private void PostPrepareNestedExprInference(AstNestedExpr nestExpr, out bool itWasPropa, bool propaSet = false)
+        private void PostPrepareNestedExprInference(AstNestedExpr nestExpr, InInfo inInfo, ref OutInfo outInfo)
         {
             // the var is used to check when static/const field is accessed from an object
             bool accessingFromAnObject = false;
@@ -1166,7 +1176,7 @@ namespace HapetPostPrepare
 
             if (nestExpr.LeftPart == null)
             {
-                PostPrepareExprInference(nestExpr.RightPart);
+                PostPrepareExprInference(nestExpr.RightPart, inInfo, ref outInfo);
                 nestExpr.OutType = nestExpr.RightPart.OutType;
                 nestExpr.OutValue = nestExpr.RightPart.OutValue;
 
@@ -1181,14 +1191,14 @@ namespace HapetPostPrepare
                     var thisArg = new AstNestedExpr(new AstIdExpr("this", nestExpr), null, nestExpr);
                     SetScopeAndParent(thisArg, nestExpr);
                     PostPrepareExprScoping(thisArg);
-                    PostPrepareExprInference(thisArg);
+                    PostPrepareExprInference(thisArg, inInfo, ref outInfo);
                     nestExpr.LeftPart = thisArg;
                 }
             }
             else
             {
                 Scope leftSideScope = null;
-                PostPrepareExprInference(nestExpr.LeftPart);
+                PostPrepareExprInference(nestExpr.LeftPart, inInfo, ref outInfo);
                 if (nestExpr.LeftPart.OutType is PointerType ptr && ptr.TargetType is ClassType classT)
                 {
                     leftSideScope = classT.Declaration.SubScope;
@@ -1216,7 +1226,7 @@ namespace HapetPostPrepare
                 if (leftSideScope == null)
                 {
                     _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, nestExpr.LeftPart, [], ErrorCode.Get(CTEN.ExprNotClassOrStruct));
-                    itWasPropa = false;
+                    outInfo.ItWasProperty = false;
                     return;
                 }
 
@@ -1224,7 +1234,7 @@ namespace HapetPostPrepare
                 if (nestExpr.RightPart is not AstIdExpr idExpr)
                 {
                     _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, nestExpr.RightPart, [], ErrorCode.Get(CTEN.CommonIdentifierExpected));
-                    itWasPropa = false;
+                    outInfo.ItWasProperty = false;
                     return;
                 }
 
@@ -1246,9 +1256,9 @@ namespace HapetPostPrepare
                     if (typed.Decl is AstPropertyDecl)
                     {
                         // if getting property to set smth
-                        if (propaSet)
+                        if (inInfo.PropertySet)
                         {
-                            itWasPropa = true;
+                            outInfo.ItWasProperty = true;
                             return;
                         }
                         else
@@ -1258,7 +1268,7 @@ namespace HapetPostPrepare
                             SetScopeAndParent(fncCall, nestExpr.RightPart.NormalParent, nestExpr.RightPart.Scope);
                             nestExpr.LeftPart = null;
                             nestExpr.RightPart = fncCall;
-                            PostPrepareCallExprInference(fncCall);
+                            PostPrepareCallExprInference(fncCall, inInfo, ref outInfo);
                         }
                     }
                 }
@@ -1267,7 +1277,7 @@ namespace HapetPostPrepare
                     _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, idExpr, [HapetType.AsString(nestExpr.LeftPart.OutType)], ErrorCode.Get(CTEN.SymbolNotFoundInType));
                 }
             }
-            itWasPropa = false;
+            outInfo.ItWasProperty = false;
         }
 
         // :)
@@ -1327,21 +1337,21 @@ namespace HapetPostPrepare
             }
         }
 
-        private void PostPrepareArrayExprInference(AstArrayExpr arrayExpr)
+        private void PostPrepareArrayExprInference(AstArrayExpr arrayExpr, InInfo inInfo, ref OutInfo outInfo)
         {
-            PostPrepareExprInference(arrayExpr.SubExpression);
+            PostPrepareExprInference(arrayExpr.SubExpression, inInfo, ref outInfo);
             arrayExpr.OutType = ArrayType.GetArrayType(arrayExpr.SubExpression.OutType, arrayExpr.Scope);
         }
 
-        private void PostPrepareArrayCreateExprInference(AstArrayCreateExpr arrayExpr)
+        private void PostPrepareArrayCreateExprInference(AstArrayCreateExpr arrayExpr, InInfo inInfo, ref OutInfo outInfo)
         {
             foreach (var sz in arrayExpr.SizeExprs)
             {
-                PostPrepareExprInference(sz);
+                PostPrepareExprInference(sz, inInfo, ref outInfo);
             }
             // TODO: you can check if the size is available at compile time and create the array on stack
 
-            PostPrepareExprInference(arrayExpr.TypeName);
+            PostPrepareExprInference(arrayExpr.TypeName, inInfo, ref outInfo);
 
             // create an expecting elements type to be
             HapetType expectingElementType = arrayExpr.TypeName.OutType;
@@ -1357,7 +1367,7 @@ namespace HapetPostPrepare
             for (int i = 0; i < arrayExpr.Elements.Count; ++i)
             {
                 var e = arrayExpr.Elements[i];
-                PostPrepareExprInference(e);
+                PostPrepareExprInference(e, inInfo, ref outInfo);
                 // try to use implicit cast if it can be used
                 arrayExpr.Elements[i] = PostPrepareExpressionWithType(expectingElementType, e);
             }
@@ -1366,10 +1376,10 @@ namespace HapetPostPrepare
             PostPrepareFullArray(arrayExpr);
         }
 
-        private void PostPrepareArrayAccessExprInference(AstArrayAccessExpr arrayAccExpr)
+        private void PostPrepareArrayAccessExprInference(AstArrayAccessExpr arrayAccExpr, InInfo inInfo, ref OutInfo outInfo)
         {
-            PostPrepareExprInference(arrayAccExpr.ParameterExpr);
-            PostPrepareExprInference(arrayAccExpr.ObjectName);
+            PostPrepareExprInference(arrayAccExpr.ParameterExpr, inInfo, ref outInfo);
+            PostPrepareExprInference(arrayAccExpr.ObjectName, inInfo, ref outInfo);
 
             // at first try to find indexer overload
             string typeName = null;
@@ -1390,7 +1400,7 @@ namespace HapetPostPrepare
                 typeName = strT.Declaration.Name.Name;
                 firstParamType = PointerType.GetPointerType(arrayAccExpr.ObjectName.OutType);
                 pseudoFirstArg = new AstPointerExpr(arrayAccExpr.ObjectName, false, arrayAccExpr.ObjectName);
-                PostPrepareExprInference(pseudoFirstArg);
+                PostPrepareExprInference(pseudoFirstArg, inInfo, ref outInfo);
                 subScope = strT.Declaration.SubScope;
                 declItself = strT.Declaration;
             }
@@ -1433,10 +1443,12 @@ namespace HapetPostPrepare
         }
 
         // statements
-        private void PostPrepareAssignStmtInference(AstAssignStmt assignStmt, out bool itWasPropa)
+        private void PostPrepareAssignStmtInference(AstAssignStmt assignStmt, InInfo inInfo, ref OutInfo outInfo)
         {
             // propaSet is true only here
-            PostPrepareNestedExprInference(assignStmt.Target, out itWasPropa, true);
+            inInfo.PropertySet = true;
+            PostPrepareNestedExprInference(assignStmt.Target, inInfo, ref outInfo);
+            inInfo.PropertySet = false;
 
             // cringe error when user tries to assign something directly into enum field
             if (assignStmt.Target.LeftPart != null && assignStmt.Target.LeftPart.OutType is EnumType)
@@ -1446,18 +1458,18 @@ namespace HapetPostPrepare
             }
             // pp assign value
             if (assignStmt.Value != null)
-                assignStmt.Value = PostPrepareVarValueAssign(assignStmt.Value, assignStmt.Target.OutType);
+                assignStmt.Value = PostPrepareVarValueAssign(assignStmt.Value, assignStmt.Target.OutType, inInfo, ref outInfo);
             else
                 _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, assignStmt, [], ErrorCode.Get(CTEN.NotExprInAssignment));
         }
 
-        private void PostPrepareForStmtInference(AstForStmt forStmt)
+        private void PostPrepareForStmtInference(AstForStmt forStmt, InInfo inInfo, ref OutInfo outInfo)
         {
             if (forStmt.FirstParam != null)
-                PostPrepareExprInference(forStmt.FirstParam);
+                PostPrepareExprInference(forStmt.FirstParam, inInfo, ref outInfo);
             if (forStmt.SecondParam != null)
             {
-                PostPrepareExprInference(forStmt.SecondParam);
+                PostPrepareExprInference(forStmt.SecondParam, inInfo, ref outInfo);
 
                 // error if it is not a bool type because it has to be
                 if (forStmt.SecondParam.OutType is not BoolType)
@@ -1466,14 +1478,14 @@ namespace HapetPostPrepare
                 }
             }
             if (forStmt.ThirdParam != null)
-                PostPrepareExprInference(forStmt.ThirdParam);
+                PostPrepareExprInference(forStmt.ThirdParam, inInfo, ref outInfo);
 
-            PostPrepareExprInference(forStmt.Body);
+            PostPrepareExprInference(forStmt.Body, inInfo, ref outInfo);
         }
 
-        private void PostPrepareWhileStmtInference(AstWhileStmt whileStmt)
+        private void PostPrepareWhileStmtInference(AstWhileStmt whileStmt, InInfo inInfo, ref OutInfo outInfo)
         {
-            PostPrepareExprInference(whileStmt.ConditionParam);
+            PostPrepareExprInference(whileStmt.ConditionParam, inInfo, ref outInfo);
 
             // error if it is not a bool type because it has to be
             if (whileStmt.ConditionParam.OutType is not BoolType)
@@ -1481,12 +1493,12 @@ namespace HapetPostPrepare
                 _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, whileStmt.ConditionParam, [], ErrorCode.Get(CTEN.ExprIsNotBool));
             }
 
-            PostPrepareExprInference(whileStmt.Body);
+            PostPrepareExprInference(whileStmt.Body, inInfo, ref outInfo);
         }
 
-        private void PostPrepareIfStmtInference(AstIfStmt ifStmt)
+        private void PostPrepareIfStmtInference(AstIfStmt ifStmt, InInfo inInfo, ref OutInfo outInfo)
         {
-            PostPrepareExprInference(ifStmt.Condition);
+            PostPrepareExprInference(ifStmt.Condition, inInfo, ref outInfo);
 
             // error if it is not a bool type because it has to be
             if (ifStmt.Condition.OutType is not BoolType)
@@ -1494,21 +1506,21 @@ namespace HapetPostPrepare
                 _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, ifStmt.Condition, [], ErrorCode.Get(CTEN.ExprIsNotBool));
             }
 
-            PostPrepareExprInference(ifStmt.BodyTrue);
+            PostPrepareExprInference(ifStmt.BodyTrue, inInfo, ref outInfo);
             if (ifStmt.BodyFalse != null)
-                PostPrepareExprInference(ifStmt.BodyFalse);
+                PostPrepareExprInference(ifStmt.BodyFalse, inInfo, ref outInfo);
         }
 
-        private void PostPrepareSwitchStmtInference(AstSwitchStmt switchStmt)
+        private void PostPrepareSwitchStmtInference(AstSwitchStmt switchStmt, InInfo inInfo, ref OutInfo outInfo)
         {
-            PostPrepareExprInference(switchStmt.SubExpression);
+            PostPrepareExprInference(switchStmt.SubExpression, inInfo, ref outInfo);
 
             // used to check that there are no more than 1 default case
             bool thereWasADefaultCase = false;
 
             foreach (var cc in switchStmt.Cases)
             {
-                PostPrepareExprInference(cc);
+                PostPrepareExprInference(cc, inInfo, ref outInfo);
 
                 // calc default cases. if there are more than 1 - error
                 if (cc.DefaultCase)
@@ -1530,16 +1542,16 @@ namespace HapetPostPrepare
             }
         }
 
-        private void PostPrepareCaseStmtInference(AstCaseStmt caseStmt)
+        private void PostPrepareCaseStmtInference(AstCaseStmt caseStmt, InInfo inInfo, ref OutInfo outInfo)
         {
             if (!caseStmt.DefaultCase)
-                PostPrepareExprInference(caseStmt.Pattern);
+                PostPrepareExprInference(caseStmt.Pattern, inInfo, ref outInfo);
 
             if (!caseStmt.FallingCase)
-                PostPrepareExprInference(caseStmt.Body);
+                PostPrepareExprInference(caseStmt.Body, inInfo, ref outInfo);
         }
 
-        private void PostPrepareReturnStmtInference(AstReturnStmt returnStmt)
+        private void PostPrepareReturnStmtInference(AstReturnStmt returnStmt, InInfo inInfo, ref OutInfo outInfo)
         {
             if (returnStmt.ReturnExpression != null)
             {
@@ -1552,7 +1564,7 @@ namespace HapetPostPrepare
 
                 // do not infer this shite
                 if (_currentFunction.Returns.OutType is not DelegateType)
-                    PostPrepareExprInference(returnStmt.ReturnExpression);
+                    PostPrepareExprInference(returnStmt.ReturnExpression, inInfo, ref outInfo);
                 // casting to func return type
                 returnStmt.ReturnExpression = PostPrepareExpressionWithType(_currentFunction.Returns.OutType, returnStmt.ReturnExpression);
             }
@@ -1570,14 +1582,14 @@ namespace HapetPostPrepare
             }
         }
 
-        private void PostPrepareAttributeStmtInference(AstAttributeStmt attrStmt)
+        private void PostPrepareAttributeStmtInference(AstAttributeStmt attrStmt, InInfo inInfo, ref OutInfo outInfo)
         {
             // purified type string with namespace in it!
             // we need this so when saving the attributes into metafile 
             // we would know namespace of the attribute and so on.
             // (kostyl?)
             var newTypeAst = attrStmt.AttributeName.GetTypeAstId(_compiler.MessageHandler, _currentSourceFile);
-            PostPrepareExprInference(newTypeAst);
+            PostPrepareExprInference(newTypeAst, inInfo, ref outInfo);
             attrStmt.AttributeName.SetTypeAstId(newTypeAst);
 
             // check that the attr ast was infered properly
@@ -1604,7 +1616,7 @@ namespace HapetPostPrepare
                 {
                     // inferrencing the param
                     var a = attrStmt.Parameters[i];
-                    PostPrepareExprInference(a);
+                    PostPrepareExprInference(a, inInfo, ref outInfo);
                     // all attr params has to be const values
                     if (a.OutValue == null)
                         _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, a, [], ErrorCode.Get(CTEN.NonComptimeAttrArg));
@@ -1621,7 +1633,7 @@ namespace HapetPostPrepare
                         {
                             var savedSourceFile = _currentSourceFile;
                             _currentSourceFile = theAttrField.SourceFile;
-                            PostPrepareAttributeStmtInference(aa);
+                            PostPrepareAttributeStmtInference(aa, inInfo, ref outInfo);
                             _currentSourceFile = savedSourceFile;
                         }
                     }
@@ -1638,16 +1650,16 @@ namespace HapetPostPrepare
             }
         }
 
-        private void PostPrepareBaseCtorStmtInference(AstBaseCtorStmt baseStmt)
+        private void PostPrepareBaseCtorStmtInference(AstBaseCtorStmt baseStmt, InInfo inInfo, ref OutInfo outInfo)
         {
             // resolve args
             foreach (var a in baseStmt.Arguments)
             {
-                PostPrepareExprInference(a);
+                PostPrepareExprInference(a, inInfo, ref outInfo);
             }
         }
 
-        private AstExpression PostPrepareVarValueAssign(AstExpression value, HapetType targetType)
+        private AstExpression PostPrepareVarValueAssign(AstExpression value, HapetType targetType, InInfo inInfo, ref OutInfo outInfo)
         {
             if (value is AstDefaultExpr)
             {
@@ -1660,7 +1672,7 @@ namespace HapetPostPrepare
             else if (targetType is not DelegateType)
             {
                 // if it is not a default
-                PostPrepareExprInference(value);
+                PostPrepareExprInference(value, inInfo, ref outInfo);
             }
             return PostPrepareExpressionWithType(targetType, value);
         }

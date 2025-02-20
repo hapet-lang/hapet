@@ -9,6 +9,7 @@ using HapetFrontend.Helpers;
 using HapetFrontend.Parsing;
 using HapetFrontend.Scoping;
 using HapetFrontend.Types;
+using HapetPostPrepare.Entities;
 
 namespace HapetPostPrepare
 {
@@ -292,6 +293,10 @@ namespace HapetPostPrepare
 
         private AstExpression PostPrepareDelegateWithType(AstExpression value, DelegateType targetType)
         {
+            // just handlers
+            InInfo inInfo = InInfo.Default;
+            OutInfo outInfo = OutInfo.Default;
+
             // if user assigns a delegate to another
             if (value.OutType is DelegateType)
             {
@@ -321,7 +326,7 @@ namespace HapetPostPrepare
             if (nestFuncName.LeftPart != null)
             {
                 // resolve the object on which func is gotten
-                PostPrepareExprInference(nestFuncName.LeftPart);
+                PostPrepareExprInference(nestFuncName.LeftPart, inInfo, ref outInfo);
             }
 
             /// WARN!!! almost the same as in <see cref="PostPrepareCallExprInference"/>
@@ -346,7 +351,7 @@ namespace HapetPostPrepare
                     nestFuncName.LeftPart = new AstNestedExpr(new AstIdExpr("this"), null, value);
                     SetScopeAndParent(nestFuncName.LeftPart, value);
                     PostPrepareExprScoping(nestFuncName.LeftPart);
-                    PostPrepareExprInference(nestFuncName.LeftPart);
+                    PostPrepareExprInference(nestFuncName.LeftPart, inInfo, ref outInfo);
                 }
             }
             else if (nestFuncName.LeftPart.OutType is PointerType ptrTp && ptrTp.TargetType is ClassType clsTp)
@@ -386,7 +391,7 @@ namespace HapetPostPrepare
             }
 
             nestFuncName.RightPart = idFuncName.GetCopy(newName);
-            PostPrepareIdentifierInference(nestFuncName.RightPart as AstIdExpr);
+            PostPrepareIdentifierInference(nestFuncName.RightPart as AstIdExpr, inInfo, ref outInfo);
 
             // setting parameters
             if (nestFuncName.RightPart.OutType is FunctionType ft)

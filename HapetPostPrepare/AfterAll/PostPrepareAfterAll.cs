@@ -3,6 +3,7 @@ using HapetFrontend.Ast.Expressions;
 using HapetFrontend.Errors;
 using HapetFrontend.Types;
 using HapetFrontend;
+using HapetPostPrepare.Entities;
 
 namespace HapetPostPrepare
 {
@@ -36,6 +37,10 @@ namespace HapetPostPrepare
 
         private void CallAllStaticCtors()
         {
+            // just handlers
+            InInfo inInfo = InInfo.Default;
+            OutInfo outInfo = OutInfo.Default;
+
             if (_compiler.MainFunction == null)
                 return;
 
@@ -61,7 +66,7 @@ namespace HapetPostPrepare
                 var call = new AstCallExpr(new AstNestedExpr(cls.Name.GetCopy(), null), new AstIdExpr(funcName));
                 SetScopeAndParent(call, _compiler.MainFunction.Body, _compiler.MainFunction.Body.SubScope);
                 PostPrepareExprScoping(call);
-                PostPrepareExprInference(call);
+                PostPrepareExprInference(call, inInfo, ref outInfo);
 
                 // TODO: sort the static ctors calls by hierarchy
                 _compiler.MainFunction.Body.Statements.Insert(0, call);
