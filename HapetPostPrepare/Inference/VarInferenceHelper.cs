@@ -247,6 +247,14 @@ namespace HapetPostPrepare
                             castResult.CouldBeCasted = true;
                         break;
                     }
+
+                // this is to allow to do this 'int[] arr = null'
+                case ArrayType when exprType is PointerType ptr4 && ptr4.TargetType == null:
+                case StringType when exprType is PointerType ptr5 && ptr5.TargetType == null:
+                    outExpr = cst;
+                    if (castResult != null)
+                        castResult.CouldBeCasted = true;
+                    break;
                     // TODO: other checks also. warn: class and class should be checked properly!!!
             }
 

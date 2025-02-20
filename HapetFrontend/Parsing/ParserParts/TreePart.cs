@@ -420,6 +420,7 @@ namespace HapetFrontend.Parsing
                                 SkipNewlines();
 
                                 // TODO: doc 
+                                indexerDecl.Name = indexerDecl.Name.GetCopy("indexer__");
                                 var prop = PreparePropertyDecl(indexerDecl, "") as AstPropertyDecl;
                                 var indexer = new AstIndexerDecl(prop);
                                 indexer.IndexerParameter = new AstParamDecl(unknownDecl.Type, unknownDecl.Name, null, "", unknownDecl);

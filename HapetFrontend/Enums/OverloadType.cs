@@ -6,6 +6,5 @@
         BinaryOperator,
         ImplicitCast,
         ExplicitCast,
-        Indexer,
     }
 }

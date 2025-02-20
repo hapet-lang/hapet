@@ -16,10 +16,6 @@ namespace HapetFrontend.Ast.Expressions
             AstExpression outExpr;
             switch (tp)
             {
-                case StringType:
-                    outExpr = new AstStringExpr("", null, orig);
-                    outExpr.OutType = StringType.GetInstance(orig.Scope);
-                    break;
                 case IntType:
                     outExpr = new AstNumberExpr(NumberData.FromInt(0), null, tp, orig);
                     break;
@@ -34,8 +30,10 @@ namespace HapetFrontend.Ast.Expressions
                     break;
                 case ClassType:
                 case PointerType:
+                case ArrayType:
+                case StringType:
                     outExpr = new AstNullExpr(tp, orig);
-                    break;
+                        break;
                 // TODO: other shite
                 default:
                     outExpr = null;

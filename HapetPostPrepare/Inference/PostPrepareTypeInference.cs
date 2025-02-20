@@ -158,8 +158,7 @@ namespace HapetPostPrepare
                     // register operator decl
                     if (funcDecl is AstOverloadDecl overDecl2)
                     {
-                        if (overDecl2.OverloadType == OverloadType.UnaryOperator ||
-                            overDecl2.OverloadType == OverloadType.Indexer)
+                        if (overDecl2.OverloadType == OverloadType.UnaryOperator)
                         {
                             var op = new UserDefinedUnaryOperator(overDecl2.Operator, overDecl2.Returns.OutType, overDecl2.Parameters[0].Type.OutType);
                             op.Function = funcDecl.Type.OutType as FunctionType;
@@ -1371,6 +1370,46 @@ namespace HapetPostPrepare
         {
             PostPrepareExprInference(arrayAccExpr.ParameterExpr);
             PostPrepareExprInference(arrayAccExpr.ObjectName);
+
+            // at first try to find indexer overload
+            string typeName = null;
+            HapetType firstParamType = null;
+            AstExpression pseudoFirstArg = null;
+            Scope subScope = null;
+            AstDeclaration declItself = null;
+            if (arrayAccExpr.ObjectName.OutType is PointerType ptrT && ptrT.TargetType is ClassType clsT)
+            {
+                typeName = clsT.Declaration.Name.Name;
+                firstParamType = arrayAccExpr.ObjectName.OutType;
+                pseudoFirstArg = arrayAccExpr.ObjectName;
+                subScope = clsT.Declaration.SubScope;
+                declItself = clsT.Declaration;
+            }
+            else if (arrayAccExpr.ObjectName.OutType is StructType strT)
+            {
+                typeName = strT.Declaration.Name.Name;
+                firstParamType = PointerType.GetPointerType(arrayAccExpr.ObjectName.OutType);
+                pseudoFirstArg = new AstPointerExpr(arrayAccExpr.ObjectName, false, arrayAccExpr.ObjectName);
+                PostPrepareExprInference(pseudoFirstArg);
+                subScope = strT.Declaration.SubScope;
+                declItself = strT.Declaration;
+            }
+            if (typeName != null)
+            {
+                // getting the name but with object first param
+                var newName = $"{typeName}::get_indexer__({HapetType.AsString(firstParamType)}:{HapetType.AsString(arrayAccExpr.ParameterExpr.OutType)})";
+
+                List<AstExpression> argsWithStructParam = new List<AstExpression>() { arrayAccExpr.ParameterExpr };
+                argsWithStructParam.Insert(0, pseudoFirstArg);
+                var smbl = GetFuncFromCandidates(newName, argsWithStructParam, subScope, declItself, out var casts);
+
+                if (smbl != null && smbl.Decl is AstFuncDecl funcDecl)
+                {
+                    arrayAccExpr.OutType = funcDecl.Returns.OutType;
+                    return; // everything is ok :)
+                }
+            }
+            
 
             if (arrayAccExpr.ParameterExpr.OutType is not IntType)
             {
