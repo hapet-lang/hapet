@@ -376,7 +376,7 @@ namespace HapetFrontend.Parsing
                                 var next = PeekToken();
                                 if (next.Type == TokenType.CloseBracket || next.Type == TokenType.EOF)
                                     break;
-                                args.Add(ParseExpression(false));
+                                args.Add(ParseExpression(true));
                                 SkipNewlines();
 
                                 next = PeekToken();
@@ -408,8 +408,20 @@ namespace HapetFrontend.Parsing
 
                             if (args.First() is not AstExpression firstExpr)
                             {
-                                ReportMessage(args.First().Location, [], ErrorCode.Get(CTEN.ArrayAccNotExpr));
-                                return expr;
+                                // if it is not an expr - then this is probably an indexer overload
+                                if (args.First() is not UnknownDecl unknownDecl || 
+                                    expr is not UnknownDecl indexerDecl || 
+                                    indexerDecl.Name.Name != "this")
+                                {
+                                    ReportMessage(args.First().Location, [], ErrorCode.Get(CTEN.ArrayAccNotExpr));
+                                    return expr;
+                                }
+
+                                // TODO: doc 
+                                var indexer = new AstIndexerDecl(indexerDecl.Type, indexerDecl.Name.GetCopy("Indexer"), "", indexerDecl);
+                                indexer.IndexerParameter = new AstParamDecl(unknownDecl.Type, unknownDecl.Name, null, "", unknownDecl);
+
+                                return null;
                             }
                             var arrAcc = new AstArrayAccessExpr(expr as AstExpression, firstExpr, new Location(expr.Beginning, end));
                             expr = new AstNestedExpr(arrAcc, null, arrAcc);

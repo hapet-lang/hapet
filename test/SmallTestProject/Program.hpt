@@ -10,26 +10,25 @@ public static class Program
 	public static int Main(string[] args)
 	{
 		var a = new TestCls();
-		a.A = 15;
-		TestCls2 b = a;
+		a.A = new int[] { 1, 2, 3 };
 
-		return b.B;
+		return a[1];
 	}
 }
 
 public class TestCls
 {
-	public int A { get; set; }
+	public int[] A { get; set; }
 
-	public static implicit operator TestCls2(TestCls a)
+	public int this[int index]
 	{
-		var bb = new TestCls2();
-		bb.B = a.A;
-		return bb;
+		get
+		{
+			return A[index];
+		}
+		set
+		{
+			A[index] = value;
+		}
 	}
-}
-
-public class TestCls2
-{
-	public int B { get; set; }
 }
