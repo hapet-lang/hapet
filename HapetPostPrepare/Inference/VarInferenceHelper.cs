@@ -15,6 +15,17 @@ namespace HapetPostPrepare
 {
     public partial class PostPrepare
     {
+        private AstExpression GetPreparedAst(HapetType hpt, AstStatement parent)
+        {
+            var ast = hpt.GetAst();
+            SetScopeAndParent(ast, parent);
+            PostPrepareExprScoping(ast);
+
+            var tmp = OutInfo.Default;
+            PostPrepareExprInference(ast, InInfo.Default, ref tmp);
+            return ast;
+        }
+
         /// <summary>
         /// The method is used to prepare correct assignment.
         /// Like 'float a = 6;' should be allowed and 'int a = 6.0;' should not be allowed

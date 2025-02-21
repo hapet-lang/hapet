@@ -20,7 +20,7 @@ namespace HapetFrontend.Types
 
         public override string TypeName => "var";
 
-        public override AstStatement GetAst()
+        public override AstExpression GetAst()
         {
             return new AstNestedExpr(new AstIdExpr(ToString()), null);
         }

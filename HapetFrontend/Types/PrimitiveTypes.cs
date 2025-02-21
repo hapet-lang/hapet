@@ -13,7 +13,7 @@ namespace HapetFrontend.Types
 
         public override string TypeName => ToString();
 
-        public override AstStatement GetAst()
+        public override AstExpression GetAst()
         {
             return new AstNestedExpr(new AstIdExpr(ToString()), null);
         }
@@ -28,7 +28,7 @@ namespace HapetFrontend.Types
 
         public override string TypeName => ToString();
 
-        public override AstStatement GetAst()
+        public override AstExpression GetAst()
         {
             return new AstNestedExpr(new AstIdExpr(ToString()), null);
         }
@@ -44,7 +44,7 @@ namespace HapetFrontend.Types
 
         public override string TypeName => ToString();
 
-        public override AstStatement GetAst()
+        public override AstExpression GetAst()
         {
             return new AstNestedExpr(new AstIdExpr(ToString()), null);
         }
@@ -154,7 +154,7 @@ namespace HapetFrontend.Types
 
         public override string TypeName => ToString();
 
-        public override AstStatement GetAst()
+        public override AstExpression GetAst()
         {
             return new AstNestedExpr(new AstIdExpr(ToString()), null);
         }
@@ -253,7 +253,7 @@ namespace HapetFrontend.Types
 
         public override string TypeName => "ptr";
 
-        public override AstStatement GetAst()
+        public override AstExpression GetAst()
         {
             return new AstPointerExpr(TargetType.GetAst() as AstExpression);
         }
@@ -337,7 +337,7 @@ namespace HapetFrontend.Types
 
         public override string TypeName => "ref";
 
-        public override AstStatement GetAst()
+        public override AstExpression GetAst()
         {
             // TODO: check - is it ok to pu here Pointer expr?
             return new AstPointerExpr(TargetType.GetAst() as AstExpression);
@@ -408,7 +408,7 @@ namespace HapetFrontend.Types
 
         public override string TypeName => $"array";
 
-        public override AstStatement GetAst()
+        public override AstExpression GetAst()
         {
             return new AstArrayExpr(TargetType.GetAst() as AstExpression);
         }
@@ -481,7 +481,7 @@ namespace HapetFrontend.Types
 
         public override string TypeName => "char";
 
-        public override AstStatement GetAst()
+        public override AstExpression GetAst()
         {
             return new AstNestedExpr(new AstIdExpr(ToString()), null);
         }
@@ -555,9 +555,9 @@ namespace HapetFrontend.Types
 
         public override string TypeName => "string";
 
-        public override AstStatement GetAst()
+        public override AstExpression GetAst()
         {
-            return new AstNestedExpr(new AstIdExpr(TypeName), null);
+            return new AstNestedExpr(new AstIdExpr("System.String"), null);
         }
 
         private StringType(AstStructDecl astStructDecl) : base(astStructDecl) { }
@@ -580,7 +580,7 @@ namespace HapetFrontend.Types
 
         public override string TypeName => ToString();
 
-        public override AstStatement GetAst()
+        public override AstExpression GetAst()
         {
             return new AstNestedExpr(new AstIdExpr(TypeName), null);
         }
@@ -623,7 +623,7 @@ namespace HapetFrontend.Types
 
         public override string TypeName => "ptrdiff";
 
-        public override AstStatement GetAst()
+        public override AstExpression GetAst()
         {
             return new AstNestedExpr(new AstIdExpr(TypeName), null);
         }

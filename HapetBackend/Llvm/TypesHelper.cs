@@ -9,10 +9,6 @@ using HapetFrontend.Parsing;
 using HapetFrontend.Scoping;
 using HapetFrontend.Types;
 using LLVMSharp.Interop;
-using System;
-using System.Diagnostics;
-using System.Runtime.InteropServices;
-using static System.Net.WebRequestMethods;
 
 namespace HapetBackend.Llvm
 {

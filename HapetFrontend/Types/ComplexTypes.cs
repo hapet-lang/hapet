@@ -18,7 +18,7 @@ namespace HapetFrontend.Types
 
         public static ClassType LiteralType = new ClassType(null);
 
-        public override AstStatement GetAst()
+        public override AstExpression GetAst()
         {
             return new AstNestedExpr(new AstIdExpr(ToString()), null);
         }
@@ -56,7 +56,7 @@ namespace HapetFrontend.Types
 
         public override string TypeName => "tuple";
 
-        public override AstStatement GetAst()
+        public override AstExpression GetAst()
         {
             return new AstNestedExpr(new AstIdExpr(ToString()), null);
         }
@@ -117,7 +117,7 @@ namespace HapetFrontend.Types
         /// </summary>
         public bool IsUserDefinedAlignment { get; set; } = false;
 
-        public override AstStatement GetAst()
+        public override AstExpression GetAst()
         {
             return new AstNestedExpr(new AstIdExpr(ToString()), null);
         }
@@ -184,7 +184,7 @@ namespace HapetFrontend.Types
 
         public override string TypeName => "enum";
 
-        public override AstStatement GetAst()
+        public override AstExpression GetAst()
         {
             return new AstNestedExpr(new AstIdExpr(ToString()), null);
         }
@@ -217,7 +217,7 @@ namespace HapetFrontend.Types
 
         public override string TypeName => "func";
 
-        public override AstStatement GetAst()
+        public override AstExpression GetAst()
         {
             return new AstNestedExpr(new AstIdExpr(Declaration.Name.Name), null);
         }
@@ -315,7 +315,7 @@ namespace HapetFrontend.Types
 
         public override string TypeName => "delegate";
 
-        public override AstStatement GetAst()
+        public override AstExpression GetAst()
         {
             return new AstNestedExpr(new AstIdExpr(Declaration.Name.Name), null);
         }

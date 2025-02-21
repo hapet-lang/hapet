@@ -555,7 +555,7 @@ namespace HapetPostPrepare
                                 binExpr.ActualOperator is not IUserDefinedOperator)
                             {
                                 // cast if they are not the same haha
-                                binExpr.Left = PostPrepareExpressionWithType(binExpr.OutType, leftExpr);
+                                binExpr.Left = PostPrepareExpressionWithType(GetPreparedAst(binExpr.OutType, binExpr), leftExpr);
                             }
                             // creating cast to result type if it is not a bool expr
                             if (rightExpr.OutType != binExpr.OutType && 
@@ -564,7 +564,7 @@ namespace HapetPostPrepare
                                 binExpr.ActualOperator is not IUserDefinedOperator)
                             {
                                 // cast if they are not the same haha
-                                binExpr.Right = PostPrepareExpressionWithType(binExpr.OutType, rightExpr);
+                                binExpr.Right = PostPrepareExpressionWithType(GetPreparedAst(binExpr.OutType, binExpr), rightExpr);
                             }
 
                             // creating cast to result type if it is a bool expr and left and right are not the same types
@@ -576,9 +576,9 @@ namespace HapetPostPrepare
                                 HapetType castingType = HapetType.GetPreferredTypeOf(leftExpr.OutType, rightExpr.OutType, out bool tookLeft);
                                 // if the left type was taken then change the right expr
                                 if (tookLeft)
-                                    binExpr.Right = PostPrepareExpressionWithType(castingType, rightExpr);
+                                    binExpr.Right = PostPrepareExpressionWithType(GetPreparedAst(castingType, binExpr), rightExpr);
                                 else
-                                    binExpr.Left = PostPrepareExpressionWithType(castingType, leftExpr);
+                                    binExpr.Left = PostPrepareExpressionWithType(GetPreparedAst(castingType, binExpr), leftExpr);
                             }
 
                             // if the value could be evaluated at the compile time
@@ -1407,7 +1407,7 @@ namespace HapetPostPrepare
                 var e = arrayExpr.Elements[i];
                 PostPrepareExprInference(e, inInfo, ref outInfo);
                 // try to use implicit cast if it can be used
-                arrayExpr.Elements[i] = PostPrepareExpressionWithType(expectingElementType, e);
+                arrayExpr.Elements[i] = PostPrepareExpressionWithType(GetPreparedAst(expectingElementType, arrayExpr), e);
             }
 
             // preparing the array
@@ -1573,7 +1573,7 @@ namespace HapetPostPrepare
                 }
 
                 // trying to implicitly cast cast value into switch sub expr
-                cc.Pattern = PostPrepareExpressionWithType(switchStmt.SubExpression.OutType, cc.Pattern);
+                cc.Pattern = PostPrepareExpressionWithType(GetPreparedAst(switchStmt.SubExpression.OutType, switchStmt.SubExpression), cc.Pattern);
 
                 // check that the value is a const 
                 if (cc.Pattern.OutValue == null)
@@ -1607,7 +1607,7 @@ namespace HapetPostPrepare
                 if (_currentFunction.Returns.OutType is not DelegateType)
                     PostPrepareExprInference(returnStmt.ReturnExpression, inInfo, ref outInfo);
                 // casting to func return type
-                returnStmt.ReturnExpression = PostPrepareExpressionWithType(_currentFunction.Returns.OutType, returnStmt.ReturnExpression);
+                returnStmt.ReturnExpression = PostPrepareExpressionWithType(GetPreparedAst(_currentFunction.Returns.OutType, _currentFunction.Returns), returnStmt.ReturnExpression);
             }
             else if (returnStmt.ReturnExpression == null && _currentFunction.Returns.OutType is not VoidType)
             {
@@ -1663,7 +1663,7 @@ namespace HapetPostPrepare
                         _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, a, [], ErrorCode.Get(CTEN.NonComptimeAttrArg));
 
                     // is going to error if they are different types :)
-                    attrStmt.Parameters[i] = PostPrepareExpressionWithType(theAttrField.Type.OutType, a);
+                    attrStmt.Parameters[i] = PostPrepareExpressionWithType(GetPreparedAst(theAttrField.Type.OutType, theAttrField.Type), a);
                 }
                 else
                 {
@@ -1715,7 +1715,7 @@ namespace HapetPostPrepare
                 // if it is not a default
                 PostPrepareExprInference(value, inInfo, ref outInfo);
             }
-            return PostPrepareExpressionWithType(targetType, value);
+            return PostPrepareExpressionWithType(GetPreparedAst(targetType, value), value);
         }
 
         private bool CheckIfCouldBeAccessed(AstStatement accessor, AstDeclaration accessee)

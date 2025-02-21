@@ -41,7 +41,7 @@ namespace HapetFrontend.Types
         public virtual int GetSize() => _size;
         public virtual int GetAlignment() => _alignment;
 
-        public abstract AstStatement GetAst();
+        public abstract AstExpression GetAst();
 
         public void SetSizeAndAlignment(int size, int align)
         {
