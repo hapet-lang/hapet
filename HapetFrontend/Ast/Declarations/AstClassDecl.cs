@@ -21,6 +21,12 @@ namespace HapetFrontend.Ast.Declarations
         public List<AstNestedExpr> InheritedFrom { get; set; } = new List<AstNestedExpr>();
 
         /// <summary>
+        /// Generic name aliases like T in:
+        /// public class TestCls<T> { ... }
+        /// </summary>
+        public List<AstNestedExpr> GenericNames { get; set; } = new List<AstNestedExpr>();
+
+        /// <summary>
         /// 'true' if the declaration is an interface
         /// </summary>
         public bool IsInterface { get; set; }

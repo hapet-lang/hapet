@@ -149,6 +149,7 @@ namespace HapetFrontend.Parsing
         KwRef, // would be used anywhere?
         KwOut, // would be used anywhere?
         KwParams, // would be used anywhere?
+        KwWhere, // for generic constrains
 
         KwPublic,
         KwInternal,
