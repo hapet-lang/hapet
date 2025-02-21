@@ -13,3 +13,8 @@ public static class Program
 	}
 }
 
+public class AnimeCls<T>
+{
+	public T AnimeProp { get; set; }
+}
+
