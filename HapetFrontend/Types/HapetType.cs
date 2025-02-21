@@ -1,4 +1,5 @@
-﻿using HapetFrontend.Ast.Expressions;
+﻿using HapetFrontend.Ast;
+using HapetFrontend.Ast.Expressions;
 using System.Xml.Linq;
 
 namespace HapetFrontend.Types
@@ -39,6 +40,8 @@ namespace HapetFrontend.Types
 
         public virtual int GetSize() => _size;
         public virtual int GetAlignment() => _alignment;
+
+        public abstract AstStatement GetAst();
 
         public void SetSizeAndAlignment(int size, int align)
         {

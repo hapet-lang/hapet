@@ -1,4 +1,6 @@
-﻿using HapetFrontend.Ast.Declarations;
+﻿using HapetFrontend.Ast;
+using HapetFrontend.Ast.Declarations;
+using HapetFrontend.Ast.Expressions;
 using HapetFrontend.Helpers;
 using Microsoft.VisualBasic.FileIO;
 using Newtonsoft.Json;
@@ -15,6 +17,11 @@ namespace HapetFrontend.Types
         public override string TypeName => "class";
 
         public static ClassType LiteralType = new ClassType(null);
+
+        public override AstStatement GetAst()
+        {
+            return new AstNestedExpr(new AstIdExpr(ToString()), null);
+        }
 
         public ClassType(AstClassDecl decl)
             : base()
@@ -48,6 +55,11 @@ namespace HapetFrontend.Types
         public (HapetType type, string name)[] Members { get; }
 
         public override string TypeName => "tuple";
+
+        public override AstStatement GetAst()
+        {
+            return new AstNestedExpr(new AstIdExpr(ToString()), null);
+        }
 
         private TupleType((HapetType type, string name)[] members) : base()
         {
@@ -104,6 +116,11 @@ namespace HapetFrontend.Types
         /// The property is set to 'true' in code gen when StructLayoutAttribute found
         /// </summary>
         public bool IsUserDefinedAlignment { get; set; } = false;
+
+        public override AstStatement GetAst()
+        {
+            return new AstNestedExpr(new AstIdExpr(ToString()), null);
+        }
 
         public StructType(AstStructDecl decl)
             : base()
@@ -167,6 +184,11 @@ namespace HapetFrontend.Types
 
         public override string TypeName => "enum";
 
+        public override AstStatement GetAst()
+        {
+            return new AstNestedExpr(new AstIdExpr(ToString()), null);
+        }
+
         public EnumType(AstEnumDecl decl) : base()
         {
             Declaration = decl;
@@ -194,6 +216,11 @@ namespace HapetFrontend.Types
         public AstFuncDecl Declaration { get; set; }
 
         public override string TypeName => "func";
+
+        public override AstStatement GetAst()
+        {
+            return new AstNestedExpr(new AstIdExpr(Declaration.Name.Name), null);
+        }
 
         public FunctionType(AstFuncDecl decl)
             : base(PointerType.PointerSize, PointerType.PointerAlignment)
@@ -287,6 +314,11 @@ namespace HapetFrontend.Types
         public AstDelegateDecl Declaration { get; set; }
 
         public override string TypeName => "delegate";
+
+        public override AstStatement GetAst()
+        {
+            return new AstNestedExpr(new AstIdExpr(Declaration.Name.Name), null);
+        }
 
         public DelegateType(AstDelegateDecl decl)
             : base(PointerType.PointerSize, PointerType.PointerAlignment)

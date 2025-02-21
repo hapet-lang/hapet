@@ -99,9 +99,6 @@ namespace HapetBackend.Llvm
                         return HapetTypeToLLVMType(r.TargetType).GetPointerTo();
                     }
 
-                case ThisType self:
-                    return _context.Int8Type;
-
                 case VoidType _:
                     return _context.VoidType;
 

@@ -145,7 +145,7 @@ namespace HapetPostPrepare
                     }
 
                     CastResult castResult = new CastResult();
-                    var cst = PostPrepareExpressionWithType(par.Type.OutType, arg, castResult);
+                    var cst = PostPrepareExpressionWithType(par.Type, arg, castResult);
                     if (castResult.CouldBeCasted)
                     {
                         score += 1;

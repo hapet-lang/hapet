@@ -10,10 +10,13 @@ public static class Program
 	public static int Main(string[] args)
 	{
 		var a = new TestCls();
-		a.A = new int[] { 1, 2, 3 };
+		var aH = new Holder();
+		aH.Tst = a;
+		aH.Tst.A = new int[] { 1, 2, 3 };
 
-		a[1] = 555;
-		return a[1];
+		//aH.Tst[1] = 555;
+		//return aH.Tst[1];
+		return aH.Tst.A[2];
 	}
 }
 
@@ -32,4 +35,9 @@ public class TestCls
 			A[index] = value;
 		}
 	}
+}
+
+public class Holder
+{
+	public TestCls Tst { get; set; }
 }

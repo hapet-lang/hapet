@@ -1,4 +1,5 @@
-﻿using HapetFrontend.Ast.Declarations;
+﻿using HapetFrontend.Ast;
+using HapetFrontend.Ast.Declarations;
 using HapetFrontend.Ast.Expressions;
 using HapetFrontend.Scoping;
 using System.Numerics;
@@ -12,6 +13,11 @@ namespace HapetFrontend.Types
 
         public override string TypeName => ToString();
 
+        public override AstStatement GetAst()
+        {
+            return new AstNestedExpr(new AstIdExpr(ToString()), null);
+        }
+
         private VoidType() : base(0, 0) { }
     }
 
@@ -21,6 +27,11 @@ namespace HapetFrontend.Types
         public override string ToString() => "bool";
 
         public override string TypeName => ToString();
+
+        public override AstStatement GetAst()
+        {
+            return new AstNestedExpr(new AstIdExpr(ToString()), null);
+        }
 
         private BoolType() : base(1, 1) { }
     }
@@ -32,6 +43,11 @@ namespace HapetFrontend.Types
         public static IntType DefaultType => GetIntType(4, true);
 
         public override string TypeName => ToString();
+
+        public override AstStatement GetAst()
+        {
+            return new AstNestedExpr(new AstIdExpr(ToString()), null);
+        }
 
         protected IntType(int size, int align, bool sign) : base(size, align)
         {
@@ -138,6 +154,11 @@ namespace HapetFrontend.Types
 
         public override string TypeName => ToString();
 
+        public override AstStatement GetAst()
+        {
+            return new AstNestedExpr(new AstIdExpr(ToString()), null);
+        }
+
         private FloatType(int size, int align) : base(size, align) { }
 
         public static FloatType GetFloatType(int bytes)
@@ -232,6 +253,11 @@ namespace HapetFrontend.Types
 
         public override string TypeName => "ptr";
 
+        public override AstStatement GetAst()
+        {
+            return new AstPointerExpr(TargetType.GetAst() as AstExpression);
+        }
+
         private PointerType(HapetType target) : base(
             target switch
             {
@@ -311,6 +337,12 @@ namespace HapetFrontend.Types
 
         public override string TypeName => "ref";
 
+        public override AstStatement GetAst()
+        {
+            // TODO: check - is it ok to pu here Pointer expr?
+            return new AstPointerExpr(TargetType.GetAst() as AstExpression);
+        }
+
         private ReferenceType(HapetType target) : base(PointerType.PointerSize, PointerType.PointerAlignment)
         {
             TargetType = target;
@@ -375,6 +407,11 @@ namespace HapetFrontend.Types
         public HapetType TargetType { get; set; }
 
         public override string TypeName => $"array";
+
+        public override AstStatement GetAst()
+        {
+            return new AstArrayExpr(TargetType.GetAst() as AstExpression);
+        }
 
         private ArrayType(HapetType target, AstStructDecl arrStructDecl) : base(arrStructDecl)
         {
@@ -443,6 +480,11 @@ namespace HapetFrontend.Types
         public static CharType DefaultType => GetCharType(2);
 
         public override string TypeName => "char";
+
+        public override AstStatement GetAst()
+        {
+            return new AstNestedExpr(new AstIdExpr(ToString()), null);
+        }
 
         private CharType(int size) : base(size, size)
         {
@@ -513,6 +555,11 @@ namespace HapetFrontend.Types
 
         public override string TypeName => "string";
 
+        public override AstStatement GetAst()
+        {
+            return new AstNestedExpr(new AstIdExpr(TypeName), null);
+        }
+
         private StringType(AstStructDecl astStructDecl) : base(astStructDecl) { }
     }
 
@@ -532,6 +579,11 @@ namespace HapetFrontend.Types
         }
 
         public override string TypeName => ToString();
+
+        public override AstStatement GetAst()
+        {
+            return new AstNestedExpr(new AstIdExpr(TypeName), null);
+        }
 
         private IntPtrType(int size, int align) : base(size, align, false) { }
         public override string ToString() => "uintptr";
@@ -570,6 +622,11 @@ namespace HapetFrontend.Types
         }
 
         public override string TypeName => "ptrdiff";
+
+        public override AstStatement GetAst()
+        {
+            return new AstNestedExpr(new AstIdExpr(TypeName), null);
+        }
 
         private PtrDiffType(int size, int align) : base(size, align, true) { }
         public override string ToString() => "ptrdiff";

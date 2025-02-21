@@ -1,31 +1,14 @@
-﻿using HapetFrontend.Ast.Declarations;
+﻿using HapetFrontend.Ast;
+using HapetFrontend.Ast.Declarations;
+using HapetFrontend.Ast.Expressions;
 using Newtonsoft.Json;
+using System.Xml.Linq;
 
 namespace HapetFrontend.Types
 {
     public abstract class AbstractType : HapetType
     {
         protected AbstractType() : base(0, 0) { }
-    }
-
-    /// <summary>
-    /// This is like 'this.a = ...' in a class
-    /// </summary>
-    public class ThisType : AbstractType
-    {
-        public HapetType ClassType { get; }
-
-        public override string TypeName => "this";
-
-        public ThisType(HapetType classType)
-        {
-            this.ClassType = classType;
-        }
-
-        public override string ToString()
-        {
-            return "this";
-        }
     }
 
     /// <summary>
@@ -36,6 +19,11 @@ namespace HapetFrontend.Types
         public static VarType Instance { get; } = new VarType();
 
         public override string TypeName => "var";
+
+        public override AstStatement GetAst()
+        {
+            return new AstNestedExpr(new AstIdExpr(ToString()), null);
+        }
 
         private VarType()
         {

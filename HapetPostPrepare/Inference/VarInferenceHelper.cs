@@ -23,7 +23,7 @@ namespace HapetPostPrepare
         /// <param name="varDecl">The var decl</param>
         private void PostPrepareVariableAssign(AstVarDecl varDecl)
         {
-            var newExpr = PostPrepareExpressionWithType(varDecl.Type.OutType, varDecl.Initializer);
+            var newExpr = PostPrepareExpressionWithType(varDecl.Type, varDecl.Initializer);
             varDecl.Initializer = newExpr;
         }
 
@@ -33,7 +33,7 @@ namespace HapetPostPrepare
         /// <param name="assignStmt">The var assignment</param>
         private void PostPrepareVariableAssign(AstAssignStmt assignStmt)
         {
-            var newExpr = PostPrepareExpressionWithType(assignStmt.Target.OutType, assignStmt.Value);
+            var newExpr = PostPrepareExpressionWithType(assignStmt.Target, assignStmt.Value);
             assignStmt.Value = newExpr;
         }
 
@@ -44,8 +44,9 @@ namespace HapetPostPrepare
         /// <param name="neededType">The type that should be outed</param>
         /// <param name="expr">The expr to be casted</param>
         /// <returns>Casted expr</returns>
-        public AstExpression PostPrepareExpressionWithType(HapetType neededType, AstExpression expr, CastResult castResult = null)
+        public AstExpression PostPrepareExpressionWithType(AstExpression neededTypeExpr, AstExpression expr, CastResult castResult = null)
         {
+            HapetType neededType = neededTypeExpr.OutType;
             HapetType exprType = expr.OutType;
             AstExpression outExpr = null;
 
@@ -96,23 +97,17 @@ namespace HapetPostPrepare
             }
 
 
-            AstExpression tpName;
-            if (neededType is ArrayType arrT)
-            {
-                var tpNameInside = new AstIdExpr(arrT.TargetType.ToString());
-                tpNameInside.OutType = arrT.TargetType;
-                tpNameInside.Scope = expr.Scope;
-                tpName = new AstArrayExpr(tpNameInside);
-                tpName.OutType = neededType;
-                tpName.Scope = expr.Scope;
-            }
-            else
-            {
-                tpName = new AstIdExpr(neededType.ToString());
-                tpName.OutType = neededType;
-                tpName.Scope = expr.Scope;
-            }
-            var cst = new AstCastExpr(tpName, expr, expr);
+            //AstExpression tpName;
+            //if (neededType is ArrayType arrT)
+            //{
+            //    var tpNameInside = new AstIdExpr(arrT.TargetType.ToString());
+            //    tpNameInside.OutType = arrT.TargetType;
+            //    tpNameInside.Scope = expr.Scope;
+            //    tpName = new AstArrayExpr(tpNameInside);
+            //    tpName.OutType = neededType;
+            //    tpName.Scope = expr.Scope;
+            //}
+            var cst = new AstCastExpr(neededTypeExpr, expr, expr);
             cst.OutType = neededType;
             cst.Scope = expr.Scope;
             cst.OutValue = expr.OutValue;
