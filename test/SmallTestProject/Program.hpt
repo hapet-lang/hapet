@@ -14,9 +14,8 @@ public static class Program
 		aH.Tst = a;
 		aH.Tst.A = new int[] { 1, 2, 3 };
 
-		//aH.Tst[1] = 555;
-		//return aH.Tst[1];
-		return aH.Tst.A[2];
+		aH.Tst[1] = 555;
+		return aH.Tst[1];
 	}
 }
 

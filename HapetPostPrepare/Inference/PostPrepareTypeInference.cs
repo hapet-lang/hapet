@@ -1416,8 +1416,12 @@ namespace HapetPostPrepare
 
         private void PostPrepareArrayAccessExprInference(AstArrayAccessExpr arrayAccExpr, InInfo inInfo, ref OutInfo outInfo)
         {
+            // set propertySet to false because if we are in ArrayAccess - then ObjectName if it is property - has to be 'get_prop'
+            var savedPropSet = inInfo.PropertySet;
+            inInfo.PropertySet = false;
             PostPrepareExprInference(arrayAccExpr.ParameterExpr, inInfo, ref outInfo);
             PostPrepareExprInference(arrayAccExpr.ObjectName, inInfo, ref outInfo);
+            inInfo.PropertySet = savedPropSet;
 
             // at first try to find indexer overload
             string typeName = null;

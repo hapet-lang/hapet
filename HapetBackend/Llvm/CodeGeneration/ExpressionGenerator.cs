@@ -511,7 +511,7 @@ namespace HapetBackend.Llvm
                 }
 
                 // is that smth like 'base.Anime()' call
-                bool isBaseCall = expr.TypeOrObjectName == null ? false : expr.TypeOrObjectName.TryFlatten(_messageHandler, _currentSourceFile) == "base";
+                bool isBaseCall = expr.TypeOrObjectName == null ? false : expr.TypeOrObjectName.TryFlatten(null, null) == "base";
 
                 // the return name has to be empty if ret value of func is void
                 // also save the ret value into a var
