@@ -105,6 +105,8 @@
         TooManyParamsAfterOvOp          = 0x2050,
         UnexpectedUnOpToOverload        = 0x2051,
         UnexpectedBinOpToOverload       = 0x2052,
+        GenericTypeNameExpected         = 0x2053,
+        GenericTypeNotFound             = 0x2054,
 
         // post preparer errors up to 0x5000
         EnumCouldNotBeAssigned          = 0x3001,

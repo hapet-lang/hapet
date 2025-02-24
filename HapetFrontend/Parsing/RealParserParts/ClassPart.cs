@@ -2,6 +2,7 @@
 using HapetFrontend.Ast.Declarations;
 using HapetFrontend.Ast.Expressions;
 using HapetFrontend.Errors;
+using System.Collections.Generic;
 
 namespace HapetFrontend.Parsing
 {
@@ -12,6 +13,8 @@ namespace HapetFrontend.Parsing
             TokenLocation beg = null, end = null;
             var declarations = new List<AstDeclaration>();
             var inherited = new List<AstNestedExpr>();
+            var generics = new List<AstIdExpr>();
+            var genericConstrains = new Dictionary<AstIdExpr, List<AstNestedExpr>>();
             AstIdExpr className = null;
             bool isInterface = false;
 
@@ -43,6 +46,37 @@ namespace HapetFrontend.Parsing
                 className = idExpr;
             }
 
+            // checking generics
+            if (CheckToken(TokenType.Less))
+            {
+                Consume(TokenType.Less, ErrMsg("<", "before generic types"));
+                SkipNewlines();
+
+                while (CheckToken(TokenType.Identifier))
+                {
+                    var ident = ParseIdentifierExpression();
+                    if (ident.RightPart is not AstIdExpr identExpr)
+                    {
+                        ReportMessage(ident, [], ErrorCode.Get(CTEN.CommonIdentifierExpected));
+                        continue;
+                    }
+
+                    generics.Add(identExpr);
+                    // if there is something else
+                    if (CheckToken(TokenType.Comma))
+                    {
+                        Consume(TokenType.Comma, ErrMsg(",", "before the next generic type"));
+                        continue;
+                    }
+
+                    // if there is nothing else
+                    break;
+                }
+
+                Consume(TokenType.Greater, ErrMsg(">", "after generic types"));
+                SkipNewlines();
+            }
+
             // checking for inheritance
             if (CheckToken(TokenType.Colon))
             {
@@ -65,6 +99,62 @@ namespace HapetFrontend.Parsing
                 }
             }
             SkipNewlines();
+
+            // checking for generic constrains
+            // https://learn.microsoft.com/en-us/dotnet/csharp/programming-guide/generics/constraints-on-type-parameters
+            while (CheckToken(TokenType.KwWhere))
+            {
+                Consume(TokenType.KwWhere, ErrMsg("where", "before generic constrains"));
+
+                // generic type name has to be here
+                if (!CheckToken(TokenType.Identifier))
+                {
+                    ReportMessage(PeekToken().Location, [], ErrorCode.Get(CTEN.GenericTypeNameExpected));
+                    continue;
+                }
+                // has to be identifier (nested is also not allowed!!!)
+                var typeNameExpr = ParseIdentifierExpression();
+                if (typeNameExpr.RightPart is not AstIdExpr nameIdentExpr)
+                {
+                    ReportMessage(typeNameExpr, [], ErrorCode.Get(CTEN.CommonIdentifierExpected));
+                    continue;
+                }
+                // check if the generic type even exists
+                var nameTmp = generics.FirstOrDefault(x => x.Name == nameIdentExpr.Name);
+                if (nameTmp == null)
+                {
+                    ReportMessage(typeNameExpr, [], ErrorCode.Get(CTEN.GenericTypeNotFound));
+                    continue;
+                }
+                // for dictionary
+                nameIdentExpr = nameTmp;
+
+                // get the colon before constain types
+                var tmp = Consume(TokenType.Colon, ErrMsg(":", "before generic constrain types"));
+                if (tmp == null)
+                    continue;
+
+                List<AstNestedExpr> constrains = new List<AstNestedExpr>();
+                while (CheckToken(TokenType.Identifier))
+                {
+                    var ident = ParseIdentifierExpression();
+                    constrains.Add(ident);
+                    // if there is something else
+                    if (CheckToken(TokenType.Comma))
+                    {
+                        Consume(TokenType.Comma, ErrMsg(",", "before the next constrain"));
+                        continue;
+                    }
+
+                    // if there is nothing else
+                    break;
+                }
+
+                // add it
+                genericConstrains.Add(nameIdentExpr, constrains);
+
+                SkipNewlines();
+            }
 
             ConsumeUntil(TokenType.OpenBrace, ErrMsg("{", "at beginning of class body"), true);
 
@@ -118,7 +208,13 @@ namespace HapetFrontend.Parsing
             }
 
             // TODO: doc string
-            return new AstClassDecl(className, declarations, "", new Location(beg, end)) { InheritedFrom = inherited, IsInterface = isInterface };
+            return new AstClassDecl(className, declarations, "", new Location(beg, end)) 
+            { 
+                InheritedFrom = inherited, 
+                IsInterface = isInterface,
+                GenericNames = generics,
+                GenericConstrains = genericConstrains,
+            };
         }
     }
 }
