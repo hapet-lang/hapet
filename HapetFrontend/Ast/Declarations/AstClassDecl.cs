@@ -38,6 +38,11 @@ namespace HapetFrontend.Ast.Declarations
         public bool IsInterface { get; set; }
 
         /// <summary>
+        /// 'true' if the declaration is a declaration of a generic type like 'T'
+        /// </summary>
+        public bool IsGenericType { get; set; }
+
+        /// <summary>
         /// All original raw fields (including inherited) (for easier interface offset generation)
         /// </summary>
         public List<AstVarDecl> AllRawFields { get; set; }
