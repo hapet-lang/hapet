@@ -67,6 +67,7 @@ namespace HapetFrontend.Ast.Declarations
                 SourceFile = SourceFile,
             };
             field.Attributes.AddRange(Attributes);
+            field.IsPropertyField = true;
 
             // no special keys for struct
             if (!forStruct)

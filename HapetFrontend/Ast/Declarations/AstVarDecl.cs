@@ -20,6 +20,11 @@ namespace HapetFrontend.Ast.Declarations
         [JsonIgnore]
         public AstDeclaration ContainingParent { get; set; }
 
+        /// <summary>
+        /// Used for easier infferencing. Mean that the field is for get/set func
+        /// </summary>
+        public bool IsPropertyField { get; set; }
+
         public override string AAAName => nameof(AstVarDecl);
 
         public AstVarDecl(AstExpression type, AstIdExpr name, AstExpression ini = null, string doc = "", ILocation Location = null) : base(name, doc, Location)
@@ -39,6 +44,7 @@ namespace HapetFrontend.Ast.Declarations
             };
             varDecl.Attributes.AddRange(Attributes);
             varDecl.SpecialKeys.AddRange(SpecialKeys);
+            varDecl.IsPropertyField = IsPropertyField;
             return varDecl;
         }
 

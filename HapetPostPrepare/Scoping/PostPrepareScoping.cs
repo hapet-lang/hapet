@@ -67,6 +67,25 @@ namespace HapetPostPrepare
                 PostPrepareExprScoping(inh);
             }
 
+            // scoping generic shite
+            foreach (var g in classDecl.GenericNames)
+            {
+                // subscoping generic types
+                SetScopeAndParent(g, classDecl, classDecl.SubScope);
+                PostPrepareExprScoping(g);
+
+                // check for constrains
+                if (classDecl.GenericConstrains.TryGetValue(g, out var constrains))
+                {
+                    foreach (var c in constrains)
+                    {
+                        // subscoping generic type constrains
+                        SetScopeAndParent(c, classDecl, classDecl.SubScope);
+                        PostPrepareExprScoping(c);
+                    }
+                }
+            }
+
             foreach (var decl in classDecl.Declarations)
             {
                 SetScopeAndParent(decl, classDecl, classScope);

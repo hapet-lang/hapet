@@ -259,7 +259,14 @@ namespace HapetPostPrepare
 
             void InternalVarPP(AstVarDecl decl)
             {
+                // mute all inference errors for var type of property. 
+                // if has to be errored somewhere else
+                var savedMute = inInfo.MuteErrors;
+                if (decl.IsPropertyField)
+                    inInfo.MuteErrors = true;
                 PostPrepareExprInference(decl.Type, inInfo, ref outInfo);
+                if (decl.IsPropertyField)
+                    inInfo.MuteErrors = savedMute;
 
                 if (decl.Type.OutType is ClassType)
                 {
@@ -769,10 +776,16 @@ namespace HapetPostPrepare
                 // infer fields and props at first
                 foreach (var decl in cls.Declarations.Where(x => x is AstVarDecl).Select(x => x as AstVarDecl))
                 {
+                    // this kostyl is done to skip double error on uninferred type
+                    var savedIsPropF = decl.IsPropertyField;
+                    decl.IsPropertyField = true;
+
                     // field or property
                     inInfo.AllowSpecialKeys = true;
                     PostPrepareVarInference(decl, inInfo, ref outInfo);
                     inInfo.AllowSpecialKeys = false;
+
+                    decl.IsPropertyField = savedIsPropF;
                 }
             }
             // resolve all fields of structs

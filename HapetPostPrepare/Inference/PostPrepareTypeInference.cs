@@ -129,14 +129,28 @@ namespace HapetPostPrepare
             if (inInfo.ForMetadata)
             {
                 // inferencing parameters 
+                // mute all inference errors for param types of property func. 
+                // if has to be errored somewhere else
+                var savedMute = inInfo.MuteErrors;
+                if (funcDecl.IsPropertyFunction)
+                    inInfo.MuteErrors = true;
                 foreach (var p in funcDecl.Parameters)
                 {
                     PostPrepareParamInference(p, inInfo, ref outInfo);
                 }
+                if (funcDecl.IsPropertyFunction)
+                    inInfo.MuteErrors = savedMute;
 
                 // inferencing return type 
                 {
+                    // mute all inference errors for return type of property get_ func. 
+                    // if has to be errored somewhere else
+                    savedMute = inInfo.MuteErrors;
+                    if (funcDecl.IsPropertyFunction)
+                        inInfo.MuteErrors = true;
                     PostPrepareExprInference(funcDecl.Returns, inInfo, ref outInfo);
+                    if (funcDecl.IsPropertyFunction)
+                        inInfo.MuteErrors = savedMute;
 
                     if (funcDecl.Returns.OutType is ClassType)
                     {
@@ -217,7 +231,14 @@ namespace HapetPostPrepare
 
         private void PostPrepareVarInference(AstVarDecl varDecl, InInfo inInfo, ref OutInfo outInfo)
         {
+            // mute all inference errors for var type of property. 
+            // if has to be errored somewhere else
+            var savedMute = inInfo.MuteErrors;
+            if (varDecl.IsPropertyField)
+                inInfo.MuteErrors = true;
             PostPrepareExprInference(varDecl.Type, inInfo, ref outInfo);
+            if (varDecl.IsPropertyField)
+                inInfo.MuteErrors = savedMute;
 
             if (varDecl.Initializer != null)
                 PostPrepareExprInference(varDecl.Initializer, inInfo, ref outInfo);
@@ -681,7 +702,7 @@ namespace HapetPostPrepare
             var smbl = idExpr.Scope.GetSymbol(name);
             if (smbl is DeclSymbol typed)
             {
-                if (!CheckIfCouldBeAccessed(idExpr, typed.Decl) && !(typed.Decl is AstBuiltInTypeDecl) && !inInfo.FromCallExpr)
+                if (!CheckIfCouldBeAccessed(idExpr, typed.Decl) && !(typed.Decl is AstBuiltInTypeDecl) && !inInfo.FromCallExpr && !inInfo.MuteErrors)
                     _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, idExpr, [], ErrorCode.Get(CTEN.DeclCouldNotBeAccessed));
                 idExpr.OutType = typed.Decl.Type.OutType;
                 TryAssignConstValueToExpr(idExpr, typed.Decl, inInfo, ref outInfo);
@@ -696,7 +717,7 @@ namespace HapetPostPrepare
             var smblInLocalClass = idExpr.Scope.GetSymbol(nameWithClass);
             if (smblInLocalClass is DeclSymbol typed2)
             {
-                if (!CheckIfCouldBeAccessed(idExpr, typed2.Decl) && !(typed2.Decl is AstBuiltInTypeDecl) && !inInfo.FromCallExpr)
+                if (!CheckIfCouldBeAccessed(idExpr, typed2.Decl) && !(typed2.Decl is AstBuiltInTypeDecl) && !inInfo.FromCallExpr && !inInfo.MuteErrors)
                     _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, idExpr, [], ErrorCode.Get(CTEN.DeclCouldNotBeAccessed));
                 idExpr.Name = nameWithClass;
                 idExpr.OutType = typed2.Decl.Type.OutType;
@@ -742,7 +763,7 @@ namespace HapetPostPrepare
                 
                 if (funcInAnotherClass is DeclSymbol typed4)
                 {
-                    if (!CheckIfCouldBeAccessed(idExpr, typed4.Decl) && !(typed4.Decl is AstBuiltInTypeDecl) && !inInfo.FromCallExpr)
+                    if (!CheckIfCouldBeAccessed(idExpr, typed4.Decl) && !(typed4.Decl is AstBuiltInTypeDecl) && !inInfo.FromCallExpr && !inInfo.MuteErrors)
                         _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, idExpr, [], ErrorCode.Get(CTEN.DeclCouldNotBeAccessed));
                     idExpr.Name = fullFuncName;
                     idExpr.OutType = typed4.Decl.Type.OutType;
@@ -759,7 +780,7 @@ namespace HapetPostPrepare
             var smblInLocalFile = idExpr.Scope.GetSymbol(nameWithNamespace);
             if (smblInLocalFile is DeclSymbol typed3)
             {
-                if (!CheckIfCouldBeAccessed(idExpr, typed3.Decl) && !(typed3.Decl is AstBuiltInTypeDecl) && !inInfo.FromCallExpr)
+                if (!CheckIfCouldBeAccessed(idExpr, typed3.Decl) && !(typed3.Decl is AstBuiltInTypeDecl) && !inInfo.FromCallExpr && !inInfo.MuteErrors)
                     _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, idExpr, [], ErrorCode.Get(CTEN.DeclCouldNotBeAccessed));
                 idExpr.Name = nameWithNamespace;
                 idExpr.OutType = typed3.Decl.Type.OutType;
@@ -780,7 +801,7 @@ namespace HapetPostPrepare
                 var includedSmbl = idExpr.Scope.GetSymbolInNamespace(leftPart, rightPart);
                 if (includedSmbl is DeclSymbol typed4)
                 {
-                    if (!CheckIfCouldBeAccessed(idExpr, typed4.Decl) && !(typed4.Decl is AstBuiltInTypeDecl) && !inInfo.FromCallExpr)
+                    if (!CheckIfCouldBeAccessed(idExpr, typed4.Decl) && !(typed4.Decl is AstBuiltInTypeDecl) && !inInfo.FromCallExpr && !inInfo.MuteErrors)
                         _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, idExpr, [], ErrorCode.Get(CTEN.DeclCouldNotBeAccessed));
                     // do not change name because it already contains namespace
                     idExpr.OutType = typed4.Decl.Type.OutType;
@@ -809,7 +830,7 @@ namespace HapetPostPrepare
                     var includedSmbl = idExpr.Scope.GetSymbolInNamespace($"{ns}.{leftPart}", rightPart);
                     if (includedSmbl is DeclSymbol typed4)
                     {
-                        if (!CheckIfCouldBeAccessed(idExpr, typed4.Decl) && !(typed4.Decl is AstBuiltInTypeDecl) && !inInfo.FromCallExpr)
+                        if (!CheckIfCouldBeAccessed(idExpr, typed4.Decl) && !(typed4.Decl is AstBuiltInTypeDecl) && !inInfo.FromCallExpr && !inInfo.MuteErrors)
                             _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, idExpr, [], ErrorCode.Get(CTEN.DeclCouldNotBeAccessed));
                         // do not change name because it already contains namespace
                         idExpr.OutType = typed4.Decl.Type.OutType;
@@ -825,7 +846,7 @@ namespace HapetPostPrepare
                 var usedSmbl = idExpr.Scope.GetSymbolInNamespace(ns, name);
                 if (usedSmbl is DeclSymbol typed5)
                 {
-                    if (!CheckIfCouldBeAccessed(idExpr, typed5.Decl) && !(typed5.Decl is AstBuiltInTypeDecl) && !inInfo.FromCallExpr)
+                    if (!CheckIfCouldBeAccessed(idExpr, typed5.Decl) && !(typed5.Decl is AstBuiltInTypeDecl) && !inInfo.FromCallExpr && !inInfo.MuteErrors)
                         _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, idExpr, [], ErrorCode.Get(CTEN.DeclCouldNotBeAccessed));
                     idExpr.Name = fullNameWithNs;
                     idExpr.OutType = typed5.Decl.Type.OutType;
@@ -836,8 +857,8 @@ namespace HapetPostPrepare
                 }
             }
 
-            // TODO: really give them a error? or mb there is smth harder?
-            _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, idExpr, [], ErrorCode.Get(CTEN.TypeCouldNotBeInfered));
+            if (!inInfo.MuteErrors)
+                _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, idExpr, [], ErrorCode.Get(CTEN.TypeCouldNotBeInfered));
         }
 
         /// <summary>
