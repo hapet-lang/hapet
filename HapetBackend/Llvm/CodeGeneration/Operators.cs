@@ -18,15 +18,15 @@ namespace HapetBackend.Llvm
         private Func<LLVMBuilderRef, LLVMValueRef, LLVMValueRef, string, LLVMValueRef> GetBinOp(string op, HapetType l, HapetType r)
         {
             // this is a kostyl to search for any ptr bin ops
-            var searchL = l is PointerType ? PointerType.NullLiteralType : l;
-            var searchR = r is PointerType ? PointerType.NullLiteralType : r;
+            var searchL = l is PointerType ? PointerType.VoidLiteralType : l;
+            var searchR = r is PointerType ? PointerType.VoidLiteralType : r;
             return builtInBinOperators[(op, searchL, searchR)];
         }
 
         private Func<LLVMBuilderRef, LLVMValueRef, string, LLVMValueRef> GetUnOp(string op, HapetType t)
         {
             // this is a kostyl to search for any ptr bin ops
-            var searchT = t is PointerType ? PointerType.NullLiteralType : t;
+            var searchT = t is PointerType ? PointerType.VoidLiteralType : t;
             return builtInUnOperators[(op, searchT)];
         }
 

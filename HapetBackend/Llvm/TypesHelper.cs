@@ -353,18 +353,18 @@ namespace HapetBackend.Llvm
                     return builder.BuildPtrToInt(val, HapetTypeToLLVMType(outType));
                 }
                 // like 'int[] a = null'
-                else if (ptrT.TargetType == null && outType is ArrayType arrayType)
+                else if (ptrT == PointerType.NullLiteralType && outType is ArrayType arrayType)
                 {
-                    var nullTarget = LLVMValueRef.CreateConstPointerNull(HapetTypeToLLVMType(arrayType.TargetType));
+                    var nullTarget = LLVMValueRef.CreateConstPointerNull(HapetTypeToLLVMType(PointerType.GetPointerType(arrayType.TargetType)));
                     var v = _builder.BuildAlloca(HapetTypeToLLVMType(arrayType), $"nulled_array");
                     var buffer = _builder.BuildGEP2(HapetTypeToLLVMType(arrayType), v, new LLVMValueRef[] { LLVMValueRef.CreateConstInt(_context.Int32Type, 1) }, "arrBuffer");
                     _builder.BuildStore(nullTarget, buffer);
                     return _builder.BuildLoad2(HapetTypeToLLVMType(arrayType), v); // return loaded
                 }
                 // like 'string a = null'
-                else if (ptrT.TargetType == null && outType is StringType stringType)
+                else if (ptrT == PointerType.NullLiteralType && outType is StringType stringType)
                 {
-                    var nullTarget = LLVMValueRef.CreateConstPointerNull(HapetTypeToLLVMType(CharType.DefaultType));
+                    var nullTarget = LLVMValueRef.CreateConstPointerNull(HapetTypeToLLVMType(PointerType.GetPointerType(CharType.DefaultType)));
                     var v = _builder.BuildAlloca(HapetTypeToLLVMType(stringType), $"nulled_string");
                     var buffer = _builder.BuildGEP2(HapetTypeToLLVMType(stringType), v, new LLVMValueRef[] { LLVMValueRef.CreateConstInt(_context.Int32Type, 1) }, "strBuffer");
                     _builder.BuildStore(nullTarget, buffer);

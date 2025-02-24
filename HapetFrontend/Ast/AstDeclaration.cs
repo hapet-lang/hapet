@@ -61,7 +61,7 @@ namespace HapetFrontend.Ast
         public static int GetSizeForAlloc(List<AstDeclaration> fields, bool withTypeInfo = true)
         {
             if (withTypeInfo)
-                fields.Insert(0, new AstVarDecl(new AstIdExpr("uintptr") { OutType = PointerType.NullLiteralType }, new AstIdExpr("typeinfo")));
+                fields.Insert(0, new AstVarDecl(new AstIdExpr("uintptr") { OutType = PointerType.VoidLiteralType }, new AstIdExpr("typeinfo")));
             int totalSize = 0;
             // go all over the fields and calc the size
             for (int i = 0; i < fields.Count; ++i)

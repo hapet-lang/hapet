@@ -123,8 +123,8 @@ namespace HapetFrontend.Scoping
                 return result;
 
             // this is a kostyl to search for any ptr bin ops
-            var searchTypeL = lhs is PointerType ? PointerType.NullLiteralType : lhs;
-            var searchTypeR = rhs is PointerType ? PointerType.NullLiteralType : rhs;
+            var searchTypeL = lhs is PointerType ? PointerType.VoidLiteralType : lhs;
+            var searchTypeR = rhs is PointerType ? PointerType.VoidLiteralType : rhs;
             GetBinaryOperatorsInternal(this, name, searchTypeL, searchTypeR, result, ref level);
             return result;
         }
@@ -195,7 +195,7 @@ namespace HapetFrontend.Scoping
                 return result;
 
             // this is a kostyl to search for any ptr un ops
-            var searchType = sub is PointerType ? PointerType.NullLiteralType : sub;
+            var searchType = sub is PointerType ? PointerType.VoidLiteralType : sub;
             GetUnaryOperatorsInternal(this, name, searchType, result, ref level);
             return result;
         }

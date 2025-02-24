@@ -249,9 +249,14 @@ namespace HapetFrontend.Types
         public static int PointerAlignment => PointerSize;
 
         private static Dictionary<HapetType, PointerType> _types = new Dictionary<HapetType, PointerType>();
-        public static PointerType NullLiteralType { get; } = new PointerType(null);
+        public static PointerType VoidLiteralType { get; } = new PointerType(VoidType.Instance);
+        public static PointerType NullLiteralType { get; } = new PointerType(VoidType.Instance) { IsPointerToNull = true, };
 
         public override string TypeName => "ptr";
+        /// <summary>
+        /// Cringe kostyl to search for nullptr types
+        /// </summary>
+        public bool IsPointerToNull { get; set; }
 
         public override AstExpression GetAst()
         {

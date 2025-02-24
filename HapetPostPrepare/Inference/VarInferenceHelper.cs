@@ -249,11 +249,12 @@ namespace HapetPostPrepare
                             castResult.CouldBeCasted = true;
                         break;
                     }
-                // just setting null to a pointer
-                case PointerType when expr is AstNullExpr:
+                // everything can be casted to void* implicitly like
+                // void* anime = animePtrToSmth;
+                case PointerType ptr5 when ptr5.TargetType == VoidType.Instance && exprType is PointerType:
                 // casting ptrs to null ptrs (?)
-                case PointerType when exprType is PointerType ptr1 && ptr1.TargetType == null:
-                case PointerType ptr2 when exprType is PointerType && ptr2.TargetType == null:
+                case PointerType when expr is AstNullExpr:
+                case PointerType when neededTypeExpr is AstNullExpr:
                 // ptr casts
                 case PointerType ptr3 when 
                     exprType is PointerType ptr4 && 
@@ -269,8 +270,8 @@ namespace HapetPostPrepare
                     }
 
                 // this is to allow to do this 'int[] arr = null'
-                case ArrayType when exprType is PointerType ptr4 && ptr4.TargetType == null:
-                case StringType when exprType is PointerType ptr5 && ptr5.TargetType == null:
+                case ArrayType when expr is AstNullExpr:
+                case StringType when expr is AstNullExpr:
                     outExpr = cst;
                     if (castResult != null)
                         castResult.CouldBeCasted = true;

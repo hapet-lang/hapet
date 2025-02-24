@@ -179,16 +179,16 @@ namespace HapetFrontend.Scoping
             // for ptr arithmetics
             foreach (var type in numTypes)
             {
-                DefineBinaryOperator(new BuiltInBinaryOperator("+", PointerType.NullLiteralType, type, PointerType.NullLiteralType));
-                DefineBinaryOperator(new BuiltInBinaryOperator("+", PointerType.NullLiteralType, PointerType.NullLiteralType, type));
-                DefineBinaryOperator(new BuiltInBinaryOperator("-", PointerType.NullLiteralType, PointerType.NullLiteralType, type));
+                DefineBinaryOperator(new BuiltInBinaryOperator("+", PointerType.VoidLiteralType, type, PointerType.VoidLiteralType));
+                DefineBinaryOperator(new BuiltInBinaryOperator("+", PointerType.VoidLiteralType, PointerType.VoidLiteralType, type));
+                DefineBinaryOperator(new BuiltInBinaryOperator("-", PointerType.VoidLiteralType, PointerType.VoidLiteralType, type));
             }
 
-            DefineBinaryOperator(new BuiltInBinaryOperator("==", BoolType.Instance, PointerType.NullLiteralType, PointerType.NullLiteralType));
-            DefineBinaryOperator(new BuiltInBinaryOperator("!=", BoolType.Instance, PointerType.NullLiteralType, PointerType.NullLiteralType));
+            DefineBinaryOperator(new BuiltInBinaryOperator("==", BoolType.Instance, PointerType.VoidLiteralType, PointerType.VoidLiteralType));
+            DefineBinaryOperator(new BuiltInBinaryOperator("!=", BoolType.Instance, PointerType.VoidLiteralType, PointerType.VoidLiteralType));
 
-            DefineBinaryOperator(new BuiltInCommonBinaryOperator("as", ClassType.LiteralType, PointerType.NullLiteralType, ClassType.LiteralType));
-            DefineBinaryOperator(new BuiltInCommonBinaryOperator("is", BoolType.Instance, PointerType.NullLiteralType, ClassType.LiteralType));
+            DefineBinaryOperator(new BuiltInCommonBinaryOperator("as", ClassType.LiteralType, PointerType.VoidLiteralType, ClassType.LiteralType));
+            DefineBinaryOperator(new BuiltInCommonBinaryOperator("is", BoolType.Instance, PointerType.VoidLiteralType, ClassType.LiteralType));
         }
     }
 }
