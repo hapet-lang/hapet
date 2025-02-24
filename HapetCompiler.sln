@@ -9,7 +9,12 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HapetFrontend", "HapetFront
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HapetBackend", "HapetBackend\HapetBackend.csproj", "{80CE2BB5-15AD-4EAD-AEAF-A3ABC2052414}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HapetPostPrepare", "HapetPostPrepare\HapetPostPrepare.csproj", "{95E07BF9-368E-4F86-9C7B-A4BABD4281A9}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HapetPostPrepare", "HapetPostPrepare\HapetPostPrepare.csproj", "{95E07BF9-368E-4F86-9C7B-A4BABD4281A9}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{52132950-C779-4FDD-ACFD-654E172F6511}"
+	ProjectSection(SolutionItems) = preProject
+		.editorconfig = .editorconfig
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
