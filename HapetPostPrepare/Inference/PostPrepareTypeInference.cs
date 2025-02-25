@@ -929,8 +929,8 @@ namespace HapetPostPrepare
         private void PostPrepareCallExprInference(AstCallExpr callExpr, InInfo inInfo, ref OutInfo outInfo)
         {
             // skip if already inferred
-            if (callExpr.OutType != null)
-                return;
+            //if (callExpr.OutType != null)
+            //    return;
 
             // the var is used to check when static method is accessed from an object
             bool accessingFromAnObject = false;
