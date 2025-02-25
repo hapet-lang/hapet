@@ -212,6 +212,7 @@ namespace HapetFrontend.Parsing
             { 
                 InheritedFrom = inherited, 
                 IsInterface = isInterface,
+                HasGenericTypes = generics.Count > 0,
                 GenericNames = generics,
                 GenericConstrains = genericConstrains,
             };

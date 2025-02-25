@@ -413,6 +413,9 @@ namespace HapetPostPrepare
                 case AstArgumentExpr argumentExpr:
                     PostPrepareArgumentExprScoping(argumentExpr);
                     break;
+                case AstIdGenericExpr genExpr:
+                    PostPrepareIdGenericExprScoping(genExpr);
+                    break;
                 case AstIdExpr _:
                     break;
                 case AstCallExpr callExpr:
@@ -546,6 +549,15 @@ namespace HapetPostPrepare
             {
                 SetScopeAndParent(argumentExpr.Name, argumentExpr);
                 PostPrepareExprScoping(argumentExpr.Name);
+            }
+        }
+
+        private void PostPrepareIdGenericExprScoping(AstIdGenericExpr genExpr)
+        {
+            foreach (var g in genExpr.GenericRealTypes)
+            {
+                SetScopeAndParent(g, genExpr);
+                PostPrepareExprScoping(g);
             }
         }
 

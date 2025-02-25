@@ -3,6 +3,8 @@ using HapetFrontend.Ast.Declarations;
 using HapetFrontend.Ast.Expressions;
 using HapetFrontend.Ast.Statements;
 using HapetFrontend.Parsing;
+using HapetPostPrepare.Entities;
+using System.Text;
 
 namespace HapetPostPrepare
 {
@@ -22,6 +24,26 @@ namespace HapetPostPrepare
             SetScopeAndParent(cls, parent, parent.SubScope);
             parent.SubScope.DefineDeclSymbol(name.Name, cls);
             return cls;
+        }
+
+        private string GetGenericRealName(string name, List<AstNestedExpr> generics)
+        {
+            InInfo tmpIn = InInfo.Default;
+            OutInfo tmpout = OutInfo.Default;
+
+            StringBuilder sb = new StringBuilder(name);
+            sb.Append("_GB_");
+            foreach (var g in generics)
+            {
+                // cringe :)
+                PostPrepareExprInference(g, tmpIn, ref tmpout);
+                if (g.RightPart is AstIdExpr idExpr)
+                {
+                    sb.Append(idExpr.FindSymbol.Name);
+                }
+            }
+            sb.Append("_GE_");
+            return sb.ToString();
         }
     }
 }

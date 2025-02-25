@@ -704,10 +704,11 @@ namespace HapetPostPrepare
             {
                 if (!CheckIfCouldBeAccessed(idExpr, typed.Decl) && !inInfo.FromCallExpr && !inInfo.MuteErrors)
                     _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, idExpr, [], ErrorCode.Get(CTEN.DeclCouldNotBeAccessed));
+                typed = CheckForGenericType(typed, idExpr);
                 idExpr.OutType = typed.Decl.Type.OutType;
                 TryAssignConstValueToExpr(idExpr, typed.Decl, inInfo, ref outInfo);
                 TrySaveClassUsage(typed.Decl);
-                idExpr.FindSymbol = smbl;
+                idExpr.FindSymbol = typed;
                 return;
             }
 
@@ -719,11 +720,12 @@ namespace HapetPostPrepare
             {
                 if (!CheckIfCouldBeAccessed(idExpr, typed2.Decl) && !inInfo.FromCallExpr && !inInfo.MuteErrors)
                     _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, idExpr, [], ErrorCode.Get(CTEN.DeclCouldNotBeAccessed));
+                typed2 = CheckForGenericType(typed2, idExpr);
                 idExpr.Name = nameWithClass;
                 idExpr.OutType = typed2.Decl.Type.OutType;
                 TryAssignConstValueToExpr(idExpr, typed2.Decl, inInfo, ref outInfo);
                 TrySaveClassUsage(typed2.Decl);
-                idExpr.FindSymbol = smblInLocalClass;
+                idExpr.FindSymbol = typed2;
                 return;
             }
 
@@ -765,11 +767,12 @@ namespace HapetPostPrepare
                 {
                     if (!CheckIfCouldBeAccessed(idExpr, typed4.Decl) && !inInfo.FromCallExpr && !inInfo.MuteErrors)
                         _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, idExpr, [], ErrorCode.Get(CTEN.DeclCouldNotBeAccessed));
+                    typed4 = CheckForGenericType(typed4, idExpr);
                     idExpr.Name = fullFuncName;
                     idExpr.OutType = typed4.Decl.Type.OutType;
                     TryAssignConstValueToExpr(idExpr, typed4.Decl, inInfo, ref outInfo);
                     TrySaveClassUsage(typed4.Decl);
-                    idExpr.FindSymbol = funcInAnotherClass;
+                    idExpr.FindSymbol = typed4;
                     return;
                 }
             }
@@ -782,11 +785,12 @@ namespace HapetPostPrepare
             {
                 if (!CheckIfCouldBeAccessed(idExpr, typed3.Decl) && !inInfo.FromCallExpr && !inInfo.MuteErrors)
                     _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, idExpr, [], ErrorCode.Get(CTEN.DeclCouldNotBeAccessed));
+                typed3 = CheckForGenericType(typed3, idExpr);
                 idExpr.Name = nameWithNamespace;
                 idExpr.OutType = typed3.Decl.Type.OutType;
                 TryAssignConstValueToExpr(idExpr, typed3.Decl, inInfo, ref outInfo);
                 TrySaveClassUsage(typed3.Decl);
-                idExpr.FindSymbol = smblInLocalFile;
+                idExpr.FindSymbol = typed3;
                 return;
             }
 
@@ -803,11 +807,12 @@ namespace HapetPostPrepare
                 {
                     if (!CheckIfCouldBeAccessed(idExpr, typed4.Decl) && !inInfo.FromCallExpr && !inInfo.MuteErrors)
                         _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, idExpr, [], ErrorCode.Get(CTEN.DeclCouldNotBeAccessed));
+                    typed4 = CheckForGenericType(typed4, idExpr);
                     // do not change name because it already contains namespace
                     idExpr.OutType = typed4.Decl.Type.OutType;
                     TryAssignConstValueToExpr(idExpr, typed4.Decl, inInfo, ref outInfo);
                     TrySaveClassUsage(typed4.Decl);
-                    idExpr.FindSymbol = includedSmbl;
+                    idExpr.FindSymbol = typed4;
                     return;
                 }
             }
@@ -832,11 +837,12 @@ namespace HapetPostPrepare
                     {
                         if (!CheckIfCouldBeAccessed(idExpr, typed4.Decl) && !inInfo.FromCallExpr && !inInfo.MuteErrors)
                             _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, idExpr, [], ErrorCode.Get(CTEN.DeclCouldNotBeAccessed));
+                        typed4 = CheckForGenericType(typed4, idExpr);
                         // do not change name because it already contains namespace
                         idExpr.OutType = typed4.Decl.Type.OutType;
                         TryAssignConstValueToExpr(idExpr, typed4.Decl, inInfo, ref outInfo);
                         TrySaveClassUsage(typed4.Decl);
-                        idExpr.FindSymbol = includedSmbl;
+                        idExpr.FindSymbol = typed4;
                         return;
                     }
                 }
@@ -848,11 +854,12 @@ namespace HapetPostPrepare
                 {
                     if (!CheckIfCouldBeAccessed(idExpr, typed5.Decl) && !inInfo.FromCallExpr && !inInfo.MuteErrors)
                         _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, idExpr, [], ErrorCode.Get(CTEN.DeclCouldNotBeAccessed));
+                    typed5 = CheckForGenericType(typed5, idExpr);
                     idExpr.Name = fullNameWithNs;
                     idExpr.OutType = typed5.Decl.Type.OutType;
                     TryAssignConstValueToExpr(idExpr, typed5.Decl, inInfo, ref outInfo);
                     TrySaveClassUsage(typed5.Decl);
-                    idExpr.FindSymbol = usedSmbl;
+                    idExpr.FindSymbol = typed5;
                     return;
                 }
             }
@@ -896,6 +903,27 @@ namespace HapetPostPrepare
             {
                 _allUsedClassesInProgram.Add(clsDecl);
             }
+        }
+
+        private DeclSymbol CheckForGenericType(DeclSymbol decl, AstIdExpr idExpr)
+        {
+            if (decl.Decl is AstClassDecl clsDecl && clsDecl.HasGenericTypes && idExpr is AstIdGenericExpr genId)
+            {
+                // generating generic cls name
+                string realName = GetGenericRealName(clsDecl.Name.Name, genId.GenericRealTypes);
+                if (clsDecl.Scope.SymbolTable.TryGetValue(realName, out var realDcl) && realDcl is DeclSymbol realDclDecl)
+                {
+                    // return if exists
+                    return realDclDecl;
+                }
+
+                // create a new class for real types
+                var realCls = clsDecl.GetFromGeneric(genId.GenericRealTypes, realName);
+                realDclDecl = new DeclSymbol(realName, realCls);
+                clsDecl.Scope.DefineSymbol(realDclDecl);
+                return realDclDecl;
+            }
+            return decl;
         }
 
         private void PostPrepareCallExprInference(AstCallExpr callExpr, InInfo inInfo, ref OutInfo outInfo)

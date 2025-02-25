@@ -28,7 +28,7 @@ namespace HapetFrontend.Ast.Declarations
 
         /// <summary>
         /// Generic parameter constrains like:
-        /// ...<T> where T: struct, enum, class { ... }
+        /// ...-T- where T: struct, enum, class { ... }
         /// </summary>
         public Dictionary<AstIdExpr, List<AstNestedExpr>> GenericConstrains { get; set; } = new Dictionary<AstIdExpr, List<AstNestedExpr>>();
 
@@ -41,6 +41,11 @@ namespace HapetFrontend.Ast.Declarations
         /// 'true' if the declaration is a declaration of a generic type like 'T'
         /// </summary>
         public bool IsGenericType { get; set; }
+
+        /// <summary>
+        /// 'true' if the declaration is a generic decl like 'List-T-'
+        /// </summary>
+        public bool HasGenericTypes { get; set; }
 
         /// <summary>
         /// All original raw fields (including inherited) (for easier interface offset generation)
@@ -63,6 +68,15 @@ namespace HapetFrontend.Ast.Declarations
             Type.OutType = new ClassType(this);
 
             Declarations = declarations;
+        }
+
+        public AstClassDecl GetFromGeneric(List<AstNestedExpr> realTypes, string name)
+        {
+            if (HasGenericTypes)
+            {
+                // TODO:
+            }
+            return this;
         }
 
         public ClassDeclJson GetJson()
