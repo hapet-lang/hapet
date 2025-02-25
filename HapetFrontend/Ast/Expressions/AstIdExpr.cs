@@ -18,7 +18,7 @@ namespace HapetFrontend.Ast.Expressions
             get
             {
                 if (_foundSymbol == null)
-                    _foundSymbol = Scope.GetSymbol(Name);
+                    _foundSymbol = Scope?.GetSymbol(Name);
                 return _foundSymbol;
             }
             set
@@ -35,7 +35,7 @@ namespace HapetFrontend.Ast.Expressions
 
         public override string AAAName => nameof(AstIdExpr);
 
-        public AstIdExpr(string name, ILocation Location = null) : base(Location)
+        public AstIdExpr(string name, ILocation location = null) : base(location)
         {
             this.Name = name;
         }

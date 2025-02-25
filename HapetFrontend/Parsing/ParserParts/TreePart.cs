@@ -506,7 +506,7 @@ namespace HapetFrontend.Parsing
 
                 case TokenType.Identifier:
                     {
-                        var id = ParseIdentifierExpression();
+                        var id = ParseIdentifierExpression(allowGenerics: true);
 
                         // if it is a pointer or array type
                         while (CheckToken(TokenType.Asterisk) || CheckToken(TokenType.ArrayDef))

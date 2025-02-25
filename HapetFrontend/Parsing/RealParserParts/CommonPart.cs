@@ -3,8 +3,10 @@ using HapetFrontend.Ast.Declarations;
 using HapetFrontend.Ast.Expressions;
 using HapetFrontend.Ast.Statements;
 using HapetFrontend.Errors;
+using HapetFrontend.Types;
 using System.Collections.Generic;
 using System.Text;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace HapetFrontend.Parsing
 {
@@ -17,7 +19,7 @@ namespace HapetFrontend.Parsing
         }
 
         private AstNestedExpr ParseIdentifierExpression(MessageResolver customMessage = null, TokenType identType = TokenType.Identifier, 
-            bool allowDots = true, AstNestedExpr iniNested = null)
+            bool allowDots = true, bool allowGenerics = false, AstNestedExpr iniNested = null)
         {
             var next = PeekToken();
             if (next.Type != identType)
@@ -34,6 +36,9 @@ namespace HapetFrontend.Parsing
             // while there are more idents or periods
             while (CheckToken(TokenType.Period))
             {
+                if (allowGenerics)
+                    currNested.RightPart = HandleGeneric(currNested.RightPart as AstIdExpr);
+
                 if (!allowDots)
                 {
                     ReportMessage(PeekToken().Location, [], ErrorCode.Get(CTEN.CommonDotUnexpected));
@@ -51,8 +56,31 @@ namespace HapetFrontend.Parsing
                     ReportMessage(PeekToken().Location, [], ErrorCode.Get(CTEN.CommonIdentAfterDot));
                 }
             }
+            if (allowGenerics)
+                currNested.RightPart = HandleGeneric(currNested.RightPart as AstIdExpr);
 
             return currNested;
+        }
+
+        private AstIdExpr HandleGeneric(AstIdExpr originId)
+        {
+            if (!CheckToken(TokenType.Less))
+                return originId;
+            NextToken();
+
+            List<AstNestedExpr> generics = new List<AstNestedExpr>();
+            // <Anime, dwdawd.dasd, ...>
+            while (CheckToken(TokenType.Identifier))
+            {
+                generics.Add(ParseIdentifierExpression(allowGenerics: true));
+
+                // just skip commas
+                if (CheckToken(TokenType.Comma))
+                    NextToken();
+            }
+            Consume(TokenType.Greater, ErrMsg(">", "after generic types"));
+
+            return AstIdGenericExpr.FromAstIdExpr(originId, generics);
         }
 
         private AstDeclaration PrepareUnknownDecl(UnknownDecl udecl, string docString, bool allowCommaTuple, List<AstAttributeStmt> attrs)
