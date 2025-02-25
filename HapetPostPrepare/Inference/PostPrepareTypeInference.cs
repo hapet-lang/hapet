@@ -702,7 +702,7 @@ namespace HapetPostPrepare
             var smbl = idExpr.Scope.GetSymbol(name);
             if (smbl is DeclSymbol typed)
             {
-                if (!CheckIfCouldBeAccessed(idExpr, typed.Decl) && !(typed.Decl is AstBuiltInTypeDecl) && !inInfo.FromCallExpr && !inInfo.MuteErrors)
+                if (!CheckIfCouldBeAccessed(idExpr, typed.Decl) && !inInfo.FromCallExpr && !inInfo.MuteErrors)
                     _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, idExpr, [], ErrorCode.Get(CTEN.DeclCouldNotBeAccessed));
                 idExpr.OutType = typed.Decl.Type.OutType;
                 TryAssignConstValueToExpr(idExpr, typed.Decl, inInfo, ref outInfo);
@@ -717,7 +717,7 @@ namespace HapetPostPrepare
             var smblInLocalClass = idExpr.Scope.GetSymbol(nameWithClass);
             if (smblInLocalClass is DeclSymbol typed2)
             {
-                if (!CheckIfCouldBeAccessed(idExpr, typed2.Decl) && !(typed2.Decl is AstBuiltInTypeDecl) && !inInfo.FromCallExpr && !inInfo.MuteErrors)
+                if (!CheckIfCouldBeAccessed(idExpr, typed2.Decl) && !inInfo.FromCallExpr && !inInfo.MuteErrors)
                     _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, idExpr, [], ErrorCode.Get(CTEN.DeclCouldNotBeAccessed));
                 idExpr.Name = nameWithClass;
                 idExpr.OutType = typed2.Decl.Type.OutType;
@@ -763,7 +763,7 @@ namespace HapetPostPrepare
                 
                 if (funcInAnotherClass is DeclSymbol typed4)
                 {
-                    if (!CheckIfCouldBeAccessed(idExpr, typed4.Decl) && !(typed4.Decl is AstBuiltInTypeDecl) && !inInfo.FromCallExpr && !inInfo.MuteErrors)
+                    if (!CheckIfCouldBeAccessed(idExpr, typed4.Decl) && !inInfo.FromCallExpr && !inInfo.MuteErrors)
                         _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, idExpr, [], ErrorCode.Get(CTEN.DeclCouldNotBeAccessed));
                     idExpr.Name = fullFuncName;
                     idExpr.OutType = typed4.Decl.Type.OutType;
@@ -780,7 +780,7 @@ namespace HapetPostPrepare
             var smblInLocalFile = idExpr.Scope.GetSymbol(nameWithNamespace);
             if (smblInLocalFile is DeclSymbol typed3)
             {
-                if (!CheckIfCouldBeAccessed(idExpr, typed3.Decl) && !(typed3.Decl is AstBuiltInTypeDecl) && !inInfo.FromCallExpr && !inInfo.MuteErrors)
+                if (!CheckIfCouldBeAccessed(idExpr, typed3.Decl) && !inInfo.FromCallExpr && !inInfo.MuteErrors)
                     _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, idExpr, [], ErrorCode.Get(CTEN.DeclCouldNotBeAccessed));
                 idExpr.Name = nameWithNamespace;
                 idExpr.OutType = typed3.Decl.Type.OutType;
@@ -801,7 +801,7 @@ namespace HapetPostPrepare
                 var includedSmbl = idExpr.Scope.GetSymbolInNamespace(leftPart, rightPart);
                 if (includedSmbl is DeclSymbol typed4)
                 {
-                    if (!CheckIfCouldBeAccessed(idExpr, typed4.Decl) && !(typed4.Decl is AstBuiltInTypeDecl) && !inInfo.FromCallExpr && !inInfo.MuteErrors)
+                    if (!CheckIfCouldBeAccessed(idExpr, typed4.Decl) && !inInfo.FromCallExpr && !inInfo.MuteErrors)
                         _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, idExpr, [], ErrorCode.Get(CTEN.DeclCouldNotBeAccessed));
                     // do not change name because it already contains namespace
                     idExpr.OutType = typed4.Decl.Type.OutType;
@@ -830,7 +830,7 @@ namespace HapetPostPrepare
                     var includedSmbl = idExpr.Scope.GetSymbolInNamespace($"{ns}.{leftPart}", rightPart);
                     if (includedSmbl is DeclSymbol typed4)
                     {
-                        if (!CheckIfCouldBeAccessed(idExpr, typed4.Decl) && !(typed4.Decl is AstBuiltInTypeDecl) && !inInfo.FromCallExpr && !inInfo.MuteErrors)
+                        if (!CheckIfCouldBeAccessed(idExpr, typed4.Decl) && !inInfo.FromCallExpr && !inInfo.MuteErrors)
                             _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, idExpr, [], ErrorCode.Get(CTEN.DeclCouldNotBeAccessed));
                         // do not change name because it already contains namespace
                         idExpr.OutType = typed4.Decl.Type.OutType;
@@ -846,7 +846,7 @@ namespace HapetPostPrepare
                 var usedSmbl = idExpr.Scope.GetSymbolInNamespace(ns, name);
                 if (usedSmbl is DeclSymbol typed5)
                 {
-                    if (!CheckIfCouldBeAccessed(idExpr, typed5.Decl) && !(typed5.Decl is AstBuiltInTypeDecl) && !inInfo.FromCallExpr && !inInfo.MuteErrors)
+                    if (!CheckIfCouldBeAccessed(idExpr, typed5.Decl) && !inInfo.FromCallExpr && !inInfo.MuteErrors)
                         _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, idExpr, [], ErrorCode.Get(CTEN.DeclCouldNotBeAccessed));
                     idExpr.Name = fullNameWithNs;
                     idExpr.OutType = typed5.Decl.Type.OutType;
@@ -1747,6 +1747,10 @@ namespace HapetPostPrepare
         {
             // could be accessed from everyone
             if (accessee.SpecialKeys.Contains(TokenType.KwPublic))
+                return true;
+
+            // built in also could be accessed from everywhere
+            if (accessee is AstBuiltInTypeDecl)
                 return true;
 
             // TODO: check protected
