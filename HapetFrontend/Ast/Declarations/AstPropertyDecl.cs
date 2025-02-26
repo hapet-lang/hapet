@@ -47,13 +47,13 @@ namespace HapetFrontend.Ast.Declarations
             var copy = new AstPropertyDecl(
                 Type.GetDeepCopy() as AstExpression,
                 Name.GetDeepCopy() as AstIdExpr,
-                Initializer.GetDeepCopy() as AstExpression,
+                Initializer?.GetDeepCopy() as AstExpression,
                 Documentation, Location)
             {
                 HasGet = HasGet,
                 HasSet = HasSet,
-                GetBlock = GetBlock.GetDeepCopy() as AstBlockExpr,
-                SetBlock = SetBlock.GetDeepCopy() as AstBlockExpr,
+                GetBlock = GetBlock?.GetDeepCopy() as AstBlockExpr,
+                SetBlock = SetBlock?.GetDeepCopy() as AstBlockExpr,
                 Scope = Scope,
                 SourceFile = SourceFile,
                 SubScope = SubScope,

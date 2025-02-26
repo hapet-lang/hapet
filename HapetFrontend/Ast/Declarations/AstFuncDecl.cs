@@ -53,13 +53,12 @@ namespace HapetFrontend.Ast.Declarations
             var copy = new AstFuncDecl(
                 Parameters.Select(x => x.GetDeepCopy() as AstParamDecl).ToList(),
                 Returns.GetDeepCopy() as AstExpression,
-                Body.GetDeepCopy() as AstBlockExpr,
+                Body?.GetDeepCopy() as AstBlockExpr,
                 Name.GetDeepCopy() as AstIdExpr,
                 Documentation, Location)
             {
                 IsPropertyFunction = IsPropertyFunction,
-                ContainingParent = ContainingParent.GetDeepCopy() as AstDeclaration,
-                BaseCtorCall = BaseCtorCall.GetDeepCopy() as AstBaseCtorStmt,
+                BaseCtorCall = BaseCtorCall?.GetDeepCopy() as AstBaseCtorStmt,
                 CallingConvention = CallingConvention,
                 ClassFunctionType = ClassFunctionType,
                 Scope = Scope,

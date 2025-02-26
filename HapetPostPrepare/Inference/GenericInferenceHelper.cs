@@ -4,6 +4,7 @@ using HapetFrontend.Ast.Expressions;
 using HapetFrontend.Ast.Statements;
 using HapetFrontend.Parsing;
 using HapetPostPrepare.Entities;
+using System;
 using System.Text;
 
 namespace HapetPostPrepare
@@ -24,6 +25,14 @@ namespace HapetPostPrepare
             SetScopeAndParent(cls, parent, parent.SubScope);
             parent.SubScope.DefineDeclSymbol(name.Name, cls);
             return cls;
+        }
+
+        private AstClassDecl GetRealTypeFromGeneric(AstClassDecl clsDecl, List<AstNestedExpr> genericTypes, string realName)
+        {
+            var realCls = clsDecl.GetDeepCopy() as AstClassDecl;
+            realCls.Name = realCls.Name.GetCopy(realName);
+            ReplaceAllGenericTypesInClass(realCls, genericTypes);
+            return realCls;
         }
 
         private string GetGenericRealName(string name, List<AstNestedExpr> generics)

@@ -35,7 +35,7 @@ namespace HapetFrontend.Ast.Statements
             var copy = new AstIfStmt(
                 Condition.GetDeepCopy() as AstExpression,
                 BodyTrue.GetDeepCopy() as AstBlockExpr,
-                BodyFalse.GetDeepCopy() as AstBlockExpr,
+                BodyFalse?.GetDeepCopy() as AstBlockExpr,
                 Location)
             {
                 Scope = Scope,

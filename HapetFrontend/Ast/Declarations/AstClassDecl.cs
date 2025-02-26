@@ -101,15 +101,6 @@ namespace HapetFrontend.Ast.Declarations
             return copy;
         }
 
-        public AstClassDecl GetFromGeneric(List<AstNestedExpr> realTypes, string name)
-        {
-            if (HasGenericTypes)
-            {
-                // TODO:
-            }
-            return this;
-        }
-
         public ClassDeclJson GetJson()
         {
             var fields = Declarations.Where(x => x is AstVarDecl && x is not AstPropertyDecl).Select(x => (x as AstVarDecl).GetJson()).ToList();

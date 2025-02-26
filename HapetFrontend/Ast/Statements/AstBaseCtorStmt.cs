@@ -35,7 +35,7 @@ namespace HapetFrontend.Ast.Statements
                 Location)
             {
                 BaseType = BaseType,
-                ThisArgument = ThisArgument.GetDeepCopy() as AstIdExpr,
+                ThisArgument = ThisArgument?.GetDeepCopy() as AstIdExpr,
                 Scope = Scope,
                 SourceFile = SourceFile,
             };

@@ -918,7 +918,8 @@ namespace HapetPostPrepare
                 }
 
                 // create a new class for real types
-                var realCls = clsDecl.GetFromGeneric(genId.GenericRealTypes, realName);
+                var realCls = GetRealTypeFromGeneric(clsDecl, genId.GenericRealTypes, realName);
+
                 realDclDecl = new DeclSymbol(realName, realCls);
                 clsDecl.Scope.DefineSymbol(realDclDecl);
                 return realDclDecl;

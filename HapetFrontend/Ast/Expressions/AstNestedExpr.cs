@@ -32,7 +32,7 @@ namespace HapetFrontend.Ast.Expressions
         {
             var copy = new AstNestedExpr(
                 RightPart.GetDeepCopy() as AstExpression,
-                LeftPart.GetDeepCopy() as AstNestedExpr,
+                LeftPart?.GetDeepCopy() as AstNestedExpr,
                 Location)
             {
                 IsCompileTimeValue = IsCompileTimeValue,

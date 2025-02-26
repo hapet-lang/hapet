@@ -19,7 +19,7 @@ namespace HapetFrontend.Ast.Statements
         public override AstStatement GetDeepCopy()
         {
             var copy = new AstReturnStmt(
-                ReturnExpression.GetDeepCopy() as AstExpression,
+                ReturnExpression?.GetDeepCopy() as AstExpression,
                 Location)
             {
                 Scope = Scope,
