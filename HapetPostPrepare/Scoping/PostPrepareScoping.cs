@@ -366,6 +366,14 @@ namespace HapetPostPrepare
             if (paramDecl.Name != null)
                 SetScopeAndParent(paramDecl.Name, paramDecl);
             SetScopeAndParent(paramDecl.Type, paramDecl);
+
+            // scoping param attrs
+            foreach (var a in paramDecl.Attributes)
+            {
+                SetScopeAndParent(a, paramDecl);
+                PostPrepareExprScoping(a);
+            }
+
             PostPrepareExprScoping(paramDecl.Type);
             if (paramDecl.DefaultValue != null)
             {
