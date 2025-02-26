@@ -21,6 +21,19 @@ namespace HapetFrontend.Ast.Statements
             SubExpression = sub;
             Cases = cases;
         }
+
+        public override AstStatement GetDeepCopy()
+        {
+            var copy = new AstSwitchStmt(
+                SubExpression.GetDeepCopy() as AstExpression,
+                Cases.Select(x => x.GetDeepCopy() as AstCaseStmt).ToList(),
+                Location)
+            {
+                Scope = Scope,
+                SourceFile = SourceFile,
+            };
+            return copy;
+        }
     }
 
     public class AstCaseStmt : AstStatement
@@ -55,6 +68,21 @@ namespace HapetFrontend.Ast.Statements
         {
             Pattern = pattern;
             Body = body;
+        }
+
+        public override AstStatement GetDeepCopy()
+        {
+            var copy = new AstCaseStmt(
+                Pattern.GetDeepCopy() as AstExpression,
+                Body.GetDeepCopy() as AstBlockExpr,
+                Location)
+            {
+                DefaultCase = DefaultCase,
+                FallingCase = FallingCase,
+                Scope = Scope,
+                SourceFile = SourceFile,
+            };
+            return copy;
         }
     }
 }

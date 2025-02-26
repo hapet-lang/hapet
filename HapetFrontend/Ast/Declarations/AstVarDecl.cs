@@ -33,6 +33,25 @@ namespace HapetFrontend.Ast.Declarations
             Initializer = ini;
         }
 
+        public override AstStatement GetDeepCopy()
+        {
+            var copy = new AstVarDecl(
+                Type.GetDeepCopy() as AstExpression,
+                Name.GetDeepCopy() as AstIdExpr,
+                Initializer?.GetDeepCopy() as AstExpression,
+                Documentation, Location)
+            {
+                IsPropertyField = IsPropertyField,
+                ContainingParent = ContainingParent, // do we need to deep copy it?
+                Scope = Scope,
+                SourceFile = SourceFile,
+                SubScope = SubScope,
+            };
+            copy.Attributes.AddRange(Attributes);
+            copy.SpecialKeys.AddRange(SpecialKeys);
+            return copy;
+        }
+
         public virtual AstVarDecl GetCopyForAnotherType(AstDeclaration decl)
         {
             var varDecl = new AstVarDecl(Type, Name, Initializer, Documentation, Location)

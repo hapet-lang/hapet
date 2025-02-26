@@ -1,4 +1,5 @@
-﻿using HapetFrontend.Scoping;
+﻿using HapetFrontend.Ast.Declarations;
+using HapetFrontend.Scoping;
 
 namespace HapetFrontend.Ast.Expressions
 {
@@ -19,6 +20,22 @@ namespace HapetFrontend.Ast.Expressions
         public AstBlockExpr(List<AstStatement> statements, ILocation Location = null) : base(Location: Location)
         {
             Statements = statements;
+        }
+
+        public override AstStatement GetDeepCopy()
+        {
+            var copy = new AstBlockExpr(
+                Statements.Select(x => x.GetDeepCopy() as AstStatement).ToList(),
+                Location)
+            {
+                IsCompileTimeValue = IsCompileTimeValue,
+                OutType = OutType,
+                OutValue = OutValue,
+                Scope = Scope,
+                SourceFile = SourceFile,
+                SubScope = SubScope,
+            };
+            return copy;
         }
     }
 }

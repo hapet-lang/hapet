@@ -23,5 +23,18 @@ namespace HapetFrontend.Ast.Statements
             ConditionParam = condition;
             Body = body;
         }
+
+        public override AstStatement GetDeepCopy()
+        {
+            var copy = new AstWhileStmt(
+                ConditionParam.GetDeepCopy() as AstExpression,
+                Body.GetDeepCopy() as AstBlockExpr,
+                Location)
+            {
+                Scope = Scope,
+                SourceFile = SourceFile,
+            };
+            return copy;
+        }
     }
 }

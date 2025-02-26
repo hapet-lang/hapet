@@ -1,4 +1,6 @@
-﻿namespace HapetFrontend.Ast.Statements
+﻿using HapetFrontend.Ast.Expressions;
+
+namespace HapetFrontend.Ast.Statements
 {
     public class AstReturnStmt : AstStatement
     {
@@ -12,6 +14,18 @@
         public AstReturnStmt(AstExpression expr, ILocation Location = null) : base(Location)
         {
             ReturnExpression = expr;
+        }
+
+        public override AstStatement GetDeepCopy()
+        {
+            var copy = new AstReturnStmt(
+                ReturnExpression.GetDeepCopy() as AstExpression,
+                Location)
+            {
+                Scope = Scope,
+                SourceFile = SourceFile,
+            };
+            return copy;
         }
     }
 }

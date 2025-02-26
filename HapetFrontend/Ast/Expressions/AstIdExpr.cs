@@ -1,4 +1,5 @@
-﻿using HapetFrontend.Scoping;
+﻿using HapetFrontend.Ast.Declarations;
+using HapetFrontend.Scoping;
 using Newtonsoft.Json;
 
 namespace HapetFrontend.Ast.Expressions
@@ -38,6 +39,23 @@ namespace HapetFrontend.Ast.Expressions
         public AstIdExpr(string name, ILocation location = null) : base(location)
         {
             this.Name = name;
+        }
+
+        public override AstStatement GetDeepCopy()
+        {
+            var copy = new AstIdExpr(
+                Name,
+                Location)
+            {
+                FindSymbol = FindSymbol,
+                Suffix = Suffix,
+                IsCompileTimeValue = IsCompileTimeValue,
+                OutType = OutType,
+                OutValue = OutValue,
+                Scope = Scope,
+                SourceFile = SourceFile,
+            };
+            return copy;
         }
 
         public override string ToString()

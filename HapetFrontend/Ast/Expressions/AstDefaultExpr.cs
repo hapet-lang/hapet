@@ -1,4 +1,5 @@
-﻿using HapetFrontend.Types;
+﻿using HapetFrontend.Ast.Declarations;
+using HapetFrontend.Types;
 using System.Diagnostics;
 
 namespace HapetFrontend.Ast.Expressions
@@ -9,6 +10,19 @@ namespace HapetFrontend.Ast.Expressions
 
         public AstDefaultExpr(ILocation Location = null) : base(Location)
         {
+        }
+
+        public override AstStatement GetDeepCopy()
+        {
+            var copy = new AstDefaultExpr(Location)
+            {
+                IsCompileTimeValue = IsCompileTimeValue,
+                OutType = OutType,
+                OutValue = OutValue,
+                Scope = Scope,
+                SourceFile = SourceFile,
+            };
+            return copy;
         }
 
         public static AstExpression GetDefaultValueForType(HapetType tp, AstExpression orig)

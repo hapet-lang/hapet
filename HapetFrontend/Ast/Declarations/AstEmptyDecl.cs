@@ -14,5 +14,20 @@ namespace HapetFrontend.Ast.Declarations
         public AstEmptyDecl(AstIdExpr name, string doc = "", ILocation Location = null) : base(name, doc, Location)
         {
         }
+
+        public override AstStatement GetDeepCopy()
+        {
+            var copy = new AstEmptyDecl(
+                Name.GetDeepCopy() as AstIdExpr,
+                Documentation, Location)
+            {
+                Scope = Scope,
+                SourceFile = SourceFile,
+                SubScope = SubScope,
+            };
+            copy.Attributes.AddRange(Attributes);
+            copy.SpecialKeys.AddRange(SpecialKeys);
+            return copy;
+        }
     }
 }

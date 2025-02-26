@@ -36,5 +36,20 @@ namespace HapetFrontend.Ast.Statements
             ThirdParam = third;
             Body = body;
         }
+
+        public override AstStatement GetDeepCopy()
+        {
+            var copy = new AstForStmt(
+                FirstParam.GetDeepCopy() as AstStatement,
+                SecondParam.GetDeepCopy() as AstExpression,
+                ThirdParam.GetDeepCopy() as AstStatement,
+                Body.GetDeepCopy() as AstBlockExpr,
+                Location)
+            {
+                Scope = Scope,
+                SourceFile = SourceFile,
+            };
+            return copy;
+        }
     }
 }

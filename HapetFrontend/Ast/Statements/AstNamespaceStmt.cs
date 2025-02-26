@@ -16,5 +16,17 @@ namespace HapetFrontend.Ast.Statements
         {
             NameExpression = name;
         }
+
+        public override AstStatement GetDeepCopy()
+        {
+            var copy = new AstNamespaceStmt(
+                NameExpression.GetDeepCopy() as AstNestedExpr,
+                Location)
+            {
+                Scope = Scope,
+                SourceFile = SourceFile,
+            };
+            return copy;
+        }
     }
 }

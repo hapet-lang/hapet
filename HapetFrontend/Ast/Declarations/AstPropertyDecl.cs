@@ -42,6 +42,27 @@ namespace HapetFrontend.Ast.Declarations
         {
         }
 
+        public override AstStatement GetDeepCopy()
+        {
+            var copy = new AstPropertyDecl(
+                Type.GetDeepCopy() as AstExpression,
+                Name.GetDeepCopy() as AstIdExpr,
+                Initializer.GetDeepCopy() as AstExpression,
+                Documentation, Location)
+            {
+                HasGet = HasGet,
+                HasSet = HasSet,
+                GetBlock = GetBlock.GetDeepCopy() as AstBlockExpr,
+                SetBlock = SetBlock.GetDeepCopy() as AstBlockExpr,
+                Scope = Scope,
+                SourceFile = SourceFile,
+                SubScope = SubScope,
+            };
+            copy.Attributes.AddRange(Attributes);
+            copy.SpecialKeys.AddRange(SpecialKeys);
+            return copy;
+        }
+
         internal PropertyDeclJson GetJsonPropa()
         {
             var attributes = Attributes.Select(x => x.GetJson()).ToList();

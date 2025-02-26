@@ -26,5 +26,17 @@ namespace HapetFrontend.Ast.Statements
         {
             Namespace = ns;
         }
+
+        public override AstStatement GetDeepCopy()
+        {
+            var copy = new AstUsingStmt(
+                Namespace.GetDeepCopy() as AstNestedExpr,
+                Location)
+            {
+                Scope = Scope,
+                SourceFile = SourceFile,
+            };
+            return copy;
+        }
     }
 }

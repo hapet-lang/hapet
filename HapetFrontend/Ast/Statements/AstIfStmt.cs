@@ -29,5 +29,19 @@ namespace HapetFrontend.Ast.Statements
             BodyTrue = bodyTrue;
             BodyFalse = bodyFalse;
         }
+
+        public override AstStatement GetDeepCopy()
+        {
+            var copy = new AstIfStmt(
+                Condition.GetDeepCopy() as AstExpression,
+                BodyTrue.GetDeepCopy() as AstBlockExpr,
+                BodyFalse.GetDeepCopy() as AstBlockExpr,
+                Location)
+            {
+                Scope = Scope,
+                SourceFile = SourceFile,
+            };
+            return copy;
+        }
     }
 }

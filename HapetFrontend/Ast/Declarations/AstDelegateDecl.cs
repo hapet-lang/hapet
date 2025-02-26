@@ -22,6 +22,23 @@ namespace HapetFrontend.Ast.Declarations
             Returns = returns;
         }
 
+        public override AstStatement GetDeepCopy()
+        {
+            var copy = new AstDelegateDecl(
+                Parameters.Select(x => x.GetDeepCopy() as AstParamDecl).ToList(),
+                Returns.GetDeepCopy() as AstExpression,
+                Name.GetDeepCopy() as AstIdExpr,
+                Documentation, Location)
+            {
+                Scope = Scope,
+                SourceFile = SourceFile,
+                SubScope = SubScope,
+            };
+            copy.Attributes.AddRange(Attributes);
+            copy.SpecialKeys.AddRange(SpecialKeys);
+            return copy;
+        }
+
         public DelegateDeclJson GetJson()
         {
             var parameters = Parameters.Select(x => x.GetJson()).ToList();

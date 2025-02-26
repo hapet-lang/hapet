@@ -1,4 +1,5 @@
-﻿using HapetFrontend.Scoping;
+﻿using HapetFrontend.Ast.Declarations;
+using HapetFrontend.Scoping;
 using System.Diagnostics;
 
 namespace HapetFrontend.Ast.Expressions
@@ -16,6 +17,23 @@ namespace HapetFrontend.Ast.Expressions
         {
             Operator = op;
             SubExpr = sub;
+        }
+
+        public override AstStatement GetDeepCopy()
+        {
+            var copy = new AstUnaryExpr(
+                Operator,
+                SubExpr.GetDeepCopy() as AstStatement,
+                Location)
+            {
+                ActualOperator = ActualOperator,
+                IsCompileTimeValue = IsCompileTimeValue,
+                OutType = OutType,
+                OutValue = OutValue,
+                Scope = Scope,
+                SourceFile = SourceFile,
+            };
+            return copy;
         }
     }
 }

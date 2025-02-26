@@ -27,5 +27,19 @@ namespace HapetFrontend.Ast.Statements
         {
             this.Arguments = arguments ?? new List<AstArgumentExpr>();
         }
+
+        public override AstStatement GetDeepCopy()
+        {
+            var copy = new AstBaseCtorStmt(
+                Arguments.Select(x => x.GetDeepCopy() as AstArgumentExpr).ToList(),
+                Location)
+            {
+                BaseType = BaseType,
+                ThisArgument = ThisArgument.GetDeepCopy() as AstIdExpr,
+                Scope = Scope,
+                SourceFile = SourceFile,
+            };
+            return copy;
+        }
     }
 }

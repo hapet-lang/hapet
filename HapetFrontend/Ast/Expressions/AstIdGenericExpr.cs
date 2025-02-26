@@ -1,4 +1,5 @@
-﻿using HapetFrontend.Scoping;
+﻿using HapetFrontend.Ast.Declarations;
+using HapetFrontend.Scoping;
 
 namespace HapetFrontend.Ast.Expressions
 {
@@ -15,6 +16,24 @@ namespace HapetFrontend.Ast.Expressions
         public AstIdGenericExpr(string name, List<AstNestedExpr> genericRealTypes, ILocation location = null) : base(name, location)
         {
             GenericRealTypes.AddRange(genericRealTypes);
+        }
+
+        public override AstStatement GetDeepCopy()
+        {
+            var copy = new AstIdGenericExpr(
+                Name,
+                GenericRealTypes.Select(x => x.GetDeepCopy() as AstNestedExpr).ToList(),
+                Location)
+            {
+                FindSymbol = FindSymbol,
+                Suffix = Suffix,
+                IsCompileTimeValue = IsCompileTimeValue,
+                OutType = OutType,
+                OutValue = OutValue,
+                Scope = Scope,
+                SourceFile = SourceFile,
+            };
+            return copy;
         }
 
         public static AstIdGenericExpr FromAstIdExpr(AstIdExpr astIdExpr, List<AstNestedExpr> genericRealTypes = null)

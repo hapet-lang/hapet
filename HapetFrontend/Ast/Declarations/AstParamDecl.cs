@@ -13,18 +13,29 @@ namespace HapetFrontend.Ast.Declarations
         /// </summary>
         public AstExpression DefaultValue { get; set; }
 
-        /// <summary>
-        /// The function in which the parameter presented
-        /// </summary>
-        [JsonIgnore]
-        public AstFuncDecl ContainingFunction { get; set; }
-
         public override string AAAName => nameof(AstParamDecl);
 
         public AstParamDecl(AstExpression type, AstIdExpr name, AstExpression defaultValue = null, string doc = "", ILocation Location = null) : base(name, doc, Location)
         {
             Type = type;
             DefaultValue = defaultValue;
+        }
+
+        public override AstStatement GetDeepCopy()
+        {
+            var copy = new AstParamDecl(
+                Type.GetDeepCopy() as AstExpression, 
+                Name.GetDeepCopy() as AstIdExpr,
+                DefaultValue?.GetDeepCopy() as AstExpression,
+                Documentation, Location)
+            {
+                Scope = Scope,
+                SourceFile = SourceFile,
+                SubScope = SubScope,
+            };
+            copy.Attributes.AddRange(Attributes);
+            copy.SpecialKeys.AddRange(SpecialKeys);
+            return copy;
         }
 
         public AstVarDecl ToVarDecl()

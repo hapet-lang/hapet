@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using HapetFrontend.Ast.Declarations;
+using System.Text;
 
 namespace HapetFrontend.Ast.Expressions
 {
@@ -21,6 +22,22 @@ namespace HapetFrontend.Ast.Expressions
         {
             this.TypeName = typeName;
             this.Arguments = arguments;
+        }
+
+        public override AstStatement GetDeepCopy()
+        {
+            var copy = new AstNewExpr(
+                TypeName.GetDeepCopy() as AstNestedExpr,
+                Arguments.Select(x => x.GetDeepCopy() as AstArgumentExpr).ToList(),
+                Location)
+            {
+                IsCompileTimeValue = IsCompileTimeValue,
+                OutType = OutType,
+                OutValue = OutValue,
+                Scope = Scope,
+                SourceFile = SourceFile,
+            };
+            return copy;
         }
     }
 }

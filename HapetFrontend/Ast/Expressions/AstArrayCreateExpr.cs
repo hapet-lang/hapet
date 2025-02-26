@@ -1,4 +1,5 @@
-﻿using System.Diagnostics;
+﻿using HapetFrontend.Ast.Declarations;
+using System.Diagnostics;
 
 namespace HapetFrontend.Ast.Expressions
 {
@@ -25,6 +26,23 @@ namespace HapetFrontend.Ast.Expressions
             TypeName = type;
             SizeExprs = sizeExprs;
             Elements = elements;
+        }
+
+        public override AstStatement GetDeepCopy()
+        {
+            var copy = new AstArrayCreateExpr(
+                TypeName.GetDeepCopy() as AstExpression,
+                SizeExprs.Select(x => x.GetDeepCopy() as AstExpression).ToList(),
+                Elements.Select(x => x.GetDeepCopy() as AstExpression).ToList(),
+                Location)
+            {
+                IsCompileTimeValue = IsCompileTimeValue,
+                OutType = OutType,
+                OutValue = OutValue,
+                Scope = Scope,
+                SourceFile = SourceFile,
+            };
+            return copy;
         }
 
         public object Clone()

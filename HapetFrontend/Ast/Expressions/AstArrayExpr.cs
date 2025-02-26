@@ -18,6 +18,21 @@ namespace HapetFrontend.Ast.Expressions
             SubExpression = sub;
         }
 
+        public override AstStatement GetDeepCopy()
+        {
+            var copy = new AstArrayExpr(
+                SubExpression.GetDeepCopy() as AstExpression,
+                Location)
+            {
+                IsCompileTimeValue = IsCompileTimeValue,
+                OutType = OutType,
+                OutValue = OutValue,
+                Scope = Scope,
+                SourceFile = SourceFile,
+            };
+            return copy;
+        }
+
         public static AstStructDecl GetArrayStruct(Scope scope)
         {
             return (scope.GetSymbolInNamespace("System", "Array") as DeclSymbol).Decl as AstStructDecl;

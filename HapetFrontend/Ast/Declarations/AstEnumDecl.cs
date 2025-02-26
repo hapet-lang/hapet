@@ -29,6 +29,23 @@ namespace HapetFrontend.Ast.Declarations
             Declarations = declarations;
         }
 
+        public override AstStatement GetDeepCopy()
+        {
+            var copy = new AstEnumDecl(
+                Name.GetDeepCopy() as AstIdExpr,
+                Declarations.Select(x => x.GetDeepCopy() as AstVarDecl).ToList(),
+                Documentation, Location)
+            {
+                InheritedType = InheritedType.GetDeepCopy() as AstNestedExpr,
+                Scope = Scope,
+                SourceFile = SourceFile,
+                SubScope = SubScope,
+            };
+            copy.Attributes.AddRange(Attributes);
+            copy.SpecialKeys.AddRange(SpecialKeys);
+            return copy;
+        }
+
         public EnumDeclJson GetJson()
         {
             var fields = Declarations.Select(x => x.Name.Name).ToList();

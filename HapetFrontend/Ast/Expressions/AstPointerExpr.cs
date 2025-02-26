@@ -1,4 +1,6 @@
-﻿namespace HapetFrontend.Ast.Expressions
+﻿using HapetFrontend.Ast.Declarations;
+
+namespace HapetFrontend.Ast.Expressions
 {
     // also used for dereference
     public class AstPointerExpr : AstExpression
@@ -22,6 +24,22 @@
         {
             IsDereference = isDeref;
             SubExpression = sub;
+        }
+
+        public override AstStatement GetDeepCopy()
+        {
+            var copy = new AstPointerExpr(
+                SubExpression.GetDeepCopy() as AstExpression,
+                IsDereference,
+                Location)
+            {
+                IsCompileTimeValue = IsCompileTimeValue,
+                OutType = OutType,
+                OutValue = OutValue,
+                Scope = Scope,
+                SourceFile = SourceFile,
+            };
+            return copy;
         }
     }
 }

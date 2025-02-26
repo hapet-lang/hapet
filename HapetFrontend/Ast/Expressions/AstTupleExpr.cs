@@ -22,5 +22,10 @@ namespace HapetFrontend.Ast.Expressions
             this.Types = values.Select(v => new AstParamDecl(v, null, null, "", v.Location)).ToList();
             this.Values = Types.Select(t => t.Type).ToList();
         }
+
+        public override AstStatement GetDeepCopy()
+        {
+             throw new NotImplementedException("Tuple deep copy not implemented");
+        }
     }
 }

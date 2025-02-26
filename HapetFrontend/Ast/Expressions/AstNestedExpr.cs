@@ -1,4 +1,5 @@
-﻿using HapetFrontend.Entities;
+﻿using HapetFrontend.Ast.Declarations;
+using HapetFrontend.Entities;
 using HapetFrontend.Errors;
 using HapetFrontend.Parsing;
 
@@ -25,6 +26,22 @@ namespace HapetFrontend.Ast.Expressions
         {
             this.RightPart = rightPart;
             this.LeftPart = leftPart;
+        }
+
+        public override AstStatement GetDeepCopy()
+        {
+            var copy = new AstNestedExpr(
+                RightPart.GetDeepCopy() as AstExpression,
+                LeftPart.GetDeepCopy() as AstNestedExpr,
+                Location)
+            {
+                IsCompileTimeValue = IsCompileTimeValue,
+                OutType = OutType,
+                OutValue = OutValue,
+                Scope = Scope,
+                SourceFile = SourceFile,
+            };
+            return copy;
         }
 
         /// <summary>

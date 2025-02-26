@@ -15,5 +15,18 @@ namespace HapetFrontend.Ast.Declarations
             Type = new AstIdExpr(tp.TypeName, Location);
             Type.OutType = tp;
         }
+
+        public override AstStatement GetDeepCopy()
+        {
+            var copy = new AstBuiltInTypeDecl(Type.OutType, Documentation, Location)
+            {
+                Scope = Scope,
+                SourceFile = SourceFile,
+                SubScope = SubScope,
+            };
+            copy.Attributes.AddRange(Attributes);
+            copy.SpecialKeys.AddRange(SpecialKeys);
+            return copy;
+        }
     }
 }

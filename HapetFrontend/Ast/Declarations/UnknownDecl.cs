@@ -14,5 +14,10 @@ namespace HapetFrontend.Ast.Declarations
         {
             Type = type;
         }
+
+        public override AstStatement GetDeepCopy()
+        {
+            throw new NotImplementedException($"{nameof(GetDeepCopy)} should not be called over {nameof(UnknownDecl)}");
+        }
     }
 }

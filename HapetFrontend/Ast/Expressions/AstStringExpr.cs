@@ -18,6 +18,21 @@ namespace HapetFrontend.Ast.Expressions
             this.Suffix = suffix;
         }
 
+        public override AstStatement GetDeepCopy()
+        {
+            var copy = new AstStringExpr(
+                StringValue, Suffix,
+                Location)
+            {
+                IsCompileTimeValue = IsCompileTimeValue,
+                OutType = OutType,
+                OutValue = OutValue,
+                Scope = Scope,
+                SourceFile = SourceFile,
+            };
+            return copy;
+        }
+
         public static AstStructDecl GetStringStruct(Scope scope)
         {
             return (scope.GetSymbolInNamespace("System", "String") as DeclSymbol).Decl as AstStructDecl;

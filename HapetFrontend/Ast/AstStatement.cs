@@ -52,6 +52,8 @@ namespace HapetFrontend.Ast
             this.Location = Location;
         }
 
+        public abstract AstStatement GetDeepCopy();
+
         #region Helper functions
         public AstFuncDecl FindContainingFunction()
         {

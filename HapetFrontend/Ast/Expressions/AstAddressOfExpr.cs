@@ -1,4 +1,5 @@
-﻿using HapetFrontend.Ast.Statements;
+﻿using HapetFrontend.Ast.Declarations;
+using HapetFrontend.Ast.Statements;
 
 namespace HapetFrontend.Ast.Expressions
 {
@@ -15,6 +16,21 @@ namespace HapetFrontend.Ast.Expressions
             : base(Location)
         {
             SubExpression = sub;
+        }
+
+        public override AstStatement GetDeepCopy()
+        {
+            var copy = new AstAddressOfExpr(
+                SubExpression.GetDeepCopy() as AstExpression,
+                Location)
+            {
+                IsCompileTimeValue = IsCompileTimeValue,
+                OutType = OutType,
+                OutValue = OutValue,
+                Scope = Scope,
+                SourceFile = SourceFile,
+            };
+            return copy;
         }
     }
 }

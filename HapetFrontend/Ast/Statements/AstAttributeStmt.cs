@@ -28,6 +28,19 @@ namespace HapetFrontend.Ast.Statements
             Parameters = parameters;
         }
 
+        public override AstStatement GetDeepCopy()
+        {
+            var copy = new AstAttributeStmt(
+                AttributeName.GetDeepCopy() as AstNestedExpr,
+                Parameters.Select(x => x.GetDeepCopy() as AstExpression).ToList(),
+                Location)
+            {
+                Scope = Scope,
+                SourceFile = SourceFile,
+            };
+            return copy;
+        }
+
         internal AttributeJson GetJson()
         {
             List<object> pars = new List<object>();

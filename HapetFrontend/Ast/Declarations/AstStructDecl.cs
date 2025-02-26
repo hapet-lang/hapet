@@ -41,6 +41,26 @@ namespace HapetFrontend.Ast.Declarations
             Declarations = declarations;
         }
 
+        public override AstStatement GetDeepCopy()
+        {
+            var copy = new AstStructDecl(
+                Name.GetDeepCopy() as AstIdExpr,
+                Declarations.Select(x => x.GetDeepCopy() as AstDeclaration).ToList(),
+                Documentation, Location)
+            {
+                AllRawFields = AllRawFields.Select(x => x.GetDeepCopy() as AstVarDecl).ToList(),
+                AllRawProps = AllRawProps.Select(x => x.GetDeepCopy() as AstPropertyDecl).ToList(),
+                AllVirtualMethods = AllVirtualMethods.Select(x => x.GetDeepCopy() as AstFuncDecl).ToList(),
+                InheritedFrom = InheritedFrom.Select(x => x.GetDeepCopy() as AstNestedExpr).ToList(),
+                Scope = Scope,
+                SourceFile = SourceFile,
+                SubScope = SubScope,
+            };
+            copy.Attributes.AddRange(Attributes);
+            copy.SpecialKeys.AddRange(SpecialKeys);
+            return copy;
+        }
+
         public StructDeclJson GetJson()
         {
             var fields = Declarations.Where(x => x is AstVarDecl && x is not AstPropertyDecl).Select(x => (x as AstVarDecl).GetJson()).ToList();

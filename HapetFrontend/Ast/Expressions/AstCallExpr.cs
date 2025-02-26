@@ -1,4 +1,6 @@
-﻿namespace HapetFrontend.Ast.Expressions
+﻿using HapetFrontend.Ast.Declarations;
+
+namespace HapetFrontend.Ast.Expressions
 {
     public class AstCallExpr : AstExpression
     {
@@ -30,6 +32,24 @@
             this.TypeOrObjectName = typeOrObjectName;
             this.FuncName = funcName;
             this.Arguments = arguments ?? new List<AstArgumentExpr>();
+        }
+
+        public override AstStatement GetDeepCopy()
+        {
+            var copy = new AstCallExpr(
+                TypeOrObjectName.GetDeepCopy() as AstNestedExpr,
+                FuncName.GetDeepCopy() as AstIdExpr,
+                Arguments.Select(x => x.GetDeepCopy() as AstArgumentExpr).ToList(),
+                Location)
+            {
+                StaticCall = StaticCall,
+                IsCompileTimeValue = IsCompileTimeValue,
+                OutType = OutType,
+                OutValue = OutValue,
+                Scope = Scope,
+                SourceFile = SourceFile,
+            };
+            return copy;
         }
     }
 }

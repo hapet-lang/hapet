@@ -1,4 +1,6 @@
-﻿namespace HapetFrontend.Ast.Statements
+﻿using HapetFrontend.Ast.Expressions;
+
+namespace HapetFrontend.Ast.Statements
 {
     public class AstBreakContStmt : AstStatement
     {
@@ -12,6 +14,16 @@
         public AstBreakContStmt(bool isBreak, ILocation Location = null) : base(Location)
         {
             IsBreak = isBreak;
+        }
+
+        public override AstStatement GetDeepCopy()
+        {
+            var copy = new AstBreakContStmt(IsBreak, Location)
+            {
+                Scope = Scope,
+                SourceFile = SourceFile,
+            };
+            return copy;
         }
     }
 }

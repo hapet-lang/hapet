@@ -48,6 +48,29 @@ namespace HapetFrontend.Ast.Declarations
             Returns = returns;
         }
 
+        public override AstStatement GetDeepCopy()
+        {
+            var copy = new AstFuncDecl(
+                Parameters.Select(x => x.GetDeepCopy() as AstParamDecl).ToList(),
+                Returns.GetDeepCopy() as AstExpression,
+                Body.GetDeepCopy() as AstBlockExpr,
+                Name.GetDeepCopy() as AstIdExpr,
+                Documentation, Location)
+            {
+                IsPropertyFunction = IsPropertyFunction,
+                ContainingParent = ContainingParent.GetDeepCopy() as AstDeclaration,
+                BaseCtorCall = BaseCtorCall.GetDeepCopy() as AstBaseCtorStmt,
+                CallingConvention = CallingConvention,
+                ClassFunctionType = ClassFunctionType,
+                Scope = Scope,
+                SourceFile = SourceFile,
+                SubScope = SubScope,
+            };
+            copy.Attributes.AddRange(Attributes);
+            copy.SpecialKeys.AddRange(SpecialKeys);
+            return copy;
+        }
+
         public FuncDeclJson GetJson()
         {
             var parameters = Parameters.Select(x => x.GetJson()).ToList();
