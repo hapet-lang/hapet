@@ -718,6 +718,10 @@
         <Number>5007</Number>
         <Text>(Compiler exception) Could not generate access code for the {0} type</Text>
     </Item>
+	<Item>
+		<Number>5008</Number>
+		<Text>(Compiler exception) Stmt could not be prepared when current step is None</Text>
+	</Item>
 
     <!--Backend errors-->
 	<Item>

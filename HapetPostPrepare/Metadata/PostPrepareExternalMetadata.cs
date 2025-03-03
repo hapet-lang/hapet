@@ -13,7 +13,6 @@ namespace HapetPostPrepare
         private List<AstStructDecl> _structs;
         private List<AstEnumDecl> _enums;
         private List<AstDelegateDecl> _delegates;
-        private List<AstFuncDecl> _funcs;
 
         private string _externalProjectFilename;
 
@@ -24,11 +23,11 @@ namespace HapetPostPrepare
             _structs = metadata.StructDecls.Select(x => x.GetAst(_compiler)).ToList();
             _enums = metadata.EnumDecls.Select(x => x.GetAst(_compiler)).ToList();
             _delegates = metadata.DelegateDecls.Select(x => x.GetAst(_compiler)).ToList();
-            _funcs = metadata.FuncDecls.Select(x => x.GetAst(_compiler)).ToList();
+            var funcs = metadata.FuncDecls.Select(x => x.GetAst(_compiler)).ToList();
             _externalProjectFilename = fileName;
 
-            // setting all functions into classes. So do not use _funcs anymore
-            foreach (var fnc in _funcs)
+            // setting all functions into classes. So do not use funcs anymore
+            foreach (var fnc in funcs)
             {
                 string typeName = string.Concat(fnc.Name.Name.TakeWhile(x => x != ':'));
 
@@ -137,15 +136,7 @@ namespace HapetPostPrepare
             {
                 _currentSourceFile = cls.SourceFile;
                 _currentClass = cls;
-                foreach (var decl in cls.Declarations.Where(x => x is AstFuncDecl).Select(x => x as AstFuncDecl))
-                {
-                    // set that the function is imported from another assembly
-                    decl.SpecialKeys.Add(TokenType.KwImported);
-                    inInfo.ForMetadata = true;
-                    PostPrepareFunctionInference(decl, inInfo, ref outInfo);
-                    inInfo.ForMetadata = false;
-                    AllFunctionsMetadata.Add(decl);
-                }
+                PostPrepareMetadataFunctions(cls, false, true);
             }
         }
     }

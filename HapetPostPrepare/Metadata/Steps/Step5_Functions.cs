@@ -1,5 +1,6 @@
 ﻿using HapetFrontend.Ast;
 using HapetFrontend.Ast.Declarations;
+using HapetFrontend.Parsing;
 using HapetPostPrepare.Entities;
 using System;
 
@@ -7,7 +8,7 @@ namespace HapetPostPrepare
 {
     public partial class PostPrepare
     {
-        private void PostPrepareMetadataFunctions(AstStatement stmt, bool needSerialize = false)
+        private void PostPrepareMetadataFunctions(AstStatement stmt, bool needSerialize = false, bool isImported = false)
         {
             // just handlers
             InInfo inInfo = InInfo.Default;
@@ -41,6 +42,10 @@ namespace HapetPostPrepare
 
                 if (needSerialize)
                     _serializeFunctionsMetadata.Add(func);
+
+                if (isImported)
+                    // set that the function is imported from another assembly
+                    func.SpecialKeys.Add(TokenType.KwImported);
             }
         }
     }

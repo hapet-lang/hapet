@@ -81,7 +81,7 @@ namespace HapetPostPrepare
             _currentPreparationStep = PreparationStep.Generics;
 
             // resolve inheritance shite of classes
-            foreach (var cls in AllClassesMetadata)
+            foreach (var cls in AllClassesMetadata.ToList())
             {
                 _currentSourceFile = cls.SourceFile;
                 _currentClass = cls;
@@ -94,20 +94,20 @@ namespace HapetPostPrepare
             _currentPreparationStep = PreparationStep.Inheritance;
 
             // resolve inheritance shite of classes
-            foreach (var cls in AllClassesMetadata)
+            foreach (var cls in AllClassesMetadata.ToList())
             {
                 _currentSourceFile = cls.SourceFile;
                 _currentClass = cls;
                 PostPrepareMetadataInheritance(cls);
             }
             // resolve inheritance shite of structs
-            foreach (var str in AllStructsMetadata)
+            foreach (var str in AllStructsMetadata.ToList())
             {
                 _currentSourceFile = str.SourceFile;
                 PostPrepareMetadataInheritance(str);
             }
             // resolve inheritance shite of enums
-            foreach (var enm in AllEnumsMetadata)
+            foreach (var enm in AllEnumsMetadata.ToList())
             {
                 _currentSourceFile = enm.SourceFile;
                 PostPrepareMetadataInheritance(enm);
@@ -119,7 +119,7 @@ namespace HapetPostPrepare
             _currentPreparationStep = PreparationStep.Delegates;
 
             // inferrencing delegates
-            foreach (var del in AllDelegatesMetadata)
+            foreach (var del in AllDelegatesMetadata.ToList())
             {
                 _currentSourceFile = del.SourceFile;
                 PostPrepareMetadataDelegates(del);
@@ -132,13 +132,13 @@ namespace HapetPostPrepare
 
             // inferrencing funcs
             // WARN! _serializeClassesMetadata is used because we don't want external funcs to be inferred like that
-            foreach (var cls in _serializeClassesMetadata)
+            foreach (var cls in _serializeClassesMetadata.ToList())
             {
                 _currentSourceFile = cls.SourceFile;
                 _currentClass = cls;
                 PostPrepareMetadataFunctions(cls, true);
             }
-            foreach (var str in _serializeStructsMetadata)
+            foreach (var str in _serializeStructsMetadata.ToList())
             {
                 _currentSourceFile = str.SourceFile;
                 PostPrepareMetadataFunctions(str, true);
@@ -149,13 +149,13 @@ namespace HapetPostPrepare
         {
             _currentPreparationStep = PreparationStep.InheritedFunctions;
 
-            foreach (var cls in AllClassesMetadata)
+            foreach (var cls in AllClassesMetadata.ToList())
             {
                 _currentSourceFile = cls.SourceFile;
                 _currentClass = cls;
                 PostPrepareMetadataInheritedFunctions(cls);
             }
-            foreach (var str in AllStructsMetadata)
+            foreach (var str in AllStructsMetadata.ToList())
             {
                 _currentSourceFile = str.SourceFile;
                 PostPrepareMetadataInheritedFunctions(str);
@@ -170,19 +170,19 @@ namespace HapetPostPrepare
             _currentPreparationStep = PreparationStep.FieldAndPropDecls;
 
             // resolve all fields of classes
-            foreach (var cls in AllClassesMetadata)
+            foreach (var cls in AllClassesMetadata.ToList())
             {
                 _currentSourceFile = cls.SourceFile;
                 _currentClass = cls;
                 PostPrepareMetadataTypeFieldDecls(cls);
             }
             // resolve all fields of structs
-            foreach (var str in AllStructsMetadata)
+            foreach (var str in AllStructsMetadata.ToList())
             {
                 _currentSourceFile = str.SourceFile;
                 PostPrepareMetadataTypeFieldDecls(str);
             }
-            foreach (var enm in AllEnumsMetadata)
+            foreach (var enm in AllEnumsMetadata.ToList())
             {
                 _currentSourceFile = enm.SourceFile;
                 PostPrepareMetadataTypeFieldDecls(enm);
@@ -193,26 +193,29 @@ namespace HapetPostPrepare
         {
             _currentPreparationStep = PreparationStep.InheritedFieldDecls;
 
+            var classes = AllClassesMetadata.ToList();
+            var structures = AllStructsMetadata.ToList();
+
             // resolve all inherited fields of classes
-            foreach (var cls in AllClassesMetadata)
+            foreach (var cls in classes)
             {
                 _currentSourceFile = cls.SourceFile;
                 _currentClass = cls;
                 PostPrepareMetadataTypeInheritedFieldDecls(cls);
             }
-            foreach (var str in AllStructsMetadata)
+            foreach (var str in structures)
             {
                 _currentSourceFile = str.SourceFile;
                 PostPrepareMetadataTypeInheritedFieldDecls(str);
             }
 
-            foreach (var cls in AllClassesMetadata)
+            foreach (var cls in classes)
             {
                 _currentSourceFile = cls.SourceFile;
                 _currentClass = cls;
                 PostPrepareMetadataTypeInheritedFieldDeclsCopy(cls);
             }
-            foreach (var str in AllStructsMetadata)
+            foreach (var str in structures)
             {
                 _currentSourceFile = str.SourceFile;
                 PostPrepareMetadataTypeInheritedFieldDeclsCopy(str);
@@ -223,26 +226,29 @@ namespace HapetPostPrepare
         {
             _currentPreparationStep = PreparationStep.InheritedPropDecls;
 
+            var classes = AllClassesMetadata.ToList();
+            var structures = AllStructsMetadata.ToList();
+
             // resolve all inherited props of classes
-            foreach (var cls in AllClassesMetadata)
+            foreach (var cls in classes)
             {
                 _currentSourceFile = cls.SourceFile;
                 _currentClass = cls;
                 PostPrepareMetadataTypeInheritedPropsDecls(cls);
             }
-            foreach (var str in AllStructsMetadata)
+            foreach (var str in structures)
             {
                 _currentSourceFile = str.SourceFile;
                 PostPrepareMetadataTypeInheritedPropsDecls(str);
             }
 
-            foreach (var cls in AllClassesMetadata)
+            foreach (var cls in classes)
             {
                 _currentSourceFile = cls.SourceFile;
                 _currentClass = cls;
                 PostPrepareMetadataTypeInheritedPropsDeclsCopy(cls);
             }
-            foreach (var str in AllStructsMetadata)
+            foreach (var str in structures)
             {
                 _currentSourceFile = str.SourceFile;
                 PostPrepareMetadataTypeInheritedPropsDeclsCopy(str);
@@ -254,19 +260,19 @@ namespace HapetPostPrepare
             _currentPreparationStep = PreparationStep.FieldAndPropInits;
 
             // resolve all fields of classes
-            foreach (var cls in AllClassesMetadata)
+            foreach (var cls in AllClassesMetadata.ToList())
             {
                 _currentSourceFile = cls.SourceFile;
                 _currentClass = cls;
                 PostPrepareMetadataTypeFieldInits(cls);
             }
             // resolve all fields of structs
-            foreach (var str in AllStructsMetadata)
+            foreach (var str in AllStructsMetadata.ToList())
             {
                 _currentSourceFile = str.SourceFile;
                 PostPrepareMetadataTypeFieldInits(str);
             }
-            foreach (var enm in AllEnumsMetadata)
+            foreach (var enm in AllEnumsMetadata.ToList())
             {
                 _currentSourceFile = enm.SourceFile;
                 PostPrepareMetadataTypeFieldInits(enm);
@@ -278,32 +284,32 @@ namespace HapetPostPrepare
             _currentPreparationStep = PreparationStep.Attributes;
 
             // inferrencing attribtues of functions
-            foreach (var fnc in AllFunctionsMetadata)
+            foreach (var fnc in AllFunctionsMetadata.ToList())
             {
                 _currentSourceFile = fnc.SourceFile;
                 PostPrepareMetadataAttributes(fnc);
             }
             // inferrencing attribtues of classes
-            foreach (var cls in AllClassesMetadata)
+            foreach (var cls in AllClassesMetadata.ToList())
             {
                 _currentSourceFile = cls.SourceFile;
                 _currentClass = cls;
                 PostPrepareMetadataAttributes(cls);
             }
             // inferrencing attribtues of structs
-            foreach (var str in AllStructsMetadata)
+            foreach (var str in AllStructsMetadata.ToList())
             {
                 _currentSourceFile = str.SourceFile;
                 PostPrepareMetadataAttributes(str);
             }
             // inferrencing attribtues of enums
-            foreach (var enm in AllEnumsMetadata)
+            foreach (var enm in AllEnumsMetadata.ToList())
             {
                 _currentSourceFile = enm.SourceFile;
                 PostPrepareMetadataAttributes(enm);
             }
             // inferrencing attribtues of delegates
-            foreach (var del in AllDelegatesMetadata)
+            foreach (var del in AllDelegatesMetadata.ToList())
             {
                 _currentSourceFile = del.SourceFile;
                 PostPrepareMetadataAttributes(del);
