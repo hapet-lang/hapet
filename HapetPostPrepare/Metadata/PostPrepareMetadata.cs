@@ -154,10 +154,6 @@ namespace HapetPostPrepare
 
         private void PostPrepareMetadataGenerics()
         {
-            // just handlers
-            InInfo inInfo = InInfo.Default;
-            OutInfo outInfo = OutInfo.Default;
-
             // resolve inheritance shite of classes
             foreach (var cls in AllClassesMetadata)
             {
@@ -166,11 +162,11 @@ namespace HapetPostPrepare
                 foreach (var t in cls.GenericNames)
                 {
                     // getting constains for the generic type
-                    List<AstNestedExpr> constains = cls.GenericConstrains.ContainsKey(t) ? cls.GenericConstrains[t] : new List<AstNestedExpr>();
+                    List<AstNestedExpr> constains = cls.GenericConstrains.TryGetValue(t, out var val) ? val : new List<AstNestedExpr>();
 
                     // we need to create a temp class declaration 
                     // and define it inside class scope
-                    var clsT = GetTypeDeclarationForGeneric(cls, t, constains);
+                    var _ = GetTypeDeclarationForGeneric(cls, t, constains);
                 }
             }
         }
