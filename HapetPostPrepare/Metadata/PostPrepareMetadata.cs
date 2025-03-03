@@ -132,16 +132,20 @@ namespace HapetPostPrepare
 
             // inferrencing funcs
             // WARN! _serializeClassesMetadata is used because we don't want external funcs to be inferred like that
-            foreach (var cls in _serializeClassesMetadata.ToList())
+            foreach (var cls in AllClassesMetadata.ToList())
             {
                 _currentSourceFile = cls.SourceFile;
                 _currentClass = cls;
-                PostPrepareMetadataFunctions(cls, true);
+
+                bool isImported = cls.IsImported;
+                PostPrepareMetadataFunctions(cls, !isImported, isImported);
             }
-            foreach (var str in _serializeStructsMetadata.ToList())
+            foreach (var str in AllStructsMetadata.ToList())
             {
                 _currentSourceFile = str.SourceFile;
-                PostPrepareMetadataFunctions(str, true);
+
+                bool isImported = str.IsImported;
+                PostPrepareMetadataFunctions(str, !isImported, isImported);
             }
         }
 

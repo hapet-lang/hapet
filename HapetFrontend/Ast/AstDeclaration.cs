@@ -45,6 +45,11 @@ namespace HapetFrontend.Ast
             }
         }
 
+        /// <summary>
+        /// Is the declaration imported from another assembly
+        /// </summary>
+        public bool IsImported { get; set; }
+
         public override string AAAName => nameof(AstDeclaration);
 
         public AstDeclaration(AstIdExpr name, string doc, ILocation Location = null) : base(Location)

@@ -18,6 +18,18 @@ namespace HapetPostPrepare
 
         public void PostPrepareExternalMetadata(MetadataJson metadata, string fileName)
         {
+            PosPrepareExternalLoad(metadata, fileName);
+
+            // we need to do this to know locations of the asts
+            _externalProjectName = $"Referenced assembly '.../{fileName}'";
+            PostPrepareExternalScoping();
+            _externalProjectName = null;
+
+            PostPrepareExternalMetadataInternal();
+        }
+
+        private void PosPrepareExternalLoad(MetadataJson metadata, string fileName)
+        {
             // getting asts
             _classes = metadata.ClassDecls.Select(x => x.GetAst(_compiler)).ToList();
             _structs = metadata.StructDecls.Select(x => x.GetAst(_compiler)).ToList();
@@ -31,7 +43,7 @@ namespace HapetPostPrepare
             {
                 string typeName = string.Concat(fnc.Name.Name.TakeWhile(x => x != ':'));
 
-                var theClass = _classes.FirstOrDefault(x => x.Name.Name == typeName); 
+                var theClass = _classes.FirstOrDefault(x => x.Name.Name == typeName);
                 if (theClass != null)
                 {
                     theClass.Declarations.Add(fnc);
@@ -45,13 +57,6 @@ namespace HapetPostPrepare
                 }
                 // TODO: error if both are null
             }
-
-            // we need to do this to know locations of the asts
-            _externalProjectName = $"Referenced assembly '.../{fileName}'";
-            PostPrepareExternalScoping();
-            _externalProjectName = null;
-
-            PostPrepareExternalMetadataInternal();
         }
 
         /// <summary>
@@ -61,12 +66,14 @@ namespace HapetPostPrepare
         {
             foreach (var classDecl in _classes)
             {
+                classDecl.IsImported = true;
                 PrepareDeclarationShite(classDecl);
                 _currentSourceFile = classDecl.SourceFile;
                 PostPrepareClassScoping(classDecl);
             }
             foreach (var structDecl in _structs)
             {
+                structDecl.IsImported = true;
                 // getting namespace from full struct name
                 PrepareDeclarationShite(structDecl);
                 _currentSourceFile = structDecl.SourceFile;
@@ -74,6 +81,7 @@ namespace HapetPostPrepare
             }
             foreach (var enumDecl in _enums)
             {
+                enumDecl.IsImported = true;
                 // getting namespace from full enum name
                 PrepareDeclarationShite(enumDecl);
                 _currentSourceFile = enumDecl.SourceFile;
@@ -81,6 +89,7 @@ namespace HapetPostPrepare
             }
             foreach (var delegateDecl in _delegates)
             {
+                delegateDecl.IsImported = true;
                 // getting namespace from full delegate name
                 PrepareDeclarationShite(delegateDecl);
                 _currentSourceFile = delegateDecl.SourceFile;
@@ -101,42 +110,22 @@ namespace HapetPostPrepare
 
         private void PostPrepareExternalMetadataInternal()
         {
-            // just handlers
-            InInfo inInfo = InInfo.Default;
-            OutInfo outInfo = OutInfo.Default;
-
             /// like <see cref="PostPrepareMetadataTypes"/>
             foreach (var classDecl in _classes)
             {
-                classDecl.Scope.DefineDeclSymbol(classDecl.Name.Name, classDecl);
-                AllClassesMetadata.Add(classDecl);
-
-                PostPrepareAliases(classDecl.Name.Name, classDecl.Scope, classDecl);
+                PostPrepareMetadataTypes(classDecl, false);
             }
             foreach (var structDecl in _structs)
             {
-                structDecl.Scope.DefineDeclSymbol(structDecl.Name.Name, structDecl);
-                AllStructsMetadata.Add(structDecl);
-
-                PostPrepareAliases(structDecl.Name.Name, structDecl.Scope, structDecl);
+                PostPrepareMetadataTypes(structDecl, false);
             }
             foreach (var enumDecl in _enums)
             {
-                enumDecl.Scope.DefineDeclSymbol(enumDecl.Name.Name, enumDecl);
-                AllEnumsMetadata.Add(enumDecl);
+                PostPrepareMetadataTypes(enumDecl, false);
             }
             foreach (var delegateDecl in _delegates)
             {
-                delegateDecl.Scope.DefineDeclSymbol(delegateDecl.Name.Name, delegateDecl);
-                AllDelegatesMetadata.Add(delegateDecl);
-            }
-
-            /// like <see cref="PostPrepareMetadataFunctions"/>
-            foreach (var cls in _classes)
-            {
-                _currentSourceFile = cls.SourceFile;
-                _currentClass = cls;
-                PostPrepareMetadataFunctions(cls, false, true);
+                PostPrepareMetadataTypes(delegateDecl, false);
             }
         }
     }
