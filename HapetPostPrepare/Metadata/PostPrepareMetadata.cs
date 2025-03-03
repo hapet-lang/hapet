@@ -29,28 +29,12 @@ namespace HapetPostPrepare
         private List<AstDelegateDecl> _serializeDelegatesMetadata { get; } = new List<AstDelegateDecl>();
         private List<AstFuncDecl> _serializeFunctionsMetadata { get; } = new List<AstFuncDecl>();
 
-        public static void PostPrepareAliases(string typeName, Scope scope, AstDeclaration decl)
-        {
-            // kostyl to create aliases :)
-            if (typeName == "System.Object")
-            {
-                scope.DefineDeclSymbol("System.object", decl);
-            }
-            else if (typeName == "System.String")
-            {
-                decl.Type.OutType = StringType.GetInstance(decl as AstStructDecl);
-                scope.DefineDeclSymbol("System.string", decl);
-            }
-            else if (typeName == "System.Array")
-            {
-                decl.Type.OutType = new StructType(decl as AstStructDecl);
-            }
-        }
+        private PreparationStep _currentPreparationStep { get; set; } = PreparationStep.None;
 
         private int PostPrepareMetadata()
         {
-            PostPrepareMetadataTypes();
-            PostPrepareMetadataGenerics();
+            AllPostPrepareMetadataTypes();
+            AllPostPrepareMetadataGenerics();
             PostPrepareMetadataInheritance();
             PostPrepareMetadataDelegates();
             PostPrepareMetadataFunctions();
@@ -78,96 +62,30 @@ namespace HapetPostPrepare
             return 0;
         }
 
-        private void PostPrepareMetadataTypes()
+        private void AllPostPrepareMetadataTypes()
         {
+            _currentPreparationStep = PreparationStep.Types;
+
             foreach (var (path, file) in _compiler.GetFiles())
             {
                 _currentSourceFile = file;
                 foreach (var stmt in file.Statements)
                 {
-                    // just skip allowed statements
-                    if (stmt is AstUsingStmt)
-                    {
-                        continue;
-                    }
-
-                    if (stmt is not AstDeclaration decl)
-                    {
-                        _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, stmt, [], ErrorCode.Get(CTEN.StmtExpectedToBeDecl));
-                        continue;
-                    }
-
-                    string newName;
-                    if (decl is AstClassDecl classDecl)
-                    {
-                        _currentClass = classDecl;
-
-                        // creating a new class name with namespace
-                        newName = $"{file.Namespace}.{classDecl.Name.Name}";
-                        AllClassesMetadata.Add(classDecl);
-                        _serializeClassesMetadata.Add(classDecl);
-                    }
-                    else if (decl is AstStructDecl structDecl)
-                    {
-                        // creating a new struct name with namespace
-                        newName = $"{file.Namespace}.{structDecl.Name.Name}";
-                        AllStructsMetadata.Add(structDecl);
-                        _serializeStructsMetadata.Add(structDecl);
-                    }
-                    else if (decl is AstEnumDecl enumDecl)
-                    {
-                        // creating a new enum name with namespace
-                        newName = $"{file.Namespace}.{enumDecl.Name.Name}";
-                        AllEnumsMetadata.Add(enumDecl);
-                        _serializeEnumsMetadata.Add(enumDecl);
-                    }
-                    else if (decl is AstDelegateDecl delegateDecl)
-                    {
-                        // creating a new delegate name with namespace
-                        newName = $"{file.Namespace}.{delegateDecl.Name.Name}";
-                        AllDelegatesMetadata.Add(delegateDecl);
-                        _serializeDelegatesMetadata.Add(delegateDecl);
-                    }
-                    else
-                    {
-                        _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, decl.Name, [], ErrorCode.Get(CTEN.DeclNotAllowedInNamespace));
-                        continue;
-                    }
-
-                    // TODO: check for partial :)
-                    decl.Name = decl.Name.GetCopy(newName);
-                    var smbl = file.NamespaceScope.GetSymbol(decl.Name.Name);
-                    // TODO: better error like where is the first decl?
-                    if (smbl != null)
-                    {
-                        _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, decl.Name, [file.Namespace], ErrorCode.Get(CTEN.NamespaceAlreadyContains));
-                    }
-                    else
-                    {
-                        file.NamespaceScope.DefineDeclSymbol(decl.Name.Name, decl);
-
-                        PostPrepareAliases(newName, file.NamespaceScope, decl);
-                    }
+                    PostPrepareMetadataTypes(stmt);
                 }
             }
         }
 
-        private void PostPrepareMetadataGenerics()
+        private void AllPostPrepareMetadataGenerics()
         {
+            _currentPreparationStep = PreparationStep.Generics;
+
             // resolve inheritance shite of classes
             foreach (var cls in AllClassesMetadata)
             {
                 _currentSourceFile = cls.SourceFile;
                 _currentClass = cls;
-                foreach (var t in cls.GenericNames)
-                {
-                    // getting constains for the generic type
-                    List<AstNestedExpr> constains = cls.GenericConstrains.TryGetValue(t, out var val) ? val : new List<AstNestedExpr>();
-
-                    // we need to create a temp class declaration 
-                    // and define it inside class scope
-                    var _ = GetTypeDeclarationForGeneric(cls, t, constains);
-                }
+                PostPrepareMetadataGenerics(cls);
             }
         }
 

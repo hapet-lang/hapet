@@ -11,7 +11,14 @@ namespace HapetPostPrepare
 {
     public partial class PostPrepare
     {
-        private AstDeclaration GetTypeDeclarationForGeneric(AstDeclaration parent, AstIdExpr name, List<AstNestedExpr> constrains)
+        /// <summary>
+        /// Creates a pseudo type to handle constrains of a generic type
+        /// </summary>
+        /// <param name="parent"></param>
+        /// <param name="name"></param>
+        /// <param name="constrains"></param>
+        /// <returns></returns>
+        private void CreateTypeDeclarationForGeneric(AstDeclaration parent, AstIdExpr name, List<AstNestedExpr> constrains)
         {
             // TODO: handle constains
             var cls = new AstClassDecl(name, new List<AstDeclaration>(), "", name)
@@ -24,7 +31,6 @@ namespace HapetPostPrepare
             PostPrepareClassScoping(cls);
             SetScopeAndParent(cls, parent, parent.SubScope);
             parent.SubScope.DefineDeclSymbol(name.Name, cls);
-            return cls;
         }
 
         private AstClassDecl GetRealTypeFromGeneric(AstClassDecl clsDecl, List<AstNestedExpr> genericTypes, string realName)
