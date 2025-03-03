@@ -6,7 +6,7 @@ namespace HapetPostPrepare
 {
     public partial class PostPrepare
     {
-        private void PostPrepareMetadataTypes(AstStatement stmt)
+        private void PostPrepareMetadataTypes(AstStatement stmt, bool needSerialize = false)
         {
             // just skip allowed statements
             if (stmt is AstUsingStmt)
@@ -28,28 +28,36 @@ namespace HapetPostPrepare
                 // creating a new class name with namespace
                 newName = $"{_currentSourceFile.Namespace}.{classDecl.Name.Name}";
                 AllClassesMetadata.Add(classDecl);
-                _serializeClassesMetadata.Add(classDecl);
+
+                if (needSerialize)
+                    _serializeClassesMetadata.Add(classDecl);
             }
             else if (decl is AstStructDecl structDecl)
             {
                 // creating a new struct name with namespace
                 newName = $"{_currentSourceFile.Namespace}.{structDecl.Name.Name}";
                 AllStructsMetadata.Add(structDecl);
-                _serializeStructsMetadata.Add(structDecl);
+
+                if (needSerialize)
+                    _serializeStructsMetadata.Add(structDecl);
             }
             else if (decl is AstEnumDecl enumDecl)
             {
                 // creating a new enum name with namespace
                 newName = $"{_currentSourceFile.Namespace}.{enumDecl.Name.Name}";
                 AllEnumsMetadata.Add(enumDecl);
-                _serializeEnumsMetadata.Add(enumDecl);
+
+                if (needSerialize)
+                    _serializeEnumsMetadata.Add(enumDecl);
             }
             else if (decl is AstDelegateDecl delegateDecl)
             {
                 // creating a new delegate name with namespace
                 newName = $"{_currentSourceFile.Namespace}.{delegateDecl.Name.Name}";
                 AllDelegatesMetadata.Add(delegateDecl);
-                _serializeDelegatesMetadata.Add(delegateDecl);
+
+                if (needSerialize)
+                    _serializeDelegatesMetadata.Add(delegateDecl);
             }
             else
             {
