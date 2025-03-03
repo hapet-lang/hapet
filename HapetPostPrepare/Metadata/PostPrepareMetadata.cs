@@ -40,8 +40,8 @@ namespace HapetPostPrepare
             AllPostPrepareMetadataFunctions();
             AllPostPrepareMetadataInheritedFunctions();
             AllPostPrepareMetadataTypeFieldDecls();
-            ФддPostPrepareMetadataTypeInheritedFieldDecls();
-            PostPrepareMetadataTypeInheritedPropsDecls();
+            AllPostPrepareMetadataTypeInheritedFieldDecls();
+            AllPostPrepareMetadataTypeInheritedPropsDecls();
             PostPrepareMetadataTypeFieldInits();
             PostPrepareMetadataAttributes();
 
@@ -189,7 +189,7 @@ namespace HapetPostPrepare
             }
         }
 
-        private void ФддPostPrepareMetadataTypeInheritedFieldDecls()
+        private void AllPostPrepareMetadataTypeInheritedFieldDecls()
         {
             _currentPreparationStep = PreparationStep.InheritedFieldDecls;
 
@@ -219,7 +219,7 @@ namespace HapetPostPrepare
             }
         }
 
-        private void PostPrepareMetadataTypeInheritedPropsDecls()
+        private void AllPostPrepareMetadataTypeInheritedPropsDecls()
         {
             _currentPreparationStep = PreparationStep.InheritedPropDecls;
 
