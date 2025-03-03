@@ -42,8 +42,8 @@ namespace HapetPostPrepare
             AllPostPrepareMetadataTypeFieldDecls();
             AllPostPrepareMetadataTypeInheritedFieldDecls();
             AllPostPrepareMetadataTypeInheritedPropsDecls();
-            PostPrepareMetadataTypeFieldInits();
-            PostPrepareMetadataAttributes();
+            AllPostPrepareMetadataTypeFieldInits();
+            AllPostPrepareMetadataAttributes();
 
             // if there were errors while preparing for metafile
             if (_compiler.MessageHandler.HasErrors)
@@ -249,180 +249,71 @@ namespace HapetPostPrepare
             }
         }
 
-        private void PostPrepareMetadataTypeFieldInits()
+        private void AllPostPrepareMetadataTypeFieldInits()
         {
-            // just handlers
-            InInfo inInfo = InInfo.Default;
-            OutInfo outInfo = OutInfo.Default;
+            _currentPreparationStep = PreparationStep.FieldAndPropInits;
 
             // resolve all fields of classes
             foreach (var cls in AllClassesMetadata)
             {
                 _currentSourceFile = cls.SourceFile;
                 _currentClass = cls;
-                // infer fields and props at first
-                foreach (var decl in cls.Declarations.Where(x => x is AstVarDecl).Select(x => x as AstVarDecl))
-                {
-                    // this kostyl is done to skip double error on uninferred type
-                    var savedIsPropF = decl.IsPropertyField;
-                    decl.IsPropertyField = true;
-
-                    // field or property
-                    inInfo.AllowSpecialKeys = true;
-                    PostPrepareVarInference(decl, inInfo, ref outInfo);
-                    inInfo.AllowSpecialKeys = false;
-
-                    decl.IsPropertyField = savedIsPropF;
-                }
+                PostPrepareMetadataTypeFieldInits(cls);
             }
             // resolve all fields of structs
             foreach (var str in AllStructsMetadata)
             {
                 _currentSourceFile = str.SourceFile;
-                // infer fields at first
-                foreach (var decl in str.Declarations.Where(x => x is AstVarDecl).Select(x => x as AstVarDecl))
-                {
-                    // field 
-                    PostPrepareVarInference(decl, inInfo, ref outInfo);
-                }
+                PostPrepareMetadataTypeFieldInits(str);
             }
             foreach (var enm in AllEnumsMetadata)
             {
                 _currentSourceFile = enm.SourceFile;
-                // generating all the values of fields
-                int currentValue = 0;
-                List<int> allValues = new List<int>(enm.Declarations.Count);
-
-                // infer fields at first
-                foreach (var decl in enm.Declarations)
-                {
-                    // field 
-                    PostPrepareVarInference(decl, inInfo, ref outInfo);
-                    // this shite is to generate values for enum fields
-                    if (decl.Initializer == null)
-                    {
-                        decl.Initializer = PostPrepareExpressionWithType(GetPreparedAst(decl.Type.OutType, decl.Type), new AstNumberExpr(NumberData.FromInt(currentValue)));
-                        // warn if the value already exists in enum
-                        if (allValues.Contains(currentValue))
-                        {
-                            _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, decl, [], ErrorCode.Get(CTWN.EnumHasSameValue), null, ReportType.Warning);
-                        }
-                        allValues.Add(currentValue);
-                        currentValue++;
-                    }
-                    else
-                    {
-                        if (decl.Initializer.OutValue == null)
-                        {
-                            _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, decl.Initializer, [], ErrorCode.Get(CTEN.EnumIniNotComptime));
-                            continue;
-                        }
-                        else if (decl.Initializer.OutValue is not NumberData)
-                        {
-                            _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, decl.Initializer, [], ErrorCode.Get(CTEN.EnumIniNotNumber));
-                            continue;
-                        }
-                        var userDefinedValue = (int)((NumberData)decl.Initializer.OutValue).IntValue;
-                        // warn if the value already exists in enum
-                        if (allValues.Contains(userDefinedValue))
-                        {
-                            _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, decl, [], ErrorCode.Get(CTWN.EnumHasSameValue), null, ReportType.Warning);
-                        }
-                        allValues.Add(userDefinedValue);
-                        currentValue = userDefinedValue + 1; // getting value for the next field
-                    }
-                }
+                PostPrepareMetadataTypeFieldInits(enm);
             }
         }
 
-        private void PostPrepareMetadataAttributes()
+        private void AllPostPrepareMetadataAttributes()
         {
-            // just handlers
-            InInfo inInfo = InInfo.Default;
-            OutInfo outInfo = OutInfo.Default;
+            _currentPreparationStep = PreparationStep.Attributes;
 
             // inferrencing attribtues of functions
             foreach (var fnc in AllFunctionsMetadata)
             {
                 _currentSourceFile = fnc.SourceFile;
-                // inferencing attrs
-                foreach (var a in fnc.Attributes)
-                {
-                    PostPrepareExprInference(a, inInfo, ref outInfo);
-                }
-                // inferencing params attrs
-                foreach (var p in fnc.Parameters)
-                {
-                    // inferencing attrs
-                    foreach (var a in p.Attributes)
-                    {
-                        PostPrepareExprInference(a, inInfo, ref outInfo);
-                    }
-                }
+                PostPrepareMetadataAttributes(fnc);
             }
             // inferrencing attribtues of classes
             foreach (var cls in AllClassesMetadata)
             {
                 _currentSourceFile = cls.SourceFile;
                 _currentClass = cls;
-                // infer fields and props attibutes
-                foreach (var decl in cls.Declarations.Where(x => x is AstVarDecl).Select(x => x as AstVarDecl))
-                {
-                    // inferencing attrs
-                    foreach (var a in decl.Attributes)
-                    {
-                        PostPrepareExprInference(a, inInfo, ref outInfo);
-                    }
-                }
-                // inferencing attrs
-                foreach (var a in cls.Attributes)
-                {
-                    PostPrepareExprInference(a, inInfo, ref outInfo);
-                }
+                PostPrepareMetadataAttributes(cls);
             }
             // inferrencing attribtues of structs
             foreach (var str in AllStructsMetadata)
             {
                 _currentSourceFile = str.SourceFile;
-                // inferencing attrs
-                foreach (var a in str.Attributes)
-                {
-                    PostPrepareExprInference(a, inInfo, ref outInfo);
-                }
+                PostPrepareMetadataAttributes(str);
             }
             // inferrencing attribtues of enums
             foreach (var enm in AllEnumsMetadata)
             {
                 _currentSourceFile = enm.SourceFile;
-                // inferencing attrs
-                foreach (var a in enm.Attributes)
-                {
-                    PostPrepareExprInference(a, inInfo, ref outInfo);
-                }
+                PostPrepareMetadataAttributes(enm);
             }
             // inferrencing attribtues of delegates
             foreach (var del in AllDelegatesMetadata)
             {
                 _currentSourceFile = del.SourceFile;
-                // inferencing attrs
-                foreach (var a in del.Attributes)
-                {
-                    PostPrepareExprInference(a, inInfo, ref outInfo);
-                }
-                // inferencing params attrs
-                foreach (var p in del.Parameters)
-                {
-                    // inferencing attrs
-                    foreach (var a in p.Attributes)
-                    {
-                        PostPrepareExprInference(a, inInfo, ref outInfo);
-                    }
-                }
+                PostPrepareMetadataAttributes(del);
             }
         }
 
         private void PostPrepareMetadataCreate()
         {
+            _currentPreparationStep = PreparationStep.MetadataCreation;
+
             var projectVersion = _compiler.CurrentProjectSettings.ProjectVersion;
 
             MetadataJson metadata = new MetadataJson();
@@ -443,6 +334,8 @@ namespace HapetPostPrepare
 
         private void RemoveAllProperties()
         {
+            _currentPreparationStep = PreparationStep.PropsRemoval;
+
             foreach (var cls in AllClassesMetadata)
             {
                 cls.Declarations.RemoveAll(x => x is AstPropertyDecl);
