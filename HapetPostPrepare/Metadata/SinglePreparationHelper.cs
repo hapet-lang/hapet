@@ -4,6 +4,7 @@ using HapetFrontend.Errors;
 using HapetFrontend.Types;
 using HapetPostPrepare.Entities;
 using System;
+using System.Runtime;
 
 namespace HapetPostPrepare
 {
@@ -33,6 +34,72 @@ namespace HapetPostPrepare
             {
                 PostPrepareMetadataGenerics(stmt);
             }
+            if (_currentPreparationStep >= PreparationStep.Inheritance)
+            {
+                PostPrepareMetadataInheritance(stmt);
+            }
+            if (_currentPreparationStep >= PreparationStep.Delegates)
+            {
+                PostPrepareMetadataDelegates(stmt);
+            }
+            if (_currentPreparationStep >= PreparationStep.Functions)
+            {
+                PostPrepareMetadataFunctions(stmt);
+            }
+            if (_currentPreparationStep >= PreparationStep.InheritedFunctions)
+            {
+                PostPrepareMetadataInheritedFunctions(stmt);
+            }
+            if (_currentPreparationStep >= PreparationStep.FieldAndPropDecls)
+            {
+                PostPrepareMetadataTypeFieldDecls(stmt);
+            }
+            if (_currentPreparationStep >= PreparationStep.InheritedFieldDecls)
+            {
+                PostPrepareMetadataTypeInheritedFieldDecls(stmt);
+                PostPrepareMetadataTypeInheritedFieldDeclsCopy(stmt);
+            }
+            if (_currentPreparationStep >= PreparationStep.InheritedPropDecls)
+            {
+                PostPrepareMetadataTypeInheritedPropsDecls(stmt);
+                PostPrepareMetadataTypeInheritedPropsDeclsCopy(stmt);
+            }
+            if (_currentPreparationStep >= PreparationStep.FieldAndPropInits)
+            {
+                PostPrepareMetadataTypeFieldInits(stmt);
+            }
+            if (_currentPreparationStep >= PreparationStep.Attributes)
+            {
+                PostPrepareMetadataAttributes(stmt);
+            }
+
+            if (_currentPreparationStep >= PreparationStep.Inferencing)
+            {
+                // just handlers
+                InInfo inInfo = InInfo.Default;
+                OutInfo outInfo = OutInfo.Default;
+
+                // we need to inference it manually
+                if (stmt is AstClassDecl classDecl)
+                {
+                    PostPrepareClassInference(classDecl, inInfo, ref outInfo);
+                }
+                else if (stmt is AstStructDecl structDecl)
+                {
+                    PostPrepareStructInference(structDecl, inInfo, ref outInfo);
+                }
+                else if (stmt is AstEnumDecl enumDecl)
+                {
+                    PostPrepareEnumInference(enumDecl, inInfo, ref outInfo);
+                }
+                else if (stmt is AstDelegateDecl delegateDecl)
+                {
+                    PostPrepareDelegateInference(delegateDecl, inInfo, ref outInfo);
+                }
+            }
+
+            _currentSourceFile = cachedSourceFile;
+            _currentClass = cachedCurrentClass;
         }
     }
 }

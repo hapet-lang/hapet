@@ -28,6 +28,7 @@
         FieldAndPropInits,
         Attributes,
         MetadataCreation,
-        PropsRemoval
+        PropsRemoval,
+        Inferencing
     }
 }

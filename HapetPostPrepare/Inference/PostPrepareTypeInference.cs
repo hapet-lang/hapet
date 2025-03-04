@@ -19,26 +19,33 @@ namespace HapetPostPrepare
     {
         private void PostPrepareTypeInference()
         {
+            _currentPreparationStep = PreparationStep.Inferencing;
+
             // just handlers
             InInfo inInfo = InInfo.Default;
             OutInfo outInfo = OutInfo.Default;
 
-            foreach (var classDecl in AllClassesMetadata)
+            var classes = AllClassesMetadata.ToList();
+            var structs = AllStructsMetadata.ToList();
+            var enums = AllEnumsMetadata.ToList();
+            var delegates = AllDelegatesMetadata.ToList();
+
+            foreach (var classDecl in classes)
             {
                 _currentSourceFile = classDecl.SourceFile;
                 PostPrepareClassInference(classDecl, inInfo, ref outInfo);
             }
-            foreach (var structDecl in AllStructsMetadata)
+            foreach (var structDecl in structs)
             {
                 _currentSourceFile = structDecl.SourceFile;
                 PostPrepareStructInference(structDecl, inInfo, ref outInfo);
             }
-            foreach (var enumDecl in AllEnumsMetadata)
+            foreach (var enumDecl in enums)
             {
                 _currentSourceFile = enumDecl.SourceFile;
                 PostPrepareEnumInference(enumDecl, inInfo, ref outInfo);
             }
-            foreach (var delegateDecl in AllDelegatesMetadata)
+            foreach (var delegateDecl in delegates)
             {
                 _currentSourceFile = delegateDecl.SourceFile;
                 PostPrepareDelegateInference(delegateDecl, inInfo, ref outInfo);
