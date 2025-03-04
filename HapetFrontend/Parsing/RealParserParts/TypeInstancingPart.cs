@@ -1,6 +1,7 @@
 ﻿using HapetFrontend.Ast;
 using HapetFrontend.Ast.Expressions;
 using HapetFrontend.Ast.Statements;
+using HapetFrontend.Entities;
 using HapetFrontend.Errors;
 
 namespace HapetFrontend.Parsing
@@ -9,12 +10,19 @@ namespace HapetFrontend.Parsing
     {
         private AstStatement ParseNewExpression()
         {
+            // just handlers
+            ParserInInfo inInfo = ParserInInfo.Default;
+            ParserOutInfo outInfo = ParserOutInfo.Default;
+
             TokenLocation beg = null;
 
             beg ??= Consume(TokenType.KwNew, ErrMsg("keyword 'new'", "at beginning of type instancing expression")).Location;
             SkipNewlines();
+
             // do not allow array expressions after 'new' word!!! but allow pointers
-            var type = ParseAtomicExpression(false, false, ErrMsg("expression", "after keyword 'new'"), false, true);
+            inInfo.AllowPointerExpression = true;
+            inInfo.Message = ErrMsg("expression", "after keyword 'new'");
+            var type = ParseAtomicExpression(inInfo, ref outInfo);
 
             // TokenType.ArrayDef is for array creation with ini values
             if (CheckToken(TokenType.OpenBracket) || CheckToken(TokenType.ArrayDef)) // array creation

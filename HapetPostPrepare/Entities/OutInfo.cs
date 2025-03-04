@@ -3,7 +3,7 @@ using HapetFrontend.Ast.Expressions;
 
 namespace HapetPostPrepare.Entities
 {
-    public class OutInfo
+    internal class OutInfo
     {
         public bool ItWasProperty { get; set; }
 

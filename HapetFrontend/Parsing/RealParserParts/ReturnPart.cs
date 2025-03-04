@@ -1,12 +1,13 @@
 ﻿using HapetFrontend.Ast;
 using HapetFrontend.Ast.Statements;
+using HapetFrontend.Entities;
 using HapetFrontend.Errors;
 
 namespace HapetFrontend.Parsing
 {
     public partial class Parser
     {
-        public AstStatement ParseReturnStatement()
+        public AstStatement ParseReturnStatement(ParserInInfo inInfo, ref ParserOutInfo outInfo)
         {
             TokenLocation beg = null;
 

@@ -1,6 +1,7 @@
 ﻿using HapetFrontend.Ast;
 using HapetFrontend.Ast.Declarations;
 using HapetFrontend.Ast.Expressions;
+using HapetFrontend.Entities;
 using HapetFrontend.Errors;
 
 namespace HapetFrontend.Parsing
@@ -177,7 +178,7 @@ namespace HapetFrontend.Parsing
             return parameters;
         }
 
-        private AstStatement ParseTupleExpression(bool allowFunctionDeclaration, bool allowCommaForTuple)
+        private AstStatement ParseTupleExpression(ParserInInfo inInfo, ref ParserOutInfo outInfo)
         {
             var list = ParseParameterList(TokenType.OpenParen, TokenType.CloseParen, out var beg, out var end, allowDefaultValue: true);
 
@@ -185,7 +186,7 @@ namespace HapetFrontend.Parsing
 
             // function expression
             // hash identifier for directives
-            if (allowFunctionDeclaration && CheckTokens(TokenType.OpenBrace, TokenType.Semicolon, TokenType.Colon))
+            if (inInfo.AllowFunctionDeclaration && CheckTokens(TokenType.OpenBrace, TokenType.Semicolon, TokenType.Colon))
             {
                 return ParseFuncDeclaration(list, new Location(beg, end));
             }
@@ -203,7 +204,7 @@ namespace HapetFrontend.Parsing
                         p.Type = null;
                     }
                 }
-                return ParseLambdaDeclaration(list, beg, allowCommaForTuple);
+                return ParseLambdaDeclaration(list, beg, inInfo.AllowCommaForTuple);
             }
 
             bool isType = false;
@@ -228,7 +229,12 @@ namespace HapetFrontend.Parsing
                             // probably a cast 
                             var expr = list[0].Type;
                             expr.Location = new Location(beg, end);
-                            var sub = ParsePostUnaryExpression(allowCommaForTuple, false, null);
+
+                            var savedAllowFuncs = inInfo.AllowFunctionDeclaration;
+                            inInfo.AllowFunctionDeclaration = false;
+                            var sub = ParsePostUnaryExpression(inInfo, ref outInfo);
+                            inInfo.AllowFunctionDeclaration = savedAllowFuncs;
+
                             var cst = new AstCastExpr(expr, sub, new Location(beg, sub.Ending));
 
                             // error if it is not an expr

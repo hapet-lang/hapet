@@ -2,15 +2,16 @@
 using HapetFrontend.Ast.Declarations;
 using HapetFrontend.Ast.Expressions;
 using HapetFrontend.Ast.Statements;
+using HapetFrontend.Entities;
 using HapetFrontend.Errors;
 
 namespace HapetFrontend.Parsing
 {
     public partial class Parser
     {
-        public AstStatement ParseStatement(bool expectNewline = true)
+        public AstStatement ParseStatement(ParserInInfo inInfo, ref ParserOutInfo outInfo)
         {
-            var stmt = ParseStatementHelper();
+            var stmt = ParseStatementHelper(inInfo, ref outInfo);
 
             if (stmt == null)
                 return null;
@@ -22,7 +23,7 @@ namespace HapetFrontend.Parsing
             }
 
             var next = PeekToken();
-            if (expectNewline && next.Type != TokenType.NewLine && next.Type != TokenType.EOF)
+            if (inInfo.ExpectNewline && next.Type != TokenType.NewLine && next.Type != TokenType.EOF)
             {
                 ReportMessage(next.Location, [], ErrorCode.Get(CTEN.NewlineExpected));
                 RecoverStatement();
@@ -30,7 +31,7 @@ namespace HapetFrontend.Parsing
             return stmt;
         }
 
-        public AstStatement ParseStatementHelper()
+        public AstStatement ParseStatementHelper(ParserInInfo inInfo, ref ParserOutInfo outInfo)
         {
             SkipNewlines();
             var token = PeekToken();
@@ -77,7 +78,11 @@ namespace HapetFrontend.Parsing
                         }
                         if (stmt is UnknownDecl udecl)
                         {
-                            return PrepareUnknownDecl(udecl, "", true, new List<AstAttributeStmt>()); // TODO: doc string?
+                            bool savedAllowence = inInfo.AllowCommaForTuple;
+                            inInfo.AllowCommaForTuple = true;
+                            var dcl = PrepareUnknownDecl(udecl, new List<AstAttributeStmt>(), inInfo, ref outInfo);
+                            inInfo.AllowCommaForTuple = savedAllowence;
+                            return dcl;
                         }
                         if (CheckTokens(TokenType.Equal, TokenType.AddEq, TokenType.SubEq, TokenType.MulEq, TokenType.DivEq, TokenType.ModEq))
                         {

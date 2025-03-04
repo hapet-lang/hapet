@@ -2,6 +2,7 @@
 using HapetFrontend.Ast.Declarations;
 using HapetFrontend.Ast.Expressions;
 using HapetFrontend.Ast.Statements;
+using HapetFrontend.Entities;
 using HapetFrontend.Errors;
 using HapetFrontend.Types;
 using System.Collections.Generic;
@@ -83,7 +84,7 @@ namespace HapetFrontend.Parsing
             return AstIdGenericExpr.FromAstIdExpr(originId, generics);
         }
 
-        private AstDeclaration PrepareUnknownDecl(UnknownDecl udecl, string docString, bool allowCommaTuple, List<AstAttributeStmt> attrs)
+        private AstDeclaration PrepareUnknownDecl(UnknownDecl udecl, List<AstAttributeStmt> attrs, ParserInInfo inInfo, ref ParserOutInfo outInfo)
         {
             TokenLocation end = udecl.Ending;
             AstStatement initializer = null;
@@ -92,7 +93,7 @@ namespace HapetFrontend.Parsing
             if (CheckToken(TokenType.Equal))
             {
                 NextToken();
-                initializer = ParseExpression(allowCommaTuple);
+                initializer = ParseExpression(inInfo.AllowCommaForTuple);
                 end = initializer.Ending;
 
                 if (initializer is not AstExpression)
@@ -100,7 +101,7 @@ namespace HapetFrontend.Parsing
                     ReportMessage(initializer.Location, [], ErrorCode.Get(CTEN.VarIniterExpr));
                 }
 
-                var varDecl = new AstVarDecl(udecl.Type, udecl.Name, initializer as AstExpression, docString, Location: new Location(udecl.Beginning, end));
+                var varDecl = new AstVarDecl(udecl.Type, udecl.Name, initializer as AstExpression, udecl.Documentation, Location: new Location(udecl.Beginning, end));
                 varDecl.Attributes.AddRange(attrs);
                 varDecl.SpecialKeys.AddRange(udecl.SpecialKeys);
                 return varDecl;
@@ -109,7 +110,7 @@ namespace HapetFrontend.Parsing
             else if (CheckToken(TokenType.Semicolon))
             {
                 // do not get the next token
-                var varDecl = new AstVarDecl(udecl.Type, udecl.Name, null, docString, Location: new Location(udecl.Beginning, end));
+                var varDecl = new AstVarDecl(udecl.Type, udecl.Name, null, udecl.Documentation, Location: new Location(udecl.Beginning, end));
                 varDecl.Attributes.AddRange(attrs);
                 varDecl.SpecialKeys.AddRange(udecl.SpecialKeys);
                 return varDecl;
@@ -147,7 +148,7 @@ namespace HapetFrontend.Parsing
             // properties 
             else if (CheckToken(TokenType.OpenBrace))
             {
-                var prop = PreparePropertyDecl(udecl, docString);
+                var prop = PreparePropertyDecl(udecl, udecl.Documentation);
                 prop.Attributes.AddRange(attrs);
                 // special keys are added inside PreparePropertyDecl
                 return prop;

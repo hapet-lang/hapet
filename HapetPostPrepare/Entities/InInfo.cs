@@ -1,6 +1,6 @@
 ﻿namespace HapetPostPrepare.Entities
 {
-    public class InInfo
+    internal class InInfo
     {
         public bool ForMetadata { get; set; }
         public bool AllowSpecialKeys { get; set; }

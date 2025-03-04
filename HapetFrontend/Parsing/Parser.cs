@@ -13,17 +13,17 @@ namespace HapetFrontend.Parsing
 
     public partial class Parser
     {
-        private delegate AstStatement ExpressionParser(bool allowCommaForTuple, bool allowFunctionExpression, MessageResolver e, bool allowPointerExpressions);
+        private delegate AstStatement ExpressionParser(ParserInInfo inInfo, ref ParserOutInfo outInfo);
 
-        private ILexer _lexer;
-        private IMessageHandler _messageHandler;
+        private readonly ILexer _lexer;
+        private readonly IMessageHandler _messageHandler;
 
         private Token _lastNonWhitespace = null;
 
         private Token _currentToken = null;
         private Token CurrentToken => _currentToken; // probably could be public
 
-        private StringBuilder _docString = new StringBuilder();
+        private readonly StringBuilder _docString = new StringBuilder();
 
         public Parser(ILexer lex, IMessageHandler messageHandler)
         {
