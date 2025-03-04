@@ -100,7 +100,11 @@ namespace HapetPostPrepare
         private void PrepareDeclarationShite(AstDeclaration decl)
         {
             // getting namespace from full decl name
-            string nameSpaceName = string.Join('.', decl.Name.Name.Split('.').SkipLast(1));
+            var fullNameSplitted = decl.Name.Name.Split('.');
+            string pureDeclName = fullNameSplitted[fullNameSplitted.Length - 1];
+            decl.Name = decl.Name.GetCopy(pureDeclName);
+
+            string nameSpaceName = string.Join('.', fullNameSplitted.SkipLast(1));
             Scope nameSpaceScope = _compiler.GetNamespaceScope(nameSpaceName);
             ProgramFile tmpProgFile = new ProgramFile(_externalProjectFilename, string.Empty) { Namespace = nameSpaceName, NamespaceScope = nameSpaceScope };
             tmpProgFile.Statements.Add(decl);
@@ -113,18 +117,22 @@ namespace HapetPostPrepare
             /// like <see cref="PostPrepareMetadataTypes"/>
             foreach (var classDecl in _classes)
             {
+                _currentSourceFile = classDecl.SourceFile;
                 PostPrepareMetadataTypes(classDecl, false);
             }
             foreach (var structDecl in _structs)
             {
+                _currentSourceFile = structDecl.SourceFile;
                 PostPrepareMetadataTypes(structDecl, false);
             }
             foreach (var enumDecl in _enums)
             {
+                _currentSourceFile = enumDecl.SourceFile;
                 PostPrepareMetadataTypes(enumDecl, false);
             }
             foreach (var delegateDecl in _delegates)
             {
+                _currentSourceFile = delegateDecl.SourceFile;
                 PostPrepareMetadataTypes(delegateDecl, false);
             }
         }
