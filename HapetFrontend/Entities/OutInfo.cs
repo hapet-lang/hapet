@@ -4,8 +4,6 @@
     {
         public static ParserOutInfo Default => new ParserOutInfo()
         {
-            ItWasProperty = false,
-            ItWasIndexer = false,
         };
     }
 }

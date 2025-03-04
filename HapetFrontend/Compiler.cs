@@ -92,9 +92,12 @@ namespace HapetFrontend
 
             // the list is to handle attributes
             List<AstAttributeStmt> foundAttributes = new List<AstAttributeStmt>();
+            // just handlers
+            ParserInInfo inInfo = ParserInInfo.Default;
+            ParserOutInfo outInfo = ParserOutInfo.Default;
             while (true)
             {
-                var s = parser.ParseStatement();
+                var s = parser.ParseStatement(inInfo, ref outInfo);
                 if (s == null)
                     break;
 
