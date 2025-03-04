@@ -936,9 +936,13 @@ namespace HapetPostPrepare
 
         private void PostPrepareCallExprInference(AstCallExpr callExpr, InInfo inInfo, ref OutInfo outInfo)
         {
-            // skip if already inferred
-            //if (callExpr.OutType != null)
-            //    return;
+            // it wants to be infered again - reset its name and allow it
+            if (callExpr.OutType != null && callExpr.FuncName.Name.Contains("::"))
+            {
+                var theName = callExpr.FuncName.Name;
+                var resetedName = string.Concat(theName.Split("::")[1].TakeWhile(x => x != '('));
+                callExpr.FuncName = callExpr.FuncName.GetCopy(resetedName);
+            }
 
             // the var is used to check when static method is accessed from an object
             bool accessingFromAnObject = false;

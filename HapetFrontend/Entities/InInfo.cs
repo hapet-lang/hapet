@@ -9,6 +9,7 @@ namespace HapetFrontend.Entities
         public bool AllowFunctionDeclaration { get; set; }
         public bool AllowPointerExpression { get; set; }
         public bool AllowArrayExpression { get; set; }
+        public bool AllowGeneric { get; set; }
         public MessageResolver Message { get; set; }
 
         public static ParserInInfo Default => new ParserInInfo()
@@ -18,6 +19,7 @@ namespace HapetFrontend.Entities
             AllowFunctionDeclaration = false,
             AllowPointerExpression = false,
             AllowArrayExpression = false,
+            AllowGeneric = false,
             Message = null,
         };
     }

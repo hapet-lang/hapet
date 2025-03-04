@@ -56,7 +56,9 @@ namespace HapetFrontend.Parsing
             else
             {
                 // getting only one stmt if there are no braces
+                inInfo.ExpectNewline = false;
                 var onlyStmt = ParseStatement(inInfo, ref outInfo);
+                inInfo.ExpectNewline = true;
                 bodyTrue = new AstBlockExpr(new List<AstStatement>() { onlyStmt }, onlyStmt);
             }
 
@@ -76,7 +78,9 @@ namespace HapetFrontend.Parsing
                 else
                 {
                     // getting only one stmt if there are no braces
+                    inInfo.ExpectNewline = false;
                     var onlyStmt = ParseStatement(inInfo, ref outInfo);
+                    inInfo.ExpectNewline = true;
                     bodyFalse = new AstBlockExpr(new List<AstStatement>() { onlyStmt }, onlyStmt);
                 }
             }
