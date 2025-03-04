@@ -11,7 +11,7 @@ namespace HapetFrontend.Parsing
 {
     public partial class Parser
     {
-        public AstStatement ParseExpression(ParserInInfo inInfo, ref ParserOutInfo outInfo)
+        private AstStatement ParseExpression(ParserInInfo inInfo, ref ParserOutInfo outInfo)
         {
             var savedMessage = inInfo.Message;
             inInfo.Message ??= new MessageResolver() { XmlMessage = ErrorCode.Get(CTEN.CommonUnexpectedInExpr) };

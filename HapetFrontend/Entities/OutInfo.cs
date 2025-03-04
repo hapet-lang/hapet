@@ -1,6 +1,6 @@
 ﻿namespace HapetFrontend.Entities
 {
-    public class ParserOutInfo
+    internal class ParserOutInfo
     {
         public static ParserOutInfo Default => new ParserOutInfo()
         {

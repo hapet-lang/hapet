@@ -2,7 +2,7 @@
 
 namespace HapetFrontend.Entities
 {
-    public class ParserInInfo
+    internal class ParserInInfo
     {
         public bool ExpectNewline { get; set; }
         public bool AllowCommaForTuple { get; set; }

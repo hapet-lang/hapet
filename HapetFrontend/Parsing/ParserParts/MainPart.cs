@@ -9,7 +9,7 @@ namespace HapetFrontend.Parsing
 {
     public partial class Parser
     {
-        public AstStatement ParseStatement(ParserInInfo inInfo, ref ParserOutInfo outInfo)
+        internal AstStatement ParseStatement(ParserInInfo inInfo, ref ParserOutInfo outInfo)
         {
             var stmt = ParseStatementHelper(inInfo, ref outInfo);
 
@@ -31,7 +31,7 @@ namespace HapetFrontend.Parsing
             return stmt;
         }
 
-        public AstStatement ParseStatementHelper(ParserInInfo inInfo, ref ParserOutInfo outInfo)
+        private AstStatement ParseStatementHelper(ParserInInfo inInfo, ref ParserOutInfo outInfo)
         {
             SkipNewlines();
             var token = PeekToken();
