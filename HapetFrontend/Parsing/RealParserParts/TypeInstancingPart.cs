@@ -21,6 +21,7 @@ namespace HapetFrontend.Parsing
 
             // do not allow array expressions after 'new' word!!! but allow pointers
             inInfo.AllowPointerExpression = true;
+            inInfo.AllowGeneric = true;
             inInfo.Message = ErrMsg("expression", "after keyword 'new'");
             var type = ParseAtomicExpression(inInfo, ref outInfo);
 
