@@ -70,7 +70,13 @@ namespace HapetFrontend.Parsing
 
                 default:
                     {
-                        var stmt = ParseExpression(true, false, null, true); // anyway it should return AstStatement, not AstExpression
+                        // just handlers
+                        ParserInInfo inInfo2 = ParserInInfo.Default;
+                        ParserOutInfo outInfo2 = ParserOutInfo.Default;
+                        inInfo2.AllowCommaForTuple = true;
+                        inInfo2.AllowPointerExpression = true;
+                        var stmt = ParseExpression(inInfo2, ref outInfo2); // anyway it should return AstStatement, not AstExpression
+
                         if (stmt is AstEmptyStmt)
                         {
                             NextToken();
@@ -99,7 +105,11 @@ namespace HapetFrontend.Parsing
                             }
                             SkipNewlines();
 
-                            var val = ParseExpression(true);
+                            // just handlers
+                            ParserInInfo inInfo3 = ParserInInfo.Default;
+                            ParserOutInfo outInfo3 = ParserOutInfo.Default;
+                            inInfo2.AllowCommaForTuple = true;
+                            var val = ParseExpression(inInfo3, ref outInfo3);
 
                             if (val is not AstExpression valExpr)
                             {

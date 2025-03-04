@@ -2,6 +2,7 @@
 using HapetFrontend.Ast;
 using HapetFrontend.Ast.Statements;
 using HapetFrontend.Errors;
+using HapetFrontend.Entities;
 
 namespace HapetFrontend.Parsing
 {
@@ -9,6 +10,10 @@ namespace HapetFrontend.Parsing
     {
         private AstIfStmt ParseIfStatement()
         {
+            // just handlers
+            ParserInInfo inInfo = ParserInInfo.Default;
+            ParserOutInfo outInfo = ParserOutInfo.Default;
+
             AstExpression condition = null;
             AstBlockExpr bodyTrue;
             AstBlockExpr bodyFalse = null;
@@ -21,7 +26,10 @@ namespace HapetFrontend.Parsing
             // if there is a condition param
             if (!CheckToken(TokenType.CloseParen))
             {
-                var expr = ParseExpression(true, false);
+                inInfo.AllowCommaForTuple = true;
+                var expr = ParseExpression(inInfo, ref outInfo);
+                inInfo.AllowCommaForTuple = false;
+
                 if (expr is not AstExpression)
                     ReportMessage(expr, [], ErrorCode.Get(CTEN.IfStmtCondNotExpr));
                 condition = expr as AstExpression;
@@ -48,7 +56,7 @@ namespace HapetFrontend.Parsing
             else
             {
                 // getting only one stmt if there are no braces
-                var onlyStmt = ParseStatement(false);
+                var onlyStmt = ParseStatement(inInfo, ref outInfo);
                 bodyTrue = new AstBlockExpr(new List<AstStatement>() { onlyStmt }, onlyStmt);
             }
 
@@ -68,7 +76,7 @@ namespace HapetFrontend.Parsing
                 else
                 {
                     // getting only one stmt if there are no braces
-                    var onlyStmt = ParseStatement(false);
+                    var onlyStmt = ParseStatement(inInfo, ref outInfo);
                     bodyFalse = new AstBlockExpr(new List<AstStatement>() { onlyStmt }, onlyStmt);
                 }
             }
@@ -78,6 +86,10 @@ namespace HapetFrontend.Parsing
 
         private AstStatement ParseSwitchStatement()
         {
+            // just handlers
+            ParserInInfo inInfo = ParserInInfo.Default;
+            ParserOutInfo outInfo = ParserOutInfo.Default;
+
             AstExpression condition = null;
 
             var beg = Consume(TokenType.KwSwitch, ErrMsg("keyword 'switch'", "at beginning of 'switch' statement"));
@@ -88,7 +100,10 @@ namespace HapetFrontend.Parsing
             // if there is a condition param
             if (!CheckToken(TokenType.CloseParen))
             {
-                var expr = ParseExpression(true, false);
+                inInfo.AllowCommaForTuple = true;
+                var expr = ParseExpression(inInfo, ref outInfo);
+                inInfo.AllowCommaForTuple = false;
+
                 if (expr is not AstExpression)
                     ReportMessage(expr, [], ErrorCode.Get(CTEN.SwitchStmtCondNotExpr));
                 condition = expr as AstExpression;
@@ -158,6 +173,10 @@ namespace HapetFrontend.Parsing
 
         private AstStatement ParseCaseStatement()
         {
+            // just handlers
+            ParserInInfo inInfo = ParserInInfo.Default;
+            ParserOutInfo outInfo = ParserOutInfo.Default;
+
             AstExpression pattern = null;
             AstBlockExpr body = null;
             bool isDefault = false;
@@ -189,7 +208,10 @@ namespace HapetFrontend.Parsing
                 // if there is a condition param
                 if (!CheckToken(TokenType.CloseParen))
                 {
-                    var expr = ParseExpression(true, false);
+                    inInfo.AllowCommaForTuple = true;
+                    var expr = ParseExpression(inInfo, ref outInfo);
+                    inInfo.AllowCommaForTuple = false;
+
                     if (expr is not AstExpression)
                         ReportMessage(expr, [], ErrorCode.Get(CTEN.CaseParamExprExpected));
                     pattern = expr as AstExpression;
@@ -213,7 +235,10 @@ namespace HapetFrontend.Parsing
             else
             {
                 // getting only one stmt if there are no braces
-                var onlyStmt = ParseStatement(false);
+                inInfo.ExpectNewline = false;
+                var onlyStmt = ParseStatement(inInfo, ref outInfo);
+                inInfo.ExpectNewline = true;
+
                 body = new AstBlockExpr(new List<AstStatement>() { onlyStmt }, onlyStmt);
             }
 

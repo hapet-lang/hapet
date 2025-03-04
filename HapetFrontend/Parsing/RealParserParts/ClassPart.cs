@@ -1,6 +1,7 @@
 ﻿using HapetFrontend.Ast;
 using HapetFrontend.Ast.Declarations;
 using HapetFrontend.Ast.Expressions;
+using HapetFrontend.Entities;
 using HapetFrontend.Errors;
 using System.Collections.Generic;
 
@@ -10,6 +11,10 @@ namespace HapetFrontend.Parsing
     {
         private AstDeclaration ParseClassDeclaration()
         {
+            // just handlers
+            ParserInInfo inInfo = ParserInInfo.Default;
+            ParserOutInfo outInfo = ParserOutInfo.Default;
+
             TokenLocation beg = null, end = null;
             var declarations = new List<AstDeclaration>();
             var inherited = new List<AstNestedExpr>();
@@ -165,7 +170,10 @@ namespace HapetFrontend.Parsing
                 if (next.Type == TokenType.CloseBrace || next.Type == TokenType.EOF)
                     break;
 
-                var decl = ParseDeclaration(null, true);
+                inInfo.AllowCommaForTuple = true;
+                var decl = ParseDeclaration(inInfo, ref outInfo);
+                inInfo.AllowCommaForTuple = false;
+
                 // it is probably an attribute so no need to save it to decls
                 if (decl is AstEmptyDecl)
                 {

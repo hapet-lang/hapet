@@ -2,6 +2,7 @@
 using HapetFrontend.Ast;
 using HapetFrontend.Ast.Expressions;
 using HapetFrontend.Errors;
+using HapetFrontend.Entities;
 
 namespace HapetFrontend.Parsing
 {
@@ -9,6 +10,10 @@ namespace HapetFrontend.Parsing
     {
         private AstDeclaration PreparePropertyDecl(UnknownDecl udecl, string docString)
         {
+            // just handlers
+            ParserInInfo inInfo = ParserInInfo.Default;
+            ParserOutInfo outInfo = ParserOutInfo.Default;
+
             bool hasGet = false;
             bool hasSet = false;
             AstBlockExpr getBody = null;
@@ -84,7 +89,10 @@ namespace HapetFrontend.Parsing
             if (CheckToken(TokenType.Equal))
             {
                 NextToken();
-                initializer = ParseExpression(true);
+                inInfo.AllowCommaForTuple = true;
+                initializer = ParseExpression(inInfo, ref outInfo);
+                inInfo.AllowCommaForTuple = false;
+
                 if (initializer is not AstExpression)
                 {
                     ReportMessage(initializer.Location, [], ErrorCode.Get(CTEN.PropIniNotExpr));

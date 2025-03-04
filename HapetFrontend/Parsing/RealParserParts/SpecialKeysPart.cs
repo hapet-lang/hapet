@@ -1,6 +1,7 @@
 ﻿using HapetFrontend.Ast;
 using HapetFrontend.Ast.Declarations;
 using HapetFrontend.Ast.Expressions;
+using HapetFrontend.Entities;
 using HapetFrontend.Errors;
 
 namespace HapetFrontend.Parsing
@@ -30,11 +31,21 @@ namespace HapetFrontend.Parsing
         // they are all the same
         private AstStatement ParseKeysInternal(TokenType tknType)
         {
+            // just handlers
+            ParserInInfo inInfo = ParserInInfo.Default;
+            ParserOutInfo outInfo = ParserOutInfo.Default;
+
             TokenLocation beg = null;
             var tkn = Consume(tknType, ErrMsg($"keyword '{tknType}'", "at beginning of type"));
             beg = tkn.Location;
 
-            var expr = ParseExpression(true, true, null, true);
+            inInfo.AllowCommaForTuple = true;
+            inInfo.AllowFunctionDeclaration = true;
+            inInfo.AllowPointerExpression = true;
+            var expr = ParseExpression(inInfo, ref outInfo);
+            inInfo.AllowCommaForTuple = false;
+            inInfo.AllowFunctionDeclaration = false;
+            inInfo.AllowPointerExpression = false;
 
             // it could be an idexpr or nestedexpr when ctor/dtor decls are here
             if (expr is AstIdExpr idExpr)

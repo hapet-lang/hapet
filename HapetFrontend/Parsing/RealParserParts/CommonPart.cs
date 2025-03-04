@@ -93,7 +93,7 @@ namespace HapetFrontend.Parsing
             if (CheckToken(TokenType.Equal))
             {
                 NextToken();
-                initializer = ParseExpression(inInfo.AllowCommaForTuple);
+                initializer = ParseExpression(inInfo, ref outInfo);
                 end = initializer.Ending;
 
                 if (initializer is not AstExpression)
@@ -118,7 +118,14 @@ namespace HapetFrontend.Parsing
             // func declaration 
             else if (CheckToken(TokenType.OpenParen))
             {
-                var tpl = ParseTupleExpression(true, true);
+                var saved1 = inInfo.AllowFunctionDeclaration;
+                var saved2 = inInfo.AllowCommaForTuple;
+                inInfo.AllowFunctionDeclaration = true;
+                inInfo.AllowCommaForTuple = true;
+                var tpl = ParseTupleExpression(inInfo, ref outInfo);
+                inInfo.AllowFunctionDeclaration = saved1;
+                inInfo.AllowCommaForTuple = saved2;
+
                 if (tpl is AstFuncDecl func)
                 {
                     if (udecl.Type == null)

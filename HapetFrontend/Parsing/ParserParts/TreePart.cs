@@ -459,7 +459,7 @@ namespace HapetFrontend.Parsing
                             if (CheckToken(TokenType.ArrayDef))
                             {
                                 // it is not allowed usually from ParseArrayExpr
-                                if (!allowArrayExpressions)
+                                if (!inInfo.AllowArrayExpression)
                                     break;
                                 var arrExpr = new AstArrayExpr(id.RightPart, new Location(id.RightPart.Beginning, CurrentToken.Location.Ending));
                                 id.RightPart = arrExpr;
@@ -470,7 +470,7 @@ namespace HapetFrontend.Parsing
                                 // how to find out when 'a * b' is a mul expr
                                 // and 'bool* bptr' is a ptr expr?
                                 // so allowPointerExpressions is true only when decls are parsed!!!
-                                if (!allowPointerExpressions)
+                                if (!inInfo.AllowPointerExpression)
                                     break;
                                 var ptrExpr = new AstPointerExpr(id.RightPart, false, new Location(id.RightPart.Beginning, CurrentToken.Location.Ending));
                                 id.RightPart = ptrExpr;

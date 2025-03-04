@@ -1,5 +1,6 @@
 ﻿using HapetFrontend.Ast;
 using HapetFrontend.Ast.Expressions;
+using HapetFrontend.Entities;
 using HapetFrontend.Errors;
 using HapetFrontend.Types;
 
@@ -9,6 +10,10 @@ namespace HapetFrontend.Parsing
     {
         private AstStatement ParseArrayExpr(AstExpression type, TokenLocation beg)
         {
+            // just handlers
+            ParserInInfo inInfo = ParserInInfo.Default;
+            ParserOutInfo outInfo = ParserOutInfo.Default;
+
             // by default it is null because the size could not be defined
             // when values are presented
             List<AstExpression> sizeExprs = new List<AstExpression>();
@@ -24,7 +29,7 @@ namespace HapetFrontend.Parsing
                     Consume(TokenType.OpenBracket, ErrMsg("[", "at the beggining of array expr"));
                     if (!CheckToken(TokenType.CloseBracket))
                     {
-                        var arraySize = ParseExpression(false, false);
+                        var arraySize = ParseExpression(inInfo, ref outInfo);
                         if (arraySize is not AstExpression expr)
                         {
                             // error here. it has to be an expr
@@ -94,6 +99,10 @@ namespace HapetFrontend.Parsing
 
         private List<AstExpression> ParseArrayElementsExpression()
         {
+            // just handlers
+            ParserInInfo inInfo = ParserInInfo.Default;
+            ParserOutInfo outInfo = ParserOutInfo.Default;
+
             var token = NextToken();
             var values = new List<AstExpression>();
 
@@ -105,7 +114,7 @@ namespace HapetFrontend.Parsing
                 if (next.Type == TokenType.CloseBrace || next.Type == TokenType.EOF)
                     break;
 
-                var expr = ParseExpression(false);
+                var expr = ParseExpression(inInfo, ref outInfo);
                 if (expr is not AstExpression exprexpr)
                 {
                     // error here. it has to be

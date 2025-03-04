@@ -2,6 +2,7 @@
 using HapetFrontend.Ast.Declarations;
 using HapetFrontend.Ast.Expressions;
 using HapetFrontend.Ast.Statements;
+using HapetFrontend.Entities;
 using HapetFrontend.Errors;
 using System.Diagnostics;
 
@@ -11,16 +12,27 @@ namespace HapetFrontend.Parsing
     {
         private readonly List<AstAttributeStmt> _foundAttributes = new List<AstAttributeStmt>();
 
-        private AstDeclaration ParseDeclaration(AstStatement expr, bool allowCommaTuple)
+        private AstDeclaration ParseDeclaration(ParserInInfo inInfo, ref ParserOutInfo outInfo)
         {
             var docString = GetCurrentDocString();
-            if (expr == null)
-                expr = ParseExpression(allowCommaTuple, true, null, true);
+
+            var saved1 = inInfo.AllowFunctionDeclaration;
+            var saved2 = inInfo.Message;
+            var saved3 = inInfo.AllowPointerExpression;
+            inInfo.AllowFunctionDeclaration = true;
+            inInfo.Message = null;
+            inInfo.AllowPointerExpression = true;
+            var expr = ParseExpression(inInfo, ref outInfo);
+            inInfo.AllowFunctionDeclaration = saved1;
+            inInfo.Message = saved2;
+            inInfo.AllowPointerExpression = saved3;
 
             if (expr is UnknownDecl udecl)
             {
                 SkipNewlines();
-                var result = PrepareUnknownDecl(udecl, docString, allowCommaTuple, _foundAttributes);
+
+                udecl.Documentation = docString;
+                var result = PrepareUnknownDecl(udecl, _foundAttributes, inInfo, ref outInfo);
                 // clearing found attr because they were applied to the decl
                 _foundAttributes.Clear();
                 return result;

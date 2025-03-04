@@ -1,6 +1,7 @@
 ﻿using HapetFrontend.Ast;
 using HapetFrontend.Ast.Declarations;
 using HapetFrontend.Ast.Expressions;
+using HapetFrontend.Entities;
 using HapetFrontend.Errors;
 
 namespace HapetFrontend.Parsing
@@ -9,6 +10,10 @@ namespace HapetFrontend.Parsing
     {
         private AstDeclaration ParseEnumDeclaration()
         {
+            // just handlers
+            ParserInInfo inInfo = ParserInInfo.Default;
+            ParserOutInfo outInfo = ParserOutInfo.Default;
+
             TokenLocation beg = null, end = null;
             var declarations = new List<AstVarDecl>();
             var inherited = new List<AstNestedExpr>();
@@ -87,7 +92,7 @@ namespace HapetFrontend.Parsing
                 if (CheckToken(TokenType.Equal))
                 {
                     NextToken();
-                    var initStmt = ParseExpression(false, false, null, false);
+                    var initStmt = ParseExpression(inInfo, ref outInfo);
                     if (initStmt is not AstExpression)
                         ReportMessage(initStmt.Location, [], ErrorCode.Get(CTEN.EnumFieldIniNotExpr));
                     ini = initStmt as AstExpression;

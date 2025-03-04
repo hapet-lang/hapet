@@ -10,11 +10,15 @@ namespace HapetFrontend.Parsing
     {
         private AstArgumentExpr ParseArgument()
         {
+            // just handlers
+            ParserInInfo inInfo = ParserInInfo.Default;
+            ParserOutInfo outInfo = ParserOutInfo.Default;
+
             TokenLocation beg;
             AstExpression expr;
             AstIdExpr name = null;
 
-            var e = ParseExpression(false);
+            var e = ParseExpression(inInfo, ref outInfo);
             beg = e.Beginning;
 
             // if next token is : then e is the name of the parameter
@@ -32,7 +36,7 @@ namespace HapetFrontend.Parsing
                 Consume(TokenType.Equal, ErrMsg(":", "after name in argument"));
                 SkipNewlines();
 
-                expr = ParseExpression(false) as AstExpression;
+                expr = ParseExpression(inInfo, ref outInfo) as AstExpression;
             }
             else
             {
@@ -78,15 +82,22 @@ namespace HapetFrontend.Parsing
             return args;
         }
 
-        private AstParamDecl ParseParameter(bool allowCommaForTuple, bool allowDefaultValue = true)
+        private AstParamDecl ParseParameter(bool allowDefaultValue = true)
         {
+            // just handlers
+            ParserInInfo inInfo = ParserInInfo.Default;
+            ParserOutInfo outInfo = ParserOutInfo.Default;
+
             AstIdExpr pname = null;
             AstStatement ptype = null;
             AstExpression defaultValue = null;
 
             TokenLocation beg = null, end = null;
 
-            var e = ParseExpression(allowCommaForTuple, false, null, true);
+            inInfo.AllowPointerExpression = true;
+            var e = ParseExpression(inInfo, ref outInfo);
+            inInfo.AllowPointerExpression = false;
+
             beg = e.Beginning;
             SkipNewlines();
 
@@ -102,7 +113,7 @@ namespace HapetFrontend.Parsing
                 {
                     SkipNewlines();
 
-                    var probName = ParseExpression(allowCommaForTuple);
+                    var probName = ParseExpression(inInfo, ref outInfo);
                     if (probName is not AstIdExpr)
                     {
                         ReportMessage(probName.Location, [], ErrorCode.Get(CTEN.ParameterNameNotIdent));
@@ -126,7 +137,7 @@ namespace HapetFrontend.Parsing
                 {
                     NextToken();
                     SkipNewlines();
-                    var probDefVal = ParseExpression(allowCommaForTuple);
+                    var probDefVal = ParseExpression(inInfo, ref outInfo);
                     if (probDefVal is not AstExpression)
                     {
                         ReportMessage(probDefVal.Location, [], ErrorCode.Get(CTEN.ParamDefaultNotExpr));
@@ -153,7 +164,7 @@ namespace HapetFrontend.Parsing
                 if (next.Type == close || next.Type == TokenType.EOF)
                     break;
 
-                var a = ParseParameter(false, allowDefaultValue);
+                var a = ParseParameter(allowDefaultValue);
                 parameters.Add(a);
 
                 SkipNewlines();

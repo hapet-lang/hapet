@@ -3,6 +3,7 @@ using HapetFrontend.Ast.Statements;
 using HapetFrontend.Ast;
 using System.Collections.Generic;
 using HapetFrontend.Errors;
+using HapetFrontend.Entities;
 
 namespace HapetFrontend.Parsing
 {
@@ -10,6 +11,10 @@ namespace HapetFrontend.Parsing
     {
         private AstForStmt ParseForStatement()
         {
+            // just handlers
+            ParserInInfo inInfo = ParserInInfo.Default;
+            ParserOutInfo outInfo = ParserOutInfo.Default;
+
             AstStatement first = null;
             AstExpression second = null;
             AstStatement third = null;
@@ -22,13 +27,20 @@ namespace HapetFrontend.Parsing
 
             // if there is a first param
             if (!CheckToken(TokenType.Semicolon))
-                first = ParseStatement(false);
+            {
+                inInfo.ExpectNewline = false;
+                first = ParseStatement(inInfo, ref outInfo);
+                inInfo.ExpectNewline = true;
+            }
             // Consume(TokenType.Semicolon, ErrMsg("';'", "after the first argument")); // WARN: semicolon is parsed inside ParseStatement
 
             // if there is a second param
             if (!CheckToken(TokenType.Semicolon))
             {
-                var expr = ParseExpression(true, false);
+                inInfo.AllowCommaForTuple = true;
+                var expr = ParseExpression(inInfo, ref outInfo);
+                inInfo.AllowCommaForTuple = false;
+
                 if (expr is not AstExpression)
                     ReportMessage(expr, [], ErrorCode.Get(CTEN.ForLoopSecondNotExpr));
                 second = expr as AstExpression;
@@ -37,7 +49,11 @@ namespace HapetFrontend.Parsing
 
             // if there is a third param
             if (!CheckToken(TokenType.CloseParen))
-                third = ParseStatement(false);
+            {
+                inInfo.ExpectNewline = false;
+                third = ParseStatement(inInfo, ref outInfo);
+                inInfo.ExpectNewline = true;
+            }
             var end = Consume(TokenType.CloseParen, ErrMsg("')'", "after the third argument"));
 
             SkipNewlines();
@@ -58,7 +74,9 @@ namespace HapetFrontend.Parsing
             else
             {
                 // getting only one stmt if there are no braces
-                var onlyStmt = ParseStatement(false);
+                inInfo.ExpectNewline = false;
+                var onlyStmt = ParseStatement(inInfo, ref outInfo);
+                inInfo.ExpectNewline = true;
                 body = new AstBlockExpr(new List<AstStatement>() { onlyStmt }, onlyStmt);
             }
 
@@ -67,6 +85,10 @@ namespace HapetFrontend.Parsing
 
         private AstWhileStmt ParseWhileStatement()
         {
+            // just handlers
+            ParserInInfo inInfo = ParserInInfo.Default;
+            ParserOutInfo outInfo = ParserOutInfo.Default;
+
             AstExpression condition = null;
             AstBlockExpr body;
 
@@ -78,7 +100,10 @@ namespace HapetFrontend.Parsing
             // if there is a condition param
             if (!CheckToken(TokenType.CloseParen))
             {
-                var expr = ParseExpression(true, false);
+                inInfo.AllowCommaForTuple = true;
+                var expr = ParseExpression(inInfo, ref outInfo);
+                inInfo.AllowCommaForTuple = false;
+
                 if (expr is not AstExpression)
                     ReportMessage(expr, [], ErrorCode.Get(CTEN.WhileLoopParamNotExpr));
                 condition = expr as AstExpression;
@@ -105,7 +130,9 @@ namespace HapetFrontend.Parsing
             else
             {
                 // getting only one stmt if there are no braces
-                var onlyStmt = ParseStatement(false);
+                inInfo.ExpectNewline = false;
+                var onlyStmt = ParseStatement(inInfo, ref outInfo);
+                inInfo.ExpectNewline = true;
                 body = new AstBlockExpr(new List<AstStatement>() { onlyStmt }, onlyStmt);
             }
 

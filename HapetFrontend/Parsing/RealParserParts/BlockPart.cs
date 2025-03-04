@@ -2,6 +2,7 @@
 using HapetFrontend.Ast.Declarations;
 using HapetFrontend.Ast.Expressions;
 using HapetFrontend.Ast.Statements;
+using HapetFrontend.Entities;
 using HapetFrontend.Errors;
 
 namespace HapetFrontend.Parsing
@@ -10,6 +11,10 @@ namespace HapetFrontend.Parsing
     {
         private AstBlockExpr ParseBlockExpression()
         {
+            // just handlers
+            ParserInInfo inInfo = ParserInInfo.Default;
+            ParserOutInfo outInfo = ParserOutInfo.Default;
+
             var statements = new List<AstStatement>();
             var beg = Consume(TokenType.OpenBrace, ErrMsg("{", "at beginning of block expression")).Location;
 
@@ -25,7 +30,7 @@ namespace HapetFrontend.Parsing
                 if (next.Type == TokenType.CloseBrace || next.Type == TokenType.EOF)
                     break;
 
-                var s = ParseStatement(false);
+                var s = ParseStatement(inInfo, ref outInfo);
                 if (s != null)
                 {
                     if (string.IsNullOrWhiteSpace(foundBrStatement))

@@ -1,6 +1,7 @@
 ﻿using HapetFrontend.Ast;
 using HapetFrontend.Ast.Declarations;
 using HapetFrontend.Ast.Expressions;
+using HapetFrontend.Entities;
 using HapetFrontend.Enums;
 using HapetFrontend.Errors;
 using Newtonsoft.Json.Linq;
@@ -16,6 +17,10 @@ namespace HapetFrontend.Parsing
 
         public AstOverloadDecl ParseOperatorOverride(UnknownDecl udecl)
         {
+            // just handlers
+            ParserInInfo inInfo = ParserInInfo.Default;
+            ParserOutInfo outInfo = ParserOutInfo.Default;
+
             OverloadType overloadType = OverloadType.UnaryOperator;
             string op = null;
 
@@ -43,7 +48,12 @@ namespace HapetFrontend.Parsing
                 // getting cast result type
                 returns = ParseIdentifierExpression();
 
-                var tpl = ParseTupleExpression(true, true);
+                inInfo.AllowCommaForTuple = true;
+                inInfo.AllowFunctionDeclaration = true;
+                var tpl = ParseTupleExpression(inInfo, ref outInfo);
+                inInfo.AllowCommaForTuple = false;
+                inInfo.AllowFunctionDeclaration = false;
+
                 if (tpl is AstFuncDecl func)
                 {
                     paramDecls = func.Parameters;
@@ -92,7 +102,12 @@ namespace HapetFrontend.Parsing
                     case TokenType.MinusMinus: op = "--"; break;
                 }
 
-                var tpl = ParseTupleExpression(true, true);
+                inInfo.AllowCommaForTuple = true;
+                inInfo.AllowFunctionDeclaration = true;
+                var tpl = ParseTupleExpression(inInfo, ref outInfo);
+                inInfo.AllowCommaForTuple = false;
+                inInfo.AllowFunctionDeclaration = false;
+
                 if (tpl is AstFuncDecl func)
                 {
                     paramDecls = func.Parameters;
