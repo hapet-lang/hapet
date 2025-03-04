@@ -53,7 +53,8 @@ namespace HapetPostPrepare
                 if (decl.IsPropertyField)
                     inInfo.MuteErrors = savedMute;
 
-                if (decl.Type.OutType is ClassType)
+                // don't do this for generic shite
+                if (decl.Type.OutType is ClassType clsT && !clsT.Declaration.IsGenericType)
                 {
                     // the var is actually a pointer to the class
                     var astPtr = new AstPointerExpr(decl.Type, false, decl.Type.Location);

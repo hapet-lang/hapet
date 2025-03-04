@@ -7,11 +7,6 @@ namespace HapetFrontend.Types
     public abstract class HapetType
     {
         /// <summary>
-        /// Like "class Pivo<T>" where Pivo is a ClassType and IsGenericType - true (TODO: not sure)
-        /// </summary>
-        public virtual bool IsGenericType { get; } = false;
-
-        /// <summary>
         /// The name of the type alias like 'int', 'bool' and etc.
         /// </summary>
         public abstract string TypeName { get; }

@@ -159,7 +159,8 @@ namespace HapetPostPrepare
                     if (funcDecl.IsPropertyFunction)
                         inInfo.MuteErrors = savedMute;
 
-                    if (funcDecl.Returns.OutType is ClassType)
+                    // don't do this for generic shite
+                    if (funcDecl.Returns.OutType is ClassType clsT && !clsT.Declaration.IsGenericType)
                     {
                         // the return type is actually a pointer to the class
                         var astPtr = new AstPointerExpr(funcDecl.Returns, false, funcDecl.Returns.Location);
@@ -208,8 +209,10 @@ namespace HapetPostPrepare
             }
             else
             {
+                // if it is a ini_func and cls contains Generic shite - do not infer
+                bool allowInfer = funcDecl.ContainingParent is not AstClassDecl clsDecl22 || !clsDecl22.HasGenericTypes;
                 // inferring body
-                if (funcDecl.Body != null)
+                if (funcDecl.Body != null && allowInfer)
                     PostPrepareBlockInference(funcDecl.Body, inInfo, ref outInfo);
 
                 // check if the class if inherited from smth
@@ -261,7 +264,8 @@ namespace HapetPostPrepare
                     varDecl.Type.OutType = varDecl.Initializer.OutType;
             }
 
-            if (varDecl.Type.OutType is ClassType)
+            // don't do this for generic shite
+            if (varDecl.Type.OutType is ClassType clsT && !clsT.Declaration.IsGenericType)
             {
                 // the var is actually a pointer to the class
                 var astPtr = new AstPointerExpr(varDecl.Type, false, varDecl.Type.Location);
@@ -294,7 +298,8 @@ namespace HapetPostPrepare
         {
             PostPrepareExprInference(paramDecl.Type, inInfo, ref outInfo);
 
-            if (paramDecl.Type.OutType is ClassType)
+            // don't do this for generic shite
+            if (paramDecl.Type.OutType is ClassType clsT && !clsT.Declaration.IsGenericType)
             {
                 // the var is actually a pointer to the class
                 var astPtr = new AstPointerExpr(paramDecl.Type, false, paramDecl.Type.Location);
