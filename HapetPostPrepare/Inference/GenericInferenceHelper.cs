@@ -38,6 +38,8 @@ namespace HapetPostPrepare
             var realCls = clsDecl.GetDeepCopy() as AstClassDecl;
             realCls.Name = realCls.Name.GetCopy(realName);
             ReplaceAllGenericTypesInClass(realCls, genericTypes);
+            PostPrepareClassScoping(realCls);
+            PostPrepareStatementUpToCurrentStep(realCls);
             // TODO: inference this shite
             return realCls;
         }
