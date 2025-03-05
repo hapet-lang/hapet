@@ -53,5 +53,21 @@ namespace HapetFrontend.Ast.Expressions
             };
             return gen;
         }
+
+        public override AstIdGenericExpr GetCopy(string name = "")
+        {
+            string newName = string.IsNullOrWhiteSpace(name) ? Name : name;
+            var newId = new AstIdGenericExpr(newName, GenericRealTypes, Location)
+            {
+                Suffix = this.Suffix,
+                Parent = this.Parent,
+                Scope = this.Scope,
+                IsCompileTimeValue = this.IsCompileTimeValue,
+                OutType = this.OutType,
+                OutValue = this.OutValue,
+                SourceFile = this.SourceFile,
+            };
+            return newId;
+        }
     }
 }

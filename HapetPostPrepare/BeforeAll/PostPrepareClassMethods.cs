@@ -260,8 +260,15 @@ namespace HapetPostPrepare
                 // adding 'this' param to func params
                 if (!funcDecl.SpecialKeys.Contains(TokenType.KwStatic))
                 {
+                    // for generic type - need to create an AstIdGenericExpr
+                    AstIdExpr thisParamType;
+                    if (classDecl.HasGenericTypes)
+                        thisParamType = AstIdGenericExpr.FromAstIdExpr(classDecl.Name.GetCopy(), 
+                            classDecl.GenericNames.Select(x => new AstNestedExpr(x, null, x)).ToList());
+                    else
+                        thisParamType = classDecl.Name.GetCopy();
                     // creating the class instance 'this' param
-                    AstExpression paramType = new AstPointerExpr(classDecl.Name.GetCopy(), false);
+                    AstExpression paramType = new AstPointerExpr(thisParamType, false);
                     AstIdExpr paramName = new AstIdExpr("this");
                     AstParamDecl thisParam = new AstParamDecl(paramType, paramName);
                     // adding the param as the func first param

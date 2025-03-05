@@ -83,13 +83,13 @@ namespace HapetFrontend.Ast.Declarations
                 Declarations.Select(x => x.GetDeepCopy() as AstDeclaration).ToList(),
                 Documentation, Location)
             {
-                AllRawFields = AllRawFields.Select(x => x.GetDeepCopy() as AstVarDecl).ToList(),
-                AllRawProps = AllRawProps.Select(x => x.GetDeepCopy() as AstPropertyDecl).ToList(),
-                AllVirtualMethods = AllVirtualMethods.Select(x => x.GetDeepCopy() as AstFuncDecl).ToList(),
-                GenericNames = GenericNames.Select(x => x.GetDeepCopy() as AstIdExpr).ToList(),
+                AllRawFields = AllRawFields?.Select(x => x.GetDeepCopy() as AstVarDecl).ToList(),
+                AllRawProps = AllRawProps?.Select(x => x.GetDeepCopy() as AstPropertyDecl).ToList(),
+                AllVirtualMethods = AllVirtualMethods?.Select(x => x.GetDeepCopy() as AstFuncDecl).ToList(),
+                GenericNames = GenericNames?.Select(x => x.GetDeepCopy() as AstIdExpr).ToList(),
                 GenericConstrains = copiedConstrains,
                 HasGenericTypes = HasGenericTypes,
-                InheritedFrom = InheritedFrom.Select(x => x.GetDeepCopy() as AstNestedExpr).ToList(),
+                InheritedFrom = InheritedFrom?.Select(x => x.GetDeepCopy() as AstNestedExpr).ToList(),
                 IsGenericType = IsGenericType,
                 IsInterface = IsInterface,
                 Scope = Scope,

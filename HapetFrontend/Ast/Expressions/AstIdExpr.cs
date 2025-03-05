@@ -63,7 +63,7 @@ namespace HapetFrontend.Ast.Expressions
             return Name;
         }
 
-        public AstIdExpr GetCopy(string name = "")
+        public virtual AstIdExpr GetCopy(string name = "")
         {
             string newName = string.IsNullOrWhiteSpace(name) ? Name : name;
             var newId = new AstIdExpr(newName, Location)
