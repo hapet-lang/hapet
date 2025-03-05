@@ -101,10 +101,11 @@ namespace HapetPostPrepare
         private void PrepareDeclarationShite(AstDeclaration decl)
         {
             // getting namespace from full decl name
-            string pureDeclName = decl.Name.Name.GetClassNameWithoutNamespace();
+            var name = decl.Name.Name;
+            string pureDeclName = name.GetClassNameWithoutNamespace();
             decl.Name = decl.Name.GetCopy(pureDeclName);
 
-            string nameSpaceName = decl.Name.Name.GetNamespaceWithoutClassName();
+            string nameSpaceName = name.GetNamespaceWithoutClassName();
             Scope nameSpaceScope = _compiler.GetNamespaceScope(nameSpaceName);
             ProgramFile tmpProgFile = new ProgramFile(_externalProjectFilename, string.Empty) { Namespace = nameSpaceName, NamespaceScope = nameSpaceScope };
             tmpProgFile.Statements.Add(decl);
