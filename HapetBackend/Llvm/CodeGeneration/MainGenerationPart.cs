@@ -7,9 +7,6 @@ using HapetFrontend.Parsing;
 using HapetFrontend.Scoping;
 using HapetFrontend.Types;
 using LLVMSharp.Interop;
-using System;
-using System.Diagnostics;
-using System.Xml.Linq;
 
 namespace HapetBackend.Llvm
 {
@@ -20,21 +17,22 @@ namespace HapetBackend.Llvm
 
         private void GenerateCode()
         {
-            foreach (var (path, file) in _compiler.GetFiles())
-            {
-                _currentSourceFile = file;
+            var classes = _postPreparer.AllClassesMetadata.ToList();
+            var structs = _postPreparer.AllStructsMetadata.ToList();
 
-                foreach (var stmt in file.Statements)
-                {
-                    if (stmt is AstClassDecl classDecl)
-                    {
-                        GenerateClassCode(classDecl);
-                    }
-                    else if (stmt is AstStructDecl structDecl)
-                    {
-                        GenerateStructCode(structDecl);
-                    }
-                }
+            foreach (var classDecl in classes)
+            {
+                // skip generic (non-real) classes
+                if (classDecl.HasGenericTypes)
+                    continue;
+
+                _currentSourceFile = classDecl.SourceFile;
+                GenerateClassCode(classDecl);
+            }
+            foreach (var structDecl in structs)
+            {
+                _currentSourceFile = structDecl.SourceFile;
+                GenerateStructCode(structDecl);
             }
         }
 
@@ -131,6 +129,10 @@ namespace HapetBackend.Llvm
             }
             else
             {
+                // skip imported funcs
+                if (funcDecl.SpecialKeys.Contains(TokenType.KwImported))
+                    return;
+
                 // getting the func
                 LLVMValueRef lfunc = _valueMap[funcDecl.GetSymbol];
                 _lastFunctionValueRef = lfunc;

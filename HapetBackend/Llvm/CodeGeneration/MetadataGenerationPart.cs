@@ -28,6 +28,10 @@ namespace HapetBackend.Llvm
             // all over the classes
             foreach (var cls in _postPreparer.AllClassesMetadata)
             {
+                // skip generic (non-real) classes
+                if (cls.HasGenericTypes)
+                    continue;
+
                 _currentSourceFile = cls.SourceFile;
                 // doing that we are registering the type in dict
                 var _ = HapetTypeToLLVMType(cls.Type.OutType);
@@ -53,6 +57,10 @@ namespace HapetBackend.Llvm
         {
             foreach (var cls in _postPreparer.AllClassesMetadata)
             {
+                // skip generic (non-real) classes
+                if (cls.HasGenericTypes)
+                    continue;
+
                 _currentSourceFile = cls.SourceFile;
 
                 var classStruct = HapetTypeToLLVMType(cls.Type.OutType);
@@ -121,6 +129,10 @@ namespace HapetBackend.Llvm
         {
             foreach (var func in _postPreparer.AllFunctionsMetadata)
             {
+                // skip generic (non-real) classes
+                if (func.ContainingParent is AstClassDecl cls && cls.HasGenericTypes)
+                    continue;
+
                 _currentSourceFile = func.SourceFile;
                 GenerateFuncCode(func, null, true);
             }
@@ -130,6 +142,10 @@ namespace HapetBackend.Llvm
         {
             foreach (var cls in _postPreparer.AllClassesMetadata)
             {
+                // skip generic (non-real) classes
+                if (cls.HasGenericTypes)
+                    continue;
+
                 // reg type info if non static
                 if (!cls.SpecialKeys.Contains(TokenType.KwStatic))
                 {
