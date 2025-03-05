@@ -330,6 +330,7 @@ namespace HapetPostPrepare
                 // there is no ctor. need to create one
                 List<AstStatement> ctorBlockStatements = new List<AstStatement>();
                 // creating ini func call
+                /// make sure that this shite is the same as in <see cref="RenameFromGenericToRealType"/>
                 ctorBlockStatements.Add(new AstCallExpr(
                     new AstNestedExpr(new AstIdExpr("this"), null),
                     new AstIdExpr($"{decl.Name.Name}_ini")));
@@ -357,6 +358,7 @@ namespace HapetPostPrepare
                 {
                     ct.Name = ct.Name.GetCopy($"{ct.Name.Name}_ctor");
                     // insert ini func call at the beginning of the func body
+                    /// make sure that this shite is the same as in <see cref="RenameFromGenericToRealType"/>
                     ct.Body.Statements.Insert(0, new AstCallExpr(
                         new AstNestedExpr(new AstIdExpr("this"), null),
                         new AstIdExpr($"{decl.Name.Name}_ini")));
@@ -421,6 +423,9 @@ namespace HapetPostPrepare
             if (classDecl.IsInterface)
                 return;
 
+            // creating the ini block for fields
+            var iniBlock = GetFieldsToInitialize(classDecl, true);
+
             // we need to add a static var to check that the stor was called
             string theVarName = $"__is_{_currentSourceFile.Namespace}.{classDecl.Name.Name}_stor_called";
             var theVar = new AstVarDecl(new AstNestedExpr(new AstIdExpr("bool"), null), new AstIdExpr(theVarName));
@@ -428,11 +433,10 @@ namespace HapetPostPrepare
             theVar.SpecialKeys.Add(TokenType.KwUnreflected);
             classDecl.Declarations.Add(theVar);
 
-            // creating the ini block for fields
-            var iniBlock = GetFieldsToInitialize(classDecl, true);
             // set 'true' to the var
+            /// make sure that this shite is the same as in <see cref="RenameFromGenericToRealType"/>
             var varAssign = new AstAssignStmt(new AstNestedExpr(new AstIdExpr(theVarName), null), new AstBoolExpr(true));
-            iniBlock.Statements.Add(varAssign);
+            iniBlock.Statements.Add(varAssign); // should be the last statement
             AstIfStmt checkForInited = new AstIfStmt(new AstUnaryExpr("!", new AstIdExpr(theVarName)), iniBlock, null);
 
             if (ctors.Count == 0)
@@ -465,7 +469,7 @@ namespace HapetPostPrepare
                     _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, ctorFunc.Name, [], ErrorCode.Get(CTWN.StaticCtorKwsIgnored), null, HapetFrontend.Entities.ReportType.Warning);
 
                 // move all user code under 'if' stmt
-                checkForInited.BodyTrue.Statements.AddRange(ctorFunc.Body.Statements);
+                checkForInited.BodyTrue.Statements.InsertRange(0, ctorFunc.Body.Statements);
                 ctorFunc.Body.Statements.Clear();
 
                 // add check into user defined stor

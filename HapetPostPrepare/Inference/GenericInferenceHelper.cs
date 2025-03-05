@@ -3,6 +3,7 @@ using HapetFrontend.Ast.Declarations;
 using HapetFrontend.Ast.Expressions;
 using HapetFrontend.Ast.Statements;
 using HapetFrontend.Parsing;
+using HapetFrontend.Scoping;
 using HapetPostPrepare.Entities;
 using System;
 using System.Text;
@@ -35,11 +36,17 @@ namespace HapetPostPrepare
 
         private AstClassDecl GetRealTypeFromGeneric(AstClassDecl clsDecl, List<AstNestedExpr> genericTypes, string realName)
         {
+            // we need to save previous info about current shite and then reload it 
+            var savedSourceFile = _currentSourceFile;
+            var savedClass = _currentClass;
+            var savedFunction = _currentFunction;
+
             string origClassPureName = clsDecl.Name.Name.Split('.')[^1];
 
             var realCls = clsDecl.GetDeepCopy() as AstClassDecl;
             realCls.Name = realCls.Name.GetCopy(realName);
-            realCls.HasGenericTypes = false;
+            // no need to reset HasGenericTypes when using generic shite from another generic
+            realCls.HasGenericTypes = HasGenericTypesInRealTypes(genericTypes);
             // replaces all T with normal types like int
             ReplaceAllGenericTypesInClass(realCls, genericTypes);
             // replaces all System.Anime::Func(Pivo) with just Func and etc.
@@ -50,7 +57,31 @@ namespace HapetPostPrepare
             PostPrepareClassScoping(realCls);
             // pp up to the current metadata step
             PostPrepareStatementUpToCurrentStep(realCls);
+
+            // reload previously saved shite
+            _currentSourceFile = savedSourceFile;
+            _currentClass = savedClass;
+            _currentFunction = savedFunction;
+
             return realCls;
+        }
+
+        private static bool HasGenericTypesInRealTypes(List<AstNestedExpr> genericTypes)
+        {
+            bool hasGeneric = false;
+            foreach (var g in genericTypes)
+            {
+                if (g.LeftPart == null && g.RightPart is AstIdExpr id)
+                {
+                    var smb = id.Scope.GetSymbol(id.Name);
+                    if (smb is DeclSymbol dS && dS.Decl is AstClassDecl clsD && clsD.IsGenericType)
+                    {
+                        hasGeneric = true;
+                        break;
+                    }
+                }
+            }
+            return hasGeneric;
         }
 
         private string GetGenericRealName(string name, List<AstNestedExpr> generics)
@@ -122,11 +153,33 @@ namespace HapetPostPrepare
                 if (d.Name.Name == $"{origName}_ctor")
                 {
                     d.Name = d.Name.GetCopy($"{decl.Name.Name}_ctor");
+
+                    // we also need to rename _ini func call :)
+                    if (d is AstFuncDecl fDecl && fDecl.Body != null && 
+                        fDecl.Body.Statements[0] is AstCallExpr callExpr && callExpr.FuncName.Name == $"{origName}_ini")
+                    {
+                        /// make sure that this shite is the same as in <see cref="PostPrepareGenerateClassConstructor"/>
+                        callExpr.FuncName = callExpr.FuncName.GetCopy($"{decl.Name.Name}_ini");
+                    }
                 }
                 // if stor
                 else if (d.Name.Name == $"{origName}_stor")
                 {
                     d.Name = d.Name.GetCopy($"{decl.Name.Name}_stor");
+
+                    // we also need to rename static var assign :)
+                    if (d is AstFuncDecl fDecl && fDecl.Body != null &&
+                        fDecl.Body.Statements[0] is AstIfStmt ifStmt && ifStmt.BodyTrue != null &&
+                        ifStmt.BodyTrue.Statements.Count > 0 && ifStmt.BodyTrue.Statements[^1] is AstAssignStmt assignStmt &&
+                        assignStmt.Target is AstNestedExpr nstE && nstE.RightPart is AstIdExpr idE && 
+                        idE.Name == $"__is_{_currentSourceFile.Namespace}.{origName}_stor_called" &&
+                        ifStmt.Condition is AstUnaryExpr unE && unE.SubExpr is AstIdExpr idECond &&
+                        idECond.Name == $"__is_{_currentSourceFile.Namespace}.{origName}_stor_called")
+                    {
+                        /// make sure that this shite is the same as in <see cref="PostPrepareGenerateClassStaticConstructor"/>
+                        nstE.RightPart = idE.GetCopy($"__is_{_currentSourceFile.Namespace}.{decl.Name.Name}_stor_called");
+                        unE.SubExpr = idECond.GetCopy($"__is_{_currentSourceFile.Namespace}.{decl.Name.Name}_stor_called");
+                    }
                 }
                 // if ini
                 else if (d.Name.Name == $"{origName}_ini")

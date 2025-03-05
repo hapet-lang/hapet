@@ -346,14 +346,14 @@ namespace HapetPostPrepare
         {
             _currentPreparationStep = PreparationStep.PropsRemoval;
 
-            foreach (var cls in AllClassesMetadata)
-            {
-                cls.Declarations.RemoveAll(x => x is AstPropertyDecl);
-            }
-            foreach (var cls in AllStructsMetadata)
-            {
-                cls.Declarations.RemoveAll(x => x is AstPropertyDecl);
-            }
+            //foreach (var cls in AllClassesMetadata)
+            //{
+            //    cls.Declarations.RemoveAll(x => x is AstPropertyDecl);
+            //}
+            //foreach (var cls in AllStructsMetadata)
+            //{
+            //    cls.Declarations.RemoveAll(x => x is AstPropertyDecl);
+            //}
         }
     }
 
