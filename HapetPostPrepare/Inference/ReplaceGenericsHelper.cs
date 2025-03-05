@@ -490,6 +490,26 @@ namespace HapetPostPrepare
                 }
             }
 
+            // if found something generic inside another generic shite
+            if (expr is AstIdGenericExpr genExpr)
+            {
+                for (int i = 0; i < genExpr.GenericRealTypes.Count; ++i)
+                {
+                    var currNest = genExpr.GenericRealTypes[i];
+                    // generic types are like that :)
+                    if (currNest.LeftPart == null &&
+                        currNest.RightPart is AstIdExpr idExpr2)
+                    {
+                        // if found the generic entry - replace it
+                        if (_currentGenericMapping.TryGetValue(idExpr2.Name, out var val))
+                        {
+                            // no need to tell em about it. we do it by our own here
+                            genExpr.GenericRealTypes[i] = val;
+                        }
+                    }
+                }
+            }
+
             value = null;
             return false;
         }

@@ -93,7 +93,9 @@ namespace HapetPostPrepare
                 }
                 else if (d is AstFuncDecl f)
                 {
-                    return string.Concat(f.Name.Name.Split("::")[1].TakeWhile(x => x != '('));
+                    // check if it is really infered
+                    if (f.Name.Name.Contains("::"))
+                        return string.Concat(f.Name.Name.Split("::")[1].TakeWhile(x => x != '('));
                 }
                 return d.Name.Name;
             }
