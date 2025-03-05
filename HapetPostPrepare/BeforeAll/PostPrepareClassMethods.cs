@@ -11,6 +11,7 @@ namespace HapetPostPrepare
 {
     public partial class PostPrepare
     {
+        /// names of some funcs/vars has to be the same as in <see cref="RenameFromGenericToRealType"/>
         private void PostPrepareClassMethods()
         {
             foreach (var (path, file) in _compiler.GetFiles())

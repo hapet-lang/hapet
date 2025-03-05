@@ -84,7 +84,7 @@ namespace HapetPostPrepare
             foreach (var p in funcDecl.Parameters)
             {
                 // settings the block scope to the parameters (so they are in the scope of the block)
-                ReplaceAllGenericTypesInExpr(p);
+                ReplaceAllGenericTypesInParam(p);
 
                 // scoping param attrs
                 foreach (var a in p.Attributes)
