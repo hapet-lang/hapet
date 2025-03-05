@@ -3,6 +3,7 @@ using HapetFrontend.Ast.Declarations;
 using HapetFrontend.Ast.Expressions;
 using HapetFrontend.Entities;
 using HapetFrontend.Errors;
+using HapetFrontend.Extensions;
 using HapetFrontend.Types;
 using System.Diagnostics;
 using System.Text;
@@ -17,12 +18,6 @@ namespace HapetFrontend.Helpers
     public static class CompilerUtils
     {
         #region Extensions
-        public static string PathNormalize(this string path)
-        {
-            return Path.GetFullPath(new Uri(path).LocalPath)
-                       .TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
-        }
-
         public static void ReplaceWithCasts(this List<AstArgumentExpr> args, List<AstExpression> casts)
         {
             for (int i = 0; i < args.Count; ++i)

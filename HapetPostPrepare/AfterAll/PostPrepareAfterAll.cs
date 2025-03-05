@@ -1,6 +1,7 @@
 ﻿using HapetFrontend.Ast.Declarations;
 using HapetFrontend.Ast.Expressions;
 using HapetFrontend.Errors;
+using HapetFrontend.Extensions;
 using HapetFrontend.Types;
 using HapetFrontend;
 using HapetPostPrepare.Entities;
@@ -66,7 +67,7 @@ namespace HapetPostPrepare
                     continue;
 
                 // creating stor call ast
-                string funcName = $"{cls.Name.Name.Split('.').Last()}_stor";
+                string funcName = $"{cls.Name.Name.GetClassNameWithoutNamespace()}_stor";
                 var call = new AstCallExpr(new AstNestedExpr(cls.Name.GetCopy(), null), new AstIdExpr(funcName));
                 SetScopeAndParent(call, _compiler.MainFunction.Body, _compiler.MainFunction.Body.SubScope);
                 PostPrepareExprScoping(call);

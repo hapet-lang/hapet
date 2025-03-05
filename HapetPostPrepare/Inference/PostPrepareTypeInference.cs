@@ -5,6 +5,7 @@ using HapetFrontend.Ast.Statements;
 using HapetFrontend.Entities;
 using HapetFrontend.Enums;
 using HapetFrontend.Errors;
+using HapetFrontend.Extensions;
 using HapetFrontend.Helpers;
 using HapetFrontend.Parsing;
 using HapetFrontend.Scoping;
@@ -807,11 +808,10 @@ namespace HapetPostPrepare
             }
 
             // check if it is smth like 'System.Attribute' where 'System' is ns and 'Attribute' is a class
-            if (name.Split('.').Length > 1)
+            if (!string.IsNullOrWhiteSpace(name.GetNamespaceWithoutClassName()))
             {
-                string[] splitted = name.Split('.');
-                var leftPart = string.Join('.', splitted.SkipLast(1));
-                var rightPart = splitted.Last();
+                var leftPart = name.GetNamespaceWithoutClassName();
+                var rightPart = name.GetClassNameWithoutNamespace();
 
                 // getting a symbol from namespace
                 var includedSmbl = idExpr.Scope.GetSymbolInNamespace(leftPart, rightPart);
@@ -837,11 +837,10 @@ namespace HapetPostPrepare
 
                 // check if it is smth like 'Runtime.InteropServices.DllImportAttribute'
                 // where 'Runtime.InteropServices' is PART! of ns and 'DllImportAttribute' is a class
-                if (name.Split('.').Length > 1)
+                if (!string.IsNullOrWhiteSpace(name.GetNamespaceWithoutClassName()))
                 {
-                    string[] splitted = name.Split('.');
-                    var leftPart = string.Join('.', splitted.SkipLast(1));
-                    var rightPart = splitted.Last();
+                    var leftPart = name.GetNamespaceWithoutClassName();
+                    var rightPart = name.GetClassNameWithoutNamespace();
 
                     // getting a symbol from namespace
                     var includedSmbl = idExpr.Scope.GetSymbolInNamespace($"{ns}.{leftPart}", rightPart);

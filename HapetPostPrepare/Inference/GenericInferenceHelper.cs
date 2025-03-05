@@ -4,6 +4,7 @@ using HapetFrontend.Ast.Expressions;
 using HapetFrontend.Ast.Statements;
 using HapetFrontend.Parsing;
 using HapetFrontend.Scoping;
+using HapetFrontend.Extensions;
 using HapetPostPrepare.Entities;
 using System;
 using System.Text;
@@ -41,7 +42,7 @@ namespace HapetPostPrepare
             var savedClass = _currentClass;
             var savedFunction = _currentFunction;
 
-            string origClassPureName = clsDecl.Name.Name.Split('.')[^1];
+            string origClassPureName = clsDecl.Name.Name.GetClassNameWithoutNamespace();
 
             var realCls = clsDecl.GetDeepCopy() as AstClassDecl;
             realCls.Name = realCls.Name.GetCopy(realName);
@@ -119,8 +120,7 @@ namespace HapetPostPrepare
             {
                 if (d is AstClassDecl c)
                 {
-                    var elements = c.Name.Name.Split(".");
-                    return elements[elements.Length - 1];
+                    return c.Name.Name.GetClassNameWithoutNamespace();
                 }
                 else if (d is AstFuncDecl f)
                 {

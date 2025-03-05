@@ -1,6 +1,7 @@
 ﻿using HapetFrontend.Ast;
 using HapetFrontend.Ast.Declarations;
 using HapetFrontend.Entities;
+using HapetFrontend.Extensions;
 using HapetFrontend.Parsing;
 using HapetFrontend.Scoping;
 using HapetPostPrepare.Entities;
@@ -100,11 +101,10 @@ namespace HapetPostPrepare
         private void PrepareDeclarationShite(AstDeclaration decl)
         {
             // getting namespace from full decl name
-            var fullNameSplitted = decl.Name.Name.Split('.');
-            string pureDeclName = fullNameSplitted[fullNameSplitted.Length - 1];
+            string pureDeclName = decl.Name.Name.GetClassNameWithoutNamespace();
             decl.Name = decl.Name.GetCopy(pureDeclName);
 
-            string nameSpaceName = string.Join('.', fullNameSplitted.SkipLast(1));
+            string nameSpaceName = decl.Name.Name.GetNamespaceWithoutClassName();
             Scope nameSpaceScope = _compiler.GetNamespaceScope(nameSpaceName);
             ProgramFile tmpProgFile = new ProgramFile(_externalProjectFilename, string.Empty) { Namespace = nameSpaceName, NamespaceScope = nameSpaceScope };
             tmpProgFile.Statements.Add(decl);

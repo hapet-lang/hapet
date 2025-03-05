@@ -4,6 +4,7 @@ using HapetFrontend.Ast.Declarations;
 using HapetFrontend.Ast.Expressions;
 using HapetFrontend.Ast.Statements;
 using HapetFrontend.Errors;
+using HapetFrontend.Extensions;
 using HapetFrontend.Helpers;
 using HapetFrontend.Parsing;
 using HapetFrontend.Scoping;
@@ -365,7 +366,7 @@ namespace HapetBackend.Llvm
                 int structSize = AstDeclaration.GetSizeForAlloc(classType.Declaration.Declarations.GetStructFields());
 
                 // getting class ctor
-                string onlyName = classType.Declaration.Name.Name.Split('.').Last();
+                string onlyName = classType.Declaration.Name.Name.GetClassNameWithoutNamespace();
                 var ctorName = $"{classType.Declaration.Name.Name}::{onlyName}_ctor" + expr.Arguments.GetArgsString(PointerType.GetPointerType(classType));
                 List<AstExpression> argsWithClassParam = new List<AstExpression>(expr.Arguments);
                 argsWithClassParam.Insert(0, new AstIdExpr("this") { OutType = PointerType.GetPointerType(classType) });
@@ -403,7 +404,7 @@ namespace HapetBackend.Llvm
             else if (expr.OutType is StructType structType)
             {
                 // getting struct ctor
-                string onlyName = structType.Declaration.Name.Name.Split('.').Last();
+                string onlyName = structType.Declaration.Name.Name.GetClassNameWithoutNamespace();
                 var ctorName = $"{structType.Declaration.Name.Name}::{onlyName}_ctor" + expr.Arguments.GetArgsString(PointerType.GetPointerType(structType));
                 List<AstExpression> argsWithClassParam = new List<AstExpression>(expr.Arguments);
                 argsWithClassParam.Insert(0, new AstIdExpr("this") { OutType = PointerType.GetPointerType(structType) });
@@ -1256,7 +1257,7 @@ namespace HapetBackend.Llvm
             if (baseStmt.BaseType == null || baseStmt.BaseType.Declaration.IsInterface)
                 return;
 
-            string onlyName = baseStmt.BaseType.Declaration.Name.Name.Split('.').Last();
+            string onlyName = baseStmt.BaseType.Declaration.Name.Name.GetClassNameWithoutNamespace();
             var ctorName = $"{baseStmt.BaseType.Declaration.Name.Name}::{onlyName}_ctor" + baseStmt.Arguments.GetArgsString(PointerType.GetPointerType(baseStmt.BaseType));
             List<AstExpression> argsWithClassParam = new List<AstExpression>(baseStmt.Arguments);
             argsWithClassParam.Insert(0, baseStmt.ThisArgument);
