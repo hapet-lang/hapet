@@ -24,7 +24,8 @@ namespace HapetPostPrepare
                 var inh = clsDecl.InheritedFrom[i];
                 if (IsGenericEntry(inh, out var val))
                     clsDecl.InheritedFrom[i] = val;
-                ReplaceAllGenericTypesInExpr(clsDecl.InheritedFrom[i]);
+                else
+                    ReplaceAllGenericTypesInExpr(clsDecl.InheritedFrom[i]);
             }
 
             // go all over the decls
@@ -96,7 +97,8 @@ namespace HapetPostPrepare
             // return type replacing
             if (IsGenericEntry(funcDecl.Returns, out var val))
                 funcDecl.Returns = val;
-            ReplaceAllGenericTypesInExpr(funcDecl.Returns);
+            else
+                ReplaceAllGenericTypesInExpr(funcDecl.Returns);
         }
 
         private void ReplaceAllGenericTypesInVar(AstVarDecl varDecl)
@@ -109,7 +111,8 @@ namespace HapetPostPrepare
 
             if (IsGenericEntry(varDecl.Type, out var val))
                 varDecl.Type = val;
-            ReplaceAllGenericTypesInExpr(varDecl.Type);
+            else
+                ReplaceAllGenericTypesInExpr(varDecl.Type);
 
             if (varDecl.Initializer != null)
             {
@@ -127,7 +130,8 @@ namespace HapetPostPrepare
 
             if (IsGenericEntry(paramDecl.Type, out var val))
                 paramDecl.Type = val;
-            ReplaceAllGenericTypesInExpr(paramDecl.Type);
+            else
+                ReplaceAllGenericTypesInExpr(paramDecl.Type);
 
             if (paramDecl.DefaultValue != null)
             {
@@ -137,6 +141,9 @@ namespace HapetPostPrepare
 
         private void ReplaceAllGenericTypesInExpr(AstStatement expr)
         {
+            if (expr == null)
+                return;
+
             switch (expr)
             {
                 // special case at least for 'for' loop
@@ -260,7 +267,8 @@ namespace HapetPostPrepare
         {
             if (IsGenericEntry(pointerExpr.SubExpression, out var val) && !pointerExpr.IsDereference)
                 pointerExpr.SubExpression = val;
-            ReplaceAllGenericTypesInExpr(pointerExpr.SubExpression);
+            else
+                ReplaceAllGenericTypesInExpr(pointerExpr.SubExpression);
         }
 
         private void ReplaceAllGenericTypesInAddressOfExpr(AstAddressOfExpr addrExpr)
@@ -272,7 +280,8 @@ namespace HapetPostPrepare
         {
             if (IsGenericEntry(newExpr.TypeName, out var val))
                 newExpr.TypeName = val;
-            ReplaceAllGenericTypesInExpr(newExpr.TypeName);
+            else
+                ReplaceAllGenericTypesInExpr(newExpr.TypeName);
 
             foreach (var a in newExpr.Arguments)
             {
@@ -296,19 +305,18 @@ namespace HapetPostPrepare
                 var currGt = genExpr.GenericRealTypes[i];
                 if (IsGenericEntry(currGt, out var val))
                     genExpr.GenericRealTypes[i] = val;
-                ReplaceAllGenericTypesInExpr(genExpr.GenericRealTypes[i]);
+                else
+                    ReplaceAllGenericTypesInExpr(genExpr.GenericRealTypes[i]);
             }
         }
 
         private void ReplaceAllGenericTypesInCallExpr(AstCallExpr callExpr)
         {
             // usually when in the same class
-            if (callExpr.TypeOrObjectName != null)
-            {
-                if (IsGenericEntry(callExpr.TypeOrObjectName, out var val))
-                    callExpr.TypeOrObjectName = val;
-            }
-            ReplaceAllGenericTypesInExpr(callExpr.TypeOrObjectName);
+            if (callExpr.TypeOrObjectName != null && IsGenericEntry(callExpr.TypeOrObjectName, out var val))
+                callExpr.TypeOrObjectName = val;
+            else
+                ReplaceAllGenericTypesInExpr(callExpr.TypeOrObjectName);
 
             ReplaceAllGenericTypesInExpr(callExpr.FuncName);
             foreach (var a in callExpr.Arguments)
@@ -323,20 +331,23 @@ namespace HapetPostPrepare
 
             if (IsGenericEntry(castExpr.TypeExpr, out var val))
                 castExpr.TypeExpr = val;
-            ReplaceAllGenericTypesInExpr(castExpr.TypeExpr);
+            else
+                ReplaceAllGenericTypesInExpr(castExpr.TypeExpr);
         }
 
         private void ReplaceAllGenericTypesInNestedExpr(AstNestedExpr nestExpr)
         {
             if (IsGenericEntry(nestExpr.RightPart, out var val))
                 nestExpr.RightPart = val;
-            ReplaceAllGenericTypesInExpr(nestExpr.RightPart);
+            else
+                ReplaceAllGenericTypesInExpr(nestExpr.RightPart);
 
             if (nestExpr.LeftPart != null)
             {
                 if (IsGenericEntry(nestExpr.LeftPart, out var val2))
                     nestExpr.LeftPart = val2;
-                ReplaceAllGenericTypesInExpr(nestExpr.LeftPart);
+                else
+                    ReplaceAllGenericTypesInExpr(nestExpr.LeftPart);
             }
         }
 
@@ -344,7 +355,8 @@ namespace HapetPostPrepare
         {
             if (IsGenericEntry(arrayExpr.SubExpression, out var val))
                 arrayExpr.SubExpression = val;
-            ReplaceAllGenericTypesInExpr(arrayExpr.SubExpression);
+            else
+                ReplaceAllGenericTypesInExpr(arrayExpr.SubExpression);
         }
 
         private void ReplaceAllGenericTypesInArrayCreateExpr(AstArrayCreateExpr arrayExpr)
@@ -356,7 +368,8 @@ namespace HapetPostPrepare
 
             if (IsGenericEntry(arrayExpr.TypeName, out var val))
                 arrayExpr.TypeName = val;
-            ReplaceAllGenericTypesInExpr(arrayExpr.TypeName);
+            else
+                ReplaceAllGenericTypesInExpr(arrayExpr.TypeName);
 
             foreach (var e in arrayExpr.Elements)
             {
@@ -436,7 +449,8 @@ namespace HapetPostPrepare
             {
                 if (IsGenericEntry(caseStmt.Pattern, out var val))
                     caseStmt.Pattern = val;
-                ReplaceAllGenericTypesInExpr(caseStmt.Pattern);
+                else
+                    ReplaceAllGenericTypesInExpr(caseStmt.Pattern);
             }
 
             if (!caseStmt.FallingCase)
@@ -451,7 +465,8 @@ namespace HapetPostPrepare
             {
                 if (IsGenericEntry(returnStmt.ReturnExpression, out var val))
                     returnStmt.ReturnExpression = val;
-                ReplaceAllGenericTypesInExpr(returnStmt.ReturnExpression);
+                else
+                    ReplaceAllGenericTypesInExpr(returnStmt.ReturnExpression);
             }
         }
 
@@ -463,7 +478,8 @@ namespace HapetPostPrepare
                 var par = attrStmt.Parameters[i];
                 if (IsGenericEntry(par, out var val))
                     attrStmt.Parameters[i] = val;
-                ReplaceAllGenericTypesInExpr(attrStmt.Parameters[i]);
+                else
+                    ReplaceAllGenericTypesInExpr(attrStmt.Parameters[i]);
             }
         }
 
@@ -507,6 +523,17 @@ namespace HapetPostPrepare
                             genExpr.GenericRealTypes[i] = val;
                         }
                     }
+                }
+            }
+
+            // could be when T[] or T*
+            if (expr is AstIdExpr idExpr3)
+            {
+                // if found the generic entry - replace it
+                if (_currentGenericMapping.TryGetValue(idExpr3.Name, out var val))
+                {
+                    value = val;
+                    return true;
                 }
             }
 

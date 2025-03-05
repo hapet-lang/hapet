@@ -9,20 +9,25 @@ public static class Program
 {
 	public static int Main(string[] args)
 	{
-		AnimeCls<InsideCls> a = new AnimeCls<InsideCls>();
-		a.AnimeProp = new InsideCls();
-		a.AnimeProp.Propa = 10;
-		return a.AnimeProp.Propa;
+		return 0;
 	}
 }
 
-public class InsideCls
-{
-	public int Propa { get; set; }
-}
 
-public class AnimeCls<T>
+public class List<T>
 {
-	public T AnimeProp { get; set; }
+	public T[] Buffer { get; set; }
+
+	public T this[int index]
+    {
+        get
+		{
+			return Buffer[index];
+		}
+        set
+		{
+			Buffer[index] = value;
+		}
+    }
 }
 
