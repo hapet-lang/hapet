@@ -54,6 +54,10 @@ namespace HapetPostPrepare
                 if (cls.IsInterface)
                     continue;
 
+                // skip generic (non-real) classes
+                if (cls.HasGenericTypes)
+                    continue;
+
                 // check that the class has suppress stor call attr
                 // and skip the class without calling it's stor
                 string suppressAttrName = "System.SuppressStaticCtorCallAttribute";
