@@ -48,6 +48,11 @@ namespace HapetFrontend.Ast.Declarations
         public bool HasGenericTypes { get; set; }
 
         /// <summary>
+        /// 'true' if smth like List-T- or List-int-, 'false' on real pure generic type
+        /// </summary>
+        public bool IsGenericTypeImpl { get; set; }
+
+        /// <summary>
         /// All original raw fields (including inherited) (for easier interface offset generation)
         /// </summary>
         public List<AstVarDecl> AllRawFields { get; set; }

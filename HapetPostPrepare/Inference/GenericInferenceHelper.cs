@@ -20,10 +20,11 @@ namespace HapetPostPrepare
         /// <param name="name"></param>
         /// <param name="constrains"></param>
         /// <returns></returns>
-        private void CreateTypeDeclarationForGeneric(AstDeclaration parent, AstIdExpr name, List<AstNestedExpr> constrains)
+        private AstClassDecl CreateTypeDeclarationForGeneric(AstDeclaration parent, AstIdExpr name, List<AstNestedExpr> constrains)
         {
             // TODO: handle constains
-            var cls = new AstClassDecl(name, new List<AstDeclaration>(), "", name)
+            var specialName = name.GetCopy($"{parent.Name.Name}_g_{name.Name}");
+            var cls = new AstClassDecl(specialName, new List<AstDeclaration>(), "", specialName)
             {
                 IsGenericType = true,
             };
@@ -32,7 +33,11 @@ namespace HapetPostPrepare
 
             PostPrepareClassScoping(cls);
             SetScopeAndParent(cls, parent, parent.SubScope);
-            parent.SubScope.DefineDeclSymbol(name.Name, cls);
+
+            // we need to define it in global scope :)))
+            _compiler.GlobalScope.DefineDeclSymbol(specialName.Name, cls);
+
+            return cls;
         }
 
         private AstClassDecl GetRealTypeFromGeneric(AstClassDecl clsDecl, List<AstNestedExpr> genericTypes, string realName)
@@ -45,6 +50,7 @@ namespace HapetPostPrepare
             string origClassPureName = clsDecl.Name.Name.GetClassNameWithoutNamespace();
 
             var realCls = clsDecl.GetDeepCopy() as AstClassDecl;
+            realCls.IsGenericTypeImpl = true;
             realCls.Name = realCls.Name.GetCopy(realName);
             // no need to reset HasGenericTypes when using generic shite from another generic
             realCls.HasGenericTypes = HasGenericTypesInRealTypes(genericTypes);
