@@ -38,17 +38,25 @@ namespace HapetBackend.Llvm
         /// </summary>
         private Dictionary<string, LLVMTypeRef> _delegateAnonTypes = new Dictionary<string, LLVMTypeRef>();
 
-        private LLVMTypeRef HapetTypeToLLVMType(HapetType ht)
+        private unsafe LLVMTypeRef HapetTypeToLLVMType(HapetType ht)
         {
             if (_typeMap.TryGetValue(ht, out var tt))
                 return tt;
 
             // all array types are the same
-            if (ht is ArrayType)
+            if (ht is ArrayType at)
             {
                 var kw = _typeMap.Any(x => x.Key is ArrayType);
                 if (kw)
-                    return _typeMap.First(x => x.Key is ArrayType).Value;
+                {
+                    var llvmType = _typeMap.First(x => x.Key is ArrayType).Value;
+
+                    // we need to set size/alignment on every array type instance :)
+                    at.ChangeSize((int)LLVM.ABISizeOfType(_targetData, llvmType));
+                    at.ChangeAlignment((int)LLVM.ABIAlignmentOfType(_targetData, llvmType));
+
+                    return llvmType;
+                }
             }
 
             var t = HapetTypeToLLVMTypeHelper(ht);
@@ -550,7 +558,7 @@ namespace HapetBackend.Llvm
             //	"TypeInfoStruct"
 
             // allocating memory for the data in array
-            var allocated = GetMalloc(HapetType.PointerSize, 2);
+            var allocated = GetMalloc(HapetType.PointerSize, 2, "allocForTypeInfo");
             var ptrToType = _builder.BuildGEP2(LLVMTypeRef.CreatePointer(GetTypeInfoType(), 0), allocated, new LLVMValueRef[] { LLVMValueRef.CreateConstInt(LLVMTypeRef.Int32, 0) }, $"elementPtr{0}");
             _builder.BuildStore(_typeInfoDictionary[type], ptrToType);
             var ptrToVtable = _builder.BuildGEP2(LLVMTypeRef.CreatePointer(GetVirtualTableType(), 0), allocated, new LLVMValueRef[] { LLVMValueRef.CreateConstInt(LLVMTypeRef.Int32, 1) }, $"elementPtr{1}");
@@ -573,26 +581,26 @@ namespace HapetBackend.Llvm
         }
 
         #region Mallocs
-        private LLVMValueRef GetMalloc(int typeSize, int amount)
+        private LLVMValueRef GetMalloc(int typeSize, int amount, string allocName = "allocated")
         {
             var tp = LLVMValueRef.CreateConstInt(HapetTypeToLLVMType(IntType.GetIntType(4, true)), (ulong)typeSize);
             var am = LLVMValueRef.CreateConstInt(HapetTypeToLLVMType(IntType.GetIntType(4, true)), (ulong)amount);
-            return GetMalloc(tp, am);
+            return GetMalloc(tp, am, allocName);
         }
 
-        private LLVMValueRef GetMalloc(LLVMValueRef typeSize, int amount)
+        private LLVMValueRef GetMalloc(LLVMValueRef typeSize, int amount, string allocName = "allocated")
         {
             var am = LLVMValueRef.CreateConstInt(HapetTypeToLLVMType(IntType.GetIntType(4, true)), (ulong)amount);
-            return GetMalloc(typeSize, am);
+            return GetMalloc(typeSize, am, allocName);
         }
 
-        private LLVMValueRef GetMalloc(int typeSize, LLVMValueRef amount)
+        private LLVMValueRef GetMalloc(int typeSize, LLVMValueRef amount, string allocName = "allocated")
         {
             var tp = LLVMValueRef.CreateConstInt(HapetTypeToLLVMType(IntType.GetIntType(4, true)), (ulong)typeSize);
-            return GetMalloc(tp, amount);
+            return GetMalloc(tp, amount, allocName);
         }
 
-        private LLVMValueRef GetMalloc(LLVMValueRef typeSize, LLVMValueRef amount)
+        private LLVMValueRef GetMalloc(LLVMValueRef typeSize, LLVMValueRef amount, string allocName = "allocated")
         {
             // WARN: hard cock
             var marshalDecl = _currentFunction.Scope.GetSymbolInNamespace("System.Runtime.InteropServices", "Marshal");
@@ -601,7 +609,7 @@ namespace HapetBackend.Llvm
             LLVMTypeRef funcType = _typeMap[mallocSymbol.Decl.Type.OutType];
             // calc size to malloc = amount * typeSize
             var sizeToMalloc = _builder.BuildMul(amount, typeSize, "sizeToMalloc");
-            return _builder.BuildCall2(funcType, mallocFunc, new LLVMValueRef[] { sizeToMalloc }, "allocated");
+            return _builder.BuildCall2(funcType, mallocFunc, new LLVMValueRef[] { sizeToMalloc }, allocName);
         }
         #endregion
     }
