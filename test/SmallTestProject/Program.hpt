@@ -12,7 +12,8 @@ public static class Program
         Dictionary<string, int> dict = new Dictionary<string, int>();
         dict.Add("anime", 14);
 
-        return dict["anime"];
+        var a = dict.Values.Buffer[0];
+        return 0;
     }
 }
 
