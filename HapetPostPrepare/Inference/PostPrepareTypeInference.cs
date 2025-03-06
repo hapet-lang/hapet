@@ -66,23 +66,6 @@ namespace HapetPostPrepare
             }
 
             /// some shite is already inferrenced in <see cref="PostPrepareMetadataTypeFieldDecls"/>
-            foreach (var decl in classDecl.Declarations.Where(x => x is AstPropertyDecl).Select(x => x as AstPropertyDecl))
-            {
-                if (decl.GetBlock != null)
-                {
-                    var tmpId = new AstIdExpr($"get_{decl.Name.Name}", decl.GetBlock) { Scope = decl.GetBlock.Scope };
-                    PostPrepareIdentifierInference(tmpId, inInfo, ref outInfo);
-                    _currentFunction = (tmpId.FindSymbol as DeclSymbol).Decl as AstFuncDecl;
-                    PostPrepareExprInference(decl.GetBlock, inInfo, ref outInfo);
-                }
-                if (decl.SetBlock != null)
-                {
-                    var tmpId = new AstIdExpr($"set_{decl.Name.Name}", decl.GetBlock) { Scope = decl.GetBlock.Scope };
-                    PostPrepareIdentifierInference(tmpId, inInfo, ref outInfo);
-                    _currentFunction = (tmpId.FindSymbol as DeclSymbol).Decl as AstFuncDecl;
-                    PostPrepareExprInference(decl.SetBlock, inInfo, ref outInfo);
-                }
-            }
         }
 
         private void PostPrepareStructInference(AstStructDecl structDecl, InInfo inInfo, ref OutInfo outInfo)
@@ -96,17 +79,6 @@ namespace HapetPostPrepare
             }
 
             /// some shite is already inferrenced in <see cref="PostPrepareMetadataTypeFields"/>
-            foreach (var decl in structDecl.Declarations.Where(x => x is AstPropertyDecl).Select(x => x as AstPropertyDecl))
-            {
-                if (decl.GetBlock != null)
-                {
-                    PostPrepareExprInference(decl.GetBlock, inInfo, ref outInfo);
-                }
-                if (decl.SetBlock != null)
-                {
-                    PostPrepareExprInference(decl.SetBlock, inInfo, ref outInfo);
-                }
-            }
         }
 
         private void PostPrepareEnumInference(AstEnumDecl enumDecl, InInfo inInfo, ref OutInfo outInfo)

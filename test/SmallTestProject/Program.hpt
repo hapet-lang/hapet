@@ -9,7 +9,20 @@ public static class Program
 {
 	public static int Main(string[] args)
 	{
+		Dictionary<string, int> dict = new Dictionary<string, int>();
 		return 0;
+	}
+}
+
+public class Dictionary<K, V>
+{
+	public List<K> Keys { get; set; }
+	public List<V> Values { get; set; }
+
+	public void Add(K key, V value)
+	{
+		Keys.Add(key);
+		Values.Add(value);
 	}
 }
 
@@ -29,5 +42,10 @@ public class List<T>
 			Buffer[index] = value;
 		}
     }
+
+	public void Add(T element)
+	{
+		// TODO:
+	}
 }
 
