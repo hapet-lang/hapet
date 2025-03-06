@@ -98,14 +98,19 @@ namespace HapetPostPrepare
 
             StringBuilder sb = new StringBuilder(name);
             sb.Append("_GB_");
-            foreach (var g in generics)
+            for (int i = 0; i < generics.Count; ++i)
             {
+                var g = generics[i];
                 // cringe :)
                 PostPrepareExprInference(g, tmpIn, ref tmpout);
                 if (g.RightPart is AstIdExpr idExpr)
                 {
                     sb.Append(idExpr.FindSymbol.Name);
                 }
+
+                // if not last - append delimeter
+                if (i != generics.Count - 1)
+                    sb.Append("_GD_");
             }
             sb.Append("_GE_");
             return sb.ToString();

@@ -12,14 +12,14 @@ public static class Program
         Dictionary<string, int> dict = new Dictionary<string, int>();
         dict.Add("anime", 14);
 
-        return 0;
+        return dict["anime"];
     }
 }
 
 public class Dictionary<K, V>
 {
-    public List<K> Keys { get; set; }
-    public List<V> Values { get; set; }
+    public List<K> Keys { get; set; } = new List<K>();
+    public List<V> Values { get; set; } = new List<V>();
 
     public void Add(K key, V value)
     {
