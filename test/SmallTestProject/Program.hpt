@@ -1,51 +1,65 @@
 using System.Runtime.InteropServices;
-using System.Text; 
-using System; 
-using SmallTestProject.Test; 
-using TestProject.Sub; 
+using System.Text;
+using System;
+using SmallTestProject.Test;
+using TestProject.Sub;
 using System.Runtime;
 
 public static class Program
 {
-	public static int Main(string[] args)
-	{
-		Dictionary<string, int> dict = new Dictionary<string, int>();
-		return 0;
-	}
+    public static int Main(string[] args)
+    {
+        Dictionary<string, int> dict = new Dictionary<string, int>();
+        dict.Add("anime", 14);
+
+        return 0;
+    }
 }
 
 public class Dictionary<K, V>
 {
-	public List<K> Keys { get; set; }
-	public List<V> Values { get; set; }
+    public List<K> Keys { get; set; }
+    public List<V> Values { get; set; }
 
-	public void Add(K key, V value)
-	{
-		Keys.Add(key);
-		Values.Add(value);
-	}
+    public void Add(K key, V value)
+    {
+        Keys.Add(key);
+        Values.Add(value);
+    }
+
+    public V this[K key]
+    {
+        get
+        {
+            return Values[0];
+        }
+        set
+        {
+            Values[0] = value;
+        }
+    }
 }
 
 
 public class List<T>
 {
-	public T[] Buffer { get; set; }
+    public T[] Buffer { get; set; } = new T[1];
 
-	public T this[int index]
+    public T this[int index]
     {
         get
-		{
-			return Buffer[index];
-		}
+        {
+            return Buffer[index];
+        }
         set
-		{
-			Buffer[index] = value;
-		}
+        {
+            Buffer[index] = value;
+        }
     }
 
-	public void Add(T element)
-	{
-		// TODO:
-	}
+    public void Add(T element)
+    {
+        Buffer[0] = element;
+    }
 }
 

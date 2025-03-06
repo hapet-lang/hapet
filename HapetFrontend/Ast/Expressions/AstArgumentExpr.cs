@@ -30,7 +30,7 @@ namespace HapetFrontend.Ast.Expressions
         {
             var copy = new AstArgumentExpr(
                 Expr.GetDeepCopy() as AstExpression,
-                Name.GetDeepCopy() as AstIdExpr,
+                Name?.GetDeepCopy() as AstIdExpr,
                 Location)
             {
                 Index = Index,

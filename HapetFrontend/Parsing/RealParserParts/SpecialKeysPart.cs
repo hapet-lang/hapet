@@ -42,10 +42,12 @@ namespace HapetFrontend.Parsing
             inInfo.AllowCommaForTuple = true;
             inInfo.AllowFunctionDeclaration = true;
             inInfo.AllowPointerExpression = true;
+            inInfo.AllowGeneric = true;
             var expr = ParseExpression(inInfo, ref outInfo);
             inInfo.AllowCommaForTuple = false;
             inInfo.AllowFunctionDeclaration = false;
             inInfo.AllowPointerExpression = false;
+            inInfo.AllowGeneric = false;
 
             // it could be an idexpr or nestedexpr when ctor/dtor decls are here
             if (expr is AstIdExpr idExpr)
