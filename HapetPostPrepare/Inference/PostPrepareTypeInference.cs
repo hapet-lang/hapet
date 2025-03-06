@@ -417,6 +417,7 @@ namespace HapetPostPrepare
                         var fncVal = new AstArgumentExpr(asgn.Value, null, asgn.Target);
                         var fncCall = new AstCallExpr(asgn.Target.LeftPart, propaName.GetCopy($"set_{propaName.Name}"), new List<AstArgumentExpr>() { fncVal }, asgn);
                         SetScopeAndParent(fncCall, asgn.Target.NormalParent, asgn.Target.Scope);
+                        PostPrepareCallExprScoping(fncCall);
                         PostPrepareCallExprInference(fncCall, inInfo, ref outInfo);
                         repls.Add(asgn, fncCall);
                     }
@@ -432,6 +433,7 @@ namespace HapetPostPrepare
                         var fncVal = new AstArgumentExpr(asgn.Value, null, asgn.Target);
                         var fncCall = new AstCallExpr(outInfo.IndexedObject, fncName, new List<AstArgumentExpr>() { fncArg, fncVal }, asgn);
                         SetScopeAndParent(fncCall, asgn.Target.NormalParent, asgn.Target.Scope);
+                        PostPrepareCallExprScoping(fncCall);
                         PostPrepareCallExprInference(fncCall, inInfo, ref outInfo);
                         repls.Add(asgn, fncCall);
                     }
@@ -1531,7 +1533,16 @@ namespace HapetPostPrepare
             }
             // pp assign value
             if (assignStmt.Value != null)
+            {
+                // save previous
+                var saved1 = outInfo.ItWasIndexer;
+                var saved2 = outInfo.ItWasProperty;
+                outInfo.ItWasIndexer = false;
+                outInfo.ItWasProperty = false;
                 assignStmt.Value = PostPrepareVarValueAssign(assignStmt.Value, assignStmt.Target.OutType, inInfo, ref outInfo);
+                outInfo.ItWasIndexer = saved1;
+                outInfo.ItWasProperty = saved2;
+            }
             else
                 _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, assignStmt, [], ErrorCode.Get(CTEN.NotExprInAssignment));
         }
