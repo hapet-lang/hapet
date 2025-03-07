@@ -195,6 +195,7 @@ namespace HapetPostPrepare
                     PostPrepareBlockInference(funcDecl.Body, inInfo, ref outInfo);
 
                 // check if the class if inherited from smth
+                // and call base ctor
                 if (funcDecl.ClassFunctionType == HapetFrontend.Enums.ClassFunctionType.Ctor &&
                     funcDecl.ContainingParent is AstClassDecl clsDecl &&
                     clsDecl.InheritedFrom.Count > 0 &&
@@ -1239,6 +1240,10 @@ namespace HapetPostPrepare
                     PostPrepareExprScoping(thisArg);
                     PostPrepareExprInference(thisArg, inInfo, ref outInfo);
                     nestExpr.LeftPart = thisArg;
+
+                    // if true - found set propa
+                    if (CheckForProperty(dS.Decl, idExpr, inInfo, ref outInfo))
+                        return;
                 }
 
                 // if getting indexer to set smth
@@ -1320,25 +1325,9 @@ namespace HapetPostPrepare
                         _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, idExpr, [], ErrorCode.Get(CTWN.StaticFieldFromObject), null, HapetFrontend.Entities.ReportType.Warning);
                     }
 
-                    // if the ast is an access to a property
-                    if (typed.Decl is AstPropertyDecl)
-                    {
-                        // if getting property to set smth
-                        if (inInfo.PropertySet)
-                        {
-                            outInfo.ItWasProperty = true;
-                            return;
-                        }
-                        else
-                        {
-                            // if getting propa to get
-                            var fncCall = new AstCallExpr(nestExpr.LeftPart, idExpr.GetCopy($"get_{idExpr}"), null, nestExpr);
-                            SetScopeAndParent(fncCall, nestExpr.RightPart.NormalParent, nestExpr.RightPart.Scope);
-                            nestExpr.LeftPart = null;
-                            nestExpr.RightPart = fncCall;
-                            PostPrepareCallExprInference(fncCall, inInfo, ref outInfo);
-                        }
-                    }
+                    // if true - found set propa
+                    if (CheckForProperty(typed.Decl, idExpr, inInfo, ref outInfo))
+                        return;
                 }
                 else
                 {
@@ -1346,6 +1335,30 @@ namespace HapetPostPrepare
                 }
             }
             outInfo.ItWasProperty = false;
+
+            bool CheckForProperty(AstDeclaration decl, AstIdExpr propaName, InInfo inInfoInside, ref OutInfo outInfoInside)
+            {
+                // if the ast is an access to a property
+                if (decl is AstPropertyDecl)
+                {
+                    // if getting property to set smth
+                    if (inInfoInside.PropertySet)
+                    {
+                        outInfoInside.ItWasProperty = true;
+                        return true;
+                    }
+                    else
+                    {
+                        // if getting propa to get
+                        var fncCall = new AstCallExpr(nestExpr.LeftPart, propaName.GetCopy($"get_{propaName.Name}"), null, nestExpr);
+                        SetScopeAndParent(fncCall, nestExpr.RightPart.NormalParent, nestExpr.RightPart.Scope);
+                        nestExpr.LeftPart = null;
+                        nestExpr.RightPart = fncCall;
+                        PostPrepareCallExprInference(fncCall, inInfoInside, ref outInfoInside);
+                    }
+                }
+                return false;
+            }
         }
 
         // :)

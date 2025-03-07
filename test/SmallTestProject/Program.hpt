@@ -11,6 +11,7 @@ public static class Program
     {
         Dictionary<string, int> dict = new Dictionary<string, int>();
         dict.Add("anime", 14);
+        //dict.Values.Add(14);
 
         //dict["anime"] = 14;
         return dict["anime"];
