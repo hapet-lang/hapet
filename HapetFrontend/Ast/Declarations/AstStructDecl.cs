@@ -35,7 +35,7 @@ namespace HapetFrontend.Ast.Declarations
 
         public AstStructDecl(AstIdExpr name, List<AstDeclaration> declarations, string doc = "", ILocation Location = null) : base(name, doc, Location)
         {
-            Type = new AstIdExpr("struct", Location);
+            Type = new AstNestedExpr(new AstIdExpr("struct", Location), null, Location);
             Type.OutType = new StructType(this);
 
             Declarations = declarations;

@@ -1,6 +1,7 @@
 ﻿using HapetFrontend.Ast.Expressions;
 using HapetFrontend.Ast.Statements;
 using HapetFrontend.Enums;
+using HapetFrontend.Helpers;
 using HapetFrontend.Parsing;
 using HapetFrontend.Scoping;
 using HapetFrontend.Types;
@@ -15,7 +16,7 @@ namespace HapetFrontend.Ast.Declarations
         public ClassFunctionType ClassFunctionType { get; set; } = ClassFunctionType.Default;
 
         public List<AstParamDecl> Parameters { get; set; }
-        public AstExpression Returns { get; set; }
+        public AstNestedExpr Returns { get; set; }
 
         [JsonIgnore]
         public AstBlockExpr Body { get; set; }
@@ -60,9 +61,9 @@ namespace HapetFrontend.Ast.Declarations
 
         public override string AAAName => nameof(AstFuncDecl);
 
-        public AstFuncDecl(List<AstParamDecl> parameters, AstExpression returns, AstBlockExpr body, AstIdExpr name, string doc = "", ILocation location = null) : base(name, doc, location)
+        public AstFuncDecl(List<AstParamDecl> parameters, AstNestedExpr returns, AstBlockExpr body, AstIdExpr name, string doc = "", ILocation location = null) : base(name, doc, location)
         {
-            Type = new AstIdExpr("func", location);
+            Type = new AstNestedExpr(new AstIdExpr("func", location), null, location);
             Type.OutType = new FunctionType(this);
 
             Body = body;
@@ -80,7 +81,7 @@ namespace HapetFrontend.Ast.Declarations
 
             var copy = new AstFuncDecl(
                 Parameters.Select(x => x.GetDeepCopy() as AstParamDecl).ToList(),
-                Returns.GetDeepCopy() as AstExpression,
+                Returns.GetDeepCopy() as AstNestedExpr,
                 Body?.GetDeepCopy() as AstBlockExpr,
                 Name.GetDeepCopy() as AstIdExpr,
                 Documentation, Location)
@@ -116,6 +117,11 @@ namespace HapetFrontend.Ast.Declarations
                 DocString = Documentation
             };
         }
+
+        public string GenerateHashForGenericType(string genTypeName)
+        {
+            return Funcad.CreateMD5($"{SourceFile}{Name.Name}{ContainingParent?.Name.Name}{string.Join('_', Parameters.Select(x => x.Type.TryFlatten(null, null)))}{Returns.TryFlatten(null, null)}{genTypeName}");
+        }
     }
 
     public class FuncDeclJson
@@ -133,7 +139,7 @@ namespace HapetFrontend.Ast.Declarations
 
         public AstFuncDecl GetAst(Compiler compiler)
         {
-            var decl = new AstFuncDecl(Parameters.Select(x => x.GetAst(compiler)).ToList(), Parser.ParseType(ReturnType, compiler), null, new AstIdExpr(Name), DocString);
+            var decl = new AstFuncDecl(Parameters.Select(x => x.GetAst(compiler)).ToList(), Parser.ParseType(ReturnType, compiler) as AstNestedExpr, null, new AstIdExpr(Name), DocString);
             decl.SpecialKeys.AddRange(SpecialKeys);
             decl.Attributes.AddRange(Attributes.Select(x => x.GetAst(compiler)));
             decl.CallingConvention = CallingConvention;

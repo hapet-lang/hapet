@@ -69,7 +69,7 @@ namespace HapetFrontend.Ast.Declarations
 
         public AstClassDecl(AstIdExpr name, List<AstDeclaration> declarations, string doc = "", ILocation Location = null) : base(name, doc, Location)
         {
-            Type = new AstIdExpr("class", Location);
+            Type = new AstNestedExpr(new AstIdExpr("class", Location), null, Location);
             Type.OutType = new ClassType(this);
 
             Declarations = declarations;

@@ -27,7 +27,10 @@ namespace HapetFrontend.Parsing
                 }
                 parser.NextToken();
             }
-            return id;
+
+            if (id is AstNestedExpr)
+                return id;
+            return new AstNestedExpr(id, null, id);
         }
     }
 }

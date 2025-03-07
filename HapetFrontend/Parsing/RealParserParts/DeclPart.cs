@@ -61,7 +61,7 @@ namespace HapetFrontend.Parsing
             }
 
             ReportMessage(PeekToken().Location, [], ErrorCode.Get(CTEN.ExpectedEqualOrNewline));
-            return new AstVarDecl(expr as AstIdExpr, null, null, docString, Location: expr);
+            return new AstVarDecl(expr as AstNestedExpr, null, null, docString, Location: expr);
         }
     }
 }

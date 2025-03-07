@@ -14,13 +14,13 @@ namespace HapetFrontend.Ast.Expressions
             : base(Location)
         {
             this.Types = values;
-            this.Values = Types.Select(t => t.Type).ToList();
+            this.Values = Types.Select(t => t.Type as AstExpression).ToList();
         }
-        public AstTupleExpr(List<AstExpression> values, ILocation Location)
+        public AstTupleExpr(List<AstNestedExpr> values, ILocation Location)
             : base(Location)
         {
             this.Types = values.Select(v => new AstParamDecl(v, null, null, "", v.Location)).ToList();
-            this.Values = Types.Select(t => t.Type).ToList();
+            this.Values = Types.Select(t => t.Type as AstExpression).ToList();
         }
 
         public override AstStatement GetDeepCopy()

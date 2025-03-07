@@ -28,7 +28,7 @@ namespace HapetFrontend.Parsing
             AstBlockExpr body = null;
 
             // kostyl to always get type
-            AstExpression returns = udecl.Name == null ? udecl.Type : new AstNestedExpr(udecl.Name, null, udecl.Name);
+            AstNestedExpr returns = udecl.Name == null ? udecl.Type : new AstNestedExpr(udecl.Name, null, udecl.Name);
 
             // cast override
             if ((CheckToken(TokenType.KwImplicit) || CheckToken(TokenType.KwExplicit)))

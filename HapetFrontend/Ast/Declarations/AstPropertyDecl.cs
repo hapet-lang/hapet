@@ -38,14 +38,14 @@ namespace HapetFrontend.Ast.Declarations
 
         public override string AAAName => nameof(AstPropertyDecl);
 
-        public AstPropertyDecl(AstExpression type, AstIdExpr name, AstExpression ini = null, string doc = "", ILocation Location = null) : base(type, name, ini, doc, Location)
+        public AstPropertyDecl(AstNestedExpr type, AstIdExpr name, AstExpression ini = null, string doc = "", ILocation Location = null) : base(type, name, ini, doc, Location)
         {
         }
 
         public override AstStatement GetDeepCopy()
         {
             var copy = new AstPropertyDecl(
-                Type.GetDeepCopy() as AstExpression,
+                Type.GetDeepCopy() as AstNestedExpr,
                 Name.GetDeepCopy() as AstIdExpr,
                 Initializer?.GetDeepCopy() as AstExpression,
                 Documentation, Location)
@@ -112,7 +112,7 @@ namespace HapetFrontend.Ast.Declarations
             // the func is - 'void set_Prop(PropType value)'
             AstFuncDecl func = new AstFuncDecl(
                 prs,
-                new AstIdExpr("void"),
+                new AstNestedExpr(new AstIdExpr("void", Location), null, Location),
                 null,
                 new AstIdExpr($"set_{Name.Name}"),
                 "",
@@ -216,7 +216,7 @@ namespace HapetFrontend.Ast.Declarations
 
         public AstPropertyDecl GetAst(Compiler compiler)
         {
-            var decl = new AstPropertyDecl(Parser.ParseType(Type, compiler), new AstIdExpr(Name), null, DocString);
+            var decl = new AstPropertyDecl(Parser.ParseType(Type, compiler) as AstNestedExpr, new AstIdExpr(Name), null, DocString);
             decl.HasGet = HasGet;
             decl.HasSet = HasSet;
             decl.SpecialKeys.AddRange(SpecialKeys);

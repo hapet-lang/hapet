@@ -23,7 +23,7 @@ namespace HapetFrontend.Ast.Declarations
 
         public AstEnumDecl(AstIdExpr name, List<AstVarDecl> declarations, string doc = "", ILocation Location = null) : base(name, doc, Location)
         {
-            Type = new AstIdExpr("enum", Location);
+            Type = new AstNestedExpr(new AstIdExpr("enum", Location), null, Location);
             Type.OutType = new EnumType(this);
 
             Declarations = declarations;
@@ -81,7 +81,7 @@ namespace HapetFrontend.Ast.Declarations
             var fields = new List<AstVarDecl>();
             for (int i = 0; i < Fields.Count; i++)
             {
-                var v = new AstVarDecl(Parser.ParseType(InheritedType, compiler), new AstIdExpr(Fields[i]), new AstNumberExpr(NumberData.FromInt(Values[i])));
+                var v = new AstVarDecl(Parser.ParseType(InheritedType, compiler) as AstNestedExpr, new AstIdExpr(Fields[i]), new AstNumberExpr(NumberData.FromInt(Values[i])));
                 fields.Add(v);
             }
             var decl = new AstEnumDecl(new AstIdExpr(Name), fields, DocString);

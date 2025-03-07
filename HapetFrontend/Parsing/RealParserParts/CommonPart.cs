@@ -137,7 +137,7 @@ namespace HapetFrontend.Parsing
                         // it is ctor/dtor
                         // func.Name = udecl.Name.GetCopy(udecl.Name.Name + (udecl.Name.Suffix != "~" ? "_ctor" : "_dtor")); // no need anymore?
                         func.Name = udecl.Name.GetCopy();
-                        func.Returns = new AstIdExpr("void");
+                        func.Returns = new AstNestedExpr(new AstIdExpr("void"), null);
                         // check that it is a static ctor
                         if (udecl.Name.Suffix != "~" && udecl.SpecialKeys.Contains(TokenType.KwStatic))
                             func.ClassFunctionType = Enums.ClassFunctionType.StaticCtor;

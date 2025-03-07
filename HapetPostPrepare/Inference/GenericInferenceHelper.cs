@@ -23,7 +23,11 @@ namespace HapetPostPrepare
         private AstClassDecl CreateTypeDeclarationForGeneric(AstDeclaration parent, AstIdExpr name, List<AstNestedExpr> constrains)
         {
             // TODO: handle constains
-            var specialName = name.GetCopy($"{parent.Name.Name}_g_{name.Name}");
+            string additionalString = string.Empty;
+            if (parent is AstFuncDecl funcDecl)
+                additionalString = funcDecl.GenerateHashForGenericType(name.Name);
+
+            var specialName = name.GetCopy($"{parent.Name.Name}_g_{name.Name}_{additionalString}");
             var cls = new AstClassDecl(specialName, new List<AstDeclaration>(), "", specialName)
             {
                 IsGenericType = true,

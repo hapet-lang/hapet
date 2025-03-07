@@ -12,7 +12,7 @@ namespace HapetFrontend.Ast.Declarations
 
         public AstBuiltInTypeDecl(HapetType tp, string doc = "", ILocation Location = null) : base(null, doc, Location)
         {
-            Type = new AstIdExpr(tp.TypeName, Location);
+            Type = new AstNestedExpr(new AstIdExpr(tp.TypeName, Location), null, Location);
             Type.OutType = tp;
         }
 

@@ -11,7 +11,7 @@ namespace HapetFrontend.Ast.Declarations
 
         public override string AAAName => nameof(AstIndexerDecl);
 
-        public AstIndexerDecl(AstExpression type, AstIdExpr name, string doc = "", ILocation Location = null) : 
+        public AstIndexerDecl(AstNestedExpr type, AstIdExpr name, string doc = "", ILocation Location = null) : 
             base(type, name, null, doc, Location)
         {
         }
@@ -30,7 +30,7 @@ namespace HapetFrontend.Ast.Declarations
         public override AstStatement GetDeepCopy()
         {
             var copy = new AstIndexerDecl(
-                Type.GetDeepCopy() as AstExpression,
+                Type.GetDeepCopy() as AstNestedExpr,
                 Name.GetDeepCopy() as AstIdExpr,
                 Documentation, Location)
             {

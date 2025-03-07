@@ -15,7 +15,7 @@ namespace HapetFrontend.Ast.Declarations
 
         public AstDelegateDecl(List<AstParamDecl> parameters, AstExpression returns, AstIdExpr name, string doc = "", ILocation Location = null) : base(name, doc, Location)
         {
-            Type = new AstIdExpr("delegate", Location);
+            Type = new AstNestedExpr(new AstIdExpr("delegate", Location), null, Location);
             Type.OutType = new DelegateType(this);
 
             Parameters = parameters;

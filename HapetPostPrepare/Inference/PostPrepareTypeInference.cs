@@ -145,7 +145,7 @@ namespace HapetPostPrepare
                         var astPtr = new AstPointerExpr(funcDecl.Returns, false, funcDecl.Returns.Location);
                         astPtr.OutType = PointerType.GetPointerType(astPtr.SubExpression.OutType);
                         astPtr.Scope = funcDecl.Returns.Scope;
-                        funcDecl.Returns = astPtr;
+                        funcDecl.Returns = new AstNestedExpr(astPtr, null, funcDecl.Returns.Location);
                     }
                 }
 
@@ -251,7 +251,7 @@ namespace HapetPostPrepare
                 var astPtr = new AstPointerExpr(varDecl.Type, false, varDecl.Type.Location);
                 astPtr.OutType = PointerType.GetPointerType(astPtr.SubExpression.OutType);
                 astPtr.Scope = varDecl.Type.Scope;
-                varDecl.Type = astPtr;
+                varDecl.Type = new AstNestedExpr(astPtr, null, varDecl.Type.Location);
             }
 
             // pp assign value
@@ -284,7 +284,7 @@ namespace HapetPostPrepare
                 // the var is actually a pointer to the class
                 var astPtr = new AstPointerExpr(paramDecl.Type, false, paramDecl.Type.Location);
                 astPtr.Scope = paramDecl.Type.Scope;
-                paramDecl.Type = astPtr;
+                paramDecl.Type = new AstNestedExpr(astPtr, null, paramDecl.Type.Location);
                 PostPrepareExprInference(paramDecl.Type, inInfo, ref outInfo);
             }
 

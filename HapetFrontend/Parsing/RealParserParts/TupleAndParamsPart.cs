@@ -148,7 +148,7 @@ namespace HapetFrontend.Parsing
             }
 
             // TODO: doc string???
-            return new AstParamDecl(ptype as AstExpression, pname, defaultValue, "", new Location(beg, end));
+            return new AstParamDecl(ptype as AstNestedExpr, pname, defaultValue, "", new Location(beg, end));
         }
 
         private List<AstParamDecl> ParseParameterList(TokenType open, TokenType close, out TokenLocation beg, out TokenLocation end, bool allowDefaultValue = true)
@@ -209,7 +209,7 @@ namespace HapetFrontend.Parsing
                 {
                     if (p.Name == null && p.Type != null)
                     {
-                        p.Name = p.Type as AstIdExpr;
+                        p.Name = p.Type.RightPart as AstIdExpr;
                         if (p.Name == null)
                             ReportMessage(p.Type.Location, [], ErrorCode.Get(CTEN.LambdaParamNameNotIdent));
                         p.Type = null;

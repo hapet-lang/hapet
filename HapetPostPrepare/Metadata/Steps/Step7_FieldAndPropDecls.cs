@@ -59,7 +59,7 @@ namespace HapetPostPrepare
                     // the var is actually a pointer to the class
                     var astPtr = new AstPointerExpr(decl.Type, false, decl.Type.Location);
                     astPtr.Scope = decl.Type.Scope;
-                    decl.Type = astPtr;
+                    decl.Type = new AstNestedExpr(astPtr, null, decl.Type.Location);
                     PostPrepareExprInference(decl.Type, inInfo, ref outInfo);
                 }
             }

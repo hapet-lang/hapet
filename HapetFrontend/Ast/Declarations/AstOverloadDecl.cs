@@ -16,7 +16,7 @@ namespace HapetFrontend.Ast.Declarations
 
         public override string AAAName => nameof(AstOverloadDecl);
 
-        public AstOverloadDecl(List<AstParamDecl> parameters, AstExpression returns, AstBlockExpr body, AstIdExpr name, string doc = "", ILocation location = null) 
+        public AstOverloadDecl(List<AstParamDecl> parameters, AstNestedExpr returns, AstBlockExpr body, AstIdExpr name, string doc = "", ILocation location = null) 
             : base(parameters, returns, body, name, doc, location)
         {
         }
@@ -25,7 +25,7 @@ namespace HapetFrontend.Ast.Declarations
         {
             var copy = new AstOverloadDecl(
                 Parameters.Select(x => x.GetDeepCopy() as AstParamDecl).ToList(),
-                Returns.GetDeepCopy() as AstExpression,
+                Returns.GetDeepCopy() as AstNestedExpr,
                 Body.GetDeepCopy() as AstBlockExpr,
                 Name.GetDeepCopy() as AstIdExpr,
                 Documentation, Location)

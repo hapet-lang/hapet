@@ -115,7 +115,7 @@ namespace HapetPostPrepare
                     // creating the class instance 'this' param
                     AstExpression paramType = new AstPointerExpr(structDecl.Name.GetCopy(), false);
                     AstIdExpr paramName = new AstIdExpr("this");
-                    AstParamDecl thisParam = new AstParamDecl(paramType, paramName);
+                    AstParamDecl thisParam = new AstParamDecl(new AstNestedExpr(paramType, null), paramName);
                     // adding the param as the func first param
                     funcDecl.Parameters.Insert(0, thisParam);
                 }
@@ -270,7 +270,7 @@ namespace HapetPostPrepare
                     // creating the class instance 'this' param
                     AstExpression paramType = new AstPointerExpr(thisParamType, false);
                     AstIdExpr paramName = new AstIdExpr("this");
-                    AstParamDecl thisParam = new AstParamDecl(paramType, paramName);
+                    AstParamDecl thisParam = new AstParamDecl(new AstNestedExpr(paramType, null), paramName);
                     // adding the param as the func first param
                     funcDecl.Parameters.Insert(0, thisParam);
                 }
@@ -306,7 +306,7 @@ namespace HapetPostPrepare
 
             // the ini func
             var iniDecl = new AstFuncDecl(new List<AstParamDecl>(),
-            new AstIdExpr("void"),
+            new AstNestedExpr(new AstIdExpr("void", decl), null, decl),
             iniBlock,
             new AstIdExpr($"{decl.Name.Name}_ini"));
             iniDecl.SpecialKeys.Add(TokenType.KwUnreflected); // ini is private because it is called inside ctors
@@ -339,7 +339,7 @@ namespace HapetPostPrepare
 
                 // the ctor func
                 var ctorDecl = new AstFuncDecl(new List<AstParamDecl>(),
-                    new AstIdExpr("void"),
+                    new AstNestedExpr(new AstIdExpr("void", decl), null, decl),
                     ctorBlock,
                     new AstIdExpr($"{decl.Name.Name}_ctor"));
                 ctorDecl.BaseCtorCall = new AstBaseCtorStmt(location: ctorDecl.Name);
@@ -388,7 +388,7 @@ namespace HapetPostPrepare
 
                 // the ctor func
                 var dtorDecl = new AstFuncDecl(new List<AstParamDecl>(),
-                new AstIdExpr("void"),
+                new AstNestedExpr(new AstIdExpr("void", decl), null, decl),
                 dtorBlock,
                 new AstIdExpr($"{decl.Name.Name}_dtor"));
                 dtorDecl.SpecialKeys.Add(TokenType.KwPublic); // default dtor is public
@@ -450,7 +450,7 @@ namespace HapetPostPrepare
 
                 // the ctor func
                 var storDecl = new AstFuncDecl(new List<AstParamDecl>(),
-                new AstIdExpr("void"),
+                new AstNestedExpr(new AstIdExpr("void", classDecl), null, classDecl),
                 storBlock,
                 new AstIdExpr($"{classDecl.Name.Name}_stor"));
                 storDecl.SpecialKeys.Add(TokenType.KwPublic); // stor is public

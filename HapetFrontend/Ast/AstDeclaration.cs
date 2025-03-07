@@ -11,9 +11,9 @@ namespace HapetFrontend.Ast
     public abstract class AstDeclaration : AstStatement
     {
         /// <summary>
-        /// Could not be nested because of tuples!!!
+        /// Could be nested :)
         /// </summary>
-        public AstExpression Type { get; set; }
+        public AstNestedExpr Type { get; set; }
         public AstIdExpr Name { get; set; }
 
         public string Documentation { get; set; }
@@ -66,7 +66,10 @@ namespace HapetFrontend.Ast
         public static int GetSizeForAlloc(List<AstDeclaration> fields, bool withTypeInfo = true)
         {
             if (withTypeInfo)
-                fields.Insert(0, new AstVarDecl(new AstIdExpr("uintptr") { OutType = PointerType.VoidLiteralType }, new AstIdExpr("typeinfo")));
+            {
+                var tp = new AstIdExpr("uintptr") { OutType = PointerType.VoidLiteralType };
+                fields.Insert(0, new AstVarDecl(new AstNestedExpr(tp, null), new AstIdExpr("typeinfo")));
+            }
             int totalSize = 0;
             // go all over the fields and calc the size
             for (int i = 0; i < fields.Count; ++i)
