@@ -8,41 +8,41 @@ namespace HapetFrontend.Parsing
 {
     public partial class Lexer
     {
-        private void ParseIdentifier(ref Token token, TokenType idtype)
+        private void ParseIdentifier(TokenLocation location, ref Token token, TokenType idtype)
         {
             token.Type = idtype;
 
-            int start = _location.Index;
+            int start = location.Index;
 
             switch (idtype)
             {
                 case TokenType.AtSignIdentifier:
                 case TokenType.DollarIdentifier:
                 case TokenType.SharpIdentifier:
-                    _location.Index++;
+                    location.Index++;
                     start++;
                     break;
             }
 
-            while (_location.Index < _text.Length && IsIdent(Current))
+            while (location.Index < _text.Length && IsIdent(Current(location)))
             {
-                _location.Index++;
+                location.Index++;
             }
 
-            token.Data = _text.Substring(start, _location.Index - start);
+            token.Data = _text.Substring(start, location.Index - start);
         }
 
-        private void ParseStringLiteral(ref Token token, char end)
+        private void ParseStringLiteral(TokenLocation location, ref Token token, char end)
         {
             token.Type = TokenType.StringLiteral;
-            int start = _location.Index++;
+            int start = location.Index++;
             StringBuilder sb = new StringBuilder();
 
             bool foundEnd = false;
-            while (_location.Index < _text.Length)
+            while (location.Index < _text.Length)
             {
-                char c = Current;
-                _location.Index++;
+                char c = Current(location);
+                location.Index++;
                 if (c == end)
                 {
                     foundEnd = true;
@@ -50,28 +50,28 @@ namespace HapetFrontend.Parsing
                 }
                 else if (c == '\\')
                 {
-                    if (_location.Index >= _text.Length)
+                    if (location.Index >= _text.Length)
                     {
-                        _messageHandler.ReportMessage(_text, new Location(_location), [], ErrorCode.Get(CTEN.UnexpectedEndOfStringLit));
+                        _messageHandler.ReportMessage(_text, new Location(location), [], ErrorCode.Get(CTEN.UnexpectedEndOfStringLit));
                         token.Data = sb.ToString();
                         return;
                     }
-                    switch (Current)
+                    switch (Current(location))
                     {
                         case '0': sb.Append('\0'); break;
                         case 'r': sb.Append('\r'); break;
                         case 'n': sb.Append('\n'); break;
                         case 't': sb.Append('\t'); break;
-                        default: sb.Append(Current); break;
+                        default: sb.Append(Current(location)); break;
                     }
-                    _location.Index++;
+                    location.Index++;
                     continue;
                 }
 
                 if (c == '\n')
                 {
-                    _location.Line++;
-                    _location.LineStartIndex = _location.Index;
+                    location.Line++;
+                    location.LineStartIndex = location.Index;
                 }
 
                 sb.Append(c);
@@ -79,13 +79,13 @@ namespace HapetFrontend.Parsing
 
             if (!foundEnd)
             {
-                _messageHandler.ReportMessage(_text, new Location(_location), [], ErrorCode.Get(CTEN.UnexpectedEndOfStringLit));
+                _messageHandler.ReportMessage(_text, new Location(location), [], ErrorCode.Get(CTEN.UnexpectedEndOfStringLit));
             }
 
             token.Data = sb.ToString();
         }
 
-        private void ParseNumberLiteral(ref Token token)
+        private void ParseNumberLiteral(TokenLocation location, ref Token token)
         {
             token.Type = TokenType.NumberLiteral;
             var dataIntBase = 10;
@@ -111,9 +111,9 @@ namespace HapetFrontend.Parsing
             string error = null;
 
 
-            while (_location.Index < _text.Length && state != -1 && state != StateDone)
+            while (location.Index < _text.Length && state != -1 && state != StateDone)
             {
-                char c = Current;
+                char c = Current(location);
 
                 switch (state)
                 {
@@ -158,7 +158,7 @@ namespace HapetFrontend.Parsing
                                 dataStringValue += c;
                                 state = StateDecimalDigit;
                             }
-                            else if (c == '.' && Next != '.')
+                            else if (c == '.' && Next(location) != '.')
                             {
                                 dataStringValue += c;
                                 state = StateFloatPoint;
@@ -175,7 +175,7 @@ namespace HapetFrontend.Parsing
                         {
                             if (IsDigit(c))
                                 dataStringValue += c;
-                            else if (c == '.' && Next != '.')
+                            else if (c == '.' && Next(location) != '.')
                             {
                                 dataStringValue += c;
                                 state = StateFloatPoint;
@@ -349,7 +349,7 @@ namespace HapetFrontend.Parsing
 
                 if (state != StateDone)
                 {
-                    _location.Index++;
+                    location.Index++;
                 }
             }
 

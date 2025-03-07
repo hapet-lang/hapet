@@ -10,17 +10,23 @@ namespace HapetFrontend.Parsing
         string Text { get; }
         Token PeekToken();
         Token NextToken();
+
+        void UpdateLookAheadLocation();
+        Token NextLookAhead(bool skipWhitespaces);
+        Token PeekLookAhead(bool skipWhitespaces);
     }
 
     public partial class Lexer : ILexer
     {
         private string _text;
         private TokenLocation _location;
+        private TokenLocation _lookAheadLocation;
 
-        private char Current => _location.Index < _text.Length ? _text[_location.Index] : (char)0;
-        private char Next => _location.Index < _text.Length - 1 ? _text[_location.Index + 1] : (char)0;
-        private char GetChar(int offset) => _location.Index + offset < _text.Length ? _text[_location.Index + offset] : (char)0;
-        private Token peek = null;
+        private char Current(TokenLocation location) => location.Index < _text.Length ? _text[location.Index] : (char)0;
+        private char Next(TokenLocation location) => location.Index < _text.Length - 1 ? _text[location.Index + 1] : (char)0;
+        private char GetChar(int offset, TokenLocation location) => location.Index + offset < _text.Length ? _text[location.Index + offset] : (char)0;
+        private Token _peek = null;
+        private Token _peekLookAhead = null;
 
         public string Text => _text;
         private IMessageHandler _messageHandler;
@@ -44,7 +50,14 @@ namespace HapetFrontend.Parsing
                     Line = 1,
                     Index = 0,
                     LineStartIndex = 0
-                }
+                },
+                _lookAheadLocation = new TokenLocation
+                {
+                    File = fileName,
+                    Line = 1,
+                    Index = 0,
+                    LineStartIndex = 0
+                },
             };
         }
 
@@ -58,31 +71,43 @@ namespace HapetFrontend.Parsing
                 {
                     File = fileName,
                     Line = 1,
-                }
+                },
+                _lookAheadLocation = new TokenLocation
+                {
+                    File = fileName,
+                    Line = 1,
+                },
             };
         }
 
         public Token PeekToken()
         {
-            if (peek == null)
+            if (_peek == null)
             {
-                peek = NextToken();
-                //UndoToken();
+                _peek = NextToken();
             }
+            return _peek;
+        }
 
-            return peek;
+        public Token PeekLookAhead(bool skipWhitespaces = true)
+        {
+            if (_peekLookAhead == null)
+            {
+                _peekLookAhead = NextLookAhead(skipWhitespaces);
+            }
+            return _peekLookAhead;
         }
 
         public Token NextToken()
         {
-            if (peek != null)
+            if (_peek != null)
             {
-                Token t = peek;
-                peek = null;
+                Token t = _peek;
+                _peek = null;
                 return t;
             }
 
-            if (SkipWhitespaceAndComments(out TokenLocation loc))
+            if (SkipWhitespaceAndComments(_location, out TokenLocation loc))
             {
                 loc.End = loc.Index;
                 Token tok = new Token();
@@ -91,70 +116,99 @@ namespace HapetFrontend.Parsing
                 return tok;
             }
 
-            return ReadToken();
+            return ReadToken(_location);
+        }
+
+        public Token NextLookAhead(bool skipWhitespaces = true)
+        {
+            if (_peekLookAhead != null)
+            {
+                Token t = _peekLookAhead;
+                _peekLookAhead = null;
+                return t;
+            }
+
+            if (SkipWhitespaceAndComments(_lookAheadLocation, out TokenLocation loc, skipWhitespaces))
+            {
+                loc.End = loc.Index;
+                Token tok = new Token();
+                tok.Location = loc;
+                tok.Type = TokenType.NewLine;
+                return tok;
+            }
+
+            return ReadToken(_lookAheadLocation);
+        }
+
+        public void UpdateLookAheadLocation()
+        {
+            _lookAheadLocation.Index = _location.Index;
+            _lookAheadLocation.Line = _location.Line;
+            _lookAheadLocation.LineStartIndex = _location.LineStartIndex;
+            _lookAheadLocation.End = _location.End;
+            _peekLookAhead = _peek;
         }
 
 
-
         private StringBuilder tokenDataBuilder = new StringBuilder();
-        private Token ReadToken()
+        private Token ReadToken(TokenLocation location)
         {
             var token = new Token();
-            token.Location = _location.Clone();
+            token.Location = location.Clone();
             token.Location.End = token.Location.Index;
             token.Type = TokenType.EOF;
-            if (_location.Index >= _text.Length)
+            if (location.Index >= _text.Length)
                 return token;
 
             tokenDataBuilder.Clear();
 
-            switch (Current)
+            switch (Current(location))
             {
-                case '+' when Next == '+': SimpleToken(ref token, TokenType.PlusPlus, 2); break;
-                case '-' when Next == '-': SimpleToken(ref token, TokenType.MinusMinus, 2); break;
-                case '=' when Next == '>': SimpleToken(ref token, TokenType.Arrow, 2); break;
-                case '=' when Next == '=': SimpleToken(ref token, TokenType.DoubleEqual, 2); break;
-                case '!' when Next == '=': SimpleToken(ref token, TokenType.NotEqual, 2); break;
-                case '<' when Next == '=': SimpleToken(ref token, TokenType.LessEqual, 2); break;
-                case '<' when Next == '<': SimpleToken(ref token, TokenType.LessLess, 2); break;
-                case '>' when Next == '>': SimpleToken(ref token, TokenType.GreaterGreater, 2); break;
-                case '>' when Next == '=': SimpleToken(ref token, TokenType.GreaterEqual, 2); break;
-                case '+' when Next == '=': SimpleToken(ref token, TokenType.AddEq, 2); break;
-                case '-' when Next == '=': SimpleToken(ref token, TokenType.SubEq, 2); break;
-                case '*' when Next == '=': SimpleToken(ref token, TokenType.MulEq, 2); break;
-                case '/' when Next == '=': SimpleToken(ref token, TokenType.DivEq, 2); break;
-                case '%' when Next == '=': SimpleToken(ref token, TokenType.ModEq, 2); break;
-                case '.' when Next == '.': SimpleToken(ref token, TokenType.PeriodPeriod, 2); break;
-                case '&' when Next == '&': SimpleToken(ref token, TokenType.LogicalAnd, 2); break;
-                case '[' when Next == ']': SimpleToken(ref token, TokenType.ArrayDef, 2); break;
-                case '|' when Next == '|': SimpleToken(ref token, TokenType.LogicalOr, 2); break;
-                case '/' when (Next == '/' && GetChar(2) == '/'):
+                case '+' when Next(location) == '+': SimpleToken(location, ref token, TokenType.PlusPlus, 2); break;
+                case '-' when Next(location) == '-': SimpleToken(location, ref token, TokenType.MinusMinus, 2); break;
+                case '=' when Next(location) == '>': SimpleToken(location, ref token, TokenType.Arrow, 2); break;
+                case '=' when Next(location) == '=': SimpleToken(location, ref token, TokenType.DoubleEqual, 2); break;
+                case '!' when Next(location) == '=': SimpleToken(location, ref token, TokenType.NotEqual, 2); break;
+                case '<' when Next(location) == '=': SimpleToken(location, ref token, TokenType.LessEqual, 2); break;
+                case '<' when Next(location) == '<': SimpleToken(location, ref token, TokenType.LessLess, 2); break;
+                case '>' when Next(location) == '>': SimpleToken(location, ref token, TokenType.GreaterGreater, 2); break;
+                case '>' when Next(location) == '=': SimpleToken(location, ref token, TokenType.GreaterEqual, 2); break;
+                case '+' when Next(location) == '=': SimpleToken(location, ref token, TokenType.AddEq, 2); break;
+                case '-' when Next(location) == '=': SimpleToken(location, ref token, TokenType.SubEq, 2); break;
+                case '*' when Next(location) == '=': SimpleToken(location, ref token, TokenType.MulEq, 2); break;
+                case '/' when Next(location) == '=': SimpleToken(location, ref token, TokenType.DivEq, 2); break;
+                case '%' when Next(location) == '=': SimpleToken(location, ref token, TokenType.ModEq, 2); break;
+                case '.' when Next(location) == '.': SimpleToken(location, ref token, TokenType.PeriodPeriod, 2); break;
+                case '&' when Next(location) == '&': SimpleToken(location, ref token, TokenType.LogicalAnd, 2); break;
+                case '[' when Next(location) == ']': SimpleToken(location, ref token, TokenType.ArrayDef, 2); break;
+                case '|' when Next(location) == '|': SimpleToken(location, ref token, TokenType.LogicalOr, 2); break;
+                case '/' when (Next(location) == '/' && GetChar(2, location) == '/'):
                     {
                         // doc comment
 
-                        if (GetChar(3) == ' ')
+                        if (GetChar(3, location) == ' ')
                         {
                             token.Type = TokenType.DocComment;
                             int index = 0;
-                            while (_location.Index < _text.Length && Current != '\n')
+                            while (location.Index < _text.Length && Current(location) != '\n')
                             {
                                 if (index >= 4)
-                                    tokenDataBuilder.Append(Current);
-                                _location.Index += 1;
+                                    tokenDataBuilder.Append(Current(location));
+                                location.Index += 1;
                                 index += 1;
                             }
-                            if (_location.Index < _text.Length && Current == '\n')
+                            if (location.Index < _text.Length && Current(location) == '\n')
                             {
-                                _location.Index += 1;
-                                _location.Line++;
-                                _location.LineStartIndex = _location.Index;
+                                location.Index += 1;
+                                location.Line++;
+                                location.LineStartIndex = location.Index;
                             }
                             token.Data = tokenDataBuilder.ToString();
                         }
-                        else if (GetChar(3) == '*')
+                        else if (GetChar(3, location) == '*')
                         {
                             token.Type = TokenType.DocComment;
-                            token.Data = ParseMultiLineDocComment();
+                            token.Data = ParseMultiLineDocComment(location);
                         }
                         else
                         {
@@ -163,73 +217,73 @@ namespace HapetFrontend.Parsing
 
                         break;
                     }
-                case '~': SimpleToken(ref token, TokenType.Tilda); break;
-                case ':': SimpleToken(ref token, TokenType.Colon); break;
-                case ';': SimpleToken(ref token, TokenType.Semicolon); break;
-                case '.': SimpleToken(ref token, TokenType.Period); break;
-                case '=': SimpleToken(ref token, TokenType.Equal); break;
-                case '(': SimpleToken(ref token, TokenType.OpenParen); break;
-                case ')': SimpleToken(ref token, TokenType.CloseParen); break;
-                case '{': SimpleToken(ref token, TokenType.OpenBrace); break;
-                case '}': SimpleToken(ref token, TokenType.CloseBrace); break;
-                case '[': SimpleToken(ref token, TokenType.OpenBracket); break;
-                case ']': SimpleToken(ref token, TokenType.CloseBracket); break;
-                case ',': SimpleToken(ref token, TokenType.Comma); break;
-                case '&': SimpleToken(ref token, TokenType.Ampersand); break;
-                case '^': SimpleToken(ref token, TokenType.Hat); break;
-                case '*': SimpleToken(ref token, TokenType.Asterisk); break;
-                case '/': SimpleToken(ref token, TokenType.ForwardSlash); break;
-                case '+': SimpleToken(ref token, TokenType.Plus); break;
-                case '%': SimpleToken(ref token, TokenType.Percent); break;
-                case '-': SimpleToken(ref token, TokenType.Minus); break;
-                case '<': SimpleToken(ref token, TokenType.Less); break;
-                case '>': SimpleToken(ref token, TokenType.Greater); break;
-                case '!': SimpleToken(ref token, TokenType.Bang); break;
-                case '|': SimpleToken(ref token, TokenType.VerticalSlash); break;
+                case '~': SimpleToken(location, ref token, TokenType.Tilda); break;
+                case ':': SimpleToken(location, ref token, TokenType.Colon); break;
+                case ';': SimpleToken(location, ref token, TokenType.Semicolon); break;
+                case '.': SimpleToken(location, ref token, TokenType.Period); break;
+                case '=': SimpleToken(location, ref token, TokenType.Equal); break;
+                case '(': SimpleToken(location, ref token, TokenType.OpenParen); break;
+                case ')': SimpleToken(location, ref token, TokenType.CloseParen); break;
+                case '{': SimpleToken(location, ref token, TokenType.OpenBrace); break;
+                case '}': SimpleToken(location, ref token, TokenType.CloseBrace); break;
+                case '[': SimpleToken(location, ref token, TokenType.OpenBracket); break;
+                case ']': SimpleToken(location, ref token, TokenType.CloseBracket); break;
+                case ',': SimpleToken(location, ref token, TokenType.Comma); break;
+                case '&': SimpleToken(location, ref token, TokenType.Ampersand); break;
+                case '^': SimpleToken(location, ref token, TokenType.Hat); break;
+                case '*': SimpleToken(location, ref token, TokenType.Asterisk); break;
+                case '/': SimpleToken(location, ref token, TokenType.ForwardSlash); break;
+                case '+': SimpleToken(location, ref token, TokenType.Plus); break;
+                case '%': SimpleToken(location, ref token, TokenType.Percent); break;
+                case '-': SimpleToken(location, ref token, TokenType.Minus); break;
+                case '<': SimpleToken(location, ref token, TokenType.Less); break;
+                case '>': SimpleToken(location, ref token, TokenType.Greater); break;
+                case '!': SimpleToken(location, ref token, TokenType.Bang); break;
+                case '|': SimpleToken(location, ref token, TokenType.VerticalSlash); break;
 
-                case '"': ParseStringLiteral(ref token, '"'); break;
+                case '"': ParseStringLiteral(location, ref token, '"'); break;
                 case '\'':
                     {
-                        ParseStringLiteral(ref token, '\'');
+                        ParseStringLiteral(location, ref token, '\'');
                         token.Type = TokenType.CharLiteral;
                         break;
                     }
 
                 case char cc when IsDigit(cc):
-                    ParseNumberLiteral(ref token);
+                    ParseNumberLiteral(location, ref token);
                     break;
 
-                case '$': ParseIdentifier(ref token, TokenType.DollarIdentifier); break;
-                case '#': ParseIdentifier(ref token, TokenType.SharpIdentifier); break;
-                case '@': ParseIdentifier(ref token, TokenType.AtSignIdentifier); break;
+                case '$': ParseIdentifier(location, ref token, TokenType.DollarIdentifier); break;
+                case '#': ParseIdentifier(location, ref token, TokenType.SharpIdentifier); break;
+                case '@': ParseIdentifier(location, ref token, TokenType.AtSignIdentifier); break;
 
                 case char cc when IsIdentBegin(cc):
-                    ParseIdentifier(ref token, TokenType.Identifier);
+                    ParseIdentifier(location, ref token, TokenType.Identifier);
                     CheckKeywords(ref token);
                     break;
 
                 default:
                     token.Type = TokenType.Unknown;
-                    _location.Index += 1;
+                    location.Index += 1;
                     break;
             }
 
             if (token.Type == TokenType.StringLiteral || token.Type == TokenType.NumberLiteral || token.Type == TokenType.CharLiteral)
             {
-                if (IsIdentBegin(Current))
+                if (IsIdentBegin(Current(location)))
                 {
-                    token.Suffix = "" + Current;
-                    _location.Index++;
+                    token.Suffix = "" + Current(location);
+                    location.Index++;
 
-                    while (IsIdent(Current))
+                    while (IsIdent(Current(location)))
                     {
-                        token.Suffix += Current;
-                        _location.Index++;
+                        token.Suffix += Current(location);
+                        location.Index++;
                     }
                 }
             }
 
-            token.Location.End = _location.Index;
+            token.Location.End = location.Index;
             return token;
         }
 
@@ -324,10 +378,10 @@ namespace HapetFrontend.Parsing
             }
         }
 
-        private void SimpleToken(ref Token token, TokenType type, int len = 1)
+        private void SimpleToken(TokenLocation location, ref Token token, TokenType type, int len = 1)
         {
             token.Type = type;
-            _location.Index += len;
+            location.Index += len;
         }
 
         private static bool IsBinaryDigit(char c)

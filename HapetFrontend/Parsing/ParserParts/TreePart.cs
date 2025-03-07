@@ -266,6 +266,9 @@ namespace HapetFrontend.Parsing
             bool breakLoop = false;
             while (!breakLoop)
             {
+                // handle generic expr
+                HandleGenericWithLookAhead(expr);
+
                 switch (PeekToken().Type)
                 {
                     case TokenType.OpenParen:

@@ -4,10 +4,6 @@ using HapetFrontend.Ast.Expressions;
 using HapetFrontend.Ast.Statements;
 using HapetFrontend.Entities;
 using HapetFrontend.Errors;
-using HapetFrontend.Types;
-using System.Collections.Generic;
-using System.Text;
-using static System.Net.Mime.MediaTypeNames;
 
 namespace HapetFrontend.Parsing
 {
@@ -20,16 +16,19 @@ namespace HapetFrontend.Parsing
         }
 
         private AstNestedExpr ParseIdentifierExpression(MessageResolver customMessage = null, TokenType identType = TokenType.Identifier, 
-            bool allowDots = true, bool allowGenerics = false, AstNestedExpr iniNested = null)
+            bool allowDots = true, bool allowGenerics = false, AstNestedExpr iniNested = null, bool lookAhead = false)
         {
-            var next = PeekToken();
+            var next = lookAhead ? PeekLookAhead() : PeekToken();
             if (next.Type != identType)
             {
                 customMessage ??= new MessageResolver() { MessageArgs = [], XmlMessage = ErrorCode.Get(CTEN.CommonIdentifierExpected) };
-                ReportMessage(next.Location, customMessage.MessageArgs, customMessage.XmlMessage);
-                return new AstNestedExpr(new AstIdExpr("anon", new Location(next.Location)), iniNested, next.Location);
+                // do not error when look ahead :)
+                if (!lookAhead)
+                    ReportMessage(next.Location, customMessage.MessageArgs, customMessage.XmlMessage);
+                return new AstNestedExpr(null, iniNested, next.Location);
             }
-            NextToken();
+
+            var _ = lookAhead ? NextLookAhead() : NextToken();
 
             var beg = next.Location.Beginning;
             var currNested = new AstNestedExpr(new AstIdExpr((string)next.Data, new Location(next.Location)), iniNested, next.Location);
@@ -38,48 +37,67 @@ namespace HapetFrontend.Parsing
             while (CheckToken(TokenType.Period))
             {
                 if (allowGenerics)
-                    currNested.RightPart = HandleGeneric(currNested.RightPart as AstIdExpr);
+                    currNested.RightPart = HandleGeneric(currNested.RightPart as AstIdExpr, lookAhead);
 
                 if (!allowDots)
                 {
-                    ReportMessage(PeekToken().Location, [], ErrorCode.Get(CTEN.CommonDotUnexpected));
+                    // do not error when look ahead and dots allowed :)
+                    if (!lookAhead)
+                        ReportMessage((lookAhead ? PeekLookAhead() : PeekToken()).Location, [], ErrorCode.Get(CTEN.CommonDotUnexpected));
+                    currNested.RightPart = null; // wrong parse
+                    return currNested;
                 }
 
-                NextToken();
-                if (CheckToken(identType))
+                var __ = lookAhead ? NextLookAhead() : NextToken();
+                if ((lookAhead ? CheckLookAhead(identType) : CheckToken(identType)))
                 {
-                    next = NextToken();
+                    next = lookAhead ? NextLookAhead() : NextToken();
                     var dt = new AstIdExpr((string)next.Data, new Location(next.Location));
                     currNested = new AstNestedExpr(dt, currNested, new Location(beg, next.Location));
                 }
                 else
                 {
-                    ReportMessage(PeekToken().Location, [], ErrorCode.Get(CTEN.CommonIdentAfterDot));
+                    // do not error when look ahead :)
+                    if (!lookAhead)
+                        ReportMessage((lookAhead ? PeekLookAhead() : PeekToken()).Location, [], ErrorCode.Get(CTEN.CommonIdentAfterDot));
+                    currNested.RightPart = null; // wrong parse
+                    return currNested;
                 }
             }
             if (allowGenerics)
-                currNested.RightPart = HandleGeneric(currNested.RightPart as AstIdExpr);
+                currNested.RightPart = HandleGeneric(currNested.RightPart as AstIdExpr, lookAhead);
 
             return currNested;
         }
 
-        private AstIdExpr HandleGeneric(AstIdExpr originId)
+        private AstIdExpr HandleGeneric(AstIdExpr originId, bool lookAhead = false)
         {
-            if (!CheckToken(TokenType.Less))
+            if (!(lookAhead ? CheckLookAhead(TokenType.Less) : CheckToken(TokenType.Less)))
                 return originId;
-            NextToken();
+            var _ = lookAhead ? NextLookAhead() : NextToken();
 
             List<AstNestedExpr> generics = new List<AstNestedExpr>();
             // <Anime, dwdawd.dasd, ...>
-            while (CheckToken(TokenType.Identifier))
+            while ((lookAhead ? CheckLookAhead(TokenType.Identifier) : CheckToken(TokenType.Identifier)))
             {
-                generics.Add(ParseIdentifierExpression(allowGenerics: true));
+                generics.Add(ParseIdentifierExpression(allowGenerics: true, lookAhead: lookAhead));
 
                 // just skip commas
-                if (CheckToken(TokenType.Comma))
-                    NextToken();
+                if ((lookAhead ? CheckLookAhead(TokenType.Comma) : CheckToken(TokenType.Comma)))
+                {
+                    var __ = lookAhead ? NextLookAhead() : NextToken();
+                }
             }
-            Consume(TokenType.Greater, ErrMsg(">", "after generic types"));
+
+            var nxt = NextToken();
+            if (nxt.Type != TokenType.Greater)
+            {
+                var custom = ErrMsg(">", "after generic types");
+                if (!lookAhead)
+                    ReportMessage(nxt.Location, custom.MessageArgs, custom.XmlMessage);
+
+                return null;
+            }
 
             return AstIdGenericExpr.FromAstIdExpr(originId, generics);
         }

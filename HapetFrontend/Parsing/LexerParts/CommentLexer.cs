@@ -4,58 +4,61 @@ namespace HapetFrontend.Parsing
 {
     public partial class Lexer
     {
-        private bool SkipWhitespaceAndComments(out TokenLocation loc)
+        private bool SkipWhitespaceAndComments(TokenLocation location, out TokenLocation loc, bool skipWhitespaces = true)
         {
             loc = null;
 
-            while (_location.Index < _text.Length)
+            while (location.Index < _text.Length)
             {
-                char c = Current;
-                if (c == '/' && Next == '*')
+                char c = Current(location);
+                if (c == '/' && Next(location) == '*')
                 {
-                    ParseMultiLineComment();
+                    ParseMultiLineComment(location);
                 }
 
-                else if (c == '/' && Next == '/')
+                else if (c == '/' && Next(location) == '/')
                 {
-                    if (GetChar(2) == '/')
+                    if (GetChar(2, location) == '/')
                     {
                         // potentially doc comment
 
-                        if (GetChar(3) == ' ')
+                        if (GetChar(3, location) == ' ')
                         {
                             // single line doc comment
                             break;
                         }
-                        else if (GetChar(3) == '*')
+                        else if (GetChar(3, location) == '*')
                         {
-                            ParseMultiLineDocComment();
+                            ParseMultiLineDocComment(location);
                             break;
                         }
                     }
-                    ParseSingleLineComment();
+                    ParseSingleLineComment(location);
                 }
 
                 else if (c == ' ' || c == '\t')
                 {
-                    _location.Index++;
+                    if (skipWhitespaces)
+                        location.Index++;
+                    else
+                        break;
                 }
 
                 else if (c == '\r')
                 {
-                    _location.Index++;
+                    location.Index++;
                 }
 
                 else if (c == '\n')
                 {
                     if (loc == null)
                     {
-                        loc = _location.Clone();
+                        loc = location.Clone();
                     }
 
-                    _location.Line++;
-                    _location.Index++;
-                    _location.LineStartIndex = _location.Index;
+                    location.Line++;
+                    location.Index++;
+                    location.LineStartIndex = location.Index;
                 }
 
                 else break;
@@ -63,42 +66,42 @@ namespace HapetFrontend.Parsing
 
             if (loc != null)
             {
-                loc.End = _location.Index;
+                loc.End = location.Index;
                 return true;
             }
 
             return false;
         }
 
-        private void ParseSingleLineComment()
+        private void ParseSingleLineComment(TokenLocation location)
         {
-            while (_location.Index < _text.Length)
+            while (location.Index < _text.Length)
             {
-                if (Current == '\n')
+                if (Current(location) == '\n')
                     break;
-                _location.Index++;
+                location.Index++;
             }
         }
 
-        private void ParseMultiLineComment()
+        private void ParseMultiLineComment(TokenLocation location)
         {
 
             int level = 0;
-            while (_location.Index < _text.Length)
+            while (location.Index < _text.Length)
             {
-                char curr = Current;
-                char next = Next;
-                _location.Index++;
+                char curr = Current(location);
+                char next = Next(location);
+                location.Index++;
 
                 if (curr == '/' && next == '*')
                 {
-                    _location.Index++;
+                    location.Index++;
                     level++;
                 }
 
                 else if (curr == '*' && next == '/')
                 {
-                    _location.Index++;
+                    location.Index++;
                     level--;
 
                     if (level == 0)
@@ -107,34 +110,34 @@ namespace HapetFrontend.Parsing
 
                 else if (curr == '\n')
                 {
-                    _location.Index++;
-                    _location.LineStartIndex = _location.Index;
+                    location.Index++;
+                    location.LineStartIndex = location.Index;
                 }
             }
         }
 
-        private string ParseMultiLineDocComment()
+        private string ParseMultiLineDocComment(TokenLocation location)
         {
-            int startIndex = _location.Index + 4;
-            int initialIndentation = _location.Column;
+            int startIndex = location.Index + 4;
+            int initialIndentation = location.Column;
 
             int endIndex = startIndex;
 
             int level = 0;
-            while (_location.Index < _text.Length)
+            while (location.Index < _text.Length)
             {
-                char curr = Current;
-                char next = Next;
-                _location.Index++;
+                char curr = Current(location);
+                char next = Next(location);
+                location.Index++;
 
                 if (curr == '/' && next == '*')
                 {
-                    _location.Index++;
+                    location.Index++;
                     level++;
                 }
-                else if (curr == '/' && next == '/' && GetChar(1) == '*' && GetChar(2) == '/')
+                else if (curr == '/' && next == '/' && GetChar(1, location) == '*' && GetChar(2, location) == '/')
                 {
-                    _location.Index += 3;
+                    location.Index += 3;
                     level--;
 
                     if (level == 0)
@@ -144,7 +147,7 @@ namespace HapetFrontend.Parsing
                 }
                 else if (curr == '*' && next == '/')
                 {
-                    _location.Index++;
+                    location.Index++;
                     level--;
 
                     if (level == 0)
@@ -154,9 +157,9 @@ namespace HapetFrontend.Parsing
                 }
                 else if (curr == '\n')
                 {
-                    endIndex = _location.Index - 1;
-                    _location.Index++;
-                    _location.LineStartIndex = _location.Index;
+                    endIndex = location.Index - 1;
+                    location.Index++;
+                    location.LineStartIndex = location.Index;
                 }
             }
 

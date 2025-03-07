@@ -48,12 +48,27 @@ namespace HapetFrontend.Parsing
 
         [SkipInStackFrame]
         [DebuggerStepThrough]
+        public void UpdateLookAheadLocation()
+        {
+            _lexer.UpdateLookAheadLocation();
+        }
+
+        [SkipInStackFrame]
+        [DebuggerStepThrough]
         public Token NextToken()
         {
             _currentToken = _lexer.NextToken();
             if (_currentToken.Type != TokenType.NewLine)
                 _lastNonWhitespace = _currentToken;
             return _currentToken;
+        }
+
+        [SkipInStackFrame]
+        [DebuggerStepThrough]
+        public Token NextLookAhead(bool skipWhitespaces = true)
+        {
+            var token = _lexer.NextLookAhead(skipWhitespaces);
+            return token;
         }
 
         [SkipInStackFrame]
@@ -121,6 +136,13 @@ namespace HapetFrontend.Parsing
         }
 
         [DebuggerStepThrough]
+        public bool CheckLookAhead(TokenType type, bool skipWhitespaces = true)
+        {
+            var next = _lexer.PeekLookAhead(skipWhitespaces);
+            return next.Type == type;
+        }
+
+        [DebuggerStepThrough]
         public bool CheckTokens(params TokenType[] types)
         {
             var next = PeekToken();
@@ -138,6 +160,12 @@ namespace HapetFrontend.Parsing
         public Token PeekToken()
         {
             return _lexer.PeekToken();
+        }
+
+        [DebuggerStepThrough]
+        public Token PeekLookAhead(bool skipWhitespaces = true)
+        {
+            return _lexer.PeekLookAhead(skipWhitespaces);
         }
 
         // TODO: do i need it?
