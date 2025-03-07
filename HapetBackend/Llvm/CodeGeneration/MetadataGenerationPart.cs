@@ -133,6 +133,10 @@ namespace HapetBackend.Llvm
                 if (func.ContainingParent is AstClassDecl cls && cls.HasGenericTypes)
                     continue;
 
+                // skip generic (non-real) funcs
+                if (func.HasGenericTypes)
+                    continue;
+
                 _currentSourceFile = func.SourceFile;
                 GenerateFuncCode(func, null, true);
             }
