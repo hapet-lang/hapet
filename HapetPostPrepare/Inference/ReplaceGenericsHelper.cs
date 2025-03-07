@@ -9,15 +9,18 @@ namespace HapetPostPrepare
     {
         private Dictionary<string, AstNestedExpr> _currentGenericMapping = new Dictionary<string, AstNestedExpr>();
 
-        public void ReplaceAllGenericTypesInClass(AstClassDecl clsDecl, List<AstNestedExpr> normalTypes)
+        private void MakeGenericMapping(List<AstIdExpr> generics, List<AstNestedExpr> normalTypes)
         {
             // ini the dict
             _currentGenericMapping = new Dictionary<string, AstNestedExpr>();
-            for (int i = 0; i < clsDecl.GenericNames.Count; ++i)
+            for (int i = 0; i < generics.Count; ++i)
             {
-                _currentGenericMapping.Add(clsDecl.GenericNames[i].Name, normalTypes[i]);
+                _currentGenericMapping.Add(generics[i].Name, normalTypes[i]);
             }
+        }
 
+        public void ReplaceAllGenericTypesInClass(AstClassDecl clsDecl)
+        {
             // replacing inheritance
             for (int i = 0; i < clsDecl.InheritedFrom.Count; ++i)
             {

@@ -43,6 +43,10 @@ namespace HapetBackend.Llvm
             {
                 if (decl is AstFuncDecl funcDecl)
                 {
+                    // skip generic (non-real) funcs
+                    if (funcDecl.HasGenericTypes)
+                        continue;
+
                     // defining global func
                     var funcType = HapetTypeToLLVMType(funcDecl.Type.OutType);
                     funcs.Add(funcDecl, funcType);
@@ -62,6 +66,10 @@ namespace HapetBackend.Llvm
             {
                 if (decl is AstFuncDecl funcDecl)
                 {
+                    // skip generic (non-real) funcs
+                    if (funcDecl.HasGenericTypes)
+                        continue;
+
                     // defining global func
                     var funcType = HapetTypeToLLVMType(funcDecl.Type.OutType);
                     funcs.Add(funcDecl, funcType);

@@ -201,7 +201,7 @@ namespace HapetPostPrepare
             // search for the func in the scope
             foreach (var k in scopeToSearch.SymbolTable.Keys)
             {
-                if (scopeToSearch.SymbolTable[k] is DeclSymbol ds && ds.Decl is AstFuncDecl)
+                if (scopeToSearch.SymbolTable[k] is DeclSymbol ds && ds.Decl is AstFuncDecl fnc && !(fnc.HasGenericTypes && !fnc.IsImplOfGeneric))
                 {
                     var onlyFuncName = classWithFuncName.Split("::")[1];
                     var firstKeyPart = k.Split("(")[0].Split("::")[1];

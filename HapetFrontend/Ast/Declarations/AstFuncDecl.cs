@@ -72,6 +72,12 @@ namespace HapetFrontend.Ast.Declarations
 
         public override AstStatement GetDeepCopy()
         {
+            Dictionary<AstIdExpr, List<AstNestedExpr>> copiedConstrains = new Dictionary<AstIdExpr, List<AstNestedExpr>>();
+            foreach (var cc in GenericConstrains)
+            {
+                copiedConstrains.Add(cc.Key.GetDeepCopy() as AstIdExpr, cc.Value.Select(x => x.GetDeepCopy() as AstNestedExpr).ToList());
+            }
+
             var copy = new AstFuncDecl(
                 Parameters.Select(x => x.GetDeepCopy() as AstParamDecl).ToList(),
                 Returns.GetDeepCopy() as AstExpression,
@@ -83,6 +89,9 @@ namespace HapetFrontend.Ast.Declarations
                 BaseCtorCall = BaseCtorCall?.GetDeepCopy() as AstBaseCtorStmt,
                 CallingConvention = CallingConvention,
                 ClassFunctionType = ClassFunctionType,
+                GenericNames = GenericNames?.Select(x => x.GetDeepCopy() as AstIdExpr).ToList(),
+                GenericConstrains = copiedConstrains,
+                HasGenericTypes = HasGenericTypes,
                 Scope = Scope,
                 SourceFile = SourceFile,
                 SubScope = SubScope,

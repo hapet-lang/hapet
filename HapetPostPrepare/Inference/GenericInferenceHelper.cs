@@ -55,7 +55,8 @@ namespace HapetPostPrepare
             // no need to reset HasGenericTypes when using generic shite from another generic
             realCls.HasGenericTypes = HasGenericTypesInRealTypes(genericTypes);
             // replaces all T with normal types like int
-            ReplaceAllGenericTypesInClass(realCls, genericTypes);
+            MakeGenericMapping(realCls.GenericNames, genericTypes);
+            ReplaceAllGenericTypesInClass(realCls);
             // replaces all System.Anime::Func(Pivo) with just Func and etc.
             ResetDeclarationNames(realCls);
             // renaming generated funcs like ctor, dtor and etc.
@@ -71,6 +72,46 @@ namespace HapetPostPrepare
             _currentFunction = savedFunction;
 
             return realCls;
+        }
+
+        private AstFuncDecl GetRealTypeFromGeneric(AstFuncDecl funcDecl, List<AstNestedExpr> genericTypes, string realName)
+        {
+            // we need to save previous info about current shite and then reload it 
+            var savedSourceFile = _currentSourceFile;
+            var savedClass = _currentClass;
+            var savedFunction = _currentFunction;
+
+            // cringe
+            string origFuncPureName;
+            if (funcDecl.Name.Name.Contains("::"))
+                origFuncPureName = funcDecl.Name.Name.GetPureFuncName();
+            else
+                origFuncPureName = funcDecl.Name.Name;
+
+            var realFunc = funcDecl.GetDeepCopy() as AstFuncDecl;
+            realFunc.ContainingParent = funcDecl.ContainingParent;
+            realFunc.IsImplOfGeneric = true;
+            realFunc.Name = realFunc.Name.GetCopy(realName);
+            // no need to reset HasGenericTypes when using generic shite from another generic
+            realFunc.HasGenericTypes = HasGenericTypesInRealTypes(genericTypes);
+            // replaces all T with normal types like int
+            MakeGenericMapping(realFunc.GenericNames, genericTypes);
+            ReplaceAllGenericTypesInFunction(realFunc);
+            // replaces all System.Anime::Func(Pivo) with just Func and etc.
+            ResetDeclarationNames(realFunc);
+            // renaming generated funcs like ctor, dtor and etc.
+            RenameFromGenericToRealType(funcDecl, origFuncPureName);
+            // just a pp
+            PostPrepareFunctionScoping(realFunc);
+            // pp up to the current metadata step
+            PostPrepareStatementUpToCurrentStep(realFunc);
+
+            // reload previously saved shite
+            _currentSourceFile = savedSourceFile;
+            _currentClass = savedClass;
+            _currentFunction = savedFunction;
+
+            return realFunc;
         }
 
         private static bool HasGenericTypesInRealTypes(List<AstNestedExpr> genericTypes)
@@ -126,6 +167,10 @@ namespace HapetPostPrepare
                     dec.Name = dec.Name.GetCopy(GetName(dec));
                 }
             }
+            else if (decl is AstFuncDecl funcDecl)
+            {
+                funcDecl.Name = funcDecl.Name.GetCopy(GetName(funcDecl));
+            }
 
             static string GetName(AstDeclaration d)
             {
@@ -137,7 +182,7 @@ namespace HapetPostPrepare
                 {
                     // check if it is really infered
                     if (f.Name.Name.Contains("::"))
-                        return string.Concat(f.Name.Name.Split("::")[1].TakeWhile(x => x != '('));
+                        return f.Name.Name.GetPureFuncName();
                 }
                 return d.Name.Name;
             }

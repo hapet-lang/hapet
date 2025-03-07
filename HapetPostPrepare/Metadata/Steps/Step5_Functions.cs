@@ -1,5 +1,6 @@
 ﻿using HapetFrontend.Ast;
 using HapetFrontend.Ast.Declarations;
+using HapetFrontend.Ast.Expressions;
 using HapetFrontend.Parsing;
 using HapetPostPrepare.Entities;
 using System;
@@ -35,10 +36,22 @@ namespace HapetPostPrepare
 
             void PPFunc(AstFuncDecl func)
             {
-                inInfo.ForMetadata = true;
-                PostPrepareFunctionInference(func, inInfo, ref outInfo);
-                inInfo.ForMetadata = false;
                 AllFunctionsMetadata.Add(func);
+
+                // p func generics here
+                if (!isImported)
+                {
+                    AstIdExpr tmp = func.Name;
+                }
+                bool itWasPureGenericFunc = PostPrepareMetadataGenerics(func);
+
+                // do not infer pure generic funcs
+                if (!itWasPureGenericFunc)
+                {
+                    inInfo.ForMetadata = true;
+                    PostPrepareFunctionInference(func, inInfo, ref outInfo);
+                    inInfo.ForMetadata = false;
+                }
 
                 if (needSerialize)
                     _serializeFunctionsMetadata.Add(func);

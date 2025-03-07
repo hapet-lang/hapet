@@ -60,7 +60,7 @@ namespace HapetPostPrepare
             /// WARN: attributes are inferrenced in <see cref="PostPrepareMetadataAttributes"/>
 
             /// fields should be already inferred in <see cref="PostPrepareMetadataTypes"/> and <see cref="PostPrepareMetadataTypeFields"/>
-            foreach (var decl in classDecl.Declarations.Where(x => x is AstFuncDecl).Select(x => x as AstFuncDecl))
+            foreach (var decl in classDecl.Declarations.Where(x => x is AstFuncDecl fnc && !(fnc.HasGenericTypes && !fnc.IsImplOfGeneric)).Select(x => x as AstFuncDecl))
             {
                 PostPrepareFunctionInference(decl, inInfo, ref outInfo);
             }
@@ -73,7 +73,7 @@ namespace HapetPostPrepare
             /// WARN: should be already inferred in <see cref="PostPrepareMetadataTypes"/> and <see cref="PostPrepareMetadataTypeFields"/>
             /// WARN: attributes are inferrenced in <see cref="PostPrepareMetadataAttributes"/>
             /// 
-            foreach (var decl in structDecl.Declarations.Where(x => x is AstFuncDecl).Select(x => x as AstFuncDecl))
+            foreach (var decl in structDecl.Declarations.Where(x => x is AstFuncDecl fnc && !(fnc.HasGenericTypes && !fnc.IsImplOfGeneric)).Select(x => x as AstFuncDecl))
             {
                 PostPrepareFunctionInference(decl, inInfo, ref outInfo);
             }

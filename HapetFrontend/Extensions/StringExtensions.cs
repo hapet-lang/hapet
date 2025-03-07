@@ -41,5 +41,10 @@ namespace HapetFrontend.Extensions
             var elements = name.Split(".");
             return string.Join('.', elements.SkipLast(1));
         }
+
+        public static string GetPureFuncName(this string name)
+        {
+            return string.Concat(name.Split("::")[1].TakeWhile(x => x != '('));
+        }
     }
 }

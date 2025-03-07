@@ -288,6 +288,25 @@ namespace HapetPostPrepare
                 PostPrepareExprScoping(funcDecl.BaseCtorCall);
             }
 
+            // scoping generic shite
+            foreach (var g in funcDecl.GenericNames)
+            {
+                // subscoping generic types
+                SetScopeAndParent(g, funcDecl, funcDecl.SubScope);
+                PostPrepareExprScoping(g);
+
+                // check for constrains
+                if (funcDecl.GenericConstrains.TryGetValue(g, out var constrains))
+                {
+                    foreach (var c in constrains)
+                    {
+                        // subscoping generic type constrains
+                        SetScopeAndParent(c, funcDecl, funcDecl.SubScope);
+                        PostPrepareExprScoping(c);
+                    }
+                }
+            }
+
             // TODO: refactor similar shite!
             if (funcDecl.Body != null)
             {

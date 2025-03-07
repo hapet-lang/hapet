@@ -96,6 +96,10 @@ namespace HapetPostPrepare
                 {
                     PostPrepareDelegateInference(delegateDecl, inInfo, ref outInfo);
                 }
+                else if (stmt is AstFuncDecl funcDecl)
+                {
+                    PostPrepareFunctionInference(funcDecl, inInfo, ref outInfo);
+                }
             }
 
             _currentSourceFile = cachedSourceFile;

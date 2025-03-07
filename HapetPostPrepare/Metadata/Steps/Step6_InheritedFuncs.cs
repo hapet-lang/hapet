@@ -5,6 +5,7 @@ using HapetFrontend.Errors;
 using HapetFrontend.Helpers;
 using HapetFrontend.Parsing;
 using HapetFrontend.Types;
+using System;
 
 namespace HapetPostPrepare
 {
@@ -27,13 +28,13 @@ namespace HapetPostPrepare
             bool isInterface = false;
             if (decl is AstClassDecl clsDecl)
             {
-                currentClassMethods = clsDecl.Declarations.Where(x => x is AstFuncDecl).Select(x => x as AstFuncDecl).ToList();
+                currentClassMethods = clsDecl.Declarations.Where(x => x is AstFuncDecl fnc && !(fnc.HasGenericTypes && !fnc.IsImplOfGeneric)).Select(x => x as AstFuncDecl).ToList();
                 inheritedFrom = clsDecl.InheritedFrom;
                 isInterface = clsDecl.IsInterface;
             }
             else if (decl is AstStructDecl strDecl)
             {
-                currentClassMethods = strDecl.Declarations.Where(x => x is AstFuncDecl).Select(x => x as AstFuncDecl).ToList();
+                currentClassMethods = strDecl.Declarations.Where(x => x is AstFuncDecl fnc && !(fnc.HasGenericTypes && !fnc.IsImplOfGeneric)).Select(x => x as AstFuncDecl).ToList();
                 inheritedFrom = strDecl.InheritedFrom;
             }
             else

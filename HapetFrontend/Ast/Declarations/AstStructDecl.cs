@@ -58,6 +58,16 @@ namespace HapetFrontend.Ast.Declarations
             };
             copy.Attributes.AddRange(Attributes);
             copy.SpecialKeys.AddRange(SpecialKeys);
+
+            // handle containing parent shite
+            foreach (var decl in copy.Declarations)
+            {
+                if (decl is AstVarDecl vD)
+                    vD.ContainingParent = copy;
+                else if (decl is AstFuncDecl fD)
+                    fD.ContainingParent = copy;
+            }
+
             return copy;
         }
 

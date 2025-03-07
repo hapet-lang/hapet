@@ -42,7 +42,6 @@ namespace HapetFrontend.Ast.Declarations
                 Documentation, Location)
             {
                 IsPropertyField = IsPropertyField,
-                ContainingParent = ContainingParent, // do we need to deep copy it?
                 Scope = Scope,
                 SourceFile = SourceFile,
                 SubScope = SubScope,
