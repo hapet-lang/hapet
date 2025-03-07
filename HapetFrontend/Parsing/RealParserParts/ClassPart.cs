@@ -19,7 +19,6 @@ namespace HapetFrontend.Parsing
             var declarations = new List<AstDeclaration>();
             var inherited = new List<AstNestedExpr>();
             var generics = new List<AstIdExpr>();
-            var genericConstrains = new Dictionary<AstIdExpr, List<AstNestedExpr>>();
             AstIdExpr className = null;
             bool isInterface = false;
 
@@ -42,7 +41,7 @@ namespace HapetFrontend.Parsing
             }
             else
             {
-                var nest = ParseIdentifierExpression(allowDots: false);
+                var nest = ParseIdentifierExpression(allowDots: false, allowGenerics: true);
                 if (nest.RightPart is not AstIdExpr idExpr)
                 {
                     ReportMessage(nest.Location, [], ErrorCode.Get(CTEN.ClassNameNotIdent));
@@ -52,34 +51,10 @@ namespace HapetFrontend.Parsing
             }
 
             // checking generics
-            if (CheckToken(TokenType.Less))
+            // getting generics from parsed class name
+            if (className is AstIdGenericExpr genExpr)
             {
-                Consume(TokenType.Less, ErrMsg("<", "before generic types"));
-                SkipNewlines();
-
-                while (CheckToken(TokenType.Identifier))
-                {
-                    var ident = ParseIdentifierExpression();
-                    if (ident.RightPart is not AstIdExpr identExpr)
-                    {
-                        ReportMessage(ident, [], ErrorCode.Get(CTEN.CommonIdentifierExpected));
-                        continue;
-                    }
-
-                    generics.Add(identExpr);
-                    // if there is something else
-                    if (CheckToken(TokenType.Comma))
-                    {
-                        Consume(TokenType.Comma, ErrMsg(",", "before the next generic type"));
-                        continue;
-                    }
-
-                    // if there is nothing else
-                    break;
-                }
-
-                Consume(TokenType.Greater, ErrMsg(">", "after generic types"));
-                SkipNewlines();
+                generics = genExpr.GenericRealTypes.Select(x => x.RightPart as AstIdExpr).ToList();
             }
 
             // checking for inheritance
@@ -105,61 +80,8 @@ namespace HapetFrontend.Parsing
             }
             SkipNewlines();
 
-            // checking for generic constrains
-            // https://learn.microsoft.com/en-us/dotnet/csharp/programming-guide/generics/constraints-on-type-parameters
-            while (CheckToken(TokenType.KwWhere))
-            {
-                Consume(TokenType.KwWhere, ErrMsg("where", "before generic constrains"));
-
-                // generic type name has to be here
-                if (!CheckToken(TokenType.Identifier))
-                {
-                    ReportMessage(PeekToken().Location, [], ErrorCode.Get(CTEN.GenericTypeNameExpected));
-                    continue;
-                }
-                // has to be identifier (nested is also not allowed!!!)
-                var typeNameExpr = ParseIdentifierExpression();
-                if (typeNameExpr.RightPart is not AstIdExpr nameIdentExpr)
-                {
-                    ReportMessage(typeNameExpr, [], ErrorCode.Get(CTEN.CommonIdentifierExpected));
-                    continue;
-                }
-                // check if the generic type even exists
-                var nameTmp = generics.FirstOrDefault(x => x.Name == nameIdentExpr.Name);
-                if (nameTmp == null)
-                {
-                    ReportMessage(typeNameExpr, [], ErrorCode.Get(CTEN.GenericTypeNotFound));
-                    continue;
-                }
-                // for dictionary
-                nameIdentExpr = nameTmp;
-
-                // get the colon before constain types
-                var tmp = Consume(TokenType.Colon, ErrMsg(":", "before generic constrain types"));
-                if (tmp == null)
-                    continue;
-
-                List<AstNestedExpr> constrains = new List<AstNestedExpr>();
-                while (CheckToken(TokenType.Identifier))
-                {
-                    var ident = ParseIdentifierExpression();
-                    constrains.Add(ident);
-                    // if there is something else
-                    if (CheckToken(TokenType.Comma))
-                    {
-                        Consume(TokenType.Comma, ErrMsg(",", "before the next constrain"));
-                        continue;
-                    }
-
-                    // if there is nothing else
-                    break;
-                }
-
-                // add it
-                genericConstrains.Add(nameIdentExpr, constrains);
-
-                SkipNewlines();
-            }
+            // parsing constrains
+            var genericConstrains = ParseGenericConstrains(generics);
 
             ConsumeUntil(TokenType.OpenBrace, ErrMsg("{", "at beginning of class body"), true);
 

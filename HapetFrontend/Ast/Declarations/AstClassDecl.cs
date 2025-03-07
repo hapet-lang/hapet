@@ -22,7 +22,7 @@ namespace HapetFrontend.Ast.Declarations
 
         /// <summary>
         /// Generic name aliases like T in:
-        /// public class TestCls<T> { ... }
+        /// public class TestCls-T- { ... }
         /// </summary>
         public List<AstIdExpr> GenericNames { get; set; } = new List<AstIdExpr>();
 
@@ -50,7 +50,7 @@ namespace HapetFrontend.Ast.Declarations
         /// <summary>
         /// 'true' if smth like List-T- or List-int-, 'false' on real pure generic type
         /// </summary>
-        public bool IsGenericTypeImpl { get; set; }
+        public bool IsImplOfGeneric { get; set; }
 
         /// <summary>
         /// All original raw fields (including inherited) (for easier interface offset generation)

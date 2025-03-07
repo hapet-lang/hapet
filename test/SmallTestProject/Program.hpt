@@ -9,59 +9,14 @@ public static class Program
 {
     public static int Main(string[] args)
     {
-        Dictionary<string, int> dict = new Dictionary<string, int>();
-        dict.Add("anime", 14);
-        //dict.Values.Add(14);
-
-        //dict["anime"] = 14;
-        return dict["anime"];
+        return 0;
     }
 }
 
-public class Dictionary<K, V>
+public class TestCls
 {
-    public List<K> Keys { get; set; } = new List<K>();
-    public List<V> Values { get; set; } = new List<V>();
-
-    public void Add(K key, V value)
+    public T GetElement<T>(T element)
     {
-        Keys.Add(key);
-        Values.Add(value);
-    }
-
-    public V this[K key]
-    {
-        get
-        {
-            return Values[0];
-        }
-        set
-        {
-            Values[0] = value;
-        }
+        return element;
     }
 }
-
-
-public class List<T>
-{
-    public T[] Buffer { get; set; } = new T[1];
-
-    public T this[int index]
-    {
-        get
-        {
-            return Buffer[index];
-        }
-        set
-        {
-            Buffer[index] = value;
-        }
-    }
-
-    public void Add(T element)
-    {
-        Buffer[0] = element;
-    }
-}
-

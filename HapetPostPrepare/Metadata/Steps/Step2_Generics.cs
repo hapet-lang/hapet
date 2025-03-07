@@ -17,7 +17,7 @@ namespace HapetPostPrepare
                     return;
 
                 // has generic types but already is an implementation 
-                if (cls.IsGenericTypeImpl)
+                if (cls.IsImplOfGeneric)
                     return;
 
                 List<AstClassDecl> virtualTypes = new List<AstClassDecl>();

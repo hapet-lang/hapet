@@ -88,6 +88,8 @@ namespace HapetFrontend.Parsing
         {
             TokenLocation end = udecl.Ending;
             AstStatement initializer = null;
+            var savedUdecl = inInfo.CurrentUdecl;
+            inInfo.CurrentUdecl = udecl;
 
             // variable declaration with initializer
             if (CheckToken(TokenType.Equal))
@@ -104,6 +106,7 @@ namespace HapetFrontend.Parsing
                 var varDecl = new AstVarDecl(udecl.Type, udecl.Name, initializer as AstExpression, udecl.Documentation, Location: new Location(udecl.Beginning, end));
                 varDecl.Attributes.AddRange(attrs);
                 varDecl.SpecialKeys.AddRange(udecl.SpecialKeys);
+                OnExit();
                 return varDecl;
             }
             // variable declaration without initializer
@@ -113,6 +116,7 @@ namespace HapetFrontend.Parsing
                 var varDecl = new AstVarDecl(udecl.Type, udecl.Name, null, udecl.Documentation, Location: new Location(udecl.Beginning, end));
                 varDecl.Attributes.AddRange(attrs);
                 varDecl.SpecialKeys.AddRange(udecl.SpecialKeys);
+                OnExit();
                 return varDecl;
             }
             // func declaration 
@@ -148,6 +152,7 @@ namespace HapetFrontend.Parsing
                     }
                     func.Attributes.AddRange(attrs);
                     func.SpecialKeys.AddRange(udecl.SpecialKeys);
+                    OnExit();
                     return func;
                 }
                 // TODO: could there be a lambda???
@@ -158,6 +163,7 @@ namespace HapetFrontend.Parsing
                 var prop = PreparePropertyDecl(udecl, udecl.Documentation);
                 prop.Attributes.AddRange(attrs);
                 // special keys are added inside PreparePropertyDecl
+                OnExit();
                 return prop;
             }
 
@@ -166,11 +172,18 @@ namespace HapetFrontend.Parsing
             if (result != null)
             {
                 result.Attributes.AddRange(attrs);
+                OnExit();
                 return result;
             }
 
             ReportMessage(PeekToken().Location, [], ErrorCode.Get(CTEN.PureUnexpectedToken)); // TODO: better error message?
+            OnExit();
             return udecl;
+
+            void OnExit()
+            {
+                inInfo.CurrentUdecl = savedUdecl;
+            }
         }
     }
 }

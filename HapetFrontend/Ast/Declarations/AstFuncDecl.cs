@@ -21,6 +21,18 @@ namespace HapetFrontend.Ast.Declarations
         public AstBlockExpr Body { get; set; }
 
         /// <summary>
+        /// Generic name aliases like T in:
+        /// public T GetAnimeElement-T-() { ... }
+        /// </summary>
+        public List<AstIdExpr> GenericNames { get; set; } = new List<AstIdExpr>();
+
+        /// <summary>
+        /// Generic parameter constrains like:
+        /// ... where T: struct, enum, class { ... }
+        /// </summary>
+        public Dictionary<AstIdExpr, List<AstNestedExpr>> GenericConstrains { get; set; } = new Dictionary<AstIdExpr, List<AstNestedExpr>>();
+
+        /// <summary>
         /// The class that contains the function
         /// </summary>
         [JsonIgnore]
@@ -35,6 +47,16 @@ namespace HapetFrontend.Ast.Declarations
         /// Used for easier infferencing. Mean that the func is a get/set func
         /// </summary>
         public bool IsPropertyFunction { get; set; }
+
+        /// <summary>
+        /// 'true' if the declaration is a generic decl like 'GetAnimeElements-T-'
+        /// </summary>
+        public bool HasGenericTypes { get; set; }
+
+        /// <summary>
+        /// 'true' if smth like GetAnimeElements-T- or GetAnimeElements-int-, 'false' on real pure generic func
+        /// </summary>
+        public bool IsImplOfGeneric { get; set; }
 
         public override string AAAName => nameof(AstFuncDecl);
 

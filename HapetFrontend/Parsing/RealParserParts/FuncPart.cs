@@ -2,12 +2,13 @@
 using HapetFrontend.Ast.Declarations;
 using HapetFrontend.Ast.Expressions;
 using HapetFrontend.Ast.Statements;
+using HapetFrontend.Entities;
 
 namespace HapetFrontend.Parsing
 {
     public partial class Parser
     {
-        private AstFuncDecl ParseFuncDeclaration(List<AstParamDecl> parameters, Location paramsLocation)
+        private AstFuncDecl ParseFuncDeclaration(List<AstParamDecl> parameters, Location paramsLocation, ParserInInfo inInfo, ref ParserOutInfo outInfo)
         {
             if (parameters == null)
             {
@@ -17,6 +18,13 @@ namespace HapetFrontend.Parsing
 
             AstBlockExpr body = null;
             AstBaseCtorStmt baseCtorCall = null;
+            List<AstIdExpr> generics = new List<AstIdExpr>();
+
+            // getting generics from parsed udecl' name
+            if (inInfo.CurrentUdecl != null && inInfo.CurrentUdecl.Name is AstIdGenericExpr genExpr)
+            {
+                generics = genExpr.GenericRealTypes.Select(x => x.RightPart as AstIdExpr).ToList();
+            }
 
             SkipNewlines();
 
@@ -30,13 +38,22 @@ namespace HapetFrontend.Parsing
                 baseCtorCall = new AstBaseCtorStmt(args, new Location(bsTkn.Location, end));
             }
 
+            // parsing constrains
+            var genericConstrains = ParseGenericConstrains(generics);
+
             SkipNewlines();
 
             if (CheckToken(TokenType.Semicolon))
                 NextToken(); // do nothing
             else
                 body = ParseBlockExpression();
-            return new AstFuncDecl(parameters, null, body, null, location: new Location(paramsLocation.Beginning, body?.Ending ?? paramsLocation.Ending)) { BaseCtorCall = baseCtorCall };
+            return new AstFuncDecl(parameters, null, body, null, location: new Location(paramsLocation.Beginning, body?.Ending ?? paramsLocation.Ending)) 
+            { 
+                BaseCtorCall = baseCtorCall,
+                HasGenericTypes = generics.Count > 0,
+                GenericNames = generics,
+                GenericConstrains = genericConstrains,
+            };
         }
 
         private AstLambdaDecl ParseLambdaDeclaration(List<AstParamDecl> parameters, TokenLocation beg, bool allowCommaForTuple)

@@ -1,4 +1,5 @@
-﻿using HapetFrontend.Parsing;
+﻿using HapetFrontend.Ast.Declarations;
+using HapetFrontend.Parsing;
 
 namespace HapetFrontend.Entities
 {
@@ -10,6 +11,11 @@ namespace HapetFrontend.Entities
         public bool AllowPointerExpression { get; set; }
         public bool AllowArrayExpression { get; set; }
         public bool AllowGeneric { get; set; }
+
+        /// <summary>
+        /// This shite is used for func decl
+        /// </summary>
+        public UnknownDecl CurrentUdecl { get; set; }
         public MessageResolver Message { get; set; }
 
         public static ParserInInfo Default => new ParserInInfo()

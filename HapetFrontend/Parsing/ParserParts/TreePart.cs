@@ -481,7 +481,7 @@ namespace HapetFrontend.Parsing
                         // the second identifier for UnknownDecl
                         if (CheckToken(TokenType.Identifier))
                         {
-                            var name = ParseIdentifierExpression(allowDots: false);
+                            var name = ParseIdentifierExpression(allowDots: false, allowGenerics: inInfo.AllowGeneric);
                             if (name.RightPart is not AstIdExpr idExpr)
                             {
                                 ReportMessage(id.Location, [], ErrorCode.Get(CTEN.DeclNameIsNotIdent));

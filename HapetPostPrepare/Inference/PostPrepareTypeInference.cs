@@ -189,7 +189,7 @@ namespace HapetPostPrepare
             else
             {
                 // if it is a ini_func and cls contains Generic shite - do not infer
-                bool allowInfer = funcDecl.ContainingParent is not AstClassDecl clsDecl22 || !(clsDecl22.HasGenericTypes && !clsDecl22.IsGenericTypeImpl);
+                bool allowInfer = funcDecl.ContainingParent is not AstClassDecl clsDecl22 || !(clsDecl22.HasGenericTypes && !clsDecl22.IsImplOfGeneric);
                 // inferring body
                 if (funcDecl.Body != null && allowInfer)
                     PostPrepareBlockInference(funcDecl.Body, inInfo, ref outInfo);

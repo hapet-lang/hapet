@@ -17,13 +17,16 @@ namespace HapetFrontend.Parsing
             var docString = GetCurrentDocString();
 
             var saved1 = inInfo.AllowFunctionDeclaration;
+            var saved4 = inInfo.AllowGeneric;
             var saved2 = inInfo.Message;
             var saved3 = inInfo.AllowPointerExpression;
             inInfo.AllowFunctionDeclaration = true;
+            inInfo.AllowGeneric = true;
             inInfo.Message = null;
             inInfo.AllowPointerExpression = true;
             var expr = ParseExpression(inInfo, ref outInfo);
             inInfo.AllowFunctionDeclaration = saved1;
+            inInfo.AllowGeneric = saved4;
             inInfo.Message = saved2;
             inInfo.AllowPointerExpression = saved3;
 

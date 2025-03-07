@@ -50,7 +50,7 @@ namespace HapetPostPrepare
             string origClassPureName = clsDecl.Name.Name.GetClassNameWithoutNamespace();
 
             var realCls = clsDecl.GetDeepCopy() as AstClassDecl;
-            realCls.IsGenericTypeImpl = true;
+            realCls.IsImplOfGeneric = true;
             realCls.Name = realCls.Name.GetCopy(realName);
             // no need to reset HasGenericTypes when using generic shite from another generic
             realCls.HasGenericTypes = HasGenericTypesInRealTypes(genericTypes);
