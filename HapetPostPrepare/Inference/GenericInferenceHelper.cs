@@ -136,18 +136,42 @@ namespace HapetPostPrepare
             return hasGeneric;
         }
 
-        private string GetGenericRealName(string name, List<AstNestedExpr> generics)
+        private static string GetGenericRealName(AstDeclaration decl, List<AstNestedExpr> generics)
         {
-            InInfo tmpIn = InInfo.Default;
-            OutInfo tmpout = OutInfo.Default;
+            if (decl is AstFuncDecl func)
+            {
+                // cringe
+                string name = func.Name.Name;
+                int indexOfParen = 0;
+                bool containsClsName = func.Name.Name.Contains("::");
+                if (containsClsName)
+                {
+                    indexOfParen = func.Name.Name.IndexOf('(');
+                    name = func.Name.Name.Substring(0, indexOfParen);
+                }
 
-            StringBuilder sb = new StringBuilder(name);
+                string realName = GetGenericRealName(name, generics);
+
+                // cringe
+                if (containsClsName)
+                    realName += func.Name.Name.Substring(indexOfParen, func.Name.Name.Length - indexOfParen);
+
+                return realName;
+            }
+            else if (decl is AstClassDecl cls)
+            {
+                return GetGenericRealName(cls.Name.Name, generics);
+            }
+            return decl.Name.Name;
+        }
+
+        private static string GetGenericRealName(string namee, List<AstNestedExpr> generics)
+        {
+            StringBuilder sb = new StringBuilder(namee);
             sb.Append("_GB_");
             for (int i = 0; i < generics.Count; ++i)
             {
                 var g = generics[i];
-                // cringe :)
-                PostPrepareExprInference(g, tmpIn, ref tmpout);
                 if (g.RightPart is AstIdExpr idExpr)
                 {
                     sb.Append(idExpr.FindSymbol.Name);

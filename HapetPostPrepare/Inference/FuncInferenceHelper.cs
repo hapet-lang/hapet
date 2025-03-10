@@ -3,6 +3,7 @@ using HapetFrontend.Ast;
 using HapetFrontend.Entities;
 using HapetFrontend.Scoping;
 using HapetFrontend.Types;
+using HapetFrontend.Extensions;
 
 namespace HapetPostPrepare
 {
@@ -177,6 +178,11 @@ namespace HapetPostPrepare
                     // TODO: ambiguous error here that there are two func and we dk which one to call
                 }
             }
+
+            // if there is only one symbol and the symbol is generic shite - return it
+            if (candidates.Count == 1 && candidates[0].Decl is AstFuncDecl func && func.HasGenericTypes && !func.IsImplOfGeneric)
+                return candidates[0];
+
             return bestMatch;
         }
 
@@ -201,10 +207,10 @@ namespace HapetPostPrepare
             // search for the func in the scope
             foreach (var k in scopeToSearch.SymbolTable.Keys)
             {
-                if (scopeToSearch.SymbolTable[k] is DeclSymbol ds && ds.Decl is AstFuncDecl fnc && !(fnc.HasGenericTypes && !fnc.IsImplOfGeneric))
+                if (scopeToSearch.SymbolTable[k] is DeclSymbol ds && ds.Decl is AstFuncDecl fnc)
                 {
-                    var onlyFuncName = classWithFuncName.Split("::")[1];
-                    var firstKeyPart = k.Split("(")[0].Split("::")[1];
+                    var onlyFuncName = classWithFuncName.GetPureFuncName();
+                    var firstKeyPart = k.GetPureFuncName();
                     if ((k.StartsWith(classWithFuncName) || firstKeyPart == onlyFuncName))
                         candidates.Add(ds);
                 }

@@ -44,6 +44,8 @@ namespace HapetFrontend.Extensions
 
         public static string GetPureFuncName(this string name)
         {
+            if (!name.Contains("::"))
+                return string.Concat(name.TakeWhile(x => x != '('));
             return string.Concat(name.Split("::")[1].TakeWhile(x => x != '('));
         }
     }

@@ -36,7 +36,7 @@ namespace HapetPostPrepare
 
                 // making a class like List<T> where T is a virtual type
                 var nestedList = virtualTypes.Select(x => new AstNestedExpr(x.Name, null, x.Name)).ToList();
-                string realName = GetGenericRealName(cls.Name.Name, nestedList);
+                string realName = GetGenericRealName(cls, nestedList);
                 var realCls = GetRealTypeFromGeneric(cls, nestedList, realName);
 
                 // define it in the same scope
@@ -58,6 +58,10 @@ namespace HapetPostPrepare
                 if (func.IsImplOfGeneric)
                     return false;
 
+                // define it in scope 
+                var genericFunc = new DeclSymbol(func.Name.Name, func);
+                func.Scope.DefineSymbol(genericFunc);
+
                 List<AstClassDecl> virtualTypes = new List<AstClassDecl>();
                 // making virtual types for generics like T
                 foreach (var t in func.GenericNames)
@@ -73,27 +77,8 @@ namespace HapetPostPrepare
 
                 // making a class like List<T> where T is a virtual type
                 var nestedList = virtualTypes.Select(x => new AstNestedExpr(x.Name, null, x.Name)).ToList();
-
-                // cringe
-                string name = func.Name.Name;
-                int indexOfParen = 0;
-                if (func.Name.Name.Contains("::"))
-                {
-                    indexOfParen = func.Name.Name.IndexOf('(');
-                    name = func.Name.Name.Substring(0, indexOfParen);
-                }
-                
-                string realName = GetGenericRealName(name, nestedList);
-
-                // cringe
-                if (func.Name.Name.Contains("::"))
-                    realName += func.Name.Name.Substring(indexOfParen, func.Name.Name.Length - indexOfParen);
-
+                var realName = GetGenericRealName(func, nestedList);
                 var realFunc = GetRealTypeFromGeneric(func, nestedList, realName);
-
-                // define it in the same scope ||| already registered inside inferencer
-                //var realDclDecl = new DeclSymbol(realName, realFunc);
-                //func.Scope.DefineSymbol(realDclDecl);
 
                 // remove from inferencing
                 AllFunctionsMetadata.Remove(func);
