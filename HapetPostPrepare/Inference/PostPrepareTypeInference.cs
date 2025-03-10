@@ -918,7 +918,20 @@ namespace HapetPostPrepare
             }
             else if (decl.Decl is AstFuncDecl funcDecl && funcDecl.HasGenericTypes)
             {
-                int a = 4;
+                // generating generic cls name
+                string realName = GetGenericRealName(funcDecl, genId.GenericRealTypes);
+                if (funcDecl.Scope.SymbolTable.TryGetValue(realName, out var realDcl) && realDcl is DeclSymbol realDclDecl)
+                {
+                    // return if exists
+                    return realDclDecl;
+                }
+
+                // create a new class for real types
+                var realCls = GetRealTypeFromGeneric(funcDecl, genId.GenericRealTypes, realName);
+
+                realDclDecl = new DeclSymbol(realName, realCls);
+                funcDecl.Scope.DefineSymbol(realDclDecl);
+                return realDclDecl;
             }
             return decl;
         }
@@ -930,6 +943,9 @@ namespace HapetPostPrepare
             {
                 var theName = callExpr.FuncName.Name;
                 var resetedName = theName.GetPureFuncName();
+                // also reset generic appendings
+                if (resetedName.Contains("_GB_"))
+                    resetedName = resetedName.Split("_GB_")[0];
                 callExpr.FuncName = callExpr.FuncName.GetCopy(resetedName);
             }
 
@@ -1076,7 +1092,7 @@ namespace HapetPostPrepare
                             if (!CheckIfCouldBeAccessed(callExpr, funcDecl3))
                                 _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, callExpr.FuncName, [], ErrorCode.Get(CTEN.FuncCouldNotBeAccessed));
                             newName = funcDecl3.Name.Name;
-                            callExpr.Arguments.ReplaceWithCasts(casts2);
+                            //callExpr.Arguments.ReplaceWithCasts(casts2);
                         }
                         else
                             _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, callExpr.FuncName, [], ErrorCode.Get(CTEN.FuncWithNameNotFound));
