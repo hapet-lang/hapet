@@ -140,13 +140,13 @@ namespace HapetPostPrepare
                         inInfo.MuteErrors = savedMute;
 
                     // don't do this for generic shite
-                    if (funcDecl.Returns.OutType is ClassType clsT && !clsT.Declaration.IsGenericType)
+                    if (funcDecl.Returns.OutType is ClassType)
                     {
                         // the return type is actually a pointer to the class
                         var astPtr = new AstPointerExpr(funcDecl.Returns, false, funcDecl.Returns.Location);
                         astPtr.OutType = PointerType.GetPointerType(astPtr.SubExpression.OutType);
                         astPtr.Scope = funcDecl.Returns.Scope;
-                        funcDecl.Returns = new AstNestedExpr(astPtr, null, funcDecl.Returns.Location);
+                        funcDecl.Returns = new AstNestedExpr(astPtr, null, funcDecl.Returns.Location) { OutType = astPtr.OutType };
                     }
                 }
 
@@ -246,14 +246,13 @@ namespace HapetPostPrepare
             }
 
             // don't do this for generic shite
-            if (varDecl.Type.OutType is ClassType clsT && !clsT.Declaration.IsGenericType)
+            if (varDecl.Type.OutType is ClassType)
             {
                 // the var is actually a pointer to the class
                 var astPtr = new AstPointerExpr(varDecl.Type, false, varDecl.Type.Location);
                 astPtr.OutType = PointerType.GetPointerType(astPtr.SubExpression.OutType);
                 astPtr.Scope = varDecl.Type.Scope;
-                varDecl.Type = new AstNestedExpr(astPtr, null, varDecl.Type.Location);
-                varDecl.Type.OutType = astPtr.OutType; // the same type
+                varDecl.Type = new AstNestedExpr(astPtr, null, varDecl.Type.Location) { OutType = astPtr.OutType };
             }
 
             // pp assign value
@@ -281,12 +280,12 @@ namespace HapetPostPrepare
             PostPrepareExprInference(paramDecl.Type, inInfo, ref outInfo);
 
             // don't do this for generic shite
-            if (paramDecl.Type.OutType is ClassType clsT && !clsT.Declaration.IsGenericType)
+            if (paramDecl.Type.OutType is ClassType)
             {
                 // the var is actually a pointer to the class
                 var astPtr = new AstPointerExpr(paramDecl.Type, false, paramDecl.Type.Location);
                 astPtr.Scope = paramDecl.Type.Scope;
-                paramDecl.Type = new AstNestedExpr(astPtr, null, paramDecl.Type.Location);
+                paramDecl.Type = new AstNestedExpr(astPtr, null, paramDecl.Type.Location) { OutType = astPtr.OutType };
                 PostPrepareExprInference(paramDecl.Type, inInfo, ref outInfo);
             }
 
@@ -1726,11 +1725,8 @@ namespace HapetPostPrepare
                     return;
                 }
 
-                // do not infer this shite
-                if (_currentFunction.Returns.OutType is not DelegateType)
-                    PostPrepareExprInference(returnStmt.ReturnExpression, inInfo, ref outInfo);
                 // casting to func return type
-                returnStmt.ReturnExpression = PostPrepareExpressionWithType(GetPreparedAst(_currentFunction.Returns.OutType, _currentFunction.Returns), returnStmt.ReturnExpression);
+                returnStmt.ReturnExpression = PostPrepareVarValueAssign(returnStmt.ReturnExpression, _currentFunction.Returns.OutType, inInfo, ref outInfo);
             }
             else if (returnStmt.ReturnExpression == null && _currentFunction.Returns.OutType is not VoidType)
             {

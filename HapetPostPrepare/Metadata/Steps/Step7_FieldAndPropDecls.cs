@@ -54,12 +54,12 @@ namespace HapetPostPrepare
                     inInfo.MuteErrors = savedMute;
 
                 // don't do this for generic shite
-                if (decl.Type.OutType is ClassType clsT && !clsT.Declaration.IsGenericType)
+                if (decl.Type.OutType is ClassType)
                 {
                     // the var is actually a pointer to the class
                     var astPtr = new AstPointerExpr(decl.Type, false, decl.Type.Location);
                     astPtr.Scope = decl.Type.Scope;
-                    decl.Type = new AstNestedExpr(astPtr, null, decl.Type.Location);
+                    decl.Type = new AstNestedExpr(astPtr, null, decl.Type.Location) { OutType = astPtr.OutType };
                     PostPrepareExprInference(decl.Type, inInfo, ref outInfo);
                 }
             }
