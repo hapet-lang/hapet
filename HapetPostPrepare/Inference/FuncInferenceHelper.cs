@@ -215,6 +215,20 @@ namespace HapetPostPrepare
                     var firstKeyPart = k.GetPureFuncName();
                     if ((k.StartsWith(classWithFuncName) || firstKeyPart == onlyFuncName))
                         candidates.Add(ds);
+
+                    // generics check
+                    if (onlyFuncName.Contains("_GB_") && firstKeyPart.Contains("_GB_"))
+                    {
+                        // if names without generics are the same and the same amount of parameters
+                        string pureFuncName = firstKeyPart.Substring(0, firstKeyPart.IndexOf("_GB_"));
+                        string pureCallName = onlyFuncName.Substring(0, firstKeyPart.IndexOf("_GB_"));
+
+                        int gAmountFunc = firstKeyPart.GetGenericsAmount();
+                        int gAmountCall = onlyFuncName.GetGenericsAmount();
+
+                        if (pureFuncName == pureCallName && gAmountFunc == gAmountCall)
+                            candidates.Add(ds);
+                    }
                 }
             }
             return candidates;

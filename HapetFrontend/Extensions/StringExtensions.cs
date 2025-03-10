@@ -48,5 +48,10 @@ namespace HapetFrontend.Extensions
                 return string.Concat(name.TakeWhile(x => x != '('));
             return string.Concat(name.Split("::")[1].TakeWhile(x => x != '('));
         }
+
+        public static int GetGenericsAmount(this string name)
+        {
+            int amount = 0;
+        }
     }
 }
