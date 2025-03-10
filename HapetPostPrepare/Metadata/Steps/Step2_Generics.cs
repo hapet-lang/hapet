@@ -58,10 +58,6 @@ namespace HapetPostPrepare
                 if (func.IsImplOfGeneric)
                     return false;
 
-                // define it in scope 
-                var genericFunc = new DeclSymbol(func.Name.Name, func);
-                func.Scope.DefineSymbol(genericFunc);
-
                 List<AstClassDecl> virtualTypes = new List<AstClassDecl>();
                 // making virtual types for generics like T
                 foreach (var t in func.GenericNames)
