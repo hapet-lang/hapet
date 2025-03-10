@@ -110,6 +110,12 @@ namespace HapetPostPrepare
             // pp up to the current metadata step
             PostPrepareStatementUpToCurrentStep(realFunc);
 
+            // add to parent decls
+            if (funcDecl.NormalParent is AstClassDecl clsD)
+                clsD.Declarations.Add(realFunc);
+            else if (funcDecl.NormalParent is AstStructDecl strD)
+                strD.Declarations.Add(realFunc);
+
             // reload previously saved shite
             _currentSourceFile = savedSourceFile;
             _currentClass = savedClass;
