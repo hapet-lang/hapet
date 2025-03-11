@@ -917,6 +917,10 @@ namespace HapetPostPrepare
             }
             else if (decl.Decl is AstFuncDecl funcDecl && funcDecl.HasGenericTypes)
             {
+                // this is to get REAL PURE GENERIC function. not the fcking T-like
+                if (funcDecl.IsImplOfGeneric)
+                    funcDecl = funcDecl.OriginalGenericFunction;
+
                 // generating generic cls name
                 string realName = GetGenericRealName(funcDecl, genId.GenericRealTypes);
                 if (funcDecl.Scope.SymbolTable.TryGetValue(realName, out var realDcl) && realDcl is DeclSymbol realDclDecl)
@@ -943,8 +947,8 @@ namespace HapetPostPrepare
                 var theName = callExpr.FuncName.Name;
                 var resetedName = theName.GetPureFuncName();
                 // also reset generic appendings
-                if (resetedName.Contains("_GB_"))
-                    resetedName = resetedName.Split("_GB_")[0];
+                if (resetedName.Contains(Funcad.GENERIC_BEGIN))
+                    resetedName = resetedName.Split(Funcad.GENERIC_BEGIN)[0];
                 callExpr.FuncName = callExpr.FuncName.GetCopy(resetedName);
             }
 

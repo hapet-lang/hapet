@@ -34,6 +34,12 @@ namespace HapetFrontend.Ast.Declarations
         public Dictionary<AstIdExpr, List<AstNestedExpr>> GenericConstrains { get; set; } = new Dictionary<AstIdExpr, List<AstNestedExpr>>();
 
         /// <summary>
+        /// Contains the original generic function from which the current one is created 
+        /// also if the current one is <see cref="IsImplOfGeneric"/>
+        /// </summary>
+        public AstFuncDecl OriginalGenericFunction { get; set; }
+
+        /// <summary>
         /// The class that contains the function
         /// </summary>
         [JsonIgnore]

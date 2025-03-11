@@ -8,6 +8,7 @@ using HapetFrontend.Extensions;
 using HapetPostPrepare.Entities;
 using System;
 using System.Text;
+using HapetFrontend.Helpers;
 
 namespace HapetPostPrepare
 {
@@ -95,6 +96,7 @@ namespace HapetPostPrepare
             var realFunc = funcDecl.GetDeepCopy() as AstFuncDecl;
             realFunc.ContainingParent = funcDecl.ContainingParent;
             realFunc.IsImplOfGeneric = true;
+            realFunc.OriginalGenericFunction = funcDecl;
             realFunc.Name = realFunc.Name.GetCopy(realName);
             // no need to reset HasGenericTypes when using generic shite from another generic
             realFunc.HasGenericTypes = HasGenericTypesInRealTypes(genericTypes);
@@ -156,6 +158,12 @@ namespace HapetPostPrepare
                     name = func.Name.Name.Substring(0, indexOfParen);
                 }
 
+                // also reset generic shite if exists
+                if (name.Contains(Funcad.GENERIC_BEGIN))
+                {
+                    name = name.Substring(0, name.IndexOf(Funcad.GENERIC_BEGIN));
+                }
+
                 string realName = GetGenericRealName(name, generics);
 
                 // cringe
@@ -174,7 +182,7 @@ namespace HapetPostPrepare
         private static string GetGenericRealName(string namee, List<AstNestedExpr> generics)
         {
             StringBuilder sb = new StringBuilder(namee);
-            sb.Append("_GB_");
+            sb.Append(Funcad.GENERIC_BEGIN);
             for (int i = 0; i < generics.Count; ++i)
             {
                 var g = generics[i];
@@ -185,9 +193,9 @@ namespace HapetPostPrepare
 
                 // if not last - append delimeter
                 if (i != generics.Count - 1)
-                    sb.Append("_GD_");
+                    sb.Append(Funcad.GENERIC_DELIM);
             }
-            sb.Append("_GE_");
+            sb.Append(Funcad.GENERIC_END);
             return sb.ToString();
         }
 

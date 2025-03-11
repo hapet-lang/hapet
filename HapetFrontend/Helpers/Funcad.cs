@@ -4,6 +4,10 @@ namespace HapetFrontend.Helpers
 {
     public static class Funcad
     {
+        public const string GENERIC_BEGIN = "_GB_";
+        public const string GENERIC_DELIM = "_GD_";
+        public const string GENERIC_END   = "_GE_";
+
         /// <summary>
         /// Returns 'true' is the provided number is a power of two (including 0)
         /// </summary>
