@@ -25,23 +25,32 @@ namespace HapetPostPrepare
                 foreach (var stmt in file.Statements)
                 {
                     stmt.Scope = file.NamespaceScope;
-                    if (stmt is AstClassDecl classDecl)
-                    {
-                        PostPrepareClassScoping(classDecl);
-                    }
-                    else if (stmt is AstStructDecl structDecl)
-                    {
-                        PostPrepareStructScoping(structDecl);
-                    }
-                    else if (stmt is AstEnumDecl enumDecl)
-                    {
-                        PostPrepareEnumScoping(enumDecl);
-                    }
-                    else if (stmt is AstDelegateDecl delegateDecl)
-                    {
-                        PostPrepareDelegateScoping(delegateDecl);
-                    }
+                    PostPrepareDeclScoping(stmt as AstDeclaration);
                 }
+            }
+        }
+
+        private void PostPrepareDeclScoping(AstDeclaration stmt)
+        {
+            if (stmt is AstClassDecl classDecl)
+            {
+                PostPrepareClassScoping(classDecl);
+            }
+            else if (stmt is AstStructDecl structDecl)
+            {
+                PostPrepareStructScoping(structDecl);
+            }
+            else if (stmt is AstEnumDecl enumDecl)
+            {
+                PostPrepareEnumScoping(enumDecl);
+            }
+            else if (stmt is AstDelegateDecl delegateDecl)
+            {
+                PostPrepareDelegateScoping(delegateDecl);
+            }
+            else if (stmt is AstFuncDecl funcDecl)
+            {
+                PostPrepareFunctionScoping(funcDecl);
             }
         }
 

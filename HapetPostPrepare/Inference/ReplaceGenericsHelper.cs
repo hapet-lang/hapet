@@ -19,6 +19,14 @@ namespace HapetPostPrepare
             }
         }
 
+        public void ReplaceAllGenericTypesInDecl(AstDeclaration decl)
+        {
+            if (decl is AstClassDecl clsDecl)
+                ReplaceAllGenericTypesInClass(clsDecl);
+            else if (decl is AstFuncDecl funcDecl)
+                ReplaceAllGenericTypesInFunction(funcDecl);
+        }
+
         public void ReplaceAllGenericTypesInClass(AstClassDecl clsDecl)
         {
             // replacing inheritance

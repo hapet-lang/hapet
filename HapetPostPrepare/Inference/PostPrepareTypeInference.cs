@@ -898,45 +898,30 @@ namespace HapetPostPrepare
             if (idExpr is not AstIdGenericExpr genId)
                 return decl;
 
-            if (decl.Decl is AstClassDecl clsDecl && clsDecl.HasGenericTypes)
+            if (!decl.Decl.HasGenericTypes)
+                return decl;
+
+            var theDecl = decl.Decl;
+
+            // this is to get REAL PURE GENERIC. not the fcking T-like
+            if (theDecl.IsImplOfGeneric)
+                theDecl = theDecl.OriginalGenericDecl;
+
+            // generating generic shite name
+            string realName = GetGenericRealName(theDecl, genId.GenericRealTypes);
+            if (theDecl.Scope.SymbolTable.TryGetValue(realName, out var realDcl) && realDcl is DeclSymbol realDclDecl)
             {
-                // generating generic cls name
-                string realName = GetGenericRealName(clsDecl, genId.GenericRealTypes);
-                if (clsDecl.Scope.SymbolTable.TryGetValue(realName, out var realDcl) && realDcl is DeclSymbol realDclDecl)
-                {
-                    // return if exists
-                    return realDclDecl;
-                }
-
-                // create a new class for real types
-                var realCls = GetRealTypeFromGeneric(clsDecl, genId.GenericRealTypes, realName);
-
-                realDclDecl = new DeclSymbol(realName, realCls);
-                clsDecl.Scope.DefineSymbol(realDclDecl);
+                // return if exists
                 return realDclDecl;
             }
-            else if (decl.Decl is AstFuncDecl funcDecl && funcDecl.HasGenericTypes)
-            {
-                // this is to get REAL PURE GENERIC function. not the fcking T-like
-                if (funcDecl.IsImplOfGeneric)
-                    funcDecl = funcDecl.OriginalGenericFunction;
 
-                // generating generic cls name
-                string realName = GetGenericRealName(funcDecl, genId.GenericRealTypes);
-                if (funcDecl.Scope.SymbolTable.TryGetValue(realName, out var realDcl) && realDcl is DeclSymbol realDclDecl)
-                {
-                    // return if exists
-                    return realDclDecl;
-                }
+            // create a new shite with real types
+            var realCls = GetRealTypeFromGeneric(theDecl, genId.GenericRealTypes, realName);
 
-                // create a new class for real types
-                var realCls = GetRealTypeFromGeneric(funcDecl, genId.GenericRealTypes, realName);
-
-                realDclDecl = new DeclSymbol(realName, realCls);
-                funcDecl.Scope.DefineSymbol(realDclDecl);
-                return realDclDecl;
-            }
-            return decl;
+            // define the real decl in the same scope where generic one exists
+            realDclDecl = new DeclSymbol(realName, realCls);
+            theDecl.Scope.DefineSymbol(realDclDecl);
+            return realDclDecl;
         }
 
         private void PostPrepareCallExprInference(AstCallExpr callExpr, InInfo inInfo, ref OutInfo outInfo)

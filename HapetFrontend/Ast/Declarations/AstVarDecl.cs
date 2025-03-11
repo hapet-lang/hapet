@@ -14,13 +14,6 @@ namespace HapetFrontend.Ast.Declarations
         public AstExpression Initializer { get; set; }
 
         /// <summary>
-        /// The class/struct/interface that contains the var
-        /// Used only for fields and properties!!!
-        /// </summary>
-        [JsonIgnore]
-        public AstDeclaration ContainingParent { get; set; }
-
-        /// <summary>
         /// Used for easier infferencing. Mean that the field is for get/set func
         /// </summary>
         public bool IsPropertyField { get; set; }

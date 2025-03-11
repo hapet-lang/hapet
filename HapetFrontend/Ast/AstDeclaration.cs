@@ -34,6 +34,40 @@ namespace HapetFrontend.Ast
         public Scope SubScope { get; set; }
 
         /// <summary>
+        /// The class/struct/interface/other_shite that contains the decl
+        /// </summary>
+        [JsonIgnore]
+        public AstDeclaration ContainingParent { get; set; }
+
+        /// <summary>
+        /// 'true' if the declaration is a generic decl like 'List-T-'
+        /// </summary>
+        public bool HasGenericTypes { get; set; }
+
+        /// <summary>
+        /// 'true' if smth like List-T- or List-int-, 'false' on real pure generic type
+        /// </summary>
+        public bool IsImplOfGeneric { get; set; }
+
+        /// <summary>
+        /// Generic name aliases like T in:
+        /// public class TestCls-T- { ... }
+        /// </summary>
+        public List<AstIdExpr> GenericNames { get; set; } = new List<AstIdExpr>();
+
+        /// <summary>
+        /// Generic parameter constrains like:
+        /// ...-T- where T: struct, enum, class { ... }
+        /// </summary>
+        public Dictionary<AstIdExpr, List<AstNestedExpr>> GenericConstrains { get; set; } = new Dictionary<AstIdExpr, List<AstNestedExpr>>();
+
+        /// <summary>
+        /// Contains the original generic decl from which the current one is created 
+        /// also if the current one is <see cref="IsImplOfGeneric"/>
+        /// </summary>
+        public AstDeclaration OriginalGenericDecl { get; set; }
+
+        /// <summary>
         /// Getting symbol of itself
         /// </summary>
         [JsonIgnore]

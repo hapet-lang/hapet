@@ -45,41 +45,7 @@ namespace HapetPostPrepare
             return cls;
         }
 
-        private AstClassDecl GetRealTypeFromGeneric(AstClassDecl clsDecl, List<AstNestedExpr> genericTypes, string realName)
-        {
-            // we need to save previous info about current shite and then reload it 
-            var savedSourceFile = _currentSourceFile;
-            var savedClass = _currentClass;
-            var savedFunction = _currentFunction;
-
-            string origClassPureName = clsDecl.Name.Name.GetClassNameWithoutNamespace();
-
-            var realCls = clsDecl.GetDeepCopy() as AstClassDecl;
-            realCls.IsImplOfGeneric = true;
-            realCls.Name = realCls.Name.GetCopy(realName).GetPureIdExpr();
-            // no need to reset HasGenericTypes when using generic shite from another generic
-            realCls.HasGenericTypes = HasGenericTypesInRealTypes(genericTypes);
-            // replaces all T with normal types like int
-            MakeGenericMapping(realCls.GenericNames, genericTypes);
-            ReplaceAllGenericTypesInClass(realCls);
-            // replaces all System.Anime::Func(Pivo) with just Func and etc.
-            ResetDeclarationNames(realCls);
-            // renaming generated funcs like ctor, dtor and etc.
-            RenameFromGenericToRealType(realCls, origClassPureName);
-            // just a pp
-            PostPrepareClassScoping(realCls);
-            // pp up to the current metadata step
-            PostPrepareStatementUpToCurrentStep(realCls);
-
-            // reload previously saved shite
-            _currentSourceFile = savedSourceFile;
-            _currentClass = savedClass;
-            _currentFunction = savedFunction;
-
-            return realCls;
-        }
-
-        private AstFuncDecl GetRealTypeFromGeneric(AstFuncDecl funcDecl, List<AstNestedExpr> genericTypes, string realName)
+        private AstDeclaration GetRealTypeFromGeneric(AstDeclaration decl, List<AstNestedExpr> genericTypes, string realName)
         {
             // we need to save previous info about current shite and then reload it 
             var savedSourceFile = _currentSourceFile;
@@ -87,43 +53,55 @@ namespace HapetPostPrepare
             var savedFunction = _currentFunction;
 
             // cringe
-            string origFuncPureName;
-            if (funcDecl.Name.Name.Contains("::"))
-                origFuncPureName = funcDecl.Name.Name.GetPureFuncName();
-            else
-                origFuncPureName = funcDecl.Name.Name;
+            string origDeclPureName = decl.Name.Name;
+            if (decl is AstFuncDecl funcDecl)
+            {
+                if (funcDecl.Name.Name.Contains("::"))
+                    origDeclPureName = funcDecl.Name.Name.GetPureFuncName();
+                else
+                    origDeclPureName = funcDecl.Name.Name;
+            }
+            else if (decl is AstClassDecl clsDecl)
+            {
+                origDeclPureName = clsDecl.Name.Name.GetClassNameWithoutNamespace();
+            }
 
-            var realFunc = funcDecl.GetDeepCopy() as AstFuncDecl;
-            realFunc.ContainingParent = funcDecl.ContainingParent;
-            realFunc.IsImplOfGeneric = true;
-            realFunc.OriginalGenericFunction = funcDecl;
-            realFunc.Name = realFunc.Name.GetCopy(realName).GetPureIdExpr();
+            var realDecl = decl.GetDeepCopy() as AstDeclaration;
+            realDecl.ContainingParent = realDecl.ContainingParent;
+            realDecl.IsImplOfGeneric = true;
+            realDecl.OriginalGenericDecl = decl;
+            realDecl.Name = realDecl.Name.GetCopy(realName).GetPureIdExpr();
             // no need to reset HasGenericTypes when using generic shite from another generic
-            realFunc.HasGenericTypes = HasGenericTypesInRealTypes(genericTypes);
-            // replaces all T with normal types like int
-            MakeGenericMapping(realFunc.GenericNames, genericTypes);
-            ReplaceAllGenericTypesInFunction(realFunc);
-            // replaces all System.Anime::Func(Pivo) with just Func and etc.
-            ResetDeclarationNames(realFunc);
-            // renaming generated funcs like ctor, dtor and etc.
-            RenameFromGenericToRealType(funcDecl, origFuncPureName);
-            // just a pp
-            PostPrepareFunctionScoping(realFunc);
-            // pp up to the current metadata step
-            PostPrepareStatementUpToCurrentStep(realFunc);
+            realDecl.HasGenericTypes = HasGenericTypesInRealTypes(genericTypes);
 
-            // add to parent decls
-            if (funcDecl.NormalParent is AstClassDecl clsD)
-                clsD.Declarations.Add(realFunc);
-            else if (funcDecl.NormalParent is AstStructDecl strD)
-                strD.Declarations.Add(realFunc);
+            // replaces all T with normal types like int
+            MakeGenericMapping(realDecl.GenericNames, genericTypes);
+            ReplaceAllGenericTypesInDecl(realDecl);
+            // replaces all System.Anime::Func(Pivo) with just Func and etc.
+            ResetDeclarationNames(realDecl);
+            // renaming generated funcs like ctor, dtor and etc.
+            RenameFromGenericToRealType(realDecl, origDeclPureName);
+            // just a pp
+            PostPrepareDeclScoping(realDecl);
+            // pp up to the current metadata step
+            PostPrepareStatementUpToCurrentStep(realDecl);
+
+            // add to parent if a func decl
+            if (decl is AstFuncDecl funcDecl2)
+            {
+                // add to parent decls
+                if (funcDecl2.NormalParent is AstClassDecl clsD)
+                    clsD.Declarations.Add(realDecl);
+                else if (funcDecl2.NormalParent is AstStructDecl strD)
+                    strD.Declarations.Add(realDecl);
+            }
 
             // reload previously saved shite
             _currentSourceFile = savedSourceFile;
             _currentClass = savedClass;
             _currentFunction = savedFunction;
 
-            return realFunc;
+            return realDecl;
         }
 
         private static bool HasGenericTypesInRealTypes(List<AstNestedExpr> genericTypes)

@@ -22,30 +22,6 @@ namespace HapetFrontend.Ast.Declarations
         public AstBlockExpr Body { get; set; }
 
         /// <summary>
-        /// Generic name aliases like T in:
-        /// public T GetAnimeElement-T-() { ... }
-        /// </summary>
-        public List<AstIdExpr> GenericNames { get; set; } = new List<AstIdExpr>();
-
-        /// <summary>
-        /// Generic parameter constrains like:
-        /// ... where T: struct, enum, class { ... }
-        /// </summary>
-        public Dictionary<AstIdExpr, List<AstNestedExpr>> GenericConstrains { get; set; } = new Dictionary<AstIdExpr, List<AstNestedExpr>>();
-
-        /// <summary>
-        /// Contains the original generic function from which the current one is created 
-        /// also if the current one is <see cref="IsImplOfGeneric"/>
-        /// </summary>
-        public AstFuncDecl OriginalGenericFunction { get; set; }
-
-        /// <summary>
-        /// The class that contains the function
-        /// </summary>
-        [JsonIgnore]
-        public AstDeclaration ContainingParent { get; set; }
-
-        /// <summary>
         /// Statement of calling base ctor. Used only for ctors!!!!
         /// </summary>
         public AstBaseCtorStmt BaseCtorCall { get; set; }
@@ -54,16 +30,6 @@ namespace HapetFrontend.Ast.Declarations
         /// Used for easier infferencing. Mean that the func is a get/set func
         /// </summary>
         public bool IsPropertyFunction { get; set; }
-
-        /// <summary>
-        /// 'true' if the declaration is a generic decl like 'GetAnimeElements-T-'
-        /// </summary>
-        public bool HasGenericTypes { get; set; }
-
-        /// <summary>
-        /// 'true' if smth like GetAnimeElements-T- or GetAnimeElements-int-, 'false' on real pure generic func
-        /// </summary>
-        public bool IsImplOfGeneric { get; set; }
 
         public override string AAAName => nameof(AstFuncDecl);
 

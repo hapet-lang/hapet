@@ -21,18 +21,6 @@ namespace HapetFrontend.Ast.Declarations
         public List<AstNestedExpr> InheritedFrom { get; set; } = new List<AstNestedExpr>();
 
         /// <summary>
-        /// Generic name aliases like T in:
-        /// public class TestCls-T- { ... }
-        /// </summary>
-        public List<AstIdExpr> GenericNames { get; set; } = new List<AstIdExpr>();
-
-        /// <summary>
-        /// Generic parameter constrains like:
-        /// ...-T- where T: struct, enum, class { ... }
-        /// </summary>
-        public Dictionary<AstIdExpr, List<AstNestedExpr>> GenericConstrains { get; set; } = new Dictionary<AstIdExpr, List<AstNestedExpr>>();
-
-        /// <summary>
         /// 'true' if the declaration is an interface
         /// </summary>
         public bool IsInterface { get; set; }
@@ -41,16 +29,6 @@ namespace HapetFrontend.Ast.Declarations
         /// 'true' if the declaration is a declaration of a generic type like 'T'
         /// </summary>
         public bool IsGenericType { get; set; }
-
-        /// <summary>
-        /// 'true' if the declaration is a generic decl like 'List-T-'
-        /// </summary>
-        public bool HasGenericTypes { get; set; }
-
-        /// <summary>
-        /// 'true' if smth like List-T- or List-int-, 'false' on real pure generic type
-        /// </summary>
-        public bool IsImplOfGeneric { get; set; }
 
         /// <summary>
         /// All original raw fields (including inherited) (for easier interface offset generation)
