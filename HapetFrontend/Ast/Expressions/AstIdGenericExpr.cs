@@ -69,5 +69,18 @@ namespace HapetFrontend.Ast.Expressions
             };
             return newId;
         }
+
+        public override AstIdExpr GetPureIdExpr()
+        {
+            return new AstIdExpr(Name, Location)
+            {
+                Suffix = this.Suffix,
+                Parent = this.Parent,
+                Scope = this.Scope,
+                OutType = this.OutType,
+                OutValue = this.OutValue,
+                SourceFile = this.SourceFile,
+            };
+        }
     }
 }

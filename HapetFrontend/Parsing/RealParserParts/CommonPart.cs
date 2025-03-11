@@ -89,7 +89,7 @@ namespace HapetFrontend.Parsing
                 }
             }
 
-            var nxt = NextToken();
+            var nxt = lookAhead ? NextLookAhead() : NextToken();
             if (nxt.Type != TokenType.Greater)
             {
                 var custom = ErrMsg(">", "after generic types");

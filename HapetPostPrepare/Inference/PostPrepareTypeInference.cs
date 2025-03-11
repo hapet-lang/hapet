@@ -954,7 +954,14 @@ namespace HapetPostPrepare
 
             string funcName = callExpr.FuncName.Name;
             if (callExpr.FuncName is AstIdGenericExpr genId)
+            {
+                for (int i = 0; i < genId.GenericRealTypes.Count; ++i)
+                {
+                    var g = genId.GenericRealTypes[i];
+                    PostPrepareExprInference(g, inInfo, ref outInfo);
+                }
                 funcName = GetGenericRealName(callExpr.FuncName.Name, genId.GenericRealTypes);
+            }
 
             // the var is used to check when static method is accessed from an object
             bool accessingFromAnObject = false;

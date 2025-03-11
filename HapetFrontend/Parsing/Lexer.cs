@@ -171,7 +171,8 @@ namespace HapetFrontend.Parsing
                 case '!' when Next(location) == '=': SimpleToken(location, ref token, TokenType.NotEqual, 2); break;
                 case '<' when Next(location) == '=': SimpleToken(location, ref token, TokenType.LessEqual, 2); break;
                 case '<' when Next(location) == '<': SimpleToken(location, ref token, TokenType.LessLess, 2); break;
-                case '>' when Next(location) == '>': SimpleToken(location, ref token, TokenType.GreaterGreater, 2); break;
+                // https://stackoverflow.com/questions/13428934/is-c-sharp-considered-a-context-free-language
+                //case '>' when Next(location) == '>': SimpleToken(location, ref token, TokenType.GreaterGreater, 2); break;
                 case '>' when Next(location) == '=': SimpleToken(location, ref token, TokenType.GreaterEqual, 2); break;
                 case '+' when Next(location) == '=': SimpleToken(location, ref token, TokenType.AddEq, 2); break;
                 case '-' when Next(location) == '=': SimpleToken(location, ref token, TokenType.SubEq, 2); break;

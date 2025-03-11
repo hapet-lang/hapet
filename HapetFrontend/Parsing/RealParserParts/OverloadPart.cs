@@ -102,6 +102,15 @@ namespace HapetFrontend.Parsing
                     case TokenType.MinusMinus: op = "--"; break;
                 }
 
+                // cringe handle >>
+                // https://github.com/dotnet/roslyn/blob/62646c22f6bd7b213e7e15dbc0dfadfe47a1e30f/src/Compilers/CSharp/Portable/Parser/Lexer.cs#L4118-L4122
+                // https://github.com/dotnet/roslyn/blob/62646c22f6bd7b213e7e15dbc0dfadfe47a1e30f/src/Compilers/CSharp/Portable/Parser/LanguageParser.cs#L11067-L11073
+                if (op == ">" && PeekToken().Type == TokenType.Greater)
+                {
+                    NextToken();
+                    op = ">>";
+                }
+
                 inInfo.AllowCommaForTuple = true;
                 inInfo.AllowFunctionDeclaration = true;
                 var tpl = ParseTupleExpression(inInfo, ref outInfo);

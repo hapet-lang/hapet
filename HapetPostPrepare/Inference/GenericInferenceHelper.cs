@@ -56,7 +56,7 @@ namespace HapetPostPrepare
 
             var realCls = clsDecl.GetDeepCopy() as AstClassDecl;
             realCls.IsImplOfGeneric = true;
-            realCls.Name = realCls.Name.GetCopy(realName);
+            realCls.Name = realCls.Name.GetCopy(realName).GetPureIdExpr();
             // no need to reset HasGenericTypes when using generic shite from another generic
             realCls.HasGenericTypes = HasGenericTypesInRealTypes(genericTypes);
             // replaces all T with normal types like int
@@ -97,7 +97,7 @@ namespace HapetPostPrepare
             realFunc.ContainingParent = funcDecl.ContainingParent;
             realFunc.IsImplOfGeneric = true;
             realFunc.OriginalGenericFunction = funcDecl;
-            realFunc.Name = realFunc.Name.GetCopy(realName);
+            realFunc.Name = realFunc.Name.GetCopy(realName).GetPureIdExpr();
             // no need to reset HasGenericTypes when using generic shite from another generic
             realFunc.HasGenericTypes = HasGenericTypesInRealTypes(genericTypes);
             // replaces all T with normal types like int

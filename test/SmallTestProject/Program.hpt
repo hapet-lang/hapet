@@ -10,8 +10,8 @@ public static class Program
     public static int Main(string[] args)
     {
         var cls = new TestCls();
-        int a = cls.GetElement<int>(10);
-        return a;
+        var a = cls.GetElement<Anime<int>>(10);
+        return 0;
     }
 }
 
@@ -26,4 +26,9 @@ public class TestCls
     {
         return default;
     }
+}
+
+public class Anime<T>
+{
+
 }

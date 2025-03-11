@@ -78,5 +78,10 @@ namespace HapetFrontend.Ast.Expressions
             };
             return newId;
         }
+
+        public virtual AstIdExpr GetPureIdExpr()
+        {
+            return this;
+        }
     }
 }
