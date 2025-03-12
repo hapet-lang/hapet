@@ -127,6 +127,10 @@ namespace HapetFrontend.Parsing
                 }
             }
 
+            // ptype is only a NestedShite
+            if (ptype is not AstNestedExpr)
+                ptype = new AstNestedExpr(ptype as AstExpression, null, ptype);
+
             end = ptype.Ending;
 
             if (allowDefaultValue)

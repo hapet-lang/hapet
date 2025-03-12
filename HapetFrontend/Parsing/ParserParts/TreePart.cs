@@ -175,7 +175,6 @@ namespace HapetFrontend.Parsing
                 var t2 = PeekLookAhead();
                 if (t1.Type == TokenType.Greater && t2.Type == TokenType.Greater)
                 {
-                    NextToken();
                     next.Type = TokenType.GreaterGreater;
                     next.Location.End = t2.Location.End;
                 }
@@ -189,6 +188,10 @@ namespace HapetFrontend.Parsing
                 {
                     return lhs;
                 }
+
+                // make one more token eat because of pseudo >>
+                if (next.Type == TokenType.GreaterGreater)
+                    NextToken();
 
                 NextToken();
                 SkipNewlines();
@@ -344,9 +347,12 @@ namespace HapetFrontend.Parsing
                                     break;
 
                                 bool savedAllowComma = inInfo.AllowCommaForTuple;
+                                bool savedAllowGen = inInfo.AllowGeneric;
                                 inInfo.AllowCommaForTuple = true;
+                                inInfo.AllowGeneric = false;
                                 args.Add(ParseExpression(inInfo, ref outInfo));
                                 inInfo.AllowCommaForTuple = savedAllowComma;
+                                inInfo.AllowGeneric = savedAllowGen;
 
                                 SkipNewlines();
 
@@ -362,7 +368,6 @@ namespace HapetFrontend.Parsing
                                 {
                                     NextToken();
                                     ReportMessage(next.Location, [], ErrorCode.Get(CTEN.ArrayAccUnexpectedToken));
-                                    //RecoverExpression();
                                 }
                             }
                             var end = Consume(TokenType.CloseBracket, ErrMsg("]", "at end of [..] operator")).Location;
