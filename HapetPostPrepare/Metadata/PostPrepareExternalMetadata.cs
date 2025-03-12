@@ -40,9 +40,10 @@ namespace HapetPostPrepare
             _externalProjectFilename = fileName;
 
             // setting all functions into classes. So do not use funcs anymore
-            foreach (var fnc in funcs)
+            for (int i = 0; i < funcs.Count; ++i)
             {
-                string typeName = string.Concat(fnc.Name.Name.TakeWhile(x => x != ':'));
+                string typeName = metadata.FuncDecls[i].ParentDeclName;
+                var fnc = funcs[i];
 
                 var theClass = _classes.FirstOrDefault(x => x.Name.Name == typeName);
                 if (theClass != null)

@@ -92,26 +92,20 @@ namespace HapetFrontend.Helpers
 
         public static string GetPrettyGenericFuncName(string name)
         {
-            // there is no generic shite
-            if (!name.Contains(GENERIC_BEGIN))
-                return name;
-
             // getting the index of func/cls delim
             int delimIndex = name.IndexOf("::");
             if (delimIndex == -1)
                 return GetPrettyGenericImplName(name); // probably pure func
 
-            string clsPart = name.Substring(0, delimIndex);
             string otherPart = name.Substring(delimIndex + 2);
 
-            StringBuilder sb = new StringBuilder(GetPrettyGenericImplName(clsPart));
-            sb.Append("::");
+            StringBuilder sb = new StringBuilder();
 
             int parenIndex = otherPart.IndexOf('(');
             string funcNamePart = otherPart.Substring(0, parenIndex);
-            string paramsPart = otherPart.Substring(parenIndex);
 
             sb.Append(GetPrettyGenericImplName(funcNamePart));
+
             return sb.ToString();
         }
 
@@ -202,6 +196,27 @@ namespace HapetFrontend.Helpers
                 }
                 return d.Name.Name;
             }
+        }
+
+        public static AstIdExpr GetAstIdFromName(string name, ILocation location)
+        {
+            // no generics
+            if (!name.Contains('<'))
+                return new AstIdExpr(name, location);
+
+            int genInd = name.IndexOf('<');
+            string nameWithout = name.Substring(0, genInd);
+            string genTypes = name.Substring(genInd + 1, name.Length - genInd - 2); // why -2? because we want to remove both < and >
+
+            // generating/adding generics
+            List<AstNestedExpr> gens = new List<AstNestedExpr>();
+            foreach (var g in genTypes.Split(':'))
+            {
+                gens.Add(new AstNestedExpr(GetAstIdFromName(g, location), null, location));
+            }
+
+            var astGen = new AstIdGenericExpr(nameWithout, gens, location);
+            return astGen;
         }
     }
 }

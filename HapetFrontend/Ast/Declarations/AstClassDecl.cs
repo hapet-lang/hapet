@@ -107,6 +107,7 @@ namespace HapetFrontend.Ast.Declarations
                 Name = GenericsHelper.GetPrettyGenericImplName(Name.Name),
                 InheritedTypes = inhs,
                 IsGenericDecl = HasGenericTypes,
+                IsInterface = IsInterface,
                 SpecialKeys = SpecialKeys,
                 Attributes = attributes,
                 DocString = Documentation
@@ -125,6 +126,7 @@ namespace HapetFrontend.Ast.Declarations
         public List<TokenType> SpecialKeys { get; set; }
         public List<AttributeJson> Attributes { get; set; }
 
+        public bool IsInterface { get; set; }
         public bool IsGenericDecl { get; set; }
 
         public string DocString { get; set; }
@@ -134,7 +136,9 @@ namespace HapetFrontend.Ast.Declarations
             var allClassDecls = new List<AstDeclaration>();
             allClassDecls.AddRange(Fields.Select(x => x.GetAst(compiler)));
             allClassDecls.AddRange(Properties.Select(x => x.GetAst(compiler)));
-            var decl = new AstClassDecl(new AstIdExpr(Name), allClassDecls, DocString);
+            var decl = new AstClassDecl(GenericsHelper.GetAstIdFromName(Name, null), allClassDecls, DocString);
+            decl.HasGenericTypes = IsGenericDecl;
+            decl.IsInterface = IsInterface;
             decl.SpecialKeys.AddRange(SpecialKeys);
             decl.Attributes.AddRange(Attributes.Select(x => x.GetAst(compiler)));
             decl.InheritedFrom.AddRange(InheritedTypes.Select(x => new AstNestedExpr(new AstIdExpr(x), null)));

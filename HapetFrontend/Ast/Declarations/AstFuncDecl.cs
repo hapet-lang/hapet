@@ -84,6 +84,7 @@ namespace HapetFrontend.Ast.Declarations
                 Parameters = parameters,
                 ReturnType = HapetType.AsString(Returns.OutType, true),
                 Name = GenericsHelper.GetPrettyGenericFuncName(Name.Name),
+                ParentDeclName = ContainingParent.Name.Name,
                 SpecialKeys = SpecialKeys,
                 IsGenericDecl = HasGenericTypes,
                 Attributes = attributes,
@@ -103,6 +104,7 @@ namespace HapetFrontend.Ast.Declarations
         public List<ParamDeclJson> Parameters { get; set; }
         public string ReturnType { get; set; }
         public string Name { get; set; }
+        public string ParentDeclName { get; set; }
 
         public List<TokenType> SpecialKeys { get; set; }
         public List<AttributeJson> Attributes { get; set; }
@@ -114,9 +116,15 @@ namespace HapetFrontend.Ast.Declarations
 
         public AstFuncDecl GetAst(Compiler compiler)
         {
-            var decl = new AstFuncDecl(Parameters.Select(x => x.GetAst(compiler)).ToList(), Parser.ParseType(ReturnType, compiler) as AstNestedExpr, null, new AstIdExpr(Name), DocString);
+            var decl = new AstFuncDecl(
+                Parameters.Select(x => x.GetAst(compiler)).ToList(), 
+                Parser.ParseType(ReturnType, compiler) as AstNestedExpr, 
+                null,
+                GenericsHelper.GetAstIdFromName(Name, null), 
+                DocString);
             decl.SpecialKeys.AddRange(SpecialKeys);
             decl.Attributes.AddRange(Attributes.Select(x => x.GetAst(compiler)));
+            decl.HasGenericTypes = IsGenericDecl;
             decl.CallingConvention = CallingConvention;
             return decl;
         }
