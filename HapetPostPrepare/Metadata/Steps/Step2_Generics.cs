@@ -1,6 +1,7 @@
 ﻿using HapetFrontend.Ast;
 using HapetFrontend.Ast.Declarations;
 using HapetFrontend.Ast.Expressions;
+using HapetFrontend.Helpers;
 using HapetFrontend.Scoping;
 using System;
 
@@ -9,8 +10,11 @@ namespace HapetPostPrepare
     public partial class PostPrepare
     {
         // TODO: refactor
-        private bool PostPrepareMetadataGenerics(AstStatement stmt)
+        private bool PostPrepareMetadataGenerics(AstStatement stmt, out AstDeclaration realDeclResult)
         {
+            // null by default
+            realDeclResult = null;
+
             if (stmt is not AstDeclaration decl)
                 return false;
 
@@ -37,24 +41,9 @@ namespace HapetPostPrepare
 
             // making a class like List<T> where T is a virtual type
             var nestedList = virtualTypes.Select(x => new AstNestedExpr(x.Name, null, x.Name)).ToList();
-            string realName = GetGenericRealName(decl, nestedList);
+            string realName = GenericsHelper.GetRealFromGenericName(decl, nestedList);
             var realCls = GetRealTypeFromGeneric(decl, nestedList, realName);
-
-            // special cases
-            if (stmt is AstClassDecl cls)
-            {
-                // define it in the same scope
-                var realDclDecl = new DeclSymbol(realName, realCls);
-                cls.Scope.DefineSymbol(realDclDecl);
-
-                // remove from inferencing
-                AllClassesMetadata.Remove(cls);
-            }
-            else if (stmt is AstFuncDecl func)
-            {
-                // remove from inferencing
-                AllFunctionsMetadata.Remove(func);
-            }
+            realDeclResult = realCls;
 
             return true;
         }

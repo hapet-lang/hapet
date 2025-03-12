@@ -7,5 +7,11 @@ public class FlagsAttribute : Attribute
 {
     public FlagsAttribute()
     {
+        
+    }
+
+    public int Anime<T>(string asd)
+    {
+        return 11;
     }
 }

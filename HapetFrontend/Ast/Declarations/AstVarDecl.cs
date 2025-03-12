@@ -64,7 +64,7 @@ namespace HapetFrontend.Ast.Declarations
             var attributes = Attributes.Select(x => x.GetJson()).ToList();
             return new VarDeclJson()
             {
-                Type = HapetType.AsString(Type.OutType),
+                Type = HapetType.AsString(Type.OutType, true),
                 Name = Name.Name,
                 SpecialKeys = SpecialKeys,
                 Attributes = attributes,

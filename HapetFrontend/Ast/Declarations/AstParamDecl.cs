@@ -61,7 +61,7 @@ namespace HapetFrontend.Ast.Declarations
             var attributes = Attributes.Select(x => x.GetJson()).ToList();
             return new ParamDeclJson()
             {
-                Type = HapetType.AsString(Type.OutType),
+                Type = HapetType.AsString(Type.OutType, true),
                 Name = Name.Name,
                 SpecialKeys = SpecialKeys, // need it for 'ref', 'out' and other shite
                 Attributes = attributes,

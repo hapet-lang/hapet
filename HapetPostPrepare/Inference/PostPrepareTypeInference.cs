@@ -908,7 +908,7 @@ namespace HapetPostPrepare
                 theDecl = theDecl.OriginalGenericDecl;
 
             // generating generic shite name
-            string realName = GetGenericRealName(theDecl, genId.GenericRealTypes);
+            string realName = GenericsHelper.GetRealFromGenericName(theDecl, genId.GenericRealTypes);
             if (theDecl.Scope.SymbolTable.TryGetValue(realName, out var realDcl) && realDcl is DeclSymbol realDclDecl)
             {
                 // return if exists
@@ -932,8 +932,8 @@ namespace HapetPostPrepare
                 var theName = callExpr.FuncName.Name;
                 var resetedName = theName.GetPureFuncName();
                 // also reset generic appendings
-                if (resetedName.Contains(Funcad.GENERIC_BEGIN))
-                    resetedName = resetedName.Split(Funcad.GENERIC_BEGIN)[0];
+                if (resetedName.Contains(GenericsHelper.GENERIC_BEGIN))
+                    resetedName = resetedName.Split(GenericsHelper.GENERIC_BEGIN)[0];
                 callExpr.FuncName = callExpr.FuncName.GetCopy(resetedName);
             }
 
@@ -945,7 +945,7 @@ namespace HapetPostPrepare
                     var g = genId.GenericRealTypes[i];
                     PostPrepareExprInference(g, inInfo, ref outInfo);
                 }
-                funcName = GetGenericRealName(callExpr.FuncName.Name, genId.GenericRealTypes);
+                funcName = GenericsHelper.GetRealFromGenericName(callExpr.FuncName.Name, genId.GenericRealTypes);
             }
 
             // the var is used to check when static method is accessed from an object

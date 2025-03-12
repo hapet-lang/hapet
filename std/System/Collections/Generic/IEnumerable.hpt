@@ -8,5 +8,5 @@ public interface IEnumerable<T>
 {
     // Returns an IEnumerator for this enumerable Object.  The enumerator provides
     // a simple way to access all the contents of a collection.
-    IEnumerator<T> GetEnumerator();
+    IEnumerator<T> GetEnumerator(int a);
 }

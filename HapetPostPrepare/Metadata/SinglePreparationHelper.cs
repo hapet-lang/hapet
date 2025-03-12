@@ -1,6 +1,7 @@
 ﻿using HapetFrontend.Ast;
 using HapetFrontend.Ast.Declarations;
 using HapetFrontend.Errors;
+using HapetFrontend.Scoping;
 using HapetFrontend.Types;
 using HapetPostPrepare.Entities;
 using System;
@@ -32,7 +33,7 @@ namespace HapetPostPrepare
             }
             if (_currentPreparationStep >= PreparationStep.Generics)
             {
-                PostPrepareMetadataGenerics(stmt);
+                PostPrepareMetadataGenerics(stmt, out var _);
             }
             if (_currentPreparationStep >= PreparationStep.Inheritance)
             {

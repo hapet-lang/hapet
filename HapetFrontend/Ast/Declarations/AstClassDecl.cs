@@ -97,14 +97,14 @@ namespace HapetFrontend.Ast.Declarations
         public ClassDeclJson GetJson()
         {
             var fields = Declarations.Where(x => x is AstVarDecl && x is not AstPropertyDecl).Select(x => (x as AstVarDecl).GetJson()).ToList();
-            var inhs = InheritedFrom.Select(x => HapetType.AsString(x.OutType)).ToList();
+            var inhs = InheritedFrom.Select(x => HapetType.AsString(x.OutType, true)).ToList();
             var props = Declarations.Where(x => x is AstPropertyDecl).Select(x => (x as AstPropertyDecl).GetJsonPropa()).ToList();
             var attributes = Attributes.Select(x => x.GetJson()).ToList();
             return new ClassDeclJson()
             {
                 Fields = fields,
                 Properties = props,
-                Name = Name.Name,
+                Name = GenericsHelper.GetPrettyGenericImplName(Name.Name),
                 InheritedTypes = inhs,
                 SpecialKeys = SpecialKeys,
                 Attributes = attributes,

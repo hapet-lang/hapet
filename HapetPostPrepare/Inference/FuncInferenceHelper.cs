@@ -218,11 +218,11 @@ namespace HapetPostPrepare
                         candidates.Add(ds);
 
                     // generics check
-                    if (onlyFuncName.Contains(Funcad.GENERIC_BEGIN) && firstKeyPart.Contains(Funcad.GENERIC_BEGIN))
+                    if (onlyFuncName.Contains(GenericsHelper.GENERIC_BEGIN) && firstKeyPart.Contains(GenericsHelper.GENERIC_BEGIN))
                     {
                         // if names without generics are the same and the same amount of parameters
-                        string pureFuncName = firstKeyPart.Substring(0, firstKeyPart.IndexOf(Funcad.GENERIC_BEGIN));
-                        string pureCallName = onlyFuncName.Substring(0, firstKeyPart.IndexOf(Funcad.GENERIC_BEGIN));
+                        string pureFuncName = firstKeyPart.Substring(0, firstKeyPart.IndexOf(GenericsHelper.GENERIC_BEGIN));
+                        string pureCallName = onlyFuncName.Substring(0, firstKeyPart.IndexOf(GenericsHelper.GENERIC_BEGIN));
 
                         int gAmountFunc = firstKeyPart.GetGenericsAmount();
                         int gAmountCall = onlyFuncName.GetGenericsAmount();

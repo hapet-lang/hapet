@@ -78,11 +78,12 @@ namespace HapetFrontend.Ast.Declarations
         {
             var parameters = Parameters.Select(x => x.GetJson()).ToList();
             var attributes = Attributes.Select(x => x.GetJson()).ToList();
+
             return new FuncDeclJson()
             {
                 Parameters = parameters,
-                ReturnType = HapetType.AsString(Returns.OutType),
-                Name = Name.Name,
+                ReturnType = HapetType.AsString(Returns.OutType, true),
+                Name = GenericsHelper.GetPrettyGenericFuncName(Name.Name),
                 SpecialKeys = SpecialKeys,
                 Attributes = attributes,
                 CallingConvention = CallingConvention,

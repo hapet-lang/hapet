@@ -1,4 +1,5 @@
-﻿using HapetFrontend.Scoping;
+﻿using HapetFrontend.Ast.Expressions;
+using HapetFrontend.Scoping;
 using HapetFrontend.Types;
 
 namespace HapetFrontend.Ast

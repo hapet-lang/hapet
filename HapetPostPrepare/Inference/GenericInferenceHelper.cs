@@ -28,7 +28,8 @@ namespace HapetPostPrepare
             if (parent is AstFuncDecl funcDecl)
                 additionalString = funcDecl.GenerateHashForGenericType(name.Name);
 
-            var specialName = name.GetCopy($"{parent.Name.Name}_g_{name.Name}_{additionalString}");
+            string typeName = $"{parent.Name.Name}{GenericsHelper.GENERIC_TYPE_BEGIN}{name.Name}{GenericsHelper.GENERIC_TYPE_END}{additionalString}";
+            var specialName = name.GetCopy(typeName);
             var cls = new AstClassDecl(specialName, new List<AstDeclaration>(), "", specialName)
             {
                 IsGenericType = true,
@@ -70,18 +71,18 @@ namespace HapetPostPrepare
             }
 
             var realDecl = decl.GetDeepCopy() as AstDeclaration;
-            realDecl.ContainingParent = realDecl.ContainingParent;
+            realDecl.ContainingParent = decl.ContainingParent;
             realDecl.IsImplOfGeneric = true;
             realDecl.OriginalGenericDecl = decl;
             realDecl.Name = realDecl.Name.GetCopy(realName).GetPureIdExpr();
             // no need to reset HasGenericTypes when using generic shite from another generic
-            realDecl.HasGenericTypes = HasGenericTypesInRealTypes(genericTypes);
+            realDecl.HasGenericTypes = GenericsHelper.HasGenericTypesInRealTypes(genericTypes);
 
             // replaces all T with normal types like int
             MakeGenericMapping(realDecl.GenericNames, genericTypes);
             ReplaceAllGenericTypesInDecl(realDecl);
             // replaces all System.Anime::Func(Pivo) with just Func and etc.
-            ResetDeclarationNames(realDecl);
+            GenericsHelper.ResetDeclarationNames(realDecl);
             // renaming generated funcs like ctor, dtor and etc.
             RenameFromGenericToRealType(realDecl, origDeclPureName);
             // just a pp
@@ -89,126 +90,12 @@ namespace HapetPostPrepare
             // pp up to the current metadata step
             PostPrepareStatementUpToCurrentStep(realDecl);
 
-            // add to parent if a func decl
-            if (decl is AstFuncDecl funcDecl2)
-            {
-                // add to parent decls
-                if (funcDecl2.NormalParent is AstClassDecl clsD)
-                    clsD.Declarations.Add(realDecl);
-                else if (funcDecl2.NormalParent is AstStructDecl strD)
-                    strD.Declarations.Add(realDecl);
-            }
-
             // reload previously saved shite
             _currentSourceFile = savedSourceFile;
             _currentClass = savedClass;
             _currentFunction = savedFunction;
 
             return realDecl;
-        }
-
-        private static bool HasGenericTypesInRealTypes(List<AstNestedExpr> genericTypes)
-        {
-            bool hasGeneric = false;
-            foreach (var g in genericTypes)
-            {
-                if (g.LeftPart == null && g.RightPart is AstIdExpr id)
-                {
-                    var smb = id.Scope.GetSymbol(id.Name);
-                    if (smb is DeclSymbol dS && dS.Decl is AstClassDecl clsD && clsD.IsGenericType)
-                    {
-                        hasGeneric = true;
-                        break;
-                    }
-                }
-            }
-            return hasGeneric;
-        }
-
-        private static string GetGenericRealName(AstDeclaration decl, List<AstNestedExpr> generics)
-        {
-            if (decl is AstFuncDecl func)
-            {
-                // cringe
-                string name = func.Name.Name;
-                int indexOfParen = 0;
-                bool containsClsName = func.Name.Name.Contains("::");
-                if (containsClsName)
-                {
-                    indexOfParen = func.Name.Name.IndexOf('(');
-                    name = func.Name.Name.Substring(0, indexOfParen);
-                }
-
-                // also reset generic shite if exists
-                if (name.Contains(Funcad.GENERIC_BEGIN))
-                {
-                    name = name.Substring(0, name.IndexOf(Funcad.GENERIC_BEGIN));
-                }
-
-                string realName = GetGenericRealName(name, generics);
-
-                // cringe
-                if (containsClsName)
-                    realName += func.Name.Name.Substring(indexOfParen, func.Name.Name.Length - indexOfParen);
-
-                return realName;
-            }
-            else if (decl is AstClassDecl cls)
-            {
-                return GetGenericRealName(cls.Name.Name, generics);
-            }
-            return decl.Name.Name;
-        }
-
-        private static string GetGenericRealName(string namee, List<AstNestedExpr> generics)
-        {
-            StringBuilder sb = new StringBuilder(namee);
-            sb.Append(Funcad.GENERIC_BEGIN);
-            for (int i = 0; i < generics.Count; ++i)
-            {
-                var g = generics[i];
-                if (g.RightPart is AstIdExpr idExpr)
-                {
-                    sb.Append(idExpr.FindSymbol.Name);
-                }
-
-                // if not last - append delimeter
-                if (i != generics.Count - 1)
-                    sb.Append(Funcad.GENERIC_DELIM);
-            }
-            sb.Append(Funcad.GENERIC_END);
-            return sb.ToString();
-        }
-
-        private static void ResetDeclarationNames(AstDeclaration decl)
-        {
-            if (decl is AstClassDecl clsDecl)
-            {
-                clsDecl.Name = clsDecl.Name.GetCopy(GetName(clsDecl));
-                foreach (var dec in clsDecl.Declarations)
-                {
-                    dec.Name = dec.Name.GetCopy(GetName(dec));
-                }
-            }
-            else if (decl is AstFuncDecl funcDecl)
-            {
-                funcDecl.Name = funcDecl.Name.GetCopy(GetName(funcDecl));
-            }
-
-            static string GetName(AstDeclaration d)
-            {
-                if (d is AstClassDecl c)
-                {
-                    return c.Name.Name.GetClassNameWithoutNamespace();
-                }
-                else if (d is AstFuncDecl f)
-                {
-                    // check if it is really infered
-                    if (f.Name.Name.Contains("::"))
-                        return f.Name.Name.GetPureFuncName();
-                }
-                return d.Name.Name;
-            }
         }
 
         private void RenameFromGenericToRealType(AstDeclaration decl, string origName)

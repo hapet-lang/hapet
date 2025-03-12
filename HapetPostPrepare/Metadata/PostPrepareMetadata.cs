@@ -71,7 +71,10 @@ namespace HapetPostPrepare
                 _currentSourceFile = file;
                 foreach (var stmt in file.Statements)
                 {
-                    PostPrepareMetadataTypes(stmt, true);
+                    /// DO NOT SERIALIZE PURE GENERICS - SERIALIZE T-LIKE GENERICS <see cref="AllPostPrepareMetadataGenerics"/>
+                    bool needSerialize = !(stmt is AstClassDecl classDecl && classDecl.HasGenericTypes);
+
+                    PostPrepareMetadataTypes(stmt, needSerialize);
                 }
             }
         }
@@ -85,7 +88,16 @@ namespace HapetPostPrepare
             {
                 _currentSourceFile = cls.SourceFile;
                 _currentClass = cls;
-                PostPrepareMetadataGenerics(cls);
+                bool itWasGeneric = PostPrepareMetadataGenerics(cls, out var realDecl);
+
+                // do not inference generics
+                if (itWasGeneric)
+                {
+                    // append for serialization T-like
+                    _serializeClassesMetadata.Add(realDecl as AstClassDecl);
+                    // remove from inferencing
+                    AllClassesMetadata.Remove(cls);
+                }
             }
         }
 
@@ -131,21 +143,20 @@ namespace HapetPostPrepare
             _currentPreparationStep = PreparationStep.Functions;
 
             // inferrencing funcs
-            // WARN! _serializeClassesMetadata is used because we don't want external funcs to be inferred like that
             foreach (var cls in AllClassesMetadata.ToList())
             {
                 _currentSourceFile = cls.SourceFile;
                 _currentClass = cls;
 
                 bool isImported = cls.IsImported;
-                PostPrepareMetadataFunctions(cls, !isImported, isImported);
+                PostPrepareMetadataFunctions(cls, !isImported, isImported, true);
             }
             foreach (var str in AllStructsMetadata.ToList())
             {
                 _currentSourceFile = str.SourceFile;
 
                 bool isImported = str.IsImported;
-                PostPrepareMetadataFunctions(str, !isImported, isImported);
+                PostPrepareMetadataFunctions(str, !isImported, isImported, true);
             }
         }
 
