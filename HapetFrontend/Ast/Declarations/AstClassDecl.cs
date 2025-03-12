@@ -106,6 +106,7 @@ namespace HapetFrontend.Ast.Declarations
                 Properties = props,
                 Name = GenericsHelper.GetPrettyGenericImplName(Name.Name),
                 InheritedTypes = inhs,
+                IsGenericDecl = HasGenericTypes,
                 SpecialKeys = SpecialKeys,
                 Attributes = attributes,
                 DocString = Documentation
@@ -123,6 +124,8 @@ namespace HapetFrontend.Ast.Declarations
 
         public List<TokenType> SpecialKeys { get; set; }
         public List<AttributeJson> Attributes { get; set; }
+
+        public bool IsGenericDecl { get; set; }
 
         public string DocString { get; set; }
 

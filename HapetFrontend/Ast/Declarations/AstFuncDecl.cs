@@ -85,6 +85,7 @@ namespace HapetFrontend.Ast.Declarations
                 ReturnType = HapetType.AsString(Returns.OutType, true),
                 Name = GenericsHelper.GetPrettyGenericFuncName(Name.Name),
                 SpecialKeys = SpecialKeys,
+                IsGenericDecl = HasGenericTypes,
                 Attributes = attributes,
                 CallingConvention = CallingConvention,
                 DocString = Documentation
@@ -107,6 +108,7 @@ namespace HapetFrontend.Ast.Declarations
         public List<AttributeJson> Attributes { get; set; }
 
         public CallingConvention CallingConvention { get; set; }
+        public bool IsGenericDecl { get; set; }
 
         public string DocString { get; set; }
 
