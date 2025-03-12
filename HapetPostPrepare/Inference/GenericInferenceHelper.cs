@@ -52,6 +52,9 @@ namespace HapetPostPrepare
             var savedClass = _currentClass;
             var savedFunction = _currentFunction;
 
+            // set the decl source file
+            _currentSourceFile = decl.SourceFile;
+
             // cringe
             string origDeclPureName = decl.Name.Name;
             if (decl is AstFuncDecl funcDecl)

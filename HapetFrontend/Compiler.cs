@@ -121,7 +121,8 @@ namespace HapetFrontend
                     s is AstStructDecl ||
                     s is AstClassDecl ||
                     s is AstDelegateDecl ||
-                    s is AstUsingStmt)
+                    s is AstUsingStmt ||
+                    s is AstNamespaceStmt)
                 {
                     s.SourceFile = file;
                     file.Statements.Add(s);
