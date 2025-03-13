@@ -13,6 +13,11 @@ namespace HapetFrontend.Entities
         public bool AllowGeneric { get; set; }
 
         /// <summary>
+        /// 'true' when parsing .mpt file
+        /// </summary>
+        public bool ExternalMetadata { get; set; }
+
+        /// <summary>
         /// This shite is used for func decl
         /// </summary>
         public AstUnknownDecl CurrentUdecl { get; set; }
@@ -26,6 +31,7 @@ namespace HapetFrontend.Entities
             AllowPointerExpression = false,
             AllowArrayExpression = false,
             AllowGeneric = false,
+            ExternalMetadata = false,
             Message = null,
         };
     }

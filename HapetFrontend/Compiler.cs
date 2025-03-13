@@ -74,21 +74,21 @@ namespace HapetFrontend
                 return _files[filePath];
             }
 
-            var file = ParseFile(filePath, MessageHandler);
+            var file = ParseFile(filePath);
             if (file == null)
                 return null;
 
             return file;
         }
 
-        public List<ProgramFile> ParseMetadata(string metadataText, IMessageHandler mh)
+        public List<ProgramFile> ParseMetadata(string metadataText)
         {
-            var lexer = Lexer.FromString(metadataText, mh, "metadata");
+            var lexer = Lexer.FromString(metadataText, MessageHandler, "metadata");
 
             if (lexer == null)
                 return null;
 
-            var parser = new Parser(lexer, mh);
+            var parser = new Parser(lexer, MessageHandler);
 
             // the list is to handle attributes
             List<AstAttributeStmt> foundAttributes = new List<AstAttributeStmt>();
@@ -98,6 +98,10 @@ namespace HapetFrontend
             // just handlers
             ParserInInfo inInfo = ParserInInfo.Default;
             ParserOutInfo outInfo = ParserOutInfo.Default;
+
+            // parsing metadata
+            inInfo.ExternalMetadata = true;
+
             while (true)
             {
                 var s = parser.ParseStatement(inInfo, ref outInfo);
@@ -127,20 +131,20 @@ namespace HapetFrontend
                     allFiles.Add(currentFile);
                 }
 
-                HandleStatement(s, currentFile, foundAttributes, lexer, mh);
+                HandleStatement(s, currentFile, foundAttributes, lexer);
             }
 
             return allFiles;
         }
 
-        private ProgramFile ParseFile(string fileName, IMessageHandler mh)
+        private ProgramFile ParseFile(string fileName)
         {
-            var lexer = Lexer.FromFile(fileName, mh);
+            var lexer = Lexer.FromFile(fileName, MessageHandler);
 
             if (lexer == null)
                 return null;
 
-            var parser = new Parser(lexer, mh);
+            var parser = new Parser(lexer, MessageHandler);
 
             var file = new ProgramFile(fileName, lexer.Text);
             _files[fileName] = file;
@@ -156,7 +160,7 @@ namespace HapetFrontend
                 if (s == null)
                     break;
 
-                HandleStatement(s, file, foundAttributes, lexer, mh);
+                HandleStatement(s, file, foundAttributes, lexer);
             }
 
             string normalNamespace = CompilerUtils.GetNamespace(CurrentProjectSettings.ProjectPath, CurrentProjectSettings.RootNamespace, fileName);
@@ -170,7 +174,7 @@ namespace HapetFrontend
             return file;
         }
 
-        private void HandleStatement(AstStatement s, ProgramFile file, List<AstAttributeStmt> foundAttributes, ILexer lexer, IMessageHandler mh)
+        private void HandleStatement(AstStatement s, ProgramFile file, List<AstAttributeStmt> foundAttributes, ILexer lexer)
         {
             if (s is AstEnumDecl ||
                 s is AstStructDecl ||
@@ -200,7 +204,7 @@ namespace HapetFrontend
             }
             else if (s != null)
             {
-                mh.ReportMessage(lexer.Text, s, [], ErrorCode.Get(CTEN.StmtNotAllowedInGlobal));
+                MessageHandler.ReportMessage(lexer.Text, s, [], ErrorCode.Get(CTEN.StmtNotAllowedInGlobal));
             }
         }
 

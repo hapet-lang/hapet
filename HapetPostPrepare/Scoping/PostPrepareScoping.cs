@@ -10,13 +10,6 @@ namespace HapetPostPrepare
 {
     public partial class PostPrepare
     {
-        /// <summary>
-        /// This kostyl is used to set TokenLocations on asts that were included from other projects/libraries
-        /// TODO: there is a normal workaround for it. Just when deserializing metadata - we need to set normal 
-        /// token locations relatively to .json file
-        /// </summary>
-        private string _externalProjectName = null;
-
         private void PostPrepareScoping()
         {
             foreach (var (path, file) in _compiler.GetFiles())
@@ -685,20 +678,20 @@ namespace HapetPostPrepare
             string scopename = $"for_{_forCounter++}_scope";
             var forScope = PostPrepareBlockScoping(forStmt.Body, scopename);
 
-            if (forStmt.FirstParam != null)
+            if (forStmt.FirstArgument != null)
             {
-                SetScopeAndParent(forStmt.FirstParam, forStmt, forScope);
-                PostPrepareExprScoping(forStmt.FirstParam);
+                SetScopeAndParent(forStmt.FirstArgument, forStmt, forScope);
+                PostPrepareExprScoping(forStmt.FirstArgument);
             }
-            if (forStmt.SecondParam != null)
+            if (forStmt.SecondArgument != null)
             {
-                SetScopeAndParent(forStmt.SecondParam, forStmt, forScope);
-                PostPrepareExprScoping(forStmt.SecondParam);
+                SetScopeAndParent(forStmt.SecondArgument, forStmt, forScope);
+                PostPrepareExprScoping(forStmt.SecondArgument);
             }
-            if (forStmt.ThirdParam != null)
+            if (forStmt.ThirdArgument != null)
             {
-                SetScopeAndParent(forStmt.ThirdParam, forStmt, forScope);
-                PostPrepareExprScoping(forStmt.ThirdParam);
+                SetScopeAndParent(forStmt.ThirdArgument, forStmt, forScope);
+                PostPrepareExprScoping(forStmt.ThirdArgument);
             }
         }
 
@@ -710,10 +703,10 @@ namespace HapetPostPrepare
             string scopename = $"while_{_whileCounter++}_scope";
             var whileScope = PostPrepareBlockScoping(whileStmt.Body, scopename);
 
-            if (whileStmt.ConditionParam != null)
+            if (whileStmt.Condition != null)
             {
-                SetScopeAndParent(whileStmt.ConditionParam, whileStmt, whileScope);
-                PostPrepareExprScoping(whileStmt.ConditionParam);
+                SetScopeAndParent(whileStmt.Condition, whileStmt, whileScope);
+                PostPrepareExprScoping(whileStmt.Condition);
             }
         }
 
@@ -752,13 +745,13 @@ namespace HapetPostPrepare
 
         private void PostPrepareCaseStmtScoping(AstCaseStmt caseStmt)
         {
-            if (!caseStmt.DefaultCase)
+            if (!caseStmt.IsDefaultCase)
             {
                 SetScopeAndParent(caseStmt.Pattern, caseStmt);
                 PostPrepareExprScoping(caseStmt.Pattern);
             }
 
-            if (!caseStmt.FallingCase)
+            if (!caseStmt.IsFallingCase)
             {
                 SetScopeAndParent(caseStmt.Body, caseStmt);
                 PostPrepareExprScoping(caseStmt.Body);
@@ -778,7 +771,7 @@ namespace HapetPostPrepare
         {
             SetScopeAndParent(attrStmt.AttributeName, attrStmt);
             PostPrepareExprScoping(attrStmt.AttributeName);
-            foreach (var a in attrStmt.Parameters)
+            foreach (var a in attrStmt.Arguments)
             {
                 SetScopeAndParent(a, attrStmt);
                 PostPrepareExprScoping(a);
@@ -807,11 +800,6 @@ namespace HapetPostPrepare
             child.Scope = anotherScope;
             child.Parent = parent;
             child.SourceFile = _currentSourceFile;
-
-            if (_externalProjectName != null && child.Location == null)
-            {
-                child.Location = new Location(new TokenLocation() { File = _externalProjectName });
-            }
         }
     }
 }
