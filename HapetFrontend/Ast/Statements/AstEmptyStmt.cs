@@ -6,7 +6,7 @@ namespace HapetFrontend.Ast.Statements
     {
         public override string AAAName => nameof(AstEmptyStmt);
 
-        public AstEmptyStmt(ILocation Location = null) : base(Location: Location) { }
+        public AstEmptyStmt(ILocation location = null) : base(location) { }
 
         public override AstStatement GetDeepCopy()
         {

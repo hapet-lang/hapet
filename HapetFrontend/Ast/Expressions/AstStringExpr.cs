@@ -12,7 +12,7 @@ namespace HapetFrontend.Ast.Expressions
 
         public override string AAAName => nameof(AstStringExpr);
 
-        public AstStringExpr(string value, string suffix = null, ILocation Location = null) : base(Location)
+        public AstStringExpr(string value, string suffix = null, ILocation location = null) : base(location)
         {
             this.OutValue = value;
             this.Suffix = suffix;

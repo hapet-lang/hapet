@@ -102,7 +102,7 @@ namespace HapetFrontend.Parsing
             return AstIdGenericExpr.FromAstIdExpr(originId, generics);
         }
 
-        private AstDeclaration PrepareUnknownDecl(UnknownDecl udecl, List<AstAttributeStmt> attrs, ParserInInfo inInfo, ref ParserOutInfo outInfo)
+        private AstDeclaration PrepareUnknownDecl(AstUnknownDecl udecl, List<AstAttributeStmt> attrs, ParserInInfo inInfo, ref ParserOutInfo outInfo)
         {
             TokenLocation end = udecl.Ending;
             AstStatement initializer = null;

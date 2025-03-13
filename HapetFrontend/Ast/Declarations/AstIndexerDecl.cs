@@ -11,8 +11,8 @@ namespace HapetFrontend.Ast.Declarations
 
         public override string AAAName => nameof(AstIndexerDecl);
 
-        public AstIndexerDecl(AstNestedExpr type, AstIdExpr name, string doc = "", ILocation Location = null) : 
-            base(type, name, null, doc, Location)
+        public AstIndexerDecl(AstNestedExpr type, AstIdExpr name, string doc = "", ILocation location = null) : 
+            base(type, name, null, doc, location)
         {
         }
 

@@ -17,8 +17,8 @@ namespace HapetFrontend.Ast.Expressions
 
         public override string AAAName => nameof(AstNewExpr);
 
-        public AstNewExpr(AstNestedExpr typeName, List<AstArgumentExpr> arguments = null, ILocation Location = null)
-            : base(Location)
+        public AstNewExpr(AstNestedExpr typeName, List<AstArgumentExpr> arguments = null, ILocation location = null)
+            : base(location)
         {
             this.TypeName = typeName;
             this.Arguments = arguments;

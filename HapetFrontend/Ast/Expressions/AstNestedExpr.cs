@@ -10,7 +10,9 @@ namespace HapetFrontend.Ast.Expressions
         /// <summary>
         /// This is the left part of an id expr like the 'a.mm.anime.Test'
         /// where 'Test' would be the <see cref="RightPart"/> and 'a.mm.anime' would be the <see cref="LeftPart"/> 
-        /// with its parsed names
+        /// with its parsed names.
+        /// or
+        /// '(chlen as Pivo).Cringe;'
         /// </summary>
         public AstNestedExpr LeftPart { get; set; }
 
@@ -22,7 +24,7 @@ namespace HapetFrontend.Ast.Expressions
 
         public override string AAAName => nameof(AstNestedExpr);
 
-        public AstNestedExpr(AstExpression rightPart, AstNestedExpr leftPart, ILocation Location = null) : base(Location)
+        public AstNestedExpr(AstExpression rightPart, AstNestedExpr leftPart, ILocation location = null) : base(location)
         {
             this.RightPart = rightPart;
             this.LeftPart = leftPart;

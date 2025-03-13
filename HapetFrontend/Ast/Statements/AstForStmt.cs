@@ -7,20 +7,20 @@ namespace HapetFrontend.Ast.Statements
     public class AstForStmt : AstStatement
     {
         /// <summary>
-        /// The first param of for loop. Could be <see cref="AstVarDecl"/>, pure <see cref="AstExpression"/> or just a <see cref="null"/>
+        /// The first arg of for loop. Could be <see cref="AstVarDecl"/>, pure <see cref="AstExpression"/> or just a <see cref="null"/>
         /// </summary>
-        public AstStatement FirstParam { get; set; }
+        public AstStatement FirstArgument { get; set; }
 
         /// <summary>
-        /// The second param of for loop. Could be pure <see cref="AstExpression"/> or just a <see cref="null"/>.
+        /// The second arg of for loop. Could be pure <see cref="AstExpression"/> or just a <see cref="null"/>.
         /// Has to return <see cref="BoolType"/>
         /// </summary>
-        public AstExpression SecondParam { get; set; }
+        public AstExpression SecondArgument { get; set; }
 
         /// <summary>
-        /// The third param of for loop. Usually just a <see cref="AstAssignStmt"/> so <see cref="AstStatement"/> or just a <see cref="null"/>.
+        /// The third arg of for loop. Usually just a <see cref="AstAssignStmt"/> so <see cref="AstStatement"/> or just a <see cref="null"/>.
         /// </summary>
-        public AstStatement ThirdParam { get; set; }
+        public AstStatement ThirdArgument { get; set; }
 
         /// <summary>
         /// The body of for loop
@@ -31,18 +31,18 @@ namespace HapetFrontend.Ast.Statements
 
         public AstForStmt(AstStatement first, AstExpression second, AstStatement third, AstBlockExpr body, ILocation location = null) : base(location)
         {
-            FirstParam = first;
-            SecondParam = second;
-            ThirdParam = third;
+            FirstArgument = first;
+            SecondArgument = second;
+            ThirdArgument = third;
             Body = body;
         }
 
         public override AstStatement GetDeepCopy()
         {
             var copy = new AstForStmt(
-                FirstParam.GetDeepCopy() as AstStatement,
-                SecondParam.GetDeepCopy() as AstExpression,
-                ThirdParam.GetDeepCopy() as AstStatement,
+                FirstArgument.GetDeepCopy() as AstStatement,
+                SecondArgument.GetDeepCopy() as AstExpression,
+                ThirdArgument.GetDeepCopy() as AstStatement,
                 Body.GetDeepCopy() as AstBlockExpr,
                 Location)
             {

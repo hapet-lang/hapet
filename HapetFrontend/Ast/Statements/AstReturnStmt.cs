@@ -11,7 +11,7 @@ namespace HapetFrontend.Ast.Statements
 
         public override string AAAName => nameof(AstReturnStmt);
 
-        public AstReturnStmt(AstExpression expr, ILocation Location = null) : base(Location)
+        public AstReturnStmt(AstExpression expr, ILocation location = null) : base(location)
         {
             ReturnExpression = expr;
         }

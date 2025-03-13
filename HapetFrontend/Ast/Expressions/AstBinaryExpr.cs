@@ -7,14 +7,14 @@ namespace HapetFrontend.Ast.Expressions
     public class AstBinaryExpr : AstExpression
     {
         public string Operator { get; set; }
-        public AstStatement Left { get; set; }
-        public AstStatement Right { get; set; }
+        public AstExpression Left { get; set; }
+        public AstExpression Right { get; set; }
 
         public IBinaryOperator ActualOperator { get; set; }
 
         public override string AAAName => nameof(AstBinaryExpr);
 
-        public AstBinaryExpr(string op, AstStatement lhs, AstStatement rhs, ILocation Location = null) : base(Location)
+        public AstBinaryExpr(string op, AstExpression lhs, AstExpression rhs, ILocation location = null) : base(location)
         {
             Operator = op;
             Left = lhs;
@@ -25,8 +25,8 @@ namespace HapetFrontend.Ast.Expressions
         {
             var copy = new AstBinaryExpr(
                 Operator,
-                Left.GetDeepCopy() as AstStatement,
-                Right.GetDeepCopy() as AstStatement,
+                Left.GetDeepCopy() as AstExpression,
+                Right.GetDeepCopy() as AstExpression,
                 Location)
             {
                 ActualOperator = ActualOperator,

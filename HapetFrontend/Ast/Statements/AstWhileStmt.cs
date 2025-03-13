@@ -9,7 +9,7 @@ namespace HapetFrontend.Ast.Statements
 		/// The condition param of 'while' loop. Could be pure <see cref="AstExpression"/>.
 		/// Has to return <see cref="BoolType"/>
 		/// </summary>
-		public AstExpression ConditionParam { get; set; }
+		public AstExpression Condition { get; set; }
 
         /// <summary>
         /// The body of for loop
@@ -20,14 +20,14 @@ namespace HapetFrontend.Ast.Statements
 
         public AstWhileStmt(AstExpression condition, AstBlockExpr body, ILocation location = null) : base(location)
         {
-            ConditionParam = condition;
+            Condition = condition;
             Body = body;
         }
 
         public override AstStatement GetDeepCopy()
         {
             var copy = new AstWhileStmt(
-                ConditionParam.GetDeepCopy() as AstExpression,
+                Condition.GetDeepCopy() as AstExpression,
                 Body.GetDeepCopy() as AstBlockExpr,
                 Location)
             {

@@ -19,8 +19,8 @@ namespace HapetFrontend.Ast.Expressions
 
         public override string AAAName => nameof(AstPointerExpr);
 
-        public AstPointerExpr(AstExpression sub, bool isDeref = false, ILocation Location = null)
-            : base(Location)
+        public AstPointerExpr(AstExpression sub, bool isDeref = false, ILocation location = null)
+            : base(location)
         {
             IsDereference = isDeref;
             SubExpression = sub;

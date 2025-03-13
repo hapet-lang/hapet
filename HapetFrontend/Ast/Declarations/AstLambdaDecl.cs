@@ -10,7 +10,7 @@ namespace HapetFrontend.Ast.Declarations
     public class AstLambdaDecl : AstExpression
     {
         public List<AstParamDecl> Parameters { get; set; }
-        public AstExpression ReturnType { get; set; }
+        public AstExpression Returns { get; set; }
         public AstBlockExpr Body { get; set; }
 
         [JsonIgnore]
@@ -22,7 +22,7 @@ namespace HapetFrontend.Ast.Declarations
             : base(location)
         {
             this.Parameters = parameters;
-            this.ReturnType = retType;
+            this.Returns = retType;
             this.Body = body;
         }
 
@@ -31,7 +31,7 @@ namespace HapetFrontend.Ast.Declarations
             var copy = new AstLambdaDecl(
                 Parameters.Select(x => x.GetDeepCopy() as AstParamDecl).ToList(),
                 Body.GetDeepCopy() as AstBlockExpr,
-                ReturnType.GetDeepCopy() as AstExpression,
+                Returns.GetDeepCopy() as AstExpression,
                 Location)
             {
                 IsCompileTimeValue = IsCompileTimeValue,

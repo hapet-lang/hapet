@@ -32,7 +32,7 @@ namespace HapetFrontend.Ast
 
         public override string AAAName => nameof(AstExpression);
 
-        public AstExpression(ILocation Location = null) : base(Location)
+        public AstExpression(ILocation location = null) : base(location)
         {
         }
 

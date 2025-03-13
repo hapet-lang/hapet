@@ -11,7 +11,7 @@ namespace HapetFrontend.Ast.Statements
 
         public override string AAAName => nameof(AstBreakContStmt);
 
-        public AstBreakContStmt(bool isBreak, ILocation Location = null) : base(Location)
+        public AstBreakContStmt(bool isBreak, ILocation location = null) : base(location)
         {
             IsBreak = isBreak;
         }

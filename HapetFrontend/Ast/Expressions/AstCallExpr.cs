@@ -6,8 +6,10 @@ namespace HapetFrontend.Ast.Expressions
     {
         /// <summary>
         /// The type (for static funcs) or object (for non static) where the func is located
+        /// Could be another expr like AstCast when:
+        /// (anime as AnimeCls).FuncToCall();
         /// </summary>
-        public AstNestedExpr TypeOrObjectName { get; set; }
+        public AstExpression TypeOrObjectName { get; set; }
 
         /// <summary>
         /// If the call is of static func
@@ -26,8 +28,8 @@ namespace HapetFrontend.Ast.Expressions
 
         public override string AAAName => nameof(AstCallExpr);
 
-        public AstCallExpr(AstNestedExpr typeOrObjectName, AstIdExpr funcName, List<AstArgumentExpr> arguments = null, ILocation Location = null)
-            : base(Location)
+        public AstCallExpr(AstNestedExpr typeOrObjectName, AstIdExpr funcName, List<AstArgumentExpr> arguments = null, ILocation location = null)
+            : base(location)
         {
             this.TypeOrObjectName = typeOrObjectName;
             this.FuncName = funcName;

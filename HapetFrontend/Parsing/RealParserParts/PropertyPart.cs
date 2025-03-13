@@ -8,7 +8,7 @@ namespace HapetFrontend.Parsing
 {
     public partial class Parser
     {
-        private AstDeclaration PreparePropertyDecl(UnknownDecl udecl, string docString)
+        private AstDeclaration PreparePropertyDecl(AstUnknownDecl udecl, string docString)
         {
             // just handlers
             ParserInInfo inInfo = ParserInInfo.Default;

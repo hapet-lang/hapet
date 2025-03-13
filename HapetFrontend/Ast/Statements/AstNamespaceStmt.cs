@@ -12,7 +12,7 @@ namespace HapetFrontend.Ast.Statements
 
         public override string AAAName => nameof(AstNamespaceStmt);
 
-        public AstNamespaceStmt(AstNestedExpr name, ILocation Location = null) : base(Location)
+        public AstNamespaceStmt(AstNestedExpr name, ILocation location = null) : base(location)
         {
             NameExpression = name;
         }

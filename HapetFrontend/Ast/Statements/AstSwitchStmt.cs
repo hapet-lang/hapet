@@ -51,7 +51,7 @@ namespace HapetFrontend.Ast.Statements
         /// <summary>
         /// 'true' if the case is default case
         /// </summary>
-        public bool DefaultCase { get; set; }
+        public bool IsDefaultCase { get; set; }
 
         /// <summary>
         /// The case that is just falling into lower one like: <br/>
@@ -62,7 +62,7 @@ namespace HapetFrontend.Ast.Statements
         ///	} <br/>
         ///	Where the 'case (0)' would be Falling
         /// </summary>
-        public bool FallingCase { get; set; }
+        public bool IsFallingCase { get; set; }
 
         public AstCaseStmt(AstExpression pattern, AstBlockExpr body, ILocation location = null) : base(location)
         {
@@ -77,8 +77,8 @@ namespace HapetFrontend.Ast.Statements
                 Body.GetDeepCopy() as AstBlockExpr,
                 Location)
             {
-                DefaultCase = DefaultCase,
-                FallingCase = FallingCase,
+                IsDefaultCase = IsDefaultCase,
+                IsFallingCase = IsFallingCase,
                 Scope = Scope,
                 SourceFile = SourceFile,
             };

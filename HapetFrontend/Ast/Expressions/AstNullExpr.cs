@@ -13,7 +13,7 @@ namespace HapetFrontend.Ast.Expressions
 
         public override string AAAName => nameof(AstNullExpr);
 
-        public AstNullExpr(HapetType target, ILocation Location = null) : base(Location)
+        public AstNullExpr(HapetType target, ILocation location = null) : base(location)
         {
             Target = target;
             OutType = PointerType.NullLiteralType;

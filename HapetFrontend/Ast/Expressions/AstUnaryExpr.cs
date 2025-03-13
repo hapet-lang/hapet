@@ -7,13 +7,13 @@ namespace HapetFrontend.Ast.Expressions
     public class AstUnaryExpr : AstExpression
     {
         public string Operator { get; set; }
-        public AstStatement SubExpr { get; set; }
+        public AstExpression SubExpr { get; set; }
 
         public IUnaryOperator ActualOperator { get; set; } = null;
 
         public override string AAAName => nameof(AstUnaryExpr);
 
-        public AstUnaryExpr(string op, AstStatement sub, ILocation Location = null) : base(Location)
+        public AstUnaryExpr(string op, AstExpression sub, ILocation location = null) : base(location)
         {
             Operator = op;
             SubExpr = sub;
@@ -23,7 +23,7 @@ namespace HapetFrontend.Ast.Expressions
         {
             var copy = new AstUnaryExpr(
                 Operator,
-                SubExpr.GetDeepCopy() as AstStatement,
+                SubExpr.GetDeepCopy() as AstExpression,
                 Location)
             {
                 ActualOperator = ActualOperator,

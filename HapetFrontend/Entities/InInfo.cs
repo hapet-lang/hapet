@@ -15,7 +15,7 @@ namespace HapetFrontend.Entities
         /// <summary>
         /// This shite is used for func decl
         /// </summary>
-        public UnknownDecl CurrentUdecl { get; set; }
+        public AstUnknownDecl CurrentUdecl { get; set; }
         public MessageResolver Message { get; set; }
 
         public static ParserInInfo Default => new ParserInInfo()

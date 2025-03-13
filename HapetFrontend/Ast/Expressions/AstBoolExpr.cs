@@ -10,7 +10,7 @@ namespace HapetFrontend.Ast.Expressions
 
         public override string AAAName => nameof(AstBoolExpr);
 
-        public AstBoolExpr(bool value, ILocation Location = null) : base(Location)
+        public AstBoolExpr(bool value, ILocation location = null) : base(location)
         {
             this.OutType = BoolType.Instance;
             this.OutValue = value;

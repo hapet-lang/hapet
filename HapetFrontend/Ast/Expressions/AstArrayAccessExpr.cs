@@ -17,7 +17,7 @@ namespace HapetFrontend.Ast.Expressions
 
         public override string AAAName => nameof(AstArrayAccessExpr);
 
-        public AstArrayAccessExpr(AstExpression objectName, AstExpression parameterExpr, ILocation Location = null) : base(Location)
+        public AstArrayAccessExpr(AstExpression objectName, AstExpression parameterExpr, ILocation location = null) : base(location)
         {
             ObjectName = objectName;
             ParameterExpr = parameterExpr;

@@ -38,7 +38,7 @@ namespace HapetFrontend.Ast.Declarations
 
         public override string AAAName => nameof(AstPropertyDecl);
 
-        public AstPropertyDecl(AstNestedExpr type, AstIdExpr name, AstExpression ini = null, string doc = "", ILocation Location = null) : base(type, name, ini, doc, Location)
+        public AstPropertyDecl(AstExpression type, AstIdExpr name, AstExpression ini = null, string doc = "", ILocation location = null) : base(type, name, ini, doc, location)
         {
         }
 
@@ -63,21 +63,7 @@ namespace HapetFrontend.Ast.Declarations
             return copy;
         }
 
-        internal PropertyDeclJson GetJsonPropa()
-        {
-            var attributes = Attributes.Select(x => x.GetJson()).ToList();
-            return new PropertyDeclJson()
-            {
-                Type = HapetType.AsString(Type.OutType, true),
-                Name = Name.Name,
-                HasGet = HasGet,
-                HasSet = HasSet,
-                SpecialKeys = SpecialKeys,
-                Attributes = attributes,
-                DocString = Documentation
-            };
-        }
-
+        #region Separating props into field and funcs
         public AstVarDecl GetField(bool forStruct)
         {
             var field = new AstVarDecl(Type, Name.GetCopy($"field_{Name.Name}"), Initializer, Documentation, Location)
@@ -179,6 +165,7 @@ namespace HapetFrontend.Ast.Declarations
             }
             return func;
         }
+        #endregion
 
         public override AstVarDecl GetCopyForAnotherType(AstDeclaration decl)
         {
@@ -198,30 +185,6 @@ namespace HapetFrontend.Ast.Declarations
             varDecl.SetBlock = SetBlock;
 
             return varDecl;
-        }
-    }
-
-    public class PropertyDeclJson
-    {
-        public string Type { get; set; }
-        public string Name { get; set; }
-
-        public bool HasGet { get; set; }
-        public bool HasSet { get; set; }
-
-        public List<TokenType> SpecialKeys { get; set; }
-        public List<AttributeJson> Attributes { get; set; }
-
-        public string DocString { get; set; }
-
-        public AstPropertyDecl GetAst(Compiler compiler)
-        {
-            var decl = new AstPropertyDecl(Parser.ParseType(Type, compiler) as AstNestedExpr, new AstIdExpr(Name), null, DocString);
-            decl.HasGet = HasGet;
-            decl.HasSet = HasSet;
-            decl.SpecialKeys.AddRange(SpecialKeys);
-            decl.Attributes.AddRange(Attributes.Select(x => x.GetAst(compiler)));
-            return decl;
         }
     }
 }

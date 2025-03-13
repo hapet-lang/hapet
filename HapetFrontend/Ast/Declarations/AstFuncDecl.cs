@@ -16,7 +16,7 @@ namespace HapetFrontend.Ast.Declarations
         public ClassFunctionType ClassFunctionType { get; set; } = ClassFunctionType.Default;
 
         public List<AstParamDecl> Parameters { get; set; }
-        public AstNestedExpr Returns { get; set; }
+        public AstExpression Returns { get; set; }
 
         [JsonIgnore]
         public AstBlockExpr Body { get; set; }
@@ -35,7 +35,7 @@ namespace HapetFrontend.Ast.Declarations
 
         public AstFuncDecl(List<AstParamDecl> parameters, AstNestedExpr returns, AstBlockExpr body, AstIdExpr name, string doc = "", ILocation location = null) : base(name, doc, location)
         {
-            Type = new AstNestedExpr(new AstIdExpr("func", location), null, location);
+            Type = new AstIdExpr("func", location);
             Type.OutType = new FunctionType(this);
 
             Body = body;
@@ -74,59 +74,9 @@ namespace HapetFrontend.Ast.Declarations
             return copy;
         }
 
-        public FuncDeclJson GetJson()
-        {
-            var parameters = Parameters.Select(x => x.GetJson()).ToList();
-            var attributes = Attributes.Select(x => x.GetJson()).ToList();
-
-            return new FuncDeclJson()
-            {
-                Parameters = parameters,
-                ReturnType = HapetType.AsString(Returns.OutType, true),
-                Name = GenericsHelper.GetPrettyGenericFuncName(Name.Name),
-                ParentDeclName = ContainingParent.Name.Name,
-                SpecialKeys = SpecialKeys,
-                IsGenericDecl = HasGenericTypes,
-                Attributes = attributes,
-                CallingConvention = CallingConvention,
-                DocString = Documentation
-            };
-        }
-
         public string GenerateHashForGenericType(string genTypeName)
         {
-            return Funcad.CreateMD5($"{SourceFile}{Name.Name}{ContainingParent?.Name.Name}{string.Join('_', Parameters.Select(x => x.Type.TryFlatten(null, null)))}{Returns.TryFlatten(null, null)}{genTypeName}");
-        }
-    }
-
-    public class FuncDeclJson
-    {
-        public List<ParamDeclJson> Parameters { get; set; }
-        public string ReturnType { get; set; }
-        public string Name { get; set; }
-        public string ParentDeclName { get; set; }
-
-        public List<TokenType> SpecialKeys { get; set; }
-        public List<AttributeJson> Attributes { get; set; }
-
-        public CallingConvention CallingConvention { get; set; }
-        public bool IsGenericDecl { get; set; }
-
-        public string DocString { get; set; }
-
-        public AstFuncDecl GetAst(Compiler compiler)
-        {
-            var decl = new AstFuncDecl(
-                Parameters.Select(x => x.GetAst(compiler)).ToList(), 
-                Parser.ParseType(ReturnType, compiler) as AstNestedExpr, 
-                null,
-                GenericsHelper.GetAstIdFromName(Name, null), 
-                DocString);
-            decl.SpecialKeys.AddRange(SpecialKeys);
-            decl.Attributes.AddRange(Attributes.Select(x => x.GetAst(compiler)));
-            decl.HasGenericTypes = IsGenericDecl;
-            decl.CallingConvention = CallingConvention;
-            return decl;
+            return Funcad.CreateMD5($"{SourceFile}{Name.Name}{ContainingParent?.Name.Name}{string.Join('_', Parameters.Select(x => HapetType.AsString(x.Type.OutType)))}{HapetType.AsString(Returns.OutType)}{genTypeName}");
         }
     }
 }

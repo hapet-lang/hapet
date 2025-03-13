@@ -15,7 +15,7 @@ namespace HapetFrontend.Parsing
             TokenType.Ampersand, TokenType.VerticalSlash, TokenType.Hat, TokenType.GreaterGreater, TokenType.LessLess, TokenType.DoubleEqual, TokenType.NotEqual, 
             TokenType.Less, TokenType.LessEqual, TokenType.Greater, TokenType.GreaterEqual, TokenType.LogicalAnd, TokenType.LogicalOr };
 
-        public AstOverloadDecl ParseOperatorOverride(UnknownDecl udecl)
+        public AstOverloadDecl ParseOperatorOverride(AstUnknownDecl udecl)
         {
             // just handlers
             ParserInInfo inInfo = ParserInInfo.Default;

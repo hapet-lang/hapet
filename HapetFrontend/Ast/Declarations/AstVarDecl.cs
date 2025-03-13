@@ -20,7 +20,7 @@ namespace HapetFrontend.Ast.Declarations
 
         public override string AAAName => nameof(AstVarDecl);
 
-        public AstVarDecl(AstNestedExpr type, AstIdExpr name, AstExpression ini = null, string doc = "", ILocation Location = null) : base(name, doc, Location)
+        public AstVarDecl(AstExpression type, AstIdExpr name, AstExpression ini = null, string doc = "", ILocation location = null) : base(name, doc, location)
         {
             Type = type;
             Initializer = ini;
@@ -57,43 +57,6 @@ namespace HapetFrontend.Ast.Declarations
             varDecl.SpecialKeys.AddRange(SpecialKeys);
             varDecl.IsPropertyField = IsPropertyField;
             return varDecl;
-        }
-
-        internal VarDeclJson GetJson()
-        {
-            var attributes = Attributes.Select(x => x.GetJson()).ToList();
-            return new VarDeclJson()
-            {
-                Type = HapetType.AsString(Type.OutType, true),
-                Name = Name.Name,
-                SpecialKeys = SpecialKeys,
-                Attributes = attributes,
-                DocString = Documentation
-            };
-        }
-
-        public override string ToString()
-        {
-            return $"{HapetType.AsString(Type.OutType)} {Name.Name}";
-        }
-    }
-
-    public class VarDeclJson
-    {
-        public string Type { get; set; }
-        public string Name { get; set; }
-
-        public List<TokenType> SpecialKeys { get; set; }
-        public List<AttributeJson> Attributes { get; set; }
-
-        public string DocString { get; set; }
-
-        public AstVarDecl GetAst(Compiler compiler)
-        {
-            var decl = new AstVarDecl(Parser.ParseType(Type, compiler) as AstNestedExpr, new AstIdExpr(Name), null, DocString);
-            decl.SpecialKeys.AddRange(SpecialKeys);
-            decl.Attributes.AddRange(Attributes.Select(x => x.GetAst(compiler)));
-            return decl;
         }
     }
 }

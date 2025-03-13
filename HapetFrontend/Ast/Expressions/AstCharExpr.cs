@@ -11,7 +11,7 @@ namespace HapetFrontend.Ast.Expressions
 
         public override string AAAName => nameof(AstCharExpr);
 
-        public AstCharExpr(string rawValue, ILocation Location = null) : base(Location)
+        public AstCharExpr(string rawValue, ILocation location = null) : base(location)
         {
             this.RawValue = rawValue;
             OutValue = rawValue.FirstOrDefault();

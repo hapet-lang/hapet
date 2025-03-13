@@ -83,7 +83,7 @@ namespace HapetFrontend.Parsing
                             NextToken();
                             return stmt;
                         }
-                        if (stmt is UnknownDecl udecl)
+                        if (stmt is AstUnknownDecl udecl)
                         {
                             bool savedAllowence = inInfo.AllowCommaForTuple;
                             inInfo.AllowCommaForTuple = true;

@@ -101,7 +101,7 @@ namespace HapetFrontend.Parsing
             beg = e.Beginning;
             SkipNewlines();
 
-            if (e is UnknownDecl udecl)
+            if (e is AstUnknownDecl udecl)
             {
                 pname = udecl.Name as AstIdExpr;
                 ptype = udecl.Type;

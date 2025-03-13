@@ -30,7 +30,7 @@ namespace HapetFrontend.Parsing
             inInfo.Message = saved2;
             inInfo.AllowPointerExpression = saved3;
 
-            if (expr is UnknownDecl udecl)
+            if (expr is AstUnknownDecl udecl)
             {
                 SkipNewlines();
 

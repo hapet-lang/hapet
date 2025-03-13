@@ -52,16 +52,16 @@ namespace HapetFrontend.Parsing
             // it could be an idexpr or nestedexpr when ctor/dtor decls are here
             if (expr is AstIdExpr idExpr)
             {
-                expr = new UnknownDecl(null, idExpr, expr);
+                expr = new AstUnknownDecl(null, idExpr, expr);
             }
             else if (expr is AstNestedExpr nestExpr && nestExpr.RightPart is AstIdExpr idExpr2 && nestExpr.LeftPart == null)
             {
-                expr = new UnknownDecl(null, idExpr2, expr);
+                expr = new AstUnknownDecl(null, idExpr2, expr);
             }
             // probably only for overloading
             else if (expr is AstNestedExpr nestExpr2)
             {
-                expr = new UnknownDecl(nestExpr2, null, expr);
+                expr = new AstUnknownDecl(nestExpr2, null, expr);
             }
 
             // because it has to be declaration

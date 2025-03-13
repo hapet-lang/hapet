@@ -385,8 +385,8 @@ namespace HapetFrontend.Parsing
                             if (args.First() is not AstExpression firstExpr)
                             {
                                 // if it is not an expr - then this is probably an indexer overload
-                                if (args.First() is not UnknownDecl unknownDecl || 
-                                    expr is not UnknownDecl indexerDecl || 
+                                if (args.First() is not AstUnknownDecl unknownDecl || 
+                                    expr is not AstUnknownDecl indexerDecl || 
                                     indexerDecl.Name.Name != "this")
                                 {
                                     ReportMessage(args.First().Location, [], ErrorCode.Get(CTEN.ArrayAccNotExpr));
@@ -472,7 +472,7 @@ namespace HapetFrontend.Parsing
                 case TokenType.KwImplicit:
                 case TokenType.KwExplicit:
                     {
-                        return ParseOperatorOverride(new UnknownDecl(null, null, PeekToken().Location));
+                        return ParseOperatorOverride(new AstUnknownDecl(null, null, PeekToken().Location));
                     }
 
                 case TokenType.Identifier:
@@ -513,7 +513,7 @@ namespace HapetFrontend.Parsing
                                 ReportMessage(id.Location, [], ErrorCode.Get(CTEN.DeclNameIsNotIdent));
                                 return id;
                             }
-                            return new UnknownDecl(id, idExpr, new Location(token.Location, name.Location.Ending));
+                            return new AstUnknownDecl(id, idExpr, new Location(token.Location, name.Location.Ending));
                         }
 
                         return id;

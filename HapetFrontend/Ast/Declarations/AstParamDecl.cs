@@ -15,7 +15,7 @@ namespace HapetFrontend.Ast.Declarations
 
         public override string AAAName => nameof(AstParamDecl);
 
-        public AstParamDecl(AstNestedExpr type, AstIdExpr name, AstExpression defaultValue = null, string doc = "", ILocation Location = null) : base(name, doc, Location)
+        public AstParamDecl(AstExpression type, AstIdExpr name, AstExpression defaultValue = null, string doc = "", ILocation location = null) : base(name, doc, location)
         {
             Type = type;
             DefaultValue = defaultValue;
@@ -38,12 +38,6 @@ namespace HapetFrontend.Ast.Declarations
             return copy;
         }
 
-        public AstVarDecl ToVarDecl()
-        {
-            var varDecl = new AstVarDecl(Type, Name, DefaultValue, Documentation, Location);
-            return varDecl;
-        }
-
         public AstParamDecl GetCopy(string name = "")
         {
             AstIdExpr nm = Name;
@@ -54,38 +48,6 @@ namespace HapetFrontend.Ast.Declarations
             np.SpecialKeys.AddRange(SpecialKeys);
             np.Attributes.AddRange(Attributes);
             return np;
-        }
-
-        internal ParamDeclJson GetJson()
-        {
-            var attributes = Attributes.Select(x => x.GetJson()).ToList();
-            return new ParamDeclJson()
-            {
-                Type = HapetType.AsString(Type.OutType, true),
-                Name = Name.Name,
-                SpecialKeys = SpecialKeys, // need it for 'ref', 'out' and other shite
-                Attributes = attributes,
-                DocString = Documentation
-            };
-        }
-    }
-
-    public class ParamDeclJson
-    {
-        public string Type { get; set; }
-        public string Name { get; set; }
-
-        public List<TokenType> SpecialKeys { get; set; }
-        public List<AttributeJson> Attributes { get; set; }
-
-        public string DocString { get; set; }
-
-        public AstParamDecl GetAst(Compiler compiler)
-        {
-            var pr = new AstParamDecl(Parser.ParseType(Type, compiler) as AstNestedExpr, new AstIdExpr(Name), null, DocString);
-            pr.SpecialKeys.AddRange(SpecialKeys);
-            pr.Attributes.AddRange(Attributes.Select(x => x.GetAst(compiler)));
-            return pr;
         }
     }
 }

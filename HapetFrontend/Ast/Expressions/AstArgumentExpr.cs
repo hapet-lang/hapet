@@ -12,15 +12,11 @@ namespace HapetFrontend.Ast.Expressions
         /// The name of a parameter into which argument is passed
         /// </summary>
         public AstIdExpr Name { get; set; }
-        /// <summary>
-        /// Index of the argument
-        /// </summary>
-        public int Index { get; set; } = -1;
 
         public override string AAAName => nameof(AstArgumentExpr);
 
-        public AstArgumentExpr(AstExpression expr, AstIdExpr name = null, ILocation Location = null)
-            : base(Location)
+        public AstArgumentExpr(AstExpression expr, AstIdExpr name = null, ILocation location = null)
+            : base(location)
         {
             this.Expr = expr;
             this.Name = name;
@@ -33,7 +29,6 @@ namespace HapetFrontend.Ast.Expressions
                 Name?.GetDeepCopy() as AstIdExpr,
                 Location)
             {
-                Index = Index,
                 IsCompileTimeValue = IsCompileTimeValue,
                 OutType = OutType,
                 OutValue = OutValue,

@@ -10,10 +10,12 @@ namespace HapetFrontend.Ast.Expressions
         /// <summary>
         /// Types from shite like:
         /// 'Dictionary<string, MyNamespace.Anime322>' ...
+        /// or
+        /// 'Dictionary<(int, string), AnimeCls>' ...
         /// </summary>
-        public List<AstNestedExpr> GenericRealTypes { get; } = new List<AstNestedExpr>();
+        public List<AstExpression> GenericRealTypes { get; } = new List<AstExpression>();
 
-        public AstIdGenericExpr(string name, List<AstNestedExpr> genericRealTypes, ILocation location = null) : base(name, location)
+        public AstIdGenericExpr(string name, List<AstExpression> genericRealTypes, ILocation location = null) : base(name, location)
         {
             GenericRealTypes.AddRange(genericRealTypes);
         }
@@ -22,7 +24,7 @@ namespace HapetFrontend.Ast.Expressions
         {
             var copy = new AstIdGenericExpr(
                 Name,
-                GenericRealTypes.Select(x => x.GetDeepCopy() as AstNestedExpr).ToList(),
+                GenericRealTypes.Select(x => x.GetDeepCopy() as AstExpression).ToList(),
                 Location)
             {
                 FindSymbol = FindSymbol,
@@ -36,9 +38,9 @@ namespace HapetFrontend.Ast.Expressions
             return copy;
         }
 
-        public static AstIdGenericExpr FromAstIdExpr(AstIdExpr astIdExpr, List<AstNestedExpr> genericRealTypes = null)
+        public static AstIdGenericExpr FromAstIdExpr(AstIdExpr astIdExpr, List<AstExpression> genericRealTypes = null)
         {
-            genericRealTypes ??= new List<AstNestedExpr>();
+            genericRealTypes ??= new List<AstExpression>();
 
             var gen = new AstIdGenericExpr(astIdExpr.Name, genericRealTypes, astIdExpr.Location)
             {

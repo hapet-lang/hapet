@@ -11,9 +11,9 @@ namespace HapetFrontend.Ast
     public abstract class AstDeclaration : AstStatement
     {
         /// <summary>
-        /// Could be nested :)
+        /// Could be anything - nested, id, genId, tuple
         /// </summary>
-        public AstNestedExpr Type { get; set; }
+        public AstExpression Type { get; set; }
         public AstIdExpr Name { get; set; }
 
         public string Documentation { get; set; }
@@ -86,7 +86,7 @@ namespace HapetFrontend.Ast
 
         public override string AAAName => nameof(AstDeclaration);
 
-        public AstDeclaration(AstIdExpr name, string doc, ILocation Location = null) : base(Location)
+        public AstDeclaration(AstIdExpr name, string doc, ILocation location = null) : base(location)
         {
             this.Name = name;
             this.Documentation = doc;

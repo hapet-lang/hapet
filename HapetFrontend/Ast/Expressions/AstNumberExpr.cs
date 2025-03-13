@@ -11,7 +11,7 @@ namespace HapetFrontend.Ast.Expressions
 
         public override string AAAName => nameof(AstNumberExpr);
 
-        public AstNumberExpr(NumberData data, string suffix = null, HapetType numberType = null, ILocation Location = null) : base(Location)
+        public AstNumberExpr(NumberData data, string suffix = null, HapetType numberType = null, ILocation location = null) : base(location)
         {
             Data = data;
             OutValue = data;

@@ -17,7 +17,7 @@ namespace HapetFrontend.Ast.Expressions
 
         public override string AAAName => nameof(AstBlockExpr);
 
-        public AstBlockExpr(List<AstStatement> statements, ILocation Location = null) : base(Location: Location)
+        public AstBlockExpr(List<AstStatement> statements, ILocation location = null) : base(location)
         {
             Statements = statements;
         }

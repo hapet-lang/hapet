@@ -10,14 +10,14 @@ namespace HapetFrontend.Ast.Expressions
 
         public override string AAAName => nameof(AstTupleExpr);
 
-        public AstTupleExpr(List<AstParamDecl> values, ILocation Location)
-            : base(Location)
+        public AstTupleExpr(List<AstParamDecl> values, ILocation location)
+            : base(location)
         {
             this.Types = values;
             this.Values = Types.Select(t => t.Type as AstExpression).ToList();
         }
-        public AstTupleExpr(List<AstNestedExpr> values, ILocation Location)
-            : base(Location)
+        public AstTupleExpr(List<AstNestedExpr> values, ILocation location)
+            : base(location)
         {
             this.Types = values.Select(v => new AstParamDecl(v, null, null, "", v.Location)).ToList();
             this.Values = Types.Select(t => t.Type as AstExpression).ToList();

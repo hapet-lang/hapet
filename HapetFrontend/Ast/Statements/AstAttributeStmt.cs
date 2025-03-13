@@ -16,89 +16,29 @@ namespace HapetFrontend.Ast.Statements
         public AstNestedExpr AttributeName { get; set; }
 
         /// <summary>
-        /// Parameters of the attribute
+        /// Arguments of the attribute
         /// </summary>
-        public List<AstExpression> Parameters { get; set; }
+        public List<AstArgumentExpr> Arguments { get; set; }
 
         public override string AAAName => nameof(AstAttributeStmt);
 
-        public AstAttributeStmt(AstNestedExpr attrName, List<AstExpression> parameters, ILocation Location = null) : base(Location)
+        public AstAttributeStmt(AstNestedExpr attrName, List<AstArgumentExpr> args, ILocation location = null) : base(location)
         {
             AttributeName = attrName;
-            Parameters = parameters;
+            Arguments = args;
         }
 
         public override AstStatement GetDeepCopy()
         {
             var copy = new AstAttributeStmt(
                 AttributeName.GetDeepCopy() as AstNestedExpr,
-                Parameters.Select(x => x.GetDeepCopy() as AstExpression).ToList(),
+                Arguments.Select(x => x.GetDeepCopy() as AstArgumentExpr).ToList(),
                 Location)
             {
                 Scope = Scope,
                 SourceFile = SourceFile,
             };
             return copy;
-        }
-
-        internal AttributeJson GetJson()
-        {
-            List<object> pars = new List<object>();
-            foreach (var v in Parameters.Select(x => x.OutValue))
-            {
-                if (v is NumberData nd)
-                {
-                    if (nd.Type == Enums.NumberType.Float)
-                        pars.Add(nd.DoubleValue);
-                    else
-                        pars.Add(nd.IntValue);
-                }
-                else
-                {
-                    pars.Add(v);
-                }
-            }
-            return new AttributeJson()
-            {
-                Name = AttributeName.TryFlatten(null, null),
-                Values = pars,
-            };
-        }
-    }
-
-    public class AttributeJson
-    {
-        public string Name { get; set; }
-        public List<object> Values { get; set; }
-
-        public AstAttributeStmt GetAst(Compiler compiler)
-        {
-            List<AstExpression> pars = new List<AstExpression>();
-            foreach (var v in Values)
-            {
-                switch (v)
-                {
-                    case int:
-                        pars.Add(new AstNumberExpr(NumberData.FromInt((int)v)));
-                        break;
-                    case long:
-                        pars.Add(new AstNumberExpr(NumberData.FromInt((long)v)));
-                        break;
-                    case float:
-                        pars.Add(new AstNumberExpr(NumberData.FromDouble((float)v)));
-                        break;
-                    case double:
-                        pars.Add(new AstNumberExpr(NumberData.FromDouble((double)v)));
-                        break;
-                    case string s:
-                        pars.Add(new AstStringExpr(s));
-                        break;
-                    default:
-                        // TODO: anything else?
-                        break;
-                }
-            }
-            return new AstAttributeStmt(Parser.ParseType(Name, compiler) as AstNestedExpr, pars);
         }
     }
 }

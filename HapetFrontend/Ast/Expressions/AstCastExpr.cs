@@ -5,12 +5,12 @@ namespace HapetFrontend.Ast.Expressions
 {
     public class AstCastExpr : AstExpression
     {
-        public AstStatement SubExpression { get; set; }
-        public AstStatement TypeExpr { get; set; }
+        public AstExpression SubExpression { get; set; }
+        public AstExpression TypeExpr { get; set; }
 
         public override string AAAName => nameof(AstCastExpr);
 
-        public AstCastExpr(AstStatement typeExpr, AstStatement sub, ILocation Location = null) : base(Location)
+        public AstCastExpr(AstExpression typeExpr, AstExpression sub, ILocation location = null) : base(location)
         {
             this.TypeExpr = typeExpr;
             SubExpression = sub;
@@ -19,8 +19,8 @@ namespace HapetFrontend.Ast.Expressions
         public override AstStatement GetDeepCopy()
         {
             var copy = new AstCastExpr(
-                TypeExpr.GetDeepCopy() as AstStatement,
-                SubExpression.GetDeepCopy() as AstStatement,
+                TypeExpr.GetDeepCopy() as AstExpression,
+                SubExpression.GetDeepCopy() as AstExpression,
                 Location)
             {
                 IsCompileTimeValue = IsCompileTimeValue,

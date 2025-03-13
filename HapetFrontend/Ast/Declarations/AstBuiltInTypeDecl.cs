@@ -10,9 +10,9 @@ namespace HapetFrontend.Ast.Declarations
     {
         public override string AAAName => nameof(AstBuiltInTypeDecl);
 
-        public AstBuiltInTypeDecl(HapetType tp, string doc = "", ILocation Location = null) : base(null, doc, Location)
+        public AstBuiltInTypeDecl(HapetType tp, string doc = "", ILocation location = null) : base(null, doc, location)
         {
-            Type = new AstNestedExpr(new AstIdExpr(tp.TypeName, Location), null, Location);
+            Type = new AstIdExpr(tp.TypeName, location);
             Type.OutType = tp;
         }
 

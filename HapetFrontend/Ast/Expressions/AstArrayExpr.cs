@@ -13,7 +13,7 @@ namespace HapetFrontend.Ast.Expressions
 
         public override string AAAName => nameof(AstArrayExpr);
 
-        public AstArrayExpr(AstExpression sub, ILocation Location = null) : base(Location)
+        public AstArrayExpr(AstExpression sub, ILocation location = null) : base(location)
         {
             SubExpression = sub;
         }

@@ -45,9 +45,9 @@ namespace HapetFrontend.Ast.Declarations
 
         public override string AAAName => nameof(AstClassDecl);
 
-        public AstClassDecl(AstIdExpr name, List<AstDeclaration> declarations, string doc = "", ILocation Location = null) : base(name, doc, Location)
+        public AstClassDecl(AstIdExpr name, List<AstDeclaration> declarations, string doc = "", ILocation location = null) : base(name, doc, location)
         {
-            Type = new AstNestedExpr(new AstIdExpr("class", Location), null, Location);
+            Type = new AstIdExpr("class", location);
             Type.OutType = new ClassType(this);
 
             Declarations = declarations;
@@ -92,57 +92,6 @@ namespace HapetFrontend.Ast.Declarations
             }
 
             return copy;
-        }
-
-        public ClassDeclJson GetJson()
-        {
-            var fields = Declarations.Where(x => x is AstVarDecl && x is not AstPropertyDecl).Select(x => (x as AstVarDecl).GetJson()).ToList();
-            var inhs = InheritedFrom.Select(x => HapetType.AsString(x.OutType, true)).ToList();
-            var props = Declarations.Where(x => x is AstPropertyDecl).Select(x => (x as AstPropertyDecl).GetJsonPropa()).ToList();
-            var attributes = Attributes.Select(x => x.GetJson()).ToList();
-            return new ClassDeclJson()
-            {
-                Fields = fields,
-                Properties = props,
-                Name = GenericsHelper.GetPrettyGenericImplName(Name.Name),
-                InheritedTypes = inhs,
-                IsGenericDecl = HasGenericTypes,
-                IsInterface = IsInterface,
-                SpecialKeys = SpecialKeys,
-                Attributes = attributes,
-                DocString = Documentation
-            };
-        }
-    }
-
-    public class ClassDeclJson
-    {
-        public List<VarDeclJson> Fields { get; set; }
-        public List<PropertyDeclJson> Properties { get; set; }
-        public string Name { get; set; }
-
-        public List<string> InheritedTypes { get; set; }
-
-        public List<TokenType> SpecialKeys { get; set; }
-        public List<AttributeJson> Attributes { get; set; }
-
-        public bool IsInterface { get; set; }
-        public bool IsGenericDecl { get; set; }
-
-        public string DocString { get; set; }
-
-        public AstClassDecl GetAst(Compiler compiler)
-        {
-            var allClassDecls = new List<AstDeclaration>();
-            allClassDecls.AddRange(Fields.Select(x => x.GetAst(compiler)));
-            allClassDecls.AddRange(Properties.Select(x => x.GetAst(compiler)));
-            var decl = new AstClassDecl(GenericsHelper.GetAstIdFromName(Name, null), allClassDecls, DocString);
-            decl.HasGenericTypes = IsGenericDecl;
-            decl.IsInterface = IsInterface;
-            decl.SpecialKeys.AddRange(SpecialKeys);
-            decl.Attributes.AddRange(Attributes.Select(x => x.GetAst(compiler)));
-            decl.InheritedFrom.AddRange(InheritedTypes.Select(x => new AstNestedExpr(new AstIdExpr(x), null)));
-            return decl;
         }
     }
 }

@@ -21,7 +21,7 @@ namespace HapetFrontend.Ast.Expressions
 
         public override string AAAName => nameof(AstArrayCreateExpr);
 
-        public AstArrayCreateExpr(AstExpression type, List<AstExpression> sizeExprs, List<AstExpression> elements, ILocation Location = null) : base(Location)
+        public AstArrayCreateExpr(AstExpression type, List<AstExpression> sizeExprs, List<AstExpression> elements, ILocation location = null) : base(location)
         {
             TypeName = type;
             SizeExprs = sizeExprs;

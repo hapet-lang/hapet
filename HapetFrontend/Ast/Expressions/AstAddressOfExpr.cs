@@ -12,8 +12,8 @@ namespace HapetFrontend.Ast.Expressions
 
         public override string AAAName => nameof(AstAddressOfExpr);
 
-        public AstAddressOfExpr(AstExpression sub, ILocation Location)
-            : base(Location)
+        public AstAddressOfExpr(AstExpression sub, ILocation location)
+            : base(location)
         {
             SubExpression = sub;
         }
