@@ -124,6 +124,7 @@ namespace HapetFrontend.Parsing
                 var varDecl = new AstVarDecl(udecl.Type, udecl.Name, initializer as AstExpression, udecl.Documentation, new Location(udecl.Beginning, end));
                 varDecl.Attributes.AddRange(attrs);
                 varDecl.SpecialKeys.AddRange(udecl.SpecialKeys);
+                varDecl.IsImported = inInfo.ExternalMetadata;
                 OnExit();
                 return varDecl;
             }
@@ -134,6 +135,7 @@ namespace HapetFrontend.Parsing
                 var varDecl = new AstVarDecl(udecl.Type, udecl.Name, null, udecl.Documentation, new Location(udecl.Beginning, end));
                 varDecl.Attributes.AddRange(attrs);
                 varDecl.SpecialKeys.AddRange(udecl.SpecialKeys);
+                varDecl.IsImported = inInfo.ExternalMetadata;
                 OnExit();
                 return varDecl;
             }

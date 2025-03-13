@@ -106,6 +106,7 @@ namespace HapetFrontend.Parsing
             theProperty.GetBlock = getBody;
             theProperty.SetBlock = setBody;
             theProperty.SpecialKeys.AddRange(udecl.SpecialKeys);
+            theProperty.IsImported = inInfo.ExternalMetadata;
 
             // do some checks because they could be done here, not in pp
             if (!hasGet && hasSet && setBody == null)

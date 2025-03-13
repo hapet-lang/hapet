@@ -115,7 +115,11 @@ namespace HapetFrontend.Parsing
             end = Consume(TokenType.CloseBrace, ErrMsg("}", "at end of struct declaration")).Location;
 
             // TODO: doc string
-            return new AstStructDecl(structName, declarations, "", new Location(beg, end)) { InheritedFrom = inherited };
+            return new AstStructDecl(structName, declarations, "", new Location(beg, end)) 
+            { 
+                InheritedFrom = inherited,
+                IsImported = inInfo.ExternalMetadata
+            };
         }
     }
 }

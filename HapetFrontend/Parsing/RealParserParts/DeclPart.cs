@@ -61,7 +61,10 @@ namespace HapetFrontend.Parsing
             }
 
             ReportMessage(PeekToken().Location, [], ErrorCode.Get(CTEN.ExpectedEqualOrNewline));
-            return new AstVarDecl(expr as AstNestedExpr, null, null, docString, expr);
+            return new AstVarDecl(expr as AstNestedExpr, null, null, docString, expr)
+            {
+                IsImported = inInfo.ExternalMetadata
+            };
         }
     }
 }

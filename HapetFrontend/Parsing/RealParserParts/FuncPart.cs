@@ -61,6 +61,7 @@ namespace HapetFrontend.Parsing
                 HasGenericTypes = generics.Count > 0,
                 GenericNames = generics,
                 GenericConstrains = genericConstrains,
+                IsImported = inInfo.ExternalMetadata
             };
         }
 
