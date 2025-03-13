@@ -1,5 +1,6 @@
 ﻿using HapetFrontend.Ast;
 using HapetFrontend.Ast.Declarations;
+using HapetFrontend.Ast.Expressions;
 using HapetFrontend.Ast.Statements;
 using HapetFrontend.Entities;
 using HapetFrontend.Errors;
@@ -9,6 +10,7 @@ using HapetFrontend.Parsing;
 using HapetFrontend.Scoping;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
+using System.Diagnostics.Metrics;
 
 namespace HapetFrontend
 {
@@ -79,6 +81,58 @@ namespace HapetFrontend
             return file;
         }
 
+        public List<ProgramFile> ParseMetadata(string metadataText, IMessageHandler mh)
+        {
+            var lexer = Lexer.FromString(metadataText, mh, "metadata");
+
+            if (lexer == null)
+                return null;
+
+            var parser = new Parser(lexer, mh);
+
+            // the list is to handle attributes
+            List<AstAttributeStmt> foundAttributes = new List<AstAttributeStmt>();
+            List<ProgramFile> allFiles = new List<ProgramFile>();
+            ProgramFile currentFile = null;
+
+            // just handlers
+            ParserInInfo inInfo = ParserInInfo.Default;
+            ParserOutInfo outInfo = ParserOutInfo.Default;
+            while (true)
+            {
+                var s = parser.ParseStatement(inInfo, ref outInfo);
+                if (s == null)
+                    break;
+
+                // create a virtual file of the directive
+                if (s is AstDirectiveStmt dir && dir.DirectiveType == Enums.DirectiveType.MetadataFile)
+                {
+                    // creating a virtual file
+                    currentFile = new ProgramFile((dir.RightPart as AstStringExpr).StringValue, lexer.Text);
+
+                    // parse namespace directive
+                    s = parser.ParseStatement(inInfo, ref outInfo);
+                    if (s is not AstDirectiveStmt dirNs || dirNs.DirectiveType != Enums.DirectiveType.MetadataNamespace)
+                    {
+                        // TODO: error
+                        continue;
+                    }
+
+                    // generating namespace scope and doing some shite with it
+                    string normalNamespace = (dirNs.RightPart as AstStringExpr).StringValue;
+                    var nsScope = GetNamespaceScope(normalNamespace);
+                    currentFile.NamespaceScope = nsScope;
+                    currentFile.Namespace = normalNamespace;
+
+                    allFiles.Add(currentFile);
+                }
+
+                HandleStatement(s, currentFile, foundAttributes, lexer, mh);
+            }
+
+            return allFiles;
+        }
+
         private ProgramFile ParseFile(string fileName, IMessageHandler mh)
         {
             var lexer = Lexer.FromFile(fileName, mh);
@@ -102,7 +156,7 @@ namespace HapetFrontend
                 if (s == null)
                     break;
 
-                HandleStatement(s);
+                HandleStatement(s, file, foundAttributes, lexer, mh);
             }
 
             string normalNamespace = CompilerUtils.GetNamespace(CurrentProjectSettings.ProjectPath, CurrentProjectSettings.RootNamespace, fileName);
@@ -114,39 +168,39 @@ namespace HapetFrontend
             file.Namespace = normalNamespace;
 
             return file;
+        }
 
-            void HandleStatement(AstStatement s)
+        private void HandleStatement(AstStatement s, ProgramFile file, List<AstAttributeStmt> foundAttributes, ILexer lexer, IMessageHandler mh)
+        {
+            if (s is AstEnumDecl ||
+                s is AstStructDecl ||
+                s is AstClassDecl ||
+                s is AstDelegateDecl ||
+                s is AstUsingStmt ||
+                s is AstNamespaceStmt)
             {
-                if (s is AstEnumDecl ||
-                    s is AstStructDecl ||
-                    s is AstClassDecl ||
-                    s is AstDelegateDecl ||
-                    s is AstUsingStmt ||
-                    s is AstNamespaceStmt)
-                {
-                    s.SourceFile = file;
-                    file.Statements.Add(s);
+                s.SourceFile = file;
+                file.Statements.Add(s);
 
-                    // if it is a 'using' add it to the list
-                    if (s is AstUsingStmt usng)
-                        file.Usings.Add(usng);
+                // if it is a 'using' add it to the list
+                if (s is AstUsingStmt usng)
+                    file.Usings.Add(usng);
 
-                    // add previously found attributes into the declaration
-                    if (s is AstDeclaration decl)
-                        decl.Attributes.AddRange(foundAttributes);
+                // add previously found attributes into the declaration
+                if (s is AstDeclaration decl)
+                    decl.Attributes.AddRange(foundAttributes);
 
-                    // clear attributes
-                    foundAttributes.Clear();
-                }
-                else if (s is AstAttributeStmt attr)
-                {
-                    // we found an attr - add it to list and use it when find a decl
-                    foundAttributes.Add(attr);
-                }
-                else if (s != null)
-                {
-                    mh.ReportMessage(lexer.Text, s, [], ErrorCode.Get(CTEN.StmtNotAllowedInGlobal));
-                }
+                // clear attributes
+                foundAttributes.Clear();
+            }
+            else if (s is AstAttributeStmt attr)
+            {
+                // we found an attr - add it to list and use it when find a decl
+                foundAttributes.Add(attr);
+            }
+            else if (s != null)
+            {
+                mh.ReportMessage(lexer.Text, s, [], ErrorCode.Get(CTEN.StmtNotAllowedInGlobal));
             }
         }
 

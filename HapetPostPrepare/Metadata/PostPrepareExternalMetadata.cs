@@ -17,9 +17,9 @@ namespace HapetPostPrepare
 
         private string _externalProjectFilename;
 
-        public void PostPrepareExternalMetadata(MetadataJson metadata, string fileName)
+        public void PostPrepareExternalMetadata(string metadataText, string fileName)
         {
-            PosPrepareExternalLoad(metadata, fileName);
+            PosPrepareExternalLoad(metadataText, fileName);
 
             // we need to do this to know locations of the asts
             _externalProjectName = $"Referenced assembly '.../{fileName}'";
@@ -29,36 +29,9 @@ namespace HapetPostPrepare
             PostPrepareExternalMetadataInternal();
         }
 
-        private void PosPrepareExternalLoad(MetadataJson metadata, string fileName)
+        private void PosPrepareExternalLoad(string metadataText, string fileName)
         {
-            // getting asts
-            _classes = metadata.ClassDecls.Select(x => x.GetAst(_compiler)).ToList();
-            _structs = metadata.StructDecls.Select(x => x.GetAst(_compiler)).ToList();
-            _enums = metadata.EnumDecls.Select(x => x.GetAst(_compiler)).ToList();
-            _delegates = metadata.DelegateDecls.Select(x => x.GetAst(_compiler)).ToList();
-            var funcs = metadata.FuncDecls.Select(x => x.GetAst(_compiler)).ToList();
-            _externalProjectFilename = fileName;
-
-            // setting all functions into classes. So do not use funcs anymore
-            for (int i = 0; i < funcs.Count; ++i)
-            {
-                string typeName = metadata.FuncDecls[i].ParentDeclName;
-                var fnc = funcs[i];
-
-                var theClass = _classes.FirstOrDefault(x => x.Name.Name == typeName);
-                if (theClass != null)
-                {
-                    theClass.Declarations.Add(fnc);
-                    fnc.ContainingParent = theClass;
-                }
-                var theStruct = _structs.FirstOrDefault(x => x.Name.Name == typeName);
-                if (theStruct != null)
-                {
-                    theStruct.Declarations.Add(fnc);
-                    fnc.ContainingParent = theStruct;
-                }
-                // TODO: error if both are null
-            }
+            
         }
 
         /// <summary>

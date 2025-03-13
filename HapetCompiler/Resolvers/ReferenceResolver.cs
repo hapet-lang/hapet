@@ -30,10 +30,9 @@ namespace HapetCompiler.Resolvers
                     continue;
                 }
 
-                var fullPathToTheFile = $"{data.Item1}/{data.Item2}.json";
-                var jsonText = File.ReadAllText(fullPathToTheFile);
-                var metadata = JsonConvert.DeserializeObject<MetadataJson>(jsonText);
-                _postPreparer.PostPrepareExternalMetadata(metadata, r);
+                var fullPathToTheFile = $"{data.Item1}/{data.Item2}.mpt";
+                var metaText = File.ReadAllText(fullPathToTheFile);
+                _postPreparer.PostPrepareExternalMetadata(metaText, r);
 
                 PathsToLinkWith.Add(data.Item1);
                 // TODO: is there .lib file when we are on linux?

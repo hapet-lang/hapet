@@ -355,26 +355,8 @@ namespace HapetPostPrepare
 
         private void RemoveAllProperties()
         {
+            // obsolete but keep it here
             _currentPreparationStep = PreparationStep.PropsRemoval;
-
-            //foreach (var cls in AllClassesMetadata)
-            //{
-            //    cls.Declarations.RemoveAll(x => x is AstPropertyDecl);
-            //}
-            //foreach (var cls in AllStructsMetadata)
-            //{
-            //    cls.Declarations.RemoveAll(x => x is AstPropertyDecl);
-            //}
         }
-    }
-
-    public class MetadataJson
-    {
-        public string Version { get; set; }
-        public List<ClassDeclJson> ClassDecls { get; set; }
-        public List<StructDeclJson> StructDecls { get; set; }
-        public List<EnumDeclJson> EnumDecls { get; set; }
-        public List<DelegateDeclJson> DelegateDecls { get; set; }
-        public List<FuncDeclJson> FuncDecls { get; set; }
     }
 }
