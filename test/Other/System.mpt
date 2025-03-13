@@ -1,0 +1,23 @@
+#file "./CuteClass.hpt"
+#namespace "System"
+// Some comments are here
+[System.SomeAnimeAttribute]
+public class CuteClass : System.Object
+{
+    static CuteClass_stor();
+    public CuteClass_ctor(System.CuteClass* this);
+    public ~CuteClass_dtor(System.CuteClass* this);
+
+    public int Anime<T>(System.CuteClass* this, string asd)
+    {
+        return 11;
+    }
+}
+
+#file "./Runtime/InteropServices/CuteClass2.hpt"
+#namespace "System.Runtime.InteropServices"
+[System.SuppressStaticCtorCallAttribute]
+public static class CuteClass2
+{
+    public static void Pivo();
+}

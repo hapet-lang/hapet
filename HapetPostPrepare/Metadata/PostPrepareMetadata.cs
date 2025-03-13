@@ -337,20 +337,13 @@ namespace HapetPostPrepare
 
             var projectVersion = _compiler.CurrentProjectSettings.ProjectVersion;
 
-            MetadataJson metadata = new MetadataJson();
-            metadata.Version = projectVersion;
-            // serialize all unreflected
-            metadata.ClassDecls = _serializeClassesMetadata.Where(x => !x.SpecialKeys.Contains(TokenType.KwUnreflected)).Select(x => x.GetJson()).ToList();
-            metadata.StructDecls = _serializeStructsMetadata.Where(x => !x.SpecialKeys.Contains(TokenType.KwUnreflected)).Select(x => x.GetJson()).ToList();
-            metadata.EnumDecls = _serializeEnumsMetadata.Where(x => !x.SpecialKeys.Contains(TokenType.KwUnreflected)).Select(x => x.GetJson()).ToList();
-            metadata.DelegateDecls = _serializeDelegatesMetadata.Where(x => !x.SpecialKeys.Contains(TokenType.KwUnreflected)).Select(x => x.GetJson()).ToList();
-            metadata.FuncDecls = _serializeFunctionsMetadata.Where(x => !x.SpecialKeys.Contains(TokenType.KwUnreflected)).Select(x => x.GetJson()).ToList();
+            // TODO: make the metadata generation
 
-            // WARN: take care about the shite that is goin on here
-            var sz = JsonConvert.SerializeObject(metadata, Formatting.Indented);
-            var outFolderPath = _compiler.CurrentProjectSettings.OutputDirectory;
-            var projectName = _compiler.CurrentProjectSettings.ProjectName;
-            File.WriteAllText($"{outFolderPath}/{projectName}.json", sz);
+            //// WARN: take care about the shite that is goin on here
+            //var sz = JsonConvert.SerializeObject(metadata, Formatting.Indented);
+            //var outFolderPath = _compiler.CurrentProjectSettings.OutputDirectory;
+            //var projectName = _compiler.CurrentProjectSettings.ProjectName;
+            //File.WriteAllText($"{outFolderPath}/{projectName}.json", sz);
         }
 
         private void RemoveAllProperties()
