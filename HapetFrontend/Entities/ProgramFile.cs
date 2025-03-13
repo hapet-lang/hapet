@@ -21,6 +21,11 @@ namespace HapetFrontend.Entities
         /// </summary>
         public string Text { get; }
 
+        /// <summary>
+        /// Is the file imported/virtual from another assembly
+        /// </summary>
+        public bool IsImported { get; set; }
+
         public Scope NamespaceScope { get; set; }
 
         public List<AstStatement> Statements { get; } = new List<AstStatement>();

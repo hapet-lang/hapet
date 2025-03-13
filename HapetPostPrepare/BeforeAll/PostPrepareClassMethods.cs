@@ -16,6 +16,10 @@ namespace HapetPostPrepare
         {
             foreach (var (path, file) in _compiler.GetFiles())
             {
+                // skip imported files
+                if (file.IsImported)
+                    continue;
+
                 _currentSourceFile = file;
 
                 foreach (var stmt in file.Statements)
@@ -264,7 +268,7 @@ namespace HapetPostPrepare
                     AstIdExpr thisParamType;
                     if (classDecl.HasGenericTypes)
                         thisParamType = AstIdGenericExpr.FromAstIdExpr(classDecl.Name.GetCopy(), 
-                            classDecl.GenericNames.Select(x => new AstNestedExpr(x, null, x)).ToList());
+                            classDecl.GenericNames.Select(x => x as AstExpression).ToList());
                     else
                         thisParamType = classDecl.Name.GetCopy();
                     // creating the class instance 'this' param

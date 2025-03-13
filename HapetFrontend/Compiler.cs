@@ -62,16 +62,26 @@ namespace HapetFrontend
             }
         }
 
-        private ProgramFile AddFile(string fileName)
+        public ProgramFile AddFile(ProgramFile file, string filePath)
+        {
+            if (_files.TryGetValue(filePath, out ProgramFile value))
+            {
+                return value;
+            }
+            _files[filePath] = file;
+            return file;
+        }
+
+        public ProgramFile AddFile(string fileName)
         {
             if (!CompilerUtils.ValidateFilePath("", fileName, false, MessageHandler, null, out string filePath))
             {
                 return null;
             }
 
-            if (_files.ContainsKey(filePath))
+            if (_files.TryGetValue(filePath, out ProgramFile value))
             {
-                return _files[filePath];
+                return value;
             }
 
             var file = ParseFile(filePath);
