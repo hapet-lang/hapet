@@ -21,7 +21,7 @@ namespace HapetFrontend.Parsing
             // if it is a simple return without params
             if (CheckToken(TokenType.Semicolon))
             {
-                return new AstReturnStmt(null, Location: new Location(beg));
+                return new AstReturnStmt(null, new Location(beg));
             }
 
             inInfo.AllowCommaForTuple = true;
@@ -38,7 +38,7 @@ namespace HapetFrontend.Parsing
                 return ParseEmptyExpression();
             }
 
-            return new AstReturnStmt(expr as AstExpression, Location: new Location(beg));
+            return new AstReturnStmt(expr as AstExpression, new Location(beg));
         }
     }
 }

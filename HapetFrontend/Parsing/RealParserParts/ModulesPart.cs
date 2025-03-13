@@ -22,7 +22,7 @@ namespace HapetFrontend.Parsing
                 return ParseEmptyExpression();
             }
 
-            return new AstUsingStmt(expr, Location: new Location(beg));
+            return new AstUsingStmt(expr, new Location(beg));
         }
 
         private AstStatement ParseNamespaceStatement()
@@ -39,7 +39,7 @@ namespace HapetFrontend.Parsing
                 return ParseEmptyExpression();
             }
 
-            return new AstNamespaceStmt(expr, Location: new Location(beg));
+            return new AstNamespaceStmt(expr, new Location(beg));
         }
     }
 }

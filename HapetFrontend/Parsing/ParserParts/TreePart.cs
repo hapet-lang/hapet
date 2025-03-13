@@ -6,6 +6,7 @@ using HapetFrontend.Entities;
 using HapetFrontend.Errors;
 using HapetFrontend.Types;
 using System.Diagnostics;
+using System.Security.Cryptography;
 
 namespace HapetFrontend.Parsing
 {
@@ -40,14 +41,24 @@ namespace HapetFrontend.Parsing
         private AstStatement ParseIsExpression(ParserInInfo inInfo, ref ParserOutInfo outInfo)
         {
             var lhs = ParseAsExpression(inInfo, ref outInfo);
-            AstStatement rhs = null;
+            AstStatement rhs;
 
             while (CheckToken(TokenType.KwIs))
             {
-                var _is = NextToken();
+                var _ = NextToken();
                 SkipNewlines();
                 rhs = ParseAsExpression(inInfo, ref outInfo);
-                lhs = new AstBinaryExpr("is", lhs, rhs, new Location(lhs.Beginning, rhs.Ending));
+                var binExpr = new AstBinaryExpr("is", lhs as AstExpression, rhs as AstExpression, new Location(lhs.Beginning, rhs.Ending));
+
+                // error if it is not an expr
+                if (lhs is not AstExpression)
+                    ReportMessage(lhs, [binExpr.Operator], ErrorCode.Get(CTEN.ExprsExpectedInBinExpr));
+                // error if it is not an expr
+                if (rhs is not AstExpression)
+                    ReportMessage(rhs, [binExpr.Operator], ErrorCode.Get(CTEN.ExprsExpectedInBinExprR));
+
+                // set to return it
+                lhs = binExpr;
             }
             return lhs;
         }
@@ -55,14 +66,24 @@ namespace HapetFrontend.Parsing
         private AstStatement ParseAsExpression(ParserInInfo inInfo, ref ParserOutInfo outInfo)
         {
             var lhs = ParseInExpression(inInfo, ref outInfo);
-            AstStatement rhs = null;
+            AstStatement rhs;
 
             while (CheckToken(TokenType.KwAs))
             {
-                var _as = NextToken();
+                var _ = NextToken();
                 SkipNewlines();
                 rhs = ParseInExpression(inInfo, ref outInfo);
-                lhs = new AstBinaryExpr("as", lhs, rhs, new Location(lhs.Beginning, rhs.Ending));
+                var binExpr = new AstBinaryExpr("as", lhs as AstExpression, rhs as AstExpression, new Location(lhs.Beginning, rhs.Ending));
+
+                // error if it is not an expr
+                if (lhs is not AstExpression)
+                    ReportMessage(lhs, [binExpr.Operator], ErrorCode.Get(CTEN.ExprsExpectedInBinExpr));
+                // error if it is not an expr
+                if (rhs is not AstExpression)
+                    ReportMessage(rhs, [binExpr.Operator], ErrorCode.Get(CTEN.ExprsExpectedInBinExprR));
+
+                // set to return it
+                lhs = binExpr;
             }
             return lhs;
         }
@@ -70,14 +91,24 @@ namespace HapetFrontend.Parsing
         private AstStatement ParseInExpression(ParserInInfo inInfo, ref ParserOutInfo outInfo)
         {
             var lhs = ParseComparisonExpression(inInfo, ref outInfo);
-            AstStatement rhs = null;
+            AstStatement rhs;
 
             while (CheckToken(TokenType.KwIn))
             {
-                var _in = NextToken();
+                var _ = NextToken();
                 SkipNewlines();
                 rhs = ParseComparisonExpression(inInfo, ref outInfo);
-                lhs = new AstBinaryExpr("in", lhs, rhs, new Location(lhs.Beginning, rhs.Ending));
+                var binExpr = new AstBinaryExpr("in", lhs as AstExpression, rhs as AstExpression, new Location(lhs.Beginning, rhs.Ending));
+
+                // error if it is not an expr
+                if (lhs is not AstExpression)
+                    ReportMessage(lhs, [binExpr.Operator], ErrorCode.Get(CTEN.ExprsExpectedInBinExpr));
+                // error if it is not an expr
+                if (rhs is not AstExpression)
+                    ReportMessage(rhs, [binExpr.Operator], ErrorCode.Get(CTEN.ExprsExpectedInBinExprR));
+
+                // set to return it
+                lhs = binExpr;
             }
             return lhs;
         }
@@ -196,18 +227,14 @@ namespace HapetFrontend.Parsing
                 NextToken();
                 SkipNewlines();
                 rhs = sub(inInfo, ref outInfo);
-                var binExpr = new AstBinaryExpr(op, lhs, rhs, new Location(lhs.Beginning, rhs.Ending));
+                var binExpr = new AstBinaryExpr(op, lhs as AstExpression, rhs as AstExpression, new Location(lhs.Beginning, rhs.Ending));
 
                 // error if it is not an expr
-                if (binExpr.Left is not AstExpression)
-                {
-                    ReportMessage(binExpr.Left, [binExpr.Operator], ErrorCode.Get(CTEN.ExprsExpectedInBinExpr));
-                }
+                if (lhs is not AstExpression)
+                    ReportMessage(lhs, [binExpr.Operator], ErrorCode.Get(CTEN.ExprsExpectedInBinExpr));
                 // error if it is not an expr
-                if (binExpr.Right is not AstExpression)
-                {
-                    ReportMessage(binExpr.Right, [binExpr.Operator], ErrorCode.Get(CTEN.ExprsExpectedInBinExprR));
-                }
+                if (rhs is not AstExpression)
+                    ReportMessage(rhs, [binExpr.Operator], ErrorCode.Get(CTEN.ExprsExpectedInBinExprR));
 
                 lhs = binExpr;
             }
@@ -224,7 +251,7 @@ namespace HapetFrontend.Parsing
                 var sub = ParseUnaryExpression(inInfo, ref outInfo);
                 if (sub is not AstExpression expr)
                 {
-                    ReportMessage(sub.Location, ["&"], ErrorCode.Get(CTEN.ExprExpectedInUnExpr));
+                    ReportMessage(sub, ["&"], ErrorCode.Get(CTEN.ExprExpectedInUnExpr));
                     return sub;
                 }
                 return new AstAddressOfExpr(expr, new Location(next.Location, sub.Ending));
@@ -236,7 +263,7 @@ namespace HapetFrontend.Parsing
                 var sub = ParseUnaryExpression(inInfo, ref outInfo);
                 if (sub is not AstExpression expr)
                 {
-                    ReportMessage(sub.Location, ["*"], ErrorCode.Get(CTEN.ExprExpectedInUnExpr));
+                    ReportMessage(sub, ["*"], ErrorCode.Get(CTEN.ExprExpectedInUnExpr));
                     return sub;
                 }
                 return new AstPointerExpr(expr, true, new Location(next.Location, sub.Ending));
@@ -252,11 +279,11 @@ namespace HapetFrontend.Parsing
                     case TokenType.Plus: op = "+"; break;
                     case TokenType.Minus: op = "-"; break;
                 }
-                var un = new AstUnaryExpr(op, sub, new Location(next.Location, sub.Ending));
+                var un = new AstUnaryExpr(op, sub as AstExpression, new Location(next.Location, sub.Ending));
                 // error if it is not an expr
-                if (un.SubExpr is not AstExpression)
+                if (sub is not AstExpression)
                 {
-                    ReportMessage(un.SubExpr, [un.Operator], ErrorCode.Get(CTEN.ExprExpectedInUnExpr));
+                    ReportMessage(sub, [un.Operator], ErrorCode.Get(CTEN.ExprExpectedInUnExpr));
                 }
                 return un;
             }
@@ -265,11 +292,11 @@ namespace HapetFrontend.Parsing
                 NextToken();
                 SkipNewlines();
                 var sub = ParseUnaryExpression(inInfo, ref outInfo);
-                var un = new AstUnaryExpr("!", sub, new Location(next.Location, sub.Ending));
+                var un = new AstUnaryExpr("!", sub as AstExpression, new Location(next.Location, sub.Ending));
                 // error if it is not an expr
-                if (un.SubExpr is not AstExpression)
+                if (sub is not AstExpression)
                 {
-                    ReportMessage(un.SubExpr, [un.Operator], ErrorCode.Get(CTEN.ExprExpectedInUnExpr));
+                    ReportMessage(sub, [un.Operator], ErrorCode.Get(CTEN.ExprExpectedInUnExpr));
                 }
                 return un;
             }

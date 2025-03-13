@@ -50,7 +50,7 @@ namespace HapetFrontend.Parsing
             //parameters.Insert(0, new AstParamDecl(new AstNestedExpr(new AstPointerExpr(new AstIdExpr("byte")), null), new AstIdExpr("this")));
 
             // TODO: doc string
-            return new AstDelegateDecl(parameters, returnType, delegateName, Location: new Location(beg, end));
+            return new AstDelegateDecl(parameters, returnType, delegateName, "", new Location(beg, end));
         }
     }
 }

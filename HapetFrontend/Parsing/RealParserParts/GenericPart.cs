@@ -74,7 +74,7 @@ namespace HapetFrontend.Parsing
             if (CheckToken(TokenType.Less) && expr is AstNestedExpr nstExpr && nstExpr.RightPart is AstIdExpr idExpr)
             {
                 // loolahead cringe
-                List<AstNestedExpr> types = new List<AstNestedExpr>();
+                List<AstExpression> types = new List<AstExpression>();
                 bool isGeneric = true;
 
                 UpdateLookAheadLocation();

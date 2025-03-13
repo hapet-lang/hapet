@@ -109,7 +109,7 @@ namespace HapetFrontend.Parsing
                             // just handlers
                             ParserInInfo inInfo3 = ParserInInfo.Default;
                             ParserOutInfo outInfo3 = ParserOutInfo.Default;
-                            inInfo2.AllowCommaForTuple = true;
+                            inInfo3.AllowCommaForTuple = true;
                             var val = ParseExpression(inInfo3, ref outInfo3);
 
                             if (val is not AstExpression valExpr)
@@ -121,7 +121,7 @@ namespace HapetFrontend.Parsing
                             if (stmt is AstNestedExpr id && currT.Type != TokenType.Equal)
                             {
                                 // expand ops like 'a += b' into 'a = a + b'
-                                var binOpExpr = new AstBinaryExpr(op, id, val, new Location(id.Location.Beginning, val.Location.Ending));
+                                var binOpExpr = new AstBinaryExpr(op, id, valExpr, new Location(id.Location.Beginning, val.Location.Ending));
                                 return new AstAssignStmt(id, binOpExpr, new Location(stmt.Beginning, val.Ending));
                             }
                             else if (stmt is AstNestedExpr nestId && currT.Type == TokenType.Equal)

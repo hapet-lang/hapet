@@ -139,12 +139,12 @@ namespace HapetFrontend.Parsing
                         // this cringe is done to handle default case :((
                         if (s is AstBlockExpr block && prevWasDefault != null)
                         {
-                            cases.Add(new AstCaseStmt(null, block, prevWasDefault) { DefaultCase = true });
+                            cases.Add(new AstCaseStmt(null, block, prevWasDefault) { IsDefaultCase = true });
                             prevWasDefault = null;
                         }
                         else if (s is AstStatement stmt && prevWasDefault != null)
                         {
-                            cases.Add(new AstCaseStmt(null, new AstBlockExpr(new List<AstStatement>() { stmt }, stmt), prevWasDefault) { DefaultCase = true });
+                            cases.Add(new AstCaseStmt(null, new AstBlockExpr(new List<AstStatement>() { stmt }, stmt), prevWasDefault) { IsDefaultCase = true });
                             prevWasDefault = null;
                         }
                         else
@@ -247,8 +247,8 @@ namespace HapetFrontend.Parsing
             }
 
             var cs = new AstCaseStmt(pattern, body, new Location(beg, end));
-            cs.DefaultCase = isDefault;
-            cs.FallingCase = isFalling;
+            cs.IsDefaultCase = isDefault;
+            cs.IsFallingCase = isFalling;
             return cs;
         }
     }

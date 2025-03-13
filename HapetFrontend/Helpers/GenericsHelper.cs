@@ -209,10 +209,10 @@ namespace HapetFrontend.Helpers
             string genTypes = name.Substring(genInd + 1, name.Length - genInd - 2); // why -2? because we want to remove both < and >
 
             // generating/adding generics
-            List<AstNestedExpr> gens = new List<AstNestedExpr>();
+            List<AstExpression> gens = new List<AstExpression>();
             foreach (var g in genTypes.Split(':'))
             {
-                gens.Add(new AstNestedExpr(GetAstIdFromName(g, location), null, location));
+                gens.Add(GetAstIdFromName(g, location));
             }
 
             var astGen = new AstIdGenericExpr(nameWithout, gens, location);

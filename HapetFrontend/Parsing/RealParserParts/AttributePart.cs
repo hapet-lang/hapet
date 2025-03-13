@@ -14,7 +14,7 @@ namespace HapetFrontend.Parsing
             TokenLocation beg = null;
             TokenLocation end = null;
             AstNestedExpr attrName = null;
-            List<AstExpression> parameters = new List<AstExpression>();
+            List<AstArgumentExpr> args = new List<AstArgumentExpr>();
 
             beg = Consume(TokenType.OpenBracket, ErrMsg("token '['", "at beginning of attribute statement")).Location;
             SkipNewlines();
@@ -33,16 +33,12 @@ namespace HapetFrontend.Parsing
             // parsing attr args
             if (CheckToken(TokenType.OpenParen))
             {
-                var args = ParseArgumentList(out var _);
-                foreach (var a in args)
-                {
-                    parameters.Add(a.Expr);
-                }
+                args = ParseArgumentList(out var _);
             }
 
             end = Consume(TokenType.CloseBracket, ErrMsg("token ']'", "at the end of attribute statement")).Location;
 
-            return new AstAttributeStmt(attrName, parameters, new Location(beg, end));
+            return new AstAttributeStmt(attrName, args, new Location(beg, end));
         }
     }
 }

@@ -211,9 +211,9 @@ namespace HapetFrontend.Parsing
                 // if only one id is given for a parameter, then this should be used as name, not type
                 foreach (var p in list)
                 {
-                    if (p.Name == null && p.Type != null)
+                    if (p.Name == null && p.Type != null && p.Type is AstNestedExpr nest)
                     {
-                        p.Name = p.Type.RightPart as AstIdExpr;
+                        p.Name = nest.RightPart as AstIdExpr;
                         if (p.Name == null)
                             ReportMessage(p.Type.Location, [], ErrorCode.Get(CTEN.LambdaParamNameNotIdent));
                         p.Type = null;
@@ -250,17 +250,12 @@ namespace HapetFrontend.Parsing
                             var sub = ParsePostUnaryExpression(inInfo, ref outInfo);
                             inInfo.AllowFunctionDeclaration = savedAllowFuncs;
 
-                            var cst = new AstCastExpr(expr, sub, new Location(beg, sub.Ending));
+                            var cst = new AstCastExpr(expr, sub as AstExpression, new Location(beg, sub.Ending));
 
                             // error if it is not an expr
-                            if (cst.SubExpression is not AstExpression)
+                            if (sub is not AstExpression)
                             {
-                                ReportMessage(cst.SubExpression, [], ErrorCode.Get(CTEN.CastSubNotExpr));
-                            }
-                            // error if it is not an expr
-                            if (cst.TypeExpr is not AstExpression)
-                            {
-                                ReportMessage(cst.TypeExpr, [], ErrorCode.Get(CTEN.CastTargetNotExpr));
+                                ReportMessage(sub, [], ErrorCode.Get(CTEN.CastSubNotExpr));
                             }
                             return cst;
                         }

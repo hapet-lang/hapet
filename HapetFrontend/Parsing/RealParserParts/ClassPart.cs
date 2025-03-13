@@ -54,7 +54,15 @@ namespace HapetFrontend.Parsing
             // getting generics from parsed class name
             if (className is AstIdGenericExpr genExpr)
             {
-                generics = genExpr.GenericRealTypes.Select(x => x.RightPart as AstIdExpr).ToList();
+                foreach (var g in genExpr.GenericRealTypes)
+                {
+                    if (g is AstNestedExpr nest)
+                        generics.Add(nest.RightPart as AstIdExpr);
+                    else if (g is AstIdExpr id)
+                        generics.Add(id);
+                    else
+                        generics.Add(null); // TODO: ERROR HERE
+                }
             }
 
             // checking for inheritance

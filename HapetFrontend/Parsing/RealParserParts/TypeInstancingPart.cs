@@ -43,7 +43,7 @@ namespace HapetFrontend.Parsing
                     return ParseEmptyExpression();
                 }
                 var args = ParseArgumentList(out var end);
-                return new AstNewExpr(nestExpr, args, Location: new Location(beg, end));
+                return new AstNewExpr(nestExpr, args, new Location(beg, end));
             }
 
             // error here that unexpected token .. after typeName

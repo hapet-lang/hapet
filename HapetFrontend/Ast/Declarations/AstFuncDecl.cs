@@ -33,7 +33,7 @@ namespace HapetFrontend.Ast.Declarations
 
         public override string AAAName => nameof(AstFuncDecl);
 
-        public AstFuncDecl(List<AstParamDecl> parameters, AstNestedExpr returns, AstBlockExpr body, AstIdExpr name, string doc = "", ILocation location = null) : base(name, doc, location)
+        public AstFuncDecl(List<AstParamDecl> parameters, AstExpression returns, AstBlockExpr body, AstIdExpr name, string doc = "", ILocation location = null) : base(name, doc, location)
         {
             Type = new AstIdExpr("func", location);
             Type.OutType = new FunctionType(this);

@@ -76,7 +76,7 @@ namespace HapetFrontend.Parsing
                 return originId;
             var _ = lookAhead ? NextLookAhead() : NextToken();
 
-            List<AstNestedExpr> generics = new List<AstNestedExpr>();
+            List<AstExpression> generics = new List<AstExpression>();
             // <Anime, dwdawd.dasd, ...>
             while ((lookAhead ? CheckLookAhead(TokenType.Identifier) : CheckToken(TokenType.Identifier)))
             {
@@ -121,7 +121,7 @@ namespace HapetFrontend.Parsing
                     ReportMessage(initializer.Location, [], ErrorCode.Get(CTEN.VarIniterExpr));
                 }
 
-                var varDecl = new AstVarDecl(udecl.Type, udecl.Name, initializer as AstExpression, udecl.Documentation, Location: new Location(udecl.Beginning, end));
+                var varDecl = new AstVarDecl(udecl.Type, udecl.Name, initializer as AstExpression, udecl.Documentation, new Location(udecl.Beginning, end));
                 varDecl.Attributes.AddRange(attrs);
                 varDecl.SpecialKeys.AddRange(udecl.SpecialKeys);
                 OnExit();
@@ -131,7 +131,7 @@ namespace HapetFrontend.Parsing
             else if (CheckToken(TokenType.Semicolon))
             {
                 // do not get the next token
-                var varDecl = new AstVarDecl(udecl.Type, udecl.Name, null, udecl.Documentation, Location: new Location(udecl.Beginning, end));
+                var varDecl = new AstVarDecl(udecl.Type, udecl.Name, null, udecl.Documentation, new Location(udecl.Beginning, end));
                 varDecl.Attributes.AddRange(attrs);
                 varDecl.SpecialKeys.AddRange(udecl.SpecialKeys);
                 OnExit();
