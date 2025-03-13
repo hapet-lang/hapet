@@ -1,4 +1,5 @@
 ﻿using HapetFrontend.Ast.Declarations;
+using HapetFrontend.Scoping;
 
 namespace HapetFrontend.Ast.Expressions
 {

@@ -45,6 +45,9 @@ namespace HapetPostPrepare
             if (_compiler.MessageHandler.HasErrors)
                 return 0;
 
+            // replace tuples before inferencing!!!
+            ReplaceAllTuplesInDecls();
+
             // generate metadata file
             int result = PostPrepareMetadata();
             if (result != 0)

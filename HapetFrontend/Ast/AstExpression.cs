@@ -40,5 +40,22 @@ namespace HapetFrontend.Ast
         {
             return HapetType.AsString(OutType);
         }
+
+        /// <summary>
+        /// Searches for an IdExpr and gets its DeclSymbol
+        /// Useful for AstCallExpr' TypeOrObjectName
+        /// </summary>
+        /// <returns>The decl of the type</returns>
+        public DeclSymbol TryGetDeclSymbol()
+        {
+            if (this is AstIdExpr idExpr)
+                return idExpr.FindSymbol as DeclSymbol;
+            else if (this is AstNestedExpr nest)
+                return nest.RightPart.TryGetDeclSymbol();
+            else if (this is AstCastExpr cast)
+                return cast.TypeExpr.TryGetDeclSymbol();
+            // TODO: other
+            return null;
+        }
     }
 }

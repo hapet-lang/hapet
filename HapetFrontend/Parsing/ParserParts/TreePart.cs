@@ -602,17 +602,17 @@ namespace HapetFrontend.Parsing
                     return ParseTupleExpression(inInfo, ref outInfo);
 
                 case TokenType.KwDelegate:
-                    return ParseDelegateDeclaration();
+                    return ParseDelegateDeclaration(inInfo, ref outInfo);
 
                 case TokenType.KwStruct:
-                    return ParseStructDeclaration();
+                    return ParseStructDeclaration(inInfo, ref outInfo);
 
                 case TokenType.KwEnum:
-                    return ParseEnumDeclaration();
+                    return ParseEnumDeclaration(inInfo, ref outInfo);
 
                 case TokenType.KwInterface:
                 case TokenType.KwClass:
-                    return ParseClassDeclaration();
+                    return ParseClassDeclaration(inInfo, ref outInfo);
 
                 // custom shite
                 case TokenType.KwPublic:

@@ -157,6 +157,20 @@ namespace HapetFrontend.Helpers
             index = -1;
             return null;
         }
+
+        public static List<AstNestedExpr> GetNestedList(this List<AstExpression> exprs)
+        {
+            List<AstNestedExpr> nests = new List<AstNestedExpr>();
+            foreach (var expr in exprs)
+            {
+                if (expr is AstIdExpr idExpr)
+                    nests.Add(new AstNestedExpr(idExpr, null, idExpr));
+                else if (expr is AstNestedExpr nest)
+                    nests.Add(nest);
+                // TODO: else - error
+            }
+            return nests;
+        }
         #endregion
 
         #region Parsing shite helpers

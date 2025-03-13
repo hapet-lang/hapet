@@ -2,6 +2,7 @@
 using HapetFrontend.Ast.Declarations;
 using HapetFrontend.Ast.Expressions;
 using HapetFrontend.Ast.Statements;
+using HapetFrontend.Helpers;
 
 namespace HapetPostPrepare
 {
@@ -302,7 +303,11 @@ namespace HapetPostPrepare
 
         private void ReplaceAllGenericTypesInArgumentExpr(AstArgumentExpr argumentExpr)
         {
-            ReplaceAllGenericTypesInExpr(argumentExpr.Expr);
+            if (IsGenericEntry(argumentExpr.Expr, out var val))
+                argumentExpr.Expr = val;
+            else
+                ReplaceAllGenericTypesInExpr(argumentExpr.Expr);
+
             if (argumentExpr.Name != null)
             {
                 ReplaceAllGenericTypesInExpr(argumentExpr.Name);
@@ -408,17 +413,17 @@ namespace HapetPostPrepare
         {
             ReplaceAllGenericTypesInExpr(forStmt.Body);
 
-            if (forStmt.FirstParam != null)
+            if (forStmt.FirstArgument != null)
             {
-                ReplaceAllGenericTypesInExpr(forStmt.FirstParam);
+                ReplaceAllGenericTypesInExpr(forStmt.FirstArgument);
             }
-            if (forStmt.SecondParam != null)
+            if (forStmt.SecondArgument != null)
             {
-                ReplaceAllGenericTypesInExpr(forStmt.SecondParam);
+                ReplaceAllGenericTypesInExpr(forStmt.SecondArgument);
             }
-            if (forStmt.ThirdParam != null)
+            if (forStmt.ThirdArgument != null)
             {
-                ReplaceAllGenericTypesInExpr(forStmt.ThirdParam);
+                ReplaceAllGenericTypesInExpr(forStmt.ThirdArgument);
             }
         }
 
@@ -426,9 +431,9 @@ namespace HapetPostPrepare
         {
             ReplaceAllGenericTypesInExpr(whileStmt.Body);
 
-            if (whileStmt.ConditionParam != null)
+            if (whileStmt.Condition != null)
             {
-                ReplaceAllGenericTypesInExpr(whileStmt.ConditionParam);
+                ReplaceAllGenericTypesInExpr(whileStmt.Condition);
             }
         }
 
@@ -456,7 +461,7 @@ namespace HapetPostPrepare
 
         private void ReplaceAllGenericTypesInCaseStmt(AstCaseStmt caseStmt)
         {
-            if (!caseStmt.DefaultCase)
+            if (!caseStmt.IsDefaultCase)
             {
                 if (IsGenericEntry(caseStmt.Pattern, out var val))
                     caseStmt.Pattern = val;
@@ -464,7 +469,7 @@ namespace HapetPostPrepare
                     ReplaceAllGenericTypesInExpr(caseStmt.Pattern);
             }
 
-            if (!caseStmt.FallingCase)
+            if (!caseStmt.IsFallingCase)
             {
                 ReplaceAllGenericTypesInExpr(caseStmt.Body);
             }
@@ -484,13 +489,9 @@ namespace HapetPostPrepare
         private void ReplaceAllGenericTypesInAttributeStmt(AstAttributeStmt attrStmt)
         {
             ReplaceAllGenericTypesInExpr(attrStmt.AttributeName);
-            for (int i = 0; i < attrStmt.Parameters.Count; ++i)
+            for (int i = 0; i < attrStmt.Arguments.Count; ++i)
             {
-                var par = attrStmt.Parameters[i];
-                if (IsGenericEntry(par, out var val))
-                    attrStmt.Parameters[i] = val;
-                else
-                    ReplaceAllGenericTypesInExpr(attrStmt.Parameters[i]);
+                ReplaceAllGenericTypesInExpr(attrStmt.Arguments[i]);
             }
         }
 
@@ -520,9 +521,10 @@ namespace HapetPostPrepare
             // if found something generic inside another generic shite
             if (expr is AstIdGenericExpr genExpr)
             {
-                for (int i = 0; i < genExpr.GenericRealTypes.Count; ++i)
+                var nestedGenerics = genExpr.GenericRealTypes.GetNestedList();
+                for (int i = 0; i < nestedGenerics.Count; ++i)
                 {
-                    var currNest = genExpr.GenericRealTypes[i];
+                    var currNest = nestedGenerics[i];
                     // generic types are like that :)
                     if (currNest.LeftPart == null &&
                         currNest.RightPart is AstIdExpr idExpr2)

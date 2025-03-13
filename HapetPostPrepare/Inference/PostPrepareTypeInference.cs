@@ -908,7 +908,7 @@ namespace HapetPostPrepare
                 theDecl = theDecl.OriginalGenericDecl;
 
             // generating generic shite name
-            string realName = GenericsHelper.GetRealFromGenericName(theDecl, genId.GenericRealTypes);
+            string realName = GenericsHelper.GetRealFromGenericName(theDecl, genId.GenericRealTypes.GetNestedList());
             if (theDecl.Scope.SymbolTable.TryGetValue(realName, out var realDcl) && realDcl is DeclSymbol realDclDecl)
             {
                 // return if exists
@@ -916,7 +916,7 @@ namespace HapetPostPrepare
             }
 
             // create a new shite with real types
-            var realCls = GetRealTypeFromGeneric(theDecl, genId.GenericRealTypes, realName);
+            var realCls = GetRealTypeFromGeneric(theDecl, genId.GenericRealTypes.GetNestedList(), realName);
 
             // define the real decl in the same scope where generic one exists
             realDclDecl = new DeclSymbol(realName, realCls);
@@ -945,7 +945,7 @@ namespace HapetPostPrepare
                     var g = genId.GenericRealTypes[i];
                     PostPrepareExprInference(g, inInfo, ref outInfo);
                 }
-                funcName = GenericsHelper.GetRealFromGenericName(callExpr.FuncName.Name, genId.GenericRealTypes);
+                funcName = GenericsHelper.GetRealFromGenericName(callExpr.FuncName.Name, genId.GenericRealTypes.GetNestedList());
             }
 
             // the var is used to check when static method is accessed from an object
@@ -1157,7 +1157,7 @@ namespace HapetPostPrepare
                     smbl2 = GetFuncFromCandidates(newName, argsWithStructParam, structType.Declaration.SubScope, structType.Declaration, out casts);
                     smbl2 = OnFoundSymbol(smbl2, callExpr.FuncName);
 
-                    var declSymbolOfLeft = (callExpr.TypeOrObjectName.RightPart as AstIdExpr).FindSymbol as DeclSymbol;
+                    var declSymbolOfLeft = callExpr.TypeOrObjectName.TryGetDeclSymbol();
                     if (smbl2 is DeclSymbol ds2 && ds2.Decl is AstFuncDecl funcDecl2)
                     {
                         // error because user tries to access non static method from a class name
@@ -1204,7 +1204,7 @@ namespace HapetPostPrepare
                     smbl2 = GetFuncFromCandidates(newName, argsWithStructParam, strTp.Declaration.SubScope, strTp.Declaration, out casts);
                     smbl2 = OnFoundSymbol(smbl2, callExpr.FuncName);
 
-                    var declSymbolOfLeft = (callExpr.TypeOrObjectName.RightPart as AstIdExpr).FindSymbol as DeclSymbol;
+                    var declSymbolOfLeft = callExpr.TypeOrObjectName.TryGetDeclSymbol();
                     if (smbl2 is DeclSymbol ds2 && ds2.Decl is AstFuncDecl funcDecl2)
                     {
                         // error because user tries to access non static method from a class name
@@ -1624,32 +1624,32 @@ namespace HapetPostPrepare
 
         private void PostPrepareForStmtInference(AstForStmt forStmt, InInfo inInfo, ref OutInfo outInfo)
         {
-            if (forStmt.FirstParam != null)
-                PostPrepareExprInference(forStmt.FirstParam, inInfo, ref outInfo);
-            if (forStmt.SecondParam != null)
+            if (forStmt.FirstArgument != null)
+                PostPrepareExprInference(forStmt.FirstArgument, inInfo, ref outInfo);
+            if (forStmt.SecondArgument != null)
             {
-                PostPrepareExprInference(forStmt.SecondParam, inInfo, ref outInfo);
+                PostPrepareExprInference(forStmt.SecondArgument, inInfo, ref outInfo);
 
                 // error if it is not a bool type because it has to be
-                if (forStmt.SecondParam.OutType is not BoolType)
+                if (forStmt.SecondArgument.OutType is not BoolType)
                 {
-                    _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, forStmt.SecondParam, [], ErrorCode.Get(CTEN.ExprIsNotBool));
+                    _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, forStmt.SecondArgument, [], ErrorCode.Get(CTEN.ExprIsNotBool));
                 }
             }
-            if (forStmt.ThirdParam != null)
-                PostPrepareExprInference(forStmt.ThirdParam, inInfo, ref outInfo);
+            if (forStmt.ThirdArgument != null)
+                PostPrepareExprInference(forStmt.ThirdArgument, inInfo, ref outInfo);
 
             PostPrepareExprInference(forStmt.Body, inInfo, ref outInfo);
         }
 
         private void PostPrepareWhileStmtInference(AstWhileStmt whileStmt, InInfo inInfo, ref OutInfo outInfo)
         {
-            PostPrepareExprInference(whileStmt.ConditionParam, inInfo, ref outInfo);
+            PostPrepareExprInference(whileStmt.Condition, inInfo, ref outInfo);
 
             // error if it is not a bool type because it has to be
-            if (whileStmt.ConditionParam.OutType is not BoolType)
+            if (whileStmt.Condition.OutType is not BoolType)
             {
-                _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, whileStmt.ConditionParam, [], ErrorCode.Get(CTEN.ExprIsNotBool));
+                _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, whileStmt.Condition, [], ErrorCode.Get(CTEN.ExprIsNotBool));
             }
 
             PostPrepareExprInference(whileStmt.Body, inInfo, ref outInfo);
@@ -1682,7 +1682,7 @@ namespace HapetPostPrepare
                 PostPrepareExprInference(cc, inInfo, ref outInfo);
 
                 // calc default cases. if there are more than 1 - error
-                if (cc.DefaultCase)
+                if (cc.IsDefaultCase)
                 {
                     if (thereWasADefaultCase)
                         _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, cc.Pattern, [], ErrorCode.Get(CTEN.MultipleDefaultCases));
@@ -1703,10 +1703,10 @@ namespace HapetPostPrepare
 
         private void PostPrepareCaseStmtInference(AstCaseStmt caseStmt, InInfo inInfo, ref OutInfo outInfo)
         {
-            if (!caseStmt.DefaultCase)
+            if (!caseStmt.IsDefaultCase)
                 PostPrepareExprInference(caseStmt.Pattern, inInfo, ref outInfo);
 
-            if (!caseStmt.FallingCase)
+            if (!caseStmt.IsFallingCase)
                 PostPrepareExprInference(caseStmt.Body, inInfo, ref outInfo);
         }
 
@@ -1756,11 +1756,11 @@ namespace HapetPostPrepare
             // getting all the fields of attribuute class decl
             var attrDeclFields = (attrStmt.AttributeName.OutType as ClassType).Declaration.Declarations.Where(x => x is AstVarDecl).Select(x => x as AstVarDecl).ToList();
             // check that not too much params
-            if (attrStmt.Parameters.Count > attrDeclFields.Count)
+            if (attrStmt.Arguments.Count > attrDeclFields.Count)
             {
-                var beg = attrStmt.Parameters[attrDeclFields.Count].Beginning;
-                var end = attrStmt.Parameters[attrStmt.Parameters.Count - 1].Ending;
-                _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, new Location(beg, end), [attrDeclFields.Count.ToString(), attrStmt.Parameters.Count.ToString()], ErrorCode.Get(CTEN.WrongAttrArgs));
+                var beg = attrStmt.Arguments[attrDeclFields.Count].Beginning;
+                var end = attrStmt.Arguments[attrStmt.Arguments.Count - 1].Ending;
+                _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, new Location(beg, end), [attrDeclFields.Count.ToString(), attrStmt.Arguments.Count.ToString()], ErrorCode.Get(CTEN.WrongAttrArgs));
             }
 
             for (int i = 0; i < attrDeclFields.Count; ++i)
@@ -1768,17 +1768,19 @@ namespace HapetPostPrepare
                 var theAttrField = attrDeclFields[i];
 
                 // check that param exists for the field 
-                if (i < attrStmt.Parameters.Count)
+                if (i < attrStmt.Arguments.Count)
                 {
                     // inferrencing the param
-                    var a = attrStmt.Parameters[i];
-                    PostPrepareExprInference(a, inInfo, ref outInfo);
+                    var arg = attrStmt.Arguments[i];
+                    PostPrepareExprInference(arg, inInfo, ref outInfo);
+
+                    var a = arg.Expr;
                     // all attr params has to be const values
                     if (a.OutValue == null)
                         _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, a, [], ErrorCode.Get(CTEN.NonComptimeAttrArg));
 
                     // is going to error if they are different types :)
-                    attrStmt.Parameters[i] = PostPrepareExpressionWithType(GetPreparedAst(theAttrField.Type.OutType, theAttrField.Type), a);
+                    attrStmt.Arguments[i].Expr = PostPrepareExpressionWithType(GetPreparedAst(theAttrField.Type.OutType, theAttrField.Type), a);
                 }
                 else
                 {

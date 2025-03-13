@@ -4,12 +4,13 @@ using HapetFrontend.Ast;
 using System.Xml.Linq;
 using HapetFrontend.Errors;
 using System.Runtime;
+using HapetFrontend.Entities;
 
 namespace HapetFrontend.Parsing
 {
     public partial class Parser
     {
-        private AstDelegateDecl ParseDelegateDeclaration()
+        private AstDelegateDecl ParseDelegateDeclaration(ParserInInfo inInfo, ref ParserOutInfo outInfo)
         {
             AstNestedExpr returnType = null;
             AstIdExpr delegateName = null;

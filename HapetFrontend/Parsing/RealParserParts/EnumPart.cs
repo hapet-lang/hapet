@@ -8,12 +8,8 @@ namespace HapetFrontend.Parsing
 {
     public partial class Parser
     {
-        private AstDeclaration ParseEnumDeclaration()
+        private AstDeclaration ParseEnumDeclaration(ParserInInfo inInfo, ref ParserOutInfo outInfo)
         {
-            // just handlers
-            ParserInInfo inInfo = ParserInInfo.Default;
-            ParserOutInfo outInfo = ParserOutInfo.Default;
-
             TokenLocation beg = null, end = null;
             var declarations = new List<AstVarDecl>();
             var inherited = new List<AstNestedExpr>();

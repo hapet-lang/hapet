@@ -35,6 +35,13 @@ namespace HapetFrontend.Helpers
             return hasGeneric;
         }
 
+        /// <summary>
+        /// Makes from List-T- to List-int-
+        /// But really just does from List_GB_DAWDAWDAWD_g_T_GE to List_GB_int_GE
+        /// </summary>
+        /// <param name="decl">The decl</param>
+        /// <param name="generics">List of real types</param>
+        /// <returns>New name</returns>
         public static string GetRealFromGenericName(AstDeclaration decl, List<AstNestedExpr> generics)
         {
             if (decl is AstFuncDecl func)
