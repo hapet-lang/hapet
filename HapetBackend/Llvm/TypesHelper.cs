@@ -148,7 +148,7 @@ namespace HapetBackend.Llvm
                         int packNumber = 0;
                         if (layoutAttr != null)
                         {
-                            var thePackParam = layoutAttr.Parameters.First();
+                            var thePackParam = layoutAttr.Arguments.First();
                             var tmpPack = (int)((NumberData)thePackParam.OutValue).IntValue;
                             // check for 0 and other shite
                             if (tmpPack <= 0)

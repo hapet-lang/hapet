@@ -216,8 +216,8 @@ namespace HapetBackend.Llvm
                 _messageHandler.ReportMessage(_currentSourceFile.Text, funcDecl, [], ErrorCode.Get(CTEN.ExternFuncNoAttr));
                 return;
             }
-            string dllName = dllImportAttr.Parameters[0].OutValue as string;
-            string entryPoint = dllImportAttr.Parameters[1].OutValue as string;
+            string dllName = dllImportAttr.Arguments[0].OutValue as string;
+            string entryPoint = dllImportAttr.Arguments[1].OutValue as string;
 
             LLVMTypeRef funcType;
             LLVMValueRef funcValue;

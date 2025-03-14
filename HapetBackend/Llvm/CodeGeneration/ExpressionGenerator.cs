@@ -512,7 +512,12 @@ namespace HapetBackend.Llvm
                 }
 
                 // is that smth like 'base.Anime()' call
-                bool isBaseCall = expr.TypeOrObjectName == null ? false : expr.TypeOrObjectName.TryFlatten(null, null) == "base";
+                // TODO: won't work with smth like '(base as AnimeCls).AnimeFunc()'
+                bool isBaseCall = false;
+                if (expr.TypeOrObjectName is AstNestedExpr nest)
+                    isBaseCall = nest.RightPart is AstIdExpr id && id.Name == "base";
+                else if (expr.TypeOrObjectName is AstIdExpr id)
+                    isBaseCall = id.Name == "base";
 
                 // the return name has to be empty if ret value of func is void
                 // also save the ret value into a var
@@ -846,8 +851,8 @@ namespace HapetBackend.Llvm
             var prevForInc = _currentLoopInc;
             var prevForEnd = _currentLoopEnd;
 
-            if (stmt.FirstParam != null)
-                GenerateExpressionCode(stmt.FirstParam);
+            if (stmt.FirstArgument != null)
+                GenerateExpressionCode(stmt.FirstArgument);
 
             var bbCond = _lastFunctionValueRef.AppendBasicBlock($"for{_forCounter}.cond");
             var bbBody = _lastFunctionValueRef.AppendBasicBlock($"for{_forCounter}.body");
@@ -864,10 +869,10 @@ namespace HapetBackend.Llvm
 
             // condition
             _builder.PositionAtEnd(bbCond);
-            if (stmt.SecondParam != null)
+            if (stmt.SecondArgument != null)
             {
                 // building the condition
-                var cmp = GenerateExpressionCode(stmt.SecondParam);
+                var cmp = GenerateExpressionCode(stmt.SecondArgument);
                 _builder.BuildCondBr(cmp, bbBody, bbEnd);
             }
             else
@@ -907,10 +912,10 @@ namespace HapetBackend.Llvm
 
             // inc
             _builder.PositionAtEnd(bbInc);
-            if (stmt.ThirdParam != null)
+            if (stmt.ThirdArgument != null)
             {
                 // generating inc code
-                GenerateExpressionCode(stmt.ThirdParam);
+                GenerateExpressionCode(stmt.ThirdArgument);
             }
             _builder.BuildBr(bbCond);
             _builder.PositionAtEnd(bbEnd);
@@ -955,10 +960,10 @@ namespace HapetBackend.Llvm
 
             // condition
             _builder.PositionAtEnd(bbCond);
-            if (stmt.ConditionParam != null)
+            if (stmt.Condition != null)
             {
                 // building the condition
-                var cmp = GenerateExpressionCode(stmt.ConditionParam);
+                var cmp = GenerateExpressionCode(stmt.Condition);
                 _builder.BuildCondBr(cmp, bbBody, bbEnd);
             }
             else
@@ -1102,7 +1107,7 @@ namespace HapetBackend.Llvm
             _switchCounter++;
 
             // checking if there is a user defined default case
-            bool userDefinedDefaultCase = stmt.Cases.Any(x => x.DefaultCase);
+            bool userDefinedDefaultCase = stmt.Cases.Any(x => x.IsDefaultCase);
 
             var prevLoopEnd = _currentLoopEnd;
 
@@ -1124,7 +1129,7 @@ namespace HapetBackend.Llvm
             foreach (var cc in stmt.Cases)
             {
                 // just wait for a normal case
-                if (cc.FallingCase)
+                if (cc.IsFallingCase)
                 {
                     fallingCases.Add(cc);
                     continue;
@@ -1132,7 +1137,7 @@ namespace HapetBackend.Llvm
 
                 // creating a block for the case
                 LLVMBasicBlockRef currBb;
-                if (cc.DefaultCase)
+                if (cc.IsDefaultCase)
                 {
                     LLVM.AppendExistingBasicBlock(_lastFunctionValueRef, bbDefault);
                     currBb = bbDefault;
@@ -1164,7 +1169,7 @@ namespace HapetBackend.Llvm
                 }
 
                 // there is no pattern in default case
-                if (!cc.DefaultCase)
+                if (!cc.IsDefaultCase)
                 {
                     // the pattern of the case
                     var patt = GenerateExpressionCode(cc.Pattern);
