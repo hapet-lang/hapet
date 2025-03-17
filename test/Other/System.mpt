@@ -1,3 +1,5 @@
+#assemblyVersion "0.0.1"
+
 #file "./CuteClass.hpt"
 #namespace "System"
 // Some comments are here

@@ -163,13 +163,19 @@ namespace HapetFrontend.Helpers
             List<AstNestedExpr> nests = new List<AstNestedExpr>();
             foreach (var expr in exprs)
             {
-                if (expr is AstIdExpr idExpr)
-                    nests.Add(new AstNestedExpr(idExpr, null, idExpr));
-                else if (expr is AstNestedExpr nest)
-                    nests.Add(nest);
-                // TODO: else - error
+                nests.Add(expr.GetNested());
             }
             return nests;
+        }
+
+        public static AstNestedExpr GetNested(this AstExpression expr) 
+        {
+            if (expr is AstIdExpr idExpr)
+                return new AstNestedExpr(idExpr, null, idExpr);
+            else if (expr is AstNestedExpr nest)
+                return nest;
+            // TODO: else - error
+            return null;
         }
         #endregion
 
@@ -252,6 +258,29 @@ namespace HapetFrontend.Helpers
             }
 
             return $"{rootNamespace}.{uniquePathNormalized}";
+        }
+
+        public static string GetFileRelativePath(string projectPath, string filePath)
+        {
+            var projectPathNormalized = Path.GetDirectoryName(projectPath).Replace("\\", "/").TrimEnd('/');
+            var filePathNormalized = Path.GetDirectoryName(filePath).Replace("\\", "/").TrimEnd('/');
+
+            StringBuilder uniquePath = new StringBuilder();
+            for (int i = 0; i < filePathNormalized.Length; ++i)
+            {
+                if (i >= projectPathNormalized.Length)
+                {
+                    uniquePath.Append(filePathNormalized[i]);
+                }
+            }
+            var uniquePathNormalized = uniquePath.ToString().Trim('/');
+            // it could be empty if the file is in the same directory as project file
+            if (string.IsNullOrWhiteSpace(uniquePathNormalized))
+            {
+                return $"./{Path.GetFileName(filePath)}";
+            }
+
+            return $"./{uniquePathNormalized}/{Path.GetFileName(filePath)}";
         }
     }
 }

@@ -1,6 +1,7 @@
 ﻿using HapetFrontend.Ast.Declarations;
 using HapetFrontend.Entities;
 using HapetFrontend.Errors;
+using HapetFrontend.Helpers;
 using HapetFrontend.Parsing;
 
 namespace HapetFrontend.Ast.Expressions
@@ -62,9 +63,9 @@ namespace HapetFrontend.Ast.Expressions
             }
 
             if (LeftPart == null)
-                return idExpr.Name;
+                return GenericsHelper.GetNameFromAst(idExpr);
 
-            return $"{LeftPart.TryFlatten(messageHandler, file)}.{idExpr.Name}";
+            return $"{LeftPart.TryFlatten(messageHandler, file)}.{GenericsHelper.GetNameFromAst(idExpr)}";
         }
 
         /// <summary>

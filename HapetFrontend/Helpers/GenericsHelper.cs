@@ -225,5 +225,22 @@ namespace HapetFrontend.Helpers
             var astGen = new AstIdGenericExpr(nameWithout, gens, location);
             return astGen;
         }
+
+        public static string GetNameFromAst(AstIdExpr idExpr)
+        {
+            if (idExpr is not AstIdGenericExpr genId)
+                return idExpr.Name;
+
+            StringBuilder sb = new StringBuilder("<");
+            for (int i = 0; i < genId.GenericRealTypes.Count; ++i)
+            {
+                var g = genId.GenericRealTypes[i];
+                sb.Append(g.GetNested().TryFlatten(null, null));
+                if (i < genId.GenericRealTypes.Count - 1)
+                    sb.Append(", ");
+            }
+            sb.Append('>');
+            return $"{genId.Name}{sb}";
+        }
     }
 }

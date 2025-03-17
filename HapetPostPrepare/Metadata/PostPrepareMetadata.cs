@@ -52,7 +52,7 @@ namespace HapetPostPrepare
             }
 
             // creating the file
-            PostPrepareMetadataCreate();
+            GenerateMetadataFile();
 
             // WARN: removing all properties after saving to file
             // removing them only now because we need them to be presented in metadata
@@ -329,21 +329,6 @@ namespace HapetPostPrepare
                 _currentSourceFile = del.SourceFile;
                 PostPrepareMetadataAttributes(del);
             }
-        }
-
-        private void PostPrepareMetadataCreate()
-        {
-            _currentPreparationStep = PreparationStep.MetadataCreation;
-
-            var projectVersion = _compiler.CurrentProjectSettings.ProjectVersion;
-
-            // TODO: make the metadata generation
-
-            //// WARN: take care about the shite that is goin on here
-            //var sz = JsonConvert.SerializeObject(metadata, Formatting.Indented);
-            //var outFolderPath = _compiler.CurrentProjectSettings.OutputDirectory;
-            //var projectName = _compiler.CurrentProjectSettings.ProjectName;
-            //File.WriteAllText($"{outFolderPath}/{projectName}.json", sz);
         }
 
         private void RemoveAllProperties()
