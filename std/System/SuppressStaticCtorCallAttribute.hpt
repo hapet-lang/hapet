@@ -5,13 +5,4 @@
 [SuppressStaticCtorCallAttribute]
 public class SuppressStaticCtorCallAttribute : Attribute
 {
-    public static bool Stattttt;
-    public SuppressStaticCtorCallAttribute()
-    {
-    }
-
-    static SuppressStaticCtorCallAttribute()
-    {
-        int a = 3;
-    }
 }

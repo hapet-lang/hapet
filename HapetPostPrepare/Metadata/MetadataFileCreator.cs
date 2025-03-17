@@ -77,6 +77,9 @@ namespace HapetPostPrepare
 
             foreach (var decl in decls)
             {
+                if (decl.SpecialKeys.Contains(TokenType.KwUnreflected))
+                    continue;
+
                 // TODO: doc string
 
                 // serialize attributes
@@ -91,6 +94,10 @@ namespace HapetPostPrepare
                 if (decl is AstClassDecl clsDecl)
                 {
                     CreateClassDecl(clsDecl, sb, "");
+                }
+                else if (decl is AstStructDecl strDecl)
+                {
+                    CreateStructDecl(strDecl, sb, "");
                 }
             }
         }
@@ -120,7 +127,10 @@ namespace HapetPostPrepare
 
         private void CreateClassDecl(AstClassDecl decl, StringBuilder sb, string additionalOffset)
         {
-            sb.Append("class ");
+            if (decl.IsInterface)
+                sb.Append("interface ");
+            else
+                sb.Append("class ");
             sb.Append($"{GenericsHelper.GetNameFromAst(decl.Name).GetClassNameWithoutNamespace()} ");
 
             if (decl.InheritedFrom.Count > 0)
@@ -136,6 +146,9 @@ namespace HapetPostPrepare
 
             foreach (var d in decl.Declarations)
             {
+                if (d.SpecialKeys.Contains(TokenType.KwUnreflected))
+                    continue;
+
                 // TODO: doc string
 
                 // serialize attributes
@@ -150,6 +163,62 @@ namespace HapetPostPrepare
                 {
                     CreateFuncDecl(func, sb, additionalOffset + _fourSpaces);
                 }
+                else if (d is AstPropertyDecl prop)
+                {
+                    CreatePropertyDecl(prop, sb, additionalOffset + _fourSpaces);
+                }
+                else if (d is AstVarDecl field)
+                {
+                    CreateFieldDecl(field, sb, additionalOffset + _fourSpaces);
+                }
+            }
+
+            sb.Append($"{additionalOffset}}}\n\n");
+        }
+
+        private void CreateStructDecl(AstStructDecl decl, StringBuilder sb, string additionalOffset)
+        {
+            sb.Append("struct ");
+            sb.Append($"{GenericsHelper.GetNameFromAst(decl.Name).GetClassNameWithoutNamespace()} ");
+
+            if (decl.InheritedFrom.Count > 0)
+            {
+                sb.Append(": ");
+                var inhs = decl.InheritedFrom.Select(x => x.GetNested().TryFlatten(null, null));
+                sb.Append(string.Join(", ", inhs));
+            }
+
+            // TODO: generic constraiins 
+
+            sb.Append($"\n{additionalOffset}{{\n");
+
+            foreach (var d in decl.Declarations)
+            {
+                if (d.SpecialKeys.Contains(TokenType.KwUnreflected))
+                    continue;
+
+                // TODO: doc string
+
+                // serialize attributes
+                foreach (var attr in d.Attributes)
+                {
+                    CreateAttributeDecl(attr, sb, additionalOffset + _fourSpaces);
+                }
+
+                CreateSpecialKeys(d.SpecialKeys, sb, additionalOffset + _fourSpaces);
+
+                if (d is AstFuncDecl func)
+                {
+                    CreateFuncDecl(func, sb, additionalOffset + _fourSpaces);
+                }
+                else if (d is AstPropertyDecl prop)
+                {
+                    CreatePropertyDecl(prop, sb, additionalOffset + _fourSpaces);
+                }
+                else if (d is AstVarDecl field)
+                {
+                    CreateFieldDecl(field, sb, additionalOffset + _fourSpaces);
+                }
             }
 
             sb.Append($"{additionalOffset}}}\n\n");
@@ -158,7 +227,7 @@ namespace HapetPostPrepare
         private void CreateFuncDecl(AstFuncDecl decl, StringBuilder sb, string additionalOffset)
         {
             // return type
-            sb.Append(decl.Returns.GetNested().TryFlatten(null, null));
+            sb.Append(decl.Returns.OutType);
 
             sb.Append($" {GenericsHelper.GetNameFromAst(decl.Name).GetPureFuncName()}");
 
@@ -176,6 +245,29 @@ namespace HapetPostPrepare
             {
                 sb.Append(";\n");
             }
+        }
+
+        private void CreatePropertyDecl(AstPropertyDecl decl, StringBuilder sb, string additionalOffset)
+        {
+            // return type
+            sb.Append(decl.Type.OutType);
+
+            sb.Append($" {GenericsHelper.GetNameFromAst(decl.Name).GetPureFuncName()}");
+
+            sb.Append(" { get; ");
+            if (decl.HasSet)
+                sb.Append("set; ");
+            sb.Append("}\n");
+        }
+
+        private void CreateFieldDecl(AstVarDecl decl, StringBuilder sb, string additionalOffset)
+        {
+            // return type
+            sb.Append(decl.Type.OutType);
+
+            sb.Append($" {GenericsHelper.GetNameFromAst(decl.Name).GetPureFuncName()}");
+
+            sb.Append(";\n");
         }
     }
 }

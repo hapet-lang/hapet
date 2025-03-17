@@ -138,13 +138,13 @@ namespace HapetPostPrepare
                         fDecl.Body.Statements[0] is AstIfStmt ifStmt && ifStmt.BodyTrue != null &&
                         ifStmt.BodyTrue.Statements.Count > 0 && ifStmt.BodyTrue.Statements[^1] is AstAssignStmt assignStmt &&
                         assignStmt.Target is AstNestedExpr nstE && nstE.RightPart is AstIdExpr idE && 
-                        idE.Name == $"__is_{_currentSourceFile.Namespace}.{origName}_stor_called" &&
+                        idE.Name == $"__is_{_currentSourceFile.Namespace.Replace('.', '_')}_{origName}_stor_called" &&
                         ifStmt.Condition is AstUnaryExpr unE && unE.SubExpr is AstIdExpr idECond &&
-                        idECond.Name == $"__is_{_currentSourceFile.Namespace}.{origName}_stor_called")
+                        idECond.Name == $"__is_{_currentSourceFile.Namespace.Replace('.', '_')}_{origName}_stor_called")
                     {
                         /// make sure that this shite is the same as in <see cref="PostPrepareGenerateClassStaticConstructor"/>
-                        nstE.RightPart = idE.GetCopy($"__is_{_currentSourceFile.Namespace}.{decl.Name.Name}_stor_called");
-                        unE.SubExpr = idECond.GetCopy($"__is_{_currentSourceFile.Namespace}.{decl.Name.Name}_stor_called");
+                        nstE.RightPart = idE.GetCopy($"__is_{_currentSourceFile.Namespace.Replace('.', '_')}_{decl.Name.Name}_stor_called");
+                        unE.SubExpr = idECond.GetCopy($"__is_{_currentSourceFile.Namespace.Replace('.', '_')}_{decl.Name.Name}_stor_called");
                     }
                 }
                 // if ini
@@ -158,9 +158,9 @@ namespace HapetPostPrepare
                     d.Name = d.Name.GetCopy($"{decl.Name.Name}_dtor");
                 }
                 // if static ctor var handler
-                else if (d.Name.Name == $"__is_{_currentSourceFile.Namespace}.{origName}_stor_called")
+                else if (d.Name.Name == $"__is_{_currentSourceFile.Namespace.Replace('.', '_')}_{origName}_stor_called")
                 {
-                    d.Name = d.Name.GetCopy($"__is_{_currentSourceFile.Namespace}.{decl.Name.Name}_stor_called");
+                    d.Name = d.Name.GetCopy($"__is_{_currentSourceFile.Namespace.Replace('.', '_')}_{decl.Name.Name}_stor_called");
                 }
             }
         }

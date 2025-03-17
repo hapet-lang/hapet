@@ -313,7 +313,7 @@ namespace HapetPostPrepare
             new AstNestedExpr(new AstIdExpr("void", decl), null, decl),
             iniBlock,
             new AstIdExpr($"{decl.Name.Name}_ini"));
-            iniDecl.SpecialKeys.Add(TokenType.KwUnreflected); // ini is private because it is called inside ctors
+            iniDecl.SpecialKeys.Insert(0, TokenType.KwUnreflected); // ini is private because it is called inside ctors
             iniDecl.ClassFunctionType = ClassFunctionType.Initializer;
             iniDecl.ContainingParent = decl;
 
@@ -431,10 +431,10 @@ namespace HapetPostPrepare
             var iniBlock = GetFieldsToInitialize(classDecl, true);
 
             // we need to add a static var to check that the stor was called
-            string theVarName = $"__is_{_currentSourceFile.Namespace}.{classDecl.Name.Name}_stor_called";
+            string theVarName = $"__is_{_currentSourceFile.Namespace.Replace('.', '_')}_{classDecl.Name.Name}_stor_called";
             var theVar = new AstVarDecl(new AstNestedExpr(new AstIdExpr("bool"), null), new AstIdExpr(theVarName));
             theVar.SpecialKeys.Add(TokenType.KwStatic);
-            theVar.SpecialKeys.Add(TokenType.KwUnreflected);
+            theVar.SpecialKeys.Insert(0, TokenType.KwUnreflected);
             classDecl.Declarations.Add(theVar);
 
             // set 'true' to the var
