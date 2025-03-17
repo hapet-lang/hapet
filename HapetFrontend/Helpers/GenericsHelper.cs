@@ -5,6 +5,7 @@ using HapetFrontend.Scoping;
 using System.Text;
 using HapetFrontend.Extensions;
 using System.Xml.Linq;
+using HapetFrontend.Types;
 
 namespace HapetFrontend.Helpers
 {
@@ -229,7 +230,7 @@ namespace HapetFrontend.Helpers
         public static string GetNameFromAst(AstIdExpr idExpr)
         {
             if (idExpr is not AstIdGenericExpr genId)
-                return idExpr.Name;
+                return GetPrettyGenericFuncName(idExpr.Name);
 
             StringBuilder sb = new StringBuilder("<");
             for (int i = 0; i < genId.GenericRealTypes.Count; ++i)
@@ -240,7 +241,24 @@ namespace HapetFrontend.Helpers
                     sb.Append(", ");
             }
             sb.Append('>');
-            return $"{genId.Name}{sb}";
+            return $"{GetPrettyGenericFuncName(genId.Name)}{sb}";
+        }
+
+        public static string GetNameFromType(HapetType type)
+        {
+            if (type is PointerType ptr)
+            {
+                return $"{GetNameFromType(ptr.TargetType)}*";
+            }
+            else if (type is ArrayType arr)
+            {
+                return $"{GetNameFromType(arr.TargetType)}[]";
+            }
+            else if (type is ClassType || type is StructType)
+            {
+                return GetPrettyGenericFuncName(type.ToString());
+            }
+            return type.ToString();
         }
     }
 }

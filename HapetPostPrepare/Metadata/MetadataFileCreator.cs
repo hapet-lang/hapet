@@ -104,12 +104,22 @@ namespace HapetPostPrepare
 
         private void CreateAttributeDecl(AstAttributeStmt attr, StringBuilder sb, string additionalOffset)
         {
-            string args = "";
+            StringBuilder args = new StringBuilder();
             if (attr.Arguments.Count > 0)
             {
-                args = "(";
-                args += string.Join(", ", attr.Arguments.Select(x => x.OutValue));
-                args += ")";
+                args.Append('(');
+                for (int i = 0; i < attr.Arguments.Count; i++)
+                {
+                    var arg = attr.Arguments[i];
+                    if (arg.OutValue is string str)
+                        args.Append($"\"{str}\"");
+                    else
+                        args.Append($"{arg.OutValue}");
+
+                    if (i < attr.Arguments.Count - 1)
+                        args.Append(", ");
+                }
+                args.Append(')');
             }
 
             sb.Append($"{additionalOffset}[{attr.AttributeName.TryFlatten(null, null)}{args}]\n");
@@ -161,7 +171,7 @@ namespace HapetPostPrepare
 
                 if (d is AstFuncDecl func)
                 {
-                    CreateFuncDecl(func, sb, additionalOffset + _fourSpaces);
+                    CreateFuncDecl(func, sb, additionalOffset + _fourSpaces, decl.HasGenericTypes);
                 }
                 else if (d is AstPropertyDecl prop)
                 {
@@ -209,7 +219,7 @@ namespace HapetPostPrepare
 
                 if (d is AstFuncDecl func)
                 {
-                    CreateFuncDecl(func, sb, additionalOffset + _fourSpaces);
+                    CreateFuncDecl(func, sb, additionalOffset + _fourSpaces, decl.HasGenericTypes);
                 }
                 else if (d is AstPropertyDecl prop)
                 {
@@ -224,18 +234,29 @@ namespace HapetPostPrepare
             sb.Append($"{additionalOffset}}}\n\n");
         }
 
-        private void CreateFuncDecl(AstFuncDecl decl, StringBuilder sb, string additionalOffset)
+        private void CreateFuncDecl(AstFuncDecl decl, StringBuilder sb, string additionalOffset, bool isParentGeneric)
         {
             // return type
-            sb.Append(decl.Returns.OutType);
+            sb.Append(GenericsHelper.GetNameFromType(decl.Returns.OutType));
 
             sb.Append($" {GenericsHelper.GetNameFromAst(decl.Name).GetPureFuncName()}");
 
-            // TODO: params
+            sb.Append('(');
+            for (int i = 0; i < decl.Parameters.Count; ++i)
+            {
+                var par = decl.Parameters[i];
+                sb.Append(GenericsHelper.GetNameFromType(par.Type.OutType));
+                sb.Append(' ');
+                sb.Append(GenericsHelper.GetNameFromAst(par.Name).GetPureFuncName());
+
+                if (i < decl.Parameters.Count - 1)
+                    sb.Append(", ");
+            }
+            sb.Append(')');
 
             // TODO: generic constraiins 
 
-            if (decl.HasGenericTypes)
+            if (decl.HasGenericTypes || isParentGeneric)
             {
                 sb.Append($"\n{additionalOffset}{{\n");
                 // TODO: func body
@@ -250,7 +271,7 @@ namespace HapetPostPrepare
         private void CreatePropertyDecl(AstPropertyDecl decl, StringBuilder sb, string additionalOffset)
         {
             // return type
-            sb.Append(decl.Type.OutType);
+            sb.Append(GenericsHelper.GetNameFromType(decl.Type.OutType));
 
             sb.Append($" {GenericsHelper.GetNameFromAst(decl.Name).GetPureFuncName()}");
 
@@ -263,7 +284,7 @@ namespace HapetPostPrepare
         private void CreateFieldDecl(AstVarDecl decl, StringBuilder sb, string additionalOffset)
         {
             // return type
-            sb.Append(decl.Type.OutType);
+            sb.Append(GenericsHelper.GetNameFromType(decl.Type.OutType));
 
             sb.Append($" {GenericsHelper.GetNameFromAst(decl.Name).GetPureFuncName()}");
 
