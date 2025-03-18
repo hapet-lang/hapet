@@ -42,7 +42,7 @@ namespace HapetFrontend.Parsing
                 NextToken();
                 SkipNewlines();
                 var bsTkn = Consume(TokenType.KwBase, ErrMsg("'base'", "after ':'"));
-                var args = ParseArgumentList(out var end);
+                var args = ParseArgumentList(out var _, out var end);
                 baseCtorCall = new AstBaseCtorStmt(args, new Location(bsTkn.Location, end));
             }
 

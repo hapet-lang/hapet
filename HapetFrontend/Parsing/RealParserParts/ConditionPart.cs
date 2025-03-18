@@ -27,7 +27,7 @@ namespace HapetFrontend.Parsing
             if (!CheckToken(TokenType.CloseParen))
             {
                 inInfo.AllowCommaForTuple = true;
-                var expr = ParseExpression(inInfo, ref outInfo);
+                var expr = ParseArgument().Expr;
                 inInfo.AllowCommaForTuple = false;
 
                 if (expr is not AstExpression)

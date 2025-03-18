@@ -42,7 +42,7 @@ namespace HapetFrontend.Parsing
                     ReportMessage(type.Location, [], ErrorCode.Get(CTEN.TypeNameUnexpected));
                     return ParseEmptyExpression();
                 }
-                var args = ParseArgumentList(out var end);
+                var args = ParseArgumentList(out var _, out var end);
                 return new AstNewExpr(nestExpr, args, new Location(beg, end));
             }
 

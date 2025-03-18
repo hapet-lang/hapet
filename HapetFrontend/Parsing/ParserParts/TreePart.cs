@@ -211,7 +211,7 @@ namespace HapetFrontend.Parsing
                 }
 
                 // no need to parse anything further - it should be handled by generic parser
-                if (inInfo.AllowGeneric)
+                if (inInfo.AllowGeneric && (next.Type == TokenType.GreaterGreater || next.Type == TokenType.Greater || next.Type == TokenType.Less))
                     return lhs;
 
                 var op = tokenMapping(next.Type);
@@ -329,7 +329,7 @@ namespace HapetFrontend.Parsing
                             }
 
                             // TODO: not only nested should be allowed. tuples, lamdas and other shite
-                            var args = ParseArgumentList(out var end);
+                            var args = ParseArgumentList(out var _, out var end);
                             if (expr is not AstNestedExpr nestExpr)
                             {
                                 ReportMessage(expr.Location, [], ErrorCode.Get(CTEN.CallTargetExprExpected));
