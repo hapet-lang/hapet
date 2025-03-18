@@ -17,15 +17,17 @@ namespace HapetFrontend.Ast.Statements
 
         public override string AAAName => nameof(AstDirectiveStmt);
 
-        public AstDirectiveStmt(AstStatement right, ILocation location = null) : base(location)
+        public AstDirectiveStmt(AstStatement right, DirectiveType type, ILocation location = null) : base(location)
         {
             RightPart = right;
+            DirectiveType = type;
         }
 
         public override AstStatement GetDeepCopy()
         {
             var copy = new AstDirectiveStmt(
                 RightPart.GetDeepCopy() as AstStatement,
+                DirectiveType,
                 Location)
             {
                 Scope = Scope,

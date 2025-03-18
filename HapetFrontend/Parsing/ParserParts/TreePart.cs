@@ -567,6 +567,12 @@ namespace HapetFrontend.Parsing
                         return expr;
                     }
 
+                // directive
+                case TokenType.SharpIdentifier:
+                    {
+                        return ParseDirectiveStatement();
+                    }
+
                 case TokenType.StringLiteral:
                     NextToken();
                     return new AstStringExpr((string)token.Data, token.Suffix, new Location(token.Location));

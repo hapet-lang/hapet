@@ -33,9 +33,9 @@ namespace HapetFrontend.Parsing
         NumberLiteral,
 
         Identifier,
-        DollarIdentifier,
-        SharpIdentifier,
-        AtSignIdentifier,
+        DollarIdentifier,// $
+        SharpIdentifier, // #
+        AtSignIdentifier,// @
 
         Tilda,           // ~
         Semicolon,       // ;
