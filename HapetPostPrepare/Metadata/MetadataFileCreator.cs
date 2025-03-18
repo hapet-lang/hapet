@@ -158,6 +158,12 @@ namespace HapetPostPrepare
             {
                 if (d.SpecialKeys.Contains(TokenType.KwUnreflected))
                     continue;
+                // do not serialize prop' funcs
+                if (d is AstFuncDecl func2 && func2.IsPropertyFunction)
+                    continue;
+                // do not serialize prop' fields
+                if (d is AstVarDecl field2 && field2.IsPropertyField)
+                    continue;
 
                 // TODO: doc string
 
@@ -175,7 +181,7 @@ namespace HapetPostPrepare
                 }
                 else if (d is AstPropertyDecl prop)
                 {
-                    CreatePropertyDecl(prop, sb, additionalOffset + _fourSpaces);
+                    CreatePropertyDecl(prop, sb, additionalOffset + _fourSpaces, decl.HasGenericTypes);
                 }
                 else if (d is AstVarDecl field)
                 {
@@ -206,6 +212,12 @@ namespace HapetPostPrepare
             {
                 if (d.SpecialKeys.Contains(TokenType.KwUnreflected))
                     continue;
+                // do not serialize prop' funcs
+                if (d is AstFuncDecl func2 && func2.IsPropertyFunction)
+                    continue;
+                // do not serialize prop' fields
+                if (d is AstVarDecl field2 && field2.IsPropertyField)
+                    continue;
 
                 // TODO: doc string
 
@@ -223,7 +235,7 @@ namespace HapetPostPrepare
                 }
                 else if (d is AstPropertyDecl prop)
                 {
-                    CreatePropertyDecl(prop, sb, additionalOffset + _fourSpaces);
+                    CreatePropertyDecl(prop, sb, additionalOffset + _fourSpaces, decl.HasGenericTypes);
                 }
                 else if (d is AstVarDecl field)
                 {
@@ -270,17 +282,36 @@ namespace HapetPostPrepare
             }
         }
 
-        private void CreatePropertyDecl(AstPropertyDecl decl, StringBuilder sb, string additionalOffset)
+        private void CreatePropertyDecl(AstPropertyDecl decl, StringBuilder sb, string additionalOffset, bool isParentGeneric)
         {
             // return type
             sb.Append(GenericsHelper.GetNameFromType(decl.Type.OutType));
 
             sb.Append($" {GenericsHelper.GetNameFromAst(decl.Name).GetPureFuncName()}");
 
-            sb.Append(" { get; ");
-            if (decl.HasSet)
+            if (decl.HasGet && decl.GetBlock != null)
+            {
+                sb.Append($" \n{additionalOffset}{{ \n{additionalOffset + _fourSpaces}get \n{additionalOffset + _fourSpaces}{{ \n");
+                var bodyText = decl.SourceFile.Text.Substring(decl.GetBlock.Location.Beginning.Index, decl.GetBlock.Location.Ending.End - decl.GetBlock.Location.Beginning.Index);
+                bodyText = bodyText.TrimStart('{').TrimEnd('}');
+                sb.Append(bodyText); // TODO: prettify the block text
+                sb.Append($"\n{additionalOffset + _fourSpaces}}}\n");
+            }
+            else if (decl.HasGet)
+                sb.Append(" { get; ");
+
+            if (decl.HasSet && decl.SetBlock != null)
+            {
+                sb.Append($"{additionalOffset + _fourSpaces}set \n{additionalOffset + _fourSpaces}{{ \n");
+                var bodyText = decl.SourceFile.Text.Substring(decl.SetBlock.Location.Beginning.Index, decl.SetBlock.Location.Ending.End - decl.SetBlock.Location.Beginning.Index);
+                bodyText = bodyText.TrimStart('{').TrimEnd('}');
+                sb.Append(bodyText); // TODO: prettify the block text
+                sb.Append($"\n{additionalOffset + _fourSpaces}}}\n");
+            }
+            else if (decl.HasSet)
                 sb.Append("set; ");
-            sb.Append("}\n");
+
+            sb.Append($"{additionalOffset}}}\n");
         }
 
         private void CreateFieldDecl(AstVarDecl decl, StringBuilder sb, string additionalOffset)

@@ -613,6 +613,10 @@ namespace HapetPostPrepare
                 if (foundPropa)
                     continue;
 
+                // check if the var itself is a propa without 'set' word!!! - skip them
+                if (decl is AstPropertyDecl propD && !propD.HasSet)
+                    continue;
+
                 // for static we need to get only static fields/props
                 if (forStatic)
                 {

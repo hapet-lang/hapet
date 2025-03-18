@@ -5,6 +5,19 @@
 [SuppressStaticCtorCallAttribute]
 public class FlagsAttribute : Attribute
 {
+    private int ffff = 3;
+    public int AnimePropa 
+    {
+        get
+        {
+            return 424;
+        }
+        set
+        {
+            ffff = value;
+        }
+    }
+
     public FlagsAttribute()
     {
         
