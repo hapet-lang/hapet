@@ -12,6 +12,12 @@ public class FlagsAttribute : Attribute
 
     public int Anime<T>(string asd)
     {
+        int justAnotherLine = 333;
+        string abns = "test";
+        if (justAnotherLine == 55)
+        {
+            return 33;
+        }
         return 11;
     }
 }

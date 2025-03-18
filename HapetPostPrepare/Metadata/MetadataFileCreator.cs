@@ -256,10 +256,12 @@ namespace HapetPostPrepare
 
             // TODO: generic constraiins 
 
-            if (decl.HasGenericTypes || isParentGeneric)
+            if ((decl.HasGenericTypes || isParentGeneric) && !decl.SpecialKeys.Contains(TokenType.KwAbstract))
             {
                 sb.Append($"\n{additionalOffset}{{\n");
-                // TODO: func body
+                var bodyText = decl.SourceFile.Text.Substring(decl.Body.Location.Beginning.Index, decl.Body.Location.Ending.End - decl.Body.Location.Beginning.Index);
+                bodyText = bodyText.TrimStart('{').TrimEnd('}');
+                sb.Append(bodyText); // TODO: prettify the block text
                 sb.Append($"\n{additionalOffset}}}\n");
             }
             else
