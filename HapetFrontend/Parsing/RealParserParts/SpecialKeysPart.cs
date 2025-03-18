@@ -70,7 +70,7 @@ namespace HapetFrontend.Parsing
                 ReportMessage(expr.Location, [tknType.ToString()], ErrorCode.Get(CTEN.DeclExpectedAfterTheToken));
                 return ParseEmptyExpression();
             }
-            (expr as AstDeclaration).SpecialKeys.Add(tknType);
+            (expr as AstDeclaration).SpecialKeys.Insert(0, tknType);
 
             // change beginning
             var prevLoc = expr.Location;

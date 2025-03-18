@@ -688,6 +688,14 @@
 		<Number>3047</Number>
 		<Text>Ambiguous user defined conversions when converting from {0} to {1}</Text>
 	</Item>
+	<Item>
+		<Number>3048</Number>
+		<Text>The keyword '{0}' has to be before keyword '{1}'</Text>
+	</Item>
+	<Item>
+		<Number>3049</Number>
+		<Text>Keywords '{0}' and '{1}' are ambiguous. Only one of them has to be defined</Text>
+	</Item>
 
     <!--Compiler errors-->
 	<Item>

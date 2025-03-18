@@ -38,6 +38,9 @@ namespace HapetPostPrepare
             // 0 is returned because normal error is going to be
             // returned in the caller shite
 
+            PostPrepareSpecialKeys();
+            if (_compiler.MessageHandler.HasErrors)
+                return 0;
             PostPrepareClassMethods();
             if (_compiler.MessageHandler.HasErrors)
                 return 0;

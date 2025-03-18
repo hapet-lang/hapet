@@ -4,8 +4,8 @@ using System;
 public static class Marshal
 {
     [DllImportAttribute("", "malloc")]
-    public extern static void* Malloc(int size);
+    public static extern void* Malloc(int size);
 
     [DllImportAttribute("", "free")]
-    public extern static void Free(void* ptr);
+    public static extern void Free(void* ptr);
 }

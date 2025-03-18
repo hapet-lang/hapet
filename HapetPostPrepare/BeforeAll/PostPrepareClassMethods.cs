@@ -208,23 +208,23 @@ namespace HapetPostPrepare
                 foreach (var f in allFields)
                 {
                     // add abstract key to the field if it is an interface
-                    f.SpecialKeys.Add(TokenType.KwAbstract);
+                    AddSpecialKeyToDecl(f, TokenType.KwAbstract);
                     // and public :)
-                    f.SpecialKeys.Add(TokenType.KwPublic);
+                    AddSpecialKeyToDecl(f, TokenType.KwPublic);
                 }
                 foreach (var p in allProps)
                 {
                     // add abstract key to the prop if it is an interface
-                    p.SpecialKeys.Add(TokenType.KwAbstract);
+                    AddSpecialKeyToDecl(p, TokenType.KwAbstract);
                     // and public :)
-                    p.SpecialKeys.Add(TokenType.KwPublic);
+                    AddSpecialKeyToDecl(p, TokenType.KwPublic);
                 }
                 foreach (var f in allFuncs)
                 {
                     // add abstract key to the func if it is an interface
-                    f.SpecialKeys.Add(TokenType.KwAbstract);
+                    AddSpecialKeyToDecl(f, TokenType.KwAbstract);
                     // and public :)
-                    f.SpecialKeys.Add(TokenType.KwPublic);
+                    AddSpecialKeyToDecl(f, TokenType.KwPublic);
                 }
             }
 
@@ -538,7 +538,7 @@ namespace HapetPostPrepare
                     AstVarDecl propField = prop.GetField(false);
                     // add abstract key to the field if it is an interface
                     if (classDecl.IsInterface)
-                        propField.SpecialKeys.Add(TokenType.KwAbstract);
+                        AddSpecialKeyToDecl(propField, TokenType.KwAbstract);
                     declarationsToAdd.Add(propField);
                 }
                 if (prop.HasGet)
@@ -547,7 +547,7 @@ namespace HapetPostPrepare
                     AstFuncDecl getFunc = prop.GetGetFunction();
                     // add abstract key to the method if it is an interface
                     if (classDecl.IsInterface)
-                        getFunc.SpecialKeys.Add(TokenType.KwAbstract);
+                        AddSpecialKeyToDecl(getFunc, TokenType.KwAbstract);
                     declarationsToAdd.Add(getFunc);
                 }
                 if (prop.HasSet)
@@ -556,7 +556,7 @@ namespace HapetPostPrepare
                     AstFuncDecl setFunc = prop.GetSetFunction();
                     // add abstract key to the method if it is an interface
                     if (classDecl.IsInterface)
-                        setFunc.SpecialKeys.Add(TokenType.KwAbstract);
+                        AddSpecialKeyToDecl(setFunc, TokenType.KwAbstract);
                     declarationsToAdd.Add(setFunc);
                 }
 

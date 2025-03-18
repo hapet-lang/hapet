@@ -4,5 +4,5 @@ using System;
 public static class Console
 {
     [DllImportAttribute("", "puts")]
-    public extern static int Puts(byte* data);
+    public static extern int Puts(byte* data);
 }
