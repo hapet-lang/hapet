@@ -8,46 +8,47 @@ namespace HapetFrontend.Parsing
 {
     public partial class Parser
     {
-        private AstStatement ParseAccessKeys(TokenType tknType)
+        private AstStatement ParseAccessKeys(TokenType tknType, ParserInInfo inInfo, ref ParserOutInfo outInfo)
         {
-            return ParseKeysInternal(tknType);
+            return ParseKeysInternal(tknType, inInfo, ref outInfo);
         }
 
-        private AstStatement ParseSyncKeys(TokenType tknType)
+        private AstStatement ParseSyncKeys(TokenType tknType, ParserInInfo inInfo, ref ParserOutInfo outInfo)
         {
-            return ParseKeysInternal(tknType);
+            return ParseKeysInternal(tknType, inInfo, ref outInfo);
         }
 
-        private AstStatement ParseInstancingKeys(TokenType tknType)
+        private AstStatement ParseInstancingKeys(TokenType tknType, ParserInInfo inInfo, ref ParserOutInfo outInfo)
         {
-            return ParseKeysInternal(tknType);
+            return ParseKeysInternal(tknType, inInfo, ref outInfo);
         }
 
-        private AstStatement ParseImplementationKeys(TokenType tknType)
+        private AstStatement ParseImplementationKeys(TokenType tknType, ParserInInfo inInfo, ref ParserOutInfo outInfo)
         {
-            return ParseKeysInternal(tknType);
+            return ParseKeysInternal(tknType, inInfo, ref outInfo);
         }
 
         // they are all the same
-        private AstStatement ParseKeysInternal(TokenType tknType)
+        private AstStatement ParseKeysInternal(TokenType tknType, ParserInInfo inInfo, ref ParserOutInfo outInfo)
         {
-            // just handlers
-            ParserInInfo inInfo = ParserInInfo.Default;
-            ParserOutInfo outInfo = ParserOutInfo.Default;
-
             TokenLocation beg = null;
             var tkn = Consume(tknType, ErrMsg($"keyword '{tknType}'", "at beginning of type"));
             beg = tkn.Location;
+
+            var saved1 = inInfo.AllowCommaForTuple;
+            var saved2 = inInfo.AllowFunctionDeclaration;
+            var saved3 = inInfo.AllowPointerExpression;
+            var saved4 = inInfo.AllowGeneric;
 
             inInfo.AllowCommaForTuple = true;
             inInfo.AllowFunctionDeclaration = true;
             inInfo.AllowPointerExpression = true;
             inInfo.AllowGeneric = true;
             var expr = ParseExpression(inInfo, ref outInfo);
-            inInfo.AllowCommaForTuple = false;
-            inInfo.AllowFunctionDeclaration = false;
-            inInfo.AllowPointerExpression = false;
-            inInfo.AllowGeneric = false;
+            inInfo.AllowCommaForTuple = saved1;
+            inInfo.AllowFunctionDeclaration = saved2;
+            inInfo.AllowPointerExpression = saved3;
+            inInfo.AllowGeneric = saved4;
 
             // it could be an idexpr or nestedexpr when ctor/dtor decls are here
             if (expr is AstIdExpr idExpr)

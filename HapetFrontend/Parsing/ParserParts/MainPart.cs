@@ -76,6 +76,7 @@ namespace HapetFrontend.Parsing
                         inInfo2.AllowCommaForTuple = true;
                         inInfo2.AllowPointerExpression = true;
                         inInfo2.AllowGeneric = true;
+                        inInfo2.ExternalMetadata = inInfo.ExternalMetadata;
                         var stmt = ParseExpression(inInfo2, ref outInfo2); // anyway it should return AstStatement, not AstExpression
 
                         if (stmt is AstEmptyStmt)

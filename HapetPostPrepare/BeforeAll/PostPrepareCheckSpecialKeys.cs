@@ -1,5 +1,6 @@
 ﻿using HapetFrontend.Ast;
 using HapetFrontend.Ast.Declarations;
+using HapetFrontend.Parsing;
 
 namespace HapetPostPrepare
 {
@@ -37,6 +38,7 @@ namespace HapetPostPrepare
 
             foreach (var decl in classDecl.Declarations)
             {
+                RemoveIfMetadataDeclaration(decl);
                 CheckSpecialKeys(decl);
             }
         }
@@ -45,7 +47,21 @@ namespace HapetPostPrepare
         {
             foreach (var decl in structDecl.Declarations)
             {
+                RemoveIfMetadataDeclaration(decl);
                 CheckSpecialKeys(decl);
+            }
+        }
+
+        private void RemoveIfMetadataDeclaration(AstDeclaration decl)
+        {
+            // this shite is done because .mpt abstract/virtual funcs
+            // are serialized with both override and virtual/abstract keys
+            // we need to remove virtual/abstract
+            if (decl.IsImported && decl.SpecialKeys.Contains(TokenType.KwOverride) &&
+                (decl.SpecialKeys.Contains(TokenType.KwVirtual) || decl.SpecialKeys.Contains(TokenType.KwAbstract)))
+            {
+                decl.SpecialKeys.Remove(TokenType.KwVirtual);
+                decl.SpecialKeys.Remove(TokenType.KwAbstract);
             }
         }
     }
