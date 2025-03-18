@@ -139,6 +139,7 @@ namespace HapetFrontend
                     currentFile.Namespace = normalNamespace;
 
                     allFiles.Add(currentFile);
+                    continue; // no need to add this shite
                 }
 
                 HandleStatement(s, currentFile, foundAttributes, lexer);

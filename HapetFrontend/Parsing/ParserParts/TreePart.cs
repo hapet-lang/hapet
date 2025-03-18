@@ -514,8 +514,8 @@ namespace HapetFrontend.Parsing
                                 // it is not allowed usually from ParseArrayExpr
                                 if (!inInfo.AllowArrayExpression)
                                     break;
-                                var arrExpr = new AstArrayExpr(id.RightPart, new Location(id.RightPart.Beginning, CurrentToken.Location.Ending));
-                                id.RightPart = arrExpr;
+                                var arrExpr = new AstArrayExpr(id, new Location(id.RightPart.Beginning, CurrentToken.Location.Ending));
+                                id = new AstNestedExpr(arrExpr, null, arrExpr);
                             }
                             else
                             {
@@ -525,8 +525,8 @@ namespace HapetFrontend.Parsing
                                 // so allowPointerExpressions is true only when decls are parsed!!!
                                 if (!inInfo.AllowPointerExpression)
                                     break;
-                                var ptrExpr = new AstPointerExpr(id.RightPart, false, new Location(id.RightPart.Beginning, CurrentToken.Location.Ending));
-                                id.RightPart = ptrExpr;
+                                var ptrExpr = new AstPointerExpr(id, false, new Location(id.RightPart.Beginning, CurrentToken.Location.Ending));
+                                id = new AstNestedExpr(ptrExpr, null, ptrExpr);
                             }
                             NextToken();
                         }

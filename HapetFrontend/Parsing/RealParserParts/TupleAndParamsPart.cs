@@ -95,8 +95,10 @@ namespace HapetFrontend.Parsing
             TokenLocation beg = null, end = null;
 
             inInfo.AllowPointerExpression = true;
+            inInfo.AllowGeneric = true;
             var e = ParseExpression(inInfo, ref outInfo);
             inInfo.AllowPointerExpression = false;
+            inInfo.AllowGeneric = false;
 
             beg = e.Beginning;
             SkipNewlines();
