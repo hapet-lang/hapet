@@ -75,6 +75,13 @@ namespace HapetPostPrepare
             sb.Append($"#file \"{CompilerUtils.GetFileRelativePath(_compiler.CurrentProjectSettings.ProjectPath, file.Name)}\"\n");
             sb.Append($"#namespace \"{file.Namespace}\"\n");
 
+            // serialize usings
+            foreach (var usng in file.Usings)
+            {
+                AntiParseExpr(usng, sb, "");
+            }
+
+            // serialize all decls
             foreach (var decl in decls)
             {
                 if (decl.SpecialKeys.Contains(TokenType.KwUnreflected))

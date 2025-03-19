@@ -149,6 +149,10 @@ namespace HapetPostPrepare
                 case AstBaseCtorStmt baseStmt:
                     AntiParseBaseCtorStmt(baseStmt, sb, offset);
                     break;
+
+                case AstUsingStmt usingStmt:
+                    AntiParseUsingStmt(usingStmt, sb, offset);
+                    break;
                 // TODO: check other expressions
 
                 default:
@@ -465,6 +469,13 @@ namespace HapetPostPrepare
                     sb.Append(", ");
             }
             sb.Append(')');
+        }
+
+        public void AntiParseUsingStmt(AstUsingStmt usingStmt, StringBuilder sb, string offset)
+        {
+            sb.Append("using ");
+            AntiParseExpr(usingStmt.Namespace, sb, offset);
+            sb.Append(";\n");
         }
     }
 }
