@@ -270,11 +270,8 @@ namespace HapetPostPrepare
 
             if ((decl.HasGenericTypes || isParentGeneric) && !decl.SpecialKeys.Contains(TokenType.KwAbstract))
             {
-                sb.Append($"\n{additionalOffset}{{\n");
-                var bodyText = decl.SourceFile.Text.Substring(decl.Body.Location.Beginning.Index, decl.Body.Location.Ending.End - decl.Body.Location.Beginning.Index);
-                bodyText = bodyText.TrimStart('{').TrimEnd('}');
-                sb.Append(bodyText); // TODO: prettify the block text
-                sb.Append($"\n{additionalOffset}}}\n");
+                sb.Append('\n');
+                AntiParseExpr(decl.Body, sb, additionalOffset);
             }
             else
             {
@@ -289,29 +286,22 @@ namespace HapetPostPrepare
 
             sb.Append($" {GenericsHelper.GetNameFromAst(decl.Name).GetPureFuncName()}");
 
-            if (decl.HasGet && decl.GetBlock != null)
+            if (decl.HasGet && decl.GetBlock != null && (decl.HasGenericTypes || isParentGeneric))
             {
-                sb.Append($" \n{additionalOffset}{{ \n{additionalOffset + _fourSpaces}get \n{additionalOffset + _fourSpaces}{{ \n");
-                var bodyText = decl.SourceFile.Text.Substring(decl.GetBlock.Location.Beginning.Index, decl.GetBlock.Location.Ending.End - decl.GetBlock.Location.Beginning.Index);
-                bodyText = bodyText.TrimStart('{').TrimEnd('}');
-                sb.Append(bodyText); // TODO: prettify the block text
-                sb.Append($"\n{additionalOffset + _fourSpaces}}}\n");
+                sb.Append($" \n{additionalOffset}{{ \n{additionalOffset + _fourSpaces}get \n");
+                AntiParseExpr(decl.GetBlock, sb, additionalOffset + _fourSpaces);
             }
             else if (decl.HasGet)
                 sb.Append(" { get; ");
 
-            if (decl.HasSet && decl.SetBlock != null)
+            if (decl.HasSet && decl.SetBlock != null && (decl.HasGenericTypes || isParentGeneric))
             {
-                sb.Append($"{additionalOffset + _fourSpaces}set \n{additionalOffset + _fourSpaces}{{ \n");
-                var bodyText = decl.SourceFile.Text.Substring(decl.SetBlock.Location.Beginning.Index, decl.SetBlock.Location.Ending.End - decl.SetBlock.Location.Beginning.Index);
-                bodyText = bodyText.TrimStart('{').TrimEnd('}');
-                sb.Append(bodyText); // TODO: prettify the block text
-                sb.Append($"\n{additionalOffset + _fourSpaces}}}\n");
+                sb.Append($" {additionalOffset}{{ \n{additionalOffset + _fourSpaces}set \n");
+                AntiParseExpr(decl.SetBlock, sb, additionalOffset + _fourSpaces);
+                sb.Append($"{additionalOffset}}}\n");
             }
             else if (decl.HasSet)
-                sb.Append("set; ");
-
-            sb.Append($"{additionalOffset}}}\n");
+                sb.Append("set; }\n");
         }
 
         private void CreateFieldDecl(AstVarDecl decl, StringBuilder sb, string additionalOffset)
