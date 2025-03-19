@@ -263,7 +263,10 @@ namespace HapetPostPrepare
 
             // TODO: generic constraiins 
 
-            if ((decl.HasGenericTypes || isParentGeneric) && !decl.SpecialKeys.Contains(TokenType.KwAbstract))
+            // if the func is generic && not abstract - serialize
+            // if parent is generic && func is not static  && func not abstract - serialize
+            if ((decl.HasGenericTypes || (isParentGeneric && !decl.SpecialKeys.Contains(TokenType.KwStatic))) && 
+                !decl.SpecialKeys.Contains(TokenType.KwAbstract))
             {
                 sb.Append('\n');
 
@@ -286,7 +289,8 @@ namespace HapetPostPrepare
             sb.Append(' ');
             AntiParseExpr(decl.Name, sb, additionalOffset);
 
-            if (decl.HasGet && decl.GetBlock != null && (decl.HasGenericTypes || isParentGeneric))
+            if (decl.HasGet && decl.GetBlock != null && (decl.HasGenericTypes || 
+                (isParentGeneric && !decl.SpecialKeys.Contains(TokenType.KwStatic))))
             {
                 sb.Append($" \n{additionalOffset}{{ \n{additionalOffset + _fourSpaces}get \n");
                 AntiParseExpr(decl.GetBlock, sb, additionalOffset + _fourSpaces);
@@ -294,7 +298,8 @@ namespace HapetPostPrepare
             else if (decl.HasGet)
                 sb.Append(" { get; ");
 
-            if (decl.HasSet && decl.SetBlock != null && (decl.HasGenericTypes || isParentGeneric))
+            if (decl.HasSet && decl.SetBlock != null && (decl.HasGenericTypes || 
+                (isParentGeneric && !decl.SpecialKeys.Contains(TokenType.KwStatic))))
             {
                 sb.Append($" {additionalOffset}{{ \n{additionalOffset + _fourSpaces}set \n");
                 AntiParseExpr(decl.SetBlock, sb, additionalOffset + _fourSpaces);

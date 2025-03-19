@@ -313,7 +313,7 @@ namespace HapetPostPrepare
             new AstNestedExpr(new AstIdExpr("void", decl), null, decl),
             iniBlock,
             new AstIdExpr($"{decl.Name.Name}_ini"));
-            iniDecl.SpecialKeys.Insert(0, TokenType.KwUnreflected); // ini is private because it is called inside ctors
+            iniDecl.SpecialKeys.Insert(0, TokenType.KwPrivate); // ini is private because it is called inside ctors
             iniDecl.ClassFunctionType = ClassFunctionType.Initializer;
             iniDecl.ContainingParent = decl;
 

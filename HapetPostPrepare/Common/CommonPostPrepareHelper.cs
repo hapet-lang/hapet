@@ -7,17 +7,17 @@ namespace HapetPostPrepare
 {
     public partial class PostPrepare
     {
-        public static void PostPrepareAliases(string typeName, Scope scope, AstDeclaration decl)
+        public void PostPrepareAliases(string typeName, Scope scope, AstDeclaration decl)
         {
             // kostyl to create aliases :)
             if (typeName == "System.Object")
             {
-                scope.DefineDeclSymbol("System.object", decl);
+                _compiler.GlobalScope.DefineDeclSymbol("object", decl);
             }
             else if (typeName == "System.String")
             {
                 decl.Type.OutType = StringType.GetInstance(decl as AstStructDecl);
-                scope.DefineDeclSymbol("System.string", decl);
+                _compiler.GlobalScope.DefineDeclSymbol("string", decl);
             }
             else if (typeName == "System.Array")
             {
