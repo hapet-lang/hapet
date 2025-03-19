@@ -22,6 +22,9 @@ namespace HapetBackend.Llvm
 
             foreach (var func in funcDecls)
             {
+                // skip generic (non-real) classes
+                if (func.ContainingParent?.HasGenericTypes ?? false)
+                    continue;
                 // skip generic (non-real) funcs
                 if (func.HasGenericTypes)
                     continue;
