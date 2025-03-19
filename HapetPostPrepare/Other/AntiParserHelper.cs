@@ -10,15 +10,55 @@ namespace HapetPostPrepare
 {
     public partial class PostPrepare
     {
+        public void AntiParseLiterals(AstStatement expr, StringBuilder sb, string offset)
+        {
+            switch (expr)
+            {
+                // consts and literals
+                case AstNumberExpr n:
+                    sb.Append(n.Data);
+                    break;
+                case AstStringExpr s:
+                    sb.Append($"\"{s.StringValue}\"");
+                    break;
+                case AstCharExpr c:
+                    sb.Append($"\'{c.CharValue}\'");
+                    break;
+                case AstBoolExpr b:
+                    sb.Append(b.BoolValue ? "true" : "false");
+                    break;
+                case AstNullExpr:
+                    sb.Append("null");
+                    break;
+            }
+        }
+
         public void AntiParseVarDecl(AstVarDecl varDecl, StringBuilder sb, string offset)
         {
+            AntiParseExpr(varDecl.Type, sb, offset);
+            sb.Append(' ');
+            AntiParseExpr(varDecl.Name, sb, offset);
 
+            if (varDecl.Initializer != null)
+            {
+                sb.Append(" = ");
+                AntiParseExpr(varDecl.Initializer, sb, offset);
+            }
         }
 
         public void AntiParseExpr(AstStatement expr, StringBuilder sb, string offset)
         {
             switch (expr)
             {
+                // consts and literals
+                case AstNumberExpr:
+                case AstStringExpr:
+                case AstCharExpr:
+                case AstBoolExpr:
+                case AstNullExpr:
+                    AntiParseLiterals(expr, sb, offset);
+                    break;
+
                 // special case at least for 'for' loop
                 // when 'for (int i = 0;...)' where 'int i' 
                 // would not be handled by blockExpr
@@ -123,7 +163,14 @@ namespace HapetPostPrepare
             {
                 sb.Append($"{offset + _fourSpaces}");
                 AntiParseExpr(stmt, sb, offset + _fourSpaces);
-                sb.Append('\n');
+
+                // do not ; after this stmts
+                if (stmt is not AstBlockExpr &&
+                    stmt is not AstIfStmt && 
+                    stmt is not AstSwitchStmt &&
+                    stmt is not AstForStmt && 
+                    stmt is not AstWhileStmt)
+                    sb.Append(";\n");
             }
             sb.Append($"{offset}}}\n");
         }
@@ -296,27 +343,74 @@ namespace HapetPostPrepare
 
         public void AntiParseForStmt(AstForStmt forStmt, StringBuilder sb, string offset)
         {
+            sb.Append("for (");
+            AntiParseExpr(forStmt.FirstArgument, sb, offset);
+            sb.Append("; ");
+            AntiParseExpr(forStmt.SecondArgument, sb, offset);
+            sb.Append("; ");
+            AntiParseExpr(forStmt.ThirdArgument, sb, offset);
+            sb.Append(")\n");
 
+            AntiParseExpr(forStmt.Body, sb, offset);
         }
 
         public void AntiParseWhileStmt(AstWhileStmt whileStmt, StringBuilder sb, string offset)
         {
+            sb.Append("while (");
+            AntiParseExpr(whileStmt.Condition, sb, offset);
+            sb.Append(")\n");
 
+            AntiParseExpr(whileStmt.Body, sb, offset);
         }
 
         public void AntiParseIfStmt(AstIfStmt ifStmt, StringBuilder sb, string offset)
         {
+            sb.Append("if (");
+            AntiParseExpr(ifStmt.Condition, sb, offset);
+            sb.Append(")\n");
 
+            AntiParseExpr(ifStmt.BodyTrue, sb, offset);
+
+            if (ifStmt.BodyFalse != null)
+            {
+                sb.Append("else \n");
+                AntiParseExpr(ifStmt.BodyFalse, sb, offset);
+            }
         }
 
         public void AntiParseSwitchStmt(AstSwitchStmt switchStmt, StringBuilder sb, string offset)
         {
+            sb.Append("switch (");
+            AntiParseExpr(switchStmt.SubExpression, sb, offset);
+            sb.Append(")\n");
 
+            sb.Append($"{offset}{{\n");
+            foreach (var cs in switchStmt.Cases)
+            {
+                sb.Append($"{offset + _fourSpaces}");
+                AntiParseExpr(cs, sb, offset + _fourSpaces);
+                //sb.Append(";\n");
+            }
+            sb.Append($"{offset}}}\n");
         }
 
         public void AntiParseCaseStmt(AstCaseStmt caseStmt, StringBuilder sb, string offset)
         {
-
+            if (caseStmt.IsDefaultCase)
+            {
+                sb.Append("default \n");
+            }
+            else
+            {
+                sb.Append("case (");
+                AntiParseExpr(caseStmt.Pattern, sb, offset);
+                sb.Append(")\n");
+            }
+            
+            if (!caseStmt.IsFallingCase)
+            {
+                AntiParseExpr(caseStmt.Body, sb, offset);
+            }
         }
 
         public void AntiParseBreakStmt(AstBreakContStmt breakStmt, StringBuilder sb, string offset)
@@ -339,12 +433,19 @@ namespace HapetPostPrepare
 
         public void AntiParseAttributeStmt(AstAttributeStmt attrStmt, StringBuilder sb, string offset)
         {
-
+            /// attributes has to be parsed in <see cref="GenerateMetadataFile"/>
         }
 
         public void AntiParseBaseCtorStmt(AstBaseCtorStmt baseStmt, StringBuilder sb, string offset)
         {
-
+            sb.Append("base(");
+            for (int i = 0; i < baseStmt.Arguments.Count; ++i)
+            {
+                AntiParseExpr(baseStmt.Arguments[i], sb, offset);
+                if (i != baseStmt.Arguments.Count - 1)
+                    sb.Append(", ");
+            }
+            sb.Append(')');
         }
     }
 }
