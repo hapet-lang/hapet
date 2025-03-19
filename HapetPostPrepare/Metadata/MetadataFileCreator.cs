@@ -163,6 +163,7 @@ namespace HapetPostPrepare
                 // serialize attributes
                 foreach (var attr in d.Attributes)
                 {
+                    sb.Append(additionalOffset + _fourSpaces);
                     AntiParseExpr(attr, sb, additionalOffset + _fourSpaces);
                 }
 
@@ -226,6 +227,7 @@ namespace HapetPostPrepare
                 // serialize attributes
                 foreach (var attr in d.Attributes)
                 {
+                    sb.Append(additionalOffset + _fourSpaces);
                     AntiParseExpr(attr, sb, additionalOffset + _fourSpaces);
                 }
 
@@ -314,6 +316,8 @@ namespace HapetPostPrepare
             }
             else if (decl.HasSet)
                 sb.Append("set; }\n");
+            else
+                sb.Append("}\n");
         }
 
         private void CreateFieldDecl(AstVarDecl decl, StringBuilder sb, string additionalOffset)
