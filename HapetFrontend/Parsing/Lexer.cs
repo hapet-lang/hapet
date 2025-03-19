@@ -14,6 +14,8 @@ namespace HapetFrontend.Parsing
         void UpdateLookAheadLocation();
         Token NextLookAhead(bool skipWhitespaces);
         Token PeekLookAhead(bool skipWhitespaces);
+
+        void ChangeFilename(string filename);
     }
 
     public partial class Lexer : ILexer
@@ -78,6 +80,16 @@ namespace HapetFrontend.Parsing
                     Line = 1,
                 },
             };
+        }
+
+        /// <summary>
+        /// So all the locations would have new filename - used for metadata readings
+        /// </summary>
+        /// <param name="filename">The new filename</param>
+        public void ChangeFilename(string filename)
+        {
+            _location.File = filename;
+            _lookAheadLocation.File = filename;
         }
 
         public Token PeekToken()

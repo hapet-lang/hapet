@@ -139,6 +139,8 @@ namespace HapetFrontend
                     currentFile.Namespace = normalNamespace;
 
                     allFiles.Add(currentFile);
+                    // change lexer locations' filename
+                    lexer.ChangeFilename(currentFile.Name);
                     continue; // no need to add this shite
                 }
 
