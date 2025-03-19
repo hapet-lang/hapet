@@ -4,6 +4,7 @@ using HapetFrontend.Ast.Expressions;
 using HapetFrontend.Ast.Statements;
 using HapetFrontend.Helpers;
 using HapetFrontend.Parsing;
+using System.Diagnostics;
 using System.Text;
 
 namespace HapetPostPrepare
@@ -46,6 +47,8 @@ namespace HapetPostPrepare
             }
         }
 
+        [SkipInStackFrame]
+        [DebuggerStepThrough]
         public void AntiParseExpr(AstStatement expr, StringBuilder sb, string offset)
         {
             switch (expr)
@@ -169,7 +172,8 @@ namespace HapetPostPrepare
                     stmt is not AstIfStmt && 
                     stmt is not AstSwitchStmt &&
                     stmt is not AstForStmt && 
-                    stmt is not AstWhileStmt)
+                    stmt is not AstWhileStmt &&
+                    stmt is not AstAttributeStmt)
                     sb.Append(";\n");
             }
             sb.Append($"{offset}}}\n");
@@ -433,7 +437,22 @@ namespace HapetPostPrepare
 
         public void AntiParseAttributeStmt(AstAttributeStmt attrStmt, StringBuilder sb, string offset)
         {
-            /// attributes has to be parsed in <see cref="GenerateMetadataFile"/>
+            sb.Append('[');
+            AntiParseExpr(attrStmt.AttributeName, sb, offset);
+            if (attrStmt.Arguments.Count > 0)
+            {
+                sb.Append('(');
+                for (int i = 0; i < attrStmt.Arguments.Count; i++)
+                {
+                    var arg = attrStmt.Arguments[i];
+                    AntiParseExpr(arg, sb, offset);
+
+                    if (i < attrStmt.Arguments.Count - 1)
+                        sb.Append(", ");
+                }
+                sb.Append(')');
+            }
+            sb.Append("]\n");
         }
 
         public void AntiParseBaseCtorStmt(AstBaseCtorStmt baseStmt, StringBuilder sb, string offset)

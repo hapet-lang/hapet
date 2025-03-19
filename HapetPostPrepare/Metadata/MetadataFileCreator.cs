@@ -85,7 +85,7 @@ namespace HapetPostPrepare
                 // serialize attributes
                 foreach (var attr in decl.Attributes)
                 {
-                    CreateAttributeDecl(attr, sb, "");
+                    AntiParseExpr(attr, sb, "");
                 }
 
                 CreateSpecialKeys(decl.SpecialKeys, sb, "");
@@ -100,29 +100,6 @@ namespace HapetPostPrepare
                     CreateStructDecl(strDecl, sb, "");
                 }
             }
-        }
-
-        private void CreateAttributeDecl(AstAttributeStmt attr, StringBuilder sb, string additionalOffset)
-        {
-            StringBuilder args = new StringBuilder();
-            if (attr.Arguments.Count > 0)
-            {
-                args.Append('(');
-                for (int i = 0; i < attr.Arguments.Count; i++)
-                {
-                    var arg = attr.Arguments[i];
-                    if (arg.OutValue is string str)
-                        args.Append($"\"{str}\"");
-                    else
-                        args.Append($"{arg.OutValue}");
-
-                    if (i < attr.Arguments.Count - 1)
-                        args.Append(", ");
-                }
-                args.Append(')');
-            }
-
-            sb.Append($"{additionalOffset}[{attr.AttributeName.TryFlatten(null, null)}{args}]\n");
         }
 
         private void CreateSpecialKeys(List<TokenType> keys, StringBuilder sb, string additionalOffset)
@@ -146,15 +123,24 @@ namespace HapetPostPrepare
             if (decl.InheritedFrom.Count > 0)
             {
                 sb.Append(": ");
-                var inhs = decl.InheritedFrom.Select(x => x.GetNested().TryFlatten(null, null));
-                sb.Append(string.Join(", ", inhs));
+                for (int i = 0; i < decl.InheritedFrom.Count; i++)
+                {
+                    AntiParseExpr(decl.InheritedFrom[i], sb, additionalOffset);
+
+                    if (i < decl.InheritedFrom.Count - 1)
+                        sb.Append(", ");
+                }
             }
 
             // TODO: generic constraiins 
 
+            AstClassDecl theDecl = decl;
+            if (decl.HasGenericTypes)
+                theDecl = (decl.OriginalGenericDecl as AstClassDecl);
+
             sb.Append($"\n{additionalOffset}{{\n");
 
-            foreach (var d in decl.Declarations)
+            foreach (var d in theDecl.Declarations)
             {
                 if (d.SpecialKeys.Contains(TokenType.KwUnreflected))
                     continue;
@@ -170,18 +156,18 @@ namespace HapetPostPrepare
                 // serialize attributes
                 foreach (var attr in d.Attributes)
                 {
-                    CreateAttributeDecl(attr, sb, additionalOffset + _fourSpaces);
+                    AntiParseExpr(attr, sb, additionalOffset + _fourSpaces);
                 }
 
                 CreateSpecialKeys(d.SpecialKeys, sb, additionalOffset + _fourSpaces);
 
                 if (d is AstFuncDecl func)
                 {
-                    CreateFuncDecl(func, sb, additionalOffset + _fourSpaces, decl.HasGenericTypes);
+                    CreateFuncDecl(func, sb, additionalOffset + _fourSpaces, theDecl.HasGenericTypes);
                 }
                 else if (d is AstPropertyDecl prop)
                 {
-                    CreatePropertyDecl(prop, sb, additionalOffset + _fourSpaces, decl.HasGenericTypes);
+                    CreatePropertyDecl(prop, sb, additionalOffset + _fourSpaces, theDecl.HasGenericTypes);
                 }
                 else if (d is AstVarDecl field)
                 {
@@ -200,15 +186,24 @@ namespace HapetPostPrepare
             if (decl.InheritedFrom.Count > 0)
             {
                 sb.Append(": ");
-                var inhs = decl.InheritedFrom.Select(x => x.GetNested().TryFlatten(null, null));
-                sb.Append(string.Join(", ", inhs));
+                for (int i = 0; i < decl.InheritedFrom.Count; i++)
+                {
+                    AntiParseExpr(decl.InheritedFrom[i], sb, additionalOffset);
+
+                    if (i < decl.InheritedFrom.Count - 1)
+                        sb.Append(", ");
+                }
             }
 
             // TODO: generic constraiins 
 
+            AstStructDecl theDecl = decl;
+            if (decl.HasGenericTypes)
+                theDecl = (decl.OriginalGenericDecl as AstStructDecl);
+
             sb.Append($"\n{additionalOffset}{{\n");
 
-            foreach (var d in decl.Declarations)
+            foreach (var d in theDecl.Declarations)
             {
                 if (d.SpecialKeys.Contains(TokenType.KwUnreflected))
                     continue;
@@ -224,18 +219,18 @@ namespace HapetPostPrepare
                 // serialize attributes
                 foreach (var attr in d.Attributes)
                 {
-                    CreateAttributeDecl(attr, sb, additionalOffset + _fourSpaces);
+                    AntiParseExpr(attr, sb, additionalOffset + _fourSpaces);
                 }
 
                 CreateSpecialKeys(d.SpecialKeys, sb, additionalOffset + _fourSpaces);
 
                 if (d is AstFuncDecl func)
                 {
-                    CreateFuncDecl(func, sb, additionalOffset + _fourSpaces, decl.HasGenericTypes);
+                    CreateFuncDecl(func, sb, additionalOffset + _fourSpaces, theDecl.HasGenericTypes);
                 }
                 else if (d is AstPropertyDecl prop)
                 {
-                    CreatePropertyDecl(prop, sb, additionalOffset + _fourSpaces, decl.HasGenericTypes);
+                    CreatePropertyDecl(prop, sb, additionalOffset + _fourSpaces, theDecl.HasGenericTypes);
                 }
                 else if (d is AstVarDecl field)
                 {
@@ -249,17 +244,17 @@ namespace HapetPostPrepare
         private void CreateFuncDecl(AstFuncDecl decl, StringBuilder sb, string additionalOffset, bool isParentGeneric)
         {
             // return type
-            sb.Append(GenericsHelper.GetNameFromType(decl.Returns.OutType));
-
-            sb.Append($" {GenericsHelper.GetNameFromAst(decl.Name).GetPureFuncName()}");
+            AntiParseExpr(decl.Returns, sb, additionalOffset);
+            sb.Append(' ');
+            AntiParseExpr(decl.Name, sb, additionalOffset);
 
             sb.Append('(');
             for (int i = 0; i < decl.Parameters.Count; ++i)
             {
                 var par = decl.Parameters[i];
-                sb.Append(GenericsHelper.GetNameFromType(par.Type.OutType));
+                AntiParseExpr(par.Type, sb, additionalOffset);
                 sb.Append(' ');
-                sb.Append(GenericsHelper.GetNameFromAst(par.Name).GetPureFuncName());
+                AntiParseExpr(par.Name, sb, additionalOffset);
 
                 if (i < decl.Parameters.Count - 1)
                     sb.Append(", ");
@@ -271,7 +266,12 @@ namespace HapetPostPrepare
             if ((decl.HasGenericTypes || isParentGeneric) && !decl.SpecialKeys.Contains(TokenType.KwAbstract))
             {
                 sb.Append('\n');
-                AntiParseExpr(decl.Body, sb, additionalOffset);
+
+                AstFuncDecl theDecl = decl;
+                if (decl.HasGenericTypes)
+                    theDecl = (decl.OriginalGenericDecl as AstFuncDecl);
+
+                AntiParseExpr(theDecl.Body, sb, additionalOffset);
             }
             else
             {
@@ -282,9 +282,9 @@ namespace HapetPostPrepare
         private void CreatePropertyDecl(AstPropertyDecl decl, StringBuilder sb, string additionalOffset, bool isParentGeneric)
         {
             // return type
-            sb.Append(GenericsHelper.GetNameFromType(decl.Type.OutType));
-
-            sb.Append($" {GenericsHelper.GetNameFromAst(decl.Name).GetPureFuncName()}");
+            AntiParseExpr(decl.Type, sb, additionalOffset);
+            sb.Append(' ');
+            AntiParseExpr(decl.Name, sb, additionalOffset);
 
             if (decl.HasGet && decl.GetBlock != null && (decl.HasGenericTypes || isParentGeneric))
             {
@@ -307,9 +307,9 @@ namespace HapetPostPrepare
         private void CreateFieldDecl(AstVarDecl decl, StringBuilder sb, string additionalOffset)
         {
             // return type
-            sb.Append(GenericsHelper.GetNameFromType(decl.Type.OutType));
-
-            sb.Append($" {GenericsHelper.GetNameFromAst(decl.Name).GetPureFuncName()}");
+            AntiParseExpr(decl.Type, sb, additionalOffset);
+            sb.Append(' ');
+            AntiParseExpr(decl.Name, sb, additionalOffset);
 
             sb.Append(";\n");
         }
