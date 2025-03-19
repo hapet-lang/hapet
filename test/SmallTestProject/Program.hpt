@@ -9,26 +9,6 @@ public static class Program
 {
     public static int Main(string[] args)
     {
-        var cls = new TestCls();
-        var a = cls.GetElement<Anime<int>>(10);
         return 0;
     }
-}
-
-public class TestCls
-{
-    public T GetElement<T>(T element)
-    {
-        return element;
-    }
-
-    public T GetElement<T>(int element)
-    {
-        return default;
-    }
-}
-
-public class Anime<T>
-{
-
 }

@@ -1,17 +1,7 @@
 ﻿using HapetFrontend;
 using HapetFrontend.Ast;
 using HapetFrontend.Ast.Declarations;
-using HapetFrontend.Ast.Expressions;
-using HapetFrontend.Ast.Statements;
-using HapetFrontend.Entities;
-using HapetFrontend.Errors;
-using HapetFrontend.Helpers;
-using HapetFrontend.Parsing;
-using HapetFrontend.Scoping;
-using HapetFrontend.Types;
 using HapetPostPrepare.Entities;
-using Newtonsoft.Json;
-using System;
 
 namespace HapetPostPrepare
 {
@@ -73,6 +63,8 @@ namespace HapetPostPrepare
                 {
                     /// DO NOT SERIALIZE PURE GENERICS - SERIALIZE T-LIKE GENERICS <see cref="AllPostPrepareMetadataGenerics"/>
                     bool needSerialize = !(stmt is AstClassDecl classDecl && classDecl.HasGenericTypes);
+                    // do not serialize imported shite
+                    needSerialize = needSerialize && (!(stmt as AstDeclaration)?.IsImported ?? false);
 
                     PostPrepareMetadataTypes(stmt, needSerialize);
                 }
@@ -93,8 +85,9 @@ namespace HapetPostPrepare
                 // do not inference generics
                 if (itWasGeneric)
                 {
-                    // append for serialization T-like
-                    _serializeClassesMetadata.Add(realDecl as AstClassDecl);
+                    // append for serialization T-like (if not imported)
+                    if (!cls.IsImported)
+                        _serializeClassesMetadata.Add(realDecl as AstClassDecl);
                     // remove from inferencing
                     AllClassesMetadata.Remove(cls);
                 }

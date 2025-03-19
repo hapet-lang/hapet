@@ -9,7 +9,6 @@ namespace HapetPostPrepare
 {
     public partial class PostPrepare
     {
-        // TODO: refactor
         private bool PostPrepareMetadataGenerics(AstStatement stmt, out AstDeclaration realDeclResult)
         {
             // null by default

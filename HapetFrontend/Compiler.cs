@@ -137,6 +137,7 @@ namespace HapetFrontend
                     var nsScope = GetNamespaceScope(normalNamespace);
                     currentFile.NamespaceScope = nsScope;
                     currentFile.Namespace = normalNamespace;
+                    currentFile.IsImported = true;
 
                     allFiles.Add(currentFile);
                     // change lexer locations' filename

@@ -127,6 +127,15 @@ namespace HapetPostPrepare
                         /// make sure that this shite is the same as in <see cref="PostPrepareGenerateClassConstructor"/>
                         callExpr.FuncName = callExpr.FuncName.GetCopy($"{decl.Name.Name}_ini");
                     }
+
+                    // cringe for metadata - because parsed in another way :)
+                    if (d is AstFuncDecl fDecl2 && fDecl2.Body != null &&
+                        fDecl2.Body.Statements[0] is AstNestedExpr nest && nest.RightPart is AstCallExpr callExpr2 && 
+                        callExpr2.FuncName.Name == $"{origName}_ini")
+                    {
+                        /// make sure that this shite is the same as in <see cref="PostPrepareGenerateClassConstructor"/>
+                        callExpr2.FuncName = callExpr2.FuncName.GetCopy($"{decl.Name.Name}_ini");
+                    }
                 }
                 // if stor
                 else if (d.Name.Name == $"{origName}_stor")
