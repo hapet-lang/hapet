@@ -75,6 +75,7 @@ namespace HapetFrontend.Ast.Declarations
                 InheritedFrom = InheritedFrom?.Select(x => x.GetDeepCopy() as AstNestedExpr).ToList(),
                 IsGenericType = IsGenericType,
                 IsInterface = IsInterface,
+                IsImported = IsImported,
                 Scope = Scope,
                 SourceFile = SourceFile,
                 SubScope = SubScope,

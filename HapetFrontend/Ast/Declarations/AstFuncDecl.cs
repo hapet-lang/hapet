@@ -65,6 +65,7 @@ namespace HapetFrontend.Ast.Declarations
                 GenericNames = GenericNames?.Select(x => x.GetDeepCopy() as AstIdExpr).ToList(),
                 GenericConstrains = copiedConstrains,
                 HasGenericTypes = HasGenericTypes,
+                IsImported = IsImported,
                 Scope = Scope,
                 SourceFile = SourceFile,
                 SubScope = SubScope,

@@ -54,6 +54,7 @@ namespace HapetFrontend.Ast.Declarations
                 HasSet = HasSet,
                 GetBlock = GetBlock?.GetDeepCopy() as AstBlockExpr,
                 SetBlock = SetBlock?.GetDeepCopy() as AstBlockExpr,
+                IsImported = IsImported,
                 Scope = Scope,
                 SourceFile = SourceFile,
                 SubScope = SubScope,

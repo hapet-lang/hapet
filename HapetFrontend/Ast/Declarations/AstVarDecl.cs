@@ -35,6 +35,7 @@ namespace HapetFrontend.Ast.Declarations
                 Documentation, Location)
             {
                 IsPropertyField = IsPropertyField,
+                IsImported = IsImported,
                 Scope = Scope,
                 SourceFile = SourceFile,
                 SubScope = SubScope,

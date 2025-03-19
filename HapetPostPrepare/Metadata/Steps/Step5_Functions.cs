@@ -82,7 +82,7 @@ namespace HapetPostPrepare
 
                 if (isImported)
                     // set that the function is imported from another assembly
-                    func.SpecialKeys.Add(TokenType.KwImported);
+                    func.IsImported = true;
             }
         }
     }

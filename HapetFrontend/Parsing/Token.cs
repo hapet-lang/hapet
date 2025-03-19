@@ -170,10 +170,6 @@ namespace HapetFrontend.Parsing
         KwInline,
         KwNoexcept,
 
-        // used only inside compiler to know
-        // that the func is imported from another assembly
-        KwImported,
-
         // for events
         KwEvent,
         KwAdd,

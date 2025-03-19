@@ -17,63 +17,19 @@ namespace HapetBackend.Llvm
 
         private void GenerateCode()
         {
-            var classes = _postPreparer.AllClassesMetadata.ToList();
-            var structs = _postPreparer.AllStructsMetadata.ToList();
+            var funcDecls = _postPreparer.AllFunctionsMetadata.ToList();
+            var funcs = new Dictionary<AstFuncDecl, LLVMTypeRef>();
 
-            foreach (var classDecl in classes)
+            foreach (var func in funcDecls)
             {
-                // skip generic (non-real) classes
-                if (classDecl.HasGenericTypes)
+                // skip generic (non-real) funcs
+                if (func.HasGenericTypes)
                     continue;
 
-                _currentSourceFile = classDecl.SourceFile;
-                GenerateClassCode(classDecl);
-            }
-            foreach (var structDecl in structs)
-            {
-                _currentSourceFile = structDecl.SourceFile;
-                GenerateStructCode(structDecl);
-            }
-        }
-
-        private unsafe void GenerateClassCode(AstClassDecl classDecl)
-        {
-            var funcs = new Dictionary<AstFuncDecl, LLVMTypeRef>();
-            foreach (var decl in classDecl.Declarations)
-            {
-                if (decl is AstFuncDecl funcDecl)
-                {
-                    // skip generic (non-real) funcs
-                    if (funcDecl.HasGenericTypes)
-                        continue;
-
-                    // defining global func
-                    var funcType = HapetTypeToLLVMType(funcDecl.Type.OutType);
-                    funcs.Add(funcDecl, funcType);
-                }
-            }
-
-            foreach (var (funcDecl, funcType) in funcs)
-            {
-                GenerateFuncCode(funcDecl, funcType);
-            }
-        }
-
-        private unsafe void GenerateStructCode(AstStructDecl structDecl)
-        {
-            var funcs = new Dictionary<AstFuncDecl, LLVMTypeRef>();
-            foreach (var decl in structDecl.Declarations)
-            {
-                if (decl is AstFuncDecl funcDecl)
-                {
-                    // skip generic (non-real) funcs
-                    if (funcDecl.HasGenericTypes)
-                        continue;
-
-                    // defining global func
-                    var funcType = HapetTypeToLLVMType(funcDecl.Type.OutType);
-                    funcs.Add(funcDecl, funcType);
-                }
+                _currentSourceFile = func.SourceFile;
+                // defining global func
+                var funcType = HapetTypeToLLVMType(func.Type.OutType);
+                funcs.Add(func, funcType);
             }
 
             foreach (var (funcDecl, funcType) in funcs)
@@ -97,7 +53,7 @@ namespace HapetBackend.Llvm
                 // declaring global func
                 LLVMValueRef lfunc = _module.AddFunction(funcName, funcType.Value);
 
-                if (funcDecl.SpecialKeys.Contains(TokenType.KwImported))
+                if (funcDecl.IsImported && !funcDecl.IsImplOfGeneric)
                 {
                     // this is an imported function from another assembly
                     lfunc.Linkage = LLVMLinkage.LLVMExternalLinkage;
@@ -137,8 +93,8 @@ namespace HapetBackend.Llvm
             }
             else
             {
-                // skip imported funcs
-                if (funcDecl.SpecialKeys.Contains(TokenType.KwImported))
+                // skip imported funcs that are not generics
+                if (funcDecl.IsImported && !funcDecl.IsImplOfGeneric)
                     return;
 
                 // getting the func

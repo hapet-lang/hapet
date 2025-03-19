@@ -30,6 +30,7 @@ namespace HapetFrontend.Ast.Declarations
                 Name.GetDeepCopy() as AstIdExpr,
                 Documentation, Location)
             {
+                IsImported = IsImported,
                 Scope = Scope,
                 SourceFile = SourceFile,
                 SubScope = SubScope,

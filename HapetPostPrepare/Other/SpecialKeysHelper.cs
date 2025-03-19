@@ -245,7 +245,6 @@ namespace HapetPostPrepare
                 case TokenType.KwSealed:
                 case TokenType.KwInline:
                 case TokenType.KwNoexcept:
-                case TokenType.KwImported:
                     {
                         return 4;
                     }
