@@ -75,6 +75,10 @@ namespace HapetFrontend.Helpers
             {
                 return GetRealFromGenericName(cls.Name.Name, generics);
             }
+            else if (decl is AstPropertyDecl prop)
+            {
+                return GetRealFromGenericName(prop.Name.Name, generics);
+            }
             return decl.Name.Name;
         }
 

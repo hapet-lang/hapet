@@ -22,7 +22,7 @@ namespace HapetFrontend.Parsing
 
             List<AstIdExpr> generics = new List<AstIdExpr>();
             // getting generics from parsed udecl' name
-            if (inInfo.CurrentUdecl != null && inInfo.CurrentUdecl.Name is AstIdGenericExpr genExpr)
+            if (udecl != null && udecl.Name is AstIdGenericExpr genExpr)
             {
                 foreach (var g in genExpr.GenericRealTypes)
                 {
@@ -147,7 +147,7 @@ namespace HapetFrontend.Parsing
             }
 
             // do some checks for generics
-            if (!hasGet || getBody == null || (hasSet && setBody == null))
+            if (theProperty.HasGenericTypes && (!hasGet || getBody == null || (hasSet && setBody == null)))
             {
                 // the case is
                 // 'Prop<T> { get; set; }' or

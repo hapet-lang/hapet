@@ -6,6 +6,7 @@ using HapetFrontend.Errors;
 using HapetFrontend.Types;
 using HapetFrontend.Enums;
 using HapetFrontend.Parsing;
+using System.Collections.Generic;
 
 namespace HapetPostPrepare
 {
@@ -494,31 +495,7 @@ namespace HapetPostPrepare
             List<AstDeclaration> declarationsToAdd = new List<AstDeclaration>();
             foreach (var prop in structDecl.Declarations.Where(x => x is AstPropertyDecl).Select(x => x as AstPropertyDecl))
             {
-                if (prop.GetBlock == null && prop.SetBlock == null)
-                {
-                    // need to create a field :(
-                    AstVarDecl propField = prop.GetField(true);
-                    declarationsToAdd.Add(propField);
-                }
-                if (prop.HasGet)
-                {
-                    // need to create a 'get' method
-                    AstFuncDecl getFunc = prop.GetGetFunction();
-                    declarationsToAdd.Add(getFunc);
-                }
-                if (prop.HasSet)
-                {
-                    // need to create a 'set' method
-                    AstFuncDecl setFunc = prop.GetSetFunction();
-                    declarationsToAdd.Add(setFunc);
-                }
-
-                // abs has to not have impl
-                if (prop.SpecialKeys.Contains(TokenType.KwAbstract) &&
-                    (prop.GetBlock != null || prop.SetBlock != null))
-                {
-                    _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, prop.Name, [], ErrorCode.Get(CTEN.AbsPropertyWithBody));
-                }
+                declarationsToAdd.AddRange(AddPropertyShiteToDecl(structDecl, prop));
             }
             structDecl.Declarations.AddRange(declarationsToAdd);
         }
@@ -532,42 +509,87 @@ namespace HapetPostPrepare
             List<AstDeclaration> declarationsToAdd = new List<AstDeclaration>();
             foreach (var prop in classDecl.Declarations.Where(x => x is AstPropertyDecl).Select(x => x as AstPropertyDecl))
             {
-                if (prop.GetBlock == null && prop.SetBlock == null)
-                {
-                    // need to create a field :(
-                    AstVarDecl propField = prop.GetField(false);
-                    // add abstract key to the field if it is an interface
-                    if (classDecl.IsInterface)
-                        AddSpecialKeyToDecl(propField, TokenType.KwAbstract);
-                    declarationsToAdd.Add(propField);
-                }
-                if (prop.HasGet)
-                {
-                    // need to create a 'get' method
-                    AstFuncDecl getFunc = prop.GetGetFunction();
-                    // add abstract key to the method if it is an interface
-                    if (classDecl.IsInterface)
-                        AddSpecialKeyToDecl(getFunc, TokenType.KwAbstract);
-                    declarationsToAdd.Add(getFunc);
-                }
-                if (prop.HasSet)
-                {
-                    // need to create a 'set' method
-                    AstFuncDecl setFunc = prop.GetSetFunction();
-                    // add abstract key to the method if it is an interface
-                    if (classDecl.IsInterface)
-                        AddSpecialKeyToDecl(setFunc, TokenType.KwAbstract);
-                    declarationsToAdd.Add(setFunc);
-                }
-
-                // abs has to not have impl
-                if (prop.SpecialKeys.Contains(TokenType.KwAbstract) &&
-                    (prop.GetBlock != null || prop.SetBlock != null))
-                {
-                    _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, prop.Name, [], ErrorCode.Get(CTEN.AbsPropertyWithBody));
-                }
+                declarationsToAdd.AddRange(AddPropertyShiteToDecl(classDecl, prop));
             }
             classDecl.Declarations.AddRange(declarationsToAdd);
+        }
+
+        public List<AstDeclaration> AddPropertyShiteToDecl(AstDeclaration parent, AstPropertyDecl prop)
+        {
+            List<AstDeclaration> declarationsToAdd = new List<AstDeclaration>();
+            bool isParentInterface = false;
+            bool isParentStruct = false;
+            List<AstDeclaration> decls = new List<AstDeclaration>();
+            if (parent is AstClassDecl clsDecl)
+            {
+                isParentInterface = clsDecl.IsInterface;
+                decls = clsDecl.Declarations;
+            }
+            else if (parent is AstStructDecl strDecl)
+            {
+                isParentStruct = true;
+                decls = strDecl.Declarations;
+            }
+
+            if (prop.GetBlock == null && prop.SetBlock == null)
+            {
+                // need to create a field :(
+                AstVarDecl propField = prop.GetField(isParentStruct);
+                // add abstract key to the field if it is an interface
+                if (isParentInterface)
+                    AddSpecialKeyToDecl(propField, TokenType.KwAbstract);
+                declarationsToAdd.Add(propField);
+            }
+            if (prop.HasGet)
+            {
+                // need to create a 'get' method
+                AstFuncDecl getFunc = prop.GetGetFunction();
+                // add abstract key to the method if it is an interface
+                if (isParentInterface)
+                    AddSpecialKeyToDecl(getFunc, TokenType.KwAbstract);
+                declarationsToAdd.Add(getFunc);
+            }
+            if (prop.HasSet)
+            {
+                // need to create a 'set' method
+                AstFuncDecl setFunc = prop.GetSetFunction();
+                // add abstract key to the method if it is an interface
+                if (isParentInterface)
+                    AddSpecialKeyToDecl(setFunc, TokenType.KwAbstract);
+                declarationsToAdd.Add(setFunc);
+            }
+
+            // abs has to not have impl
+            if (prop.SpecialKeys.Contains(TokenType.KwAbstract) &&
+                (prop.GetBlock != null || prop.SetBlock != null))
+            {
+                _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, prop.Name, [], ErrorCode.Get(CTEN.AbsPropertyWithBody));
+            }
+            return declarationsToAdd;
+        }
+
+        public void RemovePropertyShiteFromDecl(List<AstDeclaration> decls, AstPropertyDecl prop)
+        {
+            // WARN! the func does not remove prop itself!!!
+
+            if (prop.GetBlock == null && prop.SetBlock == null)
+            {
+                var field = decls.FirstOrDefault(x => x.Name.Name.Contains($"field_{prop.Name.Name}"));
+                if (field != null)
+                    decls.Remove(field);
+            }
+            if (prop.HasGet)
+            {
+                var func = decls.FirstOrDefault(x => x.Name.Name.Contains($"get_{prop.Name.Name}"));
+                if (func != null)
+                    decls.Remove(func);
+            }
+            if (prop.HasSet)
+            {
+                var func = decls.FirstOrDefault(x => x.Name.Name.Contains($"set_{prop.Name.Name}"));
+                if (func != null)
+                    decls.Remove(func);
+            }
         }
 
         private AstBlockExpr GetFieldsToInitialize(AstDeclaration declB, bool forStatic)

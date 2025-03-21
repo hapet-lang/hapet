@@ -24,11 +24,14 @@ namespace HapetPostPrepare
         private AstClassDecl CreateTypeDeclarationForGeneric(AstDeclaration parent, AstIdExpr name, List<AstNestedExpr> constrains)
         {
             // TODO: handle constains
+            string parentString = parent.Name.Name;
+            if (parent is AstPropertyDecl propDecl)
+                parentString = $"{parent.ContainingParent.Name.Name}.{parentString}";
             string additionalString = string.Empty;
             if (parent is AstFuncDecl funcDecl)
                 additionalString = funcDecl.GenerateHashForGenericType(name.Name);
 
-            string typeName = $"{parent.Name.Name}{GenericsHelper.GENERIC_TYPE_BEGIN}{name.Name}{GenericsHelper.GENERIC_TYPE_END}{additionalString}";
+            string typeName = $"{parentString}{GenericsHelper.GENERIC_TYPE_BEGIN}{name.Name}{GenericsHelper.GENERIC_TYPE_END}{additionalString}";
             var specialName = name.GetCopy(typeName);
             var cls = new AstClassDecl(specialName, new List<AstDeclaration>(), "", specialName)
             {
@@ -89,6 +92,23 @@ namespace HapetPostPrepare
             PostPrepareDeclScoping(realDecl);
             // pp up to the current metadata step
             PostPrepareStatementUpToCurrentStep(realDecl);
+
+            // if it is a property - we need to create and inference its field/get/set
+            if (realDecl is AstPropertyDecl propDecl)
+            {
+                var newDecls = AddPropertyShiteToDecl(propDecl.ContainingParent, propDecl);
+                foreach (var newD in newDecls)
+                {
+                    newD.HasGenericTypes = realDecl.HasGenericTypes;
+                    ReplaceAllGenericTypesInDecl(newD);
+                    // replaces all System.Anime::Func(Pivo) with just Func and etc.
+                    GenericsHelper.ResetDeclarationNames(newD);
+                    // just a pp
+                    PostPrepareDeclScoping(newD);
+                    // pp up to the current metadata step
+                    PostPrepareStatementUpToCurrentStep(newD);
+                }
+            }
 
             // reload previously saved shite
             _currentSourceFile = savedSourceFile;
