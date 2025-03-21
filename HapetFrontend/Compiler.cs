@@ -28,7 +28,6 @@ namespace HapetFrontend
 
         public IMessageHandler MessageHandler { get; }
         public CompilerSettings CurrentProjectSettings { get; }
-        public static int AssemblyPointerSize { get; set; }
         public Stopwatch CompilationStopwatch { get; set; }
 
         public Scope GlobalScope { get; private set; }

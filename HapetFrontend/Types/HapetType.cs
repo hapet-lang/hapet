@@ -13,9 +13,11 @@ namespace HapetFrontend.Types
         public abstract string TypeName { get; }
 
         /// <summary>
-        /// The size of a pointer on the currently selected platform
+        /// Current type context is used to handle context dependent shite.
+        /// For example PointerSize could be different for different projects.
+        /// Or String/Array types WOULD be different for different projects!
         /// </summary>
-        public static int PointerSize => Compiler.AssemblyPointerSize;
+        public static TypeContext CurrentTypeContext { get; set; }
 
         protected int _size = -1;
         protected int _alignment = -1;

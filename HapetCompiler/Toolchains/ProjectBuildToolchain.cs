@@ -7,6 +7,7 @@ using HapetCompiler.ProjectConf;
 using HapetCompiler.ProjectConf.Data;
 using HapetCompiler.Resolvers;
 using HapetPostPrepare;
+using HapetFrontend.Types;
 
 namespace HapetCompiler.Toolchains
 {
@@ -15,7 +16,7 @@ namespace HapetCompiler.Toolchains
         public CompilerSettings ProjectSettings { get; set; }
         public ProjectData ProjectData { get; set; }
 
-        private string[] _cmdArgs; // TODO: use them for ProjectXmlParser
+        private readonly string[] _cmdArgs; // TODO: use them for ProjectXmlParser
         public ProjectBuildToolchain(string[] args)
         {
             _cmdArgs = args;
@@ -28,6 +29,8 @@ namespace HapetCompiler.Toolchains
 
             if (!referenced)
                 messageHandler.ReportMessage([$"{Funcad.GetPrettyTimeString(stopwatch.Elapsed)} Project preparation..."], null, ReportType.Info);
+            // setting the type context
+            HapetType.CurrentTypeContext = new TypeContext();
             // creating settings instances for the project
             ProjectSettings = new CompilerSettings();
             // saving that the build is referenced or not
@@ -40,7 +43,7 @@ namespace HapetCompiler.Toolchains
                 return (int)CompilerErrors.ProjectFileParseError; // proj file parsing errors
 
             // setting pointer size for the whole assembly
-            Compiler.AssemblyPointerSize = ProjectSettings.TargetPlatformData.PointerSize;
+            HapetType.CurrentTypeContext.PointerSize = ProjectSettings.TargetPlatformData.PointerSize;
             // creating the compiler and post preparer
             var compiler = new Compiler(ProjectSettings, messageHandler);
             var postPreparer = new PostPrepare(compiler);
@@ -48,10 +51,14 @@ namespace HapetCompiler.Toolchains
             compiler.CompilationStopwatch = stopwatch;
 
             // references
+            // save type context
+            var cachedTypeContext = HapetType.CurrentTypeContext;
             ProjectReferencesResolver resolver = new ProjectReferencesResolver();
             resolver.ResolveProjectShite(ProjectData, ProjectSettings, compiler, postPreparer);
             if (messageHandler.HasErrors)
                 return (int)CompilerErrors.ProjectReferencesError; // references errors
+            // restore it
+            HapetType.CurrentTypeContext = cachedTypeContext;
 
             if (!referenced)
                 messageHandler.ReportMessage([$"{Funcad.GetPrettyTimeString(stopwatch.Elapsed)} Parsing..."], null, ReportType.Info);

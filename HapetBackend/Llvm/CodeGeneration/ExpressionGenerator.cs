@@ -715,7 +715,7 @@ namespace HapetBackend.Llvm
                             var offset = _builder.BuildCall2(funcType, offseterFunc, new LLVMValueRef[] { leftPart, ptrToTypeInfo, elementIndexValueRef }, "interfaceOffset");
 
                             // we need this to also skip TypeInfo ptr at the beginning of the class instance
-                            var normalOffset = _builder.BuildAdd(offset, LLVMValueRef.CreateConstInt(_context.Int32Type, (ulong)HapetType.PointerSize), "offsetWithTypeInfoPtr");
+                            var normalOffset = _builder.BuildAdd(offset, LLVMValueRef.CreateConstInt(_context.Int32Type, (ulong)HapetType.CurrentTypeContext.PointerSize), "offsetWithTypeInfoPtr");
 
                             // get ptr by offset
                             ret = _builder.BuildGEP2(_context.Int8Type, leftPart, new LLVMValueRef[] { normalOffset }, idExpr.Name);

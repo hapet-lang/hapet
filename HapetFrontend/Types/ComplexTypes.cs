@@ -223,7 +223,7 @@ namespace HapetFrontend.Types
         }
 
         public FunctionType(AstFuncDecl decl)
-            : base(PointerType.PointerSize, PointerType.PointerAlignment)
+            : base(CurrentTypeContext.PointerSize, PointerType.PointerAlignment)
         {
             Declaration = decl;
         }
@@ -321,7 +321,7 @@ namespace HapetFrontend.Types
         }
 
         public DelegateType(AstDelegateDecl decl)
-            : base(PointerType.PointerSize, PointerType.PointerAlignment)
+            : base(CurrentTypeContext.PointerSize, PointerType.PointerAlignment)
         {
             Declaration = decl;
         }

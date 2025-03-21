@@ -558,7 +558,7 @@ namespace HapetBackend.Llvm
             //	"TypeInfoStruct"
 
             // allocating memory for the data in array
-            var allocated = GetMalloc(HapetType.PointerSize, 2, "allocForTypeInfo");
+            var allocated = GetMalloc(HapetType.CurrentTypeContext.PointerSize, 2, "allocForTypeInfo");
             var ptrToType = _builder.BuildGEP2(LLVMTypeRef.CreatePointer(GetTypeInfoType(), 0), allocated, new LLVMValueRef[] { LLVMValueRef.CreateConstInt(LLVMTypeRef.Int32, 0) }, $"elementPtr{0}");
             _builder.BuildStore(_typeInfoDictionary[type], ptrToType);
             var ptrToVtable = _builder.BuildGEP2(LLVMTypeRef.CreatePointer(GetVirtualTableType(), 0), allocated, new LLVMValueRef[] { LLVMValueRef.CreateConstInt(LLVMTypeRef.Int32, 1) }, $"elementPtr{1}");

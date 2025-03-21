@@ -246,7 +246,7 @@ namespace HapetFrontend.Types
 
     public class PointerType : HapetType
     {
-        public static int PointerAlignment => PointerSize;
+        public static int PointerAlignment => CurrentTypeContext.PointerSize;
 
         private static Dictionary<HapetType, PointerType> _types = new Dictionary<HapetType, PointerType>();
         public static PointerType VoidLiteralType { get; } = new PointerType(VoidType.Instance);
@@ -266,7 +266,7 @@ namespace HapetFrontend.Types
         private PointerType(HapetType target) : base(
             target switch
             {
-                _ => PointerSize * 1,
+                _ => CurrentTypeContext.PointerSize * 1,
             }, PointerAlignment)
         {
             TargetType = target;
@@ -348,7 +348,7 @@ namespace HapetFrontend.Types
             return new AstPointerExpr(TargetType.GetAst() as AstExpression);
         }
 
-        private ReferenceType(HapetType target) : base(PointerType.PointerSize, PointerType.PointerAlignment)
+        private ReferenceType(HapetType target) : base(CurrentTypeContext.PointerSize, PointerType.PointerAlignment)
         {
             TargetType = target;
         }
@@ -407,8 +407,6 @@ namespace HapetFrontend.Types
 
     public class ArrayType : StructType
     {
-        private static Dictionary<HapetType, ArrayType> _types = new Dictionary<HapetType, ArrayType>();
-
         public HapetType TargetType { get; set; }
 
         public override string TypeName => $"array";
@@ -433,13 +431,13 @@ namespace HapetFrontend.Types
             if (targetType == null)
                 return null;
 
-            var existing = _types.FirstOrDefault(t => t.Value.TargetType == targetType).Value;
+            var existing = CurrentTypeContext.ArrayTypeInstances.FirstOrDefault(t => t.Value.TargetType == targetType).Value;
             if (existing != null)
                 return existing;
 
             var type = new ArrayType(targetType, arrStructDecl);
 
-            _types[targetType] = type;
+            CurrentTypeContext.ArrayTypeInstances[targetType] = type;
             return type;
         }
 
@@ -543,18 +541,17 @@ namespace HapetFrontend.Types
 
     public class StringType : StructType
     {
-        private static StringType _instance;
         public static StringType GetInstance(Scope scope)
         {
             return GetInstance(AstStringExpr.GetStringStruct(scope));
         }
         public static StringType GetInstance(AstStructDecl strDecl)
         {
-            if (_instance == null)
+            if (CurrentTypeContext.StringTypeInstance == null)
             {
-                _instance = new StringType(strDecl);
+                CurrentTypeContext.StringTypeInstance = new StringType(strDecl);
             }
-            return _instance;
+            return CurrentTypeContext.StringTypeInstance;
         }
         public static StringType LiteralType { get; } = new StringType(null);
 
@@ -578,7 +575,7 @@ namespace HapetFrontend.Types
                 // intptr size is like that because of the intptr struct:
                 // { ptr }
                 if (_instance == null)
-                    _instance = new IntPtrType(PointerType.PointerSize, PointerType.PointerSize);
+                    _instance = new IntPtrType(CurrentTypeContext.PointerSize, CurrentTypeContext.PointerSize);
                 return _instance;
             }
         }
@@ -621,7 +618,7 @@ namespace HapetFrontend.Types
                 // ptrdiff size is like that because of the ptrdiff struct:
                 // { ptr }
                 if (_instance == null)
-                    _instance = new PtrDiffType(PointerType.PointerSize, PointerType.PointerSize);
+                    _instance = new PtrDiffType(CurrentTypeContext.PointerSize, CurrentTypeContext.PointerSize);
                 return _instance;
             }
         }
