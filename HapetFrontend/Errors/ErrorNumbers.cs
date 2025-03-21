@@ -107,6 +107,7 @@
         UnexpectedBinOpToOverload       = 0x2052,
         GenericTypeNameExpected         = 0x2053,
         GenericTypeNotFound             = 0x2054,
+        PropGenericWithoutBody          = 0x2055,
 
         // post preparer errors up to 0x5000
         EnumCouldNotBeAssigned          = 0x3001,

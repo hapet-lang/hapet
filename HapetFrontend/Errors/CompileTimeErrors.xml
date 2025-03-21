@@ -398,6 +398,10 @@
 		<Number>2054</Number>
 		<Text>Generic type with the name not found</Text>
 	</Item>
+	<Item>
+		<Number>2055</Number>
+		<Text>Generic property excepted to have 'get' and/or 'set' bodies</Text>
+	</Item>
 
 
 	<!--Post prepare errors-->

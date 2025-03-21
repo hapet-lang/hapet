@@ -146,6 +146,17 @@ namespace HapetFrontend.Parsing
                 ReportMessage(theProperty.Location, [], ErrorCode.Get(CTEN.ExpectedSetBody));
             }
 
+            // do some checks for generics
+            if (!hasGet || getBody == null || (hasSet && setBody == null))
+            {
+                // the case is
+                // 'Prop<T> { get; set; }' or
+                // 'Prop<T> { get; }' or
+                // 'Prop<T> { get {...} set; }'
+                // so we should error
+                ReportMessage(theProperty.Location, [], ErrorCode.Get(CTEN.PropGenericWithoutBody));
+            }
+
             return theProperty;
         }
     }
