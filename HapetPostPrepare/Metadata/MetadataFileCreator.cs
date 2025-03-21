@@ -310,7 +310,11 @@ namespace HapetPostPrepare
             if (decl.HasSet && decl.SetBlock != null && (decl.HasGenericTypes || 
                 (isParentGeneric && !decl.SpecialKeys.Contains(TokenType.KwStatic))))
             {
-                sb.Append($" {additionalOffset}{{ \n{additionalOffset + _fourSpaces}set \n");
+                // pohuy :)
+                if (sb[^1] != '\n')
+                    sb.Append('\n');
+
+                sb.Append($"{additionalOffset + _fourSpaces}set \n");
                 AntiParseExpr(decl.SetBlock, sb, additionalOffset + _fourSpaces);
                 sb.Append($"{additionalOffset}}}\n");
             }

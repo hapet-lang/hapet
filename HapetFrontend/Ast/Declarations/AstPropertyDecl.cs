@@ -44,6 +44,12 @@ namespace HapetFrontend.Ast.Declarations
 
         public override AstStatement GetDeepCopy()
         {
+            Dictionary<AstIdExpr, List<AstNestedExpr>> copiedConstrains = new Dictionary<AstIdExpr, List<AstNestedExpr>>();
+            foreach (var cc in GenericConstrains)
+            {
+                copiedConstrains.Add(cc.Key.GetDeepCopy() as AstIdExpr, cc.Value.Select(x => x.GetDeepCopy() as AstNestedExpr).ToList());
+            }
+
             var copy = new AstPropertyDecl(
                 Type.GetDeepCopy() as AstNestedExpr,
                 Name.GetDeepCopy() as AstIdExpr,
@@ -55,6 +61,9 @@ namespace HapetFrontend.Ast.Declarations
                 GetBlock = GetBlock?.GetDeepCopy() as AstBlockExpr,
                 SetBlock = SetBlock?.GetDeepCopy() as AstBlockExpr,
                 IsImported = IsImported,
+                GenericNames = GenericNames?.Select(x => x.GetDeepCopy() as AstIdExpr).ToList(),
+                GenericConstrains = copiedConstrains,
+                HasGenericTypes = HasGenericTypes,
                 Scope = Scope,
                 SourceFile = SourceFile,
                 SubScope = SubScope,
@@ -198,21 +207,11 @@ namespace HapetFrontend.Ast.Declarations
 
         public override AstVarDecl GetCopyForAnotherType(AstDeclaration decl)
         {
-            var varDecl = new AstPropertyDecl(Type, Name, Initializer, Documentation, Location)
-            {
-                Parent = decl,
-                Scope = decl.SubScope,
-                SourceFile = decl.SourceFile,
-                ContainingParent = decl
-            };
-            varDecl.Attributes.AddRange(Attributes);
-            varDecl.SpecialKeys.AddRange(SpecialKeys);
-
-            varDecl.HasGet = HasGet;
-            varDecl.HasSet = HasSet;
-            varDecl.GetBlock = GetBlock;
-            varDecl.SetBlock = SetBlock;
-
+            var varDecl = GetDeepCopy() as AstPropertyDecl;
+            varDecl.Parent = decl;
+            varDecl.Scope = decl.SubScope;
+            varDecl.SourceFile = decl.SourceFile;
+            varDecl.ContainingParent = decl;
             return varDecl;
         }
     }

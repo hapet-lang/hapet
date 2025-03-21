@@ -113,9 +113,15 @@ namespace HapetPostPrepare
 
                 // we really need to add them :)
                 if (propDecl.ContainingParent is AstClassDecl clsDecl)
+                {
                     clsDecl.Declarations.AddRange(newDecls);
+                    clsDecl.Declarations.Add(realDecl);
+                }
                 else if (propDecl.ContainingParent is AstStructDecl strDecl)
+                {
                     strDecl.Declarations.AddRange(newDecls);
+                    strDecl.Declarations.Add(realDecl);
+                }
             }
 
             // reload previously saved shite
