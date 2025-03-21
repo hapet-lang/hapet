@@ -5,37 +5,15 @@
 [SuppressStaticCtorCallAttribute]
 public class FlagsAttribute : Attribute
 {
-    private int ffff = 3;
-    public int AnimePropa 
+    public int AnimeProps<T> 
     {
-        get
+        get 
         {
-            return 424;
+            return 14;
         }
         set
         {
-            ffff = value;
+            
         }
     }
-
-    public FlagsAttribute()
-    {
-        
-    }
-
-    public int Anime<T>(string asd)
-    {
-        int justAnotherLine = 333;
-        string abns = "test";
-        if (justAnotherLine == 55)
-        {
-            return 33;
-        }
-        return 11;
-    }
-}
-
-public class Anime<T>
-{
-
 }

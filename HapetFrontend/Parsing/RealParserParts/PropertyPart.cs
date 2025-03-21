@@ -20,6 +20,24 @@ namespace HapetFrontend.Parsing
             AstBlockExpr setBody = null;
             AstStatement initializer = null;
 
+            List<AstIdExpr> generics = new List<AstIdExpr>();
+            // getting generics from parsed udecl' name
+            if (inInfo.CurrentUdecl != null && inInfo.CurrentUdecl.Name is AstIdGenericExpr genExpr)
+            {
+                foreach (var g in genExpr.GenericRealTypes)
+                {
+                    if (g is AstNestedExpr nest)
+                        generics.Add(nest.RightPart as AstIdExpr);
+                    else if (g is AstIdExpr id)
+                        generics.Add(id);
+                    else
+                        generics.Add(null); // TODO: ERROR HERE
+                }
+            }
+
+            // parsing constrains
+            var genericConstrains = ParseGenericConstrains(generics);
+
             // getting beginning of the propa
             TokenLocation beg = udecl.Beginning;
             TokenLocation end = beg;
@@ -105,6 +123,9 @@ namespace HapetFrontend.Parsing
             theProperty.HasSet = hasSet;
             theProperty.GetBlock = getBody;
             theProperty.SetBlock = setBody;
+            theProperty.HasGenericTypes = generics.Count > 0;
+            theProperty.GenericNames = generics;
+            theProperty.GenericConstrains = genericConstrains;
             theProperty.SpecialKeys.AddRange(udecl.SpecialKeys);
             theProperty.IsImported = inInfo.ExternalMetadata;
 
