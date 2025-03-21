@@ -89,7 +89,7 @@ namespace HapetFrontend.Ast.Declarations
             return field;
         }
 
-        public AstFuncDecl GetSetFunction()
+        public AstFuncDecl GetSetFunction(bool addFirstParam = false)
         {
             // add indexer param if it is an indexer
             var prs = new List<AstParamDecl>() { new AstParamDecl(Type, new AstIdExpr("value")) };
@@ -108,6 +108,19 @@ namespace HapetFrontend.Ast.Declarations
             func.ContainingParent = ContainingParent; // it has to be
             func.IsPropertyFunction = true;
             func.SourceFile = SourceFile;
+
+            // if we need to add 'this' param
+            if (addFirstParam)
+            {
+                // for generic type - need to create an AstIdGenericExpr
+                AstIdExpr thisParamType = ContainingParent.Name.GetCopy();
+                // creating the class instance 'this' param
+                AstExpression paramType = new AstPointerExpr(thisParamType, false);
+                AstIdExpr paramName = new AstIdExpr("this");
+                AstParamDecl thisParam = new AstParamDecl(new AstNestedExpr(paramType, null), paramName);
+                // adding the param as the func first param
+                func.Parameters.Insert(0, thisParam);
+            }
 
             if (SetBlock == null)
             {
@@ -129,7 +142,7 @@ namespace HapetFrontend.Ast.Declarations
             return func;
         }
 
-        public AstFuncDecl GetGetFunction()
+        public AstFuncDecl GetGetFunction(bool addFirstParam = false)
         {
             // add indexer param if it is an indexer
             var prs = new List<AstParamDecl>();
@@ -148,6 +161,19 @@ namespace HapetFrontend.Ast.Declarations
             func.ContainingParent = ContainingParent; // it has to be
             func.IsPropertyFunction = true;
             func.SourceFile = SourceFile;
+
+            // if we need to add 'this' param
+            if (addFirstParam)
+            {
+                // for generic type - need to create an AstIdGenericExpr
+                AstIdExpr thisParamType = ContainingParent.Name.GetCopy();
+                // creating the class instance 'this' param
+                AstExpression paramType = new AstPointerExpr(thisParamType, false);
+                AstIdExpr paramName = new AstIdExpr("this");
+                AstParamDecl thisParam = new AstParamDecl(new AstNestedExpr(paramType, null), paramName);
+                // adding the param as the func first param
+                func.Parameters.Insert(0, thisParam);
+            }
 
             if (GetBlock == null)
             {

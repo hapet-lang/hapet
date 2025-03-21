@@ -39,7 +39,12 @@ namespace HapetPostPrepare
             }
 
             // making a class like List<T> where T is a virtual type
-            var nestedList = virtualTypes.Select(x => new AstNestedExpr(x.Name, null, x.Name)).ToList();
+            var nestedList = virtualTypes.Select(x => new AstNestedExpr(x.Name, null, x.Name)
+            { 
+                Scope = x.Scope,
+                SourceFile = x.SourceFile,
+                Parent = x.Parent,
+            }).ToList();
             string realName = GenericsHelper.GetRealFromGenericName(decl, nestedList);
             var realDecl = GetRealTypeFromGeneric(decl, nestedList, realName);
             realDeclResult = realDecl;

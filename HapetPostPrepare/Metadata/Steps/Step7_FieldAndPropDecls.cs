@@ -24,8 +24,14 @@ namespace HapetPostPrepare
                     var wasGeneric = InternalVarPP(decl);
                     if (wasGeneric)
                     {
-                        RemovePropertyShiteFromDecl(cls.Declarations, decl as AstPropertyDecl);
+                        var removedDecls = RemovePropertyShiteFromDecl(cls.Declarations, decl as AstPropertyDecl);
                         cls.Declarations.Remove(decl);
+                        foreach (var d in removedDecls)
+                        {
+                            if (!AllFunctionsMetadata.Contains(d))
+                                continue;
+                            AllFunctionsMetadata.Remove(d as AstFuncDecl);
+                        }
                     }
                 }
             }
@@ -38,8 +44,14 @@ namespace HapetPostPrepare
                     var wasGeneric = InternalVarPP(decl);
                     if (wasGeneric)
                     {
-                        RemovePropertyShiteFromDecl(str.Declarations, decl as AstPropertyDecl);
+                        var removedDecls = RemovePropertyShiteFromDecl(str.Declarations, decl as AstPropertyDecl);
                         str.Declarations.Remove(decl);
+                        foreach (var d in removedDecls)
+                        {
+                            if (!AllFunctionsMetadata.Contains(d))
+                                continue;
+                            AllFunctionsMetadata.Remove(d as AstFuncDecl);
+                        }
                     }
                 }
             }

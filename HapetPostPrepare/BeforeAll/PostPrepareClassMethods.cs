@@ -514,7 +514,7 @@ namespace HapetPostPrepare
             classDecl.Declarations.AddRange(declarationsToAdd);
         }
 
-        public List<AstDeclaration> AddPropertyShiteToDecl(AstDeclaration parent, AstPropertyDecl prop)
+        public List<AstDeclaration> AddPropertyShiteToDecl(AstDeclaration parent, AstPropertyDecl prop, bool addFirstParam = false)
         {
             List<AstDeclaration> declarationsToAdd = new List<AstDeclaration>();
             bool isParentInterface = false;
@@ -543,7 +543,7 @@ namespace HapetPostPrepare
             if (prop.HasGet)
             {
                 // need to create a 'get' method
-                AstFuncDecl getFunc = prop.GetGetFunction();
+                AstFuncDecl getFunc = prop.GetGetFunction(addFirstParam);
                 // add abstract key to the method if it is an interface
                 if (isParentInterface)
                     AddSpecialKeyToDecl(getFunc, TokenType.KwAbstract);
@@ -552,7 +552,7 @@ namespace HapetPostPrepare
             if (prop.HasSet)
             {
                 // need to create a 'set' method
-                AstFuncDecl setFunc = prop.GetSetFunction();
+                AstFuncDecl setFunc = prop.GetSetFunction(addFirstParam);
                 // add abstract key to the method if it is an interface
                 if (isParentInterface)
                     AddSpecialKeyToDecl(setFunc, TokenType.KwAbstract);
@@ -568,28 +568,39 @@ namespace HapetPostPrepare
             return declarationsToAdd;
         }
 
-        public void RemovePropertyShiteFromDecl(List<AstDeclaration> decls, AstPropertyDecl prop)
+        public List<AstDeclaration> RemovePropertyShiteFromDecl(List<AstDeclaration> decls, AstPropertyDecl prop)
         {
             // WARN! the func does not remove prop itself!!!
 
+            List<AstDeclaration> removedDeclarations = new List<AstDeclaration>();
             if (prop.GetBlock == null && prop.SetBlock == null)
             {
                 var field = decls.FirstOrDefault(x => x.Name.Name.Contains($"field_{prop.Name.Name}"));
                 if (field != null)
+                {
                     decls.Remove(field);
+                    removedDeclarations.Add(field);
+                }
             }
             if (prop.HasGet)
             {
-                var func = decls.FirstOrDefault(x => x.Name.Name.Contains($"get_{prop.Name.Name}"));
+                var func = decls.FirstOrDefault(x => x.Name.Name.Contains($":get_{prop.Name.Name}("));
                 if (func != null)
+                {
                     decls.Remove(func);
+                    removedDeclarations.Add(func);
+                }
             }
             if (prop.HasSet)
             {
-                var func = decls.FirstOrDefault(x => x.Name.Name.Contains($"set_{prop.Name.Name}"));
+                var func = decls.FirstOrDefault(x => x.Name.Name.Contains($":set_{prop.Name.Name}("));
                 if (func != null)
+                {
                     decls.Remove(func);
+                    removedDeclarations.Add(func);
+                }
             }
+            return removedDeclarations;
         }
 
         private AstBlockExpr GetFieldsToInitialize(AstDeclaration declB, bool forStatic)
@@ -602,12 +613,10 @@ namespace HapetPostPrepare
             if (declB is AstClassDecl classDecl)
             {
                 allVarDecls = classDecl.Declarations.Where(x => x is AstVarDecl && x is not AstIndexerDecl).Select(x => x as AstVarDecl);
-                allProps = classDecl.Declarations.Where(x => x is AstPropertyDecl && x is not AstIndexerDecl).Select(x => x as AstPropertyDecl);
             }
             else if (declB is AstStructDecl structDecl)
             {
                 allVarDecls = structDecl.Declarations.Where(x => x is AstVarDecl && x is not AstIndexerDecl).Select(x => x as AstVarDecl);
-                allProps = structDecl.Declarations.Where(x => x is AstPropertyDecl && x is not AstIndexerDecl).Select(x => x as AstPropertyDecl);
             }
             else
             {
@@ -618,25 +627,8 @@ namespace HapetPostPrepare
             List<AstStatement> iniBlockStatements = new List<AstStatement>();
             foreach (AstVarDecl decl in allVarDecls)
             {
-                // if the field is for property generated
-                // we don't need to initialize property directly
-                // we would initialize it using property 'set' method
-                // that is also prepared below :)
-                bool foundPropa = false;
-                foreach (var pp in allProps)
-                {
-                    // if the field has the proper name and (!) the property is really compiler generated
-                    if (decl.Name.Name == $"field_{pp.Name.Name}" && pp.GetBlock == null && pp.SetBlock == null)
-                    {
-                        foundPropa = true;
-                        break;
-                    }
-                }
-                if (foundPropa)
-                    continue;
-
-                // check if the var itself is a propa without 'set' word!!! - skip them
-                if (decl is AstPropertyDecl propD && !propD.HasSet)
+                // check if the var itself is a propa - skip them
+                if (decl is AstPropertyDecl propD)
                     continue;
 
                 // for static we need to get only static fields/props

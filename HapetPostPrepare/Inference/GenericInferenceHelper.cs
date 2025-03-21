@@ -40,8 +40,8 @@ namespace HapetPostPrepare
             cls.SpecialKeys.Add(TokenType.KwPrivate);
             cls.Attributes.Add(new AstAttributeStmt(new AstNestedExpr(new AstIdExpr("System.SuppressStaticCtorCallAttribute", name), null, name), [], name));
 
-            PostPrepareClassScoping(cls);
             SetScopeAndParent(cls, parent, parent.SubScope);
+            PostPrepareClassScoping(cls);
 
             // we need to define it in global scope :)))
             _compiler.GlobalScope.DefineDeclSymbol(specialName.Name, cls);
@@ -96,18 +96,26 @@ namespace HapetPostPrepare
             // if it is a property - we need to create and inference its field/get/set
             if (realDecl is AstPropertyDecl propDecl)
             {
-                var newDecls = AddPropertyShiteToDecl(propDecl.ContainingParent, propDecl);
+                var newDecls = AddPropertyShiteToDecl(propDecl.ContainingParent, propDecl, true);
                 foreach (var newD in newDecls)
                 {
+                    newD.IsImplOfGeneric = true;
                     newD.HasGenericTypes = realDecl.HasGenericTypes;
                     ReplaceAllGenericTypesInDecl(newD);
                     // replaces all System.Anime::Func(Pivo) with just Func and etc.
                     GenericsHelper.ResetDeclarationNames(newD);
                     // just a pp
+                    SetScopeAndParent(newD, propDecl);
                     PostPrepareDeclScoping(newD);
                     // pp up to the current metadata step
                     PostPrepareStatementUpToCurrentStep(newD);
                 }
+
+                // we really need to add them :)
+                if (propDecl.ContainingParent is AstClassDecl clsDecl)
+                    clsDecl.Declarations.AddRange(newDecls);
+                else if (propDecl.ContainingParent is AstStructDecl strDecl)
+                    strDecl.Declarations.AddRange(newDecls);
             }
 
             // reload previously saved shite

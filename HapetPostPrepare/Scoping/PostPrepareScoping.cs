@@ -45,6 +45,27 @@ namespace HapetPostPrepare
             {
                 PostPrepareFunctionScoping(funcDecl);
             }
+            else if (stmt is AstPropertyDecl propDecl)
+            {
+                if (propDecl.GetBlock != null)
+                {
+                    SetScopeAndParent(propDecl.GetBlock, propDecl);
+                    PostPrepareExprScoping(propDecl.GetBlock);
+                }
+                if (propDecl.SetBlock != null)
+                {
+                    SetScopeAndParent(propDecl.SetBlock, propDecl);
+                    PostPrepareExprScoping(propDecl.SetBlock);
+                }
+
+                // scoping indexer parameter
+                if (propDecl is AstIndexerDecl indDecl)
+                {
+                    SetScopeAndParent(indDecl.IndexerParameter, propDecl);
+                    PostPrepareExprScoping(indDecl.IndexerParameter);
+                }
+                PostPrepareVarScoping(propDecl, true);
+            }
         }
 
         private void PostPrepareClassScoping(AstClassDecl classDecl)
@@ -54,6 +75,9 @@ namespace HapetPostPrepare
             classDecl.SourceFile = _currentSourceFile;
             var classScope = new Scope($"{classDecl.Name.Name}_scope", classDecl.Scope);
             classDecl.SubScope = classScope; // setting the sub scope
+
+            SetScopeAndParent(classDecl.Name, classDecl);
+            PostPrepareExprScoping(classDecl.Name);
 
             // scoping class attrs
             foreach (var a in classDecl.Attributes)
@@ -147,6 +171,9 @@ namespace HapetPostPrepare
             var structScope = new Scope($"{structDecl.Name.Name}_scope", structDecl.Scope);
             structDecl.SubScope = structScope;
 
+            SetScopeAndParent(structDecl.Name, structDecl);
+            PostPrepareExprScoping(structDecl.Name);
+
             // scoping struct attrs
             foreach (var a in structDecl.Attributes)
             {
@@ -221,6 +248,9 @@ namespace HapetPostPrepare
             var enumScope = new Scope($"{enumDecl.Name.Name}_scope", enumDecl.Scope);
             enumDecl.SubScope = enumScope;
 
+            SetScopeAndParent(enumDecl.Name, enumDecl);
+            PostPrepareExprScoping(enumDecl.Name);
+
             // scoping struct attrs
             foreach (var a in enumDecl.Attributes)
             {
@@ -249,6 +279,9 @@ namespace HapetPostPrepare
 
         private void PostPrepareDelegateScoping(AstDelegateDecl delegateDecl)
         {
+            SetScopeAndParent(delegateDecl.Name, delegateDecl);
+            PostPrepareExprScoping(delegateDecl.Name);
+
             // scoping delegate attrs
             foreach (var a in delegateDecl.Attributes)
             {
@@ -275,6 +308,9 @@ namespace HapetPostPrepare
         private void PostPrepareFunctionScoping(AstFuncDecl funcDecl)
         {
             _currentFunction = funcDecl;
+
+            SetScopeAndParent(funcDecl.Name, funcDecl);
+            PostPrepareExprScoping(funcDecl.Name);
 
             // scoping func attrs
             foreach (var a in funcDecl.Attributes)
