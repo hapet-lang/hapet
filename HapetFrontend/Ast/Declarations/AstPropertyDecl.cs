@@ -74,11 +74,11 @@ namespace HapetFrontend.Ast.Declarations
         }
 
         #region Separating props into field and funcs
-        public AstVarDecl GetField(bool forStruct)
+        public AstVarDecl GetField(AstDeclaration containingParent, bool forStruct)
         {
             var field = new AstVarDecl(Type, Name.GetCopy($"field_{Name.Name}"), Initializer, Documentation, Location)
             {
-                ContainingParent = ContainingParent,
+                ContainingParent = containingParent,
                 Parent = Parent,
                 Scope = Scope,
                 SourceFile = SourceFile,
@@ -98,7 +98,7 @@ namespace HapetFrontend.Ast.Declarations
             return field;
         }
 
-        public AstFuncDecl GetSetFunction(bool addFirstParam = false)
+        public AstFuncDecl GetSetFunction(AstDeclaration containingParent, bool addFirstParam = false)
         {
             // add indexer param if it is an indexer
             var prs = new List<AstParamDecl>() { new AstParamDecl(Type, new AstIdExpr("value")) };
@@ -114,7 +114,7 @@ namespace HapetFrontend.Ast.Declarations
                 "",
                 Location);
             func.SpecialKeys.AddRange(SpecialKeys);
-            func.ContainingParent = ContainingParent; // it has to be
+            func.ContainingParent = containingParent; // it has to be
             func.IsPropertyFunction = true;
             func.SourceFile = SourceFile;
 
@@ -122,7 +122,7 @@ namespace HapetFrontend.Ast.Declarations
             if (addFirstParam)
             {
                 // for generic type - need to create an AstIdGenericExpr
-                AstIdExpr thisParamType = ContainingParent.Name.GetCopy();
+                AstIdExpr thisParamType = containingParent.Name.GetCopy();
                 // creating the class instance 'this' param
                 AstExpression paramType = new AstPointerExpr(thisParamType, false);
                 AstIdExpr paramName = new AstIdExpr("this");
@@ -131,7 +131,7 @@ namespace HapetFrontend.Ast.Declarations
                 func.Parameters.Insert(0, thisParam);
             }
 
-            if (SetBlock == null)
+            if (SetBlock == null && !SpecialKeys.Contains(TokenType.KwAbstract))
             {
                 // left part is null if it is a static propa
                 AstNestedExpr leftPart = null;
@@ -151,7 +151,7 @@ namespace HapetFrontend.Ast.Declarations
             return func;
         }
 
-        public AstFuncDecl GetGetFunction(bool addFirstParam = false)
+        public AstFuncDecl GetGetFunction(AstDeclaration containingParent, bool addFirstParam = false)
         {
             // add indexer param if it is an indexer
             var prs = new List<AstParamDecl>();
@@ -167,7 +167,7 @@ namespace HapetFrontend.Ast.Declarations
                 "",
                 Location);
             func.SpecialKeys.AddRange(SpecialKeys);
-            func.ContainingParent = ContainingParent; // it has to be
+            func.ContainingParent = containingParent; // it has to be
             func.IsPropertyFunction = true;
             func.SourceFile = SourceFile;
 
@@ -175,7 +175,7 @@ namespace HapetFrontend.Ast.Declarations
             if (addFirstParam)
             {
                 // for generic type - need to create an AstIdGenericExpr
-                AstIdExpr thisParamType = ContainingParent.Name.GetCopy();
+                AstIdExpr thisParamType = containingParent.Name.GetCopy();
                 // creating the class instance 'this' param
                 AstExpression paramType = new AstPointerExpr(thisParamType, false);
                 AstIdExpr paramName = new AstIdExpr("this");
@@ -184,7 +184,7 @@ namespace HapetFrontend.Ast.Declarations
                 func.Parameters.Insert(0, thisParam);
             }
 
-            if (GetBlock == null)
+            if (GetBlock == null && !SpecialKeys.Contains(TokenType.KwAbstract))
             {
                 // left part is null if it is a static propa
                 AstNestedExpr leftPart = null;

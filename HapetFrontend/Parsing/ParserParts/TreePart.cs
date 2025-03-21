@@ -25,6 +25,8 @@ namespace HapetFrontend.Parsing
         }
 
         [DebuggerStepThrough]
+        [StackTraceHidden]
+        [DebuggerHidden]
         private AstStatement ParseOrExpression(ParserInInfo inInfo, ref ParserOutInfo outInfo)
         {
             return ParseBinaryLeftAssociativeExpression(ParseAndExpression, inInfo, ref outInfo,
@@ -32,12 +34,17 @@ namespace HapetFrontend.Parsing
         }
 
         [DebuggerStepThrough]
+        [StackTraceHidden]
+        [DebuggerHidden]
         private AstStatement ParseAndExpression(ParserInInfo inInfo, ref ParserOutInfo outInfo)
         {
             return ParseBinaryLeftAssociativeExpression(ParseIsExpression, inInfo, ref outInfo,
                 (TokenType.LogicalAnd, "&&"));
         }
 
+        [DebuggerStepThrough]
+        [StackTraceHidden]
+        [DebuggerHidden]
         private AstStatement ParseIsExpression(ParserInInfo inInfo, ref ParserOutInfo outInfo)
         {
             var lhs = ParseAsExpression(inInfo, ref outInfo);
@@ -63,6 +70,9 @@ namespace HapetFrontend.Parsing
             return lhs;
         }
 
+        [DebuggerStepThrough]
+        [StackTraceHidden]
+        [DebuggerHidden]
         private AstStatement ParseAsExpression(ParserInInfo inInfo, ref ParserOutInfo outInfo)
         {
             var lhs = ParseInExpression(inInfo, ref outInfo);
@@ -88,6 +98,9 @@ namespace HapetFrontend.Parsing
             return lhs;
         }
 
+        [DebuggerStepThrough]
+        [StackTraceHidden]
+        [DebuggerHidden]
         private AstStatement ParseInExpression(ParserInInfo inInfo, ref ParserOutInfo outInfo)
         {
             var lhs = ParseComparisonExpression(inInfo, ref outInfo);
@@ -114,6 +127,8 @@ namespace HapetFrontend.Parsing
         }
 
         [DebuggerStepThrough]
+        [StackTraceHidden]
+        [DebuggerHidden]
         private AstStatement ParseComparisonExpression(ParserInInfo inInfo, ref ParserOutInfo outInfo)
         {
             return ParseBinaryLeftAssociativeExpression(ParseBitAndOrExpression, inInfo, ref outInfo,
@@ -126,6 +141,8 @@ namespace HapetFrontend.Parsing
         }
 
         [DebuggerStepThrough]
+        [StackTraceHidden]
+        [DebuggerHidden]
         private AstStatement ParseBitAndOrExpression(ParserInInfo inInfo, ref ParserOutInfo outInfo)
         {
             return ParseBinaryLeftAssociativeExpression(ParseBitShiftExpression, inInfo, ref outInfo,
@@ -134,6 +151,8 @@ namespace HapetFrontend.Parsing
         }
 
         [DebuggerStepThrough]
+        [StackTraceHidden]
+        [DebuggerHidden]
         private AstStatement ParseBitShiftExpression(ParserInInfo inInfo, ref ParserOutInfo outInfo)
         {
             return ParseBinaryLeftAssociativeExpression(ParseAddSubExpression, inInfo, ref outInfo,
@@ -142,6 +161,8 @@ namespace HapetFrontend.Parsing
         }
 
         [DebuggerStepThrough]
+        [StackTraceHidden]
+        [DebuggerHidden]
         private AstStatement ParseAddSubExpression(ParserInInfo inInfo, ref ParserOutInfo outInfo)
         {
             return ParseBinaryLeftAssociativeExpression(ParseMulDivExpression, inInfo, ref outInfo,
@@ -150,6 +171,8 @@ namespace HapetFrontend.Parsing
         }
 
         [DebuggerStepThrough]
+        [StackTraceHidden]
+        [DebuggerHidden]
         private AstStatement ParseMulDivExpression(ParserInInfo inInfo, ref ParserOutInfo outInfo)
         {
             return ParseBinaryLeftAssociativeExpression(ParseUnaryExpression, inInfo, ref outInfo,
@@ -160,6 +183,7 @@ namespace HapetFrontend.Parsing
 
         [Obsolete("Use ParseMulDivExpression")]
         [DebuggerStepThrough]
+        [DebuggerHidden]
         private AstStatement ParseBinaryExpression(ParserInInfo inInfo, ref ParserOutInfo outInfo)
         {
             return ParseBinaryLeftAssociativeExpression(ParseUnaryExpression, inInfo, ref outInfo,
@@ -169,6 +193,8 @@ namespace HapetFrontend.Parsing
         }
 
         [DebuggerStepThrough]
+        [StackTraceHidden]
+        [DebuggerHidden]
         private AstStatement ParseBinaryLeftAssociativeExpression(
             ExpressionParser sub,
             ParserInInfo inInfo, ref ParserOutInfo outInfo,

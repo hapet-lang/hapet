@@ -42,12 +42,12 @@ namespace HapetPostPrepare
         /// Some changes made here - has to be also made in upper shite
         /// </summary>
         /// <param name="structDecl"></param>
-        private void PostPrepareStructMethodsInternal(AstStructDecl structDecl)
+        private void PostPrepareStructMethodsInternal(AstStructDecl structDecl, bool forImported = false)
         {
             // getting all functions in the class
             var allFuncs = structDecl.Declarations.Where(x => x is AstFuncDecl).Select(x => x as AstFuncDecl);
 
-            // error if user created a func with the initializer name
+            // error if user created a func with the get/set name
             var propFuncs = allFuncs.Where(x => x.Name.Name.StartsWith($"get_") || x.Name.Name.StartsWith($"set_"));
             foreach (var fnc in propFuncs)
             {
@@ -89,58 +89,63 @@ namespace HapetPostPrepare
 
             // generate prop's fields and funcs
             /// removing props is done in <see cref="RemoveAllProperties"/>
-            PostPrepareStructProperties(structDecl);
-            // get funcs again after this :) sorry
-            allFuncs = structDecl.Declarations.Where(x => x is AstFuncDecl).Select(x => x as AstFuncDecl);
+            PostPrepareStructProperties(structDecl, forImported);
 
-            // error if user created a func with the initializer name
-            var specialFuncs = allFuncs.Where(x => (x.Name.Name.EndsWith($"::{structDecl.Name.Name}_ini") ||
-                                                    x.Name.Name.EndsWith($"::{structDecl.Name.Name}_ctor") ||
-                                                    x.Name.Name.EndsWith($"::{structDecl.Name.Name}_stor") || // static ctor
-                                                    x.Name.Name.EndsWith($"::{structDecl.Name.Name}_dtor")));
-            foreach (var fnc in specialFuncs)
+            // if not for imported - generate other shite
+            if (!forImported)
             {
-                _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, fnc.Name, [structDecl.Name.Name], ErrorCode.Get(CTEN.ClassFuncNameNotAllowed));
-            }
+                // get funcs again after this :) sorry
+                allFuncs = structDecl.Declarations.Where(x => x is AstFuncDecl).Select(x => x as AstFuncDecl);
 
-            PostPrepareGenerateClassInitializer(structDecl);
-            // passing all the existing ctors
-            PostPrepareGenerateClassConstructor(structDecl, allFuncs.Where(x => x.ClassFunctionType == ClassFunctionType.Ctor).ToList());
-            PostPrepareGenerateClassDestructor(structDecl, allFuncs.Where(x => x.ClassFunctionType == ClassFunctionType.Dtor).ToList());
-
-            // 
-            foreach (var decl in structDecl.Declarations)
-            {
-                if (decl is not AstFuncDecl funcDecl)
-                    continue;
-
-                // adding 'this' param to func params
-                if (!funcDecl.SpecialKeys.Contains(TokenType.KwStatic))
+                // error if user created a func with the initializer name
+                var specialFuncs = allFuncs.Where(x => (x.Name.Name.EndsWith($"::{structDecl.Name.Name}_ini") ||
+                                                        x.Name.Name.EndsWith($"::{structDecl.Name.Name}_ctor") ||
+                                                        x.Name.Name.EndsWith($"::{structDecl.Name.Name}_stor") || // static ctor
+                                                        x.Name.Name.EndsWith($"::{structDecl.Name.Name}_dtor")));
+                foreach (var fnc in specialFuncs)
                 {
-                    // creating the class instance 'this' param
-                    AstExpression paramType = new AstPointerExpr(structDecl.Name.GetCopy(), false);
-                    AstIdExpr paramName = new AstIdExpr("this");
-                    AstParamDecl thisParam = new AstParamDecl(new AstNestedExpr(paramType, null), paramName);
-                    // adding the param as the func first param
-                    funcDecl.Parameters.Insert(0, thisParam);
+                    _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, fnc.Name, [structDecl.Name.Name], ErrorCode.Get(CTEN.ClassFuncNameNotAllowed));
                 }
 
-                // checking for 'return' existance at the end. if not - add
-                if (funcDecl.Body != null && funcDecl.Body.Statements.LastOrDefault() is not AstReturnStmt)
-                {
-                    funcDecl.Body.Statements.Add(new AstReturnStmt(null));
-                }
+                PostPrepareGenerateClassInitializer(structDecl);
+                // passing all the existing ctors
+                PostPrepareGenerateClassConstructor(structDecl, allFuncs.Where(x => x.ClassFunctionType == ClassFunctionType.Ctor).ToList());
+                PostPrepareGenerateClassDestructor(structDecl, allFuncs.Where(x => x.ClassFunctionType == ClassFunctionType.Dtor).ToList());
 
-                // adding virtual key to all overrides
-                if (funcDecl.SpecialKeys.Contains(TokenType.KwOverride))
-                    funcDecl.SpecialKeys.Add(TokenType.KwVirtual);
-
-                // abs has to not have impl
-                if (funcDecl.SpecialKeys.Contains(TokenType.KwAbstract) &&
-                    funcDecl.Body != null &&
-                    !funcDecl.IsPropertyFunction)
+                // 
+                foreach (var decl in structDecl.Declarations)
                 {
-                    _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, funcDecl.Name, [], ErrorCode.Get(CTEN.AbsMethodWithBody));
+                    if (decl is not AstFuncDecl funcDecl)
+                        continue;
+
+                    // adding 'this' param to func params
+                    if (!funcDecl.SpecialKeys.Contains(TokenType.KwStatic))
+                    {
+                        // creating the class instance 'this' param
+                        AstExpression paramType = new AstPointerExpr(structDecl.Name.GetCopy(), false);
+                        AstIdExpr paramName = new AstIdExpr("this");
+                        AstParamDecl thisParam = new AstParamDecl(new AstNestedExpr(paramType, null), paramName);
+                        // adding the param as the func first param
+                        funcDecl.Parameters.Insert(0, thisParam);
+                    }
+
+                    // checking for 'return' existance at the end. if not - add
+                    if (funcDecl.Body != null && funcDecl.Body.Statements.LastOrDefault() is not AstReturnStmt)
+                    {
+                        funcDecl.Body.Statements.Add(new AstReturnStmt(null));
+                    }
+
+                    // adding virtual key to all overrides
+                    if (funcDecl.SpecialKeys.Contains(TokenType.KwOverride))
+                        funcDecl.SpecialKeys.Add(TokenType.KwVirtual);
+
+                    // abs has to not have impl
+                    if (funcDecl.SpecialKeys.Contains(TokenType.KwAbstract) &&
+                        funcDecl.Body != null &&
+                        !funcDecl.IsPropertyFunction)
+                    {
+                        _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, funcDecl.Name, [], ErrorCode.Get(CTEN.AbsMethodWithBody));
+                    }
                 }
             }
         }
@@ -150,7 +155,7 @@ namespace HapetPostPrepare
         /// Some changes made here - has to be also made in upper shite
         /// </summary>
         /// <param name="classDecl"></param>
-        private void PostPrepareClassMethodsInternal(AstClassDecl classDecl)
+        private void PostPrepareClassMethodsInternal(AstClassDecl classDecl, bool forImported = false)
         {
             // check that all decls in the class are also static
             if (classDecl.SpecialKeys.Contains(TokenType.KwStatic))
@@ -163,7 +168,7 @@ namespace HapetPostPrepare
             // getting all functions in the class
             var allFuncs = classDecl.Declarations.Where(x => x is AstFuncDecl).Select(x => x as AstFuncDecl);
 
-            // error if user created a func with the initializer name
+            // error if user created a func with the get/set name
             var propFuncs = allFuncs.Where(x => x.Name.Name.StartsWith($"get_") || x.Name.Name.StartsWith($"set_"));
             foreach (var fnc in propFuncs)
             {
@@ -203,101 +208,106 @@ namespace HapetPostPrepare
                 }
             }
 
-            // getting all fields and mark them abstract if it is an interface
-            if (classDecl.IsInterface)
-            {
-                foreach (var f in allFields)
-                {
-                    // add abstract key to the field if it is an interface
-                    AddSpecialKeyToDecl(f, TokenType.KwAbstract);
-                    // and public :)
-                    AddSpecialKeyToDecl(f, TokenType.KwPublic);
-                }
-                foreach (var p in allProps)
-                {
-                    // add abstract key to the prop if it is an interface
-                    AddSpecialKeyToDecl(p, TokenType.KwAbstract);
-                    // and public :)
-                    AddSpecialKeyToDecl(p, TokenType.KwPublic);
-                }
-                foreach (var f in allFuncs)
-                {
-                    // add abstract key to the func if it is an interface
-                    AddSpecialKeyToDecl(f, TokenType.KwAbstract);
-                    // and public :)
-                    AddSpecialKeyToDecl(f, TokenType.KwPublic);
-                }
-            }
-
             // generate prop's fields and funcs
             /// removing props is done in <see cref="RemoveAllProperties"/>
-            PostPrepareClassProperties(classDecl);
-            // get funcs again after this :) sorry
-            allFuncs = classDecl.Declarations.Where(x => x is AstFuncDecl).Select(x => x as AstFuncDecl);
+            PostPrepareClassProperties(classDecl, forImported);
 
-            // error if user created a func with the initializer name
-            var specialFuncs = allFuncs.Where(x => (x.Name.Name.EndsWith($"::{classDecl.Name.Name}_ini") ||
-                                                    x.Name.Name.EndsWith($"::{classDecl.Name.Name}_ctor") ||
-                                                    x.Name.Name.EndsWith($"::{classDecl.Name.Name}_stor") || // static ctor
-                                                    x.Name.Name.EndsWith($"::{classDecl.Name.Name}_dtor")));
-            foreach (var fnc in specialFuncs)
+            // if not for imported - generate other shite
+            if (!forImported)
             {
-                _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, fnc.Name, [classDecl.Name.Name], ErrorCode.Get(CTEN.ClassFuncNameNotAllowed));
-            }
-
-            // static ctor is always generated
-            PostPrepareGenerateClassStaticConstructor(classDecl, allFuncs.Where(x => x.ClassFunctionType == ClassFunctionType.StaticCtor).ToList());
-            // generating all the shite only if the class is not static
-            if (!classDecl.SpecialKeys.Contains(TokenType.KwStatic))
-            {
-                PostPrepareGenerateClassInitializer(classDecl);
-                // passing all the existing ctors
-                PostPrepareGenerateClassConstructor(classDecl, allFuncs.Where(x => x.ClassFunctionType == ClassFunctionType.Ctor).ToList());
-                PostPrepareGenerateClassDestructor(classDecl, allFuncs.Where(x => x.ClassFunctionType == ClassFunctionType.Dtor).ToList());
-            }
-
-            // 
-            foreach (var decl in classDecl.Declarations)
-            {
-                if (decl is not AstFuncDecl funcDecl)
-                    continue;
-
-                // adding 'this' param to func params
-                if (!funcDecl.SpecialKeys.Contains(TokenType.KwStatic))
+                // getting all fields and mark them abstract if it is an interface
+                if (classDecl.IsInterface)
                 {
-                    // for generic type - need to create an AstIdGenericExpr
-                    AstIdExpr thisParamType;
-                    if (classDecl.HasGenericTypes)
-                        thisParamType = AstIdGenericExpr.FromAstIdExpr(classDecl.Name.GetCopy(), 
-                            classDecl.GenericNames.Select(x => x as AstExpression).ToList());
-                    else
-                        thisParamType = classDecl.Name.GetCopy();
-                    // creating the class instance 'this' param
-                    AstExpression paramType = new AstPointerExpr(thisParamType, false);
-                    AstIdExpr paramName = new AstIdExpr("this");
-                    AstParamDecl thisParam = new AstParamDecl(new AstNestedExpr(paramType, null), paramName);
-                    // adding the param as the func first param
-                    funcDecl.Parameters.Insert(0, thisParam);
+                    foreach (var f in allFields)
+                    {
+                        // add abstract key to the field if it is an interface
+                        AddSpecialKeyToDecl(f, TokenType.KwAbstract);
+                        // and public :)
+                        AddSpecialKeyToDecl(f, TokenType.KwPublic);
+                    }
+                    foreach (var p in allProps)
+                    {
+                        // add abstract key to the prop if it is an interface
+                        AddSpecialKeyToDecl(p, TokenType.KwAbstract);
+                        // and public :)
+                        AddSpecialKeyToDecl(p, TokenType.KwPublic);
+                    }
+                    foreach (var f in allFuncs)
+                    {
+                        // add abstract key to the func if it is an interface
+                        AddSpecialKeyToDecl(f, TokenType.KwAbstract);
+                        // and public :)
+                        AddSpecialKeyToDecl(f, TokenType.KwPublic);
+                    }
                 }
 
-                // checking for 'return' existance at the end. if not - add
-                if (funcDecl.Body != null && funcDecl.Body.Statements.LastOrDefault() is not AstReturnStmt)
+                // get funcs again after this :) sorry
+                allFuncs = classDecl.Declarations.Where(x => x is AstFuncDecl).Select(x => x as AstFuncDecl);
+
+                // error if user created a func with the initializer name
+                var specialFuncs = allFuncs.Where(x => (x.Name.Name.EndsWith($"::{classDecl.Name.Name}_ini") ||
+                                                        x.Name.Name.EndsWith($"::{classDecl.Name.Name}_ctor") ||
+                                                        x.Name.Name.EndsWith($"::{classDecl.Name.Name}_stor") || // static ctor
+                                                        x.Name.Name.EndsWith($"::{classDecl.Name.Name}_dtor")));
+                foreach (var fnc in specialFuncs)
                 {
-                    funcDecl.Body.Statements.Add(new AstReturnStmt(null));
+                    _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, fnc.Name, [classDecl.Name.Name], ErrorCode.Get(CTEN.ClassFuncNameNotAllowed));
                 }
 
-                // adding virtual key to all overrides
-                if (funcDecl.SpecialKeys.Contains(TokenType.KwOverride))
-                    funcDecl.SpecialKeys.Add(TokenType.KwVirtual);
-
-                // abs has to not have impl
-                if (funcDecl.SpecialKeys.Contains(TokenType.KwAbstract) &&
-                    funcDecl.Body != null && 
-                    !funcDecl.IsPropertyFunction)
+                // static ctor is always generated
+                PostPrepareGenerateClassStaticConstructor(classDecl, allFuncs.Where(x => x.ClassFunctionType == ClassFunctionType.StaticCtor).ToList());
+                // generating all the shite only if the class is not static
+                if (!classDecl.SpecialKeys.Contains(TokenType.KwStatic))
                 {
-                    _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, funcDecl.Name, [], ErrorCode.Get(CTEN.AbsMethodWithBody));
+                    PostPrepareGenerateClassInitializer(classDecl);
+                    // passing all the existing ctors
+                    PostPrepareGenerateClassConstructor(classDecl, allFuncs.Where(x => x.ClassFunctionType == ClassFunctionType.Ctor).ToList());
+                    PostPrepareGenerateClassDestructor(classDecl, allFuncs.Where(x => x.ClassFunctionType == ClassFunctionType.Dtor).ToList());
                 }
-            }
+
+                // 
+                foreach (var decl in classDecl.Declarations)
+                {
+                    if (decl is not AstFuncDecl funcDecl)
+                        continue;
+
+                    // adding 'this' param to func params
+                    if (!funcDecl.SpecialKeys.Contains(TokenType.KwStatic))
+                    {
+                        // for generic type - need to create an AstIdGenericExpr
+                        AstIdExpr thisParamType;
+                        if (classDecl.HasGenericTypes)
+                            thisParamType = AstIdGenericExpr.FromAstIdExpr(classDecl.Name.GetCopy(),
+                                classDecl.GenericNames.Select(x => x as AstExpression).ToList());
+                        else
+                            thisParamType = classDecl.Name.GetCopy();
+                        // creating the class instance 'this' param
+                        AstExpression paramType = new AstPointerExpr(thisParamType, false);
+                        AstIdExpr paramName = new AstIdExpr("this");
+                        AstParamDecl thisParam = new AstParamDecl(new AstNestedExpr(paramType, null), paramName);
+                        // adding the param as the func first param
+                        funcDecl.Parameters.Insert(0, thisParam);
+                    }
+
+                    // checking for 'return' existance at the end. if not - add
+                    if (funcDecl.Body != null && funcDecl.Body.Statements.LastOrDefault() is not AstReturnStmt)
+                    {
+                        funcDecl.Body.Statements.Add(new AstReturnStmt(null));
+                    }
+
+                    // adding virtual key to all overrides
+                    if (funcDecl.SpecialKeys.Contains(TokenType.KwOverride))
+                        funcDecl.SpecialKeys.Add(TokenType.KwVirtual);
+
+                    // abs has to not have impl
+                    if (funcDecl.SpecialKeys.Contains(TokenType.KwAbstract) &&
+                        funcDecl.Body != null &&
+                        !funcDecl.IsPropertyFunction)
+                    {
+                        _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, funcDecl.Name, [], ErrorCode.Get(CTEN.AbsMethodWithBody));
+                    }
+                }
+            } 
         }
 
         private void PostPrepareGenerateClassInitializer(AstDeclaration decl)
@@ -490,12 +500,12 @@ namespace HapetPostPrepare
         /// Function to unwrap all the props in struct
         /// </summary>
         /// <param name="structDecl">The struct with props</param>
-        private void PostPrepareStructProperties(AstStructDecl structDecl)
+        private void PostPrepareStructProperties(AstStructDecl structDecl, bool addFirstParam = false)
         {
             List<AstDeclaration> declarationsToAdd = new List<AstDeclaration>();
             foreach (var prop in structDecl.Declarations.Where(x => x is AstPropertyDecl).Select(x => x as AstPropertyDecl))
             {
-                declarationsToAdd.AddRange(AddPropertyShiteToDecl(structDecl, prop));
+                declarationsToAdd.AddRange(AddPropertyShiteToDecl(structDecl, prop, addFirstParam));
             }
             structDecl.Declarations.AddRange(declarationsToAdd);
         }
@@ -504,12 +514,12 @@ namespace HapetPostPrepare
         /// Function to unwrap all the props
         /// </summary>
         /// <param name="classDecl">The class with props</param>
-        private void PostPrepareClassProperties(AstClassDecl classDecl)
+        private void PostPrepareClassProperties(AstClassDecl classDecl, bool addFirstParam = false)
         {
             List<AstDeclaration> declarationsToAdd = new List<AstDeclaration>();
             foreach (var prop in classDecl.Declarations.Where(x => x is AstPropertyDecl).Select(x => x as AstPropertyDecl))
             {
-                declarationsToAdd.AddRange(AddPropertyShiteToDecl(classDecl, prop));
+                declarationsToAdd.AddRange(AddPropertyShiteToDecl(classDecl, prop, addFirstParam));
             }
             classDecl.Declarations.AddRange(declarationsToAdd);
         }
@@ -531,32 +541,46 @@ namespace HapetPostPrepare
                 decls = strDecl.Declarations;
             }
 
+            AstPropertyDecl orig = prop.OriginalGenericDecl as AstPropertyDecl;
+
             if (prop.GetBlock == null && prop.SetBlock == null)
             {
                 // need to create a field :(
-                AstVarDecl propField = prop.GetField(isParentStruct);
+                AstVarDecl propField = prop.GetField(parent, isParentStruct);
                 // add abstract key to the field if it is an interface
                 if (isParentInterface)
                     AddSpecialKeyToDecl(propField, TokenType.KwAbstract);
                 declarationsToAdd.Add(propField);
+
+                var origField = decls.FirstOrDefault(x => x.Name.Name == $"field_{orig?.Name.Name}");
+                if (origField != null && orig != null)
+                    propField.OriginalGenericDecl = origField;
             }
             if (prop.HasGet)
             {
                 // need to create a 'get' method
-                AstFuncDecl getFunc = prop.GetGetFunction(addFirstParam);
+                AstFuncDecl getFunc = prop.GetGetFunction(parent, addFirstParam);
                 // add abstract key to the method if it is an interface
                 if (isParentInterface)
                     AddSpecialKeyToDecl(getFunc, TokenType.KwAbstract);
                 declarationsToAdd.Add(getFunc);
+
+                var origFunc = decls.FirstOrDefault(x => x.Name.Name.Contains($":get_{orig?.Name.Name}("));
+                if (origFunc != null && orig != null)
+                    getFunc.OriginalGenericDecl = origFunc;
             }
             if (prop.HasSet)
             {
                 // need to create a 'set' method
-                AstFuncDecl setFunc = prop.GetSetFunction(addFirstParam);
+                AstFuncDecl setFunc = prop.GetSetFunction(parent, addFirstParam);
                 // add abstract key to the method if it is an interface
                 if (isParentInterface)
                     AddSpecialKeyToDecl(setFunc, TokenType.KwAbstract);
                 declarationsToAdd.Add(setFunc);
+
+                var origFunc = decls.FirstOrDefault(x => x.Name.Name.Contains($":set_{orig?.Name.Name}("));
+                if (origFunc != null && orig != null)
+                    setFunc.OriginalGenericDecl = origFunc;
             }
 
             // abs has to not have impl

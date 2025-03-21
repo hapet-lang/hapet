@@ -87,9 +87,12 @@ namespace HapetFrontend.Parsing
                         if (stmt is AstUnknownDecl udecl)
                         {
                             bool savedAllowence = inInfo.AllowCommaForTuple;
+                            bool savedGeneric = inInfo.AllowGeneric;
                             inInfo.AllowCommaForTuple = true;
+                            inInfo.AllowGeneric = true;
                             var dcl = PrepareUnknownDecl(udecl, new List<AstAttributeStmt>(), inInfo, ref outInfo);
                             inInfo.AllowCommaForTuple = savedAllowence;
+                            inInfo.AllowGeneric = savedGeneric;
                             return dcl;
                         }
                         if (CheckTokens(TokenType.Equal, TokenType.AddEq, TokenType.SubEq, TokenType.MulEq, TokenType.DivEq, TokenType.ModEq))

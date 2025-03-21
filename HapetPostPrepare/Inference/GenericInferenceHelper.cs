@@ -96,6 +96,12 @@ namespace HapetPostPrepare
             // if it is a property - we need to create and inference its field/get/set
             if (realDecl is AstPropertyDecl propDecl)
             {
+                List<AstDeclaration> parentDecls = new List<AstDeclaration>();
+                if (propDecl.ContainingParent is AstClassDecl clsDecl)
+                    parentDecls = clsDecl.Declarations;
+                else if (propDecl.ContainingParent is AstStructDecl strDecl)
+                    parentDecls = strDecl.Declarations;
+
                 var newDecls = AddPropertyShiteToDecl(propDecl.ContainingParent, propDecl, true);
                 foreach (var newD in newDecls)
                 {
@@ -111,17 +117,9 @@ namespace HapetPostPrepare
                     PostPrepareStatementUpToCurrentStep(newD);
                 }
 
-                // we really need to add them :)
-                if (propDecl.ContainingParent is AstClassDecl clsDecl)
-                {
-                    clsDecl.Declarations.AddRange(newDecls);
-                    clsDecl.Declarations.Add(realDecl);
-                }
-                else if (propDecl.ContainingParent is AstStructDecl strDecl)
-                {
-                    strDecl.Declarations.AddRange(newDecls);
-                    strDecl.Declarations.Add(realDecl);
-                }
+                // we really need to add them :)  
+                parentDecls.AddRange(newDecls);
+                parentDecls.Add(realDecl);
             }
 
             // reload previously saved shite

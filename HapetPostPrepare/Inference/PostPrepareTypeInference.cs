@@ -905,7 +905,9 @@ namespace HapetPostPrepare
 
             // this is to get REAL PURE GENERIC. not the fcking T-like
             if (theDecl.IsImplOfGeneric)
+            {
                 theDecl = theDecl.OriginalGenericDecl;
+            }
 
             // generating generic shite name
             string realName = GenericsHelper.GetRealFromGenericName(theDecl, genId.GenericRealTypes.GetNestedList());

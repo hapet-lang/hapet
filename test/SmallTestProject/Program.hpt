@@ -10,7 +10,7 @@ public static class Program
     public static int Main(string[] args)
     {
         var a = new FlagsAttribute();
-        var b = a.Anime<TestCls>("anime");
+        var b = a.AnimeProps<TestCls>;
         return b;
     }
 }
