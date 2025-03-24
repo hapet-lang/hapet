@@ -1,4 +1,5 @@
 ﻿using HapetFrontend.Ast.Declarations;
+using HapetFrontend.Extensions;
 using HapetFrontend.Helpers;
 using HapetFrontend.Types;
 using LLVMSharp.Interop;

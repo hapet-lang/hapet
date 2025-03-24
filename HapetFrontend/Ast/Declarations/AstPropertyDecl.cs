@@ -1,5 +1,6 @@
 ﻿using HapetFrontend.Ast.Expressions;
 using HapetFrontend.Ast.Statements;
+using HapetFrontend.Extensions;
 using HapetFrontend.Parsing;
 using HapetFrontend.Types;
 
@@ -89,10 +90,10 @@ namespace HapetFrontend.Ast.Declarations
             // no special keys for struct
             if (!forStruct)
             {
-                field.SpecialKeys.Add(TokenType.KwPrivate);
+                field.SpecialKeys.Add(Lexer.CreateToken(TokenType.KwPrivate, field.Type.Location.Beginning));
                 // if the propa is static - make the field also static
-                if (SpecialKeys.Contains(TokenType.KwStatic))
-                    field.SpecialKeys.Add(TokenType.KwStatic);
+                if (SpecialKeys.Contains(Lexer.CreateToken(TokenType.KwStatic, field.Type.Location.Beginning)))
+                    field.SpecialKeys.Add(Lexer.CreateToken(TokenType.KwStatic, field.Type.Location.Beginning));
             }
             
             return field;

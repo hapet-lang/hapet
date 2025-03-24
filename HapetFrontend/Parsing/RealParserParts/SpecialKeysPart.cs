@@ -8,34 +8,35 @@ namespace HapetFrontend.Parsing
 {
     public partial class Parser
     {
-        private AstStatement ParseAccessKeys(TokenType tknType, ParserInInfo inInfo, ref ParserOutInfo outInfo)
+        private AstStatement ParseAccessKeys(Token tkn, ParserInInfo inInfo, ref ParserOutInfo outInfo)
         {
-            return ParseKeysInternal(tknType, inInfo, ref outInfo);
+            return ParseKeysInternal(tkn, inInfo, ref outInfo);
         }
 
-        private AstStatement ParseSyncKeys(TokenType tknType, ParserInInfo inInfo, ref ParserOutInfo outInfo)
+        private AstStatement ParseSyncKeys(Token tkn, ParserInInfo inInfo, ref ParserOutInfo outInfo)
         {
-            return ParseKeysInternal(tknType, inInfo, ref outInfo);
+            return ParseKeysInternal(tkn, inInfo, ref outInfo);
         }
 
-        private AstStatement ParseInstancingKeys(TokenType tknType, ParserInInfo inInfo, ref ParserOutInfo outInfo)
+        private AstStatement ParseInstancingKeys(Token tkn, ParserInInfo inInfo, ref ParserOutInfo outInfo)
         {
-            return ParseKeysInternal(tknType, inInfo, ref outInfo);
+            return ParseKeysInternal(tkn, inInfo, ref outInfo);
         }
 
-        private AstStatement ParseImplementationKeys(TokenType tknType, ParserInInfo inInfo, ref ParserOutInfo outInfo)
+        private AstStatement ParseImplementationKeys(Token tkn, ParserInInfo inInfo, ref ParserOutInfo outInfo)
         {
-            return ParseKeysInternal(tknType, inInfo, ref outInfo);
+            return ParseKeysInternal(tkn, inInfo, ref outInfo);
         }
 
         // they are all the same
-        private AstStatement ParseKeysInternal(TokenType tknType, ParserInInfo inInfo, ref ParserOutInfo outInfo)
+        private AstStatement ParseKeysInternal(Token tkn, ParserInInfo inInfo, ref ParserOutInfo outInfo)
         {
             // this var would handle 'new' token in special keys. ok?
             Token newToken = null;
 
             TokenLocation beg = null;
-            var tkn = Consume(tknType, ErrMsg($"keyword '{tknType}'", "at beginning of type"));
+            var tknType = tkn.Type;
+            Consume(tknType, ErrMsg($"keyword '{tknType}'", "at beginning of type"));
             beg = tkn.Location;
 
             // just eat it :)
@@ -80,8 +81,8 @@ namespace HapetFrontend.Parsing
             }
 
             if (newToken != null)
-                (expr as AstDeclaration).SpecialKeys.Insert(0, newToken.Type);
-            (expr as AstDeclaration).SpecialKeys.Insert(0, tknType);
+                (expr as AstDeclaration).SpecialKeys.Insert(0, newToken);
+            (expr as AstDeclaration).SpecialKeys.Insert(0, tkn);
 
             // change beginning
             var prevLoc = expr.Location;

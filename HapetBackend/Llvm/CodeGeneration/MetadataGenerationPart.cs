@@ -1,6 +1,7 @@
 ﻿using HapetFrontend.Ast.Declarations;
 using HapetFrontend.Ast.Expressions;
 using HapetFrontend.Errors;
+using HapetFrontend.Extensions;
 using HapetFrontend.Parsing;
 using HapetFrontend.Types;
 using LLVMSharp.Interop;

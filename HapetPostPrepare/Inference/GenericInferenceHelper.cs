@@ -37,7 +37,7 @@ namespace HapetPostPrepare
             {
                 IsGenericType = true,
             };
-            cls.SpecialKeys.Add(TokenType.KwPrivate);
+            cls.SpecialKeys.Add(Lexer.CreateToken(TokenType.KwPrivate, name.Location.Beginning));
             cls.Attributes.Add(new AstAttributeStmt(new AstNestedExpr(new AstIdExpr("System.SuppressStaticCtorCallAttribute", name), null, name), [], name));
 
             SetScopeAndParent(cls, parent, parent.SubScope);

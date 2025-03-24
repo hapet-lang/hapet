@@ -109,13 +109,13 @@ namespace HapetPostPrepare
             }
         }
 
-        private void CreateSpecialKeys(List<TokenType> keys, StringBuilder sb, string additionalOffset)
+        private void CreateSpecialKeys(List<Token> keys, StringBuilder sb, string additionalOffset)
         {
             sb.Append(additionalOffset);
             // serialize special keys
             foreach (var sk in keys)
             {
-                sb.Append($"{Lexer.GetKeywordFromToken(sk)} ");
+                sb.Append($"{Lexer.GetKeywordFromToken(sk.Type)} ");
             }
         }
 

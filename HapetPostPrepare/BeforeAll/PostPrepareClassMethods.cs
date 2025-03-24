@@ -7,6 +7,7 @@ using HapetFrontend.Types;
 using HapetFrontend.Enums;
 using HapetFrontend.Parsing;
 using System.Collections.Generic;
+using HapetFrontend.Extensions;
 
 namespace HapetPostPrepare
 {
@@ -137,7 +138,7 @@ namespace HapetPostPrepare
 
                     // adding virtual key to all overrides
                     if (funcDecl.SpecialKeys.Contains(TokenType.KwOverride))
-                        funcDecl.SpecialKeys.Add(TokenType.KwVirtual);
+                        funcDecl.SpecialKeys.Add(Lexer.CreateToken(TokenType.KwVirtual, funcDecl.SpecialKeys.GetType(TokenType.KwOverride).Location.Beginning));
 
                     // abs has to not have impl
                     if (funcDecl.SpecialKeys.Contains(TokenType.KwAbstract) &&
@@ -221,23 +222,23 @@ namespace HapetPostPrepare
                     foreach (var f in allFields)
                     {
                         // add abstract key to the field if it is an interface
-                        AddSpecialKeyToDecl(f, TokenType.KwAbstract);
+                        AddSpecialKeyToDecl(f, Lexer.CreateToken(TokenType.KwAbstract, f.Location.Beginning));
                         // and public :)
-                        AddSpecialKeyToDecl(f, TokenType.KwPublic);
+                        AddSpecialKeyToDecl(f, Lexer.CreateToken(TokenType.KwPublic, f.Location.Beginning));
                     }
                     foreach (var p in allProps)
                     {
                         // add abstract key to the prop if it is an interface
-                        AddSpecialKeyToDecl(p, TokenType.KwAbstract);
+                        AddSpecialKeyToDecl(p, Lexer.CreateToken(TokenType.KwAbstract, p.Location.Beginning));
                         // and public :)
-                        AddSpecialKeyToDecl(p, TokenType.KwPublic);
+                        AddSpecialKeyToDecl(p, Lexer.CreateToken(TokenType.KwPublic, p.Location.Beginning));
                     }
                     foreach (var f in allFuncs)
                     {
                         // add abstract key to the func if it is an interface
-                        AddSpecialKeyToDecl(f, TokenType.KwAbstract);
+                        AddSpecialKeyToDecl(f, Lexer.CreateToken(TokenType.KwAbstract, f.Location.Beginning));
                         // and public :)
-                        AddSpecialKeyToDecl(f, TokenType.KwPublic);
+                        AddSpecialKeyToDecl(f, Lexer.CreateToken(TokenType.KwPublic, f.Location.Beginning));
                     }
                 }
 
@@ -297,7 +298,7 @@ namespace HapetPostPrepare
 
                     // adding virtual key to all overrides
                     if (funcDecl.SpecialKeys.Contains(TokenType.KwOverride))
-                        funcDecl.SpecialKeys.Add(TokenType.KwVirtual);
+                        funcDecl.SpecialKeys.Add(Lexer.CreateToken(TokenType.KwVirtual, funcDecl.SpecialKeys.GetType(TokenType.KwOverride).Location.Beginning));
 
                     // abs has to not have impl
                     if (funcDecl.SpecialKeys.Contains(TokenType.KwAbstract) &&
@@ -324,7 +325,7 @@ namespace HapetPostPrepare
             new AstNestedExpr(new AstIdExpr("void", decl), null, decl),
             iniBlock,
             new AstIdExpr($"{decl.Name.Name}_ini"));
-            iniDecl.SpecialKeys.Insert(0, TokenType.KwPrivate); // ini is private because it is called inside ctors
+            iniDecl.SpecialKeys.Insert(0, Lexer.CreateToken(TokenType.KwPrivate, decl.Location.Beginning)); // ini is private because it is called inside ctors
             iniDecl.ClassFunctionType = ClassFunctionType.Initializer;
             iniDecl.ContainingParent = decl;
 
@@ -358,7 +359,7 @@ namespace HapetPostPrepare
                     ctorBlock,
                     new AstIdExpr($"{decl.Name.Name}_ctor"));
                 ctorDecl.BaseCtorCall = new AstBaseCtorStmt(location: ctorDecl.Name);
-                ctorDecl.SpecialKeys.Add(TokenType.KwPublic); // default ctor is public
+                ctorDecl.SpecialKeys.Add(Lexer.CreateToken(TokenType.KwPublic, decl.Location.Beginning)); // default ctor is public
                 ctorDecl.ClassFunctionType = ClassFunctionType.Ctor;
                 ctorDecl.ContainingParent = decl;
 
@@ -406,7 +407,7 @@ namespace HapetPostPrepare
                 new AstNestedExpr(new AstIdExpr("void", decl), null, decl),
                 dtorBlock,
                 new AstIdExpr($"{decl.Name.Name}_dtor"));
-                dtorDecl.SpecialKeys.Add(TokenType.KwPublic); // default dtor is public
+                dtorDecl.SpecialKeys.Add(Lexer.CreateToken(TokenType.KwPublic, decl.Location.Beginning)); // default dtor is public
                 dtorDecl.ClassFunctionType = ClassFunctionType.Dtor;
                 dtorDecl.ContainingParent = decl;
 
@@ -444,8 +445,8 @@ namespace HapetPostPrepare
             // we need to add a static var to check that the stor was called
             string theVarName = $"__is_{_currentSourceFile.Namespace.Replace('.', '_')}_{classDecl.Name.Name}_stor_called";
             var theVar = new AstVarDecl(new AstNestedExpr(new AstIdExpr("bool"), null), new AstIdExpr(theVarName));
-            theVar.SpecialKeys.Add(TokenType.KwStatic);
-            theVar.SpecialKeys.Insert(0, TokenType.KwUnreflected);
+            theVar.SpecialKeys.Add(Lexer.CreateToken(TokenType.KwStatic, classDecl.Location.Beginning));
+            theVar.SpecialKeys.Insert(0, Lexer.CreateToken(TokenType.KwUnreflected, classDecl.Location.Beginning));
             classDecl.Declarations.Add(theVar);
 
             // set 'true' to the var
@@ -468,8 +469,8 @@ namespace HapetPostPrepare
                 new AstNestedExpr(new AstIdExpr("void", classDecl), null, classDecl),
                 storBlock,
                 new AstIdExpr($"{classDecl.Name.Name}_stor"));
-                storDecl.SpecialKeys.Add(TokenType.KwPublic); // stor is public
-                storDecl.SpecialKeys.Add(TokenType.KwStatic); // stor is static
+                storDecl.SpecialKeys.Add(Lexer.CreateToken(TokenType.KwPublic, classDecl.Location.Beginning)); // stor is public
+                storDecl.SpecialKeys.Add(Lexer.CreateToken(TokenType.KwStatic, classDecl.Location.Beginning)); // stor is static
                 storDecl.ClassFunctionType = ClassFunctionType.StaticCtor;
                 storDecl.ContainingParent = classDecl;
                 classDecl.Declarations.Add(storDecl);
@@ -549,7 +550,7 @@ namespace HapetPostPrepare
                 AstVarDecl propField = prop.GetField(parent, isParentStruct);
                 // add abstract key to the field if it is an interface
                 if (isParentInterface)
-                    AddSpecialKeyToDecl(propField, TokenType.KwAbstract);
+                    AddSpecialKeyToDecl(propField, Lexer.CreateToken(TokenType.KwAbstract, prop.Location.Beginning));
                 declarationsToAdd.Add(propField);
 
                 var origField = decls.FirstOrDefault(x => x.Name.Name == $"field_{orig?.Name.Name}");
@@ -562,7 +563,7 @@ namespace HapetPostPrepare
                 AstFuncDecl getFunc = prop.GetGetFunction(parent, addFirstParam);
                 // add abstract key to the method if it is an interface
                 if (isParentInterface)
-                    AddSpecialKeyToDecl(getFunc, TokenType.KwAbstract);
+                    AddSpecialKeyToDecl(getFunc, Lexer.CreateToken(TokenType.KwAbstract, prop.Location.Beginning));
                 declarationsToAdd.Add(getFunc);
 
                 var origFunc = decls.FirstOrDefault(x => x.Name.Name.Contains($":get_{orig?.Name.Name}("));
@@ -575,7 +576,7 @@ namespace HapetPostPrepare
                 AstFuncDecl setFunc = prop.GetSetFunction(parent, addFirstParam);
                 // add abstract key to the method if it is an interface
                 if (isParentInterface)
-                    AddSpecialKeyToDecl(setFunc, TokenType.KwAbstract);
+                    AddSpecialKeyToDecl(setFunc, Lexer.CreateToken(TokenType.KwAbstract, prop.Location.Beginning));
                 declarationsToAdd.Add(setFunc);
 
                 var origFunc = decls.FirstOrDefault(x => x.Name.Name.Contains($":set_{orig?.Name.Name}("));

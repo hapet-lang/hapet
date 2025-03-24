@@ -161,6 +161,15 @@ namespace HapetFrontend.Parsing
             _peekLookAhead = _peek;
         }
 
+        public static Token CreateToken(TokenType type, TokenLocation location)
+        {
+            var token = new Token();
+            token.Location = location.Clone();
+            token.Location.End = token.Location.Index;
+            token.Type = type;
+            return token;
+        }
+
 
         private StringBuilder tokenDataBuilder = new StringBuilder();
         private Token ReadToken(TokenLocation location)

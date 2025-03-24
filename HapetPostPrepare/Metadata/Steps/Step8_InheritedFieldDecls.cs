@@ -2,6 +2,7 @@
 using HapetFrontend.Ast.Declarations;
 using HapetFrontend.Ast.Expressions;
 using HapetFrontend.Errors;
+using HapetFrontend.Extensions;
 using HapetFrontend.Helpers;
 using HapetFrontend.Parsing;
 using HapetFrontend.Types;
@@ -208,7 +209,8 @@ namespace HapetPostPrepare
                         if (inhF == null)
                         {
                             // we need to error
-                            _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, currF,
+                            _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, 
+                                f.SpecialKeys.GetType(TokenType.KwNew).Location,
                                 [], ErrorCode.Get(CTEN.PureUnexpectedToken));
                             continue;
                         }

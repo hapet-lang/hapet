@@ -21,7 +21,7 @@ namespace HapetFrontend.Ast
         /// <summary>
         /// Keys like public/static/virtual and other
         /// </summary>
-        public List<TokenType> SpecialKeys { get; private set; } = new List<TokenType>();
+        public List<Token> SpecialKeys { get; private set; } = new List<Token>();
         /// <summary>
         /// Attributes that are applied to the decl
         /// </summary>

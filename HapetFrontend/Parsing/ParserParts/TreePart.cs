@@ -653,14 +653,14 @@ namespace HapetFrontend.Parsing
                 case TokenType.KwProtected:
                 case TokenType.KwPrivate:
                 case TokenType.KwUnreflected:
-                    return ParseAccessKeys(token.Type, inInfo, ref outInfo);
+                    return ParseAccessKeys(token, inInfo, ref outInfo);
 
                 case TokenType.KwAsync:
-                    return ParseSyncKeys(token.Type, inInfo, ref outInfo);
+                    return ParseSyncKeys(token, inInfo, ref outInfo);
 
                 case TokenType.KwConst:
                 case TokenType.KwStatic:
-                    return ParseInstancingKeys(token.Type, inInfo, ref outInfo);
+                    return ParseInstancingKeys(token, inInfo, ref outInfo);
 
                 case TokenType.KwAbstract:
                 case TokenType.KwVirtual:
@@ -668,7 +668,7 @@ namespace HapetFrontend.Parsing
                 case TokenType.KwPartial:
                 case TokenType.KwExtern:
                 case TokenType.KwSealed:
-                    return ParseImplementationKeys(token.Type, inInfo, ref outInfo);
+                    return ParseImplementationKeys(token, inInfo, ref outInfo);
 
                 default:
                     if (inInfo.Message != null && inInfo.Message.MessageArgs == null)

@@ -5,6 +5,7 @@ using HapetFrontend.Errors;
 using HapetFrontend.Helpers;
 using HapetFrontend.Parsing;
 using HapetFrontend.Types;
+using HapetFrontend.Extensions;
 
 namespace HapetPostPrepare
 {
