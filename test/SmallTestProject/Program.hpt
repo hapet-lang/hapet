@@ -9,19 +9,13 @@ public static class Program
 {
     public static int Main(string[] args)
     {
-        var a = new FlagsAttribute();
-        var b = a.AnimeProps<TestCls>;
-        var c = (Pivo<TestCls>)a;
-        return b;
+        var a = new GenericStruct<int>();
+        a.CoolPropa = 44;
+        return a.CoolPropa;
     }
 }
 
-public class Pivo<T> : FlagsAttribute
+public struct GenericStruct<T>
 {
-
-}
-
-public class TestCls
-{
-
+    T CoolPropa { get; set; }
 }

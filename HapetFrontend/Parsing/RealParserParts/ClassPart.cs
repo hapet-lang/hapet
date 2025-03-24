@@ -124,12 +124,6 @@ namespace HapetFrontend.Parsing
                     NextToken();
                     SkipNewlines();
                 }
-                else
-                {
-                    // no need for errors!
-                    //NextToken();
-                    //ReportMessage(next.Location, $"Unexpected token {next} at end of class member");
-                }
             }
             end = Consume(TokenType.CloseBrace, ErrMsg("}", "at end of declaration")).Location;
 

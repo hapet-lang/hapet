@@ -13,6 +13,7 @@ namespace HapetFrontend.Parsing
             TokenLocation beg = null, end = null;
             var declarations = new List<AstDeclaration>();
             var inherited = new List<AstNestedExpr>();
+            var generics = new List<AstIdExpr>();
             AstIdExpr structName = null;
 
             beg = Consume(TokenType.KwStruct, ErrMsg("keyword 'struct'", "at beginning of struct type")).Location;
@@ -25,7 +26,7 @@ namespace HapetFrontend.Parsing
             }
             else
             {
-                var nest = ParseIdentifierExpression(allowDots: false);
+                var nest = ParseIdentifierExpression(allowDots: false, allowGenerics: true);
                 if (nest.RightPart is not AstIdExpr idExpr)
                 {
                     ReportMessage(nest.Location, [], ErrorCode.Get(CTEN.StructNameNotIdent));
@@ -33,6 +34,22 @@ namespace HapetFrontend.Parsing
                 }
                 structName = idExpr;
             }
+
+            // checking generics
+            // getting generics from parsed struct name
+            if (structName is AstIdGenericExpr genExpr)
+            {
+                foreach (var g in genExpr.GenericRealTypes)
+                {
+                    if (g is AstNestedExpr nest)
+                        generics.Add(nest.RightPart as AstIdExpr);
+                    else if (g is AstIdExpr id)
+                        generics.Add(id);
+                    else
+                        generics.Add(null); // TODO: ERROR HERE
+                }
+            }
+
             SkipNewlines();
 
             // checking for inheritance
@@ -57,6 +74,9 @@ namespace HapetFrontend.Parsing
                 }
             }
             SkipNewlines();
+
+            // parsing constrains
+            var genericConstrains = ParseGenericConstrains(generics);
 
             ConsumeUntil(TokenType.OpenBrace, ErrMsg("{", "at beginning of struct body"), true);
 
@@ -114,6 +134,9 @@ namespace HapetFrontend.Parsing
             return new AstStructDecl(structName, declarations, "", new Location(beg, end)) 
             { 
                 InheritedFrom = inherited,
+                HasGenericTypes = generics.Count > 0,
+                GenericNames = generics,
+                GenericConstrains = genericConstrains,
                 IsImported = inInfo.ExternalMetadata
             };
         }
