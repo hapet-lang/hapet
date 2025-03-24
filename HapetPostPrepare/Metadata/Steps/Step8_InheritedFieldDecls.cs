@@ -3,6 +3,7 @@ using HapetFrontend.Ast.Declarations;
 using HapetFrontend.Ast.Expressions;
 using HapetFrontend.Errors;
 using HapetFrontend.Helpers;
+using HapetFrontend.Parsing;
 using HapetFrontend.Types;
 
 namespace HapetPostPrepare
@@ -114,8 +115,8 @@ namespace HapetPostPrepare
                                 if (isInherited)
                                 {
                                     // need to check that we do not implement it also
-                                    var currF = currentFieldDecls.GetSameDeclByTypeAndName(inhF);
-                                    if (currF != null)
+                                    var currF = currentFieldDecls.FirstOrDefault(x => x.Name.Name == inhF.Name.Name);
+                                    if (currF != null && !currF.SpecialKeys.Contains(TokenType.KwNew))
                                     {
                                         // the field is implemented in parent class and current class
                                         // we need to error
@@ -184,6 +185,29 @@ namespace HapetPostPrepare
                 else
                 {
                     var parentFields = GetPreparedFields__(inhDecl);
+
+                    // remove all parent fields when there is a 'new' in current
+                    foreach (var f in parentFields.ToList())
+                    {
+                        var currF = currentFieldDecls.FirstOrDefault(x => x.Name.Name == f.Name.Name);
+
+                        // check that there are no fields with the same name in current decl
+                        if (currF == null)
+                            continue;
+
+                        // shadowing :)
+                        if (currF.SpecialKeys.Contains(TokenType.KwNew))
+                        {
+                            parentFields.Remove(f);
+                            continue;
+                        }
+
+                        // the field is implemented in parent class and current class
+                        // we need to error
+                        _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, currF,
+                            [HapetType.AsString(f.ContainingParent.Type.OutType)], ErrorCode.Get(CTEN.FieldAlreadyDefined));
+                    }
+
                     // just add parent fields if it is a class
                     inheritedFieldDecls.AddRange(parentFields);
                 }

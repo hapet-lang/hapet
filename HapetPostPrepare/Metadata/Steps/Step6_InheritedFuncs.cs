@@ -77,7 +77,7 @@ namespace HapetPostPrepare
                                 {
                                     // need to check that we do not implement it also
                                     var currF = currentClassMethods.GetSameByNameAndTypes(inhF, out int _);
-                                    if (currF != null)
+                                    if (currF != null && !currF.SpecialKeys.Contains(TokenType.KwNew))
                                     {
                                         // the method is implemented in parent class and current class
                                         // we need to error
@@ -172,7 +172,7 @@ namespace HapetPostPrepare
                 if (currM.SpecialKeys.Contains(TokenType.KwOverride))
                     continue;
                 var parentFnc = inheritedFuncDecls.GetSameByNameAndTypes(currM, out int _);
-                if (parentFnc != null)
+                if (parentFnc != null && !currM.SpecialKeys.Contains(TokenType.KwNew))
                 {
                     // skip property functions - property would error by its own
                     if (parentFnc.IsPropertyFunction)

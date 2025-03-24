@@ -474,7 +474,7 @@
 	</Item>
 	<Item>
 		<Number>3011</Number>
-		<Text>The {0} type already has an implementation of the field</Text>
+		<Text>The {0} type already has an implementation of the field. Implicit shadowing is not allowed</Text>
 	</Item>
 	<Item>
 		<Number>3012</Number>
@@ -642,7 +642,7 @@
 	</Item>
 	<Item>
 		<Number>303B</Number>
-		<Text>The {0} type already has an implementation of the method. Shadowing is not allowed yet</Text>
+		<Text>The {0} type already has an implementation of the method. Implicit shadowing is not allowed</Text>
 	</Item>
 	<Item>
 		<Number>303C</Number>
@@ -654,11 +654,11 @@
 	</Item>
 	<Item>
 		<Number>303E</Number>
-		<Text>The function shadows {0} function. Shadowing is not allowed here, buddy</Text>
+		<Text>The function shadows {0} function. Implicit shadowing is not allowed</Text>
 	</Item>
 	<Item>
 		<Number>303F</Number>
-		<Text>The property shadows {0} property. Shadowing is not allowed here, buddy</Text>
+		<Text>The property shadows {0} property. Implicit shadowing is not allowed</Text>
 	</Item>
 	<Item>
 		<Number>3040</Number>
