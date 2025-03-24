@@ -31,9 +31,16 @@ namespace HapetFrontend.Parsing
         // they are all the same
         private AstStatement ParseKeysInternal(TokenType tknType, ParserInInfo inInfo, ref ParserOutInfo outInfo)
         {
+            // this var would handle 'new' token in special keys. ok?
+            Token newToken = null;
+
             TokenLocation beg = null;
             var tkn = Consume(tknType, ErrMsg($"keyword '{tknType}'", "at beginning of type"));
             beg = tkn.Location;
+
+            // just eat it :)
+            if (CheckToken(TokenType.KwNew))
+                newToken = NextToken();
 
             var saved1 = inInfo.AllowCommaForTuple;
             var saved2 = inInfo.AllowFunctionDeclaration;
@@ -71,6 +78,9 @@ namespace HapetFrontend.Parsing
                 ReportMessage(expr.Location, [tknType.ToString()], ErrorCode.Get(CTEN.DeclExpectedAfterTheToken));
                 return ParseEmptyExpression();
             }
+
+            if (newToken != null)
+                (expr as AstDeclaration).SpecialKeys.Insert(0, newToken.Type);
             (expr as AstDeclaration).SpecialKeys.Insert(0, tknType);
 
             // change beginning

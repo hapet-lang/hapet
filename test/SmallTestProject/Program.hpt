@@ -9,13 +9,22 @@ public static class Program
 {
     public static int Main(string[] args)
     {
-        var a = new GenericStruct<int>();
-        a.CoolPropa = 44;
-        return a.CoolPropa;
+        return 0;
     }
 }
 
-public struct GenericStruct<T>
+public class AnimeBase
 {
-    T CoolPropa { get; set; }
+    public int Test()
+    {
+        return 33;
+    }
+}
+
+public class AnimeDerived : AnimeBase
+{
+    public int Test()
+    {
+        return 44;
+    }
 }

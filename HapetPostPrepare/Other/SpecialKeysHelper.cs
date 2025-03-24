@@ -237,6 +237,7 @@ namespace HapetPostPrepare
                 case TokenType.KwAbstract:
                 case TokenType.KwVirtual:
                 case TokenType.KwOverride:
+                case TokenType.KwNew:
                     {
                         return 3;
                     }
