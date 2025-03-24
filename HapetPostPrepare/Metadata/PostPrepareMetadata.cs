@@ -62,7 +62,7 @@ namespace HapetPostPrepare
                 foreach (var stmt in file.Statements)
                 {
                     /// DO NOT SERIALIZE PURE GENERICS - SERIALIZE T-LIKE GENERICS <see cref="AllPostPrepareMetadataGenerics"/>
-                    bool needSerialize = !(stmt is AstClassDecl classDecl && classDecl.HasGenericTypes);
+                    bool needSerialize = !(stmt is AstDeclaration decl && decl.HasGenericTypes);
                     // do not serialize imported shite
                     needSerialize = needSerialize && (!(stmt as AstDeclaration)?.IsImported ?? false);
 
@@ -75,7 +75,7 @@ namespace HapetPostPrepare
         {
             _currentPreparationStep = PreparationStep.Generics;
 
-            // resolve inheritance shite of classes
+            // resolve generic shite of classes
             foreach (var cls in AllClassesMetadata.ToList())
             {
                 _currentSourceFile = cls.SourceFile;
@@ -90,6 +90,22 @@ namespace HapetPostPrepare
                         _serializeClassesMetadata.Add(realDecl as AstClassDecl);
                     // remove from inferencing
                     AllClassesMetadata.Remove(cls);
+                }
+            }
+            // resolve generic shite of structs
+            foreach (var str in AllStructsMetadata.ToList())
+            {
+                _currentSourceFile = str.SourceFile;
+                bool itWasGeneric = PostPrepareMetadataGenerics(str, out var realDecl);
+
+                // do not inference generics
+                if (itWasGeneric)
+                {
+                    // append for serialization T-like (if not imported)
+                    if (!str.IsImported)
+                        _serializeStructsMetadata.Add(realDecl as AstStructDecl);
+                    // remove from inferencing
+                    AllStructsMetadata.Remove(str);
                 }
             }
         }

@@ -26,6 +26,10 @@ namespace HapetPostPrepare
                 ReplaceAllGenericTypesInClass(clsDecl);
             else if (decl is AstFuncDecl funcDecl)
                 ReplaceAllGenericTypesInFunction(funcDecl);
+            else if (decl is AstVarDecl varDecl)
+                ReplaceAllGenericTypesInVar(varDecl);
+            else if (decl is AstStructDecl strDecl)
+                ReplaceAllGenericTypesInStruct(strDecl);
         }
 
         public void ReplaceAllGenericTypesInClass(AstClassDecl clsDecl)
@@ -42,6 +46,51 @@ namespace HapetPostPrepare
 
             // go all over the decls
             foreach (var decl in clsDecl.Declarations)
+            {
+                if (decl is AstFuncDecl funcDecl)
+                {
+                    ReplaceAllGenericTypesInFunction(funcDecl);
+                }
+                else if (decl is AstPropertyDecl propDecl)
+                {
+                    if (propDecl.GetBlock != null)
+                    {
+                        ReplaceAllGenericTypesInExpr(propDecl.GetBlock);
+                    }
+                    if (propDecl.SetBlock != null)
+                    {
+                        ReplaceAllGenericTypesInExpr(propDecl.SetBlock);
+                    }
+
+                    // replacing indexer parameter
+                    if (propDecl is AstIndexerDecl indDecl)
+                    {
+                        ReplaceAllGenericTypesInExpr(indDecl.IndexerParameter);
+                    }
+
+                    ReplaceAllGenericTypesInVar(propDecl);
+                }
+                else if (decl is AstVarDecl fieldDecl) // field 
+                {
+                    ReplaceAllGenericTypesInVar(fieldDecl);
+                }
+            }
+        }
+
+        public void ReplaceAllGenericTypesInStruct(AstStructDecl strDecl)
+        {
+            // replacing inheritance
+            for (int i = 0; i < strDecl.InheritedFrom.Count; ++i)
+            {
+                var inh = strDecl.InheritedFrom[i];
+                if (IsGenericEntry(inh, out var val))
+                    strDecl.InheritedFrom[i] = val;
+                else
+                    ReplaceAllGenericTypesInExpr(strDecl.InheritedFrom[i]);
+            }
+
+            // go all over the decls
+            foreach (var decl in strDecl.Declarations)
             {
                 if (decl is AstFuncDecl funcDecl)
                 {

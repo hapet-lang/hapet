@@ -71,13 +71,9 @@ namespace HapetFrontend.Helpers
 
                 return realName;
             }
-            else if (decl is AstClassDecl cls)
+            else if (decl is AstClassDecl || decl is AstPropertyDecl || decl is AstStructDecl)
             {
-                return GetRealFromGenericName(cls.Name.Name, generics);
-            }
-            else if (decl is AstPropertyDecl prop)
-            {
-                return GetRealFromGenericName(prop.Name.Name, generics);
+                return GetRealFromGenericName(decl.Name.Name, generics);
             }
             return decl.Name.Name;
         }
@@ -181,10 +177,11 @@ namespace HapetFrontend.Helpers
 
         public static void ResetDeclarationNames(AstDeclaration decl)
         {
-            if (decl is AstClassDecl clsDecl)
+            if (decl is AstClassDecl || decl is AstStructDecl)
             {
-                clsDecl.Name = clsDecl.Name.GetCopy(GetName(clsDecl));
-                foreach (var dec in clsDecl.Declarations)
+                var decls = decl is AstClassDecl ? (decl as AstClassDecl).Declarations : (decl as AstStructDecl).Declarations;
+                decl.Name = decl.Name.GetCopy(GetName(decl));
+                foreach (var dec in decls)
                 {
                     dec.Name = dec.Name.GetCopy(GetName(dec));
                 }
@@ -196,9 +193,9 @@ namespace HapetFrontend.Helpers
 
             static string GetName(AstDeclaration d)
             {
-                if (d is AstClassDecl c)
+                if (d is AstClassDecl || d is AstStructDecl)
                 {
-                    return c.Name.Name.GetClassNameWithoutNamespace();
+                    return d.Name.Name.GetClassNameWithoutNamespace();
                 }
                 else if (d is AstFuncDecl f)
                 {

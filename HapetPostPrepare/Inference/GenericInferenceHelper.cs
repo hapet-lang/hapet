@@ -68,9 +68,9 @@ namespace HapetPostPrepare
                 else
                     origDeclPureName = funcDecl.Name.Name;
             }
-            else if (decl is AstClassDecl clsDecl)
+            else if (decl is AstClassDecl || decl is AstStructDecl)
             {
-                origDeclPureName = clsDecl.Name.Name.GetClassNameWithoutNamespace();
+                origDeclPureName = decl.Name.Name.GetClassNameWithoutNamespace();
             }
 
             var realDecl = decl.GetDeepCopy() as AstDeclaration;
