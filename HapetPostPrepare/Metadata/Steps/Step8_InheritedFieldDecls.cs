@@ -187,25 +187,34 @@ namespace HapetPostPrepare
                     var parentFields = GetPreparedFields__(inhDecl);
 
                     // remove all parent fields when there is a 'new' in current
-                    foreach (var f in parentFields.ToList())
+                    foreach (var f in currentFieldDecls.ToList())
                     {
-                        var currF = currentFieldDecls.FirstOrDefault(x => x.Name.Name == f.Name.Name);
+                        var inhF = parentFields.FirstOrDefault(x => x.Name.Name == f.Name.Name);
 
-                        // check that there are no fields with the same name in current decl
-                        if (currF == null)
-                            continue;
-
-                        // shadowing :)
-                        if (currF.SpecialKeys.Contains(TokenType.KwNew))
+                        // error if the current field is without 'new' and parent has the same named field
+                        if (!f.SpecialKeys.Contains(TokenType.KwNew))
                         {
-                            parentFields.Remove(f);
+                            if (inhF != null)
+                            {
+                                // the field is implemented in parent class and current class
+                                // we need to error
+                                _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, f,
+                                    [HapetType.AsString(f.ContainingParent.Type.OutType)], ErrorCode.Get(CTEN.FieldAlreadyDefined));
+                            }
+                            continue; // skip
+                        }
+
+                        // check if there is a 'new' kw but no fields in parent
+                        if (inhF == null)
+                        {
+                            // we need to error
+                            _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, currF,
+                                [], ErrorCode.Get(CTEN.PureUnexpectedToken));
                             continue;
                         }
 
-                        // the field is implemented in parent class and current class
-                        // we need to error
-                        _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, currF,
-                            [HapetType.AsString(f.ContainingParent.Type.OutType)], ErrorCode.Get(CTEN.FieldAlreadyDefined));
+                        // shadowing :)
+                        parentFields.Remove(f);
                     }
 
                     // just add parent fields if it is a class
