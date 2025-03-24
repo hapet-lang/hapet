@@ -751,6 +751,9 @@ namespace HapetBackend.Llvm
 
         private static uint GetElementIndex(string name, List<AstDeclaration> decls)
         {
+            AstDeclaration lastFound = null;
+            uint lastFoundIndex = 0;
+
             // getting pure decls without consts and statics
             var pureDecls = decls.GetStructFields();
             // search for the name in decl
@@ -759,10 +762,21 @@ namespace HapetBackend.Llvm
                 var decl = pureDecls[(int)i];
                 if (decl.Name.Name == name)
                 {
-                    return i; // getting the field index
+                    // if we found an override :)
+                    if (lastFound != null && decl.SpecialKeys.Contains(TokenType.KwNew))
+                    {
+                        lastFound = decl;
+                        lastFoundIndex = i;
+                        continue;
+                    }
+                    else if (lastFound != null)
+                        continue; // also continue - probably no need to shadow - probably an error :)
+
+                    lastFound = decl;
+                    lastFoundIndex = i; // getting the field index
                 }
             }
-            return 0;
+            return lastFoundIndex;
         }
 
         private LLVMValueRef GenerateArrayCreateExprCode(AstArrayCreateExpr expr, bool getPtr = false)

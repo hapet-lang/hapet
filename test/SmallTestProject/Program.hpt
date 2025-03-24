@@ -9,7 +9,11 @@ public static class Program
 {
     public static int Main(string[] args)
     {
-        return 0;
+        AnimeDerived a = new AnimeDerived();
+        a.TTT = 333;
+        var b = a as AnimeBase;
+        b.TTT = 33;
+        return b.TTT;
     }
 }
 

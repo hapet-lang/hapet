@@ -1,6 +1,8 @@
 ﻿using HapetFrontend.Ast;
 using HapetFrontend.Ast.Declarations;
 using HapetFrontend.Entities;
+using HapetFrontend.Extensions;
+using HapetFrontend.Parsing;
 using HapetFrontend.Types;
 using System.Xml.Linq;
 
@@ -14,6 +16,15 @@ namespace HapetFrontend.Scoping
             if (name == "_")
                 return true;
 
+            // if it is a shadow decl
+            if (symbol is DeclSymbol declS && declS.Decl.SpecialKeys.Contains(TokenType.KwNew))
+            {
+                if (_shadowSymbolTable.TryGetValue(name, out var otherShadow))
+                    return false;
+                _shadowSymbolTable[name] = symbol;
+                return true;
+            }
+
             if (_symbolTable.TryGetValue(name, out var other))
                 return false;
 
@@ -26,6 +37,15 @@ namespace HapetFrontend.Scoping
             name ??= symbol.Name;
             if (name == "_")
                 return true;
+
+            // if it is a shadow decl
+            if (symbol is DeclSymbol declS && declS.Decl.SpecialKeys.Contains(TokenType.KwNew))
+            {
+                if (_shadowSymbolTable.TryGetValue(name, out var otherShadow))
+                    return false;
+                _shadowSymbolTable[name] = symbol;
+                return true;
+            }
 
             if (!_symbolTable.ContainsKey(name))
                 return false;
@@ -59,19 +79,14 @@ namespace HapetFrontend.Scoping
             return RemoveLocalSymbol(new DeclSymbol(name, decl));
         }
 
-        public bool RenameSymbol(string oldName, string newName)
-        {
-            if (!_symbolTable.TryGetValue(oldName, out var other))
-                return false;
-
-            _symbolTable[newName] = other;
-            _symbolTable.Remove(oldName);
-
-            return true;
-        }
-
         public ISymbol GetSymbol(string name, bool searchUsedScopes = true, bool searchParentScope = true, bool searchPartNamespace = false)
         {
+            if (_shadowSymbolTable.ContainsKey(name))
+            {
+                var v = _shadowSymbolTable[name];
+                return v;
+            }
+
             if (_symbolTable.ContainsKey(name))
             {
                 var v = _symbolTable[name];
@@ -81,6 +96,13 @@ namespace HapetFrontend.Scoping
             // this cringe is used to search a part namespace
             if (searchPartNamespace)
             {
+                foreach (var k in _shadowSymbolTable.Keys)
+                {
+                    if (k.StartsWith(name) && _shadowSymbolTable[k] is NamespaceSymbol)
+                    {
+                        return _shadowSymbolTable[k];
+                    }
+                }
                 foreach (var k in _symbolTable.Keys)
                 {
                     if (k.StartsWith(name) && _symbolTable[k] is NamespaceSymbol)

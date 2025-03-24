@@ -216,7 +216,6 @@ namespace HapetPostPrepare
                         }
 
                         // shadowing :)
-                        parentFields.Remove(f);
                     }
 
                     // just add parent fields if it is a class

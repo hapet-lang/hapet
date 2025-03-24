@@ -7,6 +7,7 @@ namespace HapetFrontend.Scoping
     public partial class Scope
     {
         private Dictionary<string, ISymbol> _symbolTable = new Dictionary<string, ISymbol>();
+        private Dictionary<string, ISymbol> _shadowSymbolTable = new Dictionary<string, ISymbol>();
         private Dictionary<string, List<INaryOperator>> _naryOperatorTable = new Dictionary<string, List<INaryOperator>>();
         private Dictionary<string, List<IBinaryOperator>> _binaryOperatorTable = new Dictionary<string, List<IBinaryOperator>>();
         private Dictionary<string, List<IUnaryOperator>> _unaryOperatorTable = new Dictionary<string, List<IUnaryOperator>>();
