@@ -39,6 +39,10 @@ namespace HapetBackend.Llvm
             // all over the structs
             foreach (var str in _postPreparer.AllStructsMetadata)
             {
+                // skip generic (non-real) structs
+                if (str.HasGenericTypes)
+                    continue;
+
                 _currentSourceFile = str.SourceFile;
                 // doing that we are registering the type in dict
                 var _ = HapetTypeToLLVMType(str.Type.OutType);
@@ -159,6 +163,10 @@ namespace HapetBackend.Llvm
             }
             foreach (var str in _postPreparer.AllStructsMetadata)
             {
+                // skip generic (non-real) structs
+                if (str.HasGenericTypes)
+                    continue;
+
                 // reg type info if non static
                 if (!str.SpecialKeys.Contains(TokenType.KwStatic))
                 {

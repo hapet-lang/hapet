@@ -1170,7 +1170,7 @@ namespace HapetPostPrepare
                             if (!CheckIfCouldBeAccessed(callExpr, funcDecl2) && !funcDecl2.IsPropertyFunction)
                                 _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, callExpr.FuncName, [], ErrorCode.Get(CTEN.FuncCouldNotBeAccessed));
                             newName = funcDecl2.Name.Name;
-                            callExpr.Arguments.ReplaceWithCasts(casts);
+                            callExpr.Arguments.ReplaceWithCasts(casts.Skip(1).ToList());
                         }
                     }
                     else
