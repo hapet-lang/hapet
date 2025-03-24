@@ -341,7 +341,8 @@ namespace HapetFrontend.Parsing
             while (!breakLoop)
             {
                 // handle generic expr
-                HandleGenericWithLookAhead(expr);
+                if (inInfo.AllowGeneric)
+                    HandleGenericWithLookAhead(expr);
 
                 switch (PeekToken().Type)
                 {

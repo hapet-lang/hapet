@@ -36,8 +36,8 @@ namespace HapetFrontend.Parsing
             // while there are more idents or periods
             while (CheckToken(TokenType.Period))
             {
-                if (allowGenerics)
-                    currNested.RightPart = HandleGeneric(currNested.RightPart as AstIdExpr, lookAhead);
+                if (allowGenerics && HandleGeneric(currNested.RightPart as AstIdExpr, out var genId2, lookAhead))
+                    currNested.RightPart = genId2;
 
                 if (!allowDots)
                 {
@@ -64,16 +64,18 @@ namespace HapetFrontend.Parsing
                     return currNested;
                 }
             }
-            if (allowGenerics)
-                currNested.RightPart = HandleGeneric(currNested.RightPart as AstIdExpr, lookAhead);
+            if (allowGenerics && HandleGeneric(currNested.RightPart as AstIdExpr, out var genId, lookAhead))
+                currNested.RightPart = genId;
 
             return currNested;
         }
 
-        private AstIdExpr HandleGeneric(AstIdExpr originId, bool lookAhead = false)
+        private bool HandleGeneric(AstIdExpr originId, out AstIdGenericExpr gener, bool lookAhead = false)
         {
+            gener = null;
+
             if (!(lookAhead ? CheckLookAhead(TokenType.Less) : CheckToken(TokenType.Less)))
-                return originId;
+                return false;
             var _ = lookAhead ? NextLookAhead() : NextToken();
 
             List<AstExpression> generics = new List<AstExpression>();
@@ -96,10 +98,11 @@ namespace HapetFrontend.Parsing
                 if (!lookAhead)
                     ReportMessage(nxt.Location, custom.MessageArgs, custom.XmlMessage);
 
-                return null;
+                return false;
             }
 
-            return AstIdGenericExpr.FromAstIdExpr(originId, generics);
+            gener = AstIdGenericExpr.FromAstIdExpr(originId, generics);
+            return true;
         }
 
         private AstDeclaration PrepareUnknownDecl(AstUnknownDecl udecl, List<AstAttributeStmt> attrs, ParserInInfo inInfo, ref ParserOutInfo outInfo)

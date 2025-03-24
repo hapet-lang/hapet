@@ -631,9 +631,6 @@ namespace HapetPostPrepare
         {
             // gettings all field decls and init them
             IEnumerable<AstVarDecl> allVarDecls;
-            // we need to get all props from class. why?
-            // read comment below where it used
-            IEnumerable<AstPropertyDecl> allProps;
             if (declB is AstClassDecl classDecl)
             {
                 allVarDecls = classDecl.Declarations.Where(x => x is AstVarDecl && x is not AstIndexerDecl).Select(x => x as AstVarDecl);

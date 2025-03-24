@@ -20,9 +20,11 @@ namespace HapetFrontend.Parsing
 
             inInfo.AllowArrayExpression = true;
             inInfo.AllowPointerExpression = true;
+            inInfo.AllowGeneric = true;
             var e = ParseExpression(inInfo, ref outInfo);
             inInfo.AllowArrayExpression = false;
             inInfo.AllowPointerExpression = false;
+            inInfo.AllowGeneric = false;
             beg = e.Beginning;
 
             // if next token is : then e is the name of the parameter

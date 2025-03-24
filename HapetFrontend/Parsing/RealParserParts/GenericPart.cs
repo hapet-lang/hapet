@@ -73,70 +73,25 @@ namespace HapetFrontend.Parsing
             // check for generic call
             if (CheckToken(TokenType.Less) && expr is AstNestedExpr nstExpr && nstExpr.RightPart is AstIdExpr idExpr)
             {
-                // loolahead cringe
-                List<AstExpression> types = new List<AstExpression>();
-                bool isGeneric = true;
-
+                // lookahead cringe
                 UpdateLookAheadLocation();
-                NextLookAhead(); // eat less
-                while (CheckLookAhead(TokenType.Identifier))
-                {
-                    // try parse type ident
-                    var ident = ParseIdentifierExpression(allowGenerics: true, lookAhead: true);
-                    if (ident == null || ident.RightPart == null)
-                    {
-                        // cringe, it is not generic shite - skip
-                        isGeneric = false;
-                        break;
-                    }
+                bool isGeneric = HandleGeneric(idExpr, out var _, true);
 
-                    types.Add(ident);
-
-                    // eat commas
-                    if (CheckLookAhead(TokenType.Comma))
-                        NextLookAhead();
-                }
-
-                if (!CheckLookAhead(TokenType.Greater))
+                if (!CheckLookAhead(TokenType.OpenParen) &&  // when Anime<T>(..)
+                    !CheckLookAhead(TokenType.CloseParen) && // when (Anime<T>)inst
+                    !CheckLookAhead(TokenType.Semicolon) &&  // when a = abs.Anime<T>; - generic prop
+                    !CheckLookAhead(TokenType.EOF))          // :)
                 {
                     // cringe, it is not generic shite - skip
                     isGeneric = false;
                 }
-                else
-                    NextLookAhead(); // eat
-
-                if (!CheckLookAhead(TokenType.OpenParen))
-                {
-                    // cringe, it is not generic shite - skip
-                    isGeneric = false;
-                }
-                else
-                    NextLookAhead(); // eat
 
                 // if really generic shite
                 if (isGeneric)
                 {
-                    types.Clear();
-                    NextToken(); // eat less
-                    while (CheckToken(TokenType.Identifier))
-                    {
-                        // try parse type ident
-                        var ident = ParseIdentifierExpression(allowGenerics: true);
-                        types.Add(ident);
-
-                        // eat commas
-                        if (CheckToken(TokenType.Comma))
-                            NextToken();
-                    }
-                    Consume(TokenType.Greater, ErrMsg(">", "after generic types"));
-                    if (!CheckToken(TokenType.OpenParen))
-                    {
-                        var custom = ErrMsg("(", "after generic types");
-                        ReportMessage(PeekToken().Location, custom.MessageArgs, custom.XmlMessage);
-                    }
-
                     // creating the generic ast id
-                    nstExpr.RightPart = AstIdGenericExpr.FromAstIdExpr(idExpr, types);
+                    HandleGeneric(idExpr, out var genId, false);
+                    nstExpr.RightPart = genId;
                 }
             }
         }

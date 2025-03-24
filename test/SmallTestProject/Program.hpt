@@ -11,8 +11,14 @@ public static class Program
     {
         var a = new FlagsAttribute();
         var b = a.AnimeProps<TestCls>;
+        var c = (Pivo<TestCls>)a;
         return b;
     }
+}
+
+public class Pivo<T> : FlagsAttribute
+{
+
 }
 
 public class TestCls
