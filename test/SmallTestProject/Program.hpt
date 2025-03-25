@@ -11,7 +11,7 @@ public static class Program
     {
         AnimeDerived a = new AnimeDerived();
         var b = a as AnimeBase;
-        return a.Test();
+        return b.Test();
     }
 }
 

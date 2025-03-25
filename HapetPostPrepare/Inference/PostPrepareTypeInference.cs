@@ -786,26 +786,6 @@ namespace HapetPostPrepare
                     return;
                 }
             }
-            
-            // check for shite inside current class
-            if (_currentClass != null)
-            {
-                var symbolsInsideCls = _currentClass.SubScope.SymbolTable;
-                foreach (var smbl2 in symbolsInsideCls)
-                {
-                    if (smbl2.Key == idExpr.Name && smbl2.Value is DeclSymbol ds1)
-                    {
-                        OnFoundSymbol(ds1, string.Empty, ref outInfo);
-                        return;
-                    }
-                    // check for func
-                    else if (smbl2.Key.StartsWith($"{_currentClass.Name.Name}::{idExpr.Name}(") && smbl2.Value is DeclSymbol ds2)
-                    {
-                        OnFoundSymbol(ds2, string.Empty, ref outInfo);
-                        return;
-                    }
-                }
-            }
 
             // go all over the usings
             foreach (var usng in _currentSourceFile.Usings)
@@ -911,7 +891,8 @@ namespace HapetPostPrepare
 
             // generating generic shite name
             string realName = GenericsHelper.GetRealFromGenericName(theDecl, genId.GenericRealTypes.GetNestedList());
-            if (theDecl.Scope.SymbolTable.TryGetValue(realName, out var realDcl) && realDcl is DeclSymbol realDclDecl)
+            var realDcl = theDecl.Scope.GetSymbol(realName);
+            if (realDcl is DeclSymbol realDclDecl)
             {
                 // return if exists
                 return realDclDecl;

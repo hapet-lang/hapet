@@ -193,10 +193,10 @@ namespace HapetPostPrepare
         {
             List<DeclSymbol> candidates = cands ?? new List<DeclSymbol>();
             // search for the func in the scope
-            foreach (var k in scopeToSearch.SymbolTable.Keys)
+            foreach (var (k, d) in GetDecls(scopeToSearch))
             {
-                if (k.StartsWith(classWithFuncName) && scopeToSearch.SymbolTable[k] is DeclSymbol ds)
-                    candidates.Add(ds);
+                if (k.StartsWith(classWithFuncName) && d != null)
+                    candidates.Add(d);
             }
             // search in parent scope
             if (scopeToSearch.Parent != null)
@@ -208,14 +208,14 @@ namespace HapetPostPrepare
         {
             List<DeclSymbol> candidates = cands ?? new List<DeclSymbol>();
             // search for the func in the scope
-            foreach (var k in scopeToSearch.SymbolTable.Keys)
+            foreach (var (k, d) in GetDecls(scopeToSearch))
             {
-                if (scopeToSearch.SymbolTable[k] is DeclSymbol ds && ds.Decl is AstFuncDecl fnc)
+                if (d != null && d.Decl is AstFuncDecl)
                 {
                     var onlyFuncName = classWithFuncName.GetPureFuncName();
                     var firstKeyPart = k.GetPureFuncName();
                     if ((k.StartsWith(classWithFuncName) || firstKeyPart == onlyFuncName))
-                        candidates.Add(ds);
+                        candidates.Add(d);
 
                     // generics check
                     if (onlyFuncName.Contains(GenericsHelper.GENERIC_BEGIN) && firstKeyPart.Contains(GenericsHelper.GENERIC_BEGIN))
@@ -228,11 +228,25 @@ namespace HapetPostPrepare
                         int gAmountCall = onlyFuncName.GetGenericsAmount();
 
                         if (pureFuncName == pureCallName && gAmountFunc == gAmountCall)
-                            candidates.Add(ds);
+                            candidates.Add(d);
                     }
                 }
             }
             return candidates;
+        }
+
+        private static IEnumerable<(string, DeclSymbol)> GetDecls(Scope scope)
+        {
+            // search for the func in the shadow
+            foreach (var k in scope.ShadowSymbolTable.Keys)
+            {
+                yield return (k, scope.ShadowSymbolTable[k] as DeclSymbol);
+            }
+            // search for the func in the scope
+            foreach (var k in scope.SymbolTable.Keys)
+            {
+                yield return (k, scope.SymbolTable[k] as DeclSymbol);
+            }
         }
     }
 }
