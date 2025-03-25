@@ -296,7 +296,20 @@ namespace HapetPostPrepare
             // return type
             AntiParseExpr(decl.Type, sb, additionalOffset);
             sb.Append(' ');
-            AntiParseExpr(decl.Name, sb, additionalOffset);
+            // generate another shite for indexer
+            if (decl is AstIndexerDecl ind)
+            {
+                sb.Append("this[");
+                var par = ind.IndexerParameter;
+                AntiParseExpr(par.Type, sb, additionalOffset);
+                sb.Append(' ');
+                AntiParseExpr(par.Name, sb, additionalOffset);
+                sb.Append(']');
+            }
+            else
+            {
+                AntiParseExpr(decl.Name, sb, additionalOffset);
+            }
 
             if (decl.HasGet && decl.GetBlock != null && (decl.HasGenericTypes || 
                 (isParentGeneric && !decl.SpecialKeys.Contains(TokenType.KwStatic))))
