@@ -60,7 +60,7 @@ namespace HapetFrontend.Parsing
 
                 while (CheckToken(TokenType.Identifier))
                 {
-                    var ident = ParseIdentifierExpression();
+                    var ident = ParseIdentifierExpression(allowGenerics: true);
                     inherited.Add(ident);
                     // if there is something else
                     if (CheckToken(TokenType.Comma))
