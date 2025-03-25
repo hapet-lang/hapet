@@ -149,34 +149,34 @@ namespace HapetPostPrepare
                     {
                         var parentFuncs = GetPreparedVirtualMethods__(inhDecl);
 
-                        // shadowing cringe
-                        foreach (var f in currentClassMethods.ToList())
-                        {
-                            var inhF = parentFuncs.GetSameByNameAndTypes(f, out var _);
+                        //// shadowing cringe
+                        //foreach (var f in currentClassMethods.ToList())
+                        //{
+                        //    var inhF = parentFuncs.GetSameByNameAndTypes(f, out var _);
 
-                            // error if the current field is without 'new' and parent has the same named field
-                            if (!f.SpecialKeys.Contains(TokenType.KwNew))
-                            {
-                                if (inhF != null && !f.SpecialKeys.Contains(TokenType.KwOverride))
-                                {
-                                    // the field is implemented in parent class and current class
-                                    // we need to error
-                                    _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, f,
-                                        [HapetType.AsString(f.ContainingParent.Type.OutType)], ErrorCode.Get(CTEN.FieldAlreadyDefined));
-                                }
-                                continue; // skip
-                            }
+                        //    // error if the current field is without 'new' and parent has the same named field
+                        //    if (!f.SpecialKeys.Contains(TokenType.KwNew))
+                        //    {
+                        //        if (inhF != null && !f.SpecialKeys.Contains(TokenType.KwOverride))
+                        //        {
+                        //            // the field is implemented in parent class and current class
+                        //            // we need to error
+                        //            _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, f,
+                        //                [HapetType.AsString(f.ContainingParent.Type.OutType)], ErrorCode.Get(CTEN.FieldAlreadyDefined));
+                        //        }
+                        //        continue; // skip
+                        //    }
 
-                            // check if there is a 'new' kw but no fields in parent
-                            if (inhF == null)
-                            {
-                                // we need to error
-                                _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text,
-                                    f.SpecialKeys.GetType(TokenType.KwNew).Location,
-                                    [], ErrorCode.Get(CTEN.PureUnexpectedToken));
-                                continue;
-                            }
-                        }
+                        //    // check if there is a 'new' kw but no fields in parent
+                        //    if (inhF == null)
+                        //    {
+                        //        // we need to error
+                        //        _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text,
+                        //            f.SpecialKeys.GetType(TokenType.KwNew).Location,
+                        //            [], ErrorCode.Get(CTEN.PureUnexpectedToken));
+                        //        continue;
+                        //    }
+                        //}
 
                         // just add parent funcs if it is a class
                         inheritedFuncDecls.AddRange(parentFuncs);
