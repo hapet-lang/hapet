@@ -142,5 +142,51 @@ namespace HapetFrontend.Parsing
             gener = AstIdGenericExpr.FromAstIdExpr(originId, generics);
             return true;
         }
+
+        private bool IsThatPointerWithLookAhead(AstNestedExpr nest)
+        {
+            // lookahead cringe
+            UpdateLookAheadLocation();
+
+            // if it is not an asterisk - of course there is no pointer
+            if (!CheckLookAhead(TokenType.Asterisk, false))
+                return false;
+
+            NextLookAhead(false);
+            bool isPointer = false;
+
+            if (CheckLookAhead(TokenType.Identifier))
+            {
+                // this is hard to understand, it could be:
+                // byte* test ...
+                // test * test2 ...
+                // so additional checks are required :)
+
+                // eat the identifier
+                // do not allow dots - if it is a pointer - then
+                // the second ident is a name
+                var nextNest = ParseIdentifierExpression(lookAhead: true, allowDots: false);
+                if (nextNest.RightPart != null && (
+                    CheckLookAhead(TokenType.Equal) ||        // when byte* aaa = ...
+                    CheckLookAhead(TokenType.Semicolon) ||    // when byte* aaa;
+                    CheckLookAhead(TokenType.CloseParen)))    // when (byte* aaa)
+                {
+                    isPointer = true;
+                }
+            }
+            else if (CheckLookAhead(TokenType.CloseParen) ||  // when (Anime*)inst
+                    CheckLookAhead(TokenType.OpenBracket) ||  // when a = new Anime*[..]; 
+                    CheckLookAhead(TokenType.Semicolon) ||    // when a = Anime*;
+                    CheckLookAhead(TokenType.EOF))            // :)
+            {
+                isPointer = true;
+            }
+            else
+            {
+                // when Anime * (..)
+                // when Anime * 'other exprs'
+            }
+            return isPointer;
+        }
     }
 }

@@ -7,6 +7,13 @@ namespace HapetFrontend.Entities
     {
         public bool ExpectNewline { get; set; }
         public bool AllowArrayExpression { get; set; }
+        /// <summary>
+        /// 'true' when allowing to multiplication exist.
+        /// Solves the problem:
+        /// a = (test * test);
+        /// func(byte* test);
+        /// </summary>
+        public bool AllowMultiplyExpression { get; set; }
 
         /// <summary>
         /// 'true' when parsing .mpt file
@@ -23,6 +30,7 @@ namespace HapetFrontend.Entities
         {
             ExpectNewline = true,
             AllowArrayExpression = false,
+            AllowMultiplyExpression = true,
             ExternalMetadata = false,
             Message = null,
         };
