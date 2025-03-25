@@ -20,10 +20,11 @@ namespace HapetFrontend.Parsing
             SkipNewlines();
 
             // do not allow array expressions after 'new' word!!! but allow pointers
-            inInfo.AllowPointerExpression = true;
-            inInfo.AllowGeneric = true;
+            var saved = inInfo.AllowArrayExpression;
+            inInfo.AllowArrayExpression = false;
             inInfo.Message = ErrMsg("expression", "after keyword 'new'");
             var type = ParseAtomicExpression(inInfo, ref outInfo);
+            inInfo.AllowArrayExpression = saved;
 
             // TokenType.ArrayDef is for array creation with ini values
             if (CheckToken(TokenType.OpenBracket) || CheckToken(TokenType.ArrayDef)) // array creation

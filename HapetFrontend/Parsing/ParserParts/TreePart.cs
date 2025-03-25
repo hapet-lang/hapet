@@ -328,10 +328,7 @@ namespace HapetFrontend.Parsing
 
         private AstStatement ParsePostUnaryExpression(ParserInInfo inInfo, ref ParserOutInfo outInfo)
         {
-            var savedAllowence = inInfo.AllowArrayExpression;
-            inInfo.AllowArrayExpression = true;
             var expr = ParseAtomicExpression(inInfo, ref outInfo);
-            inInfo.AllowArrayExpression = savedAllowence;
 
             // just move forward the udecl :)
             if (expr is AstUnknownDecl)

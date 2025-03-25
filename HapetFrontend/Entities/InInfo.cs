@@ -29,7 +29,7 @@ namespace HapetFrontend.Entities
         public static ParserInInfo Default => new ParserInInfo()
         {
             ExpectNewline = true,
-            AllowArrayExpression = false,
+            AllowArrayExpression = true,
             AllowMultiplyExpression = true,
             ExternalMetadata = false,
             Message = null,

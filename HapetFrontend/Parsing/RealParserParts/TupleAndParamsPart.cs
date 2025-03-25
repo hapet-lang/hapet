@@ -18,13 +18,7 @@ namespace HapetFrontend.Parsing
             AstExpression expr;
             AstIdExpr name = null;
 
-            inInfo.AllowArrayExpression = true;
-            inInfo.AllowPointerExpression = true;
-            inInfo.AllowGeneric = true;
             var e = ParseExpression(inInfo, ref outInfo);
-            inInfo.AllowArrayExpression = false;
-            inInfo.AllowPointerExpression = false;
-            inInfo.AllowGeneric = false;
             beg = e.Beginning;
 
             // if next token is : then e is the name of the parameter
@@ -100,11 +94,10 @@ namespace HapetFrontend.Parsing
 
             TokenLocation beg = null, end = null;
 
-            inInfo.AllowPointerExpression = true;
-            inInfo.AllowGeneric = true;
+            // do not allow multiply here!!! read in desc - why!!!
+            inInfo.AllowMultiplyExpression = false;
             var e = ParseExpression(inInfo, ref outInfo);
-            inInfo.AllowPointerExpression = false;
-            inInfo.AllowGeneric = false;
+            inInfo.AllowMultiplyExpression = true;
 
             beg = e.Beginning;
             SkipNewlines();

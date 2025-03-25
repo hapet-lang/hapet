@@ -59,7 +59,6 @@ namespace HapetFrontend.Parsing
                     if (udecl.Type == null)
                     {
                         // it is ctor/dtor
-                        // func.Name = udecl.Name.GetCopy(udecl.Name.Name + (udecl.Name.Suffix != "~" ? "_ctor" : "_dtor")); // no need anymore?
                         func.Name = udecl.Name.GetCopy();
                         func.Returns = new AstNestedExpr(new AstIdExpr("void"), null);
                         // check that it is a static ctor
@@ -102,6 +101,7 @@ namespace HapetFrontend.Parsing
 
                 return indexer;
             }
+            // operator overloads
             else if (CheckToken(TokenType.KwOperator))
             {
                 // possible operator override
