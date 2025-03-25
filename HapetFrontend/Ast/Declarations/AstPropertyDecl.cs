@@ -92,8 +92,11 @@ namespace HapetFrontend.Ast.Declarations
             {
                 field.SpecialKeys.Add(Lexer.CreateToken(TokenType.KwPrivate, field.Type.Location.Beginning));
                 // if the propa is static - make the field also static
-                if (SpecialKeys.Contains(Lexer.CreateToken(TokenType.KwStatic, field.Type.Location.Beginning)))
+                if (SpecialKeys.Contains(TokenType.KwStatic))
                     field.SpecialKeys.Add(Lexer.CreateToken(TokenType.KwStatic, field.Type.Location.Beginning));
+                // if the propa is shadowing - make the field also shadowing
+                if (SpecialKeys.Contains(TokenType.KwNew))
+                    field.SpecialKeys.Add(Lexer.CreateToken(TokenType.KwNew, field.Type.Location.Beginning));
             }
             
             return field;

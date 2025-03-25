@@ -10,13 +10,17 @@ public static class Program
     public static int Main(string[] args)
     {
         AnimeDerived a = new AnimeDerived();
+        a.Propa = 41;
         var b = a as AnimeBase;
-        return b.Test();
+        b.Propa = 12;
+        return a.Propa;
     }
 }
 
 public class AnimeBase
 {
+    public int Propa { get; set; }
+
     public int Test()
     {
         return 33;
@@ -25,6 +29,8 @@ public class AnimeBase
 
 public class AnimeDerived : AnimeBase
 {
+    public new int Propa { get; set; }
+
     public new int Test()
     {
         return 44;

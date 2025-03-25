@@ -209,8 +209,8 @@ namespace HapetPostPrepare
             // check for shadowing
             foreach (var currP in currentPropDecls)
             {
-                // skip virtual shite
-                if (currP.SpecialKeys.Contains(TokenType.KwOverride))
+                // skip virtual or shadowing shite
+                if (currP.SpecialKeys.Contains(TokenType.KwOverride) || currP.SpecialKeys.Contains(TokenType.KwNew))
                     continue;
                 var parentProp = inheritedPropDecls.GetSameDeclByTypeAndName(currP, out int _);
                 if (parentProp != null)
