@@ -51,8 +51,17 @@ namespace HapetFrontend.Parsing
                     semicolonRequired = true;
                     break;
 
+                case TokenType.OpenBracket:
+                    toReturn = ParseAttributeStatement();
+                    break;
+
                 case TokenType.OpenBrace:
                     toReturn = ParseBlockExpression();
+                    break;
+
+                // directive
+                case TokenType.SharpIdentifier:
+                    toReturn = ParseDirectiveStatement();
                     break;
 
                 default:

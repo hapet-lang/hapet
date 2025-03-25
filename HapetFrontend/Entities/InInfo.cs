@@ -6,7 +6,6 @@ namespace HapetFrontend.Entities
     internal class ParserInInfo
     {
         public bool ExpectNewline { get; set; }
-        public bool AllowFunctionDeclaration { get; set; }
         public bool AllowArrayExpression { get; set; }
 
         /// <summary>
@@ -23,7 +22,6 @@ namespace HapetFrontend.Entities
         public static ParserInInfo Default => new ParserInInfo()
         {
             ExpectNewline = true,
-            AllowFunctionDeclaration = false,
             AllowArrayExpression = false,
             ExternalMetadata = false,
             Message = null,

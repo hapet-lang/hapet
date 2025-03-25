@@ -17,7 +17,7 @@ namespace HapetFrontend.Parsing
         }
 
         private AstNestedExpr ParseIdentifierExpression(MessageResolver customMessage = null, TokenType identType = TokenType.Identifier, 
-            bool allowDots = true, bool allowGenerics = false, AstNestedExpr iniNested = null, bool lookAhead = false)
+            bool allowDots = true, bool allowGenerics = true, AstNestedExpr iniNested = null, bool lookAhead = false)
         {
             var next = lookAhead ? PeekLookAhead() : PeekToken();
             if (next.Type != identType)

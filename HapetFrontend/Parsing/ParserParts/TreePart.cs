@@ -333,6 +333,10 @@ namespace HapetFrontend.Parsing
             var expr = ParseAtomicExpression(inInfo, ref outInfo);
             inInfo.AllowArrayExpression = savedAllowence;
 
+            // just move forward the udecl :)
+            if (expr is AstUnknownDecl)
+                return expr;
+
             bool breakLoop = false;
             while (!breakLoop)
             {
@@ -340,13 +344,6 @@ namespace HapetFrontend.Parsing
                 {
                     case TokenType.OpenParen:
                         {
-                            // if it is func decl, not call
-                            if (inInfo.AllowFunctionDeclaration)
-                            {
-                                breakLoop = true;
-                                break;
-                            }
-
                             // TODO: not only nested should be allowed. tuples, lamdas and other shite
                             var args = ParseArgumentList(out var _, out var end);
                             if (expr is not AstNestedExpr nestExpr)
@@ -421,28 +418,7 @@ namespace HapetFrontend.Parsing
                                 ReportMessage(end, [], ErrorCode.Get(CTEN.ArrayAccTooManyArgs));
                             }
 
-                            if (args.First() is not AstExpression firstExpr)
-                            {
-                                // if it is not an expr - then this is probably an indexer overload
-                                if (args.First() is not AstUnknownDecl unknownDecl || 
-                                    expr is not AstUnknownDecl indexerDecl || 
-                                    indexerDecl.Name.Name != "this")
-                                {
-                                    ReportMessage(args.First().Location, [], ErrorCode.Get(CTEN.ArrayAccNotExpr));
-                                    return expr;
-                                }
-
-                                SkipNewlines();
-
-                                // TODO: doc 
-                                indexerDecl.Name = indexerDecl.Name.GetCopy("indexer__");
-                                var prop = PreparePropertyDecl(indexerDecl, "") as AstPropertyDecl;
-                                var indexer = new AstIndexerDecl(prop);
-                                indexer.IndexerParameter = new AstParamDecl(unknownDecl.Type, unknownDecl.Name, null, "", unknownDecl);
-
-                                return indexer;
-                            }
-                            var arrAcc = new AstArrayAccessExpr(expr as AstExpression, firstExpr, new Location(expr.Beginning, end));
+                            var arrAcc = new AstArrayAccessExpr(expr as AstExpression, args[0] as AstExpression, new Location(expr.Beginning, end));
                             expr = new AstNestedExpr(arrAcc, null, arrAcc);
 
                             // check for dots after this!!! there could be a.arr[i].Length
@@ -472,11 +448,6 @@ namespace HapetFrontend.Parsing
             var token = PeekToken();
             switch (token.Type)
             {
-                case TokenType.KwBreak:
-                case TokenType.KwContinue:
-                    NextToken();
-                    return new AstBreakContStmt(token.Type == TokenType.KwBreak, new Location(token.Location));
-
                 case TokenType.KwDefault:
                     {
                         NextToken();
@@ -488,15 +459,8 @@ namespace HapetFrontend.Parsing
                     NextToken();
                     return new AstNullExpr(PointerType.NullLiteralType, new Location(token.Location));
 
-                case TokenType.OpenBracket:
-                    return ParseAttributeStatement();
-
                 case TokenType.KwNew:
                     {
-                        // if 'new' is a special key
-                        if (inInfo.AllowNewAsSpecialKey)
-                            return ParseImplementationKeys(token, inInfo, ref outInfo);
-
                         return ParseNewExpression();
                     }
 
@@ -520,7 +484,7 @@ namespace HapetFrontend.Parsing
 
                 case TokenType.Identifier:
                     {
-                        var id = ParseIdentifierExpression(allowGenerics: inInfo.AllowGeneric);
+                        var id = ParseIdentifierExpression();
 
                         // if it is a pointer or array type
                         while (CheckToken(TokenType.Asterisk) || CheckToken(TokenType.ArrayDef))
@@ -550,7 +514,7 @@ namespace HapetFrontend.Parsing
                         // the second identifier for UnknownDecl
                         if (CheckToken(TokenType.Identifier))
                         {
-                            var name = ParseIdentifierExpression(allowDots: false, allowGenerics: inInfo.AllowGeneric);
+                            var name = ParseIdentifierExpression(allowDots: false);
                             if (name.RightPart is not AstIdExpr idExpr)
                             {
                                 ReportMessage(id.Location, [], ErrorCode.Get(CTEN.DeclNameIsNotIdent));
@@ -566,11 +530,7 @@ namespace HapetFrontend.Parsing
                     {
                         NextToken();
 
-                        var savedAllowPointer = inInfo.AllowPointerExpression;
-                        inInfo.AllowPointerExpression = false;
                         var expr = ParseExpression(inInfo, ref outInfo);
-                        inInfo.AllowPointerExpression = savedAllowPointer;
-
                         if (expr is AstIdExpr idExpr)
                         {
                             idExpr.Suffix = "~";
@@ -581,12 +541,6 @@ namespace HapetFrontend.Parsing
                             ReportMessage(PeekToken().Location, [], ErrorCode.Get(CTEN.TildaUnexpectedExpr));
                         }
                         return expr;
-                    }
-
-                // directive
-                case TokenType.SharpIdentifier:
-                    {
-                        return ParseDirectiveStatement();
                     }
 
                 case TokenType.StringLiteral:
@@ -609,56 +563,8 @@ namespace HapetFrontend.Parsing
                     NextToken();
                     return new AstBoolExpr(false, new Location(token.Location));
 
-                case TokenType.OpenBrace:
-                    return ParseBlockExpression();
-
-                case TokenType.KwIf:
-                    return ParseIfStatement();
-
-                case TokenType.KwSwitch:
-                    return ParseSwitchStatement();
-                case TokenType.KwCase:
-                    return ParseCaseStatement();
-
                 case TokenType.OpenParen:
                     return ParseTupleExpression(inInfo, ref outInfo);
-
-                case TokenType.KwDelegate:
-                    return ParseDelegateDeclaration(inInfo, ref outInfo);
-
-                case TokenType.KwStruct:
-                    return ParseStructDeclaration(inInfo, ref outInfo);
-
-                case TokenType.KwEnum:
-                    return ParseEnumDeclaration(inInfo, ref outInfo);
-
-                case TokenType.KwInterface:
-                case TokenType.KwClass:
-                    return ParseClassDeclaration(inInfo, ref outInfo);
-
-                // custom shite
-                case TokenType.KwPublic:
-                case TokenType.KwInternal:
-                case TokenType.KwProtected:
-                case TokenType.KwPrivate:
-                case TokenType.KwUnreflected:
-                    return ParseAccessKeys(token, inInfo, ref outInfo);
-
-                case TokenType.KwAsync:
-                    return ParseSyncKeys(token, inInfo, ref outInfo);
-
-                case TokenType.KwConst:
-                case TokenType.KwStatic:
-                case TokenType.KwReadonly:
-                    return ParseInstancingKeys(token, inInfo, ref outInfo);
-
-                case TokenType.KwAbstract:
-                case TokenType.KwVirtual:
-                case TokenType.KwOverride:
-                case TokenType.KwPartial:
-                case TokenType.KwExtern:
-                case TokenType.KwSealed:
-                    return ParseImplementationKeys(token, inInfo, ref outInfo);
 
                 default:
                     if (inInfo.Message != null && inInfo.Message.MessageArgs == null)

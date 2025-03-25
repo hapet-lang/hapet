@@ -5,20 +5,19 @@ using HapetFrontend.Ast;
 using HapetFrontend.Errors;
 using System.Collections.Generic;
 using System.Runtime;
+using HapetFrontend.Entities;
+using HapetFrontend.Extensions;
 
 namespace HapetFrontend.Parsing
 {
     public partial class Parser
     {
-        private AstDeclaration PrepareUnknownDecl(AstUnknownDecl udecl, List<AstAttributeStmt> attrs)
+        private AstDeclaration PrepareUnknownDecl(AstUnknownDecl udecl, List<AstAttributeStmt> attrs, ParserInInfo inInfo, ref ParserOutInfo outInfo)
         {
             TokenLocation end = udecl.Ending;
             AstStatement initializer = null;
             var savedUdecl = inInfo.CurrentUdecl;
             inInfo.CurrentUdecl = udecl;
-
-            // disable new as sk allowance!!!
-            inInfo.AllowNewAsSpecialKey = false;
 
             // variable declaration with initializer
             if (CheckToken(TokenType.Equal))
@@ -53,13 +52,7 @@ namespace HapetFrontend.Parsing
             // func declaration 
             else if (CheckToken(TokenType.OpenParen))
             {
-                var saved1 = inInfo.AllowFunctionDeclaration;
-                var saved2 = inInfo.AllowCommaForTuple;
-                inInfo.AllowFunctionDeclaration = true;
-                inInfo.AllowCommaForTuple = true;
                 var tpl = ParseTupleExpression(inInfo, ref outInfo);
-                inInfo.AllowFunctionDeclaration = saved1;
-                inInfo.AllowCommaForTuple = saved2;
 
                 if (tpl is AstFuncDecl func)
                 {
@@ -97,14 +90,28 @@ namespace HapetFrontend.Parsing
                 OnExit();
                 return prop;
             }
-
-            // possible operator override
-            var result = ParseOperatorOverride(udecl);
-            if (result != null)
+            // indexer?
+            else if (CheckToken(TokenType.OpenBracket) && udecl.Name.Name == "this")
             {
-                result.Attributes.AddRange(attrs);
-                OnExit();
-                return result;
+                SkipNewlines();
+                // TODO: doc 
+                udecl.Name = udecl.Name.GetCopy("indexer__");
+                var prop = PreparePropertyDecl(udecl, "") as AstPropertyDecl;
+                var indexer = new AstIndexerDecl(prop);
+                indexer.IndexerParameter = new AstParamDecl(unknownDecl.Type, unknownDecl.Name, null, "", unknownDecl);
+
+                return indexer;
+            }
+            else if (CheckToken(TokenType.KwOperator))
+            {
+                // possible operator override
+                var result = ParseOperatorOverride(udecl);
+                if (result != null)
+                {
+                    result.Attributes.AddRange(attrs);
+                    OnExit();
+                    return result;
+                }
             }
 
             ReportMessage(PeekToken().Location, [], ErrorCode.Get(CTEN.PureUnexpectedToken)); // TODO: better error message?
