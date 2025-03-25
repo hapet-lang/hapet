@@ -660,6 +660,7 @@ namespace HapetFrontend.Parsing
 
                 case TokenType.KwConst:
                 case TokenType.KwStatic:
+                case TokenType.KwReadonly:
                     return ParseInstancingKeys(token, inInfo, ref outInfo);
 
                 case TokenType.KwAbstract:

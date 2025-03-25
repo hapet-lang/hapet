@@ -5,15 +5,4 @@
 [SuppressStaticCtorCallAttribute]
 public class FlagsAttribute : Attribute
 {
-    public int AnimeProps<T> 
-    {
-        get 
-        {
-            return 14;
-        }
-        set
-        {
-            
-        }
-    }
 }
