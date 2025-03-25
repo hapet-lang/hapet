@@ -187,7 +187,7 @@ namespace HapetPostPrepare
                 {
                     var parentFields = GetPreparedFields__(inhDecl);
 
-                    // remove all parent fields when there is a 'new' in current
+                    // shadowing cringe
                     foreach (var f in currentFieldDecls.ToList())
                     {
                         var inhF = parentFields.FirstOrDefault(x => x.Name.Name == f.Name.Name);
@@ -214,8 +214,6 @@ namespace HapetPostPrepare
                                 [], ErrorCode.Get(CTEN.PureUnexpectedToken));
                             continue;
                         }
-
-                        // shadowing :)
                     }
 
                     // just add parent fields if it is a class
