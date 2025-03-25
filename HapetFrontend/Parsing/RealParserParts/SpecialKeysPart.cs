@@ -3,6 +3,8 @@ using HapetFrontend.Ast.Declarations;
 using HapetFrontend.Ast.Expressions;
 using HapetFrontend.Entities;
 using HapetFrontend.Errors;
+using Newtonsoft.Json.Linq;
+using System.Runtime;
 
 namespace HapetFrontend.Parsing
 {
@@ -89,6 +91,48 @@ namespace HapetFrontend.Parsing
             expr.Location = new Location(beg, prevLoc.Ending);
 
             return expr;
+        }
+
+        private List<Token> ParseSpecialKeys()
+        {
+            bool running = true;
+            List<Token> keys = new List<Token>();
+            while (running)
+            {
+                var tkn = PeekToken();
+                switch (tkn.Type) 
+                {
+                    // custom shite
+                    case TokenType.KwPublic:
+                    case TokenType.KwInternal:
+                    case TokenType.KwProtected:
+                    case TokenType.KwPrivate:
+                    case TokenType.KwUnreflected:
+
+                    case TokenType.KwAsync:
+
+                    case TokenType.KwNew:
+
+                    case TokenType.KwConst:
+                    case TokenType.KwReadonly:
+
+                    case TokenType.KwStatic:
+
+                    case TokenType.KwAbstract:
+                    case TokenType.KwVirtual:
+                    case TokenType.KwOverride:
+                    case TokenType.KwPartial:
+                    case TokenType.KwExtern:
+                    case TokenType.KwSealed:
+                        keys.Add(tkn);
+                        NextToken();
+                        break;
+                    default:
+                        running = false;
+                        break;
+                }
+            }
+            return keys;
         }
     }
 }

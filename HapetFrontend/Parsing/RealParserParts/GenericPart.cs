@@ -67,33 +67,5 @@ namespace HapetFrontend.Parsing
             }
             return genericConstrains;
         }
-
-        private void HandleGenericWithLookAhead(AstStatement expr)
-        {
-            // check for generic call
-            if (CheckToken(TokenType.Less) && expr is AstNestedExpr nstExpr && nstExpr.RightPart is AstIdExpr idExpr)
-            {
-                // lookahead cringe
-                UpdateLookAheadLocation();
-                bool isGeneric = HandleGeneric(idExpr, out var _, true);
-
-                if (!CheckLookAhead(TokenType.OpenParen) &&  // when Anime<T>(..)
-                    !CheckLookAhead(TokenType.CloseParen) && // when (Anime<T>)inst
-                    !CheckLookAhead(TokenType.Semicolon) &&  // when a = abs.Anime<T>; - generic prop
-                    !CheckLookAhead(TokenType.EOF))          // :)
-                {
-                    // cringe, it is not generic shite - skip
-                    isGeneric = false;
-                }
-
-                // if really generic shite
-                if (isGeneric)
-                {
-                    // creating the generic ast id
-                    HandleGeneric(idExpr, out var genId, false);
-                    nstExpr.RightPart = genId;
-                }
-            }
-        }
     }
 }

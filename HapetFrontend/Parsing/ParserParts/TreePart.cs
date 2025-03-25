@@ -336,10 +336,6 @@ namespace HapetFrontend.Parsing
             bool breakLoop = false;
             while (!breakLoop)
             {
-                // handle generic expr
-                if (inInfo.AllowGeneric)
-                    HandleGenericWithLookAhead(expr);
-
                 switch (PeekToken().Type)
                 {
                     case TokenType.OpenParen:
@@ -396,14 +392,7 @@ namespace HapetFrontend.Parsing
                                 if (next.Type == TokenType.CloseBracket || next.Type == TokenType.EOF)
                                     break;
 
-                                bool savedAllowComma = inInfo.AllowCommaForTuple;
-                                bool savedAllowGen = inInfo.AllowGeneric;
-                                inInfo.AllowCommaForTuple = true;
-                                inInfo.AllowGeneric = false;
                                 args.Add(ParseExpression(inInfo, ref outInfo));
-                                inInfo.AllowCommaForTuple = savedAllowComma;
-                                inInfo.AllowGeneric = savedAllowGen;
-
                                 SkipNewlines();
 
                                 next = PeekToken();

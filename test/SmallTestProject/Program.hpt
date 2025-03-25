@@ -9,30 +9,16 @@ public static class Program
 {
     public static int Main(string[] args)
     {
-        AnimeDerived a = new AnimeDerived();
-        a.Propa = 41;
-        var b = a as AnimeBase;
-        b.Propa = 12;
-        return a.Propa;
+        var a = new Anime<int>();
+        var b = (Anime<int>)a;
+        var c = new Anime<Anime<int>>();
+        var d = (3 >> 41);
+        return 0;
     }
 }
 
-public class AnimeBase
+public class Anime<T>
 {
-    public int Propa { get; set; }
 
-    public int Test()
-    {
-        return 33;
-    }
 }
 
-public class AnimeDerived : AnimeBase
-{
-    public new int Propa { get; set; }
-
-    public new int Test()
-    {
-        return 44;
-    }
-}
