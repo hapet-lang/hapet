@@ -11,6 +11,7 @@ namespace HapetFrontend.Entities
         public bool AllowPointerExpression { get; set; }
         public bool AllowArrayExpression { get; set; }
         public bool AllowGeneric { get; set; }
+        public bool AllowNewAsSpecialKey { get; set; }
 
         /// <summary>
         /// 'true' when parsing .mpt file

@@ -113,39 +113,45 @@ namespace HapetFrontend.Extensions
             index = -1;
             // there is already params type in name like
             // TestClass::AnimeFunc(int:PivoCls)
-            string searchName = searchFunc.Name.Name.Split("::")[1];
+            string searchName = searchFunc.Name.Name.GetPureFuncName();
+            List<HapetType> types = searchFunc.Parameters.Select(x => x.Type.OutType).ToList();
             if (skipFirst)
             {
                 // remove the first param
-                searchName = GetSkipped(searchName);
+                types = types.Skip(1).ToList();
             }
             for (int i = 0; i < delcs.Count; ++i)
             {
                 var x = delcs[i];
-                string currName = x.Name.Name.Split("::")[1];
+                string currName = x.Name.Name.GetPureFuncName();
+                List<HapetType> typesD = x.Parameters.Select(x => x.Type.OutType).ToList();
                 if (skipFirst)
                 {
                     // remove the first param
-                    currName = GetSkipped(currName);
+                    typesD = typesD.Skip(1).ToList();
                 }
-                if ((currName == searchName) && x.Returns.OutType == searchFunc.Returns.OutType)
+
+                // check for parameter types
+                bool areTypesTheSame = typesD.Count == types.Count;
+                if (areTypesTheSame)
+                    for (int j = 0; j < types.Count; ++j)
+                    {
+                        var t1 = types[j];
+                        var t2 = typesD[j];
+                        if (t1 != t2)
+                        {
+                            areTypesTheSame = false;
+                            break;
+                        }
+                    }
+
+                if ((currName == searchName) && x.Returns.OutType == searchFunc.Returns.OutType && areTypesTheSame)
                 {
                     index = i;
                     return x;
                 }
             }
             return null;
-
-            static string GetSkipped(string name)
-            {
-                var parenIndex = name.IndexOf('(');
-                var firstPart = name.Substring(0, parenIndex + 1);
-                var secondPart = name.Substring(parenIndex + 1);
-                var skipped = string.Concat(secondPart.SkipWhile(x => x != ':' && x != ')'));
-                if (skipped[0] == ':')
-                    skipped = skipped.Substring(1);
-                return $"{firstPart}{skipped}";
-            }
         }
 
         public static AstDeclaration GetSameDeclByTypeAndName(this List<AstDeclaration> decls, AstDeclaration decl)

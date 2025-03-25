@@ -113,6 +113,9 @@ namespace HapetFrontend.Parsing
             var savedUdecl = inInfo.CurrentUdecl;
             inInfo.CurrentUdecl = udecl;
 
+            // disable new as sk allowance!!!
+            inInfo.AllowNewAsSpecialKey = false;
+
             // variable declaration with initializer
             if (CheckToken(TokenType.Equal))
             {

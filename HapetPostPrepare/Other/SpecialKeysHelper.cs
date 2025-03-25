@@ -14,6 +14,7 @@ namespace HapetPostPrepare
 
             TokenType syncKey = default;          // async
             TokenType accessKey = default;        // public/protected/internal/private/unreflected
+            TokenType shadowKey = default;        // new
             TokenType instanceKey = default;      // readonly/static/const
             TokenType abstractionKey = default;   // abstract/virtual/override
             TokenType otherKey = default;         // partial/extern/sealed/inline/noexcept/imported
@@ -26,29 +27,35 @@ namespace HapetPostPrepare
                 {
                     case 0:
                         {
-                            TokenType[] asArr = [accessKey, instanceKey, abstractionKey, otherKey];
+                            TokenType[] asArr = [accessKey, shadowKey, instanceKey, abstractionKey, otherKey];
                             Handler(asArr, currKey.Type, ref syncKey);
                             break;
                         }
                     case 1:
                         {
-                            TokenType[] asArr = [instanceKey, abstractionKey, otherKey];
+                            TokenType[] asArr = [shadowKey, instanceKey, abstractionKey, otherKey];
                             Handler(asArr, currKey.Type, ref accessKey);
                             break;
                         }
                     case 2:
                         {
+                            TokenType[] asArr = [instanceKey, abstractionKey, otherKey];
+                            Handler(asArr, currKey.Type, ref accessKey);
+                            break;
+                        }
+                    case 3:
+                        {
                             TokenType[] asArr = [abstractionKey, otherKey];
                             Handler(asArr, currKey.Type, ref instanceKey);
                             break;
                         }
-                    case 3:
+                    case 4:
                         {
                             TokenType[] asArr = [otherKey];
                             Handler(asArr, currKey.Type, ref abstractionKey);
                             break;
                         }
-                    case 4:
+                    case 5:
                         {
                             TokenType[] asArr = [];
                             Handler(asArr, currKey.Type, ref otherKey);
@@ -84,6 +91,7 @@ namespace HapetPostPrepare
         {
             TokenType syncKey = default;          // async
             TokenType accessKey = default;        // public/protected/internal/private/unreflected
+            TokenType shadowKey = default;        // new
             TokenType instanceKey = default;      // readonly/static/const
             TokenType abstractionKey = default;   // abstract/virtual/override
             TokenType otherKey = default;         // partial/extern/sealed/inline/noexcept/imported
@@ -101,12 +109,15 @@ namespace HapetPostPrepare
                         accessKey = currKey.Type;
                         break;
                     case 2:
-                        instanceKey = currKey.Type;
+                        shadowKey = currKey.Type;
                         break;
                     case 3:
-                        abstractionKey = currKey.Type;
+                        instanceKey = currKey.Type;
                         break;
                     case 4:
+                        abstractionKey = currKey.Type;
+                        break;
+                    case 5:
                         otherKey = currKey.Type;
                         break;
                 }
@@ -167,6 +178,27 @@ namespace HapetPostPrepare
                     }
                 case 3:
                     {
+                        if (instanceKey != default)
+                        {
+                            if (doError)
+                                _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, decl.Name,
+                                    [Lexer.GetKeywordFromToken(specialKey.Type), Lexer.GetKeywordFromToken(instanceKey)],
+                                    ErrorCode.Get(CTEN.AlreadyDefinedSpecialKey));
+                            break;
+                        }
+
+                        int index = 0;
+                        if (syncKey != default)
+                            index++;
+                        if (accessKey != default)
+                            index++;
+                        if (shadowKey != default)
+                            index++;
+                        decl.SpecialKeys.Insert(index, specialKey);
+                        break;
+                    }
+                case 4:
+                    {
                         if (abstractionKey != default)
                         {
                             if (doError)
@@ -181,12 +213,14 @@ namespace HapetPostPrepare
                             index++;
                         if (accessKey != default)
                             index++;
+                        if (shadowKey != default)
+                            index++;
                         if (instanceKey != default)
                             index++;
                         decl.SpecialKeys.Insert(index, specialKey);
                         break;
                     }
-                case 4:
+                case 5:
                     {
                         if (otherKey != default)
                         {
@@ -201,6 +235,8 @@ namespace HapetPostPrepare
                         if (syncKey != default)
                             index++;
                         if (accessKey != default)
+                            index++;
+                        if (shadowKey != default)
                             index++;
                         if (instanceKey != default)
                             index++;
@@ -228,18 +264,21 @@ namespace HapetPostPrepare
                     {
                         return 1;
                     }
+                case TokenType.KwNew:
+                    {
+                        return 2;
+                    }
                 case TokenType.KwReadonly:
                 case TokenType.KwStatic:
                 case TokenType.KwConst:
                     {
-                        return 2;
+                        return 3;
                     }
                 case TokenType.KwAbstract:
                 case TokenType.KwVirtual:
                 case TokenType.KwOverride:
-                case TokenType.KwNew:
                     {
-                        return 3;
+                        return 4;
                     }
                 case TokenType.KwPartial:
                 case TokenType.KwExtern:
@@ -247,7 +286,7 @@ namespace HapetPostPrepare
                 case TokenType.KwInline:
                 case TokenType.KwNoexcept:
                     {
-                        return 4;
+                        return 5;
                     }
             }
             return -1;

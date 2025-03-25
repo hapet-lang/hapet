@@ -236,10 +236,6 @@ namespace HapetFrontend.Parsing
                     next.Location.End = t2.Location.End;
                 }
 
-                // no need to parse anything further - it should be handled by generic parser
-                if (inInfo.AllowGeneric && (next.Type == TokenType.GreaterGreater || next.Type == TokenType.Greater || next.Type == TokenType.Less))
-                    return lhs;
-
                 var op = tokenMapping(next.Type);
                 if (op == null)
                 {
@@ -508,6 +504,10 @@ namespace HapetFrontend.Parsing
 
                 case TokenType.KwNew:
                     {
+                        // if 'new' is a special key
+                        if (inInfo.AllowNewAsSpecialKey)
+                            return ParseImplementationKeys(token, inInfo, ref outInfo);
+
                         return ParseNewExpression();
                     }
 
