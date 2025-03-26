@@ -93,6 +93,8 @@ namespace HapetFrontend.Parsing
                     !CheckLookAhead(TokenType.CloseParen) && // when (Anime<T>)inst
                     !CheckLookAhead(TokenType.Greater) &&    // when ...<Anime<int>>
                     !CheckLookAhead(TokenType.NewLine) &&    // when Anime<int>\n
+                    !CheckLookAhead(TokenType.Colon) &&    // when Anime<int> : ...
+                    !CheckLookAhead(TokenType.KwWhere) &&    // when Anime<T> where T ...
                     !CheckLookAhead(TokenType.Semicolon) &&  // when a = abs.Anime<T>; - generic prop
                     !CheckLookAhead(TokenType.EOF))          // :)
                 {
