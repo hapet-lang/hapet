@@ -448,8 +448,20 @@ namespace HapetFrontend.Parsing
                 case TokenType.KwDefault:
                     {
                         NextToken();
+
+                        // only type is expected
+                        AstExpression typeExpr = null;
+                        if (CheckToken(TokenType.OpenParen))
+                        {
+                            NextToken();
+                            var saved = inInfo.AllowMultiplyExpression;
+                            inInfo.AllowMultiplyExpression = false;
+                            typeExpr = ParseAtomicExpression(inInfo, ref outInfo) as AstExpression;
+                            inInfo.AllowMultiplyExpression = saved;
+                            Consume(TokenType.CloseParen, ErrMsg(")", "after default' type arg"));
+                        }
                         // it is just a 'default' word
-                        return new AstDefaultExpr(new Location(token.Location));
+                        return new AstDefaultExpr(new Location(token.Location)) { TypeForDefault = typeExpr };
                     }
 
                 case TokenType.KwNull:

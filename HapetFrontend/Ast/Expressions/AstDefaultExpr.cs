@@ -7,6 +7,7 @@ namespace HapetFrontend.Ast.Expressions
     public class AstDefaultExpr : AstExpression
     {
         public override string AAAName => nameof(AstDefaultExpr);
+        public AstExpression TypeForDefault { get; set; }
 
         public AstDefaultExpr(ILocation location = null) : base(location)
         {
