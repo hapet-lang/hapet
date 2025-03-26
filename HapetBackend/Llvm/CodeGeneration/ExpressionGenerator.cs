@@ -252,6 +252,50 @@ namespace HapetBackend.Llvm
                                 return _builder.BuildBitCast(left, HapetTypeToLLVMType(rightExpr.OutType), "castedAs");
                             }
                         }
+                    case "is":
+                        {
+                            var rightExpr = (binExpr.Right as AstExpression);
+
+                            var leftType = (leftExpr.OutType as PointerType).TargetType as ClassType;
+                            var rightType = (rightExpr.OutType as PointerType).TargetType as ClassType;
+
+                            // you would ask - wtf is anyIsInterface? - read upper 
+
+                            bool anyIsInterface = rightType.Declaration.IsInterface || leftType.Declaration.IsInterface;
+                            bool isUpcast = leftType.IsInheritedFrom(rightType);
+                            // check upcast
+                            if (!isUpcast || anyIsInterface)
+                            {
+                                // swap them and check inheritance
+                                bool isDownCast = rightType.IsInheritedFrom(leftType);
+                                if (isDownCast || anyIsInterface)
+                                {
+                                    var ptrToCastTypeInfo = _typeInfoDictionary[rightType];
+
+                                    // WARN: hard cock
+                                    var typeConverter = _currentFunction.Scope.GetSymbolInNamespace("System.Runtime.Conversion", "TypeConverter");
+                                    DeclSymbol downcasterSymbol;
+                                    if (rightType.Declaration.IsInterface)
+                                        downcasterSymbol = (typeConverter.Decl as AstClassDecl).SubScope.GetSymbol("System.Runtime.Conversion.TypeConverter::CanBeDowncastedInterface(void*:System.Runtime.TypeInfoUnsafe*)") as DeclSymbol;
+                                    else
+                                        downcasterSymbol = (typeConverter.Decl as AstClassDecl).SubScope.GetSymbol("System.Runtime.Conversion.TypeConverter::CanBeDowncasted(void*:System.Runtime.TypeInfoUnsafe*)") as DeclSymbol;
+                                    var downcasterFunc = _valueMap[downcasterSymbol];
+                                    LLVMTypeRef funcType = _typeMap[downcasterSymbol.Decl.Type.OutType];
+                                    var canBeDowncasted = _builder.BuildCall2(funcType, downcasterFunc, new LLVMValueRef[] { left, ptrToCastTypeInfo }, "canBeDowncasted");
+                                    return canBeDowncasted;
+                                }
+                                else
+                                {
+                                    _messageHandler.ReportMessage(_currentSourceFile.Text, binExpr, [HapetType.AsString(leftType), HapetType.AsString(rightType)], ErrorCode.Get(CTEN.TypeCouldNotBeConverted));
+                                    return default;
+                                }
+                            }
+                            else
+                            {
+                                // just true when upcast shite
+                                return GenerateExpressionCode(new AstBoolExpr(true));
+                            }
+                        }
                     default:
                         {
                             var rightExpr = (binExpr.Right as AstExpression);

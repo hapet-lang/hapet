@@ -168,7 +168,7 @@ namespace HapetFrontend.Types
             List<AstNestedExpr> inhFrom;
             if (this is ClassType clsT)
                 inhFrom = clsT.Declaration.InheritedFrom;
-            else if (this is ClassType strT)
+            else if (this is StructType strT)
                 inhFrom = strT.Declaration.InheritedFrom;
             else
                 return false;
