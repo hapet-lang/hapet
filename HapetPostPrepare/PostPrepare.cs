@@ -26,6 +26,11 @@ namespace HapetPostPrepare
         /// </summary>
         private AstFuncDecl _currentFunction;
 
+        /// <summary>
+        /// The block that is currently preparing
+        /// </summary>
+        private AstBlockExpr _currentBlock;
+
         public PostPrepare(Compiler compiler)
         {
             _compiler = compiler;

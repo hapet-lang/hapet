@@ -8,10 +8,11 @@ public static class Program
     public static int Main(string[] args)
     {
         var a = new Anime<int>();
+        a.Test = 44;
         var b = a as Base;
 
-        if (b is Anime<int>)
-            return 13;
+        if (b is Anime<int> asd)
+            return asd.Test;
         return 0;
     }
 }
@@ -23,6 +24,6 @@ public class Base
 
 public class Anime<T> : Base
 {
-
+    public int Test { get; set; }
 }
 

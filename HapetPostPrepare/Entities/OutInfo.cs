@@ -1,4 +1,5 @@
 ﻿using HapetFrontend.Ast;
+using HapetFrontend.Ast.Declarations;
 using HapetFrontend.Ast.Expressions;
 
 namespace HapetPostPrepare.Entities
@@ -10,6 +11,8 @@ namespace HapetPostPrepare.Entities
         public bool ItWasIndexer { get; set; }
         public AstNestedExpr IndexedObject { get; set; }
         public AstExpression IndexedIndex { get; set; }
+
+        public List<AstVarDecl> IsOpDeclarations { get; private set; } = new List<AstVarDecl>();
 
         public static OutInfo Default => new OutInfo()
         {

@@ -413,8 +413,11 @@ namespace HapetPostPrepare
             // list of all replacements that should be done
             // so all Propa assigns would be replaced with func calls
             Dictionary<AstAssignStmt, AstCallExpr> repls = new Dictionary<AstAssignStmt, AstCallExpr>();
+
+            var prevBlock = _currentBlock;
+            _currentBlock = blockExpr;
             // go all over the statements
-            foreach (var stmt in blockExpr.Statements)
+            foreach (var stmt in blockExpr.Statements.ToList())
             {
                 if (stmt == null)
                     continue;
@@ -468,6 +471,8 @@ namespace HapetPostPrepare
                 blockExpr.Statements.Remove(pair.Key);
                 blockExpr.Statements.Insert(assignIndex, pair.Value);
             }
+
+            _currentBlock = prevBlock;
         }
 
         private void PostPrepareUnaryExprInference(AstUnaryExpr unExpr, InInfo inInfo, ref OutInfo outInfo)
@@ -506,8 +511,6 @@ namespace HapetPostPrepare
             // resolve the actual operator in the current scope
             PostPrepareExprInference(binExpr.Left as AstExpression, inInfo, ref outInfo);
             PostPrepareExprInference(binExpr.Right as AstExpression, inInfo, ref outInfo);
-            if (binExpr.AdditionalExpr != null)
-                PostPrepareExprInference(binExpr.AdditionalExpr as AstExpression, inInfo, ref outInfo);
 
             var operators = binExpr.Scope.GetBinaryOperators(binExpr.Operator, (binExpr.Left as AstExpression).OutType, (binExpr.Right as AstExpression).OutType);
             if (operators.Count == 0)
@@ -554,6 +557,17 @@ namespace HapetPostPrepare
                             // so bitcast would be possible
                             rightExpr.OutType = PointerType.GetPointerType(rightExpr.OutType);
                             binExpr.OutType = BoolType.Instance;
+
+                            if (binExpr.AdditionalExpr is AstIdExpr idExpr)
+                            {
+                                AstBinaryExpr asExpr = binExpr.GetDeepCopy() as AstBinaryExpr;
+                                asExpr.Operator = "as";
+                                PostPrepareExprInference(asExpr, inInfo, ref outInfo);
+
+                                AstVarDecl varDecl = new AstVarDecl(rightExpr, idExpr, asExpr, "", idExpr);
+                                outInfo.IsOpDeclarations.Add(varDecl);
+                            }
+
                             // TODO: check for inheritance!!!
                             break;
                         }
@@ -1679,6 +1693,25 @@ namespace HapetPostPrepare
         private void PostPrepareIfStmtInference(AstIfStmt ifStmt, InInfo inInfo, ref OutInfo outInfo)
         {
             PostPrepareExprInference(ifStmt.Condition, inInfo, ref outInfo);
+
+            // store the decls
+            // list of all additions of declarations that was in 'if' stmts
+            // like 'if (test is Anime anime)' so we add 'Anime anime = test as Anime;'
+            // decl before 'if' stmt
+            if (outInfo.IsOpDeclarations.Count > 0)
+            {
+                // pp them
+                foreach (var varDecl in outInfo.IsOpDeclarations)
+                {
+                    SetScopeAndParent(varDecl, _currentBlock, _currentBlock.SubScope);
+                    PostPrepareVarScoping(varDecl);
+                    PostPrepareExprInference(varDecl, inInfo, ref outInfo);
+                }
+                // add decls before 'if' stmt
+                int ifStmtIndex = _currentBlock.Statements.IndexOf(ifStmt);
+                _currentBlock.Statements.InsertRange(ifStmtIndex, outInfo.IsOpDeclarations.ToList()); // clone them
+                outInfo.IsOpDeclarations.Clear();
+            }
 
             // error if it is not a bool type because it has to be
             if (ifStmt.Condition.OutType is not BoolType)
