@@ -7,10 +7,10 @@ public static class Program
 {
     public static int Main(string[] args)
     {
-        //var a = new Anime<int>();
-        //var b = (Anime<int>)a;
+        var a = new Anime<int>();
+        var b = (Anime<int>)a;
         var c = new Anime<Anime<int>>();
-        var d = (3 >> 41);
+        var d = (41 >> 3);
         return 0;
     }
 }
