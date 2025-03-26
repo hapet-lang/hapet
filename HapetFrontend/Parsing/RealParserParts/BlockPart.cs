@@ -30,9 +30,7 @@ namespace HapetFrontend.Parsing
                 if (next.Type == TokenType.CloseBrace || next.Type == TokenType.EOF)
                     break;
 
-                inInfo.ExpectNewline = false;
                 var s = ParseStatement(inInfo, ref outInfo);
-                inInfo.ExpectNewline = true;
 
                 if (s != null)
                 {

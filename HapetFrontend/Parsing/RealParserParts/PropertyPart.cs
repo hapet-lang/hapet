@@ -107,9 +107,7 @@ namespace HapetFrontend.Parsing
             if (CheckToken(TokenType.Equal))
             {
                 NextToken();
-                inInfo.AllowCommaForTuple = true;
                 initializer = ParseExpression(inInfo, ref outInfo);
-                inInfo.AllowCommaForTuple = false;
 
                 if (initializer is not AstExpression)
                 {

@@ -1,7 +1,4 @@
 ﻿using HapetFrontend.Ast;
-using HapetFrontend.Ast.Declarations;
-using HapetFrontend.Ast.Expressions;
-using HapetFrontend.Ast.Statements;
 using HapetFrontend.Entities;
 using HapetFrontend.Errors;
 
@@ -20,6 +17,7 @@ namespace HapetFrontend.Parsing
             switch (tkn.Type) 
             {
                 case TokenType.KwClass:
+                case TokenType.KwInterface:
                     toReturn = ParseClassDeclaration(inInfo, ref outInfo);
                     break;
                 case TokenType.KwStruct:
@@ -35,6 +33,9 @@ namespace HapetFrontend.Parsing
                 case TokenType.SharpIdentifier:
                     toReturn = ParseDirectiveStatement();
                     break;
+                case TokenType.OpenBracket:
+                    toReturn = ParseAttributeStatement();
+                    break;
                 case TokenType.KwUsing:
                     toReturn = ParseUsingStatement();
                     semicolonRequired = true;
@@ -49,13 +50,12 @@ namespace HapetFrontend.Parsing
             if (semicolonRequired)
                 Consume(TokenType.Semicolon, ErrMsg(";", "at the end of the statement"));
 
-            // expect newline
-            var next = PeekToken();
-            if (inInfo.ExpectNewline && next.Type != TokenType.NewLine && next.Type != TokenType.EOF)
-            {
-                ReportMessage(next.Location, [], ErrorCode.Get(CTEN.NewlineExpected));
-                RecoverStatement();
-            }
+            // skip unneeded
+            SkipNewlines();
+
+            // add special keys
+            if (toReturn is AstDeclaration decl)
+                decl.SpecialKeys.AddRange(specialKeys);
 
             return toReturn;
         }

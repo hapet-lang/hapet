@@ -20,38 +20,20 @@ namespace HapetFrontend.Parsing
             var saved3 = inInfo.AllowMultiplyExpression;
             inInfo.Message = null;
             inInfo.AllowMultiplyExpression = false; // DO NOT ALLOW MULTIPLY WHEN UDECL FIRST!!!
-            var expr = ParseExpression(inInfo, ref outInfo);
+            var expr = ParseStatement(inInfo, ref outInfo);
             inInfo.Message = saved2;
             inInfo.AllowMultiplyExpression = saved3;
 
-            if (expr is AstUnknownDecl udecl)
+            if (expr is AstDeclaration decl)
             {
-                SkipNewlines();
-
-                udecl.Documentation = docString;
-                var result = PrepareUnknownDecl(udecl, _foundAttributes, inInfo, ref outInfo);
-                // clearing found attr because they were applied to the decl
+                decl.Attributes.AddRange(_foundAttributes);
                 _foundAttributes.Clear();
-                return result;
+                return decl;
             }
             else if (expr is AstAttributeStmt attrStmt)
             {
                 _foundAttributes.Add(attrStmt);
                 return new AstEmptyDecl(new AstIdExpr("attr"));
-            }
-            // because of implicit/explicit kws
-            else if (expr is AstOverloadDecl overDecl)
-            {
-                overDecl.Attributes.AddRange(_foundAttributes);
-                _foundAttributes.Clear();
-                return overDecl;
-            }
-            // because of indexer overloading
-            else if (expr is AstIndexerDecl indexerDecl)
-            {
-                indexerDecl.Attributes.AddRange(_foundAttributes);
-                _foundAttributes.Clear();
-                return indexerDecl;
             }
 
             ReportMessage(PeekToken().Location, [], ErrorCode.Get(CTEN.ExpectedEqualOrNewline));

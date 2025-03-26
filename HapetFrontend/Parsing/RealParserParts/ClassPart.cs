@@ -96,11 +96,10 @@ namespace HapetFrontend.Parsing
                 if (next.Type == TokenType.CloseBrace || next.Type == TokenType.EOF)
                     break;
 
-                inInfo.AllowCommaForTuple = true;
-                inInfo.AllowNewAsSpecialKey = true;
+                // get current special keys
+                List<Token> specialKeys = ParseSpecialKeys();
                 var decl = ParseDeclaration(inInfo, ref outInfo);
-                inInfo.AllowCommaForTuple = false;
-                inInfo.AllowNewAsSpecialKey = false;
+                decl?.SpecialKeys.AddRange(specialKeys);
 
                 // it is probably an attribute so no need to save it to decls
                 if (decl is AstEmptyDecl)

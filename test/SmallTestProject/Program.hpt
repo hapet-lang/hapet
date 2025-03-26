@@ -1,16 +1,14 @@
 using System.Runtime.InteropServices;
 using System.Text;
 using System;
-using SmallTestProject.Test;
-using TestProject.Sub;
 using System.Runtime;
 
 public static class Program
 {
     public static int Main(string[] args)
     {
-        var a = new Anime<int>();
-        var b = (Anime<int>)a;
+        //var a = new Anime<int>();
+        //var b = (Anime<int>)a;
         var c = new Anime<Anime<int>>();
         var d = (3 >> 41);
         return 0;

@@ -87,11 +87,7 @@ namespace HapetFrontend.Parsing
                 if (next.Type == TokenType.CloseBrace || next.Type == TokenType.EOF)
                     break;
 
-                inInfo.AllowCommaForTuple = true;
-                inInfo.AllowNewAsSpecialKey = true;
                 var decl = ParseDeclaration(inInfo, ref outInfo);
-                inInfo.AllowCommaForTuple = false;
-                inInfo.AllowNewAsSpecialKey = false;
 
                 // it is probably an attribute so no need to save it to decls
                 if (decl is AstEmptyDecl)

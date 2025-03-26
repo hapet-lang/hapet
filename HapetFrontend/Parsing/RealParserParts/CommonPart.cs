@@ -16,7 +16,15 @@ namespace HapetFrontend.Parsing
             return new AstEmptyStmt(new Location(loc.beg, loc.end));
         }
 
-        private AstNestedExpr ParseIdentifierExpression(MessageResolver customMessage = null, TokenType identType = TokenType.Identifier, 
+        private AstNestedExpr ParseIdentifierExpression(MessageResolver customMessage = null, TokenType identType = TokenType.Identifier,
+            bool allowDots = true, bool allowGenerics = true, AstNestedExpr iniNested = null, bool lookAhead = false)
+        {
+            // lookahead cringe
+            UpdateLookAheadLocation();
+            return ParseIdentifierExpressionInternal(customMessage, identType, allowDots, allowGenerics, iniNested, lookAhead);
+        }
+
+        private AstNestedExpr ParseIdentifierExpressionInternal(MessageResolver customMessage = null, TokenType identType = TokenType.Identifier, 
             bool allowDots = true, bool allowGenerics = true, AstNestedExpr iniNested = null, bool lookAhead = false)
         {
             var next = lookAhead ? PeekLookAhead() : PeekToken();
@@ -73,15 +81,18 @@ namespace HapetFrontend.Parsing
 
         private bool HandleGenericWithLookAhead(AstIdExpr idExpr, out AstIdGenericExpr gener, bool lookAhead = false)
         {
-            // check for generic call
-            if (CheckToken(TokenType.Less))
-            {
-                // lookahead cringe
+            if (!lookAhead)
                 UpdateLookAheadLocation();
+
+            // check for generic call
+            if (CheckLookAhead(TokenType.Less))
+            {
                 bool isGeneric = HandleGeneric(idExpr, out var aheadGenId, true);
 
                 if (!CheckLookAhead(TokenType.OpenParen) &&  // when Anime<T>(..)
                     !CheckLookAhead(TokenType.CloseParen) && // when (Anime<T>)inst
+                    !CheckLookAhead(TokenType.Greater) &&    // when ...<Anime<int>>
+                    !CheckLookAhead(TokenType.NewLine) &&    // when Anime<int>\n
                     !CheckLookAhead(TokenType.Semicolon) &&  // when a = abs.Anime<T>; - generic prop
                     !CheckLookAhead(TokenType.EOF))          // :)
                 {
@@ -120,7 +131,7 @@ namespace HapetFrontend.Parsing
             // <Anime, dwdawd.dasd, ...>
             while ((lookAhead ? CheckLookAhead(TokenType.Identifier) : CheckToken(TokenType.Identifier)))
             {
-                generics.Add(ParseIdentifierExpression(allowGenerics: true, lookAhead: lookAhead));
+                generics.Add(ParseIdentifierExpressionInternal(allowGenerics: true, lookAhead: lookAhead));
 
                 // just skip commas
                 if ((lookAhead ? CheckLookAhead(TokenType.Comma) : CheckToken(TokenType.Comma)))
@@ -165,10 +176,11 @@ namespace HapetFrontend.Parsing
                 // eat the identifier
                 // do not allow dots - if it is a pointer - then
                 // the second ident is a name
-                var nextNest = ParseIdentifierExpression(lookAhead: true, allowDots: false);
+                var nextNest = ParseIdentifierExpressionInternal(lookAhead: true, allowDots: false);
                 if (nextNest.RightPart != null && (
                     CheckLookAhead(TokenType.Equal) ||        // when byte* aaa = ...
                     CheckLookAhead(TokenType.Semicolon) ||    // when byte* aaa;
+                    CheckLookAhead(TokenType.OpenParen) ||    // when public byte* aaa(...
                     CheckLookAhead(TokenType.CloseParen)))    // when (byte* aaa)
                 {
                     isPointer = true;

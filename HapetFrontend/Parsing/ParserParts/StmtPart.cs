@@ -67,21 +67,30 @@ namespace HapetFrontend.Parsing
                 default:
                     {
                         // just handlers
-                        ParserInInfo inInfo2 = ParserInInfo.Default;
-                        ParserOutInfo outInfo2 = ParserOutInfo.Default;
-                        inInfo2.ExternalMetadata = inInfo.ExternalMetadata;
-                        var stmt = ParseExpression(inInfo2, ref outInfo2); // anyway it should return AstStatement, not AstExpression
+                        var stmt = ParseExpression(inInfo, ref outInfo); // anyway it should return AstStatement, not AstExpression
+                        SkipNewlines();
 
                         if (stmt is AstEmptyStmt)
                         {
                             NextToken();
                             toReturn = stmt;
                         }
-                        if (stmt is AstUnknownDecl udecl)
+                        else if (stmt is AstUnknownDecl udecl)
                         {
-                            var dcl = PrepareUnknownDecl(udecl, new List<AstAttributeStmt>(), inInfo2, ref outInfo2);
+                            var dcl = PrepareUnknownDecl(udecl, new List<AstAttributeStmt>(), inInfo, ref outInfo);
                             toReturn = dcl;
                         }
+                        else if (stmt is AstDeclaration)
+                        {
+                            // no need for semicolon
+                            toReturn = stmt;
+                        }
+                        else
+                        {
+                            toReturn = stmt;
+                            semicolonRequired = true;
+                        }
+
                         if (CheckTokens(TokenType.Equal, TokenType.AddEq, TokenType.SubEq, TokenType.MulEq, TokenType.DivEq, TokenType.ModEq))
                         {
                             var currT = NextToken();
@@ -122,18 +131,17 @@ namespace HapetFrontend.Parsing
                                 semicolonRequired = true;
                             }
                         }
-                        else
-                        {
-                            toReturn = stmt;
-                            semicolonRequired = true;
-                        }
                         break;
                     }
             }
 
             // consume semicolon after some top level statements
+            var a = PeekToken();
             if (semicolonRequired)
                 Consume(TokenType.Semicolon, ErrMsg(";", "at the end of the statement"));
+
+            // skip unneeded
+            SkipNewlines();
 
             return toReturn;
         }

@@ -28,18 +28,14 @@ namespace HapetFrontend.Parsing
             // if there is a first param
             if (!CheckToken(TokenType.Semicolon))
             {
-                inInfo.ExpectNewline = false;
                 first = ParseStatement(inInfo, ref outInfo);
-                inInfo.ExpectNewline = true;
             }
             // Consume(TokenType.Semicolon, ErrMsg("';'", "after the first argument")); // WARN: semicolon is parsed inside ParseStatement
 
             // if there is a second param
             if (!CheckToken(TokenType.Semicolon))
             {
-                inInfo.AllowCommaForTuple = true;
                 var expr = ParseExpression(inInfo, ref outInfo);
-                inInfo.AllowCommaForTuple = false;
 
                 if (expr is not AstExpression)
                     ReportMessage(expr, [], ErrorCode.Get(CTEN.ForLoopSecondNotExpr));
@@ -50,9 +46,7 @@ namespace HapetFrontend.Parsing
             // if there is a third param
             if (!CheckToken(TokenType.CloseParen))
             {
-                inInfo.ExpectNewline = false;
                 third = ParseStatement(inInfo, ref outInfo);
-                inInfo.ExpectNewline = true;
             }
             var end = Consume(TokenType.CloseParen, ErrMsg("')'", "after the third argument"));
 
@@ -74,9 +68,7 @@ namespace HapetFrontend.Parsing
             else
             {
                 // getting only one stmt if there are no braces
-                inInfo.ExpectNewline = false;
                 var onlyStmt = ParseStatement(inInfo, ref outInfo);
-                inInfo.ExpectNewline = true;
                 body = new AstBlockExpr(new List<AstStatement>() { onlyStmt }, onlyStmt);
             }
 
@@ -100,9 +92,7 @@ namespace HapetFrontend.Parsing
             // if there is a condition param
             if (!CheckToken(TokenType.CloseParen))
             {
-                inInfo.AllowCommaForTuple = true;
                 var expr = ParseExpression(inInfo, ref outInfo);
-                inInfo.AllowCommaForTuple = false;
 
                 if (expr is not AstExpression)
                     ReportMessage(expr, [], ErrorCode.Get(CTEN.WhileLoopParamNotExpr));
@@ -130,9 +120,7 @@ namespace HapetFrontend.Parsing
             else
             {
                 // getting only one stmt if there are no braces
-                inInfo.ExpectNewline = false;
                 var onlyStmt = ParseStatement(inInfo, ref outInfo);
-                inInfo.ExpectNewline = true;
                 body = new AstBlockExpr(new List<AstStatement>() { onlyStmt }, onlyStmt);
             }
 

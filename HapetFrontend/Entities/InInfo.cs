@@ -5,7 +5,6 @@ namespace HapetFrontend.Entities
 {
     internal class ParserInInfo
     {
-        public bool ExpectNewline { get; set; }
         public bool AllowArrayExpression { get; set; }
         /// <summary>
         /// 'true' when allowing to multiplication exist.
@@ -28,7 +27,6 @@ namespace HapetFrontend.Entities
 
         public static ParserInInfo Default => new ParserInInfo()
         {
-            ExpectNewline = true,
             AllowArrayExpression = true,
             AllowMultiplyExpression = true,
             ExternalMetadata = false,

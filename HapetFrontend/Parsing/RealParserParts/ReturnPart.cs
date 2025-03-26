@@ -24,8 +24,6 @@ namespace HapetFrontend.Parsing
                 return new AstReturnStmt(null, new Location(beg));
             }
 
-            inInfo.AllowCommaForTuple = true;
-            inInfo.AllowFunctionDeclaration = false;
             inInfo.Message = ErrMsg("expression", "after keyword 'return'");
             var expr = ParseExpression(inInfo, ref outInfo);
 

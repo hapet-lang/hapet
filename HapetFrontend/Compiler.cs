@@ -113,7 +113,7 @@ namespace HapetFrontend
 
             while (true)
             {
-                var s = parser.ParseStatement(inInfo, ref outInfo);
+                var s = parser.ParseTopLevel(inInfo, ref outInfo);
                 if (s == null)
                     break;
 
@@ -169,7 +169,7 @@ namespace HapetFrontend
             ParserOutInfo outInfo = ParserOutInfo.Default;
             while (true)
             {
-                var s = parser.ParseStatement(inInfo, ref outInfo);
+                var s = parser.ParseTopLevel(inInfo, ref outInfo);
                 if (s == null)
                     break;
 
