@@ -700,6 +700,10 @@
 		<Number>3049</Number>
 		<Text>Keywords '{0}' and '{1}' are ambiguous. Only one of them has to be defined</Text>
 	</Item>
+	<Item>
+		<Number>304A</Number>
+		<Text>Variable declaration with 'var' key cannot have 'default' initializer</Text>
+	</Item>
 
     <!--Compiler errors-->
 	<Item>

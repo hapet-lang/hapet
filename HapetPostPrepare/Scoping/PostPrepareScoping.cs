@@ -492,7 +492,8 @@ namespace HapetPostPrepare
                 case AstNestedExpr nestExpr:
                     PostPrepareNestedExprScoping(nestExpr);
                     break;
-                case AstDefaultExpr _:
+                case AstDefaultExpr defaultExpr:
+                    PostPrepareDefaultExprScoping(defaultExpr);
                     break;
                 case AstArrayExpr arrayExpr:
                     PostPrepareArrayExprScoping(arrayExpr);
@@ -661,6 +662,15 @@ namespace HapetPostPrepare
             {
                 SetScopeAndParent(nestExpr.LeftPart, nestExpr);
                 PostPrepareExprScoping(nestExpr.LeftPart);
+            }
+        }
+
+        private void PostPrepareDefaultExprScoping(AstDefaultExpr defaultExpr)
+        {
+            if (defaultExpr.TypeForDefault != null)
+            {
+                SetScopeAndParent(defaultExpr.TypeForDefault, defaultExpr);
+                PostPrepareExprScoping(defaultExpr.TypeForDefault);
             }
         }
 

@@ -231,16 +231,30 @@ namespace HapetPostPrepare
             if (varDecl.IsPropertyField)
                 inInfo.MuteErrors = savedMute;
 
-            if (varDecl.Initializer != null)
+            // do not infer pure 'default' expr
+            // infer at least 'default(...)' expr
+            if (varDecl.Initializer != null && 
+                (varDecl.Initializer is not AstDefaultExpr || (varDecl.Initializer is AstDefaultExpr def && def.TypeForDefault != null)))
                 PostPrepareExprInference(varDecl.Initializer, inInfo, ref outInfo);
 
             // change variable type to a normal one
             if (varDecl.Type.OutType is VarType)
             {
                 if (varDecl.Initializer == null)
+                {
                     _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, varDecl, [], ErrorCode.Get(CTEN.VarVarNoIniter));
+                    return;
+                }
                 else if (varDecl.Initializer.OutType is VoidType)
+                {
                     _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, varDecl, [], ErrorCode.Get(CTEN.VarVoidType));
+                    return;
+                }
+                else if (varDecl.Initializer is AstDefaultExpr def2 && def2.TypeForDefault == null)
+                {
+                    _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, varDecl, [], ErrorCode.Get(CTEN.VarDefaultType));
+                    return;
+                }
                 else
                     varDecl.Type.OutType = varDecl.Initializer.OutType;
             }
@@ -338,7 +352,7 @@ namespace HapetPostPrepare
                     PostPrepareNestedExprInference(nestExpr, inInfo, ref outInfo);
                     break;
                 case AstDefaultExpr defaultExpr:
-                    _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, defaultExpr, [], ErrorCode.Get(CTEN.DefaultWasNotInfered));
+                    PostPrepareDefaultExprInference(defaultExpr, inInfo, ref outInfo);
                     break;
                 case AstArrayExpr arrayExpr:
                     PostPrepareArrayExprInference(arrayExpr, inInfo, ref outInfo);
@@ -1461,6 +1475,17 @@ namespace HapetPostPrepare
                     found = true;
                 }
             }
+        }
+
+        private void PostPrepareDefaultExprInference(AstDefaultExpr defaultExpr, InInfo inInfo, ref OutInfo outInfo)
+        {
+            if (defaultExpr.TypeForDefault == null)
+            {
+                _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, defaultExpr, [], ErrorCode.Get(CTEN.DefaultWasNotInfered));
+                return;
+            }
+            PostPrepareExprInference(defaultExpr.TypeForDefault, inInfo, ref outInfo);
+            defaultExpr.OutType = defaultExpr.TypeForDefault.OutType;
         }
 
         private void PostPrepareArrayExprInference(AstArrayExpr arrayExpr, InInfo inInfo, ref OutInfo outInfo)

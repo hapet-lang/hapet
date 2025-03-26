@@ -183,6 +183,7 @@
         AmbiguousCastOverloads          = 0x3047,
         ShouldGoBeforeSpecialKey        = 0x3048,
         AlreadyDefinedSpecialKey        = 0x3049,
+        VarDefaultType                  = 0x304A,
 
         // compiler errors up to 0x6000
         DefaultWasNotInfered            = 0x5001,
