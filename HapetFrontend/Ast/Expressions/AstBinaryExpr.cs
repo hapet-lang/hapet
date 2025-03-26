@@ -10,6 +10,12 @@ namespace HapetFrontend.Ast.Expressions
         public AstExpression Left { get; set; }
         public AstExpression Right { get; set; }
 
+        /// <summary>
+        /// For now I know that it would be used for 'is' bin op like
+        /// if (test is Anime anime) ...
+        /// </summary>
+        public AstExpression AdditionalExpr { get; set; }
+
         public IBinaryOperator ActualOperator { get; set; }
 
         public override string AAAName => nameof(AstBinaryExpr);

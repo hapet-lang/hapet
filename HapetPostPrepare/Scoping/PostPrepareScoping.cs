@@ -582,6 +582,12 @@ namespace HapetPostPrepare
             
             PostPrepareExprScoping(binExpr.Left);
             PostPrepareExprScoping(binExpr.Right);
+
+            if (binExpr.AdditionalExpr != null)
+            {
+                SetScopeAndParent(binExpr.AdditionalExpr, binExpr);
+                PostPrepareExprScoping(binExpr.AdditionalExpr);
+            }
         }
 
         private void PostPreparePointerExprScoping(AstPointerExpr pointerExpr)

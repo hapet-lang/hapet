@@ -506,6 +506,9 @@ namespace HapetPostPrepare
             // resolve the actual operator in the current scope
             PostPrepareExprInference(binExpr.Left as AstExpression, inInfo, ref outInfo);
             PostPrepareExprInference(binExpr.Right as AstExpression, inInfo, ref outInfo);
+            if (binExpr.AdditionalExpr != null)
+                PostPrepareExprInference(binExpr.AdditionalExpr as AstExpression, inInfo, ref outInfo);
+
             var operators = binExpr.Scope.GetBinaryOperators(binExpr.Operator, (binExpr.Left as AstExpression).OutType, (binExpr.Right as AstExpression).OutType);
             if (operators.Count == 0)
             {
@@ -542,6 +545,15 @@ namespace HapetPostPrepare
                             // so bitcast would be possible
                             rightExpr.OutType = PointerType.GetPointerType(rightExpr.OutType);
                             binExpr.OutType = rightExpr.OutType;
+                            // TODO: check for inheritance!!!
+                            break;
+                        }
+                    case "is":
+                        {
+                            // we need to change right part to pointer to a class
+                            // so bitcast would be possible
+                            rightExpr.OutType = PointerType.GetPointerType(rightExpr.OutType);
+                            binExpr.OutType = BoolType.Instance;
                             // TODO: check for inheritance!!!
                             break;
                         }

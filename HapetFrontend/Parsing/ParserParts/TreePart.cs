@@ -56,7 +56,18 @@ namespace HapetFrontend.Parsing
                 var _ = NextToken();
                 SkipNewlines();
                 rhs = ParseAsExpression(inInfo, ref outInfo);
-                var binExpr = new AstBinaryExpr("is", lhs as AstExpression, rhs as AstExpression, new Location(lhs.Beginning, rhs.Ending));
+
+                // check for 'test is Anime anime' shite
+                AstExpression additional = null;
+                if (rhs is AstUnknownDecl udecl)
+                {
+                    additional = udecl.Name;
+                    rhs = udecl.Type;
+                }
+                var binExpr = new AstBinaryExpr("is", lhs as AstExpression, rhs as AstExpression, new Location(lhs.Beginning, rhs.Ending))
+                {
+                    AdditionalExpr = additional,
+                };
 
                 // error if it is not an expr
                 if (lhs is not AstExpression)
