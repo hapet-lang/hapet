@@ -12,7 +12,7 @@ namespace HapetFrontend.Parsing
 {
     public partial class Parser
     {
-        private AstDeclaration PrepareUnknownDecl(AstUnknownDecl udecl, List<AstAttributeStmt> attrs, ParserInInfo inInfo, ref ParserOutInfo outInfo)
+        private AstDeclaration PrepareUnknownDecl(AstUnknownDecl udecl, List<AstAttributeStmt> attrs, ParserInInfo inInfo, ref ParserOutInfo outInfo, ref bool semicolonExpected)
         {
             TokenLocation end = udecl.Ending;
             AstStatement initializer = null;
@@ -35,6 +35,8 @@ namespace HapetFrontend.Parsing
                 varDecl.Attributes.AddRange(attrs);
                 varDecl.SpecialKeys.AddRange(udecl.SpecialKeys);
                 varDecl.IsImported = inInfo.ExternalMetadata;
+
+                semicolonExpected = true;
                 OnExit();
                 return varDecl;
             }
@@ -46,6 +48,8 @@ namespace HapetFrontend.Parsing
                 varDecl.Attributes.AddRange(attrs);
                 varDecl.SpecialKeys.AddRange(udecl.SpecialKeys);
                 varDecl.IsImported = inInfo.ExternalMetadata;
+
+                semicolonExpected = true;
                 OnExit();
                 return varDecl;
             }

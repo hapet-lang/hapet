@@ -150,7 +150,7 @@ namespace HapetFrontend.Parsing
                     defaultValue = probDefVal as AstExpression;
                     end = defaultValue.Ending;
                 }
-            }
+            }            
 
             // TODO: doc string???
             return new AstParamDecl(ptype as AstNestedExpr, pname, defaultValue, "", new Location(beg, end));

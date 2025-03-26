@@ -20,7 +20,7 @@ namespace HapetFrontend.Parsing
             var saved3 = inInfo.AllowMultiplyExpression;
             inInfo.Message = null;
             inInfo.AllowMultiplyExpression = false; // DO NOT ALLOW MULTIPLY WHEN UDECL FIRST!!!
-            var expr = ParseStatement(inInfo, ref outInfo);
+            var expr = ParseStatement(inInfo, ref outInfo, true); // WE NEED TO PARSE ONLY ATOMIC SHITE FROM HERE :)
             inInfo.Message = saved2;
             inInfo.AllowMultiplyExpression = saved3;
 

@@ -9,7 +9,7 @@ namespace HapetFrontend.Parsing
 {
     public partial class Parser
     {
-        internal AstStatement ParseStatement(ParserInInfo inInfo, ref ParserOutInfo outInfo)
+        internal AstStatement ParseStatement(ParserInInfo inInfo, ref ParserOutInfo outInfo, bool parseAtomic = false)
         {
             AstStatement toReturn = null;
             bool semicolonRequired = false;
@@ -67,7 +67,11 @@ namespace HapetFrontend.Parsing
                 default:
                     {
                         // just handlers
-                        var stmt = ParseExpression(inInfo, ref outInfo); // anyway it should return AstStatement, not AstExpression
+                        AstStatement stmt;
+                        if (parseAtomic)
+                            stmt = ParseAtomicExpression(inInfo, ref outInfo);
+                        else
+                            stmt = ParseExpression(inInfo, ref outInfo);
                         SkipNewlines();
 
                         if (stmt is AstEmptyStmt)
@@ -77,7 +81,7 @@ namespace HapetFrontend.Parsing
                         }
                         else if (stmt is AstUnknownDecl udecl)
                         {
-                            var dcl = PrepareUnknownDecl(udecl, new List<AstAttributeStmt>(), inInfo, ref outInfo);
+                            var dcl = PrepareUnknownDecl(udecl, new List<AstAttributeStmt>(), inInfo, ref outInfo, ref semicolonRequired);
                             toReturn = dcl;
                         }
                         else if (stmt is AstDeclaration)

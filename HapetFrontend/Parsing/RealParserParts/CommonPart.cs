@@ -5,6 +5,7 @@ using HapetFrontend.Ast.Statements;
 using HapetFrontend.Entities;
 using HapetFrontend.Errors;
 using HapetFrontend.Extensions;
+using System.Reflection;
 
 namespace HapetFrontend.Parsing
 {
@@ -96,10 +97,39 @@ namespace HapetFrontend.Parsing
                     !CheckLookAhead(TokenType.Colon) &&    // when Anime<int> : ...
                     !CheckLookAhead(TokenType.KwWhere) &&    // when Anime<T> where T ...
                     !CheckLookAhead(TokenType.Semicolon) &&  // when a = abs.Anime<T>; - generic prop
+                    !CheckLookAhead(TokenType.Asterisk) &&  // when a = abs.Anime<T>*;
                     !CheckLookAhead(TokenType.EOF))          // :)
                 {
-                    // cringe, it is not generic shite - skip
-                    isGeneric = false;
+                    if (CheckLookAhead(TokenType.Identifier))
+                    {
+                        // this is hard to understand, it could be:
+                        // public Anime<T> GetAnime(...
+                        // public Anime<T> GetAnime = new Anime<T>();
+                        // public Anime<T> GetAnime;
+                        // public void GetAnime(Anime<T> aaa)...
+                        // so additional checks are required :)
+
+                        // eat the identifier
+                        // do not allow dots - if it is a pointer - then
+                        // the second ident is a name
+                        var nextNest = ParseIdentifierExpressionInternal(lookAhead: true, allowDots: false);
+                        if (nextNest.RightPart == null || (
+                            !CheckLookAhead(TokenType.Equal) &&        // when public Anime<T> GetAnime = new Anime<T>();
+                            !CheckLookAhead(TokenType.Semicolon) &&    // when public Anime<T> GetAnime;
+                            !CheckLookAhead(TokenType.Comma) &&        // when (Anime<T> GetAnime, ...)
+                            !CheckLookAhead(TokenType.OpenParen) &&    // when public Anime<T> GetAnime(...
+                            !CheckLookAhead(TokenType.CloseParen)))    // when public void GetAnime(Anime<T> aaa)...
+                        {
+                            // cringe, it is not generic shite - skip
+                            isGeneric = false;
+                        }
+                        // else is ok :)
+                    }
+                    else
+                    {
+                        // cringe, it is not generic shite - skip
+                        isGeneric = false;
+                    }
                 }
 
                 // if really generic shite
@@ -182,6 +212,7 @@ namespace HapetFrontend.Parsing
                 if (nextNest.RightPart != null && (
                     CheckLookAhead(TokenType.Equal) ||        // when byte* aaa = ...
                     CheckLookAhead(TokenType.Semicolon) ||    // when byte* aaa;
+                    CheckLookAhead(TokenType.Comma) ||        // when (byte* aaa, ...)
                     CheckLookAhead(TokenType.OpenParen) ||    // when public byte* aaa(...
                     CheckLookAhead(TokenType.CloseParen)))    // when (byte* aaa)
                 {
@@ -191,6 +222,7 @@ namespace HapetFrontend.Parsing
             else if (CheckLookAhead(TokenType.CloseParen) ||  // when (Anime*)inst
                     CheckLookAhead(TokenType.OpenBracket) ||  // when a = new Anime*[..]; 
                     CheckLookAhead(TokenType.Semicolon) ||    // when a = Anime*;
+                    CheckLookAhead(TokenType.Asterisk) ||    // when a = Anime**
                     CheckLookAhead(TokenType.EOF))            // :)
             {
                 isPointer = true;
