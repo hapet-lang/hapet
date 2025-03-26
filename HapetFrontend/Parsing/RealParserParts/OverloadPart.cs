@@ -15,7 +15,7 @@ namespace HapetFrontend.Parsing
             TokenType.Ampersand, TokenType.VerticalSlash, TokenType.Hat, TokenType.GreaterGreater, TokenType.LessLess, TokenType.DoubleEqual, TokenType.NotEqual, 
             TokenType.Less, TokenType.LessEqual, TokenType.Greater, TokenType.GreaterEqual, TokenType.LogicalAnd, TokenType.LogicalOr };
 
-        public AstOverloadDecl ParseOperatorOverride(AstUnknownDecl udecl)
+        internal AstOverloadDecl ParseOperatorOverride(AstUnknownDecl udecl)
         {
             // just handlers
             ParserInInfo inInfo = ParserInInfo.Default;
@@ -46,19 +46,14 @@ namespace HapetFrontend.Parsing
                 Consume(TokenType.KwOperator, ErrMsg("'operator'", "after implicit/explicit cast overloading"));
 
                 // getting cast result type
-                returns = ParseIdentifierExpression();
+                var saved1 = inInfo.AllowMultiplyExpression;
+                inInfo.AllowMultiplyExpression = false;
+                returns = ParseExpression(inInfo, ref outInfo) as AstExpression;
+                inInfo.AllowMultiplyExpression = saved1;
 
-                inInfo.AllowCommaForTuple = true;
-                inInfo.AllowFunctionDeclaration = true;
-                var tpl = ParseTupleExpression(inInfo, ref outInfo);
-                inInfo.AllowCommaForTuple = false;
-                inInfo.AllowFunctionDeclaration = false;
-
-                if (tpl is AstFuncDecl func)
-                {
-                    paramDecls = func.Parameters;
-                    body = func.Body;
-                }
+                var func = ParseFuncDeclaration(null, null, inInfo, ref outInfo);
+                paramDecls = func.Parameters;
+                body = func.Body;
 
                 if (paramDecls == null)
                     ReportMessage(returns, [], ErrorCode.Get(CTEN.ParamsAfterOverloadOperator));
@@ -111,17 +106,9 @@ namespace HapetFrontend.Parsing
                     op = ">>";
                 }
 
-                inInfo.AllowCommaForTuple = true;
-                inInfo.AllowFunctionDeclaration = true;
-                var tpl = ParseTupleExpression(inInfo, ref outInfo);
-                inInfo.AllowCommaForTuple = false;
-                inInfo.AllowFunctionDeclaration = false;
-
-                if (tpl is AstFuncDecl func)
-                {
-                    paramDecls = func.Parameters;
-                    body = func.Body;
-                }
+                var func = ParseFuncDeclaration(null, null, inInfo, ref outInfo);
+                paramDecls = func.Parameters;
+                body = func.Body;
 
                 if (paramDecls == null)
                     ReportMessage(opToken.Location, [], ErrorCode.Get(CTEN.ParamsAfterOverloadOperator));

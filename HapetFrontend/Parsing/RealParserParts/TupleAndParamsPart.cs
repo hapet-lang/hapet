@@ -196,15 +196,6 @@ namespace HapetFrontend.Parsing
 
         private AstStatement ParseTupleExpression(ParserInInfo inInfo, ref ParserOutInfo outInfo)
         {
-            // function expression
-            // hash identifier for directives
-            if (inInfo.AllowFunctionDeclaration)
-            {
-                var listParams = ParseParameterList(TokenType.OpenParen, TokenType.CloseParen, out var begParams, out var endParams, allowDefaultValue: true);
-                SkipNewlines();
-                return ParseFuncDeclaration(listParams, new Location(begParams, endParams), inInfo, ref outInfo);
-            }
-
             var list = ParseArgumentList(out var beg, out var end);
 
             //if (CheckToken(TokenType.Arrow))
@@ -246,11 +237,7 @@ namespace HapetFrontend.Parsing
                             var expr = list[0].Expr;
                             expr.Location = new Location(beg, end);
 
-                            var savedAllowFuncs = inInfo.AllowFunctionDeclaration;
-                            inInfo.AllowFunctionDeclaration = false;
                             var sub = ParsePostUnaryExpression(inInfo, ref outInfo);
-                            inInfo.AllowFunctionDeclaration = savedAllowFuncs;
-
                             var cst = new AstCastExpr(expr, sub as AstExpression, new Location(beg, sub.Ending));
 
                             // error if it is not an expr

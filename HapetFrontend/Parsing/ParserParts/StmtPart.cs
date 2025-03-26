@@ -79,7 +79,7 @@ namespace HapetFrontend.Parsing
                         }
                         if (stmt is AstUnknownDecl udecl)
                         {
-                            var dcl = PrepareUnknownDecl(udecl, new List<AstAttributeStmt>());
+                            var dcl = PrepareUnknownDecl(udecl, new List<AstAttributeStmt>(), inInfo2, ref outInfo2);
                             toReturn = dcl;
                         }
                         if (CheckTokens(TokenType.Equal, TokenType.AddEq, TokenType.SubEq, TokenType.MulEq, TokenType.DivEq, TokenType.ModEq))

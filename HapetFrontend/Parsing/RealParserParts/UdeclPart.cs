@@ -52,33 +52,28 @@ namespace HapetFrontend.Parsing
             // func declaration 
             else if (CheckToken(TokenType.OpenParen))
             {
-                var tpl = ParseTupleExpression(inInfo, ref outInfo);
-
-                if (tpl is AstFuncDecl func)
+                var func = ParseFuncDeclaration(null, null, inInfo, ref outInfo);
+                if (udecl.Type == null)
                 {
-                    if (udecl.Type == null)
-                    {
-                        // it is ctor/dtor
-                        func.Name = udecl.Name.GetCopy();
-                        func.Returns = new AstNestedExpr(new AstIdExpr("void"), null);
-                        // check that it is a static ctor
-                        if (udecl.Name.Suffix != "~" && udecl.SpecialKeys.Contains(TokenType.KwStatic))
-                            func.ClassFunctionType = Enums.ClassFunctionType.StaticCtor;
-                        else
-                            func.ClassFunctionType = udecl.Name.Suffix != "~" ? Enums.ClassFunctionType.Ctor : Enums.ClassFunctionType.Dtor;
-                    }
+                    // it is ctor/dtor
+                    func.Name = udecl.Name.GetCopy();
+                    func.Returns = new AstNestedExpr(new AstIdExpr("void"), null);
+                    // check that it is a static ctor
+                    if (udecl.Name.Suffix != "~" && udecl.SpecialKeys.Contains(TokenType.KwStatic))
+                        func.ClassFunctionType = Enums.ClassFunctionType.StaticCtor;
                     else
-                    {
-                        // it is normal func
-                        func.Name = udecl.Name;
-                        func.Returns = udecl.Type;
-                    }
-                    func.Attributes.AddRange(attrs);
-                    func.SpecialKeys.AddRange(udecl.SpecialKeys);
-                    OnExit();
-                    return func;
+                        func.ClassFunctionType = udecl.Name.Suffix != "~" ? Enums.ClassFunctionType.Ctor : Enums.ClassFunctionType.Dtor;
                 }
-                // TODO: could there be a lambda???
+                else
+                {
+                    // it is normal func
+                    func.Name = udecl.Name;
+                    func.Returns = udecl.Type;
+                }
+                func.Attributes.AddRange(attrs);
+                func.SpecialKeys.AddRange(udecl.SpecialKeys);
+                OnExit();
+                return func;
             }
             // properties 
             else if (CheckToken(TokenType.OpenBrace))
@@ -92,12 +87,16 @@ namespace HapetFrontend.Parsing
             // indexer?
             else if (CheckToken(TokenType.OpenBracket) && udecl.Name.Name == "this")
             {
+                Consume(TokenType.OpenBracket, ErrMsg("symbol '['", "at beginning of indexer param declaration"));
+                var par = ParseParameter(false); // no default value for indexer
+                Consume(TokenType.OpenBracket, ErrMsg("symbol ']'", "at ending of indexer param declaration"));
+
                 SkipNewlines();
                 // TODO: doc 
                 udecl.Name = udecl.Name.GetCopy("indexer__");
                 var prop = PreparePropertyDecl(udecl, "") as AstPropertyDecl;
                 var indexer = new AstIndexerDecl(prop);
-                indexer.IndexerParameter = new AstParamDecl(unknownDecl.Type, unknownDecl.Name, null, "", unknownDecl);
+                indexer.IndexerParameter = par;
 
                 return indexer;
             }

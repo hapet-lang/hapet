@@ -6,7 +6,7 @@ namespace HapetFrontend.Ast.Declarations
     /// <summary>
     /// Used when there are two identifiers at once like (Random rand ...)
     /// </summary>
-    public class AstUnknownDecl : AstDeclaration
+    internal class AstUnknownDecl : AstDeclaration
     {
         /// <summary>
         /// Name could be not only AstId but also a tuple like

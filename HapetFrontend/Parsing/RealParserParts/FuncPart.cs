@@ -10,13 +10,11 @@ namespace HapetFrontend.Parsing
     {
         private AstFuncDecl ParseFuncDeclaration(List<AstParamDecl> parameters, Location paramsLocation, ParserInInfo inInfo, ref ParserOutInfo outInfo)
         {
-            // disable new as sk allowance!!!
-            inInfo.AllowNewAsSpecialKey = false;
-
             if (parameters == null)
             {
                 parameters = ParseParameterList(TokenType.OpenParen, TokenType.CloseParen, out var beg, out var end, true);
                 paramsLocation = new Location(beg, end);
+                SkipNewlines();
             }
 
             AstBlockExpr body = null;
