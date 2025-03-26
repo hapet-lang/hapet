@@ -278,6 +278,13 @@ namespace HapetBackend.Llvm
                             else theFunc = null;
                             break;
                         }
+                    case "--":
+                    case "++":
+                        {
+                            // just skip them here
+                            theFunc = null;
+                            break;
+                        }
                     default:
                         {
                             // error here (internal compiler error, should not happen)

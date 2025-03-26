@@ -526,15 +526,26 @@ namespace HapetBackend.Llvm
         /// <param name="varPtr">The variable</param>
         /// <param name="varType">The type of variable</param>
         /// <param name="value">The value that needs to be assigned</param>
-        private void AssignToVar(LLVMValueRef varPtr, HapetType varType, AstExpression value)
+        private void AssignToVar(LLVMValueRef varPtr, AstExpression value)
         {
             // generate the initializer value
             var x = GenerateExpressionCode(value);
+            AssignToVar(varPtr, x);
+        }
+
+        /// <summary>
+        /// Assigns value to a variable
+        /// </summary>
+        /// <param name="varPtr">The variable</param>
+        /// <param name="varType">The type of variable</param>
+        /// <param name="value">The value that needs to be assigned</param>
+        private void AssignToVar(LLVMValueRef varPtr, LLVMValueRef value)
+        {
             // return if the value is cringe and was not generated properly
-            if (x == default)
+            if (value == default)
                 return;
             // just storing initializer value in the var
-            _builder.BuildStore(x, varPtr);
+            _builder.BuildStore(value, varPtr);
         }
 
         private LLVMTypeRef GetFunctionTypeOfDelegate(DelegateType del)

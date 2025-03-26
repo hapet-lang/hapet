@@ -150,7 +150,7 @@ namespace HapetBackend.Llvm
             // check for initializer and try to evaluate expr
             if (varDecl.Initializer != null)
             {
-                AssignToVar(varPtr, varDecl.Type.OutType, varDecl.Initializer);
+                AssignToVar(varPtr, varDecl.Initializer);
             }
 
             // _refMap[varDecl.GetSymbol] = varPtr;

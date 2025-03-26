@@ -443,7 +443,7 @@ namespace HapetFrontend.Parsing
                             var tkn = NextToken();
                             SkipNewlines();
                             var op = tkn.Type == TokenType.PlusPlus ? "++" : "--";
-                            var un = new AstUnaryIncDecExpr(op, expr as AstExpression, new Location(tkn.Location, expr.Ending)) { IsPrefix = false };
+                            var un = new AstUnaryIncDecExpr(op, expr as AstExpression, new Location(expr.Beginning, tkn.Location)) { IsPrefix = false };
                             // error if it is not a nested!!!
                             if (expr is not AstNestedExpr)
                             {

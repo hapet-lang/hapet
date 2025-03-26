@@ -36,7 +36,8 @@ namespace HapetBackend.Llvm
                 case AstVarDecl varDecl: GenerateVarDeclCode(varDecl); return null;
 
                 case AstBlockExpr blockExpr: return GenerateBlockExprCode(blockExpr);
-                case AstUnaryExpr unExpr: return GenerateUnaryExprCode(unExpr);
+                case AstUnaryIncDecExpr unExpr: return GenerateUnaryIncDecExprCode(unExpr);
+                case AstUnaryExpr unExpr2: return GenerateUnaryExprCode(unExpr2);
                 case AstBinaryExpr binExpr: return GenerateBinaryExprCode(binExpr);
                 case AstPointerExpr pointerExpr: return GeneratePointerExprCode(pointerExpr);
                 case AstAddressOfExpr addrExpr: return GenerateAddressOfExprCode(addrExpr);
@@ -109,6 +110,63 @@ namespace HapetBackend.Llvm
                 var fncValue = _valueMap[userDef.Function.Declaration.GetSymbol];
 
                 return _builder.BuildCall2(fncType, fncValue, new LLVMValueRef[] { value }, "unOp");
+            }
+            _messageHandler.ReportMessage(_currentSourceFile.Text, unExpr, [unExpr.ToString()], ErrorCode.Get(CTEN.StmtNotImplemented));
+            return default;
+        }
+
+        private LLVMValueRef GenerateUnaryIncDecExprCode(AstUnaryIncDecExpr unExpr)
+        {
+            if (unExpr.ActualOperator is BuiltInUnaryOperator)
+            {
+                var expr = (unExpr.SubExpr as AstExpression);
+
+                LLVMValueRef val;
+                if (unExpr.IsPrefix)
+                {
+                    MakeOperation();
+                    val = GenerateExpressionCode(expr);
+                }
+                else
+                {
+                    val = GenerateExpressionCode(expr);
+                    MakeOperation();
+                }
+                return val;
+
+                void MakeOperation()
+                {
+                    var value = GenerateExpressionCode(expr);
+                    var bo = GetBinOp(unExpr.Operator == "++" ? "+" : "-", expr.OutType, IntType.GetIntType(4, true));
+                    var toAssign = bo(_builder, value, LLVMValueRef.CreateConstInt(_context.Int32Type, 1), "unOp");
+                    var valuePtr = GenerateExpressionCode(expr, true);
+                    AssignToVar(valuePtr, toAssign);
+                }
+            }
+            else if (unExpr.ActualOperator is UserDefinedUnaryOperator userDef)
+            {
+                var expr = (unExpr.SubExpr as AstExpression);
+
+                LLVMValueRef val;
+                if (unExpr.IsPrefix)
+                {
+                    MakeOperation();
+                    val = GenerateExpressionCode(expr);
+                }
+                else
+                {
+                    val = GenerateExpressionCode(expr);
+                    MakeOperation();
+                }
+                return val;
+
+                void MakeOperation()
+                {
+                    var value = GenerateExpressionCode(expr);
+                    var fncType = _typeMap[userDef.Function];
+                    var fncValue = _valueMap[userDef.Function.Declaration.GetSymbol];
+                    _builder.BuildCall2(fncType, fncValue, new LLVMValueRef[] { value });
+                }
             }
             _messageHandler.ReportMessage(_currentSourceFile.Text, unExpr, [unExpr.ToString()], ErrorCode.Get(CTEN.StmtNotImplemented));
             return default;
@@ -835,7 +893,7 @@ namespace HapetBackend.Llvm
         {
             LLVMValueRef theVar = GenerateNestedExpr(stmt.Target, true);
 
-            AssignToVar(theVar, stmt.Target.OutType, stmt.Value);
+            AssignToVar(theVar, stmt.Value);
 
             // TODO: WARN: Assign is a stmt and does not returns anything. could be changed to expr
             // so stmts like 'a = (b = 3);' would be allowed...

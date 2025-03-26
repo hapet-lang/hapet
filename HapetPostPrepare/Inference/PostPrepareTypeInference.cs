@@ -474,6 +474,7 @@ namespace HapetPostPrepare
         {
             // TODO: check for the right size for an existance value (compiletime evaluated) and do some shite (set unExpr OutValue)
             PostPrepareExprInference(unExpr.SubExpr as AstExpression, inInfo, ref outInfo);
+
             var operators = unExpr.Scope.GetUnaryOperators(unExpr.Operator, (unExpr.SubExpr as AstExpression).OutType);
             if (operators.Count == 0)
             {

@@ -40,6 +40,8 @@ namespace HapetFrontend.Scoping
             // literal types
             DefineUnaryOperator("!", BoolType.Instance, BoolType.Instance, b => !(bool)b);
             DefineUnaryOperator("-", IntType.LiteralType, IntType.LiteralType, a => ((NumberData)a).Negate());
+            DefineUnaryOperator("++", IntType.LiteralType, IntType.LiteralType, a => ((NumberData)a + 1));
+            DefineUnaryOperator("--", IntType.LiteralType, IntType.LiteralType, a => ((NumberData)a - 1));
             DefineUnaryOperator("-", FloatType.LiteralType, FloatType.LiteralType, a => ((NumberData)a).Negate());
 
             // bool types
@@ -143,6 +145,13 @@ namespace HapetFrontend.Scoping
                 // int b = -a;
                 // the result type has to be at least sbyte or even short
                 DefineUnaryOperator("-", type, type, a => ((NumberData)a).Negate());
+
+                // define this shite for ints
+                if (type is not FloatType)
+                {
+                    DefineUnaryOperator("++", type, type, a => ((NumberData)a + 1));
+                    DefineUnaryOperator("--", type, type, a => ((NumberData)a - 1));
+                }
 
                 foreach (var secondType in numTypes)
                 {
