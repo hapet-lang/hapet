@@ -7,6 +7,7 @@ using HapetFrontend.Errors;
 using HapetFrontend.Types;
 using System.Diagnostics;
 using System.Security.Cryptography;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace HapetFrontend.Parsing
 {
@@ -181,17 +182,6 @@ namespace HapetFrontend.Parsing
                 (TokenType.Percent, "%"));
         }
 
-        [Obsolete("Use ParseMulDivExpression")]
-        [DebuggerStepThrough]
-        [DebuggerHidden]
-        private AstStatement ParseBinaryExpression(ParserInInfo inInfo, ref ParserOutInfo outInfo)
-        {
-            return ParseBinaryLeftAssociativeExpression(ParseUnaryExpression, inInfo, ref outInfo,
-                (TokenType.Asterisk, "*"),
-                (TokenType.ForwardSlash, "/"),
-                (TokenType.Percent, "%"));
-        }
-
         [DebuggerStepThrough]
         [StackTraceHidden]
         [DebuggerHidden]
@@ -322,6 +312,20 @@ namespace HapetFrontend.Parsing
                 }
                 return un;
             }
+            else if (next.Type == TokenType.PlusPlus || next.Type == TokenType.MinusMinus)
+            {
+                NextToken();
+                SkipNewlines();
+                var sub = ParseUnaryExpression(inInfo, ref outInfo);
+                var op = next.Type == TokenType.PlusPlus ? "++" : "--";
+                var un = new AstUnaryIncDecExpr(op, sub as AstExpression, new Location(next.Location, sub.Ending)) { IsPrefix = true };
+                // error if it is not a nested!!!
+                if (sub is not AstNestedExpr)
+                {
+                    ReportMessage(sub, [], ErrorCode.Get(CTEN.CommonIdentifierExpected));
+                }
+                return un;
+            }
 
             return ParsePostUnaryExpression(inInfo, ref outInfo);
         }
@@ -432,6 +436,21 @@ namespace HapetFrontend.Parsing
                             }
                         }
                         break;
+
+                    case TokenType.PlusPlus:
+                    case TokenType.MinusMinus:
+                        {
+                            var tkn = NextToken();
+                            SkipNewlines();
+                            var op = tkn.Type == TokenType.PlusPlus ? "++" : "--";
+                            var un = new AstUnaryIncDecExpr(op, expr as AstExpression, new Location(tkn.Location, expr.Ending)) { IsPrefix = false };
+                            // error if it is not a nested!!!
+                            if (expr is not AstNestedExpr)
+                            {
+                                ReportMessage(expr, [], ErrorCode.Get(CTEN.CommonIdentifierExpected));
+                            }
+                            return un;
+                        }
 
                     default:
                         return expr;

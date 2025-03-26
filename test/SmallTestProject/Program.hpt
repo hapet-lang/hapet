@@ -7,8 +7,9 @@ public static class Program
 {
     public static int Main(string[] args)
     {
-        var a = default(Anime<int>);
-        int b = default;
+        int a = 10;
+        a++;
+        ++a;
         return 0;
     }
 }
