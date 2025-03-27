@@ -7,23 +7,23 @@ public static class Program
 {
     public static int Main(string[] args)
     {
-        var a = new Anime<int>();
-        a.Test = 44;
-        var b = a as Base;
-
-        if (b is Anime<int> asd)
-            return asd.Test;
-        return 0;
+        var b = new Base();
+        return b.AnimeTest();
     }
 }
 
 public class Base
 {
+    public int AnimeTest()
+    {
+        var n = new NestedClass();
+        n.Test = 441;
+        return n.Test;
+    }
 
-}
-
-public class Anime<T> : Base
-{
-    public int Test { get; set; }
+    class NestedClass
+    {
+        public int Test { get; set; }
+    }
 }
 

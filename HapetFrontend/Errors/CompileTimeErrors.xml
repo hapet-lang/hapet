@@ -402,6 +402,10 @@
 		<Number>2055</Number>
 		<Text>Generic property excepted to have 'get' and/or 'set' bodies</Text>
 	</Item>
+	<Item>
+		<Number>2056</Number>
+		<Text>Declarations are expected in {0} body</Text>
+	</Item>
 
 
 	<!--Post prepare errors-->

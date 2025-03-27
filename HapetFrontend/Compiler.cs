@@ -99,8 +99,6 @@ namespace HapetFrontend
 
             var parser = new Parser(lexer, MessageHandler);
 
-            // the list is to handle attributes
-            List<AstAttributeStmt> foundAttributes = new List<AstAttributeStmt>();
             List<ProgramFile> allFiles = new List<ProgramFile>();
             ProgramFile currentFile = null;
 
@@ -144,7 +142,7 @@ namespace HapetFrontend
                     continue; // no need to add this shite
                 }
 
-                HandleStatement(s, currentFile, foundAttributes, lexer);
+                HandleStatement(s, currentFile, lexer);
             }
 
             return allFiles;
@@ -162,8 +160,6 @@ namespace HapetFrontend
             var file = new ProgramFile(fileName, lexer.Text);
             _files[fileName] = file;
 
-            // the list is to handle attributes
-            List<AstAttributeStmt> foundAttributes = new List<AstAttributeStmt>();
             // just handlers
             ParserInInfo inInfo = ParserInInfo.Default;
             ParserOutInfo outInfo = ParserOutInfo.Default;
@@ -173,7 +169,7 @@ namespace HapetFrontend
                 if (s == null)
                     break;
 
-                HandleStatement(s, file, foundAttributes, lexer);
+                HandleStatement(s, file, lexer);
             }
 
             string normalNamespace = CompilerUtils.GetNamespace(CurrentProjectSettings.ProjectPath, CurrentProjectSettings.RootNamespace, fileName);
@@ -187,7 +183,7 @@ namespace HapetFrontend
             return file;
         }
 
-        private void HandleStatement(AstStatement s, ProgramFile file, List<AstAttributeStmt> foundAttributes, ILexer lexer)
+        private void HandleStatement(AstStatement s, ProgramFile file, ILexer lexer)
         {
             if (s is AstEnumDecl ||
                 s is AstStructDecl ||
@@ -203,18 +199,6 @@ namespace HapetFrontend
                 // if it is a 'using' add it to the list
                 if (s is AstUsingStmt usng)
                     file.Usings.Add(usng);
-
-                // add previously found attributes into the declaration
-                if (s is AstDeclaration decl)
-                    decl.Attributes.AddRange(foundAttributes);
-
-                // clear attributes
-                foundAttributes.Clear();
-            }
-            else if (s is AstAttributeStmt attr)
-            {
-                // we found an attr - add it to list and use it when find a decl
-                foundAttributes.Add(attr);
             }
             else if (s != null)
             {

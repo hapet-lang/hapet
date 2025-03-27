@@ -68,6 +68,15 @@ namespace HapetFrontend.Ast
         public AstDeclaration OriginalGenericDecl { get; set; }
 
         /// <summary>
+        /// 'true' if the decl is nested decl
+        /// </summary>
+        public bool IsNestedDecl { get; set; }
+        /// <summary>
+        /// Contains parent decl if the <see cref="IsNestedDecl"/> is 'true'
+        /// </summary>
+        public AstClassDecl ParentDecl { get; set; }
+
+        /// <summary>
         /// Getting symbol of itself
         /// </summary>
         [JsonIgnore]

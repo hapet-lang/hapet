@@ -35,8 +35,13 @@ namespace HapetFrontend.Parsing
                 _foundAttributes.Add(attrStmt);
                 return new AstEmptyDecl(new AstIdExpr("attr"));
             }
+            else if (expr == null && PeekToken().Type == TokenType.EOF)
+            {
+                return null;
+            }
 
-            ReportMessage(PeekToken().Location, [], ErrorCode.Get(CTEN.ExpectedEqualOrNewline));
+            var a = PeekToken();
+            ReportMessage(a.Location, [], ErrorCode.Get(CTEN.ExpectedEqualOrNewline));
             return new AstVarDecl(expr as AstNestedExpr, null, null, docString, expr)
             {
                 IsImported = inInfo.ExternalMetadata

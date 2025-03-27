@@ -87,6 +87,9 @@ namespace HapetFrontend.Parsing
             // parsing constrains
             var genericConstrains = ParseGenericConstrains(generics);
 
+            // the decl (declared here because it would be used)
+            var classDecl = new AstClassDecl(className, declarations, "", null);
+
             ConsumeUntil(TokenType.OpenBrace, ErrMsg("{", "at beginning of class body"), true);
 
             SkipNewlines();
@@ -98,17 +101,25 @@ namespace HapetFrontend.Parsing
 
                 // get current special keys
                 List<Token> specialKeys = ParseSpecialKeys();
-                var decl = ParseDeclaration(inInfo, ref outInfo);
-                decl?.SpecialKeys.AddRange(specialKeys);
-
-                // it is probably an attribute so no need to save it to decls
-                if (decl is AstEmptyDecl)
+                var decl = ParseTopLevel(inInfo, ref outInfo);
+                if (decl is not AstDeclaration realDecl)
                 {
-                    SkipNewlines();
+                    ReportMessage(decl, ["class"], ErrorCode.Get(CTEN.DeclExpectedInClassStruct));
                     continue;
                 }
 
-                declarations.Add(decl);
+                // mark the decl as nested if it is:
+                if (realDecl is AstClassDecl ||
+                    realDecl is AstStructDecl ||
+                    realDecl is AstEnumDecl ||
+                    realDecl is AstDelegateDecl)
+                {
+                    realDecl.IsNestedDecl = true;
+                    realDecl.ParentDecl = classDecl;
+                }
+
+                realDecl.SpecialKeys.AddRange(specialKeys);
+                declarations.Add(realDecl);
 
                 next = PeekToken();
                 if (next.Type == TokenType.NewLine)
@@ -137,15 +148,14 @@ namespace HapetFrontend.Parsing
             }
 
             // TODO: doc string
-            return new AstClassDecl(className, declarations, "", new Location(beg, end)) 
-            { 
-                InheritedFrom = inherited, 
-                IsInterface = isInterface,
-                HasGenericTypes = generics.Count > 0,
-                GenericNames = generics,
-                GenericConstrains = genericConstrains,
-                IsImported = inInfo.ExternalMetadata
-            };
+            classDecl.Location = new Location(beg, end);
+            classDecl.InheritedFrom = inherited;
+            classDecl.IsInterface = isInterface;
+            classDecl.HasGenericTypes = generics.Count > 0;
+            classDecl.GenericNames = generics;
+            classDecl.GenericConstrains = genericConstrains;
+            classDecl.IsImported = inInfo.ExternalMetadata;
+            return classDecl;
         }
     }
 }
