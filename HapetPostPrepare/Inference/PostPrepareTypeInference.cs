@@ -1683,6 +1683,12 @@ namespace HapetPostPrepare
             if (accessee is AstBuiltInTypeDecl)
                 return true;
 
+            // if it is a nested - check that is it accessed within the parent class
+            if (accessee.IsNestedDecl && accessee.Scope.IsParentOf(accessor.Scope))
+            {
+                return true;
+            }
+
             // TODO: check protected
             // TODO: check private protected
             // TODO: check protected internal
