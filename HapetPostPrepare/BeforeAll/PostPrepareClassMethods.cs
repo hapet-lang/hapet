@@ -18,21 +18,17 @@ namespace HapetPostPrepare
         {
             foreach (var (path, file) in _compiler.GetFiles())
             {
-                // skip imported files
-                if (file.IsImported)
-                    continue;
-
                 _currentSourceFile = file;
 
                 foreach (var stmt in file.Statements)
                 {
                     if (stmt is AstClassDecl classDecl)
                     {
-                        PostPrepareClassMethodsInternal(classDecl);
+                        PostPrepareClassMethodsInternal(classDecl, file.IsImported);
                     }
                     else if (stmt is AstStructDecl structDecl)
                     {
-                        PostPrepareStructMethodsInternal(structDecl);
+                        PostPrepareStructMethodsInternal(structDecl, file.IsImported);
                     }
                 }
             }
