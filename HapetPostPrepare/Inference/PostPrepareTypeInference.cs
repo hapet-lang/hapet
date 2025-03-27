@@ -1893,7 +1893,10 @@ namespace HapetPostPrepare
                 // if it is not a default
                 PostPrepareExprInference(value, inInfo, ref outInfo);
             }
-            return PostPrepareExpressionWithType(GetPreparedAst(targetType, value), value);
+
+            if (targetType != null)
+                return PostPrepareExpressionWithType(GetPreparedAst(targetType, value), value);
+            return value;
         }
 
         private bool CheckIfCouldBeAccessed(AstStatement accessor, AstDeclaration accessee)

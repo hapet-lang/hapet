@@ -162,6 +162,10 @@ namespace HapetPostPrepare
                     // setting already defined to 'true' because of some shite with access types
                     PostPrepareVarScoping(fieldDecl, true);
                 }
+                else
+                {
+                    PostPrepareDeclScoping(decl);
+                }
             }
         }
 
