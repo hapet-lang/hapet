@@ -96,16 +96,7 @@ namespace HapetPostPrepare
                 }
 
                 CreateSpecialKeys(decl.SpecialKeys, sb, "");
-
-                // the decl itself
-                if (decl is AstClassDecl clsDecl)
-                {
-                    CreateClassDecl(clsDecl, sb, "");
-                }
-                else if (decl is AstStructDecl strDecl)
-                {
-                    CreateStructDecl(strDecl, sb, "");
-                }
+                CreateDecl(decl, sb, "");
             }
         }
 
@@ -116,6 +107,19 @@ namespace HapetPostPrepare
             foreach (var sk in keys)
             {
                 sb.Append($"{Lexer.GetKeywordFromToken(sk.Type)} ");
+            }
+        }
+
+        private void CreateDecl(AstDeclaration decl, StringBuilder sb, string additionalOffset)
+        {
+            // the decl itself
+            if (decl is AstClassDecl clsDecl)
+            {
+                CreateClassDecl(clsDecl, sb, additionalOffset);
+            }
+            else if (decl is AstStructDecl strDecl)
+            {
+                CreateStructDecl(strDecl, sb, additionalOffset);
             }
         }
 
@@ -181,9 +185,16 @@ namespace HapetPostPrepare
                 {
                     CreateFieldDecl(field, sb, additionalOffset + _fourSpaces);
                 }
+                else
+                {
+                    CreateDecl(d, sb, additionalOffset + _fourSpaces);
+                }
             }
 
-            sb.Append($"{additionalOffset}}}\n\n");
+            sb.Append($"{additionalOffset}}}\n");
+            // looks better :)
+            if (!decl.IsNestedDecl)
+                sb.Append('\n');
         }
 
         private void CreateStructDecl(AstStructDecl decl, StringBuilder sb, string additionalOffset)
@@ -245,9 +256,16 @@ namespace HapetPostPrepare
                 {
                     CreateFieldDecl(field, sb, additionalOffset + _fourSpaces);
                 }
+                else
+                {
+                    CreateDecl(d, sb, additionalOffset + _fourSpaces);
+                }
             }
 
-            sb.Append($"{additionalOffset}}}\n\n");
+            sb.Append($"{additionalOffset}}}\n");
+            // looks better :)
+            if (!decl.IsNestedDecl)
+                sb.Append('\n');
         }
 
         private void CreateFuncDecl(AstFuncDecl decl, StringBuilder sb, string additionalOffset, bool isParentGeneric)
