@@ -46,9 +46,6 @@ namespace HapetPostPrepare
             PostPrepareSpecialKeys();
             if (_compiler.MessageHandler.HasErrors)
                 return 0;
-            PostPrepareMetaClassMethods(); // only for meta :)
-            if (_compiler.MessageHandler.HasErrors)
-                return 0;
             PostPrepareClassMethods();
             if (_compiler.MessageHandler.HasErrors)
                 return 0;
