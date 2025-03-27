@@ -27,6 +27,7 @@ namespace HapetPostPrepare
             AllPostPrepareMetadataGenerics();
             AllPostPrepareMetadataInheritance();
             AllPostPrepareMetadataDelegates();
+            AllPostPrepareMetadataNestedTypes();
             AllPostPrepareMetadataFunctions();
             AllPostPrepareMetadataInheritedFunctions();
             AllPostPrepareMetadataTypeFieldDecls();
@@ -144,6 +145,26 @@ namespace HapetPostPrepare
             {
                 _currentSourceFile = del.SourceFile;
                 PostPrepareMetadataDelegates(del);
+            }
+        }
+
+        private void AllPostPrepareMetadataNestedTypes()
+        {
+            _currentPreparationStep = PreparationStep.NestedTypes;
+
+            // inferrencing nested types
+            foreach (var cls in AllClassesMetadata.ToList())
+            {
+                _currentSourceFile = cls.SourceFile;
+                _currentClass = cls;
+
+                PostPrepareMetadataNestedTypes(cls);
+            }
+            foreach (var str in AllStructsMetadata.ToList())
+            {
+                _currentSourceFile = str.SourceFile;
+
+                PostPrepareMetadataNestedTypes(str);
             }
         }
 

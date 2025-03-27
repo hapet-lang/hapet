@@ -2,6 +2,7 @@
 using HapetFrontend.Ast.Statements;
 using HapetFrontend.Ast;
 using HapetFrontend.Errors;
+using HapetFrontend.Extensions;
 namespace HapetPostPrepare
 {
     public partial class PostPrepare
@@ -20,13 +21,21 @@ namespace HapetPostPrepare
                 return;
             }
 
+            // we need to add additional string to
+            // the decl name because it is nested
+            string additionalString = "";
+            if (decl.IsNestedDecl)
+            {
+                additionalString = $"{decl.ParentDecl.Name.Name.GetClassNameWithoutNamespace()}.";
+            }
+
             string newName;
             if (decl is AstClassDecl classDecl)
             {
                 _currentClass = classDecl;
 
                 // creating a new class name with namespace
-                newName = $"{_currentSourceFile.Namespace}.{classDecl.Name.Name}";
+                newName = $"{_currentSourceFile.Namespace}.{additionalString}{classDecl.Name.Name}";
                 AllClassesMetadata.Add(classDecl);
 
                 if (needSerialize)

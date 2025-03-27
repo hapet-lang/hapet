@@ -20,6 +20,7 @@
         Generics,
         Inheritance,
         Delegates,
+        NestedTypes,
         Functions,
         InheritedFunctions,
         FieldAndPropDecls,
