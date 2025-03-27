@@ -564,7 +564,14 @@ namespace HapetPostPrepare
                                 asExpr.Operator = "as";
                                 PostPrepareExprInference(asExpr, inInfo, ref outInfo);
 
-                                AstVarDecl varDecl = new AstVarDecl(rightExpr, idExpr, asExpr, "", idExpr);
+                                // creating deep copies of its elements
+                                // because we don't want to change 
+                                // original shite' scopes and other
+                                AstVarDecl varDecl = new AstVarDecl(
+                                    rightExpr.GetDeepCopy() as AstExpression, 
+                                    idExpr.GetDeepCopy() as AstIdExpr, 
+                                    asExpr.GetDeepCopy() as AstExpression, 
+                                    "", idExpr);
                                 outInfo.IsOpDeclarations.Add(varDecl);
                             }
 
@@ -1705,7 +1712,7 @@ namespace HapetPostPrepare
                 {
                     SetScopeAndParent(varDecl, _currentBlock, _currentBlock.SubScope);
                     PostPrepareVarScoping(varDecl);
-                    PostPrepareExprInference(varDecl, inInfo, ref outInfo);
+                    // no need to inference - its elements are already inferenced
                 }
                 // add decls before 'if' stmt
                 int ifStmtIndex = _currentBlock.Statements.IndexOf(ifStmt);
