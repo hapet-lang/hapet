@@ -58,7 +58,7 @@ namespace HapetBackend.Llvm.Linkers.Windows
 
                 var versions = Newtonsoft.Json.JsonConvert.DeserializeObject<VsWhere[]>(sb.ToString());
 
-                if (versions?.Length == 0)
+                if (versions == null || versions.Length == 0)
                     return (-1, null);
 
                 if (versions.Length <= skipLatest)

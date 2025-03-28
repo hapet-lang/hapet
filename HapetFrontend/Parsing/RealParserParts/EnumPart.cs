@@ -115,11 +115,6 @@ namespace HapetFrontend.Parsing
                     NextToken();
                     SkipNewlines();
                 }
-                else if (decl == null)
-                {
-                    NextToken();
-                    ReportMessage(decl.Location, [], ErrorCode.Get(CTEN.ThisDeclNotAllowedInEnum));
-                }
             }
 
             end = Consume(TokenType.CloseBrace, ErrMsg("}", "at end of enum declaration")).Location;
