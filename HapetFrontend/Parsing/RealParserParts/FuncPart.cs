@@ -52,7 +52,7 @@ namespace HapetFrontend.Parsing
 
             SkipNewlines();
 
-            var theFunc = new AstFuncDecl(parameters, null, null, null, location: new Location(paramsLocation.Beginning, body?.Ending ?? paramsLocation.Ending));
+            var theFunc = new AstFuncDecl(parameters, null, null, null);
 
             // allow nested func decls
             inInfo.AllowNestedFunc = true;
@@ -66,6 +66,7 @@ namespace HapetFrontend.Parsing
 
 
             theFunc.Body = body;
+            theFunc.Location = new Location(paramsLocation.Beginning, body?.Ending ?? paramsLocation.Ending);
             theFunc.BaseCtorCall = baseCtorCall;
             theFunc.HasGenericTypes = generics.Count > 0;
             theFunc.GenericNames = generics;
@@ -76,9 +77,13 @@ namespace HapetFrontend.Parsing
 
         private AstLambdaDecl ParseLambdaDeclaration(List<AstParamDecl> parameters, TokenLocation beg, bool allowCommaForTuple)
         {
+            // just handlers
+            ParserInInfo inInfo = ParserInInfo.Default;
+            ParserOutInfo outInfo = ParserOutInfo.Default;
+
             ConsumeUntil(TokenType.Arrow, ErrMsg("=>", "in lambda"));
 
-            AstBlockExpr body = null; //ParseBlockExpression();
+            AstBlockExpr body = ParseBlockExpression(inInfo, ref outInfo);
 
             return new AstLambdaDecl(parameters, body, null, new Location(beg, body.Ending));
         }

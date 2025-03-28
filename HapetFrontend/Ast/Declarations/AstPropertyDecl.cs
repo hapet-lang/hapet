@@ -109,31 +109,8 @@ namespace HapetFrontend.Ast.Declarations
             if (this is AstIndexerDecl indDecl)
                 prs.Insert(0, indDecl.IndexerParameter.GetCopy());
 
-            // the func is - 'void set_Prop(PropType value)'
-            AstFuncDecl func = new AstFuncDecl(
-                prs,
-                new AstNestedExpr(new AstIdExpr("void", Location), null, Location),
-                null,
-                new AstIdExpr($"set_{Name.Name}"),
-                "",
-                Location);
-            func.SpecialKeys.AddRange(SpecialKeys);
-            func.ContainingParent = containingParent; // it has to be
-            func.IsPropertyFunction = true;
-            func.SourceFile = SourceFile;
-
-            // if we need to add 'this' param
-            if (addFirstParam)
-            {
-                // for generic type - need to create an AstIdGenericExpr
-                AstIdExpr thisParamType = containingParent.Name.GetCopy();
-                // creating the class instance 'this' param
-                AstExpression paramType = new AstPointerExpr(thisParamType, false);
-                AstIdExpr paramName = new AstIdExpr("this");
-                AstParamDecl thisParam = new AstParamDecl(new AstNestedExpr(paramType, null), paramName);
-                // adding the param as the func first param
-                func.Parameters.Insert(0, thisParam);
-            }
+            var func = GetPropaFunc(addFirstParam, containingParent);
+            func.Parameters = prs;
 
             if (SetBlock == null && !SpecialKeys.Contains(TokenType.KwAbstract))
             {
@@ -162,12 +139,37 @@ namespace HapetFrontend.Ast.Declarations
             if (this is AstIndexerDecl indDecl)
                 prs.Add(indDecl.IndexerParameter.GetCopy());
 
-            // the func is - 'PropType get_Prop()'
+            var func = GetPropaFunc(addFirstParam, containingParent);
+            func.Parameters = prs;
+
+            if (GetBlock == null && !SpecialKeys.Contains(TokenType.KwAbstract))
+            {
+                // left part is null if it is a static propa
+                AstNestedExpr leftPart = null;
+                if (!SpecialKeys.Contains(TokenType.KwStatic))
+                    leftPart = new AstNestedExpr(new AstIdExpr("this"), null);
+                var getBlock = new AstBlockExpr(new List<AstStatement>()
+                {
+					// the stmt is - 'return this.field_Prop'
+					new AstReturnStmt(new AstNestedExpr(new AstIdExpr($"field_{Name.Name}"), leftPart), Location),
+                }, Location);
+                func.Body = getBlock;
+            }
+            else
+            {
+                func.Body = GetBlock;
+            }
+            return func;
+        }
+
+        private AstFuncDecl GetPropaFunc(bool addFirstParam, AstDeclaration containingParent)
+        {
+            // the func is - 'void set_Prop(PropType value)'
             AstFuncDecl func = new AstFuncDecl(
-                prs,
-                Type,
                 null,
-                new AstIdExpr($"get_{Name.Name}"),
+                new AstNestedExpr(new AstIdExpr("void", Location), null, Location),
+                null,
+                new AstIdExpr($"set_{Name.Name}"),
                 "",
                 Location);
             func.SpecialKeys.AddRange(SpecialKeys);
@@ -188,23 +190,6 @@ namespace HapetFrontend.Ast.Declarations
                 func.Parameters.Insert(0, thisParam);
             }
 
-            if (GetBlock == null && !SpecialKeys.Contains(TokenType.KwAbstract))
-            {
-                // left part is null if it is a static propa
-                AstNestedExpr leftPart = null;
-                if (!SpecialKeys.Contains(TokenType.KwStatic))
-                    leftPart = new AstNestedExpr(new AstIdExpr("this"), null);
-                var getBlock = new AstBlockExpr(new List<AstStatement>()
-                {
-					// the stmt is - 'return this.field_Prop'
-					new AstReturnStmt(new AstNestedExpr(new AstIdExpr($"field_{Name.Name}"), leftPart), Location),
-                }, Location);
-                func.Body = getBlock;
-            }
-            else
-            {
-                func.Body = GetBlock;
-            }
             return func;
         }
         #endregion
