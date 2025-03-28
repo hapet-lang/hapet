@@ -5,6 +5,7 @@ using HapetFrontend.Extensions;
 using HapetFrontend.Types;
 using HapetFrontend;
 using HapetPostPrepare.Entities;
+using HapetFrontend.Ast.Statements;
 
 namespace HapetPostPrepare
 {
@@ -51,6 +52,9 @@ namespace HapetPostPrepare
             var unique = _allUsedClassesInProgram.Distinct().ToList();
             foreach (var cls in unique)
             {
+                // setting current source file
+                _currentSourceFile = cls.SourceFile;
+
                 // skip interfaces
                 if (cls.IsInterface)
                     continue;
@@ -66,15 +70,32 @@ namespace HapetPostPrepare
                 if (suppressAttr != null)
                     continue;
 
+                // we put stor call of nested decl into its parent decl stor
+                AstBlockExpr blockWhereToCall;
+                if (cls.IsNestedDecl)
+                {
+                    var candidate = GetFuncFromCandidates($"{cls.ParentDecl.Name.Name.GetClassNameWithoutNamespace()}_stor", 
+                        [], cls.ParentDecl.SubScope, cls.ParentDecl, out var _);
+                    if (candidate == null)
+                    {
+                        // TODO: error here 
+                        continue;
+                    }
+                    var body = (candidate.Decl as AstFuncDecl).Body;
+                    blockWhereToCall = (body.Statements[0] as AstIfStmt).BodyTrue;
+                }
+                else
+                    blockWhereToCall = _compiler.MainFunction.Body;
+
                 // creating stor call ast
                 string funcName = $"{cls.Name.Name.GetClassNameWithoutNamespace()}_stor";
                 var call = new AstCallExpr(new AstNestedExpr(cls.Name.GetCopy(), null), new AstIdExpr(funcName));
-                SetScopeAndParent(call, _compiler.MainFunction.Body, _compiler.MainFunction.Body.SubScope);
+                SetScopeAndParent(call, blockWhereToCall, blockWhereToCall.SubScope);
                 PostPrepareExprScoping(call);
                 PostPrepareExprInference(call, inInfo, ref outInfo);
 
                 // TODO: sort the static ctors calls by hierarchy
-                _compiler.MainFunction.Body.Statements.Insert(0, call);
+                blockWhereToCall.Statements.Insert(0, call);
             }
         }
     }

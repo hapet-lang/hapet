@@ -8,6 +8,7 @@ using HapetFrontend.Enums;
 using HapetFrontend.Parsing;
 using System.Collections.Generic;
 using HapetFrontend.Extensions;
+using HapetFrontend.Entities;
 
 namespace HapetPostPrepare
 {
@@ -22,15 +23,20 @@ namespace HapetPostPrepare
 
                 foreach (var stmt in file.Statements)
                 {
-                    if (stmt is AstClassDecl classDecl)
-                    {
-                        PostPrepareClassMethodsInternal(classDecl, file.IsImported);
-                    }
-                    else if (stmt is AstStructDecl structDecl)
-                    {
-                        PostPrepareStructMethodsInternal(structDecl, file.IsImported);
-                    }
+                    PostPrepareDeclMethodsInternal(stmt as AstDeclaration, file);
                 }
+            }
+        }
+
+        private void PostPrepareDeclMethodsInternal(AstDeclaration decl, ProgramFile file)
+        {
+            if (decl is AstClassDecl classDecl)
+            {
+                PostPrepareClassMethodsInternal(classDecl, file.IsImported);
+            }
+            else if (decl is AstStructDecl structDecl)
+            {
+                PostPrepareStructMethodsInternal(structDecl, file.IsImported);
             }
         }
 
@@ -113,7 +119,11 @@ namespace HapetPostPrepare
                 foreach (var decl in structDecl.Declarations)
                 {
                     if (decl is not AstFuncDecl funcDecl)
+                    {
+                        // probably nested decls
+                        PostPrepareDeclMethodsInternal(decl, structDecl.SourceFile);
                         continue;
+                    }
 
                     // adding 'this' param to func params
                     if (!funcDecl.SpecialKeys.Contains(TokenType.KwStatic))
@@ -266,7 +276,11 @@ namespace HapetPostPrepare
                 foreach (var decl in classDecl.Declarations)
                 {
                     if (decl is not AstFuncDecl funcDecl)
+                    {
+                        // probably nested decls
+                        PostPrepareDeclMethodsInternal(decl, classDecl.SourceFile);
                         continue;
+                    }
 
                     // adding 'this' param to func params
                     if (!funcDecl.SpecialKeys.Contains(TokenType.KwStatic))
