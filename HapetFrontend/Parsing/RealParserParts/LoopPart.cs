@@ -55,7 +55,7 @@ namespace HapetFrontend.Parsing
             // parsing the block
             if (CheckToken(TokenType.OpenBrace))
             {
-                body = ParseBlockExpression();
+                body = ParseBlockExpression(inInfo, ref outInfo);
             }
             else if (CheckToken(TokenType.Semicolon))
             {
@@ -107,7 +107,7 @@ namespace HapetFrontend.Parsing
             // parsing the block
             if (CheckToken(TokenType.OpenBrace))
             {
-                body = ParseBlockExpression();
+                body = ParseBlockExpression(inInfo, ref outInfo);
             }
             else if (CheckToken(TokenType.Semicolon))
             {

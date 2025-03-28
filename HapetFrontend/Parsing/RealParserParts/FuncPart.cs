@@ -52,25 +52,33 @@ namespace HapetFrontend.Parsing
 
             SkipNewlines();
 
+            var theFunc = new AstFuncDecl(parameters, null, null, null, location: new Location(paramsLocation.Beginning, body?.Ending ?? paramsLocation.Ending));
+
+            // allow nested func decls
+            inInfo.AllowNestedFunc = true;
+            inInfo.ParentFuncDecl = theFunc;
             if (CheckToken(TokenType.Semicolon))
                 NextToken(); // do nothing
             else
-                body = ParseBlockExpression();
-            return new AstFuncDecl(parameters, null, body, null, location: new Location(paramsLocation.Beginning, body?.Ending ?? paramsLocation.Ending)) 
-            { 
-                BaseCtorCall = baseCtorCall,
-                HasGenericTypes = generics.Count > 0,
-                GenericNames = generics,
-                GenericConstrains = genericConstrains,
-                IsImported = inInfo.ExternalMetadata
-            };
+                body = ParseBlockExpression(inInfo, ref outInfo); 
+            inInfo.AllowNestedFunc = false;
+            inInfo.ParentFuncDecl = null;
+
+
+            theFunc.Body = body;
+            theFunc.BaseCtorCall = baseCtorCall;
+            theFunc.HasGenericTypes = generics.Count > 0;
+            theFunc.GenericNames = generics;
+            theFunc.GenericConstrains = genericConstrains;
+            theFunc.IsImported = inInfo.ExternalMetadata;
+            return theFunc;
         }
 
         private AstLambdaDecl ParseLambdaDeclaration(List<AstParamDecl> parameters, TokenLocation beg, bool allowCommaForTuple)
         {
             ConsumeUntil(TokenType.Arrow, ErrMsg("=>", "in lambda"));
 
-            AstBlockExpr body = ParseBlockExpression();
+            AstBlockExpr body = null; //ParseBlockExpression();
 
             return new AstLambdaDecl(parameters, body, null, new Location(beg, body.Ending));
         }

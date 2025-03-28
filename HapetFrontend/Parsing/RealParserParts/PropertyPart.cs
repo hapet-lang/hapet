@@ -61,7 +61,7 @@ namespace HapetFrontend.Parsing
                 else if (CheckToken(TokenType.OpenBrace))
                 {
                     // the 'get' block
-                    getBody = ParseBlockExpression();
+                    getBody = ParseBlockExpression(inInfo, ref outInfo);
                 }
                 else
                 {
@@ -84,7 +84,7 @@ namespace HapetFrontend.Parsing
                 else if (CheckToken(TokenType.OpenBrace))
                 {
                     // the 'set' block
-                    setBody = ParseBlockExpression();
+                    setBody = ParseBlockExpression(inInfo, ref outInfo);
                 }
                 else
                 {

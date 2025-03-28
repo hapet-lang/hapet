@@ -56,7 +56,7 @@ namespace HapetFrontend.Parsing
                     break;
 
                 case TokenType.OpenBrace:
-                    toReturn = ParseBlockExpression();
+                    toReturn = ParseBlockExpression(inInfo, ref outInfo);
                     break;
 
                 // directive

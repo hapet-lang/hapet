@@ -20,6 +20,15 @@ namespace HapetFrontend.Entities
         public bool ExternalMetadata { get; set; }
 
         /// <summary>
+        /// 'true' when nested func decl is allowed in current AstBlockExpr
+        /// </summary>
+        public bool AllowNestedFunc { get; set; }
+        /// <summary>
+        /// The parent func decl that is used when <see cref="AllowNestedFunc"/> is 'true'
+        /// </summary>
+        public AstFuncDecl ParentFuncDecl { get; set; }
+
+        /// <summary>
         /// This shite is used for func decl
         /// </summary>
         public AstUnknownDecl CurrentUdecl { get; set; }

@@ -74,7 +74,7 @@ namespace HapetFrontend.Ast
         /// <summary>
         /// Contains parent decl if the <see cref="IsNestedDecl"/> is 'true'
         /// </summary>
-        public AstClassDecl ParentDecl { get; set; }
+        public AstDeclaration ParentDecl { get; set; }
 
         /// <summary>
         /// Getting symbol of itself

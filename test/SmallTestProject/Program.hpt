@@ -16,14 +16,13 @@ public class Base
 {
     public int AnimeTest()
     {
-        var n = new NestedClass();
-        n.Test = 441;
-        return n.Test;
-    }
+        int a = GetInt();
+        return a;
 
-    class NestedClass
-    {
-        public int Test { get; set; }
+        int GetInt()
+        {
+            return 33;
+        }
     }
 }
 

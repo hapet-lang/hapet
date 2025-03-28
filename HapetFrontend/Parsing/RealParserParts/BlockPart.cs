@@ -9,12 +9,8 @@ namespace HapetFrontend.Parsing
 {
     public partial class Parser
     {
-        private AstBlockExpr ParseBlockExpression()
+        private AstBlockExpr ParseBlockExpression(ParserInInfo inInfo, ref ParserOutInfo outInfo)
         {
-            // just handlers
-            ParserInInfo inInfo = ParserInInfo.Default;
-            ParserOutInfo outInfo = ParserOutInfo.Default;
-
             var statements = new List<AstStatement>();
             var beg = Consume(TokenType.OpenBrace, ErrMsg("{", "at beginning of block expression")).Location;
 
@@ -30,11 +26,19 @@ namespace HapetFrontend.Parsing
                 if (next.Type == TokenType.CloseBrace || next.Type == TokenType.EOF)
                     break;
 
+                // do not allow nested funcs in nested shite. only in current!!!
+                var saved1 = inInfo.AllowNestedFunc;
+                var saved2 = inInfo.ParentFuncDecl;
+                inInfo.AllowNestedFunc = false;
+                inInfo.ParentFuncDecl = null;
                 var s = ParseStatement(inInfo, ref outInfo);
+                inInfo.AllowNestedFunc = saved1;
+                inInfo.ParentFuncDecl = saved2;
 
                 if (s != null)
                 {
-                    if (string.IsNullOrWhiteSpace(foundBrStatement))
+                    // check that stmt is not after return/break OR is a nested function
+                    if (string.IsNullOrWhiteSpace(foundBrStatement) || s is AstFuncDecl)
                     {
                         statements.Add(s);
                     }
@@ -62,6 +66,17 @@ namespace HapetFrontend.Parsing
                             break;
                     }
 
+                    // check for nested func
+                    if (s is AstFuncDecl nestedFunc)
+                    {
+                        if (!inInfo.AllowNestedFunc)
+                        {
+                            // TODO: error here that is not expected
+                        }
+
+                        nestedFunc.IsNestedDecl = true;
+                        nestedFunc.ParentDecl = inInfo.ParentFuncDecl;
+                    }
                 }
                 SkipNewlines();
             }
