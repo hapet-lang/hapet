@@ -110,7 +110,7 @@ namespace HapetFrontend.Ast.Declarations
                 prs.Insert(0, indDecl.IndexerParameter.GetCopy());
 
             var func = GetPropaFunc(addFirstParam, containingParent);
-            func.Parameters = prs;
+            func.Parameters.AddRange(prs);
 
             if (SetBlock == null && !SpecialKeys.Contains(TokenType.KwAbstract))
             {
@@ -140,7 +140,7 @@ namespace HapetFrontend.Ast.Declarations
                 prs.Add(indDecl.IndexerParameter.GetCopy());
 
             var func = GetPropaFunc(addFirstParam, containingParent);
-            func.Parameters = prs;
+            func.Parameters.AddRange(prs);
 
             if (GetBlock == null && !SpecialKeys.Contains(TokenType.KwAbstract))
             {
@@ -166,7 +166,7 @@ namespace HapetFrontend.Ast.Declarations
         {
             // the func is - 'void set_Prop(PropType value)'
             AstFuncDecl func = new AstFuncDecl(
-                null,
+                new List<AstParamDecl>(),
                 new AstNestedExpr(new AstIdExpr("void", Location), null, Location),
                 null,
                 new AstIdExpr($"set_{Name.Name}"),

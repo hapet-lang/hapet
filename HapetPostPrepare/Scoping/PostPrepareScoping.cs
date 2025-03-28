@@ -565,7 +565,12 @@ namespace HapetPostPrepare
                     continue;
 
                 SetScopeAndParent(stmt, blockExpr, blockScope);
-                PostPrepareExprScoping(stmt);
+
+                // special check for nested function
+                if (stmt is AstFuncDecl func)
+                    PostPrepareFunctionScoping(func);
+                else
+                    PostPrepareExprScoping(stmt);
             }
 
             return blockScope;
