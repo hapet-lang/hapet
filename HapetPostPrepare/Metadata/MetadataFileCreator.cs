@@ -1,5 +1,6 @@
 ﻿using HapetFrontend.Ast;
 using HapetFrontend.Ast.Declarations;
+using HapetFrontend.Ast.Expressions;
 using HapetFrontend.Ast.Statements;
 using HapetFrontend.Entities;
 using HapetFrontend.Extensions;
@@ -113,116 +114,58 @@ namespace HapetPostPrepare
         private void CreateDecl(AstDeclaration decl, StringBuilder sb, string additionalOffset)
         {
             // the decl itself
-            if (decl is AstClassDecl clsDecl)
+            if (decl is AstClassDecl || decl is AstStructDecl)
             {
-                CreateClassDecl(clsDecl, sb, additionalOffset);
-            }
-            else if (decl is AstStructDecl strDecl)
-            {
-                CreateStructDecl(strDecl, sb, additionalOffset);
+                CreateClassOrStructDecl(decl, sb, additionalOffset);
             }
         }
 
-        private void CreateClassDecl(AstClassDecl decl, StringBuilder sb, string additionalOffset)
+        private void CreateClassOrStructDecl(AstDeclaration decl, StringBuilder sb, string additionalOffset)
         {
-            if (decl.IsInterface)
-                sb.Append("interface ");
-            else
-                sb.Append("class ");
+            List<AstNestedExpr> inheritedFrom = new List<AstNestedExpr>();
+            if (decl is AstStructDecl strDecl)
+            {
+                inheritedFrom = strDecl.InheritedFrom;
+                sb.Append("struct ");
+            }
+            else if (decl is AstClassDecl clsDecl)
+            {
+                inheritedFrom = clsDecl.InheritedFrom;
+                if (clsDecl.IsInterface)
+                    sb.Append("interface ");
+                else
+                    sb.Append("class ");
+            }
+            
             sb.Append($"{GenericsHelper.GetNameFromAst(decl.Name).GetClassNameWithoutNamespace()} ");
 
-            if (decl.InheritedFrom.Count > 0)
+            if (inheritedFrom.Count > 0)
             {
                 sb.Append(": ");
-                for (int i = 0; i < decl.InheritedFrom.Count; i++)
+                for (int i = 0; i < inheritedFrom.Count; i++)
                 {
-                    AntiParseExpr(decl.InheritedFrom[i], sb, additionalOffset);
+                    AntiParseExpr(inheritedFrom[i], sb, additionalOffset);
 
-                    if (i < decl.InheritedFrom.Count - 1)
+                    if (i < inheritedFrom.Count - 1)
                         sb.Append(", ");
                 }
             }
 
             // TODO: generic constraiins 
 
-            AstClassDecl theDecl = decl;
+            AstDeclaration theDecl = decl;
             if (decl.HasGenericTypes)
                 theDecl = (decl.OriginalGenericDecl as AstClassDecl);
 
-            sb.Append($"\n{additionalOffset}{{\n");
-
-            foreach (var d in theDecl.Declarations)
-            {
-                if (d.SpecialKeys.Contains(TokenType.KwUnreflected))
-                    continue;
-                // do not serialize prop' funcs
-                if (d is AstFuncDecl func2 && func2.IsPropertyFunction)
-                    continue;
-                // do not serialize prop' fields
-                if (d is AstVarDecl field2 && field2.IsPropertyField)
-                    continue;
-
-                // TODO: doc string
-
-                // serialize attributes
-                foreach (var attr in d.Attributes)
-                {
-                    sb.Append(additionalOffset + _fourSpaces);
-                    AntiParseExpr(attr, sb, additionalOffset + _fourSpaces);
-                }
-
-                CreateSpecialKeys(d.SpecialKeys, sb, additionalOffset + _fourSpaces);
-
-                if (d is AstFuncDecl func)
-                {
-                    CreateFuncDecl(func, sb, additionalOffset + _fourSpaces, theDecl.HasGenericTypes);
-                }
-                else if (d is AstPropertyDecl prop)
-                {
-                    CreatePropertyDecl(prop, sb, additionalOffset + _fourSpaces, theDecl.HasGenericTypes);
-                }
-                else if (d is AstVarDecl field)
-                {
-                    CreateFieldDecl(field, sb, additionalOffset + _fourSpaces);
-                }
-                else
-                {
-                    CreateDecl(d, sb, additionalOffset + _fourSpaces);
-                }
-            }
-
-            sb.Append($"{additionalOffset}}}\n");
-            // looks better :)
-            if (!decl.IsNestedDecl)
-                sb.Append('\n');
-        }
-
-        private void CreateStructDecl(AstStructDecl decl, StringBuilder sb, string additionalOffset)
-        {
-            sb.Append("struct ");
-            sb.Append($"{GenericsHelper.GetNameFromAst(decl.Name).GetClassNameWithoutNamespace()} ");
-
-            if (decl.InheritedFrom.Count > 0)
-            {
-                sb.Append(": ");
-                for (int i = 0; i < decl.InheritedFrom.Count; i++)
-                {
-                    AntiParseExpr(decl.InheritedFrom[i], sb, additionalOffset);
-
-                    if (i < decl.InheritedFrom.Count - 1)
-                        sb.Append(", ");
-                }
-            }
-
-            // TODO: generic constraiins 
-
-            AstStructDecl theDecl = decl;
-            if (decl.HasGenericTypes)
-                theDecl = (decl.OriginalGenericDecl as AstStructDecl);
+            List<AstDeclaration> decls = new List<AstDeclaration>();
+            if (theDecl is AstClassDecl clsDecl1)
+                decls = clsDecl1.Declarations;
+            else if (theDecl is AstStructDecl strDecl1)
+                decls = strDecl1.Declarations;
 
             sb.Append($"\n{additionalOffset}{{\n");
 
-            foreach (var d in theDecl.Declarations)
+            foreach (var d in decls)
             {
                 if (d.SpecialKeys.Contains(TokenType.KwUnreflected))
                     continue;

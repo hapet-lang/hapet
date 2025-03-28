@@ -1,4 +1,5 @@
 ﻿using HapetFrontend.Errors;
+using HapetFrontend.Scoping;
 using HapetFrontend.Types;
 using LLVMSharp.Interop;
 
@@ -65,16 +66,7 @@ namespace HapetBackend.Llvm
                             // special logics for ptrs
                             else if (op.ResultType is PointerType)
                             {
-                                theFunc = (LLVMBuilderRef builder, LLVMValueRef left, LLVMValueRef right, string oper) =>
-                                {
-                                    var leftV = CreateCast(builder, left, op.LhsType, IntPtrType.Instance);
-                                    var rightV = CreateCast(builder, right, op.RhsType, IntPtrType.Instance);
-
-                                    // getting add func for the new types
-                                    var binOp = GetBinOp(op.Name, IntPtrType.Instance, IntPtrType.Instance);
-                                    var res = binOp(builder, leftV, rightV, oper);
-                                    return CreateCast(builder, res, IntPtrType.Instance, op.ResultType);
-                                };
+                                theFunc = GetCringeFuncForPtrs(op);
                             }
                             else theFunc = LlvmExtensions.BuildAdd;
                             break;
@@ -86,16 +78,7 @@ namespace HapetBackend.Llvm
                             // special logics for ptrs
                             else if (op.ResultType is PointerType)
                             {
-                                theFunc = (LLVMBuilderRef builder, LLVMValueRef left, LLVMValueRef right, string oper) =>
-                                {
-                                    var leftV = CreateCast(builder, left, op.LhsType, IntPtrType.Instance);
-                                    var rightV = CreateCast(builder, right, op.RhsType, IntPtrType.Instance);
-
-                                    // getting sub func for the new types
-                                    var binOp = GetBinOp(op.Name, IntPtrType.Instance, IntPtrType.Instance);
-                                    var res = binOp(builder, leftV, rightV, oper);
-                                    return CreateCast(builder, res, IntPtrType.Instance, op.ResultType);
-                                };
+                                theFunc = GetCringeFuncForPtrs(op);
                             }
                             else theFunc = LlvmExtensions.BuildSub;
                             break;
@@ -158,16 +141,7 @@ namespace HapetBackend.Llvm
                             // special logics for ptrs
                             else if (op.RhsType is PointerType)
                             {
-                                theFunc = (LLVMBuilderRef builder, LLVMValueRef left, LLVMValueRef right, string oper) =>
-                                {
-                                    var leftV = CreateCast(builder, left, op.LhsType, IntPtrType.Instance);
-                                    var rightV = CreateCast(builder, right, op.RhsType, IntPtrType.Instance);
-
-                                    // getting add func for the new types
-                                    var binOp = GetBinOp(op.Name, IntPtrType.Instance, IntPtrType.Instance);
-                                    var res = binOp(builder, leftV, rightV, oper);
-                                    return CreateCast(builder, res, IntPtrType.Instance, op.ResultType);
-                                };
+                                theFunc = GetCringeFuncForPtrs(op);
                             }
                             else theFunc = GetICompare(LLVMIntPredicate.LLVMIntEQ);
                             break;
@@ -179,16 +153,7 @@ namespace HapetBackend.Llvm
                             // special logics for ptrs
                             else if (op.RhsType is PointerType)
                             {
-                                theFunc = (LLVMBuilderRef builder, LLVMValueRef left, LLVMValueRef right, string oper) =>
-                                {
-                                    var leftV = CreateCast(builder, left, op.LhsType, IntPtrType.Instance);
-                                    var rightV = CreateCast(builder, right, op.RhsType, IntPtrType.Instance);
-
-                                    // getting add func for the new types
-                                    var binOp = GetBinOp(op.Name, IntPtrType.Instance, IntPtrType.Instance);
-                                    var res = binOp(builder, leftV, rightV, oper);
-                                    return CreateCast(builder, res, IntPtrType.Instance, op.ResultType);
-                                };
+                                theFunc = GetCringeFuncForPtrs(op);
                             }
                             else theFunc = GetICompare(LLVMIntPredicate.LLVMIntNE);
                             break;
@@ -250,6 +215,20 @@ namespace HapetBackend.Llvm
                 }
                 if (theFunc != null)
                     builtInBinOperators.Add((op.Name, op.LhsType, op.RhsType), theFunc);
+            }
+
+            Func<LLVMBuilderRef, LLVMValueRef, LLVMValueRef, string, LLVMValueRef> GetCringeFuncForPtrs(BuiltInBinaryOperator op)
+            {
+                return (LLVMBuilderRef builder, LLVMValueRef left, LLVMValueRef right, string oper) =>
+                {
+                    var leftV = CreateCast(builder, left, op.LhsType, IntPtrType.Instance);
+                    var rightV = CreateCast(builder, right, op.RhsType, IntPtrType.Instance);
+
+                    // getting add func for the new types
+                    var binOp = GetBinOp(op.Name, IntPtrType.Instance, IntPtrType.Instance);
+                    var res = binOp(builder, leftV, rightV, oper);
+                    return CreateCast(builder, res, IntPtrType.Instance, op.ResultType);
+                };
             }
         }
 
