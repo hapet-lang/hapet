@@ -3,6 +3,7 @@ using HapetFrontend.Ast;
 using HapetFrontend.Ast.Expressions;
 using HapetFrontend.Errors;
 using HapetFrontend.Entities;
+using System.Diagnostics;
 
 namespace HapetFrontend.Parsing
 {
@@ -20,9 +21,12 @@ namespace HapetFrontend.Parsing
             AstBlockExpr setBody = null;
             AstStatement initializer = null;
 
+            // required!!! must not be null!!!
+            ArgumentNullException.ThrowIfNull(udecl);
+
             List<AstIdExpr> generics = new List<AstIdExpr>();
             // getting generics from parsed udecl' name
-            if (udecl != null && udecl.Name is AstIdGenericExpr genExpr)
+            if (udecl.Name is AstIdGenericExpr genExpr)
             {
                 foreach (var g in genExpr.GenericRealTypes)
                 {

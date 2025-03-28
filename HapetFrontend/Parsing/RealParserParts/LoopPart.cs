@@ -4,6 +4,7 @@ using HapetFrontend.Ast;
 using System.Collections.Generic;
 using HapetFrontend.Errors;
 using HapetFrontend.Entities;
+using System.Runtime;
 
 namespace HapetFrontend.Parsing
 {
@@ -50,27 +51,7 @@ namespace HapetFrontend.Parsing
             }
             var end = Consume(TokenType.CloseParen, ErrMsg("')'", "after the third argument"));
 
-            SkipNewlines();
-
-            // parsing the block
-            if (CheckToken(TokenType.OpenBrace))
-            {
-                body = ParseBlockExpression(inInfo, ref outInfo);
-            }
-            else if (CheckToken(TokenType.Semicolon))
-            {
-                // check if there is not only a '{' but could be a ';'
-                // because exprs like 'for (;;) ;' should also be handled
-                // if there is no '{' just create an empty block
-                NextToken();
-                body = new AstBlockExpr(new List<AstStatement>(), PeekToken().Location);
-            }
-            else
-            {
-                // getting only one stmt if there are no braces
-                var onlyStmt = ParseStatement(inInfo, ref outInfo);
-                body = new AstBlockExpr(new List<AstStatement>() { onlyStmt }, onlyStmt);
-            }
+            body = GetLoopOrCondBlock(inInfo, ref outInfo);
 
             return new AstForStmt(first, second, third, body, new Location(beg.Location, end.Location));
         }
@@ -102,8 +83,16 @@ namespace HapetFrontend.Parsing
                 ReportMessage(PeekToken().Location, [], ErrorCode.Get(CTEN.WhileLoopNoCondition));
             var end = Consume(TokenType.CloseParen, ErrMsg("')'", "after the condition"));
 
+            body = GetLoopOrCondBlock(inInfo, ref outInfo);
+
+            return new AstWhileStmt(condition, body, new Location(beg.Location, end.Location));
+        }
+
+        private AstBlockExpr GetLoopOrCondBlock(ParserInInfo inInfo, ref ParserOutInfo outInfo)
+        {
             SkipNewlines();
 
+            AstBlockExpr body;
             // parsing the block
             if (CheckToken(TokenType.OpenBrace))
             {
@@ -123,8 +112,7 @@ namespace HapetFrontend.Parsing
                 var onlyStmt = ParseStatement(inInfo, ref outInfo);
                 body = new AstBlockExpr(new List<AstStatement>() { onlyStmt }, onlyStmt);
             }
-
-            return new AstWhileStmt(condition, body, new Location(beg.Location, end.Location));
+            return body;
         }
     }
 }

@@ -109,13 +109,13 @@ namespace HapetFrontend.Parsing
                 {
                     break;
                 }
-                else if (decl is AstVarDecl && next.Type == TokenType.Comma)
+                else if (decl != null && next.Type == TokenType.Comma)
                 {
                     // it is just a ',' at the end of enum field
                     NextToken();
                     SkipNewlines();
                 }
-                else if (decl is not AstVarDecl)
+                else if (decl == null)
                 {
                     NextToken();
                     ReportMessage(decl.Location, [], ErrorCode.Get(CTEN.ThisDeclNotAllowedInEnum));

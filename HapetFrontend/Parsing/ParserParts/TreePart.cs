@@ -349,8 +349,7 @@ namespace HapetFrontend.Parsing
             if (expr is AstUnknownDecl)
                 return expr;
 
-            bool breakLoop = false;
-            while (!breakLoop)
+            while (true)
             {
                 switch (PeekToken().Type)
                 {

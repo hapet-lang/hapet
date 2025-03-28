@@ -90,7 +90,11 @@ namespace HapetFrontend.Parsing
                 // get current special keys
                 List<Token> specialKeys = ParseSpecialKeys();
                 var decl = ParseDeclaration(inInfo, ref outInfo);
-                decl?.SpecialKeys.AddRange(specialKeys);
+
+                // required!!! must not be null!!!
+                ArgumentNullException.ThrowIfNull(decl);
+
+                decl.SpecialKeys.AddRange(specialKeys);
 
                 // it is probably an attribute so no need to save it to decls
                 if (decl is AstEmptyDecl)

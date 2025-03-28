@@ -36,27 +36,7 @@ namespace HapetFrontend.Parsing
                 ReportMessage(PeekToken().Location, [], ErrorCode.Get(CTEN.IfStmtCondExpected));
             var end = Consume(TokenType.CloseParen, ErrMsg("')'", "after the condition"));
 
-            SkipNewlines();
-
-            // parsing the block
-            if (CheckToken(TokenType.OpenBrace))
-            {
-                bodyTrue = ParseBlockExpression(inInfo, ref outInfo);
-            }
-            else if (CheckToken(TokenType.Semicolon))
-            {
-                // check if there is not only a '{' but could be a ';'
-                // because exprs like 'if (false) ;' should also be handled
-                // if there is no '{' just create an empty block
-                NextToken();
-                bodyTrue = new AstBlockExpr(new List<AstStatement>(), PeekToken().Location);
-            }
-            else
-            {
-                // getting only one stmt if there are no braces
-                var onlyStmt = ParseStatement(inInfo, ref outInfo);
-                bodyTrue = new AstBlockExpr(new List<AstStatement>() { onlyStmt }, onlyStmt);
-            }
+            bodyTrue = GetLoopOrCondBlock(inInfo, ref outInfo);
 
             SkipNewlines();
 
@@ -66,17 +46,7 @@ namespace HapetFrontend.Parsing
                 Consume(TokenType.KwElse, ErrMsg("keyword 'else'", "at beginning of 'else' statement"));
                 SkipNewlines();
 
-                // parsing the block
-                if (CheckToken(TokenType.OpenBrace))
-                {
-                    bodyFalse = ParseBlockExpression(inInfo, ref outInfo);
-                }
-                else
-                {
-                    // getting only one stmt if there are no braces
-                    var onlyStmt = ParseStatement(inInfo, ref outInfo);
-                    bodyFalse = new AstBlockExpr(new List<AstStatement>() { onlyStmt }, onlyStmt);
-                }
+                bodyFalse = GetLoopOrCondBlock(inInfo, ref outInfo);
             }
 
             return new AstIfStmt(condition, bodyTrue, bodyFalse, new Location(beg.Location, end.Location));

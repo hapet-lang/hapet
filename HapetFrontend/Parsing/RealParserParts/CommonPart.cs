@@ -53,7 +53,7 @@ namespace HapetFrontend.Parsing
                 {
                     // do not error when look ahead and dots allowed :)
                     if (!lookAhead)
-                        ReportMessage((lookAhead ? PeekLookAhead() : PeekToken()).Location, [], ErrorCode.Get(CTEN.CommonDotUnexpected));
+                        ReportMessage(PeekToken().Location, [], ErrorCode.Get(CTEN.CommonDotUnexpected));
                     currNested.RightPart = null; // wrong parse
                     return currNested;
                 }
@@ -69,7 +69,7 @@ namespace HapetFrontend.Parsing
                 {
                     // do not error when look ahead :)
                     if (!lookAhead)
-                        ReportMessage((lookAhead ? PeekLookAhead() : PeekToken()).Location, [], ErrorCode.Get(CTEN.CommonIdentAfterDot));
+                        ReportMessage(PeekToken().Location, [], ErrorCode.Get(CTEN.CommonIdentAfterDot));
                     currNested.RightPart = null; // wrong parse
                     return currNested;
                 }

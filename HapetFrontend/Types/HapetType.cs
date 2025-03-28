@@ -59,21 +59,6 @@ namespace HapetFrontend.Types
             return !(a == b);
         }
 
-        public override bool Equals(object obj)
-        {
-            return base.Equals(obj);
-        }
-
-        public override int GetHashCode()
-        {
-            return base.GetHashCode();
-        }
-
-        public override string ToString()
-        {
-            return base.ToString();
-        }
-
         public virtual int Match(HapetType concrete)
         {
             if (concrete is ReferenceType r)
