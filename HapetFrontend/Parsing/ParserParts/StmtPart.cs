@@ -77,14 +77,9 @@ namespace HapetFrontend.Parsing
                         {
                             stmt = new AstUnknownDecl(idExpr, null, stmt);
                         }
-                        else if (stmt is AstNestedExpr nestExpr && nestExpr.RightPart is AstIdExpr idExpr2 && nestExpr.LeftPart == null)
+                        else if (stmt is AstNestedExpr nestExpr && (nestExpr.RightPart is AstIdExpr || nestExpr.RightPart is AstArrayAccessExpr))
                         {
-                            stmt = new AstUnknownDecl(idExpr2, null, stmt);
-                        }
-                        // probably only for overloading and var assign
-                        else if (stmt is AstNestedExpr nestExpr2)
-                        {
-                            stmt = new AstUnknownDecl(nestExpr2, null, stmt);
+                            stmt = new AstUnknownDecl(nestExpr, null, stmt);
                         }
 
                         // further preparations

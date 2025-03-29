@@ -464,7 +464,6 @@ namespace HapetFrontend.Parsing
                         return expr;
                 }
             }
-            return expr;
         }
 
         private AstStatement ParseAtomicExpression(ParserInInfo inInfo, ref ParserOutInfo outInfo)

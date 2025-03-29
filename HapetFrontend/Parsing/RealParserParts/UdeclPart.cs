@@ -103,8 +103,10 @@ namespace HapetFrontend.Parsing
             else if (CheckToken(TokenType.OpenParen))
             {
                 var func = ParseFuncDeclaration(null, null, inInfo, ref outInfo);
-                if (udecl.Name == null && udecl.Type is AstIdExpr fncName)
+                if (udecl.Name == null)
                 {
+                    var fncName = udecl.Type is AstIdExpr ? (udecl.Type as AstIdExpr) : ((udecl.Type as AstNestedExpr).RightPart as AstIdExpr);
+
                     // it is ctor/dtor
                     func.Name = fncName.GetCopy();
                     func.Returns = new AstNestedExpr(new AstIdExpr("void"), null);
