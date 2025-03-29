@@ -18,6 +18,9 @@ namespace HapetFrontend.Parsing
 
             while (keepParsing)
             {
+                // skip unneeded
+                SkipNewlines();
+
                 // get current special keys
                 List<Token> specialKeys = ParseSpecialKeys();
                 bool semicolonRequired = false;

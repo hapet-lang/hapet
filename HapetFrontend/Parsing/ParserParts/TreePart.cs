@@ -6,8 +6,6 @@ using HapetFrontend.Entities;
 using HapetFrontend.Errors;
 using HapetFrontend.Types;
 using System.Diagnostics;
-using System.Security.Cryptography;
-using static System.Net.Mime.MediaTypeNames;
 
 namespace HapetFrontend.Parsing
 {
@@ -541,7 +539,7 @@ namespace HapetFrontend.Parsing
                                 // how to find out when 'a * b' is a mul expr
                                 // and 'bool* bptr' is a ptr expr?
                                 // so allowPointerExpressions is true only when decls are parsed!!!
-                                if (inInfo.AllowMultiplyExpression || !IsThatPointerWithLookAhead(id))
+                                if (!IsThatPointerWithLookAhead(id, inInfo.AllowMultiplyExpression))
                                     break;
                                 var ptrExpr = new AstPointerExpr(id, false, new Location(id.RightPart.Beginning, CurrentToken.Location.Ending));
                                 id = new AstNestedExpr(ptrExpr, null, ptrExpr);

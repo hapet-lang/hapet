@@ -50,10 +50,8 @@ namespace HapetFrontend.Parsing
                         ReportMessage(s, [foundBrStatement], ErrorCode.Get(CTWN.StmtsWouldBeIgnored), Entities.ReportType.Warning);
                     }
 
-                    next = PeekToken();
-
-                    if (next.Type == TokenType.CloseBrace || next.Type == TokenType.EOF)
-                        break;
+                    // try eat semicolon or error
+                    CheckSemicolonAfterStmt(s);
 
                     // save the statment name to warn if there is something after it
                     switch (s)
@@ -77,6 +75,10 @@ namespace HapetFrontend.Parsing
                         nestedFunc.IsNestedDecl = true;
                         nestedFunc.ParentDecl = inInfo.ParentFuncDecl;
                     }
+
+                    next = PeekToken();
+                    if (next.Type == TokenType.CloseBrace || next.Type == TokenType.EOF)
+                        break;
                 }
                 SkipNewlines();
             }

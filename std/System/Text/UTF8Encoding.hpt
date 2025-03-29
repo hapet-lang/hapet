@@ -102,7 +102,7 @@ public class UTF8Encoding : Encoding
                 ushort highSurrogate = (ushort)((currentChar - 0xD800) * 0x400);
                 ushort lowSurrogate = (ushort)(str[i + 1] - 0xDC00);
                 codepoint = (uint)((lowSurrogate | highSurrogate) + 0x10000);
-                i += 1
+                i += 1;
                 currentChar = (ushort)str[i];
             }
 
@@ -169,7 +169,7 @@ public class UTF8Encoding : Encoding
                 ushort highSurrogate = (ushort)((currentChar - 0xD800) * 0x400);
                 ushort lowSurrogate = (ushort)(str[i + 1] - 0xDC00);
                 codepoint = (uint)((lowSurrogate | highSurrogate) + 0x10000);
-                i += 1
+                i += 1;
                 currentChar = (ushort)str[i];
             }
 

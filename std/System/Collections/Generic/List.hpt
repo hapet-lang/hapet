@@ -80,7 +80,7 @@ public class List<T> : IList<T>, IList, IReadOnlyList<T>
         else
         {
             _items = s_emptyArray;
-            IEnumerator<T> en = collection.GetEnumerator()
+            IEnumerator<T> en = collection.GetEnumerator();
             while (en.MoveNext())
             {
                 Add(en.Current);

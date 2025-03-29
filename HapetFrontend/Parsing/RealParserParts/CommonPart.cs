@@ -186,7 +186,7 @@ namespace HapetFrontend.Parsing
             return true;
         }
 
-        private bool IsThatPointerWithLookAhead(AstNestedExpr nest)
+        private bool IsThatPointerWithLookAhead(AstNestedExpr nest, bool isMultiplyAllowed)
         {
             // lookahead cringe
             UpdateLookAheadLocation();
@@ -211,12 +211,18 @@ namespace HapetFrontend.Parsing
                 var nextNest = ParseIdentifierExpressionInternal(lookAhead: true, allowDots: false);
                 if (nextNest.RightPart != null && (
                     CheckLookAhead(TokenType.Equal) ||        // when byte* aaa = ...
-                    CheckLookAhead(TokenType.Semicolon) ||    // when byte* aaa;
-                    CheckLookAhead(TokenType.Comma) ||        // when (byte* aaa, ...)
-                    CheckLookAhead(TokenType.OpenParen) ||    // when public byte* aaa(...
-                    CheckLookAhead(TokenType.CloseParen)))    // when (byte* aaa)
+                    CheckLookAhead(TokenType.OpenParen)))     // when public byte* aaa(...
                 {
                     isPointer = true;
+                }
+
+                // 50/50 cases
+                if (CheckLookAhead(TokenType.Semicolon) ||    // when 'byte* aaa;' OR 'anime = test * test;'
+                    CheckLookAhead(TokenType.CloseParen) ||   // when '(byte* aaa)' OR 'anime(test * test)'
+                    CheckLookAhead(TokenType.Comma))          // when '(byte* aaa, ...)' OR 'anime(test * test, ...)'
+                {
+                    if (!isMultiplyAllowed)
+                        isPointer = true;
                 }
             }
             else if (CheckLookAhead(TokenType.CloseParen) ||  // when (Anime*)inst
@@ -233,6 +239,24 @@ namespace HapetFrontend.Parsing
                 // when Anime * 'other exprs'
             }
             return isPointer;
+        }
+
+        private void CheckSemicolonAfterStmt(AstStatement s)
+        {
+            // consume semicolon after other stmt
+            if (s is not AstWhileStmt &&
+                s is not AstForStmt &&
+                s is not AstIfStmt &&
+                s is not AstCaseStmt &&
+                s is not AstSwitchStmt &&
+                s is not AstDirectiveStmt)
+            {
+                if (!CheckToken(TokenType.Semicolon))
+                {
+                    // here u can set breakpoint to catch error
+                }
+                Consume(TokenType.Semicolon, ErrMsg(";", "at the end of the statement"));
+            }
         }
     }
 }

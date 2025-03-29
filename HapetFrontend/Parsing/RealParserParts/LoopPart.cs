@@ -31,7 +31,7 @@ namespace HapetFrontend.Parsing
             {
                 first = ParseStatement(inInfo, ref outInfo);
             }
-            // Consume(TokenType.Semicolon, ErrMsg("';'", "after the first argument")); // WARN: semicolon is parsed inside ParseStatement
+            Consume(TokenType.Semicolon, ErrMsg("';'", "after the first argument"));
 
             // if there is a second param
             if (!CheckToken(TokenType.Semicolon))
@@ -111,6 +111,9 @@ namespace HapetFrontend.Parsing
                 // getting only one stmt if there are no braces
                 var onlyStmt = ParseStatement(inInfo, ref outInfo);
                 body = new AstBlockExpr(new List<AstStatement>() { onlyStmt }, onlyStmt);
+
+                // try eat semicolon or error
+                CheckSemicolonAfterStmt(onlyStmt);
             }
             return body;
         }

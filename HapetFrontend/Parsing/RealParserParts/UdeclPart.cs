@@ -12,7 +12,7 @@ namespace HapetFrontend.Parsing
 {
     public partial class Parser
     {
-        private AstDeclaration PrepareUnknownDecl(AstUnknownDecl udecl, List<AstAttributeStmt> attrs, ParserInInfo inInfo, ref ParserOutInfo outInfo, ref bool semicolonExpected)
+        private AstStatement PrepareUnknownDecl(AstUnknownDecl udecl, List<AstAttributeStmt> attrs, ParserInInfo inInfo, ref ParserOutInfo outInfo)
         {
             TokenLocation end = udecl.Ending;
             AstStatement initializer = null;
@@ -20,7 +20,7 @@ namespace HapetFrontend.Parsing
             inInfo.CurrentUdecl = udecl;
 
             // variable declaration with initializer
-            if (CheckToken(TokenType.Equal))
+            if (CheckToken(TokenType.Equal) && udecl.Name != null)
             {
                 NextToken();
                 initializer = ParseExpression(inInfo, ref outInfo);
@@ -36,9 +36,56 @@ namespace HapetFrontend.Parsing
                 varDecl.SpecialKeys.AddRange(udecl.SpecialKeys);
                 varDecl.IsImported = inInfo.ExternalMetadata;
 
-                semicolonExpected = true;
                 OnExit();
                 return varDecl;
+            }
+            // assing to var
+            else if (CheckTokens(TokenType.Equal, TokenType.AddEq, TokenType.SubEq, TokenType.MulEq, TokenType.DivEq, TokenType.ModEq) && udecl.Name == null)
+            {
+                var currT = NextToken();
+                var x = currT.Type;
+                string op = null;
+                switch (x)
+                {
+                    case TokenType.AddEq: op = "+"; break;
+                    case TokenType.SubEq: op = "-"; break;
+                    case TokenType.MulEq: op = "*"; break;
+                    case TokenType.DivEq: op = "/"; break;
+                    case TokenType.ModEq: op = "%"; break;
+                }
+                SkipNewlines();
+
+                var val = ParseExpression(inInfo, ref outInfo);
+
+                if (val is not AstExpression valExpr)
+                {
+                    ReportMessage(val.Location, [], ErrorCode.Get(CTEN.RightSideVarDeclNotExpr));
+                    OnExit();
+                    return udecl;
+                }
+
+                // just needed :)
+                if (udecl.Type is AstIdExpr idExpr)
+                    udecl.Type = new AstNestedExpr(idExpr, null, idExpr);
+
+                if (udecl.Type is AstNestedExpr id && currT.Type != TokenType.Equal)
+                {
+                    // expand ops like 'a += b' into 'a = a + b'
+                    var binOpExpr = new AstBinaryExpr(op, id, valExpr, new Location(id.Location.Beginning, val.Location.Ending));
+                    var toReturn = new AstAssignStmt(id, binOpExpr, new Location(udecl.Type.Beginning, val.Ending));
+                    OnExit();
+                    return toReturn;
+                }
+                else if (udecl.Type is AstNestedExpr nestId && currT.Type == TokenType.Equal)
+                {
+                    var toReturn = new AstAssignStmt(nestId, valExpr, new Location(udecl.Type.Beginning, val.Ending));
+                    OnExit();
+                    return toReturn;
+                }
+                else
+                {
+                    // TODO: error here probably
+                }
             }
             // variable declaration without initializer
             else if (CheckToken(TokenType.Semicolon))
@@ -49,7 +96,6 @@ namespace HapetFrontend.Parsing
                 varDecl.SpecialKeys.AddRange(udecl.SpecialKeys);
                 varDecl.IsImported = inInfo.ExternalMetadata;
 
-                semicolonExpected = true;
                 OnExit();
                 return varDecl;
             }
@@ -57,16 +103,16 @@ namespace HapetFrontend.Parsing
             else if (CheckToken(TokenType.OpenParen))
             {
                 var func = ParseFuncDeclaration(null, null, inInfo, ref outInfo);
-                if (udecl.Type == null)
+                if (udecl.Name == null && udecl.Type is AstIdExpr fncName)
                 {
                     // it is ctor/dtor
-                    func.Name = udecl.Name.GetCopy();
+                    func.Name = fncName.GetCopy();
                     func.Returns = new AstNestedExpr(new AstIdExpr("void"), null);
                     // check that it is a static ctor
-                    if (udecl.Name.Suffix != "~" && udecl.SpecialKeys.Contains(TokenType.KwStatic))
+                    if (fncName.Suffix != "~" && udecl.SpecialKeys.Contains(TokenType.KwStatic))
                         func.ClassFunctionType = Enums.ClassFunctionType.StaticCtor;
                     else
-                        func.ClassFunctionType = udecl.Name.Suffix != "~" ? Enums.ClassFunctionType.Ctor : Enums.ClassFunctionType.Dtor;
+                        func.ClassFunctionType = fncName.Suffix != "~" ? Enums.ClassFunctionType.Ctor : Enums.ClassFunctionType.Dtor;
                 }
                 else
                 {
@@ -93,7 +139,8 @@ namespace HapetFrontend.Parsing
             {
                 Consume(TokenType.OpenBracket, ErrMsg("symbol '['", "at beginning of indexer param declaration"));
                 var par = ParseParameter(false); // no default value for indexer
-                Consume(TokenType.OpenBracket, ErrMsg("symbol ']'", "at ending of indexer param declaration"));
+                var a = PeekToken();
+                Consume(TokenType.CloseBracket, ErrMsg("symbol ']'", "at ending of indexer param declaration"));
 
                 SkipNewlines();
                 // TODO: doc 

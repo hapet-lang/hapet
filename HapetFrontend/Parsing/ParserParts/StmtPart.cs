@@ -12,7 +12,6 @@ namespace HapetFrontend.Parsing
         internal AstStatement ParseStatement(ParserInInfo inInfo, ref ParserOutInfo outInfo, bool parseAtomic = false)
         {
             AstStatement toReturn = null;
-            bool semicolonRequired = false;
 
             SkipNewlines();
             var token = PeekToken();
@@ -24,7 +23,6 @@ namespace HapetFrontend.Parsing
 
                 case TokenType.KwReturn:
                     toReturn = ParseReturnStatement();
-                    semicolonRequired = true;
                     break;
 
                 case TokenType.KwWhile:
@@ -48,7 +46,6 @@ namespace HapetFrontend.Parsing
                 case TokenType.KwBreak:
                     NextToken();
                     toReturn = new AstBreakContStmt(token.Type == TokenType.KwBreak, new Location(token.Location));
-                    semicolonRequired = true;
                     break;
 
                 case TokenType.OpenBracket:
@@ -74,6 +71,23 @@ namespace HapetFrontend.Parsing
                             stmt = ParseExpression(inInfo, ref outInfo);
                         SkipNewlines();
 
+                        // change to udecl like it was previously
+                        // https://github.com/hapet-lang/hapet/blob/c15ae05721d3f91fe86a25658ef099d4e84f117f/HapetFrontend/Parsing/RealParserParts/SpecialKeysPart.cs#L62-L69
+                        if (stmt is AstIdExpr idExpr)
+                        {
+                            stmt = new AstUnknownDecl(idExpr, null, stmt);
+                        }
+                        else if (stmt is AstNestedExpr nestExpr && nestExpr.RightPart is AstIdExpr idExpr2 && nestExpr.LeftPart == null)
+                        {
+                            stmt = new AstUnknownDecl(idExpr2, null, stmt);
+                        }
+                        // probably only for overloading and var assign
+                        else if (stmt is AstNestedExpr nestExpr2)
+                        {
+                            stmt = new AstUnknownDecl(nestExpr2, null, stmt);
+                        }
+
+                        // further preparations
                         if (stmt is AstEmptyStmt)
                         {
                             NextToken();
@@ -81,68 +95,15 @@ namespace HapetFrontend.Parsing
                         }
                         else if (stmt is AstUnknownDecl udecl)
                         {
-                            var dcl = PrepareUnknownDecl(udecl, new List<AstAttributeStmt>(), inInfo, ref outInfo, ref semicolonRequired);
-                            toReturn = dcl;
-                        }
-                        else if (stmt is AstDeclaration)
-                        {
-                            // no need for semicolon
-                            toReturn = stmt;
+                            toReturn = PrepareUnknownDecl(udecl, new List<AstAttributeStmt>(), inInfo, ref outInfo);
                         }
                         else
                         {
                             toReturn = stmt;
-                            semicolonRequired = true;
-                        }
-
-                        if (CheckTokens(TokenType.Equal, TokenType.AddEq, TokenType.SubEq, TokenType.MulEq, TokenType.DivEq, TokenType.ModEq))
-                        {
-                            var currT = NextToken();
-                            var x = currT.Type;
-                            string op = null;
-                            switch (x)
-                            {
-                                case TokenType.AddEq: op = "+"; break;
-                                case TokenType.SubEq: op = "-"; break;
-                                case TokenType.MulEq: op = "*"; break;
-                                case TokenType.DivEq: op = "/"; break;
-                                case TokenType.ModEq: op = "%"; break;
-                            }
-                            SkipNewlines();
-
-                            // just handlers
-                            ParserInInfo inInfo3 = ParserInInfo.Default;
-                            ParserOutInfo outInfo3 = ParserOutInfo.Default;
-                            var val = ParseExpression(inInfo3, ref outInfo3);
-
-                            if (val is not AstExpression valExpr)
-                            {
-                                ReportMessage(val.Location, [], ErrorCode.Get(CTEN.RightSideVarDeclNotExpr));
-                                toReturn = stmt;
-                                break;
-                            }
-
-                            if (stmt is AstNestedExpr id && currT.Type != TokenType.Equal)
-                            {
-                                // expand ops like 'a += b' into 'a = a + b'
-                                var binOpExpr = new AstBinaryExpr(op, id, valExpr, new Location(id.Location.Beginning, val.Location.Ending));
-                                toReturn = new AstAssignStmt(id, binOpExpr, new Location(stmt.Beginning, val.Ending));
-                                semicolonRequired = true;
-                            }
-                            else if (stmt is AstNestedExpr nestId && currT.Type == TokenType.Equal)
-                            {
-                                toReturn = new AstAssignStmt(nestId, valExpr, new Location(stmt.Beginning, val.Ending));
-                                semicolonRequired = true;
-                            }
                         }
                         break;
                     }
             }
-
-            // consume semicolon after some top level statements
-            var a = PeekToken();
-            if (semicolonRequired)
-                Consume(TokenType.Semicolon, ErrMsg(";", "at the end of the statement"));
 
             // skip unneeded
             SkipNewlines();
