@@ -41,7 +41,6 @@ namespace HapetPostPrepare
             foreach (var fieldDecl in currDecls.Where(x => x is AstPropertyDecl).Select(x => x as AstPropertyDecl).ToList())
             {
                 decl.SubScope.RemoveDeclSymbol(fieldDecl.Name.Name, fieldDecl);
-                currDecls.Remove(fieldDecl);
             }
 
             List<AstDeclaration> toInsert = new List<AstDeclaration>();
@@ -55,9 +54,6 @@ namespace HapetPostPrepare
 
                 toInsert.Add(newVar);
             }
-
-            // insert them to the end
-            currDecls.AddRange(toInsert);
         }
 
         // to get all pure props including inherited
