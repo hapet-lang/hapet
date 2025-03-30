@@ -211,6 +211,7 @@ namespace HapetFrontend.Parsing
                 var nextNest = ParseIdentifierExpressionInternal(lookAhead: true, allowDots: false);
                 if (nextNest.RightPart != null && (
                     CheckLookAhead(TokenType.Equal) ||        // when byte* aaa = ...
+                    CheckLookAhead(TokenType.OpenBrace) ||    // when byte* Aaa { ...
                     CheckLookAhead(TokenType.OpenParen)))     // when public byte* aaa(...
                 {
                     isPointer = true;
@@ -219,6 +220,7 @@ namespace HapetFrontend.Parsing
                 // 50/50 cases
                 if (CheckLookAhead(TokenType.Semicolon) ||    // when 'byte* aaa;' OR 'anime = test * test;'
                     CheckLookAhead(TokenType.CloseParen) ||   // when '(byte* aaa)' OR 'anime(test * test)'
+                    CheckLookAhead(TokenType.OpenBracket) ||  // when 'byte* this[int i]' OR 'test * test[i]'
                     CheckLookAhead(TokenType.Comma))          // when '(byte* aaa, ...)' OR 'anime(test * test, ...)'
                 {
                     if (!isMultiplyAllowed)
@@ -249,6 +251,10 @@ namespace HapetFrontend.Parsing
                 s is not AstIfStmt &&
                 s is not AstCaseStmt &&
                 s is not AstSwitchStmt &&
+                s is not AstFuncDecl &&
+                s is not AstClassDecl &&
+                s is not AstStructDecl &&
+                s is not AstEnumDecl &&
                 s is not AstDirectiveStmt)
             {
                 if (!CheckToken(TokenType.Semicolon))
