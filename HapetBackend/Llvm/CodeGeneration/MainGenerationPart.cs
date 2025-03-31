@@ -38,6 +38,7 @@ namespace HapetBackend.Llvm
 
             foreach (var (funcDecl, funcType) in funcs)
             {
+                _currentSourceFile = funcDecl.SourceFile;
                 GenerateFuncCode(funcDecl, funcType);
             }
         }

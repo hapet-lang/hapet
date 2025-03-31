@@ -39,11 +39,6 @@ namespace HapetPostPrepare
                 funcName = GenericsHelper.GetRealFromGenericName(callExpr.FuncName.Name, genId.GenericRealTypes.GetNestedList());
             }
 
-            if (callExpr.FuncName.Name.Contains("GetInt"))
-            {
-
-            }
-
             // the var is used to check when static method is accessed from an object
             bool accessingFromAnObject = false;
 
