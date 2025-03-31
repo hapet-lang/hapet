@@ -19,7 +19,7 @@ public class Base
         int a = GetInt(14);
         return a;
 
-        int GetInt(int c)
+        static int GetInt(int c)
         {
             return c;
         }

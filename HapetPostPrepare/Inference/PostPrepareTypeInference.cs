@@ -11,9 +11,6 @@ using HapetFrontend.Parsing;
 using HapetFrontend.Scoping;
 using HapetFrontend.Types;
 using HapetPostPrepare.Entities;
-using System;
-using System.Threading;
-using System.Xml.Linq;
 
 namespace HapetPostPrepare
 {
@@ -27,65 +24,25 @@ namespace HapetPostPrepare
             InInfo inInfo = InInfo.Default;
             OutInfo outInfo = OutInfo.Default;
 
-            var classes = AllClassesMetadata.ToList();
-            var structs = AllStructsMetadata.ToList();
-            var enums = AllEnumsMetadata.ToList();
             var delegates = AllDelegatesMetadata.ToList();
+            var funcs = AllFunctionsMetadata.ToList();
 
-            foreach (var classDecl in classes)
+            foreach (var funcDecl in funcs)
             {
-                _currentSourceFile = classDecl.SourceFile;
-                PostPrepareClassInference(classDecl, inInfo, ref outInfo);
+                _currentSourceFile = funcDecl.SourceFile;
+
+                // skip pure generics
+                if (funcDecl.HasGenericTypes && !funcDecl.IsImplOfGeneric)
+                    continue;
+
+                PostPrepareFunctionInference(funcDecl, inInfo, ref outInfo);
             }
-            foreach (var structDecl in structs)
-            {
-                _currentSourceFile = structDecl.SourceFile;
-                PostPrepareStructInference(structDecl, inInfo, ref outInfo);
-            }
-            foreach (var enumDecl in enums)
-            {
-                _currentSourceFile = enumDecl.SourceFile;
-                PostPrepareEnumInference(enumDecl, inInfo, ref outInfo);
-            }
+
             foreach (var delegateDecl in delegates)
             {
                 _currentSourceFile = delegateDecl.SourceFile;
                 PostPrepareDelegateInference(delegateDecl, inInfo, ref outInfo);
             }
-        }
-
-        private void PostPrepareClassInference(AstClassDecl classDecl, InInfo inInfo, ref OutInfo outInfo)
-        {
-            _currentClass = classDecl;
-
-            /// WARN: attributes are inferrenced in <see cref="PostPrepareMetadataAttributes"/>
-
-            /// fields should be already inferred in <see cref="PostPrepareMetadataTypes"/> and <see cref="PostPrepareMetadataTypeFields"/>
-            foreach (var decl in classDecl.Declarations.Where(x => x is AstFuncDecl fnc && !(fnc.HasGenericTypes && !fnc.IsImplOfGeneric)).Select(x => x as AstFuncDecl))
-            {
-                PostPrepareFunctionInference(decl, inInfo, ref outInfo);
-            }
-
-            /// some shite is already inferrenced in <see cref="PostPrepareMetadataTypeFieldDecls"/>
-        }
-
-        private void PostPrepareStructInference(AstStructDecl structDecl, InInfo inInfo, ref OutInfo outInfo)
-        {
-            /// WARN: should be already inferred in <see cref="PostPrepareMetadataTypes"/> and <see cref="PostPrepareMetadataTypeFields"/>
-            /// WARN: attributes are inferrenced in <see cref="PostPrepareMetadataAttributes"/>
-            /// 
-            foreach (var decl in structDecl.Declarations.Where(x => x is AstFuncDecl fnc && !(fnc.HasGenericTypes && !fnc.IsImplOfGeneric)).Select(x => x as AstFuncDecl))
-            {
-                PostPrepareFunctionInference(decl, inInfo, ref outInfo);
-            }
-
-            /// some shite is already inferrenced in <see cref="PostPrepareMetadataTypeFields"/>
-        }
-
-        private void PostPrepareEnumInference(AstEnumDecl enumDecl, InInfo inInfo, ref OutInfo outInfo)
-        {
-            /// WARN: should be already inferred in <see cref="PostPrepareMetadataTypes"/> and <see cref="PostPrepareMetadataTypeFields"/>
-            /// WARN: attributes are inferrenced in <see cref="PostPrepareMetadataAttributes"/>
         }
 
         private void PostPrepareDelegateInference(AstDelegateDecl delegateDecl, InInfo inInfo, ref OutInfo outInfo)

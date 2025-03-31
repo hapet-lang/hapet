@@ -81,19 +81,7 @@ namespace HapetPostPrepare
                 OutInfo outInfo = OutInfo.Default;
 
                 // we need to inference it manually
-                if (stmt is AstClassDecl classDecl)
-                {
-                    PostPrepareClassInference(classDecl, inInfo, ref outInfo);
-                }
-                else if (stmt is AstStructDecl structDecl)
-                {
-                    PostPrepareStructInference(structDecl, inInfo, ref outInfo);
-                }
-                else if (stmt is AstEnumDecl enumDecl)
-                {
-                    PostPrepareEnumInference(enumDecl, inInfo, ref outInfo);
-                }
-                else if (stmt is AstDelegateDecl delegateDecl)
+                if (stmt is AstDelegateDecl delegateDecl)
                 {
                     PostPrepareDelegateInference(delegateDecl, inInfo, ref outInfo);
                 }

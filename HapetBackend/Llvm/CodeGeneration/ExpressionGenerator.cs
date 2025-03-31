@@ -79,7 +79,15 @@ namespace HapetBackend.Llvm
                 if (stmt == null)
                     continue;
 
-                GenerateExpressionCode(stmt);
+                // check for nested func
+                if (stmt is AstFuncDecl fncDecl)
+                {
+                    _currentSourceFile = fncDecl.SourceFile;
+                    GenerateFuncCode(fncDecl, null, true);
+                    GenerateFuncCode(fncDecl, HapetTypeToLLVMType(fncDecl.Type.OutType));
+                }
+                else
+                    GenerateExpressionCode(stmt);
             }
             return result;
         }
