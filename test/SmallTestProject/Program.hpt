@@ -8,18 +8,18 @@ public static class Program
     public static int Main(string[] args)
     {
         var b = new Base();
-        return b.AnimeTest();
+        return b.AnimeTest<int>(14);
     }
 }
 
 public class Base
 {
-    public int AnimeTest()
+    public T AnimeTest<T>(T value)
     {
-        int a = GetInt(14);
+        T a = GetInt<T>(value);
         return a;
 
-        static int GetInt(int c)
+        static T GetInt<T>(T c)
         {
             return c;
         }

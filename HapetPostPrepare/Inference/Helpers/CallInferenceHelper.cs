@@ -218,7 +218,7 @@ namespace HapetPostPrepare
                 }
 
                 // check for generic shite
-                newName = $"{callExpr.FuncName.Name}"; // USE REAL FUNC NAME HERE
+                newName = $"{clsTp.Declaration.Name.Name}::{callExpr.FuncName.Name}"; // USE REAL FUNC NAME HERE
                 smbl2 = GetFuncFromCandidates(newName, argsWithClassParam, clsTp.Declaration.SubScope, clsTp.Declaration, out var casts3);
                 smbl2 = OnFoundSymbol(smbl2, callExpr.FuncName);
                 if (smbl2 is DeclSymbol ds3 && ds3.Decl is AstFuncDecl funcDecl3)

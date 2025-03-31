@@ -125,6 +125,7 @@ namespace HapetPostPrepare
             }
             candidates.AddRange(GetCandidates(classWithFuncName, scopeToSearch)
                     .Where(x => (x.Decl is AstFuncDecl funcDecl && funcDecl.Parameters.Count == args.Count)).ToList());
+            candidates = candidates.Distinct().ToList();
 
             foreach (var cand in candidates)
             {
@@ -157,6 +158,15 @@ namespace HapetPostPrepare
                         casts.Add(arg);
                         continue;
                     }
+                    // check if it is a generic parameter
+                    else if (par.Type.OutType is PointerType ptrT && 
+                        ptrT.TargetType is ClassType clsT &&
+                        clsT.Declaration.IsGenericType)
+                    {
+                        score += 3;
+                        casts.Add(arg);
+                        continue;
+                    }
 
                     // if nothing - set max val and break
                     score = int.MaxValue;
@@ -178,7 +188,7 @@ namespace HapetPostPrepare
             }
 
             // if there is only one symbol and the symbol is generic shite - return it
-            if (candidates.Count == 1 && candidates[0].Decl is AstFuncDecl func && func.HasGenericTypes && !func.IsImplOfGeneric)
+            if (candidates.Count == 1 && candidates[0].Decl is AstFuncDecl func && func.HasGenericTypes)
             {
                 return candidates[0];
             }
