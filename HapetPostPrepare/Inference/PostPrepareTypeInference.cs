@@ -153,13 +153,24 @@ namespace HapetPostPrepare
                 // if the containing class is empty - it is external func
                 if (funcDecl.ContainingParent != null)
                 {
-                    // it could already contain all the shite if the func is imported from another assembly :)
+                    // the checks are done because it could be a nested func decl
+                    Scope scopeToDefine = null;
                     string newName = funcDecl.Name.Name;
-                    if (!funcDecl.Name.Name.Contains("::"))
-                        // renaming func name from 'Anime' to 'Anime(int, float)'
-                        newName = $"{funcDecl.ContainingParent.Name.Name}::{funcDecl.Name.Name}{funcDecl.Parameters.GetParamsString()}";
+                    if (funcDecl.ContainingParent is AstClassDecl || funcDecl.ContainingParent is AstStructDecl)
+                    {
+                        // it could already contain all the shite if the func is imported from another assembly :)
+                        if (!funcDecl.Name.Name.Contains("::"))
+                            // renaming func name from 'Anime' to 'Anime(int, float)'
+                            newName = $"{funcDecl.ContainingParent.Name.Name}::{funcDecl.Name.Name}{funcDecl.Parameters.GetParamsString()}";
+                        scopeToDefine = funcDecl.ContainingParent.SubScope;
+                    }
+                    else if (funcDecl.ContainingParent is AstFuncDecl fncDeclParent)
+                    {
+                        scopeToDefine = fncDeclParent.Body.SubScope;
+                    }
+                    
                     // if it is public func - it should be visible in the scope in which func's class is
-                    funcDecl.ContainingParent.SubScope.DefineDeclSymbol(newName, funcDecl);
+                    scopeToDefine.DefineDeclSymbol(newName, funcDecl);
                     funcDecl.Name = funcDecl.Name.GetCopy(newName);
 
                     // register operator decl
@@ -169,28 +180,28 @@ namespace HapetPostPrepare
                         {
                             var op = new UserDefinedUnaryOperator(overDecl2.Operator, overDecl2.Returns.OutType, overDecl2.Parameters[0].Type.OutType);
                             op.Function = funcDecl.Type.OutType as FunctionType;
-                            funcDecl.ContainingParent.SubScope.DefineUnaryOperator(op);
+                            scopeToDefine.DefineUnaryOperator(op);
                         }
                         else if (overDecl2.OverloadType == OverloadType.BinaryOperator)
                         {
                             var op = new UserDefinedBinaryOperator(overDecl2.Operator, overDecl2.Returns.OutType, overDecl2.Parameters[0].Type.OutType, overDecl2.Parameters[1].Type.OutType);
                             op.Function = funcDecl.Type.OutType as FunctionType;
-                            funcDecl.ContainingParent.SubScope.DefineBinaryOperator(op);
+                            scopeToDefine.DefineBinaryOperator(op);
                         }
                         else if (overDecl2.OverloadType == OverloadType.ImplicitCast ||
                             overDecl2.OverloadType == OverloadType.ExplicitCast)
                         {
                             var op = new UserDefinedBinaryOperator(overDecl2.Operator, overDecl2.Returns.OutType, overDecl2.Returns.OutType, overDecl2.Parameters[0].Type.OutType);
                             op.Function = funcDecl.Type.OutType as FunctionType;
-                            funcDecl.ContainingParent.SubScope.DefineBinaryOperator(op);
+                            scopeToDefine.DefineBinaryOperator(op);
                         }
                     }
                 }
             }
             else
             {
-                // if it is a ini_func and cls contains Generic shite - do not infer
-                bool allowInfer = funcDecl.ContainingParent is not AstClassDecl clsDecl22 || !(clsDecl22.HasGenericTypes && !clsDecl22.IsImplOfGeneric);
+                // if parent contains Generic shite - do not infer
+                bool allowInfer = !(funcDecl.ContainingParent.HasGenericTypes && !funcDecl.ContainingParent.IsImplOfGeneric);
                 // inferring body
                 if (funcDecl.Body != null && allowInfer)
                     PostPrepareBlockInference(funcDecl.Body, inInfo, ref outInfo);
@@ -271,7 +282,7 @@ namespace HapetPostPrepare
 
             // pp assign value
             if (varDecl.Initializer != null)
-                varDecl.Initializer = PostPrepareVarValueAssign(varDecl.Initializer, varDecl.Type.OutType, inInfo, ref outInfo);
+                varDecl.Initializer = PostPrepareVarValueAssign(varDecl.Initializer, varDecl.Type.OutType, inInfo, ref outInfo, false);
 
             // special keys could not be allowed when the var is declared in BlockExpr
             if (!inInfo.AllowSpecialKeys)
@@ -1310,7 +1321,7 @@ namespace HapetPostPrepare
             }
         }
 
-        private AstExpression PostPrepareVarValueAssign(AstExpression value, HapetType targetType, InInfo inInfo, ref OutInfo outInfo)
+        private AstExpression PostPrepareVarValueAssign(AstExpression value, HapetType targetType, InInfo inInfo, ref OutInfo outInfo, bool inferValue = true)
         {
             if (value is AstDefaultExpr)
             {
@@ -1322,8 +1333,11 @@ namespace HapetPostPrepare
             // do not infer the expr if target is a delegate
             else if (targetType is not DelegateType)
             {
-                // if it is not a default
-                PostPrepareExprInference(value, inInfo, ref outInfo);
+                if (inferValue)
+                {
+                    // if it is not a default
+                    PostPrepareExprInference(value, inInfo, ref outInfo);
+                }
             }
 
             if (targetType != null)

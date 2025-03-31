@@ -311,6 +311,7 @@ namespace HapetPostPrepare
 
         private void PostPrepareFunctionScoping(AstFuncDecl funcDecl)
         {
+            var prevFunc = _currentFunction;
             _currentFunction = funcDecl;
 
             SetScopeAndParent(funcDecl.Name, funcDecl);
@@ -391,6 +392,8 @@ namespace HapetPostPrepare
                 SetScopeAndParent(funcDecl.Returns, funcDecl, paramsBlockScope);
                 PostPrepareExprScoping(funcDecl.Returns);
             }
+
+            _currentFunction = prevFunc;
         }
 
         /// <summary>
@@ -568,9 +571,14 @@ namespace HapetPostPrepare
 
                 // special check for nested function
                 if (stmt is AstFuncDecl func)
+                {
+                    func.ContainingParent = _currentFunction;
                     PostPrepareFunctionScoping(func);
+                }
                 else
+                {
                     PostPrepareExprScoping(stmt);
+                }
             }
 
             return blockScope;

@@ -83,6 +83,14 @@ namespace HapetPostPrepare
                 if (isImported)
                     // set that the function is imported from another assembly
                     func.IsImported = true;
+
+
+                if (func.Body != null && func.Body.Statements.Count > 0)
+                    // check for nested funcs - prepare them
+                    foreach (var nestedFunc in func.Body.Statements.Where(x => x is AstFuncDecl).Select(x => x as AstFuncDecl).ToList())
+                    {
+                        PostPrepareMetadataFunctions(nestedFunc, false, isImported, false);
+                    }
             }
         }
     }

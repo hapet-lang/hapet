@@ -118,41 +118,7 @@ namespace HapetPostPrepare
                 // 
                 foreach (var decl in structDecl.Declarations)
                 {
-                    if (decl is not AstFuncDecl funcDecl)
-                    {
-                        // probably nested decls
-                        PostPrepareDeclMethodsInternal(decl, structDecl.SourceFile);
-                        continue;
-                    }
-
-                    // adding 'this' param to func params
-                    if (!funcDecl.SpecialKeys.Contains(TokenType.KwStatic))
-                    {
-                        // creating the class instance 'this' param
-                        AstExpression paramType = new AstPointerExpr(structDecl.Name.GetCopy(), false);
-                        AstIdExpr paramName = new AstIdExpr("this");
-                        AstParamDecl thisParam = new AstParamDecl(new AstNestedExpr(paramType, null), paramName);
-                        // adding the param as the func first param
-                        funcDecl.Parameters.Insert(0, thisParam);
-                    }
-
-                    // checking for 'return' existance at the end. if not - add
-                    if (funcDecl.Body != null && funcDecl.Body.Statements.LastOrDefault() is not AstReturnStmt)
-                    {
-                        funcDecl.Body.Statements.Add(new AstReturnStmt(null));
-                    }
-
-                    // adding virtual key to all overrides
-                    if (funcDecl.SpecialKeys.Contains(TokenType.KwOverride))
-                        funcDecl.SpecialKeys.Add(Lexer.CreateToken(TokenType.KwVirtual, funcDecl.SpecialKeys.GetType(TokenType.KwOverride).Location.Beginning));
-
-                    // abs has to not have impl
-                    if (funcDecl.SpecialKeys.Contains(TokenType.KwAbstract) &&
-                        funcDecl.Body != null &&
-                        !funcDecl.IsPropertyFunction)
-                    {
-                        _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, funcDecl.Name, [], ErrorCode.Get(CTEN.AbsMethodWithBody));
-                    }
+                    FuncPrepareAfterAll(decl, structDecl);
                 }
             }
         }
@@ -275,48 +241,7 @@ namespace HapetPostPrepare
                 // 
                 foreach (var decl in classDecl.Declarations)
                 {
-                    if (decl is not AstFuncDecl funcDecl)
-                    {
-                        // probably nested decls
-                        PostPrepareDeclMethodsInternal(decl, classDecl.SourceFile);
-                        continue;
-                    }
-
-                    // adding 'this' param to func params
-                    if (!funcDecl.SpecialKeys.Contains(TokenType.KwStatic))
-                    {
-                        // for generic type - need to create an AstIdGenericExpr
-                        AstIdExpr thisParamType;
-                        if (classDecl.HasGenericTypes)
-                            thisParamType = AstIdGenericExpr.FromAstIdExpr(classDecl.Name.GetCopy(),
-                                classDecl.GenericNames.Select(x => x as AstExpression).ToList());
-                        else
-                            thisParamType = classDecl.Name.GetCopy();
-                        // creating the class instance 'this' param
-                        AstExpression paramType = new AstPointerExpr(thisParamType, false);
-                        AstIdExpr paramName = new AstIdExpr("this");
-                        AstParamDecl thisParam = new AstParamDecl(new AstNestedExpr(paramType, null), paramName);
-                        // adding the param as the func first param
-                        funcDecl.Parameters.Insert(0, thisParam);
-                    }
-
-                    // checking for 'return' existance at the end. if not - add
-                    if (funcDecl.Body != null && funcDecl.Body.Statements.LastOrDefault() is not AstReturnStmt)
-                    {
-                        funcDecl.Body.Statements.Add(new AstReturnStmt(null));
-                    }
-
-                    // adding virtual key to all overrides
-                    if (funcDecl.SpecialKeys.Contains(TokenType.KwOverride))
-                        funcDecl.SpecialKeys.Add(Lexer.CreateToken(TokenType.KwVirtual, funcDecl.SpecialKeys.GetType(TokenType.KwOverride).Location.Beginning));
-
-                    // abs has to not have impl
-                    if (funcDecl.SpecialKeys.Contains(TokenType.KwAbstract) &&
-                        funcDecl.Body != null &&
-                        !funcDecl.IsPropertyFunction)
-                    {
-                        _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, funcDecl.Name, [], ErrorCode.Get(CTEN.AbsMethodWithBody));
-                    }
+                    FuncPrepareAfterAll(decl, classDecl);
                 }
             } 
         }
@@ -704,6 +629,52 @@ namespace HapetPostPrepare
             }
             // the block with all field inits
             return new AstBlockExpr(iniBlockStatements);
+        }
+
+        private void FuncPrepareAfterAll(AstDeclaration decl, AstDeclaration parentDecl)
+        {
+            if (decl is not AstFuncDecl funcDecl)
+            {
+                // probably nested decls
+                PostPrepareDeclMethodsInternal(decl, parentDecl.SourceFile);
+                return;
+            }
+
+            // adding 'this' param to func params
+            if (!funcDecl.SpecialKeys.Contains(TokenType.KwStatic))
+            {
+                // for generic type - need to create an AstIdGenericExpr
+                AstIdExpr thisParamType;
+                if (parentDecl.HasGenericTypes)
+                    thisParamType = AstIdGenericExpr.FromAstIdExpr(parentDecl.Name.GetCopy(),
+                        parentDecl.GenericNames.Select(x => x as AstExpression).ToList());
+                else
+                    thisParamType = parentDecl.Name.GetCopy();
+                // creating the class instance 'this' param
+                AstExpression paramType = new AstPointerExpr(thisParamType, false);
+                AstIdExpr paramName = new AstIdExpr("this");
+                AstParamDecl thisParam = new AstParamDecl(new AstNestedExpr(paramType, null), paramName);
+                // adding the param as the func first param
+                funcDecl.Parameters.Insert(0, thisParam);
+            }
+
+            // checking for 'return' existance at the end. if not - add
+            if (funcDecl.Body != null && funcDecl.Body.Statements.LastOrDefault() is not AstReturnStmt)
+            {
+                funcDecl.Body.Statements.Add(new AstReturnStmt(null));
+            }
+
+            // adding virtual key to all overrides
+            if (funcDecl.SpecialKeys.Contains(TokenType.KwOverride))
+                funcDecl.SpecialKeys.Add(Lexer.CreateToken(TokenType.KwVirtual, funcDecl.SpecialKeys.GetType(TokenType.KwOverride).Location.Beginning));
+
+            // abs has to not have impl
+            if (funcDecl.SpecialKeys.Contains(TokenType.KwAbstract) &&
+                funcDecl.Body != null &&
+                !funcDecl.IsPropertyFunction)
+            {
+                _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, funcDecl.Name, [], ErrorCode.Get(CTEN.AbsMethodWithBody));
+            }
         }
     }
 }
