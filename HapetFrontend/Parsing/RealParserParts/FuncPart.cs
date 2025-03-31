@@ -60,7 +60,7 @@ namespace HapetFrontend.Parsing
             if (CheckToken(TokenType.Semicolon))
                 NextToken(); // do nothing
             else
-                body = ParseBlockExpression(inInfo, ref outInfo); 
+                body = ParseBlockExpression(inInfo, ref outInfo);
             inInfo.AllowNestedFunc = false;
             inInfo.ParentFuncDecl = null;
 

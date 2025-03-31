@@ -26,6 +26,9 @@ namespace HapetFrontend.Parsing
                 if (next.Type == TokenType.CloseBrace || next.Type == TokenType.EOF)
                     break;
 
+                // get current special keys - useful for nested funcs :)
+                List<Token> specialKeys = ParseSpecialKeys(); 
+
                 // do not allow nested funcs in nested shite. only in current!!!
                 var saved1 = inInfo.AllowNestedFunc;
                 var saved2 = inInfo.ParentFuncDecl;
@@ -74,6 +77,7 @@ namespace HapetFrontend.Parsing
 
                         nestedFunc.IsNestedDecl = true;
                         nestedFunc.ParentDecl = inInfo.ParentFuncDecl;
+                        nestedFunc.SpecialKeys.AddRange(specialKeys);
                     }
 
                     next = PeekToken();
