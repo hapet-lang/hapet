@@ -187,12 +187,6 @@ namespace HapetPostPrepare
                 }
             }
 
-            // if there is only one symbol and the symbol is generic shite - return it
-            if (candidates.Count == 1 && candidates[0].Decl is AstFuncDecl func && func.HasGenericTypes)
-            {
-                return candidates[0];
-            }
-
             return bestMatch;
         }
 
