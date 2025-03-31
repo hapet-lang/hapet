@@ -16,12 +16,12 @@ public class Base
 {
     public int AnimeTest()
     {
-        int a = GetInt();
+        int a = GetInt(14);
         return a;
 
-        int GetInt()
+        int GetInt(int c)
         {
-            return 33;
+            return c;
         }
     }
 }

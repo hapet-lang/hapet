@@ -123,11 +123,8 @@ namespace HapetPostPrepare
                     }
                 }
             }
-            else
-            {
-                candidates.AddRange(GetCandidates(classWithFuncName, scopeToSearch)
-                        .Where(x => (x.Decl is AstFuncDecl funcDecl && funcDecl.Parameters.Count == args.Count)).ToList());
-            }
+            candidates.AddRange(GetCandidates(classWithFuncName, scopeToSearch)
+                    .Where(x => (x.Decl is AstFuncDecl funcDecl && funcDecl.Parameters.Count == args.Count)).ToList());
 
             foreach (var cand in candidates)
             {

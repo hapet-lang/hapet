@@ -175,8 +175,9 @@ namespace HapetPostPrepare
                 accessingFromAnObject = false;
 
                 // check for nested shite
-                newName = $"{callExpr.FuncName.Name}"; // USE REAL FUNC NAME HERE
-                smbl2 = GetFuncFromCandidates(newName, argsWithClassParam, callExpr.FuncName.Scope, _currentClass, out var casts3);
+                newName = $"{callExpr.FuncName.Name}{callExpr.Arguments.GetArgsString()}"; // USE REAL FUNC NAME HERE
+                var tmpArgs = callExpr.Arguments.Select(x => x.Expr).ToList();
+                smbl2 = GetFuncFromCandidates(newName, tmpArgs, callExpr.FuncName.Scope, _currentClass, out var casts3);
                 smbl2 = OnFoundSymbol(smbl2, callExpr.FuncName);
                 if (smbl2 is DeclSymbol ds3 && ds3.Decl is AstFuncDecl funcDecl3)
                 {

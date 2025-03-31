@@ -160,12 +160,16 @@ namespace HapetPostPrepare
                     {
                         // it could already contain all the shite if the func is imported from another assembly :)
                         if (!funcDecl.Name.Name.Contains("::"))
-                            // renaming func name from 'Anime' to 'Anime(int, float)'
+                            // renaming func name from 'Anime' to 'Cls::Anime(int, float)'
                             newName = $"{funcDecl.ContainingParent.Name.Name}::{funcDecl.Name.Name}{funcDecl.Parameters.GetParamsString()}";
                         scopeToDefine = funcDecl.ContainingParent.SubScope;
                     }
                     else if (funcDecl.ContainingParent is AstFuncDecl fncDeclParent)
                     {
+                        // it could already contain all the shite if the func is imported from another assembly :)
+                        if (!funcDecl.Name.Name.Contains("::"))
+                            // renaming func name from 'Anime' to 'Anime(int, float)'
+                            newName = $"{funcDecl.Name.Name}{funcDecl.Parameters.GetParamsString()}";
                         scopeToDefine = fncDeclParent.Body.SubScope;
                     }
                     
