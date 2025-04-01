@@ -34,6 +34,14 @@ namespace HapetFrontend.Ast.Expressions
         /// </summary>
         public string Suffix { get; set; }
 
+        /// <summary>
+        /// Used to handle additional data. Probably used only for
+        /// explicit implementations. Like 'void Anime<T>.Func(...)'
+        /// where Func would be the Name and Anime<T> is a part 
+        /// or AdditionalData.
+        /// </summary>
+        public AstNestedExpr AdditionalData { get; set; }
+
         public override string AAAName => nameof(AstIdExpr);
 
         public AstIdExpr(string name, ILocation location = null) : base(location)

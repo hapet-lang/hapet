@@ -186,15 +186,15 @@ public class List<T> : IList<T>, IList, IReadOnlyList<T>
             // TODO: 
             // ThrowHelper.IfNullAndNullsAreIllegalThenThrow<T>(value, ExceptionArgument.value);
 
-            try
-            {
+            //try
+            //{
                 this[index] = (T)value;
-            }
-            catch (InvalidCastException)
-            {
+            //}
+            //catch (InvalidCastException)
+            //{
                 // TODO: 
                 // ThrowHelper.ThrowWrongValueTypeArgumentException(value, typeof(T));
-            }
+            //}
         }
     }
 
@@ -234,15 +234,15 @@ public class List<T> : IList<T>, IList, IReadOnlyList<T>
         // TODO: 
         // ThrowHelper.IfNullAndNullsAreIllegalThenThrow<T>(item, ExceptionArgument.item);
 
-        try
-        {
+        //try
+        //{
             Add((T)item);
-        }
-        catch (InvalidCastException)
-        {
+        //}
+        //catch (InvalidCastException)
+        //{
             // TODO: 
             // ThrowHelper.ThrowWrongValueTypeArgumentException(item, typeof(T));
-        }
+        //}
 
         return Count - 1;
     }
@@ -414,16 +414,16 @@ public class List<T> : IList<T>, IList, IReadOnlyList<T>
             // ThrowHelper.ThrowArgumentException(ExceptionResource.Arg_RankMultiDimNotSupported);
         }
 
-        try
+        //try
         {
             // Array.Copy will check for NULL.
             Array.Copy(_items, 0, array, arrayIndex, _size);
         }
-        catch (ArrayTypeMismatchException)
-        {
+        //catch (ArrayTypeMismatchException)
+        //{
             // TODO:
             // ThrowHelper.ThrowArgumentException_Argument_IncompatibleArrayType();
-        }
+        //}
     }
 
     // Copies a section of this list to the given array at the given index.
@@ -870,15 +870,15 @@ public class List<T> : IList<T>, IList, IReadOnlyList<T>
         // TODO: 
         // ThrowHelper.IfNullAndNullsAreIllegalThenThrow<T>(item, ExceptionArgument.item);
 
-        try
+        //try
         {
             Insert(index, (T)item!);
         }
-        catch (InvalidCastException)
-        {
+        //catch (InvalidCastException)
+        //{
             // TODO:
             // ThrowHelper.ThrowWrongValueTypeArgumentException(item, typeof(T));
-        }
+        //}
     }
 
     // Inserts the elements of the given collection at a given index. If

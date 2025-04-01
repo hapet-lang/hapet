@@ -164,13 +164,17 @@ namespace HapetFrontend.Extensions
             // additional search for explicit declarations!!!
             // if any of them are like 'Namespace.BaseCls::Intrf.Func(...);'
             searchName = searchFunc.Name.Name.GetPureFuncName();
-            string interfaceSearchName = searchName.Contains('.') ? searchName.GetNamespaceWithoutClassName() : "";
+            string interfaceSearchName = "";
+            if (searchFunc.Name.AdditionalData != null)
+                interfaceSearchName = (searchFunc.Name.AdditionalData.OutType as ClassType).Declaration.Name.Name;
             string pureSearchName = searchName.GetClassNameWithoutNamespace();
             for (int i = 0; i < delcs.Count; ++i)
             {
                 var x = delcs[i];
                 string currName = x.Name.Name.GetPureFuncName();
-                string interfaceName = currName.Contains('.') ? currName.GetNamespaceWithoutClassName() : "";
+                string interfaceName = "";
+                if (x.Name.AdditionalData != null)
+                    interfaceName = (x.Name.AdditionalData.OutType as ClassType).Declaration.Name.Name;
                 string pureName = currName.GetClassNameWithoutNamespace();
 
                 List<HapetType> typesD = x.Parameters.Select(x => x.Type.OutType).ToList();

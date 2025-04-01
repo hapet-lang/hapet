@@ -30,6 +30,12 @@ namespace HapetPostPrepare
                 }
             }
 
+            // infer explicit shite
+            if (idExpr.AdditionalData != null)
+            {
+                PostPrepareExprInference(idExpr.AdditionalData, inInfo, ref outInfo);
+            }
+
             if (Step1_IdentifierFullNamespace(idExpr, inInfo, ref outInfo)) return;
             if (Step2_IdentifierLocalScope(idExpr, inInfo, ref outInfo)) return;
             if (Step3_IdentifierCurrNamespace(idExpr, inInfo, ref outInfo)) return;

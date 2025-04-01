@@ -488,7 +488,8 @@ namespace HapetPostPrepare
                 case AstIdGenericExpr genExpr:
                     PostPrepareIdGenericExprScoping(genExpr);
                     break;
-                case AstIdExpr _:
+                case AstIdExpr idExpr:
+                    PostPrepareIdExprScoping(idExpr);
                     break;
                 case AstCallExpr callExpr:
                     PostPrepareCallExprScoping(callExpr);
@@ -647,6 +648,15 @@ namespace HapetPostPrepare
             {
                 SetScopeAndParent(g, genExpr);
                 PostPrepareExprScoping(g);
+            }
+        }
+
+        private void PostPrepareIdExprScoping(AstIdExpr idExpr)
+        {
+            if (idExpr.AdditionalData != null)
+            {
+                SetScopeAndParent(idExpr.AdditionalData, idExpr);
+                PostPrepareExprScoping(idExpr.AdditionalData);
             }
         }
 

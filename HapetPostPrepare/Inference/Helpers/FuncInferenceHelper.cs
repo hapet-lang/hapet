@@ -240,7 +240,7 @@ namespace HapetPostPrepare
 
                     // explicit interface impl check
                     /// the same as in <see cref="OtherExtensions.GetSameByNameAndTypes(List{AstFuncDecl}, AstFuncDecl, out int, bool)"/>
-                    if (onlyFuncName.Contains('.') || firstKeyPart.Contains('.'))
+                    if (d.Decl.Name.AdditionalData != null)
                     {
                         string pureSearchName = onlyFuncName.GetClassNameWithoutNamespace();
                         string pureName = firstKeyPart.GetClassNameWithoutNamespace();
@@ -281,7 +281,7 @@ namespace HapetPostPrepare
                 var onlyFuncName = funcDecl.Name.Name.GetPureFuncName();
 
                 // skip non explicit
-                if (!onlyFuncName.Contains('.'))
+                if (funcDecl.Name.AdditionalData == null)
                     continue;
 
                 // to handle then
@@ -291,7 +291,7 @@ namespace HapetPostPrepare
                 decls.Remove(d);
 
                 // search if there funcs from interfaces - remove them also
-                string pureSearchParent = onlyFuncName.GetNamespaceWithoutClassName();
+                string pureSearchParent = (funcDecl.Name.AdditionalData.OutType as ClassType).Declaration.Name.Name;
                 string pureSearchName = onlyFuncName.GetClassNameWithoutNamespace();
                 foreach (var dIn in declsCopied)
                 {

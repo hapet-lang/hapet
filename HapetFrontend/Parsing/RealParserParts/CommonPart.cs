@@ -43,12 +43,12 @@ namespace HapetFrontend.Parsing
             var beg = next.Location.Beginning;
             var currNested = new AstNestedExpr(new AstIdExpr((string)next.Data, new Location(next.Location)), iniNested, next.Location);
 
+            if (allowGenerics && HandleGenericWithLookAhead(currNested.RightPart as AstIdExpr, out var genId2, lookAhead))
+                currNested.RightPart = genId2;
+
             // while there are more idents or periods
             while (CheckToken(TokenType.Period))
             {
-                if (allowGenerics && HandleGenericWithLookAhead(currNested.RightPart as AstIdExpr, out var genId2, lookAhead))
-                    currNested.RightPart = genId2;
-
                 if (!allowDots)
                 {
                     // do not error when look ahead and dots allowed :)
@@ -73,9 +73,10 @@ namespace HapetFrontend.Parsing
                     currNested.RightPart = null; // wrong parse
                     return currNested;
                 }
+
+                if (allowGenerics && HandleGenericWithLookAhead(currNested.RightPart as AstIdExpr, out var genId, lookAhead))
+                    currNested.RightPart = genId;
             }
-            if (allowGenerics && HandleGenericWithLookAhead(currNested.RightPart as AstIdExpr, out var genId, lookAhead))
-                currNested.RightPart = genId;
 
             return currNested;
         }
@@ -254,6 +255,7 @@ namespace HapetFrontend.Parsing
                 s is not AstCaseStmt &&
                 s is not AstSwitchStmt &&
                 s is not AstFuncDecl &&
+                s is not AstBlockExpr &&
                 s is not AstClassDecl &&
                 s is not AstStructDecl &&
                 s is not AstEnumDecl &&
