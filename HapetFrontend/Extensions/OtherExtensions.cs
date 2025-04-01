@@ -111,6 +111,7 @@ namespace HapetFrontend.Extensions
         public static AstFuncDecl GetSameByNameAndTypes(this List<AstFuncDecl> delcs, AstFuncDecl searchFunc, out int index, bool skipFirst = true)
         {
             index = -1;
+            AstFuncDecl bestMatch = null;
             // there is already params type in name like
             // TestClass::AnimeFunc(int:PivoCls)
             string searchName = searchFunc.Name.Name.GetPureFuncName();
@@ -123,6 +124,14 @@ namespace HapetFrontend.Extensions
             for (int i = 0; i < delcs.Count; ++i)
             {
                 var x = delcs[i];
+
+                // return if the same
+                if (x == searchFunc)
+                {
+                    index = i;
+                    return x;
+                }
+
                 string currName = x.Name.Name.GetPureFuncName();
                 List<HapetType> typesD = x.Parameters.Select(x => x.Type.OutType).ToList();
                 if (skipFirst)
@@ -148,7 +157,7 @@ namespace HapetFrontend.Extensions
                 if ((currName == searchName) && x.Returns.OutType == searchFunc.Returns.OutType && areTypesTheSame)
                 {
                     index = i;
-                    return x;
+                    bestMatch = x;
                 }
             }
 
@@ -202,10 +211,10 @@ namespace HapetFrontend.Extensions
                 if (areNamesEqual && x.Returns.OutType == searchFunc.Returns.OutType && areTypesTheSame)
                 {
                     index = i;
-                    return x;
+                    bestMatch = x;
                 }
             }
-            return null;
+            return bestMatch;
         }
 
         public static AstDeclaration GetSameDeclByTypeAndName(this List<AstDeclaration> decls, AstDeclaration decl)
