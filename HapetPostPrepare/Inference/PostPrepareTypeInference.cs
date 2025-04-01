@@ -115,10 +115,30 @@ namespace HapetPostPrepare
                     string newName = funcDecl.Name.Name;
                     if (funcDecl.ContainingParent is AstClassDecl || funcDecl.ContainingParent is AstStructDecl)
                     {
+                        // additional shite to handle explicit funcs and make them
+                        // from 'Anime::Test.Func()' into 'Anime::Namespace.Test.Func()'
+                        // so it would be easier sooner to infer some shite
+                        string explicitInterfaceName = "";
+                        string pureFuncName = funcDecl.Name.Name;
+                        string pureName = funcDecl.Name.Name.GetPureFuncName();
+                        if (pureName.Contains('.'))
+                        {
+                            string interfName = pureName.GetNamespaceWithoutClassName();
+                            pureFuncName = pureName.GetClassNameWithoutNamespace();
+                            var tmpIdExpr = new AstIdExpr(interfName, funcDecl.Name) 
+                            { 
+                                Scope = funcDecl.Name.Scope, 
+                                SourceFile = funcDecl.Name.SourceFile 
+                            };
+                            PostPrepareIdentifierInference(tmpIdExpr, inInfo, ref outInfo);
+                            explicitInterfaceName = tmpIdExpr.Name;
+                            explicitInterfaceName += '.';
+                        }
+
                         // it could already contain all the shite if the func is imported from another assembly :)
                         if (!funcDecl.Name.Name.Contains("::"))
                             // renaming func name from 'Anime' to 'Cls::Anime(int, float)'
-                            newName = $"{funcDecl.ContainingParent.Name.Name}::{funcDecl.Name.Name}{funcDecl.Parameters.GetParamsString()}";
+                            newName = $"{funcDecl.ContainingParent.Name.Name}::{explicitInterfaceName}{pureFuncName}{funcDecl.Parameters.GetParamsString()}";
                         scopeToDefine = funcDecl.ContainingParent.SubScope;
                     }
                     else if (funcDecl.ContainingParent is AstFuncDecl fncDeclParent)

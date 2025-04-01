@@ -7,23 +7,30 @@ public static class Program
 {
     public static int Main(string[] args)
     {
-        return 0;
+        Base b = new Base();
+        return b.AnimeFunc();
     }
 }
 
 public interface Test1
 {
-    int AnimePropa { get; }
+    int AnimeFunc();
 }
 
 public interface Test2
 {
-    int AnimePropa { get; }
+    int AnimeFunc();
 }
 
 public class Base : Test1, Test2
 {
-    int Test1.AnimePropa { get; }        
-    int Test2.AnimePropa { get; }   
+    int Test1.AnimeFunc() 
+    {
+        return 1;
+    }
+    int Test2.AnimeFunc()
+    {
+        return 1;
+    }
 }
 

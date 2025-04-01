@@ -50,6 +50,13 @@ namespace HapetFrontend.Extensions
             return string.Concat(name.Split("::")[1].TakeWhile(x => x != '('));
         }
 
+        public static string GetClassNameFromFuncName(this string name)
+        {
+            if (!name.Contains("::"))
+                return string.Empty;
+            return name.Split("::")[0];
+        }
+
         public static int GetGenericsAmount(this string name)
         {
             int amount = 0;

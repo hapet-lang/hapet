@@ -151,6 +151,60 @@ namespace HapetFrontend.Extensions
                     return x;
                 }
             }
+
+            // additional search for explicit declarations!!!
+            // if any of them are like 'Namespace.BaseCls::Intrf.Func(...);'
+            searchName = searchFunc.Name.Name.GetPureFuncName();
+            string interfaceSearchName = searchName.Contains('.') ? searchName.GetNamespaceWithoutClassName() : "";
+            string pureSearchName = searchName.GetClassNameWithoutNamespace();
+            for (int i = 0; i < delcs.Count; ++i)
+            {
+                var x = delcs[i];
+                string currName = x.Name.Name.GetPureFuncName();
+                string interfaceName = currName.Contains('.') ? currName.GetNamespaceWithoutClassName() : "";
+                string pureName = currName.GetClassNameWithoutNamespace();
+
+                List<HapetType> typesD = x.Parameters.Select(x => x.Type.OutType).ToList();
+                if (skipFirst)
+                {
+                    // remove the first param
+                    typesD = typesD.Skip(1).ToList();
+                }
+
+                // check for parameter types
+                bool areTypesTheSame = typesD.Count == types.Count;
+                if (areTypesTheSame)
+                    for (int j = 0; j < types.Count; ++j)
+                    {
+                        var t1 = types[j];
+                        var t2 = typesD[j];
+                        if (t1 != t2)
+                        {
+                            areTypesTheSame = false;
+                            break;
+                        }
+                    }
+
+                bool areNamesEqual = false;
+                if (string.IsNullOrWhiteSpace(interfaceSearchName) && !string.IsNullOrWhiteSpace(interfaceName))
+                {
+                    string parentSearch = searchFunc.Name.Name.GetClassNameFromFuncName();
+                    if (parentSearch == interfaceName && pureName == pureSearchName)
+                        areNamesEqual = true;
+                }
+                else if (!string.IsNullOrWhiteSpace(interfaceSearchName) && string.IsNullOrWhiteSpace(interfaceName))
+                {
+                    string parentSearch = x.Name.Name.GetClassNameFromFuncName();
+                    if (parentSearch == interfaceSearchName && pureName == pureSearchName)
+                        areNamesEqual = true;
+                }
+
+                if (areNamesEqual && x.Returns.OutType == searchFunc.Returns.OutType && areTypesTheSame)
+                {
+                    index = i;
+                    return x;
+                }
+            }
             return null;
         }
 
