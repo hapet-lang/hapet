@@ -872,7 +872,7 @@ public class List<T> : IList<T>, IList, IReadOnlyList<T>
 
         //try
         {
-            Insert(index, (T)item!);
+            Insert(index, (T)item);
         }
         //catch (InvalidCastException)
         //{
@@ -1102,7 +1102,7 @@ public class List<T> : IList<T>, IList, IReadOnlyList<T>
         }
         if (RuntimeHelpers.IsReferenceOrContainsReferences<T>())
         {
-            _items[_size] = default!;
+            _items[_size] = default;
         }
         _version++;
     }

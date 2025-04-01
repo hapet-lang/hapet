@@ -551,14 +551,12 @@ namespace HapetFrontend.Parsing
                         {
                             // allowDots is true because of explicit interface impls
                             // allowGenerics because of Anime<T>.Func explicit impls
-                            var name = ParseIdentifierExpression(allowDots: true, allowGenerics: true);
+                            var name = ParseIdentifierExpression(allowDots: true, allowGenerics: true, expectIdent: true);
                             if (name.RightPart is not AstIdExpr idExpr)
                             {
                                 ReportMessage(id.Location, [], ErrorCode.Get(CTEN.DeclNameIsNotIdent));
                                 return id;
                             }
-
-                            idExpr.AdditionalData = name.LeftPart;
                             return new AstUnknownDecl(id, idExpr, new Location(token.Location, name.Location.Ending));
                         }
 

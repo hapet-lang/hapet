@@ -6,6 +6,7 @@ using HapetFrontend.Entities;
 using HapetFrontend.Errors;
 using HapetFrontend.Extensions;
 using System.Reflection;
+using System.Xml.Linq;
 
 namespace HapetFrontend.Parsing
 {
@@ -18,7 +19,7 @@ namespace HapetFrontend.Parsing
         }
 
         private AstNestedExpr ParseIdentifierExpression(MessageResolver customMessage = null, TokenType identType = TokenType.Identifier,
-            bool allowDots = true, bool allowGenerics = true, AstNestedExpr iniNested = null, bool lookAhead = false)
+            bool allowDots = true, bool allowGenerics = true, AstNestedExpr iniNested = null, bool lookAhead = false, bool expectIdent = false)
         {
             // lookahead cringe
             UpdateLookAheadLocation();
@@ -26,7 +27,7 @@ namespace HapetFrontend.Parsing
         }
 
         private AstNestedExpr ParseIdentifierExpressionInternal(MessageResolver customMessage = null, TokenType identType = TokenType.Identifier, 
-            bool allowDots = true, bool allowGenerics = true, AstNestedExpr iniNested = null, bool lookAhead = false)
+            bool allowDots = true, bool allowGenerics = true, AstNestedExpr iniNested = null, bool lookAhead = false, bool expectIdent = false)
         {
             var next = lookAhead ? PeekLookAhead() : PeekToken();
             if (next.Type != identType)
@@ -78,6 +79,12 @@ namespace HapetFrontend.Parsing
                     currNested.RightPart = genId;
             }
 
+            // make this shite as ident with additional info
+            if (currNested.RightPart is AstIdExpr idExpr && expectIdent)
+            {
+                idExpr.AdditionalData = currNested.LeftPart;
+            }
+
             return currNested;
         }
 
@@ -115,12 +122,14 @@ namespace HapetFrontend.Parsing
                         // eat the identifier
                         // do not allow dots - if it is a pointer - then
                         // the second ident is a name
-                        var nextNest = ParseIdentifierExpressionInternal(lookAhead: true, allowDots: false);
+                        var nextNest = ParseIdentifierExpressionInternal(lookAhead: true, allowDots: true, allowGenerics: true, expectIdent: true);
                         if (nextNest.RightPart == null || (
                             !CheckLookAhead(TokenType.Equal) &&        // when public Anime<T> GetAnime = new Anime<T>();
                             !CheckLookAhead(TokenType.Semicolon) &&    // when public Anime<T> GetAnime;
                             !CheckLookAhead(TokenType.Comma) &&        // when (Anime<T> GetAnime, ...)
                             !CheckLookAhead(TokenType.OpenParen) &&    // when public Anime<T> GetAnime(...
+                            !CheckLookAhead(TokenType.Less) &&         // when public Anime<T> GetAnime<...- fucking explicit impls
+                            !CheckLookAhead(TokenType.Period) &&       // when public Anime<T> GetAnime<T>.Func - fucking explicit impls
                             !CheckLookAhead(TokenType.CloseParen)))    // when public void GetAnime(Anime<T> aaa)...
                         {
                             // cringe, it is not generic shite - skip
@@ -211,7 +220,7 @@ namespace HapetFrontend.Parsing
                 // eat the identifier
                 // do not allow dots - if it is a pointer - then
                 // the second ident is a name
-                var nextNest = ParseIdentifierExpressionInternal(lookAhead: true, allowDots: false);
+                var nextNest = ParseIdentifierExpressionInternal(lookAhead: true, allowDots: true, allowGenerics: true);
                 if (nextNest.RightPart != null && (
                     CheckLookAhead(TokenType.Equal) ||        // when byte* aaa = ...
                     CheckLookAhead(TokenType.OpenBrace) ||    // when byte* Aaa { ...

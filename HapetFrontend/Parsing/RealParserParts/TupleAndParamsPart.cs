@@ -24,7 +24,7 @@ namespace HapetFrontend.Parsing
             // if next token is : then e is the name of the parameter
             if (CheckToken(TokenType.Colon))
             {
-                if (e is AstIdExpr i)
+                if (e is AstNestedExpr nest && nest.RightPart is AstIdExpr i)
                 {
                     name = i;
                 }
@@ -33,7 +33,7 @@ namespace HapetFrontend.Parsing
                     ReportMessage(e, [], ErrorCode.Get(CTEN.ArgumentNameNotIdent));
                 }
 
-                Consume(TokenType.Equal, ErrMsg(":", "after name in argument"));
+                Consume(TokenType.Colon, ErrMsg(":", "after name in argument"));
                 SkipNewlines();
 
                 expr = ParseExpression(inInfo, ref outInfo) as AstExpression;
