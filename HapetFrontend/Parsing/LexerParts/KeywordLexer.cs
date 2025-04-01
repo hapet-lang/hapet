@@ -81,6 +81,7 @@ namespace HapetFrontend.Parsing
                 case "partial": token.Type = TokenType.KwPartial; break;
                 case "extern": token.Type = TokenType.KwExtern; break;
                 case "sealed": token.Type = TokenType.KwSealed; break;
+                case "inline": token.Type = TokenType.KwInline; break;
 
                 // for events
                 case "event": token.Type = TokenType.KwEvent; break;

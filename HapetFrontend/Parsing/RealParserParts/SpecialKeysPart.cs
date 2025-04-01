@@ -32,6 +32,7 @@
                     case TokenType.KwOverride:
                     case TokenType.KwPartial:
                     case TokenType.KwExtern:
+                    case TokenType.KwInline:
                     case TokenType.KwSealed:
                         keys.Add(tkn);
                         NextToken();
