@@ -5,12 +5,15 @@ using HapetFrontend.Scoping;
 using HapetFrontend.Types;
 using HapetFrontend.Extensions;
 using HapetFrontend.Helpers;
+using HapetFrontend.Errors;
+using HapetFrontend.Ast.Expressions;
 
 namespace HapetPostPrepare
 {
     public partial class PostPrepare
     {
-        public DeclSymbol GetFuncFromCandidates(string name, List<AstExpression> args, Scope scopeToSearch, AstDeclaration declToSearch, out List<AstExpression> castsToBeDone)
+        public DeclSymbol GetFuncFromCandidates(string name, AstCallExpr callExpr, List<AstExpression> args, Scope scopeToSearch, 
+            AstDeclaration declToSearch, out List<AstExpression> castsToBeDone)
         {
             // getting only the Class::AndFuncName without params
             var splitted = name.Split('(');
@@ -127,6 +130,9 @@ namespace HapetPostPrepare
                     .Where(x => (x.Decl is AstFuncDecl funcDecl && funcDecl.Parameters.Count == args.Count)).ToList());
             candidates = candidates.Distinct().ToList();
 
+            // handle explicit shite
+            CheckAndPrepareExplicitFuncs(candidates, callExpr);
+
             foreach (var cand in candidates)
             {
                 var funcDecl = cand.Decl as AstFuncDecl;
@@ -231,6 +237,17 @@ namespace HapetPostPrepare
                         if (pureFuncName == pureCallName && gAmountFunc == gAmountCall)
                             candidates.Add(d);
                     }
+
+                    // explicit interface impl check
+                    /// the same as in <see cref="OtherExtensions.GetSameByNameAndTypes(List{AstFuncDecl}, AstFuncDecl, out int, bool)"/>
+                    if (onlyFuncName.Contains('.') || firstKeyPart.Contains('.'))
+                    {
+                        string pureSearchName = onlyFuncName.GetClassNameWithoutNamespace();
+                        string pureName = firstKeyPart.GetClassNameWithoutNamespace();
+
+                        if (pureName == pureSearchName)
+                            candidates.Add(d);
+                    }
                 }
             }
             return candidates;
@@ -247,6 +264,46 @@ namespace HapetPostPrepare
             foreach (var k in scope.SymbolTable.Keys)
             {
                 yield return (k, scope.SymbolTable[k] as DeclSymbol);
+            }
+        }
+
+        private void CheckAndPrepareExplicitFuncs(List<DeclSymbol> decls, AstCallExpr callExpr)
+        {
+            // return when less than 1 - not explicit
+            if (decls.Count < 1)
+                return;
+
+            var declsCopied = decls.ToList();
+            bool thereWasExplicitShite = false;
+            foreach (var d in declsCopied)
+            {
+                var funcDecl = d.Decl as AstFuncDecl;
+                var onlyFuncName = funcDecl.Name.Name.GetPureFuncName();
+
+                // skip non explicit
+                if (!onlyFuncName.Contains('.'))
+                    continue;
+
+                // to handle then
+                thereWasExplicitShite = true;
+
+                // remove it from candidates
+                decls.Remove(d);
+
+                // search if there funcs from interfaces - remove them also
+                string pureSearchParent = onlyFuncName.GetNamespaceWithoutClassName();
+                string pureSearchName = onlyFuncName.GetClassNameWithoutNamespace();
+                foreach (var dIn in declsCopied)
+                {
+                    var funcDeclIn = dIn.Decl as AstFuncDecl;
+                    if (funcDeclIn.Name.Name.StartsWith($"{pureSearchParent}::{pureSearchName}("))
+                        decls.Remove(dIn);
+                }
+            }
+
+            if (thereWasExplicitShite && decls.Count == 0)
+            {
+                _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, callExpr.FuncName, [callExpr.FuncName.Name], ErrorCode.Get(CTEN.ExplicitMethodCall));
             }
         }
     }

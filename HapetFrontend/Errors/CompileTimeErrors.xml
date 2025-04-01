@@ -716,6 +716,10 @@
 		<Number>304C</Number>
 		<Text>The {0} type does not have an implementation of {1} property</Text>
 	</Item>
+	<Item>
+		<Number>304D</Number>
+		<Text>The {0} method could not be found - probably because of its explicit implementation</Text>
+	</Item>
 
     <!--Compiler errors-->
 	<Item>

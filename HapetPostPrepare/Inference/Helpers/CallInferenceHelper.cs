@@ -133,7 +133,7 @@ namespace HapetPostPrepare
                 // if the type/object name is not presented - the function is in the same class
                 // but we need to know is it static or not
                 newName = $"{_currentClass.Name.Name}::{funcName}{callExpr.Arguments.GetArgsString()}";
-                var smbl2 = GetFuncFromCandidates(newName, callExpr.Arguments.Select(x => x.Expr).ToList(), callExpr.FuncName.Scope, _currentClass, out var casts);
+                var smbl2 = GetFuncFromCandidates(newName, callExpr, callExpr.Arguments.Select(x => x.Expr).ToList(), callExpr.FuncName.Scope, _currentClass, out var casts);
                 smbl2 = OnFoundSymbol(smbl2, callExpr.FuncName);
                 if (smbl2 is DeclSymbol ds && ds.Decl is AstFuncDecl funcDecl)
                 {
@@ -144,6 +144,8 @@ namespace HapetPostPrepare
                     callExpr.Arguments.ReplaceWithCasts(casts);
                     return;
                 }
+                if (_compiler.MessageHandler.HasErrors)
+                    return;
 
                 accessingFromAnObject = true;
                 // we need to create this one because code generator requires the parameter of this shite
@@ -157,7 +159,7 @@ namespace HapetPostPrepare
                 List<AstExpression> argsWithClassParam = new List<AstExpression>(callExpr.Arguments);
                 argsWithClassParam.Insert(0, callExpr.TypeOrObjectName);
 
-                smbl2 = GetFuncFromCandidates(newName, argsWithClassParam, callExpr.FuncName.Scope, _currentClass, out var casts2);
+                smbl2 = GetFuncFromCandidates(newName, callExpr, argsWithClassParam, callExpr.FuncName.Scope, _currentClass, out var casts2);
                 smbl2 = OnFoundSymbol(smbl2, callExpr.FuncName);
                 if (smbl2 is DeclSymbol ds2 && ds2.Decl is AstFuncDecl funcDecl2)
                 {
@@ -168,11 +170,13 @@ namespace HapetPostPrepare
                     return;
                 }
                 accessingFromAnObject = false;
+                if (_compiler.MessageHandler.HasErrors)
+                    return;
 
                 // check for nested shite
                 newName = $"{callExpr.FuncName.Name}{callExpr.Arguments.GetArgsString()}"; // USE REAL FUNC NAME HERE
                 var tmpArgs = callExpr.Arguments.Select(x => x.Expr).ToList();
-                smbl2 = GetFuncFromCandidates(newName, tmpArgs, callExpr.FuncName.Scope, _currentClass, out var casts3);
+                smbl2 = GetFuncFromCandidates(newName, callExpr, tmpArgs, callExpr.FuncName.Scope, _currentClass, out var casts3);
                 smbl2 = OnFoundSymbol(smbl2, callExpr.FuncName);
                 if (smbl2 is DeclSymbol ds3 && ds3.Decl is AstFuncDecl funcDecl3)
                 {
@@ -191,7 +195,7 @@ namespace HapetPostPrepare
 
                 List<AstExpression> argsWithClassParam = new List<AstExpression>(callExpr.Arguments);
                 argsWithClassParam.Insert(0, callExpr.TypeOrObjectName);
-                var smbl2 = GetFuncFromCandidates(newName, argsWithClassParam, clsTp.Declaration.SubScope, clsTp.Declaration, out var casts);
+                var smbl2 = GetFuncFromCandidates(newName, callExpr, argsWithClassParam, clsTp.Declaration.SubScope, clsTp.Declaration, out var casts);
                 smbl2 = OnFoundSymbol(smbl2, callExpr.FuncName);
 
                 // check if the decl exists. if not - it could be static method call from an object
@@ -203,10 +207,12 @@ namespace HapetPostPrepare
                     callExpr.Arguments.ReplaceWithCasts(casts.Skip(1).ToList()); // skip because the first param is an object
                     return;
                 }
+                if (_compiler.MessageHandler.HasErrors)
+                    return;
 
                 // getting the name but without object first param
                 newName = $"{clsTp.Declaration.Name.Name}::{funcName}{callExpr.Arguments.GetArgsString()}";
-                smbl2 = GetFuncFromCandidates(newName, callExpr.Arguments.Select(x => x.Expr).ToList(), clsTp.Declaration.SubScope, clsTp.Declaration, out var casts2);
+                smbl2 = GetFuncFromCandidates(newName, callExpr, callExpr.Arguments.Select(x => x.Expr).ToList(), clsTp.Declaration.SubScope, clsTp.Declaration, out var casts2);
                 smbl2 = OnFoundSymbol(smbl2, callExpr.FuncName);
                 if (smbl2 is DeclSymbol ds2 && ds2.Decl is AstFuncDecl funcDecl2)
                 {
@@ -216,10 +222,12 @@ namespace HapetPostPrepare
                     callExpr.Arguments.ReplaceWithCasts(casts2);
                     return;
                 }
+                if (_compiler.MessageHandler.HasErrors)
+                    return;
 
                 // check for generic shite
                 newName = $"{clsTp.Declaration.Name.Name}::{callExpr.FuncName.Name}"; // USE REAL FUNC NAME HERE
-                smbl2 = GetFuncFromCandidates(newName, argsWithClassParam, clsTp.Declaration.SubScope, clsTp.Declaration, out var casts3);
+                smbl2 = GetFuncFromCandidates(newName, callExpr, argsWithClassParam, clsTp.Declaration.SubScope, clsTp.Declaration, out var casts3);
                 smbl2 = OnFoundSymbol(smbl2, callExpr.FuncName);
                 if (smbl2 is DeclSymbol ds3 && ds3.Decl is AstFuncDecl funcDecl3)
                 {
@@ -237,7 +245,7 @@ namespace HapetPostPrepare
                 // we need to rename the func name call like that:
                 newName = $"{clsTpStatic.Declaration.Name.Name}::{funcName}{callExpr.Arguments.GetArgsString()}";
 
-                var smbl2 = GetFuncFromCandidates(newName, callExpr.Arguments.Select(x => x.Expr).ToList(), clsTpStatic.Declaration.SubScope, clsTpStatic.Declaration, out var casts);
+                var smbl2 = GetFuncFromCandidates(newName, callExpr, callExpr.Arguments.Select(x => x.Expr).ToList(), clsTpStatic.Declaration.SubScope, clsTpStatic.Declaration, out var casts);
                 smbl2 = OnFoundSymbol(smbl2, callExpr.FuncName);
                 // check if the decl exists. if not - it could be non static method call from a class name
                 if (smbl2 is DeclSymbol ds && ds.Decl is AstFuncDecl funcDecl)
@@ -248,6 +256,8 @@ namespace HapetPostPrepare
                     callExpr.Arguments.ReplaceWithCasts(casts);
                     return;
                 }
+                if (_compiler.MessageHandler.HasErrors)
+                    return;
 
                 // getting the name but with object first param
                 newName = $"{clsTpStatic.Declaration.Name.Name}::{funcName}{callExpr.Arguments.GetArgsString(PointerType.GetPointerType(clsTpStatic))}";
@@ -256,7 +266,7 @@ namespace HapetPostPrepare
                 var pseudoClassArg = new AstPointerExpr(callExpr.TypeOrObjectName, false, callExpr.TypeOrObjectName);
                 PostPrepareExprInference(pseudoClassArg, inInfo, ref outInfo);
                 argsWithClassParam.Insert(0, pseudoClassArg);
-                smbl2 = GetFuncFromCandidates(newName, argsWithClassParam, clsTpStatic.Declaration.SubScope, clsTpStatic.Declaration, out var _);
+                smbl2 = GetFuncFromCandidates(newName, callExpr, argsWithClassParam, clsTpStatic.Declaration.SubScope, clsTpStatic.Declaration, out var _);
                 smbl2 = OnFoundSymbol(smbl2, callExpr.FuncName);
                 // error because user tries to access non static method from a class name
                 if (smbl2 != null)
@@ -271,7 +281,7 @@ namespace HapetPostPrepare
                 // we need to rename the func name call like that:
                 newName = $"{structType.Declaration.Name.Name}::{funcName}{callExpr.Arguments.GetArgsString()}";
 
-                var smbl2 = GetFuncFromCandidates(newName, callExpr.Arguments.Select(x => x.Expr).ToList(), structType.Declaration.SubScope, structType.Declaration, out var casts);
+                var smbl2 = GetFuncFromCandidates(newName, callExpr, callExpr.Arguments.Select(x => x.Expr).ToList(), structType.Declaration.SubScope, structType.Declaration, out var casts);
                 smbl2 = OnFoundSymbol(smbl2, callExpr.FuncName);
                 // check if the decl exists. if not - it could be non static method call from a class name
                 if (smbl2 is DeclSymbol ds && ds.Decl is AstFuncDecl funcDecl)
@@ -282,6 +292,8 @@ namespace HapetPostPrepare
                     callExpr.Arguments.ReplaceWithCasts(casts);
                     return;
                 }
+                if (_compiler.MessageHandler.HasErrors)
+                    return;
 
                 // getting the name but with object first param
                 newName = $"{structType.Declaration.Name.Name}::{funcName}{callExpr.Arguments.GetArgsString(PointerType.GetPointerType(structType))}";
@@ -290,7 +302,7 @@ namespace HapetPostPrepare
                 var pseudoStructArg = new AstPointerExpr(callExpr.TypeOrObjectName, false, callExpr.TypeOrObjectName);
                 PostPrepareExprInference(pseudoStructArg, inInfo, ref outInfo);
                 argsWithStructParam.Insert(0, pseudoStructArg);
-                smbl2 = GetFuncFromCandidates(newName, argsWithStructParam, structType.Declaration.SubScope, structType.Declaration, out casts);
+                smbl2 = GetFuncFromCandidates(newName, callExpr, argsWithStructParam, structType.Declaration.SubScope, structType.Declaration, out casts);
                 smbl2 = OnFoundSymbol(smbl2, callExpr.FuncName);
 
                 var declSymbolOfLeft = callExpr.TypeOrObjectName.TryGetDeclSymbol();
@@ -318,7 +330,7 @@ namespace HapetPostPrepare
                 // we need to rename the func name call like that:
                 newName = $"{strTp.Declaration.Name.Name}::{funcName}{callExpr.Arguments.GetArgsString()}";
 
-                var smbl2 = GetFuncFromCandidates(newName, callExpr.Arguments.Select(x => x.Expr).ToList(), strTp.Declaration.SubScope, strTp.Declaration, out var casts);
+                var smbl2 = GetFuncFromCandidates(newName, callExpr, callExpr.Arguments.Select(x => x.Expr).ToList(), strTp.Declaration.SubScope, strTp.Declaration, out var casts);
                 smbl2 = OnFoundSymbol(smbl2, callExpr.FuncName);
 
                 // check if the decl exists. if not - it could be non static method call from a class name
@@ -330,6 +342,8 @@ namespace HapetPostPrepare
                     callExpr.Arguments.ReplaceWithCasts(casts);
                     return;
                 }
+                if (_compiler.MessageHandler.HasErrors)
+                    return;
 
                 // getting the name but with object first param
                 newName = $"{strTp.Declaration.Name.Name}::{funcName}{callExpr.Arguments.GetArgsString(PointerType.GetPointerType(strTp))}";
@@ -338,7 +352,7 @@ namespace HapetPostPrepare
                 var pseudoStructArg = callExpr.TypeOrObjectName;
                 argsWithStructParam.Insert(0, pseudoStructArg);
 
-                smbl2 = GetFuncFromCandidates(newName, argsWithStructParam, strTp.Declaration.SubScope, strTp.Declaration, out casts);
+                smbl2 = GetFuncFromCandidates(newName, callExpr, argsWithStructParam, strTp.Declaration.SubScope, strTp.Declaration, out casts);
                 smbl2 = OnFoundSymbol(smbl2, callExpr.FuncName);
 
                 var declSymbolOfLeft = callExpr.TypeOrObjectName.TryGetDeclSymbol();

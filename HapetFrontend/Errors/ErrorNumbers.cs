@@ -187,6 +187,7 @@
         VarDefaultType                  = 0x304A,
         PropaAlreadyDefined             = 0x304B,
         NoPropaImplementation           = 0x304C,
+        ExplicitMethodCall              = 0x304D,
 
         // compiler errors up to 0x6000
         DefaultWasNotInfered            = 0x5001,

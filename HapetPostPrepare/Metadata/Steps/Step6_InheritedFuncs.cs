@@ -78,7 +78,16 @@ namespace HapetPostPrepare
                                 if (isInherited)
                                 {
                                     // need to check that we do not implement it also
+                                    // if parents are the same but funcs are different - one of the funcs is probably explicit impl
                                     var currF = currentClassMethods.GetSameByNameAndTypes(inhF, out int _);
+                                    if (currF != null && (currF.ContainingParent == definedInOneOfTheParents.ContainingParent && currF != definedInOneOfTheParents))
+                                    {
+                                        // add it to the new dictionary
+                                        currentClassMethods.Remove(currF);
+                                        inheritedFuncDecls.Add(currF);
+                                        continue;
+                                    }
+
                                     if (currF != null && !currF.SpecialKeys.Contains(TokenType.KwNew))
                                     {
                                         // the method is implemented in parent class and current class

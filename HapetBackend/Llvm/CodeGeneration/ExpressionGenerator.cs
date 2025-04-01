@@ -478,7 +478,7 @@ namespace HapetBackend.Llvm
                 var ctorName = $"{classType.Declaration.Name.Name}::{onlyName}_ctor" + expr.Arguments.GetArgsString(PointerType.GetPointerType(classType));
                 List<AstExpression> argsWithClassParam = new List<AstExpression>(expr.Arguments);
                 argsWithClassParam.Insert(0, new AstIdExpr("this") { OutType = PointerType.GetPointerType(classType) });
-                var ctorSymbol = _postPreparer.GetFuncFromCandidates(ctorName, argsWithClassParam, classType.Declaration.SubScope, null, out var casts);
+                var ctorSymbol = _postPreparer.GetFuncFromCandidates(ctorName, null, argsWithClassParam, classType.Declaration.SubScope, null, out var casts);
 
                 // error if ctor not found
                 if (ctorSymbol == null)
@@ -516,7 +516,7 @@ namespace HapetBackend.Llvm
                 var ctorName = $"{structType.Declaration.Name.Name}::{onlyName}_ctor" + expr.Arguments.GetArgsString(PointerType.GetPointerType(structType));
                 List<AstExpression> argsWithClassParam = new List<AstExpression>(expr.Arguments);
                 argsWithClassParam.Insert(0, new AstIdExpr("this") { OutType = PointerType.GetPointerType(structType) });
-                var ctorSymbol = _postPreparer.GetFuncFromCandidates(ctorName, argsWithClassParam, structType.Declaration.SubScope, null, out var casts);
+                var ctorSymbol = _postPreparer.GetFuncFromCandidates(ctorName, null, argsWithClassParam, structType.Declaration.SubScope, null, out var casts);
 
                 // error if ctor not found
                 if (ctorSymbol == null)
@@ -1388,7 +1388,7 @@ namespace HapetBackend.Llvm
             var ctorName = $"{baseStmt.BaseType.Declaration.Name.Name}::{onlyName}_ctor" + baseStmt.Arguments.GetArgsString(PointerType.GetPointerType(baseStmt.BaseType));
             List<AstExpression> argsWithClassParam = new List<AstExpression>(baseStmt.Arguments);
             argsWithClassParam.Insert(0, baseStmt.ThisArgument);
-            var ctorSymbol = _postPreparer.GetFuncFromCandidates(ctorName, argsWithClassParam, baseStmt.BaseType.Declaration.SubScope, null, out var casts);
+            var ctorSymbol = _postPreparer.GetFuncFromCandidates(ctorName, null, argsWithClassParam, baseStmt.BaseType.Declaration.SubScope, null, out var casts);
 
             // error if ctor not found
             if (ctorSymbol == null)

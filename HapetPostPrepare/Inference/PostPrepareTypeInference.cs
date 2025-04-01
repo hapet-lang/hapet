@@ -1024,7 +1024,7 @@ namespace HapetPostPrepare
 
                 List<AstExpression> argsWithStructParam = new List<AstExpression>() { arrayAccExpr.ParameterExpr };
                 argsWithStructParam.Insert(0, pseudoFirstArg);
-                var smbl = GetFuncFromCandidates(newName, argsWithStructParam, subScope, declItself, out var casts);
+                var smbl = GetFuncFromCandidates(newName, null, argsWithStructParam, subScope, declItself, out var casts);
 
                 if (smbl != null && smbl.Decl is AstFuncDecl funcDecl)
                 {
