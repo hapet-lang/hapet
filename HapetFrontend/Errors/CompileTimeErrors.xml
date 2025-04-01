@@ -708,6 +708,14 @@
 		<Number>304A</Number>
 		<Text>Variable declaration with 'var' key cannot have 'default' initializer</Text>
 	</Item>
+	<Item>
+		<Number>304B</Number>
+		<Text>The {0} type already has an implementation of the property. Implicit shadowing is not allowed</Text>
+	</Item>
+	<Item>
+		<Number>304C</Number>
+		<Text>The {0} type does not have an implementation of {1} property</Text>
+	</Item>
 
     <!--Compiler errors-->
 	<Item>

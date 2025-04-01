@@ -164,9 +164,10 @@ namespace HapetPostPrepare
                                     var currF = currentFieldDecls.GetSameDeclByTypeAndName(inhF);
                                     if (currF == null)
                                     {
-                                        // error - the field of the interface was not implemented
-                                        _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, inh,
-                                            [HapetType.AsString(decl.Type.OutType), inhF.Name.Name], ErrorCode.Get(CTEN.NoFieldImplementation));
+                                        if (!inhF.IsPropertyField)
+                                            // error - the field of the interface was not implemented
+                                            _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, inh,
+                                                [HapetType.AsString(decl.Type.OutType), inhF.Name.Name], ErrorCode.Get(CTEN.NoFieldImplementation));
                                     }
                                     else
                                     {

@@ -185,6 +185,8 @@
         ShouldGoBeforeSpecialKey        = 0x3048,
         AlreadyDefinedSpecialKey        = 0x3049,
         VarDefaultType                  = 0x304A,
+        PropaAlreadyDefined             = 0x304B,
+        NoPropaImplementation           = 0x304C,
 
         // compiler errors up to 0x6000
         DefaultWasNotInfered            = 0x5001,

@@ -118,7 +118,7 @@ namespace HapetPostPrepare
                                         // the prop is implemented in parent class and current class
                                         // we need to error
                                         _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, currF,
-                                            [HapetType.AsString(definedInOneOfTheParents.ContainingParent.Type.OutType)], ErrorCode.Get(CTEN.FieldAlreadyDefined));
+                                            [HapetType.AsString(definedInOneOfTheParents.ContainingParent.Type.OutType)], ErrorCode.Get(CTEN.PropaAlreadyDefined));
                                         continue;
                                     }
                                     // else - everything is ok probably
@@ -163,7 +163,7 @@ namespace HapetPostPrepare
                                 {
                                     // error - the prop of the interface was not implemented
                                     _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, inh,
-                                        [HapetType.AsString(decl.Type.OutType), inhF.Name.Name], ErrorCode.Get(CTEN.NoFieldImplementation));
+                                        [HapetType.AsString(decl.Type.OutType), inhF.Name.Name], ErrorCode.Get(CTEN.NoPropaImplementation));
                                 }
                                 else
                                 {

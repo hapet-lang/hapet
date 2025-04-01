@@ -127,9 +127,10 @@ namespace HapetPostPrepare
                                 var currF = currentClassMethods.GetSameByNameAndTypes(inhF, out int _);
                                 if (currF == null)
                                 {
-                                    // error - the method of the interface was not implemented
-                                    _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, inh,
-                                        [HapetType.AsString(decl.Type.OutType), inhF.Name.Name], ErrorCode.Get(CTEN.NoMethodImplementation));
+                                    if (!inhF.IsPropertyFunction)
+                                        // error - the method of the interface was not implemented
+                                        _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, inh,
+                                            [HapetType.AsString(decl.Type.OutType), inhF.Name.Name], ErrorCode.Get(CTEN.NoMethodImplementation));
                                 }
                                 else
                                 {

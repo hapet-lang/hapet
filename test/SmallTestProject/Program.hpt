@@ -7,22 +7,23 @@ public static class Program
 {
     public static int Main(string[] args)
     {
-        var b = new Base();
-        return b.AnimeTest<int>(14);
+        return 0;
     }
 }
 
-public class Base
+public interface Test1
 {
-    public T AnimeTest<T>(T value)
-    {
-        T a = GetInt<T>(value);
-        return a;
+    int AnimePropa { get; }
+}
 
-        static T GetInt<T>(T c)
-        {
-            return c;
-        }
-    }
+public interface Test2
+{
+    int AnimePropa { get; }
+}
+
+public class Base : Test1, Test2
+{
+    int Test1.AnimePropa { get; }        
+    int Test2.AnimePropa { get; }   
 }
 
