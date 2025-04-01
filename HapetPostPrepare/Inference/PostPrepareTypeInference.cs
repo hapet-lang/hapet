@@ -181,6 +181,8 @@ namespace HapetPostPrepare
             }
             else
             {
+                var savedCls = _currentClass;
+                _currentClass = funcDecl.ContainingParent as AstClassDecl;
                 // if parent contains Generic shite - do not infer
                 bool allowInfer = !(funcDecl.ContainingParent.HasGenericTypes && !funcDecl.ContainingParent.IsImplOfGeneric);
                 // inferring body
@@ -209,6 +211,8 @@ namespace HapetPostPrepare
                     // but why to the index 1? - https://stackoverflow.com/questions/140490/base-constructor-in-c-sharp-which-gets-called-first
                     funcDecl.Body.Statements.Insert(1, funcDecl.BaseCtorCall);
                 }
+
+                _currentClass = savedCls;
             }
         }
 

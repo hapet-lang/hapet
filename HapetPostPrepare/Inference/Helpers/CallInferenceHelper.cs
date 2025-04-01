@@ -149,7 +149,7 @@ namespace HapetPostPrepare
 
                 accessingFromAnObject = true;
                 // we need to create this one because code generator requires the parameter of this shite
-                callExpr.TypeOrObjectName = new AstNestedExpr(new AstIdExpr("this"), null, callExpr);
+                callExpr.TypeOrObjectName = new AstNestedExpr(new AstIdExpr("this", callExpr), null, callExpr);
                 SetScopeAndParent(callExpr.TypeOrObjectName, callExpr);
                 PostPrepareExprScoping(callExpr.TypeOrObjectName);
                 PostPrepareExprInference(callExpr.TypeOrObjectName, inInfo, ref outInfo);
