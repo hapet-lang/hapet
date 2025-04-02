@@ -193,29 +193,29 @@ namespace HapetPostPrepare
             // if not for imported - generate other shite
             if (!forImported)
             {
+                var decls = new List<AstDeclaration>();
+                decls.AddRange(allFields);
+                decls.AddRange(allProps);
+                decls.AddRange(allFuncs);
                 // getting all fields and mark them abstract if it is an interface
                 if (classDecl.IsInterface)
                 {
-                    foreach (var f in allFields)
+                    foreach (var f in decls)
                     {
                         // add abstract key to the field if it is an interface
                         AddSpecialKeyToDecl(f, Lexer.CreateToken(TokenType.KwAbstract, f.Location.Beginning));
                         // and public :)
                         AddSpecialKeyToDecl(f, Lexer.CreateToken(TokenType.KwPublic, f.Location.Beginning));
                     }
-                    foreach (var p in allProps)
+                }
+                // add kw private if there is no one
+                else
+                {
+                    foreach (var f in decls)
                     {
-                        // add abstract key to the prop if it is an interface
-                        AddSpecialKeyToDecl(p, Lexer.CreateToken(TokenType.KwAbstract, p.Location.Beginning));
-                        // and public :)
-                        AddSpecialKeyToDecl(p, Lexer.CreateToken(TokenType.KwPublic, p.Location.Beginning));
-                    }
-                    foreach (var f in allFuncs)
-                    {
-                        // add abstract key to the func if it is an interface
-                        AddSpecialKeyToDecl(f, Lexer.CreateToken(TokenType.KwAbstract, f.Location.Beginning));
-                        // and public :)
-                        AddSpecialKeyToDecl(f, Lexer.CreateToken(TokenType.KwPublic, f.Location.Beginning));
+                        // 1 - is access special key type!!!
+                        if (!HasSpecialKeyType(f, 1))
+                            AddSpecialKeyToDecl(f, Lexer.CreateToken(TokenType.KwPrivate, f.Location.Beginning));
                     }
                 }
 

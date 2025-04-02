@@ -10,6 +10,10 @@ public static class Program
         Base b = new Base();
         var c = b as Test1;
         var d = b as Test2;
+
+        d.AnimeFunc = 6;
+        c.AnimeFunc = 3;
+
         return d.AnimeFunc + c.AnimeFunc;
     }
 }
@@ -17,21 +21,19 @@ public static class Program
 
 public interface Test1
 {
-    int AnimeFunc { get; }
+    int AnimeFunc;
 }
 
 public interface Test2
 {
-    int AnimeFunc { get; }
+    int AnimeFunc;
 }
 
 public class Base : Test1, Test2
 {
-    int Test1.AnimeFunc { get; }
+    int Test1.AnimeFunc;
 
-    int Test2.AnimeFunc { get {
-        return 5;
-    }}
+    int Test2.AnimeFunc;
 }
 
 

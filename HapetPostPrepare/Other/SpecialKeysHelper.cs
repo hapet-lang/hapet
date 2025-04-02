@@ -332,5 +332,17 @@ namespace HapetPostPrepare
             }
             return -1;
         }
+
+        private bool HasSpecialKeyType(AstDeclaration decl, int type)
+        {
+            for (int i = 0; i < decl.SpecialKeys.Count; ++i)
+            {
+                var currKey = decl.SpecialKeys[i];
+                var keyType = GetSpecialKeyType(currKey.Type);
+                if (keyType == type)
+                    return true;
+            }
+            return false;
+        }
     }
 }
