@@ -6,6 +6,7 @@ using HapetFrontend.Entities;
 using HapetFrontend.Errors;
 using HapetFrontend.Types;
 using System.Diagnostics;
+using System.Runtime;
 
 namespace HapetFrontend.Parsing
 {
@@ -16,10 +17,39 @@ namespace HapetFrontend.Parsing
             var savedMessage = inInfo.Message;
             inInfo.Message ??= new MessageResolver() { XmlMessage = ErrorCode.Get(CTEN.CommonUnexpectedInExpr) };
 
-            var expr = ParseOrExpression(inInfo, ref outInfo);
+            var expr = ParseTernaryExpression(inInfo, ref outInfo);
 
             inInfo.Message = savedMessage;
 
+            return expr;
+        }
+
+        [DebuggerStepThrough]
+        [StackTraceHidden]
+        [DebuggerHidden]
+        private AstStatement ParseTernaryExpression(ParserInInfo inInfo, ref ParserOutInfo outInfo)
+        {
+            var expr = ParseOrExpression(inInfo, ref outInfo);
+
+            if (CheckToken(TokenType.QuestionMark))
+            {
+                var _ = NextToken();
+
+                if (CheckToken(TokenType.Period))
+                {
+                    // TODO: null check access: 'var a = Anime?.Pivo;'
+                    // WARN: should be done in ParseIdentifierExpr!!! it is like nested but with some anime cringe
+                }
+                else
+                {
+                    // ternary shite probably
+                    var trueExpr = ParseExpression(inInfo, ref outInfo);
+                    Consume(TokenType.Colon, ErrMsg(":", "in ternary expression"));
+                    var falseExpr = ParseExpression(inInfo, ref outInfo);
+                    return new AstTernaryExpr(expr as AstExpression, trueExpr as AstExpression, falseExpr as AstExpression,
+                        new Location(expr.Beginning, falseExpr.Ending));
+                }
+            }
             return expr;
         }
 

@@ -203,6 +203,7 @@ namespace HapetFrontend.Parsing
                 case '.' when Next(location) == '.': SimpleToken(location, ref token, TokenType.PeriodPeriod, 2); break;
                 case '&' when Next(location) == '&': SimpleToken(location, ref token, TokenType.LogicalAnd, 2); break;
                 case '[' when Next(location) == ']': SimpleToken(location, ref token, TokenType.ArrayDef, 2); break;
+                case '?' when Next(location) == '?': SimpleToken(location, ref token, TokenType.DoubleQuestion, 2); break;
                 case '|' when Next(location) == '|': SimpleToken(location, ref token, TokenType.LogicalOr, 2); break;
                 case '/' when (Next(location) == '/' && GetChar(2, location) == '/'):
                     {
@@ -261,6 +262,7 @@ namespace HapetFrontend.Parsing
                 case '<': SimpleToken(location, ref token, TokenType.Less); break;
                 case '>': SimpleToken(location, ref token, TokenType.Greater); break;
                 case '!': SimpleToken(location, ref token, TokenType.Bang); break;
+                case '?': SimpleToken(location, ref token, TokenType.QuestionMark); break;
                 case '|': SimpleToken(location, ref token, TokenType.VerticalSlash); break;
 
                 case '"': ParseStringLiteral(location, ref token, '"'); break;

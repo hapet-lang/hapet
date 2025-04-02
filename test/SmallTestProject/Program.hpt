@@ -7,57 +7,8 @@ public static class Program
 {
     public static int Main(string[] args)
     {
-        Base b = new Base();
-        var c = b as Test1;
-        var d = b as Test2;
-
-        d.AnimeFunc = 6;
-        c.AnimeFunc = 3;
-
-        return d.AnimeFunc + c.AnimeFunc;
+        bool a = true;
+        int b = a ? 4 : 6;
+        return b;
     }
 }
-
-
-public interface Test1
-{
-    int AnimeFunc;
-}
-
-public interface Test2
-{
-    int AnimeFunc;
-}
-
-public class Base : Test1, Test2
-{
-    int Test1.AnimeFunc;
-
-    int Test2.AnimeFunc;
-}
-
-
-/*
-public interface Test1
-{
-    int AnimeFunc();
-}
-
-public interface Test2
-{
-    int AnimeFunc();
-}
-
-public class Base : Test1, Test2
-{
-    int Test1.AnimeFunc()
-    {
-        return 5;
-    }
-
-    int Test2.AnimeFunc()
-    {
-        return 4;
-    }
-}
-*/

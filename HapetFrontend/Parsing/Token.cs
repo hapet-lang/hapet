@@ -47,6 +47,8 @@ namespace HapetFrontend.Parsing
         Ampersand,       // &
         Hat,             // ^
         Bang,            // !
+        QuestionMark,    // ?
+        DoubleQuestion,  // ??
         VerticalSlash,   // |
 
         Plus,            // +
