@@ -497,6 +497,9 @@ namespace HapetPostPrepare
                 case AstArrayAccessExpr arrayAccExpr:
                     PostPrepareArrayAccessExprScoping(arrayAccExpr);
                     break;
+                case AstTernaryExpr ternaryExpr:
+                    PostPrepareTernaryExprScoping(ternaryExpr);
+                    break;
 
                 // statements
                 case AstAssignStmt assignStmt:
@@ -720,6 +723,16 @@ namespace HapetPostPrepare
             PostPrepareExprScoping(arrayAccExpr.ParameterExpr);
             SetScopeAndParent(arrayAccExpr.ObjectName, arrayAccExpr);
             PostPrepareExprScoping(arrayAccExpr.ObjectName);
+        }
+
+        private void PostPrepareTernaryExprScoping(AstTernaryExpr ternaryExpr)
+        {
+            SetScopeAndParent(ternaryExpr.Condition, ternaryExpr);
+            PostPrepareExprScoping(ternaryExpr.Condition);
+            SetScopeAndParent(ternaryExpr.TrueExpr, ternaryExpr);
+            PostPrepareExprScoping(ternaryExpr.TrueExpr);
+            SetScopeAndParent(ternaryExpr.FalseExpr, ternaryExpr);
+            PostPrepareExprScoping(ternaryExpr.FalseExpr);
         }
 
         // statements

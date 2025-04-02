@@ -355,6 +355,9 @@ namespace HapetPostPrepare
                 case AstArrayAccessExpr arrayAccExpr:
                     PostPrepareArrayAccessExprInference(arrayAccExpr, inInfo, ref outInfo);
                     break;
+                case AstTernaryExpr ternaryExpr:
+                    PostPrepareTernaryExprInference(ternaryExpr, inInfo, ref outInfo);
+                    break;
                 case AstStringExpr stringExpr:
                     stringExpr.OutType = StringType.GetInstance(stringExpr.Scope);
                     break;
@@ -1057,6 +1060,33 @@ namespace HapetPostPrepare
                 _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, arrayAccExpr.ObjectName, [], ErrorCode.Get(CTEN.NonStringOrArrayIndexed));
             }
             arrayAccExpr.OutType = outType;
+        }
+
+        private void PostPrepareTernaryExprInference(AstTernaryExpr expr, InInfo inInfo, ref OutInfo outInfo)
+        {
+            PostPrepareExprInference(expr.Condition, inInfo, ref outInfo);
+            if (expr.Condition.OutType is not BoolType) 
+            { 
+                // TODO: error
+            }
+
+            PostPrepareExprInference(expr.TrueExpr, inInfo, ref outInfo);
+            PostPrepareExprInference(expr.FalseExpr, inInfo, ref outInfo);
+            if (expr.TrueExpr.OutType != expr.FalseExpr.OutType)
+            {
+                // TODO: better checks - like inheritance and other cringe
+                // TODO: error
+            }
+
+            // evaluate at comptime if possible
+            if (expr.Condition.OutValue is bool &&
+                expr.TrueExpr.OutValue != null &&
+                expr.FalseExpr.OutValue != null)
+            {
+                expr.OutValue = ((bool)expr.Condition.OutValue) ? expr.TrueExpr.OutValue : expr.FalseExpr.OutValue;
+            }
+
+            expr.OutType = expr.TrueExpr.OutType;
         }
 
         // statements
