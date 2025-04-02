@@ -102,6 +102,10 @@ namespace HapetBackend.Llvm
                 if (funcDecl.IsImported && !funcDecl.IsImplOfGeneric)
                     return;
 
+                // skip interface funcs
+                if (funcDecl.ContainingParent is AstClassDecl clsD && clsD.IsInterface)
+                    return;
+
                 // getting the func
                 LLVMValueRef lfunc = _valueMap[funcDecl.GetSymbol];
                 _lastFunctionValueRef = lfunc;
