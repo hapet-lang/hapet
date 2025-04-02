@@ -102,7 +102,7 @@ namespace HapetPostPrepare
                         foreach (var inhF in inhFields)
                         {
                             // check if the interface is already implemented in parent classes
-                            var definedInOneOfTheParents = inheritedFieldDecls.GetSameDeclByTypeAndName(inhF);
+                            var definedInOneOfTheParents = inheritedFieldDecls.GetSameDeclByTypeAndName(inhF, out var _);
                             // if the field was already presented previously
                             if (definedInOneOfTheParents != null)
                             {
@@ -113,6 +113,14 @@ namespace HapetPostPrepare
                                 {
                                     // need to check that we do not implement it also
                                     var currF = currentFieldDecls.FirstOrDefault(x => x.Name.Name == inhF.Name.Name);
+                                    // if parents are the same but funcs are different - one of the funcs is probably explicit impl
+                                    if (currF != null && (currF.ContainingParent == definedInOneOfTheParents.ContainingParent && currF != definedInOneOfTheParents))
+                                    {
+                                        // add it to the new dictionary
+                                        currentFieldDecls.Remove(currF);
+                                        inheritedFieldDecls.Add(currF);
+                                        continue;
+                                    }
                                     if (currF != null && !currF.SpecialKeys.Contains(TokenType.KwNew))
                                     {
                                         // the field is implemented in parent class and current class
@@ -161,7 +169,7 @@ namespace HapetPostPrepare
                                 {
                                     // if the field was not presented previously
                                     // need to check that we do implement it
-                                    var currF = currentFieldDecls.GetSameDeclByTypeAndName(inhF);
+                                    var currF = currentFieldDecls.GetSameDeclByTypeAndName(inhF, out var _);
                                     if (currF == null)
                                     {
                                         if (!inhF.IsPropertyField)

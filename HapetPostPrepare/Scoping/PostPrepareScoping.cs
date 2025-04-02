@@ -146,18 +146,12 @@ namespace HapetPostPrepare
                         PostPrepareExprScoping(indDecl.IndexerParameter);
                     }
 
-                    // if it is public field/property - it should be visible in the scope in which var's class is
-                    classDecl.SubScope.DefineDeclSymbol(propDecl.Name.Name, propDecl);
-
                     // setting already defined to 'true' because of some shite with access types
                     PostPrepareVarScoping(propDecl, true);
                 }
                 else if (decl is AstVarDecl fieldDecl) // field 
                 {
                     fieldDecl.ContainingParent = classDecl;
-
-                    // if it is public field/property - it should be visible in the scope in which var's class is
-                    classDecl.SubScope.DefineDeclSymbol(fieldDecl.Name.Name, fieldDecl);
 
                     // setting already defined to 'true' because of some shite with access types
                     PostPrepareVarScoping(fieldDecl, true);
@@ -226,9 +220,6 @@ namespace HapetPostPrepare
                         PostPrepareExprScoping(indDecl.IndexerParameter);
                     }
 
-                    // if it is public field/property - it should be visible in the scope in which var's class is
-                    structDecl.SubScope.DefineDeclSymbol(propDecl.Name.Name, propDecl);
-
                     // setting already defined to 'true' because of some shite with access types
                     PostPrepareVarScoping(propDecl, true);
                 }
@@ -236,9 +227,6 @@ namespace HapetPostPrepare
                 {
                     var fieldDecl = decl as AstVarDecl;
                     fieldDecl.ContainingParent = structDecl;
-
-                    // if it is public field - it should be visible in the scope in which var's class is
-                    structDecl.SubScope.DefineDeclSymbol(fieldDecl.Name.Name, fieldDecl);
 
                     // setting already defined to 'true' because of some shite with access types
                     PostPrepareVarScoping(fieldDecl, true);
@@ -272,9 +260,6 @@ namespace HapetPostPrepare
             {
                 SetScopeAndParent(decl, enumDecl, enumScope);
                 decl.ContainingParent = enumDecl;
-
-                // if it is public field/property - it should be visible in the scope in which var's class is
-                enumDecl.SubScope.DefineDeclSymbol(decl.Name.Name, decl);
 
                 // setting already defined to 'true' because of some shite with access types
                 PostPrepareVarScoping(decl, true);
@@ -401,7 +386,7 @@ namespace HapetPostPrepare
         /// </summary>
         /// <param name="varDecl">The var decl</param>
         /// <param name="alreadyDefined">It could be already defined for example by classDecl (because of public/private shite)</param>
-        private void PostPrepareVarScoping(AstVarDecl varDecl, bool alreadyDefined = false)
+        private void PostPrepareVarScoping(AstVarDecl varDecl, bool doNotDefine = false)
         {
             SetScopeAndParent(varDecl.Name, varDecl);
             SetScopeAndParent(varDecl.Type, varDecl);
@@ -420,7 +405,7 @@ namespace HapetPostPrepare
                 PostPrepareExprScoping(varDecl.Initializer);
             }
             // define it in the scope if it is not yet
-            if (!alreadyDefined)
+            if (!doNotDefine)
                 varDecl.Scope.DefineDeclSymbol(varDecl.Name.Name, varDecl);
         }
 

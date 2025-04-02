@@ -113,6 +113,14 @@ namespace HapetPostPrepare
                                 {
                                     // need to check that we do not implement it also
                                     var currF = currentPropDecls.GetSameDeclByTypeAndName(inhF, out int _);
+                                    // if parents are the same but funcs are different - one of the funcs is probably explicit impl
+                                    if (currF != null && (currF.ContainingParent == definedInOneOfTheParents.ContainingParent && currF != definedInOneOfTheParents))
+                                    {
+                                        // add it to the new dictionary
+                                        currentPropDecls.Remove(currF);
+                                        inheritedPropDecls.Add(currF);
+                                        continue;
+                                    }
                                     if (currF != null)
                                     {
                                         // the prop is implemented in parent class and current class

@@ -109,7 +109,7 @@ namespace HapetFrontend.Ast.Declarations
             if (this is AstIndexerDecl indDecl)
                 prs.Insert(0, indDecl.IndexerParameter.GetCopy());
 
-            var func = GetPropaFunc(addFirstParam, containingParent);
+            var func = GetPropaFunc(addFirstParam, false, containingParent);
             func.Parameters.AddRange(prs);
             func.Returns = new AstNestedExpr(new AstIdExpr("void", Location), null, Location);
 
@@ -122,7 +122,7 @@ namespace HapetFrontend.Ast.Declarations
                 var setBlock = new AstBlockExpr(new List<AstStatement>()
                 {
 					// the stmt is - 'this.field_Prop = value'
-					new AstAssignStmt(new AstNestedExpr(new AstIdExpr($"field_{Name.Name}"), leftPart), new AstIdExpr("value"), Location),
+					new AstAssignStmt(new AstNestedExpr(Name.GetCopy($"field_{Name.Name}"), leftPart), new AstIdExpr("value"), Location),
                 }, Location);
                 func.Body = setBlock;
             }
@@ -140,7 +140,7 @@ namespace HapetFrontend.Ast.Declarations
             if (this is AstIndexerDecl indDecl)
                 prs.Add(indDecl.IndexerParameter.GetCopy());
 
-            var func = GetPropaFunc(addFirstParam, containingParent);
+            var func = GetPropaFunc(addFirstParam, true, containingParent);
             func.Parameters.AddRange(prs);
             func.Returns = Type;
 
@@ -153,7 +153,7 @@ namespace HapetFrontend.Ast.Declarations
                 var getBlock = new AstBlockExpr(new List<AstStatement>()
                 {
 					// the stmt is - 'return this.field_Prop'
-					new AstReturnStmt(new AstNestedExpr(new AstIdExpr($"field_{Name.Name}"), leftPart), Location),
+					new AstReturnStmt(new AstNestedExpr(Name.GetCopy($"field_{Name.Name}"), leftPart), Location),
                 }, Location);
                 func.Body = getBlock;
             }
@@ -164,13 +164,13 @@ namespace HapetFrontend.Ast.Declarations
             return func;
         }
 
-        private AstFuncDecl GetPropaFunc(bool addFirstParam, AstDeclaration containingParent)
+        private AstFuncDecl GetPropaFunc(bool addFirstParam, bool isGet, AstDeclaration containingParent)
         {
             AstFuncDecl func = new AstFuncDecl(
                 new List<AstParamDecl>(),
                 null,
                 null,
-                new AstIdExpr($"set_{Name.Name}"),
+                (isGet ? Name.GetCopy($"get_{Name.Name}") : Name.GetCopy($"set_{Name.Name}")),
                 "",
                 Location);
             func.SpecialKeys.AddRange(SpecialKeys);

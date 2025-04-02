@@ -221,17 +221,7 @@ namespace HapetFrontend.Extensions
             return bestMatch;
         }
 
-        public static AstDeclaration GetSameDeclByTypeAndName(this List<AstDeclaration> decls, AstDeclaration decl)
-        {
-            return decls.FirstOrDefault(x => x.Name.Name == decl.Name.Name && x.Type.OutType == decl.Type.OutType);
-        }
-
-        public static AstVarDecl GetSameDeclByTypeAndName(this List<AstVarDecl> decls, AstDeclaration decl)
-        {
-            return decls.FirstOrDefault(x => x.Name.Name == decl.Name.Name && x.Type.OutType == decl.Type.OutType);
-        }
-
-        public static AstPropertyDecl GetSameDeclByTypeAndName(this List<AstPropertyDecl> decls, AstDeclaration decl, out int index)
+        public static AstDeclaration GetSameDeclByTypeAndNamePure(this List<AstDeclaration> decls, AstDeclaration decl, out int index)
         {
             for (int i = 0; i < decls.Count; ++i)
             {
@@ -241,9 +231,48 @@ namespace HapetFrontend.Extensions
                     index = i;
                     return x;
                 }
+
+                // additional info checks
+                string interfaceSearchName = "";
+                if (decl.Name.AdditionalData != null)
+                    interfaceSearchName = (decl.Name.AdditionalData.OutType as ClassType).Declaration.Name.Name;
+                string pureSearchName = decl.Name.Name.GetClassNameWithoutNamespace();
+                string interfaceName = "";
+                if (x.Name.AdditionalData != null)
+                    interfaceName = (x.Name.AdditionalData.OutType as ClassType).Declaration.Name.Name;
+                string pureName = x.Name.Name.GetClassNameWithoutNamespace();
+
+                bool areNamesEqual = false;
+                if (string.IsNullOrWhiteSpace(interfaceSearchName) && !string.IsNullOrWhiteSpace(interfaceName))
+                {
+                    string parentSearch = decl.ContainingParent.Name.Name;
+                    if (parentSearch == interfaceName && pureName == pureSearchName)
+                        areNamesEqual = true;
+                }
+                else if (!string.IsNullOrWhiteSpace(interfaceSearchName) && string.IsNullOrWhiteSpace(interfaceName))
+                {
+                    string parentSearch = x.ContainingParent.Name.Name;
+                    if (parentSearch == interfaceSearchName && pureName == pureSearchName)
+                        areNamesEqual = true;
+                }
+                if (areNamesEqual && x.Type.OutType == decl.Type.OutType)
+                {
+                    index = i;
+                    return x;
+                }
             }
             index = -1;
             return null;
+        }
+
+        public static AstVarDecl GetSameDeclByTypeAndName(this List<AstVarDecl> decls, AstDeclaration decl, out int index)
+        {
+            return (new List<AstDeclaration>(decls)).GetSameDeclByTypeAndNamePure(decl, out index) as AstVarDecl;
+        }
+
+        public static AstPropertyDecl GetSameDeclByTypeAndName(this List<AstPropertyDecl> decls, AstDeclaration decl, out int index)
+        {
+            return (new List<AstDeclaration>(decls)).GetSameDeclByTypeAndNamePure(decl, out index) as AstPropertyDecl;
         }
 
         public static List<AstNestedExpr> GetNestedList(this List<AstExpression> exprs)

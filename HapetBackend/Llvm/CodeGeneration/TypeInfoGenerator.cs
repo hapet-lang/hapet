@@ -175,7 +175,7 @@ namespace HapetBackend.Llvm
                 List<int> offsets = new List<int>();
                 foreach (var iF in intrf.Declaration.AllRawFields)
                 {
-                    int fIndex = allClassFields.IndexOf(allClassFields.GetSameDeclByTypeAndName(iF));
+                    allClassFields.GetSameDeclByTypeAndName(iF, out var fIndex);
                     int offset = GetOffsetTo(allClassFields, fIndex);
                     offsets.Add(offset);
                 }

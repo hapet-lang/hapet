@@ -14,6 +14,7 @@ public static class Program
     }
 }
 
+
 public interface Test1
 {
     int AnimeFunc { get; }
@@ -26,12 +27,35 @@ public interface Test2
 
 public class Base : Test1, Test2
 {
-    int Test1.AnimeFunc { get {
-        return 4;
-    }}
+    int Test1.AnimeFunc { get; }
 
     int Test2.AnimeFunc { get {
         return 5;
     }}
 }
 
+
+/*
+public interface Test1
+{
+    int AnimeFunc();
+}
+
+public interface Test2
+{
+    int AnimeFunc();
+}
+
+public class Base : Test1, Test2
+{
+    int Test1.AnimeFunc()
+    {
+        return 5;
+    }
+
+    int Test2.AnimeFunc()
+    {
+        return 4;
+    }
+}
+*/
