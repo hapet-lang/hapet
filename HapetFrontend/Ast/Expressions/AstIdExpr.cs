@@ -57,6 +57,7 @@ namespace HapetFrontend.Ast.Expressions
             {
                 FindSymbol = FindSymbol,
                 Suffix = Suffix,
+                AdditionalData = AdditionalData?.GetDeepCopy() as AstNestedExpr,
                 IsCompileTimeValue = IsCompileTimeValue,
                 OutType = OutType,
                 OutValue = OutValue,
@@ -77,6 +78,7 @@ namespace HapetFrontend.Ast.Expressions
             var newId = new AstIdExpr(newName, Location)
             {
                 Suffix = this.Suffix,
+                AdditionalData = this.AdditionalData,
                 Parent = this.Parent,
                 Scope = this.Scope,
                 IsCompileTimeValue = this.IsCompileTimeValue,

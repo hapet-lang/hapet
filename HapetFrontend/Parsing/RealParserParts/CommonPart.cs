@@ -23,7 +23,7 @@ namespace HapetFrontend.Parsing
         {
             // lookahead cringe
             UpdateLookAheadLocation();
-            return ParseIdentifierExpressionInternal(customMessage, identType, allowDots, allowGenerics, iniNested, lookAhead);
+            return ParseIdentifierExpressionInternal(customMessage, identType, allowDots, allowGenerics, iniNested, lookAhead, expectIdent);
         }
 
         private AstNestedExpr ParseIdentifierExpressionInternal(MessageResolver customMessage = null, TokenType identType = TokenType.Identifier, 

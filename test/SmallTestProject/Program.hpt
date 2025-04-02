@@ -8,31 +8,30 @@ public static class Program
     public static int Main(string[] args)
     {
         Base b = new Base();
-        var c = b as Test2;
-        return b.AnimeFunc() + c.AnimeFunc();
+        var c = b as Test1;
+        var d = b as Test2;
+        return d.AnimeFunc + c.AnimeFunc;
     }
 }
 
 public interface Test1
 {
-    int AnimeFunc();
+    int AnimeFunc { get; }
 }
 
 public interface Test2
 {
-    int AnimeFunc();
+    int AnimeFunc { get; }
 }
 
 public class Base : Test1, Test2
 {
-    public int AnimeFunc() 
-    {
+    int Test1.AnimeFunc { get {
         return 4;
-    }
+    }}
 
-    int Test2.AnimeFunc()
-    {
-        return 2;
-    }
+    int Test2.AnimeFunc { get {
+        return 5;
+    }}
 }
 

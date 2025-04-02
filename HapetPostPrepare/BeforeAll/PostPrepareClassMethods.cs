@@ -82,7 +82,9 @@ namespace HapetPostPrepare
                 {
                     if (j == i)
                         continue;
-                    if (allFieldsAndProps[i].Name.Name == allFieldsAndProps[j].Name.Name)
+                    if (allFieldsAndProps[i].Name.Name == allFieldsAndProps[j].Name.Name &&
+                        allFieldsAndProps[i].Name.AdditionalData == null &&
+                        allFieldsAndProps[j].Name.AdditionalData == null)
                     {
                         // TODO: show previous field decl
                         _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, allFieldsAndProps[j], [], ErrorCode.Get(CTEN.ClassPropsFieldsSame));
@@ -173,7 +175,10 @@ namespace HapetPostPrepare
                 {
                     if (j == i)
                         continue;
-                    if (allFieldsAndProps[i].Name.Name == allFieldsAndProps[j].Name.Name)
+                    // if have the same names and NOT explicits
+                    if (allFieldsAndProps[i].Name.Name == allFieldsAndProps[j].Name.Name && 
+                        allFieldsAndProps[i].Name.AdditionalData == null &&
+                        allFieldsAndProps[j].Name.AdditionalData == null)
                     {
                         // TODO: show previous field decl
                         _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, allFieldsAndProps[j], [], ErrorCode.Get(CTEN.ClassPropsFieldsSame));
