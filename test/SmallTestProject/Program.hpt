@@ -7,7 +7,7 @@ public static class Program
 {
     public static int Main(string[] args)
     {
-        bool a = true;
+        bool a = false;
         int b = a ? 4 : 6;
         return b;
     }

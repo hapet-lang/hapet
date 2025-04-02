@@ -49,6 +49,7 @@ namespace HapetBackend.Llvm
                 case AstNestedExpr nestExpr: return GenerateNestedExpr(nestExpr, getPtr);
                 case AstArrayCreateExpr arrayCreateExpr: return GenerateArrayCreateExprCode(arrayCreateExpr, getPtr);
                 case AstArrayAccessExpr arrayAccessExpr: return GenerateArrayAccessExprCode(arrayAccessExpr, getPtr);
+                case AstTernaryExpr ternaryExpr: return GenerateTernaryExprCode(ternaryExpr);
 
                 case AstNullExpr nullExpr: return GenerateNullExprCode(nullExpr);
 
@@ -65,7 +66,7 @@ namespace HapetBackend.Llvm
 
                 default:
                     {
-                        _messageHandler.ReportMessage(_currentSourceFile.Text, expr, [expr.ToString()], ErrorCode.Get(CTEN.StmtNotImplemented));
+                        _messageHandler.ReportMessage(_currentSourceFile.Text, expr, [expr.AAAName], ErrorCode.Get(CTEN.StmtNotImplemented));
                         return default;
                     }
             }
@@ -931,6 +932,42 @@ namespace HapetBackend.Llvm
 
             _messageHandler.ReportMessage(_currentSourceFile.Text, expr, [HapetType.AsString(expr.ObjectName.OutType)], ErrorCode.Get(CTEN.ArrayAccessNotGenerate));
             return default;
+        }
+
+        private unsafe LLVMValueRef GenerateTernaryExprCode(AstTernaryExpr expr)
+        {
+            // WARN: almost the same as AstIfStmt!!!
+
+            var bbBody = _lastFunctionValueRef.AppendBasicBlock($"tern.body");
+
+            // creating other blocks
+            var bbElse = _context.CreateBasicBlock($"tern.else");
+            var bbEnd = _context.CreateBasicBlock($"tern.end");
+
+            // tmp var
+            var varPtr = CreateLocalVariable(expr.OutType, "tmpTernVar");
+
+            // building the condition
+            var cmp = GenerateExpressionCode(expr.Condition);
+            _builder.BuildCondBr(cmp, bbBody, bbElse);
+
+            // body
+            _builder.PositionAtEnd(bbBody);
+            AssignToVar(varPtr, GenerateExpressionCode(expr.TrueExpr));
+            _builder.BuildBr(bbEnd);
+
+            // else
+            LLVM.AppendExistingBasicBlock(_lastFunctionValueRef, bbElse);
+            _builder.PositionAtEnd(bbElse);
+            // generating else code
+            AssignToVar(varPtr, GenerateExpressionCode(expr.FalseExpr));
+            _builder.BuildBr(bbEnd);
+
+            // appending them sooner
+            LLVM.AppendExistingBasicBlock(_lastFunctionValueRef, bbEnd);
+            _builder.PositionAtEnd(bbEnd);
+
+            return _builder.BuildLoad2(HapetTypeToLLVMType(expr.OutType), varPtr, "ternLoaded");
         }
 
         private unsafe LLVMValueRef GenerateNullExprCode(AstNullExpr expr)
