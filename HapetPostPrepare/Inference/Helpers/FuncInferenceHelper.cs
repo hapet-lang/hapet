@@ -32,6 +32,9 @@ namespace HapetPostPrepare
             // filter the candidates
             foreach (var cand in candidates)
             {
+                // if set to non-null - should be checked in every frame of arg check :)
+                AstParamDecl paramsParamDecl = null;
+
                 var funcDecl = cand.Decl as AstFuncDecl;
                 int score = 0;
                 List<AstExpression> casts = new List<AstExpression>();
@@ -39,17 +42,30 @@ namespace HapetPostPrepare
                 {
                     var arg = args[i];
                     var argExpr = arg.Expr;
-                    var par = funcDecl.Parameters[i];
 
-                    if (argExpr.OutType == par.Type.OutType)
+                    var par = paramsParamDecl ?? GetParameterByIndexOrName(funcDecl.Parameters, arg, i);
+                    // break loop if there is no param with specified name
+                    if (par == null)
+                        break;
+
+                    // cringe to handle 'params' kw
+                    var parType = par.Type;
+                    if (par.IsParams) 
+                    {
+                        paramsParamDecl = par; 
+                        // because usually like 'params object[] pivo'
+                        // but we need to compare pure 'object' type then :)
+                        parType = (par.Type as AstArrayExpr).SubExpression; 
+                    }
+
+                    if (argExpr.OutType == parType.OutType)
                     {
                         score += 0;
                         casts.Add(argExpr);
                         continue;
                     }
-
                     CastResult castResult = new CastResult();
-                    var cst = PostPrepareExpressionWithType(par.Type, argExpr, castResult);
+                    var cst = PostPrepareExpressionWithType(parType, argExpr, castResult);
                     if (castResult.CouldBeCasted)
                     {
                         score += 1;
@@ -58,16 +74,16 @@ namespace HapetPostPrepare
                     }
                     else if (castResult.CouldBeNarrowed)
                     {
-                        score += 2;
+                        score += 3;
                         casts.Add(argExpr);
                         continue;
                     }
                     // check if it is a generic parameter
-                    else if (par.Type.OutType is PointerType ptrT && 
+                    else if (parType.OutType is PointerType ptrT && 
                         ptrT.TargetType is ClassType clsT &&
                         clsT.Declaration.IsGenericType)
                     {
-                        score += 3;
+                        score += 2;
                         casts.Add(argExpr);
                         continue;
                     }
@@ -92,6 +108,15 @@ namespace HapetPostPrepare
             }
 
             return bestMatch;
+        }
+
+        public static AstParamDecl GetParameterByIndexOrName(List<AstParamDecl> pars, AstArgumentExpr arg, int fallbackIndex)
+        {
+            // if there is no name in arg - return by index
+            if (arg.Name == null)
+                return pars[fallbackIndex];
+
+            return pars.FirstOrDefault(x => x.Name.Name == arg.Name.Name);
         }
 
         private static List<DeclSymbol> GetAllCandidates(string name, AstCallExpr callExpr, AstDeclaration declToSearch, List<AstArgumentExpr> args)
