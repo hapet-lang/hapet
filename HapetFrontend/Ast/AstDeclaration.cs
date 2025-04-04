@@ -127,5 +127,18 @@ namespace HapetFrontend.Ast
             }
             return totalSize;
         }
+
+        /// <summary>
+        /// Helper function that returns inherited shite for class and struct decls
+        /// </summary>
+        /// <returns>Inhertied types</returns>
+        public List<AstNestedExpr> GetInheritedTypes()
+        {
+            if (this is AstClassDecl clsDecl)
+                return clsDecl.InheritedFrom;
+            else if (this is AstStructDecl strDecl)
+                return strDecl.InheritedFrom;
+            return new List<AstNestedExpr>();
+        }
     }
 }

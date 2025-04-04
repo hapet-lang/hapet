@@ -7,132 +7,29 @@ using HapetFrontend.Extensions;
 using HapetFrontend.Helpers;
 using HapetFrontend.Errors;
 using HapetFrontend.Ast.Expressions;
+using System.Collections.Generic;
 
 namespace HapetPostPrepare
 {
     public partial class PostPrepare
     {
-        public DeclSymbol GetFuncFromCandidates(string name, AstCallExpr callExpr, List<AstExpression> args, Scope scopeToSearch, 
+        public DeclSymbol GetFuncFromCandidates(string name, AstCallExpr callExpr, List<AstExpression> args, 
             AstDeclaration declToSearch, out List<AstExpression> castsToBeDone)
         {
             // getting only the Class::AndFuncName without params
-            var splitted = name.Split('(');
-            string classWithFuncName = splitted[0];
+            string classWithFuncName = name.GetFuncWithClassName();
 
             int bestScore = int.MaxValue;
             DeclSymbol bestMatch = null;
             castsToBeDone = new List<AstExpression>();
 
-            // skip non funcs
-            // skip if different amount of params/args
-            // also get parent funcs
-            List<DeclSymbol> candidates = new List<DeclSymbol>();
-            if (declToSearch is AstClassDecl clsToSearch)
-            {
-                var currCls = clsToSearch;
-                while (currCls != null)
-                {
-                    candidates.AddRange(GetCandidatesInScope(classWithFuncName, currCls.SubScope)
-                        .Where(x => (x.Decl is AstFuncDecl funcDecl && funcDecl.Parameters.Count == args.Count)).ToList());
-
-                    // cringe check for parent :)
-                    currCls = currCls.InheritedFrom.Count > 0 ?
-                        ((currCls.InheritedFrom[0].OutType as ClassType).Declaration.IsInterface ? null :
-                        (currCls.InheritedFrom[0].OutType as ClassType).Declaration) : null;
-                }
-
-                // go all over interfaces
-                currCls = clsToSearch;
-                while (currCls != null)
-                {
-                    foreach (var inh in currCls.InheritedFrom)
-                    {
-                        var inhDecl = (inh.OutType as ClassType).Declaration;
-                        if (!inhDecl.IsInterface)
-                            continue;
-
-                        candidates.AddRange(GetCandidatesInScope(classWithFuncName, inhDecl.SubScope)
-                            .Where(x => (x.Decl is AstFuncDecl funcDecl && funcDecl.Parameters.Count == args.Count)).ToList());
-                    }
-
-                    // cringe check for parent :)
-                    currCls = currCls.InheritedFrom.Count > 0 ?
-                        ((currCls.InheritedFrom[0].OutType as ClassType).Declaration.IsInterface ? null :
-                        (currCls.InheritedFrom[0].OutType as ClassType).Declaration) : null;
-                }
-            }
-            else if (declToSearch is AstStructDecl strToSearch)
-            {
-                AstDeclaration currStr = strToSearch;
-                while (currStr != null)
-                {
-                    candidates.AddRange(GetCandidatesInScope(classWithFuncName, currStr.SubScope)
-                        .Where(x => (x.Decl is AstFuncDecl funcDecl && funcDecl.Parameters.Count == args.Count)).ToList());
-
-                    // cringe check for parent :)
-                    if (currStr is AstStructDecl currStrStruct)
-                    {
-                        // TODO: also could inherit structs
-                        currStr = currStrStruct.InheritedFrom.Count > 0 ?
-                            ((currStrStruct.InheritedFrom[0].OutType as ClassType).Declaration.IsInterface ? null :
-                            (currStrStruct.InheritedFrom[0].OutType as ClassType).Declaration) : null;
-                    }
-                    else if (currStr is AstClassDecl currStrClass)
-                    {
-                        currStr = currStrClass.InheritedFrom.Count > 0 ?
-                            ((currStrClass.InheritedFrom[0].OutType as ClassType).Declaration.IsInterface ? null :
-                            (currStrClass.InheritedFrom[0].OutType as ClassType).Declaration) : null;
-                    }
-                }
-
-                // go all over interfaces
-                currStr = strToSearch;
-                while (currStr != null)
-                {
-                    if (currStr is AstStructDecl currStrStruct)
-                    {
-                        foreach (var inh in currStrStruct.InheritedFrom)
-                        {
-                            // TODO: could be a struct inh
-                            var inhDecl = (inh.OutType as ClassType).Declaration;
-                            if (!inhDecl.IsInterface)
-                                continue;
-
-                            candidates.AddRange(GetCandidatesInScope(classWithFuncName, inhDecl.SubScope)
-                                .Where(x => (x.Decl is AstFuncDecl funcDecl && funcDecl.Parameters.Count == args.Count)).ToList());
-                        }
-
-                        // cringe check for parent :)
-                        currStr = currStrStruct.InheritedFrom.Count > 0 ?
-                            ((currStrStruct.InheritedFrom[0].OutType as ClassType).Declaration.IsInterface ? null :
-                            (currStrStruct.InheritedFrom[0].OutType as ClassType).Declaration) : null;
-                    }
-                    else if (currStr is AstClassDecl currStrClass)
-                    {
-                        foreach (var inh in currStrClass.InheritedFrom)
-                        {
-                            var inhDecl = (inh.OutType as ClassType).Declaration;
-                            if (!inhDecl.IsInterface)
-                                continue;
-
-                            candidates.AddRange(GetCandidatesInScope(classWithFuncName, inhDecl.SubScope)
-                                .Where(x => (x.Decl is AstFuncDecl funcDecl && funcDecl.Parameters.Count == args.Count)).ToList());
-                        }
-
-                        // cringe check for parent :)
-                        currStr = currStrClass.InheritedFrom.Count > 0 ?
-                            ((currStrClass.InheritedFrom[0].OutType as ClassType).Declaration.IsInterface ? null :
-                            (currStrClass.InheritedFrom[0].OutType as ClassType).Declaration) : null;
-                    }
-                }
-            }
-            candidates.AddRange(GetCandidates(classWithFuncName, scopeToSearch)
-                    .Where(x => (x.Decl is AstFuncDecl funcDecl && funcDecl.Parameters.Count == args.Count)).ToList());
-            candidates = candidates.Distinct().ToList();
+            // getting all the candidates
+            List<DeclSymbol> candidates = GetAllCandidates(name, callExpr, declToSearch, args);
 
             // handle explicit shite
             CheckAndPrepareExplicitFuncs(candidates, callExpr);
 
+            // filter the candidates
             foreach (var cand in candidates)
             {
                 var funcDecl = cand.Decl as AstFuncDecl;
@@ -196,24 +93,63 @@ namespace HapetPostPrepare
             return bestMatch;
         }
 
-        private static List<DeclSymbol> GetCandidates(string classWithFuncName, Scope scopeToSearch, List<DeclSymbol> cands = null)
+        private static List<DeclSymbol> GetAllCandidates(string name, AstCallExpr callExpr, AstDeclaration declToSearch, List<AstExpression> args)
         {
-            List<DeclSymbol> candidates = cands ?? new List<DeclSymbol>();
-            // search for the func in the scope
-            foreach (var (k, d) in GetDecls(scopeToSearch))
-            {
-                if (k.StartsWith(classWithFuncName) && d != null)
-                    candidates.Add(d);
-            }
-            // search in parent scope
-            if (scopeToSearch.Parent != null)
-                GetCandidates(classWithFuncName, scopeToSearch.Parent, candidates);
+            List<DeclSymbol> candidates = new List<DeclSymbol>();
+
+            candidates.AddRange(Candidates_Step1_InheritedAndCurrent(name, declToSearch));              // step 1
+            candidates.AddRange(Candidates_Step2_CurrentScopeAndParents(name, callExpr));               // step 2
+            candidates = Candidate_Step3_MinAmountParams(candidates.Distinct(), args.Count).ToList();   // step 3
+
             return candidates;
         }
 
-        private static List<DeclSymbol> GetCandidatesInScope(string classWithFuncName, Scope scopeToSearch, List<DeclSymbol> cands = null)
+        private static List<DeclSymbol> Candidates_Step1_InheritedAndCurrent(string name, AstDeclaration declToSearch)
         {
-            List<DeclSymbol> candidates = cands ?? new List<DeclSymbol>();
+            List<DeclSymbol> candidates = new List<DeclSymbol>();
+
+            // go all over inherited types - skip interfaces
+
+            // add current decl subscope' decls
+            candidates.AddRange(GetCandidatesInScope(name, declToSearch.SubScope));
+
+            // get only inherited parents - that has implementations
+            foreach (var inh in declToSearch.GetInheritedTypes())
+            {
+                var inhDecl = (inh.OutType as ClassType).Declaration;
+                if (inhDecl.IsInterface)
+                    continue;
+
+                // get parent class decls
+                candidates.AddRange(Candidates_Step1_InheritedAndCurrent(name, inhDecl));
+            }
+            return candidates;
+        }
+
+        private static List<DeclSymbol> Candidates_Step2_CurrentScopeAndParents(string name, AstCallExpr callExpr)
+        {
+            return GetCandidatesInScope(name, callExpr.Scope, searchParent: true); // also search parents
+        }
+
+        private static IEnumerable<DeclSymbol> Candidate_Step3_MinAmountParams(IEnumerable<DeclSymbol> decls, int argsAmount)
+        {
+            foreach (var d in decls)
+            {
+                var funcDecl = d.Decl as AstFuncDecl;
+
+                // allow if func has bigger amount of params than args
+                if (funcDecl.Parameters.Count >= argsAmount)
+                    yield return d;
+
+                // if not bigger - check if the last param with 'params' cringe
+
+            }
+        }
+
+        #region Helpers
+        private static List<DeclSymbol> GetCandidatesInScope(string classWithFuncName, Scope scopeToSearch, bool searchParent = false)
+        {
+            List<DeclSymbol> candidates = new List<DeclSymbol>();
             // search for the func in the scope
             foreach (var (k, d) in GetDecls(scopeToSearch))
             {
@@ -250,6 +186,11 @@ namespace HapetPostPrepare
                     }
                 }
             }
+
+            // if search in parent scopes
+            if (searchParent && scopeToSearch.Parent != null)
+                GetCandidatesInScope(classWithFuncName, scopeToSearch.Parent, searchParent);
+
             return candidates;
         }
 
@@ -266,6 +207,7 @@ namespace HapetPostPrepare
                 yield return (k, scope.SymbolTable[k] as DeclSymbol);
             }
         }
+        #endregion
 
         private void CheckAndPrepareExplicitFuncs(List<DeclSymbol> decls, AstCallExpr callExpr)
         {
