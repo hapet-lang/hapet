@@ -13,7 +13,7 @@ namespace HapetPostPrepare
 {
     public partial class PostPrepare
     {
-        public DeclSymbol GetFuncFromCandidates(string name, AstCallExpr callExpr, List<AstExpression> args, 
+        public DeclSymbol GetFuncFromCandidates(string name, AstCallExpr callExpr, List<AstArgumentExpr> args, 
             AstDeclaration declToSearch, out List<AstExpression> castsToBeDone)
         {
             // getting only the Class::AndFuncName without params
@@ -24,7 +24,7 @@ namespace HapetPostPrepare
             castsToBeDone = new List<AstExpression>();
 
             // getting all the candidates
-            List<DeclSymbol> candidates = GetAllCandidates(name, callExpr, declToSearch, args);
+            List<DeclSymbol> candidates = GetAllCandidates(classWithFuncName, callExpr, declToSearch, args);
 
             // handle explicit shite
             CheckAndPrepareExplicitFuncs(candidates, callExpr);
@@ -38,17 +38,18 @@ namespace HapetPostPrepare
                 for (int i = 0; i < args.Count; ++i)
                 {
                     var arg = args[i];
+                    var argExpr = arg.Expr;
                     var par = funcDecl.Parameters[i];
 
-                    if (arg.OutType == par.Type.OutType)
+                    if (argExpr.OutType == par.Type.OutType)
                     {
                         score += 0;
-                        casts.Add(arg);
+                        casts.Add(argExpr);
                         continue;
                     }
 
                     CastResult castResult = new CastResult();
-                    var cst = PostPrepareExpressionWithType(par.Type, arg, castResult);
+                    var cst = PostPrepareExpressionWithType(par.Type, argExpr, castResult);
                     if (castResult.CouldBeCasted)
                     {
                         score += 1;
@@ -58,7 +59,7 @@ namespace HapetPostPrepare
                     else if (castResult.CouldBeNarrowed)
                     {
                         score += 2;
-                        casts.Add(arg);
+                        casts.Add(argExpr);
                         continue;
                     }
                     // check if it is a generic parameter
@@ -67,7 +68,7 @@ namespace HapetPostPrepare
                         clsT.Declaration.IsGenericType)
                     {
                         score += 3;
-                        casts.Add(arg);
+                        casts.Add(argExpr);
                         continue;
                     }
 
@@ -93,7 +94,7 @@ namespace HapetPostPrepare
             return bestMatch;
         }
 
-        private static List<DeclSymbol> GetAllCandidates(string name, AstCallExpr callExpr, AstDeclaration declToSearch, List<AstExpression> args)
+        private static List<DeclSymbol> GetAllCandidates(string name, AstCallExpr callExpr, AstDeclaration declToSearch, List<AstArgumentExpr> args)
         {
             List<DeclSymbol> candidates = new List<DeclSymbol>();
 
@@ -128,6 +129,8 @@ namespace HapetPostPrepare
 
         private static List<DeclSymbol> Candidates_Step2_CurrentScopeAndParents(string name, AstCallExpr callExpr)
         {
+            if (callExpr == null)
+                return new List<DeclSymbol>();
             return GetCandidatesInScope(name, callExpr.Scope, searchParent: true); // also search parents
         }
 
@@ -141,8 +144,13 @@ namespace HapetPostPrepare
                 if (funcDecl.Parameters.Count >= argsAmount)
                     yield return d;
 
-                // if not bigger - check if the last param with 'params' cringe
+                // skip if 0 params - because args amount is non zero!!!
+                if (funcDecl.Parameters.Count == 0)
+                    continue;
 
+                // if not bigger - check if the last param with 'params' cringe - allow
+                if (funcDecl.Parameters.Last().IsParams)
+                    yield return d;
             }
         }
 
@@ -245,7 +253,7 @@ namespace HapetPostPrepare
 
             if (thereWasExplicitShite && decls.Count == 0)
             {
-                _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, callExpr.FuncName, [callExpr.FuncName.Name], ErrorCode.Get(CTEN.ExplicitMethodCall));
+                _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, callExpr?.FuncName, [callExpr?.FuncName.Name], ErrorCode.Get(CTEN.ExplicitMethodCall));
             }
         }
     }

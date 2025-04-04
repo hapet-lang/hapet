@@ -1026,9 +1026,12 @@ namespace HapetPostPrepare
                 // getting the name but with object first param
                 var newName = $"{typeName}::get_indexer__({HapetType.AsString(firstParamType)}:{HapetType.AsString(arrayAccExpr.ParameterExpr.OutType)})";
 
-                List<AstExpression> argsWithStructParam = new List<AstExpression>() { arrayAccExpr.ParameterExpr };
-                argsWithStructParam.Insert(0, pseudoFirstArg);
-                var smbl = GetFuncFromCandidates(newName, null, argsWithStructParam, subScope, declItself, out var casts);
+                List<AstArgumentExpr> argsWithStructParam = new List<AstArgumentExpr>() 
+                { 
+                    new AstArgumentExpr(pseudoFirstArg),
+                    new AstArgumentExpr(arrayAccExpr.ParameterExpr)
+                };
+                var smbl = GetFuncFromCandidates(newName, null, argsWithStructParam, declItself, out var casts);
 
                 if (smbl != null && smbl.Decl is AstFuncDecl funcDecl)
                 {

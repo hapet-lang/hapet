@@ -75,7 +75,7 @@ namespace HapetPostPrepare
                 if (cls.IsNestedDecl)
                 {
                     var candidate = GetFuncFromCandidates($"{cls.ParentDecl.Name.Name.GetClassNameWithoutNamespace()}_stor", 
-                        null, [], cls.ParentDecl.SubScope, cls.ParentDecl, out var _);
+                        null, [], cls.ParentDecl, out var _);
                     if (candidate == null)
                     {
                         // TODO: error here 
