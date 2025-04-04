@@ -9,6 +9,7 @@ using HapetFrontend.Helpers;
 using HapetFrontend.Parsing;
 using HapetFrontend.Scoping;
 using HapetFrontend.Types;
+using HapetPostPrepare;
 using LLVMSharp.Interop;
 using System;
 using System.Text;
@@ -499,7 +500,8 @@ namespace HapetBackend.Llvm
 
                 // other args
                 List<LLVMValueRef> args = new List<LLVMValueRef>() { v };
-                foreach (var a in expr.Arguments)
+                List<AstArgumentExpr> normalArgs = _postPreparer.GenerateNormalArguments((ctorSymbol.Decl as AstFuncDecl).Parameters, expr.Arguments);
+                foreach (var a in normalArgs)
                 {
                     args.Add(GenerateExpressionCode(a));
                 }
@@ -533,7 +535,8 @@ namespace HapetBackend.Llvm
 
                 // other args
                 List<LLVMValueRef> args = new List<LLVMValueRef>() { v };
-                foreach (var a in expr.Arguments)
+                List<AstArgumentExpr> normalArgs = _postPreparer.GenerateNormalArguments((ctorSymbol.Decl as AstFuncDecl).Parameters, expr.Arguments);
+                foreach (var a in normalArgs)
                 {
                     args.Add(GenerateExpressionCode(a));
                 }
@@ -615,7 +618,8 @@ namespace HapetBackend.Llvm
                     else
                         args.Add(GenerateExpressionCode(expr.TypeOrObjectName));
                 }
-                foreach (var a in expr.Arguments)
+                List<AstArgumentExpr> normalArgs = _postPreparer.GenerateNormalArguments(fncType.Declaration.Parameters, expr.Arguments);
+                foreach (var a in normalArgs)
                 {
                     args.Add(GenerateExpressionCode(a));
                 }
@@ -654,7 +658,8 @@ namespace HapetBackend.Llvm
 
                 // args shite
                 List<LLVMValueRef> args = new List<LLVMValueRef>();
-                foreach (var a in expr.Arguments)
+                List<AstArgumentExpr> normalArgs = _postPreparer.GenerateNormalArguments(delType.Declaration.Parameters, expr.Arguments);
+                foreach (var a in normalArgs)
                 {
                     args.Add(GenerateExpressionCode(a));
                 }

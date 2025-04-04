@@ -8,6 +8,7 @@ using HapetFrontend.Helpers;
 using HapetFrontend.Errors;
 using HapetFrontend.Ast.Expressions;
 using System.Collections.Generic;
+using System.Reflection.Metadata.Ecma335;
 
 namespace HapetPostPrepare
 {
@@ -43,7 +44,7 @@ namespace HapetPostPrepare
                     var arg = args[i];
                     var argExpr = arg.Expr;
 
-                    var par = paramsParamDecl ?? GetParameterByIndexOrName(funcDecl.Parameters, arg, i);
+                    var par = paramsParamDecl ?? GetParameterByIndexOrName(funcDecl.Parameters, arg, i, out var _);
                     // break loop if there is no param with specified name
                     if (par == null)
                         break;
@@ -110,13 +111,71 @@ namespace HapetPostPrepare
             return bestMatch;
         }
 
-        public static AstParamDecl GetParameterByIndexOrName(List<AstParamDecl> pars, AstArgumentExpr arg, int fallbackIndex)
+        public static AstParamDecl GetParameterByIndexOrName(List<AstParamDecl> pars, AstArgumentExpr arg, int fallbackIndex, out int realIndex)
         {
             // if there is no name in arg - return by index
             if (arg.Name == null)
-                return pars[fallbackIndex];
+            {
+                realIndex = fallbackIndex;
+                return pars.Count > fallbackIndex ? pars[fallbackIndex] : null;
+            }
 
-            return pars.FirstOrDefault(x => x.Name.Name == arg.Name.Name);
+            for (int i = 0; i < pars.Count; ++i)
+            {
+                if (pars[i].Name.Name == arg.Name.Name)
+                {
+                    realIndex = i;
+                    return pars[i];
+                }
+            }
+            realIndex = -1;
+            return null;
+        }
+
+        public List<AstArgumentExpr> GenerateNormalArguments(List<AstParamDecl> pars, List<AstArgumentExpr> args)
+        {
+            AstArgumentExpr[] normalArgs = new AstArgumentExpr[pars.Count];
+            for (int i = 0; i < args.Count; ++i)
+            {
+                var currArg = args[i];
+                var currPar = GetParameterByIndexOrName(pars, currArg, i, out int realIndex);
+
+                // special case for 'params' cringe
+                if (currPar.IsParams)
+                {
+                    // pizdec
+                    var exprs = args.Select(x => x.Expr).Skip(i);
+                    var arrCreate = new AstArrayCreateExpr(
+                        GetPreparedAst(currArg.Expr.OutType, currArg), 
+                        new List<AstExpression>() { null }, 
+                        exprs.ToList(), 
+                        new Location(exprs.First().Beginning, exprs.Last().Ending)
+                    );
+                    normalArgs[realIndex] = new AstArgumentExpr(arrCreate); // set and go out
+                    break;
+                }
+
+                normalArgs[realIndex] = currArg;
+            }
+
+            // check for unset shite - try use default values
+            for (int i = 0; i < pars.Count; ++i)
+            {
+                var currPar = pars[i];
+
+                // skip params that do not have default values - they are already set
+                if (currPar.DefaultValue == null)
+                    continue;
+
+                // search for the arg - skip if the was an arg for the param
+                var theArg = args.FirstOrDefault(x => x.Name.Name == currPar.Name.Name);
+                if (theArg != null)
+                    continue;
+
+                normalArgs[i] = new AstArgumentExpr(currPar.DefaultValue);
+            }
+
+            return normalArgs.ToList();
         }
 
         private static List<DeclSymbol> GetAllCandidates(string name, AstCallExpr callExpr, AstDeclaration declToSearch, List<AstArgumentExpr> args)
