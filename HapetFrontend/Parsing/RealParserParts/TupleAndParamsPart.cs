@@ -91,8 +91,16 @@ namespace HapetFrontend.Parsing
             AstIdExpr pname = null;
             AstStatement ptype = null;
             AstExpression defaultValue = null;
+            bool isParams = false;
 
             TokenLocation beg = null, end = null;
+
+            // check for 'params'
+            if (CheckToken(TokenType.KwParams))
+            {
+                isParams = true;
+                NextToken();
+            }
 
             // do not allow multiply here!!! read in desc - why!!!
             inInfo.AllowMultiplyExpression = false;
@@ -153,7 +161,10 @@ namespace HapetFrontend.Parsing
             }            
 
             // TODO: doc string???
-            return new AstParamDecl(ptype as AstNestedExpr, pname, defaultValue, "", new Location(beg, end));
+            return new AstParamDecl(ptype as AstNestedExpr, pname, defaultValue, "", new Location(beg, end)) 
+            {
+                IsParams = isParams,
+            };
         }
 
         private List<AstParamDecl> ParseParameterList(TokenType open, TokenType close, out TokenLocation beg, out TokenLocation end, bool allowDefaultValue = true)

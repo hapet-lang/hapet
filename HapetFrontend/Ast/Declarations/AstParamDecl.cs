@@ -13,6 +13,11 @@ namespace HapetFrontend.Ast.Declarations
         /// </summary>
         public AstExpression DefaultValue { get; set; }
 
+        /// <summary>
+        /// 'true' if it has 'params' word
+        /// </summary>
+        public bool IsParams { get; set; }
+
         public override string AAAName => nameof(AstParamDecl);
 
         public AstParamDecl(AstExpression type, AstIdExpr name, AstExpression defaultValue = null, string doc = "", ILocation location = null) : base(name, doc, location)
