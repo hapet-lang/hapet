@@ -9,6 +9,7 @@ using HapetFrontend.Errors;
 using HapetFrontend.Ast.Expressions;
 using System.Collections.Generic;
 using System.Reflection.Metadata.Ecma335;
+using System.Xml.Linq;
 
 namespace HapetPostPrepare
 {
@@ -53,10 +54,11 @@ namespace HapetPostPrepare
                     var parType = par.Type;
                     if (par.IsParams) 
                     {
-                        paramsParamDecl = par; 
+                        paramsParamDecl = par;
                         // because usually like 'params object[] pivo'
                         // but we need to compare pure 'object' type then :)
-                        parType = (par.Type as AstArrayExpr).SubExpression; 
+                        var tmp = (par.Type as AstNestedExpr).RightPart as AstArrayExpr;
+                        parType = tmp.SubExpression; 
                     }
 
                     if (argExpr.OutType == parType.OutType)
@@ -144,13 +146,16 @@ namespace HapetPostPrepare
                 if (currPar.IsParams)
                 {
                     // pizdec
-                    var exprs = args.Select(x => x.Expr).Skip(i);
+                    var exprs = args.Select(x => x.Expr).Skip(i).ToList();
                     var arrCreate = new AstArrayCreateExpr(
-                        GetPreparedAst(currArg.Expr.OutType, currArg), 
-                        new List<AstExpression>() { null }, 
-                        exprs.ToList(), 
+                        GetPreparedAst(currArg.Expr.OutType, currArg),
+                        new List<AstExpression>() { new AstNumberExpr(NumberData.FromInt(exprs.Count)) },
+                        exprs,
                         new Location(exprs.First().Beginning, exprs.Last().Ending)
-                    );
+                    )
+                    {
+                        Scope = currArg.Scope
+                    };
                     normalArgs[realIndex] = new AstArgumentExpr(arrCreate); // set and go out
                     break;
                 }
@@ -168,7 +173,7 @@ namespace HapetPostPrepare
                     continue;
 
                 // search for the arg - skip if the was an arg for the param
-                var theArg = args.FirstOrDefault(x => x.Name.Name == currPar.Name.Name);
+                var theArg = args.FirstOrDefault(x => x.Name != null && x.Name.Name == currPar.Name.Name);
                 if (theArg != null)
                     continue;
 

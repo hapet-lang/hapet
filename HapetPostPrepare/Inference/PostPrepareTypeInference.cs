@@ -712,7 +712,8 @@ namespace HapetPostPrepare
 
             if (argumentExpr.Name != null)
             {
-                PostPrepareExprInference(argumentExpr.Name, inInfo, ref outInfo);
+                // WARN: do not infer the arg name. it has to be errored while candidating
+                // PostPrepareExprInference(argumentExpr.Name, inInfo, ref outInfo);
             }
 
             // the argument type is the same as its expr type
@@ -1428,6 +1429,12 @@ namespace HapetPostPrepare
             // could be a usual variable/param
             if (accessee is AstParamDecl ||
                 (accessee is AstVarDecl vd2 && vd2.ContainingParent == null))
+            {
+                return true;
+            }
+
+            // allow access to all struct fields!!!
+            if (accessee is AstVarDecl && accessee.ContainingParent is AstStructDecl)
             {
                 return true;
             }

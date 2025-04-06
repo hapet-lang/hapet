@@ -7,8 +7,16 @@ public static class Program
 {
     public static int Main(string[] args)
     {
-        bool a = false;
-        int b = a ? 4 : 6;
-        return b;
+        return TestFunc(3, 4);
+    }
+
+    public static int TestFunc(params int[] animes)
+    {
+        int sum = 0;
+        for (int i = 0; i < animes.Length; ++i)
+        {
+            sum += animes[i];
+        }
+        return sum;
     }
 }
