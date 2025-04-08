@@ -11,6 +11,6 @@ public static class Program
         return PrintF(bytes);
     }
 
-    [DllImportAttribute("", "printf")]
+    [DllImportAttribute("", "vprintf")]
     public static extern int PrintF(byte* format, arglist);
 }

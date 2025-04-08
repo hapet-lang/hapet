@@ -8,4 +8,10 @@ public static class Marshal
 
     [DllImportAttribute("", "free")]
     public static extern void Free(void* ptr);
+
+    [DllImportAttribute("", "llvm.va_start")]
+    public static extern void VaStart(void* ptr);
+
+    [DllImportAttribute("", "llvm.va_end")]
+    public static extern void VaEnd(void* ptr);
 }

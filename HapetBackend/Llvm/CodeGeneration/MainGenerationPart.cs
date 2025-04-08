@@ -7,6 +7,7 @@ using HapetFrontend.Extensions;
 using HapetFrontend.Parsing;
 using HapetFrontend.Scoping;
 using HapetFrontend.Types;
+using HapetPostPrepare;
 using LLVMSharp.Interop;
 
 namespace HapetBackend.Llvm
@@ -121,6 +122,10 @@ namespace HapetBackend.Llvm
                 for (int i = 0; i < funcDecl.Parameters.Count; ++i)
                 {
                     var p = funcDecl.Parameters[i];
+                    // skip this shite
+                    if (p.IsArglist)
+                        continue;
+
                     var addrAlloca = _builder.BuildAlloca(HapetTypeToLLVMType(p.Type.OutType), $"{p.Name.Name}.addr");
                     _builder.BuildStore(lfunc.GetParam((uint)i), addrAlloca);
                     _valueMap[p.GetSymbol] = addrAlloca;
@@ -211,21 +216,57 @@ namespace HapetBackend.Llvm
             for (int i = 0; i < funcDecl.Parameters.Count; ++i)
             {
                 var p = funcDecl.Parameters[i];
-                var vptr = _valueMap[p.GetSymbol];
-                var loaded = _builder.BuildLoad2(HapetTypeToLLVMType(p.Type.OutType), vptr, p.Name.Name);
-                parameters.Add(loaded);
+                if (p.IsArglist)
+                {
+                    // need to create va_list and va_start
+                    var vaListType = ((funcDecl.Scope.GetSymbol(PostPrepare.VA_LIST_NAME) as DeclSymbol).Decl as AstStructDecl).Type.OutType;
+                    var apAlloca = _builder.BuildAlloca(HapetTypeToLLVMType(vaListType), $"va_list.ap.addr");
+
+                    // va start
+                    var startDecl = _currentFunction.Scope.GetSymbolInNamespace("System.Runtime.InteropServices", "Marshal");
+                    var startSymbol = (startDecl.Decl as AstClassDecl).SubScope.GetSymbol("System.Runtime.InteropServices.Marshal::VaStart(void*)") as DeclSymbol;
+                    var startFunc = _valueMap[startSymbol];
+                    LLVMTypeRef startType = _typeMap[startSymbol.Decl.Type.OutType];
+                    _builder.BuildCall2(startType, startFunc, new LLVMValueRef[] { apAlloca });
+
+                    parameters.Add(apAlloca);
+                }
+                else
+                {
+                    var vptr = _valueMap[p.GetSymbol];
+                    var loaded = _builder.BuildLoad2(HapetTypeToLLVMType(p.Type.OutType), vptr, p.Name.Name);
+                    parameters.Add(loaded);
+                }
             }
 
             // if there is smth to return
             if (funcDecl.Returns.OutType is VoidType)
             {
                 _builder.BuildCall2(funcType, funcValue, parameters.ToArray());
+                TryBuildVaEnd();
                 _builder.BuildRetVoid();
             }
             else
             {
                 var v = _builder.BuildCall2(funcType, funcValue, parameters.ToArray(), $"{entryPoint}Result");
+                TryBuildVaEnd();
                 _builder.BuildRet(v);
+            }            
+
+            void TryBuildVaEnd()
+            {
+                // check for va
+                if (funcDecl.Parameters.Count == 0 || !funcDecl.Parameters.Last().IsArglist)
+                    return;
+
+                var apAllocated = parameters.Last();
+
+                // va end
+                var endDecl = _currentFunction.Scope.GetSymbolInNamespace("System.Runtime.InteropServices", "Marshal");
+                var endSymbol = (endDecl.Decl as AstClassDecl).SubScope.GetSymbol("System.Runtime.InteropServices.Marshal::VaEnd(void*)") as DeclSymbol;
+                var endFunc = _valueMap[endSymbol];
+                LLVMTypeRef endType = _typeMap[endSymbol.Decl.Type.OutType];
+                _builder.BuildCall2(endType, endFunc, new LLVMValueRef[] { apAllocated });
             }
         }
     }

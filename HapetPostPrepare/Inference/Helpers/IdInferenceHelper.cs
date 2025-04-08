@@ -82,15 +82,16 @@ namespace HapetPostPrepare
                 return true;
             }
 
-            if (idExpr.AdditionalData == null)
-                return false;
-
-            string typeName = (idExpr.AdditionalData.OutType as ClassType).Declaration.Name.Name;
-            smbl = scope.GetSymbol($"{typeName}.{name}");
-            if (smbl is DeclSymbol typed2)
+            // check for explicit shite
+            if (idExpr.AdditionalData != null)
             {
-                IdentifierOnFoundSymbol(idExpr, typed2, string.Empty, inInfo, ref outInfo);
-                return true;
+                string typeName = (idExpr.AdditionalData.OutType as ClassType).Declaration.Name.Name;
+                smbl = scope.GetSymbol($"{typeName}.{name}");
+                if (smbl is DeclSymbol typed2)
+                {
+                    IdentifierOnFoundSymbol(idExpr, typed2, string.Empty, inInfo, ref outInfo);
+                    return true;
+                }
             }
 
             // skip if search in specific scope
