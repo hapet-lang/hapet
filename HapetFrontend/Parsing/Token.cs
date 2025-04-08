@@ -151,6 +151,7 @@ namespace HapetFrontend.Parsing
         KwRef, // would be used anywhere?
         KwOut, // would be used anywhere?
         KwParams,
+        KwArglist,
         KwWhere,
 
         KwPublic,

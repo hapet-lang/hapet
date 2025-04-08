@@ -64,6 +64,7 @@ namespace HapetFrontend.Parsing
                 case "ref": token.Type = TokenType.KwRef; break;
                 case "out": token.Type = TokenType.KwOut; break;
                 case "params": token.Type = TokenType.KwParams; break;
+                case "arglist": token.Type = TokenType.KwArglist; break;
 
                 case "public": token.Type = TokenType.KwPublic; break;
                 case "internal": token.Type = TokenType.KwInternal; break;
@@ -156,6 +157,7 @@ namespace HapetFrontend.Parsing
                 case TokenType.KwRef: return "ref";
                 case TokenType.KwOut: return "out";
                 case TokenType.KwParams: return "params";
+                case TokenType.KwArglist: return "arglist";
 
                 case TokenType.KwPublic: return "public";
                 case TokenType.KwInternal: return "internal";
