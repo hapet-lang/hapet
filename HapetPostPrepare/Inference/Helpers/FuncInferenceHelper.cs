@@ -134,7 +134,7 @@ namespace HapetPostPrepare
             return null;
         }
 
-        public List<AstArgumentExpr> GenerateNormalArguments(List<AstParamDecl> pars, List<AstArgumentExpr> args)
+        public List<AstArgumentExpr> GenerateNormalArguments(List<AstParamDecl> pars, List<AstArgumentExpr> args, AstStatement caller)
         {
             AstArgumentExpr[] normalArgs = new AstArgumentExpr[pars.Count];
             for (int i = 0; i < args.Count; ++i)
@@ -181,6 +181,24 @@ namespace HapetPostPrepare
             }
 
             // we need to create an empty array for 'params' if there was no args
+            var paramsParam = pars.FirstOrDefault(x => x.IsParams);
+            if (paramsParam != null)
+            {
+                int indexx = pars.IndexOf(paramsParam);
+                if (normalArgs[indexx] == null)
+                {
+                    var arrCreate = new AstArrayCreateExpr(
+                        GetPreparedAst(paramsParam.Type.OutType, paramsParam),
+                        new List<AstExpression>() { new AstNumberExpr(NumberData.FromInt(0)) },
+                        new List<AstExpression>(),
+                        new Location(caller.Beginning, caller.Ending)
+                    )
+                    {
+                        Scope = caller.Scope
+                    };
+                    normalArgs[indexx] = new AstArgumentExpr(arrCreate);
+                }
+            }
 
             return normalArgs.ToList();
         }

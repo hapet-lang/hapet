@@ -500,7 +500,7 @@ namespace HapetBackend.Llvm
 
                 // other args
                 List<LLVMValueRef> args = new List<LLVMValueRef>() { v };
-                List<AstArgumentExpr> normalArgs = _postPreparer.GenerateNormalArguments((ctorSymbol.Decl as AstFuncDecl).Parameters, expr.Arguments);
+                List<AstArgumentExpr> normalArgs = _postPreparer.GenerateNormalArguments((ctorSymbol.Decl as AstFuncDecl).Parameters, expr.Arguments, expr);
                 foreach (var a in normalArgs)
                 {
                     args.Add(GenerateExpressionCode(a));
@@ -535,7 +535,7 @@ namespace HapetBackend.Llvm
 
                 // other args
                 List<LLVMValueRef> args = new List<LLVMValueRef>() { v };
-                List<AstArgumentExpr> normalArgs = _postPreparer.GenerateNormalArguments((ctorSymbol.Decl as AstFuncDecl).Parameters, expr.Arguments);
+                List<AstArgumentExpr> normalArgs = _postPreparer.GenerateNormalArguments((ctorSymbol.Decl as AstFuncDecl).Parameters, expr.Arguments, expr);
                 foreach (var a in normalArgs)
                 {
                     args.Add(GenerateExpressionCode(a));
@@ -618,7 +618,7 @@ namespace HapetBackend.Llvm
                     else
                         args.Add(GenerateExpressionCode(expr.TypeOrObjectName));
                 }
-                List<AstArgumentExpr> normalArgs = _postPreparer.GenerateNormalArguments(fncType.Declaration.Parameters, expr.Arguments);
+                List<AstArgumentExpr> normalArgs = _postPreparer.GenerateNormalArguments(fncType.Declaration.Parameters, expr.Arguments, expr);
                 foreach (var a in normalArgs)
                 {
                     args.Add(GenerateExpressionCode(a));
@@ -658,7 +658,7 @@ namespace HapetBackend.Llvm
 
                 // args shite
                 List<LLVMValueRef> args = new List<LLVMValueRef>();
-                List<AstArgumentExpr> normalArgs = _postPreparer.GenerateNormalArguments(delType.Declaration.Parameters, expr.Arguments);
+                List<AstArgumentExpr> normalArgs = _postPreparer.GenerateNormalArguments(delType.Declaration.Parameters, expr.Arguments, expr);
                 foreach (var a in normalArgs)
                 {
                     args.Add(GenerateExpressionCode(a));
