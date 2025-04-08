@@ -67,6 +67,7 @@ namespace HapetBackend.Llvm.Linkers.Windows
                         // lldArgs.Add("libvcruntimed.lib");
                         lldArgs.Add("msvcrt.lib");
                         lldArgs.Add("ucrt.lib");
+                        lldArgs.Add("libcmt.lib");
                         //lldArgs.Add("shlwapi.lib");
                         break;
                     }

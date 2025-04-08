@@ -189,15 +189,22 @@ namespace HapetBackend.Llvm
             string dllName = dllImportAttr.Arguments[0].OutValue as string;
             string entryPoint = dllImportAttr.Arguments[1].OutValue as string;
 
+            HapetType vaListType = ((funcDecl.Scope.GetSymbol(PostPrepare.VA_LIST_NAME) as DeclSymbol).Decl as AstStructDecl).Type.OutType;
             LLVMTypeRef funcType;
             LLVMValueRef funcValue;
+            LLVMValueRef apAlloca = default;
 
             // check if there is a dll to be linked with!
             if (!string.IsNullOrWhiteSpace(dllName))
                 _libsToBeLinked.Add(dllName);
 
             // the same type
-            funcType = HapetTypeToLLVMType(funcDecl.Type.OutType);
+            /// almost the same as in <see cref="HapetTypeToLLVMType"/>
+            var f = funcDecl.Type.OutType as FunctionType;
+            var paramTypes = f.Declaration.Parameters.Select(rt => HapetTypeToLLVMType(rt.IsArglist ? vaListType : rt.Type.OutType)).ToList();
+            var returnType = HapetTypeToLLVMType(f.Declaration.Returns.OutType);
+            funcType = LLVMTypeRef.CreateFunction(returnType, paramTypes.ToArray(), false);
+
             // declaring external global func
             funcValue = _module.AddFunction(entryPoint, funcType);
             funcValue.Linkage = LLVMLinkage.LLVMExternalLinkage;
@@ -219,8 +226,7 @@ namespace HapetBackend.Llvm
                 if (p.IsArglist)
                 {
                     // need to create va_list and va_start
-                    var vaListType = ((funcDecl.Scope.GetSymbol(PostPrepare.VA_LIST_NAME) as DeclSymbol).Decl as AstStructDecl).Type.OutType;
-                    var apAlloca = _builder.BuildAlloca(HapetTypeToLLVMType(vaListType), $"va_list.ap.addr");
+                    apAlloca = _builder.BuildAlloca(HapetTypeToLLVMType(vaListType), $"va_list.ap.addr");
 
                     // va start
                     var startDecl = _currentFunction.Scope.GetSymbolInNamespace("System.Runtime.InteropServices", "Marshal");
@@ -229,7 +235,8 @@ namespace HapetBackend.Llvm
                     LLVMTypeRef startType = _typeMap[startSymbol.Decl.Type.OutType];
                     _builder.BuildCall2(startType, startFunc, new LLVMValueRef[] { apAlloca });
 
-                    parameters.Add(apAlloca);
+                    var loaded = _builder.BuildLoad2(HapetTypeToLLVMType(vaListType), apAlloca, "va_list.ap.loaded");
+                    parameters.Add(loaded);
                 }
                 else
                 {
@@ -259,14 +266,12 @@ namespace HapetBackend.Llvm
                 if (funcDecl.Parameters.Count == 0 || !funcDecl.Parameters.Last().IsArglist)
                     return;
 
-                var apAllocated = parameters.Last();
-
                 // va end
                 var endDecl = _currentFunction.Scope.GetSymbolInNamespace("System.Runtime.InteropServices", "Marshal");
                 var endSymbol = (endDecl.Decl as AstClassDecl).SubScope.GetSymbol("System.Runtime.InteropServices.Marshal::VaEnd(void*)") as DeclSymbol;
                 var endFunc = _valueMap[endSymbol];
                 LLVMTypeRef endType = _typeMap[endSymbol.Decl.Type.OutType];
-                _builder.BuildCall2(endType, endFunc, new LLVMValueRef[] { apAllocated });
+                _builder.BuildCall2(endType, endFunc, new LLVMValueRef[] { apAlloca });
             }
         }
     }
