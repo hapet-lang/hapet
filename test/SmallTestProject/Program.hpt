@@ -7,16 +7,10 @@ public static class Program
 {
     public static int Main(string[] args)
     {
-        return TestFunc();
+        var bytes = UTF8Encoding.GetBytesUnsafe("AnimeTest");
+        return PrintF(bytes);
     }
 
-    public static int TestFunc(params int[] animes)
-    {
-        int sum = 0;
-        for (int i = 0; i < animes.Length; ++i)
-        {
-            sum += animes[i];
-        }
-        return sum;
-    }
+    [DllImportAttribute("", "printf")]
+    public static extern int PrintF(byte* format, arglist);
 }

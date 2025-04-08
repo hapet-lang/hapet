@@ -92,8 +92,19 @@ namespace HapetFrontend.Parsing
             AstStatement ptype = null;
             AstExpression defaultValue = null;
             bool isParams = false;
+            bool isArglist = false;
 
             TokenLocation beg = null, end = null;
+
+            // check for 'arglist'
+            if (CheckToken(TokenType.KwArglist))
+            {
+                isArglist = true;
+                var loc = NextToken().Location;
+                beg = loc.Beginning;
+                end = loc.Ending;
+                return GetParam(); // just return it
+            }
 
             // check for 'params'
             if (CheckToken(TokenType.KwParams))
@@ -158,13 +169,18 @@ namespace HapetFrontend.Parsing
                     defaultValue = probDefVal as AstExpression;
                     end = defaultValue.Ending;
                 }
-            }            
+            }
+            return GetParam();
 
-            // TODO: doc string???
-            return new AstParamDecl(ptype as AstNestedExpr, pname, defaultValue, "", new Location(beg, end)) 
+            AstParamDecl GetParam()
             {
-                IsParams = isParams,
-            };
+                // TODO: doc string???
+                return new AstParamDecl(ptype as AstNestedExpr, pname, defaultValue, "", new Location(beg, end))
+                {
+                    IsParams = isParams,
+                    IsArglist = isArglist,
+                };
+            }
         }
 
         private List<AstParamDecl> ParseParameterList(TokenType open, TokenType close, out TokenLocation beg, out TokenLocation end, bool allowDefaultValue = true)
