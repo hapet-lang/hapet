@@ -414,7 +414,9 @@ namespace HapetPostPrepare
             // it can be null when the func is only declared but not defined!
             if (paramDecl.Name != null)
                 SetScopeAndParent(paramDecl.Name, paramDecl);
-            SetScopeAndParent(paramDecl.Type, paramDecl);
+            // it can be null when param is 'arglist'
+            if (paramDecl.Type != null)
+                SetScopeAndParent(paramDecl.Type, paramDecl);
 
             // scoping param attrs
             foreach (var a in paramDecl.Attributes)

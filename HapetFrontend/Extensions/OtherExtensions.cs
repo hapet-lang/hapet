@@ -90,7 +90,10 @@ namespace HapetFrontend.Extensions
             for (int i = 0; i < pars.Count; i++)
             {
                 var p = pars[i];
-                sb.Append(p.Type.OutType == null ? "" : HapetType.AsString(p.Type.OutType));
+                if (!p.IsArglist)
+                    sb.Append(p.Type.OutType == null ? "" : HapetType.AsString(p.Type.OutType));
+                else
+                    sb.Append("arglist");
 
                 if (i != pars.Count - 1)
                     sb.Append(':');
@@ -115,7 +118,7 @@ namespace HapetFrontend.Extensions
             // there is already params type in name like
             // TestClass::AnimeFunc(int:PivoCls)
             string searchName = searchFunc.Name.Name.GetPureFuncName();
-            List<HapetType> types = searchFunc.Parameters.Select(x => x.Type.OutType).ToList();
+            List<HapetType> types = searchFunc.Parameters.Select(x => x.Type?.OutType).ToList();
             if (skipFirst)
             {
                 // remove the first param
@@ -133,7 +136,7 @@ namespace HapetFrontend.Extensions
                 }
 
                 string currName = x.Name.Name.GetPureFuncName();
-                List<HapetType> typesD = x.Parameters.Select(x => x.Type.OutType).ToList();
+                List<HapetType> typesD = x.Parameters.Select(x => x.Type?.OutType).ToList();
                 if (skipFirst)
                 {
                     // remove the first param
@@ -177,7 +180,7 @@ namespace HapetFrontend.Extensions
                     interfaceName = (x.Name.AdditionalData.OutType as ClassType).Declaration.Name.Name;
                 string pureName = currName.GetClassNameWithoutNamespace();
 
-                List<HapetType> typesD = x.Parameters.Select(x => x.Type.OutType).ToList();
+                List<HapetType> typesD = x.Parameters.Select(x => x.Type?.OutType).ToList();
                 if (skipFirst)
                 {
                     // remove the first param
