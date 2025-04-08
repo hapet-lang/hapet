@@ -190,9 +190,11 @@ namespace HapetBackend.Llvm
             string entryPoint = dllImportAttr.Arguments[1].OutValue as string;
 
             HapetType vaListType = ((funcDecl.Scope.GetSymbol(PostPrepare.VA_LIST_NAME) as DeclSymbol).Decl as AstStructDecl).Type.OutType;
+            HapetType ptrToVaListType = PointerType.GetPointerType(vaListType);
             LLVMTypeRef funcType;
             LLVMValueRef funcValue;
             LLVMValueRef apAlloca = default;
+            LLVMValueRef aniemeeee = default;
 
             // check if there is a dll to be linked with!
             if (!string.IsNullOrWhiteSpace(dllName))
@@ -201,7 +203,7 @@ namespace HapetBackend.Llvm
             // the same type
             /// almost the same as in <see cref="HapetTypeToLLVMType"/>
             var f = funcDecl.Type.OutType as FunctionType;
-            var paramTypes = f.Declaration.Parameters.Select(rt => HapetTypeToLLVMType(rt.IsArglist ? vaListType : rt.Type.OutType)).ToList();
+            var paramTypes = f.Declaration.Parameters.Select(rt => HapetTypeToLLVMType(rt.IsArglist ? ptrToVaListType : rt.Type.OutType)).ToList();
             var returnType = HapetTypeToLLVMType(f.Declaration.Returns.OutType);
             funcType = LLVMTypeRef.CreateFunction(returnType, paramTypes.ToArray(), false);
 
@@ -235,7 +237,11 @@ namespace HapetBackend.Llvm
                     LLVMTypeRef startType = _typeMap[startSymbol.Decl.Type.OutType];
                     _builder.BuildCall2(startType, startFunc, new LLVMValueRef[] { apAlloca });
 
-                    var loaded = _builder.BuildLoad2(HapetTypeToLLVMType(vaListType), apAlloca, "va_list.ap.loaded");
+                    var apAllocaBitcasted = _builder.BuildBitCast(apAlloca, _context.Int8Type.GetPointerTo(), "asdasdasdfrfff");
+
+                    aniemeeee = _builder.BuildVAArg(apAllocaBitcasted, _context.Int32Type, "asdasd");
+
+                    var loaded = _builder.BuildLoad2(HapetTypeToLLVMType(ptrToVaListType), apAllocaBitcasted, "va_list.ap.loaded");
                     parameters.Add(loaded);
                 }
                 else
@@ -257,7 +263,10 @@ namespace HapetBackend.Llvm
             {
                 var v = _builder.BuildCall2(funcType, funcValue, parameters.ToArray(), $"{entryPoint}Result");
                 TryBuildVaEnd();
-                _builder.BuildRet(v);
+                if (aniemeeee != default)
+                    _builder.BuildRet(aniemeeee);
+                else
+                    _builder.BuildRet(v);
             }            
 
             void TryBuildVaEnd()

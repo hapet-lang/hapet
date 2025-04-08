@@ -7,8 +7,8 @@ public static class Program
 {
     public static int Main(string[] args)
     {
-        var bytes = UTF8Encoding.GetBytesUnsafe("AnimeTest");
-        return PrintF(bytes);
+        var bytes = UTF8Encoding.GetBytesUnsafe("AnimeTest %d");
+        return PrintF(bytes, 444);
     }
 
     [DllImportAttribute("", "vprintf")]

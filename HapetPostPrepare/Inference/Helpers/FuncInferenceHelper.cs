@@ -50,6 +50,15 @@ namespace HapetPostPrepare
                     if (par == null)
                         break;
 
+                    // cringe to handle 'arglist' kw
+                    if (par.IsArglist)
+                    {
+                        paramsParamDecl = par;
+                        score += 4;
+                        casts.Add(argExpr);
+                        continue;
+                    }
+
                     // cringe to handle 'params' kw
                     var parType = par.Type;
                     if (par.IsParams) 
