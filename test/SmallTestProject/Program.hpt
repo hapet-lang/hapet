@@ -7,7 +7,7 @@ public static class Program
 {
     public static int Main(string[] args)
     {
-        return TestFunc(3, 4);
+        return TestFunc();
     }
 
     public static int TestFunc(params int[] animes)

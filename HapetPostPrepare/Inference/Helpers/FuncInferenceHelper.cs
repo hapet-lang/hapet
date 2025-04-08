@@ -180,6 +180,8 @@ namespace HapetPostPrepare
                 normalArgs[i] = new AstArgumentExpr(currPar.DefaultValue);
             }
 
+            // we need to create an empty array for 'params' if there was no args
+
             return normalArgs.ToList();
         }
 
