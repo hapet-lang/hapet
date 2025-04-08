@@ -289,8 +289,17 @@ namespace HapetFrontend.Types
                     return false;
 
                 for (int i = 0; i < Declaration.Parameters.Count; i++)
-                    if (this.Declaration.Parameters[i].Type.OutType != f.Declaration.Parameters[i].Type.OutType)
+                {
+                    if (this.Declaration.Parameters[i].IsArglist && !f.Declaration.Parameters[i].IsArglist)
                         return false;
+
+                    if (!this.Declaration.Parameters[i].IsArglist && f.Declaration.Parameters[i].IsArglist)
+                        return false;
+
+                    if (!Declaration.Parameters[i].IsArglist && // null safer
+                        this.Declaration.Parameters[i].Type.OutType != f.Declaration.Parameters[i].Type.OutType)
+                        return false;
+                }
 
                 return true;
             }
@@ -302,7 +311,12 @@ namespace HapetFrontend.Types
         {
             var hash = new HashCode();
             foreach (var p in Declaration.Parameters)
-                hash.Add(p.Type.OutType);
+            {
+                if (!p.IsArglist)
+                    hash.Add(p.Type.OutType);
+                else
+                    hash.Add("arglist");
+            }
             hash.Add(Declaration.Returns.OutType);
             return hash.ToHashCode();
         }

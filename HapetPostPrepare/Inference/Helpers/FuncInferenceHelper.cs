@@ -136,7 +136,7 @@ namespace HapetPostPrepare
 
         public List<AstArgumentExpr> GenerateNormalArguments(List<AstParamDecl> pars, List<AstArgumentExpr> args, AstStatement caller)
         {
-            AstArgumentExpr[] normalArgs = new AstArgumentExpr[pars.Count];
+            List<AstArgumentExpr> normalArgs = new List<AstArgumentExpr>(pars.Count);
             for (int i = 0; i < args.Count; ++i)
             {
                 var currArg = args[i];
@@ -157,6 +157,18 @@ namespace HapetPostPrepare
                         Scope = currArg.Scope
                     };
                     normalArgs[realIndex] = new AstArgumentExpr(arrCreate); // set and go out
+                    break;
+                }
+
+                // special case for 'arglist' cringe
+                if (currPar.IsArglist)
+                {
+                    // pizdec
+                    var exprs = args.Select(x => x.Expr).Skip(i).ToList();
+                    normalArgs[realIndex] = new AstArgumentExpr(exprs[0]); // set the first one
+                    // we really need to add them :)
+                    foreach (var tmpA in exprs.Skip(1))
+                        normalArgs.Add(new AstArgumentExpr(tmpA));
                     break;
                 }
 
@@ -197,6 +209,17 @@ namespace HapetPostPrepare
                         Scope = caller.Scope
                     };
                     normalArgs[indexx] = new AstArgumentExpr(arrCreate);
+                }
+            }
+
+            // we need to remove arg of 'arglist' if there was no args
+            var arglistParam = pars.FirstOrDefault(x => x.IsArglist);
+            if (arglistParam != null)
+            {
+                int indexx = pars.IndexOf(arglistParam);
+                if (normalArgs[indexx] == null)
+                {
+                    normalArgs.RemoveAt(indexx);
                 }
             }
 

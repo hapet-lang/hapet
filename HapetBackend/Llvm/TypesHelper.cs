@@ -109,9 +109,12 @@ namespace HapetBackend.Llvm
 
                 case FunctionType f:
                     {
-                        var paramTypes = f.Declaration.Parameters.Select(rt => HapetTypeToLLVMType(rt.Type.OutType)).ToList();
+                        // skip arglist params!!!
+                        var paramTypes = f.Declaration.Parameters.Where(x => !x.IsArglist).Select(rt => HapetTypeToLLVMType(rt.Type.OutType)).ToList();
                         var returnType = HapetTypeToLLVMType(f.Declaration.Returns.OutType);
-                        var funcType = LLVMTypeRef.CreateFunction(returnType, paramTypes.ToArray(), false); // TODO: var args
+
+                        bool hasArgList = f.Declaration.Parameters.FirstOrDefault(x => x.IsArglist) != null;
+                        var funcType = LLVMTypeRef.CreateFunction(returnType, paramTypes.ToArray(), hasArgList);
                         return funcType;
                     }
 
