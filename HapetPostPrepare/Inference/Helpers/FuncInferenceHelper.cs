@@ -136,7 +136,7 @@ namespace HapetPostPrepare
 
         public List<AstArgumentExpr> GenerateNormalArguments(List<AstParamDecl> pars, List<AstArgumentExpr> args, AstStatement caller)
         {
-            List<AstArgumentExpr> normalArgs = new List<AstArgumentExpr>(pars.Count);
+            List<AstArgumentExpr> normalArgs = Enumerable.Repeat<AstArgumentExpr>(null, pars.Count).ToList();
             for (int i = 0; i < args.Count; ++i)
             {
                 var currArg = args[i];
