@@ -175,6 +175,7 @@ namespace HapetFrontend.Parsing
                 case TokenType.KwPartial: return "partial";
                 case TokenType.KwExtern: return "extern";
                 case TokenType.KwSealed: return "sealed";
+                case TokenType.KwInline: return "inline";
 
                 // for events
                 case TokenType.KwEvent: return "event";

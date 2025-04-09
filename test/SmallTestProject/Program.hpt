@@ -7,11 +7,11 @@ public static class Program
 {
     public static int Main(string[] args)
     {
-        var bytes = UTF8Encoding.GetBytesUnsafe("AnimeTest %d %d %s");
-        var bytes222 = UTF8Encoding.GetBytesUnsafe("AnimeTest cringe");
-        return PrintF(bytes, 444, 5555, bytes222);
+        return Inlined();
     }
 
-    [DllImportAttribute("", "vprintf")]
-    public static extern int PrintF(byte* format, arglist);
+    private static inline int Inlined()
+    {
+        return 154;
+    } 
 }

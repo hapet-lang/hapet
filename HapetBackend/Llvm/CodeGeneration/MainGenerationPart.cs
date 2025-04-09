@@ -85,6 +85,15 @@ namespace HapetBackend.Llvm
                     lfunc.Linkage = LLVMLinkage.LLVMInternalLinkage;
                 }
 
+                // check inline attr
+                if (funcDecl.SpecialKeys.Contains(TokenType.KwInline))
+                {
+                    // 3 - is AlwaysInline
+                    // https://github.com/dotnet/LLVMSharp/blob/fb8f621699da07ed3244f75142c3cb37a7f49d2f/sources/LLVMSharp/Attribute.cs#L32
+                    var attr = LLVM.CreateEnumAttribute(_context, (uint)3, default);
+                    LLVM.AddAttributeAtIndex(lfunc, LLVMAttributeIndex.LLVMAttributeFunctionIndex, attr);
+                }
+
                 // caching the function											 
                 _valueMap[funcDecl.GetSymbol] = lfunc;
                 _lastFunctionValueRef = lfunc;

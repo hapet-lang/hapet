@@ -29,68 +29,68 @@ namespace HapetPostPrepare
                     case 0:
                         {
                             TokenType[] asArr = [accessKey, shadowKey, instanceKey, mutabilityKey, abstractionKey, otherKey];
-                            Handler(asArr, currKey.Type, ref syncKey);
+                            Handler(asArr, currKey, ref syncKey);
                             break;
                         }
                     case 1:
                         {
                             TokenType[] asArr = [shadowKey, instanceKey, mutabilityKey, abstractionKey, otherKey];
-                            Handler(asArr, currKey.Type, ref accessKey);
+                            Handler(asArr, currKey, ref accessKey);
                             break;
                         }
                     case 2:
                         {
                             TokenType[] asArr = [instanceKey, mutabilityKey, abstractionKey, otherKey];
-                            Handler(asArr, currKey.Type, ref shadowKey);
+                            Handler(asArr, currKey, ref shadowKey);
                             break;
                         }
                     case 3:
                         {
                             TokenType[] asArr = [mutabilityKey, abstractionKey, otherKey];
-                            Handler(asArr, currKey.Type, ref instanceKey);
+                            Handler(asArr, currKey, ref instanceKey);
                             break;
                         }
                     case 4:
                         {
                             TokenType[] asArr = [abstractionKey, otherKey];
-                            Handler(asArr, currKey.Type, ref mutabilityKey);
+                            Handler(asArr, currKey, ref mutabilityKey);
                             break;
                         }
                     case 5:
                         {
                             TokenType[] asArr = [otherKey];
-                            Handler(asArr, currKey.Type, ref abstractionKey);
+                            Handler(asArr, currKey, ref abstractionKey);
                             break;
                         }
                     case 6:
                         {
                             TokenType[] asArr = [];
-                            Handler(asArr, currKey.Type, ref otherKey);
+                            Handler(asArr, currKey, ref otherKey);
                             break;
                         }
                 }
             }
 
-            void Handler(TokenType[] forw, TokenType curr, ref TokenType check)
+            void Handler(TokenType[] forw, Token curr, ref TokenType check)
             {
                 var nonDefault = forw.FirstOrDefault(x => x != default);
                 if (nonDefault != default)
                 {
-                    _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, decl.Name,
-                        [Lexer.GetKeywordFromToken(curr), Lexer.GetKeywordFromToken(nonDefault)],
+                    _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, curr.Location,
+                        [Lexer.GetKeywordFromToken(curr.Type), Lexer.GetKeywordFromToken(nonDefault)],
                         ErrorCode.Get(CTEN.ShouldGoBeforeSpecialKey));
                     return;
                 }
 
                 if (check != default)
                 {
-                    _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, decl.Name,
-                        [Lexer.GetKeywordFromToken(curr), Lexer.GetKeywordFromToken(check)],
+                    _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, curr.Location,
+                        [Lexer.GetKeywordFromToken(curr.Type), Lexer.GetKeywordFromToken(check)],
                         ErrorCode.Get(CTEN.AlreadyDefinedSpecialKey));
                     return;
                 }
 
-                check = curr;
+                check = curr.Type;
             }
         }
 
