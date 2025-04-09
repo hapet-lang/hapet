@@ -3,12 +3,14 @@ using HapetFrontend.Ast;
 using HapetFrontend.Ast.Declarations;
 using HapetFrontend.Ast.Expressions;
 using HapetFrontend.Scoping;
+using HapetFrontend.Types;
 
 namespace HapetPostPrepare
 {
     public partial class PostPrepare
     {
         public const string VA_LIST_NAME = "System.Runtime.InteropServices.VaList"; // WARN: hardcock
+        public HapetType VaListType { get; set; }
 
         private void PostPrepareMetadataEmbededTypes()
         {
@@ -41,6 +43,7 @@ namespace HapetPostPrepare
 
             // creating a new struct name with namespace
             var structDecl = new AstStructDecl(new AstIdExpr(VA_LIST_NAME), decls);
+            VaListType = structDecl.Type.OutType;
 
             // scoping 
             _compiler.GlobalScope.DefineSymbol(new DeclSymbol(VA_LIST_NAME, structDecl));

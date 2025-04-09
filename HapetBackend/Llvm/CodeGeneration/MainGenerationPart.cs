@@ -189,12 +189,12 @@ namespace HapetBackend.Llvm
             string dllName = dllImportAttr.Arguments[0].OutValue as string;
             string entryPoint = dllImportAttr.Arguments[1].OutValue as string;
 
-            HapetType vaListType = ((funcDecl.Scope.GetSymbol(PostPrepare.VA_LIST_NAME) as DeclSymbol).Decl as AstStructDecl).Type.OutType;
+            HapetType vaListType = _postPreparer.VaListType;
             HapetType ptrToVaListType = PointerType.GetPointerType(vaListType);
             LLVMTypeRef funcType;
             LLVMValueRef funcValue;
             LLVMValueRef apAlloca = default;
-            LLVMValueRef aniemeeee = default;
+            LLVMValueRef apAllocaBitcasted = default;
 
             // check if there is a dll to be linked with!
             if (!string.IsNullOrWhiteSpace(dllName))
@@ -229,17 +229,14 @@ namespace HapetBackend.Llvm
                 {
                     // need to create va_list and va_start
                     apAlloca = _builder.BuildAlloca(HapetTypeToLLVMType(vaListType), $"va_list.ap.addr");
+                    apAllocaBitcasted = _builder.BuildBitCast(apAlloca, _context.Int8Type.GetPointerTo(), "va_list.bitcasted");
 
                     // va start
                     var startDecl = _currentFunction.Scope.GetSymbolInNamespace("System.Runtime.InteropServices", "Marshal");
                     var startSymbol = (startDecl.Decl as AstClassDecl).SubScope.GetSymbol("System.Runtime.InteropServices.Marshal::VaStart(void*)") as DeclSymbol;
                     var startFunc = _valueMap[startSymbol];
                     LLVMTypeRef startType = _typeMap[startSymbol.Decl.Type.OutType];
-                    _builder.BuildCall2(startType, startFunc, new LLVMValueRef[] { apAlloca });
-
-                    var apAllocaBitcasted = _builder.BuildBitCast(apAlloca, _context.Int8Type.GetPointerTo(), "asdasdasdfrfff");
-
-                    aniemeeee = _builder.BuildVAArg(apAllocaBitcasted, _context.Int32Type, "asdasd");
+                    _builder.BuildCall2(startType, startFunc, new LLVMValueRef[] { apAllocaBitcasted });
 
                     var loaded = _builder.BuildLoad2(HapetTypeToLLVMType(ptrToVaListType), apAllocaBitcasted, "va_list.ap.loaded");
                     parameters.Add(loaded);
@@ -263,10 +260,7 @@ namespace HapetBackend.Llvm
             {
                 var v = _builder.BuildCall2(funcType, funcValue, parameters.ToArray(), $"{entryPoint}Result");
                 TryBuildVaEnd();
-                if (aniemeeee != default)
-                    _builder.BuildRet(aniemeeee);
-                else
-                    _builder.BuildRet(v);
+                _builder.BuildRet(v);
             }            
 
             void TryBuildVaEnd()
@@ -280,7 +274,7 @@ namespace HapetBackend.Llvm
                 var endSymbol = (endDecl.Decl as AstClassDecl).SubScope.GetSymbol("System.Runtime.InteropServices.Marshal::VaEnd(void*)") as DeclSymbol;
                 var endFunc = _valueMap[endSymbol];
                 LLVMTypeRef endType = _typeMap[endSymbol.Decl.Type.OutType];
-                _builder.BuildCall2(endType, endFunc, new LLVMValueRef[] { apAlloca });
+                _builder.BuildCall2(endType, endFunc, new LLVMValueRef[] { apAllocaBitcasted });
             }
         }
     }

@@ -289,8 +289,8 @@ namespace HapetPostPrepare
                 if (funcDecl.Parameters.Count == 0)
                     continue;
 
-                // if not bigger - check if the last param with 'params' cringe - allow
-                if (funcDecl.Parameters.Last().IsParams)
+                // if not bigger - check if the last param with 'params' or 'arglist' cringe - allow
+                if (funcDecl.Parameters.Last().IsParams || funcDecl.Parameters.Last().IsArglist)
                     yield return d;
             }
         }

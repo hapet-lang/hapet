@@ -8,7 +8,15 @@ public static class Program
     public static int Main(string[] args)
     {
         var bytes = UTF8Encoding.GetBytesUnsafe("AnimeTest %d");
-        return PrintF(bytes, 444);
+        byte[] a = new byte[6];
+        a[0] = 120;
+        a[1] = 120;
+        a[2] = 32;
+        a[3] = 37;
+        a[4] = 100;
+        a[5] = 0;
+        var b = (byte*)a.Buffer;
+        return PrintF(b, 444, 5555);
     }
 
     [DllImportAttribute("", "vprintf")]
