@@ -627,5 +627,41 @@ namespace HapetBackend.Llvm
             return _builder.BuildCall2(funcType, mallocFunc, new LLVMValueRef[] { sizeToMalloc }, allocName);
         }
         #endregion
+
+        #region Variatic args
+        private (LLVMTypeRef, LLVMValueRef)? _vaStartFunc;
+        private (LLVMTypeRef, LLVMValueRef) GetVaStartFunc()
+        {
+            if (_vaStartFunc.HasValue)
+                return _vaStartFunc.Value;
+
+            List<LLVMTypeRef> paramTypes = [HapetTypeToLLVMType(PointerType.GetPointerType(VoidType.Instance))];
+            var returnType = HapetTypeToLLVMType(VoidType.Instance);
+            var funcType = LLVMTypeRef.CreateFunction(returnType, paramTypes.ToArray(), false);
+            var funcValue = _module.AddFunction("llvm.va_start", funcType);
+            funcValue.Linkage = LLVMLinkage.LLVMExternalLinkage;
+            funcValue.DLLStorageClass = LLVMDLLStorageClass.LLVMDLLImportStorageClass;
+
+            _vaStartFunc = (funcType, funcValue);
+            return _vaStartFunc.Value;
+        }
+
+        private (LLVMTypeRef, LLVMValueRef)? _vaEndFunc;
+        private (LLVMTypeRef, LLVMValueRef) GetVaEndFunc()
+        {
+            if (_vaEndFunc.HasValue)
+                return _vaEndFunc.Value;
+
+            List<LLVMTypeRef> paramTypes = [HapetTypeToLLVMType(PointerType.GetPointerType(VoidType.Instance))];
+            var returnType = HapetTypeToLLVMType(VoidType.Instance);
+            var funcType = LLVMTypeRef.CreateFunction(returnType, paramTypes.ToArray(), false);
+            var funcValue = _module.AddFunction("llvm.va_end", funcType);
+            funcValue.Linkage = LLVMLinkage.LLVMExternalLinkage;
+            funcValue.DLLStorageClass = LLVMDLLStorageClass.LLVMDLLImportStorageClass;
+
+            _vaEndFunc = (funcType, funcValue);
+            return _vaEndFunc.Value;
+        }
+        #endregion
     }
 }
