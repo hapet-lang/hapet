@@ -490,6 +490,17 @@ namespace HapetFrontend.Parsing
                             return un;
                         }
 
+                    case TokenType.Period:
+                        {
+                            // cringe when smth like
+                            // ... (pivo as Sperm).CoolCringe().WWW ...
+                            var tkn = NextToken();
+                            SkipNewlines();
+                            var tmpExpr = new AstNestedExpr(expr as AstExpression, null, expr);
+                            expr = ParseIdentifierExpression(iniNested: tmpExpr);
+                        }
+                        break;
+
                     default:
                         return expr;
                 }
