@@ -48,10 +48,6 @@ namespace HapetFrontend.Parsing
                     // keep parsing 
                     continue;
                 }
-                else if (expr is AstTupleExpr tpl)
-                {
-                    return PrepareTupleExpr(tpl);
-                }
                 else if (expr == null && PeekToken().Type == TokenType.EOF)
                 {
                     return null;

@@ -1,8 +1,10 @@
 ﻿using HapetFrontend.Ast;
 using HapetFrontend.Ast.Declarations;
 using HapetFrontend.Ast.Expressions;
+using HapetFrontend.Ast.Statements;
 using HapetFrontend.Entities;
 using HapetFrontend.Errors;
+using System.Runtime;
 
 namespace HapetFrontend.Parsing
 {
@@ -303,10 +305,8 @@ namespace HapetFrontend.Parsing
             return new AstTupleExpr(list.Select(x => x.Expr).ToList(), new Location(beg, end)) { IsTypedTuple = false };
         }
 
-        private AstDeclaration PrepareTupleExpr(AstTupleExpr tpl)
+        private AstUnknownDecl PrepareTupleExpr(AstTupleExpr tpl, ParserInInfo inInfo, ref ParserOutInfo outInfo)
         {
-            // (int a, int) = (3, 4);\
-
             AstUnknownDecl decl;
             if (tpl.IsFullyNamed)
             {
@@ -316,9 +316,10 @@ namespace HapetFrontend.Parsing
             else
             {
                 // expect the name
+                var name = ParseIdentifierExpression(allowDots: false, allowGenerics: false, allowTupled: true);
+                decl = new AstUnknownDecl(tpl, name.RightPart as AstIdExpr, tpl);
             }
-
-            
+            return decl;
         }
     }
 }

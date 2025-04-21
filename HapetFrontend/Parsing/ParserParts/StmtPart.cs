@@ -81,6 +81,10 @@ namespace HapetFrontend.Parsing
                         {
                             stmt = new AstUnknownDecl(nestExpr, null, stmt);
                         }
+                        else if (stmt is AstTupleExpr tpl)
+                        {
+                            stmt = PrepareTupleExpr(tpl, inInfo, ref outInfo);
+                        }
 
                         // further preparations
                         if (stmt is AstEmptyStmt)

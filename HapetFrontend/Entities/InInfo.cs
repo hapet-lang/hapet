@@ -15,6 +15,8 @@ namespace HapetFrontend.Entities
         public bool AllowMultiplyExpression { get; set; }
         /// <summary>
         /// 'true' if shite like (int, int) is allowed
+        /// AND!!!
+        /// 'true' if shite like var a, b = ... is allowed
         /// </summary>
         public bool AllowTypedTuple { get; set; }
 

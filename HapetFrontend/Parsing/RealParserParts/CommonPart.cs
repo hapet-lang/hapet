@@ -25,9 +25,20 @@ namespace HapetFrontend.Parsing
             // lookahead cringe
             UpdateLookAheadLocation();
             var ident = ParseIdentifierExpressionInternal(customMessage, identType, allowDots, allowGenerics, iniNested, lookAhead, expectIdent);
-            if (allowTupled)
+
+            // handling cringe like 'var a, b, c = ...'
+            bool isComma = lookAhead ? CheckLookAhead(TokenType.Comma) : CheckToken(TokenType.Comma);
+            if (allowTupled && isComma)
             {
-                // TODO: 
+                List<AstIdExpr> names = new List<AstIdExpr>() { ident.RightPart as AstIdExpr };
+                while (isComma)
+                {
+                    var _ = lookAhead ? NextLookAhead() : NextToken();
+                    var another = ParseIdentifierExpressionInternal(allowGenerics: false, allowDots: false, lookAhead: lookAhead);
+                    names.Add(another.RightPart as AstIdExpr);
+                }
+                var tupled = new AstIdTupledExpr(names, new Location(names.First().Beginning, names.Last().Ending));
+                ident.RightPart = tupled;
             }
             return ident;
         }
