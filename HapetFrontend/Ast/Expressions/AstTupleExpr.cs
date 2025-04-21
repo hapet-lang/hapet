@@ -1,26 +1,23 @@
-﻿using HapetFrontend.Ast.Declarations;
-
-namespace HapetFrontend.Ast.Expressions
+﻿namespace HapetFrontend.Ast.Expressions
 {
     public class AstTupleExpr : AstExpression
     {
-        public bool IsFullyNamed => Types.All(t => t.Name != null);
-        public List<AstExpression> Values { get; set; }
-        public List<AstParamDecl> Types { get; set; }
+        public List<AstIdExpr> Names { get; set; }
+        public List<AstExpression> Elements { get; set; }
+
+        /// <summary>
+        /// 'true' if (int, int), 'false' if (3, 54)
+        /// </summary>
+        public bool IsTypedTuple { get; set; }
+
+        public bool IsFullyNamed => Names.All(x => x != null);
 
         public override string AAAName => nameof(AstTupleExpr);
 
-        public AstTupleExpr(List<AstParamDecl> values, ILocation location)
+        public AstTupleExpr(List<AstExpression> elements, ILocation location)
             : base(location)
         {
-            this.Types = values;
-            this.Values = Types.Select(t => t.Type as AstExpression).ToList();
-        }
-        public AstTupleExpr(List<AstNestedExpr> values, ILocation location)
-            : base(location)
-        {
-            this.Types = values.Select(v => new AstParamDecl(v, null, null, "", v.Location)).ToList();
-            this.Values = Types.Select(t => t.Type as AstExpression).ToList();
+            this.Elements = elements;
         }
 
         public override AstStatement GetDeepCopy()

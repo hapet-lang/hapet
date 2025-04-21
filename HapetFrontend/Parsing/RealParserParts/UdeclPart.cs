@@ -20,7 +20,8 @@ namespace HapetFrontend.Parsing
             inInfo.CurrentUdecl = udecl;
 
             // variable declaration with initializer
-            if (CheckToken(TokenType.Equal) && udecl.Name != null)
+            // allow shite like (int a, int b) = ...
+            if (CheckToken(TokenType.Equal) && (udecl.Name != null || (udecl.Type is AstTupleExpr tpl && tpl.IsFullyNamed)))
             {
                 NextToken();
                 initializer = ParseExpression(inInfo, ref outInfo);

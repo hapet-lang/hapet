@@ -7,11 +7,7 @@ public static class Program
 {
     public static int Main(string[] args)
     {
-        return Inlined();
+        (int, int) a = (4, 5);
+        return 0;
     }
-
-    private static inline int Inlined()
-    {
-        return 154;
-    } 
 }

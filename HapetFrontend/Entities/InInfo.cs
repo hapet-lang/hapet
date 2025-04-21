@@ -13,6 +13,10 @@ namespace HapetFrontend.Entities
         /// func(byte* test);
         /// </summary>
         public bool AllowMultiplyExpression { get; set; }
+        /// <summary>
+        /// 'true' if shite like (int, int) is allowed
+        /// </summary>
+        public bool AllowTypedTuple { get; set; }
 
         /// <summary>
         /// 'true' when parsing .mpt file
@@ -37,6 +41,7 @@ namespace HapetFrontend.Entities
         public static ParserInInfo Default => new ParserInInfo()
         {
             AllowArrayExpression = true,
+            AllowTypedTuple = false,
             AllowMultiplyExpression = true,
             ExternalMetadata = false,
             Message = null,

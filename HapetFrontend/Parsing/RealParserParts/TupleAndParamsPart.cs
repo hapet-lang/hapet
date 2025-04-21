@@ -223,6 +223,16 @@ namespace HapetFrontend.Parsing
 
         private AstStatement ParseTupleExpression(ParserInInfo inInfo, ref ParserOutInfo outInfo)
         {
+            // expecting (int, int b) here
+            if (inInfo.AllowTypedTuple)
+            {
+                var list2 = ParseParameterList(TokenType.OpenParen, TokenType.CloseParen, out var beg2, out var end2, false);
+                var tpl = new AstTupleExpr(list2.Select(x => x.Type).ToList(), new Location(beg2, end2));
+                tpl.Names = list2.Select(x => x.Name).ToList();
+                tpl.IsTypedTuple = true;
+                return tpl;
+            }
+
             var list = ParseArgumentList(out var beg, out var end);
 
             //if (CheckToken(TokenType.Arrow))
@@ -290,7 +300,25 @@ namespace HapetFrontend.Parsing
                 }
             }
 
-            return new AstTupleExpr(list.Select(x => x.Expr as AstNestedExpr).ToList(), new Location(beg, end));
+            return new AstTupleExpr(list.Select(x => x.Expr).ToList(), new Location(beg, end)) { IsTypedTuple = false };
+        }
+
+        private AstDeclaration PrepareTupleExpr(AstTupleExpr tpl)
+        {
+            // (int a, int) = (3, 4);\
+
+            AstUnknownDecl decl;
+            if (tpl.IsFullyNamed)
+            {
+                // (int a, int b) = (3, 4);
+                decl = new AstUnknownDecl(tpl, null, tpl);
+            }
+            else
+            {
+                // expect the name
+            }
+
+            
         }
     }
 }
