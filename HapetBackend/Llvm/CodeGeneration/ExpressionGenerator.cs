@@ -290,6 +290,11 @@ namespace HapetBackend.Llvm
                                     var downcasterFunc = _valueMap[downcasterSymbol];
                                     LLVMTypeRef funcType = _typeMap[downcasterSymbol.Decl.Type.OutType];
                                     var canBeDowncasted = _builder.BuildCall2(funcType, downcasterFunc, new LLVMValueRef[] { left, ptrToCastTypeInfo }, "canBeDowncasted");
+
+                                    // if 'is not' cringe - negate
+                                    if (binExpr.IsNot)
+                                        canBeDowncasted = _builder.BuildNot(canBeDowncasted, "negated");
+
                                     return canBeDowncasted;
                                 }
                                 else
@@ -301,7 +306,7 @@ namespace HapetBackend.Llvm
                             else
                             {
                                 // just true when upcast shite
-                                return GenerateExpressionCode(new AstBoolExpr(true));
+                                return GenerateExpressionCode(new AstBoolExpr(!binExpr.IsNot));
                             }
                         }
                     default:
