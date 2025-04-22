@@ -26,7 +26,7 @@ namespace HapetFrontend.Parsing
             }
             else
             {
-                var nest = ParseIdentifierExpression(allowDots: false, allowGenerics: true);
+                var nest = ParseIdentifierExpression(inInfo, allowDots: false, allowGenerics: true);
                 if (nest.RightPart is not AstIdExpr idExpr)
                 {
                     ReportMessage(nest.Location, [], ErrorCode.Get(CTEN.StructNameNotIdent));
@@ -60,7 +60,7 @@ namespace HapetFrontend.Parsing
 
                 while (CheckToken(TokenType.Identifier))
                 {
-                    var ident = ParseIdentifierExpression(allowGenerics: true);
+                    var ident = ParseIdentifierExpression(inInfo, allowGenerics: true);
                     inherited.Add(ident);
                     // if there is something else
                     if (CheckToken(TokenType.Comma))

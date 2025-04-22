@@ -123,7 +123,12 @@ namespace HapetFrontend.Parsing
             {
                 var _ = NextToken();
                 SkipNewlines();
+
+                // we want to prefer generics
+                var saved1 = inInfo.PreferGenericShite;
+                inInfo.PreferGenericShite = true;
                 rhs = ParseAsExpression(inInfo, ref outInfo);
+                inInfo.PreferGenericShite = saved1;
 
                 // check for 'test is Anime anime' shite
                 AstExpression additional = null;
@@ -162,7 +167,13 @@ namespace HapetFrontend.Parsing
             {
                 var _ = NextToken();
                 SkipNewlines();
+
+                // we want to prefer generics
+                var saved1 = inInfo.PreferGenericShite;
+                inInfo.PreferGenericShite = true;
                 rhs = ParseInExpression(inInfo, ref outInfo);
+                inInfo.PreferGenericShite = saved1;
+
                 var binExpr = new AstBinaryExpr("as", lhs as AstExpression, rhs as AstExpression, new Location(lhs.Beginning, rhs.Ending));
 
                 // error if it is not an expr
@@ -290,6 +301,7 @@ namespace HapetFrontend.Parsing
 
             while (true)
             {
+                SkipNewlines();
                 var next = PeekToken();
 
                 // cringe handle >>
@@ -449,7 +461,7 @@ namespace HapetFrontend.Parsing
                             {
                                 NextToken();
                                 // here we are getting the rest 'dwd.Lmao'
-                                expr = ParseIdentifierExpression(iniNested: expr as AstNestedExpr);
+                                expr = ParseIdentifierExpression(inInfo, iniNested: expr as AstNestedExpr);
                                 // so after this the upper loop will check if there is a OpenParent and so on
                                 // if there is no OpenParen - then just NestedExpr will be returned
                             }
@@ -508,7 +520,7 @@ namespace HapetFrontend.Parsing
                             {
                                 NextToken();
                                 // here we are getting the rest '.Length'
-                                expr = ParseIdentifierExpression(iniNested: expr as AstNestedExpr);
+                                expr = ParseIdentifierExpression(inInfo, iniNested: expr as AstNestedExpr);
                                 // so after this the upper loop will check if there is a OpenParent and so on
                                 // if there is no OpenParen - then just NestedExpr will be returned
                             }
@@ -537,7 +549,7 @@ namespace HapetFrontend.Parsing
                             var tkn = NextToken();
                             SkipNewlines();
                             var tmpExpr = new AstNestedExpr(expr as AstExpression, null, expr);
-                            expr = ParseIdentifierExpression(iniNested: tmpExpr);
+                            expr = ParseIdentifierExpression(inInfo, iniNested: tmpExpr);
                         }
                         break;
 
@@ -589,7 +601,7 @@ namespace HapetFrontend.Parsing
                         // }
                         NextToken();
                         Consume(TokenType.Period, ErrMsg(".", "after 'base' word"));
-                        return ParseIdentifierExpression(iniNested: new AstNestedExpr(new AstIdExpr("base", CurrentToken.Location), null, CurrentToken.Location));
+                        return ParseIdentifierExpression(inInfo, iniNested: new AstNestedExpr(new AstIdExpr("base", CurrentToken.Location), null, CurrentToken.Location));
                     }
 
                 case TokenType.KwImplicit:
@@ -600,7 +612,7 @@ namespace HapetFrontend.Parsing
 
                 case TokenType.Identifier:
                     {
-                        var id = ParseIdentifierExpression(iniNested: inInfo.PreviousNestedForNullCheck);
+                        var id = ParseIdentifierExpression(inInfo, iniNested: inInfo.PreviousNestedForNullCheck);
 
                         // if it is a pointer or array type
                         while (CheckToken(TokenType.Asterisk) || CheckToken(TokenType.ArrayDef))
@@ -619,7 +631,7 @@ namespace HapetFrontend.Parsing
                                 // how to find out when 'a * b' is a mul expr
                                 // and 'bool* bptr' is a ptr expr?
                                 // so allowPointerExpressions is true only when decls are parsed!!!
-                                if (!IsThatPointerWithLookAhead(id, inInfo.AllowMultiplyExpression))
+                                if (!IsThatPointerWithLookAhead(inInfo, inInfo.AllowMultiplyExpression))
                                     break;
                                 var ptrExpr = new AstPointerExpr(id, false, new Location(id.RightPart.Beginning, CurrentToken.Location.Ending));
                                 id = new AstNestedExpr(ptrExpr, null, ptrExpr);
@@ -632,7 +644,7 @@ namespace HapetFrontend.Parsing
                         {
                             // allowDots is true because of explicit interface impls
                             // allowGenerics because of Anime<T>.Func explicit impls
-                            var name = ParseIdentifierExpression(allowDots: true, allowGenerics: true, expectIdent: true, allowTupled: inInfo.AllowTypedTuple);
+                            var name = ParseIdentifierExpression(inInfo, allowDots: true, allowGenerics: true, expectIdent: true, allowTupled: inInfo.AllowTypedTuple);
                             if (name.RightPart is not AstIdExpr idExpr)
                             {
                                 ReportMessage(id.Location, [], ErrorCode.Get(CTEN.DeclNameIsNotIdent));

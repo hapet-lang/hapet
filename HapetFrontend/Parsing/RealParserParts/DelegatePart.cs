@@ -24,7 +24,7 @@ namespace HapetFrontend.Parsing
             }
             else
             {
-                returnType = ParseIdentifierExpression(allowDots: true);
+                returnType = ParseIdentifierExpression(inInfo, allowDots: true);
             }
 
             // class name
@@ -35,7 +35,7 @@ namespace HapetFrontend.Parsing
             }
             else
             {
-                var nest = ParseIdentifierExpression(allowDots: false);
+                var nest = ParseIdentifierExpression(inInfo, allowDots: false);
                 if (nest.RightPart is not AstIdExpr idExpr)
                 {
                     ReportMessage(nest.Location, [], ErrorCode.Get(CTEN.DelegNameIsNotIdent));

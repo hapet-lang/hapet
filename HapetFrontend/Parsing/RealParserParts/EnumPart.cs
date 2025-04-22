@@ -27,7 +27,7 @@ namespace HapetFrontend.Parsing
             }
             else
             {
-                var nest = ParseIdentifierExpression(allowDots: false);
+                var nest = ParseIdentifierExpression(inInfo, allowDots: false);
                 if (nest.RightPart is not AstIdExpr idExpr)
                 {
                     ReportMessage(nest.Location, [], ErrorCode.Get(CTEN.EnumNameNotIdent));
@@ -43,7 +43,7 @@ namespace HapetFrontend.Parsing
 
                 while (CheckToken(TokenType.Identifier))
                 {
-                    var ident = ParseIdentifierExpression();
+                    var ident = ParseIdentifierExpression(inInfo);
                     inherited.Add(ident);
                     // if there is something else
                     if (CheckToken(TokenType.Comma))
@@ -83,7 +83,7 @@ namespace HapetFrontend.Parsing
 
                 // getting decl parts
                 AstExpression ini = null;
-                var id = ParseIdentifierExpression(allowDots: false);
+                var id = ParseIdentifierExpression(inInfo, allowDots: false);
                 TokenLocation fieldEnd = id.Ending;
                 if (CheckToken(TokenType.Equal))
                 {

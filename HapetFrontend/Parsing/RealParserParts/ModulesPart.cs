@@ -1,6 +1,7 @@
 ﻿using HapetFrontend.Ast;
 using HapetFrontend.Ast.Expressions;
 using HapetFrontend.Ast.Statements;
+using HapetFrontend.Entities;
 using HapetFrontend.Errors;
 using System.Collections.Generic;
 
@@ -14,7 +15,9 @@ namespace HapetFrontend.Parsing
 
             beg ??= Consume(TokenType.KwUsing, ErrMsg("keyword 'using'", "at beginning of 'using' statement")).Location;
             SkipNewlines();
-            var expr = ParseIdentifierExpression(ErrMsg("expression", "after keyword 'using'"));
+
+            var inInfo = new ParserInInfo() { Message = ErrMsg("expression", "after keyword 'using'") };
+            var expr = ParseIdentifierExpression(inInfo);
 
             if (expr is not AstNestedExpr)
             {
@@ -31,7 +34,9 @@ namespace HapetFrontend.Parsing
 
             beg ??= Consume(TokenType.KwNamespace, ErrMsg("keyword 'namespace'", "at beginning of 'namespace' statement")).Location;
             SkipNewlines();
-            var expr = ParseIdentifierExpression(ErrMsg("expression", "after keyword 'namespace'"));
+
+            var inInfo = new ParserInInfo() { Message = ErrMsg("expression", "after keyword 'namespace'") };
+            var expr = ParseIdentifierExpression(inInfo);
 
             if (expr is not AstNestedExpr)
             {

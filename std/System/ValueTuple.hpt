@@ -339,7 +339,7 @@ public struct ValueTuple<T1>
 
     int IComparable.CompareTo(object other)
     {
-        if (other is not null)
+        if (other != null)
         {
             if (other is ValueTuple<T1> objTuple)
             {
@@ -368,7 +368,7 @@ public struct ValueTuple<T1>
 
     int IStructuralComparable.CompareTo(object other, IComparer comparer)
     {
-        if (other is not null)
+        if (other != null)
         {
             if (other is ValueTuple<T1> objTuple)
             {
@@ -393,12 +393,12 @@ public struct ValueTuple<T1>
 
     int IStructuralEquatable.GetHashCode(IEqualityComparer comparer)
     {
-        return comparer.GetHashCode(Item1!);
+        return comparer.GetHashCode(Item1);
     }
 
     int IValueTupleInternal.GetHashCode(IEqualityComparer comparer)
     {
-        return comparer.GetHashCode(Item1!);
+        return comparer.GetHashCode(Item1);
     }
 
     /// <summary>

@@ -20,6 +20,11 @@ namespace HapetFrontend.Entities
         /// 'true' if shite like var a, b = ... is allowed
         /// </summary>
         public bool AllowTypedTuple { get; set; }
+        /// <summary>
+        /// If 'true' - generic shite is prefered. Check this
+        /// https://github.com/hapet-lang/hapet/issues/67
+        /// </summary>
+        public bool PreferGenericShite { get; set; }
 
         /// <summary>
         /// 'true' when parsing .mpt file

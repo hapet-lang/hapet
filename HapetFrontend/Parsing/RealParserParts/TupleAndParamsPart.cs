@@ -316,7 +316,7 @@ namespace HapetFrontend.Parsing
             else
             {
                 // expect the name
-                var name = ParseIdentifierExpression(allowDots: false, allowGenerics: false, allowTupled: true);
+                var name = ParseIdentifierExpression(inInfo, allowDots: false, allowGenerics: false, allowTupled: true);
                 decl = new AstUnknownDecl(tpl, name.RightPart as AstIdExpr, tpl);
             }
             return decl;

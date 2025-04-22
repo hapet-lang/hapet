@@ -1,6 +1,7 @@
 ﻿using HapetFrontend.Ast;
 using HapetFrontend.Ast.Expressions;
 using HapetFrontend.Errors;
+using System.Runtime;
 
 namespace HapetFrontend.Parsing
 {
@@ -8,6 +9,7 @@ namespace HapetFrontend.Parsing
     {
         private Dictionary<AstIdExpr, List<AstNestedExpr>> ParseGenericConstrains(List<AstIdExpr> generics)
         {
+            var inInfo = new Entities.ParserInInfo();
             var genericConstrains = new Dictionary<AstIdExpr, List<AstNestedExpr>>();
 
             // checking for generic constrains
@@ -23,7 +25,7 @@ namespace HapetFrontend.Parsing
                     continue;
                 }
                 // has to be identifier (nested is also not allowed!!!)
-                var typeNameExpr = ParseIdentifierExpression();
+                var typeNameExpr = ParseIdentifierExpression(inInfo);
                 if (typeNameExpr.RightPart is not AstIdExpr nameIdentExpr)
                 {
                     ReportMessage(typeNameExpr, [], ErrorCode.Get(CTEN.CommonIdentifierExpected));
@@ -47,7 +49,7 @@ namespace HapetFrontend.Parsing
                 List<AstNestedExpr> constrains = new List<AstNestedExpr>();
                 while (CheckToken(TokenType.Identifier))
                 {
-                    var ident = ParseIdentifierExpression();
+                    var ident = ParseIdentifierExpression(inInfo);
                     constrains.Add(ident);
                     // if there is something else
                     if (CheckToken(TokenType.Comma))

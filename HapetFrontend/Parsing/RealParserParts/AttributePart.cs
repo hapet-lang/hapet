@@ -2,7 +2,9 @@
 using HapetFrontend.Ast.Declarations;
 using HapetFrontend.Ast.Expressions;
 using HapetFrontend.Ast.Statements;
+using HapetFrontend.Entities;
 using HapetFrontend.Errors;
+using System.Runtime;
 using System.Xml.Linq;
 
 namespace HapetFrontend.Parsing
@@ -11,6 +13,7 @@ namespace HapetFrontend.Parsing
     {
         private AstStatement ParseAttributeStatement()
         {
+            ParserInInfo inInfo = new ParserInInfo();
             TokenLocation beg = null;
             TokenLocation end = null;
             AstNestedExpr attrName = null;
@@ -27,7 +30,7 @@ namespace HapetFrontend.Parsing
             }
             else
             {
-                attrName = ParseIdentifierExpression(allowDots: true);
+                attrName = ParseIdentifierExpression(inInfo, allowDots: true);
             }
 
             // parsing attr args
