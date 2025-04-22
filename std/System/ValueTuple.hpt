@@ -1863,9 +1863,6 @@ public struct ValueTuple<T1, T2, T3, T4, T5, T6, T7>
 /// <typeparam name="T6">The type of the tuple's sixth component.</typeparam>
 /// <typeparam name="T7">The type of the tuple's seventh component.</typeparam>
 /// <typeparam name="TRest">The type of the tuple's eighth component.</typeparam>
-[Serializable]
-[StructLayout(LayoutKind.Auto)]
-[TypeForwardedFrom("mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089")]
 public struct ValueTuple<T1, T2, T3, T4, T5, T6, T7, TRest>
 : IEquatable<ValueTuple<T1, T2, T3, T4, T5, T6, T7, TRest>>, IStructuralEquatable, IStructuralComparable, IComparable, IComparable<ValueTuple<T1, T2, T3, T4, T5, T6, T7, TRest>>, IValueTupleInternal, ITuple
 where TRest : struct
@@ -1918,7 +1915,8 @@ where TRest : struct
     {
         if (rest is not IValueTupleInternal)
         {
-            throw new ArgumentException(SR.ArgumentException_ValueTupleLastArgumentNotAValueTuple);
+            // TODO: 
+            // throw new ArgumentException(SR.ArgumentException_ValueTupleLastArgumentNotAValueTuple);
         }
 
         Item1 = item1;
@@ -1944,7 +1942,7 @@ where TRest : struct
     ///     <item><description>Its components are equal to those of the current instance. Equality is determined by the default object equality comparer for each component.</description></item>
     /// </list>
     /// </remarks>
-    public override bool Equals([NotNullWhen(true)] object? obj)
+    public override bool Equals(object obj)
     {
         return obj is ValueTuple<T1, T2, T3, T4, T5, T6, T7, TRest> tuple && Equals(tuple);
     }
@@ -1971,27 +1969,30 @@ where TRest : struct
             && EqualityComparer<TRest>.Default.Equals(Rest, other.Rest);
     }
 
-    bool IStructuralEquatable.Equals(object? other, IEqualityComparer comparer) =>
-        other is ValueTuple<T1, T2, T3, T4, T5, T6, T7, TRest> vt &&
-        comparer.Equals(Item1, vt.Item1) &&
-        comparer.Equals(Item2, vt.Item2) &&
-        comparer.Equals(Item3, vt.Item3) &&
-        comparer.Equals(Item4, vt.Item4) &&
-        comparer.Equals(Item5, vt.Item5) &&
-        comparer.Equals(Item6, vt.Item6) &&
-        comparer.Equals(Item7, vt.Item7) &&
-        comparer.Equals(Rest, vt.Rest);
-
-    int IComparable.CompareTo(object? other)
+    bool IStructuralEquatable.Equals(object other, IEqualityComparer comparer)
     {
-        if (other is not null)
+        return other is ValueTuple<T1, T2, T3, T4, T5, T6, T7, TRest> vt &&
+            comparer.Equals(Item1, vt.Item1) &&
+            comparer.Equals(Item2, vt.Item2) &&
+            comparer.Equals(Item3, vt.Item3) &&
+            comparer.Equals(Item4, vt.Item4) &&
+            comparer.Equals(Item5, vt.Item5) &&
+            comparer.Equals(Item6, vt.Item6) &&
+            comparer.Equals(Item7, vt.Item7) &&
+            comparer.Equals(Rest, vt.Rest);
+    }
+
+    int IComparable.CompareTo(object other)
+    {
+        if (other != null)
         {
             if (other is ValueTuple<T1, T2, T3, T4, T5, T6, T7, TRest> objTuple)
             {
                 return CompareTo(objTuple);
             }
 
-            ThrowHelper.ThrowArgumentException_TupleIncorrectType(this);
+            // TODO: 
+            // ThrowHelper.ThrowArgumentException_TupleIncorrectType(this);
         }
 
         return 1;
@@ -2031,9 +2032,9 @@ where TRest : struct
         return Comparer<TRest>.Default.Compare(Rest, other.Rest);
     }
 
-    int IStructuralComparable.CompareTo(object? other, IComparer comparer)
+    int IStructuralComparable.CompareTo(object other, IComparer comparer)
     {
-        if (other is not null)
+        if (other != null)
         {
             if (other is ValueTuple<T1, T2, T3, T4, T5, T6, T7, TRest> objTuple)
             {
@@ -2061,7 +2062,8 @@ where TRest : struct
                 return comparer.Compare(Rest, objTuple.Rest);
             }
 
-            ThrowHelper.ThrowArgumentException_TupleIncorrectType(this);
+            // TODO: 
+            // ThrowHelper.ThrowArgumentException_TupleIncorrectType(this);
         }
 
         return 1;
@@ -2096,32 +2098,32 @@ where TRest : struct
         int k = 8 - size;
         switch (k)
         {
-            case 1:
+            case (1)
                 return HashCode.Combine(Item7?.GetHashCode() ?? 0,
                                         restHashCode);
-            case 2:
+            case (2)
                 return HashCode.Combine(Item6?.GetHashCode() ?? 0,
                                         Item7?.GetHashCode() ?? 0,
                                         restHashCode);
-            case 3:
+            case (3)
                 return HashCode.Combine(Item5?.GetHashCode() ?? 0,
                                         Item6?.GetHashCode() ?? 0,
                                         Item7?.GetHashCode() ?? 0,
                                         restHashCode);
-            case 4:
+            case (4)
                 return HashCode.Combine(Item4?.GetHashCode() ?? 0,
                                         Item5?.GetHashCode() ?? 0,
                                         Item6?.GetHashCode() ?? 0,
                                         Item7?.GetHashCode() ?? 0,
                                         restHashCode);
-            case 5:
+            case (5)
                 return HashCode.Combine(Item3?.GetHashCode() ?? 0,
                                         Item4?.GetHashCode() ?? 0,
                                         Item5?.GetHashCode() ?? 0,
                                         Item6?.GetHashCode() ?? 0,
                                         Item7?.GetHashCode() ?? 0,
                                         restHashCode);
-            case 6:
+            case (6)
                 return HashCode.Combine(Item2?.GetHashCode() ?? 0,
                                         Item3?.GetHashCode() ?? 0,
                                         Item4?.GetHashCode() ?? 0,
@@ -2129,8 +2131,8 @@ where TRest : struct
                                         Item6?.GetHashCode() ?? 0,
                                         Item7?.GetHashCode() ?? 0,
                                         restHashCode);
-            case 7:
-            case 8:
+            case (7)
+            case (8)
                 return HashCode.Combine(Item1?.GetHashCode() ?? 0,
                                         Item2?.GetHashCode() ?? 0,
                                         Item3?.GetHashCode() ?? 0,
@@ -2141,7 +2143,8 @@ where TRest : struct
                                         restHashCode);
         }
 
-        Debug.Fail("Missed all cases for computing ValueTuple hash code");
+        // TODO: 
+        // Debug.Fail("Missed all cases for computing ValueTuple hash code");
         return -1;
     }
 
@@ -2155,9 +2158,9 @@ where TRest : struct
         // We want to have a limited hash in this case. We'll use the first 7 elements of the tuple
         if (Rest is not IValueTupleInternal rest)
         {
-            return HashCode.Combine(comparer.GetHashCode(Item1!), comparer.GetHashCode(Item2!), comparer.GetHashCode(Item3!),
-                                    comparer.GetHashCode(Item4!), comparer.GetHashCode(Item5!), comparer.GetHashCode(Item6!),
-                                    comparer.GetHashCode(Item7!));
+            return HashCode.Combine(comparer.GetHashCode(Item1), comparer.GetHashCode(Item2), comparer.GetHashCode(Item3),
+                                    comparer.GetHashCode(Item4), comparer.GetHashCode(Item5), comparer.GetHashCode(Item6),
+                                    comparer.GetHashCode(Item7));
         }
 
         int size = rest.Length;
@@ -2171,52 +2174,53 @@ where TRest : struct
         int k = 8 - size;
         switch (k)
         {
-            case 1:
-                return HashCode.Combine(comparer.GetHashCode(Item7!),
+            case (1)
+                return HashCode.Combine(comparer.GetHashCode(Item7),
                                         restHashCode);
-            case 2:
-                return HashCode.Combine(comparer.GetHashCode(Item6!),
-                                        comparer.GetHashCode(Item7!),
+            case (2)
+                return HashCode.Combine(comparer.GetHashCode(Item6),
+                                        comparer.GetHashCode(Item7),
                                         restHashCode);
-            case 3:
-                return HashCode.Combine(comparer.GetHashCode(Item5!),
-                                        comparer.GetHashCode(Item6!),
-                                        comparer.GetHashCode(Item7!),
+            case (3)
+                return HashCode.Combine(comparer.GetHashCode(Item5),
+                                        comparer.GetHashCode(Item6),
+                                        comparer.GetHashCode(Item7),
                                         restHashCode);
-            case 4:
-                return HashCode.Combine(comparer.GetHashCode(Item4!),
-                                        comparer.GetHashCode(Item5!),
-                                        comparer.GetHashCode(Item6!),
-                                        comparer.GetHashCode(Item7!),
+            case (4)
+                return HashCode.Combine(comparer.GetHashCode(Item4),
+                                        comparer.GetHashCode(Item5),
+                                        comparer.GetHashCode(Item6),
+                                        comparer.GetHashCode(Item7),
                                         restHashCode);
-            case 5:
-                return HashCode.Combine(comparer.GetHashCode(Item3!),
-                                        comparer.GetHashCode(Item4!),
-                                        comparer.GetHashCode(Item5!),
-                                        comparer.GetHashCode(Item6!),
-                                        comparer.GetHashCode(Item7!),
+            case (5)
+                return HashCode.Combine(comparer.GetHashCode(Item3),
+                                        comparer.GetHashCode(Item4),
+                                        comparer.GetHashCode(Item5),
+                                        comparer.GetHashCode(Item6),
+                                        comparer.GetHashCode(Item7),
                                         restHashCode);
-            case 6:
-                return HashCode.Combine(comparer.GetHashCode(Item2!),
-                                        comparer.GetHashCode(Item3!),
-                                        comparer.GetHashCode(Item4!),
-                                        comparer.GetHashCode(Item5!),
-                                        comparer.GetHashCode(Item6!),
-                                        comparer.GetHashCode(Item7!),
+            case (6)
+                return HashCode.Combine(comparer.GetHashCode(Item2),
+                                        comparer.GetHashCode(Item3),
+                                        comparer.GetHashCode(Item4),
+                                        comparer.GetHashCode(Item5),
+                                        comparer.GetHashCode(Item6),
+                                        comparer.GetHashCode(Item7),
                                         restHashCode);
-            case 7:
-            case 8:
-                return HashCode.Combine(comparer.GetHashCode(Item1!),
-                                        comparer.GetHashCode(Item2!),
-                                        comparer.GetHashCode(Item3!),
-                                        comparer.GetHashCode(Item4!),
-                                        comparer.GetHashCode(Item5!),
-                                        comparer.GetHashCode(Item6!),
-                                        comparer.GetHashCode(Item7!),
+            case (7)
+            case (8)
+                return HashCode.Combine(comparer.GetHashCode(Item1),
+                                        comparer.GetHashCode(Item2),
+                                        comparer.GetHashCode(Item3),
+                                        comparer.GetHashCode(Item4),
+                                        comparer.GetHashCode(Item5),
+                                        comparer.GetHashCode(Item6),
+                                        comparer.GetHashCode(Item7),
                                         restHashCode);
         }
 
-        Debug.Fail("Missed all cases for computing ValueTuple hash code");
+        // TODO: 
+        // Debug.Fail("Missed all cases for computing ValueTuple hash code");
         return -1;
     }
 
@@ -2256,30 +2260,30 @@ where TRest : struct
     /// <summary>
     /// The number of positions in this data structure.
     /// </summary>
-    int ITuple.Length => Rest is IValueTupleInternal ? 7 + ((IValueTupleInternal)Rest).Length : 8;
+    int ITuple.Length { get { return Rest is IValueTupleInternal ? 7 + ((IValueTupleInternal)Rest).Length : 8; } }
 
     /// <summary>
     /// Get the element at position <param name="index"/>.
     /// </summary>
-    object? ITuple.this[int index]
+    object ITuple.this[int index]
     {
         get
         {
             switch (index)
             {
-                case 0:
+                case (0)
                     return Item1;
-                case 1:
+                case (1)
                     return Item2;
-                case 2:
+                case (2)
                     return Item3;
-                case 3:
+                case (3)
                     return Item4;
-                case 4:
+                case (4)
                     return Item5;
-                case 5:
+                case (5)
                     return Item6;
-                case 6:
+                case (6)
                     return Item7;
             }
 
@@ -2294,7 +2298,9 @@ where TRest : struct
                 return Rest;
             }
 
-            throw new IndexOutOfRangeException();
+            // TODO: 
+            // throw new IndexOutOfRangeException();
+            return Rest;
         }
     }
 }
