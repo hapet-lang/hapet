@@ -46,6 +46,12 @@ namespace HapetFrontend.Entities
         public AstNestedExpr PreviousNestedForNullCheck { get; set; }
 
         /// <summary>
+        /// if 'true' then block expr parser would skip semicolon checks when sees 'default' kw
+        /// added because of https://github.com/hapet-lang/hapet/issues/69
+        /// </summary>
+        public bool SkipDefaultSemicolonChecks { get; set; }
+
+        /// <summary>
         /// This shite is used for func decl
         /// </summary>
         public AstUnknownDecl CurrentUdecl { get; set; }

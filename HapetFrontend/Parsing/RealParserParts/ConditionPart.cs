@@ -83,6 +83,7 @@ namespace HapetFrontend.Parsing
             // parsing the block
             if (CheckToken(TokenType.OpenBrace))
             {
+                inInfo.SkipDefaultSemicolonChecks = true; // skip checks at the top level for 'default'
                 var theBlock = ParseBlockExpression(inInfo, ref outInfo);
                 List<AstCaseStmt> cases = new List<AstCaseStmt>();
 
@@ -187,20 +188,14 @@ namespace HapetFrontend.Parsing
 
             SkipNewlines();
 
-            // parsing the block
-            if (CheckToken(TokenType.OpenBrace))
-            {
-                body = ParseBlockExpression(inInfo, ref outInfo);
-            }
-            else if (CheckToken(TokenType.KwCase))
+            if (CheckToken(TokenType.KwCase))
             {
                 isFalling = true;
             }
             else
             {
-                // getting only one stmt if there are no braces
-                var onlyStmt = ParseStatement(inInfo, ref outInfo);
-                body = new AstBlockExpr(new List<AstStatement>() { onlyStmt }, onlyStmt);
+                // parsing the block
+                body = GetLoopOrCondBlock(inInfo, ref outInfo);
             }
 
             var cs = new AstCaseStmt(pattern, body, new Location(beg, end));

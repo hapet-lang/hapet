@@ -281,7 +281,7 @@ namespace HapetFrontend.Parsing
             return isPointer;
         }
 
-        private void CheckSemicolonAfterStmt(AstStatement s)
+        private void CheckSemicolonAfterStmt(AstStatement s, bool skipDefault = false)
         {
             // consume semicolon after other stmt
             if (s is not AstWhileStmt &&
@@ -296,6 +296,10 @@ namespace HapetFrontend.Parsing
                 s is not AstEnumDecl &&
                 s is not AstDirectiveStmt)
             {
+                // if skip default checks
+                if (skipDefault && s is AstDefaultExpr)
+                    return;
+
                 if (!CheckToken(TokenType.Semicolon))
                 {
                     // here u can set breakpoint to catch error

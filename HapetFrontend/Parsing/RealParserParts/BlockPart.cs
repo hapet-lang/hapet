@@ -14,6 +14,10 @@ namespace HapetFrontend.Parsing
             var statements = new List<AstStatement>();
             var beg = Consume(TokenType.OpenBrace, ErrMsg("{", "at beginning of block expression")).Location;
 
+            // get info and reset this cringe - only top level skips
+            var skipDefaultSemicolonChecks = inInfo.SkipDefaultSemicolonChecks;
+            inInfo.SkipDefaultSemicolonChecks = false;
+
             // the string is used to check if BR found in the block
             // so do not accept any statements after it
             string foundBrStatement = string.Empty;
@@ -54,7 +58,7 @@ namespace HapetFrontend.Parsing
                     }
 
                     // try eat semicolon or error
-                    CheckSemicolonAfterStmt(s);
+                    CheckSemicolonAfterStmt(s, skipDefaultSemicolonChecks);
 
                     // save the statment name to warn if there is something after it
                     switch (s)
