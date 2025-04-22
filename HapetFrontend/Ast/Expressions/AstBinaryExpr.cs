@@ -16,6 +16,12 @@ namespace HapetFrontend.Ast.Expressions
         /// </summary>
         public AstExpression AdditionalExpr { get; set; }
 
+        /// <summary>
+        /// Used probably only for 'is' bin op
+        /// when 'is not' is presented
+        /// </summary>
+        public bool IsNot { get; set; }
+
         public IBinaryOperator ActualOperator { get; set; }
 
         public override string AAAName => nameof(AstBinaryExpr);

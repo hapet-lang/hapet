@@ -124,6 +124,14 @@ namespace HapetFrontend.Parsing
                 var _ = NextToken();
                 SkipNewlines();
 
+                // handle 'is not' cringe
+                bool isNot = false;
+                if (PeekToken().Data is string str && str == "not")
+                {
+                    NextToken();
+                    isNot = true;
+                }
+
                 // we want to prefer generics
                 var saved1 = inInfo.PreferGenericShite;
                 inInfo.PreferGenericShite = true;
@@ -140,6 +148,7 @@ namespace HapetFrontend.Parsing
                 var binExpr = new AstBinaryExpr("is", lhs as AstExpression, rhs as AstExpression, new Location(lhs.Beginning, rhs.Ending))
                 {
                     AdditionalExpr = additional,
+                    IsNot = isNot,
                 };
 
                 // error if it is not an expr
