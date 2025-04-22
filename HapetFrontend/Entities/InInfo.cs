@@ -1,4 +1,5 @@
 ﻿using HapetFrontend.Ast.Declarations;
+using HapetFrontend.Ast.Expressions;
 using HapetFrontend.Parsing;
 
 namespace HapetFrontend.Entities
@@ -33,6 +34,11 @@ namespace HapetFrontend.Entities
         /// The parent func decl that is used when <see cref="AllowNestedFunc"/> is 'true'
         /// </summary>
         public AstFuncDecl ParentFuncDecl { get; set; }
+
+        /// <summary>
+        /// Handles previous nested expr for inlined null checks like anime?.Cringe?.Pivo;
+        /// </summary>
+        public AstNestedExpr PreviousNestedForNullCheck { get; set; }
 
         /// <summary>
         /// This shite is used for func decl

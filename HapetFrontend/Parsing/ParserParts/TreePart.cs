@@ -5,6 +5,7 @@ using HapetFrontend.Ast.Statements;
 using HapetFrontend.Entities;
 using HapetFrontend.Errors;
 using HapetFrontend.Types;
+using Newtonsoft.Json.Linq;
 using System.Diagnostics;
 using System.Runtime;
 
@@ -33,12 +34,27 @@ namespace HapetFrontend.Parsing
 
             if (CheckToken(TokenType.QuestionMark))
             {
-                var _ = NextToken();
+                NextToken();
 
                 if (CheckToken(TokenType.Period))
                 {
                     // TODO: null check access: 'var a = Anime?.Pivo;'
-                    // WARN: should be done in ParseIdentifierExpr!!! it is like nested but with some anime cringe
+                    NextToken();
+
+                    var savedPrev = inInfo.PreviousNestedForNullCheck;
+
+                    // making normal nested
+                    var iniNest = expr is AstNestedExpr ? expr : new AstNestedExpr(expr as AstExpression, null, expr);
+                    inInfo.PreviousNestedForNullCheck = new AstNestedExpr(iniNest as AstNestedExpr, savedPrev, expr);
+
+                    // creating null comparison
+                    var nulll = new AstNullExpr(PointerType.NullLiteralType, expr);
+                    var nullComparison = new AstBinaryExpr("==", inInfo.PreviousNestedForNullCheck, nulll, expr);
+                    var normalPart = ParseExpression(inInfo, ref outInfo) as AstExpression;
+                    var ternOp = new AstTernaryExpr(nullComparison, nulll, normalPart, expr);
+
+                    inInfo.PreviousNestedForNullCheck = savedPrev;
+                    return ternOp;
                 }
                 else
                 {
@@ -560,7 +576,7 @@ namespace HapetFrontend.Parsing
 
                 case TokenType.Identifier:
                     {
-                        var id = ParseIdentifierExpression();
+                        var id = ParseIdentifierExpression(iniNested: inInfo.PreviousNestedForNullCheck);
 
                         // if it is a pointer or array type
                         while (CheckToken(TokenType.Asterisk) || CheckToken(TokenType.ArrayDef))
