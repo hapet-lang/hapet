@@ -532,7 +532,7 @@ public struct ValueTuple<T1, T2>
 
     int IComparable.CompareTo(object other)
     {
-        if (other is not null)
+        if (other != null)
         {
             if (other is ValueTuple<T1, T2> objTuple)
             {
@@ -564,7 +564,7 @@ public struct ValueTuple<T1, T2>
 
     int IStructuralComparable.CompareTo(object other, IComparer comparer)
     {
-        if (other is not null)
+        if (other != null)
         {
             if (other is ValueTuple<T1, T2> objTuple)
             {
@@ -598,8 +598,8 @@ public struct ValueTuple<T1, T2>
 
     private int GetHashCodeCore(IEqualityComparer comparer)
     {
-        return HashCode.Combine(comparer.GetHashCode(Item1!),
-                                comparer.GetHashCode(Item2!));
+        return HashCode.Combine(comparer.GetHashCode(Item1),
+                                comparer.GetHashCode(Item2));
     }
 
     int IValueTupleInternal.GetHashCode(IEqualityComparer comparer)
@@ -630,19 +630,25 @@ public struct ValueTuple<T1, T2>
     /// <summary>
     /// The number of positions in this data structure.
     /// </summary>
-    int ITuple.Length => 2;
+    int ITuple.Length { get { return 2; } }
 
     /// <summary>
     /// Get the element at position <param name="index"/>.
     /// </summary>
     object ITuple.this[int index]
     {
-        return index switch
+        get 
         {
-            0 => Item1,
-            1 => Item2,
-            _ => throw new IndexOutOfRangeException(),
-        };
+            switch (index)
+            {
+                case (0)
+                    return Item1;
+                case (1)
+                    return Item2;
+                default
+                    return Item1; // TODO: error throw new IndexOutOfRangeException(),
+            }
+        }
     }
 }
 
