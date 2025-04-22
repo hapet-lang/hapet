@@ -63,6 +63,8 @@ namespace HapetFrontend.Parsing
 
                 default:
                     {
+                        var saved4 = inInfo.AllowTypedTuple;
+                        inInfo.AllowTypedTuple = true; // ALLOW TYPED TUPLES WHEN DECLS!!!
                         // just handlers
                         AstStatement stmt;
                         if (parseAtomic)
@@ -70,6 +72,7 @@ namespace HapetFrontend.Parsing
                         else
                             stmt = ParseExpression(inInfo, ref outInfo);
                         SkipNewlines();
+                        inInfo.AllowTypedTuple = saved4;
 
                         // change to udecl like it was previously
                         // https://github.com/hapet-lang/hapet/blob/c15ae05721d3f91fe86a25658ef099d4e84f117f/HapetFrontend/Parsing/RealParserParts/SpecialKeysPart.cs#L62-L69

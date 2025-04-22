@@ -21,14 +21,12 @@ namespace HapetFrontend.Parsing
             {
                 var saved2 = inInfo.Message;
                 var saved3 = inInfo.AllowMultiplyExpression;
-                var saved4 = inInfo.AllowTypedTuple;
+                
                 inInfo.Message = null;
                 inInfo.AllowMultiplyExpression = false; // DO NOT ALLOW MULTIPLY WHEN UDECL FIRST!!!
-                inInfo.AllowTypedTuple = true; // ALLOW TYPED TUPLES WHEN DECLS!!!
                 var expr = ParseStatement(inInfo, ref outInfo, true); // WE NEED TO PARSE ONLY ATOMIC SHITE FROM HERE :)
                 inInfo.Message = saved2;
                 inInfo.AllowMultiplyExpression = saved3;
-                inInfo.AllowTypedTuple = saved4;
 
                 if (expr is AstDeclaration decl)
                 {
