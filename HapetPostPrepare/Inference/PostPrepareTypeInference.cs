@@ -788,6 +788,7 @@ namespace HapetPostPrepare
                     var fncArg = new AstArgumentExpr(outInfo.IndexedIndex, null, nestExpr);
                     var fncCall = new AstCallExpr(outInfo.IndexedObject, fncName, new List<AstArgumentExpr>() { fncArg }, nestExpr);
                     SetScopeAndParent(fncCall, nestExpr.RightPart.NormalParent, nestExpr.RightPart.Scope);
+                    PostPrepareExprScoping(fncCall);
                     nestExpr.LeftPart = null;
                     nestExpr.RightPart = fncCall;
                     PostPrepareCallExprInference(fncCall, inInfo, ref outInfo);
@@ -1036,7 +1037,9 @@ namespace HapetPostPrepare
                     new AstArgumentExpr(pseudoFirstArg),
                     new AstArgumentExpr(arrayAccExpr.ParameterExpr)
                 };
-                var smbl = GetFuncFromCandidates(newName, null, argsWithStructParam, declItself, out var casts);
+                // just for better error message
+                var tmpIndexer = new AstCallExpr(null, new AstIdExpr("'indexer'", arrayAccExpr), null, arrayAccExpr);
+                var smbl = GetFuncFromCandidates(newName, tmpIndexer, argsWithStructParam, declItself, out var casts);
 
                 if (smbl != null && smbl.Decl is AstFuncDecl funcDecl)
                 {

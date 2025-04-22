@@ -136,9 +136,12 @@ public struct ValueTuple
     /// </summary>
     object ITuple.this[int index]
     {
-        // TODO:
-        // throw new IndexOutOfRangeException();
-        return null;
+        get
+        {
+            // TODO:
+            // throw new IndexOutOfRangeException();
+            return null;
+        }
     }
 
     /// <summary>Creates a new struct 0-tuple.</summary>

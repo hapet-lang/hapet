@@ -270,7 +270,7 @@ namespace HapetPostPrepare
 
         private static List<DeclSymbol> Candidates_Step2_CurrentScopeAndParents(string name, AstCallExpr callExpr)
         {
-            if (callExpr == null)
+            if (callExpr == null || callExpr.Scope == null)
                 return new List<DeclSymbol>();
             return GetCandidatesInScope(name, callExpr.Scope, searchParent: true); // also search parents
         }

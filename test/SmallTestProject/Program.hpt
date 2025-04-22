@@ -7,7 +7,25 @@ public static class Program
 {
     public static int Main(string[] args)
     {
-        (int, int) a = (4, 5);
-        return 0;
+        var a = new Cringe();
+        var b = a as Int1;
+        var c = a as Int2;
+        return b[0] + c[0];
     }
+}
+
+public interface Int1
+{
+    int this[int a] { get; set; }
+}
+
+public interface Int2
+{
+    int this[int a] { get; set; }
+}
+
+public class Cringe : Int1, Int2
+{
+    int Int1.this[int a] { get { return 1; } set {} }
+    int Int2.this[int a] { get { return 3; } set {} }
 }
