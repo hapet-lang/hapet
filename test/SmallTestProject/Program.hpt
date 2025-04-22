@@ -8,6 +8,7 @@ public static class Program
     public static int Main(string[] args)
     {
         var a = new Cringe();
+        a.Inside = new Inside();
         var tst = a?.Inside?.A;
         if (tst == null)
             return 1;

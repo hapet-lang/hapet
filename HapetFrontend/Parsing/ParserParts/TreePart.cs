@@ -44,8 +44,8 @@ namespace HapetFrontend.Parsing
                     var savedPrev = inInfo.PreviousNestedForNullCheck;
 
                     // making normal nested
-                    var iniNest = expr is AstNestedExpr ? expr : new AstNestedExpr(expr as AstExpression, null, expr);
-                    inInfo.PreviousNestedForNullCheck = new AstNestedExpr(iniNest as AstNestedExpr, savedPrev, expr);
+                    var iniNest = expr is AstNestedExpr ? expr : new AstNestedExpr(expr as AstExpression, savedPrev, expr);
+                    inInfo.PreviousNestedForNullCheck = iniNest as AstNestedExpr;
 
                     // creating null comparison
                     var nulll = new AstNullExpr(PointerType.NullLiteralType, expr);
