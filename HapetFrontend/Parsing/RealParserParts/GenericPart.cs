@@ -12,6 +12,8 @@ namespace HapetFrontend.Parsing
             var inInfo = new Entities.ParserInInfo();
             var genericConstrains = new Dictionary<AstIdExpr, List<AstNestedExpr>>();
 
+            var tst = PeekToken();
+
             // checking for generic constrains
             // https://learn.microsoft.com/en-us/dotnet/csharp/programming-guide/generics/constraints-on-type-parameters
             while (CheckToken(TokenType.KwWhere))
@@ -46,10 +48,34 @@ namespace HapetFrontend.Parsing
                 if (tmp == null)
                     continue;
 
+                SkipNewlines();
+
                 List<AstNestedExpr> constrains = new List<AstNestedExpr>();
-                while (CheckToken(TokenType.Identifier))
+                while (!CheckTokens(TokenType.OpenBrace, TokenType.KwWhere))
                 {
-                    var ident = ParseIdentifierExpression(inInfo);
+                    SkipNewlines();
+
+                    AstNestedExpr ident = null;
+                    var tkn = NextToken();
+                    switch (tkn.Type)
+                    {
+                        case TokenType.Identifier:
+                            {
+                                ident = ParseIdentifierExpression(inInfo);
+                                break;
+                            }
+                        case TokenType.KwStruct:
+                            {
+                                ident = new AstNestedExpr(new AstIdExpr("struct", tkn.Location), null, tkn.Location);
+                                break;
+                            }
+                        case TokenType.KwClass:
+                            {
+                                ident = new AstNestedExpr(new AstIdExpr("class", tkn.Location), null, tkn.Location);
+                                break;
+                            }
+                            // TODO: others and a error if cringe constrain
+                    }
                     constrains.Add(ident);
                     // if there is something else
                     if (CheckToken(TokenType.Comma))
