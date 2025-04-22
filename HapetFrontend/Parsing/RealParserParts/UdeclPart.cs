@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Runtime;
 using HapetFrontend.Entities;
 using HapetFrontend.Extensions;
+using HapetFrontend.Types;
 
 namespace HapetFrontend.Parsing
 {
@@ -41,7 +42,7 @@ namespace HapetFrontend.Parsing
                 return varDecl;
             }
             // assing to var
-            else if (CheckTokens(TokenType.Equal, TokenType.AddEq, TokenType.SubEq, TokenType.MulEq, TokenType.DivEq, TokenType.ModEq) && udecl.Name == null)
+            else if (CheckTokens(TokenType.Equal, TokenType.AddEq, TokenType.SubEq, TokenType.MulEq, TokenType.DivEq, TokenType.ModEq, TokenType.CoalesceEq) && udecl.Name == null)
             {
                 var currT = NextToken();
                 var x = currT.Type;
@@ -53,6 +54,7 @@ namespace HapetFrontend.Parsing
                     case TokenType.MulEq: op = "*"; break;
                     case TokenType.DivEq: op = "/"; break;
                     case TokenType.ModEq: op = "%"; break;
+                    case TokenType.CoalesceEq: op = "??"; break;
                 }
                 SkipNewlines();
 
@@ -72,7 +74,16 @@ namespace HapetFrontend.Parsing
                 if (udecl.Type is AstNestedExpr id && currT.Type != TokenType.Equal)
                 {
                     // expand ops like 'a += b' into 'a = a + b'
-                    var binOpExpr = new AstBinaryExpr(op, id, valExpr, new Location(id.Location.Beginning, val.Location.Ending));
+                    AstExpression binOpExpr = new AstBinaryExpr(op, id, valExpr, new Location(id.Location.Beginning, val.Location.Ending));
+                    if (op == "??")
+                    {
+                        /// WARN!!!: the same as in <see cref="ParseNullCoalescingExpression"/>
+                        // creating null comparison
+                        var nulll = new AstNullExpr(PointerType.NullLiteralType, id);
+                        var nullComparison = new AstBinaryExpr("==", id.GetDeepCopy() as AstExpression, nulll, id);
+                        var ternOp = new AstTernaryExpr(nullComparison, valExpr, id.GetDeepCopy() as AstExpression, binOpExpr.Location);
+                        binOpExpr = ternOp;
+                    }
                     var toReturn = new AstAssignStmt(id, binOpExpr, new Location(udecl.Type.Beginning, val.Ending));
                     OnExit();
                     return toReturn;

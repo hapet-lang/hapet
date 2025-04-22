@@ -704,6 +704,12 @@ namespace HapetPostPrepare
                 _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, newExpr, [], ErrorCode.Get(CTEN.CreateInterfOrAbsCls));
             }
 
+            // make it ptrT when creating an object of a class
+            if (newExpr.TypeName.OutType is ClassType)
+            {
+                newExpr.OutType = PointerType.GetPointerType(newExpr.OutType);
+            }
+
             foreach (var a in newExpr.Arguments)
             {
                 PostPrepareExprInference(a, inInfo, ref outInfo);

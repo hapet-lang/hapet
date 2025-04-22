@@ -18,10 +18,34 @@ namespace HapetFrontend.Parsing
             var savedMessage = inInfo.Message;
             inInfo.Message ??= new MessageResolver() { XmlMessage = ErrorCode.Get(CTEN.CommonUnexpectedInExpr) };
 
-            var expr = ParseTernaryExpression(inInfo, ref outInfo);
+            var expr = ParseNullCoalescingExpression(inInfo, ref outInfo);
 
             inInfo.Message = savedMessage;
 
+            return expr;
+        }
+
+        //[DebuggerStepThrough]
+        [StackTraceHidden]
+       // [DebuggerHidden]
+        private AstStatement ParseNullCoalescingExpression(ParserInInfo inInfo, ref ParserOutInfo outInfo)
+        {
+            var expr = ParseTernaryExpression(inInfo, ref outInfo);
+            // check for 'anime ?? cringe;'
+            if (CheckToken(TokenType.DoubleQuestion))
+            {
+                NextToken();
+
+                // getting the right part
+                var exprSecond = ParseTernaryExpression(inInfo, ref outInfo);
+
+                // creating null comparison
+                var nulll = new AstNullExpr(PointerType.NullLiteralType, expr);
+                var nullComparison = new AstBinaryExpr("==", expr as AstExpression, nulll, expr);
+                var ternOp = new AstTernaryExpr(nullComparison, exprSecond as AstExpression, 
+                    expr as AstExpression, new Location(expr.Beginning, exprSecond.Ending));
+                expr = ternOp;
+            }
             return expr;
         }
 
@@ -45,7 +69,7 @@ namespace HapetFrontend.Parsing
 
                     // making normal nested
                     var iniNest = expr is AstNestedExpr ? expr : new AstNestedExpr(expr as AstExpression, savedPrev, expr);
-                    inInfo.PreviousNestedForNullCheck = iniNest as AstNestedExpr;
+                    inInfo.PreviousNestedForNullCheck = iniNest.GetDeepCopy() as AstNestedExpr;
 
                     // creating null comparison
                     var nulll = new AstNullExpr(PointerType.NullLiteralType, expr);
