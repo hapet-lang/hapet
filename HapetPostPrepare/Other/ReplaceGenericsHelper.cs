@@ -164,6 +164,8 @@ namespace HapetPostPrepare
                 }
             }
 
+            ReplaceAllGenericTypesInExpr(funcDecl.Name);
+
             // return type replacing
             if (IsGenericEntry(funcDecl.Returns, out var val))
                 funcDecl.Returns = val;
@@ -183,6 +185,8 @@ namespace HapetPostPrepare
                 varDecl.Type = val;
             else
                 ReplaceAllGenericTypesInExpr(varDecl.Type);
+
+            ReplaceAllGenericTypesInExpr(varDecl.Name);
 
             if (varDecl.Initializer != null)
             {
@@ -247,7 +251,11 @@ namespace HapetPostPrepare
                 case AstIdGenericExpr genExpr:
                     ReplaceAllGenericTypesInGenIdExpr(genExpr);
                     break;
-                case AstIdExpr _:
+                case AstIdTupledExpr tupledExpr:
+                    ReplaceAllGenericTypesInTupledIdExpr(tupledExpr);
+                    break;
+                case AstIdExpr idExpr:
+                    ReplaceAllGenericTypesInIdExpr(idExpr);
                     break;
                 case AstCallExpr callExpr:
                     ReplaceAllGenericTypesInCallExpr(callExpr);
@@ -382,6 +390,26 @@ namespace HapetPostPrepare
                 else
                     ReplaceAllGenericTypesInExpr(genExpr.GenericRealTypes[i]);
             }
+
+            ReplaceAllGenericTypesInIdExpr(genExpr);
+        }
+
+        private void ReplaceAllGenericTypesInTupledIdExpr(AstIdTupledExpr tupledExpr)
+        {
+            throw new NotImplementedException();
+
+            ReplaceAllGenericTypesInIdExpr(tupledExpr);
+        }
+
+        private void ReplaceAllGenericTypesInIdExpr(AstIdExpr idExpr)
+        {
+            if (idExpr.AdditionalData == null)
+                return;
+
+            if (IsGenericEntry(idExpr.AdditionalData, out var val))
+                idExpr.AdditionalData = val;
+            else
+                ReplaceAllGenericTypesInExpr(idExpr.AdditionalData);
         }
 
         private void ReplaceAllGenericTypesInCallExpr(AstCallExpr callExpr)

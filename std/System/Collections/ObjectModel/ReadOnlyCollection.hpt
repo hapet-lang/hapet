@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -255,6 +256,7 @@ public class ReadOnlyCollection<T> : IList<T>, IList, IReadOnlyList<T>
 /// </summary>
 public static class ReadOnlyCollection
 {
+    /*
     /// <summary>
     /// Creates a new <see cref="ReadOnlyCollection{T}"/> from the specified span of values.
     /// This method (simplifies collection initialization)[/dotnet/csharp/language-reference/operators/collection-expressions]
@@ -286,12 +288,13 @@ public static class ReadOnlyCollection
         HashSet<T> hashSet = new HashSet<T>();
 
         // TODO:
-        /*
+        
         foreach (T value in values)
         {
             hashSet.Add(value);
-        }*/
+        }
 
         return new ReadOnlySet<T>(hashSet);
     }
+    */
 }
