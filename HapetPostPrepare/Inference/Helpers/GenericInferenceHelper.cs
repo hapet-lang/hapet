@@ -31,7 +31,7 @@ namespace HapetPostPrepare
             if (parent is AstFuncDecl funcDecl)
                 additionalString = funcDecl.GenerateHashForGenericType(name.Name);
 
-            string typeName = $"{parentString}{GenericsHelper.GENERIC_TYPE_BEGIN}{name.Name}{GenericsHelper.GENERIC_TYPE_END}{additionalString}";
+            string typeName = $"{parentString}_{parent.GenericNames.Count}_{GenericsHelper.GENERIC_TYPE_BEGIN}{name.Name}{GenericsHelper.GENERIC_TYPE_END}{additionalString}";
             var specialName = name.GetCopy(typeName);
             var cls = new AstClassDecl(specialName, new List<AstDeclaration>(), "", specialName)
             {

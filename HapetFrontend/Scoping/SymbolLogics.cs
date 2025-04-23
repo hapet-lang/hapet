@@ -161,7 +161,7 @@ namespace HapetFrontend.Scoping
             if (nsSymbol == null)
                 return null;
 
-            return nsSymbol.Scope.GetSymbol($"{ns}.{symbol}", searchUsedScopes, searchParentScope, handleGenerics) as DeclSymbol;
+            return nsSymbol.Scope.GetSymbol($"{ns}.{symbol}", searchUsedScopes, searchParentScope, handleGenerics: handleGenerics) as DeclSymbol;
         }
 
         public bool IsStringNamespaceOrPart(string testString, bool searchUsedScopes = true, bool searchParentScope = true)

@@ -4,6 +4,7 @@ using HapetFrontend.Ast;
 using HapetFrontend.Errors;
 using HapetFrontend.Extensions;
 using HapetFrontend.Scoping;
+using HapetFrontend.Helpers;
 namespace HapetPostPrepare
 {
     public partial class PostPrepare
@@ -75,17 +76,16 @@ namespace HapetPostPrepare
 
             // TODO: check for partial :)
             decl.Name = decl.Name.GetCopy(newName);
-            var smbl = _currentSourceFile.NamespaceScope.GetSymbol(decl.Name.Name);
+            string searchName = GenericsHelper.GetCringeGenericName(decl.Name);
+            var smbl = _currentSourceFile.NamespaceScope.GetSymbol(searchName);
             // TODO: better error like where is the first decl?
             if (smbl != null)
             {
-                // do not error if normal type is defined and current one is generic
-                if (!decl.HasGenericTypes)
-                    _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, decl.Name, [_currentSourceFile.Namespace], ErrorCode.Get(CTEN.NamespaceAlreadyContains));
+                _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, decl.Name, [_currentSourceFile.Namespace], ErrorCode.Get(CTEN.NamespaceAlreadyContains));
             }
-            else if (!decl.HasGenericTypes || decl.IsImplOfGeneric) // define the decl only if it is not a pure generic type
+            else
             {
-                _currentSourceFile.NamespaceScope.DefineDeclSymbol(decl.Name.Name, decl);
+                _currentSourceFile.NamespaceScope.DefineDeclSymbol(searchName, decl);
                 PostPrepareAliases(newName, _currentSourceFile.NamespaceScope, decl);
             }
         }

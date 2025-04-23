@@ -1,6 +1,7 @@
 ﻿using HapetFrontend;
 using HapetFrontend.Ast;
 using HapetFrontend.Ast.Declarations;
+using HapetFrontend.Helpers;
 using HapetPostPrepare.Entities;
 
 namespace HapetPostPrepare
@@ -97,6 +98,8 @@ namespace HapetPostPrepare
                         _serializeClassesMetadata.Add(realDecl as AstClassDecl);
                     // remove from inferencing
                     AllClassesMetadata.Remove(cls);
+                    // remove definition
+                    cls.SourceFile.NamespaceScope.RemoveDeclSymbol(GenericsHelper.GetCringeGenericName(cls.Name), cls);
                 }
             }
             // resolve generic shite of structs
@@ -113,6 +116,8 @@ namespace HapetPostPrepare
                         _serializeStructsMetadata.Add(realDecl as AstStructDecl);
                     // remove from inferencing
                     AllStructsMetadata.Remove(str);
+                    // remove definition
+                    str.SourceFile.NamespaceScope.RemoveDeclSymbol(GenericsHelper.GetCringeGenericName(str.Name), str);
                 }
             }
         }

@@ -52,7 +52,11 @@ namespace HapetPostPrepare
             if (scopeToSearch != null)
                 return false;
 
-            string name = GenericsHelper.GetCringeGenericName(idExpr);
+            string name = idExpr.Name;
+            if (name.Contains("ValueTuple"))
+            {
+
+            }
             // check if it is smth like 'System.Attribute' where 'System' is ns and 'Attribute' is a class
             if (!string.IsNullOrWhiteSpace(name.GetNamespaceWithoutClassName()))
             {
@@ -120,6 +124,10 @@ namespace HapetPostPrepare
             // searching for the name with namespace
             // works only for types/objects
             string nameWithNamespace = $"{idExpr.SourceFile.Namespace}.{name}";
+            if (name.Contains("ValueTuple"))
+            {
+
+            }
             var smblInLocalFile = idExpr.Scope.GetSymbol(nameWithNamespace, handleGenerics: true);
             if (smblInLocalFile is DeclSymbol typed3)
             {
@@ -235,7 +243,12 @@ namespace HapetPostPrepare
                 _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, idExpr, [], ErrorCode.Get(CTEN.DeclCouldNotBeAccessed));
             typed = CheckForGenericType(typed, idExpr);
             if (!string.IsNullOrWhiteSpace(name))
+            {
+                // clear generic names - already infered
+                if (idExpr is AstIdGenericExpr genid)
+                    genid.GenericRealTypes.Clear();
                 idExpr.Name = name;
+            }
             idExpr.OutType = typed.Decl.Type.OutType;
             TryAssignConstValueToExpr(idExpr, typed.Decl, inInfo, ref outInfo2);
             TrySaveClassUsage(typed.Decl);

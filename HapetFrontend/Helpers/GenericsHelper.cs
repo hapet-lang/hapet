@@ -80,6 +80,9 @@ namespace HapetFrontend.Helpers
 
         public static string GetRealFromGenericName(string namee, List<AstNestedExpr> generics)
         {
+            if (generics.Count == 0)
+                return namee;
+
             StringBuilder sb = new StringBuilder(namee);
             sb.Append(GENERIC_BEGIN);
             for (int i = 0; i < generics.Count; ++i)
