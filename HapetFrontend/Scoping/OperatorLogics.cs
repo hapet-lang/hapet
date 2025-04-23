@@ -57,13 +57,6 @@ namespace HapetFrontend.Scoping
             }
             if (localOnly)
                 return;
-            if (_usedScopes != null)
-            {
-                foreach (var scope in _usedScopes)
-                {
-                    scope.GetNaryOperatorsInternal(name, result, ref level, true, types);
-                }
-            }
             Parent?.GetNaryOperatorsInternal(name, result, ref level, false, types);
         }
 
@@ -155,13 +148,6 @@ namespace HapetFrontend.Scoping
             }
             if (localOnly)
                 return;
-            if (scopeToSearch._usedScopes != null && !localOnly)
-            {
-                foreach (var scope in scopeToSearch._usedScopes)
-                {
-                    GetBinaryOperatorsInternal(scope, name, lhs, rhs, result, ref level, true);
-                }
-            }
             if (scopeToSearch.Parent != null)
                 GetBinaryOperatorsInternal(scopeToSearch.Parent, name, lhs, rhs, result, ref level);
         }
@@ -226,13 +212,6 @@ namespace HapetFrontend.Scoping
             }
             if (localOnly)
                 return;
-            if (scopeToSearch._usedScopes != null && !localOnly)
-            {
-                foreach (var scope in scopeToSearch._usedScopes)
-                {
-                    GetUnaryOperatorsInternal(scope, name, sub, result, ref level, true);
-                }
-            }
             if (scopeToSearch.Parent != null)
                 GetUnaryOperatorsInternal(scopeToSearch.Parent, name, sub, result, ref level);
         }

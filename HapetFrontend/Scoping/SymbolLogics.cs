@@ -127,11 +127,14 @@ namespace HapetFrontend.Scoping
                     if (!k.Contains(GenericsHelper.GENERIC_BEGIN))
                         continue;
 
-                    string pureSymbolNs = k.GetNamespaceWithoutClassName();
-                    string pureSearchNs = name.GetNamespaceWithoutClassName();
+                    string symbolWoGenerics = k.Substring(0, k.IndexOf(GenericsHelper.GENERIC_BEGIN));
+                    string searchWoGenerics = name.Substring(0, name.IndexOf(GenericsHelper.GENERIC_BEGIN));
 
-                    string pureSymbolName = k.Substring(0, k.IndexOf(GenericsHelper.GENERIC_BEGIN)).GetClassNameWithoutNamespace();
-                    string pureSearchName = name.Substring(0, name.IndexOf(GenericsHelper.GENERIC_BEGIN)).GetClassNameWithoutNamespace();
+                    string pureSymbolNs = symbolWoGenerics.GetNamespaceWithoutClassName();
+                    string pureSearchNs = searchWoGenerics.GetNamespaceWithoutClassName();
+
+                    string pureSymbolName = symbolWoGenerics.GetClassNameWithoutNamespace();
+                    string pureSearchName = searchWoGenerics.GetClassNameWithoutNamespace();
 
                     int gAmountSymbol = k.GetGenericsAmount();
                     int gAmountSearch = name.GetGenericsAmount();
@@ -146,25 +149,8 @@ namespace HapetFrontend.Scoping
                 }
             }
 
-            if (_usedScopes != null && searchUsedScopes)
-            {
-                List<ISymbol> found = new List<ISymbol>();
-                foreach (var scope in _usedScopes)
-                {
-                    var sym = scope.GetSymbol(name, false, false);
-                    if (sym == null)
-                        continue;
-                    found.Add(sym);
-                }
-
-                if (found.Count == 1)
-                    return found[0];
-                if (found.Count > 1)
-                    return new AmbiguousSymol(found);
-            }
-
             if (searchParentScope)
-                return Parent?.GetSymbol(name, searchUsedScopes, searchParentScope, searchPartNamespace);
+                return Parent?.GetSymbol(name, searchUsedScopes, searchParentScope, searchPartNamespace, handleGenerics);
             return null;
         }
 

@@ -287,12 +287,21 @@ namespace HapetPostPrepare
             if (!decl.Decl.HasGenericTypes)
                 return decl;
 
+            InInfo inInfo = InInfo.Default;
+            OutInfo outInfo = OutInfo.Default;
             var theDecl = decl.Decl;
 
             // this is to get REAL PURE GENERIC. not the fcking T-like
             if (theDecl.IsImplOfGeneric)
             {
                 theDecl = theDecl.OriginalGenericDecl;
+            }
+
+            // infer generic names
+            for (int i = 0; i < genId.GenericRealTypes.Count; ++i)
+            {
+                var g = genId.GenericRealTypes[i];
+                PostPrepareExprInference(g, inInfo, ref outInfo);
             }
 
             // generating generic shite name
