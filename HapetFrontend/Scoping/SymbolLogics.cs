@@ -2,6 +2,7 @@
 using HapetFrontend.Ast.Declarations;
 using HapetFrontend.Entities;
 using HapetFrontend.Extensions;
+using HapetFrontend.Helpers;
 using HapetFrontend.Parsing;
 using HapetFrontend.Types;
 using System.Xml.Linq;
@@ -79,7 +80,12 @@ namespace HapetFrontend.Scoping
             return RemoveLocalSymbol(new DeclSymbol(name, decl));
         }
 
-        public ISymbol GetSymbol(string name, bool searchUsedScopes = true, bool searchParentScope = true, bool searchPartNamespace = false)
+        public ISymbol GetSymbol(
+            string name, 
+            bool searchUsedScopes = true, 
+            bool searchParentScope = true, 
+            bool searchPartNamespace = false,
+            bool handleGenerics = false)
         {
             if (_shadowSymbolTable.ContainsKey(name))
             {
@@ -112,6 +118,34 @@ namespace HapetFrontend.Scoping
                 }
             }
 
+            // handle generics search
+            if (handleGenerics && name.Contains(GenericsHelper.GENERIC_BEGIN))
+            {
+                foreach (var k in _symbolTable.Keys)
+                {
+                    // skip non generic keys
+                    if (!k.Contains(GenericsHelper.GENERIC_BEGIN))
+                        continue;
+
+                    string pureSymbolNs = k.GetNamespaceWithoutClassName();
+                    string pureSearchNs = name.GetNamespaceWithoutClassName();
+
+                    string pureSymbolName = k.Substring(0, k.IndexOf(GenericsHelper.GENERIC_BEGIN)).GetClassNameWithoutNamespace();
+                    string pureSearchName = name.Substring(0, name.IndexOf(GenericsHelper.GENERIC_BEGIN)).GetClassNameWithoutNamespace();
+
+                    int gAmountSymbol = k.GetGenericsAmount();
+                    int gAmountSearch = name.GetGenericsAmount();
+
+                    if (gAmountSymbol == gAmountSearch && 
+                        pureSymbolName == pureSearchName &&
+                        pureSymbolNs == pureSearchNs &&
+                        _symbolTable[k] is DeclSymbol)
+                    {
+                        return _symbolTable[k];
+                    }
+                }
+            }
+
             if (_usedScopes != null && searchUsedScopes)
             {
                 List<ISymbol> found = new List<ISymbol>();
@@ -135,13 +169,13 @@ namespace HapetFrontend.Scoping
         }
 
         // to get decl in namespace
-        public DeclSymbol GetSymbolInNamespace(string ns, string symbol, bool searchUsedScopes = true, bool searchParentScope = true)
+        public DeclSymbol GetSymbolInNamespace(string ns, string symbol, bool searchUsedScopes = true, bool searchParentScope = true, bool handleGenerics = false)
         {
             NamespaceSymbol nsSymbol = GetSymbol(ns, searchUsedScopes, searchParentScope) as NamespaceSymbol;
             if (nsSymbol == null)
                 return null;
 
-            return nsSymbol.Scope.GetSymbol($"{ns}.{symbol}", searchUsedScopes, searchParentScope) as DeclSymbol;
+            return nsSymbol.Scope.GetSymbol($"{ns}.{symbol}", searchUsedScopes, searchParentScope, handleGenerics) as DeclSymbol;
         }
 
         public bool IsStringNamespaceOrPart(string testString, bool searchUsedScopes = true, bool searchParentScope = true)

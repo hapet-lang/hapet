@@ -64,6 +64,10 @@ namespace HapetPostPrepare
                 {
                     PostPrepareExprInference(inh, inInfo, ref outInfo);
 
+                    // was not infered properly - probably errored somewhere before
+                    if (inh.OutType == null)
+                        continue;
+
                     if (inh.OutType is not ClassType ||
                         (!(inh.OutType as ClassType).Declaration.IsInterface &&
                         (inh.OutType as ClassType).Declaration.Name.Name != "System.ValueType"))

@@ -261,5 +261,14 @@ namespace HapetFrontend.Helpers
             }
             return type.ToString();
         }
+
+        public static string GetCringeGenericName(AstIdExpr idExpr)
+        {
+            if (idExpr is not AstIdGenericExpr genExpr)
+                return idExpr.Name;
+
+            List<AstNestedExpr> tmp = Enumerable.Repeat(new AstNestedExpr(null, null), genExpr.GenericRealTypes.Count).ToList();
+            return GetRealFromGenericName(genExpr.Name, tmp);
+        }
     }
 }

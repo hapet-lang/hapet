@@ -52,7 +52,7 @@ namespace HapetPostPrepare
             if (scopeToSearch != null)
                 return false;
 
-            string name = idExpr.Name;
+            string name = GenericsHelper.GetCringeGenericName(idExpr);
             // check if it is smth like 'System.Attribute' where 'System' is ns and 'Attribute' is a class
             if (!string.IsNullOrWhiteSpace(name.GetNamespaceWithoutClassName()))
             {
@@ -60,7 +60,7 @@ namespace HapetPostPrepare
                 var rightPart = name.GetClassNameWithoutNamespace();
 
                 // search for the symbol in concrete namespace
-                var smbl = idExpr.Scope.GetSymbolInNamespace(leftPart, rightPart);
+                var smbl = idExpr.Scope.GetSymbolInNamespace(leftPart, rightPart, handleGenerics: true);
                 if (smbl is DeclSymbol typed)
                 {
                     IdentifierOnFoundSymbol(idExpr, typed, string.Empty, inInfo, ref outInfo);
@@ -72,7 +72,7 @@ namespace HapetPostPrepare
 
         private bool Step2_IdentifierLocalScope(AstIdExpr idExpr, InInfo inInfo, ref OutInfo outInfo, Scope scopeToSearch = null)
         {
-            string name = idExpr.Name;
+            string name = GenericsHelper.GetCringeGenericName(idExpr);
             var scope = scopeToSearch ?? idExpr.Scope;
 
             var smbl = scope.GetSymbol(name);
@@ -116,11 +116,11 @@ namespace HapetPostPrepare
             if (scopeToSearch != null)
                 return false;
 
-            string name = idExpr.Name;
+            string name = GenericsHelper.GetCringeGenericName(idExpr);
             // searching for the name with namespace
             // works only for types/objects
             string nameWithNamespace = $"{idExpr.SourceFile.Namespace}.{name}";
-            var smblInLocalFile = idExpr.Scope.GetSymbol(nameWithNamespace);
+            var smblInLocalFile = idExpr.Scope.GetSymbol(nameWithNamespace, handleGenerics: true);
             if (smblInLocalFile is DeclSymbol typed3)
             {
                 IdentifierOnFoundSymbol(idExpr, typed3, nameWithNamespace, inInfo, ref outInfo);
@@ -135,7 +135,7 @@ namespace HapetPostPrepare
             if (scopeToSearch != null)
                 return false;
 
-            string name = idExpr.Name;
+            string name = GenericsHelper.GetCringeGenericName(idExpr);
             // go all over the usings
             foreach (var usng in idExpr.SourceFile.Usings)
             {
@@ -150,7 +150,7 @@ namespace HapetPostPrepare
                     var rightPart = name.GetClassNameWithoutNamespace();
 
                     // getting a symbol from namespace
-                    var includedSmbl = idExpr.Scope.GetSymbolInNamespace($"{ns}.{leftPart}", rightPart);
+                    var includedSmbl = idExpr.Scope.GetSymbolInNamespace($"{ns}.{leftPart}", rightPart, handleGenerics: true);
                     if (includedSmbl is DeclSymbol typed4)
                     {
                         IdentifierOnFoundSymbol(idExpr, typed4, string.Empty, inInfo, ref outInfo);
@@ -160,7 +160,7 @@ namespace HapetPostPrepare
 
                 // try just get the name from using namespace
                 string fullNameWithNs = $"{ns}.{name}";
-                var usedSmbl = idExpr.Scope.GetSymbolInNamespace(ns, name);
+                var usedSmbl = idExpr.Scope.GetSymbolInNamespace(ns, name, handleGenerics: true);
                 if (usedSmbl is DeclSymbol typed5)
                 {
                     IdentifierOnFoundSymbol(idExpr, typed5, fullNameWithNs, inInfo, ref outInfo);
@@ -173,7 +173,7 @@ namespace HapetPostPrepare
         private bool Step5_IdentifierFuncs(AstIdExpr idExpr, InInfo inInfo, ref OutInfo outInfo, Scope scopeToSearch = null)
         {
             Scope scope = scopeToSearch ?? idExpr.Scope;
-            string name = idExpr.Name;
+            string name = GenericsHelper.GetCringeGenericName(idExpr);
             // searching for the name with current class name
             // works only for functions
             string nameWithClass = $"{_currentClass.Name.Name}::{name}";
