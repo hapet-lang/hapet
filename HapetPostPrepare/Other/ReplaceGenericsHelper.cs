@@ -75,6 +75,10 @@ namespace HapetPostPrepare
                 {
                     ReplaceAllGenericTypesInVar(fieldDecl);
                 }
+                else
+                {
+                    ReplaceAllGenericTypesInDecl(decl);
+                }
             }
         }
 
@@ -119,6 +123,10 @@ namespace HapetPostPrepare
                 else if (decl is AstVarDecl fieldDecl) // field 
                 {
                     ReplaceAllGenericTypesInVar(fieldDecl);
+                }
+                else
+                {
+                    ReplaceAllGenericTypesInDecl(decl);
                 }
             }
         }

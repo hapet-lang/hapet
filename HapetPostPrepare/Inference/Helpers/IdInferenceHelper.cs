@@ -244,9 +244,6 @@ namespace HapetPostPrepare
             typed = CheckForGenericType(typed, idExpr);
             if (!string.IsNullOrWhiteSpace(name))
             {
-                // clear generic names - already infered
-                if (idExpr is AstIdGenericExpr genid)
-                    genid.GenericRealTypes.Clear();
                 idExpr.Name = name;
             }
             idExpr.OutType = typed.Decl.Type.OutType;
