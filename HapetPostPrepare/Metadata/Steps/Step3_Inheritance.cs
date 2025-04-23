@@ -25,6 +25,10 @@ namespace HapetPostPrepare
                 {
                     PostPrepareExprInference(inh, inInfo, ref outInfo);
 
+                    // was not infered properly - probably errored somewhere before
+                    if (inh.OutType == null)
+                        continue;
+
                     if (inh.OutType is not ClassType)
                     {
                         // error - cannot inherit from non class types

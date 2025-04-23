@@ -74,7 +74,7 @@ namespace HapetFrontend.Ast.Statements
         {
             var copy = new AstCaseStmt(
                 Pattern?.GetDeepCopy() as AstExpression,
-                Body.GetDeepCopy() as AstBlockExpr,
+                Body?.GetDeepCopy() as AstBlockExpr,
                 Location)
             {
                 IsDefaultCase = IsDefaultCase,
