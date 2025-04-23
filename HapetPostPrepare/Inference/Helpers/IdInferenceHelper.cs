@@ -53,10 +53,6 @@ namespace HapetPostPrepare
                 return false;
 
             string name = idExpr.Name;
-            if (name.Contains("ValueTuple"))
-            {
-
-            }
             // check if it is smth like 'System.Attribute' where 'System' is ns and 'Attribute' is a class
             if (!string.IsNullOrWhiteSpace(name.GetNamespaceWithoutClassName()))
             {
@@ -124,10 +120,6 @@ namespace HapetPostPrepare
             // searching for the name with namespace
             // works only for types/objects
             string nameWithNamespace = $"{idExpr.SourceFile.Namespace}.{name}";
-            if (name.Contains("ValueTuple"))
-            {
-
-            }
             var smblInLocalFile = idExpr.Scope.GetSymbol(nameWithNamespace, handleGenerics: true);
             if (smblInLocalFile is DeclSymbol typed3)
             {
