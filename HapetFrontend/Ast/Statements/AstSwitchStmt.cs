@@ -73,7 +73,7 @@ namespace HapetFrontend.Ast.Statements
         public override AstStatement GetDeepCopy()
         {
             var copy = new AstCaseStmt(
-                Pattern.GetDeepCopy() as AstExpression,
+                Pattern?.GetDeepCopy() as AstExpression,
                 Body.GetDeepCopy() as AstBlockExpr,
                 Location)
             {

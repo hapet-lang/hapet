@@ -3,6 +3,7 @@ using HapetFrontend.Ast.Statements;
 using HapetFrontend.Ast;
 using HapetFrontend.Errors;
 using HapetFrontend.Extensions;
+using HapetFrontend.Scoping;
 namespace HapetPostPrepare
 {
     public partial class PostPrepare
@@ -78,12 +79,13 @@ namespace HapetPostPrepare
             // TODO: better error like where is the first decl?
             if (smbl != null)
             {
-                _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, decl.Name, [_currentSourceFile.Namespace], ErrorCode.Get(CTEN.NamespaceAlreadyContains));
+                // do not error if normal type is defined and current one is generic
+                if (!decl.HasGenericTypes)
+                    _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, decl.Name, [_currentSourceFile.Namespace], ErrorCode.Get(CTEN.NamespaceAlreadyContains));
             }
-            else
+            else if (!decl.HasGenericTypes || decl.IsImplOfGeneric) // define the decl only if it is not a pure generic type
             {
                 _currentSourceFile.NamespaceScope.DefineDeclSymbol(decl.Name.Name, decl);
-
                 PostPrepareAliases(newName, _currentSourceFile.NamespaceScope, decl);
             }
         }
