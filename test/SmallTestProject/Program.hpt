@@ -7,21 +7,6 @@ public static class Program
 {
     public static int Main(string[] args)
     {
-        var a = new Cringe();
-        a.Inside ??= new Inside();
-        var tst = a?.Inside?.A;
-        if (tst != null)
-            return 1;
         return 0;
     }
-}
-
-public class Cringe
-{
-    public Inside Inside { get; set; }
-}
-
-public class Inside 
-{
-    public int A { get; set; }
 }

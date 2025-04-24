@@ -59,6 +59,10 @@ namespace HapetPostPrepare
                 var leftPart = name.GetNamespaceWithoutClassName();
                 var rightPart = name.GetClassNameWithoutNamespace();
 
+                // cringe kostyl - do not touch
+                if (idExpr is AstIdGenericExpr genId)
+                    rightPart = GenericsHelper.GetCringeGenericName(new AstIdGenericExpr(rightPart, genId.GenericRealTypes, genId));
+
                 // search for the symbol in concrete namespace
                 var smbl = idExpr.Scope.GetSymbolInNamespace(leftPart, rightPart, handleGenerics: true);
                 if (smbl is DeclSymbol typed)
