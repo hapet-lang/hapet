@@ -30,6 +30,8 @@ namespace HapetPostPrepare
             string additionalString = string.Empty;
             if (parent is AstFuncDecl funcDecl)
                 additionalString = funcDecl.GenerateHashForGenericType(name.Name);
+            else if (parent is AstDelegateDecl delegateDecl)
+                additionalString = delegateDecl.GenerateHashForGenericType(name.Name);
 
             string typeName = $"{parentString}_{parent.GenericNames.Count}_{GenericsHelper.GENERIC_TYPE_BEGIN}{name.Name}{GenericsHelper.GENERIC_TYPE_END}{additionalString}";
             var specialName = name.GetCopy(typeName);
@@ -68,7 +70,7 @@ namespace HapetPostPrepare
                 else
                     origDeclPureName = funcDecl.Name.Name;
             }
-            else if (decl is AstClassDecl || decl is AstStructDecl)
+            else if (decl is AstClassDecl || decl is AstStructDecl || decl is AstDelegateDecl)
             {
                 origDeclPureName = decl.Name.Name.GetClassNameWithoutNamespace();
             }

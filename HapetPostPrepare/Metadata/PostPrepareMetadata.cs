@@ -120,6 +120,24 @@ namespace HapetPostPrepare
                     str.SourceFile.NamespaceScope.RemoveDeclSymbol(GenericsHelper.GetCringeGenericName(str.Name), str);
                 }
             }
+            // resolve generic shite of delegates
+            foreach (var del in AllDelegatesMetadata.ToList())
+            {
+                _currentSourceFile = del.SourceFile;
+                bool itWasGeneric = PostPrepareMetadataGenerics(del, out var realDecl);
+
+                // do not inference generics
+                if (itWasGeneric)
+                {
+                    // append for serialization T-like (if not imported)
+                    if (!del.IsImported)
+                        _serializeDelegatesMetadata.Add(realDecl as AstDelegateDecl);
+                    // remove from inferencing
+                    AllDelegatesMetadata.Remove(del);
+                    // remove definition
+                    del.SourceFile.NamespaceScope.RemoveDeclSymbol(GenericsHelper.GetCringeGenericName(del.Name), del);
+                }
+            }
         }
 
         private void AllPostPrepareMetadataInheritance()

@@ -71,7 +71,7 @@ namespace HapetFrontend.Helpers
 
                 return realName;
             }
-            else if (decl is AstClassDecl || decl is AstPropertyDecl || decl is AstStructDecl)
+            else if (decl is AstClassDecl || decl is AstPropertyDecl || decl is AstStructDecl || decl is AstDelegateDecl)
             {
                 return GetRealFromGenericName(decl.Name.Name, generics);
             }
@@ -196,7 +196,7 @@ namespace HapetFrontend.Helpers
 
             static string GetName(AstDeclaration d)
             {
-                if (d is AstClassDecl || d is AstStructDecl)
+                if (d is AstClassDecl || d is AstStructDecl || d is AstDelegateDecl)
                 {
                     return d.Name.Name.GetClassNameWithoutNamespace();
                 }

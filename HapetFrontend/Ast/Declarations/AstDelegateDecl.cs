@@ -1,5 +1,6 @@
 ﻿using HapetFrontend.Ast.Expressions;
 using HapetFrontend.Ast.Statements;
+using HapetFrontend.Helpers;
 using HapetFrontend.Parsing;
 using HapetFrontend.Types;
 using System.Xml.Linq;
@@ -24,12 +25,21 @@ namespace HapetFrontend.Ast.Declarations
 
         public override AstStatement GetDeepCopy()
         {
+            Dictionary<AstIdExpr, List<AstNestedExpr>> copiedConstrains = new Dictionary<AstIdExpr, List<AstNestedExpr>>();
+            foreach (var cc in GenericConstrains)
+            {
+                copiedConstrains.Add(cc.Key.GetDeepCopy() as AstIdExpr, cc.Value.Select(x => x.GetDeepCopy() as AstNestedExpr).ToList());
+            }
+
             var copy = new AstDelegateDecl(
                 Parameters.Select(x => x.GetDeepCopy() as AstParamDecl).ToList(),
                 Returns.GetDeepCopy() as AstExpression,
                 Name.GetDeepCopy() as AstIdExpr,
                 Documentation, Location)
             {
+                GenericNames = GenericNames?.Select(x => x.GetDeepCopy() as AstIdExpr).ToList(),
+                GenericConstrains = copiedConstrains,
+                HasGenericTypes = HasGenericTypes,
                 IsImported = IsImported,
                 Scope = Scope,
                 SourceFile = SourceFile,
@@ -38,6 +48,11 @@ namespace HapetFrontend.Ast.Declarations
             copy.Attributes.AddRange(Attributes);
             copy.SpecialKeys.AddRange(SpecialKeys);
             return copy;
+        }
+
+        public string GenerateHashForGenericType(string genTypeName)
+        {
+            return Funcad.CreateMD5($"{SourceFile}{Name.Name}{ContainingParent?.Name.Name}{string.Join('_', Parameters.Select(x => HapetType.AsString(x.Type.OutType)))}{HapetType.AsString(Returns.OutType)}{genTypeName}");
         }
     }
 }

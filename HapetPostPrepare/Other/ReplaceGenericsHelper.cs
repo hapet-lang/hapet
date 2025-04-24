@@ -31,6 +31,8 @@ namespace HapetPostPrepare
                 ReplaceAllGenericTypesInVar(varDecl);
             else if (decl is AstStructDecl strDecl)
                 ReplaceAllGenericTypesInStruct(strDecl);
+            else if (decl is AstDelegateDecl delDecl)
+                ReplaceAllGenericTypesInDelegate(delDecl);
         }
 
         public void ReplaceAllGenericTypesInClass(AstClassDecl clsDecl)
@@ -171,6 +173,36 @@ namespace HapetPostPrepare
                 funcDecl.Returns = val;
             else
                 ReplaceAllGenericTypesInExpr(funcDecl.Returns);
+        }
+
+        private void ReplaceAllGenericTypesInDelegate(AstDelegateDecl delDecl)
+        {
+            // replacing func attrs
+            foreach (var a in delDecl.Attributes)
+            {
+                ReplaceAllGenericTypesInExpr(a);
+            }
+
+            // replacing parameters
+            foreach (var p in delDecl.Parameters)
+            {
+                // settings the block scope to the parameters (so they are in the scope of the block)
+                ReplaceAllGenericTypesInParam(p);
+
+                // scoping param attrs
+                foreach (var a in p.Attributes)
+                {
+                    ReplaceAllGenericTypesInExpr(a);
+                }
+            }
+
+            ReplaceAllGenericTypesInExpr(delDecl.Name);
+
+            // return type replacing
+            if (IsGenericEntry(delDecl.Returns, out var val))
+                delDecl.Returns = val;
+            else
+                ReplaceAllGenericTypesInExpr(delDecl.Returns);
         }
 
         private void ReplaceAllGenericTypesInVar(AstVarDecl varDecl)
