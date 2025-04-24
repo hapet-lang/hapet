@@ -15,7 +15,7 @@ using System.Runtime.CompilerServices;
 // of the List is automatically increased as required by reallocating the
 // internal array.
 //
-public class List<T> : IList<T>, IReadOnlyList<T>
+public class List<T> : IList<T>
 {
     private const int DefaultCapacity = 4;
 
@@ -244,9 +244,9 @@ public class List<T> : IList<T>, IReadOnlyList<T>
         }
     }
 
-    public ReadOnlyCollection<T> AsReadOnly()
+    public ReadOnlyList<T> AsReadOnly()
     {
-        return new ReadOnlyCollection<T>(this);
+        return new ReadOnlyList<T>(this);
     }
 
     // Searches a section of the list for a given element using a binary search
