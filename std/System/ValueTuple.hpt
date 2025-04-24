@@ -55,15 +55,7 @@ public struct ValueTuple
 
     int IComparable.CompareTo(object other)
     {
-        if (other is null) return 1;
-
-        if (other is not ValueTuple)
-        {
-            // TODO:
-            // ThrowHelper.ThrowArgumentException_TupleIncorrectType(this);
-        }
-
-        return 0;
+        return CompareTo(other, null);
     }
 
     /// <summary>Compares this instance to a specified instance and returns an indication of their relative values.</summary>
@@ -129,12 +121,12 @@ public struct ValueTuple
     /// <summary>
     /// The number of positions in this data structure.
     /// </summary>
-    int ITuple.Length { get { return 0; } }
+    public int Length { get { return 0; } }
 
     /// <summary>
     /// Get the element at position <param name="index"/>.
     /// </summary>
-    object ITuple.this[int index]
+    public object this[int index]
     {
         get
         {
@@ -343,7 +335,7 @@ public struct ValueTuple<T1>
         {
             if (other is ValueTuple<T1> objTuple)
             {
-                return Comparer<T1>.Default.Compare(Item1, objTuple.Item1);
+                return CompareTo(objTuple);
             }
 
             // TODO: 
@@ -423,12 +415,12 @@ public struct ValueTuple<T1>
     /// <summary>
     /// The number of positions in this data structure.
     /// </summary>
-    int ITuple.Length { get { return 1; } }
+    public int Length { get { return 1; } }
 
     /// <summary>
     /// Get the element at position <param name="index"/>.
     /// </summary>
-    object ITuple.this[int index]
+    public object this[int index]
     {
         get
         {
@@ -630,12 +622,12 @@ public struct ValueTuple<T1, T2>
     /// <summary>
     /// The number of positions in this data structure.
     /// </summary>
-    int ITuple.Length { get { return 2; } }
+    public int Length { get { return 2; } }
 
     /// <summary>
     /// Get the element at position <param name="index"/>.
     /// </summary>
-    object ITuple.this[int index]
+    public object this[int index]
     {
         get 
         {
@@ -836,12 +828,12 @@ public struct ValueTuple<T1, T2, T3>
     /// <summary>
     /// The number of positions in this data structure.
     /// </summary>
-    int ITuple.Length { get { return 3; } }
+    public int Length { get { return 3; } }
 
     /// <summary>
     /// Get the element at position <param name="index"/>.
     /// </summary>
-    object ITuple.this[int index]
+    public object this[int index]
     {
         get 
         {
@@ -1057,12 +1049,12 @@ public struct ValueTuple<T1, T2, T3, T4>
     /// <summary>
     /// The number of positions in this data structure.
     /// </summary>
-    int ITuple.Length { get { return 4; } }
+    public int Length { get { return 4; } }
 
     /// <summary>
     /// Get the element at position <param name="index"/>.
     /// </summary>
-    object ITuple.this[int index]
+    public object this[int index]
     {
         get
         {
@@ -1296,12 +1288,12 @@ public struct ValueTuple<T1, T2, T3, T4, T5>
     /// <summary>
     /// The number of positions in this data structure.
     /// </summary>
-    int ITuple.Length { get { return 5; } }
+    public int Length { get { return 5; } }
 
     /// <summary>
     /// Get the element at position <param name="index"/>.
     /// </summary>
-    object ITuple.this[int index]
+    public object this[int index]
     {
         get
         {
@@ -1553,12 +1545,12 @@ public struct ValueTuple<T1, T2, T3, T4, T5, T6>
     /// <summary>
     /// The number of positions in this data structure.
     /// </summary>
-    int ITuple.Length { get { return 6; } }
+    public int Length { get { return 6; } }
 
     /// <summary>
     /// Get the element at position <param name="index"/>.
     /// </summary>
-    object ITuple.this[int index]
+    public object this[int index]
     {
         get
         {
@@ -1828,12 +1820,12 @@ public struct ValueTuple<T1, T2, T3, T4, T5, T6, T7>
     /// <summary>
     /// The number of positions in this data structure.
     /// </summary>
-    int ITuple.Length { get { return 7; } }
+    public int Length { get { return 7; } }
 
     /// <summary>
     /// Get the element at position <param name="index"/>.
     /// </summary>
-    object ITuple.this[int index]
+    public object this[int index]
     {
         get
         {
@@ -2260,12 +2252,12 @@ where TRest : struct
     /// <summary>
     /// The number of positions in this data structure.
     /// </summary>
-    int ITuple.Length { get { return Rest is IValueTupleInternal ? 7 + ((IValueTupleInternal)Rest).Length : 8; } }
+    public int Length { get { return Rest is IValueTupleInternal ? 7 + ((IValueTupleInternal)Rest).Length : 8; } }
 
     /// <summary>
     /// Get the element at position <param name="index"/>.
     /// </summary>
-    object ITuple.this[int index]
+    public object this[int index]
     {
         get
         {
