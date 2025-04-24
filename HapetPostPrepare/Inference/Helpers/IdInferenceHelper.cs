@@ -79,7 +79,7 @@ namespace HapetPostPrepare
             string name = GenericsHelper.GetCringeGenericName(idExpr);
             var scope = scopeToSearch ?? idExpr.Scope;
 
-            var smbl = scope.GetSymbol(name);
+            var smbl = scope.GetSymbol(name, handleGenerics: true);
             if (smbl is DeclSymbol typed)
             {
                 IdentifierOnFoundSymbol(idExpr, typed, string.Empty, inInfo, ref outInfo);
@@ -90,7 +90,7 @@ namespace HapetPostPrepare
             if (idExpr.AdditionalData != null)
             {
                 string typeName = (idExpr.AdditionalData.OutType as ClassType).Declaration.Name.Name;
-                smbl = scope.GetSymbol($"{typeName}.{name}");
+                smbl = scope.GetSymbol($"{typeName}.{name}", handleGenerics: true);
                 if (smbl is DeclSymbol typed2)
                 {
                     IdentifierOnFoundSymbol(idExpr, typed2, string.Empty, inInfo, ref outInfo);
@@ -181,11 +181,16 @@ namespace HapetPostPrepare
             // searching for the name with current class name
             // works only for functions
             string nameWithClass = $"{_currentClass.Name.Name}::{name}";
-            var smblInLocalClass = scope.GetSymbol(nameWithClass);
+            var smblInLocalClass = scope.GetSymbol(nameWithClass, handleGenerics: true);
             if (smblInLocalClass is DeclSymbol typed2)
             {
                 IdentifierOnFoundSymbol(idExpr, typed2, nameWithClass, inInfo, ref outInfo);
                 return true;
+            }
+
+            if (name.Contains("CrFunc"))
+            {
+
             }
 
             // it is a func

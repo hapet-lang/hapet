@@ -7,9 +7,6 @@ using HapetFrontend.Extensions;
 using HapetFrontend.Helpers;
 using HapetFrontend.Errors;
 using HapetFrontend.Ast.Expressions;
-using System.Collections.Generic;
-using System.Reflection.Metadata.Ecma335;
-using System.Xml.Linq;
 
 namespace HapetPostPrepare
 {
@@ -30,6 +27,16 @@ namespace HapetPostPrepare
 
             // handle explicit shite
             CheckAndPrepareExplicitFuncs(candidates, callExpr);
+
+            // there has to be only one func when no args is set
+            if (args == null)
+            {
+                if (candidates.Count > 1)
+                {
+                    // TODO: error
+                }
+                return candidates.FirstOrDefault();
+            }
 
             // filter the candidates
             foreach (var cand in candidates)
@@ -241,7 +248,8 @@ namespace HapetPostPrepare
 
             candidates.AddRange(Candidates_Step1_InheritedAndCurrent(name, declToSearch));              // step 1
             candidates.AddRange(Candidates_Step2_CurrentScopeAndParents(name, callExpr));               // step 2
-            candidates = Candidate_Step3_MinAmountParams(candidates.Distinct(), args.Count).ToList();   // step 3
+            var argsAmount = args == null ? -1 : args.Count;
+            candidates = Candidate_Step3_MinAmountParams(candidates.Distinct(), argsAmount).ToList();   // step 3
 
             return candidates;
         }
@@ -280,6 +288,10 @@ namespace HapetPostPrepare
             foreach (var d in decls)
             {
                 var funcDecl = d.Decl as AstFuncDecl;
+
+                // if args amount is -1 - then any func is ok
+                if (argsAmount == -1)
+                    yield return d;
 
                 // allow if func has bigger amount of params than args
                 if (funcDecl.Parameters.Count >= argsAmount)

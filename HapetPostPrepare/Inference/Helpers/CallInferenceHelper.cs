@@ -130,6 +130,13 @@ namespace HapetPostPrepare
             // renaming func call name from 'Anime' to 'Anime(int, float)' WITH OBJECT AS FIRST PARAM
             if (callExpr.TypeOrObjectName == null)
             {
+                // if the type/object name is not presented - the function could be in local variable as delegate
+                var smbl1 = callExpr.Scope.GetSymbol(funcName);
+                if (smbl1 is DeclSymbol ds4 && ds4.Decl is AstDeclaration varDecl && varDecl.Type.OutType is DelegateType)
+                {
+                    return;
+                }
+
                 // if the type/object name is not presented - the function is in the same class
                 // but we need to know is it static or not
                 newName = $"{_currentClass.Name.Name}::{funcName}{callExpr.Arguments.GetArgsString()}";

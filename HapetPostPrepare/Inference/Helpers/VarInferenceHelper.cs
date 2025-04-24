@@ -339,8 +339,13 @@ namespace HapetPostPrepare
 
             /// WARN!!! almost the same as in <see cref="PostPrepareCallExprInference"/>
             string newName = string.Empty;
+            if (idFuncName.FindSymbol != null)
+            {
+                // check if it was already infered somewhere
+                newName = idFuncName.Name;
+            }
             // renaming func call name from 'Anime' to 'Anime(int, float)' WITH OBJECT AS FIRST PARAM
-            if (nestFuncName.LeftPart == null)
+            else if (nestFuncName.LeftPart == null)
             {
                 // if the type/object name is not presented - the function is in the same class
                 // but we need to know is it static or not

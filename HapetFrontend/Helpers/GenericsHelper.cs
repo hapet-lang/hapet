@@ -182,16 +182,16 @@ namespace HapetFrontend.Helpers
         {
             if (decl is AstClassDecl || decl is AstStructDecl)
             {
-                var decls = decl is AstClassDecl ? (decl as AstClassDecl).Declarations : (decl as AstStructDecl).Declarations;
                 decl.Name = decl.Name.GetCopy(GetName(decl));
+                var decls = decl is AstClassDecl ? (decl as AstClassDecl).Declarations : (decl as AstStructDecl).Declarations;
                 foreach (var dec in decls)
                 {
                     dec.Name = dec.Name.GetCopy(GetName(dec));
                 }
             }
-            else if (decl is AstFuncDecl funcDecl)
+            else if (decl is AstFuncDecl || decl is AstDelegateDecl)
             {
-                funcDecl.Name = funcDecl.Name.GetCopy(GetName(funcDecl));
+                decl.Name = decl.Name.GetCopy(GetName(decl));
             }
 
             static string GetName(AstDeclaration d)
