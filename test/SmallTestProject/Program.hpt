@@ -3,6 +3,8 @@ using System.Text;
 using System;
 using System.Runtime;
 
+public delegate void Cringe<T>(T anime);
+
 public static class Program
 {
     public static int Main(string[] args)
