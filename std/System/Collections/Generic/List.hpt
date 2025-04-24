@@ -15,7 +15,7 @@ using System.Runtime.CompilerServices;
 // of the List is automatically increased as required by reallocating the
 // internal array.
 //
-public class List<T> : IList<T>, IList, IReadOnlyList<T>
+public class List<T> : IList<T>, IReadOnlyList<T>
 {
     private const int DefaultCapacity = 4;
 
@@ -131,18 +131,16 @@ public class List<T> : IList<T>, IList, IReadOnlyList<T>
     // Read-only property describing how many elements are in the List.
     public int Count { get { return _size; } }
 
-    bool IList.IsFixedSize { get { return false; } }
+    public bool IsFixedSize { get { return false; } }
 
     // Is this List read-only?
-    bool ICollection<T>.IsReadOnly { get { return false; } }
-
-    bool IList.IsReadOnly { get { return false; } }
+    public bool IsReadOnly { get { return false; } }
 
     // Is this List synchronized (thread-safe)?
-    bool ICollection.IsSynchronized { get { return false; } }
+    public bool IsSynchronized { get { return false; } }
 
     // Synchronization root for this object.
-    object ICollection.SyncRoot { get { return this; } }
+    public object SyncRoot { get { return this; } }
 
     // Sets or Gets the element at the given index.
     public T this[int index]
@@ -172,32 +170,9 @@ public class List<T> : IList<T>, IList, IReadOnlyList<T>
 
     private static bool IsCompatibleObject(object value)
     {
-        // Non-null values are fine.  Only accept nulls if T is a class or Nullable<U>.
+        // Non-null values are fine. Only accept nulls if T is a class or Nullable<U>.
         // Note that default(T) is not equal to null for value types except when T is Nullable<U>.
         return (value is T) || (value == null && default(T) == null);
-    }
-
-    object IList.this[int index]
-    {
-        get
-        {
-            return this[index];
-        }
-        set
-        {
-            // TODO: 
-            // ThrowHelper.IfNullAndNullsAreIllegalThenThrow<T>(value, ExceptionArgument.value);
-
-            //try
-            //{
-                this[index] = (T)value;
-            //}
-            //catch (InvalidCastException)
-            //{
-                // TODO: 
-                // ThrowHelper.ThrowWrongValueTypeArgumentException(value, typeof(T));
-            //}
-        }
     }
 
     // Adds the given object to the end of this list. The size of the list is
@@ -229,24 +204,6 @@ public class List<T> : IList<T>, IList, IReadOnlyList<T>
         Grow(size + 1);
         _size = size + 1;
         _items[size] = item;
-    }
-
-    int IList.Add(object item)
-    {
-        // TODO: 
-        // ThrowHelper.IfNullAndNullsAreIllegalThenThrow<T>(item, ExceptionArgument.item);
-
-        //try
-        //{
-            Add((T)item);
-        //}
-        //catch (InvalidCastException)
-        //{
-            // TODO: 
-            // ThrowHelper.ThrowWrongValueTypeArgumentException(item, typeof(T));
-        //}
-
-        return Count - 1;
     }
 
     // Adds the elements of the given collection to the end of this list. If
@@ -373,15 +330,6 @@ public class List<T> : IList<T>, IList, IReadOnlyList<T>
         return _size != 0 && IndexOf(item) >= 0;
     }
 
-    bool IList.Contains(object item)
-    {
-        if (IsCompatibleObject(item))
-        {
-            return Contains((T)item);
-        }
-        return false;
-    }
-
     public List<TOutput> ConvertAll<TOutput>(Converter<T, TOutput> converter)
     {
         if (converter == null)
@@ -404,28 +352,6 @@ public class List<T> : IList<T>, IList, IReadOnlyList<T>
     public void CopyTo(T[] array)
     {
         CopyTo(array, 0);
-    }
-
-    // Copies this List into array, which must be of a
-    // compatible array type.
-    void ICollection.CopyTo(Array array, int arrayIndex)
-    {
-        if ((array != null) && (array.Rank != 1))
-        {
-            // TODO:
-            // ThrowHelper.ThrowArgumentException(ExceptionResource.Arg_RankMultiDimNotSupported);
-        }
-
-        //try
-        {
-            // Array.Copy will check for NULL.
-            Array.Copy(_items, 0, array, arrayIndex, _size);
-        }
-        //catch (ArrayTypeMismatchException)
-        //{
-            // TODO:
-            // ThrowHelper.ThrowArgumentException_Argument_IncompatibleArrayType();
-        //}
     }
 
     // Copies a section of this list to the given array at the given index.
@@ -531,208 +457,24 @@ public class List<T> : IList<T>, IList, IReadOnlyList<T>
         return newCapacity;
     }
 
-    public bool Exists(Predicate<T> match)
-    {
-        return FindIndex(match) != -1;
-    }
-
-    public T Find(Predicate<T> match)
-    {
-        if (match == null)
-        {
-            // TODO: 
-            // ThrowHelper.ThrowArgumentNullException(ExceptionArgument.match);
-        }
-
-        for (int i = 0; i < _size; i++)
-        {
-            if (match(_items[i]))
-            {
-                return _items[i];
-            }
-        }
-        return default;
-    }
-
-    public List<T> FindAll(Predicate<T> match)
-    {
-        if (match == null)
-        {
-            // TODO: 
-            // ThrowHelper.ThrowArgumentNullException(ExceptionArgument.match);
-        }
-
-        List<T> list = new List<T>();
-        for (int i = 0; i < _size; i++)
-        {
-            if (match(_items[i]))
-            {
-                list.Add(_items[i]);
-            }
-        }
-        return list;
-    }
-
-    public int FindIndex(Predicate<T> match)
-    {
-        return FindIndex(0, _size, match);
-    }
-
-    public int FindIndex(int startIndex, Predicate<T> match)
-    {
-        return FindIndex(startIndex, _size - startIndex, match);
-    }
-
-    public int FindIndex(int startIndex, int count, Predicate<T> match)
-    {
-        if ((uint)startIndex > (uint)_size)
-        {
-            // TODO: 
-            // ThrowHelper.ThrowStartIndexArgumentOutOfRange_ArgumentOutOfRange_IndexMustBeLessOrEqual();
-        }
-
-        if (count < 0 || startIndex > _size - count)
-        {
-            // TODO: 
-            // ThrowHelper.ThrowCountArgumentOutOfRange_ArgumentOutOfRange_Count();
-        }
-
-        if (match == null)
-        {
-            // TODO: 
-            // ThrowHelper.ThrowArgumentNullException(ExceptionArgument.match);
-        }
-
-        int endIndex = startIndex + count;
-        for (int i = startIndex; i < endIndex; i++)
-        {
-            if (match(_items[i])) return i;
-        }
-        return -1;
-    }
-
-    public T FindLast(Predicate<T> match)
-    {
-        if (match == null)
-        {
-            // TODO: 
-            // ThrowHelper.ThrowArgumentNullException(ExceptionArgument.match);
-        }
-
-        for (int i = _size - 1; i >= 0; i--)
-        {
-            if (match(_items[i]))
-            {
-                return _items[i];
-            }
-        }
-        return default;
-    }
-
-    public int FindLastIndex(Predicate<T> match)
-    {
-        return FindLastIndex(_size - 1, _size, match);
-    }
-
-    public int FindLastIndex(int startIndex, Predicate<T> match)
-    {
-        return FindLastIndex(startIndex, startIndex + 1, match);
-    }
-
-    public int FindLastIndex(int startIndex, int count, Predicate<T> match)
-    {
-        if (match == null)
-        {
-            // TODO:
-            // ThrowHelper.ThrowArgumentNullException(ExceptionArgument.match);
-        }
-
-        if (_size == 0)
-        {
-            // Special case for 0 length List
-            if (startIndex != -1)
-            {
-                // TODO:
-                // ThrowHelper.ThrowStartIndexArgumentOutOfRange_ArgumentOutOfRange_IndexMustBeLess();
-            }
-        }
-        else
-        {
-            // Make sure we're not out of range
-            if ((uint)startIndex >= (uint)_size)
-            {
-                // TODO:
-                // ThrowHelper.ThrowStartIndexArgumentOutOfRange_ArgumentOutOfRange_IndexMustBeLess();
-            }
-        }
-
-        // 2nd have of this also catches when startIndex == MAXINT, so MAXINT - 0 + 1 == -1, which is < 0.
-        if (count < 0 || startIndex - count + 1 < 0)
-        {
-            // TODO:
-            // ThrowHelper.ThrowCountArgumentOutOfRange_ArgumentOutOfRange_Count();
-        }
-
-        int endIndex = startIndex - count;
-        for (int i = startIndex; i > endIndex; i--)
-        {
-            if (match(_items[i]))
-            {
-                return i;
-            }
-        }
-        return -1;
-    }
-
-    public void ForEach(Action<T> action)
-    {
-        if (action == null)
-        {
-            // TODO:
-            // ThrowHelper.ThrowArgumentNullException(ExceptionArgument.action);
-        }
-
-        int version = _version;
-
-        for (int i = 0; i < _size; i++)
-        {
-            if (version != _version)
-            {
-                break;
-            }
-            action(_items[i]);
-        }
-
-        if (version != _version)
-        {
-            // TODO:
-            // ThrowHelper.ThrowInvalidOperationException_InvalidOperation_EnumFailedVersion();
-        }
-    }
-
     // Returns an enumerator for this list with the given
     // permission for removal of elements. If modifications made to the list
     // while an enumeration is in progress, the MoveNext and
     // GetObject methods of the enumerator will throw an exception.
     //
-    public Enumerator GetEnumerator()
+    private Enumerator GetEnumeratorInternal()
     {
         return new Enumerator(this);
     }
 
-    IEnumerator<T> IEnumerable<T>.GetEnumerator() 
+    public IEnumerator<T> GetEnumerator() 
     {
         if (Count == 0)
             return SZGenericArrayEnumerator<T>.Empty;
-        return GetEnumerator();
+        return GetEnumeratorInternal();
     }
 
-    IEnumerator IEnumerable.GetEnumerator()
-    {
-        return ((IEnumerable<T>)this).GetEnumerator();
-    }
-
-    public List<T> GetRange(int index, int count)
+    public IList<T> GetRange(int index, int count)
     {
         if (index < 0)
         {
@@ -758,23 +500,6 @@ public class List<T> : IList<T>, IList, IReadOnlyList<T>
         return list;
     }
 
-    /// <summary>
-    /// Creates a shallow copy of a range of elements in the source <see cref="List{T}" />.
-    /// </summary>
-    /// <param name="start">The zero-based <see cref="List{T}" /> index at which the range starts.</param>
-    /// <param name="length">The length of the range.</param>
-    /// <returns>A shallow copy of a range of elements in the source <see cref="List{T}" />.</returns>
-    /// <exception cref="ArgumentOutOfRangeException">
-    /// <paramref name="start" /> is less than 0.
-    /// -or-
-    /// <paramref name="length" /> is less than 0.
-    /// </exception>
-    /// <exception cref="ArgumentException"><paramref name="start" /> and <paramref name="length" /> do not denote a valid range of elements in the <see cref="List{T}" />.</exception>
-    public List<T> Slice(int start, int length)
-    {
-        return GetRange(start, length);
-    }
-
     // Returns the index of the first occurrence of a given value in a range of
     // this list. The list is searched forwards from beginning to end.
     // The elements of the list are compared to the given value using the
@@ -786,15 +511,6 @@ public class List<T> : IList<T>, IList, IReadOnlyList<T>
     public int IndexOf(T item)
     {
         return Array.IndexOf(_items, item, 0, _size);
-    }
-
-    int IList.IndexOf(object item)
-    {
-        if (IsCompatibleObject(item))
-        {
-            return IndexOf((T)item);
-        }
-        return -1;
     }
 
     // Returns the index of the first occurrence of a given value in a range of
@@ -865,22 +581,6 @@ public class List<T> : IList<T>, IList, IReadOnlyList<T>
         _items[index] = item;
         _size++;
         _version++;
-    }
-
-    void IList.Insert(int index, object item)
-    {
-        // TODO: 
-        // ThrowHelper.IfNullAndNullsAreIllegalThenThrow<T>(item, ExceptionArgument.item);
-
-        //try
-        {
-            Insert(index, (T)item);
-        }
-        //catch (InvalidCastException)
-        //{
-            // TODO:
-            // ThrowHelper.ThrowWrongValueTypeArgumentException(item, typeof(T));
-        //}
     }
 
     // Inserts the elements of the given collection at a given index. If
@@ -1038,14 +738,6 @@ public class List<T> : IList<T>, IList, IReadOnlyList<T>
         }
 
         return false;
-    }
-
-    void IList.Remove(object item)
-    {
-        if (IsCompatibleObject(item))
-        {
-            Remove((T)item);
-        }
     }
 
     // This method removes all items which matches the predicate.
@@ -1280,25 +972,7 @@ public class List<T> : IList<T>, IList, IReadOnlyList<T>
         }
     }
 
-    public bool TrueForAll(Predicate<T> match)
-    {
-        if (match == null)
-        {
-            // TODO: 
-            // ThrowHelper.ThrowArgumentNullException(ExceptionArgument.match);
-        }
-
-        for (int i = 0; i < _size; i++)
-        {
-            if (!match(_items[i]))
-            {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    public struct Enumerator : IEnumerator<T>, IEnumerator
+    public struct Enumerator : IEnumerator<T>
     {
         private readonly List<T> _list;
         private int _index;
@@ -1345,20 +1019,7 @@ public class List<T> : IList<T>, IList, IReadOnlyList<T>
 
         public T Current { get { return _current; } };
 
-        object IEnumerator.Current
-        {
-            get
-            {
-                if (_index == 0 || _index == _list._size + 1)
-                {
-                    // TODO:
-                    // ThrowHelper.ThrowInvalidOperationException_InvalidOperation_EnumOpCantHappen();
-                }
-                return Current;
-            }
-        }
-
-        void IEnumerator.Reset()
+        public void Reset()
         {
             if (_version != _list._version)
             {
