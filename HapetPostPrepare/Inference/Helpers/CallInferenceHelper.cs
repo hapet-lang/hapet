@@ -117,6 +117,8 @@ namespace HapetPostPrepare
             {
                 // call expr type is the same as func return type
                 callExpr.OutType = dt.Declaration.Returns.OutType;
+
+                callExpr.StaticCall = true; // TODO: always a static call for now!!! - change for smth other
             }
             else
             {
