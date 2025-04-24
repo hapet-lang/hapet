@@ -184,7 +184,7 @@ namespace HapetPostPrepare
             var smblInLocalClass = scope.GetSymbol(nameWithClass, handleGenerics: true);
             if (smblInLocalClass is DeclSymbol typed2)
             {
-                IdentifierOnFoundSymbol(idExpr, typed2, nameWithClass, inInfo, ref outInfo);
+                IdentifierOnFoundSymbol(idExpr, typed2, typed2.Name, inInfo, ref outInfo);
                 return true;
             }
 
@@ -226,7 +226,7 @@ namespace HapetPostPrepare
 
                 if (funcInAnotherClass is DeclSymbol typed4)
                 {
-                    IdentifierOnFoundSymbol(idExpr, typed4, fullFuncName, inInfo, ref outInfo);
+                    IdentifierOnFoundSymbol(idExpr, typed4, typed4.Name, inInfo, ref outInfo);
                     return true;
                 }
             }
@@ -322,9 +322,18 @@ namespace HapetPostPrepare
             // create a new shite with real types
             var realCls = GetRealTypeFromGeneric(theDecl, genId.GenericRealTypes.GetNestedList(), realName);
 
-            // define the real decl in the same scope where generic one exists
-            realDclDecl = new DeclSymbol(realName, realCls);
-            theDecl.Scope.DefineSymbol(realDclDecl);
+            // func is defined by itself
+            if (theDecl is not AstFuncDecl)
+            {
+                // define the real decl in the same scope where generic one exists
+                realDclDecl = new DeclSymbol(realName, realCls);
+                theDecl.Scope.DefineSymbol(realDclDecl);
+            }
+            else
+            {
+                realDclDecl = theDecl.Scope.GetSymbol(realCls.Name.Name) as DeclSymbol;
+            }
+            
             return realDclDecl;
         }
     }

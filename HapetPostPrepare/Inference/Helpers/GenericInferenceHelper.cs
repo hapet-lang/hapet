@@ -77,6 +77,7 @@ namespace HapetPostPrepare
 
             var realDecl = decl.GetDeepCopy() as AstDeclaration;
             realDecl.ContainingParent = decl.ContainingParent;
+            realDecl.Parent = decl.Parent;
             realDecl.IsImplOfGeneric = true;
             realDecl.OriginalGenericDecl = decl;
             realDecl.Name = realDecl.Name.GetCopy(realName).GetPureIdExpr();

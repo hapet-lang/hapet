@@ -145,7 +145,7 @@ namespace HapetPostPrepare
                             newName = $"{funcDecl.Name.Name}{funcDecl.Parameters.GetParamsString()}";
                         scopeToDefine = fncDeclParent.Body.SubScope;
                     }
-                    
+
                     // if it is public func - it should be visible in the scope in which func's class is
                     scopeToDefine.DefineDeclSymbol(newName, funcDecl);
                     funcDecl.Name = funcDecl.Name.GetCopy(newName);
@@ -173,6 +173,10 @@ namespace HapetPostPrepare
                             scopeToDefine.DefineBinaryOperator(op);
                         }
                     }
+                }
+                else
+                {
+                    // probably cringe
                 }
             }
             else
