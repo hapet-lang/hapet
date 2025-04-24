@@ -188,11 +188,6 @@ namespace HapetPostPrepare
                 return true;
             }
 
-            if (name.Contains("CrFunc"))
-            {
-
-            }
-
             // it is a func
             if (name.Contains("::"))
             {
