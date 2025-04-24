@@ -118,6 +118,10 @@ namespace HapetPostPrepare
             {
                 CreateClassOrStructDecl(decl, sb, additionalOffset);
             }
+            else if (decl is AstDelegateDecl delDecl)
+            {
+                CreateDelegateDecl(delDecl, sb, additionalOffset, false);
+            }
         }
 
         private void CreateClassOrStructDecl(AstDeclaration decl, StringBuilder sb, string additionalOffset)
@@ -209,6 +213,32 @@ namespace HapetPostPrepare
             // looks better :)
             if (!decl.IsNestedDecl)
                 sb.Append('\n');
+        }
+
+        private void CreateDelegateDecl(AstDelegateDecl decl, StringBuilder sb, string additionalOffset, bool isParentGeneric)
+        {
+            // return type
+            sb.Append("delegate ");
+            AntiParseExpr(decl.Returns, sb, additionalOffset);
+            sb.Append(' ');
+            sb.Append($"{GenericsHelper.GetNameFromAst(decl.Name).GetClassNameWithoutNamespace()}");
+
+            sb.Append('(');
+            for (int i = 0; i < decl.Parameters.Count; ++i)
+            {
+                var par = decl.Parameters[i];
+                AntiParseExpr(par.Type, sb, additionalOffset);
+                sb.Append(' ');
+                AntiParseExpr(par.Name, sb, additionalOffset);
+
+                if (i < decl.Parameters.Count - 1)
+                    sb.Append(", ");
+            }
+            sb.Append(')');
+
+            // TODO: generic constraiins 
+
+            sb.Append(";\n");
         }
 
         private void CreateFuncDecl(AstFuncDecl decl, StringBuilder sb, string additionalOffset, bool isParentGeneric)
