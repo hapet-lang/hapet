@@ -14,6 +14,7 @@ namespace HapetFrontend.Parsing
         {
             AstNestedExpr returnType = null;
             AstIdExpr delegateName = null;
+            var generics = new List<AstIdExpr>();
             var beg = Consume(TokenType.KwDelegate, ErrMsg("keyword 'delegate'", "at beginning of delegate type")).Location;
 
             // return type
@@ -44,8 +45,27 @@ namespace HapetFrontend.Parsing
                 delegateName = idExpr;
             }
 
+            // checking generics
+            // getting generics from parsed class name
+            if (delegateName is AstIdGenericExpr genExpr)
+            {
+                foreach (var g in genExpr.GenericRealTypes)
+                {
+                    if (g is AstNestedExpr nest)
+                        generics.Add(nest.RightPart as AstIdExpr);
+                    else if (g is AstIdExpr id)
+                        generics.Add(id);
+                    else
+                        generics.Add(null); // TODO: ERROR HERE
+                }
+            }
+
             TokenLocation end;
             var parameters = ParseParameterList(TokenType.OpenParen, TokenType.CloseParen, out var pbeg, out end, true);
+            SkipNewlines();
+
+            // parsing constrains
+            var genericConstrains = ParseGenericConstrains(generics);
 
             // TODO: probably needed when allowing delegates for non-static funcs
             //// all delegates have ptr to a class object as their first param
@@ -54,8 +74,11 @@ namespace HapetFrontend.Parsing
             // TODO: doc string
             return new AstDelegateDecl(parameters, returnType, delegateName, "", new Location(beg, end))
             {
-                IsImported = inInfo.ExternalMetadata
-            };
+                IsImported = inInfo.ExternalMetadata,
+                HasGenericTypes = generics.Count > 0,
+                GenericNames = generics,
+                GenericConstrains = genericConstrains,
+        };
         }
     }
 }
