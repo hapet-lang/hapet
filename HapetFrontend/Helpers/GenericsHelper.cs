@@ -18,6 +18,11 @@ namespace HapetFrontend.Helpers
         public const string GENERIC_DELIM = "_GD_";
         public const string GENERIC_END = "_GE_";
 
+        /// <summary>
+        /// 'true' if accessing smth like List{T} where T is a generic type
+        /// </summary>
+        /// <param name="genericTypes"></param>
+        /// <returns></returns>
         public static bool HasGenericTypesInRealTypes(List<AstNestedExpr> genericTypes)
         {
             bool hasGeneric = false;
@@ -48,14 +53,10 @@ namespace HapetFrontend.Helpers
             if (decl is AstFuncDecl func)
             {
                 // cringe
+                int indexOfParen = func.Name.Name.IndexOf('(');
                 string name = func.Name.Name;
-                int indexOfParen = 0;
-                bool containsClsName = func.Name.Name.Contains("::");
-                if (containsClsName)
-                {
-                    indexOfParen = func.Name.Name.IndexOf('(');
-                    name = func.Name.Name.Substring(0, indexOfParen);
-                }
+                if (indexOfParen != -1)
+                    name = name.Substring(0, indexOfParen);
 
                 // also reset generic shite if exists
                 if (name.Contains(GENERIC_BEGIN))
@@ -66,9 +67,8 @@ namespace HapetFrontend.Helpers
                 string realName = GetRealFromGenericName(name, generics);
 
                 // cringe
-                if (containsClsName)
+                if (indexOfParen != -1)
                     realName += func.Name.Name.Substring(indexOfParen, func.Name.Name.Length - indexOfParen);
-
                 return realName;
             }
             else if (decl is AstClassDecl || decl is AstPropertyDecl || decl is AstStructDecl || decl is AstDelegateDecl)
@@ -101,7 +101,8 @@ namespace HapetFrontend.Helpers
             return sb.ToString();
         }
 
-        public static string GetPrettyGenericFuncName(string name)
+        #region Prettifier
+        public static string GetPrettyGenericName(string name)
         {
             // getting the index of func/cls delim
             int delimIndex = name.IndexOf("::");
@@ -109,15 +110,10 @@ namespace HapetFrontend.Helpers
                 return GetPrettyGenericImplName(name); // probably pure func
 
             string otherPart = name.Substring(delimIndex + 2);
-
-            StringBuilder sb = new StringBuilder();
-
             int parenIndex = otherPart.IndexOf('(');
             string funcNamePart = otherPart.Substring(0, parenIndex);
 
-            sb.Append(GetPrettyGenericImplName(funcNamePart));
-
-            return sb.ToString();
+            return GetPrettyGenericImplName(funcNamePart);
         }
 
         public static string GetPrettyGenericImplName(string namee)
@@ -132,36 +128,37 @@ namespace HapetFrontend.Helpers
 
             StringBuilder currentName = new StringBuilder();
 
-            string currentSearchString = namee[(genIndex + GENERIC_BEGIN.Length)..];
-            while (currentSearchString.Length > 0)
+            int currentIndex = genIndex + GENERIC_BEGIN.Length;
+            while (currentIndex + 3 < namee.Length)
             {
-                if (currentSearchString.StartsWith(GENERIC_DELIM))
+                string toCheck = string.Concat(namee[currentIndex], namee[currentIndex + 1], namee[currentIndex + 2], namee[currentIndex + 3]);
+                if (toCheck == GENERIC_DELIM)
                 {
                     sb.Append(':'); // param delim
                     sb.Append(GetPrettyGenericTypeName(currentName.ToString())); // the name
-
                     currentName.Clear();
-                    currentSearchString = currentSearchString[GENERIC_DELIM.Length..];
+
+                    currentIndex += GENERIC_DELIM.Length;
                 }
-                else if (currentSearchString.StartsWith(GENERIC_BEGIN))
+                else if (toCheck == GENERIC_BEGIN)
                 {
                     sb.Append('<'); // begin
-
                     currentName.Clear();
-                    currentSearchString = currentSearchString[GENERIC_BEGIN.Length..];
+
+                    currentIndex += GENERIC_BEGIN.Length;
                 }
-                else if (currentSearchString.StartsWith(GENERIC_END))
+                else if (toCheck == GENERIC_END)
                 {
                     sb.Append(GetPrettyGenericTypeName(currentName.ToString())); // the name
                     sb.Append('>'); // end
-
                     currentName.Clear();
-                    currentSearchString = currentSearchString[GENERIC_END.Length..];
+
+                    currentIndex += GENERIC_END.Length;
                 }
                 else
                 {
-                    currentName.Append(currentSearchString[0]);
-                    currentSearchString = currentSearchString[1..];
+                    currentName.Append(namee[currentIndex]);
+                    currentIndex++;
                 }
             }
             sb.Append(currentName); // ostatki sladki
@@ -177,24 +174,30 @@ namespace HapetFrontend.Helpers
             var geInd = namee.IndexOf(GENERIC_TYPE_END);
             return namee.Substring(gbInd + GENERIC_TYPE_BEGIN.Length, (geInd - (gbInd + GENERIC_TYPE_BEGIN.Length)));
         }
+        #endregion
 
+        /// <summary>
+        /// Replaces all System.Anime::Func(Pivo) with just Func and etc.
+        /// Saves all generic entries!!!
+        /// </summary>
+        /// <param name="decl"></param>
         public static void ResetDeclarationNames(AstDeclaration decl)
         {
             if (decl is AstClassDecl || decl is AstStructDecl)
             {
-                decl.Name = decl.Name.GetCopy(GetName(decl));
+                decl.Name = decl.Name.GetCopy(GetResetedName(decl));
                 var decls = decl is AstClassDecl ? (decl as AstClassDecl).Declarations : (decl as AstStructDecl).Declarations;
                 foreach (var dec in decls)
                 {
-                    dec.Name = dec.Name.GetCopy(GetName(dec));
+                    dec.Name = dec.Name.GetCopy(GetResetedName(dec));
                 }
             }
             else if (decl is AstFuncDecl || decl is AstDelegateDecl)
             {
-                decl.Name = decl.Name.GetCopy(GetName(decl));
+                decl.Name = decl.Name.GetCopy(GetResetedName(decl));
             }
 
-            static string GetName(AstDeclaration d)
+            static string GetResetedName(AstDeclaration d)
             {
                 if (d is AstClassDecl || d is AstStructDecl || d is AstDelegateDecl)
                 {
@@ -210,6 +213,13 @@ namespace HapetFrontend.Helpers
             }
         }
 
+        /// <summary>
+        /// Creates an AstIdExpr (or generic one) from string like
+        /// 'Pivo' or 'Pivo<Cringe>'
+        /// </summary>
+        /// <param name="name"></param>
+        /// <param name="location"></param>
+        /// <returns></returns>
         public static AstIdExpr GetAstIdFromName(string name, ILocation location)
         {
             // no generics
@@ -231,10 +241,15 @@ namespace HapetFrontend.Helpers
             return astGen;
         }
 
+        /// <summary>
+        /// Inversed func of <see cref="GetAstIdFromName"/>
+        /// </summary>
+        /// <param name="idExpr"></param>
+        /// <returns></returns>
         public static string GetNameFromAst(AstIdExpr idExpr)
         {
             if (idExpr is not AstIdGenericExpr genId)
-                return GetPrettyGenericFuncName(idExpr.Name);
+                return GetPrettyGenericName(idExpr.Name);
 
             StringBuilder sb = new StringBuilder("<");
             for (int i = 0; i < genId.GenericRealTypes.Count; ++i)
@@ -245,9 +260,15 @@ namespace HapetFrontend.Helpers
                     sb.Append(", ");
             }
             sb.Append('>');
-            return $"{GetPrettyGenericFuncName(genId.Name)}{sb}";
+            return $"{GetPrettyGenericName(genId.Name)}{sb}";
         }
 
+        /// <summary>
+        /// Generates pretty string from <see cref="HapetType"/>. 
+        /// At least used for metadata gen
+        /// </summary>
+        /// <param name="type"></param>
+        /// <returns></returns>
         public static string GetNameFromType(HapetType type)
         {
             if (type is PointerType ptr)
@@ -260,11 +281,18 @@ namespace HapetFrontend.Helpers
             }
             else if (type is ClassType || type is StructType)
             {
-                return GetPrettyGenericFuncName(type.ToString());
+                return GetPrettyGenericName(type.ToString());
             }
             return type.ToString();
         }
 
+        /// <summary>
+        /// Converts generic astId into smth like
+        /// 'Pivo_GB__GD__GE_'
+        /// Used at least for generic type/func searching via candidating
+        /// </summary>
+        /// <param name="idExpr"></param>
+        /// <returns></returns>
         public static string GetCringeGenericName(AstIdExpr idExpr)
         {
             if (idExpr is not AstIdGenericExpr genExpr)
@@ -272,6 +300,54 @@ namespace HapetFrontend.Helpers
 
             List<AstNestedExpr> tmp = Enumerable.Repeat(new AstNestedExpr(null, null), genExpr.GenericRealTypes.Count).ToList();
             return GetRealFromGenericName(genExpr.Name, tmp);
+        }
+
+        /// <summary>
+        /// Returns amount of generics in string
+        /// </summary>
+        /// <param name="name"></param>
+        /// <returns></returns>
+        public static int GetGenericsAmount(this string name)
+        {
+            int amount = 0;
+
+            // getting the index of the first entry
+            int genIndex = name.IndexOf(GENERIC_BEGIN);
+            if (genIndex == -1)
+                return 0; // there are no generics
+
+            // at least one generic exists if the _GB_ exists
+            amount++;
+
+            // if > 0 then there was a _GB_ and no _GE_ yet. if < 0 - probably error :)
+            int currentState = 0;
+            int currentIndex = (genIndex + GENERIC_BEGIN.Length);
+
+            while (currentIndex + 3 < name.Length)
+            {
+                string toCheck = string.Concat(name[currentIndex], name[currentIndex + 1], name[currentIndex + 2], name[currentIndex + 3]);
+                if (currentState == 0 && toCheck == GENERIC_DELIM)
+                {
+                    amount++;
+                    currentIndex += GENERIC_DELIM.Length;
+                    continue;
+                }
+                else if (currentState == 0 && toCheck == GENERIC_END)
+                {
+                    // all found
+                    break;
+                }
+                else if (toCheck == GENERIC_BEGIN)
+                {
+                    currentState++;
+                }
+                else if (toCheck == GENERIC_END)
+                {
+                    currentState--;
+                }
+                currentIndex++;
+            }
+            return amount;
         }
     }
 }

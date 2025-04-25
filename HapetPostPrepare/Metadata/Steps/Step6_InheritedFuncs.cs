@@ -140,7 +140,7 @@ namespace HapetPostPrepare
                                         // error - the method of the interface was not implemented
                                         _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, inh,
                                             [GenericsHelper.GetPrettyGenericImplName(HapetType.AsString(decl.Type.OutType)), 
-                                                GenericsHelper.GetPrettyGenericFuncName(inhF.Name.Name)], ErrorCode.Get(CTEN.NoMethodImplementation));
+                                                GenericsHelper.GetPrettyGenericName(inhF.Name.Name)], ErrorCode.Get(CTEN.NoMethodImplementation));
                                 }
                                 else
                                 {
