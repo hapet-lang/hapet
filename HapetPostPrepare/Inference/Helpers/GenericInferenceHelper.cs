@@ -26,7 +26,7 @@ namespace HapetPostPrepare
             // TODO: handle constains
             string parentString = parent.Name.Name;
             if (parent is AstPropertyDecl || parent is AstFuncDecl)
-                parentString = $"{parent.ContainingParent.Name.Name}_{parentString}";
+                parentString = $"{parent.ContainingParent.Name.Name}.{parentString}";
 
             string typeName = $"{parentString}_{parent.GenericNames.Count}_{GenericsHelper.GENERIC_TYPE_BEGIN}{name.Name}{GenericsHelper.GENERIC_TYPE_END}";
             var specialName = name.GetCopy(typeName);
@@ -46,6 +46,7 @@ namespace HapetPostPrepare
             return cls;
         }
 
+        private int aaaa = 0;
         private AstDeclaration GetRealTypeFromGeneric(AstDeclaration decl, List<AstNestedExpr> genericTypes, string realName)
         {
             // we need to save previous info about current shite and then reload it 
@@ -88,8 +89,15 @@ namespace HapetPostPrepare
             RenameFromGenericToRealType(realDecl, origDeclPureName);
             // just a pp
             PostPrepareDeclScoping(realDecl);
+            aaaa++;
+            if (aaaa > 79)
+            {
+
+            }
             // pp up to the current metadata step
             PostPrepareStatementUpToCurrentStep(realDecl);
+
+            
 
             // if it is a property - we need to create and inference its field/get/set
             if (realDecl is AstPropertyDecl propDecl)

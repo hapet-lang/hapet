@@ -74,5 +74,10 @@ namespace HapetFrontend.Ast.Declarations
             copy.SpecialKeys.AddRange(SpecialKeys);
             return copy;
         }
+
+        public override string ToString()
+        {
+            return $"{Returns.OutType}:{Name}";
+        }
     }
 }

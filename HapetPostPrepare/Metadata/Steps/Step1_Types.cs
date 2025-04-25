@@ -5,6 +5,7 @@ using HapetFrontend.Errors;
 using HapetFrontend.Extensions;
 using HapetFrontend.Scoping;
 using HapetFrontend.Helpers;
+using HapetFrontend.Types;
 namespace HapetPostPrepare
 {
     public partial class PostPrepare

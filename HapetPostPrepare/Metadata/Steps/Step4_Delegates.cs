@@ -1,5 +1,6 @@
 ﻿using HapetFrontend.Ast;
 using HapetFrontend.Ast.Declarations;
+using HapetFrontend.Types;
 using HapetPostPrepare.Entities;
 
 namespace HapetPostPrepare
@@ -14,6 +15,9 @@ namespace HapetPostPrepare
 
             if (stmt is AstDelegateDecl del)
             {
+                // have to do it here!!!
+                del.Type.OutType = DelegateType.GetDelegateType(del, del.Scope);
+
                 PostPrepareDelegateInference(del, inInfo, ref outInfo);
             }
         }

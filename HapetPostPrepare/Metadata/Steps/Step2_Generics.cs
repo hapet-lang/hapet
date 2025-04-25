@@ -45,9 +45,9 @@ namespace HapetPostPrepare
                 SourceFile = x.SourceFile,
                 Parent = x.Parent,
             }).ToList();
+
             string realName = GenericsHelper.GetRealFromGenericName(decl, nestedList);
-            var realDecl = GetRealTypeFromGeneric(decl, nestedList, realName);
-            realDeclResult = realDecl;
+            realDeclResult = GetRealTypeFromGeneric(decl, nestedList, realName);
 
             return true;
         }

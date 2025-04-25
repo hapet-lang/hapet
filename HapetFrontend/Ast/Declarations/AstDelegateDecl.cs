@@ -18,6 +18,7 @@ namespace HapetFrontend.Ast.Declarations
         public AstDelegateDecl(List<AstParamDecl> parameters, AstExpression returns, AstIdExpr name, string doc = "", ILocation location = null) : base(name, doc, location)
         {
             Type = new AstIdExpr("delegate", location);
+            /// WARN: type is set in <see cref="PostPrepareMetadataDelegates"/>
 
             Parameters = parameters;
             Returns = returns;
