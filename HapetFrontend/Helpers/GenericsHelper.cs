@@ -11,13 +11,6 @@ namespace HapetFrontend.Helpers
 {
     public static class GenericsHelper
     {
-        public const string GENERIC_TYPE_BEGIN = "_gb_";
-        public const string GENERIC_TYPE_END = "_ge_";
-
-        public const string GENERIC_BEGIN = "_GB_";
-        public const string GENERIC_DELIM = "_GD_";
-        public const string GENERIC_END = "_GE_";
-
         /// <summary>
         /// 'true' if accessing smth like List{T} where T is a generic type
         /// </summary>

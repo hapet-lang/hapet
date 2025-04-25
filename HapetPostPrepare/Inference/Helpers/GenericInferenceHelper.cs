@@ -14,6 +14,7 @@ namespace HapetPostPrepare
 {
     public partial class PostPrepare
     {
+        private static int _currentGenericIndex = 0;
         /// <summary>
         /// Creates a pseudo type to handle constrains of a generic type
         /// </summary>
@@ -24,11 +25,8 @@ namespace HapetPostPrepare
         private AstClassDecl CreateTypeDeclarationForGeneric(AstDeclaration parent, AstIdExpr name, List<AstNestedExpr> constrains)
         {
             // TODO: handle constains
-            string parentString = parent.Name.Name;
-            if (parent is AstPropertyDecl || parent is AstFuncDecl)
-                parentString = $"{parent.ContainingParent.Name.Name}.{parentString}";
 
-            string typeName = $"{parentString}_{parent.GenericNames.Count}_{GenericsHelper.GENERIC_TYPE_BEGIN}{name.Name}{GenericsHelper.GENERIC_TYPE_END}";
+            string typeName = $"{name.Name}.{_currentGenericIndex++}";
             var specialName = name.GetCopy(typeName);
             var cls = new AstClassDecl(specialName, new List<AstDeclaration>(), "", specialName)
             {
