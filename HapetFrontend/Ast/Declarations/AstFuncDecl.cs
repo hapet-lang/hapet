@@ -74,10 +74,5 @@ namespace HapetFrontend.Ast.Declarations
             copy.SpecialKeys.AddRange(SpecialKeys);
             return copy;
         }
-
-        public string GenerateHashForGenericType(string genTypeName)
-        {
-            return Funcad.CreateMD5($"{SourceFile}{Name.Name}{ContainingParent?.Name.Name}{string.Join('_', Parameters.Select(x => HapetType.AsString(x.Type.OutType)))}{HapetType.AsString(Returns.OutType)}{genTypeName}");
-        }
     }
 }

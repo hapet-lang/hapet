@@ -25,15 +25,10 @@ namespace HapetPostPrepare
         {
             // TODO: handle constains
             string parentString = parent.Name.Name;
-            if (parent is AstPropertyDecl propDecl)
-                parentString = $"{parent.ContainingParent.Name.Name}.{parentString}";
-            string additionalString = string.Empty;
-            if (parent is AstFuncDecl funcDecl)
-                additionalString = funcDecl.GenerateHashForGenericType(name.Name);
-            else if (parent is AstDelegateDecl delegateDecl)
-                additionalString = delegateDecl.GenerateHashForGenericType(name.Name);
+            if (parent is AstPropertyDecl || parent is AstFuncDecl)
+                parentString = $"{parent.ContainingParent.Name.Name}_{parentString}";
 
-            string typeName = $"{parentString}_{parent.GenericNames.Count}_{GenericsHelper.GENERIC_TYPE_BEGIN}{name.Name}{GenericsHelper.GENERIC_TYPE_END}{additionalString}";
+            string typeName = $"{parentString}_{parent.GenericNames.Count}_{GenericsHelper.GENERIC_TYPE_BEGIN}{name.Name}{GenericsHelper.GENERIC_TYPE_END}";
             var specialName = name.GetCopy(typeName);
             var cls = new AstClassDecl(specialName, new List<AstDeclaration>(), "", specialName)
             {

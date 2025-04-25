@@ -76,30 +76,31 @@ namespace HapetFrontend.Extensions
 
             // if > 0 then there was a _GB_ and no _GE_ yet. if < 0 - probably error :)
             int currentState = 0;
+            int currentIndex = (genIndex + GenericsHelper.GENERIC_BEGIN.Length);
 
-            string currentSearchString = name[(genIndex + GenericsHelper.GENERIC_BEGIN.Length)..];
-            while (currentSearchString.Length > 0)
+            while (currentIndex + 3 < name.Length)
             {
-                if (currentState == 0 && currentSearchString.StartsWith(GenericsHelper.GENERIC_DELIM))
+                string toCheck = string.Concat(name[currentIndex], name[currentIndex + 1], name[currentIndex + 2], name[currentIndex + 3]);
+                if (currentState == 0 && toCheck == GenericsHelper.GENERIC_DELIM)
                 {
                     amount++;
-                    currentSearchString = currentSearchString[GenericsHelper.GENERIC_DELIM.Length..];
+                    currentIndex += GenericsHelper.GENERIC_DELIM.Length;
                     continue;
                 }
-                else if (currentState == 0 && currentSearchString.StartsWith(GenericsHelper.GENERIC_END))
+                else if (currentState == 0 && toCheck == GenericsHelper.GENERIC_END)
                 {
                     // all found
                     break;
                 }
-                else if (currentSearchString.StartsWith(GenericsHelper.GENERIC_BEGIN))
+                else if (toCheck == GenericsHelper.GENERIC_BEGIN)
                 {
                     currentState++;
                 }
-                else if (currentSearchString.StartsWith(GenericsHelper.GENERIC_END))
+                else if (toCheck == GenericsHelper.GENERIC_END)
                 {
                     currentState--;
                 }
-                currentSearchString = currentSearchString[1..];
+                currentIndex++;
             }
             return amount;
         }

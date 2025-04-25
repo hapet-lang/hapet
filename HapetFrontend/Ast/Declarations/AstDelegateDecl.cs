@@ -50,11 +50,6 @@ namespace HapetFrontend.Ast.Declarations
             return copy;
         }
 
-        public string GenerateHashForGenericType(string genTypeName)
-        {
-            return Funcad.CreateMD5($"{SourceFile}{Name.Name}{ContainingParent?.Name.Name}{string.Join('_', Parameters.Select(x => HapetType.AsString(x.Type.OutType)))}{HapetType.AsString(Returns.OutType)}{genTypeName}");
-        }
-
         public static AstClassDecl GetDelegateClass(Scope scope)
         {
             return (scope.GetSymbolInNamespace("System", "Delegate") as DeclSymbol).Decl as AstClassDecl;
