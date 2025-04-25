@@ -664,13 +664,13 @@ namespace HapetBackend.Llvm
                 LLVMTypeRef delegateType = _typeMap[expr.FuncName.OutType];
 
                 LLVMValueRef varPtr = default;
-                if (delType.Declaration.Returns.OutType is not VoidType)
-                    varPtr = CreateLocalVariable(delType.Declaration.Returns.OutType, "delRetHolder");
+                if (delType.TargetDeclaration.Returns.OutType is not VoidType)
+                    varPtr = CreateLocalVariable(delType.TargetDeclaration.Returns.OutType, "delRetHolder");
 
                 // args shite
                 List<LLVMValueRef> args = new List<LLVMValueRef>();
                 // skip the first object param
-                var parsToSearch = expr.StaticCall ? delType.Declaration.Parameters : delType.Declaration.Parameters.Skip(1).ToList();
+                var parsToSearch = expr.StaticCall ? delType.TargetDeclaration.Parameters : delType.TargetDeclaration.Parameters.Skip(1).ToList();
                 List<AstArgumentExpr> normalArgs = _postPreparer.GenerateNormalArguments(parsToSearch, expr.Arguments, expr);
                 foreach (var a in normalArgs)
                 {
@@ -685,14 +685,14 @@ namespace HapetBackend.Llvm
 
                 // the return name has to be empty if ret value of func is void
                 // also save the ret value into a var
-                if (delType.Declaration.Returns.OutType is not VoidType)
+                if (delType.TargetDeclaration.Returns.OutType is not VoidType)
                 {
                     LLVMValueRef ret = _builder.BuildCall2(funcType, theRealFuncExtracted, args.ToArray(), $"delReturnValue");
                     _builder.BuildStore(ret, varPtr);
 
                     if (getPtr)
                         return varPtr;
-                    return _builder.BuildLoad2(HapetTypeToLLVMType(delType.Declaration.Returns.OutType), varPtr, "holderLoaded");
+                    return _builder.BuildLoad2(HapetTypeToLLVMType(delType.TargetDeclaration.Returns.OutType), varPtr, "holderLoaded");
                 }
 
                 return _builder.BuildCall2(funcType, theRealFuncExtracted, args.ToArray());

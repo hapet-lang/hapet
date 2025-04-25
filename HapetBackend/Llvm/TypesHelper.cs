@@ -69,11 +69,6 @@ namespace HapetBackend.Llvm
         {
             switch (ht)
             {
-                case ClassType t:
-                    {
-                        return _context.CreateNamedStruct($"class.{t.Declaration.Name.Name}"); ;
-                    }
-
                 case BoolType b:
                     return _context.Int1Type;
 
@@ -118,20 +113,25 @@ namespace HapetBackend.Llvm
                         return funcType;
                     }
 
-                case DelegateType d:
+                //case DelegateType d:
+                //    {
+                //        var funcType = GetFunctionTypeOfDelegate(d);
+
+                //        // fields of delegate struct
+                //        var objectPtr = HapetTypeToLLVMType(PointerType.GetPointerType(IntType.GetIntType(1, false))); // ptr to func object
+                //        var funcPtr = funcType.GetPointerTo();
+
+                //        var str = _context.CreateNamedStruct($"delegate.{d.Declaration.Name.Name}");
+                //        str.StructSetBody(new LLVMTypeRef[] {
+                //            ((LLVMTypeRef)funcPtr),
+                //            ((LLVMTypeRef)objectPtr)
+                //        }, false);
+                //        return str;
+                //    }
+
+                case ClassType t:
                     {
-                        var funcType = GetFunctionTypeOfDelegate(d);
-
-                        // fields of delegate struct
-                        var objectPtr = HapetTypeToLLVMType(PointerType.GetPointerType(IntType.GetIntType(1, false))); // ptr to func object
-                        var funcPtr = funcType.GetPointerTo();
-
-                        var str = _context.CreateNamedStruct($"delegate.{d.Declaration.Name.Name}");
-                        str.StructSetBody(new LLVMTypeRef[] {
-                            ((LLVMTypeRef)funcPtr),
-                            ((LLVMTypeRef)objectPtr)
-                        }, false);
-                        return str;
+                        return _context.CreateNamedStruct($"class.{t.Declaration.Name.Name}"); ;
                     }
 
                 case EnumType e:
@@ -553,8 +553,8 @@ namespace HapetBackend.Llvm
 
         private LLVMTypeRef GetFunctionTypeOfDelegate(DelegateType del)
         {
-            var paramTypes = del.Declaration.Parameters.Select(rt => HapetTypeToLLVMType(rt.Type.OutType)).ToList();
-            var returnType = HapetTypeToLLVMType(del.Declaration.Returns.OutType);
+            var paramTypes = del.TargetDeclaration.Parameters.Select(rt => HapetTypeToLLVMType(rt.Type.OutType)).ToList();
+            var returnType = HapetTypeToLLVMType(del.TargetDeclaration.Returns.OutType);
             return LLVMTypeRef.CreateFunction(returnType, paramTypes.ToArray(), false);
         }
 

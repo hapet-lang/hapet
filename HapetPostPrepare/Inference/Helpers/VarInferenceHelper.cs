@@ -313,9 +313,9 @@ namespace HapetPostPrepare
 
             // the var is used to check when static method is accessed from an object
             bool accessingFromAnObject = false;
-            var delegateParams = targetType.Declaration.Parameters;
+            var delegateParams = targetType.TargetDeclaration.Parameters;
             // TODO: probably needed when allowing delegates for non-static funcs
-            //var delegateParams = targetType.Declaration.Parameters.Skip(1).ToList(); // no need for the first param
+            //var delegateParams = targetType.TargetDeclaration.Parameters.Skip(1).ToList(); // no need for the first param
 
             // when assigning to a delegate type - function name is expected
             if (value is not AstNestedExpr nestFuncName)

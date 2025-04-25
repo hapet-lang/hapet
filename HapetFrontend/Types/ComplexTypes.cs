@@ -2,6 +2,7 @@
 using HapetFrontend.Ast.Declarations;
 using HapetFrontend.Ast.Expressions;
 using HapetFrontend.Helpers;
+using HapetFrontend.Scoping;
 using Microsoft.VisualBasic.FileIO;
 using Newtonsoft.Json;
 using System.Drawing;
@@ -272,106 +273,49 @@ namespace HapetFrontend.Types
         {
             return (Declaration.Parameters.FirstOrDefault() == null ||
                 (Declaration.Parameters.FirstOrDefault().Type.OutType is not PointerType && Declaration.Parameters.FirstOrDefault().Name.Name != "this"));
-
-        }
-
-        public override bool Equals(object obj)
-        {
-            if (obj is FunctionType f)
-            {
-                if (Declaration.Returns.OutType != f.Declaration.Returns.OutType)
-                    return false;
-
-                if (Declaration.Parameters.Count != f.Declaration.Parameters.Count)
-                    return false;
-
-                if (Declaration.CallingConvention != f.Declaration.CallingConvention)
-                    return false;
-
-                for (int i = 0; i < Declaration.Parameters.Count; i++)
-                {
-                    if (this.Declaration.Parameters[i].IsArglist && !f.Declaration.Parameters[i].IsArglist)
-                        return false;
-
-                    if (!this.Declaration.Parameters[i].IsArglist && f.Declaration.Parameters[i].IsArglist)
-                        return false;
-
-                    if (!Declaration.Parameters[i].IsArglist && // null safer
-                        this.Declaration.Parameters[i].Type.OutType != f.Declaration.Parameters[i].Type.OutType)
-                        return false;
-                }
-
-                return true;
-            }
-
-            return false;
-        }
-
-        public override int GetHashCode()
-        {
-            var hash = new HashCode();
-            foreach (var p in Declaration.Parameters)
-            {
-                if (!p.IsArglist)
-                    hash.Add(p.Type.OutType);
-                else
-                    hash.Add("arglist");
-            }
-            hash.Add(Declaration.Returns.OutType);
-            return hash.ToHashCode();
         }
     }
 
-    public class DelegateType : HapetType
+    public class DelegateType : ClassType
     {
-        [JsonIgnore]
-        public AstDelegateDecl Declaration { get; set; }
+        public static DelegateType GetDelegateType(AstDelegateDecl targetDecl, Scope scope)
+        {
+            return GetDelegateType(targetDecl, AstDelegateDecl.GetDelegateClass(scope));
+        }
+
+        public static DelegateType GetDelegateType(AstDelegateDecl targetDecl, AstClassDecl delClassDecl)
+        {
+            if (targetDecl == null)
+                return null;
+
+            var existing = CurrentTypeContext.DelegateTypeInstances.FirstOrDefault(t => t.Value.TargetDeclaration == targetDecl).Value;
+            if (existing != null)
+                return existing;
+
+            var type = new DelegateType(targetDecl, delClassDecl);
+
+            CurrentTypeContext.DelegateTypeInstances[targetDecl] = type;
+            return type;
+        }
 
         public override string TypeName => "delegate";
+
+        public AstDelegateDecl TargetDeclaration { get; set; }
 
         public override AstExpression GetAst()
         {
             return new AstNestedExpr(new AstIdExpr(Declaration.Name.Name), null);
         }
 
-        public DelegateType(AstDelegateDecl decl)
-            : base(CurrentTypeContext.PointerSize, PointerType.PointerAlignment)
+        private DelegateType(AstDelegateDecl targetDecl, AstClassDecl decl)
+            : base(decl)
         {
-            Declaration = decl;
+            TargetDeclaration = targetDecl;
         }
 
         public override string ToString()
         {
             return $"{Declaration.Name.Name}";
-        }
-
-        public override bool Equals(object obj)
-        {
-            if (obj is DelegateType f)
-            {
-                if (Declaration.Returns.OutType != f.Declaration.Returns.OutType)
-                    return false;
-
-                if (Declaration.Parameters.Count != f.Declaration.Parameters.Count)
-                    return false;
-
-                for (int i = 0; i < Declaration.Parameters.Count; i++)
-                    if (this.Declaration.Parameters[i].Type.OutType != f.Declaration.Parameters[i].Type.OutType)
-                        return false;
-
-                return true;
-            }
-
-            return false;
-        }
-
-        public override int GetHashCode()
-        {
-            var hash = new HashCode();
-            foreach (var p in Declaration.Parameters)
-                hash.Add(p.Type.OutType);
-            hash.Add(Declaration.Returns.OutType);
-            return hash.ToHashCode();
         }
     }
 }

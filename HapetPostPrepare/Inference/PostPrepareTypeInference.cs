@@ -830,6 +830,8 @@ namespace HapetPostPrepare
                     leftSideScope = AstStringExpr.GetStringStruct(nestExpr.Scope).SubScope;
                 else if (nestExpr.LeftPart.OutType is ArrayType)
                     leftSideScope = AstArrayExpr.GetArrayStruct(nestExpr.Scope).SubScope;
+                else if (nestExpr.LeftPart.OutType is DelegateType)
+                    leftSideScope = AstDelegateDecl.GetDelegateClass(nestExpr.Scope).SubScope;
                 // TODO: structs and other
 
                 if (leftSideScope == null)

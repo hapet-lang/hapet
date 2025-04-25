@@ -2,6 +2,7 @@
 using HapetFrontend.Ast.Statements;
 using HapetFrontend.Helpers;
 using HapetFrontend.Parsing;
+using HapetFrontend.Scoping;
 using HapetFrontend.Types;
 using System.Xml.Linq;
 
@@ -17,7 +18,6 @@ namespace HapetFrontend.Ast.Declarations
         public AstDelegateDecl(List<AstParamDecl> parameters, AstExpression returns, AstIdExpr name, string doc = "", ILocation location = null) : base(name, doc, location)
         {
             Type = new AstIdExpr("delegate", location);
-            Type.OutType = new DelegateType(this);
 
             Parameters = parameters;
             Returns = returns;
@@ -53,6 +53,11 @@ namespace HapetFrontend.Ast.Declarations
         public string GenerateHashForGenericType(string genTypeName)
         {
             return Funcad.CreateMD5($"{SourceFile}{Name.Name}{ContainingParent?.Name.Name}{string.Join('_', Parameters.Select(x => HapetType.AsString(x.Type.OutType)))}{HapetType.AsString(Returns.OutType)}{genTypeName}");
+        }
+
+        public static AstClassDecl GetDelegateClass(Scope scope)
+        {
+            return (scope.GetSymbolInNamespace("System", "Delegate") as DeclSymbol).Decl as AstClassDecl;
         }
     }
 }
