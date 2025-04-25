@@ -1,0 +1,7 @@
+namespace System;
+
+public class Delegate
+{
+    internal void* _funcPtr;
+    internal void* _objectPtr;
+}
