@@ -142,7 +142,8 @@ namespace HapetFrontend.Scoping
                     if (gAmountSymbol == gAmountSearch && 
                         pureSymbolName == pureSearchName &&
                         pureSymbolNs == pureSearchNs &&
-                        _symbolTable[k] is DeclSymbol)
+                        _symbolTable[k] is DeclSymbol ds &&
+                        ds.Decl.HasGenericTypes) // only pure generics are allowed
                     {
                         return _symbolTable[k];
                     }
