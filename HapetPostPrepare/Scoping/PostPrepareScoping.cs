@@ -406,7 +406,7 @@ namespace HapetPostPrepare
             }
             // define it in the scope if it is not yet
             if (!doNotDefine)
-                varDecl.Scope.DefineDeclSymbol(varDecl.Name.Name, varDecl);
+                varDecl.Scope.DefineDeclSymbol(varDecl.Name, varDecl);
         }
 
         private void PostPrepareParamScoping(AstParamDecl paramDecl)
@@ -436,7 +436,7 @@ namespace HapetPostPrepare
             if (paramDecl.Name != null)
             {
                 // defining the symbol in the scope so it can be easily found
-                paramDecl.Scope.DefineDeclSymbol(paramDecl.Name.Name, paramDecl);
+                paramDecl.Scope.DefineDeclSymbol(paramDecl.Name, paramDecl);
             }
         }
 

@@ -338,18 +338,18 @@ namespace HapetPostPrepare
             }
 
             /// WARN!!! almost the same as in <see cref="PostPrepareCallExprInference"/>
-            string newName = string.Empty;
+            AstIdExpr newName = null;
             if (idFuncName.FindSymbol != null)
             {
                 // check if it was already infered somewhere
-                newName = idFuncName.Name;
+                newName = idFuncName.GetCopy();
             }
             // renaming func call name from 'Anime' to 'Anime(int, float)' WITH OBJECT AS FIRST PARAM
             else if (nestFuncName.LeftPart == null)
             {
                 // if the type/object name is not presented - the function is in the same class
                 // but we need to know is it static or not
-                newName = $"{_currentClass.Name.Name}::{idFuncName.Name}{delegateParams.GetParamsString()}";
+                newName = idFuncName.GetCopy($"{_currentClass.Name.Name}::{idFuncName.Name}{delegateParams.GetParamsString()}");
                 var smbl2 = idFuncName.Scope.GetSymbol(newName);
                 if (smbl2 is DeclSymbol)
                 {
@@ -358,7 +358,7 @@ namespace HapetPostPrepare
                 else
                 {
                     // if it is a non static func defined in local class
-                    newName = $"{_currentClass.Name.Name}::{idFuncName.Name}{delegateParams.GetParamsString(PointerType.GetPointerType(_currentClass.Type.OutType))}";
+                    newName = idFuncName.GetCopy($"{_currentClass.Name.Name}::{idFuncName.Name}{delegateParams.GetParamsString(PointerType.GetPointerType(_currentClass.Type.OutType))}");
                     accessingFromAnObject = true;
                     // we need to create this one because code generator requires the parameter of this shite
                     nestFuncName.LeftPart = new AstNestedExpr(new AstIdExpr("this"), null, value);
@@ -371,12 +371,12 @@ namespace HapetPostPrepare
             {
                 // if we are calling like 'a.Anime()' where 'a' is an object
                 // we need to rename the func name call like that:
-                newName = $"{clsTp.Declaration.Name.Name}::{idFuncName.Name}{delegateParams.GetParamsString(nestFuncName.LeftPart.OutType)}";
+                newName = idFuncName.GetCopy($"{clsTp.Declaration.Name.Name}::{idFuncName.Name}{delegateParams.GetParamsString(nestFuncName.LeftPart.OutType)}");
                 // check if the decl exists. if not - it could be static method call from an object
                 if (clsTp.Declaration.SubScope.GetSymbol(newName) == null)
                 {
                     // getting the name but without object first param
-                    newName = $"{clsTp.Declaration.Name.Name}::{idFuncName.Name}{delegateParams.GetParamsString()}";
+                    newName = idFuncName.GetCopy($"{clsTp.Declaration.Name.Name}::{idFuncName.Name}{delegateParams.GetParamsString()}");
                 }
                 accessingFromAnObject = true;
             }
@@ -384,12 +384,12 @@ namespace HapetPostPrepare
             {
                 // if we are calling like 'A.Anime()' where 'A' is a class
                 // we need to rename the func name call like that:
-                newName = $"{clsTpStatic.Declaration.Name.Name}::{idFuncName.Name}{delegateParams.GetParamsString()}";
+                newName = idFuncName.GetCopy($"{clsTpStatic.Declaration.Name.Name}::{idFuncName.Name}{delegateParams.GetParamsString()}");
                 // check if the decl exists. if not - it could be non static method call from a class name
                 if (clsTpStatic.Declaration.SubScope.GetSymbol(newName) == null)
                 {
                     // getting the name but without object first param
-                    newName = $"{clsTpStatic.Declaration.Name.Name}::{idFuncName.Name}{delegateParams.GetParamsString(PointerType.GetPointerType(clsTpStatic))}";
+                    newName = idFuncName.GetCopy($"{clsTpStatic.Declaration.Name.Name}::{idFuncName.Name}{delegateParams.GetParamsString(PointerType.GetPointerType(clsTpStatic))}");
                     // error because user tries to access non static method from a class name
                     if (clsTpStatic.Declaration.SubScope.GetSymbol(newName) != null)
                     {
@@ -403,7 +403,7 @@ namespace HapetPostPrepare
                 _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, value, [], ErrorCode.Get(CTEN.FuncNotInfered));
             }
 
-            nestFuncName.RightPart = idFuncName.GetCopy(newName);
+            nestFuncName.RightPart = newName;
             PostPrepareIdentifierInference(nestFuncName.RightPart as AstIdExpr, inInfo, ref outInfo);
 
             // setting parameters

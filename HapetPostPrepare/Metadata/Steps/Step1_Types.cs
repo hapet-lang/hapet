@@ -86,7 +86,7 @@ namespace HapetPostPrepare
             else
             {
                 _currentSourceFile.NamespaceScope.DefineDeclSymbol(decl.Name, decl);
-                PostPrepareAliases(newName, _currentSourceFile.NamespaceScope, decl);
+                PostPrepareAliases(decl.Name, _currentSourceFile.NamespaceScope, decl);
             }
         }
     }

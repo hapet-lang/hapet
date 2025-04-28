@@ -116,7 +116,7 @@ namespace HapetPostPrepare
                 {
                     // the checks are done because it could be a nested func decl
                     Scope scopeToDefine = null;
-                    string newName = funcDecl.Name.Name;
+                    AstIdExpr newName = funcDecl.Name.GetCopy();
                     if (funcDecl.ContainingParent is AstClassDecl || funcDecl.ContainingParent is AstStructDecl)
                     {
                         // additional shite to handle explicit funcs and make them
@@ -134,7 +134,7 @@ namespace HapetPostPrepare
                         // it could already contain all the shite if the func is imported from another assembly :)
                         if (!funcDecl.Name.Name.Contains("::"))
                             // renaming func name from 'Anime' to 'Cls::Anime(int, float)'
-                            newName = $"{funcDecl.ContainingParent.Name.Name}::{explicitInterfaceName}{pureName}{funcDecl.Parameters.GetParamsString()}";
+                            newName = newName.GetCopy($"{funcDecl.ContainingParent.Name.Name}::{explicitInterfaceName}{pureName}{funcDecl.Parameters.GetParamsString()}");
                         scopeToDefine = funcDecl.ContainingParent.SubScope;
                     }
                     else if (funcDecl.ContainingParent is AstFuncDecl fncDeclParent)
@@ -142,13 +142,13 @@ namespace HapetPostPrepare
                         // it could already contain all the shite if the func is imported from another assembly :)
                         if (!funcDecl.Name.Name.Contains("::"))
                             // renaming func name from 'Anime' to 'Anime(int, float)'
-                            newName = $"{funcDecl.Name.Name}{funcDecl.Parameters.GetParamsString()}";
+                            newName = newName.GetCopy($"{funcDecl.Name.Name}{funcDecl.Parameters.GetParamsString()}");
                         scopeToDefine = fncDeclParent.Body.SubScope;
                     }
 
                     // if it is public func - it should be visible in the scope in which func's class is
                     scopeToDefine.DefineDeclSymbol(newName, funcDecl);
-                    funcDecl.Name = funcDecl.Name.GetCopy(newName);
+                    funcDecl.Name = newName;
 
                     // register operator decl
                     if (funcDecl is AstOverloadDecl overDecl2)
@@ -1042,7 +1042,11 @@ namespace HapetPostPrepare
             if (typeName != null)
             {
                 // getting the name but with object first param
-                var newName = $"{typeName}::get_indexer__({HapetType.AsString(firstParamType)}:{HapetType.AsString(arrayAccExpr.ParameterExpr.OutType)})";
+                AstIdExpr newName = new AstIdExpr($"{typeName}::get_indexer__({HapetType.AsString(firstParamType)}:{HapetType.AsString(arrayAccExpr.ParameterExpr.OutType)})", arrayAccExpr)
+                {
+                    Scope = arrayAccExpr.Scope,
+                    Parent = arrayAccExpr.Parent,
+                };
 
                 List<AstArgumentExpr> argsWithStructParam = new List<AstArgumentExpr>() 
                 { 

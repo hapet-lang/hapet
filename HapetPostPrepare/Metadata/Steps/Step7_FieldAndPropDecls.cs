@@ -107,7 +107,7 @@ namespace HapetPostPrepare
                     nameAddition = (decl.Name.AdditionalData.OutType as ClassType).Declaration.Name.Name;
                     nameAddition += '.';
                 }
-                parentSubScope.DefineDeclSymbol($"{nameAddition}{decl.Name.Name}", decl);
+                parentSubScope.DefineDeclSymbol(decl.Name.GetCopy($"{nameAddition}{decl.Name.Name}"), decl);
                 decl.Name = decl.Name.GetCopy($"{nameAddition}{decl.Name.Name}");
 
                 return itWasPureGenericProp;

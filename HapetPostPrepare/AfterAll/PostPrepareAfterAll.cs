@@ -74,7 +74,7 @@ namespace HapetPostPrepare
                 AstBlockExpr blockWhereToCall;
                 if (cls.IsNestedDecl)
                 {
-                    var candidate = GetFuncFromCandidates($"{cls.ParentDecl.Name.Name.GetClassNameWithoutNamespace()}_stor", 
+                    var candidate = GetFuncFromCandidates(new AstIdExpr($"{cls.ParentDecl.Name.Name.GetClassNameWithoutNamespace()}_stor"), 
                         null, [], cls.ParentDecl, out var _);
                     if (candidate == null)
                     {

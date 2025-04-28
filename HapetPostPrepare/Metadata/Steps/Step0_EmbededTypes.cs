@@ -42,11 +42,12 @@ namespace HapetPostPrepare
             }
 
             // creating a new struct name with namespace
-            var structDecl = new AstStructDecl(new AstIdExpr(VA_LIST_NAME), decls);
+            var vaListName = new AstIdExpr(VA_LIST_NAME);
+            var structDecl = new AstStructDecl(vaListName, decls);
             VaListType = structDecl.Type.OutType;
 
             // scoping 
-            _compiler.GlobalScope.DefineSymbol(new DeclSymbol(VA_LIST_NAME, structDecl));
+            _compiler.GlobalScope.DefineSymbol(new DeclSymbol(vaListName, structDecl));
             SetScopeAndParent(structDecl, null, _compiler.GlobalScope);
             PostPrepareStructScoping(structDecl);
 
