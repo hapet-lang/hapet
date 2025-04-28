@@ -66,9 +66,9 @@ namespace HapetFrontend.Scoping
             return DefineSymbol(new DeclSymbol(name, new AstBuiltInTypeDecl(tp)));
         }
 
-        public bool DefineNamespaceSymbol(AstIdExpr name, Scope nsScope)
+        public bool DefineNamespaceSymbol(string name, Scope nsScope)
         {
-            return DefineSymbol(new NamespaceSymbol(name, nsScope));
+            return DefineSymbol(new NamespaceSymbol(new AstIdExpr(name), nsScope));
         }
 
         public bool DefineDeclSymbol(AstIdExpr name, AstDeclaration decl)

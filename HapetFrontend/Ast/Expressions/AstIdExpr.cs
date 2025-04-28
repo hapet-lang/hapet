@@ -19,7 +19,7 @@ namespace HapetFrontend.Ast.Expressions
             get
             {
                 if (_foundSymbol == null)
-                    _foundSymbol = Scope?.GetSymbol(Name);
+                    _foundSymbol = Scope?.GetSymbol(this);
                 return _foundSymbol;
             }
             set

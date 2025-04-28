@@ -35,7 +35,7 @@ namespace HapetFrontend.Ast.Expressions
 
         public static AstStructDecl GetArrayStruct(Scope scope)
         {
-            return (scope.GetSymbolInNamespace("System", "Array") as DeclSymbol).Decl as AstStructDecl;
+            return (scope.GetSymbolInNamespace("System", new AstIdExpr("Array")) as DeclSymbol).Decl as AstStructDecl;
         }
     }
 }

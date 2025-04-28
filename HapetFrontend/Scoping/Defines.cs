@@ -1,4 +1,5 @@
-﻿using HapetFrontend.Types;
+﻿using HapetFrontend.Ast.Expressions;
+using HapetFrontend.Types;
 
 namespace HapetFrontend.Scoping
 {
@@ -6,28 +7,28 @@ namespace HapetFrontend.Scoping
     {
         internal void DefineBuiltInTypes()
         {
-            DefineTypeSymbol("sbyte", IntType.GetIntType(1, true));
-            DefineTypeSymbol("short", IntType.GetIntType(2, true));
-            DefineTypeSymbol("int", IntType.GetIntType(4, true));
-            DefineTypeSymbol("long", IntType.GetIntType(8, true));
+            DefineTypeSymbol(new AstIdExpr("sbyte"), IntType.GetIntType(1, true));
+            DefineTypeSymbol(new AstIdExpr("short"), IntType.GetIntType(2, true));
+            DefineTypeSymbol(new AstIdExpr("int"), IntType.GetIntType(4, true));
+            DefineTypeSymbol(new AstIdExpr("long"), IntType.GetIntType(8, true));
 
-            DefineTypeSymbol("byte", IntType.GetIntType(1, false));
-            DefineTypeSymbol("ushort", IntType.GetIntType(2, false));
-            DefineTypeSymbol("uint", IntType.GetIntType(4, false));
-            DefineTypeSymbol("ulong", IntType.GetIntType(8, false));
+            DefineTypeSymbol(new AstIdExpr("byte"), IntType.GetIntType(1, false));
+            DefineTypeSymbol(new AstIdExpr("ushort"), IntType.GetIntType(2, false));
+            DefineTypeSymbol(new AstIdExpr("uint"), IntType.GetIntType(4, false));
+            DefineTypeSymbol(new AstIdExpr("ulong"), IntType.GetIntType(8, false));
 
-            DefineTypeSymbol("half", FloatType.GetFloatType(2));
-            DefineTypeSymbol("float", FloatType.GetFloatType(4));
-            DefineTypeSymbol("double", FloatType.GetFloatType(8));
+            DefineTypeSymbol(new AstIdExpr("half"), FloatType.GetFloatType(2));
+            DefineTypeSymbol(new AstIdExpr("float"), FloatType.GetFloatType(4));
+            DefineTypeSymbol(new AstIdExpr("double"), FloatType.GetFloatType(8));
 
-            DefineTypeSymbol("char16", CharType.DefaultType);
-            DefineTypeSymbol("char", CharType.DefaultType);
-            DefineTypeSymbol("bool", BoolType.Instance);
-            DefineTypeSymbol("void", VoidType.Instance);
+            DefineTypeSymbol(new AstIdExpr("char16"), CharType.DefaultType);
+            DefineTypeSymbol(new AstIdExpr("char"), CharType.DefaultType);
+            DefineTypeSymbol(new AstIdExpr("bool"), BoolType.Instance);
+            DefineTypeSymbol(new AstIdExpr("void"), VoidType.Instance);
 
-            DefineTypeSymbol("var", VarType.Instance);
-            DefineTypeSymbol("uintptr", IntPtrType.Instance);
-            DefineTypeSymbol("ptrdiff", PtrDiffType.Instance);
+            DefineTypeSymbol(new AstIdExpr("var"), VarType.Instance);
+            DefineTypeSymbol(new AstIdExpr("uintptr"), IntPtrType.Instance);
+            DefineTypeSymbol(new AstIdExpr("ptrdiff"), PtrDiffType.Instance);
         }
 
         internal void DefineBuiltInOperators()

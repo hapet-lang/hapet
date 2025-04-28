@@ -14,28 +14,12 @@ namespace HapetFrontend.Extensions
 
         public static string GetClassNameWithoutNamespace(this string name)
         {
-            // we are getting the generic part to append it at the end
-            int indexofGenericEntry = name.IndexOf(GenericsHelper.GENERIC_BEGIN);
-            string toAppend = string.Empty;
-            if (indexofGenericEntry != -1)
-            {
-                toAppend = name.Substring(indexofGenericEntry, name.Length - indexofGenericEntry);
-                name = name.Substring(0, indexofGenericEntry);
-            }
-
             var elements = name.Split(".");
-            return elements[elements.Length - 1] + toAppend;
+            return elements[elements.Length - 1];
         }
 
         public static string GetNamespaceWithoutClassName(this string name)
         {
-            // we are getting the generic part to append it at the end
-            int indexofGenericEntry = name.IndexOf(GenericsHelper.GENERIC_BEGIN);
-            if (indexofGenericEntry != -1)
-            {
-                name = name.Substring(0, indexofGenericEntry);
-            }
-
             if (!name.Contains('.'))
                 return string.Empty;
 

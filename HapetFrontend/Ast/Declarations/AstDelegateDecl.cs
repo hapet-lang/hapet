@@ -53,7 +53,7 @@ namespace HapetFrontend.Ast.Declarations
 
         public static AstClassDecl GetDelegateClass(Scope scope)
         {
-            return (scope.GetSymbolInNamespace("System", "Delegate") as DeclSymbol).Decl as AstClassDecl;
+            return (scope.GetSymbolInNamespace("System", new AstIdExpr("Delegate")) as DeclSymbol).Decl as AstClassDecl;
         }
     }
 }

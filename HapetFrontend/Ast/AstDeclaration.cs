@@ -84,7 +84,7 @@ namespace HapetFrontend.Ast
         {
             get
             {
-                return Scope.GetSymbol(Name.Name);
+                return Scope.GetSymbol(Name);
             }
         }
 
