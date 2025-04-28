@@ -58,8 +58,11 @@ namespace HapetPostPrepare
             // check if it is smth like 'System.Attribute' where 'System' is ns and 'Attribute' is a class
             if (!string.IsNullOrWhiteSpace(ns))
             {
+                // the only type name
+                var rightPart = idExpr.GetCopy(name.GetClassNameWithoutNamespace());
+
                 // search for the symbol in concrete namespace
-                var smbl = idExpr.Scope.GetSymbolInNamespace(ns, idExpr, handleGenerics: true);
+                var smbl = idExpr.Scope.GetSymbolInNamespace(ns, rightPart, handleGenerics: true);
                 if (smbl is DeclSymbol typed)
                 {
                     IdentifierOnFoundSymbol(idExpr, typed, string.Empty, inInfo, ref outInfo);
