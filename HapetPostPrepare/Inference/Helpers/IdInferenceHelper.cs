@@ -304,7 +304,7 @@ namespace HapetPostPrepare
             }
 
             // generating generic shite name
-            string realName = GenericsHelper.GetRealFromGenericName(theDecl, genId.GenericRealTypes.GetNestedList());
+            var realName = genId.GetCopy(theDecl.Name.Name);
             var realDcl = theDecl.Scope.GetSymbol(realName);
             if (realDcl is DeclSymbol realDclDecl)
             {
@@ -324,7 +324,7 @@ namespace HapetPostPrepare
             }
             else
             {
-                realDclDecl = theDecl.Scope.GetSymbol(realCls.Name.Name) as DeclSymbol;
+                realDclDecl = theDecl.Scope.GetSymbol(realCls.Name) as DeclSymbol;
             }
             
             return realDclDecl;

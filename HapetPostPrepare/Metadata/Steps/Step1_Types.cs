@@ -77,8 +77,7 @@ namespace HapetPostPrepare
 
             // TODO: check for partial :)
             decl.Name = decl.Name.GetCopy(newName);
-            string searchName = GenericsHelper.GetCringeGenericName(decl.Name);
-            var smbl = _currentSourceFile.NamespaceScope.GetSymbol(searchName);
+            var smbl = _currentSourceFile.NamespaceScope.GetSymbol(decl.Name);
             // TODO: better error like where is the first decl?
             if (smbl != null)
             {
@@ -86,7 +85,7 @@ namespace HapetPostPrepare
             }
             else
             {
-                _currentSourceFile.NamespaceScope.DefineDeclSymbol(searchName, decl);
+                _currentSourceFile.NamespaceScope.DefineDeclSymbol(decl.Name, decl);
                 PostPrepareAliases(newName, _currentSourceFile.NamespaceScope, decl);
             }
         }

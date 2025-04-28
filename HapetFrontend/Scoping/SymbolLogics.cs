@@ -12,7 +12,7 @@ namespace HapetFrontend.Scoping
 {
     public partial class Scope
     {
-        public bool DefineLocalSymbol(ISymbol symbol)
+        private bool DefineLocalSymbol(ISymbol symbol)
         {
             var name = symbol.Name;
             if (name.Name == "_")
@@ -34,26 +34,39 @@ namespace HapetFrontend.Scoping
             return true;
         }
 
-        public bool RemoveLocalSymbol(ISymbol symbol)
+        private bool RemoveLocalSymbol(ISymbol symbol)
         {
             var name = symbol.Name;
-            if (name.Name == "_")
-                return true;
 
             // if it is a shadow decl
             if (symbol is DeclSymbol declS && declS.Decl.SpecialKeys.Contains(TokenType.KwNew))
             {
                 if (_shadowSymbolTable.ContainsKey(name))
-                    return false;
-                _shadowSymbolTable[name] = symbol;
+                {
+                    _shadowSymbolTable.Remove(name);
+                    return true;
+                }
+                var tmp1 = _shadowSymbolTable.Keys.FirstOrDefault(x => x.Name == name.Name);
+                if (tmp1 != null)
+                {
+                    _shadowSymbolTable.Remove(tmp1);
+                    return true;
+                }
+            }
+
+            if (_symbolTable.ContainsKey(name))
+            {
+                _symbolTable.Remove(name);
+                return true;
+            }
+            var tmp2 = _symbolTable.Keys.FirstOrDefault(x => x.Name == name.Name);
+            if (tmp2 != null)
+            {
+                _symbolTable.Remove(tmp2);
                 return true;
             }
 
-            if (!_symbolTable.ContainsKey(name))
-                return false;
-
-            _symbolTable.Remove(name);
-            return true;
+            return false;
         }
 
         public bool DefineSymbol(ISymbol symbol)

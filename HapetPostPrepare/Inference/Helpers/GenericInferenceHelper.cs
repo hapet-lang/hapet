@@ -39,13 +39,13 @@ namespace HapetPostPrepare
             PostPrepareClassScoping(cls);
 
             // we need to define it in global scope :)))
-            _compiler.GlobalScope.DefineDeclSymbol(specialName.Name, cls);
+            _compiler.GlobalScope.DefineDeclSymbol(specialName, cls);
 
             return cls;
         }
 
         private int aaaa = 0;
-        private AstDeclaration GetRealTypeFromGeneric(AstDeclaration decl, List<AstNestedExpr> genericTypes, string realName)
+        private AstDeclaration GetRealTypeFromGeneric(AstDeclaration decl, List<AstNestedExpr> genericTypes, AstIdGenericExpr realName)
         {
             // we need to save previous info about current shite and then reload it 
             var savedSourceFile = _currentSourceFile;
@@ -74,7 +74,7 @@ namespace HapetPostPrepare
             realDecl.Parent = decl.Parent;
             realDecl.IsImplOfGeneric = true;
             realDecl.OriginalGenericDecl = decl;
-            realDecl.Name = realDecl.Name.GetCopy(realName).GetPureIdExpr();
+            realDecl.Name = realName;
             // no need to reset HasGenericTypes when using generic shite from another generic
             realDecl.HasGenericTypes = GenericsHelper.HasGenericTypesInRealTypes(genericTypes);
 

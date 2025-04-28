@@ -99,7 +99,7 @@ namespace HapetPostPrepare
                     // remove from inferencing
                     AllClassesMetadata.Remove(cls);
                     // remove definition
-                    cls.SourceFile.NamespaceScope.RemoveDeclSymbol(GenericsHelper.GetCringeGenericName(cls.Name), cls);
+                    cls.SourceFile.NamespaceScope.RemoveDeclSymbol(cls.Name, cls);
                 }
             }
             // resolve generic shite of structs
@@ -117,7 +117,7 @@ namespace HapetPostPrepare
                     // remove from inferencing
                     AllStructsMetadata.Remove(str);
                     // remove definition
-                    str.SourceFile.NamespaceScope.RemoveDeclSymbol(GenericsHelper.GetCringeGenericName(str.Name), str);
+                    str.SourceFile.NamespaceScope.RemoveDeclSymbol(str.Name, str);
                 }
             }
             // resolve generic shite of delegates
@@ -135,7 +135,7 @@ namespace HapetPostPrepare
                     // remove from inferencing
                     AllDelegatesMetadata.Remove(del);
                     // remove definition
-                    del.SourceFile.NamespaceScope.RemoveDeclSymbol(GenericsHelper.GetCringeGenericName(del.Name), del);
+                    del.SourceFile.NamespaceScope.RemoveDeclSymbol(del.Name, del);
                 }
             }
         }

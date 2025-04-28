@@ -46,8 +46,8 @@ namespace HapetPostPrepare
                 Parent = x.Parent,
             }).ToList();
 
-            string realName = GenericsHelper.GetRealFromGenericName(decl, nestedList);
-            realDeclResult = GetRealTypeFromGeneric(decl, nestedList, realName);
+            var genName = AstIdGenericExpr.FromAstIdExpr(decl.Name, nestedList.Select(x => x as AstExpression).ToList());
+            realDeclResult = GetRealTypeFromGeneric(decl, nestedList, genName);
 
             return true;
         }

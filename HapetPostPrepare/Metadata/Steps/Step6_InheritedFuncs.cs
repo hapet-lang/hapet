@@ -139,8 +139,8 @@ namespace HapetPostPrepare
                                     if (!inhF.IsPropertyFunction)
                                         // error - the method of the interface was not implemented
                                         _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, inh,
-                                            [GenericsHelper.GetPrettyGenericImplName(HapetType.AsString(decl.Type.OutType)), 
-                                                GenericsHelper.GetPrettyGenericName(inhF.Name.Name)], ErrorCode.Get(CTEN.NoMethodImplementation));
+                                            [HapetType.AsString(decl.Type.OutType), 
+                                                inhF.Name.Name], ErrorCode.Get(CTEN.NoMethodImplementation));
                                 }
                                 else
                                 {
