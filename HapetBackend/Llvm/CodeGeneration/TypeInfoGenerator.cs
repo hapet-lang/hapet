@@ -1,4 +1,5 @@
 ﻿using HapetFrontend.Ast.Declarations;
+using HapetFrontend.Ast.Expressions;
 using HapetFrontend.Extensions;
 using HapetFrontend.Helpers;
 using HapetFrontend.Types;
@@ -68,7 +69,7 @@ namespace HapetBackend.Llvm
                 return _typeInfoType;
 
             // WARN: hard cock
-            var typeInfoUnsafeDecl = _currentSourceFile.NamespaceScope.GetSymbolInNamespace("System.Runtime", "TypeInfoUnsafe");
+            var typeInfoUnsafeDecl = _currentSourceFile.NamespaceScope.GetSymbolInNamespace("System.Runtime", new AstIdExpr("TypeInfoUnsafe"));
             _typeInfoType = _typeMap[typeInfoUnsafeDecl.Decl.Type.OutType];
             return _typeInfoType;
         }

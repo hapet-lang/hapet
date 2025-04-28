@@ -1,5 +1,6 @@
 ﻿using HapetFrontend;
 using HapetFrontend.Ast.Declarations;
+using HapetFrontend.Ast.Expressions;
 using HapetFrontend.Scoping;
 using HapetFrontend.Types;
 using LLVMSharp.Interop;
@@ -91,8 +92,8 @@ namespace HapetBackend.Llvm
             }
 
             // calling proper function to create normal string array from this shite of C
-            var nativeDecl = _compiler.MainFunction.Scope.GetSymbolInNamespace("System.Text", "Native");
-            var getParamsSymbol = (nativeDecl.Decl as AstClassDecl).SubScope.GetSymbol("System.Text.Native::GetParametersArray(int:byte**)") as DeclSymbol;
+            var nativeDecl = _compiler.MainFunction.Scope.GetSymbolInNamespace("System.Text", new AstIdExpr("Native"));
+            var getParamsSymbol = (nativeDecl.Decl as AstClassDecl).SubScope.GetSymbol(new AstIdExpr("System.Text.Native::GetParametersArray(int:byte**)")) as DeclSymbol;
             var getParamsFunc = _valueMap[getParamsSymbol];
             LLVMTypeRef getParamsFuncType = _typeMap[getParamsSymbol.Decl.Type.OutType];
 

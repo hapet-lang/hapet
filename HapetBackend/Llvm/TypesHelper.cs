@@ -389,9 +389,9 @@ namespace HapetBackend.Llvm
                     var ptrToCastTypeInfo = _typeInfoDictionary[structType];
 
                     // WARN: hard cock
-                    var typeConverter = _currentFunction.Scope.GetSymbolInNamespace("System.Runtime.Conversion", "TypeConverter");
+                    var typeConverter = _currentFunction.Scope.GetSymbolInNamespace("System.Runtime.Conversion", new AstIdExpr("TypeConverter"));
                     DeclSymbol downcasterSymbol;
-                    downcasterSymbol = (typeConverter.Decl as AstClassDecl).SubScope.GetSymbol("System.Runtime.Conversion.TypeConverter::CanBeDowncasted(void*:System.Runtime.TypeInfoUnsafe*)") as DeclSymbol;
+                    downcasterSymbol = (typeConverter.Decl as AstClassDecl).SubScope.GetSymbol(new AstIdExpr("System.Runtime.Conversion.TypeConverter::CanBeDowncasted(void*:System.Runtime.TypeInfoUnsafe*)")) as DeclSymbol;
                     var downcasterFunc = _valueMap[downcasterSymbol];
                     LLVMTypeRef funcType = _typeMap[downcasterSymbol.Decl.Type.OutType];
                     var canBeDowncasted = _builder.BuildCall2(funcType, downcasterFunc, new LLVMValueRef[] { val, ptrToCastTypeInfo }, "canBeDowncasted");
@@ -618,8 +618,8 @@ namespace HapetBackend.Llvm
         private LLVMValueRef GetMalloc(LLVMValueRef typeSize, LLVMValueRef amount, string allocName = "allocated")
         {
             // WARN: hard cock
-            var marshalDecl = _currentFunction.Scope.GetSymbolInNamespace("System.Runtime.InteropServices", "Marshal");
-            var mallocSymbol = (marshalDecl.Decl as AstClassDecl).SubScope.GetSymbol("System.Runtime.InteropServices.Marshal::Malloc(int)") as DeclSymbol;
+            var marshalDecl = _currentFunction.Scope.GetSymbolInNamespace("System.Runtime.InteropServices", new AstIdExpr("Marshal"));
+            var mallocSymbol = (marshalDecl.Decl as AstClassDecl).SubScope.GetSymbol(new AstIdExpr("System.Runtime.InteropServices.Marshal::Malloc(int)")) as DeclSymbol;
             var mallocFunc = _valueMap[mallocSymbol];
             LLVMTypeRef funcType = _typeMap[mallocSymbol.Decl.Type.OutType];
             // calc size to malloc = amount * typeSize

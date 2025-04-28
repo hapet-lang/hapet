@@ -1,4 +1,5 @@
 ﻿using HapetFrontend.Ast.Declarations;
+using HapetFrontend.Ast.Expressions;
 using HapetFrontend.Extensions;
 using HapetFrontend.Helpers;
 using HapetFrontend.Types;
@@ -66,7 +67,7 @@ namespace HapetBackend.Llvm
                 return _virtualTableType;
 
             // WARN: hard cock
-            var virtualTableUnsafeDecl = _currentSourceFile.NamespaceScope.GetSymbolInNamespace("System.Runtime", "VirtualTableUnsafe");
+            var virtualTableUnsafeDecl = _currentSourceFile.NamespaceScope.GetSymbolInNamespace("System.Runtime", new AstIdExpr("VirtualTableUnsafe"));
             _virtualTableType = _typeMap[virtualTableUnsafeDecl.Decl.Type.OutType];
             return _virtualTableType;
         }

@@ -237,12 +237,12 @@ namespace HapetBackend.Llvm
                                     var casted = _builder.BuildBitCast(left, HapetTypeToLLVMType(rightExpr.OutType), "castedAs");
 
                                     // WARN: hard cock
-                                    var typeConverter = _currentFunction.Scope.GetSymbolInNamespace("System.Runtime.Conversion", "TypeConverter");
+                                    var typeConverter = _currentFunction.Scope.GetSymbolInNamespace("System.Runtime.Conversion", new AstIdExpr("TypeConverter"));
                                     DeclSymbol downcasterSymbol;
                                     if (rightType.Declaration.IsInterface)
-                                        downcasterSymbol = (typeConverter.Decl as AstClassDecl).SubScope.GetSymbol("System.Runtime.Conversion.TypeConverter::CanBeDowncastedInterface(void*:System.Runtime.TypeInfoUnsafe*)") as DeclSymbol;
+                                        downcasterSymbol = (typeConverter.Decl as AstClassDecl).SubScope.GetSymbol(new AstIdExpr("System.Runtime.Conversion.TypeConverter::CanBeDowncastedInterface(void*:System.Runtime.TypeInfoUnsafe*)")) as DeclSymbol;
                                     else
-                                        downcasterSymbol = (typeConverter.Decl as AstClassDecl).SubScope.GetSymbol("System.Runtime.Conversion.TypeConverter::CanBeDowncasted(void*:System.Runtime.TypeInfoUnsafe*)") as DeclSymbol;
+                                        downcasterSymbol = (typeConverter.Decl as AstClassDecl).SubScope.GetSymbol(new AstIdExpr("System.Runtime.Conversion.TypeConverter::CanBeDowncasted(void*:System.Runtime.TypeInfoUnsafe*)")) as DeclSymbol;
                                     var downcasterFunc = _valueMap[downcasterSymbol];
                                     LLVMTypeRef funcType = _typeMap[downcasterSymbol.Decl.Type.OutType];
                                     var canBeDowncasted = _builder.BuildCall2(funcType, downcasterFunc, new LLVMValueRef[] { left, ptrToCastTypeInfo }, "canBeDowncasted");
@@ -281,12 +281,12 @@ namespace HapetBackend.Llvm
                                     var ptrToCastTypeInfo = _typeInfoDictionary[rightType];
 
                                     // WARN: hard cock
-                                    var typeConverter = _currentFunction.Scope.GetSymbolInNamespace("System.Runtime.Conversion", "TypeConverter");
+                                    var typeConverter = _currentFunction.Scope.GetSymbolInNamespace("System.Runtime.Conversion", new AstIdExpr("TypeConverter"));
                                     DeclSymbol downcasterSymbol;
                                     if (rightType.Declaration.IsInterface)
-                                        downcasterSymbol = (typeConverter.Decl as AstClassDecl).SubScope.GetSymbol("System.Runtime.Conversion.TypeConverter::CanBeDowncastedInterface(void*:System.Runtime.TypeInfoUnsafe*)") as DeclSymbol;
+                                        downcasterSymbol = (typeConverter.Decl as AstClassDecl).SubScope.GetSymbol(new AstIdExpr("System.Runtime.Conversion.TypeConverter::CanBeDowncastedInterface(void*:System.Runtime.TypeInfoUnsafe*)")) as DeclSymbol;
                                     else
-                                        downcasterSymbol = (typeConverter.Decl as AstClassDecl).SubScope.GetSymbol("System.Runtime.Conversion.TypeConverter::CanBeDowncasted(void*:System.Runtime.TypeInfoUnsafe*)") as DeclSymbol;
+                                        downcasterSymbol = (typeConverter.Decl as AstClassDecl).SubScope.GetSymbol(new AstIdExpr("System.Runtime.Conversion.TypeConverter::CanBeDowncasted(void*:System.Runtime.TypeInfoUnsafe*)")) as DeclSymbol;
                                     var downcasterFunc = _valueMap[downcasterSymbol];
                                     LLVMTypeRef funcType = _typeMap[downcasterSymbol.Decl.Type.OutType];
                                     var canBeDowncasted = _builder.BuildCall2(funcType, downcasterFunc, new LLVMValueRef[] { left, ptrToCastTypeInfo }, "canBeDowncasted");
@@ -448,7 +448,7 @@ namespace HapetBackend.Llvm
                 // if it is not a static func - get ptr to class
                 if (!fncType.IsStaticFunction())
                 {
-                    ptrToObject = _valueMap[expr.Scope.GetSymbol("this")];
+                    ptrToObject = _valueMap[expr.Scope.GetSymbol(new AstIdExpr("this"))];
                 }
                 // the 1 is because delegate struct has object field as it's 1 param
                 var objPtr = _builder.BuildStructGEP2(delegateIrType, allocatedDelegate, 1, "objectPtr");
@@ -485,7 +485,7 @@ namespace HapetBackend.Llvm
                 var ctorName = $"{classType.Declaration.Name.Name}::{onlyName}_ctor" + expr.Arguments.GetArgsString(PointerType.GetPointerType(classType));
                 List<AstArgumentExpr> argsWithClassParam = new List<AstArgumentExpr>(expr.Arguments);
                 argsWithClassParam.Insert(0, new AstArgumentExpr(new AstIdExpr("this") { OutType = PointerType.GetPointerType(classType) }));
-                var ctorSymbol = _postPreparer.GetFuncFromCandidates(ctorName, null, argsWithClassParam, classType.Declaration, out var casts);
+                var ctorSymbol = _postPreparer.GetFuncFromCandidates(new AstIdExpr(ctorName), null, argsWithClassParam, classType.Declaration, out var casts);
 
                 // error if ctor not found
                 if (ctorSymbol == null)
@@ -526,7 +526,7 @@ namespace HapetBackend.Llvm
                 var ctorName = $"{structType.Declaration.Name.Name}::{onlyName}_ctor" + expr.Arguments.GetArgsString(PointerType.GetPointerType(structType));
                 List<AstArgumentExpr> argsWithClassParam = new List<AstArgumentExpr>(expr.Arguments);
                 argsWithClassParam.Insert(0, new AstArgumentExpr(new AstIdExpr("this") { OutType = PointerType.GetPointerType(structType) }));
-                var ctorSymbol = _postPreparer.GetFuncFromCandidates(ctorName, null, argsWithClassParam, structType.Declaration, out var casts);
+                var ctorSymbol = _postPreparer.GetFuncFromCandidates(new AstIdExpr(ctorName), null, argsWithClassParam, structType.Declaration, out var casts);
 
                 // error if ctor not found
                 if (ctorSymbol == null)
@@ -579,8 +579,8 @@ namespace HapetBackend.Llvm
                     if (clsDecl.IsInterface)
                     {
                         // WARN: hard cock
-                        var helper = _currentFunction.Scope.GetSymbolInNamespace("System.Runtime.Conversion", "VtableHelper");
-                        var methSymbol = (helper.Decl as AstClassDecl).SubScope.GetSymbol("System.Runtime.Conversion.VtableHelper::GetInterfaceMethodByIndex(void*:System.Runtime.VirtualTableUnsafe*:int)") as DeclSymbol;
+                        var helper = _currentFunction.Scope.GetSymbolInNamespace("System.Runtime.Conversion", new AstIdExpr("VtableHelper"));
+                        var methSymbol = (helper.Decl as AstClassDecl).SubScope.GetSymbol(new AstIdExpr("System.Runtime.Conversion.VtableHelper::GetInterfaceMethodByIndex(void*:System.Runtime.VirtualTableUnsafe*:int)")) as DeclSymbol;
                         var methFunc = _valueMap[methSymbol];
                         LLVMTypeRef methType = _typeMap[methSymbol.Decl.Type.OutType];
                         var vtableInfo = _virtualTableDictionary[clsDecl.Type.OutType as ClassType];
@@ -590,8 +590,8 @@ namespace HapetBackend.Llvm
                     else
                     {
                         // WARN: hard cock
-                        var helper = _currentFunction.Scope.GetSymbolInNamespace("System.Runtime.Conversion", "VtableHelper");
-                        var methSymbol = (helper.Decl as AstClassDecl).SubScope.GetSymbol("System.Runtime.Conversion.VtableHelper::GetMethodByIndex(void*:int)") as DeclSymbol;
+                        var helper = _currentFunction.Scope.GetSymbolInNamespace("System.Runtime.Conversion", new AstIdExpr("VtableHelper"));
+                        var methSymbol = (helper.Decl as AstClassDecl).SubScope.GetSymbol(new AstIdExpr("System.Runtime.Conversion.VtableHelper::GetMethodByIndex(void*:int)")) as DeclSymbol;
                         var methFunc = _valueMap[methSymbol];
                         LLVMTypeRef methType = _typeMap[methSymbol.Decl.Type.OutType];
                         var funcToCall = _builder.BuildCall2(methType, methFunc, new LLVMValueRef[] { args[0], LLVMValueRef.CreateConstInt(_context.Int32Type, (ulong)index) }, "funcToCall");
@@ -835,8 +835,8 @@ namespace HapetBackend.Llvm
                             var ptrToTypeInfo = _typeInfoDictionary[clsT];
                             var elementIndexValueRef = LLVMValueRef.CreateConstInt(_context.Int32Type, (ulong)elementIndex);
                             // WARN: hard cock
-                            var typeConverter = _currentFunction.Scope.GetSymbolInNamespace("System.Runtime.Conversion", "TypeConverter");
-                            var offseterSymbol = (typeConverter.Decl as AstClassDecl).SubScope.GetSymbol("System.Runtime.Conversion.TypeConverter::GetInterfaceOffset(void*:System.Runtime.TypeInfoUnsafe*:int)") as DeclSymbol;
+                            var typeConverter = _currentFunction.Scope.GetSymbolInNamespace("System.Runtime.Conversion", new AstIdExpr("TypeConverter"));
+                            var offseterSymbol = (typeConverter.Decl as AstClassDecl).SubScope.GetSymbol(new AstIdExpr("System.Runtime.Conversion.TypeConverter::GetInterfaceOffset(void*:System.Runtime.TypeInfoUnsafe*:int)")) as DeclSymbol;
                             var offseterFunc = _valueMap[offseterSymbol];
                             LLVMTypeRef funcType = _typeMap[offseterSymbol.Decl.Type.OutType];
                             var offset = _builder.BuildCall2(funcType, offseterFunc, new LLVMValueRef[] { leftPart, ptrToTypeInfo, elementIndexValueRef }, "interfaceOffset");
@@ -1443,7 +1443,7 @@ namespace HapetBackend.Llvm
             var ctorName = $"{baseStmt.BaseType.Declaration.Name.Name}::{onlyName}_ctor" + baseStmt.Arguments.GetArgsString(PointerType.GetPointerType(baseStmt.BaseType));
             List<AstArgumentExpr> argsWithClassParam = new List<AstArgumentExpr>(baseStmt.Arguments);
             argsWithClassParam.Insert(0, new AstArgumentExpr(baseStmt.ThisArgument));
-            var ctorSymbol = _postPreparer.GetFuncFromCandidates(ctorName, null, argsWithClassParam, baseStmt.BaseType.Declaration, out var casts);
+            var ctorSymbol = _postPreparer.GetFuncFromCandidates(new AstIdExpr(ctorName), null, argsWithClassParam, baseStmt.BaseType.Declaration, out var casts);
 
             // error if ctor not found
             if (ctorSymbol == null)
