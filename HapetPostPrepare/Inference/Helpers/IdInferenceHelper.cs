@@ -11,6 +11,7 @@ using HapetPostPrepare.Entities;
 using System.Text;
 using System.Runtime;
 using System.Xml.Linq;
+using System;
 
 namespace HapetPostPrepare
 {
@@ -53,18 +54,12 @@ namespace HapetPostPrepare
                 return false;
 
             string name = idExpr.Name;
+            string ns = name.GetNamespaceWithoutClassName();
             // check if it is smth like 'System.Attribute' where 'System' is ns and 'Attribute' is a class
-            if (!string.IsNullOrWhiteSpace(name.GetNamespaceWithoutClassName()))
+            if (!string.IsNullOrWhiteSpace(ns))
             {
-                var leftPart = name.GetNamespaceWithoutClassName();
-                var rightPart = name.GetClassNameWithoutNamespace();
-
-                // cringe kostyl - do not touch
-                if (idExpr is AstIdGenericExpr genId)
-                    rightPart = GenericsHelper.GetCringeGenericName(new AstIdGenericExpr(rightPart, genId.GenericRealTypes, genId));
-
                 // search for the symbol in concrete namespace
-                var smbl = idExpr.Scope.GetSymbolInNamespace(leftPart, rightPart, handleGenerics: true);
+                var smbl = idExpr.Scope.GetSymbolInNamespace(ns, idExpr, handleGenerics: true);
                 if (smbl is DeclSymbol typed)
                 {
                     IdentifierOnFoundSymbol(idExpr, typed, string.Empty, inInfo, ref outInfo);
@@ -76,10 +71,10 @@ namespace HapetPostPrepare
 
         private bool Step2_IdentifierLocalScope(AstIdExpr idExpr, InInfo inInfo, ref OutInfo outInfo, Scope scopeToSearch = null)
         {
-            string name = GenericsHelper.GetCringeGenericName(idExpr);
+            string name = idExpr.Name;
             var scope = scopeToSearch ?? idExpr.Scope;
 
-            var smbl = scope.GetSymbol(name, handleGenerics: true);
+            var smbl = scope.GetSymbol(idExpr, handleGenerics: true);
             if (smbl is DeclSymbol typed)
             {
                 IdentifierOnFoundSymbol(idExpr, typed, string.Empty, inInfo, ref outInfo);
@@ -90,7 +85,7 @@ namespace HapetPostPrepare
             if (idExpr.AdditionalData != null)
             {
                 string typeName = (idExpr.AdditionalData.OutType as ClassType).Declaration.Name.Name;
-                smbl = scope.GetSymbol($"{typeName}.{name}", handleGenerics: true);
+                smbl = scope.GetSymbol(idExpr.GetCopy($"{typeName}.{name}"), handleGenerics: true);
                 if (smbl is DeclSymbol typed2)
                 {
                     IdentifierOnFoundSymbol(idExpr, typed2, string.Empty, inInfo, ref outInfo);
@@ -106,7 +101,7 @@ namespace HapetPostPrepare
             if (name == "base")
             {
                 idExpr.OutType = PointerType.GetPointerType(_currentClass.InheritedFrom[0].OutType);
-                var smbl2 = idExpr.Scope.GetSymbol("this");
+                var smbl2 = idExpr.Scope.GetSymbol(idExpr.GetCopy("this"));
                 idExpr.FindSymbol = smbl2;
                 return true;
             }
@@ -120,11 +115,11 @@ namespace HapetPostPrepare
             if (scopeToSearch != null)
                 return false;
 
-            string name = GenericsHelper.GetCringeGenericName(idExpr);
+            string name = idExpr.Name;
             // searching for the name with namespace
             // works only for types/objects
             string nameWithNamespace = $"{idExpr.SourceFile.Namespace}.{name}";
-            var smblInLocalFile = idExpr.Scope.GetSymbol(nameWithNamespace, handleGenerics: true);
+            var smblInLocalFile = idExpr.Scope.GetSymbol(idExpr.GetCopy(nameWithNamespace), handleGenerics: true);
             if (smblInLocalFile is DeclSymbol typed3)
             {
                 IdentifierOnFoundSymbol(idExpr, typed3, nameWithNamespace, inInfo, ref outInfo);
@@ -139,37 +134,35 @@ namespace HapetPostPrepare
             if (scopeToSearch != null)
                 return false;
 
-            string name = GenericsHelper.GetCringeGenericName(idExpr);
+            string name = idExpr.Name;
             // go all over the usings
             foreach (var usng in idExpr.SourceFile.Usings)
             {
                 // getting ns string
                 var ns = usng.FlattenNamespace;
 
-                // check if it is smth like 'Runtime.InteropServices.DllImportAttribute'
-                // where 'Runtime.InteropServices' is PART! of ns and 'DllImportAttribute' is a class
-                if (!string.IsNullOrWhiteSpace(name.GetNamespaceWithoutClassName()))
-                {
-                    var leftPart = name.GetNamespaceWithoutClassName();
-                    var rightPart = name.GetClassNameWithoutNamespace();
-
-                    // getting a symbol from namespace
-                    var includedSmbl = idExpr.Scope.GetSymbolInNamespace($"{ns}.{leftPart}", rightPart, handleGenerics: true);
-                    if (includedSmbl is DeclSymbol typed4)
-                    {
-                        IdentifierOnFoundSymbol(idExpr, typed4, string.Empty, inInfo, ref outInfo);
-                        return true;
-                    }
-                }
-
                 // try just get the name from using namespace
                 string fullNameWithNs = $"{ns}.{name}";
-                var usedSmbl = idExpr.Scope.GetSymbolInNamespace(ns, name, handleGenerics: true);
+                var usedSmbl = idExpr.Scope.GetSymbolInNamespace(ns, idExpr, handleGenerics: true);
                 if (usedSmbl is DeclSymbol typed5)
                 {
-                    IdentifierOnFoundSymbol(idExpr, typed5, fullNameWithNs, inInfo, ref outInfo);
+                    IdentifierOnFoundSymbol(idExpr, typed5, typed5.Name.Name, inInfo, ref outInfo);
                     return true;
                 }
+
+                string currNs = name.GetNamespaceWithoutClassName();
+                // check if it is smth like 'Runtime.InteropServices.DllImportAttribute'
+                // where 'Runtime.InteropServices' is PART! of ns and 'DllImportAttribute' is a class
+                if (!string.IsNullOrWhiteSpace(currNs))
+                {
+                    // getting a symbol from namespace
+                    var includedSmbl = idExpr.Scope.GetSymbolInNamespace($"{ns}.{currNs}", idExpr, handleGenerics: true);
+                    if (includedSmbl is DeclSymbol typed4)
+                    {
+                        IdentifierOnFoundSymbol(idExpr, typed4, typed4.Name.Name, inInfo, ref outInfo);
+                        return true;
+                    }
+                }                
             }
             return false;
         }
@@ -177,14 +170,14 @@ namespace HapetPostPrepare
         private bool Step5_IdentifierFuncs(AstIdExpr idExpr, InInfo inInfo, ref OutInfo outInfo, Scope scopeToSearch = null)
         {
             Scope scope = scopeToSearch ?? idExpr.Scope;
-            string name = GenericsHelper.GetCringeGenericName(idExpr);
+            string name = idExpr.Name;
             // searching for the name with current class name
             // works only for functions
             string nameWithClass = $"{_currentClass.Name.Name}::{name}";
-            var smblInLocalClass = scope.GetSymbol(nameWithClass, handleGenerics: true);
+            var smblInLocalClass = scope.GetSymbol(idExpr.GetCopy(nameWithClass), handleGenerics: true);
             if (smblInLocalClass is DeclSymbol typed2)
             {
-                IdentifierOnFoundSymbol(idExpr, typed2, typed2.Name, inInfo, ref outInfo);
+                IdentifierOnFoundSymbol(idExpr, typed2, typed2.Name.Name, inInfo, ref outInfo);
                 return true;
             }
 
@@ -210,13 +203,13 @@ namespace HapetPostPrepare
                 {
                     fullFuncName = $"{clsTp}::{nameAndFunc[1]}";
                     scope = scopeToSearch ?? clsTp.Declaration.SubScope;
-                    funcInAnotherClass = scope.GetSymbol(fullFuncName);
+                    funcInAnotherClass = scope.GetSymbol(idExpr.GetCopy(fullFuncName));
                 }
                 else if (leftPartId.OutType is StructType strTp)
                 {
                     fullFuncName = $"{strTp}::{nameAndFunc[1]}";
                     scope = scopeToSearch ?? strTp.Declaration.SubScope;
-                    funcInAnotherClass = scope.GetSymbol(fullFuncName);
+                    funcInAnotherClass = scope.GetSymbol(idExpr.GetCopy(fullFuncName));
                 }
                 else
                 {
@@ -226,7 +219,7 @@ namespace HapetPostPrepare
 
                 if (funcInAnotherClass is DeclSymbol typed4)
                 {
-                    IdentifierOnFoundSymbol(idExpr, typed4, typed4.Name, inInfo, ref outInfo);
+                    IdentifierOnFoundSymbol(idExpr, typed4, typed4.Name.Name, inInfo, ref outInfo);
                     return true;
                 }
             }
