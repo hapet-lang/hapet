@@ -12,18 +12,15 @@ namespace HapetPostPrepare
 {
     public partial class PostPrepare
     {
-        public DeclSymbol GetFuncFromCandidates(string name, AstCallExpr callExpr, List<AstArgumentExpr> args, 
+        public DeclSymbol GetFuncFromCandidates(AstIdExpr name, AstCallExpr callExpr, List<AstArgumentExpr> args, 
             AstDeclaration declToSearch, out List<AstExpression> castsToBeDone)
         {
-            // getting only the Class::AndFuncName without params
-            string classWithFuncName = name.GetFuncWithClassName();
-
             int bestScore = int.MaxValue;
             DeclSymbol bestMatch = null;
             castsToBeDone = new List<AstExpression>();
 
             // getting all the candidates
-            List<DeclSymbol> candidates = GetAllCandidates(classWithFuncName, callExpr, declToSearch, args);
+            List<DeclSymbol> candidates = GetAllCandidates(name, callExpr, declToSearch, args);
 
             // handle explicit shite
             CheckAndPrepareExplicitFuncs(candidates, callExpr);
@@ -239,10 +236,10 @@ namespace HapetPostPrepare
                 }
             }
 
-            return normalArgs.ToList();
+            return normalArgs;
         }
 
-        private static List<DeclSymbol> GetAllCandidates(string name, AstCallExpr callExpr, AstDeclaration declToSearch, List<AstArgumentExpr> args)
+        private static List<DeclSymbol> GetAllCandidates(AstIdExpr name, AstCallExpr callExpr, AstDeclaration declToSearch, List<AstArgumentExpr> args)
         {
             List<DeclSymbol> candidates = new List<DeclSymbol>();
 
@@ -254,7 +251,7 @@ namespace HapetPostPrepare
             return candidates;
         }
 
-        private static List<DeclSymbol> Candidates_Step1_InheritedAndCurrent(string name, AstDeclaration declToSearch)
+        private static List<DeclSymbol> Candidates_Step1_InheritedAndCurrent(AstIdExpr name, AstDeclaration declToSearch)
         {
             List<DeclSymbol> candidates = new List<DeclSymbol>();
 
@@ -276,7 +273,7 @@ namespace HapetPostPrepare
             return candidates;
         }
 
-        private static List<DeclSymbol> Candidates_Step2_CurrentScopeAndParents(string name, AstCallExpr callExpr)
+        private static List<DeclSymbol> Candidates_Step2_CurrentScopeAndParents(AstIdExpr name, AstCallExpr callExpr)
         {
             if (callExpr == null || callExpr.Scope == null)
                 return new List<DeclSymbol>();
@@ -308,7 +305,7 @@ namespace HapetPostPrepare
         }
 
         #region Helpers
-        private static List<DeclSymbol> GetCandidatesInScope(string classWithFuncName, Scope scopeToSearch, bool searchParent = false)
+        private static List<DeclSymbol> GetCandidatesInScope(AstIdExpr classWithFuncName, Scope scopeToSearch, bool searchParent = false)
         {
             List<DeclSymbol> candidates = new List<DeclSymbol>();
             // search for the func in the scope
@@ -316,34 +313,38 @@ namespace HapetPostPrepare
             {
                 if (d != null && d.Decl is AstFuncDecl)
                 {
-                    var onlyFuncName = classWithFuncName.GetPureFuncName();
-                    var firstKeyPart = k.GetPureFuncName();
-                    if ((k.StartsWith(classWithFuncName) || firstKeyPart == onlyFuncName))
-                        candidates.Add(d);
-
-                    // generics check
-                    if (onlyFuncName.Contains(GenericsHelper.GENERIC_BEGIN) && firstKeyPart.Contains(GenericsHelper.GENERIC_BEGIN))
+                    // 1 - name similarity checks
+                    var onlyFuncName = classWithFuncName.Name.GetPureFuncName();
+                    var firstKeyPart = k.Name.GetPureFuncName();
+                    if (k.Name.StartsWith(classWithFuncName.Name) || firstKeyPart == onlyFuncName)
                     {
-                        // if names without generics are the same and the same amount of parameters
-                        string pureFuncName = firstKeyPart.Substring(0, firstKeyPart.IndexOf(GenericsHelper.GENERIC_BEGIN));
-                        string pureCallName = onlyFuncName.Substring(0, firstKeyPart.IndexOf(GenericsHelper.GENERIC_BEGIN));
-
-                        int gAmountFunc = firstKeyPart.GetGenericsAmount();
-                        int gAmountCall = onlyFuncName.GetGenericsAmount();
-
-                        if (pureFuncName == pureCallName && gAmountFunc == gAmountCall)
-                            candidates.Add(d);
+                        candidates.Add(d);
+                        continue;
                     }
 
-                    // explicit interface impl check
+                    // 2 - generics check
+                    if (classWithFuncName is AstIdGenericExpr searchGen && k is AstIdGenericExpr symbolGen)
+                    {
+                        int gAmountFunc = symbolGen.GenericRealTypes.Count;
+                        int gAmountCall = searchGen.GenericRealTypes.Count;
+                        if (onlyFuncName == firstKeyPart && gAmountFunc == gAmountCall)
+                        {
+                            candidates.Add(d);
+                            continue;
+                        }
+                    }
+
+                    // 3 - explicit interface impl check
                     /// the same as in <see cref="OtherExtensions.GetSameByNameAndTypes(List{AstFuncDecl}, AstFuncDecl, out int, bool)"/>
                     if (d.Decl.Name.AdditionalData != null)
                     {
                         string pureSearchName = onlyFuncName.GetClassNameWithoutNamespace();
                         string pureName = firstKeyPart.GetClassNameWithoutNamespace();
-
                         if (pureName == pureSearchName)
+                        {
                             candidates.Add(d);
+                            continue;
+                        }
                     }
                 }
             }
@@ -355,7 +356,7 @@ namespace HapetPostPrepare
             return candidates;
         }
 
-        private static IEnumerable<(string, DeclSymbol)> GetDecls(Scope scope)
+        private static IEnumerable<(AstIdExpr, DeclSymbol)> GetDecls(Scope scope)
         {
             // search for the func in the shadow
             foreach (var k in scope.ShadowSymbolTable.Keys)
