@@ -73,29 +73,9 @@ namespace HapetFrontend.Types
             return -1;
         }
 
-        public static string AsString(HapetType type, bool prettifyType = false)
+        public static string AsString(HapetType type)
         {
             string typeString = type == null ? "[Undefined]" : type.ToString();
-
-            // prettify generics and other shite
-            if (prettifyType)
-            {
-                // if it is a ptr for a class
-                if (type is PointerType ptr && ptr.TargetType is ClassType cls)
-                {
-                    // if it is an impl of a generic containing type
-                    if (cls.Declaration.IsImplOfGeneric)
-                    {
-                        return GenericsHelper.GetPrettyGenericImplName(typeString);
-                    }
-                    // if it is a generic type
-                    else if (cls.Declaration.IsGenericType)
-                    {
-                        return GenericsHelper.GetPrettyGenericTypeName(typeString);
-                    }
-                }
-                
-            }
 
             return typeString;
         }
