@@ -136,23 +136,61 @@ namespace HapetFrontend.Scoping
             // 3 - handle generics search
             if (handleGenerics && name is AstIdGenericExpr genId)
             {
+                // we need to store original decl 
+                // if we won't find the same decl
+                // we need to return original one
+                DeclSymbol originalGeneric = null;
+                DeclSymbol theSameGeneric = null;
                 foreach (var k in _symbolTable.Keys)
                 {
                     // skip non generic keys
                     if (k is not AstIdGenericExpr genK)
                         continue;
 
+                    // if not the same name
+                    if (k.Name != name.Name)
+                        continue;
+
+                    // if not the same amount of generics
                     int gAmountSymbol = genK.GenericRealTypes.Count;
                     int gAmountSearch = genId.GenericRealTypes.Count;
+                    if (gAmountSymbol != gAmountSearch)
+                        continue;
 
-                    if (gAmountSymbol == gAmountSearch && 
-                        k.Name == name.Name &&
-                        _symbolTable[k] is DeclSymbol ds &&
-                        ds.Decl.HasGenericTypes) // only pure generics are allowed
+                    // if the same decl
+                    bool allEqual = true;
+                    for (int i = 0; i < gAmountSymbol; ++i)
                     {
-                        return _symbolTable[k];
+                        if (genK.GenericRealTypes[i].OutType != genId.GenericRealTypes[i].OutType)
+                        {
+                            allEqual = false;
+                            break;
+                        }
+                    }
+                    if (_symbolTable[k] is DeclSymbol ds1 && 
+                        ds1.Decl.IsImplOfGeneric &&
+                        allEqual)
+                    {
+                        theSameGeneric = _symbolTable[k] as DeclSymbol;
+                        continue;
+                    }
+
+                    // if original generic
+                    if (_symbolTable[k] is DeclSymbol ds &&
+                        ds.Decl.HasGenericTypes &&
+                        !ds.Decl.IsImplOfGeneric)
+                    {
+                        originalGeneric = _symbolTable[k] as DeclSymbol;
+                        continue;
                     }
                 }
+
+                // try at first to return the same
+                if (theSameGeneric != null)
+                    return theSameGeneric;
+                // then try to return original generic
+                if (originalGeneric != null)
+                    return originalGeneric;
             }
 
             // 4 - search in parent

@@ -289,15 +289,13 @@ namespace HapetPostPrepare
             if (!decl.Decl.HasGenericTypes)
                 return decl;
 
+            // return if it is already an impl
+            if (decl.Decl.IsImplOfGeneric)
+                return decl;
+
             InInfo inInfo = InInfo.Default;
             OutInfo outInfo = OutInfo.Default;
             var theDecl = decl.Decl;
-
-            // this is to get REAL PURE GENERIC. not the fcking T-like
-            if (theDecl.IsImplOfGeneric)
-            {
-                theDecl = theDecl.OriginalGenericDecl;
-            }
 
             // infer generic names
             for (int i = 0; i < genId.GenericRealTypes.Count; ++i)

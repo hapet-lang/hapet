@@ -94,5 +94,10 @@ namespace HapetFrontend.Ast.Declarations
 
             return copy;
         }
+
+        public override string ToString()
+        {
+            return $"{Name}";
+        }
     }
 }
