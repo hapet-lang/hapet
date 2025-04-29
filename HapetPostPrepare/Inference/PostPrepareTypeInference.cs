@@ -1297,7 +1297,10 @@ namespace HapetPostPrepare
 
             // TODO: check that the shite is inherited from 'System.Attribute'
             // getting all the fields of attribuute class decl
-            var attrDeclFields = (attrStmt.AttributeName.OutType as ClassType).Declaration.Declarations.Where(x => x is AstVarDecl).Select(x => x as AstVarDecl).ToList();
+            var attrDeclFields = (attrStmt.AttributeName.OutType as ClassType).Declaration.Declarations.
+                Where(x => x is AstVarDecl vd && !vd.SpecialKeys.Contains(TokenType.KwStatic)).
+                Select(x => x as AstVarDecl).ToList();
+
             // check that not too much params
             if (attrStmt.Arguments.Count > attrDeclFields.Count)
             {
