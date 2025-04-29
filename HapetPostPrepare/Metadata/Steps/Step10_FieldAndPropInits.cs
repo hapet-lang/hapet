@@ -38,8 +38,16 @@ namespace HapetPostPrepare
                 // infer fields at first
                 foreach (var decl in str.Declarations.Where(x => x is AstVarDecl).Select(x => x as AstVarDecl))
                 {
-                    // field 
+                    // this kostyl is done to skip double error on uninferred type
+                    var savedIsPropF = decl.IsPropertyField;
+                    decl.IsPropertyField = true;
+
+                    // field or property
+                    inInfo.AllowSpecialKeys = true;
                     PostPrepareVarInference(decl, inInfo, ref outInfo);
+                    inInfo.AllowSpecialKeys = false;
+
+                    decl.IsPropertyField = savedIsPropF;
                 }
             }
             else if (stmt is AstEnumDecl enm)
