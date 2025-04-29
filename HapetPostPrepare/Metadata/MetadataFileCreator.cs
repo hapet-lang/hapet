@@ -158,9 +158,6 @@ namespace HapetPostPrepare
             // TODO: generic constraiins 
 
             AstDeclaration theDecl = decl;
-            if (decl.HasGenericTypes)
-                theDecl = (decl.OriginalGenericDecl as AstClassDecl);
-
             List<AstDeclaration> decls = new List<AstDeclaration>();
             if (theDecl is AstClassDecl clsDecl1)
                 decls = clsDecl1.Declarations;
@@ -271,9 +268,6 @@ namespace HapetPostPrepare
                 sb.Append('\n');
 
                 AstFuncDecl theDecl = decl;
-                if (decl.HasGenericTypes)
-                    theDecl = (decl.OriginalGenericDecl as AstFuncDecl);
-
                 AntiParseExpr(theDecl.Body, sb, additionalOffset);
             }
             else
