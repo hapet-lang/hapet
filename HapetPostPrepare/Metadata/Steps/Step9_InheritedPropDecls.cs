@@ -40,6 +40,7 @@ namespace HapetPostPrepare
             // remove all current props
             foreach (var fieldDecl in currDecls.Where(x => x is AstPropertyDecl).Select(x => x as AstPropertyDecl).ToList())
             {
+                currDecls.Remove(fieldDecl);
                 decl.SubScope.RemoveDeclSymbol(fieldDecl.Name, fieldDecl);
             }
 
@@ -49,6 +50,7 @@ namespace HapetPostPrepare
             {
                 // change parent and scope
                 var newVar = propDecl.GetCopyForAnotherType(decl);
+                currDecls.Add(newVar);
                 // define the symbol
                 decl.SubScope.DefineDeclSymbol(newVar.Name, newVar);
 

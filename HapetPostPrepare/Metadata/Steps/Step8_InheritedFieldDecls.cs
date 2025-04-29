@@ -40,6 +40,7 @@ namespace HapetPostPrepare
             // remove all current fields
             foreach (var fieldDecl in currDecls.GetStructFields())
             {
+                currDecls.Remove(fieldDecl);
                 decl.SubScope.RemoveDeclSymbol(fieldDecl.Name, fieldDecl);
             }
 
@@ -49,6 +50,7 @@ namespace HapetPostPrepare
             {
                 // change parent and scope
                 var newVar = fieldDecl.GetCopyForAnotherType(decl);
+                currDecls.Add(newVar);
                 // define the symbol
                 decl.SubScope.DefineDeclSymbol(newVar.Name, newVar);
 
