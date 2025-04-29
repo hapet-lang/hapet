@@ -70,9 +70,8 @@ namespace HapetPostPrepare
             {
                 // p prop generics here
                 bool itWasPureGenericProp = false;
-                AstDeclaration realProp = null;
                 if (decl is AstPropertyDecl prop)
-                    itWasPureGenericProp = PostPrepareMetadataGenerics(prop, out realProp);
+                    itWasPureGenericProp = PostPrepareMetadataGenerics(prop);
 
                 // do not infer pure generic funcs
                 if (!itWasPureGenericProp)
@@ -85,30 +84,11 @@ namespace HapetPostPrepare
                     PostPrepareExprInference(decl.Type, inInfo, ref outInfo);
                     if (decl.IsPropertyField)
                         inInfo.MuteErrors = savedMute;
-
-                    realProp = decl;
-                }
-
-                if (realProp.Type.OutType is ClassType)
-                {
-                    // the var is actually a pointer to the class
-                    var astPtr = new AstPointerExpr(realProp.Type, false, realProp.Type.Location);
-                    astPtr.Scope = realProp.Type.Scope;
-                    realProp.Type = new AstNestedExpr(astPtr, null, realProp.Type.Location) { OutType = astPtr.OutType };
-                    PostPrepareExprInference(realProp.Type, inInfo, ref outInfo);
                 }
 
                 // define in scope
                 // if it is public field - it should be visible in the scope in which var's class is
-                string nameAddition = "";
-                if (decl.Name.AdditionalData != null)
-                {
-                    PostPrepareExprInference(decl.Name.AdditionalData, inInfo, ref outInfo);
-                    nameAddition = (decl.Name.AdditionalData.OutType as ClassType).Declaration.Name.Name;
-                    nameAddition += '.';
-                }
-                parentSubScope.DefineDeclSymbol(decl.Name.GetCopy($"{nameAddition}{decl.Name.Name}"), decl);
-                decl.Name = decl.Name.GetCopy($"{nameAddition}{decl.Name.Name}");
+                parentSubScope.DefineDeclSymbol(decl.Name.GetCopy(), decl);
 
                 return itWasPureGenericProp;
             }

@@ -9,7 +9,7 @@ namespace HapetPostPrepare
 {
     public partial class PostPrepare
     {
-        private void PostPrepareMetadataFunctions(AstStatement stmt, bool needSerialize = false, bool isImported = false, bool allowRemovance = false)
+        private void PostPrepareMetadataFunctions(AstStatement stmt, bool needSerialize = false, bool isImported = false)
         {
             // just handlers
             InInfo inInfo = InInfo.Default;
@@ -39,7 +39,7 @@ namespace HapetPostPrepare
                 AllFunctionsMetadata.Add(func);
 
                 // p func generics here
-                bool itWasPureGenericFunc = PostPrepareMetadataGenerics(func, out var realFnc);
+                bool itWasPureGenericFunc = PostPrepareMetadataGenerics(func);
 
                 // do not infer pure generic funcs
                 if (!itWasPureGenericFunc)
@@ -50,46 +50,24 @@ namespace HapetPostPrepare
                 }
                 else
                 {
-                    // remove if allowed
-                    if (allowRemovance)
-                    {
-                        // remove this shite from decls
-                        if (stmt is AstClassDecl cls)
-                        {
-                            cls.Declarations.Add(realFnc);
-                            cls.Declarations.Remove(func);
-                        }
-                        else if (stmt is AstStructDecl str)
-                        {
-                            str.Declarations.Add(realFnc);
-                            str.Declarations.Remove(func);
-                        }
-
-                        // remove from inferencing
-                        AllFunctionsMetadata.Remove(func);
-                    }
+                    // remove from inferencing
+                    AllFunctionsMetadata.Remove(func);
                 }
 
                 // if func serialization required
                 if (needSerialize)
                 {
-                    // if need serialize - check for generic shite - serialize only T-like funcs :)
-                    if (!itWasPureGenericFunc)
-                        _serializeFunctionsMetadata.Add(func);
-                    else
-                        _serializeFunctionsMetadata.Add(realFnc as AstFuncDecl);
+                    _serializeFunctionsMetadata.Add(func);
                 }
 
-                if (isImported)
-                    // set that the function is imported from another assembly
-                    func.IsImported = true;
-
+                // set that the function is imported from another assembly
+                func.IsImported = isImported;
 
                 if (func.Body != null && func.Body.Statements.Count > 0)
                     // check for nested funcs - prepare them
                     foreach (var nestedFunc in func.Body.Statements.Where(x => x is AstFuncDecl).Select(x => x as AstFuncDecl).ToList())
                     {
-                        PostPrepareMetadataFunctions(nestedFunc, false, isImported, false);
+                        PostPrepareMetadataFunctions(nestedFunc, false, isImported);
                     }
             }
         }

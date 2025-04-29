@@ -33,7 +33,7 @@ namespace HapetPostPrepare
             }
             if (_currentPreparationStep >= PreparationStep.Generics)
             {
-                PostPrepareMetadataGenerics(stmt, out var _);
+                PostPrepareMetadataGenerics(stmt);
             }
             if (_currentPreparationStep >= PreparationStep.Inheritance)
             {
@@ -72,6 +72,10 @@ namespace HapetPostPrepare
             if (_currentPreparationStep >= PreparationStep.Attributes)
             {
                 PostPrepareMetadataAttributes(stmt);
+            }
+            if (_currentPreparationStep >= PreparationStep.GenericUsage)
+            {
+                PostPrepareGenericType(stmt);
             }
 
             if (_currentPreparationStep >= PreparationStep.Inferencing)

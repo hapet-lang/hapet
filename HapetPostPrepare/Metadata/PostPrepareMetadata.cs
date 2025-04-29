@@ -37,6 +37,7 @@ namespace HapetPostPrepare
             AllPostPrepareMetadataTypeInheritedPropsDecls();
             AllPostPrepareMetadataTypeFieldInits();
             AllPostPrepareMetadataAttributes();
+            AllPostPrepareMetadataGenericUsage();
 
             // if there were errors while preparing for metafile
             if (_compiler.MessageHandler.HasErrors)
@@ -88,55 +89,25 @@ namespace HapetPostPrepare
             {
                 _currentSourceFile = cls.SourceFile;
                 _currentClass = cls;
-                bool itWasGeneric = PostPrepareMetadataGenerics(cls, out var realDecl);
-
-                // do not inference generics
-                if (itWasGeneric)
-                {
-                    // append for serialization T-like (if not imported)
-                    if (!cls.IsImported)
-                        _serializeClassesMetadata.Add(realDecl as AstClassDecl);
-                    // remove from inferencing
+                bool wasGeneric = PostPrepareMetadataGenerics(cls);
+                if (wasGeneric)
                     AllClassesMetadata.Remove(cls);
-                    // remove definition
-                    // cls.SourceFile.NamespaceScope.RemoveDeclSymbol(cls.Name, cls);
-                }
             }
             // resolve generic shite of structs
             foreach (var str in AllStructsMetadata.ToList())
             {
                 _currentSourceFile = str.SourceFile;
-                bool itWasGeneric = PostPrepareMetadataGenerics(str, out var realDecl);
-
-                // do not inference generics
-                if (itWasGeneric)
-                {
-                    // append for serialization T-like (if not imported)
-                    if (!str.IsImported)
-                        _serializeStructsMetadata.Add(realDecl as AstStructDecl);
-                    // remove from inferencing
+                bool wasGeneric = PostPrepareMetadataGenerics(str);
+                if (wasGeneric)
                     AllStructsMetadata.Remove(str);
-                    // remove definition
-                    // str.SourceFile.NamespaceScope.RemoveDeclSymbol(str.Name, str);
-                }
             }
             // resolve generic shite of delegates
             foreach (var del in AllDelegatesMetadata.ToList())
             {
                 _currentSourceFile = del.SourceFile;
-                bool itWasGeneric = PostPrepareMetadataGenerics(del, out var realDecl);
-
-                // do not inference generics
-                if (itWasGeneric)
-                {
-                    // append for serialization T-like (if not imported)
-                    if (!del.IsImported)
-                        _serializeDelegatesMetadata.Add(realDecl as AstDelegateDecl);
-                    // remove from inferencing
+                bool wasGeneric = PostPrepareMetadataGenerics(del);
+                if (wasGeneric)
                     AllDelegatesMetadata.Remove(del);
-                    // remove definition
-                    // del.SourceFile.NamespaceScope.RemoveDeclSymbol(del.Name, del);
-                }
             }
         }
 
@@ -208,14 +179,14 @@ namespace HapetPostPrepare
                 _currentClass = cls;
 
                 bool isImported = cls.IsImported;
-                PostPrepareMetadataFunctions(cls, !isImported, isImported, true);
+                PostPrepareMetadataFunctions(cls, !isImported, isImported);
             }
             foreach (var str in AllStructsMetadata.ToList())
             {
                 _currentSourceFile = str.SourceFile;
 
                 bool isImported = str.IsImported;
-                PostPrepareMetadataFunctions(str, !isImported, isImported, true);
+                PostPrepareMetadataFunctions(str, !isImported, isImported);
             }
         }
 
@@ -387,6 +358,18 @@ namespace HapetPostPrepare
             {
                 _currentSourceFile = del.SourceFile;
                 PostPrepareMetadataAttributes(del);
+            }
+        }
+
+        private void AllPostPrepareMetadataGenericUsage()
+        {
+            _currentPreparationStep = PreparationStep.GenericUsage;
+
+            // inferrencing attribtues of functions
+            foreach (var tp in _allPureGenericTypes.ToList())
+            {
+                _currentSourceFile = tp.SourceFile;
+                PostPrepareGenericType(tp);
             }
         }
 

@@ -28,6 +28,7 @@
         InheritedPropDecls,
         FieldAndPropInits,
         Attributes,
+        GenericUsage,
         MetadataCreation,
         PropsRemoval,
         Inferencing
