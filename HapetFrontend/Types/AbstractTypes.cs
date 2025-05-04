@@ -31,4 +31,28 @@ namespace HapetFrontend.Types
 
         public override string ToString() => $"var";
     }
+
+    /// <summary>
+    /// The type is used to describe T-like type with its constrains
+    /// </summary>
+    public class GenericType : AbstractType
+    {
+        public AstIdExpr Name { get; set; }
+        public List<AstNestedExpr> Constrains { get; set; }
+
+        public override string TypeName => "generic";
+
+        public override AstExpression GetAst()
+        {
+            return new AstNestedExpr(Name, null);
+        }
+
+        private GenericType(AstIdExpr name, List<AstNestedExpr> constrains)
+        {
+            Name = name;
+            Constrains = constrains;
+        }
+
+        public override string ToString() => Name.Name;
+    }
 }
