@@ -568,6 +568,36 @@ namespace HapetPostPrepare
             return removedDeclarations;
         }
 
+        public List<AstDeclaration> GetPropertyShiteFromDecl(List<AstDeclaration> decls, AstPropertyDecl prop)
+        {
+            List<AstDeclaration> declarations = new List<AstDeclaration>();
+            if (prop.GetBlock == null && prop.SetBlock == null)
+            {
+                var field = decls.FirstOrDefault(x => x.Name.Name.Contains($"field_{prop.Name.Name}"));
+                if (field != null)
+                {
+                    declarations.Add(field);
+                }
+            }
+            if (prop.HasGet)
+            {
+                var func = decls.FirstOrDefault(x => x.Name.Name.Contains($":get_{prop.Name.Name}("));
+                if (func != null)
+                {
+                    declarations.Add(func);
+                }
+            }
+            if (prop.HasSet)
+            {
+                var func = decls.FirstOrDefault(x => x.Name.Name.Contains($":set_{prop.Name.Name}("));
+                if (func != null)
+                {
+                    declarations.Add(func);
+                }
+            }
+            return declarations;
+        }
+
         private AstBlockExpr GetFieldsToInitialize(AstDeclaration declB, bool forStatic)
         {
             // gettings all field decls and init them

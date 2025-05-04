@@ -21,6 +21,10 @@ namespace HapetPostPrepare
                 // infer fields and props at first
                 foreach (var decl in cls.Declarations.Where(x => x is AstVarDecl).Select(x => x as AstVarDecl))
                 {
+                    // do not infer generic props - it is for stage 12
+                    if (decl is AstPropertyDecl && decl.HasGenericTypes)
+                        continue;
+
                     // this kostyl is done to skip double error on uninferred type
                     var savedIsPropF = decl.IsPropertyField;
                     decl.IsPropertyField = true;
@@ -38,6 +42,10 @@ namespace HapetPostPrepare
                 // infer fields at first
                 foreach (var decl in str.Declarations.Where(x => x is AstVarDecl).Select(x => x as AstVarDecl))
                 {
+                    // do not infer generic props - it is for stage 12
+                    if (decl is AstPropertyDecl && decl.HasGenericTypes)
+                        continue;
+
                     // this kostyl is done to skip double error on uninferred type
                     var savedIsPropF = decl.IsPropertyField;
                     decl.IsPropertyField = true;

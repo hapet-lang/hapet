@@ -25,9 +25,8 @@ namespace HapetPostPrepare
                     var wasGeneric = InternalVarPP(decl, cls.SubScope);
                     if (wasGeneric)
                     {
-                        var removedDecls = RemovePropertyShiteFromDecl(cls.Declarations, decl as AstPropertyDecl);
-                        cls.Declarations.Remove(decl);
-                        foreach (var d in removedDecls)
+                        var decls = GetPropertyShiteFromDecl(cls.Declarations, decl as AstPropertyDecl);
+                        foreach (var d in decls)
                         {
                             if (!AllFunctionsMetadata.Contains(d))
                                 continue;
@@ -45,9 +44,8 @@ namespace HapetPostPrepare
                     var wasGeneric = InternalVarPP(decl, str.SubScope);
                     if (wasGeneric)
                     {
-                        var removedDecls = RemovePropertyShiteFromDecl(str.Declarations, decl as AstPropertyDecl);
-                        str.Declarations.Remove(decl);
-                        foreach (var d in removedDecls)
+                        var decls = GetPropertyShiteFromDecl(str.Declarations, decl as AstPropertyDecl);
+                        foreach (var d in decls)
                         {
                             if (!AllFunctionsMetadata.Contains(d))
                                 continue;
