@@ -1373,9 +1373,13 @@ namespace HapetPostPrepare
             if (value is AstDefaultExpr)
             {
                 // get the default value for the type (no need to infer)
-                value = AstDefaultExpr.GetDefaultValueForType(targetType, value);
-                if (value == null)
+                var defaultOfDefault = AstDefaultExpr.GetDefaultValueForType(targetType, value);
+                if (defaultOfDefault == null)
+                {
                     _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, value, [], ErrorCode.Get(CTEN.DefaultValueNotFound));
+                    return value;
+                }
+                value = defaultOfDefault;
             }
             // do not infer the expr if target is a delegate
             else if (targetType is not DelegateType)

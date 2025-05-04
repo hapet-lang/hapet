@@ -153,8 +153,6 @@ namespace HapetPostPrepare
                     callExpr.Arguments.ReplaceWithCasts(casts);
                     return;
                 }
-                if (_compiler.MessageHandler.HasErrors)
-                    return;
 
                 accessingFromAnObject = true;
                 // we need to create this one because code generator requires the parameter of this shite
