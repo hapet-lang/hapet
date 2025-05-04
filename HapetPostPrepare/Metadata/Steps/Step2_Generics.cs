@@ -19,7 +19,10 @@ namespace HapetPostPrepare
             for (int i = 0; i < decl.GenericNames.Count; ++i)
             {
                 var currGeneric = decl.GenericNames[i];
-                var currContrains = decl.GenericConstrains[currGeneric];
+                var currContrains = new List<AstNestedExpr>();
+                if (decl.GenericConstrains.TryGetValue(currGeneric, out var constrains))
+                    currContrains = constrains;
+
                 // TODO: inference constains
                 currGeneric.OutType = new GenericType(currGeneric, currContrains);
             }

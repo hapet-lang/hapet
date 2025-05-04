@@ -14,7 +14,9 @@ namespace HapetPostPrepare
                 _currentSourceFile = file;
                 foreach (var stmt in file.Statements)
                 {
-                    PostPrepareDeclSpecialKeys(stmt as AstDeclaration);
+                    if (stmt is not AstDeclaration decl)
+                        continue;
+                    PostPrepareDeclSpecialKeys(decl);
                 }
             }
         }

@@ -18,7 +18,11 @@ namespace HapetPostPrepare
                 foreach (var stmt in file.Statements)
                 {
                     stmt.Scope = file.NamespaceScope;
-                    PostPrepareDeclScoping(stmt as AstDeclaration);
+
+                    if (stmt is not AstDeclaration decl)
+                        continue;
+
+                    PostPrepareDeclScoping(decl);
                 }
             }
         }
