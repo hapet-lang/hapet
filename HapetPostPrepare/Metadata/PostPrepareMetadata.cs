@@ -20,6 +20,8 @@ namespace HapetPostPrepare
         private List<AstDelegateDecl> _serializeDelegatesMetadata { get; } = new List<AstDelegateDecl>();
         private List<AstFuncDecl> _serializeFunctionsMetadata { get; } = new List<AstFuncDecl>();
 
+        private List<AstDeclaration> _allPureGenericTypes { get; } = new List<AstDeclaration>();
+
         private PreparationStep _currentPreparationStep { get; set; } = PreparationStep.None;
 
         private int PostPrepareMetadata()

@@ -1,10 +1,16 @@
 ﻿using HapetFrontend.Ast;
+using HapetFrontend.Types;
 
 namespace HapetPostPrepare
 {
     public partial class PostPrepare
     {
-        private List<AstDeclaration> _allPureGenericTypes { get; } = new List<AstDeclaration>();
+        /// <summary>
+        /// In <see cref="PostPrepareGenericType"/> the dict is going to be used as a holder
+        /// for current preparing generic types. So <see cref="PostPrepareIdentifierInference"/>
+        /// would return correct types for ids
+        /// </summary>
+        private Dictionary<string, GenericType> _currentGenericIdMappings = new Dictionary<string, GenericType>();
 
         public void PostPrepareGenericType(AstStatement decl)
         {

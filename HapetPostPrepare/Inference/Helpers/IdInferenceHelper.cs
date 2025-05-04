@@ -8,10 +8,6 @@ using HapetFrontend.Parsing;
 using HapetFrontend.Scoping;
 using HapetFrontend.Types;
 using HapetPostPrepare.Entities;
-using System.Text;
-using System.Runtime;
-using System.Xml.Linq;
-using System;
 
 namespace HapetPostPrepare
 {
@@ -20,6 +16,13 @@ namespace HapetPostPrepare
         private void PostPrepareIdentifierInference(AstIdExpr idExpr, InInfo inInfo, ref OutInfo outInfo, Scope scopeToSearch = null)
         {
             string name = idExpr.Name;
+
+            // at first - check that the id could be a generic type
+            if (_currentGenericIdMappings.TryGetValue(name, out var genType))
+            {
+                idExpr.OutType = genType;
+                return;
+            }
 
             // infer generic names
             if (idExpr is AstIdGenericExpr genId)

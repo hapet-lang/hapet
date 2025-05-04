@@ -9,15 +9,15 @@ namespace HapetPostPrepare
 {
     public partial class PostPrepare
     {
-        private Dictionary<string, AstNestedExpr> _currentGenericMapping = new Dictionary<string, AstNestedExpr>();
+        private Dictionary<string, AstNestedExpr> _currentGenericToRealMappings = new Dictionary<string, AstNestedExpr>();
 
         private void MakeGenericMapping(List<AstIdExpr> generics, List<AstNestedExpr> normalTypes)
         {
             // ini the dict
-            _currentGenericMapping = new Dictionary<string, AstNestedExpr>();
+            _currentGenericToRealMappings = new Dictionary<string, AstNestedExpr>();
             for (int i = 0; i < generics.Count; ++i)
             {
-                _currentGenericMapping.Add(generics[i].Name, normalTypes[i]);
+                _currentGenericToRealMappings.Add(generics[i].Name, normalTypes[i]);
             }
         }
 
@@ -629,7 +629,7 @@ namespace HapetPostPrepare
                 nestExpr.RightPart is AstIdExpr idExpr)
             {
                 // if found the generic entry - replace it
-                if (_currentGenericMapping.TryGetValue(idExpr.Name, out var val))
+                if (_currentGenericToRealMappings.TryGetValue(idExpr.Name, out var val))
                 {
                     value = val;
                     return true;
@@ -648,7 +648,7 @@ namespace HapetPostPrepare
                         currNest.RightPart is AstIdExpr idExpr2)
                     {
                         // if found the generic entry - replace it
-                        if (_currentGenericMapping.TryGetValue(idExpr2.Name, out var val))
+                        if (_currentGenericToRealMappings.TryGetValue(idExpr2.Name, out var val))
                         {
                             // no need to tell em about it. we do it by our own here
                             genExpr.GenericRealTypes[i] = val;
@@ -661,7 +661,7 @@ namespace HapetPostPrepare
             if (expr is AstIdExpr idExpr3)
             {
                 // if found the generic entry - replace it
-                if (_currentGenericMapping.TryGetValue(idExpr3.Name, out var val))
+                if (_currentGenericToRealMappings.TryGetValue(idExpr3.Name, out var val))
                 {
                     value = val;
                     return true;
