@@ -39,7 +39,6 @@ namespace HapetPostPrepare
             AllPostPrepareMetadataTypeInheritedPropsDecls();
             AllPostPrepareMetadataTypeFieldInits();
             AllPostPrepareMetadataAttributes();
-            AllPostPrepareMetadataGenericUsage();
 
             // if there were errors while preparing for metafile
             if (_compiler.MessageHandler.HasErrors)
@@ -72,11 +71,8 @@ namespace HapetPostPrepare
                 _currentSourceFile = file;
                 foreach (var stmt in file.Statements)
                 {
-                    /// DO NOT SERIALIZE PURE GENERICS - SERIALIZE T-LIKE GENERICS <see cref="AllPostPrepareMetadataGenerics"/>
-                    bool needSerialize = !(stmt is AstDeclaration decl && decl.HasGenericTypes);
                     // do not serialize imported shite
-                    needSerialize = needSerialize && (!(stmt as AstDeclaration)?.IsImported ?? false);
-
+                    var needSerialize = (!(stmt as AstDeclaration)?.IsImported ?? false);
                     PostPrepareMetadataTypes(stmt, needSerialize);
                 }
             }
@@ -360,18 +356,6 @@ namespace HapetPostPrepare
             {
                 _currentSourceFile = del.SourceFile;
                 PostPrepareMetadataAttributes(del);
-            }
-        }
-
-        private void AllPostPrepareMetadataGenericUsage()
-        {
-            _currentPreparationStep = PreparationStep.GenericUsage;
-
-            // inferrencing attribtues of functions
-            foreach (var tp in _allPureGenericTypes.ToList())
-            {
-                _currentSourceFile = tp.SourceFile;
-                PostPrepareGenericType(tp);
             }
         }
 

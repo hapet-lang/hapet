@@ -73,10 +73,6 @@ namespace HapetPostPrepare
             {
                 PostPrepareMetadataAttributes(stmt);
             }
-            if (_currentPreparationStep >= PreparationStep.GenericUsage)
-            {
-                PostPrepareGenericType(stmt);
-            }
 
             if (_currentPreparationStep >= PreparationStep.Inferencing)
             {
