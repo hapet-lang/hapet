@@ -14,36 +14,6 @@ namespace HapetPostPrepare
 {
     public partial class PostPrepare
     {
-        private static int _currentGenericIndex = 0;
-        /// <summary>
-        /// Creates a pseudo type to handle constrains of a generic type
-        /// </summary>
-        /// <param name="parent"></param>
-        /// <param name="name"></param>
-        /// <param name="constrains"></param>
-        /// <returns></returns>
-        private AstClassDecl CreateTypeDeclarationForGeneric(AstDeclaration parent, AstIdExpr name, List<AstNestedExpr> constrains)
-        {
-            // TODO: handle constains
-
-            string typeName = $"{name.Name}.{_currentGenericIndex++}";
-            var specialName = name.GetCopy(typeName);
-            var cls = new AstClassDecl(specialName, new List<AstDeclaration>(), "", specialName)
-            {
-                IsGenericType = true,
-            };
-            cls.SpecialKeys.Add(Lexer.CreateToken(TokenType.KwPrivate, name.Location.Beginning));
-            cls.Attributes.Add(new AstAttributeStmt(new AstNestedExpr(new AstIdExpr("System.SuppressStaticCtorCallAttribute", name), null, name), [], name));
-
-            SetScopeAndParent(cls, parent, _compiler.GlobalScope);
-            PostPrepareClassScoping(cls);
-
-            // we need to define it in global scope :)))
-            _compiler.GlobalScope.DefineDeclSymbol(specialName, cls);
-
-            return cls;
-        }
-
         private int aaaa = 0;
         private AstDeclaration GetRealTypeFromGeneric(AstDeclaration decl, List<AstNestedExpr> genericTypes, AstIdGenericExpr realName)
         {
