@@ -9,6 +9,7 @@ using HapetPostPrepare.Entities;
 using System;
 using System.Text;
 using HapetFrontend.Helpers;
+using HapetPostPrepare.Other;
 
 namespace HapetPostPrepare
 {
@@ -19,9 +20,13 @@ namespace HapetPostPrepare
         {
             // we need to save previous info about current shite and then reload it 
             var savedSourceFile = _currentSourceFile;
+            // we need to store it. because when inferencing new class from generic
+            // we have to be sure nothing is there from previous decls
+            var savedParentStack = _currentParentStack;
 
             // set the decl source file
             _currentSourceFile = decl.SourceFile;
+            _currentParentStack = ParentStackManager.Create();
 
             // cringe
             string origDeclPureName = decl.Name.Name;
@@ -96,6 +101,7 @@ namespace HapetPostPrepare
 
             // reload previously saved shite
             _currentSourceFile = savedSourceFile;
+            _currentParentStack = savedParentStack;
 
             return realDecl;
         }
