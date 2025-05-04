@@ -21,10 +21,10 @@ namespace HapetPostPrepare
 
             // setting up anime shite
             var cachedSourceFile = _currentSourceFile;
-            var cachedCurrentClass = _currentClass;
             _currentSourceFile = stmt.SourceFile;
-            if (stmt is AstClassDecl cls)
-                _currentClass = cls;
+
+            if (stmt is AstDeclaration dcl)
+                AddParent(dcl);
 
             // go all over the steps down
             if (_currentPreparationStep >= PreparationStep.Types)
@@ -92,7 +92,8 @@ namespace HapetPostPrepare
             }
 
             _currentSourceFile = cachedSourceFile;
-            _currentClass = cachedCurrentClass;
+            if (stmt is AstDeclaration)
+                RemoveParent();
         }
     }
 }

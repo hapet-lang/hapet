@@ -66,7 +66,7 @@ namespace HapetPostPrepare
         {
             /// WARN: attributes are inferrenced in <see cref="PostPrepareMetadataAttributes"/>
 
-            _currentFunction = funcDecl;
+            AddParent(funcDecl);
 
             // if the function inference is for metadata - infer everything except body
             // if not - infer only body because func decl already infered from metadata :)
@@ -181,8 +181,9 @@ namespace HapetPostPrepare
             }
             else
             {
-                var savedCls = _currentClass;
-                _currentClass = funcDecl.ContainingParent as AstClassDecl;
+                // cringe? - adding cls parent after func parent...
+                AddParent(funcDecl.ContainingParent);
+                
                 // if parent contains Generic shite - do not infer
                 bool allowInfer = !(funcDecl.ContainingParent.HasGenericTypes && !funcDecl.ContainingParent.IsImplOfGeneric);
                 // inferring body
@@ -212,8 +213,10 @@ namespace HapetPostPrepare
                     funcDecl.Body.Statements.Insert(1, funcDecl.BaseCtorCall);
                 }
 
-                _currentClass = savedCls;
+                RemoveParent();
             }
+
+            RemoveParent();
         }
 
         private void PostPrepareVarInference(AstVarDecl varDecl, InInfo inInfo, ref OutInfo outInfo)
@@ -1255,29 +1258,31 @@ namespace HapetPostPrepare
 
         private void PostPrepareReturnStmtInference(AstReturnStmt returnStmt, InInfo inInfo, ref OutInfo outInfo)
         {
+            var currentFunction = GetNearestParentFunc();
+
             if (returnStmt.ReturnExpression != null)
             {
                 // if user tries to return smth but func ret type is void =^0
-                if (_currentFunction.Returns.OutType is VoidType)
+                if (currentFunction.Returns.OutType is VoidType)
                 {
-                    _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, _currentFunction.Name, [], ErrorCode.Get(CTEN.EmptyReturnExpected));
+                    _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, currentFunction.Name, [], ErrorCode.Get(CTEN.EmptyReturnExpected));
                     return;
                 }
 
                 // casting to func return type
-                returnStmt.ReturnExpression = PostPrepareVarValueAssign(returnStmt.ReturnExpression, _currentFunction.Returns.OutType, inInfo, ref outInfo);
+                returnStmt.ReturnExpression = PostPrepareVarValueAssign(returnStmt.ReturnExpression, currentFunction.Returns.OutType, inInfo, ref outInfo);
             }
-            else if (returnStmt.ReturnExpression == null && _currentFunction.Returns.OutType is not VoidType)
+            else if (returnStmt.ReturnExpression == null && currentFunction.Returns.OutType is not VoidType)
             {
                 // TODO: better return stmts checks. like in if/else blocks and so on
                 if (returnStmt.Location == null)
                 {
                     // it is a manually added 'return' statement
                     var theFunc = returnStmt.FindContainingFunction();
-                    _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, theFunc.Name, [HapetType.AsString(_currentFunction.Returns.OutType)], ErrorCode.Get(CTEN.NotEnoughReturns));
+                    _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, theFunc.Name, [HapetType.AsString(currentFunction.Returns.OutType)], ErrorCode.Get(CTEN.NotEnoughReturns));
                 }
                 else
-                    _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, returnStmt, [HapetType.AsString(_currentFunction.Returns.OutType)], ErrorCode.Get(CTEN.EmptyReturnStmt));
+                    _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, returnStmt, [HapetType.AsString(currentFunction.Returns.OutType)], ErrorCode.Get(CTEN.EmptyReturnStmt));
             }
         }
 

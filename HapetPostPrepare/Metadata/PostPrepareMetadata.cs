@@ -86,18 +86,21 @@ namespace HapetPostPrepare
             foreach (var cls in AllClassesMetadata.ToList())
             {
                 _currentSourceFile = cls.SourceFile;
-                _currentClass = cls;
+                AddParent(cls);
                 bool wasGeneric = PostPrepareMetadataGenerics(cls);
                 if (wasGeneric)
                     AllClassesMetadata.Remove(cls);
+                RemoveParent();
             }
             // resolve generic shite of structs
             foreach (var str in AllStructsMetadata.ToList())
             {
                 _currentSourceFile = str.SourceFile;
+                AddParent(str);
                 bool wasGeneric = PostPrepareMetadataGenerics(str);
                 if (wasGeneric)
                     AllStructsMetadata.Remove(str);
+                RemoveParent();
             }
             // resolve generic shite of delegates
             foreach (var del in AllDelegatesMetadata.ToList())
@@ -117,20 +120,25 @@ namespace HapetPostPrepare
             foreach (var cls in AllClassesMetadata.ToList())
             {
                 _currentSourceFile = cls.SourceFile;
-                _currentClass = cls;
+                AddParent(cls);
                 PostPrepareMetadataInheritance(cls);
+                RemoveParent();
             }
             // resolve inheritance shite of structs
             foreach (var str in AllStructsMetadata.ToList())
             {
                 _currentSourceFile = str.SourceFile;
+                AddParent(str);
                 PostPrepareMetadataInheritance(str);
+                RemoveParent();
             }
             // resolve inheritance shite of enums
             foreach (var enm in AllEnumsMetadata.ToList())
             {
                 _currentSourceFile = enm.SourceFile;
+                AddParent(enm);
                 PostPrepareMetadataInheritance(enm);
+                RemoveParent();
             }
         }
 
@@ -154,15 +162,18 @@ namespace HapetPostPrepare
             foreach (var cls in AllClassesMetadata.ToList())
             {
                 _currentSourceFile = cls.SourceFile;
-                _currentClass = cls;
+                AddParent(cls);
 
                 PostPrepareMetadataNestedTypes(cls);
+                RemoveParent();
             }
             foreach (var str in AllStructsMetadata.ToList())
             {
                 _currentSourceFile = str.SourceFile;
+                AddParent(str);
 
                 PostPrepareMetadataNestedTypes(str);
+                RemoveParent();
             }
         }
 
@@ -174,17 +185,20 @@ namespace HapetPostPrepare
             foreach (var cls in AllClassesMetadata.ToList())
             {
                 _currentSourceFile = cls.SourceFile;
-                _currentClass = cls;
+                AddParent(cls);
 
                 bool isImported = cls.IsImported;
                 PostPrepareMetadataFunctions(cls, !isImported, isImported);
+                RemoveParent();
             }
             foreach (var str in AllStructsMetadata.ToList())
             {
                 _currentSourceFile = str.SourceFile;
+                AddParent(str);
 
                 bool isImported = str.IsImported;
                 PostPrepareMetadataFunctions(str, !isImported, isImported);
+                RemoveParent();
             }
         }
 
@@ -195,13 +209,16 @@ namespace HapetPostPrepare
             foreach (var cls in AllClassesMetadata.ToList())
             {
                 _currentSourceFile = cls.SourceFile;
-                _currentClass = cls;
+                AddParent(cls);
                 PostPrepareMetadataInheritedFunctions(cls);
+                RemoveParent();
             }
             foreach (var str in AllStructsMetadata.ToList())
             {
                 _currentSourceFile = str.SourceFile;
+                AddParent(str);
                 PostPrepareMetadataInheritedFunctions(str);
+                RemoveParent();
             }
         }
 
@@ -216,19 +233,24 @@ namespace HapetPostPrepare
             foreach (var cls in AllClassesMetadata.ToList())
             {
                 _currentSourceFile = cls.SourceFile;
-                _currentClass = cls;
+                AddParent(cls);
                 PostPrepareMetadataTypeFieldDecls(cls);
+                RemoveParent();
             }
             // resolve all fields of structs
             foreach (var str in AllStructsMetadata.ToList())
             {
                 _currentSourceFile = str.SourceFile;
+                AddParent(str);
                 PostPrepareMetadataTypeFieldDecls(str);
+                RemoveParent();
             }
             foreach (var enm in AllEnumsMetadata.ToList())
             {
                 _currentSourceFile = enm.SourceFile;
+                AddParent(enm);
                 PostPrepareMetadataTypeFieldDecls(enm);
+                RemoveParent();
             }
         }
 
@@ -243,25 +265,31 @@ namespace HapetPostPrepare
             foreach (var cls in classes)
             {
                 _currentSourceFile = cls.SourceFile;
-                _currentClass = cls;
+                AddParent(cls);
                 PostPrepareMetadataTypeInheritedFieldDecls(cls);
+                RemoveParent();
             }
             foreach (var str in structures)
             {
                 _currentSourceFile = str.SourceFile;
+                AddParent(str);
                 PostPrepareMetadataTypeInheritedFieldDecls(str);
+                RemoveParent();
             }
 
             foreach (var cls in classes)
             {
                 _currentSourceFile = cls.SourceFile;
-                _currentClass = cls;
+                AddParent(cls);
                 PostPrepareMetadataTypeInheritedFieldDeclsCopy(cls);
+                RemoveParent();
             }
             foreach (var str in structures)
             {
                 _currentSourceFile = str.SourceFile;
+                AddParent(str);
                 PostPrepareMetadataTypeInheritedFieldDeclsCopy(str);
+                RemoveParent();
             }
         }
 
@@ -276,25 +304,31 @@ namespace HapetPostPrepare
             foreach (var cls in classes)
             {
                 _currentSourceFile = cls.SourceFile;
-                _currentClass = cls;
+                AddParent(cls);
                 PostPrepareMetadataTypeInheritedPropsDecls(cls);
+                RemoveParent();
             }
             foreach (var str in structures)
             {
                 _currentSourceFile = str.SourceFile;
+                AddParent(str);
                 PostPrepareMetadataTypeInheritedPropsDecls(str);
+                RemoveParent();
             }
 
             foreach (var cls in classes)
             {
                 _currentSourceFile = cls.SourceFile;
-                _currentClass = cls;
+                AddParent(cls);
                 PostPrepareMetadataTypeInheritedPropsDeclsCopy(cls);
+                RemoveParent();
             }
             foreach (var str in structures)
             {
                 _currentSourceFile = str.SourceFile;
+                AddParent(str);
                 PostPrepareMetadataTypeInheritedPropsDeclsCopy(str);
+                RemoveParent();
             }
         }
 
@@ -306,19 +340,24 @@ namespace HapetPostPrepare
             foreach (var cls in AllClassesMetadata.ToList())
             {
                 _currentSourceFile = cls.SourceFile;
-                _currentClass = cls;
+                AddParent(cls);
                 PostPrepareMetadataTypeFieldInits(cls);
+                RemoveParent();
             }
             // resolve all fields of structs
             foreach (var str in AllStructsMetadata.ToList())
             {
                 _currentSourceFile = str.SourceFile;
+                AddParent(str);
                 PostPrepareMetadataTypeFieldInits(str);
+                RemoveParent();
             }
             foreach (var enm in AllEnumsMetadata.ToList())
             {
                 _currentSourceFile = enm.SourceFile;
+                AddParent(enm);
                 PostPrepareMetadataTypeFieldInits(enm);
+                RemoveParent();
             }
         }
 
@@ -330,26 +369,33 @@ namespace HapetPostPrepare
             foreach (var fnc in AllFunctionsMetadata.ToList())
             {
                 _currentSourceFile = fnc.SourceFile;
+                AddParent(fnc);
                 PostPrepareMetadataAttributes(fnc);
+                RemoveParent();
             }
             // inferrencing attribtues of classes
             foreach (var cls in AllClassesMetadata.ToList())
             {
                 _currentSourceFile = cls.SourceFile;
-                _currentClass = cls;
+                AddParent(cls);
                 PostPrepareMetadataAttributes(cls);
+                RemoveParent();
             }
             // inferrencing attribtues of structs
             foreach (var str in AllStructsMetadata.ToList())
             {
                 _currentSourceFile = str.SourceFile;
+                AddParent(str);
                 PostPrepareMetadataAttributes(str);
+                RemoveParent();
             }
             // inferrencing attribtues of enums
             foreach (var enm in AllEnumsMetadata.ToList())
             {
                 _currentSourceFile = enm.SourceFile;
+                AddParent(enm);
                 PostPrepareMetadataAttributes(enm);
+                RemoveParent();
             }
             // inferrencing attribtues of delegates
             foreach (var del in AllDelegatesMetadata.ToList())

@@ -49,8 +49,6 @@ namespace HapetPostPrepare
         {
             // we need to save previous info about current shite and then reload it 
             var savedSourceFile = _currentSourceFile;
-            var savedClass = _currentClass;
-            var savedFunction = _currentFunction;
 
             // set the decl source file
             _currentSourceFile = decl.SourceFile;
@@ -128,8 +126,6 @@ namespace HapetPostPrepare
 
             // reload previously saved shite
             _currentSourceFile = savedSourceFile;
-            _currentClass = savedClass;
-            _currentFunction = savedFunction;
 
             return realDecl;
         }

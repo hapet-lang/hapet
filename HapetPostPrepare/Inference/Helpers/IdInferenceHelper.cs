@@ -106,7 +106,15 @@ namespace HapetPostPrepare
             // kostyl to handle 'base.Anime()' calls
             if (name == "base")
             {
-                idExpr.OutType = PointerType.GetPointerType(_currentClass.InheritedFrom[0].OutType);
+                // getting the current's class inherited shite
+                List<AstNestedExpr> inherited;
+                var currentParent = GetNearestParentClassOrStruct();
+                if (currentParent is AstClassDecl clsDeclCurr)
+                    inherited = clsDeclCurr.InheritedFrom;
+                else
+                    inherited = (currentParent as AstStructDecl).InheritedFrom;
+
+                idExpr.OutType = PointerType.GetPointerType(inherited[0].OutType);
                 var smbl2 = idExpr.Scope.GetSymbol(idExpr.GetCopy("this"));
                 idExpr.FindSymbol = smbl2;
                 return true;
@@ -179,7 +187,8 @@ namespace HapetPostPrepare
             string name = idExpr.Name;
             // searching for the name with current class name
             // works only for functions
-            string nameWithClass = $"{_currentClass.Name.Name}::{name}";
+            var currentParent = GetNearestParentClassOrStruct();
+            string nameWithClass = $"{currentParent.Name.Name}::{name}";
             var smblInLocalClass = scope.GetSymbol(idExpr.GetCopy(nameWithClass), handleGenerics: true);
             if (smblInLocalClass is DeclSymbol typed2)
             {

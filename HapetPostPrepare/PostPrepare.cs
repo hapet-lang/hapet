@@ -17,16 +17,6 @@ namespace HapetPostPrepare
         private ProgramFile _currentSourceFile;
 
         /// <summary>
-        /// The class decl that is currently preparing
-        /// </summary>
-        private AstClassDecl _currentClass;
-
-        /// <summary>
-        /// The function decl that is currently preparing
-        /// </summary>
-        private AstFuncDecl _currentFunction;
-
-        /// <summary>
         /// The block that is currently preparing
         /// </summary>
         private AstBlockExpr _currentBlock;

@@ -136,10 +136,13 @@ namespace HapetPostPrepare
                     return;
                 }
 
+                // getting parent of the func
+                var currentParent = GetNearestParentClassOrStruct();
+
                 // if the type/object name is not presented - the function is in the same class
                 // but we need to know is it static or not
-                newName = funcName.GetCopy($"{_currentClass.Name.Name}::{funcName}{callExpr.Arguments.GetArgsString()}");
-                var smbl2 = GetFuncFromCandidates(newName, callExpr, callExpr.Arguments, _currentClass, out var casts);
+                newName = funcName.GetCopy($"{currentParent.Name.Name}::{funcName}{callExpr.Arguments.GetArgsString()}");
+                var smbl2 = GetFuncFromCandidates(newName, callExpr, callExpr.Arguments, currentParent, out var casts);
                 smbl2 = OnFoundSymbol(smbl2, callExpr.FuncName);
                 if (smbl2 is DeclSymbol ds && ds.Decl is AstFuncDecl funcDecl)
                 {
@@ -161,11 +164,11 @@ namespace HapetPostPrepare
                 PostPrepareExprInference(callExpr.TypeOrObjectName, inInfo, ref outInfo);
 
                 // if it is a non static func defined in local class
-                newName = funcName.GetCopy($"{_currentClass.Name.Name}::{funcName}{callExpr.Arguments.GetArgsString(PointerType.GetPointerType(_currentClass.Type.OutType))}");
+                newName = funcName.GetCopy($"{currentParent.Name.Name}::{funcName}{callExpr.Arguments.GetArgsString(PointerType.GetPointerType(currentParent.Type.OutType))}");
                 List<AstArgumentExpr> argsWithClassParam = new List<AstArgumentExpr>(callExpr.Arguments);
                 argsWithClassParam.Insert(0, new AstArgumentExpr(callExpr.TypeOrObjectName));
 
-                smbl2 = GetFuncFromCandidates(newName, callExpr, argsWithClassParam, _currentClass, out var casts2);
+                smbl2 = GetFuncFromCandidates(newName, callExpr, argsWithClassParam, currentParent, out var casts2);
                 smbl2 = OnFoundSymbol(smbl2, callExpr.FuncName);
                 if (smbl2 is DeclSymbol ds2 && ds2.Decl is AstFuncDecl funcDecl2)
                 {
@@ -181,7 +184,7 @@ namespace HapetPostPrepare
 
                 // check for nested shite
                 newName = funcName.GetCopy($"{callExpr.FuncName.Name}{callExpr.Arguments.GetArgsString()}"); // USE REAL FUNC NAME HERE
-                smbl2 = GetFuncFromCandidates(newName, callExpr, callExpr.Arguments, _currentClass, out var casts3);
+                smbl2 = GetFuncFromCandidates(newName, callExpr, callExpr.Arguments, currentParent, out var casts3);
                 smbl2 = OnFoundSymbol(smbl2, callExpr.FuncName);
                 if (smbl2 is DeclSymbol ds3 && ds3.Decl is AstFuncDecl funcDecl3)
                 {

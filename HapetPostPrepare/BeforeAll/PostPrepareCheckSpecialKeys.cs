@@ -21,6 +21,8 @@ namespace HapetPostPrepare
 
         private void PostPrepareDeclSpecialKeys(AstDeclaration stmt)
         {
+            AddParent(stmt);
+
             CheckSpecialKeys(stmt);
             if (stmt is AstClassDecl classDecl)
             {
@@ -31,12 +33,12 @@ namespace HapetPostPrepare
                 PostPrepareStructSpecialKeys(structDecl);
             }
             // TODO: also check nested func' declarations 
+
+            RemoveParent();
         }
 
         private void PostPrepareClassSpecialKeys(AstClassDecl classDecl)
         {
-            _currentClass = classDecl;
-
             foreach (var decl in classDecl.Declarations)
             {
                 RemoveIfMetadataDeclaration(decl);

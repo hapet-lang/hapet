@@ -347,9 +347,10 @@ namespace HapetPostPrepare
             // renaming func call name from 'Anime' to 'Anime(int, float)' WITH OBJECT AS FIRST PARAM
             else if (nestFuncName.LeftPart == null)
             {
+                var currentParent = GetNearestParentClassOrStruct();
                 // if the type/object name is not presented - the function is in the same class
                 // but we need to know is it static or not
-                newName = idFuncName.GetCopy($"{_currentClass.Name.Name}::{idFuncName.Name}{delegateParams.GetParamsString()}");
+                newName = idFuncName.GetCopy($"{currentParent.Name.Name}::{idFuncName.Name}{delegateParams.GetParamsString()}");
                 var smbl2 = idFuncName.Scope.GetSymbol(newName);
                 if (smbl2 is DeclSymbol)
                 {
@@ -358,7 +359,7 @@ namespace HapetPostPrepare
                 else
                 {
                     // if it is a non static func defined in local class
-                    newName = idFuncName.GetCopy($"{_currentClass.Name.Name}::{idFuncName.Name}{delegateParams.GetParamsString(PointerType.GetPointerType(_currentClass.Type.OutType))}");
+                    newName = idFuncName.GetCopy($"{currentParent.Name.Name}::{idFuncName.Name}{delegateParams.GetParamsString(PointerType.GetPointerType(currentParent.Type.OutType))}");
                     accessingFromAnObject = true;
                     // we need to create this one because code generator requires the parameter of this shite
                     nestFuncName.LeftPart = new AstNestedExpr(new AstIdExpr("this"), null, value);

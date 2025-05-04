@@ -27,8 +27,6 @@ namespace HapetPostPrepare
             string newName;
             if (decl is AstClassDecl classDecl)
             {
-                _currentClass = classDecl;
-
                 if (decl.IsNestedDecl)
                     // we need a pure decl name because it is nested
                     newName = $"{classDecl.Name.Name}";

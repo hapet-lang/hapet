@@ -1,5 +1,6 @@
 ﻿using System.Collections.Immutable;
 using HapetFrontend.Ast;
+using HapetFrontend.Ast.Declarations;
 using HapetFrontend.Types;
 
 namespace HapetPostPrepare
@@ -29,6 +30,26 @@ namespace HapetPostPrepare
 
             if (poped.HasGenericTypes)
                 _RemoveParentGenerics(poped);
+        }
+
+        private AstDeclaration GetNearestParentClassOrStruct()
+        {
+            foreach (var p in ParentStack.AsEnumerable())
+            {
+                if (p is AstClassDecl || p is AstStructDecl)
+                    return p;
+            }
+            return null;
+        }
+
+        private AstFuncDecl GetNearestParentFunc()
+        {
+            foreach (var p in ParentStack.AsEnumerable())
+            {
+                if (p is AstFuncDecl func)
+                    return func;
+            }
+            return null;
         }
 
         private void _AddParentGenerics(AstDeclaration parent)
