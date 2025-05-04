@@ -137,7 +137,7 @@ namespace HapetPostPrepare
                 }
 
                 // getting parent of the func
-                var currentParent = GetNearestParentClassOrStruct();
+                var currentParent = _currentParentStack.GetNearestParentClassOrStruct();
 
                 // if the type/object name is not presented - the function is in the same class
                 // but we need to know is it static or not

@@ -1,13 +1,14 @@
 ﻿using System.Collections.Immutable;
+using System.Collections.ObjectModel;
 using HapetFrontend.Ast;
 using HapetFrontend.Ast.Declarations;
 using HapetFrontend.Types;
 
-namespace HapetPostPrepare
+namespace HapetPostPrepare.Other
 {
-    public partial class PostPrepare
+    public class ParentStackManager
     {
-        private Stack<AstDeclaration> ParentStack { get; } = new Stack<AstDeclaration>();
+        private Stack<AstDeclaration> _parentStack { get; } = new Stack<AstDeclaration>();
 
         /// <summary>
         /// The dict is going to be used as a holder
@@ -16,25 +17,33 @@ namespace HapetPostPrepare
         /// </summary>
         private Dictionary<string, GenericType> _currentGenericIdMappings = new Dictionary<string, GenericType>();
 
-        private void AddParent(AstDeclaration parent)
+        public ReadOnlyDictionary<string, GenericType> CurrentGenericIdMappings => new ReadOnlyDictionary<string, GenericType>(_currentGenericIdMappings);
+
+        private ParentStackManager() { }
+        public static ParentStackManager Create()
         {
-            ParentStack.Push(parent);
+            return new ParentStackManager();
+        }
+
+        public void AddParent(AstDeclaration parent)
+        {
+            _parentStack.Push(parent);
 
             if (parent.HasGenericTypes)
-                _AddParentGenerics(parent);
+                AddParentGenerics(parent);
         }
 
-        private void RemoveParent()
+        public void RemoveParent()
         {
-            var poped = ParentStack.Pop();
+            var poped = _parentStack.Pop();
 
             if (poped.HasGenericTypes)
-                _RemoveParentGenerics(poped);
+                RemoveParentGenerics(poped);
         }
 
-        private AstDeclaration GetNearestParentClassOrStruct()
+        public AstDeclaration GetNearestParentClassOrStruct()
         {
-            foreach (var p in ParentStack.AsEnumerable())
+            foreach (var p in _parentStack.AsEnumerable())
             {
                 if (p is AstClassDecl || p is AstStructDecl)
                     return p;
@@ -42,9 +51,9 @@ namespace HapetPostPrepare
             return null;
         }
 
-        private AstFuncDecl GetNearestParentFunc()
+        public AstFuncDecl GetNearestParentFunc()
         {
-            foreach (var p in ParentStack.AsEnumerable())
+            foreach (var p in _parentStack.AsEnumerable())
             {
                 if (p is AstFuncDecl func)
                     return func;
@@ -52,7 +61,7 @@ namespace HapetPostPrepare
             return null;
         }
 
-        private void _AddParentGenerics(AstDeclaration parent)
+        private void AddParentGenerics(AstDeclaration parent)
         {
             foreach (var p in parent.GenericNames)
             {
@@ -60,7 +69,7 @@ namespace HapetPostPrepare
             }
         }
 
-        private void _RemoveParentGenerics(AstDeclaration parent)
+        private void RemoveParentGenerics(AstDeclaration parent)
         {
             foreach (var p in parent.GenericNames)
             {

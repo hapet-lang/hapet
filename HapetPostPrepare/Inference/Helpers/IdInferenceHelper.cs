@@ -18,7 +18,7 @@ namespace HapetPostPrepare
             string name = idExpr.Name;
 
             // at first - check that the id could be a generic type
-            if (_currentGenericIdMappings.TryGetValue(name, out var genType))
+            if (_currentParentStack.CurrentGenericIdMappings.TryGetValue(name, out var genType))
             {
                 idExpr.OutType = genType;
                 return;
@@ -108,7 +108,7 @@ namespace HapetPostPrepare
             {
                 // getting the current's class inherited shite
                 List<AstNestedExpr> inherited;
-                var currentParent = GetNearestParentClassOrStruct();
+                var currentParent = _currentParentStack.GetNearestParentClassOrStruct();
                 if (currentParent is AstClassDecl clsDeclCurr)
                     inherited = clsDeclCurr.InheritedFrom;
                 else
@@ -187,7 +187,7 @@ namespace HapetPostPrepare
             string name = idExpr.Name;
             // searching for the name with current class name
             // works only for functions
-            var currentParent = GetNearestParentClassOrStruct();
+            var currentParent = _currentParentStack.GetNearestParentClassOrStruct();
             string nameWithClass = $"{currentParent.Name.Name}::{name}";
             var smblInLocalClass = scope.GetSymbol(idExpr.GetCopy(nameWithClass), handleGenerics: true);
             if (smblInLocalClass is DeclSymbol typed2)

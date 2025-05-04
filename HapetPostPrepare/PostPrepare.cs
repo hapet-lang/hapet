@@ -4,6 +4,7 @@ using HapetFrontend.Ast.Expressions;
 using HapetFrontend.Entities;
 using HapetFrontend.Errors;
 using HapetFrontend.Types;
+using HapetPostPrepare.Other;
 
 namespace HapetPostPrepare
 {
@@ -17,6 +18,11 @@ namespace HapetPostPrepare
         private ProgramFile _currentSourceFile;
 
         /// <summary>
+        /// To handle current stack manager
+        /// </summary>
+        private ParentStackManager _currentParentStack;
+
+        /// <summary>
         /// The block that is currently preparing
         /// </summary>
         private AstBlockExpr _currentBlock;
@@ -28,6 +34,8 @@ namespace HapetPostPrepare
 
         public int StartPreparation()
         {
+            _currentParentStack = ParentStackManager.Create();
+
             // we are checking for errors after each function 
             // because some steps won't work properly without previous
             // 0 is returned because normal error is going to be

@@ -25,7 +25,7 @@ namespace HapetPostPrepare
 
         private void PostPrepareDeclScoping(AstDeclaration stmt)
         {
-            AddParent(stmt);
+            _currentParentStack.AddParent(stmt);
             if (stmt is AstClassDecl classDecl)
             {
                 PostPrepareClassScoping(classDecl);
@@ -67,7 +67,7 @@ namespace HapetPostPrepare
                 }
                 PostPrepareVarScoping(propDecl, true);
             }
-            RemoveParent();
+            _currentParentStack.RemoveParent();
         }
 
         private void PostPrepareClassScoping(AstClassDecl classDecl)
@@ -296,7 +296,7 @@ namespace HapetPostPrepare
 
         private void PostPrepareFunctionScoping(AstFuncDecl funcDecl)
         {
-            AddParent(funcDecl);
+            _currentParentStack.AddParent(funcDecl);
 
             SetScopeAndParent(funcDecl.Name, funcDecl);
             PostPrepareExprScoping(funcDecl.Name);
@@ -377,7 +377,7 @@ namespace HapetPostPrepare
                 PostPrepareExprScoping(funcDecl.Returns);
             }
 
-            RemoveParent();
+            _currentParentStack.RemoveParent();
         }
 
         /// <summary>
@@ -562,7 +562,7 @@ namespace HapetPostPrepare
                 // special check for nested function
                 if (stmt is AstFuncDecl func)
                 {
-                    var parentFunction = GetNearestParentFunc();
+                    var parentFunction = _currentParentStack.GetNearestParentFunc();
                     func.ContainingParent = parentFunction;
                     PostPrepareFunctionScoping(func);
                 }

@@ -347,7 +347,7 @@ namespace HapetPostPrepare
             // renaming func call name from 'Anime' to 'Anime(int, float)' WITH OBJECT AS FIRST PARAM
             else if (nestFuncName.LeftPart == null)
             {
-                var currentParent = GetNearestParentClassOrStruct();
+                var currentParent = _currentParentStack.GetNearestParentClassOrStruct();
                 // if the type/object name is not presented - the function is in the same class
                 // but we need to know is it static or not
                 newName = idFuncName.GetCopy($"{currentParent.Name.Name}::{idFuncName.Name}{delegateParams.GetParamsString()}");

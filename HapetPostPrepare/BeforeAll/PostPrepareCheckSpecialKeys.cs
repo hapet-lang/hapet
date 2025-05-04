@@ -21,7 +21,7 @@ namespace HapetPostPrepare
 
         private void PostPrepareDeclSpecialKeys(AstDeclaration stmt)
         {
-            AddParent(stmt);
+            _currentParentStack.AddParent(stmt);
 
             CheckSpecialKeys(stmt);
             if (stmt is AstClassDecl classDecl)
@@ -34,7 +34,7 @@ namespace HapetPostPrepare
             }
             // TODO: also check nested func' declarations 
 
-            RemoveParent();
+            _currentParentStack.RemoveParent();
         }
 
         private void PostPrepareClassSpecialKeys(AstClassDecl classDecl)

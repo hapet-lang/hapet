@@ -24,7 +24,7 @@ namespace HapetPostPrepare
             _currentSourceFile = stmt.SourceFile;
 
             if (stmt is AstDeclaration dcl)
-                AddParent(dcl);
+                _currentParentStack.AddParent(dcl);
 
             // go all over the steps down
             if (_currentPreparationStep >= PreparationStep.Types)
@@ -93,7 +93,7 @@ namespace HapetPostPrepare
 
             _currentSourceFile = cachedSourceFile;
             if (stmt is AstDeclaration)
-                RemoveParent();
+                _currentParentStack.RemoveParent();
         }
     }
 }

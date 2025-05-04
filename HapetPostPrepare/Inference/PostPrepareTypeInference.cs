@@ -66,7 +66,7 @@ namespace HapetPostPrepare
         {
             /// WARN: attributes are inferrenced in <see cref="PostPrepareMetadataAttributes"/>
 
-            AddParent(funcDecl);
+            _currentParentStack.AddParent(funcDecl);
 
             // if the function inference is for metadata - infer everything except body
             // if not - infer only body because func decl already infered from metadata :)
@@ -182,7 +182,7 @@ namespace HapetPostPrepare
             else
             {
                 // cringe? - adding cls parent after func parent...
-                AddParent(funcDecl.ContainingParent);
+                _currentParentStack.AddParent(funcDecl.ContainingParent);
                 
                 // if parent contains Generic shite - do not infer
                 bool allowInfer = !(funcDecl.ContainingParent.HasGenericTypes && !funcDecl.ContainingParent.IsImplOfGeneric);
@@ -213,10 +213,10 @@ namespace HapetPostPrepare
                     funcDecl.Body.Statements.Insert(1, funcDecl.BaseCtorCall);
                 }
 
-                RemoveParent();
+                _currentParentStack.RemoveParent();
             }
 
-            RemoveParent();
+            _currentParentStack.RemoveParent();
         }
 
         private void PostPrepareVarInference(AstVarDecl varDecl, InInfo inInfo, ref OutInfo outInfo)
@@ -1258,7 +1258,7 @@ namespace HapetPostPrepare
 
         private void PostPrepareReturnStmtInference(AstReturnStmt returnStmt, InInfo inInfo, ref OutInfo outInfo)
         {
-            var currentFunction = GetNearestParentFunc();
+            var currentFunction = _currentParentStack.GetNearestParentFunc();
 
             if (returnStmt.ReturnExpression != null)
             {
