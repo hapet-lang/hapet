@@ -47,7 +47,7 @@ namespace HapetFrontend.Types
             return new AstNestedExpr(Name, null);
         }
 
-        private GenericType(AstIdExpr name, List<AstNestedExpr> constrains)
+        public GenericType(AstIdExpr name, List<AstNestedExpr> constrains)
         {
             Name = name;
             Constrains = constrains;

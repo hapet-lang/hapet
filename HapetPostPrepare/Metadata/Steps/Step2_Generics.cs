@@ -1,4 +1,6 @@
 ﻿using HapetFrontend.Ast;
+using HapetFrontend.Ast.Expressions;
+using HapetFrontend.Types;
 
 namespace HapetPostPrepare
 {
@@ -13,7 +15,14 @@ namespace HapetPostPrepare
             if (!decl.HasGenericTypes)
                 return false;
 
-            // TODO: inference constains
+            // we need to set types to ids
+            for (int i = 0; i < decl.GenericNames.Count; ++i)
+            {
+                var currGeneric = decl.GenericNames[i];
+                var currContrains = decl.GenericConstrains[currGeneric];
+                // TODO: inference constains
+                currGeneric.OutType = new GenericType(currGeneric, currContrains);
+            }
 
             // add here
             _allPureGenericTypes.Add(decl);
