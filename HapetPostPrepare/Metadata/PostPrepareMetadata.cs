@@ -3,6 +3,7 @@ using HapetFrontend.Ast;
 using HapetFrontend.Ast.Declarations;
 using HapetFrontend.Helpers;
 using HapetPostPrepare.Entities;
+using System;
 
 namespace HapetPostPrepare
 {
@@ -87,9 +88,7 @@ namespace HapetPostPrepare
             {
                 _currentSourceFile = cls.SourceFile;
                 _currentParentStack.AddParent(cls);
-                bool wasGeneric = PostPrepareMetadataGenerics(cls);
-                if (wasGeneric)
-                    AllClassesMetadata.Remove(cls);
+                bool _ = PostPrepareMetadataGenerics(cls);
                 _currentParentStack.RemoveParent();
             }
             // resolve generic shite of structs
@@ -97,18 +96,16 @@ namespace HapetPostPrepare
             {
                 _currentSourceFile = str.SourceFile;
                 _currentParentStack.AddParent(str);
-                bool wasGeneric = PostPrepareMetadataGenerics(str);
-                if (wasGeneric)
-                    AllStructsMetadata.Remove(str);
+                bool _ = PostPrepareMetadataGenerics(str);
                 _currentParentStack.RemoveParent();
             }
             // resolve generic shite of delegates
             foreach (var del in AllDelegatesMetadata.ToList())
             {
                 _currentSourceFile = del.SourceFile;
-                bool wasGeneric = PostPrepareMetadataGenerics(del);
-                if (wasGeneric)
-                    AllDelegatesMetadata.Remove(del);
+                _currentParentStack.AddParent(del);
+                bool _ = PostPrepareMetadataGenerics(del);
+                _currentParentStack.RemoveParent();
             }
         }
 
@@ -150,7 +147,9 @@ namespace HapetPostPrepare
             foreach (var del in AllDelegatesMetadata.ToList())
             {
                 _currentSourceFile = del.SourceFile;
+                _currentParentStack.AddParent(del);
                 PostPrepareMetadataDelegates(del);
+                _currentParentStack.RemoveParent();
             }
         }
 
@@ -401,7 +400,9 @@ namespace HapetPostPrepare
             foreach (var del in AllDelegatesMetadata.ToList())
             {
                 _currentSourceFile = del.SourceFile;
+                _currentParentStack.AddParent(del);
                 PostPrepareMetadataAttributes(del);
+                _currentParentStack.RemoveParent();
             }
         }
 

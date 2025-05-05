@@ -22,17 +22,7 @@ namespace HapetPostPrepare
                 foreach (var decl in cls.Declarations.Where(x => x is AstVarDecl).Select(x => x as AstVarDecl).ToList())
                 {
                     // field or property
-                    var wasGeneric = InternalVarPP(decl, cls.SubScope);
-                    if (wasGeneric)
-                    {
-                        var decls = GetPropertyShiteFromDecl(cls.Declarations, decl as AstPropertyDecl);
-                        foreach (var d in decls)
-                        {
-                            if (!AllFunctionsMetadata.Contains(d))
-                                continue;
-                            AllFunctionsMetadata.Remove(d as AstFuncDecl);
-                        }
-                    }
+                    InternalVarPP(decl, cls.SubScope);
                 }
             }
             else if (stmt is AstStructDecl str)
@@ -41,17 +31,7 @@ namespace HapetPostPrepare
                 foreach (var decl in str.Declarations.Where(x => x is AstVarDecl).Select(x => x as AstVarDecl).ToList())
                 {
                     // field 
-                    var wasGeneric = InternalVarPP(decl, str.SubScope);
-                    if (wasGeneric)
-                    {
-                        var decls = GetPropertyShiteFromDecl(str.Declarations, decl as AstPropertyDecl);
-                        foreach (var d in decls)
-                        {
-                            if (!AllFunctionsMetadata.Contains(d))
-                                continue;
-                            AllFunctionsMetadata.Remove(d as AstFuncDecl);
-                        }
-                    }
+                    InternalVarPP(decl, str.SubScope);
                 }
             }
             else if (stmt is AstEnumDecl enm)
@@ -64,31 +44,24 @@ namespace HapetPostPrepare
                 }
             }
 
-            bool InternalVarPP(AstVarDecl decl, Scope parentSubScope)
+            void InternalVarPP(AstVarDecl decl, Scope parentSubScope)
             {
                 // p prop generics here
-                bool itWasPureGenericProp = false;
                 if (decl is AstPropertyDecl prop)
-                    itWasPureGenericProp = PostPrepareMetadataGenerics(prop);
+                    _ = PostPrepareMetadataGenerics(prop);
 
-                // do not infer pure generic funcs
-                if (!itWasPureGenericProp)
-                {
-                    // mute all inference errors for var type of property. 
-                    // if has to be errored somewhere else
-                    var savedMute = inInfo.MuteErrors;
-                    if (decl.IsPropertyField)
-                        inInfo.MuteErrors = true;
-                    PostPrepareExprInference(decl.Type, inInfo, ref outInfo);
-                    if (decl.IsPropertyField)
-                        inInfo.MuteErrors = savedMute;
-                }
+                // mute all inference errors for var type of property. 
+                // if has to be errored somewhere else
+                var savedMute = inInfo.MuteErrors;
+                if (decl.IsPropertyField)
+                    inInfo.MuteErrors = true;
+                PostPrepareExprInference(decl.Type, inInfo, ref outInfo);
+                if (decl.IsPropertyField)
+                    inInfo.MuteErrors = savedMute;
 
                 // define in scope
                 // if it is public field - it should be visible in the scope in which var's class is
                 parentSubScope.DefineDeclSymbol(decl.Name.GetCopy(), decl);
-
-                return itWasPureGenericProp;
             }
         }
     }

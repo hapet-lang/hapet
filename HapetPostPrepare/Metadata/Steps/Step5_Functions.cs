@@ -39,20 +39,11 @@ namespace HapetPostPrepare
                 AllFunctionsMetadata.Add(func);
 
                 // p func generics here
-                bool itWasPureGenericFunc = PostPrepareMetadataGenerics(func);
+                bool _ = PostPrepareMetadataGenerics(func);
 
-                // do not infer pure generic funcs
-                if (!itWasPureGenericFunc)
-                {
-                    inInfo.ForMetadata = true;
-                    PostPrepareFunctionInference(func, inInfo, ref outInfo);
-                    inInfo.ForMetadata = false;
-                }
-                else
-                {
-                    // remove from inferencing
-                    AllFunctionsMetadata.Remove(func);
-                }
+                inInfo.ForMetadata = true;
+                PostPrepareFunctionInference(func, inInfo, ref outInfo);
+                inInfo.ForMetadata = false;
 
                 // if func serialization required
                 if (needSerialize)

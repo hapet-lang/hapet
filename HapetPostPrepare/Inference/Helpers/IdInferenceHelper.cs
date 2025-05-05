@@ -316,6 +316,14 @@ namespace HapetPostPrepare
                 PostPrepareExprInference(g, inInfo, ref outInfo);
             }
 
+            // no need to create new decls with non-real-generics
+            bool isAnyGeneric = genId.GenericRealTypes.Any(x => x.OutType is GenericType);
+            if (isAnyGeneric)
+            {
+                // TODO: check for compatibility
+                return decl;
+            }
+
             // generating generic shite name
             var realName = genId.GetCopy(theDecl.Name.Name);
             var realDcl = theDecl.Scope.GetSymbol(realName);
