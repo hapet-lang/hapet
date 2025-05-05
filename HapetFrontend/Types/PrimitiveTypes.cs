@@ -553,7 +553,7 @@ namespace HapetFrontend.Types
             }
             return CurrentTypeContext.StringTypeInstance;
         }
-        public static StringType LiteralType { get; } = new StringType(null);
+        public new static StringType LiteralType { get; } = new StringType(null);
 
         public override string TypeName => "string";
 

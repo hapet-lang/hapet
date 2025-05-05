@@ -199,6 +199,7 @@ namespace HapetFrontend.Scoping
 
             DefineBinaryOperator(new BuiltInCommonBinaryOperator("as", ClassType.LiteralType, PointerType.VoidLiteralType, ClassType.LiteralType));
             DefineBinaryOperator(new BuiltInCommonBinaryOperator("is", BoolType.Instance, PointerType.VoidLiteralType, ClassType.LiteralType));
+            DefineBinaryOperator(new BuiltInCommonBinaryOperator("is", BoolType.Instance, PointerType.VoidLiteralType, StructType.LiteralType));
         }
     }
 }

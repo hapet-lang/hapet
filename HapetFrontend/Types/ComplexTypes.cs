@@ -17,7 +17,7 @@ namespace HapetFrontend.Types
 
         public override string TypeName => "class";
 
-        public static ClassType LiteralType = new ClassType(null);
+        public static ClassType LiteralType { get; } = new ClassType(null);
 
         public override AstExpression GetAst()
         {
@@ -110,6 +110,8 @@ namespace HapetFrontend.Types
     {
         [JsonIgnore]
         public AstStructDecl Declaration { get; }
+
+        public static StructType LiteralType { get; } = new StructType(null);
 
         public override string TypeName => "struct";
 
