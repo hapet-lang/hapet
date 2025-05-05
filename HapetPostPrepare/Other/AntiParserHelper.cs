@@ -117,6 +117,9 @@ namespace HapetPostPrepare
                 case AstArrayAccessExpr arrayAccExpr:
                     AntiParseArrayAccessExpr(arrayAccExpr, sb, offset);
                     break;
+                case AstTernaryExpr terExpr:
+                    AntiParseTernaryExpr(terExpr, sb, offset);
+                    break;
 
                 // statements
                 case AstAssignStmt assignStmt:
@@ -342,6 +345,19 @@ namespace HapetPostPrepare
             sb.Append(']');
         }
 
+        public void AntiParseTernaryExpr(AstTernaryExpr terExpr, StringBuilder sb, string offset)
+        {
+            sb.Append('(');
+
+            AntiParseExpr(terExpr.Condition, sb, offset);
+            sb.Append(" ? ");
+            AntiParseExpr(terExpr.TrueExpr, sb, offset);
+            sb.Append(" : ");
+            AntiParseExpr(terExpr.FalseExpr, sb, offset);
+
+            sb.Append(')');
+        }
+
         public void AntiParseAssignStmt(AstAssignStmt assignStmt, StringBuilder sb, string offset)
         {
             AntiParseExpr(assignStmt.Target, sb, offset);
@@ -381,7 +397,7 @@ namespace HapetPostPrepare
 
             if (ifStmt.BodyFalse != null)
             {
-                sb.Append("else \n");
+                sb.Append($"{offset}else \n");
                 AntiParseExpr(ifStmt.BodyFalse, sb, offset);
             }
         }

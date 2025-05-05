@@ -319,7 +319,12 @@ namespace HapetPostPrepare
             else if (decl.HasSet)
                 sb.Append("set; }\n");
             else
-                sb.Append($"{additionalOffset}}}\n");
+            {
+                if (decl.GetBlock != null)
+                    sb.Append($"{additionalOffset}}}\n");
+                else
+                    sb.Append("}\n");
+            }
         }
 
         private void CreateFieldDecl(AstVarDecl decl, StringBuilder sb, string additionalOffset)
