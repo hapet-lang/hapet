@@ -201,9 +201,7 @@ namespace HapetBackend.Llvm
                         // create a boxed type
                         var nameBoxed = $"boxed.{s.Declaration.Name.Name}";
                         var llvmTypeBoxed = _context.CreateNamedStruct(nameBoxed);
-                        var fieldDeclarationsBoxed = s.Declaration.Declarations.
-                            Where(x => x is AstVarDecl && x is not AstPropertyDecl).
-                            Select(x => (x as AstVarDecl).Type.OutType).ToList();
+                        var fieldDeclarationsBoxed = s.Declaration.Declarations.GetStructFields().Select(x => x.Type.OutType).ToList();
                         fieldDeclarationsBoxed.Insert(0, PointerType.GetPointerType(IntPtrType.Instance)); // the same as in metadata gen
                         var (offsetsBoxed, _, memTypesBoxed) = CalcStructData(fieldDeclarationsBoxed, packNumber);
                         

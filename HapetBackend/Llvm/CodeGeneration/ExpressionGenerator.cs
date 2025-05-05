@@ -197,8 +197,17 @@ namespace HapetBackend.Llvm
                         {
                             var rightExpr = (binExpr.Right as AstExpression);
 
-                            var leftType = (leftExpr.OutType as PointerType).TargetType as ClassType;
-                            var rightType = (rightExpr.OutType as PointerType).TargetType as ClassType;
+                            ClassType leftType;
+                            ClassType rightType = (rightExpr.OutType as PointerType).TargetType as ClassType;
+                            if ((leftExpr.OutType as PointerType).TargetType is ClassType clsT)
+                            {
+                                leftType = clsT;
+                            }
+                            else
+                            {
+                                // when smth like 'valueTyped as ICringeCock'
+                                return CreateCast(_builder, left, (leftExpr.OutType as PointerType).TargetType, rightType);
+                            }
 
                             // you would ask - wtf is anyIsInterface?
                             // then I would say:
@@ -220,7 +229,7 @@ namespace HapetBackend.Llvm
                                 class Base : Obj, ILoh {}
 
                                 class Derived : Base {}
-                             */
+                                */
                             // https://habr.com/ru/articles/882888/
                             // this shite has no compile time errors in c#...
                             bool anyIsInterface = rightType.Declaration.IsInterface || leftType.Declaration.IsInterface;
@@ -272,8 +281,19 @@ namespace HapetBackend.Llvm
                             }
                             else
                             {
-                                // TODO: struct ref type
-                                rightType = null;
+                                /// WARN: almost the same as in <see cref="CreateCast"/>
+                                // check cast from object instance to struct
+
+                                var ptrToCastTypeInfo = _typeInfoDictionary[(rightExpr.OutType as PointerType).TargetType];
+
+                                // WARN: hard cock
+                                var typeConverter = _currentFunction.Scope.GetSymbolInNamespace("System.Runtime.Conversion", new AstIdExpr("TypeConverter"));
+                                DeclSymbol downcasterSymbol;
+                                downcasterSymbol = (typeConverter.Decl as AstClassDecl).SubScope.GetSymbol(new AstIdExpr("System.Runtime.Conversion.TypeConverter::CanBeDowncasted(void*:System.Runtime.TypeInfoUnsafe*)")) as DeclSymbol;
+                                var downcasterFunc = _valueMap[downcasterSymbol];
+                                LLVMTypeRef funcType = _typeMap[downcasterSymbol.Decl.Type.OutType];
+                                var canBeDowncasted = _builder.BuildCall2(funcType, downcasterFunc, new LLVMValueRef[] { left, ptrToCastTypeInfo }, "canBeDowncasted");
+                                return canBeDowncasted;
                             }
 
                             // you would ask - wtf is anyIsInterface? - read upper 
