@@ -10,6 +10,7 @@ using System;
 using System.Text;
 using HapetFrontend.Helpers;
 using HapetPostPrepare.Other;
+using HapetFrontend.Types;
 
 namespace HapetPostPrepare
 {
@@ -180,6 +181,33 @@ namespace HapetPostPrepare
                     d.Name = d.Name.GetCopy($"__is_{_currentSourceFile.Namespace.Replace('.', '_')}_{decl.Name.Name}_stor_called");
                 }
             }
+        }
+
+        /// <summary>
+        /// Super cool search for generic type existance
+        /// </summary>
+        /// <param name="genericReals"></param>
+        /// <returns></returns>
+        private bool HasAnyGenericTypes(List<AstExpression> genericReals)
+        {
+            foreach (var g in genericReals)
+            {
+                if (g.OutType is GenericType)
+                    return true;
+
+                if (g is AstNestedExpr nst && nst.RightPart is AstIdGenericExpr genId)
+                {
+                    if (HasAnyGenericTypes(genId.GenericRealTypes))
+                        return true;
+                }
+                
+                if (g is AstIdGenericExpr genId2)
+                {
+                    if (HasAnyGenericTypes(genId2.GenericRealTypes))
+                        return true;
+                }
+            }
+            return false;
         }
     }
 }

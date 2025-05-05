@@ -317,8 +317,7 @@ namespace HapetPostPrepare
             }
 
             // no need to create new decls with non-real-generics
-            bool isAnyGeneric = genId.GenericRealTypes.Any(x => x.OutType is GenericType);
-            if (isAnyGeneric)
+            if (HasAnyGenericTypes(genId.GenericRealTypes))
             {
                 // TODO: check for compatibility
                 return decl;

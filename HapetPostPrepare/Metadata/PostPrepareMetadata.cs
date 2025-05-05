@@ -184,20 +184,28 @@ namespace HapetPostPrepare
             foreach (var cls in AllClassesMetadata.ToList())
             {
                 _currentSourceFile = cls.SourceFile;
+                if (cls.IsNestedDecl)
+                    _currentParentStack.AddParent(cls.ParentDecl);
                 _currentParentStack.AddParent(cls);
 
                 bool isImported = cls.IsImported;
                 PostPrepareMetadataFunctions(cls, !isImported, isImported);
                 _currentParentStack.RemoveParent();
+                if (cls.IsNestedDecl)
+                    _currentParentStack.RemoveParent();
             }
             foreach (var str in AllStructsMetadata.ToList())
             {
                 _currentSourceFile = str.SourceFile;
+                if (str.IsNestedDecl)
+                    _currentParentStack.AddParent(str.ParentDecl);
                 _currentParentStack.AddParent(str);
 
                 bool isImported = str.IsImported;
                 PostPrepareMetadataFunctions(str, !isImported, isImported);
                 _currentParentStack.RemoveParent();
+                if (str.IsNestedDecl)
+                    _currentParentStack.RemoveParent();
             }
         }
 
@@ -208,16 +216,24 @@ namespace HapetPostPrepare
             foreach (var cls in AllClassesMetadata.ToList())
             {
                 _currentSourceFile = cls.SourceFile;
+                if (cls.IsNestedDecl)
+                    _currentParentStack.AddParent(cls.ParentDecl);
                 _currentParentStack.AddParent(cls);
                 PostPrepareMetadataInheritedFunctions(cls);
                 _currentParentStack.RemoveParent();
+                if (cls.IsNestedDecl)
+                    _currentParentStack.RemoveParent();
             }
             foreach (var str in AllStructsMetadata.ToList())
             {
                 _currentSourceFile = str.SourceFile;
+                if (str.IsNestedDecl)
+                    _currentParentStack.AddParent(str.ParentDecl);
                 _currentParentStack.AddParent(str);
                 PostPrepareMetadataInheritedFunctions(str);
                 _currentParentStack.RemoveParent();
+                if (str.IsNestedDecl)
+                    _currentParentStack.RemoveParent();
             }
         }
 
@@ -232,24 +248,36 @@ namespace HapetPostPrepare
             foreach (var cls in AllClassesMetadata.ToList())
             {
                 _currentSourceFile = cls.SourceFile;
+                if (cls.IsNestedDecl)
+                    _currentParentStack.AddParent(cls.ParentDecl);
                 _currentParentStack.AddParent(cls);
                 PostPrepareMetadataTypeFieldDecls(cls);
                 _currentParentStack.RemoveParent();
+                if (cls.IsNestedDecl)
+                    _currentParentStack.RemoveParent();
             }
             // resolve all fields of structs
             foreach (var str in AllStructsMetadata.ToList())
             {
                 _currentSourceFile = str.SourceFile;
+                if (str.IsNestedDecl)
+                    _currentParentStack.AddParent(str.ParentDecl);
                 _currentParentStack.AddParent(str);
                 PostPrepareMetadataTypeFieldDecls(str);
                 _currentParentStack.RemoveParent();
+                if (str.IsNestedDecl)
+                    _currentParentStack.RemoveParent();
             }
             foreach (var enm in AllEnumsMetadata.ToList())
             {
                 _currentSourceFile = enm.SourceFile;
+                if (enm.IsNestedDecl)
+                    _currentParentStack.AddParent(enm.ParentDecl);
                 _currentParentStack.AddParent(enm);
                 PostPrepareMetadataTypeFieldDecls(enm);
                 _currentParentStack.RemoveParent();
+                if (enm.IsNestedDecl)
+                    _currentParentStack.RemoveParent();
             }
         }
 
