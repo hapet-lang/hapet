@@ -80,6 +80,13 @@ namespace HapetPostPrepare
                         casts.Add(argExpr);
                         continue;
                     }
+                    // if putting 'null' as an arg
+                    else if (argExpr is AstNullExpr && parType.OutType is PointerType)
+                    {
+                        score += 0;
+                        casts.Add(argExpr);
+                        continue;
+                    }
                     CastResult castResult = new CastResult();
                     var cst = PostPrepareExpressionWithType(parType, argExpr, castResult);
                     if (castResult.CouldBeCasted)

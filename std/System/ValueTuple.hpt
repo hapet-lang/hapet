@@ -55,7 +55,7 @@ public struct ValueTuple
 
     int IComparable.CompareTo(object other)
     {
-        return CompareTo(other, null);
+        return (this as IStructuralComparable).CompareTo(other, null);
     }
 
     /// <summary>Compares this instance to a specified instance and returns an indication of their relative values.</summary>
@@ -73,7 +73,7 @@ public struct ValueTuple
 
     int IStructuralComparable.CompareTo(object other, IComparer comparer)
     {
-        if (other is null) return 1;
+        if (other == null) return 1;
 
         if (other is not ValueTuple)
         {

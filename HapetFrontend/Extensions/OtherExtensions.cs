@@ -63,8 +63,16 @@ namespace HapetFrontend.Extensions
 
             for (int i = 0; i < args.Count; i++)
             {
+                // null is handled in another way
                 var a = args[i];
-                sb.Append(a.OutType != null ? HapetType.AsString(a.OutType) : string.Empty);
+                if (a.Expr is AstNullExpr)
+                {
+                    sb.Append("null");
+                }
+                else
+                {
+                    sb.Append(a.OutType != null ? HapetType.AsString(a.OutType) : string.Empty);
+                }
 
                 if (i != args.Count - 1)
                     sb.Append(':');

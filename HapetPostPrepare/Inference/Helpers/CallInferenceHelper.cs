@@ -164,7 +164,7 @@ namespace HapetPostPrepare
                 // if it is a non static func defined in local class
                 newName = funcName.GetCopy($"{currentParent.Name.Name}::{funcName}{callExpr.Arguments.GetArgsString(PointerType.GetPointerType(currentParent.Type.OutType))}");
                 List<AstArgumentExpr> argsWithClassParam = new List<AstArgumentExpr>(callExpr.Arguments);
-                argsWithClassParam.Insert(0, new AstArgumentExpr(callExpr.TypeOrObjectName));
+                argsWithClassParam.Insert(0, new AstArgumentExpr(callExpr.TypeOrObjectName) { OutType = callExpr.TypeOrObjectName.OutType });
 
                 smbl2 = GetFuncFromCandidates(newName, callExpr, argsWithClassParam, currentParent, out var casts2);
                 smbl2 = OnFoundSymbol(smbl2, callExpr.FuncName);
@@ -200,7 +200,7 @@ namespace HapetPostPrepare
                 // we need to rename the func name call like that:
                 newName = funcName.GetCopy($"{clsTp.Declaration.Name.Name}::{funcName}{callExpr.Arguments.GetArgsString(callExpr.TypeOrObjectName.OutType)}");
                 List<AstArgumentExpr> argsWithClassParam = new List<AstArgumentExpr>(callExpr.Arguments);
-                argsWithClassParam.Insert(0, new AstArgumentExpr(callExpr.TypeOrObjectName));
+                argsWithClassParam.Insert(0, new AstArgumentExpr(callExpr.TypeOrObjectName) { OutType = callExpr.TypeOrObjectName.OutType });
                 var smbl2 = GetFuncFromCandidates(newName, callExpr, argsWithClassParam, clsTp.Declaration, out var casts);
                 smbl2 = OnFoundSymbol(smbl2, callExpr.FuncName);
 
@@ -271,7 +271,7 @@ namespace HapetPostPrepare
                 List<AstArgumentExpr> argsWithClassParam = new List<AstArgumentExpr>(callExpr.Arguments);
                 var pseudoClassArg = new AstPointerExpr(callExpr.TypeOrObjectName, false, callExpr.TypeOrObjectName);
                 PostPrepareExprInference(pseudoClassArg, inInfo, ref outInfo);
-                argsWithClassParam.Insert(0, new AstArgumentExpr(pseudoClassArg));
+                argsWithClassParam.Insert(0, new AstArgumentExpr(pseudoClassArg) { OutType = callExpr.TypeOrObjectName.OutType });
                 smbl2 = GetFuncFromCandidates(newName, callExpr, argsWithClassParam, clsTpStatic.Declaration, out var _);
                 smbl2 = OnFoundSymbol(smbl2, callExpr.FuncName);
                 // error because user tries to access non static method from a class name
@@ -307,7 +307,7 @@ namespace HapetPostPrepare
                 List<AstArgumentExpr> argsWithStructParam = new List<AstArgumentExpr>(callExpr.Arguments);
                 var pseudoStructArg = new AstPointerExpr(callExpr.TypeOrObjectName, false, callExpr.TypeOrObjectName);
                 PostPrepareExprInference(pseudoStructArg, inInfo, ref outInfo);
-                argsWithStructParam.Insert(0, new AstArgumentExpr(pseudoStructArg));
+                argsWithStructParam.Insert(0, new AstArgumentExpr(pseudoStructArg) { OutType = callExpr.TypeOrObjectName.OutType });
                 smbl2 = GetFuncFromCandidates(newName, callExpr, argsWithStructParam, structType.Declaration, out casts);
                 smbl2 = OnFoundSymbol(smbl2, callExpr.FuncName);
 
@@ -356,7 +356,7 @@ namespace HapetPostPrepare
 
                 List<AstArgumentExpr> argsWithStructParam = new List<AstArgumentExpr>(callExpr.Arguments);
                 var pseudoStructArg = callExpr.TypeOrObjectName;
-                argsWithStructParam.Insert(0, new AstArgumentExpr(pseudoStructArg));
+                argsWithStructParam.Insert(0, new AstArgumentExpr(pseudoStructArg) { OutType = callExpr.TypeOrObjectName.OutType });
 
                 smbl2 = GetFuncFromCandidates(newName, callExpr, argsWithStructParam, strTp.Declaration, out casts);
                 smbl2 = OnFoundSymbol(smbl2, callExpr.FuncName);
