@@ -4,7 +4,7 @@ namespace HapetFrontend.Ast.Expressions
 {
     public class AstEmptyStructExpr : AstExpression
     {
-        public override string AAAName => nameof(AstDefaultExpr);
+        public override string AAAName => nameof(AstEmptyStructExpr);
         public StructType TypeForDefault { get; set; }
 
         public AstEmptyStructExpr(StructType tp, ILocation location = null) : base(location)

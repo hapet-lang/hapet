@@ -51,6 +51,7 @@ namespace HapetBackend.Llvm
                 case AstArrayCreateExpr arrayCreateExpr: return GenerateArrayCreateExprCode(arrayCreateExpr, getPtr);
                 case AstArrayAccessExpr arrayAccessExpr: return GenerateArrayAccessExprCode(arrayAccessExpr, getPtr);
                 case AstTernaryExpr ternaryExpr: return GenerateTernaryExprCode(ternaryExpr);
+                case AstEmptyStructExpr emptyStructExpr: return GenerateEmptyStructExprCode(emptyStructExpr);
 
                 case AstNullExpr nullExpr: return GenerateNullExprCode(nullExpr);
 
@@ -1015,6 +1016,28 @@ namespace HapetBackend.Llvm
             _builder.PositionAtEnd(bbEnd);
 
             return _builder.BuildLoad2(HapetTypeToLLVMType(expr.OutType), varPtr, "ternLoaded");
+        }
+
+        private unsafe LLVMValueRef GenerateEmptyStructExprCode(AstEmptyStructExpr expr)
+        {
+            // getting types
+            var structType = expr.TypeForDefault;
+            int structSize = AstDeclaration.GetSizeForAlloc(structType.Declaration.Declarations.GetStructFields(), false);
+            var allocated = _builder.BuildAlloca(HapetTypeToLLVMType(structType), "allocatedEmpty");
+
+            // making consts
+            var zeroLlvm = LLVMValueRef.CreateConstInt(_context.Int32Type, 0);
+            var sizeLlvm = LLVMValueRef.CreateConstInt(HapetTypeToLLVMType(IntPtrType.Instance), (ulong)structSize);
+
+            // memset
+            var marshalDecl = _currentFunction.Scope.GetSymbolInNamespace("System.Runtime.InteropServices", new AstIdExpr("Marshal"));
+            var memsetSymbol = (marshalDecl.Decl as AstClassDecl).SubScope.GetSymbol(new AstIdExpr("System.Runtime.InteropServices.Marshal::Memset(void*:int:uintptr)")) as DeclSymbol;
+            var memsetFunc = _valueMap[memsetSymbol];
+            LLVMTypeRef funcType = _typeMap[memsetSymbol.Decl.Type.OutType];
+            _builder.BuildCall2(funcType, memsetFunc, new LLVMValueRef[] { allocated, zeroLlvm, sizeLlvm }, "zeroedEmpty");
+
+            var loaded = _builder.BuildLoad2(HapetTypeToLLVMType(structType), allocated, "loadedEmpty");
+            return loaded;
         }
 
         private unsafe LLVMValueRef GenerateNullExprCode(AstNullExpr expr)

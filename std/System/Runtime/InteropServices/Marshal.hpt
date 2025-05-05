@@ -8,4 +8,7 @@ public static class Marshal
 
     [DllImportAttribute("", "free")]
     public static extern void Free(void* ptr);
+
+    [DllImportAttribute("", "memset")]
+    public static extern void* Memset(void* memptr, int val, uintptr num);
 }
