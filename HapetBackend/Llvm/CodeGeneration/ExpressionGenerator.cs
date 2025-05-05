@@ -264,8 +264,17 @@ namespace HapetBackend.Llvm
                         {
                             var rightExpr = (binExpr.Right as AstExpression);
 
-                            var leftType = (leftExpr.OutType as PointerType).TargetType as ClassType;
-                            var rightType = (rightExpr.OutType as PointerType).TargetType as ClassType;
+                            ClassType leftType = (leftExpr.OutType as PointerType).TargetType as ClassType;
+                            ClassType rightType;
+                            if ((rightExpr.OutType as PointerType).TargetType is ClassType clsT)
+                            {
+                                rightType = clsT;
+                            }
+                            else
+                            {
+                                // TODO: struct ref type
+                                rightType = null;
+                            }
 
                             // you would ask - wtf is anyIsInterface? - read upper 
 

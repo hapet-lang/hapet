@@ -18,6 +18,7 @@ namespace HapetFrontend.Ast.Expressions
             var copy = new AstDefaultExpr(Location)
             {
                 IsCompileTimeValue = IsCompileTimeValue,
+                TypeForDefault = TypeForDefault,
                 OutType = OutType,
                 OutValue = OutValue,
                 Scope = Scope,
@@ -48,7 +49,10 @@ namespace HapetFrontend.Ast.Expressions
                 case ArrayType:
                 case StringType:
                     outExpr = new AstNullExpr(tp, orig);
-                        break;
+                    break;
+                case StructType st:
+                    outExpr = new AstEmptyStructExpr(st, orig);
+                    break;
                 // TODO: other shite
                 default:
                     outExpr = null;
