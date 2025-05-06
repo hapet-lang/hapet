@@ -5,6 +5,7 @@ using HapetFrontend.Ast.Statements;
 using HapetFrontend.Entities;
 using HapetFrontend.Errors;
 using HapetFrontend.Scoping;
+using Newtonsoft.Json.Linq;
 
 namespace HapetPostPrepare
 {
@@ -537,11 +538,10 @@ namespace HapetPostPrepare
                 case AstBaseCtorStmt baseStmt:
                     PostPrepareBaseCtorStmtScoping(baseStmt);
                     break;
-                // TODO: check other expressions
 
                 default:
                     {
-                        // TODO: anything to do here?
+                        _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, expr, [expr.AAAName], ErrorCode.Get(CTEN.StmtNotImplemented));
                         break;
                     }
             }

@@ -275,7 +275,6 @@ namespace HapetPostPrepare
                     return;
 
                 // check that the initializer is not yet infered - infer it
-                // TODO: possible circular access!!!
                 if (varDecl.Initializer.OutType == null)
                 {
                     PostPrepareExprInference(varDecl.Initializer, inInfo, ref outInfo);

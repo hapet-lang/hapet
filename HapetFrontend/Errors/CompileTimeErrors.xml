@@ -756,6 +756,14 @@
 		<Number>3052</Number>
 		<Text>Functions could only be called on types/objects not on {0}</Text>
 	</Item>
+	<Item>
+		<Number>3053</Number>
+		<Text>Pointer type expected to be dereferenced - got {0}</Text>
+	</Item>
+	<Item>
+		<Number>3054</Number>
+		<Text>The class that is used as an attribute expected to be inherited from System.Attribute class</Text>
+	</Item>
 
     <!--Compiler errors-->
 	<Item>

@@ -11,6 +11,7 @@ using HapetFrontend.Parsing;
 using HapetFrontend.Scoping;
 using HapetFrontend.Types;
 using HapetPostPrepare.Entities;
+using Newtonsoft.Json.Linq;
 
 namespace HapetPostPrepare
 {
@@ -404,11 +405,10 @@ namespace HapetPostPrepare
                 case AstBaseCtorStmt baseStmt:
                     PostPrepareBaseCtorStmtInference(baseStmt, inInfo, ref outInfo);
                     break;
-                // TODO: check other expressions
 
                 default:
                     {
-                        // TODO: anything to do here?
+                        _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, expr, [expr.AAAName], ErrorCode.Get(CTEN.StmtNotImplemented));
                         break;
                     }
             }
@@ -676,7 +676,10 @@ namespace HapetPostPrepare
                 var rightType = pointerExpr.SubExpression.OutType as PointerType;
                 if (rightType == null)
                 {
-                    // TODO: error here
+                    // error here
+                    _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text,
+                        pointerExpr.SubExpression, [HapetType.AsString(pointerExpr.SubExpression.OutType)],
+                        ErrorCode.Get(CTEN.PointerTypeExpected));
                     return;
                 }
                 pointerExpr.OutType = rightType.TargetType;
@@ -835,7 +838,6 @@ namespace HapetPostPrepare
                     leftSideScope = AstArrayExpr.GetArrayStruct(nestExpr.Scope).SubScope;
                 else if (nestExpr.LeftPart.OutType is DelegateType)
                     leftSideScope = AstDelegateDecl.GetDelegateClass(nestExpr.Scope).SubScope;
-                // TODO: structs and other
 
                 if (leftSideScope == null)
                 {
@@ -1096,17 +1098,15 @@ namespace HapetPostPrepare
         {
             PostPrepareExprInference(expr.Condition, inInfo, ref outInfo);
             if (expr.Condition.OutType is not BoolType) 
-            { 
-                // TODO: error
+            {
+                // error
+                _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, expr.Condition, [], ErrorCode.Get(CTEN.ExprIsNotBool));
             }
 
             PostPrepareExprInference(expr.TrueExpr, inInfo, ref outInfo);
             PostPrepareExprInference(expr.FalseExpr, inInfo, ref outInfo);
-            if (expr.TrueExpr.OutType != expr.FalseExpr.OutType)
-            {
-                // TODO: better checks - like inheritance and other cringe
-                // TODO: error
-            }
+            // try to cast to the tru type
+            expr.FalseExpr = PostPrepareExpressionWithType(expr.TrueExpr, expr.FalseExpr);
 
             // evaluate at comptime if possible
             if (expr.Condition.OutValue is bool &&
@@ -1300,7 +1300,15 @@ namespace HapetPostPrepare
             if (attrStmt.AttributeName.OutType == null)
                 return;
 
-            // TODO: check that the shite is inherited from 'System.Attribute'
+            // check that this cringe is inherited from attribute cls
+            if (!(attrStmt.AttributeName.OutType is ClassType ct && 
+                ct.Declaration.InheritedFrom.Count > 0 && 
+                ct.Declaration.InheritedFrom[0].TryFlatten(null, null) == "System.Attribute"))
+            {
+                // check that the shite is inherited from 'System.Attribute'
+                _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, attrStmt.AttributeName, [], ErrorCode.Get(CTEN.AttrNotInhFromAttr));
+            }
+
             // getting all the fields of attribuute class decl
             var attrDeclFields = (attrStmt.AttributeName.OutType as ClassType).Declaration.Declarations.
                 Where(x => x is AstVarDecl vd && !vd.SpecialKeys.Contains(TokenType.KwStatic)).

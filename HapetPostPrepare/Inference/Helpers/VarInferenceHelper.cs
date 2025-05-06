@@ -102,7 +102,7 @@ namespace HapetPostPrepare
             // assigning function to delegates is made different
             if (neededType is DelegateType delT)
             {
-                // TODO: not always could be casted - do it inside the func
+                // not always could be casted - do it inside the func
                 if (castResult != null)
                     castResult.CouldBeCasted = true;
                 return PostPrepareDelegateWithType(expr, delT);
@@ -277,7 +277,6 @@ namespace HapetPostPrepare
                     if (castResult != null)
                         castResult.CouldBeCasted = true;
                     break;
-                    // TODO: other checks also. warn: class and class should be checked properly!!!
             }
 
             // if there is no way to cast
