@@ -76,7 +76,8 @@ namespace HapetFrontend.Parsing
                     {
                         if (!inInfo.AllowNestedFunc)
                         {
-                            // TODO: error here that is not expected
+                            // error here that is not expected
+                            ReportMessage(nestedFunc.Name, [], ErrorCode.Get(CTEN.UnexpectedNestedFunc));
                         }
 
                         nestedFunc.IsNestedDecl = true;

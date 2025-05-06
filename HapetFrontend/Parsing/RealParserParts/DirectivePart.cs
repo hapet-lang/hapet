@@ -3,6 +3,7 @@ using HapetFrontend.Ast.Expressions;
 using HapetFrontend.Ast.Statements;
 using HapetFrontend.Entities;
 using HapetFrontend.Enums;
+using HapetFrontend.Errors;
 
 namespace HapetFrontend.Parsing
 {
@@ -31,13 +32,15 @@ namespace HapetFrontend.Parsing
                         var expr = ParseExpression(inInfo, ref outInfo);
                         if (expr is not AstStringExpr)
                         {
-                            // TODO: error here
+                            // error here
+                            ReportMessage(expr.Location, [], ErrorCode.Get(CTEN.CommonStringExpected));
                         }
                         return new AstDirectiveStmt(expr, type, new Location(tkn.Location, expr.Location.Ending));
                     }
             }
 
-            // TODO: error here
+            // error here
+            ReportMessage(tkn.Location, [], ErrorCode.Get(CTEN.UnexpectedDirective));
             return new AstEmptyStmt();
         }
     }

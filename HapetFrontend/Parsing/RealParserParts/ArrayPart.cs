@@ -71,7 +71,6 @@ namespace HapetFrontend.Parsing
             }
             else if (CheckToken(TokenType.OpenBrace))
             {
-                // TODO: could it be prepared like this 4real?
                 // allow only the last size to be null!!! because in other way it is very hard to prepare
                 bool allExceptTheLastAreNotNull = sizeExprs.SkipLast(1).All(x => x != null);
                 if (!allExceptTheLastAreNotNull)

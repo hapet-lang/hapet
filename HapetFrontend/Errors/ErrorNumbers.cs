@@ -109,6 +109,9 @@
         GenericTypeNotFound             = 0x2054,
         PropGenericWithoutBody          = 0x2055,
         DeclExpectedInClassStruct       = 0x2056,
+        UnexpectedNestedFunc            = 0x2057,
+        CommonStringExpected            = 0x2058,
+        UnexpectedDirective             = 0x2059,
 
         // post preparer errors up to 0x5000
         EnumCouldNotBeAssigned          = 0x3001,

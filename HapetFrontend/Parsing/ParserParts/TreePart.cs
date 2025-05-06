@@ -62,7 +62,7 @@ namespace HapetFrontend.Parsing
 
                 if (CheckToken(TokenType.Period))
                 {
-                    // TODO: null check access: 'var a = Anime?.Pivo;'
+                    // null check access: 'var a = Anime?.Pivo;'
                     NextToken();
 
                     var savedPrev = inInfo.PreviousNestedForNullCheck;
@@ -514,7 +514,6 @@ namespace HapetFrontend.Parsing
                             }
                             else if (args.Count > 1)
                             {
-                                // TODO: mb allow them multiple args in []?
                                 ReportMessage(end, [], ErrorCode.Get(CTEN.ArrayAccTooManyArgs));
                             }
 

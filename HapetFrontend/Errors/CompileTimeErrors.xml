@@ -406,6 +406,18 @@
 		<Number>2056</Number>
 		<Text>Declarations are expected in {0} body</Text>
 	</Item>
+	<Item>
+		<Number>2057</Number>
+		<Text>Nested function declaration is not expected to be here</Text>
+	</Item>
+	<Item>
+		<Number>2058</Number>
+		<Text>String value expected to be here</Text>
+	</Item>
+	<Item>
+		<Number>2059</Number>
+		<Text>Unknown directive name</Text>
+	</Item>
 
 
 	<!--Post prepare errors-->
