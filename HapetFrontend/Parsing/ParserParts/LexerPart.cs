@@ -168,63 +168,6 @@ namespace HapetFrontend.Parsing
             return _lexer.PeekLookAhead(skipWhitespaces);
         }
 
-        // TODO: do i need it?
-        public bool IsTypeExprToken()
-        {
-            var next = PeekToken();
-            switch (next.Type)
-            {
-                case TokenType.OpenParen:
-                case TokenType.OpenBracket:
-                case TokenType.Ampersand:
-                case TokenType.Hat:
-                case TokenType.Identifier:
-                case TokenType.DollarIdentifier:
-                    return true;
-
-                default:
-                    return false;
-            }
-        }
-
-        // TODO: do i need it?
-        public bool IsExprToken(params TokenType[] exclude)
-        {
-            var next = PeekToken();
-            if (exclude.Contains(next.Type))
-                return false;
-            switch (next.Type)
-            {
-                case TokenType.Plus:
-                case TokenType.Minus:
-                case TokenType.LessLess:
-                case TokenType.OpenParen:
-                case TokenType.OpenBracket:
-                case TokenType.OpenBrace:
-                case TokenType.StringLiteral:
-                case TokenType.CharLiteral:
-                case TokenType.NumberLiteral:
-                case TokenType.KwNull:
-                case TokenType.KwTrue:
-                case TokenType.KwFalse:
-                case TokenType.KwSwitch:
-                case TokenType.KwIf:
-                case TokenType.Ampersand:
-                case TokenType.Hat:
-                case TokenType.Asterisk:
-                case TokenType.Bang:
-                case TokenType.Identifier:
-                case TokenType.AtSignIdentifier:
-                case TokenType.DollarIdentifier:
-                case TokenType.PeriodPeriod:
-                case TokenType.Period:
-                    return true;
-
-                default:
-                    return false;
-            }
-        }
-
         private void RecoverStatement()
         {
             while (true)
