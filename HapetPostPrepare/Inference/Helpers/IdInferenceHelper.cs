@@ -203,7 +203,8 @@ namespace HapetPostPrepare
                 string[] nameAndFunc = name.Split("::");
                 if (nameAndFunc.Length != 2)
                 {
-                    // TODO: error 
+                    // error 
+                    _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, idExpr, [name], ErrorCode.Get(CTEN.OnlyOneDoubleColonInFunc));
                     return false;
                 }
 
@@ -228,7 +229,10 @@ namespace HapetPostPrepare
                 }
                 else
                 {
-                    // TODO: error 
+                    // error 
+                    _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, leftPartId, 
+                        [HapetType.AsString(leftPartId.OutType)], 
+                        ErrorCode.Get(CTEN.FuncCallNotOnType));
                     return false;
                 }
 

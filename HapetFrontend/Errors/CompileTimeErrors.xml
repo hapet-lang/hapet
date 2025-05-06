@@ -748,6 +748,14 @@
 		<Number>3050</Number>
 		<Text>Parent's static constructor not found</Text>
 	</Item>
+	<Item>
+		<Number>3051</Number>
+		<Text>The name is ambiguous between the following functions {0} and {1}</Text>
+	</Item>
+	<Item>
+		<Number>3052</Number>
+		<Text>Functions could only be called on types/objects not on {0}</Text>
+	</Item>
 
     <!--Compiler errors-->
 	<Item>
@@ -785,6 +793,14 @@
 	<Item>
 		<Number>5009</Number>
 		<Text>(Compiler exception) There is no default value for the {0} type</Text>
+	</Item>
+	<Item>
+		<Number>500A</Number>
+		<Text>(Compiler exception) There are no fields to initialize in {0}</Text>
+	</Item>
+	<Item>
+		<Number>500B</Number>
+		<Text>(Compiler exception) Only one double colon (::) expected to be in the func' name - {0}</Text>
 	</Item>
 
     <!--Backend errors-->

@@ -30,7 +30,10 @@ namespace HapetPostPrepare
             {
                 if (candidates.Count > 1)
                 {
-                    // TODO: error
+                    // error
+                    _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, callExpr, 
+                        [candidates[0].Name.Name, candidates[1].Name.Name], 
+                        ErrorCode.Get(CTEN.AmbiguousFunctionCall));
                 }
                 return candidates.FirstOrDefault();
             }
@@ -126,7 +129,10 @@ namespace HapetPostPrepare
                 }
                 else if (score == bestScore && score != int.MaxValue)
                 {
-                    // TODO: ambiguous error here that there are two func and we dk which one to call
+                    // ambiguous error here that there are two func and we dk which one to call
+                    _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, callExpr,
+                        [bestMatch.Name.Name, cand.Name.Name],
+                        ErrorCode.Get(CTEN.AmbiguousFunctionCall));
                 }
             }
 

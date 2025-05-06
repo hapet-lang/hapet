@@ -618,7 +618,8 @@ namespace HapetPostPrepare
             }
             else
             {
-                // TODO: compiler error
+                // compiler error
+                _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, declB.Name, [declB.AAAName], ErrorCode.Get(CTEN.NoFieldsInNonTypes));
                 return null;
             }
 

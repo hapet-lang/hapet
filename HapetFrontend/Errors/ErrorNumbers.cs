@@ -195,6 +195,8 @@
         NestedFuncParentNotFound        = 0x304E,
         NestedTypeParentNotFound        = 0x304F,
         ParentStorNotFound              = 0x3050,
+        AmbiguousFunctionCall           = 0x3051,
+        FuncCallNotOnType               = 0x3052,
 
         // compiler errors up to 0x6000
         DefaultWasNotInfered            = 0x5001,
@@ -206,6 +208,8 @@
         ArrayAccessNotGenerate          = 0x5007,
         StmtInvalidPreparation          = 0x5008,
         NoDefaultValueForType           = 0x5009,
+        NoFieldsInNonTypes              = 0x500A,
+        OnlyOneDoubleColonInFunc        = 0x500B,
 
         // backend errors up to 0x8000
         TypeCouldNotBeConverted         = 0x6001,

@@ -34,7 +34,11 @@ namespace HapetPostPrepare
             {
                 PostPrepareStructSpecialKeys(structDecl);
             }
-            // TODO: also check nested func' declarations 
+            // also check nested func' declarations 
+            else if (stmt is AstFuncDecl funcDecl)
+            {
+                PostPrepareFuncSpecialKeys(funcDecl);
+            }
 
             _currentParentStack.RemoveParent();
         }
@@ -45,6 +49,9 @@ namespace HapetPostPrepare
             {
                 RemoveIfMetadataDeclaration(decl);
                 CheckSpecialKeys(decl);
+
+                if (decl is AstClassDecl || decl is AstStructDecl)
+                    PostPrepareDeclSpecialKeys(decl);
             }
         }
 
@@ -54,6 +61,29 @@ namespace HapetPostPrepare
             {
                 RemoveIfMetadataDeclaration(decl);
                 CheckSpecialKeys(decl);
+
+                if (decl is AstClassDecl || decl is AstStructDecl)
+                    PostPrepareDeclSpecialKeys(decl);
+            }
+        }
+
+        private void PostPrepareFuncSpecialKeys(AstFuncDecl funcDecl)
+        {
+            // skip funcs without body
+            if (funcDecl.Body == null)
+                return;
+
+            foreach (var stmt in funcDecl.Body.Statements)
+            {
+                // skip non decls
+                if (stmt is not AstDeclaration decl)
+                    continue;
+
+                RemoveIfMetadataDeclaration(decl);
+                CheckSpecialKeys(decl);
+
+                if (decl is AstFuncDecl)
+                    PostPrepareDeclSpecialKeys(decl);
             }
         }
 
