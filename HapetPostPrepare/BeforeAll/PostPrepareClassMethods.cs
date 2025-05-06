@@ -105,17 +105,17 @@ namespace HapetPostPrepare
                 // error if user created a func with the initializer name
                 var specialFuncs = allFuncs.Where(x => (x.Name.Name.EndsWith($"::{structDecl.Name.Name}_ini") ||
                                                         x.Name.Name.EndsWith($"::{structDecl.Name.Name}_ctor") ||
-                                                        x.Name.Name.EndsWith($"::{structDecl.Name.Name}_stor") || // static ctor
-                                                        x.Name.Name.EndsWith($"::{structDecl.Name.Name}_dtor")));
+                                                        x.Name.Name.EndsWith($"::{structDecl.Name.Name}_stor"))); // static ctor
                 foreach (var fnc in specialFuncs)
                 {
                     _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, fnc.Name, [structDecl.Name.Name], ErrorCode.Get(CTEN.ClassFuncNameNotAllowed));
                 }
 
+                // static ctor is always generated
+                PostPrepareGenerateClassStaticConstructor(structDecl, allFuncs.Where(x => x.ClassFunctionType == ClassFunctionType.StaticCtor).ToList());
                 PostPrepareGenerateClassInitializer(structDecl);
                 // passing all the existing ctors
                 PostPrepareGenerateClassConstructor(structDecl, allFuncs.Where(x => x.ClassFunctionType == ClassFunctionType.Ctor).ToList());
-                PostPrepareGenerateClassDestructor(structDecl, allFuncs.Where(x => x.ClassFunctionType == ClassFunctionType.Dtor).ToList());
 
                 // 
                 foreach (var decl in structDecl.Declarations)
@@ -372,22 +372,28 @@ namespace HapetPostPrepare
             }
         }
 
-        private List<AstClassDecl> _allUsedClassesInProgram = new List<AstClassDecl>();
-        private void PostPrepareGenerateClassStaticConstructor(AstClassDecl classDecl, List<AstFuncDecl> ctors)
+        private List<AstDeclaration> _allUsedClassesAndStructsInProgram = new List<AstDeclaration>();
+        private void PostPrepareGenerateClassStaticConstructor(AstDeclaration decl, List<AstFuncDecl> ctors)
         {
             // skip interfaces
-            if (classDecl.IsInterface)
+            if (decl is AstClassDecl clsDecl && clsDecl.IsInterface)
                 return;
 
+            List<AstDeclaration> decls;
+            if (decl is AstStructDecl strDecl)
+                decls = strDecl.Declarations;
+            else
+                decls = (decl as AstClassDecl).Declarations;
+
             // creating the ini block for fields
-            var iniBlock = GetFieldsToInitialize(classDecl, true);
+            var iniBlock = GetFieldsToInitialize(decl, true);
 
             // we need to add a static var to check that the stor was called
-            string theVarName = $"__is_{_currentSourceFile.Namespace.Replace('.', '_')}_{classDecl.Name.Name}_stor_called";
+            string theVarName = $"__is_{_currentSourceFile.Namespace.Replace('.', '_')}_{decl.Name.Name}_stor_called";
             var theVar = new AstVarDecl(new AstNestedExpr(new AstIdExpr("bool"), null), new AstIdExpr(theVarName));
-            theVar.SpecialKeys.Add(Lexer.CreateToken(TokenType.KwStatic, classDecl.Location.Beginning));
-            theVar.SpecialKeys.Insert(0, Lexer.CreateToken(TokenType.KwUnreflected, classDecl.Location.Beginning));
-            classDecl.Declarations.Add(theVar);
+            theVar.SpecialKeys.Add(Lexer.CreateToken(TokenType.KwStatic, decl.Location.Beginning));
+            theVar.SpecialKeys.Insert(0, Lexer.CreateToken(TokenType.KwUnreflected, decl.Location.Beginning));
+            decls.Add(theVar);
 
             // set 'true' to the var
             /// make sure that this shite is the same as in <see cref="RenameFromGenericToRealType"/>
@@ -406,14 +412,14 @@ namespace HapetPostPrepare
 
                 // the ctor func
                 var storDecl = new AstFuncDecl(new List<AstParamDecl>(),
-                new AstNestedExpr(new AstIdExpr("void", classDecl), null, classDecl),
+                new AstNestedExpr(new AstIdExpr("void", decl), null, decl),
                 storBlock,
-                new AstIdExpr($"{classDecl.Name.Name}_stor"));
-                storDecl.SpecialKeys.Add(Lexer.CreateToken(TokenType.KwPublic, classDecl.Location.Beginning)); // stor is public
-                storDecl.SpecialKeys.Add(Lexer.CreateToken(TokenType.KwStatic, classDecl.Location.Beginning)); // stor is static
+                new AstIdExpr($"{decl.Name.Name}_stor"));
+                storDecl.SpecialKeys.Add(Lexer.CreateToken(TokenType.KwPublic, decl.Location.Beginning)); // stor is public
+                storDecl.SpecialKeys.Add(Lexer.CreateToken(TokenType.KwStatic, decl.Location.Beginning)); // stor is static
                 storDecl.ClassFunctionType = ClassFunctionType.StaticCtor;
-                storDecl.ContainingParent = classDecl;
-                classDecl.Declarations.Add(storDecl);
+                storDecl.ContainingParent = decl;
+                decls.Add(storDecl);
             }
             else if (ctors.Count == 1)
             {

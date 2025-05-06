@@ -252,7 +252,7 @@ namespace HapetPostPrepare
             }
             idExpr.OutType = typed.Decl.Type.OutType;
             TryAssignConstValueToExpr(idExpr, typed.Decl, inInfo, ref outInfo2);
-            TrySaveClassUsage(typed.Decl);
+            TrySaveClassAndStructUsage(typed.Decl);
             idExpr.FindSymbol = typed;
         }
 
@@ -285,11 +285,11 @@ namespace HapetPostPrepare
         /// This would be used to call static ctors :)
         /// </summary>
         /// <param name="decl">The decl to check and mark</param>
-        private void TrySaveClassUsage(AstDeclaration decl)
+        private void TrySaveClassAndStructUsage(AstDeclaration decl)
         {
-            if (decl is AstClassDecl clsDecl)
+            if (decl is AstClassDecl || decl is AstStructDecl)
             {
-                _allUsedClassesInProgram.Add(clsDecl);
+                _allUsedClassesAndStructsInProgram.Add(decl);
             }
         }
 

@@ -47,39 +47,39 @@ namespace HapetPostPrepare
                 return;
 
             // also add main's func class
-            _allUsedClassesInProgram.Add(_compiler.MainFunction.ContainingParent as AstClassDecl);
+            _allUsedClassesAndStructsInProgram.Add(_compiler.MainFunction.ContainingParent as AstClassDecl);
             // WARN! ToList is required! because _allUsedClassesInProgram is going to be modified below for no reason
-            var unique = _allUsedClassesInProgram.Distinct().ToList();
-            foreach (var cls in unique)
+            var unique = _allUsedClassesAndStructsInProgram.Distinct().ToList();
+            foreach (var decl in unique)
             {
                 // setting current source file
-                _currentSourceFile = cls.SourceFile;
+                _currentSourceFile = decl.SourceFile;
 
                 // skip interfaces
-                if (cls.IsInterface)
+                if (decl is AstClassDecl clsDecl && clsDecl.IsInterface)
                     continue;
 
                 // skip generic (non-real) classes
-                if (cls.HasGenericTypes)
+                if (decl.HasGenericTypes)
                     continue;
 
                 // check that the class has suppress stor call attr
                 // and skip the class without calling it's stor
                 string suppressAttrName = "System.SuppressStaticCtorCallAttribute";
-                var suppressAttr = cls.Attributes.FirstOrDefault(x => x.AttributeName.TryFlatten(_compiler.MessageHandler, _currentSourceFile) == suppressAttrName);
+                var suppressAttr = decl.Attributes.FirstOrDefault(x => x.AttributeName.TryFlatten(_compiler.MessageHandler, _currentSourceFile) == suppressAttrName);
                 if (suppressAttr != null)
                     continue;
 
                 // we put stor call of nested decl into its parent decl stor
                 AstBlockExpr blockWhereToCall;
-                if (cls.IsNestedDecl)
+                if (decl.IsNestedDecl)
                 {
-                    var candidate = GetFuncFromCandidates(new AstIdExpr($"{cls.ParentDecl.Name.Name.GetClassNameWithoutNamespace()}_stor"), 
-                        null, [], cls.ParentDecl, out var _);
+                    var candidate = GetFuncFromCandidates(new AstIdExpr($"{decl.ParentDecl.Name.Name.GetClassNameWithoutNamespace()}_stor"), 
+                        null, [], decl.ParentDecl, out var _);
                     if (candidate == null)
                     {
                         // error here 
-                        _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, cls, [], ErrorCode.Get(CTEN.NestedTypeParentNotFound));
+                        _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, decl, [], ErrorCode.Get(CTEN.ParentStorNotFound));
                         continue;
                     }
                     var body = (candidate.Decl as AstFuncDecl).Body;
@@ -89,8 +89,8 @@ namespace HapetPostPrepare
                     blockWhereToCall = _compiler.MainFunction.Body;
 
                 // creating stor call ast
-                string funcName = $"{cls.Name.Name.GetClassNameWithoutNamespace()}_stor";
-                var call = new AstCallExpr(new AstNestedExpr(cls.Name.GetCopy(), null), new AstIdExpr(funcName));
+                string funcName = $"{decl.Name.Name.GetClassNameWithoutNamespace()}_stor";
+                var call = new AstCallExpr(new AstNestedExpr(decl.Name.GetCopy(), null), new AstIdExpr(funcName));
                 SetScopeAndParent(call, blockWhereToCall, blockWhereToCall.SubScope);
                 PostPrepareExprScoping(call);
                 PostPrepareExprInference(call, inInfo, ref outInfo);

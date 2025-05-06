@@ -194,6 +194,7 @@
         ExplicitMethodCall              = 0x304D,
         NestedFuncParentNotFound        = 0x304E,
         NestedTypeParentNotFound        = 0x304F,
+        ParentStorNotFound              = 0x3050,
 
         // compiler errors up to 0x6000
         DefaultWasNotInfered            = 0x5001,

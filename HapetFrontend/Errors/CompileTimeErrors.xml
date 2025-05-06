@@ -474,7 +474,7 @@
 	</Item>
 	<Item>
 		<Number>300C</Number>
-		<Text>Only one static constructor could be declared in a class</Text>
+		<Text>Only one static constructor could be declared in a class/struct</Text>
 	</Item>
 	<Item>
 		<Number>300D</Number>
@@ -743,6 +743,10 @@
 	<Item>
 		<Number>304F</Number>
 		<Text>The nested type's parent not found</Text>
+	</Item>
+	<Item>
+		<Number>3050</Number>
+		<Text>Parent's static constructor not found</Text>
 	</Item>
 
     <!--Compiler errors-->
