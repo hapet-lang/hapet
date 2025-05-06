@@ -141,7 +141,7 @@ namespace HapetPostPrepare
                     sb.Append("class ");
             }
             
-            sb.Append($"{GenericsHelper.GetNameFromAst(decl.Name).GetClassNameWithoutNamespace()} ");
+            sb.Append($"{GenericsHelper.GetNameFromAst(decl.Name, _compiler.MessageHandler).GetClassNameWithoutNamespace()} ");
 
             if (inheritedFrom.Count > 0)
             {
@@ -218,7 +218,7 @@ namespace HapetPostPrepare
             sb.Append("delegate ");
             AntiParseExpr(decl.Returns, sb, additionalOffset);
             sb.Append(' ');
-            sb.Append($"{GenericsHelper.GetNameFromAst(decl.Name).GetClassNameWithoutNamespace()}");
+            sb.Append($"{GenericsHelper.GetNameFromAst(decl.Name, _compiler.MessageHandler).GetClassNameWithoutNamespace()}");
 
             sb.Append('(');
             for (int i = 0; i < decl.Parameters.Count; ++i)

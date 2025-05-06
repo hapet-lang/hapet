@@ -6,6 +6,7 @@ using System.Text;
 using HapetFrontend.Extensions;
 using System.Xml.Linq;
 using HapetFrontend.Types;
+using HapetFrontend.Entities;
 
 namespace HapetFrontend.Helpers
 {
@@ -104,7 +105,7 @@ namespace HapetFrontend.Helpers
         /// </summary>
         /// <param name="idExpr"></param>
         /// <returns></returns>
-        public static string GetNameFromAst(AstIdExpr idExpr)
+        public static string GetNameFromAst(AstIdExpr idExpr, IMessageHandler messageHandler)
         {
             if (idExpr is not AstIdGenericExpr genId)
                 return idExpr.Name;
@@ -113,7 +114,7 @@ namespace HapetFrontend.Helpers
             for (int i = 0; i < genId.GenericRealTypes.Count; ++i)
             {
                 var g = genId.GenericRealTypes[i];
-                sb.Append(g.GetNested().TryFlatten(null, null));
+                sb.Append(g.GetNested(messageHandler).TryFlatten(null, null));
                 if (i < genId.GenericRealTypes.Count - 1)
                     sb.Append(", ");
             }

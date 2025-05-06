@@ -63,9 +63,9 @@ namespace HapetFrontend.Ast.Expressions
             }
 
             if (LeftPart == null)
-                return GenericsHelper.GetNameFromAst(idExpr);
+                return GenericsHelper.GetNameFromAst(idExpr, messageHandler);
 
-            return $"{LeftPart.TryFlatten(messageHandler, file)}.{GenericsHelper.GetNameFromAst(idExpr)}";
+            return $"{LeftPart.TryFlatten(messageHandler, file)}.{GenericsHelper.GetNameFromAst(idExpr, messageHandler)}";
         }
 
         /// <summary>

@@ -4,6 +4,8 @@ using HapetFrontend.Ast;
 using HapetFrontend.Parsing;
 using HapetFrontend.Types;
 using System.Text;
+using HapetFrontend.Entities;
+using HapetFrontend.Errors;
 
 namespace HapetFrontend.Extensions
 {
@@ -286,24 +288,27 @@ namespace HapetFrontend.Extensions
             return (new List<AstDeclaration>(decls)).GetSameDeclByTypeAndNamePure(decl, out index) as AstPropertyDecl;
         }
 
-        public static List<AstNestedExpr> GetNestedList(this List<AstExpression> exprs)
+        public static List<AstNestedExpr> GetNestedList(this List<AstExpression> exprs, IMessageHandler messageHandler)
         {
             List<AstNestedExpr> nests = new List<AstNestedExpr>();
             foreach (var expr in exprs)
             {
-                nests.Add(expr.GetNested());
+                nests.Add(expr.GetNested(messageHandler));
             }
             return nests;
         }
 
-        public static AstNestedExpr GetNested(this AstExpression expr)
+        public static AstNestedExpr GetNested(this AstExpression expr, IMessageHandler messageHandler)
         {
             if (expr is AstIdExpr idExpr)
                 return new AstNestedExpr(idExpr, null, idExpr);
             else if (expr is AstNestedExpr nest)
                 return nest;
-            // TODO: else - error
-            return null;
+            else
+            {
+                messageHandler?.ReportMessage(expr.SourceFile.Text, expr, [], ErrorCode.Get(CTEN.CommonIdentifierExpected));
+                return null;
+            }
         }
         #endregion
     }

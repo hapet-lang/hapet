@@ -639,7 +639,7 @@ namespace HapetPostPrepare
             // if found something generic inside another generic shite
             if (expr is AstIdGenericExpr genExpr)
             {
-                var nestedGenerics = genExpr.GenericRealTypes.GetNestedList();
+                var nestedGenerics = genExpr.GenericRealTypes.GetNestedList(_compiler.MessageHandler);
                 for (int i = 0; i < nestedGenerics.Count; ++i)
                 {
                     var currNest = nestedGenerics[i];

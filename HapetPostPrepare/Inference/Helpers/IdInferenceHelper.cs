@@ -333,7 +333,7 @@ namespace HapetPostPrepare
             }
 
             // create a new shite with real types
-            var realCls = GetRealTypeFromGeneric(theDecl, genId.GenericRealTypes.GetNestedList(), realName);
+            var realCls = GetRealTypeFromGeneric(theDecl, genId.GenericRealTypes.GetNestedList(_compiler.MessageHandler), realName);
 
             // func is defined by itself
             if (theDecl is not AstFuncDecl)
