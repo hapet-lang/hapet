@@ -11,6 +11,7 @@ using HapetFrontend.Scoping;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Diagnostics.Metrics;
+using System.Net;
 
 namespace HapetFrontend
 {
@@ -120,26 +121,22 @@ namespace HapetFrontend
                 {
                     // creating a virtual file
                     currentFile = new ProgramFile((dir.RightPart as AstStringExpr).StringValue, lexer.Text);
-
-                    // parse namespace directive
-                    s = parser.ParseStatement(inInfo, ref outInfo);
-                    if (s is not AstDirectiveStmt dirNs || dirNs.DirectiveType != Enums.DirectiveType.MetadataNamespace)
-                    {
-                        // TODO: error
-                        continue;
-                    }
-
-                    // generating namespace scope and doing some shite with it
-                    string normalNamespace = (dirNs.RightPart as AstStringExpr).StringValue;
-                    var nsScope = GetNamespaceScope(normalNamespace);
-                    currentFile.NamespaceScope = nsScope;
-                    currentFile.Namespace = normalNamespace;
-                    currentFile.IsImported = true;
-
                     allFiles.Add(currentFile);
                     // change lexer locations' filename
                     lexer.ChangeFilename(currentFile.Name);
                     continue; // no need to add this shite
+                }
+
+                // check for namespace 
+                if (s is AstNamespaceStmt nsStmt)
+                {
+                    // generating namespace scope and doing some shite with it
+                    string normalNamespace = nsStmt.NameExpression.TryFlatten(MessageHandler, currentFile);
+                    var nsScope = GetNamespaceScope(normalNamespace);
+                    currentFile.NamespaceScope = nsScope;
+                    currentFile.Namespace = normalNamespace;
+                    currentFile.IsImported = true;
+                    continue;
                 }
 
                 HandleStatement(s, currentFile, lexer);

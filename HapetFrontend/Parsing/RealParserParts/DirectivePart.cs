@@ -22,15 +22,11 @@ namespace HapetFrontend.Parsing
                 case "file":
                     type = DirectiveType.MetadataFile;
                     break;
-                case "namespace":
-                    type = DirectiveType.MetadataNamespace;
-                    break;
             }
 
             switch (type) 
             {
                 case DirectiveType.MetadataFile:
-                case DirectiveType.MetadataNamespace:
                     {
                         var expr = ParseExpression(inInfo, ref outInfo);
                         if (expr is not AstStringExpr)
