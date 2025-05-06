@@ -112,6 +112,7 @@
         UnexpectedNestedFunc            = 0x2057,
         CommonStringExpected            = 0x2058,
         UnexpectedDirective             = 0x2059,
+        UnexpectedGenericConstrain      = 0x205A,
 
         // post preparer errors up to 0x5000
         EnumCouldNotBeAssigned          = 0x3001,
@@ -191,6 +192,8 @@
         PropaAlreadyDefined             = 0x304B,
         NoPropaImplementation           = 0x304C,
         ExplicitMethodCall              = 0x304D,
+        NestedFuncParentNotFound        = 0x304E,
+        NestedTypeParentNotFound        = 0x304F,
 
         // compiler errors up to 0x6000
         DefaultWasNotInfered            = 0x5001,

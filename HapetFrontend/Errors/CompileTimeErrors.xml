@@ -418,6 +418,10 @@
 		<Number>2059</Number>
 		<Text>Unknown directive name</Text>
 	</Item>
+	<Item>
+		<Number>205A</Number>
+		<Text>Unknown generic type constrain</Text>
+	</Item>
 
 
 	<!--Post prepare errors-->
@@ -731,6 +735,14 @@
 	<Item>
 		<Number>304D</Number>
 		<Text>The {0} method could not be found - probably because of its explicit implementation</Text>
+	</Item>
+	<Item>
+		<Number>304E</Number>
+		<Text>The nested function's parent not found</Text>
+	</Item>
+	<Item>
+		<Number>304F</Number>
+		<Text>The nested type's parent not found</Text>
 	</Item>
 
     <!--Compiler errors-->

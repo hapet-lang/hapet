@@ -344,8 +344,7 @@ namespace HapetFrontend.Types
 
         public override AstExpression GetAst()
         {
-            // TODO: check - is it ok to pu here Pointer expr?
-            return new AstPointerExpr(TargetType.GetAst() as AstExpression);
+            return new AstAddressOfExpr(TargetType.GetAst() as AstExpression, null);
         }
 
         private ReferenceType(HapetType target) : base(CurrentTypeContext.PointerSize, PointerType.PointerAlignment)

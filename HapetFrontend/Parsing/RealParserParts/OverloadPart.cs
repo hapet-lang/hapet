@@ -5,6 +5,7 @@ using HapetFrontend.Entities;
 using HapetFrontend.Enums;
 using HapetFrontend.Errors;
 using Newtonsoft.Json.Linq;
+using System;
 
 namespace HapetFrontend.Parsing
 {
@@ -26,6 +27,7 @@ namespace HapetFrontend.Parsing
 
             List<AstParamDecl> paramDecls = null;
             AstBlockExpr body = null;
+            TokenLocation possibleEndLocation = null;
 
             // kostyl to always get type
             AstExpression returns = udecl.Name ?? udecl.Type;
@@ -54,6 +56,7 @@ namespace HapetFrontend.Parsing
                 var func = ParseFuncDeclaration(null, null, inInfo, ref outInfo);
                 paramDecls = func.Parameters;
                 body = func.Body;
+                possibleEndLocation = func.Location.Ending;
 
                 if (paramDecls == null)
                     ReportMessage(returns, [], ErrorCode.Get(CTEN.ParamsAfterOverloadOperator));
@@ -109,6 +112,7 @@ namespace HapetFrontend.Parsing
                 var func = ParseFuncDeclaration(null, null, inInfo, ref outInfo);
                 paramDecls = func.Parameters;
                 body = func.Body;
+                possibleEndLocation = func.Location.Ending;
 
                 if (paramDecls == null)
                     ReportMessage(opToken.Location, [], ErrorCode.Get(CTEN.ParamsAfterOverloadOperator));
@@ -131,8 +135,9 @@ namespace HapetFrontend.Parsing
             }
 
             string name = AstOverloadDecl.GenerateName(overloadType, op, returns as AstNestedExpr);
-            // TODO: doc string and better location
-            var overload = new AstOverloadDecl(paramDecls, returns, body, new AstIdExpr(name), "", udecl);
+            // TODO: doc string
+            var endLocation = body == null ? possibleEndLocation : body.Ending;
+            var overload = new AstOverloadDecl(paramDecls, returns, body, new AstIdExpr(name), "", new Location(udecl.Beginning, endLocation));
 
             // set up shite
             overload.OverloadType = overloadType;

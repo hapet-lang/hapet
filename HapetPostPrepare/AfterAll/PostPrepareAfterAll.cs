@@ -78,7 +78,8 @@ namespace HapetPostPrepare
                         null, [], cls.ParentDecl, out var _);
                     if (candidate == null)
                     {
-                        // TODO: error here 
+                        // error here 
+                        _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, cls, [], ErrorCode.Get(CTEN.NestedTypeParentNotFound));
                         continue;
                     }
                     var body = (candidate.Decl as AstFuncDecl).Body;

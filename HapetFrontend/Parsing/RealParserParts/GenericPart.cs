@@ -74,7 +74,12 @@ namespace HapetFrontend.Parsing
                                 ident = new AstNestedExpr(new AstIdExpr("class", tkn.Location), null, tkn.Location);
                                 break;
                             }
-                            // TODO: others and a error if cringe constrain
+                        default:
+                            {
+                                // error if cringe constrain
+                                ReportMessage(tkn.Location, [], ErrorCode.Get(CTEN.UnexpectedGenericConstrain));
+                                break;
+                            }
                     }
                     constrains.Add(ident);
                     // if there is something else

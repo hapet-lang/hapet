@@ -3,6 +3,7 @@ using HapetFrontend.Ast.Declarations;
 using HapetFrontend.Ast.Expressions;
 using HapetFrontend.Ast.Statements;
 using HapetFrontend.Entities;
+using HapetFrontend.Errors;
 
 namespace HapetFrontend.Parsing
 {
@@ -31,7 +32,10 @@ namespace HapetFrontend.Parsing
                     else if (g is AstIdExpr id)
                         generics.Add(id);
                     else
-                        generics.Add(null); // TODO: ERROR HERE
+                    {
+                        ReportMessage(g.Location, [], ErrorCode.Get(CTEN.CommonIdentifierExpected));
+                        generics.Add(null); // ERROR HERE
+                    }
                 }
             }
 

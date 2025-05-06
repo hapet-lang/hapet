@@ -96,7 +96,8 @@ namespace HapetFrontend.Parsing
                 }
                 else
                 {
-                    // TODO: error here probably
+                    // error here probably
+                    ReportMessage(udecl.Type.Location, [], ErrorCode.Get(CTEN.CommonIdentifierExpected));
                 }
             }
             // variable declaration without initializer
@@ -178,7 +179,7 @@ namespace HapetFrontend.Parsing
                 }
             }
 
-            ReportMessage(PeekToken().Location, [], ErrorCode.Get(CTEN.PureUnexpectedToken)); // TODO: better error message?
+            ReportMessage(PeekToken().Location, [], ErrorCode.Get(CTEN.PureUnexpectedToken)); // better error message?
             OnExit();
             return udecl;
 
