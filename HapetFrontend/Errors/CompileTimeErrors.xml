@@ -754,6 +754,10 @@
 		<Number>5008</Number>
 		<Text>(Compiler exception) Stmt could not be prepared when current step is None</Text>
 	</Item>
+	<Item>
+		<Number>5009</Number>
+		<Text>(Compiler exception) There is no default value for the {0} type</Text>
+	</Item>
 
     <!--Backend errors-->
 	<Item>

@@ -1,4 +1,6 @@
 ﻿using HapetFrontend.Ast.Declarations;
+using HapetFrontend.Entities;
+using HapetFrontend.Errors;
 using HapetFrontend.Types;
 using System.Diagnostics;
 
@@ -27,7 +29,7 @@ namespace HapetFrontend.Ast.Expressions
             return copy;
         }
 
-        public static AstExpression GetDefaultValueForType(HapetType tp, AstExpression orig)
+        public static AstExpression GetDefaultValueForType(HapetType tp, AstExpression orig, IMessageHandler messageHandler)
         {
             AstExpression outExpr;
             switch (tp)
@@ -53,8 +55,8 @@ namespace HapetFrontend.Ast.Expressions
                 case StructType st:
                     outExpr = new AstEmptyStructExpr(st, orig);
                     break;
-                // TODO: other shite
                 default:
+                    messageHandler.ReportMessage(orig.SourceFile.Text, orig, [HapetType.AsString(tp)], ErrorCode.Get(CTEN.NoDefaultValueForType));
                     outExpr = null;
                     break;
             }

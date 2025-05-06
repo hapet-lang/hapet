@@ -198,6 +198,7 @@
         NestedCouldNotBeGenerated       = 0x5006,
         ArrayAccessNotGenerate          = 0x5007,
         StmtInvalidPreparation          = 0x5008,
+        NoDefaultValueForType           = 0x5009,
 
         // backend errors up to 0x8000
         TypeCouldNotBeConverted         = 0x6001,

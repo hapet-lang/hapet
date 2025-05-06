@@ -99,7 +99,7 @@ namespace HapetBackend.Llvm
                 else
                 {
                     // just normal default values 
-                    var defaultExpr = AstDefaultExpr.GetDefaultValueForType(expr.TypeName.OutType, expr.TypeName);
+                    var defaultExpr = AstDefaultExpr.GetDefaultValueForType(expr.TypeName.OutType, expr.TypeName, _compiler.MessageHandler);
                     var defaultVal = GenerateExpressionCode(defaultExpr);
                     var casted = CreateCast(_builder, defaultVal, defaultExpr.OutType, expr.TypeName.OutType);
                     var arrayBufEl = _builder.BuildGEP2(HapetTypeToLLVMType(expr.TypeName.OutType), allocated, new LLVMValueRef[] { iLoadedForBody }, $"elementPtr");

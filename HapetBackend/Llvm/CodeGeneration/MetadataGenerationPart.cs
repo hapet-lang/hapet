@@ -92,7 +92,7 @@ namespace HapetBackend.Llvm
                         else
                         {
                             // set default value to it
-                            globStatic.Initializer = GenerateExpressionCode(AstDefaultExpr.GetDefaultValueForType(decl.Type.OutType, null));
+                            globStatic.Initializer = GenerateExpressionCode(AstDefaultExpr.GetDefaultValueForType(decl.Type.OutType, null, _compiler.MessageHandler));
                         }
                         _valueMap[decl.GetSymbol] = globStatic;
                     }

@@ -1373,7 +1373,7 @@ namespace HapetPostPrepare
             if (value is AstDefaultExpr)
             {
                 // get the default value for the type (no need to infer)
-                var defaultOfDefault = AstDefaultExpr.GetDefaultValueForType(targetType, value);
+                var defaultOfDefault = AstDefaultExpr.GetDefaultValueForType(targetType, value, _compiler.MessageHandler);
                 if (defaultOfDefault == null)
                 {
                     _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, value, [], ErrorCode.Get(CTEN.DefaultValueNotFound));
