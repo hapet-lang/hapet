@@ -77,6 +77,11 @@ namespace HapetFrontend.Parsing
                 // add special keys
                 if (toReturn is AstDeclaration decl)
                 {
+                    // saving doc string
+                    var docString = GetCurrentDocString();
+                    decl.Documentation = docString;
+
+                    // append special keys
                     decl.SpecialKeys.AddRange(specialKeys);
 
                     // add previously found attributes into the declaration

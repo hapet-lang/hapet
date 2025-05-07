@@ -1,3 +1,5 @@
+/// This is a test comment
+/// And this is another one
 public struct Array
 {
     int Length;

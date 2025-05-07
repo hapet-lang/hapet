@@ -14,8 +14,6 @@ namespace HapetFrontend.Parsing
 
         private AstDeclaration ParseDeclaration(ParserInInfo inInfo, ref ParserOutInfo outInfo)
         {
-            var docString = GetCurrentDocString();
-
             // keep parsing while attributes are there :)
             while (true)
             {
@@ -53,7 +51,7 @@ namespace HapetFrontend.Parsing
 
                 var a = PeekToken();
                 ReportMessage(a.Location, [], ErrorCode.Get(CTEN.ExpectedEqualOrNewline));
-                return new AstVarDecl(expr as AstNestedExpr, null, null, docString, expr)
+                return new AstVarDecl(expr as AstNestedExpr, null, null, "", expr)
                 {
                     IsImported = inInfo.ExternalMetadata
                 };
