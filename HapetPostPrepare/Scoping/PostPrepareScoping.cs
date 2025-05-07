@@ -148,7 +148,7 @@ namespace HapetPostPrepare
                     if (propDecl is AstIndexerDecl indDecl)
                     {
                         SetScopeAndParent(indDecl.IndexerParameter, propDecl);
-                        PostPrepareExprScoping(indDecl.IndexerParameter);
+                        PostPrepareParamScoping(indDecl.IndexerParameter);
                     }
 
                     // setting already defined to 'true' because of some shite with access types
@@ -221,8 +221,12 @@ namespace HapetPostPrepare
                     // scoping indexer parameter
                     if (propDecl is AstIndexerDecl indDecl)
                     {
-                        SetScopeAndParent(indDecl.IndexerParameter, propDecl);
-                        PostPrepareExprScoping(indDecl.IndexerParameter);
+                        // WARN!!!! do not set the scope the same as delegate scope because its params would be visible in class or smth
+                        // creating a Scope in which the params would be
+                        var paramsBlockScope = new Scope($"params_{indDecl.Name.Name}_scope", indDecl.Scope);
+
+                        SetScopeAndParent(indDecl.IndexerParameter, propDecl, paramsBlockScope);
+                        PostPrepareParamScoping(indDecl.IndexerParameter);
                     }
 
                     // setting already defined to 'true' because of some shite with access types
@@ -527,6 +531,14 @@ namespace HapetPostPrepare
                     break;
                 case AstBaseCtorStmt baseStmt:
                     PostPrepareBaseCtorStmtScoping(baseStmt);
+                    break;
+
+                // skip literals
+                case AstNumberExpr:
+                case AstStringExpr:
+                case AstBoolExpr:
+                case AstCharExpr:
+                case AstNullExpr:
                     break;
 
                 default:

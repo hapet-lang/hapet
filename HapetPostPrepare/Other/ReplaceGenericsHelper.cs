@@ -343,6 +343,14 @@ namespace HapetPostPrepare
                     ReplaceAllGenericTypesInBaseStmt(baseStmt);
                     break;
 
+                // skip literals
+                case AstNumberExpr:
+                case AstStringExpr:
+                case AstBoolExpr:
+                case AstCharExpr:
+                case AstNullExpr:
+                    break;
+
                 default:
                     {
                         _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, expr, [expr.AAAName], ErrorCode.Get(CTEN.StmtNotImplemented));
