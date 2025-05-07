@@ -296,6 +296,8 @@ namespace HapetPostPrepare
                 AntiParseExpr(decl.Name, sb, additionalOffset);
             }
 
+            // TODO: generic constraiins 
+
             if (decl.HasGet && decl.GetBlock != null && (decl.HasGenericTypes || 
                 (isParentGeneric && !decl.SpecialKeys.Contains(TokenType.KwStatic))))
             {

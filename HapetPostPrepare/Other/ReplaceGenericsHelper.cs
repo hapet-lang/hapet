@@ -2,6 +2,7 @@
 using HapetFrontend.Ast.Declarations;
 using HapetFrontend.Ast.Expressions;
 using HapetFrontend.Ast.Statements;
+using HapetFrontend.Errors;
 using HapetFrontend.Extensions;
 using HapetFrontend.Helpers;
 
@@ -341,11 +342,10 @@ namespace HapetPostPrepare
                 case AstBaseCtorStmt baseStmt:
                     ReplaceAllGenericTypesInBaseStmt(baseStmt);
                     break;
-                // TODO: check other expressions
 
                 default:
                     {
-                        // TODO: anything to do here?
+                        _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, expr, [expr.AAAName], ErrorCode.Get(CTEN.StmtNotImplemented));
                         break;
                     }
             }

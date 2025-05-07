@@ -1,5 +1,6 @@
 ﻿using HapetFrontend.Ast.Declarations;
 using HapetFrontend.Ast.Expressions;
+using HapetFrontend.Errors;
 using HapetFrontend.Extensions;
 using HapetFrontend.Helpers;
 using HapetFrontend.Types;
@@ -28,13 +29,13 @@ namespace HapetBackend.Llvm
             }
             else if (type is StructType strType)
             {
-                // TODO: struct parent
                 parent = strType.Declaration.InheritedFrom.FirstOrDefault(x => x.OutType is ClassType clss && !clss.Declaration.IsInterface)?.OutType as ClassType;
                 typeNameString = strType.Declaration.Name.Name;
             }
             else
             {
-                // TODO: compiler error - could not generate type info 
+                // compiler error - could not generate type info 
+                _messageHandler.ReportMessage(_currentSourceFile.Text, null, [HapetType.AsString(type)], ErrorCode.Get(CTEN.CouldNotGenerateTypeInfo));
                 return default;
             }
 
@@ -100,7 +101,8 @@ namespace HapetBackend.Llvm
             }
             else
             {
-                // TODO: compiler error - could not generate type info 
+                // compiler error - could not generate type info 
+                _messageHandler.ReportMessage(_currentSourceFile.Text, null, [HapetType.AsString(type)], ErrorCode.Get(CTEN.CouldNotGenerateTypeInfo));
                 amount = 0;
                 return (default, default);
             }

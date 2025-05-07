@@ -810,6 +810,10 @@
 		<Number>500B</Number>
 		<Text>(Compiler exception) Only one double colon (::) expected to be in the func' name - {0}</Text>
 	</Item>
+	<Item>
+		<Number>500C</Number>
+		<Text>(Compiler exception) Type info could not be generated for {0}</Text>
+	</Item>
 
     <!--Backend errors-->
 	<Item>

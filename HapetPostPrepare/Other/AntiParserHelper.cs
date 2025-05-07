@@ -2,6 +2,7 @@
 using HapetFrontend.Ast.Declarations;
 using HapetFrontend.Ast.Expressions;
 using HapetFrontend.Ast.Statements;
+using HapetFrontend.Errors;
 using HapetFrontend.Helpers;
 using HapetFrontend.Parsing;
 using System.Diagnostics;
@@ -156,11 +157,10 @@ namespace HapetPostPrepare
                 case AstUsingStmt usingStmt:
                     AntiParseUsingStmt(usingStmt, sb, offset);
                     break;
-                // TODO: check other expressions
 
                 default:
                     {
-                        // TODO: anything to do here?
+                        _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, expr, [expr.AAAName], ErrorCode.Get(CTEN.StmtNotImplemented));
                         break;
                     }
             }

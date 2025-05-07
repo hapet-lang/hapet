@@ -65,7 +65,7 @@ namespace HapetBackend.Llvm
                     lfunc.Linkage = LLVMLinkage.LLVMExternalLinkage;
                     lfunc.DLLStorageClass = LLVMDLLStorageClass.LLVMDLLImportStorageClass;
 
-                    // TODO: do I need to define calling convention here like below?
+                    // WARN: do I need to define calling convention here like below?
                 }
                 else if (!funcDecl.SpecialKeys.Contains(TokenType.KwUnreflected))
                 {

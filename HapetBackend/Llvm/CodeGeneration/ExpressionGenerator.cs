@@ -64,7 +64,6 @@ namespace HapetBackend.Llvm
                 case AstBreakContStmt breakContStmt: GenerateBreakContStmt(breakContStmt); return null;
                 case AstReturnStmt returnStmt: GenerateReturnStmt(returnStmt); return null;
                 case AstBaseCtorStmt baseStmt: GenerateBaseCtorStmt(baseStmt); return null;
-                // TODO: check other expressions
 
                 default:
                     {
@@ -395,7 +394,7 @@ namespace HapetBackend.Llvm
 
         private LLVMValueRef GenerateAddressOfExprCode(AstAddressOfExpr addrExpr)
         {
-            // TODO: should be better. probably there won't be only AstNestedExpr or AstIdExpr but something else...
+            // WARN: should be better. probably there won't be only AstNestedExpr or AstIdExpr but something else...
             if (addrExpr.SubExpression is AstNestedExpr nestExpr)
             {
                 return GenerateNestedExpr(nestExpr, true);
@@ -736,7 +735,6 @@ namespace HapetBackend.Llvm
 
         private unsafe LLVMValueRef GenerateArgumentExpr(AstArgumentExpr expr)
         {
-            // TODO: handle arg name and index
             return GenerateExpressionCode(expr.Expr);
         }
 
@@ -891,8 +889,6 @@ namespace HapetBackend.Llvm
                         return retLoaded;
                     }
                 }
-
-                // TODO: strings and other
             }
             _messageHandler.ReportMessage(_currentSourceFile.Text, expr, [], ErrorCode.Get(CTEN.NestedCouldNotBeGenerated));
             return default;

@@ -212,6 +212,7 @@
         NoDefaultValueForType           = 0x5009,
         NoFieldsInNonTypes              = 0x500A,
         OnlyOneDoubleColonInFunc        = 0x500B,
+        CouldNotGenerateTypeInfo        = 0x500C,
 
         // backend errors up to 0x8000
         TypeCouldNotBeConverted         = 0x6001,

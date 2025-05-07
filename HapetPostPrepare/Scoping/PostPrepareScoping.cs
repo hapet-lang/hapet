@@ -339,48 +339,38 @@ namespace HapetPostPrepare
                 }
             }
 
-            // TODO: refactor similar shite!
+            Scope blockScope;
             if (funcDecl.Body != null)
             {
                 // body scope is the same
                 SetScopeAndParent(funcDecl.Body, funcDecl);
-                var blockScope = PostPrepareBlockScoping(funcDecl.Body, $"{funcDecl.Name.Name}_scope");
-                funcDecl.SubScope = blockScope;
-                // defining parameters in the func scope
-                foreach (var p in funcDecl.Parameters)
-                {
-                    // settings the block scope to the parameters (so they are in the scope of the block)
-                    SetScopeAndParent(p, funcDecl, blockScope);
-                    PostPrepareParamScoping(p);
-
-                    // scoping param attrs
-                    foreach (var a in p.Attributes)
-                    {
-                        SetScopeAndParent(a, p);
-                        PostPrepareExprScoping(a);
-                    }
-                }
-                // return type is the same
-                SetScopeAndParent(funcDecl.Returns, funcDecl, blockScope);
-                PostPrepareExprScoping(funcDecl.Returns);
+                blockScope = PostPrepareBlockScoping(funcDecl.Body, $"{funcDecl.Name.Name}_scope");
             }
             else
             {
                 // WARN!!!! do not set the scope the same as func scope because its params would be visible in class or smth
                 // creating a Scope in which the params would be
-                var paramsBlockScope = new Scope($"params_{funcDecl.Name.Name}_scope", funcDecl.Scope);
-                funcDecl.SubScope = paramsBlockScope;
-                // defining parameters in the func scope
-                foreach (var p in funcDecl.Parameters)
-                {
-                    // settings the block scope to the parameters (so they are in the scope of the block)
-                    SetScopeAndParent(p, funcDecl, paramsBlockScope);
-                    PostPrepareParamScoping(p);
-                }
-                // return type is the same
-                SetScopeAndParent(funcDecl.Returns, funcDecl, paramsBlockScope);
-                PostPrepareExprScoping(funcDecl.Returns);
+                blockScope = new Scope($"params_{funcDecl.Name.Name}_scope", funcDecl.Scope);
             }
+
+            funcDecl.SubScope = blockScope;
+            // defining parameters in the func scope
+            foreach (var p in funcDecl.Parameters)
+            {
+                // settings the block scope to the parameters (so they are in the scope of the block)
+                SetScopeAndParent(p, funcDecl, blockScope);
+                PostPrepareParamScoping(p);
+
+                // scoping param attrs
+                foreach (var a in p.Attributes)
+                {
+                    SetScopeAndParent(a, p);
+                    PostPrepareExprScoping(a);
+                }
+            }
+            // return type is the same
+            SetScopeAndParent(funcDecl.Returns, funcDecl, blockScope);
+            PostPrepareExprScoping(funcDecl.Returns);
 
             _currentParentStack.RemoveParent();
         }

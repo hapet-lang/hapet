@@ -67,9 +67,7 @@ namespace HapetPostPrepare
             }
             else
             {
-                // TODO:
-                // no need to be angry - check it while parsing, not PP
-                // _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, decl.Name, [], ErrorCode.Get(CTEN.DeclNotAllowedInNamespace));
+                _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, decl.Name, [], ErrorCode.Get(CTEN.DeclNotAllowedInNamespace));
                 return;
             }
 

@@ -22,8 +22,7 @@ namespace HapetBackend.Llvm
             GenerateMetadataShiteFields();
             GenerateMetadataShiteAfterAll();
         }
-
-        // TODO: mb refactor somehow?
+        
         private void GenerateMetadataShiteTypes()
         {
             // all over the classes
@@ -57,7 +56,6 @@ namespace HapetBackend.Llvm
             }
         }
 
-        // TODO: mb refactor somehow?
         private void GenerateMetadataShiteFields()
         {
             foreach (var cls in _postPreparer.AllClassesMetadata)
@@ -127,7 +125,6 @@ namespace HapetBackend.Llvm
                     _valueMap[decl.GetSymbol] = globStatic;
                 }
             }
-            // TODO: structs and other shite
         }
 
         private void GenerateMetadataShiteFuncs()
