@@ -81,6 +81,9 @@ namespace HapetFrontend.Parsing
             // parsing constrains
             var genericConstrains = ParseGenericConstrains(generics);
 
+            // the decl (declared here because it would be used)
+            var structDecl = new AstStructDecl(structName, declarations, "", null);
+
             ConsumeUntil(TokenType.OpenBrace, ErrMsg("{", "at beginning of struct body"), true);
 
             SkipNewlines();
@@ -90,29 +93,33 @@ namespace HapetFrontend.Parsing
                 if (next.Type == TokenType.CloseBrace || next.Type == TokenType.EOF)
                     break;
 
-                // get current special keys
-                List<Token> specialKeys = ParseSpecialKeys();
-                var decl = ParseDeclaration(inInfo, ref outInfo);
-
-                // required!!! must not be null!!!
-                ArgumentNullException.ThrowIfNull(decl);
-
-                decl.SpecialKeys.AddRange(specialKeys);
-
-                // it is probably an attribute so no need to save it to decls
-                if (decl is AstEmptyDecl)
+                var decl = ParseTopLevel(inInfo, ref outInfo);
+                if (decl is not AstDeclaration realDecl)
                 {
-                    SkipNewlines();
+                    ReportMessage(decl, ["class"], ErrorCode.Get(CTEN.DeclExpectedInClassStruct));
                     continue;
                 }
 
+                // mark the decl as nested if it is:
+                if (realDecl is AstClassDecl ||
+                    realDecl is AstStructDecl ||
+                    realDecl is AstEnumDecl ||
+                    realDecl is AstDelegateDecl)
+                {
+                    realDecl.IsNestedDecl = true;
+                    realDecl.ParentDecl = structDecl;
+                }
+
                 // error - unexpected decl in struct type
-                if (decl is not AstVarDecl && decl is not AstFuncDecl)
+                if (decl is not AstVarDecl && 
+                    decl is not AstFuncDecl &&
+                    decl is not AstClassDecl &&
+                    decl is not AstStructDecl)
                 {
                     ReportMessage(decl, [], ErrorCode.Get(CTEN.UnexpectedDeclInStruct));
                 }
 
-                declarations.Add(decl);
+                declarations.Add(realDecl);
 
                 next = PeekToken();
                 if (next.Type == TokenType.NewLine)
@@ -138,15 +145,13 @@ namespace HapetFrontend.Parsing
 
             end = Consume(TokenType.CloseBrace, ErrMsg("}", "at end of struct declaration")).Location;
 
-            // TODO: doc string
-            return new AstStructDecl(structName, declarations, "", new Location(beg, end)) 
-            { 
-                InheritedFrom = inherited,
-                HasGenericTypes = generics.Count > 0,
-                GenericNames = generics,
-                GenericConstrains = genericConstrains,
-                IsImported = inInfo.ExternalMetadata
-            };
+            structDecl.Location = new Location(beg, end);
+            structDecl.InheritedFrom = inherited;
+            structDecl.HasGenericTypes = generics.Count > 0;
+            structDecl.GenericNames = generics;
+            structDecl.GenericConstrains = genericConstrains;
+            structDecl.IsImported = inInfo.ExternalMetadata;
+            return structDecl;
         }
     }
 }

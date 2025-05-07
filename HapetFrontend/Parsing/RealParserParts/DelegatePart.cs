@@ -74,7 +74,6 @@ namespace HapetFrontend.Parsing
             //// all delegates have ptr to a class object as their first param
             //parameters.Insert(0, new AstParamDecl(new AstNestedExpr(new AstPointerExpr(new AstIdExpr("byte")), null), new AstIdExpr("this")));
 
-            // TODO: doc string
             return new AstDelegateDecl(parameters, returnType, delegateName, "", new Location(beg, end))
             {
                 IsImported = inInfo.ExternalMetadata,

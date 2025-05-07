@@ -118,8 +118,6 @@ namespace HapetFrontend.Parsing
             }
 
             end = Consume(TokenType.CloseBrace, ErrMsg("}", "at end of enum declaration")).Location;
-
-            // TODO: doc string
             var enm = new AstEnumDecl(enumName, declarations, "", new Location(beg, end))
             {
                 InheritedType = enumType,

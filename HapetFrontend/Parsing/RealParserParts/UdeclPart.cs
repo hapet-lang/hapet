@@ -158,7 +158,6 @@ namespace HapetFrontend.Parsing
                 Consume(TokenType.CloseBracket, ErrMsg("symbol ']'", "at ending of indexer param declaration"));
 
                 SkipNewlines();
-                // TODO: doc 
                 udecl.Name = udecl.Name.GetCopy("indexer__");
                 var prop = PreparePropertyDecl(udecl, "") as AstPropertyDecl;
                 var indexer = new AstIndexerDecl(prop);

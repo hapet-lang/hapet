@@ -135,7 +135,6 @@ namespace HapetFrontend.Parsing
             }
 
             string name = AstOverloadDecl.GenerateName(overloadType, op, returns as AstNestedExpr);
-            // TODO: doc string
             var endLocation = body == null ? possibleEndLocation : body.Ending;
             var overload = new AstOverloadDecl(paramDecls, returns, body, new AstIdExpr(name), "", new Location(udecl.Beginning, endLocation));
 

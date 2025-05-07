@@ -176,7 +176,6 @@ namespace HapetFrontend.Parsing
 
             AstParamDecl GetParam()
             {
-                // TODO: doc string???
                 return new AstParamDecl(ptype as AstNestedExpr, pname, defaultValue, "", new Location(beg, end))
                 {
                     IsParams = isParams,

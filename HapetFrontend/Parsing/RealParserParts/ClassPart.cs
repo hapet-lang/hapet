@@ -102,8 +102,6 @@ namespace HapetFrontend.Parsing
                 if (next.Type == TokenType.CloseBrace || next.Type == TokenType.EOF)
                     break;
 
-                // get current special keys
-                List<Token> specialKeys = ParseSpecialKeys();
                 var decl = ParseTopLevel(inInfo, ref outInfo);
                 if (decl is not AstDeclaration realDecl)
                 {
@@ -120,8 +118,6 @@ namespace HapetFrontend.Parsing
                     realDecl.IsNestedDecl = true;
                     realDecl.ParentDecl = classDecl;
                 }
-
-                realDecl.SpecialKeys.AddRange(specialKeys);
                 declarations.Add(realDecl);
 
                 next = PeekToken();
@@ -150,7 +146,6 @@ namespace HapetFrontend.Parsing
                     ReportMessage(field.Location, [], ErrorCode.Get(CTWN.FieldsInInterface), reportType: Entities.ReportType.Warning);
             }
 
-            // TODO: doc string
             classDecl.Location = new Location(beg, end);
             classDecl.InheritedFrom = inherited;
             classDecl.IsInterface = isInterface;
