@@ -88,7 +88,8 @@ namespace HapetPostPrepare
                 if (decl.SpecialKeys.Contains(TokenType.KwUnreflected))
                     continue;
 
-                // TODO: doc string
+                // doc string
+                CreateDocString(decl.Documentation, sb, "");
 
                 // serialize attributes
                 foreach (var attr in decl.Attributes)
@@ -177,7 +178,8 @@ namespace HapetPostPrepare
                 if (d is AstVarDecl field2 && field2.IsPropertyField)
                     continue;
 
-                // TODO: doc string
+                // doc string
+                CreateDocString(decl.Documentation, sb, additionalOffset + _fourSpaces);
 
                 // serialize attributes
                 foreach (var attr in d.Attributes)
@@ -337,6 +339,15 @@ namespace HapetPostPrepare
             AntiParseExpr(decl.Name, sb, additionalOffset);
 
             sb.Append(";\n");
+        }
+
+        private void CreateDocString(string doc, StringBuilder sb, string additionalOffset)
+        {
+            if (!string.IsNullOrWhiteSpace(doc))
+                foreach (var sp in doc.Split(Environment.NewLine))
+                {
+                    sb.Append($"{additionalOffset}/// {sp}\n");
+                }
         }
     }
 }
