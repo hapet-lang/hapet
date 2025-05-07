@@ -17,6 +17,7 @@
         TagNotParsedToInt               = 0x0009,
         ValueInvalidForTag              = 0x000A,
         AssemblyNotFound                = 0x000B,
+        RefProjectNotFound              = 0x000C,
 
         // lexer errors up to 0x2000
         FileForLexerNotFound            = 0x1001,
@@ -213,6 +214,8 @@
         NoFieldsInNonTypes              = 0x500A,
         OnlyOneDoubleColonInFunc        = 0x500B,
         CouldNotGenerateTypeInfo        = 0x500C,
+        CouldNotGenerateVTable          = 0x500D,
+        VirtualMethodNotFound           = 0x500E,
 
         // backend errors up to 0x8000
         TypeCouldNotBeConverted         = 0x6001,

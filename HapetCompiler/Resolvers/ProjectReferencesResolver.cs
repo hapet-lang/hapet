@@ -21,7 +21,7 @@ namespace HapetCompiler.Resolvers
             _compiler = compiler;
             _postPreparer = postPreparer;
 
-            // TODO: project references
+            // TODO: package references
 
             if (!projectSettings.IsReferencedCompilation)
                 compiler.MessageHandler.ReportMessage([$"{Funcad.GetPrettyTimeString(compiler.CompilationStopwatch.Elapsed)} Resolving project references..."], null, ReportType.Info);

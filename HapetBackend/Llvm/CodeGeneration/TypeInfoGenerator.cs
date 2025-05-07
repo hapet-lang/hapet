@@ -133,7 +133,7 @@ namespace HapetBackend.Llvm
             return (interfacesArray, interfaceOffsetsArray);
         }
 
-        private static List<(ClassType, int[])> GetAllInterfacesWithOffsets(HapetType type)
+        private List<(ClassType, int[])> GetAllInterfacesWithOffsets(HapetType type)
         {
             // to calc offset up to the required element
             int GetOffsetTo(List<AstVarDecl> allVars, int ind)
@@ -170,7 +170,10 @@ namespace HapetBackend.Llvm
             else if (type is StructType strType)
                 allClassFields = strType.Declaration.AllRawFields;
             else
-                return new List<(ClassType, int[])>(); // TODO: compiler error
+            {
+                _messageHandler.ReportMessage(_currentSourceFile.Text, null, [HapetType.AsString(type)], ErrorCode.Get(CTEN.CouldNotGenerateTypeInfo));
+                return new List<(ClassType, int[])>(); // compiler error
+            }
 
             var allInterfaces = GetAllInterfaces(type, true);
             foreach (var intrf in allInterfaces)
@@ -194,7 +197,6 @@ namespace HapetBackend.Llvm
             if (type is ClassType clsType)
                 inheritedInterfaces = clsType.Declaration.InheritedFrom.Where(x => x.OutType is ClassType).Select(x => x.OutType as ClassType).ToList();
             else if (type is StructType strType)
-                // TODO: parent could be a struct
                 inheritedInterfaces = strType.Declaration.InheritedFrom.Where(x => x.OutType is ClassType).Select(x => x.OutType as ClassType).ToList();
             else
                 return new List<ClassType>();

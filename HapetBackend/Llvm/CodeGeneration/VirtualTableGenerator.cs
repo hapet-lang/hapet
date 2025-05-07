@@ -1,5 +1,6 @@
 ﻿using HapetFrontend.Ast.Declarations;
 using HapetFrontend.Ast.Expressions;
+using HapetFrontend.Errors;
 using HapetFrontend.Extensions;
 using HapetFrontend.Helpers;
 using HapetFrontend.Types;
@@ -27,13 +28,13 @@ namespace HapetBackend.Llvm
             }
             else if (type is StructType strType)
             {
-                // TODO: struct parent
                 parent = strType.Declaration.InheritedFrom.FirstOrDefault(x => x.OutType is ClassType clss && !clss.Declaration.IsInterface)?.OutType as ClassType;
                 typeNameString = strType.Declaration.Name.Name;
             }
             else
             {
-                // TODO: compiler error - could not generate type info 
+                // compiler error - could not generate vtable
+                _messageHandler.ReportMessage(_currentSourceFile.Text, null, [HapetType.AsString(type)], ErrorCode.Get(CTEN.CouldNotGenerateVTable));
                 return default;
             }
 
@@ -88,7 +89,8 @@ namespace HapetBackend.Llvm
             }
             else
             {
-                amount = 0; // TODO: compiler error
+                amount = 0; // compiler error
+                _messageHandler.ReportMessage(_currentSourceFile.Text, null, [HapetType.AsString(type)], ErrorCode.Get(CTEN.CouldNotGenerateVTable));
                 return default;
             }
 
@@ -148,8 +150,9 @@ namespace HapetBackend.Llvm
             }
             else
             {
-                // TODO: compiler error - could not generate type info 
+                // compiler error - could not generate vtable
                 amount = 0;
+                _messageHandler.ReportMessage(_currentSourceFile.Text, null, [HapetType.AsString(type)], ErrorCode.Get(CTEN.CouldNotGenerateVTable));
                 return (default, default);
             }
 
@@ -179,7 +182,7 @@ namespace HapetBackend.Llvm
             return (interfacesArray, interfaceOffsetsArray);
         }
 
-        private static List<(ClassType, int[])> GetAllInterfacesWithOffsetsForVtable(HapetType type)
+        private List<(ClassType, int[])> GetAllInterfacesWithOffsetsForVtable(HapetType type)
         {
             List<(ClassType, int[])> allInterfacesWithOffsets = new List<(ClassType, int[])>();
 
@@ -189,7 +192,10 @@ namespace HapetBackend.Llvm
             else if (type is StructType strType)
                 allClassVirtuals = strType.Declaration.AllVirtualMethods;
             else
-                return new List<(ClassType, int[])>(); // TODO: compiler error
+            {
+                _messageHandler.ReportMessage(_currentSourceFile.Text, null, [HapetType.AsString(type)], ErrorCode.Get(CTEN.CouldNotGenerateVTable));
+                return new List<(ClassType, int[])>(); // compiler error
+            }
 
             var allInterfaces = GetAllInterfaces(type, true);
 
@@ -200,7 +206,8 @@ namespace HapetBackend.Llvm
                 {
                     var iM = intrf.Declaration.AllVirtualMethods[i];
                     var m = allClassVirtuals.GetSameByNameAndTypes(iM, out int index);
-                    // TODO: check m for not null and error if null (compiler error)
+                    // check m for not null and error if null (compiler error)
+                    _messageHandler.ReportMessage(_currentSourceFile.Text, iM.Name, [], ErrorCode.Get(CTEN.VirtualMethodNotFound));
 
                     offsets.Add(index);
                 }

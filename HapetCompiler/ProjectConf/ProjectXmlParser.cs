@@ -67,7 +67,7 @@ namespace HapetCompiler.ProjectConf
                     // just add it and prepare in another file
                     _itemGroups.Add(xnode);
                 }
-                // TODO: ...
+                // ...
                 else
                 {
                     var loc = NodeLocationFinder.GetLocationOfNode(_projectFileText, xnode, _projectPathAbsolute);

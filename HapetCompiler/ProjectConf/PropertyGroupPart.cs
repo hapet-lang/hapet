@@ -66,7 +66,7 @@ namespace HapetCompiler.ProjectConf
             if (string.IsNullOrEmpty(targetPlatform)) _projectSettings.TargetPlatformData = CompilerSettings.CurrentPlatformData;
             else _projectSettings.TargetPlatformData = CompilerSettings.SupportedPlatforms.FirstOrDefault(x => x.Name == targetPlatform);
 
-            // TODO:
+            // ...
         }
 
         // TODO: add allowed items parameter
@@ -79,7 +79,6 @@ namespace HapetCompiler.ProjectConf
                 if (_propertyGroupData.TryGetValue(key, out var tuple))
                 {
                     string value = tuple.Item1;
-                    // TODO: better casts. like at least int could be checked and other
                     if (typeof(bool) == typeof(T))
                     {
                         return (T)(object)(value == "true");

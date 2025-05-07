@@ -50,6 +50,10 @@
         <Number>000B</Number>
         <Text>Assembly {0} could not be found. Please check project references properly</Text>
     </Item>
+	<Item>
+		<Number>000C</Number>
+		<Text>Referenced project could not be found by path '{0}'</Text>
+	</Item>
 
     <!--Lexer errors-->
     <Item>
@@ -813,6 +817,14 @@
 	<Item>
 		<Number>500C</Number>
 		<Text>(Compiler exception) Type info could not be generated for {0}</Text>
+	</Item>
+	<Item>
+		<Number>500D</Number>
+		<Text>(Compiler exception) Virtual table could not be generated for {0}</Text>
+	</Item>
+	<Item>
+		<Number>500E</Number>
+		<Text>(Compiler exception) Virtual method could not be found. Has to be handled in PP</Text>
 	</Item>
 
     <!--Backend errors-->

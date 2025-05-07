@@ -71,7 +71,6 @@ namespace HapetCompiler
                 HasErrors = true;
 
             // do not report warning messages from other assemblies
-            // TODO: you can get a parameter from cmd to enable the warnings :)
             if (message.ReportType == ReportType.Warning &&
                 string.IsNullOrWhiteSpace(message.FileText))
             {

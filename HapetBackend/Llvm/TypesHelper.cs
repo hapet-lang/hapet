@@ -353,6 +353,7 @@ namespace HapetBackend.Llvm
             else if (allOps.Count > 1)
             {
                 // TODO: get normal location somehow or make the error as out param of the func
+                // TODO: MOVE TO PP
                 _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, null, [HapetType.AsString(inType), HapetType.AsString(outType)], ErrorCode.Get(CTEN.AmbiguousCastOverloads));
             }
 
@@ -452,7 +453,7 @@ namespace HapetBackend.Llvm
                     // if the same size just return it
                     return val;
                 }
-                // TODO: ...
+                // ...
             }
             else if ((inType is IntType intType2 && !intType2.Signed) || inType is CharType)
             {
@@ -473,7 +474,7 @@ namespace HapetBackend.Llvm
                     // if the same size just return it
                     return val;
                 }
-                // TODO: ...
+                // ...
             }
             else if (inType is FloatType)
             {
@@ -496,7 +497,7 @@ namespace HapetBackend.Llvm
                         return builder.BuildFPExt(val, HapetTypeToLLVMType(floatType));
                     }
                 }
-                // TODO: ...
+                // ...
             }
             else if (inType is StructType structType) 
             {
@@ -517,7 +518,7 @@ namespace HapetBackend.Llvm
                     return v; // return malloced
                 }
             }
-            // TODO: ...
+            // ...
             return val;
         }
 
