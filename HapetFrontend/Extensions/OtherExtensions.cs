@@ -146,6 +146,9 @@ namespace HapetFrontend.Extensions
                 }
 
                 string currName = x.Name.Name.GetPureFuncName();
+                if (currName != searchName)
+                    continue;
+
                 List<HapetType> typesD = x.Parameters.Select(x => x.Type?.OutType).ToList();
                 if (skipFirst)
                 {
@@ -163,15 +166,7 @@ namespace HapetFrontend.Extensions
                     {
                         var t1 = types[j];
                         var t2 = typesD[j];
-
-                        if (t1 is GenericType && t2 is GenericType)
-                        {
-                            // WARN: for now all generic types are the same
-                            // rewrite it for better checks
-                            continue;
-                        }
-
-                        if (t1 != t2)
+                        if (!GenericType.AreTypesTheSameIncludingGenerics(t1, t2))
                         {
                             areTypesTheSame = false;
                             break;
@@ -180,11 +175,8 @@ namespace HapetFrontend.Extensions
                 if (!areTypesTheSame)
                     continue;
 
-                if ((currName == searchName))
-                {
-                    index = i;
-                    bestMatch = x;
-                }
+                index = i;
+                bestMatch = x;
             }
 
             // additional search for explicit declarations!!!
@@ -210,33 +202,6 @@ namespace HapetFrontend.Extensions
                     typesD = typesD.Skip(1).ToList();
                 }
 
-                // check for parameter types
-                bool areTypesTheSame = typesD.Count == types.Count;
-                if (!areTypesTheSame)
-                    continue;
-
-                if (areTypesTheSame)
-                    for (int j = 0; j < types.Count; ++j)
-                    {
-                        var t1 = types[j];
-                        var t2 = typesD[j];
-
-                        if (t1 is GenericType && t2 is GenericType)
-                        {
-                            // WARN: for now all generic types are the same
-                            // rewrite it for better checks
-                            continue;
-                        }
-
-                        if (t1 != t2)
-                        {
-                            areTypesTheSame = false;
-                            break;
-                        }
-                    }
-                if (!areTypesTheSame)
-                    continue;
-
                 bool areNamesEqual = false;
                 if (string.IsNullOrWhiteSpace(interfaceSearchName) && !string.IsNullOrWhiteSpace(interfaceName))
                 {
@@ -251,6 +216,25 @@ namespace HapetFrontend.Extensions
                         areNamesEqual = true;
                 }
                 if (!areNamesEqual)
+                    continue;
+
+                // check for parameter types
+                bool areTypesTheSame = typesD.Count == types.Count;
+                if (!areTypesTheSame)
+                    continue;
+
+                if (areTypesTheSame)
+                    for (int j = 0; j < types.Count; ++j)
+                    {
+                        var t1 = types[j];
+                        var t2 = typesD[j];
+                        if (!GenericType.AreTypesTheSameIncludingGenerics(t1, t2))
+                        {
+                            areTypesTheSame = false;
+                            break;
+                        }
+                    }
+                if (!areTypesTheSame)
                     continue;
 
                 index = i;

@@ -54,5 +54,23 @@ namespace HapetFrontend.Types
         }
 
         public override string ToString() => Name.Name;
+
+        public static bool AreTypesTheSameIncludingGenerics(HapetType t1, HapetType t2)
+        {
+            if (t1 is ArrayType at1 && t2 is ArrayType at2)
+            {
+                return AreTypesTheSameIncludingGenerics(at1.TargetType, at2.TargetType);
+            }
+            else if (t1 is PointerType pt1 && t2 is PointerType pt2)
+            {
+                return AreTypesTheSameIncludingGenerics(pt1.TargetType, pt2.TargetType);
+            }
+            else if (t1 is GenericType && t2 is GenericType)
+            {
+                // CRINGE :)
+                return true;
+            }
+            return t1 == t2;
+        }
     }
 }

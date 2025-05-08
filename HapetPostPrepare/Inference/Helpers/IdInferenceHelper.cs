@@ -322,7 +322,7 @@ namespace HapetPostPrepare
             // no need to create new decls with non-real-generics
             if (HasAnyGenericTypes(genId.GenericRealTypes))
             {
-                // TODO: check for compatibility
+                // TODO: check for compatibility (? tf i mean by it)
                 return decl;
             }
 

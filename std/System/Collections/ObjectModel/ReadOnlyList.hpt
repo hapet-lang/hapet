@@ -72,6 +72,12 @@ public class ReadOnlyList<T> : IList<T>
         // ThrowHelper.ThrowNotSupportedException(ExceptionResource.NotSupported_ReadOnlyCollection);
     }
 
+    public void AddRange(IEnumerable<T> collection)
+    {
+        // TODO:
+        // ThrowHelper.ThrowNotSupportedException(ExceptionResource.NotSupported_ReadOnlyCollection);
+    }
+
     public void Clear()
     {
         // TODO:
