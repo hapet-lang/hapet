@@ -6,8 +6,6 @@ using HapetFrontend.Extensions;
 using HapetFrontend.Helpers;
 using HapetFrontend.Parsing;
 using HapetFrontend.Types;
-using System;
-using System.Collections.Generic;
 
 namespace HapetPostPrepare
 {
@@ -24,19 +22,19 @@ namespace HapetPostPrepare
         // to get all virtual methods including inherited
         private List<AstFuncDecl> GetPreparedVirtualMethods__(AstDeclaration decl)
         {
-            List<AstFuncDecl> inheritedFuncDecls = new List<AstFuncDecl>();
+            List<AstFuncDecl> allVirtualFunctions = new List<AstFuncDecl>();
             List<AstFuncDecl> currentClassMethods;
             List<AstNestedExpr> inheritedFrom;
             bool isInterface = false;
             if (decl is AstClassDecl clsDecl)
             {
-                currentClassMethods = clsDecl.Declarations.Where(x => x is AstFuncDecl fnc && !(fnc.HasGenericTypes && !fnc.IsImplOfGeneric)).Select(x => x as AstFuncDecl).ToList();
+                currentClassMethods = clsDecl.Declarations.Where(x => x is AstFuncDecl fnc && !fnc.IsImplOfGeneric).Select(x => x as AstFuncDecl).ToList();
                 inheritedFrom = clsDecl.InheritedFrom;
                 isInterface = clsDecl.IsInterface;
             }
             else if (decl is AstStructDecl strDecl)
             {
-                currentClassMethods = strDecl.Declarations.Where(x => x is AstFuncDecl fnc && !(fnc.HasGenericTypes && !fnc.IsImplOfGeneric)).Select(x => x as AstFuncDecl).ToList();
+                currentClassMethods = strDecl.Declarations.Where(x => x is AstFuncDecl fnc && !fnc.IsImplOfGeneric).Select(x => x as AstFuncDecl).ToList();
                 inheritedFrom = strDecl.InheritedFrom;
             }
             else
@@ -48,10 +46,10 @@ namespace HapetPostPrepare
             foreach (var inh in inheritedFrom)
             {
                 // it has to be a class type. if it is not - there was a error previously
-                if (inh.OutType is not ClassType)
+                if (inh.OutType is not ClassType inhType)
                     break;
 
-                var inhDecl = (inh.OutType as ClassType).Declaration;
+                var inhDecl = inhType.Declaration;
                 // if the inh type is an interface
                 if (inhDecl.IsInterface)
                 {
@@ -59,7 +57,7 @@ namespace HapetPostPrepare
                     if (isInterface)
                     {
                         // TODO: warn!!! check that method already exists in the list. it is possible probably
-                        inheritedFuncDecls.AddRange(GetPreparedVirtualMethods__(inhDecl));
+                        allVirtualFunctions.AddRange(GetPreparedVirtualMethods__(inhDecl));
                     }
                     else
                     {
@@ -68,65 +66,34 @@ namespace HapetPostPrepare
                         foreach (var inhF in inhMethods)
                         {
                             // check if the interface is already implemented in parent classes
-                            var definedInOneOfTheParents = inheritedFuncDecls.GetSameByNameAndTypes(inhF, out int _);
+                            var definedInOneOfTheParents = allVirtualFunctions.GetSameByNameAndTypes(inhF, out int _);
                             // if the field was already presented previously
                             if (definedInOneOfTheParents != null)
                             {
-                                // check if the already defined method is by the interface
-                                bool isInherited = definedInOneOfTheParents.ContainingParent.Type.OutType.IsInheritedFrom(inhF.ContainingParent.Type.OutType as ClassType, true);
-                                // if inherited - this is a parent cls already implemented the method - no need to warn
-                                if (isInherited)
+                                // need to check that we do not implement it also
+                                var currF = currentClassMethods.GetSameByNameAndTypes(inhF, out int _);
+
+                                // check that the parent's function is virtual or abstract and 
+                                // our func has override word - then allow
+                                if ((definedInOneOfTheParents.SpecialKeys.Contains(TokenType.KwVirtual) || 
+                                    definedInOneOfTheParents.SpecialKeys.Contains(TokenType.KwAbstract)) &&
+                                    currF.SpecialKeys.Contains(TokenType.KwOverride))
                                 {
-                                    // need to check that we do not implement it also
-                                    var currF = currentClassMethods.GetSameByNameAndTypes(inhF, out int _);
-                                    // if parents are the same but funcs are different - one of the funcs is probably explicit impl
-                                    if (currF != null && (currF.ContainingParent == definedInOneOfTheParents.ContainingParent && currF != definedInOneOfTheParents))
-                                    {
-                                        // add it to the new dictionary
-                                        currentClassMethods.Remove(currF);
-                                        inheritedFuncDecls.Add(currF);
-                                        continue;
-                                    }
-
-                                    if (currF != null && !currF.SpecialKeys.Contains(TokenType.KwNew))
-                                    {
-                                        // the method is implemented in parent class and current class
-                                        // we need to error
-                                        _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, currF,
-                                            [HapetType.AsString(definedInOneOfTheParents.ContainingParent.Type.OutType)], ErrorCode.Get(CTEN.MethodAlreadyDefined));
-                                        continue;
-                                    }
-                                    // else - everything is ok probably
-                                }
-                                else
-                                {
-                                    // TODO: not todo. but C# allows shite like this:
-                                    /*
-                                        public interface Anime322
-                                        {
-                                            void Test();
-                                        }
-
-                                        public class Animal
-                                        {
-                                            public void Test() { }
-                                        }
-
-                                        public class Cat : Animal, Anime322
-                                        {
-                                        }
-                                     */
-                                    // but we can't because of interface offset calcs. md could be fixed somehow?
-
-                                    // we need to error
-                                    _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, inh,
-                                        [HapetType.AsString(definedInOneOfTheParents.ContainingParent.Type.OutType),
-                                            HapetType.AsString(definedInOneOfTheParents.Type.OutType),
-                                            HapetType.AsString(decl.Type.OutType),
-                                            HapetType.AsString(inh.OutType)],
-                                        ErrorCode.Get(CTEN.DoubleInterfaceCringeMeth));
+                                    // add it to the new dictionary
+                                    currentClassMethods.Remove(currF);
+                                    allVirtualFunctions.Add(currF);
                                     continue;
                                 }
+                                // if the func is in parent and in our and wihtout 'new' kw - error
+                                else if (currF != null && !currF.SpecialKeys.Contains(TokenType.KwNew))
+                                {
+                                    // the method is implemented in parent class and current class
+                                    // we need to error
+                                    _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, currF,
+                                        [HapetType.AsString(definedInOneOfTheParents.ContainingParent.Type.OutType)], ErrorCode.Get(CTEN.MethodAlreadyDefined));
+                                    continue;
+                                }
+                                // else - everything is ok probably
                             }
                             else
                             {
@@ -146,7 +113,7 @@ namespace HapetPostPrepare
                                 {
                                     // add it to the new dictionary
                                     currentClassMethods.Remove(currF);
-                                    inheritedFuncDecls.Add(currF);
+                                    allVirtualFunctions.Add(currF);
                                 }
                             }
                         }
@@ -154,57 +121,36 @@ namespace HapetPostPrepare
                 }
                 else
                 {
-                    // if we are not an interface, happens when:
-                    // interface IAnime : object
+                    // if we are not an interface
+
+                    // check that smth like
+                    // class Pivo : object
                     if (!isInterface)
                     {
                         var parentFuncs = GetPreparedVirtualMethods__(inhDecl);
 
-                        //// shadowing cringe
-                        //foreach (var f in currentClassMethods.ToList())
-                        //{
-                        //    var inhF = parentFuncs.GetSameByNameAndTypes(f, out var _);
-
-                        //    // error if the current field is without 'new' and parent has the same named field
-                        //    if (!f.SpecialKeys.Contains(TokenType.KwNew))
-                        //    {
-                        //        if (inhF != null && !f.SpecialKeys.Contains(TokenType.KwOverride))
-                        //        {
-                        //            // the field is implemented in parent class and current class
-                        //            // we need to error
-                        //            _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, f,
-                        //                [HapetType.AsString(f.ContainingParent.Type.OutType)], ErrorCode.Get(CTEN.FieldAlreadyDefined));
-                        //        }
-                        //        continue; // skip
-                        //    }
-
-                        //    // check if there is a 'new' kw but no fields in parent
-                        //    if (inhF == null)
-                        //    {
-                        //        // we need to error
-                        //        _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text,
-                        //            f.SpecialKeys.GetType(TokenType.KwNew).Location,
-                        //            [], ErrorCode.Get(CTEN.PureUnexpectedToken));
-                        //        continue;
-                        //    }
-                        //}
-
                         // just add parent funcs if it is a class
-                        inheritedFuncDecls.AddRange(parentFuncs);
+                        allVirtualFunctions.AddRange(parentFuncs);
 
                         // search for overrides in the current class 
                         // and replace parent methods with our
                         foreach (var fCurr in currentClassMethods.Where(x => x.SpecialKeys.Contains(TokenType.KwOverride)).ToArray())
                         {
                             // check for signatures
-                            var overridedFnc = inheritedFuncDecls.GetSameByNameAndTypes(fCurr, out int fncIndex);
+                            var overridedFnc = allVirtualFunctions.GetSameByNameAndTypes(fCurr, out int fncIndex);
                             // TODO: error here? we go all over the override funcs and found no func to be overriden?
                             if (overridedFnc == null)
                                 continue;
-                            inheritedFuncDecls[fncIndex] = fCurr;
+                            allVirtualFunctions[fncIndex] = fCurr;
                             // we need to remove it so it won't mess with us
                             currentClassMethods.Remove(fCurr);
                         }
+                    }
+                    else
+                    {
+                        // TODO: probably need to handle shite like:
+                        // interface IPivo : object 
+                        // implicit inheritance
                     }
                 }
             }
@@ -214,8 +160,11 @@ namespace HapetPostPrepare
             {
                 // skip virtual shite
                 if (currM.SpecialKeys.Contains(TokenType.KwOverride))
+                {
+                    // TODO: probably error here - all overrides should be removed upper
                     continue;
-                var parentFnc = inheritedFuncDecls.GetSameByNameAndTypes(currM, out int _);
+                }
+                var parentFnc = allVirtualFunctions.GetSameByNameAndTypes(currM, out int _);
                 if (parentFnc != null && !currM.SpecialKeys.Contains(TokenType.KwNew))
                 {
                     // skip property functions - property would error by its own
@@ -232,9 +181,10 @@ namespace HapetPostPrepare
             if (!isInterface && !decl.SpecialKeys.Contains(TokenType.KwAbstract))
             {
                 // if it is not an interface nor abstract class - all abstract shite has to be implemented
-                foreach (var m in inheritedFuncDecls)
+                foreach (var m in allVirtualFunctions)
                 {
                     // skip overrided-abstract methods
+                    // the parent would be our cls if overrided
                     if (m.ContainingParent == decl)
                         continue;
 
@@ -253,12 +203,12 @@ namespace HapetPostPrepare
 
             if (isInterface)
                 // add here all shite because it is an interface
-                inheritedFuncDecls.AddRange(currentClassMethods);
+                allVirtualFunctions.AddRange(currentClassMethods);
             else
                 // add here only virtual shite
-                inheritedFuncDecls.AddRange(currentClassMethods.Where(x => x.SpecialKeys.Contains(TokenType.KwAbstract) ||
+                allVirtualFunctions.AddRange(currentClassMethods.Where(x => x.SpecialKeys.Contains(TokenType.KwAbstract) ||
                                                                            x.SpecialKeys.Contains(TokenType.KwVirtual)));
-            return inheritedFuncDecls;
+            return allVirtualFunctions;
         }
     }
 }
