@@ -42,6 +42,11 @@ public class ReadOnlyList<T> : IList<T>
         }
     }
 
+    public IList<T> GetRange(int index, int count)
+    {
+        return list.GetRange(index, count);
+    }
+
     public bool Contains(T value)
     {
         return list.Contains(value);
@@ -60,6 +65,11 @@ public class ReadOnlyList<T> : IList<T>
     public int IndexOf(T value)
     {
         return list.IndexOf(value);
+    }
+
+    public int LastIndexOf(T item)
+    {
+        return list.LastIndexOf(item);
     }
 
     protected IList<T> Items { get { return list; } }
@@ -90,6 +100,12 @@ public class ReadOnlyList<T> : IList<T>
         // ThrowHelper.ThrowNotSupportedException(ExceptionResource.NotSupported_ReadOnlyCollection);
     }
 
+    public void InsertRange(int index, IEnumerable<T> collection)
+    {
+        // TODO:
+        // ThrowHelper.ThrowNotSupportedException(ExceptionResource.NotSupported_ReadOnlyCollection);
+    }
+
     public bool Remove(T value)
     {
         // TODO:
@@ -98,6 +114,12 @@ public class ReadOnlyList<T> : IList<T>
     }
 
     public void RemoveAt(int index)
+    {
+        // TODO:
+        // ThrowHelper.ThrowNotSupportedException(ExceptionResource.NotSupported_ReadOnlyCollection);
+    }
+
+    public int RemoveAll(Predicate<T> match)
     {
         // TODO:
         // ThrowHelper.ThrowNotSupportedException(ExceptionResource.NotSupported_ReadOnlyCollection);
