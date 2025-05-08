@@ -155,19 +155,32 @@ namespace HapetFrontend.Extensions
 
                 // check for parameter types
                 bool areTypesTheSame = typesD.Count == types.Count;
+                if (!areTypesTheSame)
+                    continue;
+
                 if (areTypesTheSame)
                     for (int j = 0; j < types.Count; ++j)
                     {
                         var t1 = types[j];
                         var t2 = typesD[j];
+
+                        if (t1 is GenericType && t2 is GenericType)
+                        {
+                            // WARN: for now all generic types are the same
+                            // rewrite it for better checks
+                            continue;
+                        }
+
                         if (t1 != t2)
                         {
                             areTypesTheSame = false;
                             break;
                         }
                     }
+                if (!areTypesTheSame)
+                    continue;
 
-                if ((currName == searchName) && x.Returns.OutType == searchFunc.Returns.OutType && areTypesTheSame)
+                if ((currName == searchName))
                 {
                     index = i;
                     bestMatch = x;
@@ -199,17 +212,30 @@ namespace HapetFrontend.Extensions
 
                 // check for parameter types
                 bool areTypesTheSame = typesD.Count == types.Count;
+                if (!areTypesTheSame)
+                    continue;
+
                 if (areTypesTheSame)
                     for (int j = 0; j < types.Count; ++j)
                     {
                         var t1 = types[j];
                         var t2 = typesD[j];
+
+                        if (t1 is GenericType && t2 is GenericType)
+                        {
+                            // WARN: for now all generic types are the same
+                            // rewrite it for better checks
+                            continue;
+                        }
+
                         if (t1 != t2)
                         {
                             areTypesTheSame = false;
                             break;
                         }
                     }
+                if (!areTypesTheSame)
+                    continue;
 
                 bool areNamesEqual = false;
                 if (string.IsNullOrWhiteSpace(interfaceSearchName) && !string.IsNullOrWhiteSpace(interfaceName))
@@ -224,12 +250,11 @@ namespace HapetFrontend.Extensions
                     if (parentSearch == interfaceSearchName && pureName == pureSearchName)
                         areNamesEqual = true;
                 }
+                if (!areNamesEqual)
+                    continue;
 
-                if (areNamesEqual && x.Returns.OutType == searchFunc.Returns.OutType && areTypesTheSame)
-                {
-                    index = i;
-                    bestMatch = x;
-                }
+                index = i;
+                bestMatch = x;
             }
             return bestMatch;
         }

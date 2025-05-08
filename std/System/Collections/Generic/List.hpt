@@ -474,6 +474,13 @@ public class List<T> : IList<T>
         return GetEnumeratorInternal();
     }
 
+    public IEnumerator IEnumerable.GetEnumerator() 
+    {
+        if (Count == 0)
+            return SZGenericArrayEnumerator<T>.Empty;
+        return GetEnumeratorInternal();
+    }
+
     public IList<T> GetRange(int index, int count)
     {
         if (index < 0)

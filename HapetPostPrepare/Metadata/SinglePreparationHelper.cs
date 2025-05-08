@@ -47,13 +47,13 @@ namespace HapetPostPrepare
             {
                 PostPrepareMetadataFunctions(stmt);
             }
-            if (_currentPreparationStep >= PreparationStep.InheritedFunctions)
-            {
-                PostPrepareMetadataInheritedFunctions(stmt);
-            }
             if (_currentPreparationStep >= PreparationStep.FieldAndPropDecls)
             {
                 PostPrepareMetadataTypeFieldDecls(stmt);
+            }
+            if (_currentPreparationStep >= PreparationStep.InheritedFunctions)
+            {
+                PostPrepareMetadataInheritedFunctions(stmt);
             }
             if (_currentPreparationStep >= PreparationStep.InheritedFieldDecls)
             {

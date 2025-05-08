@@ -13,14 +13,28 @@ namespace HapetPostPrepare
     {
         private void PostPrepareMetadataInheritedFunctions(AstStatement stmt)
         {
-            if (stmt is AstClassDecl cls)
-                cls.AllVirtualMethods = GetPreparedVirtualMethods__(cls);
-            else if (stmt is AstStructDecl str)
-                str.AllVirtualMethods = GetPreparedVirtualMethods__(str);
+            if (stmt is AstDeclaration decl)
+                GetPreparedVirtualMethodsOnce(decl);
         }
 
         // to get all virtual methods including inherited
-        private List<AstFuncDecl> GetPreparedVirtualMethods__(AstDeclaration decl)
+        private List<AstFuncDecl> GetPreparedVirtualMethodsOnce(AstDeclaration decl)
+        {
+            if (decl is AstClassDecl cls)
+            {
+                if (cls.AllVirtualMethods == null)
+                    cls.AllVirtualMethods = GetPreparedVirtualMethodsInternal(cls);
+                return cls.AllVirtualMethods;
+            }
+            else if (decl is AstStructDecl str)
+            {
+                if (str.AllVirtualMethods == null)
+                    str.AllVirtualMethods = GetPreparedVirtualMethodsInternal(str);
+                return str.AllVirtualMethods;
+            }
+            return new List<AstFuncDecl>();
+        }
+        private List<AstFuncDecl> GetPreparedVirtualMethodsInternal(AstDeclaration decl)
         {
             List<AstFuncDecl> allVirtualFunctions = new List<AstFuncDecl>();
             List<AstFuncDecl> currentClassMethods;
@@ -57,21 +71,23 @@ namespace HapetPostPrepare
                     if (isInterface)
                     {
                         // TODO: warn!!! check that method already exists in the list. it is possible probably
-                        allVirtualFunctions.AddRange(GetPreparedVirtualMethods__(inhDecl));
+                        allVirtualFunctions.AddRange(GetPreparedVirtualMethodsOnce(inhDecl));
                     }
                     else
                     {
                         // get all the methods of interface
-                        var inhMethods = GetPreparedVirtualMethods__(inhDecl);
+                        var inhMethods = GetPreparedVirtualMethodsOnce(inhDecl);
                         foreach (var inhF in inhMethods)
                         {
+                            // skip first if is non static func
+                            bool skipFirst = !inhF.SpecialKeys.Contains(TokenType.KwStatic);
                             // check if the interface is already implemented in parent classes
-                            var definedInOneOfTheParents = allVirtualFunctions.GetSameByNameAndTypes(inhF, out int _);
+                            var definedInOneOfTheParents = allVirtualFunctions.GetSameByNameAndTypes(inhF, out int _, skipFirst);
                             // if the field was already presented previously
                             if (definedInOneOfTheParents != null)
                             {
                                 // need to check that we do not implement it also
-                                var currF = currentClassMethods.GetSameByNameAndTypes(inhF, out int _);
+                                var currF = currentClassMethods.GetSameByNameAndTypes(inhF, out int _, skipFirst);
 
                                 // check that the parent's function is virtual or abstract and 
                                 // our func has override word - then allow
@@ -100,7 +116,7 @@ namespace HapetPostPrepare
                                 // if the method was not presented previously
 
                                 // need to check that we do implement it
-                                var currF = currentClassMethods.GetSameByNameAndTypes(inhF, out int _);
+                                var currF = currentClassMethods.GetSameByNameAndTypes(inhF, out int _, skipFirst);
                                 if (currF == null)
                                 {
                                     if (!inhF.IsPropertyFunction)
@@ -127,7 +143,7 @@ namespace HapetPostPrepare
                     // class Pivo : object
                     if (!isInterface)
                     {
-                        var parentFuncs = GetPreparedVirtualMethods__(inhDecl);
+                        var parentFuncs = GetPreparedVirtualMethodsOnce(inhDecl);
 
                         // just add parent funcs if it is a class
                         allVirtualFunctions.AddRange(parentFuncs);
@@ -136,8 +152,10 @@ namespace HapetPostPrepare
                         // and replace parent methods with our
                         foreach (var fCurr in currentClassMethods.Where(x => x.SpecialKeys.Contains(TokenType.KwOverride)).ToArray())
                         {
+                            // skip first if is non static func
+                            bool skipFirst = !fCurr.SpecialKeys.Contains(TokenType.KwStatic);
                             // check for signatures
-                            var overridedFnc = allVirtualFunctions.GetSameByNameAndTypes(fCurr, out int fncIndex);
+                            var overridedFnc = allVirtualFunctions.GetSameByNameAndTypes(fCurr, out int fncIndex, skipFirst);
                             // TODO: error here? we go all over the override funcs and found no func to be overriden?
                             if (overridedFnc == null)
                                 continue;
@@ -164,7 +182,9 @@ namespace HapetPostPrepare
                     // TODO: probably error here - all overrides should be removed upper
                     continue;
                 }
-                var parentFnc = allVirtualFunctions.GetSameByNameAndTypes(currM, out int _);
+                // skip first if is non static func
+                bool skipFirst = !currM.SpecialKeys.Contains(TokenType.KwStatic);
+                var parentFnc = allVirtualFunctions.GetSameByNameAndTypes(currM, out int _, skipFirst);
                 if (parentFnc != null && !currM.SpecialKeys.Contains(TokenType.KwNew))
                 {
                     // skip property functions - property would error by its own
@@ -174,6 +194,10 @@ namespace HapetPostPrepare
                     // error - function shadowing
                     _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, currM.Name,
                         [HapetType.AsString(parentFnc.Type.OutType)], ErrorCode.Get(CTEN.FunctionShadowing));
+                }
+                else if (parentFnc != null && currM.SpecialKeys.Contains(TokenType.KwNew))
+                {
+                    // to set brkp here
                 }
             }
 

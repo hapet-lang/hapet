@@ -77,7 +77,7 @@ namespace HapetFrontend.Ast.Declarations
 
         public override string ToString()
         {
-            return $"{Returns.OutType}:{Name}";
+            return $"{Name}";
         }
     }
 }
