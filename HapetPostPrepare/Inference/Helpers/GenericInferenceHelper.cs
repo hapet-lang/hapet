@@ -11,6 +11,7 @@ using System.Text;
 using HapetFrontend.Helpers;
 using HapetPostPrepare.Other;
 using HapetFrontend.Types;
+using HapetFrontend.Entities;
 
 namespace HapetPostPrepare
 {
@@ -27,7 +28,7 @@ namespace HapetPostPrepare
 
             // set the decl source file
             _currentSourceFile = decl.SourceFile;
-            _currentParentStack = ParentStackManager.Create();
+            _currentParentStack = ParentStackManager.Create(_compiler.MessageHandler);
 
             // cringe
             string origDeclPureName = decl.Name.Name;
@@ -52,8 +53,10 @@ namespace HapetPostPrepare
             // no need to reset HasGenericTypes when using generic shite from another generic
             realDecl.HasGenericTypes = GenericsHelper.HasGenericTypesInRealTypes(genericTypes);
 
+            // getting pure generics from original generic decl
+            var pureGenerics = GenericsHelper.GetGenericsFromName(decl.Name as AstIdGenericExpr, _compiler.MessageHandler);
             // replaces all T with normal types like int
-            MakeGenericMapping(realDecl.GenericNames, genericTypes);
+            MakeGenericMapping(pureGenerics, genericTypes);
             ReplaceAllGenericTypesInDecl(realDecl);
             // replaces all System.Anime::Func(Pivo) with just Func and etc.
             GenericsHelper.ResetDeclarationNames(realDecl);

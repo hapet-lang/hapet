@@ -1,13 +1,18 @@
 ﻿using System.Collections.Immutable;
 using System.Collections.ObjectModel;
+using HapetFrontend;
 using HapetFrontend.Ast;
 using HapetFrontend.Ast.Declarations;
+using HapetFrontend.Ast.Expressions;
+using HapetFrontend.Entities;
+using HapetFrontend.Helpers;
 using HapetFrontend.Types;
 
 namespace HapetPostPrepare.Other
 {
     public class ParentStackManager
     {
+        private IMessageHandler _messageHandler;
         private Stack<AstDeclaration> _parentStack { get; } = new Stack<AstDeclaration>();
 
         /// <summary>
@@ -20,9 +25,12 @@ namespace HapetPostPrepare.Other
         public ReadOnlyDictionary<string, GenericType> CurrentGenericIdMappings => new ReadOnlyDictionary<string, GenericType>(_currentGenericIdMappings);
 
         private ParentStackManager() { }
-        public static ParentStackManager Create()
+        public static ParentStackManager Create(IMessageHandler messageHandler)
         {
-            return new ParentStackManager();
+            return new ParentStackManager()
+            {
+                _messageHandler = messageHandler
+            };
         }
 
         public void AddParent(AstDeclaration parent)
@@ -63,7 +71,9 @@ namespace HapetPostPrepare.Other
 
         private void AddParentGenerics(AstDeclaration parent)
         {
-            foreach (var p in parent.GenericNames)
+            // getting pure generics from decl
+            var pureGenerics = GenericsHelper.GetGenericsFromName(parent.Name as AstIdGenericExpr, _messageHandler);
+            foreach (var p in pureGenerics)
             {
                 _currentGenericIdMappings.Add(p.Name, p.OutType as GenericType);
             }
@@ -71,7 +81,9 @@ namespace HapetPostPrepare.Other
 
         private void RemoveParentGenerics(AstDeclaration parent)
         {
-            foreach (var p in parent.GenericNames)
+            // getting pure generics from decl
+            var pureGenerics = GenericsHelper.GetGenericsFromName(parent.Name as AstIdGenericExpr, _messageHandler);
+            foreach (var p in pureGenerics)
             {
                 _currentGenericIdMappings.Remove(p.Name);
             }

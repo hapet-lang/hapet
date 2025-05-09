@@ -62,7 +62,6 @@ namespace HapetFrontend.Ast.Declarations
                 GetBlock = GetBlock?.GetDeepCopy() as AstBlockExpr,
                 SetBlock = SetBlock?.GetDeepCopy() as AstBlockExpr,
                 IsImported = IsImported,
-                GenericNames = GenericNames?.Select(x => x.GetDeepCopy() as AstIdExpr).ToList(),
                 GenericConstrains = copiedConstrains,
                 HasGenericTypes = HasGenericTypes,
                 Scope = Scope,

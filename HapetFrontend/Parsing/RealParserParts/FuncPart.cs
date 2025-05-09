@@ -4,6 +4,7 @@ using HapetFrontend.Ast.Expressions;
 using HapetFrontend.Ast.Statements;
 using HapetFrontend.Entities;
 using HapetFrontend.Errors;
+using HapetFrontend.Helpers;
 
 namespace HapetFrontend.Parsing
 {
@@ -25,18 +26,7 @@ namespace HapetFrontend.Parsing
             // getting generics from parsed udecl' name
             if (inInfo.CurrentUdecl != null && inInfo.CurrentUdecl.Name is AstIdGenericExpr genExpr)
             {
-                foreach (var g in genExpr.GenericRealTypes)
-                {
-                    if (g is AstNestedExpr nest)
-                        generics.Add(nest.RightPart as AstIdExpr);
-                    else if (g is AstIdExpr id)
-                        generics.Add(id);
-                    else
-                    {
-                        ReportMessage(g.Location, [], ErrorCode.Get(CTEN.CommonIdentifierExpected));
-                        generics.Add(null); // ERROR HERE
-                    }
-                }
+                generics = GenericsHelper.GetGenericsFromName(genExpr, _messageHandler);
             }
 
             SkipNewlines();
@@ -73,7 +63,6 @@ namespace HapetFrontend.Parsing
             theFunc.Location = new Location(paramsLocation.Beginning, body?.Ending ?? paramsLocation.Ending);
             theFunc.BaseCtorCall = baseCtorCall;
             theFunc.HasGenericTypes = generics.Count > 0;
-            theFunc.GenericNames = generics;
             theFunc.GenericConstrains = genericConstrains;
             theFunc.IsImported = inInfo.ExternalMetadata;
             return theFunc;

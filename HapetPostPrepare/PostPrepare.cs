@@ -34,7 +34,7 @@ namespace HapetPostPrepare
 
         public int StartPreparation()
         {
-            _currentParentStack = ParentStackManager.Create();
+            _currentParentStack = ParentStackManager.Create(_compiler.MessageHandler);
 
             // we are checking for errors after each function 
             // because some steps won't work properly without previous

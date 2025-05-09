@@ -9,6 +9,7 @@ using HapetFrontend.Parsing;
 using System.Collections.Generic;
 using HapetFrontend.Extensions;
 using HapetFrontend.Entities;
+using HapetFrontend.Helpers;
 
 namespace HapetPostPrepare
 {
@@ -688,8 +689,12 @@ namespace HapetPostPrepare
                 // for generic type - need to create an AstIdGenericExpr
                 AstIdExpr thisParamType;
                 if (parentDecl.HasGenericTypes)
+                {
+                    // getting pure generics from decl
+                    var pureGenerics = GenericsHelper.GetGenericsFromName(parentDecl.Name as AstIdGenericExpr, _compiler.MessageHandler);
                     thisParamType = AstIdGenericExpr.FromAstIdExpr(parentDecl.Name.GetCopy(),
-                        parentDecl.GenericNames.Select(x => x as AstExpression).ToList());
+                        pureGenerics.Select(x => x as AstExpression).ToList());
+                }
                 else
                     thisParamType = parentDecl.Name.GetCopy();
                 // creating the class instance 'this' param

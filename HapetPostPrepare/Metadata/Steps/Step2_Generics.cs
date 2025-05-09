@@ -1,5 +1,6 @@
 ﻿using HapetFrontend.Ast;
 using HapetFrontend.Ast.Expressions;
+using HapetFrontend.Helpers;
 using HapetFrontend.Types;
 
 namespace HapetPostPrepare
@@ -15,10 +16,12 @@ namespace HapetPostPrepare
             if (!decl.HasGenericTypes)
                 return false;
 
+            // getting pure generics from decl
+            var pureGenerics = GenericsHelper.GetGenericsFromName(decl.Name as AstIdGenericExpr, _compiler.MessageHandler);
             // we need to set types to ids
-            for (int i = 0; i < decl.GenericNames.Count; ++i)
+            for (int i = 0; i < pureGenerics.Count; ++i)
             {
-                var currGeneric = decl.GenericNames[i];
+                var currGeneric = pureGenerics[i];
                 var currContrains = new List<AstNestedExpr>();
                 if (decl.GenericConstrains.TryGetValue(currGeneric, out var constrains))
                     currContrains = constrains;

@@ -7,6 +7,7 @@ using HapetFrontend.Extensions;
 using System.Xml.Linq;
 using HapetFrontend.Types;
 using HapetFrontend.Entities;
+using HapetFrontend.Errors;
 
 namespace HapetFrontend.Helpers
 {
@@ -139,6 +140,29 @@ namespace HapetFrontend.Helpers
                 return type.ToString();
             }
             return type.ToString();
+        }
+
+        /// <summary>
+        /// Returns list of generics from name
+        /// </summary>
+        /// <param name="idExpr"></param>
+        /// <returns></returns>
+        public static List<AstIdExpr> GetGenericsFromName(AstIdGenericExpr idExpr, IMessageHandler messageHandler)
+        {
+            var generics = new List<AstIdExpr>();
+            foreach (var g in idExpr.GenericRealTypes)
+            {
+                if (g is AstNestedExpr nest)
+                    generics.Add(nest.RightPart as AstIdExpr);
+                else if (g is AstIdExpr id)
+                    generics.Add(id);
+                else
+                {
+                    messageHandler.ReportMessage(idExpr.SourceFile.Text, g.Location, [], ErrorCode.Get(CTEN.CommonIdentifierExpected));
+                    generics.Add(null); // ERROR HERE
+                }
+            }
+            return generics;
         }
     }
 }

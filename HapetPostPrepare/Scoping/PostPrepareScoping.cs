@@ -1,4 +1,5 @@
-﻿using HapetFrontend.Ast;
+﻿using System.Data;
+using HapetFrontend.Ast;
 using HapetFrontend.Ast.Declarations;
 using HapetFrontend.Ast.Expressions;
 using HapetFrontend.Ast.Statements;
@@ -64,6 +65,17 @@ namespace HapetPostPrepare
                     PostPrepareExprScoping(propDecl.SetBlock);
                 }
 
+                // scoping generic shite
+                foreach (var c in propDecl.GenericConstrains)
+                {
+                    foreach (var currentC in c.Value)
+                    {
+                        // subscoping generic type constrains
+                        SetScopeAndParent(currentC, propDecl, propDecl.SubScope);
+                        PostPrepareExprScoping(currentC);
+                    }
+                }
+
                 // scoping indexer parameter
                 if (propDecl is AstIndexerDecl indDecl)
                 {
@@ -99,21 +111,13 @@ namespace HapetPostPrepare
             }
 
             // scoping generic shite
-            foreach (var g in classDecl.GenericNames)
+            foreach (var c in classDecl.GenericConstrains)
             {
-                // subscoping generic types
-                SetScopeAndParent(g, classDecl, classDecl.SubScope);
-                PostPrepareExprScoping(g);
-
-                // check for constrains
-                if (classDecl.GenericConstrains.TryGetValue(g, out var constrains))
+                foreach (var currentC in c.Value)
                 {
-                    foreach (var c in constrains)
-                    {
-                        // subscoping generic type constrains
-                        SetScopeAndParent(c, classDecl, classDecl.SubScope);
-                        PostPrepareExprScoping(c);
-                    }
+                    // subscoping generic type constrains
+                    SetScopeAndParent(currentC, classDecl, classDecl.SubScope);
+                    PostPrepareExprScoping(currentC);
                 }
             }
 
@@ -189,6 +193,17 @@ namespace HapetPostPrepare
             {
                 SetScopeAndParent(inh, structDecl);
                 PostPrepareExprScoping(inh);
+            }
+
+            // scoping generic shite
+            foreach (var c in structDecl.GenericConstrains)
+            {
+                foreach (var currentC in c.Value)
+                {
+                    // subscoping generic type constrains
+                    SetScopeAndParent(currentC, structDecl, structDecl.SubScope);
+                    PostPrepareExprScoping(currentC);
+                }
             }
 
             foreach (var decl in structDecl.Declarations)
@@ -280,11 +295,26 @@ namespace HapetPostPrepare
             SetScopeAndParent(delegateDecl.Name, delegateDecl);
             PostPrepareExprScoping(delegateDecl.Name);
 
+            // required for generics at least
+            var delegateScope = new Scope($"{delegateDecl.Name.Name}_scope", delegateDecl.Scope);
+            delegateDecl.SubScope = delegateScope;
+
             // scoping delegate attrs
             foreach (var a in delegateDecl.Attributes)
             {
                 SetScopeAndParent(a, delegateDecl);
                 PostPrepareExprScoping(a);
+            }
+
+            // scoping generic shite
+            foreach (var c in delegateDecl.GenericConstrains)
+            {
+                foreach (var currentC in c.Value)
+                {
+                    // subscoping generic type constrains
+                    SetScopeAndParent(currentC, delegateDecl, delegateDecl.SubScope);
+                    PostPrepareExprScoping(currentC);
+                }
             }
 
             // WARN!!!! do not set the scope the same as delegate scope because its params would be visible in class or smth
@@ -325,21 +355,13 @@ namespace HapetPostPrepare
             }
 
             // scoping generic shite
-            foreach (var g in funcDecl.GenericNames)
+            foreach (var c in funcDecl.GenericConstrains)
             {
-                // subscoping generic types
-                SetScopeAndParent(g, funcDecl, funcDecl.SubScope);
-                PostPrepareExprScoping(g);
-
-                // check for constrains
-                if (funcDecl.GenericConstrains.TryGetValue(g, out var constrains))
+                foreach (var currentC in c.Value)
                 {
-                    foreach (var c in constrains)
-                    {
-                        // subscoping generic type constrains
-                        SetScopeAndParent(c, funcDecl, funcDecl.SubScope);
-                        PostPrepareExprScoping(c);
-                    }
+                    // subscoping generic type constrains
+                    SetScopeAndParent(currentC, funcDecl, funcDecl.SubScope);
+                    PostPrepareExprScoping(currentC);
                 }
             }
 

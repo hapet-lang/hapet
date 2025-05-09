@@ -58,7 +58,6 @@ namespace HapetFrontend.Ast.Declarations
                 AllRawProps = AllRawProps?.Select(x => x.GetDeepCopy() as AstPropertyDecl).ToList(),
                 AllVirtualMethods = AllVirtualMethods?.Select(x => x.GetDeepCopy() as AstFuncDecl).ToList(),
                 InheritedFrom = InheritedFrom?.Select(x => x.GetDeepCopy() as AstNestedExpr).ToList(),
-                GenericNames = GenericNames?.Select(x => x.GetDeepCopy() as AstIdExpr).ToList(),
                 GenericConstrains = copiedConstrains,
                 HasGenericTypes = HasGenericTypes,
                 IsImported = IsImported,

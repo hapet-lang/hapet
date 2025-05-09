@@ -50,12 +50,6 @@ namespace HapetFrontend.Ast
         public bool IsImplOfGeneric { get; set; }
 
         /// <summary>
-        /// Generic name aliases like T in:
-        /// public class TestCls-T- { ... }
-        /// </summary>
-        public List<AstIdExpr> GenericNames { get; set; } = new List<AstIdExpr>();
-
-        /// <summary>
         /// Generic parameter constrains like:
         /// ...-T- where T: struct, enum, class { ... }
         /// </summary>

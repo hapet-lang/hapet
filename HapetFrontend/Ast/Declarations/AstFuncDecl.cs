@@ -62,7 +62,6 @@ namespace HapetFrontend.Ast.Declarations
                 BaseCtorCall = BaseCtorCall?.GetDeepCopy() as AstBaseCtorStmt,
                 CallingConvention = CallingConvention,
                 ClassFunctionType = ClassFunctionType,
-                GenericNames = GenericNames?.Select(x => x.GetDeepCopy() as AstIdExpr).ToList(),
                 GenericConstrains = copiedConstrains,
                 HasGenericTypes = HasGenericTypes,
                 IsImported = IsImported,

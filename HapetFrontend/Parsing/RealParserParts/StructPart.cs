@@ -3,6 +3,7 @@ using HapetFrontend.Ast.Declarations;
 using HapetFrontend.Ast.Expressions;
 using HapetFrontend.Entities;
 using HapetFrontend.Errors;
+using HapetFrontend.Helpers;
 
 namespace HapetFrontend.Parsing
 {
@@ -39,18 +40,7 @@ namespace HapetFrontend.Parsing
             // getting generics from parsed struct name
             if (structName is AstIdGenericExpr genExpr)
             {
-                foreach (var g in genExpr.GenericRealTypes)
-                {
-                    if (g is AstNestedExpr nest)
-                        generics.Add(nest.RightPart as AstIdExpr);
-                    else if (g is AstIdExpr id)
-                        generics.Add(id);
-                    else
-                    {
-                        ReportMessage(g.Location, [], ErrorCode.Get(CTEN.CommonIdentifierExpected));
-                        generics.Add(null); // ERROR HERE
-                    }
-                }
+                generics = GenericsHelper.GetGenericsFromName(genExpr, _messageHandler);
             }
 
             SkipNewlines();
@@ -148,7 +138,6 @@ namespace HapetFrontend.Parsing
             structDecl.Location = new Location(beg, end);
             structDecl.InheritedFrom = inherited;
             structDecl.HasGenericTypes = generics.Count > 0;
-            structDecl.GenericNames = generics;
             structDecl.GenericConstrains = genericConstrains;
             structDecl.IsImported = inInfo.ExternalMetadata;
             return structDecl;

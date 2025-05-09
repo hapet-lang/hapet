@@ -5,6 +5,7 @@ using System.Xml.Linq;
 using HapetFrontend.Errors;
 using System.Runtime;
 using HapetFrontend.Entities;
+using HapetFrontend.Helpers;
 
 namespace HapetFrontend.Parsing
 {
@@ -49,18 +50,7 @@ namespace HapetFrontend.Parsing
             // getting generics from parsed class name
             if (delegateName is AstIdGenericExpr genExpr)
             {
-                foreach (var g in genExpr.GenericRealTypes)
-                {
-                    if (g is AstNestedExpr nest)
-                        generics.Add(nest.RightPart as AstIdExpr);
-                    else if (g is AstIdExpr id)
-                        generics.Add(id);
-                    else
-                    {
-                        ReportMessage(g.Location, [], ErrorCode.Get(CTEN.CommonIdentifierExpected));
-                        generics.Add(null); // ERROR HERE
-                    }
-                }
+                generics = GenericsHelper.GetGenericsFromName(genExpr, _messageHandler);
             }
 
             TokenLocation end;
@@ -78,7 +68,6 @@ namespace HapetFrontend.Parsing
             {
                 IsImported = inInfo.ExternalMetadata,
                 HasGenericTypes = generics.Count > 0,
-                GenericNames = generics,
                 GenericConstrains = genericConstrains,
         };
         }

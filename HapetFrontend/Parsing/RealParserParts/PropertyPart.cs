@@ -4,6 +4,7 @@ using HapetFrontend.Ast.Expressions;
 using HapetFrontend.Errors;
 using HapetFrontend.Entities;
 using System.Diagnostics;
+using HapetFrontend.Helpers;
 
 namespace HapetFrontend.Parsing
 {
@@ -28,18 +29,7 @@ namespace HapetFrontend.Parsing
             // getting generics from parsed udecl' name
             if (udecl.Name is AstIdGenericExpr genExpr)
             {
-                foreach (var g in genExpr.GenericRealTypes)
-                {
-                    if (g is AstNestedExpr nest)
-                        generics.Add(nest.RightPart as AstIdExpr);
-                    else if (g is AstIdExpr id)
-                        generics.Add(id);
-                    else
-                    {
-                        ReportMessage(g.Location, [], ErrorCode.Get(CTEN.CommonIdentifierExpected));
-                        generics.Add(null); // ERROR HERE
-                    }
-                }
+                generics = GenericsHelper.GetGenericsFromName(genExpr, _messageHandler);
             }
 
             // parsing constrains
@@ -129,7 +119,6 @@ namespace HapetFrontend.Parsing
             theProperty.GetBlock = getBody;
             theProperty.SetBlock = setBody;
             theProperty.HasGenericTypes = generics.Count > 0;
-            theProperty.GenericNames = generics;
             theProperty.GenericConstrains = genericConstrains;
             theProperty.SpecialKeys.AddRange(udecl.SpecialKeys);
             theProperty.IsImported = inInfo.ExternalMetadata;

@@ -3,6 +3,7 @@ using HapetFrontend.Ast.Declarations;
 using HapetFrontend.Ast.Expressions;
 using HapetFrontend.Entities;
 using HapetFrontend.Errors;
+using HapetFrontend.Helpers;
 using System.Collections.Generic;
 
 namespace HapetFrontend.Parsing
@@ -50,18 +51,7 @@ namespace HapetFrontend.Parsing
             // getting generics from parsed class name
             if (className is AstIdGenericExpr genExpr)
             {
-                foreach (var g in genExpr.GenericRealTypes)
-                {
-                    if (g is AstNestedExpr nest)
-                        generics.Add(nest.RightPart as AstIdExpr);
-                    else if (g is AstIdExpr id)
-                        generics.Add(id);
-                    else
-                    {
-                        ReportMessage(g.Location, [], ErrorCode.Get(CTEN.CommonIdentifierExpected));
-                        generics.Add(null); // ERROR HERE
-                    }
-                }
+                generics = GenericsHelper.GetGenericsFromName(genExpr, _messageHandler);
             }
 
             // checking for inheritance
@@ -150,7 +140,6 @@ namespace HapetFrontend.Parsing
             classDecl.InheritedFrom = inherited;
             classDecl.IsInterface = isInterface;
             classDecl.HasGenericTypes = generics.Count > 0;
-            classDecl.GenericNames = generics;
             classDecl.GenericConstrains = genericConstrains;
             classDecl.IsImported = inInfo.ExternalMetadata;
             return classDecl;
