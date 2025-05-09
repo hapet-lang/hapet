@@ -69,7 +69,7 @@ namespace HapetPostPrepare
                     // replacing indexer parameter
                     if (propDecl is AstIndexerDecl indDecl)
                     {
-                        ReplaceAllGenericTypesInExpr(indDecl.IndexerParameter);
+                        ReplaceAllGenericTypesInParam(indDecl.IndexerParameter);
                     }
 
                     ReplaceAllGenericTypesInVar(propDecl);
@@ -118,7 +118,7 @@ namespace HapetPostPrepare
                     // replacing indexer parameter
                     if (propDecl is AstIndexerDecl indDecl)
                     {
-                        ReplaceAllGenericTypesInExpr(indDecl.IndexerParameter);
+                        ReplaceAllGenericTypesInParam(indDecl.IndexerParameter);
                     }
 
                     ReplaceAllGenericTypesInVar(propDecl);
