@@ -8,6 +8,7 @@ using HapetFrontend.Parsing;
 using HapetFrontend.Scoping;
 using HapetFrontend.Types;
 using HapetPostPrepare.Entities;
+using System;
 
 namespace HapetPostPrepare
 {
@@ -308,49 +309,61 @@ namespace HapetPostPrepare
             if (decl.Decl.IsImplOfGeneric)
                 return decl;
 
-            InInfo inInfo = InInfo.Default;
-            OutInfo outInfo = OutInfo.Default;
             var theDecl = decl.Decl;
+            var realDecl = CreateRealTypeFromGeneric(theDecl, genId, out var realName);
 
-            // infer generic names
-            for (int i = 0; i < genId.GenericRealTypes.Count; ++i)
-            {
-                var g = genId.GenericRealTypes[i];
-                PostPrepareExprInference(g, inInfo, ref outInfo);
-            }
-
-            // no need to create new decls with non-real-generics
-            if (HasAnyGenericTypes(genId.GenericRealTypes))
-            {
-                // TODO: check for compatibility (? tf i mean by it)
-                return decl;
-            }
-
-            // generating generic shite name
-            var realName = genId.GetCopy(theDecl.Name.Name);
-            var realDcl = theDecl.Scope.GetSymbol(realName);
-            if (realDcl is DeclSymbol realDclDecl)
-            {
-                // return if exists
-                return realDclDecl;
-            }
-
-            // create a new shite with real types
-            var realCls = GetRealTypeFromGeneric(theDecl, genId.GenericRealTypes.GetNestedList(_compiler.MessageHandler), realName);
-
+            DeclSymbol realDclDecl;
             // func is defined by itself
             if (theDecl is not AstFuncDecl)
             {
                 // define the real decl in the same scope where generic one exists
-                realDclDecl = new DeclSymbol(realName, realCls);
+                realDclDecl = new DeclSymbol(realName, realDecl);
                 theDecl.Scope.DefineSymbol(realDclDecl);
             }
             else
             {
-                realDclDecl = theDecl.Scope.GetSymbol(realCls.Name) as DeclSymbol;
+                realDclDecl = theDecl.Scope.GetSymbol(realDecl.Name) as DeclSymbol;
             }
-            
             return realDclDecl;
+        }
+
+        public AstDeclaration CreateRealTypeFromGeneric(AstDeclaration genDecl, AstIdGenericExpr realId, out AstIdGenericExpr realName, bool allowRealGeneric = false)
+        {
+            InInfo inInfo = InInfo.Default;
+            OutInfo outInfo = OutInfo.Default;
+
+            // infer generic names
+            for (int i = 0; i < realId.GenericRealTypes.Count; ++i)
+            {
+                var g = realId.GenericRealTypes[i];
+                PostPrepareExprInference(g, inInfo, ref outInfo);
+            }
+
+            // if instantiating with genericTypes are not allowed - 
+            // check that the types are not generic
+            if (!allowRealGeneric)
+            {
+                // no need to create new decls with non-real-generics
+                if (HasAnyGenericTypes(realId.GenericRealTypes))
+                {
+                    // TODO: check for compatibility (? tf i mean by it)
+                    realName = genDecl.Name as AstIdGenericExpr;
+                    return genDecl;
+                }
+            }
+
+            // generating generic shite name
+            realName = realId.GetCopy(genDecl.Name.Name);
+            var realDcl = genDecl.Scope.GetSymbol(realName);
+            if (realDcl is DeclSymbol realDclDecl)
+            {
+                // return if exists
+                return realDclDecl.Decl;
+            }
+
+            // create a new shite with real types
+            var realDecl = GetRealTypeFromGeneric(genDecl, realId.GenericRealTypes.GetNestedList(_compiler.MessageHandler), realName);
+            return realDecl;
         }
     }
 }

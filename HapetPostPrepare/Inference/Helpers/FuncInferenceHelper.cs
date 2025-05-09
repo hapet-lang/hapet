@@ -104,10 +104,9 @@ namespace HapetPostPrepare
                         casts.Add(argExpr);
                         continue;
                     }
-                    // check if it is a generic parameter
-                    else if (parType.OutType is PointerType ptrT && 
-                        ptrT.TargetType is ClassType clsT &&
-                        clsT.Declaration.IsGenericType)
+                    // check if it is a generic parameter 
+                    // WARN: better generic check? like T[] or T* ?
+                    else if (parType.OutType is GenericType)
                     {
                         score += 2;
                         casts.Add(argExpr);

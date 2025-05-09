@@ -22,14 +22,10 @@ namespace HapetFrontend.Helpers
             bool hasGeneric = false;
             foreach (var g in genericTypes)
             {
-                if (g.LeftPart == null && g.RightPart is AstIdExpr id)
+                if (g.OutType is GenericType)
                 {
-                    var smb = id.Scope.GetSymbol(id);
-                    if (smb is DeclSymbol dS && dS.Decl is AstClassDecl clsD && clsD.IsGenericType)
-                    {
-                        hasGeneric = true;
-                        break;
-                    }
+                    hasGeneric = true;
+                    break;
                 }
             }
             return hasGeneric;

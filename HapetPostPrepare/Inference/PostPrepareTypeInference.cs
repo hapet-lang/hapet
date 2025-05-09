@@ -1428,12 +1428,6 @@ namespace HapetPostPrepare
                 return true;
             }
 
-            // if we are directly searching for a generic type
-            if (accessee is AstClassDecl clsDecl && clsDecl.IsGenericType && accessee.Scope.IsParentOf(accessor.Scope))
-            {
-                return true;
-            }
-
             // TODO: check protected
             // TODO: check private protected
             // TODO: check protected internal
