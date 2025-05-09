@@ -210,7 +210,9 @@ namespace HapetPostPrepare
                 }
 
                 // recursively infer left part of func call
-                AstIdExpr leftPartId = idExpr.GetCopy(nameAndFunc[0]);
+                // WARN: need to get PURE id expr - because
+                // idExpr could be AstIdGenericExpr and then everything is fucked up
+                AstIdExpr leftPartId = idExpr.GetPureIdExpr().GetCopy(nameAndFunc[0]);
                 PostPrepareIdentifierInference(leftPartId, inInfo, ref outInfo);
 
                 // it has to be a class (or mb struct)

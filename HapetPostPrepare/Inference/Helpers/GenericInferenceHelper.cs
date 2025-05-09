@@ -51,7 +51,10 @@ namespace HapetPostPrepare
             realDecl.OriginalGenericDecl = decl;
             realDecl.Name = realName;
             // no need to reset HasGenericTypes when using generic shite from another generic
-            realDecl.HasGenericTypes = GenericsHelper.HasGenericTypesInRealTypes(genericTypes);
+            realDecl.HasGenericTypes = HasAnyGenericTypes(genericTypes.Select(x => x as AstExpression).ToList());
+
+            // resetting some shite - it has to be done again
+            ResetSomeDeclParams(realDecl);
 
             // getting pure generics from original generic decl
             var pureGenerics = GenericsHelper.GetGenericsFromName(decl.Name as AstIdGenericExpr, _compiler.MessageHandler);
@@ -183,6 +186,22 @@ namespace HapetPostPrepare
                 {
                     d.Name = d.Name.GetCopy($"__is_{_currentSourceFile.Namespace.Replace('.', '_')}_{decl.Name.Name}_stor_called");
                 }
+            }
+        }
+
+        private void ResetSomeDeclParams(AstDeclaration decl)
+        {
+            if (decl is AstClassDecl clsDecl)
+            {
+                clsDecl.AllVirtualMethods = null;
+                clsDecl.AllRawProps = null;
+                clsDecl.AllRawFields = null;
+            }
+            else if (decl is AstStructDecl strDecl)
+            {
+                strDecl.AllVirtualMethods = null;
+                strDecl.AllRawProps = null;
+                strDecl.AllRawFields = null;
             }
         }
 

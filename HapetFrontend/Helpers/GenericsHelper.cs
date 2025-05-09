@@ -8,30 +8,12 @@ using System.Xml.Linq;
 using HapetFrontend.Types;
 using HapetFrontend.Entities;
 using HapetFrontend.Errors;
+using HapetFrontend.Parsing;
 
 namespace HapetFrontend.Helpers
 {
     public static class GenericsHelper
     {
-        /// <summary>
-        /// 'true' if accessing smth like List{T} where T is a generic type
-        /// </summary>
-        /// <param name="genericTypes"></param>
-        /// <returns></returns>
-        public static bool HasGenericTypesInRealTypes(List<AstNestedExpr> genericTypes)
-        {
-            bool hasGeneric = false;
-            foreach (var g in genericTypes)
-            {
-                if (g.OutType is GenericType)
-                {
-                    hasGeneric = true;
-                    break;
-                }
-            }
-            return hasGeneric;
-        }
-
         /// <summary>
         /// Replaces all System.Anime::Func(Pivo) with just Func and etc.
         /// Saves all generic entries!!!
@@ -160,6 +142,36 @@ namespace HapetFrontend.Helpers
                 {
                     messageHandler.ReportMessage(idExpr.SourceFile.Text, g.Location, [], ErrorCode.Get(CTEN.CommonIdentifierExpected));
                     generics.Add(null); // ERROR HERE
+                }
+            }
+            return generics;
+        }
+
+        /// <summary>
+        /// Extracts all generic types like T from ValueType<T>
+        /// </summary>
+        /// <param name="names"></param>
+        /// <returns></returns>
+        public static List<AstIdExpr> ExtractAllGenericTypes(List<AstExpression> types)
+        {
+            var generics = new List<AstIdExpr>();
+            foreach (var g in types)
+            {
+                if (g is AstIdGenericExpr genId)
+                {
+                    generics.AddRange(ExtractAllGenericTypes(genId.GenericRealTypes));
+                }
+                else if (g is AstIdExpr id && id.OutType is GenericType)
+                {
+                    generics.Add(id);
+                }
+                else if (g is AstNestedExpr nst && nst.RightPart is AstIdGenericExpr genId2)
+                {
+                    generics.AddRange(ExtractAllGenericTypes(genId2.GenericRealTypes));
+                }
+                else if (g is AstNestedExpr nst2 && nst2.RightPart is AstIdExpr id2 && id2.OutType is GenericType)
+                {
+                    generics.Add(id2);
                 }
             }
             return generics;
