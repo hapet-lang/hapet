@@ -1026,6 +1026,19 @@ public class List<T> : IList<T>
 
         public T Current { get { return _current; } };
 
+        object IEnumerator.Current
+        {
+            get
+            {
+                if (_index == 0 || _index == _list._size + 1)
+                {
+                    // TODO: 
+                    // ThrowHelper.ThrowInvalidOperationException_InvalidOperation_EnumOpCantHappen();
+                }
+                return Current;
+            }
+        }
+
         public void Reset()
         {
             if (_version != _list._version)
