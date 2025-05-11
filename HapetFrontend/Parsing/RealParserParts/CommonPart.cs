@@ -115,7 +115,9 @@ namespace HapetFrontend.Parsing
             {
                 bool isGeneric = HandleGeneric(inInfo, idExpr, out var aheadGenId, true);
 
+                SkipNewlinesAhead();
                 if (!CheckLookAhead(TokenType.OpenParen) &&  // when Anime<T>(..)
+                    !CheckLookAhead(TokenType.OpenBrace) &&  // when Anime<T> { ...
                     !CheckLookAhead(TokenType.CloseParen) && // when (Anime<T>)inst
                     !CheckLookAhead(TokenType.Greater) &&    // when ...<Anime<int>>
                     !CheckLookAhead(TokenType.NewLine) &&    // when Anime<int>\n
@@ -127,6 +129,7 @@ namespace HapetFrontend.Parsing
                     !CheckLookAhead(TokenType.Asterisk) &&   // when a = abs.Anime<T>*;
                     !CheckLookAhead(TokenType.EOF))          // :)
                 {
+                    var tmp = PeekLookAhead();
                     if (CheckLookAhead(TokenType.Identifier))
                     {
                         // this is hard to understand, it could be:
@@ -140,6 +143,7 @@ namespace HapetFrontend.Parsing
                         // do not allow dots - if it is a pointer - then
                         // the second ident is a name
                         var nextNest = ParseIdentifierExpressionInternal(inInfo, lookAhead: true, allowDots: true, allowGenerics: true, expectIdent: true);
+                        SkipNewlinesAhead();
                         if (nextNest.RightPart == null || (
                             !CheckLookAhead(TokenType.Equal) &&        // when public Anime<T> GetAnime = new Anime<T>();
                             !CheckLookAhead(TokenType.Semicolon) &&    // when public Anime<T> GetAnime;
@@ -237,6 +241,7 @@ namespace HapetFrontend.Parsing
             NextLookAhead(false);
             bool isPointer = false;
 
+            SkipNewlinesAhead();
             if (CheckLookAhead(TokenType.Identifier))
             {
                 // this is hard to understand, it could be:
@@ -248,6 +253,7 @@ namespace HapetFrontend.Parsing
                 // do not allow dots - if it is a pointer - then
                 // the second ident is a name
                 var nextNest = ParseIdentifierExpressionInternal(inInfo, lookAhead: true, allowDots: true, allowGenerics: true);
+                SkipNewlinesAhead();
                 if (nextNest.RightPart != null && (
                     CheckLookAhead(TokenType.Equal) ||        // when byte* aaa = ...
                     CheckLookAhead(TokenType.OpenBrace) ||    // when byte* Aaa { ...

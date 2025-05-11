@@ -48,6 +48,27 @@ namespace HapetFrontend.Parsing
 
         [SkipInStackFrame]
         [DebuggerStepThrough]
+        public void SkipNewlinesAhead(bool skipWhitespaces = true)
+        {
+            while (true)
+            {
+                var tok = _lexer.PeekLookAhead(skipWhitespaces);
+
+                switch (tok.Type)
+                {
+                    case TokenType.EOF:
+                        return;
+                    case TokenType.NewLine:
+                        NextLookAhead(skipWhitespaces);
+                        break;
+                    default:
+                        return;
+                }
+            }
+        }
+
+        [SkipInStackFrame]
+        [DebuggerStepThrough]
         public void UpdateLookAheadLocation()
         {
             _lexer.UpdateLookAheadLocation();
