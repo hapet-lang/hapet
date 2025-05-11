@@ -6,4 +6,15 @@ public struct Array
     private void* _buffer;
 
     public int Length { get { return _length; } }
+
+    private static class EmptyArray<T>
+    {
+        // this is the implementation of Array.Empty<T>()
+        internal static readonly T[] Value = new T[0];
+    }
+
+    public static T[] Empty<T>()
+    {
+        return EmptyArray<T>.Value;
+    }
 }

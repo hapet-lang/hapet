@@ -247,13 +247,16 @@ namespace HapetPostPrepare
                     // setting already defined to 'true' because of some shite with access types
                     PostPrepareVarScoping(propDecl, true);
                 }
-                else
+                else if (decl is AstVarDecl fieldDecl) // field 
                 {
-                    var fieldDecl = decl as AstVarDecl;
                     fieldDecl.ContainingParent = structDecl;
 
                     // setting already defined to 'true' because of some shite with access types
                     PostPrepareVarScoping(fieldDecl, true);
+                }
+                else
+                {
+                    PostPrepareDeclScoping(decl);
                 }
             }
         }

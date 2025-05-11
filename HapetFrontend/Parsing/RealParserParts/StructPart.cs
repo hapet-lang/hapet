@@ -126,11 +126,6 @@ namespace HapetFrontend.Parsing
                     NextToken();
                     SkipNewlines();
                 }
-                else if (decl is not AstVarDecl && decl is not AstFuncDecl)
-                {
-                    NextToken();
-                    ReportMessage(decl.Location, [], ErrorCode.Get(CTEN.TheDeclNotAllowedInStruct));
-                }
             }
 
             end = Consume(TokenType.CloseBrace, ErrMsg("}", "at end of struct declaration")).Location;
