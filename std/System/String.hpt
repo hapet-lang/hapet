@@ -1,5 +1,7 @@
 public struct String
 {
-    int Length;
-    char* Buffer;
+    private int _length;
+    private char* _buffer;
+
+    public int Length { get { return _length; } }
 }

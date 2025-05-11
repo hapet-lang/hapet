@@ -2,6 +2,8 @@
 /// And this is another one
 public struct Array
 {
-    int Length;
-    void* Buffer;
+    private int _length;
+    private void* _buffer;
+
+    public int Length { get { return _length; } }
 }
