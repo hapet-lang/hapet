@@ -12,6 +12,7 @@ namespace HapetPostPrepare
 {
     public partial class PostPrepare
     {
+        // TODO: remove the step - it is the same as step 8
         private void PostPrepareMetadataTypeInheritedPropsDecls(AstStatement stmt)
         {
             // this is needed just to check that all virtual/abstract props are implemented

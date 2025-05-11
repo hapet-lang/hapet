@@ -51,7 +51,6 @@ namespace HapetFrontend.Ast.Declarations
                 Documentation, Location)
             {
                 AllRawFields = AllRawFields?.Select(x => x.GetDeepCopy() as AstVarDecl).ToList(),
-                AllRawProps = AllRawProps?.Select(x => x.GetDeepCopy() as AstPropertyDecl).ToList(),
                 AllVirtualMethods = AllVirtualMethods?.Select(x => x.GetDeepCopy() as AstFuncDecl).ToList(),
                 InheritedFrom = InheritedFrom?.Select(x => x.GetDeepCopy() as AstNestedExpr).ToList(),
                 GenericConstrains = copiedConstrains,

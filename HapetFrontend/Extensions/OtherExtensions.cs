@@ -112,13 +112,13 @@ namespace HapetFrontend.Extensions
             return sb.ToString();
         }
 
-        public static List<AstDeclaration> GetStructFields(this List<AstDeclaration> delcs)
+        public static List<AstVarDecl> GetStructFields(this List<AstDeclaration> delcs)
         {
             return delcs.Where(x =>
                 (x is AstVarDecl vD &&
                 !vD.SpecialKeys.Contains(Parsing.TokenType.KwStatic) &&
                 !vD.SpecialKeys.Contains(Parsing.TokenType.KwConst)) &&
-                x is not AstPropertyDecl).ToList();
+                x is not AstPropertyDecl).Select(x => x as AstVarDecl).ToList();
         }
 
         public static AstFuncDecl GetSameByNameAndTypes(this List<AstFuncDecl> delcs, AstFuncDecl searchFunc, out int index, bool skipFirst = true)

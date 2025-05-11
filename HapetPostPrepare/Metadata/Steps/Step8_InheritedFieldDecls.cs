@@ -26,13 +26,13 @@ namespace HapetPostPrepare
             List<AstVarDecl> currentFieldDecls;
             if (decl is AstClassDecl clsDecl)
             {
-                currentFieldDecls = clsDecl.Declarations.GetStructFields().Select(x => x as AstVarDecl).ToList();
+                currentFieldDecls = clsDecl.Declarations.GetStructFields();
                 inheritedFrom = clsDecl.InheritedFrom;
                 isInterface = clsDecl.IsInterface;
             }
             else if (decl is AstStructDecl strDecl)
             {
-                currentFieldDecls = strDecl.Declarations.GetStructFields().Select(x => x as AstVarDecl).ToList();
+                currentFieldDecls = strDecl.Declarations.GetStructFields();
                 inheritedFrom = strDecl.InheritedFrom;
             }
             else

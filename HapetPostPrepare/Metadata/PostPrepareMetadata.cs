@@ -303,21 +303,6 @@ namespace HapetPostPrepare
                 PostPrepareMetadataTypeInheritedFieldDecls(str);
                 _currentParentStack.RemoveParent();
             }
-
-            foreach (var cls in classes)
-            {
-                _currentSourceFile = cls.SourceFile;
-                _currentParentStack.AddParent(cls);
-                PostPrepareMetadataTypeInheritedFieldDeclsCopy(cls);
-                _currentParentStack.RemoveParent();
-            }
-            foreach (var str in structures)
-            {
-                _currentSourceFile = str.SourceFile;
-                _currentParentStack.AddParent(str);
-                PostPrepareMetadataTypeInheritedFieldDeclsCopy(str);
-                _currentParentStack.RemoveParent();
-            }
         }
 
         private void AllPostPrepareMetadataTypeInheritedPropsDecls()
@@ -340,21 +325,6 @@ namespace HapetPostPrepare
                 _currentSourceFile = str.SourceFile;
                 _currentParentStack.AddParent(str);
                 PostPrepareMetadataTypeInheritedPropsDecls(str);
-                _currentParentStack.RemoveParent();
-            }
-
-            foreach (var cls in classes)
-            {
-                _currentSourceFile = cls.SourceFile;
-                _currentParentStack.AddParent(cls);
-                PostPrepareMetadataTypeInheritedPropsDeclsCopy(cls);
-                _currentParentStack.RemoveParent();
-            }
-            foreach (var str in structures)
-            {
-                _currentSourceFile = str.SourceFile;
-                _currentParentStack.AddParent(str);
-                PostPrepareMetadataTypeInheritedPropsDeclsCopy(str);
                 _currentParentStack.RemoveParent();
             }
         }

@@ -507,7 +507,7 @@ namespace HapetBackend.Llvm
             LLVMValueRef v = default;
             if (expr.OutType is ClassType classType)
             {
-                int structSize = AstDeclaration.GetSizeForAlloc(classType.Declaration.Declarations.GetStructFields());
+                int structSize = AstDeclaration.GetSizeForAlloc(classType.Declaration.GetAllRawFields());
 
                 // getting class ctor
                 string onlyName = classType.Declaration.Name.Name.GetClassNameWithoutNamespace();
@@ -769,14 +769,17 @@ namespace HapetBackend.Llvm
 
                 // getting struct/class/interface declarations and the type
                 HapetType leftPartType = null;
+                AstDeclaration leftPartDecl = null;
                 List<AstDeclaration> leftPartDeclarations = null;
                 if (expr.LeftPart.OutType is PointerType ptr && ptr.TargetType is ClassType classT)
                 {
+                    leftPartDecl = classT.Declaration;
                     leftPartDeclarations = classT.Declaration.Declarations.Where(x => x is AstVarDecl).ToList();
                     leftPartType = classT;
                 }
                 else if (expr.LeftPart.OutType is PointerType ptr2 && ptr2.TargetType is StructType strT)
                 {
+                    leftPartDecl = strT.Declaration;
                     leftPartDeclarations = strT.Declaration.Declarations.Where(x => x is AstVarDecl).ToList();
                     leftPartType = strT;
                 }
@@ -784,32 +787,37 @@ namespace HapetBackend.Llvm
                 // like 'Attribute.CoonstField'
                 else if (expr.LeftPart.OutType is ClassType classTT)
                 {
+                    leftPartDecl = classTT.Declaration;
                     leftPartDeclarations = classTT.Declaration.Declarations.Where(x => x is AstVarDecl).ToList();
                     leftPartType = classTT;
                 }
                 else if (expr.LeftPart.OutType is StructType structT)
                 {
+                    leftPartDecl = structT.Declaration;
                     leftPartDeclarations = structT.Declaration.Declarations;
                     leftPartType = structT;
                 }
                 else if (expr.LeftPart.OutType is EnumType enumT)
                 {
+                    leftPartDecl = enumT.Declaration;
                     leftPartDeclarations = enumT.Declaration.Declarations.Select(x => x as AstDeclaration).ToList();
                     leftPartType = enumT;
                 }
                 else if (expr.LeftPart.OutType is ArrayType arrayT)
                 {
+                    leftPartDecl = AstArrayExpr.GetArrayStruct(expr.Scope);
                     leftPartDeclarations = AstArrayExpr.GetArrayStruct(expr.Scope).Declarations;
                     leftPartType = arrayT;
                 }
                 else if (expr.LeftPart.OutType is StringType stringT)
                 {
+                    leftPartDecl = AstStringExpr.GetStringStruct(expr.Scope);
                     leftPartDeclarations = AstStringExpr.GetStringStruct(expr.Scope).Declarations;
                     leftPartType = stringT;
                 }
 
                 // getting index of the element and the element itself
-                if (leftPartDeclarations != null && leftPartType != null)
+                if (leftPartDeclarations != null && leftPartType != null && leftPartDecl != null)
                 {
                     // this is different for enums
                     if (leftPartType is EnumType enumT)
@@ -844,7 +852,7 @@ namespace HapetBackend.Llvm
                         }
 
                         // getting the index of the element
-                        uint elementIndex = GetElementIndex(idExpr.Name, leftPartDeclarations);
+                        uint elementIndex = GetElementIndex(idExpr.Name, leftPartDecl);
 
                         // this is because the first field in class - is it reflection data (?)
                         if (leftPartType is ClassType clsTT && !clsTT.Declaration.IsInterface)
@@ -902,13 +910,13 @@ namespace HapetBackend.Llvm
             return decl != null;
         }
 
-        private static uint GetElementIndex(string name, List<AstDeclaration> decls)
+        private static uint GetElementIndex(string name, AstDeclaration parentDecl)
         {
             AstDeclaration lastFound = null;
             uint lastFoundIndex = 0;
 
             // getting pure decls without consts and statics
-            var pureDecls = decls.GetStructFields();
+            var pureDecls = parentDecl.GetAllRawFields();
             // search for the name in decl
             for (uint i = 0; i < pureDecls.Count; ++i)
             {
@@ -1018,7 +1026,7 @@ namespace HapetBackend.Llvm
         {
             // getting types
             var structType = expr.TypeForDefault;
-            int structSize = AstDeclaration.GetSizeForAlloc(structType.Declaration.Declarations.GetStructFields(), false);
+            int structSize = AstDeclaration.GetSizeForAlloc(structType.Declaration.GetAllRawFields(), false);
             var allocated = _builder.BuildAlloca(HapetTypeToLLVMType(structType), "allocatedEmpty");
 
             // making consts

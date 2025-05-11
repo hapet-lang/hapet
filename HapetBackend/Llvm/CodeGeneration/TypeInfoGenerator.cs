@@ -166,9 +166,9 @@ namespace HapetBackend.Llvm
 
             List<AstVarDecl> allClassFields;
             if (type is ClassType clsType)
-                allClassFields = clsType.Declaration.AllRawFields;
+                allClassFields = clsType.Declaration.GetAllRawFields();
             else if (type is StructType strType)
-                allClassFields = strType.Declaration.AllRawFields;
+                allClassFields = strType.Declaration.GetAllRawFields();
             else
             {
                 _messageHandler.ReportMessage(_currentSourceFile.Text, null, [HapetType.AsString(type)], ErrorCode.Get(CTEN.CouldNotGenerateTypeInfo));
@@ -179,7 +179,7 @@ namespace HapetBackend.Llvm
             foreach (var intrf in allInterfaces)
             {
                 List<int> offsets = new List<int>();
-                foreach (var iF in intrf.Declaration.AllRawFields)
+                foreach (var iF in intrf.Declaration.GetAllRawFields())
                 {
                     allClassFields.GetSameDeclByTypeAndName(iF, out var fIndex);
                     int offset = GetOffsetTo(allClassFields, fIndex);

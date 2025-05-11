@@ -58,12 +58,10 @@ namespace HapetPostPrepare
             if (_currentPreparationStep >= PreparationStep.InheritedFieldDecls)
             {
                 PostPrepareMetadataTypeInheritedFieldDecls(stmt);
-                PostPrepareMetadataTypeInheritedFieldDeclsCopy(stmt);
             }
             if (_currentPreparationStep >= PreparationStep.InheritedPropDecls)
             {
                 PostPrepareMetadataTypeInheritedPropsDecls(stmt);
-                PostPrepareMetadataTypeInheritedPropsDeclsCopy(stmt);
             }
             if (_currentPreparationStep >= PreparationStep.FieldAndPropInits)
             {

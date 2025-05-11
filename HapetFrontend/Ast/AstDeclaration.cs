@@ -1,6 +1,7 @@
 ﻿using HapetFrontend.Ast.Declarations;
 using HapetFrontend.Ast.Expressions;
 using HapetFrontend.Ast.Statements;
+using HapetFrontend.Extensions;
 using HapetFrontend.Parsing;
 using HapetFrontend.Scoping;
 using HapetFrontend.Types;
@@ -100,7 +101,7 @@ namespace HapetFrontend.Ast
         /// Could be used only after <see cref="GenerateTypeInfoConst"/> from backend
         /// </summary>
         /// <returns>The size</returns>
-        public static int GetSizeForAlloc(List<AstDeclaration> fields, bool withTypeInfo = true)
+        public static int GetSizeForAlloc(List<AstVarDecl> fields, bool withTypeInfo = true)
         {
             if (withTypeInfo)
             {
@@ -133,6 +134,87 @@ namespace HapetFrontend.Ast
             else if (this is AstStructDecl strDecl)
                 return strDecl.InheritedFrom;
             return new List<AstNestedExpr>();
+        }
+
+        /// <summary>
+        /// Returns all the fields (including inherited) 
+        /// to properly calculate size to alloc and other cringe
+        /// </summary>
+        /// <returns></returns>
+        public List<AstVarDecl> GetAllRawFields()
+        {
+            List<AstNestedExpr> inheritedFrom;
+            List<AstDeclaration> declarations;
+            if (this is AstStructDecl strDecl)
+            {
+                // return cached
+                if (strDecl.AllRawFields != null)
+                    return strDecl.AllRawFields;
+                inheritedFrom = strDecl.InheritedFrom;
+                declarations = strDecl.Declarations;
+            }
+            else if (this is AstClassDecl clsDecl)
+            {
+                // return cached
+                if (clsDecl.AllRawFields != null)
+                    return clsDecl.AllRawFields;
+                inheritedFrom = clsDecl.InheritedFrom;
+                declarations = clsDecl.Declarations;
+            }
+            else
+            {
+                return new List<AstVarDecl>();
+            }
+
+            // to handle all the fields
+            List<AstVarDecl> allFields = new List<AstVarDecl>();
+
+            List<AstVarDecl> parentFields = new List<AstVarDecl>();
+            // we can take only inherited class - because it has all the 
+            // fields that we want. if it is not - it probably errored 
+            // previously in PP (step 8-9 probably)
+            if (inheritedFrom != null &&
+                inheritedFrom.Count > 0 &&
+                inheritedFrom[0].OutType is ClassType inhClsType &&
+                !inhClsType.Declaration.IsInterface)
+            {
+                parentFields = inhClsType.Declaration.GetAllRawFields();
+            }
+
+            List<AstVarDecl> currentFields = declarations.GetStructFields();
+            foreach (var parentField in parentFields)
+            {
+                var currentField = currentFields.GetSameDeclByTypeAndName(parentField, out int _);
+                if (currentField != null)
+                {
+                    // do not remove fields with 'new' kw - they also has to be stored :(
+                    if (!currentField.SpecialKeys.Contains(TokenType.KwNew))
+                    {
+                        // we need to remove - because we would add remainings at the end
+                        currentFields.Remove(currentField);
+                    }
+                    allFields.Add(currentField);
+                }
+                else
+                {
+                    allFields.Add(parentField);
+                }
+            }
+            // add remainings
+            allFields.AddRange(currentFields);
+
+            if (this is AstStructDecl strDecl2)
+            {
+                // cache
+                strDecl2.AllRawFields = allFields;
+            }
+            else if (this is AstClassDecl clsDecl2)
+            {
+                // cache
+                clsDecl2.AllRawFields = allFields;
+            }
+
+            return allFields;
         }
     }
 }

@@ -201,7 +201,7 @@ namespace HapetBackend.Llvm
                         // create a boxed type
                         var nameBoxed = $"boxed.{s.Declaration.Name.Name}";
                         var llvmTypeBoxed = _context.CreateNamedStruct(nameBoxed);
-                        var fieldDeclarationsBoxed = s.Declaration.Declarations.GetStructFields().Select(x => x.Type.OutType).ToList();
+                        var fieldDeclarationsBoxed = s.Declaration.GetAllRawFields().Select(x => x.Type.OutType).ToList();
                         fieldDeclarationsBoxed.Insert(0, PointerType.GetPointerType(IntPtrType.Instance)); // the same as in metadata gen
                         var (offsetsBoxed, _, memTypesBoxed) = CalcStructData(fieldDeclarationsBoxed, packNumber);
                         
@@ -505,7 +505,7 @@ namespace HapetBackend.Llvm
                 {
                     // cast from struct instance to object
                     var boxedTypeData = _boxedStructTypes[inType];
-                    int structSize = AstDeclaration.GetSizeForAlloc(structType.Declaration.Declarations.GetStructFields());
+                    int structSize = AstDeclaration.GetSizeForAlloc(structType.Declaration.GetAllRawFields());
                     // allocating memory for struct
                     var v = GetMalloc(structSize, 1);
                     // set up type data ptr!!!

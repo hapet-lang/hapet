@@ -194,14 +194,10 @@ namespace HapetPostPrepare
             if (decl is AstClassDecl clsDecl)
             {
                 clsDecl.AllVirtualMethods = null;
-                clsDecl.AllRawProps = null;
-                clsDecl.AllRawFields = null;
             }
             else if (decl is AstStructDecl strDecl)
             {
                 strDecl.AllVirtualMethods = null;
-                strDecl.AllRawProps = null;
-                strDecl.AllRawFields = null;
             }
         }
 
