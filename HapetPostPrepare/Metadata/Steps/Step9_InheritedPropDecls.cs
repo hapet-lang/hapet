@@ -53,6 +53,14 @@ namespace HapetPostPrepare
                     break;
 
                 var inhDecl = (inh.OutType as ClassType).Declaration;
+                // check that the inheritance is generic
+                // need to create a specific type of the inheritance
+                if (inh.RightPart is AstIdGenericExpr genInhId)
+                {
+                    // WARN: allow genericTypes here - because we want to purely check the types
+                    inhDecl = CreateRealTypeFromGeneric(inhDecl, genInhId, out var _, true) as AstClassDecl;
+                }
+
                 // if the inh type is an interface
                 if (inhDecl.IsInterface)
                 {
