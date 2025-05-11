@@ -2,21 +2,8 @@
 /// And this is another one
 public struct Array
 {
-    private int _length;
-    private void* _buffer;
-
-    public int Length { get { return _length; } }
-    internal void* Buffer 
-    { 
-        get 
-        { 
-            return _buffer; 
-        }
-        set
-        {
-            _buffer = value;
-        }
-    }
+    public int Length { get; internal set; }
+    internal void* Buffer { get; set; }
 
     private static class EmptyArray<T>
     {

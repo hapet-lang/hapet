@@ -298,8 +298,6 @@ namespace HapetPostPrepare
                     callExpr.Arguments.ReplaceWithCasts(casts);
                     return;
                 }
-                if (_compiler.MessageHandler.HasErrors)
-                    return;
 
                 // getting the name but with object first param
                 newName = funcName.GetCopy($"{structType.Declaration.Name.Name}::{funcName}{callExpr.Arguments.GetArgsString(PointerType.GetPointerType(structType))}");
