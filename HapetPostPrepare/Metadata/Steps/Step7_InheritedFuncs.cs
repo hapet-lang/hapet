@@ -99,7 +99,7 @@ namespace HapetPostPrepare
 
                                 // check that the parent's function is virtual or abstract and 
                                 // our func has override word - then allow
-                                if ((definedInOneOfTheParents.SpecialKeys.Contains(TokenType.KwVirtual) || 
+                                if (currF != null && (definedInOneOfTheParents.SpecialKeys.Contains(TokenType.KwVirtual) || 
                                     definedInOneOfTheParents.SpecialKeys.Contains(TokenType.KwAbstract)) &&
                                     currF.SpecialKeys.Contains(TokenType.KwOverride))
                                 {
@@ -205,6 +205,7 @@ namespace HapetPostPrepare
                 }
                 else if (parentFnc != null && currM.SpecialKeys.Contains(TokenType.KwNew))
                 {
+                    // all is ok
                     // to set brkp here
                 }
             }

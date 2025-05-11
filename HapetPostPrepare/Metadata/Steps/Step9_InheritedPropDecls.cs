@@ -13,55 +13,15 @@ namespace HapetPostPrepare
     {
         private void PostPrepareMetadataTypeInheritedPropsDecls(AstStatement stmt)
         {
-            if (stmt is AstClassDecl cls)
-                cls.AllRawProps = GetPreparedProps__(cls);
-            else if (stmt is AstStructDecl str)
-                str.AllRawProps = GetPreparedProps__(str);
-        }
-
-        private void PostPrepareMetadataTypeInheritedPropsDeclsCopy(AstStatement stmt)
-        {
-            if (stmt is AstClassDecl cls)
-                CopyInheritedProps__(cls, cls.AllRawProps);
-            else if (stmt is AstStructDecl str)
-                CopyInheritedProps__(str, str.AllRawProps);
-        }
-
-        private static void CopyInheritedProps__(AstDeclaration decl, List<AstPropertyDecl> preparedDecls)
-        {
-            List<AstDeclaration> currDecls;
-            if (decl is AstClassDecl clsDecl)
-                currDecls = clsDecl.Declarations;
-            else if (decl is AstStructDecl strDecl)
-                currDecls = strDecl.Declarations;
-            else
-                return;
-
-            // remove all current props
-            foreach (var fieldDecl in currDecls.Where(x => x is AstPropertyDecl).Select(x => x as AstPropertyDecl).ToList())
-            {
-                currDecls.Remove(fieldDecl);
-                decl.SubScope.RemoveDeclSymbol(fieldDecl.Name, fieldDecl);
-            }
-
-            List<AstDeclaration> toInsert = new List<AstDeclaration>();
-            // all over the parent fields - copy them
-            foreach (var propDecl in preparedDecls)
-            {
-                // change parent and scope
-                var newVar = propDecl.GetCopyForAnotherType(decl);
-                currDecls.Add(newVar);
-                // define the symbol
-                decl.SubScope.DefineDeclSymbol(newVar.Name, newVar);
-
-                toInsert.Add(newVar);
-            }
+            // this is needed just to check that all virtual/abstract props are implemented
+            GetDeclarationProps__(stmt as AstDeclaration);
         }
 
         // to get all pure props including inherited
-        private List<AstPropertyDecl> GetPreparedProps__(AstDeclaration decl)
+        private List<AstPropertyDecl> GetDeclarationProps__(AstDeclaration decl)
         {
-            List<AstPropertyDecl> inheritedPropDecls = new List<AstPropertyDecl>();
+            // all virtual/abstract props
+            List<AstPropertyDecl> allPropDecls = new List<AstPropertyDecl>();
             List<AstNestedExpr> inheritedFrom;
             bool isInterface = false;
             List<AstPropertyDecl> currentPropDecls;
@@ -95,73 +55,43 @@ namespace HapetPostPrepare
                     // if we are also an interface - just add, no need to check implementations
                     if (isInterface)
                     {
-                        inheritedPropDecls.AddRange(GetPreparedProps__(inhDecl));
+                        allPropDecls.AddRange(GetDeclarationProps__(inhDecl));
                     }
                     else
                     {
                         // get all the props of interface
-                        var inhFields = GetPreparedProps__(inhDecl);
-                        foreach (var inhF in inhFields)
+                        var inhProps = GetDeclarationProps__(inhDecl);
+                        foreach (var inhF in inhProps)
                         {
                             // check if the interface is already implemented in parent classes
-                            var definedInOneOfTheParents = inheritedPropDecls.GetSameDeclByTypeAndName(inhF, out int _);
+                            var definedInOneOfTheParents = allPropDecls.GetSameDeclByTypeAndName(inhF, out int _);
                             // if the prop was already presented previously
                             if (definedInOneOfTheParents != null)
                             {
-                                // check if the already defined prop is by the interface
-                                bool isInherited = definedInOneOfTheParents.ContainingParent.Type.OutType.IsInheritedFrom(inhF.ContainingParent.Type.OutType as ClassType, true);
-                                // if inherited - this is a parent cls already implemented the prop - no need to warn
-                                if (isInherited)
+                                // need to check that we do not implement it also
+                                var currF = currentPropDecls.GetSameDeclByTypeAndName(inhF, out int _);
+
+                                // check that the parent's prop is virtual or abstract and 
+                                // our prop has override word - then allow
+                                if (currF != null && (definedInOneOfTheParents.SpecialKeys.Contains(TokenType.KwVirtual) ||
+                                    definedInOneOfTheParents.SpecialKeys.Contains(TokenType.KwAbstract)) &&
+                                    currF.SpecialKeys.Contains(TokenType.KwOverride))
                                 {
-                                    // need to check that we do not implement it also
-                                    var currF = currentPropDecls.GetSameDeclByTypeAndName(inhF, out int _);
-                                    // if parents are the same but funcs are different - one of the funcs is probably explicit impl
-                                    if (currF != null && (currF.ContainingParent == definedInOneOfTheParents.ContainingParent && currF != definedInOneOfTheParents))
-                                    {
-                                        // add it to the new dictionary
-                                        currentPropDecls.Remove(currF);
-                                        inheritedPropDecls.Add(currF);
-                                        continue;
-                                    }
-                                    if (currF != null)
-                                    {
-                                        // the prop is implemented in parent class and current class
-                                        // we need to error
-                                        _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, currF,
-                                            [HapetType.AsString(definedInOneOfTheParents.ContainingParent.Type.OutType)], ErrorCode.Get(CTEN.PropaAlreadyDefined));
-                                        continue;
-                                    }
-                                    // else - everything is ok probably
-                                }
-                                else
-                                {
-                                    // TODO: not todo. but C# allows shite like this:
-                                    /*
-                                        public interface IAnime
-                                        {
-                                            short Field111 { get; set; }
-                                        }
-
-                                        public class BaseCls
-                                        {
-                                            public short Field111 { get; set; }
-                                        }
-
-                                        public class Derived : BaseCls, IAnime
-                                        {
-
-                                        }
-                                     */
-                                    // but we can't because of interface offset calcs. md could be fixed somehow?
-
-                                    // we need to error
-                                    _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, definedInOneOfTheParents,
-                                        [HapetType.AsString(definedInOneOfTheParents.ContainingParent.Type.OutType),
-                                            HapetType.AsString(decl.Type.OutType),
-                                            HapetType.AsString(inh.OutType)],
-                                        ErrorCode.Get(CTEN.DoubleInterfaceCringe));
+                                    // add it to the new dictionary
+                                    currentPropDecls.Remove(currF);
+                                    allPropDecls.Add(currF);
                                     continue;
                                 }
+                                // if the prop is in parent and in our and wihtout 'new' kw - error
+                                else if (currF != null && !currF.SpecialKeys.Contains(TokenType.KwNew))
+                                {
+                                    // the prop is implemented in parent class and current class
+                                    // we need to error
+                                    _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, currF,
+                                        [HapetType.AsString(definedInOneOfTheParents.ContainingParent.Type.OutType)], ErrorCode.Get(CTEN.PropaAlreadyDefined));
+                                    continue;
+                                }
+                                // else - everything is ok probably
                             }
                             else
                             {
@@ -179,7 +109,7 @@ namespace HapetPostPrepare
                                 {
                                     // add it to the new dictionary
                                     currentPropDecls.Remove(currF);
-                                    inheritedPropDecls.Add(currF);
+                                    allPropDecls.Add(currF);
                                 }
                             }
                         }
@@ -187,27 +117,35 @@ namespace HapetPostPrepare
                 }
                 else
                 {
-                    // if we are not an interface, happens when:
-                    // interface IAnime : object
+                    // if we are not an interface
+
+                    // check that smth like
+                    // class Pivo : object
                     if (!isInterface)
                     {
-                        var parentProps = GetPreparedProps__(inhDecl);
+                        var parentProps = GetDeclarationProps__(inhDecl);
                         // just add parent props if it is a class
-                        inheritedPropDecls.AddRange(parentProps);
+                        allPropDecls.AddRange(parentProps);
 
                         // search for overrides in the current class 
                         // and replace parent methods with our
                         foreach (var fCurr in currentPropDecls.Where(x => x.SpecialKeys.Contains(TokenType.KwOverride)).ToArray())
                         {
                             // check for signatures
-                            var overridedProp = inheritedPropDecls.GetSameDeclByTypeAndName(fCurr, out int index);
+                            var overridedProp = allPropDecls.GetSameDeclByTypeAndName(fCurr, out int index);
                             // TODO: error here? we go all over the override props and found no prop to be overriden?
                             if (overridedProp == null)
                                 continue;
-                            inheritedPropDecls[index] = fCurr;
+                            allPropDecls[index] = fCurr;
                             // we need to remove it so it won't mess with us
                             currentPropDecls.Remove(fCurr);
                         }
+                    }
+                    else
+                    {
+                        // TODO: probably need to handle shite like:
+                        // interface IPivo : object 
+                        // implicit inheritance
                     }
                 }
             }
@@ -215,15 +153,23 @@ namespace HapetPostPrepare
             // check for shadowing
             foreach (var currP in currentPropDecls)
             {
-                // skip virtual or shadowing shite
-                if (currP.SpecialKeys.Contains(TokenType.KwOverride) || currP.SpecialKeys.Contains(TokenType.KwNew))
+                // skip virtual shite
+                if (currP.SpecialKeys.Contains(TokenType.KwOverride))
+                {
+                    // TODO: probably error here - all overrides should be removed upper
                     continue;
-                var parentProp = inheritedPropDecls.GetSameDeclByTypeAndName(currP, out int _);
-                if (parentProp != null)
+                }
+                var parentProp = allPropDecls.GetSameDeclByTypeAndName(currP, out int _);
+                if (parentProp != null && !currP.SpecialKeys.Contains(TokenType.KwNew))
                 {
                     // error - property shadowing
                     _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, currP.Name,
                         [$"{parentProp.ContainingParent.Name.Name}::{parentProp.Name.Name}"], ErrorCode.Get(CTEN.PropertyShadowing));
+                }
+                else if (parentProp != null && currP.SpecialKeys.Contains(TokenType.KwNew))
+                {
+                    // all is ok
+                    // to set brkp here
                 }
             }
 
@@ -231,9 +177,10 @@ namespace HapetPostPrepare
             if (!isInterface && !decl.SpecialKeys.Contains(TokenType.KwAbstract))
             {
                 // if it is not an interface nor abstract class - all abstract shite has to be implemented
-                foreach (var p in inheritedPropDecls)
+                foreach (var p in allPropDecls)
                 {
                     // skip overrided-abstract methods
+                    // the parent would be our cls if overrided
                     if (p.ContainingParent == decl)
                         continue;
 
@@ -246,8 +193,14 @@ namespace HapetPostPrepare
                 }
             }
 
-            inheritedPropDecls.AddRange(currentPropDecls);
-            return inheritedPropDecls;
+            if (isInterface)
+                // add here all shite because it is an interface
+                allPropDecls.AddRange(currentPropDecls);
+            else
+                // add here only virtual shite
+                allPropDecls.AddRange(currentPropDecls.Where(x => x.SpecialKeys.Contains(TokenType.KwAbstract) ||
+                                                                           x.SpecialKeys.Contains(TokenType.KwVirtual)));
+            return allPropDecls;
         }
     }
 }

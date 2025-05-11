@@ -30,10 +30,6 @@ namespace HapetFrontend.Ast.Declarations
         /// </summary>
         public List<AstVarDecl> AllRawFields { get; set; }
         /// <summary>
-        /// All original raw props (including inherited) (for easier inference)
-        /// </summary>
-        public List<AstPropertyDecl> AllRawProps { get; set; }
-        /// <summary>
         /// All original virtual methods (including inherited) 
         /// </summary>
         public List<AstFuncDecl> AllVirtualMethods { get; set; }
