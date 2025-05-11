@@ -4,4 +4,15 @@ public struct String
     private char* _buffer;
 
     public int Length { get { return _length; } }
+    internal char* Buffer 
+    { 
+        get 
+        { 
+            return _buffer; 
+        }
+        set
+        {
+            _buffer = value;
+        }
+    }
 }

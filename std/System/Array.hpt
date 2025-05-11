@@ -6,6 +6,17 @@ public struct Array
     private void* _buffer;
 
     public int Length { get { return _length; } }
+    internal void* Buffer 
+    { 
+        get 
+        { 
+            return _buffer; 
+        }
+        set
+        {
+            _buffer = value;
+        }
+    }
 
     private static class EmptyArray<T>
     {

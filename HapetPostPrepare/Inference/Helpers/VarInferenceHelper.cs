@@ -229,6 +229,13 @@ namespace HapetPostPrepare
 
                         break;
                     }
+                // usually when 'public static Anime a = new Anime();'
+                case PointerType ptr1 when
+                    ptr1.TargetType is ClassType cls4 &&
+                    exprType is PointerType ptr5 &&
+                    ptr5.TargetType is ClassType cls6 &&
+                    (cls4 == cls6 ||
+                    cls6.IsInheritedFrom(cls4)):
                 // usually when 'Anime a = new Anime();'
                 // usually when 'object a = new Anime();'
                 case PointerType ptr when 

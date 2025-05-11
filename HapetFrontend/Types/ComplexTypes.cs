@@ -21,7 +21,7 @@ namespace HapetFrontend.Types
 
         public override AstExpression GetAst()
         {
-            return new AstNestedExpr(new AstIdExpr(ToString()), null);
+            return new AstNestedExpr(Declaration.Name.GetCopy(), null);
         }
 
         public ClassType(AstClassDecl decl)
@@ -122,7 +122,7 @@ namespace HapetFrontend.Types
 
         public override AstExpression GetAst()
         {
-            return new AstNestedExpr(new AstIdExpr(ToString()), null);
+            return new AstNestedExpr(Declaration.Name.GetCopy(), null);
         }
 
         public StructType(AstStructDecl decl)
@@ -189,7 +189,7 @@ namespace HapetFrontend.Types
 
         public override AstExpression GetAst()
         {
-            return new AstNestedExpr(new AstIdExpr(ToString()), null);
+            return new AstNestedExpr(Declaration.Name.GetCopy(), null);
         }
 
         public EnumType(AstEnumDecl decl) : base()
@@ -222,7 +222,7 @@ namespace HapetFrontend.Types
 
         public override AstExpression GetAst()
         {
-            return new AstNestedExpr(new AstIdExpr(Declaration.Name.Name), null);
+            return new AstNestedExpr(Declaration.Name.GetCopy(), null);
         }
 
         public FunctionType(AstFuncDecl decl)
@@ -306,7 +306,7 @@ namespace HapetFrontend.Types
 
         public override AstExpression GetAst()
         {
-            return new AstNestedExpr(new AstIdExpr(Declaration.Name.Name), null);
+            return new AstNestedExpr(Declaration.Name.GetCopy(), null);
         }
 
         private DelegateType(AstDelegateDecl targetDecl, AstClassDecl decl)
