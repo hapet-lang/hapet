@@ -6,7 +6,7 @@ namespace HapetPostPrepare
 {
     public partial class PostPrepare
     {
-        public void CheckSpecialKeys(AstDeclaration decl)
+        public static void CheckSpecialKeys(AstDeclaration decl)
         {
             // not my problem
             if (decl == null)
@@ -94,7 +94,7 @@ namespace HapetPostPrepare
             }
         }
 
-        private void AddSpecialKeyToDecl(AstDeclaration decl, Token specialKey, bool doError = false)
+        private static void AddSpecialKeyToDecl(AstDeclaration decl, Token specialKey, bool doError = false)
         {
             TokenType syncKey = default;          // async
             TokenType accessKey = default;        // public/protected/internal/private/unreflected
@@ -286,7 +286,7 @@ namespace HapetPostPrepare
             }
         }
 
-        private int GetSpecialKeyType(TokenType specialKey)
+        private static int GetSpecialKeyType(TokenType specialKey)
         {
             switch (specialKey)
             {
@@ -333,16 +333,37 @@ namespace HapetPostPrepare
             return -1;
         }
 
-        private bool HasSpecialKeyType(AstDeclaration decl, int type)
+        private static bool HasSpecialKeyType(AstDeclaration decl, int type, out int index)
         {
             for (int i = 0; i < decl.SpecialKeys.Count; ++i)
             {
                 var currKey = decl.SpecialKeys[i];
                 var keyType = GetSpecialKeyType(currKey.Type);
                 if (keyType == type)
+                {
+                    index = i;
                     return true;
+                }
             }
+            index = -1;
             return false;
+        }
+
+        public static void ReplaceSpecialKeysByTypes(AstDeclaration decl, List<Token> newSpecialKeys)
+        {
+            foreach (Token sk in newSpecialKeys)
+            {
+                var keyType = GetSpecialKeyType(sk.Type);
+                var has = HasSpecialKeyType(decl, keyType, out int index);
+                if (has)
+                {
+                    decl.SpecialKeys[index] = sk;
+                }
+                else
+                {
+                    AddSpecialKeyToDecl(decl, sk, false);
+                }
+            }
         }
     }
 }

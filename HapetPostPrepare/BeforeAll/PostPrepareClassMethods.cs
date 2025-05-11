@@ -215,7 +215,7 @@ namespace HapetPostPrepare
                     foreach (var f in decls)
                     {
                         // 1 - is access special key type!!!
-                        if (!HasSpecialKeyType(f, 1))
+                        if (!HasSpecialKeyType(f, 1, out int _))
                             AddSpecialKeyToDecl(f, Lexer.CreateToken(TokenType.KwPrivate, f.Location.Beginning));
                     }
                 }

@@ -20,6 +20,17 @@ namespace HapetFrontend.Ast.Declarations
     public class AstPropertyDecl : AstVarDecl
     {
         /// <summary>
+        /// Special keys of 'get'.
+        /// Like 'Anime { internal get; set; }'
+        /// </summary>
+        public List<Token> GetSpecialKeys { get; private set; } = new List<Token>();
+        /// <summary>
+        /// Special keys of 'set'.
+        /// Like 'Anime { get; private set; }'
+        /// </summary>
+        public List<Token> SetSpecialKeys { get; private set; } = new List<Token>();
+
+        /// <summary>
         /// True if 'get' is declared
         /// </summary>
         public bool HasGet { get; set; }

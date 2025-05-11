@@ -42,6 +42,10 @@ namespace HapetFrontend.Parsing
             Consume(TokenType.OpenBrace, ErrMsg("symbol '{'", "at beginning of property declaration"));
             SkipNewlines();
 
+            // special keys of 'get'
+            List<Token> getSpecialKeys = ParseSpecialKeys();
+            SkipNewlines();
+
             // if it has 'get'
             if (CheckToken(TokenType.KwGet))
             {
@@ -66,6 +70,9 @@ namespace HapetFrontend.Parsing
                 }
                 SkipNewlines();
             }
+            // special keys of 'set'
+            List<Token> setSpecialKeys = ParseSpecialKeys();
+            SkipNewlines();
             if (CheckToken(TokenType.KwSet))
             {
                 Consume(TokenType.KwSet, ErrMsg("keyword 'set'", "..."));
@@ -120,6 +127,8 @@ namespace HapetFrontend.Parsing
             theProperty.SetBlock = setBody;
             theProperty.HasGenericTypes = generics.Count > 0;
             theProperty.GenericConstrains = genericConstrains;
+            theProperty.GetSpecialKeys.AddRange(getSpecialKeys);
+            theProperty.SetSpecialKeys.AddRange(setSpecialKeys);
             theProperty.SpecialKeys.AddRange(udecl.SpecialKeys);
             theProperty.IsImported = inInfo.ExternalMetadata;
 
