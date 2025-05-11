@@ -6,6 +6,7 @@ using HapetFrontend.Helpers;
 using HapetFrontend.Parsing;
 using HapetFrontend.Types;
 using HapetFrontend.Extensions;
+using System;
 
 namespace HapetPostPrepare
 {
@@ -17,7 +18,7 @@ namespace HapetPostPrepare
             GetDeclarationProps__(stmt as AstDeclaration);
         }
 
-        // to get all pure props including inherited
+        // to check all virtual/abstract props including inherited
         private List<AstPropertyDecl> GetDeclarationProps__(AstDeclaration decl)
         {
             // all virtual/abstract props
@@ -27,13 +28,15 @@ namespace HapetPostPrepare
             List<AstPropertyDecl> currentPropDecls;
             if (decl is AstClassDecl clsDecl)
             {
-                currentPropDecls = clsDecl.Declarations.Where(x => x is AstPropertyDecl).Select(x => x as AstPropertyDecl).ToList();
+                currentPropDecls = clsDecl.Declarations.Where(x => x is AstPropertyDecl && !x.IsImplOfGeneric &&
+                    !x.SpecialKeys.Contains(TokenType.KwStatic)).Select(x => x as AstPropertyDecl).ToList();
                 inheritedFrom = clsDecl.InheritedFrom;
                 isInterface = clsDecl.IsInterface;
             }
             else if (decl is AstStructDecl strDecl)
             {
-                currentPropDecls = strDecl.Declarations.Where(x => x is AstPropertyDecl).Select(x => x as AstPropertyDecl).ToList();
+                currentPropDecls = strDecl.Declarations.Where(x => x is AstPropertyDecl && !x.IsImplOfGeneric &&
+                    !x.SpecialKeys.Contains(TokenType.KwStatic)).Select(x => x as AstPropertyDecl).ToList();
                 inheritedFrom = strDecl.InheritedFrom;
             }
             else

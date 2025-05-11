@@ -13,57 +13,16 @@ namespace HapetPostPrepare
     {
         private void PostPrepareMetadataTypeInheritedFieldDecls(AstStatement stmt)
         {
-            if (stmt is AstClassDecl cls)
-                cls.AllRawFields = GetPreparedFields__(cls);
-            else if (stmt is AstStructDecl str)
-                str.AllRawFields = GetPreparedFields__(str);
+            // this is needed just to check that all virtual/abstract fields are implemented
+            GetDeclarationFields__(stmt as AstDeclaration);
         }
 
-        private void PostPrepareMetadataTypeInheritedFieldDeclsCopy(AstStatement stmt)
-        {
-            if (stmt is AstClassDecl cls)
-                CopyInheritedFields__(cls, cls.AllRawFields);
-            else if (stmt is AstStructDecl str)
-                CopyInheritedFields__(str, str.AllRawFields);
-        }
-
-        private static void CopyInheritedFields__(AstDeclaration decl, List<AstVarDecl> preparedDecls)
-        {
-            List<AstDeclaration> currDecls;
-            if (decl is AstClassDecl clsDecl)
-                currDecls = clsDecl.Declarations;
-            else if (decl is AstStructDecl strDecl)
-                currDecls = strDecl.Declarations;
-            else
-                return;
-
-            // remove all current fields
-            foreach (var fieldDecl in currDecls.GetStructFields())
-            {
-                currDecls.Remove(fieldDecl);
-                decl.SubScope.RemoveDeclSymbol(fieldDecl.Name, fieldDecl);
-            }
-
-            List<AstDeclaration> toInsert = new List<AstDeclaration>();
-            // all over the parent fields - copy them
-            foreach (var fieldDecl in preparedDecls)
-            {
-                // change parent and scope
-                var newVar = fieldDecl.GetCopyForAnotherType(decl);
-                currDecls.Add(newVar);
-                // define the symbol
-                decl.SubScope.DefineDeclSymbol(newVar.Name, newVar);
-
-                toInsert.Add(newVar);
-            }
-        }
-
-        // to get all pure fields including inherited
-        private List<AstVarDecl> GetPreparedFields__(AstDeclaration decl)
+        // to check all virtual/abstract fields including inherited
+        private List<AstVarDecl> GetDeclarationFields__(AstDeclaration decl)
         {
             List<AstNestedExpr> inheritedFrom;
             bool isInterface = false;
-            List<AstVarDecl> inheritedFieldDecls = new List<AstVarDecl>();
+            List<AstVarDecl> allFieldDecls = new List<AstVarDecl>();
             List<AstVarDecl> currentFieldDecls;
             if (decl is AstClassDecl clsDecl)
             {
@@ -95,96 +54,62 @@ namespace HapetPostPrepare
                     // if we are also an interface - just add, no need to check implementations
                     if (isInterface)
                     {
-                        inheritedFieldDecls.AddRange(GetPreparedFields__(inhDecl));
+                        allFieldDecls.AddRange(GetDeclarationFields__(inhDecl));
                     }
                     else
                     {
                         // get all the fields of interface
-                        var inhFields = GetPreparedFields__(inhDecl);
+                        var inhFields = GetDeclarationFields__(inhDecl);
                         foreach (var inhF in inhFields)
                         {
                             // check if the interface is already implemented in parent classes
-                            var definedInOneOfTheParents = inheritedFieldDecls.GetSameDeclByTypeAndName(inhF, out var _);
+                            var definedInOneOfTheParents = allFieldDecls.GetSameDeclByTypeAndName(inhF, out var _);
                             // if the field was already presented previously
                             if (definedInOneOfTheParents != null)
                             {
-                                // check if the already defined field is by the interface
-                                bool isInherited = definedInOneOfTheParents.ContainingParent.Type.OutType.IsInheritedFrom(inhF.ContainingParent.Type.OutType as ClassType, true);
-                                // if inherited - this is a parent cls already implemented the field - no need to warn
-                                if (isInherited)
+                                // need to check that we do not implement it also
+                                var currF = currentFieldDecls.GetSameDeclByTypeAndName(inhF, out int _);
+
+                                // check that the parent's field is virtual or abstract and 
+                                // our field has override word - then allow
+                                if (currF != null && (definedInOneOfTheParents.SpecialKeys.Contains(TokenType.KwVirtual) ||
+                                    definedInOneOfTheParents.SpecialKeys.Contains(TokenType.KwAbstract)) &&
+                                    currF.SpecialKeys.Contains(TokenType.KwOverride))
                                 {
-                                    // need to check that we do not implement it also
-                                    var currF = currentFieldDecls.FirstOrDefault(x => x.Name.Name == inhF.Name.Name);
-                                    // if parents are the same but funcs are different - one of the funcs is probably explicit impl
-                                    if (currF != null && (currF.ContainingParent == definedInOneOfTheParents.ContainingParent && currF != definedInOneOfTheParents))
-                                    {
-                                        // add it to the new dictionary
-                                        currentFieldDecls.Remove(currF);
-                                        inheritedFieldDecls.Add(currF);
-                                        continue;
-                                    }
-                                    if (currF != null && !currF.SpecialKeys.Contains(TokenType.KwNew))
-                                    {
-                                        // the field is implemented in parent class and current class
-                                        // we need to error
-                                        _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, currF,
-                                            [HapetType.AsString(definedInOneOfTheParents.ContainingParent.Type.OutType)], ErrorCode.Get(CTEN.FieldAlreadyDefined));
-                                        continue;
-                                    }
-                                    // else - everything is ok probably
-                                }
-                                else
-                                {
-                                    // TODO: not todo. but C# allows shite like this:
-                                    /*
-                                        public interface IAnime
-                                        {
-                                            short Field111 { get; set; }
-                                        }
-
-                                        public class BaseCls
-                                        {
-                                            public short Field111 { get; set; }
-                                        }
-
-                                        public class Derived : BaseCls, IAnime
-                                        {
-
-                                        }
-                                     */
-                                    // but we can't because of interface offset calcs. md could be fixed somehow?
-
-                                    // we need to error
-                                    _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, definedInOneOfTheParents,
-                                        [HapetType.AsString(definedInOneOfTheParents.ContainingParent.Type.OutType),
-                                            HapetType.AsString(decl.Type.OutType),
-                                            HapetType.AsString(inh.OutType)],
-                                        ErrorCode.Get(CTEN.DoubleInterfaceCringe));
+                                    // add it to the new dictionary
+                                    currentFieldDecls.Remove(currF);
+                                    allFieldDecls.Add(currF);
                                     continue;
                                 }
+                                // if the prop is in parent and in our and wihtout 'new' kw - error
+                                if (currF != null && !currF.SpecialKeys.Contains(TokenType.KwNew))
+                                {
+                                    // the field is implemented in parent class and current class
+                                    // we need to error
+                                    _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, currF,
+                                        [HapetType.AsString(definedInOneOfTheParents.ContainingParent.Type.OutType)], ErrorCode.Get(CTEN.FieldAlreadyDefined));
+                                    continue;
+                                }
+                                // else - everything is ok probably
                             }
                             else
                             {
-                                // if we are not an interface, happens when:
-                                // interface IAnime : object
-                                if (!isInterface)
+                                // if the field was not presented previously
+
+                                // need to check that we do implement it
+                                var currF = currentFieldDecls.GetSameDeclByTypeAndName(inhF, out var _);
+                                if (currF == null)
                                 {
-                                    // if the field was not presented previously
-                                    // need to check that we do implement it
-                                    var currF = currentFieldDecls.GetSameDeclByTypeAndName(inhF, out var _);
-                                    if (currF == null)
-                                    {
-                                        if (!inhF.IsPropertyField)
-                                            // error - the field of the interface was not implemented
-                                            _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, inh,
-                                                [HapetType.AsString(decl.Type.OutType), inhF.Name.Name], ErrorCode.Get(CTEN.NoFieldImplementation));
-                                    }
-                                    else
-                                    {
-                                        // add it to the new dictionary
-                                        currentFieldDecls.Remove(currF);
-                                        inheritedFieldDecls.Add(currF);
-                                    }
+                                    if (!inhF.IsPropertyField)
+                                        // error - the field of the interface was not implemented
+                                        _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, inh,
+                                            [HapetType.AsString(decl.Type.OutType), inhF.Name.Name], ErrorCode.Get(CTEN.NoFieldImplementation));
+                                }
+                                else
+                                {
+                                    // add it to the new dictionary
+                                    currentFieldDecls.Remove(currF);
+                                    allFieldDecls.Add(currF);
                                 }
                             }
                         }
@@ -192,44 +117,90 @@ namespace HapetPostPrepare
                 }
                 else
                 {
-                    var parentFields = GetPreparedFields__(inhDecl);
+                    // if we are not an interface
 
-                    //// shadowing cringe
-                    //foreach (var f in currentFieldDecls.ToList())
-                    //{
-                    //    var inhF = parentFields.FirstOrDefault(x => x.Name.Name == f.Name.Name);
+                    // check that smth like
+                    // class Pivo : object
+                    if (!isInterface)
+                    {
+                        var parentFields = GetDeclarationFields__(inhDecl);
+                        // just add parent fields if it is a class
+                        allFieldDecls.AddRange(parentFields);
 
-                    //    // error if the current field is without 'new' and parent has the same named field
-                    //    if (!f.SpecialKeys.Contains(TokenType.KwNew))
-                    //    {
-                    //        if (inhF != null)
-                    //        {
-                    //            // the field is implemented in parent class and current class
-                    //            // we need to error
-                    //            _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, f,
-                    //                [HapetType.AsString(f.ContainingParent.Type.OutType)], ErrorCode.Get(CTEN.FieldAlreadyDefined));
-                    //        }
-                    //        continue; // skip
-                    //    }
-
-                    //    // check if there is a 'new' kw but no fields in parent
-                    //    if (inhF == null)
-                    //    {
-                    //        // we need to error
-                    //        _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, 
-                    //            f.SpecialKeys.GetType(TokenType.KwNew).Location,
-                    //            [], ErrorCode.Get(CTEN.PureUnexpectedToken));
-                    //        continue;
-                    //    }
-                    //}
-
-                    // just add parent fields if it is a class
-                    inheritedFieldDecls.AddRange(parentFields);
+                        // search for overrides in the current class 
+                        // and replace parent methods with our
+                        foreach (var fCurr in currentFieldDecls.Where(x => x.SpecialKeys.Contains(TokenType.KwOverride)).ToArray())
+                        {
+                            // check for signatures
+                            var overridedProp = allFieldDecls.GetSameDeclByTypeAndName(fCurr, out int index);
+                            // TODO: error here? we go all over the override fields and found no field to be overriden?
+                            if (overridedProp == null)
+                                continue;
+                            allFieldDecls[index] = fCurr;
+                            // we need to remove it so it won't mess with us
+                            currentFieldDecls.Remove(fCurr);
+                        }
+                    }
+                    else
+                    {
+                        // TODO: probably need to handle shite like:
+                        // interface IPivo : object 
+                        // implicit inheritance
+                    }
                 }
             }
 
-            inheritedFieldDecls.AddRange(currentFieldDecls);
-            return inheritedFieldDecls;
+            // check for shadowing
+            foreach (var currP in currentFieldDecls)
+            {
+                // skip virtual shite
+                if (currP.SpecialKeys.Contains(TokenType.KwOverride))
+                {
+                    // TODO: probably error here - all overrides should be removed upper
+                    continue;
+                }
+                var parentProp = allFieldDecls.GetSameDeclByTypeAndName(currP, out int _);
+                if (parentProp != null && !currP.SpecialKeys.Contains(TokenType.KwNew))
+                {
+                    // error - property shadowing
+                    _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, currP.Name,
+                        [$"{parentProp.ContainingParent.Name.Name}::{parentProp.Name.Name}"], ErrorCode.Get(CTEN.PropertyShadowing));
+                }
+                else if (parentProp != null && currP.SpecialKeys.Contains(TokenType.KwNew))
+                {
+                    // all is ok
+                    // to set brkp here
+                }
+            }
+
+            // check if all implemented
+            if (!isInterface && !decl.SpecialKeys.Contains(TokenType.KwAbstract))
+            {
+                // if it is not an interface nor abstract class - all abstract shite has to be implemented
+                foreach (var p in allFieldDecls)
+                {
+                    // skip overrided-abstract methods
+                    // the parent would be our cls if overrided
+                    if (p.ContainingParent == decl)
+                        continue;
+
+                    if (p.SpecialKeys.Contains(TokenType.KwAbstract))
+                    {
+                        // error - implementation of method not found in curr class
+                        _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, decl.Name,
+                            [$"{p.ContainingParent.Name.Name}::{p.Name.Name}"], ErrorCode.Get(CTEN.NoAbsPropertyImpl));
+                    }
+                }
+            }
+
+            if (isInterface)
+                // add here all shite because it is an interface
+                allFieldDecls.AddRange(currentFieldDecls);
+            else
+                // add here only virtual shite
+                allFieldDecls.AddRange(currentFieldDecls.Where(x => x.SpecialKeys.Contains(TokenType.KwAbstract) ||
+                                                                           x.SpecialKeys.Contains(TokenType.KwVirtual)));
+            return allFieldDecls;
         }
     }
 }

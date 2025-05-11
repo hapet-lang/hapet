@@ -1,4 +1,5 @@
-﻿using HapetFrontend.Ast;
+﻿using System;
+using HapetFrontend.Ast;
 using HapetFrontend.Ast.Declarations;
 using HapetFrontend.Ast.Expressions;
 using HapetFrontend.Errors;
@@ -42,13 +43,15 @@ namespace HapetPostPrepare
             bool isInterface = false;
             if (decl is AstClassDecl clsDecl)
             {
-                currentClassMethods = clsDecl.Declarations.Where(x => x is AstFuncDecl fnc && !fnc.IsImplOfGeneric).Select(x => x as AstFuncDecl).ToList();
+                currentClassMethods = clsDecl.Declarations.Where(x => x is AstFuncDecl fnc && !fnc.IsImplOfGeneric && 
+                    !fnc.SpecialKeys.Contains(TokenType.KwStatic)).Select(x => x as AstFuncDecl).ToList();
                 inheritedFrom = clsDecl.InheritedFrom;
                 isInterface = clsDecl.IsInterface;
             }
             else if (decl is AstStructDecl strDecl)
             {
-                currentClassMethods = strDecl.Declarations.Where(x => x is AstFuncDecl fnc && !fnc.IsImplOfGeneric).Select(x => x as AstFuncDecl).ToList();
+                currentClassMethods = strDecl.Declarations.Where(x => x is AstFuncDecl fnc && !fnc.IsImplOfGeneric && 
+                    !fnc.SpecialKeys.Contains(TokenType.KwStatic)).Select(x => x as AstFuncDecl).ToList();
                 inheritedFrom = strDecl.InheritedFrom;
             }
             else
