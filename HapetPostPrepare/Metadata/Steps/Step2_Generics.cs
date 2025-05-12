@@ -17,6 +17,10 @@ namespace HapetPostPrepare
             if (!decl.HasGenericTypes)
                 return false;
 
+            // we need only PURE generics
+            if (decl.IsImplOfGeneric)
+                return false;
+
             // getting pure generics from decl
             var pureGenerics = GenericsHelper.GetGenericsFromName(decl.Name as AstIdGenericExpr, _compiler.MessageHandler);
             // we need to set types to ids

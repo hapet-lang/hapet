@@ -85,7 +85,7 @@ namespace HapetFrontend.Ast.Declarations
 
         public override string ToString()
         {
-            return $"{Name}";
+            return GenericsHelper.GetNameFromAst(Name, null);
         }
     }
 }

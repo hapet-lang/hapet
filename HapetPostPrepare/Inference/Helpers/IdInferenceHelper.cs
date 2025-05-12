@@ -19,9 +19,10 @@ namespace HapetPostPrepare
             string name = idExpr.Name;
 
             // at first - check that the id could be a generic type
-            if (_currentParentStack.CurrentGenericIdMappings.TryGetValue(name, out var genType))
+            var genericEntity = _currentParentStack.CurrentGenericIdMappings.FirstOrDefault(x => x.Value.Item1 == name);
+            if (genericEntity.HasValue)
             {
-                idExpr.OutType = genType;
+                idExpr.OutType = genericEntity.Value.Item2;
                 return;
             }
 
@@ -304,13 +305,6 @@ namespace HapetPostPrepare
             if (idExpr is not AstIdGenericExpr genId)
                 return decl;
 
-            if (!decl.Decl.HasGenericTypes)
-                return decl;
-
-            // return if it is already an impl
-            if (decl.Decl.IsImplOfGeneric)
-                return decl;
-
             var theDecl = decl.Decl;
             var realDecl = CreateRealTypeFromGeneric(theDecl, genId, out var realName, true);
 
@@ -333,6 +327,19 @@ namespace HapetPostPrepare
         {
             InInfo inInfo = InInfo.Default;
             OutInfo outInfo = OutInfo.Default;
+
+            if (!genDecl.HasGenericTypes)
+            {
+                realName = genDecl.Name as AstIdGenericExpr;
+                return genDecl;
+            }
+
+            // return if it is already an impl
+            if (genDecl.IsImplOfGeneric)
+            {
+                realName = genDecl.Name as AstIdGenericExpr;
+                return genDecl;
+            }
 
             // infer generic names
             for (int i = 0; i < realId.GenericRealTypes.Count; ++i)

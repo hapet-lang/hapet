@@ -67,7 +67,7 @@ namespace HapetPostPrepare
             }
             else
             {
-                _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, decl.Name, [], ErrorCode.Get(CTEN.DeclNotAllowedInNamespace));
+                // should be errored in frontend
                 return;
             }
 

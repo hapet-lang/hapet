@@ -47,9 +47,13 @@ namespace HapetFrontend.Ast
         [JsonIgnore]
         public virtual string AAAName => nameof(AstStatement);
 
+        private Guid Guid { get; set; } // just for debug
+
         public AstStatement(ILocation location = null)
         {
             this.Location = location;
+
+            Guid = Guid.NewGuid();
         }
 
         public abstract AstStatement GetDeepCopy();

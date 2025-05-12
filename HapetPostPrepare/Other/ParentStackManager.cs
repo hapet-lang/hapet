@@ -20,9 +20,9 @@ namespace HapetPostPrepare.Other
         /// for current preparing generic types. So <see cref="PostPrepareIdentifierInference"/>
         /// would return correct types for ids
         /// </summary>
-        private Dictionary<string, GenericType> _currentGenericIdMappings = new Dictionary<string, GenericType>();
+        private List<(string, GenericType)?> _currentGenericIdMappings = new List<(string, GenericType)?>();
 
-        public ReadOnlyDictionary<string, GenericType> CurrentGenericIdMappings => new ReadOnlyDictionary<string, GenericType>(_currentGenericIdMappings);
+        public ReadOnlyCollection<(string, GenericType)?> CurrentGenericIdMappings => new ReadOnlyCollection<(string, GenericType)?>(_currentGenericIdMappings);
 
         private ParentStackManager() { }
         public static ParentStackManager Create(IMessageHandler messageHandler)
@@ -76,7 +76,7 @@ namespace HapetPostPrepare.Other
             var pureGenerics = GenericsHelper.ExtractAllGenericTypes(typeGenerics.Select(x => x as AstExpression).ToList());
             foreach (var p in pureGenerics)
             {
-                _currentGenericIdMappings.Add(p.Name, p.OutType as GenericType);
+                _currentGenericIdMappings.Add((p.Name, p.OutType as GenericType));
             }
         }
 
@@ -87,7 +87,8 @@ namespace HapetPostPrepare.Other
             var pureGenerics = GenericsHelper.ExtractAllGenericTypes(typeGenerics.Select(x => x as AstExpression).ToList());
             foreach (var p in pureGenerics)
             {
-                _currentGenericIdMappings.Remove(p.Name);
+                var theElement = _currentGenericIdMappings.LastOrDefault(x => x.Value.Item1 == p.Name);
+                _currentGenericIdMappings.Remove(theElement);
             }
         }
     }
