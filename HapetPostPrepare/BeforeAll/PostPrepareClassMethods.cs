@@ -204,9 +204,11 @@ namespace HapetPostPrepare
                     foreach (var f in decls)
                     {
                         // add abstract key to the field if it is an interface
-                        AddSpecialKeyToDecl(f, Lexer.CreateToken(TokenType.KwAbstract, f.Location.Beginning));
+                        SpecialKeysHelper.AddSpecialKeyToDecl(f, Lexer.CreateToken(TokenType.KwAbstract, f.Location.Beginning), 
+                            _compiler.MessageHandler, _currentSourceFile);
                         // and public :)
-                        AddSpecialKeyToDecl(f, Lexer.CreateToken(TokenType.KwPublic, f.Location.Beginning));
+                        SpecialKeysHelper.AddSpecialKeyToDecl(f, Lexer.CreateToken(TokenType.KwPublic, f.Location.Beginning), 
+                            _compiler.MessageHandler, _currentSourceFile);
                     }
                 }
                 // add kw private if there is no one
@@ -215,8 +217,9 @@ namespace HapetPostPrepare
                     foreach (var f in decls)
                     {
                         // 1 - is access special key type!!!
-                        if (!HasSpecialKeyType(f, 1, out int _))
-                            AddSpecialKeyToDecl(f, Lexer.CreateToken(TokenType.KwPrivate, f.Location.Beginning));
+                        if (!SpecialKeysHelper.HasSpecialKeyType(f, 1, out int _))
+                            SpecialKeysHelper.AddSpecialKeyToDecl(f, Lexer.CreateToken(TokenType.KwPrivate, f.Location.Beginning), 
+                                _compiler.MessageHandler, _currentSourceFile);
                     }
                 }
 
@@ -497,7 +500,8 @@ namespace HapetPostPrepare
                 AstVarDecl propField = prop.GetField(parent, isParentStruct);
                 // add abstract key to the field if it is an interface
                 if (isParentInterface)
-                    AddSpecialKeyToDecl(propField, Lexer.CreateToken(TokenType.KwAbstract, prop.Location.Beginning));
+                    SpecialKeysHelper.AddSpecialKeyToDecl(propField, Lexer.CreateToken(TokenType.KwAbstract, prop.Location.Beginning), 
+                        _compiler.MessageHandler, _currentSourceFile);
                 declarationsToAdd.Add(propField);
 
                 var origField = decls.FirstOrDefault(x => x.Name.Name == $"field_{orig?.Name.Name}");
@@ -510,7 +514,8 @@ namespace HapetPostPrepare
                 AstFuncDecl getFunc = prop.GetGetFunction(parent, addFirstParam);
                 // add abstract key to the method if it is an interface
                 if (isParentInterface)
-                    AddSpecialKeyToDecl(getFunc, Lexer.CreateToken(TokenType.KwAbstract, prop.Location.Beginning));
+                    SpecialKeysHelper.AddSpecialKeyToDecl(getFunc, Lexer.CreateToken(TokenType.KwAbstract, prop.Location.Beginning), 
+                        _compiler.MessageHandler, _currentSourceFile);
                 declarationsToAdd.Add(getFunc);
 
                 var origFunc = decls.FirstOrDefault(x => x.Name.Name.Contains($":get_{orig?.Name.Name}("));
@@ -523,7 +528,8 @@ namespace HapetPostPrepare
                 AstFuncDecl setFunc = prop.GetSetFunction(parent, addFirstParam);
                 // add abstract key to the method if it is an interface
                 if (isParentInterface)
-                    AddSpecialKeyToDecl(setFunc, Lexer.CreateToken(TokenType.KwAbstract, prop.Location.Beginning));
+                    SpecialKeysHelper.AddSpecialKeyToDecl(setFunc, Lexer.CreateToken(TokenType.KwAbstract, prop.Location.Beginning), 
+                        _compiler.MessageHandler, _currentSourceFile);
                 declarationsToAdd.Add(setFunc);
 
                 var origFunc = decls.FirstOrDefault(x => x.Name.Name.Contains($":set_{orig?.Name.Name}("));

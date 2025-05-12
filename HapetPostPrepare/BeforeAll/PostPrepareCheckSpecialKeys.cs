@@ -1,6 +1,7 @@
 ﻿using HapetFrontend.Ast;
 using HapetFrontend.Ast.Declarations;
 using HapetFrontend.Extensions;
+using HapetFrontend.Helpers;
 using HapetFrontend.Parsing;
 
 namespace HapetPostPrepare
@@ -25,7 +26,7 @@ namespace HapetPostPrepare
         {
             _currentParentStack.AddParent(stmt);
 
-            CheckSpecialKeys(stmt);
+            SpecialKeysHelper.CheckSpecialKeys(stmt, _compiler.MessageHandler, _currentSourceFile);
             if (stmt is AstClassDecl classDecl)
             {
                 PostPrepareClassSpecialKeys(classDecl);
@@ -48,7 +49,7 @@ namespace HapetPostPrepare
             foreach (var decl in classDecl.Declarations)
             {
                 RemoveIfMetadataDeclaration(decl);
-                CheckSpecialKeys(decl);
+                SpecialKeysHelper.CheckSpecialKeys(decl, _compiler.MessageHandler, _currentSourceFile);
 
                 if (decl is AstClassDecl || decl is AstStructDecl)
                     PostPrepareDeclSpecialKeys(decl);
@@ -60,7 +61,7 @@ namespace HapetPostPrepare
             foreach (var decl in structDecl.Declarations)
             {
                 RemoveIfMetadataDeclaration(decl);
-                CheckSpecialKeys(decl);
+                SpecialKeysHelper.CheckSpecialKeys(decl, _compiler.MessageHandler, _currentSourceFile);
 
                 if (decl is AstClassDecl || decl is AstStructDecl)
                     PostPrepareDeclSpecialKeys(decl);
@@ -80,7 +81,7 @@ namespace HapetPostPrepare
                     continue;
 
                 RemoveIfMetadataDeclaration(decl);
-                CheckSpecialKeys(decl);
+                SpecialKeysHelper.CheckSpecialKeys(decl, _compiler.MessageHandler, _currentSourceFile);
 
                 if (decl is AstFuncDecl)
                     PostPrepareDeclSpecialKeys(decl);

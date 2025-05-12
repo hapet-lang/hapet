@@ -1,6 +1,7 @@
 ﻿using HapetFrontend.Ast.Expressions;
 using HapetFrontend.Ast.Statements;
 using HapetFrontend.Extensions;
+using HapetFrontend.Helpers;
 using HapetFrontend.Parsing;
 using HapetFrontend.Types;
 
@@ -187,6 +188,12 @@ namespace HapetFrontend.Ast.Declarations
             func.ContainingParent = containingParent; // it has to be
             func.IsPropertyFunction = true;
             func.SourceFile = SourceFile;
+
+            // add specific special keys
+            if (isGet)
+                SpecialKeysHelper.ReplaceSpecialKeysByTypes(func, GetSpecialKeys);
+            else
+                SpecialKeysHelper.ReplaceSpecialKeysByTypes(func, SetSpecialKeys);
 
             // if we need to add 'this' param
             if (addFirstParam)

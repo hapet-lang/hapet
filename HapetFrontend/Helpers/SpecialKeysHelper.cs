@@ -1,12 +1,13 @@
 ﻿using HapetFrontend.Ast;
+using HapetFrontend.Entities;
 using HapetFrontend.Errors;
 using HapetFrontend.Parsing;
 
-namespace HapetPostPrepare
+namespace HapetFrontend.Helpers
 {
-    public partial class PostPrepare
+    public static class SpecialKeysHelper
     {
-        public static void CheckSpecialKeys(AstDeclaration decl)
+        public static void CheckSpecialKeys(AstDeclaration decl, IMessageHandler messageHandler, ProgramFile sourceFile)
         {
             // not my problem
             if (decl == null)
@@ -76,7 +77,7 @@ namespace HapetPostPrepare
                 var nonDefault = forw.FirstOrDefault(x => x != default);
                 if (nonDefault != default)
                 {
-                    _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, curr.Location,
+                    messageHandler.ReportMessage(sourceFile.Text, curr.Location,
                         [Lexer.GetKeywordFromToken(curr.Type), Lexer.GetKeywordFromToken(nonDefault)],
                         ErrorCode.Get(CTEN.ShouldGoBeforeSpecialKey));
                     return;
@@ -84,7 +85,7 @@ namespace HapetPostPrepare
 
                 if (check != default)
                 {
-                    _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, curr.Location,
+                    messageHandler.ReportMessage(sourceFile.Text, curr.Location,
                         [Lexer.GetKeywordFromToken(curr.Type), Lexer.GetKeywordFromToken(check)],
                         ErrorCode.Get(CTEN.AlreadyDefinedSpecialKey));
                     return;
@@ -94,7 +95,7 @@ namespace HapetPostPrepare
             }
         }
 
-        private static void AddSpecialKeyToDecl(AstDeclaration decl, Token specialKey, bool doError = false)
+        public static void AddSpecialKeyToDecl(AstDeclaration decl, Token specialKey, IMessageHandler messageHandler, ProgramFile sourceFile, bool doError = false)
         {
             TokenType syncKey = default;          // async
             TokenType accessKey = default;        // public/protected/internal/private/unreflected
@@ -142,7 +143,7 @@ namespace HapetPostPrepare
                         if (syncKey != default)
                         {
                             if (doError)
-                                _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, decl.Name,
+                                messageHandler.ReportMessage(sourceFile.Text, decl.Name,
                                     [Lexer.GetKeywordFromToken(specialKey.Type), Lexer.GetKeywordFromToken(syncKey)],
                                     ErrorCode.Get(CTEN.AlreadyDefinedSpecialKey));
                             break;
@@ -156,7 +157,7 @@ namespace HapetPostPrepare
                         if (accessKey != default)
                         {
                             if (doError)
-                                _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, decl.Name,
+                                messageHandler.ReportMessage(sourceFile.Text, decl.Name,
                                     [Lexer.GetKeywordFromToken(specialKey.Type), Lexer.GetKeywordFromToken(accessKey)],
                                     ErrorCode.Get(CTEN.AlreadyDefinedSpecialKey));
                             break;
@@ -173,7 +174,7 @@ namespace HapetPostPrepare
                         if (shadowKey != default)
                         {
                             if (doError)
-                                _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, decl.Name,
+                                messageHandler.ReportMessage(sourceFile.Text, decl.Name,
                                     [Lexer.GetKeywordFromToken(specialKey.Type), Lexer.GetKeywordFromToken(shadowKey)],
                                     ErrorCode.Get(CTEN.AlreadyDefinedSpecialKey));
                             break;
@@ -192,7 +193,7 @@ namespace HapetPostPrepare
                         if (instanceKey != default)
                         {
                             if (doError)
-                                _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, decl.Name,
+                                messageHandler.ReportMessage(sourceFile.Text, decl.Name,
                                     [Lexer.GetKeywordFromToken(specialKey.Type), Lexer.GetKeywordFromToken(instanceKey)],
                                     ErrorCode.Get(CTEN.AlreadyDefinedSpecialKey));
                             break;
@@ -213,7 +214,7 @@ namespace HapetPostPrepare
                         if (mutabilityKey != default)
                         {
                             if (doError)
-                                _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, decl.Name,
+                                messageHandler.ReportMessage(sourceFile.Text, decl.Name,
                                     [Lexer.GetKeywordFromToken(specialKey.Type), Lexer.GetKeywordFromToken(mutabilityKey)],
                                     ErrorCode.Get(CTEN.AlreadyDefinedSpecialKey));
                             break;
@@ -236,7 +237,7 @@ namespace HapetPostPrepare
                         if (abstractionKey != default)
                         {
                             if (doError)
-                                _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, decl.Name,
+                                messageHandler.ReportMessage(sourceFile.Text, decl.Name,
                                     [Lexer.GetKeywordFromToken(specialKey.Type), Lexer.GetKeywordFromToken(abstractionKey)],
                                     ErrorCode.Get(CTEN.AlreadyDefinedSpecialKey));
                             break;
@@ -261,7 +262,7 @@ namespace HapetPostPrepare
                         if (otherKey != default)
                         {
                             if (doError)
-                                _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, decl.Name,
+                                messageHandler.ReportMessage(sourceFile.Text, decl.Name,
                                     [Lexer.GetKeywordFromToken(specialKey.Type), Lexer.GetKeywordFromToken(otherKey)],
                                     ErrorCode.Get(CTEN.AlreadyDefinedSpecialKey));
                             break;
@@ -286,7 +287,7 @@ namespace HapetPostPrepare
             }
         }
 
-        private static int GetSpecialKeyType(TokenType specialKey)
+        public static int GetSpecialKeyType(TokenType specialKey)
         {
             switch (specialKey)
             {
@@ -333,7 +334,7 @@ namespace HapetPostPrepare
             return -1;
         }
 
-        private static bool HasSpecialKeyType(AstDeclaration decl, int type, out int index)
+        public static bool HasSpecialKeyType(AstDeclaration decl, int type, out int index)
         {
             for (int i = 0; i < decl.SpecialKeys.Count; ++i)
             {
@@ -361,7 +362,7 @@ namespace HapetPostPrepare
                 }
                 else
                 {
-                    AddSpecialKeyToDecl(decl, sk, false);
+                    AddSpecialKeyToDecl(decl, sk, null, null, false);
                 }
             }
         }
