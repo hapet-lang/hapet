@@ -32,17 +32,28 @@ namespace HapetPostPrepare
             {
                 _currentSourceFile = funcDecl.SourceFile;
 
-                // skip pure generics
-                if (funcDecl.HasGenericTypes && !funcDecl.IsImplOfGeneric)
-                    continue;
-
+                var parent = funcDecl.ContainingParent;
+                if (parent.IsNestedDecl)
+                    _currentParentStack.AddParent(parent.ParentDecl);
+                _currentParentStack.AddParent(parent);
                 PostPrepareFunctionInference(funcDecl, inInfo, ref outInfo);
+                if (parent.IsNestedDecl)
+                    _currentParentStack.RemoveParent();
+                _currentParentStack.RemoveParent();
             }
 
             foreach (var delegateDecl in delegates)
             {
                 _currentSourceFile = delegateDecl.SourceFile;
+
+                var parent = delegateDecl.ContainingParent;
+                if (parent.IsNestedDecl)
+                    _currentParentStack.AddParent(parent.ParentDecl);
+                _currentParentStack.AddParent(parent);
                 PostPrepareDelegateInference(delegateDecl, inInfo, ref outInfo);
+                if (parent.IsNestedDecl)
+                    _currentParentStack.RemoveParent();
+                _currentParentStack.RemoveParent();
             }
         }
 
@@ -181,10 +192,7 @@ namespace HapetPostPrepare
                 }
             }
             else
-            {
-                // cringe? - adding cls parent after func parent...
-                _currentParentStack.AddParent(funcDecl.ContainingParent);
-                
+            {                
                 // if parent contains Generic shite - do not infer
                 bool allowInfer = !(funcDecl.ContainingParent.HasGenericTypes && !funcDecl.ContainingParent.IsImplOfGeneric);
                 // inferring body
@@ -213,8 +221,6 @@ namespace HapetPostPrepare
                     // but why to the index 1? - https://stackoverflow.com/questions/140490/base-constructor-in-c-sharp-which-gets-called-first
                     funcDecl.Body.Statements.Insert(1, funcDecl.BaseCtorCall);
                 }
-
-                _currentParentStack.RemoveParent();
             }
 
             _currentParentStack.RemoveParent();

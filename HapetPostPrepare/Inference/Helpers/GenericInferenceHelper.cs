@@ -17,7 +17,6 @@ namespace HapetPostPrepare
 {
     public partial class PostPrepare
     {
-        private int aaaa = 0;
         private AstDeclaration GetRealTypeFromGeneric(AstDeclaration decl, List<AstNestedExpr> genericTypes, AstIdGenericExpr realName)
         {
             // we need to save previous info about current shite and then reload it 
@@ -38,6 +37,12 @@ namespace HapetPostPrepare
                     origDeclPureName = funcDecl.Name.Name.GetPureFuncName();
                 else
                     origDeclPureName = funcDecl.Name.Name;
+
+                // we also need to add containing parent to stack
+                var parent = funcDecl.ContainingParent;
+                if (parent.IsNestedDecl)
+                    _currentParentStack.AddParent(parent.ParentDecl);
+                _currentParentStack.AddParent(parent);
             }
             else if (decl is AstClassDecl || decl is AstStructDecl || decl is AstDelegateDecl)
             {
@@ -67,15 +72,9 @@ namespace HapetPostPrepare
             RenameFromGenericToRealType(realDecl, origDeclPureName);
             // just a pp
             PostPrepareDeclScoping(realDecl);
-            aaaa++;
-            if (aaaa > 79)
-            {
-
-            }
             // pp up to the current metadata step
             PostPrepareStatementUpToCurrentStep(realDecl);
 
-            
 
             // if it is a property - we need to create and inference its field/get/set
             if (realDecl is AstPropertyDecl propDecl)
@@ -105,6 +104,8 @@ namespace HapetPostPrepare
                 parentDecls.AddRange(newDecls);
                 parentDecls.Add(realDecl);
             }
+
+            // no need to remove anything from the current parent stack - it would be cleared
 
             // reload previously saved shite
             _currentSourceFile = savedSourceFile;
