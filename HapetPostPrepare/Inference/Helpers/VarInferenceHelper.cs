@@ -291,7 +291,8 @@ namespace HapetPostPrepare
             {
                 string typeName = HapetType.AsString(exprType);
                 if (castResult == null)
-                    _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, expr, [typeName, HapetType.AsString(neededType)], ErrorCode.Get(CTEN.TypeCouldNotBeImplCasted));
+                    _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, expr, [typeName, HapetType.AsString(neededType)], 
+                        ErrorCode.Get(CTEN.TypeCouldNotBeImplCasted));
 
                 outExpr = expr;
             }

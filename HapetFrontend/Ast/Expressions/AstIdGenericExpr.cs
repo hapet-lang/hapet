@@ -59,7 +59,10 @@ namespace HapetFrontend.Ast.Expressions
         public override AstIdGenericExpr GetCopy(string name = "")
         {
             string newName = string.IsNullOrWhiteSpace(name) ? Name : name;
-            var newId = new AstIdGenericExpr(newName, GenericRealTypes, Location)
+            var newId = new AstIdGenericExpr(
+                newName, 
+                GenericRealTypes.Select(x => x.GetDeepCopy() as AstExpression).ToList(), 
+                Location)
             {
                 Suffix = this.Suffix,
                 Parent = this.Parent,

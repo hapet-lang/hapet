@@ -312,7 +312,7 @@ namespace HapetPostPrepare
                 return decl;
 
             var theDecl = decl.Decl;
-            var realDecl = CreateRealTypeFromGeneric(theDecl, genId, out var realName);
+            var realDecl = CreateRealTypeFromGeneric(theDecl, genId, out var realName, true);
 
             DeclSymbol realDclDecl;
             // func is defined by itself

@@ -1,6 +1,7 @@
 ﻿using HapetFrontend.Ast;
 using HapetFrontend.Ast.Expressions;
 using HapetFrontend.Helpers;
+using HapetFrontend.Parsing;
 using HapetFrontend.Types;
 
 namespace HapetPostPrepare
@@ -21,13 +22,15 @@ namespace HapetPostPrepare
             // we need to set types to ids
             for (int i = 0; i < pureGenerics.Count; ++i)
             {
+                var originalGeneric = (decl.Name as AstIdGenericExpr).GenericRealTypes[i];
                 var currGeneric = pureGenerics[i];
                 var currContrains = new List<AstNestedExpr>();
                 if (decl.GenericConstrains.TryGetValue(currGeneric, out var constrains))
                     currContrains = constrains;
 
                 // TODO: inference constains
-                currGeneric.OutType = new GenericType(currGeneric, currContrains);
+                originalGeneric.OutType = new GenericType(currGeneric, currContrains);
+                currGeneric.OutType = originalGeneric.OutType;
             }
 
             // add here

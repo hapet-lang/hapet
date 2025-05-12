@@ -161,11 +161,13 @@ namespace HapetFrontend.Scoping
                     bool allEqual = true;
                     for (int i = 0; i < gAmountSymbol; ++i)
                     {
-                        if (genK.GenericRealTypes[i].OutType != genId.GenericRealTypes[i].OutType)
+                        if (genK.GenericRealTypes[i].OutType == genId.GenericRealTypes[i].OutType)
                         {
-                            allEqual = false;
-                            break;
+                            continue;
                         }
+
+                        allEqual = false;
+                        break;
                     }
                     if (_symbolTable[k] is DeclSymbol ds1 && 
                         ds1.Decl.IsImplOfGeneric &&

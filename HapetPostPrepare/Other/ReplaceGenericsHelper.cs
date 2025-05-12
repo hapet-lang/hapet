@@ -5,6 +5,7 @@ using HapetFrontend.Ast.Statements;
 using HapetFrontend.Errors;
 using HapetFrontend.Extensions;
 using HapetFrontend.Helpers;
+using HapetPostPrepare.Entities;
 
 namespace HapetPostPrepare
 {
@@ -310,6 +311,9 @@ namespace HapetPostPrepare
                 case AstArrayAccessExpr arrayAccExpr:
                     ReplaceAllGenericTypesInArrayAccessExpr(arrayAccExpr);
                     break;
+                case AstTernaryExpr ternaryExpr:
+                    ReplaceAllGenericTypesInTernaryExpr(ternaryExpr);
+                    break;
 
                 // statements
                 case AstAssignStmt assignStmt:
@@ -523,6 +527,13 @@ namespace HapetPostPrepare
         {
             ReplaceAllGenericTypesInExpr(arrayAccExpr.ParameterExpr);
             ReplaceAllGenericTypesInExpr(arrayAccExpr.ObjectName);
+        }
+
+        private void ReplaceAllGenericTypesInTernaryExpr(AstTernaryExpr ternaryExpr)
+        {
+            ReplaceAllGenericTypesInExpr(ternaryExpr.Condition);
+            ReplaceAllGenericTypesInExpr(ternaryExpr.TrueExpr);
+            ReplaceAllGenericTypesInExpr(ternaryExpr.FalseExpr);
         }
 
         // statements
