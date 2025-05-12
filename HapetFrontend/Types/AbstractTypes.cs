@@ -38,9 +38,15 @@ namespace HapetFrontend.Types
     public class GenericType : AbstractType
     {
         public AstIdExpr Name { get; set; }
+        /// <summary>
+        /// The declaration that contains the generic types like 'List[T]'
+        /// </summary>
+        public AstDeclaration ParentDeclaration { get; set; }
         public List<AstNestedExpr> Constrains { get; set; }
 
         public override string TypeName => "generic";
+
+        private Guid Guid { get; set; } // just for debug
 
         public override AstExpression GetAst()
         {
@@ -51,6 +57,8 @@ namespace HapetFrontend.Types
         {
             Name = name;
             Constrains = constrains;
+
+            Guid = Guid.NewGuid();
         }
 
         public override string ToString() => Name.Name;

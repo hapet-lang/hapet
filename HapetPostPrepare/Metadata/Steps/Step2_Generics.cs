@@ -29,7 +29,11 @@ namespace HapetPostPrepare
                     currContrains = constrains;
 
                 // TODO: inference constains
-                originalGeneric.OutType = new GenericType(currGeneric, currContrains);
+
+                originalGeneric.OutType = new GenericType(currGeneric, currContrains)
+                {
+                    ParentDeclaration = decl.IsImplOfGeneric ? decl.OriginalGenericDecl : decl,
+                };
                 currGeneric.OutType = originalGeneric.OutType;
             }
 

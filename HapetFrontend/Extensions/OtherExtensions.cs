@@ -310,7 +310,11 @@ namespace HapetFrontend.Extensions
         public static AstNestedExpr GetNested(this AstExpression expr, IMessageHandler messageHandler)
         {
             if (expr is AstIdExpr idExpr)
-                return new AstNestedExpr(idExpr, null, idExpr);
+                return new AstNestedExpr(idExpr, null, idExpr)
+                {
+                    OutType = idExpr.OutType,
+                    Scope = idExpr.Scope,
+                };
             else if (expr is AstNestedExpr nest)
                 return nest;
             else

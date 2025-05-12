@@ -166,6 +166,33 @@ namespace HapetFrontend.Scoping
                             continue;
                         }
 
+                        // this is a special keys for funcs
+                        // when a new non-generic class is created
+                        // all the funcs are going to be copied inside it with 
+                        // new generics types. we don't need it.
+                        // we would suppose that all the generic
+                        // funcs that are the same but in different 
+                        // non-generic-generic classes - have the 
+                        // same generic types - fix of #80
+                        if (genK.GenericRealTypes[i].OutType is GenericType kType && 
+                            genId.GenericRealTypes[i].OutType is GenericType sType &&
+                            kType.ParentDeclaration is AstDeclaration fDecl &&
+                            sType.ParentDeclaration is AstDeclaration sDecl)
+                        {
+                            // check that original funcs are the same
+                            var fComp1 = fDecl.IsImplOfGeneric ? fDecl.OriginalGenericDecl : fDecl;
+                            var fComp2 = sDecl.IsImplOfGeneric ? sDecl.OriginalGenericDecl : sDecl;
+                            if (fComp1 == fComp2 && kType.Name.Name == sType.Name.Name)
+                            {
+                                continue;
+                            }
+                        }
+
+                        if (genK.GenericRealTypes[i].OutType is GenericType kType2 && kType2.Name.Name.Contains("T1"))
+                        {
+
+                        }
+
                         allEqual = false;
                         break;
                     }
