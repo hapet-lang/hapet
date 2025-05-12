@@ -1408,10 +1408,6 @@ namespace HapetPostPrepare
             {
                 if (inferValue)
                 {
-                    if (value is AstNestedExpr nst && nst.RightPart is AstIdExpr id && id.Name.Contains("Value"))
-                    {
-
-                    }
                     // if it is not a default
                     PostPrepareExprInference(value, inInfo, ref outInfo);
                 }

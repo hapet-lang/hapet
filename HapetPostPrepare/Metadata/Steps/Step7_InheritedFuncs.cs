@@ -71,10 +71,6 @@ namespace HapetPostPrepare
                 // need to create a specific type of the inheritance
                 if (inh.RightPart is AstIdGenericExpr genInhId)
                 {
-                    if (genInhId.Name.Contains("IList"))
-                    {
-
-                    }
                     // WARN: allow genericTypes here - because we want to purely check the types
                     inhDecl = CreateRealTypeFromGeneric(inhDecl, genInhId, out var _, true) as AstClassDecl;
                 }

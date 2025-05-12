@@ -157,11 +157,6 @@ namespace HapetFrontend.Scoping
                     if (gAmountSymbol != gAmountSearch)
                         continue;
 
-                    if (k.Name.Contains("ICollection"))
-                    {
-
-                    }
-
                     // if the same decl
                     bool allEqual = true;
                     for (int i = 0; i < gAmountSymbol; ++i)
