@@ -514,7 +514,7 @@ namespace HapetBackend.Llvm
                 var ctorName = $"{classType.Declaration.Name.Name}::{onlyName}_ctor" + expr.Arguments.GetArgsString(PointerType.GetPointerType(classType));
                 List<AstArgumentExpr> argsWithClassParam = new List<AstArgumentExpr>(expr.Arguments);
                 argsWithClassParam.Insert(0, new AstArgumentExpr(new AstIdExpr("this") { OutType = PointerType.GetPointerType(classType) }));
-                var ctorSymbol = _postPreparer.GetFuncFromCandidates(new AstIdExpr(ctorName), null, argsWithClassParam, classType.Declaration, out var casts);
+                var ctorSymbol = _postPreparer.GetFuncFromCandidates(new AstIdExpr(ctorName), null, argsWithClassParam, classType.Declaration, true, out var casts);
 
                 // error if ctor not found
                 if (ctorSymbol == null)
@@ -555,7 +555,7 @@ namespace HapetBackend.Llvm
                 var ctorName = $"{structType.Declaration.Name.Name}::{onlyName}_ctor" + expr.Arguments.GetArgsString(PointerType.GetPointerType(structType));
                 List<AstArgumentExpr> argsWithClassParam = new List<AstArgumentExpr>(expr.Arguments);
                 argsWithClassParam.Insert(0, new AstArgumentExpr(new AstIdExpr("this") { OutType = PointerType.GetPointerType(structType) }));
-                var ctorSymbol = _postPreparer.GetFuncFromCandidates(new AstIdExpr(ctorName), null, argsWithClassParam, structType.Declaration, out var casts);
+                var ctorSymbol = _postPreparer.GetFuncFromCandidates(new AstIdExpr(ctorName), null, argsWithClassParam, structType.Declaration, true, out var casts);
 
                 // error if ctor not found
                 if (ctorSymbol == null)
@@ -1499,7 +1499,7 @@ namespace HapetBackend.Llvm
             var ctorName = $"{baseStmt.BaseType.Declaration.Name.Name}::{onlyName}_ctor" + baseStmt.Arguments.GetArgsString(PointerType.GetPointerType(baseStmt.BaseType));
             List<AstArgumentExpr> argsWithClassParam = new List<AstArgumentExpr>(baseStmt.Arguments);
             argsWithClassParam.Insert(0, new AstArgumentExpr(baseStmt.ThisArgument));
-            var ctorSymbol = _postPreparer.GetFuncFromCandidates(new AstIdExpr(ctorName), null, argsWithClassParam, baseStmt.BaseType.Declaration, out var casts);
+            var ctorSymbol = _postPreparer.GetFuncFromCandidates(new AstIdExpr(ctorName), null, argsWithClassParam, baseStmt.BaseType.Declaration, true, out var casts);
 
             // error if ctor not found
             if (ctorSymbol == null)

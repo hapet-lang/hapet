@@ -13,14 +13,14 @@ namespace HapetPostPrepare
     public partial class PostPrepare
     {
         public DeclSymbol GetFuncFromCandidates(AstIdExpr name, AstCallExpr callExpr, List<AstArgumentExpr> args, 
-            AstDeclaration declToSearch, out List<AstExpression> castsToBeDone)
+            AstDeclaration declToSearch, bool callFromObject, out List<AstExpression> castsToBeDone)
         {
             int bestScore = int.MaxValue;
             DeclSymbol bestMatch = null;
             castsToBeDone = new List<AstExpression>();
 
             // getting all the candidates
-            List<DeclSymbol> candidates = GetAllCandidates(name, callExpr, declToSearch, args);
+            List<DeclSymbol> candidates = GetAllCandidates(name, callExpr, declToSearch, args, callFromObject);
 
             // handle explicit shite
             CheckAndPrepareExplicitFuncs(candidates, callExpr);
@@ -251,17 +251,19 @@ namespace HapetPostPrepare
             return normalArgs;
         }
 
-        private static List<DeclSymbol> GetAllCandidates(AstIdExpr name, AstCallExpr callExpr, AstDeclaration declToSearch, List<AstArgumentExpr> args)
+        private static List<DeclSymbol> GetAllCandidates(AstIdExpr name, AstCallExpr callExpr, AstDeclaration declToSearch, 
+            List<AstArgumentExpr> args, bool callFromObject)
         {
             List<DeclSymbol> candidates = new List<DeclSymbol>();
 
             candidates.AddRange(Candidates_Step1_InheritedAndCurrent(name, declToSearch));                  // step 1
             candidates.AddRange(Candidates_Step2_CurrentScopeAndParents(name, callExpr));                   // step 2
             var argsAmount = args == null ? -1 : args.Count;
-            candidates = Candidates_Step3_MinAmountParams(candidates.Distinct(), argsAmount).ToList();      // step 3
+            candidates = Candidates_Step3_MinAmountParams(candidates, argsAmount).ToList();                 // step 3
             candidates = Candidates_Step4_OnlyOneGeneric(name, candidates).ToList();                        // step 4
+            candidates = Candidates_Step5_StaticOrNon(candidates, callFromObject).ToList();                 // step 5
 
-            return candidates;
+            return candidates.Distinct().ToList();
         }
 
         private static List<DeclSymbol> Candidates_Step1_InheritedAndCurrent(AstIdExpr name, AstDeclaration declToSearch)
@@ -300,9 +302,31 @@ namespace HapetPostPrepare
                 if (argsAmount == -1)
                     yield return d;
 
-                // allow if func has bigger amount of params than args
-                if (funcDecl.Parameters.Count >= argsAmount)
+                // allow if func has equal amount of params and args
+                if (funcDecl.Parameters.Count == argsAmount)
                     yield return d;
+
+                // check if func has bigger amount of params than args
+                if (funcDecl.Parameters.Count > argsAmount)
+                {
+                    // we need to be sure that the last params has default values
+                    // if not - no yield probably
+                    bool isOk = true;
+                    var unsetParsAmount = funcDecl.Parameters.Count - argsAmount;
+                    for (int i = 0; i < unsetParsAmount; ++i)
+                    {
+                        var thePar = funcDecl.Parameters[funcDecl.Parameters.Count - 1 - i];
+                        if (thePar.DefaultValue == null)
+                        {
+                            isOk = false;
+                            break;
+                        }
+                    }
+                    if (isOk)
+                        yield return d;
+                    // if the last param is params or arglist - 
+                    // the decl would be also returned correctly below
+                }
 
                 // skip if 0 params - because args amount is non zero!!!
                 if (funcDecl.Parameters.Count == 0)
@@ -386,6 +410,28 @@ namespace HapetPostPrepare
                 foreach (var d in decls)
                 {
                     yield return d;
+                }
+            }
+        }
+
+        private static IEnumerable<DeclSymbol> Candidates_Step5_StaticOrNon(IEnumerable<DeclSymbol> decls, bool callFromObject)
+        {
+            if (callFromObject)
+            {
+                // return all non-static funcs
+                foreach (var d in decls)
+                {
+                    if (!d.Decl.SpecialKeys.Contains(HapetFrontend.Parsing.TokenType.KwStatic))
+                        yield return d;
+                }
+            }
+            else
+            {
+                // return all static funcs
+                foreach (var d in decls)
+                {
+                    if (d.Decl.SpecialKeys.Contains(HapetFrontend.Parsing.TokenType.KwStatic))
+                        yield return d;
                 }
             }
         }

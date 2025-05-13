@@ -1074,7 +1074,7 @@ namespace HapetPostPrepare
                 };
                 // just for better error message
                 var tmpIndexer = new AstCallExpr(null, new AstIdExpr("'indexer'", arrayAccExpr), null, arrayAccExpr);
-                var smbl = GetFuncFromCandidates(newName, tmpIndexer, argsWithStructParam, declItself, out var casts);
+                var smbl = GetFuncFromCandidates(newName, tmpIndexer, argsWithStructParam, declItself, true, out var casts);
 
                 if (smbl != null && smbl.Decl is AstFuncDecl funcDecl)
                 {
