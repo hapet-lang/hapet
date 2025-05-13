@@ -83,6 +83,8 @@ namespace HapetFrontend.Parsing
                 if (next.Type == TokenType.CloseBrace || next.Type == TokenType.EOF)
                     break;
 
+                // clear doc string so parent's doc won't be there
+                ClearDocString();
                 var decl = ParseTopLevel(inInfo, ref outInfo);
                 if (decl is not AstDeclaration realDecl)
                 {

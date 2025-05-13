@@ -74,7 +74,7 @@ namespace HapetPostPrepare
         private void CreateFileDeclarations(ProgramFile file, List<AstDeclaration> decls, StringBuilder sb)
         {
             sb.Append($"#file \"{CompilerUtils.GetFileRelativePath(_compiler.CurrentProjectSettings.ProjectPath, file.Name)}\"\n");
-            sb.Append($"namespace {file.Namespace}\n");
+            sb.Append($"namespace {file.Namespace};\n");
 
             // serialize usings
             foreach (var usng in file.Usings)
@@ -179,7 +179,7 @@ namespace HapetPostPrepare
                     continue;
 
                 // doc string
-                CreateDocString(decl.Documentation, sb, additionalOffset + _fourSpaces);
+                CreateDocString(d.Documentation, sb, additionalOffset + _fourSpaces);
 
                 // serialize attributes
                 foreach (var attr in d.Attributes)
@@ -346,7 +346,8 @@ namespace HapetPostPrepare
             if (!string.IsNullOrWhiteSpace(doc))
                 foreach (var sp in doc.Split(Environment.NewLine))
                 {
-                    sb.Append($"{additionalOffset}/// {sp}\n");
+                    if (!string.IsNullOrWhiteSpace(sp))
+                        sb.Append($"{additionalOffset}/// {sp}\n");
                 }
         }
     }

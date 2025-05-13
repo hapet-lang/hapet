@@ -21,6 +21,12 @@ namespace HapetFrontend.Parsing
                 // skip unneeded
                 SkipNewlines();
 
+                // getting doc string
+                var docString = GetCurrentDocString();
+
+                // skip unneeded
+                SkipNewlines();
+
                 // get current special keys
                 List<Token> specialKeys = ParseSpecialKeys();
                 bool semicolonRequired = false;
@@ -78,7 +84,7 @@ namespace HapetFrontend.Parsing
                 if (toReturn is AstDeclaration decl)
                 {
                     // saving doc string
-                    var docString = GetCurrentDocString();
+                    ClearDocString();
                     decl.Documentation = docString;
 
                     // append special keys

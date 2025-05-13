@@ -35,8 +35,12 @@ namespace HapetFrontend.Parsing
         private string GetCurrentDocString()
         {
             string doc = _docString.ToString();
-            _docString.Clear();
             return doc;
+        }
+
+        private void ClearDocString()
+        {
+            _docString.Clear();
         }
 
         private void AppendDocString(string value)
