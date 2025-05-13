@@ -534,23 +534,23 @@
 	</Item>
 	<Item>
 		<Number>301A</Number>
-		<Text>Undefined operator {0} for type {1}</Text>
+		<Text>Undefined operator '{0}' for type {1}</Text>
 	</Item>
 	<Item>
 		<Number>301B</Number>
-		<Text>Too many operators {0} defined for type {1}</Text>
+		<Text>Too many operators '{0}' defined for type {1}</Text>
 	</Item>
 	<Item>
 		<Number>301C</Number>
-		<Text>Undefined operator {0} for types {1} and {2}</Text>
+		<Text>Undefined operator '{0}' for types {1} and {2}</Text>
 	</Item>
 	<Item>
 		<Number>301D</Number>
-		<Text>Too many operators {0} defined for types {1} and {2}</Text>
+		<Text>Too many operators '{0}' defined for types {1} and {2}</Text>
 	</Item>
 	<Item>
 		<Number>301E</Number>
-		<Text>Operator {0} could not be used with void*</Text>
+		<Text>Operator '{0}' could not be used with void*</Text>
 	</Item>
 	<Item>
 		<Number>301F</Number>
