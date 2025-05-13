@@ -43,6 +43,8 @@ namespace HapetFrontend.Ast.Expressions
             {
                 ActualOperator = ActualOperator,
                 IsCompileTimeValue = IsCompileTimeValue,
+                IsNot = IsNot,
+                AdditionalExpr = AdditionalExpr?.GetDeepCopy() as AstExpression,
                 OutType = OutType,
                 OutValue = OutValue,
                 Scope = Scope,
