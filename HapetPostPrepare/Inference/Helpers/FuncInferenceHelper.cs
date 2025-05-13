@@ -30,10 +30,11 @@ namespace HapetPostPrepare
             {
                 if (candidates.Count > 1)
                 {
-                    // error
-                    _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, callExpr, 
-                        [candidates[0].Name.Name, candidates[1].Name.Name], 
-                        ErrorCode.Get(CTEN.AmbiguousFunctionCall));
+                    if (IsParentNormalOrPureGeneric())
+                        // error
+                        _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, callExpr, 
+                            [candidates[0].Name.Name, candidates[1].Name.Name], 
+                            ErrorCode.Get(CTEN.AmbiguousFunctionCall));
                 }
                 return candidates.FirstOrDefault();
             }
@@ -128,10 +129,11 @@ namespace HapetPostPrepare
                 }
                 else if (score == bestScore && score != int.MaxValue)
                 {
-                    // ambiguous error here that there are two func and we dk which one to call
-                    _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, callExpr,
-                        [bestMatch.Name.Name, cand.Name.Name],
-                        ErrorCode.Get(CTEN.AmbiguousFunctionCall));
+                    if (IsParentNormalOrPureGeneric())
+                        // ambiguous error here that there are two func and we dk which one to call
+                        _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, callExpr,
+                            [bestMatch.Name.Name, cand.Name.Name],
+                            ErrorCode.Get(CTEN.AmbiguousFunctionCall));
                 }
             }
 

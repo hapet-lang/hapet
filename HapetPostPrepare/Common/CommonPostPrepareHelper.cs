@@ -25,5 +25,25 @@ namespace HapetPostPrepare
                 decl.Type.OutType = new StructType(decl as AstStructDecl);
             }
         }
+
+        /// <summary>
+        /// Probably used only for proper error messaging - to not error 
+        /// when there are multiple generics
+        /// </summary>
+        /// <returns></returns>
+        public bool IsParentNormalOrPureGeneric()
+        {
+            var nearestDecl = _currentParentStack.GetNearestParentClassOrStruct();
+            if (nearestDecl == null)
+                return true; // allow?
+
+            if (nearestDecl.Name is not AstIdGenericExpr)
+                return true; // normal
+
+            if (nearestDecl.HasGenericTypes && !nearestDecl.IsImplOfGeneric)
+                return true; // pure generic
+
+            return false;
+        }
     }
 }
