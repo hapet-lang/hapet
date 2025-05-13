@@ -60,35 +60,12 @@ namespace HapetFrontend.Parsing
             {
                 NextToken();
 
-                if (CheckToken(TokenType.Period))
-                {
-                    // null check access: 'var a = Anime?.Pivo;'
-                    NextToken();
-
-                    var savedPrev = inInfo.PreviousNestedForNullCheck;
-
-                    // making normal nested
-                    var iniNest = expr is AstNestedExpr ? expr : new AstNestedExpr(expr as AstExpression, savedPrev, expr);
-                    inInfo.PreviousNestedForNullCheck = iniNest.GetDeepCopy() as AstNestedExpr;
-
-                    // creating null comparison
-                    var nulll = new AstNullExpr(PointerType.NullLiteralType, expr);
-                    var nullComparison = new AstBinaryExpr("==", inInfo.PreviousNestedForNullCheck, nulll, expr);
-                    var normalPart = ParseExpression(inInfo, ref outInfo) as AstExpression;
-                    var ternOp = new AstTernaryExpr(nullComparison, nulll, normalPart, expr);
-
-                    inInfo.PreviousNestedForNullCheck = savedPrev;
-                    return ternOp;
-                }
-                else
-                {
-                    // ternary shite probably
-                    var trueExpr = ParseExpression(inInfo, ref outInfo);
-                    Consume(TokenType.Colon, ErrMsg(":", "in ternary expression"));
-                    var falseExpr = ParseExpression(inInfo, ref outInfo);
-                    return new AstTernaryExpr(expr as AstExpression, trueExpr as AstExpression, falseExpr as AstExpression,
-                        new Location(expr.Beginning, falseExpr.Ending));
-                }
+                // ternary shite probably
+                var trueExpr = ParseExpression(inInfo, ref outInfo);
+                Consume(TokenType.Colon, ErrMsg(":", "in ternary expression"));
+                var falseExpr = ParseExpression(inInfo, ref outInfo);
+                return new AstTernaryExpr(expr as AstExpression, trueExpr as AstExpression, falseExpr as AstExpression,
+                    new Location(expr.Beginning, falseExpr.Ending));
             }
             return expr;
         }
@@ -560,6 +537,37 @@ namespace HapetFrontend.Parsing
                             expr = ParseIdentifierExpression(inInfo, iniNested: tmpExpr);
                         }
                         break;
+
+                    case TokenType.QuestionMark:
+                        {
+                            // need to check further with look ahead
+                            UpdateLookAheadLocation();
+                            NextLookAhead();
+                            if (CheckLookAhead(TokenType.Period))
+                            {
+                                // null check access: 'var a = Anime?.Pivo;'
+                                NextToken(); // skip ?
+                                NextToken(); // skip .
+
+                                var savedPrev = inInfo.PreviousNestedForNullCheck;
+
+                                // making normal nested
+                                var iniNest = expr is AstNestedExpr ? expr : new AstNestedExpr(expr as AstExpression, savedPrev, expr);
+                                inInfo.PreviousNestedForNullCheck = iniNest.GetDeepCopy() as AstNestedExpr;
+
+                                // creating null comparison
+                                var nulll = new AstNullExpr(PointerType.NullLiteralType, expr);
+                                var nullComparison = new AstBinaryExpr("==", inInfo.PreviousNestedForNullCheck, nulll, expr);
+                                var normalPart = ParseExpression(inInfo, ref outInfo) as AstExpression;
+                                var ternOp = new AstTernaryExpr(nullComparison, nulll, normalPart, expr);
+
+                                inInfo.PreviousNestedForNullCheck = savedPrev;
+                                return ternOp;
+                            }
+
+                            // or just return expr if non .?
+                            return expr;
+                        }
 
                     default:
                         return expr;
