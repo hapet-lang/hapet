@@ -30,11 +30,10 @@ namespace HapetPostPrepare
             {
                 if (candidates.Count > 1)
                 {
-                    if (IsParentNormalOrPureGeneric())
-                        // error
-                        _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, callExpr, 
-                            [candidates[0].Name.Name, candidates[1].Name.Name], 
-                            ErrorCode.Get(CTEN.AmbiguousFunctionCall));
+                    // error
+                    _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, callExpr, 
+                        [candidates[0].Name.Name, candidates[1].Name.Name], 
+                        ErrorCode.Get(CTEN.AmbiguousFunctionCall));
                 }
                 return candidates.FirstOrDefault();
             }
@@ -129,7 +128,7 @@ namespace HapetPostPrepare
                 }
                 else if (score == bestScore && score != int.MaxValue)
                 {
-                    if (IsParentNormalOrPureGeneric())
+                    // if (IsParentNormalOrPureGeneric())
                         // ambiguous error here that there are two func and we dk which one to call
                         _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, callExpr,
                             [bestMatch.Name.Name, cand.Name.Name],
@@ -257,10 +256,11 @@ namespace HapetPostPrepare
         {
             List<DeclSymbol> candidates = new List<DeclSymbol>();
 
-            candidates.AddRange(Candidates_Step1_InheritedAndCurrent(name, declToSearch));              // step 1
-            candidates.AddRange(Candidates_Step2_CurrentScopeAndParents(name, callExpr));               // step 2
+            candidates.AddRange(Candidates_Step1_InheritedAndCurrent(name, declToSearch));                  // step 1
+            candidates.AddRange(Candidates_Step2_CurrentScopeAndParents(name, callExpr));                   // step 2
             var argsAmount = args == null ? -1 : args.Count;
-            candidates = Candidate_Step3_MinAmountParams(candidates.Distinct(), argsAmount).ToList();   // step 3
+            candidates = Candidates_Step3_MinAmountParams(candidates.Distinct(), argsAmount).ToList();      // step 3
+            candidates = Candidates_Step4_OnlyOneGeneric(name, candidates).ToList();                        // step 4
 
             return candidates;
         }
@@ -291,7 +291,7 @@ namespace HapetPostPrepare
             return GetCandidatesInScope(name, callExpr.Scope, searchParent: true); // also search parents
         }
 
-        private static IEnumerable<DeclSymbol> Candidate_Step3_MinAmountParams(IEnumerable<DeclSymbol> decls, int argsAmount)
+        private static IEnumerable<DeclSymbol> Candidates_Step3_MinAmountParams(IEnumerable<DeclSymbol> decls, int argsAmount)
         {
             foreach (var d in decls)
             {
@@ -312,6 +312,82 @@ namespace HapetPostPrepare
                 // if not bigger - check if the last param with 'params' or 'arglist' cringe - allow
                 if (funcDecl.Parameters.Last().IsParams || funcDecl.Parameters.Last().IsArglist)
                     yield return d;
+            }
+        }
+
+        private static IEnumerable<DeclSymbol> Candidates_Step4_OnlyOneGeneric(AstIdExpr name, IEnumerable<DeclSymbol> decls)
+        {
+            // skip if non generic search
+            if (name is AstIdGenericExpr genId)
+            {
+                /// almost the same checks as in <see cref="Scope.GetSymbol"/>
+                // we need to store original decl 
+                // if we won't find the same decl
+                // we need to return original one
+                DeclSymbol originalGeneric = null;
+                DeclSymbol theSameGeneric = null;
+                foreach (var d in decls)
+                {
+                    if (d.Name is not AstIdGenericExpr currId)
+                    {
+                        yield return d;
+                        continue;
+                    }
+
+                    bool allEqual = true;
+                    for (int i = 0; i < currId.GenericRealTypes.Count; ++i)
+                    {
+                        if (currId.GenericRealTypes[i].OutType == genId.GenericRealTypes[i].OutType)
+                        {
+                            continue;
+                        }
+                        if (currId.GenericRealTypes[i].OutType is GenericType kType &&
+                            genId.GenericRealTypes[i].OutType is GenericType sType &&
+                            kType.ParentDeclaration is AstDeclaration fDecl &&
+                            sType.ParentDeclaration is AstDeclaration sDecl)
+                        {
+                            // check that original decls are the same
+                            var fComp1 = fDecl.IsImplOfGeneric ? fDecl.OriginalGenericDecl : fDecl;
+                            var fComp2 = sDecl.IsImplOfGeneric ? sDecl.OriginalGenericDecl : sDecl;
+                            if (fComp1 == fComp2 && kType.Name.Name == sType.Name.Name)
+                            {
+                                continue;
+                            }
+                        }
+                        allEqual = false;
+                        break;
+                    }
+                    if (d is DeclSymbol ds1 &&
+                        ds1.Decl.IsImplOfGeneric &&
+                        allEqual)
+                    {
+                        theSameGeneric = d as DeclSymbol;
+                        continue;
+                    }
+
+                    // if original generic
+                    if (d is DeclSymbol ds &&
+                        ds.Decl.HasGenericTypes &&
+                        !ds.Decl.IsImplOfGeneric)
+                    {
+                        originalGeneric = d as DeclSymbol;
+                        continue;
+                    }
+                }
+                // try at first to return the same
+                if (theSameGeneric != null)
+                    yield return theSameGeneric;
+                // then try to return original generic
+                else if (originalGeneric != null)
+                    yield return originalGeneric;
+            }
+            else
+            {
+                // return all if non-generic shite
+                foreach (var d in decls)
+                {
+                    yield return d;
+                }
             }
         }
 

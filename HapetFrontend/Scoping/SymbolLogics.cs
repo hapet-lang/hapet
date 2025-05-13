@@ -136,6 +136,8 @@ namespace HapetFrontend.Scoping
             // 3 - handle generics search
             if (handleGenerics && name is AstIdGenericExpr genId)
             {
+                // WARN: if any changes here - also change PP.FuncInferenceHelper.Candidates_Step4_OnlyOneGeneric!!!
+
                 // we need to store original decl 
                 // if we won't find the same decl
                 // we need to return original one
@@ -166,7 +168,7 @@ namespace HapetFrontend.Scoping
                             continue;
                         }
 
-                        // this is a special keys for funcs
+                        // this is a special keys for decls
                         // when a new non-generic class is created
                         // all the funcs are going to be copied inside it with 
                         // new generics types. we don't need it.
@@ -179,7 +181,7 @@ namespace HapetFrontend.Scoping
                             kType.ParentDeclaration is AstDeclaration fDecl &&
                             sType.ParentDeclaration is AstDeclaration sDecl)
                         {
-                            // check that original funcs are the same
+                            // check that original decls are the same
                             var fComp1 = fDecl.IsImplOfGeneric ? fDecl.OriginalGenericDecl : fDecl;
                             var fComp2 = sDecl.IsImplOfGeneric ? sDecl.OriginalGenericDecl : sDecl;
                             if (fComp1 == fComp2 && kType.Name.Name == sType.Name.Name)
