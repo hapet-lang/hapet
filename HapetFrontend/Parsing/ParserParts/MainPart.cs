@@ -8,13 +8,14 @@ namespace HapetFrontend.Parsing
 {
     public partial class Parser
     {
-        private readonly List<AstAttributeStmt> _foundAttributesTopLevel = new List<AstAttributeStmt>();
-
         internal AstStatement ParseTopLevel(ParserInInfo inInfo, ref ParserOutInfo outInfo)
         {
             // keep parsing while attributes are there :)
             bool keepParsing = true;
             AstStatement toReturn = null;
+
+            // current attributes handler
+            List<AstAttributeStmt> foundAttributesTopLevel = new List<AstAttributeStmt>();
 
             while (keepParsing)
             {
@@ -76,7 +77,7 @@ namespace HapetFrontend.Parsing
 
                 // we found an attr - add it to list and use it when find a decl
                 if (toReturn is AstAttributeStmt attr)
-                    _foundAttributesTopLevel.Add(attr);
+                    foundAttributesTopLevel.Add(attr);
                 else
                     keepParsing = false; // stop parsing if not attr
 
@@ -91,8 +92,8 @@ namespace HapetFrontend.Parsing
                     decl.SpecialKeys.AddRange(specialKeys);
 
                     // add previously found attributes into the declaration
-                    decl.Attributes.AddRange(_foundAttributesTopLevel);
-                    _foundAttributesTopLevel.Clear();
+                    decl.Attributes.AddRange(foundAttributesTopLevel);
+                    foundAttributesTopLevel.Clear();
                 }
             }
 
