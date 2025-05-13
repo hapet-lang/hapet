@@ -278,9 +278,6 @@ namespace HapetPostPrepare
             foreach (var inh in declToSearch.GetInheritedTypes())
             {
                 var inhDecl = (inh.OutType as ClassType).Declaration;
-                if (inhDecl.IsInterface)
-                    continue;
-
                 // get parent class decls
                 candidates.AddRange(Candidates_Step1_InheritedAndCurrent(name, inhDecl));
             }
