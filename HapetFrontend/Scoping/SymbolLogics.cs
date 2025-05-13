@@ -188,11 +188,6 @@ namespace HapetFrontend.Scoping
                             }
                         }
 
-                        if (genK.GenericRealTypes[i].OutType is GenericType kType2 && kType2.Name.Name.Contains("T1"))
-                        {
-
-                        }
-
                         allEqual = false;
                         break;
                     }
