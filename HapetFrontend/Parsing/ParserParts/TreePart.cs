@@ -558,11 +558,11 @@ namespace HapetFrontend.Parsing
                                 // creating null comparison
                                 var nulll = new AstNullExpr(PointerType.NullLiteralType, expr);
                                 var nullComparison = new AstBinaryExpr("==", inInfo.PreviousNestedForNullCheck, nulll, expr);
-                                var normalPart = ParseExpression(inInfo, ref outInfo) as AstExpression;
+                                var normalPart = ParsePostUnaryExpression(inInfo, ref outInfo) as AstExpression;
                                 var ternOp = new AstTernaryExpr(nullComparison, nulll, normalPart, expr);
 
                                 inInfo.PreviousNestedForNullCheck = savedPrev;
-                                return ternOp;
+                                expr = ternOp;
                             }
 
                             // or just return expr if non .?
