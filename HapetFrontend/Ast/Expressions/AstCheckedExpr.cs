@@ -1,5 +1,11 @@
 ﻿namespace HapetFrontend.Ast.Expressions
 {
+    /// <summary>
+    /// The shite is like this:
+    /// 'checked(int.MaxValue + 1)' - would error at comp time or at runtime when overflow
+    /// 'unchecked(int.MaxValue + 1)' - won't error at any time. silent overflow
+    /// '(int.MaxValue + 1)' - the same as 'unchecked'. 
+    /// </summary>
     public class AstCheckedExpr : AstExpression
     {
         /// <summary>
