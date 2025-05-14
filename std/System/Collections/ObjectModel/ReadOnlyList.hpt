@@ -123,6 +123,7 @@ public class ReadOnlyList<T> : IList<T>
     {
         // TODO:
         // ThrowHelper.ThrowNotSupportedException(ExceptionResource.NotSupported_ReadOnlyCollection);
+        return 0;
     }
 
     public bool IsSynchronized { get { return false; } }
