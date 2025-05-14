@@ -59,7 +59,7 @@ public class ReadOnlyList<T> : IList<T>
 
     public IEnumerator<T> GetEnumerator()
     {
-        return list.Count == 0 ? SZGenericArrayEnumerator<T>.Empty : list.GetEnumerator();
+        return list.Count == 0 ? EmptyEnumerator<T>.Instance : list.GetEnumerator();
     }
 
     public int IndexOf(T value)
