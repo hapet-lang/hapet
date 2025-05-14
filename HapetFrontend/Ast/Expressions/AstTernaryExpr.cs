@@ -31,7 +31,11 @@ namespace HapetFrontend.Ast.Expressions
 
         public override AstStatement GetDeepCopy()
         {
-            var copy = new AstTernaryExpr(Condition, TrueExpr, FalseExpr, Location)
+            var copy = new AstTernaryExpr(
+                Condition.GetDeepCopy() as AstExpression, 
+                TrueExpr.GetDeepCopy() as AstExpression, 
+                FalseExpr.GetDeepCopy() as AstExpression, 
+                Location)
             {
                 IsCompileTimeValue = IsCompileTimeValue,
                 OutType = OutType,

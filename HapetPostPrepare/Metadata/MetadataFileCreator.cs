@@ -28,6 +28,7 @@ namespace HapetPostPrepare
             StringBuilder globalStringBuilder = new StringBuilder();
             foreach (var srt in _sortedDeclsByFiles)
             {
+                _currentSourceFile = srt.Key;
                 CreateFileDeclarations(srt.Key, srt.Value, globalStringBuilder);
             }
 
