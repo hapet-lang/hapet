@@ -59,6 +59,10 @@ namespace HapetPostPrepare
                 if (decl.IsPropertyField)
                     inInfo.MuteErrors = savedMute;
 
+                // inferencing additional data
+                if (decl.Name.AdditionalData != null)
+                    PostPrepareExprInference(decl.Name.AdditionalData, inInfo, ref outInfo);
+
                 // define in scope
                 // if it is public field - it should be visible in the scope in which var's class is
                 parentSubScope.DefineDeclSymbol(decl.Name.GetCopy(), decl);

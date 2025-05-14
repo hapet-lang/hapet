@@ -139,6 +139,9 @@ namespace HapetPostPrepare
                         string pureName = funcName.GetPureFuncName();
                         if (funcDecl.Name.AdditionalData != null)
                         {
+                            // safe check - errored somewhere before
+                            if (funcDecl.Name.AdditionalData.OutType == null)
+                                return;
                             explicitInterfaceName = (funcDecl.Name.AdditionalData.OutType as ClassType).Declaration.Name.Name;
                             explicitInterfaceName += '.';
                         }
