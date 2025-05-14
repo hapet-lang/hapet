@@ -12,6 +12,8 @@
         /// </summary>
         public AstExpression SubExpression { get; set; }
 
+        public override string AAAName => nameof(AstCheckedExpr);
+
         public AstCheckedExpr(AstExpression sub, ILocation location = null) : base(location)
         {
             SubExpression = sub;
