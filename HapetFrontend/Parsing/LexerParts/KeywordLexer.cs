@@ -47,6 +47,7 @@ namespace HapetFrontend.Parsing
                 case "unsafe": token.Type = TokenType.KwUnsafe; break;
                 case "volatile": token.Type = TokenType.KwVolatile; break;
                 case "global": token.Type = TokenType.KwGlobal; break;
+
                 case "default": token.Type = TokenType.KwDefault; break;
                 case "new": token.Type = TokenType.KwNew; break;
                 case "base": token.Type = TokenType.KwBase; break;
@@ -54,6 +55,8 @@ namespace HapetFrontend.Parsing
                 case "alignof": token.Type = TokenType.KwAlignof; break;
                 case "typeof": token.Type = TokenType.KwTypeof; break;
                 case "nameof": token.Type = TokenType.KwNameof; break;
+                case "checked": token.Type = TokenType.KwChecked; break;
+                case "unchecked": token.Type = TokenType.KwUnchecked; break;
 
                 case "get": token.Type = TokenType.KwGet; break;
                 case "set": token.Type = TokenType.KwSet; break;

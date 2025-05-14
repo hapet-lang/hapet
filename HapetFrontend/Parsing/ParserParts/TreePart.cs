@@ -25,9 +25,9 @@ namespace HapetFrontend.Parsing
             return expr;
         }
 
-        //[DebuggerStepThrough]
+        [DebuggerStepThrough]
         [StackTraceHidden]
-       // [DebuggerHidden]
+        [DebuggerHidden]
         private AstStatement ParseNullCoalescingExpression(ParserInInfo inInfo, ref ParserOutInfo outInfo)
         {
             var expr = ParseTernaryExpression(inInfo, ref outInfo);
@@ -597,6 +597,30 @@ namespace HapetFrontend.Parsing
                         }
                         // it is just a 'default' word
                         return new AstDefaultExpr(new Location(token.Location)) { TypeForDefault = typeExpr };
+                    }
+
+                case TokenType.KwChecked:
+                case TokenType.KwUnchecked:
+                    {
+                        NextToken();
+
+                        if (CheckToken(TokenType.OpenParen))
+                        {
+                            NextToken();
+                            var saved = inInfo.AllowMultiplyExpression;
+                            inInfo.AllowMultiplyExpression = true;
+                            var subExpr = ParseExpression(inInfo, ref outInfo) as AstExpression;
+                            inInfo.AllowMultiplyExpression = saved;
+                            Consume(TokenType.CloseParen, ErrMsg(")", "after checked/unchecked' sub expression"));
+
+                            return new AstCheckedExpr(subExpr, new Location(token.Location)) { IsChecked = (token.Type == TokenType.KwChecked) };
+                        }
+                        else
+                        {
+                            // TODO: also allow blocked checked https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/statements/checked-and-unchecked
+                            // TODO: make it as AstCheckedStmt
+                            throw new NotImplementedException();
+                        }
                     }
 
                 case TokenType.KwNull:
