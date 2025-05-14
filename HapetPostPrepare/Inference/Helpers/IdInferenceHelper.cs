@@ -14,7 +14,7 @@ namespace HapetPostPrepare
 {
     public partial class PostPrepare
     {
-        private void PostPrepareIdentifierInference(AstIdExpr idExpr, InInfo inInfo, ref OutInfo outInfo, Scope scopeToSearch = null)
+        private void PostPrepareIdentifierInference(AstIdExpr idExpr, InInfo inInfo, ref OutInfo outInfo, AstDeclaration declToSearch = null)
         {
             string name = idExpr.Name;
 
@@ -42,17 +42,17 @@ namespace HapetPostPrepare
                 PostPrepareExprInference(idExpr.AdditionalData, inInfo, ref outInfo);
             }
 
-            if (Step1_IdentifierFullNamespace(idExpr, inInfo, ref outInfo, scopeToSearch)) return;
-            if (Step2_IdentifierLocalScope(idExpr, inInfo, ref outInfo, scopeToSearch)) return;
-            if (Step3_IdentifierCurrNamespace(idExpr, inInfo, ref outInfo, scopeToSearch)) return;
-            if (Step4_IdentifierUsings(idExpr, inInfo, ref outInfo, scopeToSearch)) return;
-            if (Step5_IdentifierFuncs(idExpr, inInfo, ref outInfo, scopeToSearch)) return;
+            if (Step1_IdentifierFullNamespace(idExpr, inInfo, ref outInfo, declToSearch)) return;
+            if (Step2_IdentifierLocalScope(idExpr, inInfo, ref outInfo, declToSearch)) return;
+            if (Step3_IdentifierCurrNamespace(idExpr, inInfo, ref outInfo, declToSearch)) return;
+            if (Step4_IdentifierUsings(idExpr, inInfo, ref outInfo, declToSearch)) return;
+            if (Step5_IdentifierFuncs(idExpr, inInfo, ref outInfo, declToSearch)) return;
 
             if (!inInfo.MuteErrors)
                 _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, idExpr, [], ErrorCode.Get(CTEN.TypeCouldNotBeInfered));
         }
 
-        private bool Step1_IdentifierFullNamespace(AstIdExpr idExpr, InInfo inInfo, ref OutInfo outInfo, Scope scopeToSearch = null)
+        private bool Step1_IdentifierFullNamespace(AstIdExpr idExpr, InInfo inInfo, ref OutInfo outInfo, AstDeclaration scopeToSearch = null)
         {
             // skip if search in specific scope
             if (scopeToSearch != null)
@@ -77,33 +77,32 @@ namespace HapetPostPrepare
             return false;
         }
 
-        private bool Step2_IdentifierLocalScope(AstIdExpr idExpr, InInfo inInfo, ref OutInfo outInfo, Scope scopeToSearch = null)
+        private bool Step2_IdentifierLocalScope(AstIdExpr idExpr, InInfo inInfo, ref OutInfo outInfo, AstDeclaration declToSearch = null)
         {
             string name = idExpr.Name;
-            var scope = scopeToSearch ?? idExpr.Scope;
 
-            var smbl = scope.GetSymbol(idExpr, handleGenerics: true);
-            if (smbl is DeclSymbol typed)
+            // at first try to search in decl subscopes
+            if (declToSearch != null)
             {
-                IdentifierOnFoundSymbol(idExpr, typed, string.Empty, inInfo, ref outInfo);
-                return true;
-            }
+                var resultCurrent = SubSearcher(declToSearch.SubScope, ref outInfo);
+                if (resultCurrent) return true; // handle good result
 
-            // check for explicit shite
-            if (idExpr.AdditionalData != null)
-            {
-                string typeName = (idExpr.AdditionalData.OutType as ClassType).Declaration.Name.Name;
-                smbl = scope.GetSymbol(idExpr.GetCopy($"{typeName}.{name}"), handleGenerics: true);
-                if (smbl is DeclSymbol typed2)
+                // go all over the inherited types
+                foreach (var inh in declToSearch.GetInheritedTypes())
                 {
-                    IdentifierOnFoundSymbol(idExpr, typed2, string.Empty, inInfo, ref outInfo);
-                    return true;
+                    // try to search in them
+                    var result = Step2_IdentifierLocalScope(idExpr, inInfo, ref outInfo, (inh.OutType as ClassType).Declaration);
+                    if (result) return true; // handle good result
                 }
             }
 
             // skip if search in specific scope
-            if (scopeToSearch != null)
+            if (declToSearch != null)
                 return false;
+
+            // then try id's scope
+            var res = SubSearcher(idExpr.Scope, ref outInfo);
+            if (res) return true; // handle good result
 
             // kostyl to handle 'base.Anime()' calls
             if (name == "base")
@@ -123,12 +122,35 @@ namespace HapetPostPrepare
             }
 
             return false;
+
+            bool SubSearcher(Scope scope, ref OutInfo outInfo) 
+            {
+                var smbl = scope.GetSymbol(idExpr, handleGenerics: true);
+                if (smbl is DeclSymbol typed)
+                {
+                    IdentifierOnFoundSymbol(idExpr, typed, string.Empty, inInfo, ref outInfo);
+                    return true;
+                }
+
+                // check for explicit shite
+                if (idExpr.AdditionalData != null)
+                {
+                    string typeName = (idExpr.AdditionalData.OutType as ClassType).Declaration.Name.Name;
+                    smbl = scope.GetSymbol(idExpr.GetCopy($"{typeName}.{name}"), handleGenerics: true);
+                    if (smbl is DeclSymbol typed2)
+                    {
+                        IdentifierOnFoundSymbol(idExpr, typed2, string.Empty, inInfo, ref outInfo);
+                        return true;
+                    }
+                }
+                return false;
+            }
         }
 
-        private bool Step3_IdentifierCurrNamespace(AstIdExpr idExpr, InInfo inInfo, ref OutInfo outInfo, Scope scopeToSearch = null)
+        private bool Step3_IdentifierCurrNamespace(AstIdExpr idExpr, InInfo inInfo, ref OutInfo outInfo, AstDeclaration declToSearch = null)
         {
             // skip if search in specific scope
-            if (scopeToSearch != null)
+            if (declToSearch != null)
                 return false;
 
             string name = idExpr.Name;
@@ -144,10 +166,10 @@ namespace HapetPostPrepare
             return false;
         }
 
-        private bool Step4_IdentifierUsings(AstIdExpr idExpr, InInfo inInfo, ref OutInfo outInfo, Scope scopeToSearch = null)
+        private bool Step4_IdentifierUsings(AstIdExpr idExpr, InInfo inInfo, ref OutInfo outInfo, AstDeclaration declToSearch = null)
         {
             // skip if search in specific scope
-            if (scopeToSearch != null)
+            if (declToSearch != null)
                 return false;
 
             string name = idExpr.Name;
@@ -183,70 +205,97 @@ namespace HapetPostPrepare
             return false;
         }
 
-        private bool Step5_IdentifierFuncs(AstIdExpr idExpr, InInfo inInfo, ref OutInfo outInfo, Scope scopeToSearch = null)
+        private bool Step5_IdentifierFuncs(AstIdExpr idExpr, InInfo inInfo, ref OutInfo outInfo, AstDeclaration declToSearch = null)
         {
-            Scope scope = scopeToSearch ?? idExpr.Scope;
             string name = idExpr.Name;
-            // searching for the name with current class name
-            // works only for functions
-            var currentParent = _currentParentStack.GetNearestParentClassOrStruct();
-            string nameWithClass = $"{currentParent.Name.Name}::{name}";
-            var smblInLocalClass = scope.GetSymbol(idExpr.GetCopy(nameWithClass), handleGenerics: true);
-            if (smblInLocalClass is DeclSymbol typed2)
+            // at first try to search in decl subscopes
+            if (declToSearch != null)
             {
-                IdentifierOnFoundSymbol(idExpr, typed2, typed2.Name.Name, inInfo, ref outInfo);
-                return true;
+                var resultCurrent = SubSearcher(declToSearch.SubScope, ref outInfo);
+                if (resultCurrent) return true; // handle good result
+
+                // go all over the inherited types
+                foreach (var inh in declToSearch.GetInheritedTypes())
+                {
+                    // try to search in them
+                    var result = Step5_IdentifierFuncs(idExpr, inInfo, ref outInfo, (inh.OutType as ClassType).Declaration);
+                    if (result) return true; // handle good result
+                }
             }
 
-            // it is a func
-            if (name.Contains("::"))
+            // skip if search in specific scope
+            if (declToSearch != null)
+                return false;
+
+            // then try id's scope
+            var res = SubSearcher(idExpr.Scope, ref outInfo);
+            if (res) return true; // handle good result
+
+            return false;
+
+            bool SubSearcher(Scope scope, ref OutInfo outInfo)
             {
-                // for example 'System.Attribute::Attrbute_ctor(...)'
-                string[] nameAndFunc = name.Split("::");
-                if (nameAndFunc.Length != 2)
+                // searching for the name with current class name
+                // works only for functions
+                var currentParent = _currentParentStack.GetNearestParentClassOrStruct();
+                string nameWithClass = $"{currentParent.Name.Name}::{name}";
+                var smblInLocalClass = scope.GetSymbol(idExpr.GetCopy(nameWithClass), handleGenerics: true);
+                if (smblInLocalClass is DeclSymbol typed2)
                 {
-                    // error 
-                    _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, idExpr, [name], ErrorCode.Get(CTEN.OnlyOneDoubleColonInFunc));
-                    return false;
-                }
-
-                // recursively infer left part of func call
-                // WARN: need to get PURE id expr - because
-                // idExpr could be AstIdGenericExpr and then everything is fucked up
-                AstIdExpr leftPartId = idExpr.GetPureIdExpr().GetCopy(nameAndFunc[0]);
-                PostPrepareIdentifierInference(leftPartId, inInfo, ref outInfo);
-
-                // it has to be a class (or mb struct)
-                string fullFuncName;
-                ISymbol funcInAnotherClass;
-                if (leftPartId.OutType is ClassType clsTp)
-                {
-                    fullFuncName = $"{clsTp}::{nameAndFunc[1]}";
-                    scope = scopeToSearch ?? clsTp.Declaration.SubScope;
-                    funcInAnotherClass = scope.GetSymbol(idExpr.GetCopy(fullFuncName));
-                }
-                else if (leftPartId.OutType is StructType strTp)
-                {
-                    fullFuncName = $"{strTp}::{nameAndFunc[1]}";
-                    scope = scopeToSearch ?? strTp.Declaration.SubScope;
-                    funcInAnotherClass = scope.GetSymbol(idExpr.GetCopy(fullFuncName));
-                }
-                else
-                {
-                    // error 
-                    _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, leftPartId, 
-                        [HapetType.AsString(leftPartId.OutType)], 
-                        ErrorCode.Get(CTEN.FuncCallNotOnType));
-                    return false;
-                }
-
-                if (funcInAnotherClass is DeclSymbol typed4)
-                {
-                    IdentifierOnFoundSymbol(idExpr, typed4, typed4.Name.Name, inInfo, ref outInfo);
+                    IdentifierOnFoundSymbol(idExpr, typed2, typed2.Name.Name, inInfo, ref outInfo);
                     return true;
                 }
+
+                // it is a func
+                if (name.Contains("::"))
+                {
+                    // for example 'System.Attribute::Attrbute_ctor(...)'
+                    string[] nameAndFunc = name.Split("::");
+                    if (nameAndFunc.Length != 2)
+                    {
+                        // error 
+                        _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, idExpr, [name], ErrorCode.Get(CTEN.OnlyOneDoubleColonInFunc));
+                        return false;
+                    }
+
+                    // recursively infer left part of func call
+                    // WARN: need to get PURE id expr - because
+                    // idExpr could be AstIdGenericExpr and then everything is fucked up
+                    AstIdExpr leftPartId = idExpr.GetPureIdExpr().GetCopy(nameAndFunc[0]);
+                    PostPrepareIdentifierInference(leftPartId, inInfo, ref outInfo);
+
+                    // it has to be a class (or mb struct)
+                    string fullFuncName;
+                    ISymbol funcInAnotherClass;
+                    if (leftPartId.OutType is ClassType clsTp)
+                    {
+                        fullFuncName = $"{clsTp}::{nameAndFunc[1]}";
+                        scope = declToSearch?.SubScope ?? clsTp.Declaration.SubScope;
+                        funcInAnotherClass = scope.GetSymbol(idExpr.GetCopy(fullFuncName));
+                    }
+                    else if (leftPartId.OutType is StructType strTp)
+                    {
+                        fullFuncName = $"{strTp}::{nameAndFunc[1]}";
+                        scope = declToSearch?.SubScope ?? strTp.Declaration.SubScope;
+                        funcInAnotherClass = scope.GetSymbol(idExpr.GetCopy(fullFuncName));
+                    }
+                    else
+                    {
+                        // error 
+                        _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, leftPartId,
+                            [HapetType.AsString(leftPartId.OutType)],
+                            ErrorCode.Get(CTEN.FuncCallNotOnType));
+                        return false;
+                    }
+
+                    if (funcInAnotherClass is DeclSymbol typed4)
+                    {
+                        IdentifierOnFoundSymbol(idExpr, typed4, typed4.Name.Name, inInfo, ref outInfo);
+                        return true;
+                    }
+                }
+                return false;
             }
-            return false;
         }
 
         private void IdentifierOnFoundSymbol(AstIdExpr idExpr, DeclSymbol typed, string name, InInfo inInfo, ref OutInfo outInfo2)

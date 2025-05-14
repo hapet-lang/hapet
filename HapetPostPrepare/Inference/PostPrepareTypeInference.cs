@@ -796,34 +796,34 @@ namespace HapetPostPrepare
             }
             else
             {
-                Scope leftSideScope = null;
+                AstDeclaration leftSideDecl = null;
                 PostPrepareExprInference(nestExpr.LeftPart, inInfo, ref outInfo);
                 if (nestExpr.LeftPart.OutType is PointerType ptr && ptr.TargetType is ClassType classT)
                 {
-                    leftSideScope = classT.Declaration.SubScope;
+                    leftSideDecl = classT.Declaration;
                     accessingFromAnObject = true;
                 }
                 if (nestExpr.LeftPart.OutType is PointerType ptr2 && ptr2.TargetType is StructType structT)
                 {
-                    leftSideScope = structT.Declaration.SubScope;
+                    leftSideDecl = structT.Declaration;
                     accessingFromAnObject = true;
                 }
                 // this is usually when accesing static/const values
                 // like 'Attribute.CoonstField'
                 else if (nestExpr.LeftPart.OutType is ClassType classTT)
-                    leftSideScope = classTT.Declaration.SubScope;
+                    leftSideDecl = classTT.Declaration;
                 else if (nestExpr.LeftPart.OutType is StructType structt)
-                    leftSideScope = structt.Declaration.SubScope;
+                    leftSideDecl = structt.Declaration;
                 else if (nestExpr.LeftPart.OutType is EnumType enumT)
-                    leftSideScope = enumT.Declaration.SubScope;
+                    leftSideDecl = enumT.Declaration;
                 else if (nestExpr.LeftPart.OutType is StringType)
-                    leftSideScope = AstStringExpr.GetStringStruct(nestExpr.Scope).SubScope;
+                    leftSideDecl = AstStringExpr.GetStringStruct(nestExpr.Scope);
                 else if (nestExpr.LeftPart.OutType is ArrayType)
-                    leftSideScope = AstArrayExpr.GetArrayStruct(nestExpr.Scope).SubScope;
+                    leftSideDecl = AstArrayExpr.GetArrayStruct(nestExpr.Scope);
                 else if (nestExpr.LeftPart.OutType is DelegateType)
-                    leftSideScope = AstDelegateDecl.GetDelegateClass(nestExpr.Scope).SubScope;
+                    leftSideDecl = AstDelegateDecl.GetDelegateClass(nestExpr.Scope);
 
-                if (leftSideScope == null)
+                if (leftSideDecl == null)
                 {
                     _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, nestExpr.LeftPart, [], ErrorCode.Get(CTEN.ExprNotClassOrStruct));
                     outInfo.ItWasProperty = false;
@@ -839,7 +839,7 @@ namespace HapetPostPrepare
                 }
 
                 // searching for the symbol in the class/struct
-                PostPrepareIdentifierInference(idExpr, inInfo, ref outInfo, leftSideScope);
+                PostPrepareIdentifierInference(idExpr, inInfo, ref outInfo, leftSideDecl);
                 var smbl = idExpr.FindSymbol;
                 if (smbl is DeclSymbol typed)
                 {

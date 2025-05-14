@@ -278,6 +278,9 @@ namespace HapetPostPrepare
             // get only inherited parents - that has implementations
             foreach (var inh in declToSearch.GetInheritedTypes())
             {
+                // WARN: we go all over the inherited types because
+                // we could be searching currently in interface scope
+                // and so we need to check all inherited interfaces
                 var inhDecl = (inh.OutType as ClassType).Declaration;
                 // get parent class decls
                 candidates.AddRange(Candidates_Step1_InheritedAndCurrent(name, inhDecl));
