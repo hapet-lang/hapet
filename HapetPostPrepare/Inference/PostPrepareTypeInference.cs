@@ -376,6 +376,9 @@ namespace HapetPostPrepare
                 case AstTernaryExpr ternaryExpr:
                     PostPrepareTernaryExprInference(ternaryExpr, inInfo, ref outInfo);
                     break;
+                case AstCheckedExpr checkedExpr:
+                    PostPrepareCheckedExprInference(checkedExpr, inInfo, ref outInfo);
+                    break;
                 case AstStringExpr stringExpr:
                     stringExpr.OutType = StringType.GetInstance(stringExpr.Scope);
                     break;
@@ -1098,6 +1101,14 @@ namespace HapetPostPrepare
             }
 
             expr.OutType = expr.TrueExpr.OutType;
+        }
+
+        private void PostPrepareCheckedExprInference(AstCheckedExpr expr, InInfo inInfo, ref OutInfo outInfo)
+        {
+            // TODO: static overflow check? like 'checked(int.MaxValue + 1)' - would error in c# at comp time
+            PostPrepareExprInference(expr.SubExpression, inInfo, ref outInfo);
+            expr.OutType = expr.SubExpression.OutType;
+            expr.OutValue = expr.SubExpression.OutValue;
         }
 
         // statements

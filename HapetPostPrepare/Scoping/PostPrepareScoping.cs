@@ -525,6 +525,9 @@ namespace HapetPostPrepare
                 case AstTernaryExpr ternaryExpr:
                     PostPrepareTernaryExprScoping(ternaryExpr);
                     break;
+                case AstCheckedExpr checkedExpr:
+                    PostPrepareCheckedExprScoping(checkedExpr);
+                    break;
 
                 // statements
                 case AstAssignStmt assignStmt:
@@ -766,6 +769,12 @@ namespace HapetPostPrepare
             PostPrepareExprScoping(ternaryExpr.TrueExpr);
             SetScopeAndParent(ternaryExpr.FalseExpr, ternaryExpr);
             PostPrepareExprScoping(ternaryExpr.FalseExpr);
+        }
+
+        private void PostPrepareCheckedExprScoping(AstCheckedExpr checkedExpr)
+        {
+            SetScopeAndParent(checkedExpr.SubExpression, checkedExpr);
+            PostPrepareExprScoping(checkedExpr.SubExpression);
         }
 
         // statements

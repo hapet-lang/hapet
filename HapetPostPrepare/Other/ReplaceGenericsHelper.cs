@@ -314,6 +314,9 @@ namespace HapetPostPrepare
                 case AstTernaryExpr ternaryExpr:
                     ReplaceAllGenericTypesInTernaryExpr(ternaryExpr);
                     break;
+                case AstCheckedExpr checkedExpr:
+                    ReplaceAllGenericTypesInCheckedExpr(checkedExpr);
+                    break;
 
                 // statements
                 case AstAssignStmt assignStmt:
@@ -534,6 +537,11 @@ namespace HapetPostPrepare
             ReplaceAllGenericTypesInExpr(ternaryExpr.Condition);
             ReplaceAllGenericTypesInExpr(ternaryExpr.TrueExpr);
             ReplaceAllGenericTypesInExpr(ternaryExpr.FalseExpr);
+        }
+
+        private void ReplaceAllGenericTypesInCheckedExpr(AstCheckedExpr checkedExpr) 
+        {
+            ReplaceAllGenericTypesInExpr(checkedExpr.SubExpression);
         }
 
         // statements

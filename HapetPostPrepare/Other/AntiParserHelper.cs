@@ -121,6 +121,9 @@ namespace HapetPostPrepare
                 case AstTernaryExpr terExpr:
                     AntiParseTernaryExpr(terExpr, sb, offset);
                     break;
+                case AstCheckedExpr checkedExpr:
+                    AntiParseCheckedExpr(checkedExpr, sb, offset);
+                    break;
 
                 // statements
                 case AstAssignStmt assignStmt:
@@ -355,6 +358,17 @@ namespace HapetPostPrepare
             sb.Append(" : ");
             AntiParseExpr(terExpr.FalseExpr, sb, offset);
 
+            sb.Append(')');
+        }
+
+        public void AntiParseCheckedExpr(AstCheckedExpr checkedExpr, StringBuilder sb, string offset)
+        {
+            if (checkedExpr.IsChecked)
+                sb.Append("checked");
+            else
+                sb.Append("unchecked");
+            sb.Append('(');
+            AntiParseExpr(checkedExpr.SubExpression, sb, offset);
             sb.Append(')');
         }
 
