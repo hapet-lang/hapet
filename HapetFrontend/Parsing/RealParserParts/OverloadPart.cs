@@ -16,12 +16,8 @@ namespace HapetFrontend.Parsing
             TokenType.Ampersand, TokenType.VerticalSlash, TokenType.Hat, TokenType.GreaterGreater, TokenType.LessLess, TokenType.DoubleEqual, TokenType.NotEqual, 
             TokenType.Less, TokenType.LessEqual, TokenType.Greater, TokenType.GreaterEqual, TokenType.LogicalAnd, TokenType.LogicalOr };
 
-        internal AstOverloadDecl ParseOperatorOverride(AstUnknownDecl udecl)
+        internal AstOverloadDecl ParseOperatorOverride(ParserInInfo inInfo, ref ParserOutInfo outInfo, AstUnknownDecl udecl)
         {
-            // just handlers
-            ParserInInfo inInfo = ParserInInfo.Default;
-            ParserOutInfo outInfo = ParserOutInfo.Default;
-
             OverloadType overloadType = OverloadType.UnaryOperator;
             string op = null;
 
@@ -53,7 +49,7 @@ namespace HapetFrontend.Parsing
                 returns = ParseExpression(inInfo, ref outInfo) as AstExpression;
                 inInfo.AllowMultiplyExpression = saved1;
 
-                var func = ParseFuncDeclaration(null, null, inInfo, ref outInfo);
+                var func = ParseFuncDeclaration(inInfo, ref outInfo, null, null);
                 paramDecls = func.Parameters;
                 body = func.Body;
                 possibleEndLocation = func.Location.Ending;
@@ -109,7 +105,7 @@ namespace HapetFrontend.Parsing
                     op = ">>";
                 }
 
-                var func = ParseFuncDeclaration(null, null, inInfo, ref outInfo);
+                var func = ParseFuncDeclaration(inInfo, ref outInfo, null, null);
                 paramDecls = func.Parameters;
                 body = func.Body;
                 possibleEndLocation = func.Location.Ending;

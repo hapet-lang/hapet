@@ -10,12 +10,8 @@ namespace HapetFrontend.Parsing
 {
     public partial class Parser
     {
-        private AstArgumentExpr ParseArgument()
+        private AstArgumentExpr ParseArgument(ParserInInfo inInfo, ref ParserOutInfo outInfo)
         {
-            // just handlers
-            ParserInInfo inInfo = ParserInInfo.Default;
-            ParserOutInfo outInfo = ParserOutInfo.Default;
-
             TokenLocation beg;
             AstExpression expr;
             AstIdExpr name = null;
@@ -48,7 +44,7 @@ namespace HapetFrontend.Parsing
             return new AstArgumentExpr(expr, name, new Location(beg, expr.Ending));
         }
 
-        private List<AstArgumentExpr> ParseArgumentList(out TokenLocation beg, out TokenLocation end)
+        private List<AstArgumentExpr> ParseArgumentList(ParserInInfo inInfo, ref ParserOutInfo outInfo, out TokenLocation beg, out TokenLocation end)
         {
             beg = Consume(TokenType.OpenParen, ErrMsg("(", "at beginning of argument list")).Location;
 
@@ -59,7 +55,7 @@ namespace HapetFrontend.Parsing
                 var next = PeekToken();
                 if (next.Type == TokenType.CloseParen || next.Type == TokenType.EOF)
                     break;
-                args.Add(ParseArgument());
+                args.Add(ParseArgument(inInfo, ref outInfo));
 
                 next = PeekToken();
                 if (next.Type == TokenType.NewLine)
@@ -84,12 +80,8 @@ namespace HapetFrontend.Parsing
             return args;
         }
 
-        private AstParamDecl ParseParameter(bool allowDefaultValue = true)
+        private AstParamDecl ParseParameter(ParserInInfo inInfo, ref ParserOutInfo outInfo, bool allowDefaultValue = true)
         {
-            // just handlers
-            ParserInInfo inInfo = ParserInInfo.Default;
-            ParserOutInfo outInfo = ParserOutInfo.Default;
-
             AstIdExpr pname = null;
             AstStatement ptype = null;
             AstExpression defaultValue = null;
@@ -116,9 +108,10 @@ namespace HapetFrontend.Parsing
             }
 
             // do not allow multiply here!!! read in desc - why!!!
+            var savedAllowMul = inInfo.AllowMultiplyExpression;
             inInfo.AllowMultiplyExpression = false;
             var e = ParseExpression(inInfo, ref outInfo);
-            inInfo.AllowMultiplyExpression = true;
+            inInfo.AllowMultiplyExpression = savedAllowMul;
 
             beg = e.Beginning;
             SkipNewlines();
@@ -184,7 +177,7 @@ namespace HapetFrontend.Parsing
             }
         }
 
-        private List<AstParamDecl> ParseParameterList(TokenType open, TokenType close, out TokenLocation beg, out TokenLocation end, bool allowDefaultValue = true)
+        private List<AstParamDecl> ParseParameterList(ParserInInfo inInfo, ref ParserOutInfo outInfo, TokenType open, TokenType close, out TokenLocation beg, out TokenLocation end, bool allowDefaultValue = true)
         {
             var parameters = new List<AstParamDecl>();
 
@@ -197,7 +190,7 @@ namespace HapetFrontend.Parsing
                 if (next.Type == close || next.Type == TokenType.EOF)
                     break;
 
-                var a = ParseParameter(allowDefaultValue);
+                var a = ParseParameter(inInfo, ref outInfo, allowDefaultValue);
                 parameters.Add(a);
 
                 SkipNewlines();
@@ -227,14 +220,28 @@ namespace HapetFrontend.Parsing
             // expecting (int, int b) here
             if (inInfo.AllowTypedTuple)
             {
-                var list2 = ParseParameterList(TokenType.OpenParen, TokenType.CloseParen, out var beg2, out var end2, false);
+                var list2 = ParseParameterList(inInfo, ref outInfo, TokenType.OpenParen, TokenType.CloseParen, out var beg2, out var end2, false);
+                if (list2.Count == 1)
+                {
+                    if (list2[0].Type is AstNestedExpr)
+                    {
+                        return HandleOneElement(list2[0].Type, beg2, end2, ref outInfo);
+                    }
+                    else
+                    {
+                        // just a more priority for expr
+                        // like '(a & b) == 0'
+                        return list2[0].Type;
+                    }
+                }
+
                 var tpl = new AstTupleExpr(list2.Select(x => x.Type).ToList(), new Location(beg2, end2));
                 tpl.Names = list2.Select(x => x.Name).ToList();
                 tpl.IsTypedTuple = true;
                 return tpl;
             }
 
-            var list = ParseArgumentList(out var beg, out var end);
+            var list = ParseArgumentList(inInfo, ref outInfo, out var beg, out var end);
 
             //if (CheckToken(TokenType.Arrow))
             //{
@@ -265,32 +272,7 @@ namespace HapetFrontend.Parsing
                 {
                     if (list[0].Expr is AstNestedExpr)
                     {
-                        var next = PeekToken();
-                        // WARN: could be better checks?
-                        var castNextToken = new TokenType[] { TokenType.OpenParen, TokenType.Identifier,
-                            TokenType.NumberLiteral, TokenType.StringLiteral, TokenType.CharLiteral };
-                        if (castNextToken.Contains(next.Type))
-                        {
-                            // probably a cast 
-                            var expr = list[0].Expr;
-                            expr.Location = new Location(beg, end);
-
-                            var sub = ParsePostUnaryExpression(inInfo, ref outInfo);
-                            var cst = new AstCastExpr(expr, sub as AstExpression, new Location(beg, sub.Ending));
-
-                            // error if it is not an expr
-                            if (sub is not AstExpression)
-                            {
-                                ReportMessage(sub, [], ErrorCode.Get(CTEN.CastSubNotExpr));
-                            }
-                            return cst;
-                        }
-                        else
-                        {
-                            // probably just smth like
-                            // a = (b) + (c)
-                            return list[0].Expr;
-                        }
+                        return HandleOneElement(list[0].Expr, beg, end, ref outInfo);
                     }
                     else
                     {
@@ -302,6 +284,36 @@ namespace HapetFrontend.Parsing
             }
 
             return new AstTupleExpr(list.Select(x => x.Expr).ToList(), new Location(beg, end)) { IsTypedTuple = false };
+
+            AstExpression HandleOneElement(AstExpression element, TokenLocation beg, TokenLocation end, ref ParserOutInfo outInfo)
+            {
+                var next = PeekToken();
+                // WARN: could be better checks?
+                var castNextToken = new TokenType[] { TokenType.OpenParen, TokenType.Identifier,
+                            TokenType.NumberLiteral, TokenType.StringLiteral, TokenType.CharLiteral };
+                if (castNextToken.Contains(next.Type))
+                {
+                    // probably a cast 
+                    var expr = element;
+                    expr.Location = new Location(beg, end);
+
+                    var sub = ParsePostUnaryExpression(inInfo, ref outInfo);
+                    var cst = new AstCastExpr(expr, sub as AstExpression, new Location(beg, sub.Ending));
+
+                    // error if it is not an expr
+                    if (sub is not AstExpression)
+                    {
+                        ReportMessage(sub, [], ErrorCode.Get(CTEN.CastSubNotExpr));
+                    }
+                    return cst;
+                }
+                else
+                {
+                    // probably just smth like
+                    // a = (b) + (c)
+                    return element;
+                }
+            }
         }
 
         private AstUnknownDecl PrepareTupleExpr(AstTupleExpr tpl, ParserInInfo inInfo, ref ParserOutInfo outInfo)

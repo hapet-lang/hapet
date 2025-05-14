@@ -22,24 +22,24 @@ namespace HapetFrontend.Parsing
                     break;
 
                 case TokenType.KwReturn:
-                    toReturn = ParseReturnStatement();
+                    toReturn = ParseReturnStatement(inInfo, ref outInfo);
                     break;
 
                 case TokenType.KwWhile:
-                    toReturn = ParseWhileStatement();
+                    toReturn = ParseWhileStatement(inInfo, ref outInfo);
                     break;
                 case TokenType.KwFor:
-                    toReturn = ParseForStatement();
+                    toReturn = ParseForStatement(inInfo, ref outInfo);
                     break;
                 case TokenType.KwIf:
-                    toReturn = ParseIfStatement();
+                    toReturn = ParseIfStatement(inInfo, ref outInfo);
                     break;
 
                 case TokenType.KwSwitch:
-                    toReturn = ParseSwitchStatement();
+                    toReturn = ParseSwitchStatement(inInfo, ref outInfo);
                     break;
                 case TokenType.KwCase:
-                    toReturn = ParseCaseStatement();
+                    toReturn = ParseCaseStatement(inInfo, ref outInfo);
                     break;
 
                 case TokenType.KwContinue:
@@ -49,7 +49,7 @@ namespace HapetFrontend.Parsing
                     break;
 
                 case TokenType.OpenBracket:
-                    toReturn = ParseAttributeStatement();
+                    toReturn = ParseAttributeStatement(inInfo, ref outInfo);
                     break;
 
                 case TokenType.OpenBrace:
@@ -58,7 +58,7 @@ namespace HapetFrontend.Parsing
 
                 // directive
                 case TokenType.SharpIdentifier:
-                    toReturn = ParseDirectiveStatement();
+                    toReturn = ParseDirectiveStatement(inInfo, ref outInfo);
                     break;
 
                 default:

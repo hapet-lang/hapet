@@ -124,9 +124,25 @@ namespace HapetFrontend.Parsing
                 }
                 var binExpr = new AstBinaryExpr("is", lhs as AstExpression, rhs as AstExpression, new Location(lhs.Beginning, rhs.Ending))
                 {
-                    AdditionalExpr = additional,
                     IsNot = isNot,
                 };
+
+                // handling additional shite
+                if (additional is AstIdExpr idExpr)
+                {
+                    AstBinaryExpr asExpr = binExpr.GetDeepCopy() as AstBinaryExpr;
+                    asExpr.Operator = "as";
+
+                    // creating deep copies of its elements
+                    // because we don't want to change 
+                    // original shite' scopes and other
+                    AstVarDecl varDecl = new AstVarDecl(
+                        binExpr.Right.GetDeepCopy() as AstExpression,
+                        idExpr.GetDeepCopy() as AstIdExpr,
+                        asExpr.GetDeepCopy() as AstExpression,
+                        "", binExpr);
+                    outInfo.IsOpDeclarations.Add(varDecl);
+                }
 
                 // error if it is not an expr
                 if (lhs is not AstExpression)
@@ -422,7 +438,7 @@ namespace HapetFrontend.Parsing
                     case TokenType.OpenParen:
                         {
                             // TODO: not only nested should be allowed. tuples, lamdas and other shite
-                            var args = ParseArgumentList(out var _, out var end);
+                            var args = ParseArgumentList(inInfo, ref outInfo, out var _, out var end);
                             if (expr is not AstNestedExpr nestExpr)
                             {
                                 ReportMessage(expr.Location, [], ErrorCode.Get(CTEN.CallTargetExprExpected));
@@ -629,7 +645,7 @@ namespace HapetFrontend.Parsing
 
                 case TokenType.KwNew:
                     {
-                        return ParseNewExpression();
+                        return ParseNewExpression(inInfo, ref outInfo);
                     }
 
                 case TokenType.KwBase:
@@ -647,7 +663,7 @@ namespace HapetFrontend.Parsing
                 case TokenType.KwImplicit:
                 case TokenType.KwExplicit:
                     {
-                        return ParseOperatorOverride(new AstUnknownDecl(null, null, PeekToken().Location));
+                        return ParseOperatorOverride(inInfo, ref outInfo, new AstUnknownDecl(null, null, PeekToken().Location));
                     }
 
                 case TokenType.Identifier:

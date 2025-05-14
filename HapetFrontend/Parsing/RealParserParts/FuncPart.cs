@@ -10,11 +10,11 @@ namespace HapetFrontend.Parsing
 {
     public partial class Parser
     {
-        private AstFuncDecl ParseFuncDeclaration(List<AstParamDecl> parameters, Location paramsLocation, ParserInInfo inInfo, ref ParserOutInfo outInfo)
+        private AstFuncDecl ParseFuncDeclaration(ParserInInfo inInfo, ref ParserOutInfo outInfo, List<AstParamDecl> parameters, Location paramsLocation)
         {
             if (parameters == null)
             {
-                parameters = ParseParameterList(TokenType.OpenParen, TokenType.CloseParen, out var beg, out var end, true);
+                parameters = ParseParameterList(inInfo, ref outInfo, TokenType.OpenParen, TokenType.CloseParen, out var beg, out var end, true);
                 paramsLocation = new Location(beg, end);
                 SkipNewlines();
             }
@@ -37,7 +37,7 @@ namespace HapetFrontend.Parsing
                 NextToken();
                 SkipNewlines();
                 var bsTkn = Consume(TokenType.KwBase, ErrMsg("'base'", "after ':'"));
-                var args = ParseArgumentList(out var _, out var end);
+                var args = ParseArgumentList(inInfo, ref outInfo, out var _, out var end);
                 baseCtorCall = new AstBaseCtorStmt(args, new Location(bsTkn.Location, end));
             }
 
@@ -58,7 +58,6 @@ namespace HapetFrontend.Parsing
             inInfo.AllowNestedFunc = false;
             inInfo.ParentFuncDecl = null;
 
-
             theFunc.Body = body;
             theFunc.Location = new Location(paramsLocation.Beginning, body?.Ending ?? paramsLocation.Ending);
             theFunc.BaseCtorCall = baseCtorCall;
@@ -68,12 +67,8 @@ namespace HapetFrontend.Parsing
             return theFunc;
         }
 
-        private AstLambdaDecl ParseLambdaDeclaration(List<AstParamDecl> parameters, TokenLocation beg, bool allowCommaForTuple)
+        private AstLambdaDecl ParseLambdaDeclaration(ParserInInfo inInfo, ref ParserOutInfo outInfo, List<AstParamDecl> parameters, TokenLocation beg, bool allowCommaForTuple)
         {
-            // just handlers
-            ParserInInfo inInfo = ParserInInfo.Default;
-            ParserOutInfo outInfo = ParserOutInfo.Default;
-
             ConsumeUntil(TokenType.Arrow, ErrMsg("=>", "in lambda"));
 
             AstBlockExpr body = ParseBlockExpression(inInfo, ref outInfo);

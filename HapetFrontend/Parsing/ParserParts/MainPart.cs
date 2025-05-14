@@ -50,10 +50,10 @@ namespace HapetFrontend.Parsing
                         semicolonRequired = true;
                         break;
                     case TokenType.SharpIdentifier:
-                        toReturn = ParseDirectiveStatement();
+                        toReturn = ParseDirectiveStatement(inInfo, ref outInfo);
                         break;
                     case TokenType.OpenBracket:
-                        toReturn = ParseAttributeStatement();
+                        toReturn = ParseAttributeStatement(inInfo, ref outInfo);
                         break;
                     case TokenType.KwUsing:
                         toReturn = ParseUsingStatement();

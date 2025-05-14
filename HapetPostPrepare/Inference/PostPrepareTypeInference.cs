@@ -580,24 +580,6 @@ namespace HapetPostPrepare
                             // so bitcast would be possible
                             rightExpr.OutType = PointerType.GetPointerType(rightExpr.OutType);
                             binExpr.OutType = BoolType.Instance;
-
-                            if (binExpr.AdditionalExpr is AstIdExpr idExpr)
-                            {
-                                AstBinaryExpr asExpr = binExpr.GetDeepCopy() as AstBinaryExpr;
-                                asExpr.Operator = "as";
-                                PostPrepareExprInference(asExpr, inInfo, ref outInfo);
-
-                                // creating deep copies of its elements
-                                // because we don't want to change 
-                                // original shite' scopes and other
-                                AstVarDecl varDecl = new AstVarDecl(
-                                    rightExpr.GetDeepCopy() as AstExpression, 
-                                    idExpr.GetDeepCopy() as AstIdExpr, 
-                                    asExpr.GetDeepCopy() as AstExpression, 
-                                    "", idExpr);
-                                outInfo.IsOpDeclarations.Add(varDecl);
-                            }
-
                             // TODO: check for inheritance!!!
                             break;
                         }
@@ -1177,25 +1159,6 @@ namespace HapetPostPrepare
         private void PostPrepareIfStmtInference(AstIfStmt ifStmt, InInfo inInfo, ref OutInfo outInfo)
         {
             PostPrepareExprInference(ifStmt.Condition, inInfo, ref outInfo);
-
-            // store the decls
-            // list of all additions of declarations that was in 'if' stmts
-            // like 'if (test is Anime anime)' so we add 'Anime anime = test as Anime;'
-            // decl before 'if' stmt
-            if (outInfo.IsOpDeclarations.Count > 0)
-            {
-                // pp them
-                foreach (var varDecl in outInfo.IsOpDeclarations)
-                {
-                    SetScopeAndParent(varDecl, _currentBlock, _currentBlock.SubScope);
-                    PostPrepareVarScoping(varDecl);
-                    // no need to inference - its elements are already inferenced
-                }
-                // add decls before 'if' stmt
-                int ifStmtIndex = _currentBlock.Statements.IndexOf(ifStmt);
-                _currentBlock.Statements.InsertRange(ifStmtIndex, outInfo.IsOpDeclarations.ToList()); // clone them
-                outInfo.IsOpDeclarations.Clear();
-            }
 
             // error if it is not a bool type because it has to be
             if (ifStmt.Condition.OutType is not BoolType)

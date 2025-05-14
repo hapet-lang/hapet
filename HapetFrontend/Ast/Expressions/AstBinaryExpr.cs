@@ -11,12 +11,6 @@ namespace HapetFrontend.Ast.Expressions
         public AstExpression Right { get; set; }
 
         /// <summary>
-        /// For now I know that it would be used for 'is' bin op like
-        /// if (test is Anime anime) ...
-        /// </summary>
-        public AstExpression AdditionalExpr { get; set; }
-
-        /// <summary>
         /// Used probably only for 'is' bin op
         /// when 'is not' is presented
         /// </summary>
@@ -44,7 +38,6 @@ namespace HapetFrontend.Ast.Expressions
                 ActualOperator = ActualOperator,
                 IsCompileTimeValue = IsCompileTimeValue,
                 IsNot = IsNot,
-                AdditionalExpr = AdditionalExpr?.GetDeepCopy() as AstExpression,
                 OutType = OutType,
                 OutValue = OutValue,
                 Scope = Scope,

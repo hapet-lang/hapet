@@ -8,12 +8,8 @@ namespace HapetFrontend.Parsing
 {
     public partial class Parser
     {
-        private AstStatement ParseArrayExpr(AstExpression type, TokenLocation beg)
+        private AstStatement ParseArrayExpr(ParserInInfo inInfo, ref ParserOutInfo outInfo, AstExpression type, TokenLocation beg)
         {
-            // just handlers
-            ParserInInfo inInfo = ParserInInfo.Default;
-            ParserOutInfo outInfo = ParserOutInfo.Default;
-
             // by default it is null because the size could not be defined
             // when values are presented
             List<AstExpression> sizeExprs = new List<AstExpression>();
@@ -78,7 +74,7 @@ namespace HapetFrontend.Parsing
                     ReportMessage(new Location(sizesBeg, sizesEnd), [], ErrorCode.Get(CTEN.ArrayNonLastNotSpecified));
                 }
 
-                var elements = ParseArrayElementsExpression();
+                var elements = ParseArrayElementsExpression(inInfo, ref outInfo);
 
                 // print warning here if sizeExpr is null and elements.Count == 0, that empty array will be created
                 if (sizeExprs.Last() == null && elements.Count == 0)
@@ -96,12 +92,8 @@ namespace HapetFrontend.Parsing
             return ParseEmptyExpression();
         }
 
-        private List<AstExpression> ParseArrayElementsExpression()
+        private List<AstExpression> ParseArrayElementsExpression(ParserInInfo inInfo, ref ParserOutInfo outInfo)
         {
-            // just handlers
-            ParserInInfo inInfo = ParserInInfo.Default;
-            ParserOutInfo outInfo = ParserOutInfo.Default;
-
             var token = NextToken();
             var values = new List<AstExpression>();
 

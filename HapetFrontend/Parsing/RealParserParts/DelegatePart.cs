@@ -54,7 +54,7 @@ namespace HapetFrontend.Parsing
             }
 
             TokenLocation end;
-            var parameters = ParseParameterList(TokenType.OpenParen, TokenType.CloseParen, out var pbeg, out end, true);
+            var parameters = ParseParameterList(inInfo, ref outInfo, TokenType.OpenParen, TokenType.CloseParen, out var pbeg, out end, true);
             SkipNewlines();
 
             // parsing constrains

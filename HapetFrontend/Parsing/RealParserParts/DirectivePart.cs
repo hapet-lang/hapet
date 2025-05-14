@@ -9,12 +9,8 @@ namespace HapetFrontend.Parsing
 {
     public partial class Parser
     {
-        private AstStatement ParseDirectiveStatement()
+        private AstStatement ParseDirectiveStatement(ParserInInfo inInfo, ref ParserOutInfo outInfo)
         {
-            // just handlers
-            ParserInInfo inInfo = ParserInInfo.Default;
-            ParserOutInfo outInfo = ParserOutInfo.Default;
-
             var tkn = Consume(TokenType.SharpIdentifier, ErrMsg("char '#'", "at beginning of directive"));
             DirectiveType type = DirectiveType.None;
 

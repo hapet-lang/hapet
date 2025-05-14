@@ -10,12 +10,8 @@ namespace HapetFrontend.Parsing
 {
     public partial class Parser
     {
-        private AstForStmt ParseForStatement()
+        private AstForStmt ParseForStatement(ParserInInfo inInfo, ref ParserOutInfo outInfo)
         {
-            // just handlers
-            ParserInInfo inInfo = ParserInInfo.Default;
-            ParserOutInfo outInfo = ParserOutInfo.Default;
-
             AstStatement first = null;
             AstExpression second = null;
             AstStatement third = null;
@@ -56,12 +52,8 @@ namespace HapetFrontend.Parsing
             return new AstForStmt(first, second, third, body, new Location(beg.Location, end.Location));
         }
 
-        private AstWhileStmt ParseWhileStatement()
+        private AstWhileStmt ParseWhileStatement(ParserInInfo inInfo, ref ParserOutInfo outInfo)
         {
-            // just handlers
-            ParserInInfo inInfo = ParserInInfo.Default;
-            ParserOutInfo outInfo = ParserOutInfo.Default;
-
             AstExpression condition = null;
             AstBlockExpr body;
 

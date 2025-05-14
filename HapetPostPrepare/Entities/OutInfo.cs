@@ -12,8 +12,6 @@ namespace HapetPostPrepare.Entities
         public AstNestedExpr IndexedObject { get; set; }
         public AstExpression IndexedIndex { get; set; }
 
-        public List<AstVarDecl> IsOpDeclarations { get; private set; } = new List<AstVarDecl>();
-
         public static OutInfo Default => new OutInfo()
         {
             ItWasProperty = false,

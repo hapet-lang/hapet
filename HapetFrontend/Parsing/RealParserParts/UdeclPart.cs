@@ -115,7 +115,7 @@ namespace HapetFrontend.Parsing
             // func declaration 
             else if (CheckToken(TokenType.OpenParen))
             {
-                var func = ParseFuncDeclaration(null, null, inInfo, ref outInfo);
+                var func = ParseFuncDeclaration(inInfo, ref outInfo, null, null);
                 if (udecl.Name == null)
                 {
                     var fncName = udecl.Type is AstIdExpr ? (udecl.Type as AstIdExpr) : ((udecl.Type as AstNestedExpr).RightPart as AstIdExpr);
@@ -143,7 +143,7 @@ namespace HapetFrontend.Parsing
             // properties 
             else if (CheckToken(TokenType.OpenBrace))
             {
-                var prop = PreparePropertyDecl(udecl, udecl.Documentation);
+                var prop = PreparePropertyDecl(udecl, udecl.Documentation, inInfo, ref outInfo);
                 prop.Attributes.AddRange(attrs);
                 // special keys are added inside PreparePropertyDecl
                 OnExit();
@@ -153,13 +153,13 @@ namespace HapetFrontend.Parsing
             else if (CheckToken(TokenType.OpenBracket) && udecl.Name.Name == "this")
             {
                 Consume(TokenType.OpenBracket, ErrMsg("symbol '['", "at beginning of indexer param declaration"));
-                var par = ParseParameter(false); // no default value for indexer
+                var par = ParseParameter(inInfo, ref outInfo, false); // no default value for indexer
                 var a = PeekToken();
                 Consume(TokenType.CloseBracket, ErrMsg("symbol ']'", "at ending of indexer param declaration"));
 
                 SkipNewlines();
                 udecl.Name = udecl.Name.GetCopy("indexer__");
-                var prop = PreparePropertyDecl(udecl, "") as AstPropertyDecl;
+                var prop = PreparePropertyDecl(udecl, "", inInfo, ref outInfo) as AstPropertyDecl;
                 var indexer = new AstIndexerDecl(prop);
                 indexer.IndexerParameter = par;
 
@@ -169,7 +169,7 @@ namespace HapetFrontend.Parsing
             else if (CheckToken(TokenType.KwOperator))
             {
                 // possible operator override
-                var result = ParseOperatorOverride(udecl);
+                var result = ParseOperatorOverride(inInfo, ref outInfo, udecl);
                 if (result != null)
                 {
                     result.Attributes.AddRange(attrs);

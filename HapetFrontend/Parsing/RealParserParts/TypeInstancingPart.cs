@@ -8,12 +8,8 @@ namespace HapetFrontend.Parsing
 {
     public partial class Parser
     {
-        private AstStatement ParseNewExpression()
+        private AstStatement ParseNewExpression(ParserInInfo inInfo, ref ParserOutInfo outInfo)
         {
-            // just handlers
-            ParserInInfo inInfo = ParserInInfo.Default;
-            ParserOutInfo outInfo = ParserOutInfo.Default;
-
             TokenLocation beg = null;
 
             beg ??= Consume(TokenType.KwNew, ErrMsg("keyword 'new'", "at beginning of type instancing expression")).Location;
@@ -21,10 +17,12 @@ namespace HapetFrontend.Parsing
 
             // do not allow array expressions after 'new' word!!! but allow pointers
             var saved = inInfo.AllowArrayExpression;
+            var savedMessage = inInfo.Message;
             inInfo.AllowArrayExpression = false;
             inInfo.Message = ErrMsg("expression", "after keyword 'new'");
             var type = ParseAtomicExpression(inInfo, ref outInfo);
             inInfo.AllowArrayExpression = saved;
+            inInfo.Message = savedMessage;
 
             // TokenType.ArrayDef is for array creation with ini values
             if (CheckToken(TokenType.OpenBracket) || CheckToken(TokenType.ArrayDef)) // array creation
@@ -34,7 +32,7 @@ namespace HapetFrontend.Parsing
                     ReportMessage(type.Location, [], ErrorCode.Get(CTEN.TypeNameNotExpr));
                     return ParseEmptyExpression();
                 }
-                return ParseArrayExpr(expr, beg);
+                return ParseArrayExpr(inInfo, ref outInfo, expr, beg);
             }
             else if (CheckToken(TokenType.OpenParen)) // probably class instance creation
             {
@@ -43,7 +41,7 @@ namespace HapetFrontend.Parsing
                     ReportMessage(type.Location, [], ErrorCode.Get(CTEN.TypeNameUnexpected));
                     return ParseEmptyExpression();
                 }
-                var args = ParseArgumentList(out var _, out var end);
+                var args = ParseArgumentList(inInfo, ref outInfo, out var _, out var end);
                 return new AstNewExpr(nestExpr, args, new Location(beg, end));
             }
 

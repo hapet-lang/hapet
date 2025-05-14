@@ -47,6 +47,17 @@ namespace HapetFrontend.Parsing
                     // check that stmt is not after return/break OR is a nested function
                     if (string.IsNullOrWhiteSpace(foundBrStatement) || s is AstFuncDecl)
                     {
+                        // at first we need to add all cringe 'is' decls
+                        // store the decls
+                        // list of all additions of declarations
+                        // like 'test is Anime anime' so we add 'Anime anime = test as Anime;'
+                        // decl before the stmt
+                        if (outInfo.IsOpDeclarations.Count > 0)
+                        {
+                            statements.AddRange(outInfo.IsOpDeclarations.ToList()); // clone them (for what?)
+                            outInfo.IsOpDeclarations.Clear();
+                        }
+
                         statements.Add(s);
                     }
                     else if (!afterBrStatementReported)

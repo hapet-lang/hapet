@@ -8,12 +8,8 @@ namespace HapetFrontend.Parsing
 {
     public partial class Parser
     {
-        private AstIfStmt ParseIfStatement()
+        private AstIfStmt ParseIfStatement(ParserInInfo inInfo, ref ParserOutInfo outInfo)
         {
-            // just handlers
-            ParserInInfo inInfo = ParserInInfo.Default;
-            ParserOutInfo outInfo = ParserOutInfo.Default;
-
             AstExpression condition = null;
             AstBlockExpr bodyTrue;
             AstBlockExpr bodyFalse = null;
@@ -52,12 +48,8 @@ namespace HapetFrontend.Parsing
             return new AstIfStmt(condition, bodyTrue, bodyFalse, new Location(beg.Location, end.Location));
         }
 
-        private AstStatement ParseSwitchStatement()
+        private AstStatement ParseSwitchStatement(ParserInInfo inInfo, ref ParserOutInfo outInfo)
         {
-            // just handlers
-            ParserInInfo inInfo = ParserInInfo.Default;
-            ParserOutInfo outInfo = ParserOutInfo.Default;
-
             AstExpression condition = null;
 
             var beg = Consume(TokenType.KwSwitch, ErrMsg("keyword 'switch'", "at beginning of 'switch' statement"));
@@ -83,8 +75,11 @@ namespace HapetFrontend.Parsing
             // parsing the block
             if (CheckToken(TokenType.OpenBrace))
             {
+                var savedSkip = inInfo.SkipDefaultSemicolonChecks; // skip checks at the top level for 'default'
                 inInfo.SkipDefaultSemicolonChecks = true; // skip checks at the top level for 'default'
                 var theBlock = ParseBlockExpression(inInfo, ref outInfo);
+                inInfo.SkipDefaultSemicolonChecks = savedSkip;
+
                 List<AstCaseStmt> cases = new List<AstCaseStmt>();
 
                 // serching for default
@@ -138,12 +133,8 @@ namespace HapetFrontend.Parsing
             }
         }
 
-        private AstStatement ParseCaseStatement()
+        private AstStatement ParseCaseStatement(ParserInInfo inInfo, ref ParserOutInfo outInfo)
         {
-            // just handlers
-            ParserInInfo inInfo = ParserInInfo.Default;
-            ParserOutInfo outInfo = ParserOutInfo.Default;
-
             AstExpression pattern = null;
             AstBlockExpr body = null;
             bool isDefault = false;

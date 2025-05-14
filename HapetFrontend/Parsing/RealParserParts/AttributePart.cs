@@ -11,9 +11,8 @@ namespace HapetFrontend.Parsing
 {
     public partial class Parser
     {
-        private AstStatement ParseAttributeStatement()
+        private AstStatement ParseAttributeStatement(ParserInInfo inInfo, ref ParserOutInfo outInfo)
         {
-            ParserInInfo inInfo = new ParserInInfo();
             TokenLocation beg = null;
             TokenLocation end = null;
             AstNestedExpr attrName = null;
@@ -36,7 +35,7 @@ namespace HapetFrontend.Parsing
             // parsing attr args
             if (CheckToken(TokenType.OpenParen))
             {
-                args = ParseArgumentList(out var _, out var _);
+                args = ParseArgumentList(inInfo, ref outInfo, out var _, out var _);
             }
 
             end = Consume(TokenType.CloseBracket, ErrMsg("token ']'", "at the end of attribute statement")).Location;

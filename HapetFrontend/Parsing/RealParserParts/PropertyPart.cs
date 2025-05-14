@@ -10,12 +10,8 @@ namespace HapetFrontend.Parsing
 {
     public partial class Parser
     {
-        private AstDeclaration PreparePropertyDecl(AstUnknownDecl udecl, string docString)
+        private AstDeclaration PreparePropertyDecl(AstUnknownDecl udecl, string docString, ParserInInfo inInfo, ref ParserOutInfo outInfo)
         {
-            // just handlers
-            ParserInInfo inInfo = ParserInInfo.Default;
-            ParserOutInfo outInfo = ParserOutInfo.Default;
-
             bool hasGet = false;
             bool hasSet = false;
             AstBlockExpr getBody = null;

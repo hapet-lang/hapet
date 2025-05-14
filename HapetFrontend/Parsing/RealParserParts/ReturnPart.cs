@@ -7,12 +7,8 @@ namespace HapetFrontend.Parsing
 {
     public partial class Parser
     {
-        public AstStatement ParseReturnStatement()
+        internal AstStatement ParseReturnStatement(ParserInInfo inInfo, ref ParserOutInfo outInfo)
         {
-            // just handlers
-            ParserInInfo inInfo = ParserInInfo.Default;
-            ParserOutInfo outInfo = ParserOutInfo.Default;
-
             TokenLocation beg = null;
 
             beg = Consume(TokenType.KwReturn, ErrMsg("keyword 'return'", "at beginning of 'return' statement")).Location;
@@ -24,8 +20,10 @@ namespace HapetFrontend.Parsing
                 return new AstReturnStmt(null, new Location(beg));
             }
 
+            var savedMessage = inInfo.Message;
             inInfo.Message = ErrMsg("expression", "after keyword 'return'");
             var expr = ParseExpression(inInfo, ref outInfo);
+            inInfo.Message = savedMessage;
 
             // here is the check for AstEmptyStmt because ParseExpression
             // will already generate an exception for this and return AstEmptyStmt
