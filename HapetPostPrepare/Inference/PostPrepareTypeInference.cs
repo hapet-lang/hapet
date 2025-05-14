@@ -632,39 +632,6 @@ namespace HapetPostPrepare
                                 }
                             }
 
-                            // creating cast to result type if it is not a bool expr
-                            if (leftExpr.OutType != binExpr.OutType && 
-                                binExpr.OutType is not BoolType && 
-                                binExpr.OutType is not PointerType &&
-                                binExpr.ActualOperator is not IUserDefinedOperator)
-                            {
-                                // cast if they are not the same haha
-                                binExpr.Left = PostPrepareExpressionWithType(GetPreparedAst(binExpr.OutType, binExpr), leftExpr);
-                            }
-                            // creating cast to result type if it is not a bool expr
-                            if (rightExpr.OutType != binExpr.OutType && 
-                                binExpr.OutType is not BoolType && 
-                                binExpr.OutType is not PointerType &&
-                                binExpr.ActualOperator is not IUserDefinedOperator)
-                            {
-                                // cast if they are not the same haha
-                                binExpr.Right = PostPrepareExpressionWithType(GetPreparedAst(binExpr.OutType, binExpr), rightExpr);
-                            }
-
-                            // creating cast to result type if it is a bool expr and left and right are not the same types
-                            if (rightExpr.OutType != leftExpr.OutType && 
-                                binExpr.OutType is BoolType &&
-                                binExpr.ActualOperator is not IUserDefinedOperator)
-                            {
-                                // cast if they are not the same haha
-                                HapetType castingType = HapetType.GetPreferredTypeOf(leftExpr.OutType, rightExpr.OutType, out bool tookLeft);
-                                // if the left type was taken then change the right expr
-                                if (tookLeft)
-                                    binExpr.Right = PostPrepareExpressionWithType(GetPreparedAst(castingType, binExpr), rightExpr);
-                                else
-                                    binExpr.Left = PostPrepareExpressionWithType(GetPreparedAst(castingType, binExpr), leftExpr);
-                            }
-
                             // if the value could be evaluated at the compile time
                             if (leftExpr.OutValue != null && 
                                 rightExpr.OutValue != null && 

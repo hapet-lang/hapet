@@ -44,6 +44,8 @@ namespace HapetFrontend.Types
         public AstDeclaration ParentDeclaration { get; set; }
         public List<AstNestedExpr> Constrains { get; set; }
 
+        public static GenericType LiteralType { get; } = new GenericType(null, new List<AstNestedExpr>());
+
         public override string TypeName => "generic";
 
         private Guid Guid { get; set; } // just for debug

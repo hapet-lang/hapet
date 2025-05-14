@@ -121,6 +121,11 @@ namespace HapetFrontend.Scoping
             // this is a kostyl to search for any ptr bin ops
             var searchTypeL = lhs is PointerType ? PointerType.VoidLiteralType : lhs;
             var searchTypeR = rhs is PointerType ? PointerType.VoidLiteralType : rhs;
+
+            // this is a kostyl to search for any generic bin ops
+            searchTypeL = searchTypeL is GenericType ? GenericType.LiteralType : searchTypeL;
+            searchTypeR = searchTypeR is GenericType ? GenericType.LiteralType : searchTypeR;
+
             GetBinaryOperatorsInternal(this, name, searchTypeL, searchTypeR, result, ref level);
             return result;
         }
@@ -185,6 +190,9 @@ namespace HapetFrontend.Scoping
 
             // this is a kostyl to search for any ptr un ops
             var searchType = sub is PointerType ? PointerType.VoidLiteralType : sub;
+            // this is a kostyl to search for any generic un ops
+            searchType = searchType is GenericType ? GenericType.LiteralType : searchType;
+
             GetUnaryOperatorsInternal(this, name, searchType, result, ref level);
             return result;
         }
