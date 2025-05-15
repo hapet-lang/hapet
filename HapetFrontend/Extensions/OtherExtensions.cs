@@ -208,6 +208,17 @@ namespace HapetFrontend.Extensions
                     string parentSearch = searchFunc.Name.Name.GetClassNameFromFuncName();
                     if (parentSearch == interfaceName && pureName == pureSearchName)
                         areNamesEqual = true;
+                    else
+                    {
+                        // need to check inheritance. imagine we have 
+                        // struct Array : IList { void IList.Add()... }
+                        // where IList itself do not have Add method but its parent - ICollection
+                        // so we need to check this inheritance and allow it
+                        var theExplicitDecl = x.Name.AdditionalData.OutType;
+                        bool isInherited = theExplicitDecl.IsInheritedFrom(searchFunc.ContainingParent.Type.OutType as ClassType);
+                        if (isInherited && pureName == pureSearchName)
+                            areNamesEqual = true;
+                    }
                 }
                 else if (!string.IsNullOrWhiteSpace(interfaceSearchName) && string.IsNullOrWhiteSpace(interfaceName))
                 {

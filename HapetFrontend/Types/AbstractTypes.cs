@@ -75,11 +75,6 @@ namespace HapetFrontend.Types
             {
                 return AreTypesTheSameIncludingGenerics(pt1.TargetType, pt2.TargetType);
             }
-            else if (t1 is GenericType && t2 is GenericType)
-            {
-                // CRINGE :)
-                return true;
-            }
             return t1 == t2;
         }
     }
