@@ -180,31 +180,30 @@ namespace HapetPostPrepare
         {
             _currentPreparationStep = PreparationStep.Functions;
 
+            var allFuncs = new List<AstFuncDecl>();
             // inferrencing funcs
             foreach (var cls in AllClassesMetadata.ToList())
             {
-                _currentSourceFile = cls.SourceFile;
-                if (cls.IsNestedDecl)
-                    _currentParentStack.AddParent(cls.ParentDecl);
-                _currentParentStack.AddParent(cls);
-
-                bool isImported = cls.IsImported;
-                PostPrepareMetadataFunctions(cls, !isImported, isImported);
-                _currentParentStack.RemoveParent();
-                if (cls.IsNestedDecl)
-                    _currentParentStack.RemoveParent();
+                allFuncs.AddRange(cls.Declarations.Where(x => x is AstFuncDecl).Select(x => x as AstFuncDecl));
             }
             foreach (var str in AllStructsMetadata.ToList())
             {
-                _currentSourceFile = str.SourceFile;
-                if (str.IsNestedDecl)
-                    _currentParentStack.AddParent(str.ParentDecl);
-                _currentParentStack.AddParent(str);
+                allFuncs.AddRange(str.Declarations.Where(x => x is AstFuncDecl).Select(x => x as AstFuncDecl));
+            }
 
-                bool isImported = str.IsImported;
-                PostPrepareMetadataFunctions(str, !isImported, isImported);
+            foreach (var func in allFuncs)
+            {
+                _currentSourceFile = func.SourceFile;
+
+                if (func.ContainingParent.IsNestedDecl)
+                    _currentParentStack.AddParent(func.ContainingParent.ParentDecl);
+                _currentParentStack.AddParent(func.ContainingParent);
+
+                bool isImported = func.ContainingParent.IsImported;
+                PostPrepareMetadataFunctions(func, !isImported, isImported);
+
                 _currentParentStack.RemoveParent();
-                if (str.IsNestedDecl)
+                if (func.ContainingParent.IsNestedDecl)
                     _currentParentStack.RemoveParent();
             }
         }
