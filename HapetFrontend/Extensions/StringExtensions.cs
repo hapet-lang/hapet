@@ -27,7 +27,7 @@ namespace HapetFrontend.Extensions
             return string.Join('.', elements.SkipLast(1));
         }
 
-        public static string GetPureFuncName(this string name)
+        public static string GetPureFuncName(this string name, bool keepExplicitData = true)
         {
             string rightPart;
             if (!name.Contains("::"))
@@ -38,12 +38,16 @@ namespace HapetFrontend.Extensions
             if (!rightPart.Contains('.'))
                 return rightPart;
 
-            // this is done to handle shite like:
-            // bool System.Collections.IStructuralEquatable.Equals(..
-            // and make it to this:
-            // bool IStructuralEquatable.Equals(..
             var splitted = rightPart.Split('.');
-            var result = string.Join('.', splitted[^2], splitted[^1]);
+            var result = splitted[^1];
+            if (keepExplicitData)
+            {
+                // this is done to handle shite like:
+                // bool System.Collections.IStructuralEquatable.Equals(..
+                // and make it to this:
+                // bool IStructuralEquatable.Equals(..
+                result = string.Join('.', splitted[^2], splitted[^1]);
+            }
             return result;
         }
 

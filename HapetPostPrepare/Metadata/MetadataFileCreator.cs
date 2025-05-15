@@ -246,7 +246,14 @@ namespace HapetPostPrepare
             // return type
             AntiParseExpr(decl.Returns, sb, additionalOffset);
             sb.Append(' ');
-            AntiParseExpr(decl.Name.GetCopy(decl.Name.Name.GetPureFuncName()), sb, additionalOffset);
+
+            // add additional string
+            if (decl.Name.AdditionalData != null)
+            {
+                AntiParseExpr(decl.Name.AdditionalData, sb, additionalOffset);
+                sb.Append('.');
+            }
+            AntiParseExpr(decl.Name.GetCopy(decl.Name.Name.GetPureFuncName(keepExplicitData: false)), sb, additionalOffset);
 
             sb.Append('(');
             for (int i = 0; i < decl.Parameters.Count; ++i)
@@ -284,9 +291,18 @@ namespace HapetPostPrepare
             // return type
             AntiParseExpr(decl.Type, sb, additionalOffset);
             sb.Append(' ');
+
+            // add additional string
+            if (decl.Name.AdditionalData != null)
+            {
+                AntiParseExpr(decl.Name.AdditionalData, sb, additionalOffset);
+                sb.Append('.');
+            }
+
             // generate another shite for indexer
             if (decl is AstIndexerDecl ind)
             {
+                
                 sb.Append("this[");
                 var par = ind.IndexerParameter;
                 AntiParseExpr(par.Type, sb, additionalOffset);
@@ -325,7 +341,8 @@ namespace HapetPostPrepare
                 sb.Append("set; }\n");
             else
             {
-                if (decl.GetBlock != null)
+                if (decl.GetBlock != null && (decl.HasGenericTypes ||
+                    (isParentGeneric && !decl.SpecialKeys.Contains(TokenType.KwStatic))))
                     sb.Append($"{additionalOffset}}}\n");
                 else
                     sb.Append("}\n");
@@ -337,6 +354,13 @@ namespace HapetPostPrepare
             // return type
             AntiParseExpr(decl.Type, sb, additionalOffset);
             sb.Append(' ');
+
+            // add additional string
+            if (decl.Name.AdditionalData != null)
+            {
+                AntiParseExpr(decl.Name.AdditionalData, sb, additionalOffset);
+                sb.Append('.');
+            }
             AntiParseExpr(decl.Name, sb, additionalOffset);
 
             sb.Append(";\n");
