@@ -1008,7 +1008,7 @@ namespace HapetPostPrepare
             {
                 typeName = strT.Declaration.Name.Name;
                 firstParamType = PointerType.GetPointerType(arrayAccExpr.ObjectName.OutType);
-                pseudoFirstArg = new AstPointerExpr(arrayAccExpr.ObjectName, false, arrayAccExpr.ObjectName);
+                pseudoFirstArg = new AstPointerExpr(arrayAccExpr.ObjectName, false, arrayAccExpr.ObjectName) { Scope = arrayAccExpr.ObjectName.Scope };
                 PostPrepareExprInference(pseudoFirstArg, inInfo, ref outInfo);
                 subScope = strT.Declaration.SubScope;
                 declItself = strT.Declaration;
@@ -1024,8 +1024,8 @@ namespace HapetPostPrepare
 
                 List<AstArgumentExpr> argsWithStructParam = new List<AstArgumentExpr>() 
                 { 
-                    new AstArgumentExpr(pseudoFirstArg),
-                    new AstArgumentExpr(arrayAccExpr.ParameterExpr)
+                    new AstArgumentExpr(pseudoFirstArg) { Scope = arrayAccExpr.ObjectName.Scope },
+                    new AstArgumentExpr(arrayAccExpr.ParameterExpr) { Scope = arrayAccExpr.ParameterExpr.Scope }
                 };
                 // just for better error message
                 var tmpIndexer = new AstCallExpr(null, new AstIdExpr("'indexer'", arrayAccExpr), null, arrayAccExpr);
