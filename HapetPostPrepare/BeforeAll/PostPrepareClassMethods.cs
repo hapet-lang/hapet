@@ -261,14 +261,18 @@ namespace HapetPostPrepare
             if (decl is AstClassDecl clsDecl && clsDecl.IsInterface)
                 return;
 
+            // location for all the things
+            var comLoc = decl.Name.Location;
+
             // the block with all field inits
             var iniBlock = GetFieldsToInitialize(decl, false);
 
             // the ini func
             var iniDecl = new AstFuncDecl(new List<AstParamDecl>(),
-            new AstNestedExpr(new AstIdExpr("void", decl), null, decl),
+            new AstNestedExpr(new AstIdExpr("void", comLoc), null, comLoc),
             iniBlock,
-            new AstIdExpr($"{decl.Name.Name}_ini"));
+            new AstIdExpr($"{decl.Name.Name}_ini", comLoc),
+            "", comLoc);
             iniDecl.SpecialKeys.Insert(0, Lexer.CreateToken(TokenType.KwPrivate, decl.Location.Beginning)); // ini is private because it is called inside ctors
             iniDecl.ClassFunctionType = ClassFunctionType.Initializer;
             iniDecl.ContainingParent = decl;
@@ -285,6 +289,9 @@ namespace HapetPostPrepare
             if (decl is AstClassDecl clsDecl && clsDecl.IsInterface)
                 return;
 
+            // location for all the things
+            var comLoc = decl.Name.Location;
+
             if (ctors.Count == 0)
             {
                 // there is no ctor. need to create one
@@ -292,16 +299,17 @@ namespace HapetPostPrepare
                 // creating ini func call
                 /// make sure that this shite is the same as in <see cref="RenameFromGenericToRealType"/>
                 ctorBlockStatements.Add(new AstCallExpr(
-                    new AstNestedExpr(new AstIdExpr("this"), null),
-                    new AstIdExpr($"{decl.Name.Name}_ini")));
+                    new AstNestedExpr(new AstIdExpr("this"), null, comLoc),
+                    new AstIdExpr($"{decl.Name.Name}_ini", comLoc), null, comLoc));
                 // the block with call of ini func
-                var ctorBlock = new AstBlockExpr(ctorBlockStatements);
+                var ctorBlock = new AstBlockExpr(ctorBlockStatements, comLoc);
 
                 // the ctor func
                 var ctorDecl = new AstFuncDecl(new List<AstParamDecl>(),
-                    new AstNestedExpr(new AstIdExpr("void", decl), null, decl),
+                    new AstNestedExpr(new AstIdExpr("void", comLoc), null, comLoc),
                     ctorBlock,
-                    new AstIdExpr($"{decl.Name.Name}_ctor"));
+                    new AstIdExpr($"{decl.Name.Name}_ctor", comLoc),
+                    "", comLoc);
                 ctorDecl.BaseCtorCall = new AstBaseCtorStmt(location: ctorDecl.Name);
                 ctorDecl.SpecialKeys.Add(Lexer.CreateToken(TokenType.KwPublic, decl.Location.Beginning)); // default ctor is public
                 ctorDecl.ClassFunctionType = ClassFunctionType.Ctor;
@@ -320,8 +328,8 @@ namespace HapetPostPrepare
                     // insert ini func call at the beginning of the func body
                     /// make sure that this shite is the same as in <see cref="RenameFromGenericToRealType"/>
                     ct.Body.Statements.Insert(0, new AstCallExpr(
-                        new AstNestedExpr(new AstIdExpr("this"), null),
-                        new AstIdExpr($"{decl.Name.Name}_ini")));
+                        new AstNestedExpr(new AstIdExpr("this"), null, comLoc),
+                        new AstIdExpr($"{decl.Name.Name}_ini", comLoc), null, comLoc));
 
                     // if the base ctor call is empty - create one with no params
                     if (ct.BaseCtorCall == null)
@@ -336,6 +344,9 @@ namespace HapetPostPrepare
             if (decl is AstClassDecl clsDecl && clsDecl.IsInterface)
                 return;
 
+            // location for all the things
+            var comLoc = decl.Name.Location;
+
             if (dtors.Count == 0)
             {
                 // there is no dtor. need to create one
@@ -344,13 +355,14 @@ namespace HapetPostPrepare
                 // TODO: do i need to place here something?
 
                 // the block with 
-                var dtorBlock = new AstBlockExpr(dtorBlockStatements);
+                var dtorBlock = new AstBlockExpr(dtorBlockStatements, comLoc);
 
                 // the ctor func
                 var dtorDecl = new AstFuncDecl(new List<AstParamDecl>(),
-                new AstNestedExpr(new AstIdExpr("void", decl), null, decl),
+                new AstNestedExpr(new AstIdExpr("void", comLoc), null, comLoc),
                 dtorBlock,
-                new AstIdExpr($"{decl.Name.Name}_dtor"));
+                new AstIdExpr($"{decl.Name.Name}_dtor", comLoc),
+                "", comLoc);
                 dtorDecl.SpecialKeys.Add(Lexer.CreateToken(TokenType.KwPublic, decl.Location.Beginning)); // default dtor is public
                 dtorDecl.ClassFunctionType = ClassFunctionType.Dtor;
                 dtorDecl.ContainingParent = decl;
@@ -383,6 +395,9 @@ namespace HapetPostPrepare
             if (decl is AstClassDecl clsDecl && clsDecl.IsInterface)
                 return;
 
+            // location for all the things
+            var comLoc = decl.Name.Location;
+
             List<AstDeclaration> decls;
             if (decl is AstStructDecl strDecl)
                 decls = strDecl.Declarations;
@@ -394,16 +409,16 @@ namespace HapetPostPrepare
 
             // we need to add a static var to check that the stor was called
             string theVarName = $"__is_{_currentSourceFile.Namespace.Replace('.', '_')}_{decl.Name.Name}_stor_called";
-            var theVar = new AstVarDecl(new AstNestedExpr(new AstIdExpr("bool"), null), new AstIdExpr(theVarName));
+            var theVar = new AstVarDecl(new AstNestedExpr(new AstIdExpr("bool", comLoc), null, comLoc), new AstIdExpr(theVarName, comLoc), null, "", comLoc);
             theVar.SpecialKeys.Add(Lexer.CreateToken(TokenType.KwStatic, decl.Location.Beginning));
             theVar.SpecialKeys.Insert(0, Lexer.CreateToken(TokenType.KwUnreflected, decl.Location.Beginning));
             decls.Add(theVar);
 
             // set 'true' to the var
             /// make sure that this shite is the same as in <see cref="RenameFromGenericToRealType"/>
-            var varAssign = new AstAssignStmt(new AstNestedExpr(new AstIdExpr(theVarName), null), new AstBoolExpr(true));
+            var varAssign = new AstAssignStmt(new AstNestedExpr(new AstIdExpr(theVarName, comLoc), null, comLoc), new AstBoolExpr(true, comLoc), comLoc);
             iniBlock.Statements.Add(varAssign); // should be the last statement
-            AstIfStmt checkForInited = new AstIfStmt(new AstUnaryExpr("!", new AstIdExpr(theVarName)), iniBlock, null);
+            AstIfStmt checkForInited = new AstIfStmt(new AstUnaryExpr("!", new AstIdExpr(theVarName, comLoc), comLoc), iniBlock, null, comLoc);
 
             if (ctors.Count == 0)
             {
@@ -412,13 +427,14 @@ namespace HapetPostPrepare
                 storBlockStatements.Add(checkForInited);
 
                 // the block with 
-                var storBlock = new AstBlockExpr(storBlockStatements);
+                var storBlock = new AstBlockExpr(storBlockStatements, comLoc);
 
                 // the ctor func
                 var storDecl = new AstFuncDecl(new List<AstParamDecl>(),
-                new AstNestedExpr(new AstIdExpr("void", decl), null, decl),
+                new AstNestedExpr(new AstIdExpr("void", comLoc), null, comLoc),
                 storBlock,
-                new AstIdExpr($"{decl.Name.Name}_stor"));
+                new AstIdExpr($"{decl.Name.Name}_stor"),
+                "", comLoc);
                 storDecl.SpecialKeys.Add(Lexer.CreateToken(TokenType.KwPublic, decl.Location.Beginning)); // stor is public
                 storDecl.SpecialKeys.Add(Lexer.CreateToken(TokenType.KwStatic, decl.Location.Beginning)); // stor is static
                 storDecl.ClassFunctionType = ClassFunctionType.StaticCtor;
