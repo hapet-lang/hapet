@@ -3,10 +3,127 @@ using System.Collections.Generic;
 
 /// This is a test comment
 /// And this is another one
-public struct Array
+public struct Array : IList
 {
     public int Length { get; internal set; }
     internal void* Buffer { get; set; }
+
+    public int Count { get { return Length; } }
+
+    public object this[int index] 
+    {
+        get 
+        {
+            return (object)Buffer[index];
+        }
+        set
+        {
+            Buffer[index] = value;
+        }
+    }
+
+    public IList GetRange(int index, int count)
+    {
+        if (index < 0)
+        {
+            // TODO: 
+            // ThrowHelper.ThrowIndexArgumentOutOfRange_NeedNonNegNumException();
+        }
+
+        if (count < 0)
+        {
+            // TODO: 
+            // ThrowHelper.ThrowArgumentOutOfRangeException(ExceptionArgument.count, ExceptionResource.ArgumentOutOfRange_NeedNonNegNum);
+        }
+
+        object[] newArr = new object[count];
+        Array.Copy(this, index, newArr, 0, count);
+        return newArr;
+    }
+
+    public bool Contains(object item)
+    {
+        return Length != 0 && IndexOf(item) >= 0;
+    }
+
+    public void CopyTo(Array array, int index)
+    {
+        // Delegate rest of error checking to Array.Copy.
+        Array.Copy(this, index, array, 0, Length);
+    }
+
+    public IEnumerator GetEnumerator()
+    {
+        return Length == 0 ? EmptyEnumerator<object>.Instance : new ArrayEnumerator(this);
+    }
+
+    public int IndexOf(object item)
+    {
+        return Array.IndexOf(this, item, 0, Length);
+    }
+
+    public int LastIndexOf(object item)
+    {
+        return Array.LastIndexOf(this, item, 0, Length);
+    }
+
+    public bool IsReadOnly { get { return false; } }
+
+    public void IList.Add(object value)
+    {
+        // TODO:
+        // ThrowHelper.ThrowNotSupportedException(ExceptionResource.NotSupported_ReadOnlyCollection);
+    }
+
+    public void IList.AddRange(IEnumerable collection)
+    {
+        // TODO:
+        // ThrowHelper.ThrowNotSupportedException(ExceptionResource.NotSupported_ReadOnlyCollection);
+    }
+
+    public void IList.Clear()
+    {
+        // TODO:
+        // ThrowHelper.ThrowNotSupportedException(ExceptionResource.NotSupported_ReadOnlyCollection);
+    }
+
+    public void IList.Insert(int index, object value)
+    {
+        // TODO:
+        // ThrowHelper.ThrowNotSupportedException(ExceptionResource.NotSupported_ReadOnlyCollection);
+    }
+
+    public void IList.InsertRange(int index, IEnumerable collection)
+    {
+        // TODO:
+        // ThrowHelper.ThrowNotSupportedException(ExceptionResource.NotSupported_ReadOnlyCollection);
+    }
+
+    public bool IList.Remove(object value)
+    {
+        // TODO:
+        // ThrowHelper.ThrowNotSupportedException(ExceptionResource.NotSupported_ReadOnlyCollection);
+        return false;
+    }
+
+    public void IList.RemoveAt(int index)
+    {
+        // TODO:
+        // ThrowHelper.ThrowNotSupportedException(ExceptionResource.NotSupported_ReadOnlyCollection);
+    }
+
+    public int IList.RemoveAll(Predicate<object> match)
+    {
+        // TODO:
+        // ThrowHelper.ThrowNotSupportedException(ExceptionResource.NotSupported_ReadOnlyCollection);
+        return 0;
+    }
+
+    public bool IsSynchronized { get { return false; } }
+
+    public object SyncRoot { get { return this; } }
+
+    public bool IsFixedSize { get { return true; } }
 
     private static class EmptyArray<T>
     {
@@ -65,7 +182,6 @@ public struct Array<T> : IList<T>
 
     public void CopyTo(T[] array, int index)
     {
-        // Delegate rest of error checking to Array.Copy.
         Array.Copy(this, index, array, 0, Length);
     }
 
@@ -74,64 +190,62 @@ public struct Array<T> : IList<T>
         return Length == 0 ? EmptyEnumerator<T>.Instance : new ArrayEnumerator<T>(this);
     }
 
-    public int IndexOf(T value)
+    public int IndexOf(T item)
     {
-        return list.IndexOf(value);
+        return Array.IndexOf(this, item, 0, Length);
     }
 
     public int LastIndexOf(T item)
     {
-        return list.LastIndexOf(item);
+        return Array.LastIndexOf(this, item, 0, Length);
     }
 
-    protected IList<T> Items { get { return list; } }
+    public bool IsReadOnly { get { return false; } }
 
-    public bool IsReadOnly { get { return true; } }
-
-    public void Add(T value)
+    public void IList<T>.Add(T value)
     {
         // TODO:
         // ThrowHelper.ThrowNotSupportedException(ExceptionResource.NotSupported_ReadOnlyCollection);
     }
 
-    public void AddRange(IEnumerable<T> collection)
+    public void IList<T>.AddRange(IEnumerable<T> collection)
     {
         // TODO:
         // ThrowHelper.ThrowNotSupportedException(ExceptionResource.NotSupported_ReadOnlyCollection);
     }
 
-    public void Clear()
+    public void IList<T>.Clear()
     {
         // TODO:
         // ThrowHelper.ThrowNotSupportedException(ExceptionResource.NotSupported_ReadOnlyCollection);
     }
 
-    public void Insert(int index, T value)
+    public void IList<T>.Insert(int index, T value)
     {
         // TODO:
         // ThrowHelper.ThrowNotSupportedException(ExceptionResource.NotSupported_ReadOnlyCollection);
     }
 
-    public void InsertRange(int index, IEnumerable<T> collection)
+    public void IList<T>.InsertRange(int index, IEnumerable<T> collection)
     {
         // TODO:
         // ThrowHelper.ThrowNotSupportedException(ExceptionResource.NotSupported_ReadOnlyCollection);
     }
 
-    public bool Remove(T value)
+    public bool IList<T>.Remove(T value)
     {
         // TODO:
         // ThrowHelper.ThrowNotSupportedException(ExceptionResource.NotSupported_ReadOnlyCollection);
         return false;
     }
 
-    public void RemoveAt(int index)
+    public void IList<T>.RemoveAt(int index)
     {
         // TODO:
         // ThrowHelper.ThrowNotSupportedException(ExceptionResource.NotSupported_ReadOnlyCollection);
     }
 
-    public int RemoveAll(Predicate<T> match)
+    public int IList<T>.RemoveAll(Predicate<T> match)
     {
         // TODO:
         // ThrowHelper.ThrowNotSupportedException(ExceptionResource.NotSupported_ReadOnlyCollection);
@@ -140,16 +254,9 @@ public struct Array<T> : IList<T>
 
     public bool IsSynchronized { get { return false; } }
 
-    public object SyncRoot { get { return list is ICollection coll ? coll.SyncRoot : this; } }
+    public object SyncRoot { get { return this; } }
 
     public bool IsFixedSize { get { return true; } }
-
-    private static bool IsCompatibleObject(object value)
-    {
-        // Non-null values are fine.  Only accept nulls if T is a class or Nullable<U>.
-        // Note that default(T) is not equal to null for value types except when T is Nullable<U>.
-        return (value is T) || (value == null && default(T) == null);
-    }
 }
 
 internal sealed class ArrayEnumerator : IEnumerator, ICloneable
