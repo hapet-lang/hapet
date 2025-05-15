@@ -55,6 +55,11 @@ namespace HapetFrontend.Ast.Declarations
         {
         }
 
+        public override string ToString()
+        {
+            return $"prop:{GenericsHelper.GetNameFromAst(Name, null)}";
+        }
+
         public override AstStatement GetDeepCopy()
         {
             Dictionary<AstIdExpr, List<AstNestedExpr>> copiedConstrains = new Dictionary<AstIdExpr, List<AstNestedExpr>>();

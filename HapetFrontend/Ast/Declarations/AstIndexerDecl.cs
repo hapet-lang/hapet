@@ -1,4 +1,5 @@
 ﻿using HapetFrontend.Ast.Expressions;
+using HapetFrontend.Helpers;
 
 namespace HapetFrontend.Ast.Declarations
 {
@@ -25,6 +26,11 @@ namespace HapetFrontend.Ast.Declarations
 
             SpecialKeys.AddRange(prop.SpecialKeys);
             Attributes.AddRange(prop.Attributes);
+        }
+
+        public override string ToString()
+        {
+            return $"index:{GenericsHelper.GetNameFromAst(Name, null)}";
         }
 
         public override AstStatement GetDeepCopy()

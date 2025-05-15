@@ -1,5 +1,6 @@
 ﻿using HapetFrontend.Ast.Expressions;
 using HapetFrontend.Ast.Statements;
+using HapetFrontend.Helpers;
 using HapetFrontend.Parsing;
 using HapetFrontend.Types;
 using Newtonsoft.Json;
@@ -24,6 +25,11 @@ namespace HapetFrontend.Ast.Declarations
         {
             Type = type;
             Initializer = ini;
+        }
+
+        public override string ToString()
+        {
+            return $"var:{GenericsHelper.GetNameFromAst(Name, null)}";
         }
 
         public override AstStatement GetDeepCopy()
