@@ -3,128 +3,8 @@ using System.Collections.Generic;
 
 /// This is a test comment
 /// And this is another one
-public struct Array : IList
+public static class Array
 {
-    public int Length { get; internal set; }
-    internal void* Buffer { get; set; }
-
-    public int Count { get { return Length; } }
-
-    public object this[int index] 
-    {
-        get 
-        {
-            return (object)Buffer[index];
-        }
-        set
-        {
-            Buffer[index] = value;
-        }
-    }
-
-    public IList GetRange(int index, int count)
-    {
-        if (index < 0)
-        {
-            // TODO: 
-            // ThrowHelper.ThrowIndexArgumentOutOfRange_NeedNonNegNumException();
-        }
-
-        if (count < 0)
-        {
-            // TODO: 
-            // ThrowHelper.ThrowArgumentOutOfRangeException(ExceptionArgument.count, ExceptionResource.ArgumentOutOfRange_NeedNonNegNum);
-        }
-
-        object[] newArr = new object[count];
-        Array.Copy(this, index, newArr, 0, count);
-        return newArr;
-    }
-
-    public bool Contains(object item)
-    {
-        return Length != 0 && IndexOf(item) >= 0;
-    }
-
-    public void CopyTo(Array array, int index)
-    {
-        // Delegate rest of error checking to Array.Copy.
-        Array.Copy(this, index, array, 0, Length);
-    }
-
-    public IEnumerator GetEnumerator()
-    {
-        return Length == 0 ? EmptyEnumerator<object>.Instance : new ArrayEnumerator(this);
-    }
-
-    public int IndexOf(object item)
-    {
-        return Array.IndexOf(this, item, 0, Length);
-    }
-
-    public int LastIndexOf(object item)
-    {
-        return Array.LastIndexOf(this, item, 0, Length);
-    }
-
-    public bool IsReadOnly { get { return false; } }
-
-    public void IList.Add(object value)
-    {
-        // TODO:
-        // ThrowHelper.ThrowNotSupportedException(ExceptionResource.NotSupported_ReadOnlyCollection);
-    }
-
-    public void IList.AddRange(IEnumerable collection)
-    {
-        // TODO:
-        // ThrowHelper.ThrowNotSupportedException(ExceptionResource.NotSupported_ReadOnlyCollection);
-    }
-
-    public void IList.Clear()
-    {
-        // TODO:
-        // ThrowHelper.ThrowNotSupportedException(ExceptionResource.NotSupported_ReadOnlyCollection);
-    }
-
-    public void IList.Insert(int index, object value)
-    {
-        // TODO:
-        // ThrowHelper.ThrowNotSupportedException(ExceptionResource.NotSupported_ReadOnlyCollection);
-    }
-
-    public void IList.InsertRange(int index, IEnumerable collection)
-    {
-        // TODO:
-        // ThrowHelper.ThrowNotSupportedException(ExceptionResource.NotSupported_ReadOnlyCollection);
-    }
-
-    public bool IList.Remove(object value)
-    {
-        // TODO:
-        // ThrowHelper.ThrowNotSupportedException(ExceptionResource.NotSupported_ReadOnlyCollection);
-        return false;
-    }
-
-    public void IList.RemoveAt(int index)
-    {
-        // TODO:
-        // ThrowHelper.ThrowNotSupportedException(ExceptionResource.NotSupported_ReadOnlyCollection);
-    }
-
-    public int IList.RemoveAll(Predicate<object> match)
-    {
-        // TODO:
-        // ThrowHelper.ThrowNotSupportedException(ExceptionResource.NotSupported_ReadOnlyCollection);
-        return 0;
-    }
-
-    public bool IsSynchronized { get { return false; } }
-
-    public object SyncRoot { get { return this; } }
-
-    public bool IsFixedSize { get { return true; } }
-
     private static class EmptyArray<T>
     {
         // this is the implementation of Array.Empty<T>()
@@ -134,6 +14,40 @@ public struct Array : IList
     public static T[] Empty<T>()
     {
         return EmptyArray<T>.Value;
+    }
+
+    // Copies length elements from sourceArray, starting at sourceIndex, to
+    // destinationArray, starting at destinationIndex.
+    public static void Copy<TSource, TDest>(Array<TSource> sourceArray, int sourceIndex, Array<TDest> destinationArray, int destinationIndex, int length)
+    {
+        if (sourceArray != null && destinationArray != null)
+        {
+            /*
+            MethodTable* pMT = RuntimeHelpers.GetMethodTable(sourceArray);
+            if (MethodTable.AreSameType(pMT, RuntimeHelpers.GetMethodTable(destinationArray)) &&
+                !pMT->IsMultiDimensionalArray &&
+                length >= 0 && sourceIndex >= 0 && destinationIndex >= 0 &&
+                (uint)(sourceIndex + length) <= sourceArray.NativeLength &&
+                (uint)(destinationIndex + length) <= destinationArray.NativeLength)
+            {
+                nuint elementSize = (nuint)pMT->ComponentSize;
+                nuint byteCount = (uint)length * elementSize;
+                ref byte src = ref Unsafe.AddByteOffset(ref Unsafe.As<RawArrayData>(sourceArray).Data, (uint)sourceIndex * elementSize);
+                ref byte dst = ref Unsafe.AddByteOffset(ref Unsafe.As<RawArrayData>(destinationArray).Data, (uint)destinationIndex * elementSize);
+
+                if ((*pMT).ContainsGCPointers)
+                    Buffer.BulkMoveWithWriteBarrier(ref dst, ref src, byteCount);
+                else
+                    SpanHelpers.Memmove(ref dst, ref src, byteCount);
+
+                // GC.KeepAlive(sourceArray) not required. pMT kept alive via sourceArray
+                return;
+            }
+            */
+        }
+
+        // Less common
+        // CopyImpl(sourceArray!, sourceIndex, destinationArray!, destinationIndex, length, reliable: false);
     }
 }
 
@@ -257,74 +171,6 @@ public struct Array<T> : IList<T>
     public object SyncRoot { get { return this; } }
 
     public bool IsFixedSize { get { return true; } }
-}
-
-internal sealed class ArrayEnumerator : IEnumerator, ICloneable
-{
-    private Array _array;
-    private int _index;
-
-    internal ArrayEnumerator(Array array)
-    {
-        _array = array;
-        _index = -1;
-    }
-
-    public object Clone()
-    {
-        // TODO:
-        // return MemberwiseClone();
-        return null;
-    }
-
-    public bool MoveNext()
-    {
-        int index = _index + 1;
-        int length = _array.Length;
-        if ((int)index >= length)
-        {
-            _index = (int)length;
-            return false;
-        }
-        _index = index;
-        return true;
-    }
-
-    public object Current
-    {
-        get
-        {
-            int index = _index;
-            Array array = _array;
-
-            if ((int)index >= array.Length)
-            {
-                if (index < 0)
-                {
-                    // TODO:
-                    // ThrowHelper.ThrowInvalidOperationException_InvalidOperation_EnumNotStarted();
-                }
-                else
-                {
-                    // TODO:
-                    // ThrowHelper.ThrowInvalidOperationException_InvalidOperation_EnumEnded();
-                }
-            }
-
-            return array[index];
-        }
-    }
-
-    public void Reset()
-    {
-        _index = -1;
-    }
-
-    public void Dispose()
-    {
-        Reset();
-        _array = default;
-    }
 }
 
 internal sealed class ArrayEnumerator<T> : IEnumerator<T>, ICloneable

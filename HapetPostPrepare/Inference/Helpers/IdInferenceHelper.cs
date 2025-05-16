@@ -308,6 +308,13 @@ namespace HapetPostPrepare
                 idExpr.Name = name;
             }
             idExpr.OutType = typed.Decl.Type.OutType;
+
+            // special handle for array type
+            if (typed.Decl.Name is AstIdGenericExpr genId && genId.Name == "System.Array")
+            {
+                idExpr.OutType = ArrayType.GetArrayType(genId.GenericRealTypes[0].OutType, typed.Decl as AstStructDecl);
+            }
+
             TryAssignConstValueToExpr(idExpr, typed.Decl, inInfo, ref outInfo2);
             TrySaveClassAndStructUsage(typed.Decl);
             idExpr.FindSymbol = typed;

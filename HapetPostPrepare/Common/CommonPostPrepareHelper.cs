@@ -20,10 +20,6 @@ namespace HapetPostPrepare
                 decl.Type.OutType = StringType.GetInstance(decl as AstStructDecl);
                 _compiler.GlobalScope.DefineDeclSymbol(typeName.GetCopy("string"), decl);
             }
-            else if (typeName.Name == "System.Array")
-            {
-                decl.Type.OutType = new StructType(decl as AstStructDecl);
-            }
         }
 
         /// <summary>

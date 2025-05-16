@@ -35,7 +35,7 @@ public interface ICollection : IEnumerable, ISynchronizable
     // CopyTo copies a collection into an Array, starting at a particular
     // index into the array.
     //
-    void CopyTo(Array array, int index);
+    void CopyTo(Array<object> array, int index);
     bool Remove(object item);
     int RemoveAll(Predicate<object> match);
 }
