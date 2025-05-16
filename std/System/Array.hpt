@@ -125,8 +125,6 @@ public struct Array : IList
 
     public bool IsFixedSize { get { return true; } }
 
-    // static shite
-
     private static class EmptyArray<T>
     {
         // this is the implementation of Array.Empty<T>()
@@ -137,38 +135,128 @@ public struct Array : IList
     {
         return EmptyArray<T>.Value;
     }
+}
 
-    // Copies length elements from sourceArray, starting at sourceIndex, to
-    // destinationArray, starting at destinationIndex.
-    public static void Copy(Array sourceArray, int sourceIndex, Array destinationArray, int destinationIndex, int length)
+public struct Array<T> : IList<T>
+{
+    public int Length { get; internal set; }
+    internal T* Buffer { get; set; }
+
+    public int Count { get { return Length; } }
+
+    public T this[int index] 
     {
-        if (sourceArray != null && destinationArray != null)
+        get 
         {
-            MethodTable* pMT = RuntimeHelpers.GetMethodTable(sourceArray);
-            if (MethodTable.AreSameType(pMT, RuntimeHelpers.GetMethodTable(destinationArray)) &&
-                !pMT->IsMultiDimensionalArray &&
-                length >= 0 && sourceIndex >= 0 && destinationIndex >= 0 &&
-                (uint)(sourceIndex + length) <= sourceArray.NativeLength &&
-                (uint)(destinationIndex + length) <= destinationArray.NativeLength)
-            {
-                nuint elementSize = (nuint)pMT->ComponentSize;
-                nuint byteCount = (uint)length * elementSize;
-                ref byte src = ref Unsafe.AddByteOffset(ref Unsafe.As<RawArrayData>(sourceArray).Data, (uint)sourceIndex * elementSize);
-                ref byte dst = ref Unsafe.AddByteOffset(ref Unsafe.As<RawArrayData>(destinationArray).Data, (uint)destinationIndex * elementSize);
+            return Buffer[index];
+        }
+        set
+        {
+            Buffer[index] = value;
+        }
+    }
 
-                if (pMT->ContainsGCPointers)
-                    Buffer.BulkMoveWithWriteBarrier(ref dst, ref src, byteCount);
-                else
-                    SpanHelpers.Memmove(ref dst, ref src, byteCount);
-
-                // GC.KeepAlive(sourceArray) not required. pMT kept alive via sourceArray
-                return;
-            }
+    public IList<T> GetRange(int index, int count)
+    {
+        if (index < 0)
+        {
+            // TODO: 
+            // ThrowHelper.ThrowIndexArgumentOutOfRange_NeedNonNegNumException();
         }
 
-        // Less common
-        CopyImpl(sourceArray!, sourceIndex, destinationArray!, destinationIndex, length, reliable: false);
+        if (count < 0)
+        {
+            // TODO: 
+            // ThrowHelper.ThrowArgumentOutOfRangeException(ExceptionArgument.count, ExceptionResource.ArgumentOutOfRange_NeedNonNegNum);
+        }
+
+        T[] newArr = new T[count];
+        Array.Copy(this, index, newArr, 0, count);
+        return newArr;
     }
+
+    public bool Contains(T item)
+    {
+        return Length != 0 && IndexOf(item) >= 0;
+    }
+
+    public void CopyTo(T[] array, int index)
+    {
+        Array.Copy(this, index, array, 0, Length);
+    }
+
+    public IEnumerator<T> GetEnumerator()
+    {
+        return Length == 0 ? EmptyEnumerator<T>.Instance : new ArrayEnumerator<T>(this);
+    }
+
+    public int IndexOf(T item)
+    {
+        return Array.IndexOf(this, item, 0, Length);
+    }
+
+    public int LastIndexOf(T item)
+    {
+        return Array.LastIndexOf(this, item, 0, Length);
+    }
+
+    public bool IsReadOnly { get { return false; } }
+
+    public void IList<T>.Add(T value)
+    {
+        // TODO:
+        // ThrowHelper.ThrowNotSupportedException(ExceptionResource.NotSupported_ReadOnlyCollection);
+    }
+
+    public void IList<T>.AddRange(IEnumerable<T> collection)
+    {
+        // TODO:
+        // ThrowHelper.ThrowNotSupportedException(ExceptionResource.NotSupported_ReadOnlyCollection);
+    }
+
+    public void IList<T>.Clear()
+    {
+        // TODO:
+        // ThrowHelper.ThrowNotSupportedException(ExceptionResource.NotSupported_ReadOnlyCollection);
+    }
+
+    public void IList<T>.Insert(int index, T value)
+    {
+        // TODO:
+        // ThrowHelper.ThrowNotSupportedException(ExceptionResource.NotSupported_ReadOnlyCollection);
+    }
+
+    public void IList<T>.InsertRange(int index, IEnumerable<T> collection)
+    {
+        // TODO:
+        // ThrowHelper.ThrowNotSupportedException(ExceptionResource.NotSupported_ReadOnlyCollection);
+    }
+
+    public bool IList<T>.Remove(T value)
+    {
+        // TODO:
+        // ThrowHelper.ThrowNotSupportedException(ExceptionResource.NotSupported_ReadOnlyCollection);
+        return false;
+    }
+
+    public void IList<T>.RemoveAt(int index)
+    {
+        // TODO:
+        // ThrowHelper.ThrowNotSupportedException(ExceptionResource.NotSupported_ReadOnlyCollection);
+    }
+
+    public int IList<T>.RemoveAll(Predicate<T> match)
+    {
+        // TODO:
+        // ThrowHelper.ThrowNotSupportedException(ExceptionResource.NotSupported_ReadOnlyCollection);
+        return 0;
+    }
+
+    public bool IsSynchronized { get { return false; } }
+
+    public object SyncRoot { get { return this; } }
+
+    public bool IsFixedSize { get { return true; } }
 }
 
 internal sealed class ArrayEnumerator : IEnumerator, ICloneable
@@ -208,6 +296,82 @@ internal sealed class ArrayEnumerator : IEnumerator, ICloneable
         {
             int index = _index;
             Array array = _array;
+
+            if ((int)index >= array.Length)
+            {
+                if (index < 0)
+                {
+                    // TODO:
+                    // ThrowHelper.ThrowInvalidOperationException_InvalidOperation_EnumNotStarted();
+                }
+                else
+                {
+                    // TODO:
+                    // ThrowHelper.ThrowInvalidOperationException_InvalidOperation_EnumEnded();
+                }
+            }
+
+            return array[index];
+        }
+    }
+
+    public void Reset()
+    {
+        _index = -1;
+    }
+
+    public void Dispose()
+    {
+        Reset();
+        _array = default;
+    }
+}
+
+internal sealed class ArrayEnumerator<T> : IEnumerator<T>, ICloneable
+{
+    private Array<T> _array;
+    private int _index;
+
+    internal ArrayEnumerator(Array<T> array)
+    {
+        _array = array;
+        _index = -1;
+    }
+
+    public object Clone()
+    {
+        // TODO:
+        // return MemberwiseClone();
+        return null;
+    }
+
+    public bool MoveNext()
+    {
+        int index = _index + 1;
+        int length = _array.Length;
+        if ((int)index >= length)
+        {
+            _index = (int)length;
+            return false;
+        }
+        _index = index;
+        return true;
+    }
+
+    public object IEnumerator.Current
+    {
+        get 
+        {
+            return Current;
+        }
+    }
+
+    public T Current
+    {
+        get
+        {
+            int index = _index;
+            Array<T> array = _array;
 
             if ((int)index >= array.Length)
             {
