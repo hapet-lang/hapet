@@ -205,6 +205,11 @@ namespace HapetFrontend.Scoping
             DefineBinaryOperator(new BuiltInCommonBinaryOperator("is", BoolType.Instance, PointerType.VoidLiteralType, ClassType.LiteralType));
             DefineBinaryOperator(new BuiltInCommonBinaryOperator("is", BoolType.Instance, PointerType.VoidLiteralType, StructType.LiteralType));
             DefineBinaryOperator(new BuiltInCommonBinaryOperator("is", BoolType.Instance, PointerType.VoidLiteralType, GenericType.LiteralType));
+
+            // strings and arrays
+            // WARN: structs are defined here - array/string types checks are in VarInferenceHelper
+            DefineBinaryOperator(new BuiltInBinaryOperator("==", BoolType.Instance, StructType.LiteralType, PointerType.VoidLiteralType));
+            DefineBinaryOperator(new BuiltInBinaryOperator("!=", BoolType.Instance, StructType.LiteralType, PointerType.VoidLiteralType));
         }
     }
 }
