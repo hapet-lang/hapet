@@ -83,6 +83,12 @@ namespace HapetPostPrepare
                         casts.Add(argExpr);
                         continue;
                     }
+                    else if (ArrayType.IsCouldBeCastedIncludingArray(argExpr.OutType, parType.OutType))
+                    {
+                        score += 0;
+                        casts.Add(argExpr);
+                        continue;
+                    }
                     // if putting 'null' as an arg
                     else if (argExpr is AstNullExpr && parType.OutType is PointerType)
                     {
