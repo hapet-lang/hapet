@@ -93,7 +93,10 @@ namespace HapetFrontend.Ast.Declarations
         #region Separating props into field and funcs
         public AstVarDecl GetField(AstDeclaration containingParent, bool forStruct)
         {
-            var field = new AstVarDecl(Type, Name.GetCopy($"field_{Name.Name}"), Initializer, Documentation, Location)
+            var field = new AstVarDecl(
+                Type.GetDeepCopy() as AstExpression, 
+                Name.GetCopy($"field_{Name.Name}"), 
+                Initializer?.GetDeepCopy() as AstExpression, Documentation, Location)
             {
                 ContainingParent = containingParent,
                 Parent = Parent,
@@ -121,7 +124,7 @@ namespace HapetFrontend.Ast.Declarations
         public AstFuncDecl GetSetFunction(AstDeclaration containingParent, bool addFirstParam = false)
         {
             // add indexer param if it is an indexer
-            var prs = new List<AstParamDecl>() { new AstParamDecl(Type, new AstIdExpr("value")) };
+            var prs = new List<AstParamDecl>() { new AstParamDecl(Type.GetDeepCopy() as AstExpression, new AstIdExpr("value")) };
             if (this is AstIndexerDecl indDecl)
                 prs.Insert(0, indDecl.IndexerParameter.GetCopy());
 
@@ -158,7 +161,7 @@ namespace HapetFrontend.Ast.Declarations
 
             var func = GetPropaFunc(addFirstParam, true, containingParent);
             func.Parameters.AddRange(prs);
-            func.Returns = Type;
+            func.Returns = Type.GetDeepCopy() as AstExpression;
 
             if (GetBlock == null && !SpecialKeys.Contains(TokenType.KwAbstract))
             {
