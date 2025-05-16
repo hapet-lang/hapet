@@ -408,7 +408,11 @@ namespace HapetPostPrepare
             var iniBlock = GetFieldsToInitialize(decl, true);
 
             // we need to add a static var to check that the stor was called
-            string theVarName = $"__is_{_currentSourceFile.Namespace.Replace('.', '_')}_{decl.Name.Name}_stor_called";
+            int genericAmount = 0;
+            if (decl.Name is AstIdGenericExpr genId)
+                genericAmount = genId.GenericRealTypes.Count;
+
+            string theVarName = $"__is_{_currentSourceFile.Namespace.Replace('.', '_')}_{decl.Name.Name}_stor_called{genericAmount}";
             var theVar = new AstVarDecl(new AstNestedExpr(new AstIdExpr("bool", comLoc), null, comLoc), new AstIdExpr(theVarName, comLoc), null, "", comLoc);
             theVar.SpecialKeys.Add(Lexer.CreateToken(TokenType.KwStatic, decl.Location.Beginning));
             theVar.SpecialKeys.Insert(0, Lexer.CreateToken(TokenType.KwUnreflected, decl.Location.Beginning));
