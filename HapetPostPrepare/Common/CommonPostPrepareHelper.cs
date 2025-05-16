@@ -3,6 +3,8 @@ using HapetFrontend.Ast;
 using HapetFrontend.Types;
 using HapetFrontend.Scoping;
 using HapetFrontend.Ast.Expressions;
+using HapetPostPrepare.Entities;
+using System.Collections.Generic;
 
 namespace HapetPostPrepare
 {
@@ -41,5 +43,22 @@ namespace HapetPostPrepare
 
             return false;
         }
+
+        #region Array handling cringe
+        public ArrayType GetArrayType(HapetType targetType, Scope scope)
+        {
+            var inInfo = InInfo.Default;
+            var outInfo = OutInfo.Default;
+
+            List<AstExpression> genTypes;
+            if (targetType == GenericType.LiteralType)
+                genTypes = new List<AstExpression>() { new AstNestedExpr(new AstIdExpr("T") { Scope = scope }, null) { Scope = scope } };
+            else
+                genTypes = new List<AstExpression>() { new AstNestedExpr(new AstIdExpr(HapetType.AsString(targetType)) { Scope = scope }, null) { Scope = scope } };
+            var idExpr = new AstIdGenericExpr("System.Array", genTypes) { Scope = scope };
+            PostPrepareIdentifierInference(idExpr, inInfo, ref outInfo);
+            return idExpr.OutType as ArrayType;
+        }
+        #endregion
     }
 }

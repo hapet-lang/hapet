@@ -805,8 +805,8 @@ namespace HapetBackend.Llvm
                 }
                 else if (expr.LeftPart.OutType is ArrayType arrayT)
                 {
-                    leftPartDecl = AstArrayExpr.GetArrayStruct(expr.Scope);
-                    leftPartDeclarations = AstArrayExpr.GetArrayStruct(expr.Scope).Declarations;
+                    leftPartDecl = arrayT.Declaration;
+                    leftPartDeclarations = arrayT.Declaration.Declarations;
                     leftPartType = arrayT;
                 }
                 else if (expr.LeftPart.OutType is StringType stringT)

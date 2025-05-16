@@ -415,29 +415,9 @@ namespace HapetFrontend.Types
             return new AstArrayExpr(TargetType.GetAst() as AstExpression);
         }
 
-        private ArrayType(HapetType target, AstStructDecl arrStructDecl) : base(arrStructDecl)
+        public ArrayType(HapetType target, AstStructDecl arrStructDecl) : base(arrStructDecl)
         {
             TargetType = target;
-        }
-
-        public static ArrayType GetArrayType(HapetType targetType, Scope scope)
-        {
-            return GetArrayType(targetType, AstArrayExpr.GetArrayStruct(scope));
-        }
-
-        public static ArrayType GetArrayType(HapetType targetType, AstStructDecl arrStructDecl)
-        {
-            if (targetType == null)
-                return null;
-
-            var existing = CurrentTypeContext.ArrayTypeInstances.FirstOrDefault(t => t.Value.TargetType == targetType).Value;
-            if (existing != null)
-                return existing;
-
-            var type = new ArrayType(targetType, arrStructDecl);
-
-            CurrentTypeContext.ArrayTypeInstances[targetType] = type;
-            return type;
         }
 
         public override string ToString()

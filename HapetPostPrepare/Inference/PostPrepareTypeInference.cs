@@ -803,8 +803,8 @@ namespace HapetPostPrepare
                     leftSideDecl = enumT.Declaration;
                 else if (nestExpr.LeftPart.OutType is StringType)
                     leftSideDecl = AstStringExpr.GetStringStruct(nestExpr.Scope);
-                else if (nestExpr.LeftPart.OutType is ArrayType)
-                    leftSideDecl = AstArrayExpr.GetArrayStruct(nestExpr.Scope);
+                else if (nestExpr.LeftPart.OutType is ArrayType arrT)
+                    leftSideDecl = arrT.Declaration;
                 else if (nestExpr.LeftPart.OutType is DelegateType)
                     leftSideDecl = AstDelegateDecl.GetDelegateClass(nestExpr.Scope);
 
@@ -945,7 +945,7 @@ namespace HapetPostPrepare
         private void PostPrepareArrayExprInference(AstArrayExpr arrayExpr, InInfo inInfo, ref OutInfo outInfo)
         {
             PostPrepareExprInference(arrayExpr.SubExpression, inInfo, ref outInfo);
-            arrayExpr.OutType = ArrayType.GetArrayType(arrayExpr.SubExpression.OutType, arrayExpr.Scope);
+            arrayExpr.OutType = GetArrayType(arrayExpr.SubExpression.OutType, arrayExpr.Scope);
         }
 
         private void PostPrepareArrayCreateExprInference(AstArrayCreateExpr arrayExpr, InInfo inInfo, ref OutInfo outInfo)
@@ -964,7 +964,7 @@ namespace HapetPostPrepare
             // preparing for ndim arrays
             while (sizeAmount > 1)
             {
-                expectingElementType = ArrayType.GetArrayType(expectingElementType, arrayExpr.Scope);
+                expectingElementType = GetArrayType(expectingElementType, arrayExpr.Scope);
                 sizeAmount--;
             }
 
