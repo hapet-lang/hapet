@@ -300,7 +300,8 @@ namespace HapetPostPrepare
                 case AstNestedExpr nestExpr:
                     ReplaceAllGenericTypesInNestedExpr(nestExpr);
                     break;
-                case AstDefaultExpr _:
+                case AstDefaultExpr defaultExpr:
+                    ReplaceAllGenericTypesInDefaultExpr(defaultExpr);
                     break;
                 case AstArrayExpr arrayExpr:
                     ReplaceAllGenericTypesInArrayExpr(arrayExpr);
@@ -498,6 +499,14 @@ namespace HapetPostPrepare
                 else
                     ReplaceAllGenericTypesInExpr(nestExpr.LeftPart);
             }
+        }
+
+        private void ReplaceAllGenericTypesInDefaultExpr(AstDefaultExpr defaultExpr)
+        {
+            if (IsGenericEntry(defaultExpr.TypeForDefault, out var val))
+                defaultExpr.TypeForDefault = val;
+            else
+                ReplaceAllGenericTypesInExpr(defaultExpr.TypeForDefault);
         }
 
         private void ReplaceAllGenericTypesInArrayExpr(AstArrayExpr arrayExpr)
