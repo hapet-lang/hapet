@@ -110,6 +110,7 @@ namespace HapetFrontend.Parsing
 
                 else if (curr == '\n')
                 {
+                    location.Line++;
                     location.LineStartIndex = location.Index + 1;
                 }
             }
