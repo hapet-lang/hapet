@@ -95,7 +95,11 @@ namespace HapetPostPrepare
             if (newName == null)
                 return;
 
+            // we need to save the call-funcname location for properly erroring
+            var savedCallLocation = callExpr.FuncName.Location;
             callExpr.FuncName = newName.GetCopy();
+            callExpr.FuncName.Location = savedCallLocation;
+
             inInfo.FromCallExpr = true;
             PostPrepareIdentifierInference(callExpr.FuncName, inInfo, ref outInfo);
             inInfo.FromCallExpr = false;

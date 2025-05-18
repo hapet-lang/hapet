@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+/*
+*/
 
 using System;
 using System.Collections;
@@ -116,7 +118,7 @@ public class List<T> : IList<T>
                     T[] newItems = new T[value];
                     if (_size > 0)
                     {
-                        Array.Copy(_items, newItems, _size);
+                        Array.Copy<T, T>(_items, newItems, _size);
                     }
                     _items = newItems;
                 }
@@ -370,13 +372,13 @@ public class List<T> : IList<T>
         }
 
         // Delegate rest of error checking to Array.Copy.
-        Array.Copy(_items, index, array, arrayIndex, count);
+        Array.Copy<T, T>(_items, index, array, arrayIndex, count);
     }
 
     public void CopyTo(T[] array, int arrayIndex)
     {
         // Delegate rest of error checking to Array.Copy.
-        Array.Copy(_items, 0, array, arrayIndex, _size);
+        Array.Copy<T, T>(_items, 0, array, arrayIndex, _size);
     }
 
     /// <summary>
@@ -431,12 +433,12 @@ public class List<T> : IList<T>
         T[] newItems = new T[newCapacity];
         if (indexToInsert != 0)
         {
-            Array.Copy(_items, newItems, length: indexToInsert);
+            Array.Copy<T, T>(_items, 0, newItems, 0, indexToInsert);
         }
 
         if (_size != indexToInsert)
         {
-            Array.Copy(_items, indexToInsert, newItems, indexToInsert + insertionCount, _size - indexToInsert);
+            Array.Copy<T, T>(_items, indexToInsert, newItems, indexToInsert + insertionCount, _size - indexToInsert);
         }
 
         _items = newItems;
@@ -505,7 +507,7 @@ public class List<T> : IList<T>
         }
 
         List<T> list = new List<T>(count);
-        Array.Copy(_items, index, list._items, 0, count);
+        Array.Copy<T, T>(_items, index, list._items, 0, count);
         list._size = count;
         return list;
     }
@@ -586,7 +588,7 @@ public class List<T> : IList<T>
         }
         else if (index < _size)
         {
-            Array.Copy(_items, index, _items, index + 1, _size - index);
+            Array.Copy<T, T>(_items, index, _items, index + 1, _size - index);
         }
         _items[index] = item;
         _size++;
@@ -623,16 +625,16 @@ public class List<T> : IList<T>
                 }
                 else if (index < _size)
                 {
-                    Array.Copy(_items, index, _items, index + count, _size - index);
+                    Array.Copy<T, T>(_items, index, _items, index + count, _size - index);
                 }
 
                 // If we're inserting a List into itself, we want to be able to deal with that.
                 if (this == c)
                 {
                     // Copy first part of _items to insert location
-                    Array.Copy(_items, 0, _items, index, index);
+                    Array.Copy<T, T>(_items, 0, _items, index, index);
                     // Copy last part of _items back to inserted location
-                    Array.Copy(_items, index + count, _items, index * 2, _size - index);
+                    Array.Copy<T, T>(_items, index + count, _items, index * 2, _size - index);
                 }
                 else
                 {
@@ -802,7 +804,7 @@ public class List<T> : IList<T>
         _size--;
         if (index < _size)
         {
-            Array.Copy(_items, index + 1, _items, index, _size - index);
+            Array.Copy<T, T>(_items, index + 1, _items, index, _size - index);
         }
         if (RuntimeHelpers.IsReferenceOrContainsReferences<T>())
         {
@@ -837,7 +839,7 @@ public class List<T> : IList<T>
             _size -= count;
             if (index < _size)
             {
-                Array.Copy(_items, index + count, _items, index, _size - index);
+                Array.Copy<T, T>(_items, index + count, _items, index, _size - index);
             }
 
             _version++;
@@ -960,7 +962,7 @@ public class List<T> : IList<T>
         }
 
         T[] array = new T[_size];
-        Array.Copy(_items, array, _size);
+        Array.Copy<T, T>(_items, 0, array, 0, _size);
         return array;
     }
 

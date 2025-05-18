@@ -304,7 +304,7 @@ namespace HapetPostPrepare
                 }
 
                 // we need to manually check for overriding funcs
-                if (currDecl.Decl.SpecialKeys.Contains(TokenType.KwOverride))
+                if (currDecl.Decl.SpecialKeys.Contains(TokenType.KwOverride) && callFromObject)
                 {
                     // search for overrided func
                     candidates.Select(x => x.Decl as AstFuncDecl).ToList().GetSameByNameAndTypes(currDecl.Decl as AstFuncDecl, out int index, callFromObject);
@@ -479,10 +479,12 @@ namespace HapetPostPrepare
             {
                 if (d != null && d.Decl is AstFuncDecl)
                 {
-                    // 1 - name similarity checks
+                    // 1 - name similarity checks - DO NOT ALLOW GENERICS HERE 
+                    // generic checks are below
                     var onlyFuncName = classWithFuncName.Name.GetPureFuncName();
                     var firstKeyPart = k.Name.GetPureFuncName();
-                    if (k.Name.StartsWith(classWithFuncName.Name) || firstKeyPart == onlyFuncName)
+                    if ((k.Name.StartsWith(classWithFuncName.Name) || firstKeyPart == onlyFuncName) 
+                        && (d.Decl.Name is not AstIdGenericExpr && classWithFuncName is not AstIdGenericExpr))
                     {
                         candidates.Add(d);
                         continue;
