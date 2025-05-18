@@ -91,6 +91,10 @@ namespace HapetPostPrepare
             AstIdExpr newName = null;
             SearchForFunctionByCall(callExpr, funcName, inInfo, ref outInfo, ref accessingFromAnObject, ref newName);
 
+            // there was a error somewhere before
+            if (newName == null)
+                return;
+
             callExpr.FuncName = newName.GetCopy();
             inInfo.FromCallExpr = true;
             PostPrepareIdentifierInference(callExpr.FuncName, inInfo, ref outInfo);

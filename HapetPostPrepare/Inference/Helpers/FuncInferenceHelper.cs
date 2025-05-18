@@ -7,6 +7,7 @@ using HapetFrontend.Extensions;
 using HapetFrontend.Helpers;
 using HapetFrontend.Errors;
 using HapetFrontend.Ast.Expressions;
+using HapetFrontend.Parsing;
 
 namespace HapetPostPrepare
 {
@@ -262,7 +263,7 @@ namespace HapetPostPrepare
         {
             List<DeclSymbol> candidates = new List<DeclSymbol>();
 
-            candidates.AddRange(Candidates_Step1_InheritedAndCurrent(name, declToSearch));                  // step 1
+            candidates.AddRange(Candidates_Step1_InheritedAndCurrent(name, declToSearch, callFromObject));                  // step 1
             candidates.AddRange(Candidates_Step2_CurrentScopeAndParents(name, callExpr));                   // step 2
             var argsAmount = args == null ? -1 : args.Count;
             candidates = Candidates_Step3_MinAmountParams(candidates, argsAmount).ToList();                 // step 3
@@ -272,14 +273,11 @@ namespace HapetPostPrepare
             return candidates.Distinct().ToList();
         }
 
-        private static List<DeclSymbol> Candidates_Step1_InheritedAndCurrent(AstIdExpr name, AstDeclaration declToSearch)
+        private static List<DeclSymbol> Candidates_Step1_InheritedAndCurrent(AstIdExpr name, AstDeclaration declToSearch, bool callFromObject)
         {
             List<DeclSymbol> candidates = new List<DeclSymbol>();
 
             // go all over inherited types - skip interfaces
-
-            // add current decl subscope' decls
-            candidates.AddRange(GetCandidatesInScope(name, declToSearch.SubScope));
 
             // get only inherited parents - that has implementations
             foreach (var inh in declToSearch.GetInheritedTypes())
@@ -289,8 +287,35 @@ namespace HapetPostPrepare
                 // and so we need to check all inherited interfaces
                 var inhDecl = (inh.OutType as ClassType).Declaration;
                 // get parent class decls
-                candidates.AddRange(Candidates_Step1_InheritedAndCurrent(name, inhDecl));
+                candidates.AddRange(Candidates_Step1_InheritedAndCurrent(name, inhDecl, callFromObject));
             }
+
+            // add current decl subscope' decls
+            var currentDecls = GetCandidatesInScope(name, declToSearch.SubScope);
+            foreach (var currDecl in currentDecls)
+            {
+                // we need to manually check shadowing funcs
+                if (currDecl.Decl.SpecialKeys.Contains(TokenType.KwNew))
+                {
+                    // search for shadowed func
+                    candidates.Select(x => x.Decl as AstFuncDecl).ToList().GetSameByNameAndTypes(currDecl.Decl as AstFuncDecl, out int index, callFromObject);
+                    candidates[index] = currDecl;
+                    continue;
+                }
+
+                // we need to manually check for overriding funcs
+                if (currDecl.Decl.SpecialKeys.Contains(TokenType.KwOverride))
+                {
+                    // search for overrided func
+                    candidates.Select(x => x.Decl as AstFuncDecl).ToList().GetSameByNameAndTypes(currDecl.Decl as AstFuncDecl, out int index, callFromObject);
+                    candidates[index] = currDecl;
+                    continue;
+                }
+
+                // else - we just add it
+                candidates.Add(currDecl);
+            }
+
             return candidates;
         }
 

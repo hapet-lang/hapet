@@ -281,7 +281,8 @@ public class List<T> : IList<T>
             ThrowHelper.ThrowArgumentException(ExceptionResource.Argument_InvalidOffLen);
             */
 
-        return Array.BinarySearch(_items, index, count, item, comparer);
+        // return Array.BinarySearch(_items, index, count, item, comparer);
+        return 0;
     }
 
     public int BinarySearch(T item)
@@ -297,6 +298,7 @@ public class List<T> : IList<T>
     // Clears the contents of List.
     public inline void Clear()
     {
+        /*
         _version++;
         if (RuntimeHelpers.IsReferenceOrContainsReferences<T>())
         {
@@ -311,6 +313,7 @@ public class List<T> : IList<T>
         {
             _size = 0;
         }
+        */
     }
 
     // Contains returns true if the specified element is in the List.
