@@ -1074,8 +1074,31 @@ namespace HapetPostPrepare
 
             PostPrepareExprInference(expr.TrueExpr, inInfo, ref outInfo);
             PostPrepareExprInference(expr.FalseExpr, inInfo, ref outInfo);
-            // try to cast to the tru type
-            expr.FalseExpr = PostPrepareExpressionWithType(expr.TrueExpr, expr.FalseExpr);
+            // try to cast to the false type
+            var castResult1 = new CastResult();
+            PostPrepareExpressionWithType(expr.TrueExpr, expr.FalseExpr, castResult1);
+            // setting the basest type
+            // imagine having 'cond ? IEnumerable : List'
+            // then IEnumerable should be returned as the most basest type
+            if (castResult1.CouldBeCasted)
+            {
+                expr.OutType = expr.TrueExpr.OutType; 
+            }
+            else
+            {
+                // try to cast to the true type
+                var castResult2 = new CastResult();
+                PostPrepareExpressionWithType(expr.FalseExpr, expr.TrueExpr, castResult2);
+                if (castResult2.CouldBeCasted)
+                {
+                    expr.OutType = expr.FalseExpr.OutType;
+                }
+                else
+                {
+                    // TODO: better check - search for common types LUB: 'cond ? ReadOnlyListType : ListType'
+                    // TODO: error that the types are not connected to each other
+                }
+            }
 
             // evaluate at comptime if possible
             if (expr.Condition.OutValue is bool &&
@@ -1084,8 +1107,6 @@ namespace HapetPostPrepare
             {
                 expr.OutValue = ((bool)expr.Condition.OutValue) ? expr.TrueExpr.OutValue : expr.FalseExpr.OutValue;
             }
-
-            expr.OutType = expr.TrueExpr.OutType;
         }
 
         private void PostPrepareCheckedExprInference(AstCheckedExpr expr, InInfo inInfo, ref OutInfo outInfo)
