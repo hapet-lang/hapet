@@ -125,7 +125,8 @@ namespace HapetPostPrepare
 
                 callExpr.StaticCall = true; // doesn;t mean anything when calling delegates
             }
-            else
+            /// if it is null - it would be errored in <see cref="SearchForFunctionByCall"/>
+            else if (callExpr.FuncName.OutType != null)
             {
                 // error here
                 _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, callExpr, [], ErrorCode.Get(CTEN.CallNotFuncOrDelegate));

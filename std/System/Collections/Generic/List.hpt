@@ -472,14 +472,14 @@ public class List<T> : IList<T>
     public IEnumerator<T> GetEnumerator() 
     {
         if (Count == 0)
-            return SZGenericArrayEnumerator<T>.Empty;
+            return (IEnumerator<T>)EmptyEnumerator<T>.Instance;
         return GetEnumeratorInternal();
     }
 
     public IEnumerator IEnumerable.GetEnumerator() 
     {
         if (Count == 0)
-            return SZGenericArrayEnumerator<T>.Empty;
+            return (IEnumerator)EmptyEnumerator<T>.Instance;
         return GetEnumeratorInternal();
     }
 
@@ -519,7 +519,7 @@ public class List<T> : IList<T>
     //
     public int IndexOf(T item)
     {
-        return Array.IndexOf(_items, item, 0, _size);
+        return Array.IndexOf<T>(_items, item, 0, _size);
     }
 
     // Returns the index of the first occurrence of a given value in a range of
@@ -538,7 +538,7 @@ public class List<T> : IList<T>
             // TODO: 
             // ThrowHelper.ThrowArgumentOutOfRange_IndexMustBeLessOrEqualException();
         }
-        return Array.IndexOf(_items, item, index, _size - index);
+        return Array.IndexOf<T>(_items, item, index, _size - index);
     }
 
     // Returns the index of the first occurrence of a given value in a range of
@@ -564,7 +564,7 @@ public class List<T> : IList<T>
             // ThrowHelper.ThrowCountArgumentOutOfRange_ArgumentOutOfRange_Count();
         }
 
-        return Array.IndexOf(_items, item, index, count);
+        return Array.IndexOf<T>(_items, item, index, count);
     }
 
     // Inserts an element into this list at a given index. The size of the list
@@ -667,10 +667,7 @@ public class List<T> : IList<T>
             // Special case for empty list
             return -1;
         }
-        else
-        {
-            return LastIndexOf(item, _size - 1, _size);
-        }
+        return LastIndexOf(item, _size - 1, _size);
     }
 
     // Returns the index of the last occurrence of a given value in a range of
@@ -732,7 +729,7 @@ public class List<T> : IList<T>
             // ThrowHelper.ThrowArgumentOutOfRangeException(ExceptionArgument.count, ExceptionResource.ArgumentOutOfRange_BiggerThanCollection);
         }
 
-        return Array.LastIndexOf(_items, item, index, count);
+        return Array.LastIndexOf<T>(_items, item, index, count);
     }
 
     // Removes the first occurrence of the given element, if found.
@@ -778,10 +775,12 @@ public class List<T> : IList<T>
             }
         }
 
+        /*
         if (RuntimeHelpers.IsReferenceOrContainsReferences<T>())
         {
             Array.Clear(_items, freeIndex, _size - freeIndex); // Clear the elements so that the gc can reclaim the references.
         }
+        */
 
         int result = _size - freeIndex;
         _size = freeIndex;
@@ -803,10 +802,12 @@ public class List<T> : IList<T>
         {
             Array.Copy<T, T>(_items, index + 1, _items, index, _size - index);
         }
+        /*
         if (RuntimeHelpers.IsReferenceOrContainsReferences<T>())
         {
             _items[_size] = default;
         }
+        */
         _version++;
     }
 
@@ -840,17 +841,19 @@ public class List<T> : IList<T>
             }
 
             _version++;
+            /*
             if (RuntimeHelpers.IsReferenceOrContainsReferences<T>())
             {
                 Array.Clear(_items, _size, count);
             }
+            */
         }
     }
 
     // Reverses the elements in this list.
     public void Reverse()
     {
-        return Reverse(0, Count);
+        Reverse(0, Count);
     }
 
     // Reverses the elements in a range of this list. Following a call to this
@@ -880,7 +883,7 @@ public class List<T> : IList<T>
 
         if (count > 1)
         {
-            Array.Reverse(_items, index, count);
+            Array.Reverse<T>(_items, index, count);
         }
         _version++;
     }
@@ -889,14 +892,14 @@ public class List<T> : IList<T>
     // Array.Sort.
     public void Sort()
     {
-        return Sort(0, Count, null);
+        Sort(0, Count, null);
     }
 
     // Sorts the elements in this list.  Uses Array.Sort with the
     // provided comparer.
     public void Sort(IComparer<T> comparer)
     {
-        return Sort(0, Count, comparer);
+        Sort(0, Count, comparer);
     }
 
     // Sorts the elements in a section of this list. The sort compares the
@@ -929,7 +932,7 @@ public class List<T> : IList<T>
 
         if (count > 1)
         {
-            Array.Sort(_items, index, count, comparer);
+            Array.Sort<T>(_items, index, count, comparer);
         }
         _version++;
     }
@@ -944,7 +947,7 @@ public class List<T> : IList<T>
 
         if (_size > 1)
         {
-            ArraySortHelper<T>.Sort(new Span<T>(_items, 0, _size), comparison);
+            Array.Sort<T>(_items, comparison);
         }
         _version++;
     }

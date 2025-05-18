@@ -28,28 +28,6 @@ namespace HapetPostPrepare
         }
 
         /// <summary>
-        /// The method is used to prepare correct assignment.
-        /// Like 'float a = 6;' should be allowed and 'int a = 6.0;' should not be allowed
-        /// Also class/interface shite should be checked here
-        /// </summary>
-        /// <param name="varDecl">The var decl</param>
-        private void PostPrepareVariableAssign(AstVarDecl varDecl)
-        {
-            var newExpr = PostPrepareExpressionWithType(varDecl.Type, varDecl.Initializer);
-            varDecl.Initializer = newExpr;
-        }
-
-        /// <summary>
-        /// The same as <see cref="PostPrepareVariableAssign"/> but for <see cref="AstAssignStmt"/>
-        /// </summary>
-        /// <param name="assignStmt">The var assignment</param>
-        private void PostPrepareVariableAssign(AstAssignStmt assignStmt)
-        {
-            var newExpr = PostPrepareExpressionWithType(assignStmt.Target, assignStmt.Value);
-            assignStmt.Value = newExpr;
-        }
-
-        /// <summary>
         /// The method tries to cast the <paramref name="expr"/> to <paramref name="neededType"/> type implicitly
         /// If it cannot the converted an error would appear
         /// </summary>
@@ -108,17 +86,6 @@ namespace HapetPostPrepare
                 return PostPrepareDelegateWithType(expr, delT);
             }
 
-
-            //AstExpression tpName;
-            //if (neededType is ArrayType arrT)
-            //{
-            //    var tpNameInside = new AstIdExpr(arrT.TargetType.ToString());
-            //    tpNameInside.OutType = arrT.TargetType;
-            //    tpNameInside.Scope = expr.Scope;
-            //    tpName = new AstArrayExpr(tpNameInside);
-            //    tpName.OutType = neededType;
-            //    tpName.Scope = expr.Scope;
-            //}
             var cst = new AstCastExpr(neededTypeExpr, expr, expr);
             cst.OutType = neededType;
             cst.Scope = expr.Scope;

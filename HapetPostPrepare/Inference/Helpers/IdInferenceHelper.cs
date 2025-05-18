@@ -48,7 +48,7 @@ namespace HapetPostPrepare
             if (Step4_IdentifierUsings(idExpr, inInfo, ref outInfo, declToSearch)) return;
             if (Step5_IdentifierFuncs(idExpr, inInfo, ref outInfo, declToSearch)) return;
 
-            if (!inInfo.MuteErrors)
+            if (!inInfo.MuteErrors && !inInfo.FromCallExpr)
                 _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, idExpr, [], ErrorCode.Get(CTEN.TypeCouldNotBeInfered));
         }
 

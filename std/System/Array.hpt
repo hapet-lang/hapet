@@ -5,6 +5,8 @@ using System.Collections.Generic;
 /// And this is another one
 public static class Array
 {
+    public static int MaxLength { get { return 0X7FFFFFC7; } }
+
     private static class EmptyArray<T>
     {
         // this is the implementation of Array.Empty<T>()
@@ -18,36 +20,34 @@ public static class Array
 
     // Copies length elements from sourceArray, starting at sourceIndex, to
     // destinationArray, starting at destinationIndex.
-    public static void Copy<TSource, TDest>(Array<TSource> sourceArray, int sourceIndex, Array<TDest> destinationArray, int destinationIndex, int length)
+    public static void Copy<TSource, TDest>(TSource[] sourceArray, int sourceIndex, TDest[] destinationArray, int destinationIndex, int length)
     {
-        if (sourceArray != null && destinationArray != null)
-        {
-            /*
-            MethodTable* pMT = RuntimeHelpers.GetMethodTable(sourceArray);
-            if (MethodTable.AreSameType(pMT, RuntimeHelpers.GetMethodTable(destinationArray)) &&
-                !pMT->IsMultiDimensionalArray &&
-                length >= 0 && sourceIndex >= 0 && destinationIndex >= 0 &&
-                (uint)(sourceIndex + length) <= sourceArray.NativeLength &&
-                (uint)(destinationIndex + length) <= destinationArray.NativeLength)
-            {
-                nuint elementSize = (nuint)pMT->ComponentSize;
-                nuint byteCount = (uint)length * elementSize;
-                ref byte src = ref Unsafe.AddByteOffset(ref Unsafe.As<RawArrayData>(sourceArray).Data, (uint)sourceIndex * elementSize);
-                ref byte dst = ref Unsafe.AddByteOffset(ref Unsafe.As<RawArrayData>(destinationArray).Data, (uint)destinationIndex * elementSize);
 
-                if ((*pMT).ContainsGCPointers)
-                    Buffer.BulkMoveWithWriteBarrier(ref dst, ref src, byteCount);
-                else
-                    SpanHelpers.Memmove(ref dst, ref src, byteCount);
+    }
 
-                // GC.KeepAlive(sourceArray) not required. pMT kept alive via sourceArray
-                return;
-            }
-            */
-        }
+    public static int IndexOf<T>(T[] array, T value, int startIndex, int count)
+    {
+        return 0;
+    }
 
-        // Less common
-        // CopyImpl(sourceArray!, sourceIndex, destinationArray!, destinationIndex, length, reliable: false);
+    public static int LastIndexOf<T>(T[] array, T value, int startIndex, int count)
+    {
+        return 0;
+    }
+
+    public static void Reverse<T>(T[] array, int index, int length)
+    {
+        
+    }
+
+    public static void Sort<T>(T[] array, int index, int length, IComparer<T> comparer = null)
+    {
+        
+    }
+
+    public static void Sort<T>(T[] array, Comparison<T> comparison)
+    {
+        
     }
 }
 
