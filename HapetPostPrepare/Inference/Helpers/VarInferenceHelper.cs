@@ -177,6 +177,8 @@ namespace HapetPostPrepare
                             (isFirstSigned != null && isSecondSigned != null) &&
                             (isFirstSigned.Value == isSecondSigned.Value))
                         {
+                            if (castResult != null)
+                                castResult.CouldBeCasted = true;
                             outExpr = cst;
                             break;
                         }
@@ -188,6 +190,8 @@ namespace HapetPostPrepare
                             (isFirstSigned != null && isSecondSigned != null) &&
                             (isFirstSigned.Value && !isSecondSigned.Value))
                         {
+                            if (castResult != null)
+                                castResult.CouldBeCasted = true;
                             outExpr = cst;
                             break;
                         }
@@ -199,6 +203,8 @@ namespace HapetPostPrepare
                             neededType is FloatType &&
                             (exprType is IntType || exprType is CharType))
                         {
+                            if (castResult != null)
+                                castResult.CouldBeCasted = true;
                             outExpr = cst;
                             break;
                         }
