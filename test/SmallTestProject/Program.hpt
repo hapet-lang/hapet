@@ -3,23 +3,9 @@ using System.Text;
 using System;
 using System.Runtime;
 
-public delegate int Cringe<T>(T anime);
-
 public static class Program
 {
     public static int Main(string[] args)
     {
-        Cringe<int> a = CrFunc<int>;
-        return Caller(a);
-    }
-
-    public static int CrFunc<T>(T pivo)
-    {
-        return 13;
-    }
-
-    public static int Caller(Cringe<int> cringe)
-    {
-        return cringe(0);
     }
 }

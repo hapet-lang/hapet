@@ -85,7 +85,7 @@ public struct Array<T> : IList<T>
         }
 
         T[] newArr = new T[count];
-        Array.Copy(this, index, newArr, 0, count);
+        // Array.Copy(this, index, newArr, 0, count);
         return newArr;
     }
 
@@ -96,22 +96,24 @@ public struct Array<T> : IList<T>
 
     public void CopyTo(T[] array, int index)
     {
-        Array.Copy(this, index, array, 0, Length);
+        // Array.Copy(this, index, array, 0, Length);
     }
 
     public IEnumerator<T> GetEnumerator()
     {
-        return Length == 0 ? EmptyEnumerator<T>.Instance : new ArrayEnumerator<T>(this);
+        return Length == 0 ? (IEnumerator<T>)EmptyEnumerator<T>.Instance : (IEnumerator<T>)(new ArrayEnumerator<T>(this));
     }
 
     public int IndexOf(T item)
     {
-        return Array.IndexOf(this, item, 0, Length);
+       //  return Array.IndexOf(this, item, 0, Length);
+       return 0;
     }
 
     public int LastIndexOf(T item)
     {
-        return Array.LastIndexOf(this, item, 0, Length);
+        // return Array.LastIndexOf(this, item, 0, Length);
+        return 0;
     }
 
     public bool IsReadOnly { get { return false; } }
