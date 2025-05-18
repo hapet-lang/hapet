@@ -20,9 +20,19 @@ namespace HapetFrontend.Types
 
         public override string TypeName => "var";
 
-        public override AstExpression GetAst()
+        public override AstExpression GetAst(AstExpression iniExpr = null)
         {
-            return new AstNestedExpr(new AstIdExpr(ToString()), null);
+            return new AstNestedExpr(new AstIdExpr(ToString())
+            {
+                Scope = iniExpr?.Scope,
+                SourceFile = iniExpr?.SourceFile,
+                Location = iniExpr?.Location,
+            }, null)
+            {
+                Scope = iniExpr?.Scope,
+                SourceFile = iniExpr?.SourceFile,
+                Location = iniExpr?.Location,
+            };
         }
 
         private VarType()
@@ -48,19 +58,20 @@ namespace HapetFrontend.Types
 
         public override string TypeName => "generic";
 
-        private Guid Guid { get; set; } // just for debug
-
-        public override AstExpression GetAst()
+        public override AstExpression GetAst(AstExpression iniExpr = null)
         {
-            return new AstNestedExpr(Name, null);
+            return new AstNestedExpr(Name, null)
+            {
+                Scope = iniExpr?.Scope,
+                SourceFile = iniExpr?.SourceFile,
+                Location = iniExpr?.Location,
+            };
         }
 
         public GenericType(AstIdExpr name, List<AstNestedExpr> constrains)
         {
             Name = name;
             Constrains = constrains;
-
-            Guid = Guid.NewGuid();
         }
 
         public override string ToString() => Name.Name;

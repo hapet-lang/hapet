@@ -94,5 +94,21 @@ namespace HapetFrontend.Ast.Expressions
             LeftPart = null;
             OutType = astId.OutType;
         }
+
+        public T UnrollToRightPart<T>()
+        {
+            if (RightPart is T)
+            {
+                return (T)(object)RightPart;
+            }
+            else if (RightPart is AstNestedExpr nestNest)
+            {
+                return nestNest.UnrollToRightPart<T>();
+            }
+            else
+            {
+                return default;
+            }
+        }
     }
 }

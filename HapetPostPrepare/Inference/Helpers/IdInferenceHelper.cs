@@ -310,6 +310,7 @@ namespace HapetPostPrepare
             idExpr.OutType = typed.Decl.Type.OutType;
 
             HandleArrayType(typed.Decl, idExpr);
+            HandleStringType(typed.Decl, idExpr);
             TryAssignConstValueToExpr(idExpr, typed.Decl, inInfo, ref outInfo2);
             TrySaveClassAndStructUsage(typed.Decl);
             idExpr.FindSymbol = typed;
@@ -336,6 +337,19 @@ namespace HapetPostPrepare
 
                 HapetType.CurrentTypeContext.ArrayTypeInstances[targetType] = type;
                 idExpr.OutType = type;
+            }
+        }
+
+        private void HandleStringType(AstDeclaration decl, AstIdExpr idExpr)
+        {
+            // special handle for string type
+            if (decl.Name is AstIdExpr id && id.Name == "System.String" && decl is AstStructDecl strStructDecl)
+            {
+                if (HapetType.CurrentTypeContext.StringTypeInstance == null)
+                {
+                    HapetType.CurrentTypeContext.StringTypeInstance = new StringType(strStructDecl);
+                }
+                idExpr.OutType = HapetType.CurrentTypeContext.StringTypeInstance;
             }
         }
 
@@ -421,6 +435,23 @@ namespace HapetPostPrepare
             {
                 var g = realId.GenericRealTypes[i];
                 PostPrepareExprInference(g, inInfo, ref outInfo);
+
+                if (g.OutType is ClassType)
+                {
+                    // the type is actually a pointer to the class
+                    var astPtr = new AstPointerExpr(g, false, g.Location)
+                    {
+                        OutType = PointerType.GetPointerType(g.OutType),
+                        Scope = g.Scope,
+                        SourceFile = g.SourceFile,
+                    };
+                    realId.GenericRealTypes[i] = new AstNestedExpr(astPtr, null, g.Location) 
+                    { 
+                        OutType = astPtr.OutType,
+                        Scope = g.Scope,
+                        SourceFile = g.SourceFile,
+                    };
+                }
             }
 
             // if instantiating with genericTypes are not allowed - 

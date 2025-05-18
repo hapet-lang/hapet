@@ -383,7 +383,7 @@ namespace HapetPostPrepare
                     PostPrepareCheckedExprInference(checkedExpr, inInfo, ref outInfo);
                     break;
                 case AstStringExpr stringExpr:
-                    stringExpr.OutType = StringType.GetInstance(stringExpr.Scope);
+                    stringExpr.OutType = GetStringType(stringExpr);
                     break;
 
                 // statements
@@ -945,7 +945,7 @@ namespace HapetPostPrepare
         private void PostPrepareArrayExprInference(AstArrayExpr arrayExpr, InInfo inInfo, ref OutInfo outInfo)
         {
             PostPrepareExprInference(arrayExpr.SubExpression, inInfo, ref outInfo);
-            arrayExpr.OutType = GetArrayType(arrayExpr.SubExpression.OutType, arrayExpr.Scope);
+            arrayExpr.OutType = GetArrayType(arrayExpr.SubExpression.OutType, arrayExpr);
         }
 
         private void PostPrepareArrayCreateExprInference(AstArrayCreateExpr arrayExpr, InInfo inInfo, ref OutInfo outInfo)
@@ -964,7 +964,7 @@ namespace HapetPostPrepare
             // preparing for ndim arrays
             while (sizeAmount > 1)
             {
-                expectingElementType = GetArrayType(expectingElementType, arrayExpr.Scope);
+                expectingElementType = GetArrayType(expectingElementType, arrayExpr);
                 sizeAmount--;
             }
 

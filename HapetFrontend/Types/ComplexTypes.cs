@@ -21,9 +21,14 @@ namespace HapetFrontend.Types
 
         private Guid Guid { get; set; } // just for debug
 
-        public override AstExpression GetAst()
+        public override AstExpression GetAst(AstExpression iniExpr = null)
         {
-            return new AstNestedExpr(Declaration.Name.GetCopy(), null);
+            return new AstNestedExpr(Declaration.Name.GetCopy(), null)
+            {
+                Scope = iniExpr?.Scope,
+                SourceFile = iniExpr?.SourceFile,
+                Location = iniExpr?.Location,
+            };
         }
 
         public ClassType(AstClassDecl decl)
@@ -61,9 +66,19 @@ namespace HapetFrontend.Types
 
         public override string TypeName => "tuple";
 
-        public override AstExpression GetAst()
+        public override AstExpression GetAst(AstExpression iniExpr = null)
         {
-            return new AstNestedExpr(new AstIdExpr(ToString()), null);
+            return new AstNestedExpr(new AstIdExpr(ToString())
+            {
+                Scope = iniExpr?.Scope,
+                SourceFile = iniExpr?.SourceFile,
+                Location = iniExpr?.Location,
+            }, null)
+            {
+                Scope = iniExpr?.Scope,
+                SourceFile = iniExpr?.SourceFile,
+                Location = iniExpr?.Location,
+            };
         }
 
         private TupleType((HapetType type, string name)[] members) : base()
@@ -124,9 +139,14 @@ namespace HapetFrontend.Types
         /// </summary>
         public bool IsUserDefinedAlignment { get; set; } = false;
 
-        public override AstExpression GetAst()
+        public override AstExpression GetAst(AstExpression iniExpr = null)
         {
-            return new AstNestedExpr(Declaration.Name.GetCopy(), null);
+            return new AstNestedExpr(Declaration.Name.GetCopy(), null)
+            {
+                Scope = iniExpr?.Scope,
+                SourceFile = iniExpr?.SourceFile,
+                Location = iniExpr?.Location,
+            };
         }
 
         public StructType(AstStructDecl decl)
@@ -191,9 +211,14 @@ namespace HapetFrontend.Types
 
         public override string TypeName => "enum";
 
-        public override AstExpression GetAst()
+        public override AstExpression GetAst(AstExpression iniExpr = null)
         {
-            return new AstNestedExpr(Declaration.Name.GetCopy(), null);
+            return new AstNestedExpr(Declaration.Name.GetCopy(), null)
+            {
+                Scope = iniExpr?.Scope,
+                SourceFile = iniExpr?.SourceFile,
+                Location = iniExpr?.Location,
+            };
         }
 
         public EnumType(AstEnumDecl decl) : base()
@@ -224,9 +249,14 @@ namespace HapetFrontend.Types
 
         public override string TypeName => "func";
 
-        public override AstExpression GetAst()
+        public override AstExpression GetAst(AstExpression iniExpr = null)
         {
-            return new AstNestedExpr(Declaration.Name.GetCopy(), null);
+            return new AstNestedExpr(Declaration.Name.GetCopy(), null)
+            {
+                Scope = iniExpr?.Scope,
+                SourceFile = iniExpr?.SourceFile,
+                Location = iniExpr?.Location,
+            };
         }
 
         public FunctionType(AstFuncDecl decl)
@@ -308,9 +338,14 @@ namespace HapetFrontend.Types
 
         public AstDelegateDecl TargetDeclaration { get; set; }
 
-        public override AstExpression GetAst()
+        public override AstExpression GetAst(AstExpression iniExpr = null)
         {
-            return new AstNestedExpr(Declaration.Name.GetCopy(), null);
+            return new AstNestedExpr(Declaration.Name.GetCopy(), null)
+            {
+                Scope = iniExpr?.Scope,
+                SourceFile = iniExpr?.SourceFile,
+                Location = iniExpr?.Location,
+            };
         }
 
         private DelegateType(AstDelegateDecl targetDecl, AstClassDecl decl)

@@ -13,9 +13,19 @@ namespace HapetFrontend.Types
 
         public override string TypeName => ToString();
 
-        public override AstExpression GetAst()
+        public override AstExpression GetAst(AstExpression iniExpr = null)
         {
-            return new AstNestedExpr(new AstIdExpr(ToString()), null);
+            return new AstNestedExpr(new AstIdExpr(ToString())
+            {
+                Scope = iniExpr?.Scope,
+                SourceFile = iniExpr?.SourceFile,
+                Location = iniExpr?.Location,
+            }, null)
+            {
+                Scope = iniExpr?.Scope,
+                SourceFile = iniExpr?.SourceFile,
+                Location = iniExpr?.Location,
+            };
         }
 
         private VoidType() : base(0, 0) { }
@@ -28,9 +38,19 @@ namespace HapetFrontend.Types
 
         public override string TypeName => ToString();
 
-        public override AstExpression GetAst()
+        public override AstExpression GetAst(AstExpression iniExpr = null)
         {
-            return new AstNestedExpr(new AstIdExpr(ToString()), null);
+            return new AstNestedExpr(new AstIdExpr(ToString())
+            {
+                Scope = iniExpr?.Scope,
+                SourceFile = iniExpr?.SourceFile,
+                Location = iniExpr?.Location,
+            }, null)
+            {
+                Scope = iniExpr?.Scope,
+                SourceFile = iniExpr?.SourceFile,
+                Location = iniExpr?.Location,
+            };
         }
 
         private BoolType() : base(1, 1) { }
@@ -44,9 +64,19 @@ namespace HapetFrontend.Types
 
         public override string TypeName => ToString();
 
-        public override AstExpression GetAst()
+        public override AstExpression GetAst(AstExpression iniExpr = null)
         {
-            return new AstNestedExpr(new AstIdExpr(ToString()), null);
+            return new AstNestedExpr(new AstIdExpr(ToString())
+            {
+                Scope = iniExpr?.Scope,
+                SourceFile = iniExpr?.SourceFile,
+                Location = iniExpr?.Location,
+            }, null)
+            {
+                Scope = iniExpr?.Scope,
+                SourceFile = iniExpr?.SourceFile,
+                Location = iniExpr?.Location,
+            };
         }
 
         protected IntType(int size, int align, bool sign) : base(size, align)
@@ -154,9 +184,19 @@ namespace HapetFrontend.Types
 
         public override string TypeName => ToString();
 
-        public override AstExpression GetAst()
+        public override AstExpression GetAst(AstExpression iniExpr = null)
         {
-            return new AstNestedExpr(new AstIdExpr(ToString()), null);
+            return new AstNestedExpr(new AstIdExpr(ToString())
+            {
+                Scope = iniExpr?.Scope,
+                SourceFile = iniExpr?.SourceFile,
+                Location = iniExpr?.Location,
+            }, null)
+            {
+                Scope = iniExpr?.Scope,
+                SourceFile = iniExpr?.SourceFile,
+                Location = iniExpr?.Location,
+            };
         }
 
         private FloatType(int size, int align) : base(size, align) { }
@@ -258,9 +298,14 @@ namespace HapetFrontend.Types
         /// </summary>
         public bool IsPointerToNull { get; set; }
 
-        public override AstExpression GetAst()
+        public override AstExpression GetAst(AstExpression iniExpr = null)
         {
-            return new AstPointerExpr(TargetType.GetAst() as AstExpression);
+            return new AstPointerExpr(TargetType.GetAst() as AstExpression)
+            {
+                Scope = iniExpr?.Scope,
+                SourceFile = iniExpr?.SourceFile,
+                Location = iniExpr?.Location,
+            };
         }
 
         private PointerType(HapetType target) : base(
@@ -342,9 +387,14 @@ namespace HapetFrontend.Types
 
         public override string TypeName => "ref";
 
-        public override AstExpression GetAst()
+        public override AstExpression GetAst(AstExpression iniExpr = null)
         {
-            return new AstAddressOfExpr(TargetType.GetAst() as AstExpression, null);
+            return new AstAddressOfExpr(TargetType.GetAst() as AstExpression, null)
+            {
+                Scope = iniExpr?.Scope,
+                SourceFile = iniExpr?.SourceFile,
+                Location = iniExpr?.Location,
+            };
         }
 
         private ReferenceType(HapetType target) : base(CurrentTypeContext.PointerSize, PointerType.PointerAlignment)
@@ -410,9 +460,14 @@ namespace HapetFrontend.Types
 
         public override string TypeName => $"array";
 
-        public override AstExpression GetAst()
+        public override AstExpression GetAst(AstExpression iniExpr = null)
         {
-            return new AstArrayExpr(TargetType.GetAst() as AstExpression);
+            return new AstArrayExpr(TargetType.GetAst() as AstExpression)
+            {
+                Scope = iniExpr?.Scope,
+                SourceFile = iniExpr?.SourceFile,
+                Location = iniExpr?.Location,
+            };
         }
 
         public ArrayType(HapetType target, AstStructDecl arrStructDecl) : base(arrStructDecl)
@@ -488,9 +543,19 @@ namespace HapetFrontend.Types
 
         public override string TypeName => "char";
 
-        public override AstExpression GetAst()
+        public override AstExpression GetAst(AstExpression iniExpr = null)
         {
-            return new AstNestedExpr(new AstIdExpr(ToString()), null);
+            return new AstNestedExpr(new AstIdExpr(ToString())
+            {
+                Scope = iniExpr?.Scope,
+                SourceFile = iniExpr?.SourceFile,
+                Location = iniExpr?.Location,
+            }, null)
+            {
+                Scope = iniExpr?.Scope,
+                SourceFile = iniExpr?.SourceFile,
+                Location = iniExpr?.Location,
+            };
         }
 
         private CharType(int size) : base(size, size)
@@ -545,28 +610,26 @@ namespace HapetFrontend.Types
 
     public class StringType : StructType
     {
-        public static StringType GetInstance(Scope scope)
-        {
-            return GetInstance(AstStringExpr.GetStringStruct(scope));
-        }
-        public static StringType GetInstance(AstStructDecl strDecl)
-        {
-            if (CurrentTypeContext.StringTypeInstance == null)
-            {
-                CurrentTypeContext.StringTypeInstance = new StringType(strDecl);
-            }
-            return CurrentTypeContext.StringTypeInstance;
-        }
         public new static StringType LiteralType { get; } = new StringType(null);
 
         public override string TypeName => "string";
 
-        public override AstExpression GetAst()
+        public override AstExpression GetAst(AstExpression iniExpr = null)
         {
-            return new AstNestedExpr(new AstIdExpr("System.String"), null);
+            return new AstNestedExpr(new AstIdExpr("System.String")
+            {
+                Scope = iniExpr?.Scope,
+                SourceFile = iniExpr?.SourceFile,
+                Location = iniExpr?.Location,
+            }, null)
+            {
+                Scope = iniExpr?.Scope,
+                SourceFile = iniExpr?.SourceFile,
+                Location = iniExpr?.Location,
+            };
         }
 
-        private StringType(AstStructDecl astStructDecl) : base(astStructDecl) { }
+        public StringType(AstStructDecl astStructDecl) : base(astStructDecl) { }
     }
 
     public class IntPtrType : IntType
@@ -586,9 +649,19 @@ namespace HapetFrontend.Types
 
         public override string TypeName => ToString();
 
-        public override AstExpression GetAst()
+        public override AstExpression GetAst(AstExpression iniExpr = null)
         {
-            return new AstNestedExpr(new AstIdExpr(TypeName), null);
+            return new AstNestedExpr(new AstIdExpr(TypeName)
+            {
+                Scope = iniExpr?.Scope,
+                SourceFile = iniExpr?.SourceFile,
+                Location = iniExpr?.Location,
+            }, null)
+            {
+                Scope = iniExpr?.Scope,
+                SourceFile = iniExpr?.SourceFile,
+                Location = iniExpr?.Location,
+            };
         }
 
         private IntPtrType(int size, int align) : base(size, align, false) { }
@@ -629,9 +702,19 @@ namespace HapetFrontend.Types
 
         public override string TypeName => "ptrdiff";
 
-        public override AstExpression GetAst()
+        public override AstExpression GetAst(AstExpression iniExpr = null)
         {
-            return new AstNestedExpr(new AstIdExpr(TypeName), null);
+            return new AstNestedExpr(new AstIdExpr(TypeName)
+            {
+                Scope = iniExpr?.Scope,
+                SourceFile = iniExpr?.SourceFile,
+                Location = iniExpr?.Location,
+            }, null)
+            {
+                Scope = iniExpr?.Scope,
+                SourceFile = iniExpr?.SourceFile,
+                Location = iniExpr?.Location,
+            };
         }
 
         private PtrDiffType(int size, int align) : base(size, align, true) { }

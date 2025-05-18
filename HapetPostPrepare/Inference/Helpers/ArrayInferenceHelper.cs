@@ -43,7 +43,7 @@ namespace HapetPostPrepare
                             continue;
                         }
                         // it should be already prepared so just create new array type over it
-                        arrayExpr.OutType = GetArrayType(elementArrayExpr.OutType, arrayExpr.Scope);
+                        arrayExpr.OutType = GetArrayType(elementArrayExpr.OutType, arrayExpr);
                     }
                 }
                 else
@@ -53,13 +53,13 @@ namespace HapetPostPrepare
                     var cloned = arrayExpr.Clone() as AstArrayCreateExpr;
                     cloned.SizeExprs.RemoveAt(cloned.SizeExprs.Count - 1);
                     PostPrepareFullArray(cloned);
-                    arrayExpr.OutType = GetArrayType(cloned.OutType, arrayExpr.Scope);
+                    arrayExpr.OutType = GetArrayType(cloned.OutType, arrayExpr);
                 }
             }
             else
             {
                 // if it is just 1-d array - create the arrayType with just outType of Name
-                arrayExpr.OutType = GetArrayType(arrayExpr.TypeName.OutType, arrayExpr.Scope);
+                arrayExpr.OutType = GetArrayType(arrayExpr.TypeName.OutType, arrayExpr);
             }
         }
     }

@@ -34,16 +34,20 @@ namespace HapetFrontend.Types
                 throw new ArgumentOutOfRangeException(nameof(align));
             _size = size;
             _alignment = align;
+
+            Guid = Guid.NewGuid();
         }
 
-        protected HapetType()
+        protected HapetType() : this(0, 0)
         {
         }
 
         public virtual int GetSize() => _size;
         public virtual int GetAlignment() => _alignment;
 
-        public abstract AstExpression GetAst();
+        private Guid Guid { get; set; } // just for debug
+
+        public abstract AstExpression GetAst(AstExpression iniExpr = null);
 
         public void SetSizeAndAlignment(int size, int align)
         {

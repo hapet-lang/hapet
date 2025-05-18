@@ -251,7 +251,7 @@ namespace HapetBackend.Llvm
                         var stringGlobArray = _module.AddGlobal(LLVMTypeRef.CreateArray(HapetTypeToLLVMType(CharType.DefaultType), (uint)theString.Length), "constString");
                         stringGlobArray.Initializer = LLVMValueRef.CreateConstArray(HapetTypeToLLVMType(CharType.DefaultType), elements);
 
-                        var stringType = StringType.GetInstance(_currentSourceFile.NamespaceScope);
+                        var stringType = HapetType.CurrentTypeContext.StringTypeInstance;
 
                         // creating string variable
                         var theStringItself = CreateLocalVariable(stringType, "theString");

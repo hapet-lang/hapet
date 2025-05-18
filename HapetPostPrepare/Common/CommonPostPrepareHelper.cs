@@ -5,6 +5,8 @@ using HapetFrontend.Scoping;
 using HapetFrontend.Ast.Expressions;
 using HapetPostPrepare.Entities;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Runtime;
 
 namespace HapetPostPrepare
 {
@@ -19,7 +21,6 @@ namespace HapetPostPrepare
             }
             else if (typeName.Name == "System.String")
             {
-                decl.Type.OutType = StringType.GetInstance(decl as AstStructDecl);
                 _compiler.GlobalScope.DefineDeclSymbol(typeName.GetCopy("string"), decl);
             }
         }
@@ -45,19 +46,61 @@ namespace HapetPostPrepare
         }
 
         #region Array handling cringe
-        public ArrayType GetArrayType(HapetType targetType, Scope scope)
+        public ArrayType GetArrayType(HapetType targetType, AstExpression subExpr)
         {
             var inInfo = InInfo.Default;
             var outInfo = OutInfo.Default;
 
             List<AstExpression> genTypes;
             if (targetType == GenericType.LiteralType)
-                genTypes = new List<AstExpression>() { new AstNestedExpr(new AstIdExpr("T") { Scope = scope }, null) { Scope = scope } };
+                genTypes = new List<AstExpression>() 
+                { 
+                    new AstNestedExpr(new AstIdExpr("T", subExpr) 
+                    { 
+                        Scope = subExpr.Scope,
+                        SourceFile = subExpr.SourceFile,
+                    }, null, subExpr) 
+                    {
+                        Scope = subExpr.Scope,
+                        SourceFile = subExpr.SourceFile,
+                    } 
+                };
             else
-                genTypes = new List<AstExpression>() { new AstNestedExpr(new AstIdExpr(HapetType.AsString(targetType)) { Scope = scope }, null) { Scope = scope } };
-            var idExpr = new AstIdGenericExpr("System.Array", genTypes) { Scope = scope };
+            {
+                var typeAst = targetType.GetAst(subExpr);
+                typeAst.SourceFile = subExpr.SourceFile;
+                typeAst.Scope = subExpr.Scope;
+                genTypes = new List<AstExpression>()
+                {
+                    new AstNestedExpr(typeAst, null, subExpr)
+                    {
+                        Scope = subExpr.Scope,
+                        SourceFile = subExpr.SourceFile,
+                    }
+                };
+            }
+                
+            var idExpr = new AstIdGenericExpr("System.Array", genTypes, subExpr) 
+            {
+                Scope = subExpr.Scope,
+                SourceFile = subExpr.SourceFile,
+            };
             PostPrepareIdentifierInference(idExpr, inInfo, ref outInfo);
             return idExpr.OutType as ArrayType;
+        }
+
+        public StringType GetStringType(AstExpression subExpr)
+        {
+            var inInfo = InInfo.Default;
+            var outInfo = OutInfo.Default;
+
+            var idExpr = new AstIdExpr("System.String", subExpr)
+            {
+                Scope = subExpr.Scope,
+                SourceFile = subExpr.SourceFile,
+            };
+            PostPrepareIdentifierInference(idExpr, inInfo, ref outInfo);
+            return idExpr.OutType as StringType;
         }
         #endregion
     }

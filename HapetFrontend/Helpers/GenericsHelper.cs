@@ -135,7 +135,7 @@ namespace HapetFrontend.Helpers
             foreach (var g in idExpr.GenericRealTypes)
             {
                 if (g is AstNestedExpr nest)
-                    generics.Add(nest.RightPart as AstIdExpr);
+                    generics.Add(nest.UnrollToRightPart<AstIdExpr>());
                 else if (g is AstIdExpr id)
                     generics.Add(id);
                 else
