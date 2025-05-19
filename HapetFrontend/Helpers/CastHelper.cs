@@ -48,10 +48,8 @@ namespace HapetFrontend
             // assigning function to delegates is made different
             if (targetType is DelegateType delT)
             {
-                // not always could be casted - do it inside the func
-                if (castResult != null)
-                    castResult.CouldBeCasted = true;
-                return PostPrepareDelegateWithType(expr, delT);
+                // WARN: it has to be handled in PP
+                return currentExpr;
             }
 
             // creating a cast expr to return it further
@@ -187,7 +185,7 @@ namespace HapetFrontend
                         break;
                     }
                 // every ptr type can be casted to void* implicitly like
-                // void* anime = animePtrToSmth;
+                // void* anime = ptrToSmth;
                 case PointerType ptr5 when ptr5.TargetType == VoidType.Instance && currentType is PointerType:
                     {
                         outExpr = cst;
