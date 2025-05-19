@@ -15,7 +15,7 @@ using System.Net;
 
 namespace HapetFrontend
 {
-    public class Compiler : ITextOnLocationProvider
+    public partial class Compiler : ITextOnLocationProvider
     {
         /// <summary>
         /// Path and file
