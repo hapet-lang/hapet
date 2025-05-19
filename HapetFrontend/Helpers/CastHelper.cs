@@ -290,7 +290,12 @@ namespace HapetFrontend
             // we need to fetch decl's names
             AstIdExpr targetName;
             AstIdExpr currentName;
-            if (targetType is ClassType clsT1 && currentType is ClassType clsT2)
+            if (targetType is DelegateType delT1 && currentType is DelegateType delT2)
+            {
+                targetName = delT1.TargetDeclaration.Name;
+                currentName = delT2.TargetDeclaration.Name;
+            }
+            else if (targetType is ClassType clsT1 && currentType is ClassType clsT2)
             {
                 targetName = clsT1.Declaration.Name;
                 currentName = clsT2.Declaration.Name;
