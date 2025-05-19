@@ -178,21 +178,16 @@ namespace HapetFrontend
                 // ptr to intptr and vise versa
                 case PointerType when currentType is IntPtrType:
                 case IntPtrType when currentType is PointerType:
-                    {
-                        outExpr = cst;
-                        if (castResult != null)
-                            castResult.CouldBeCasted = true;
-                        break;
-                    }
+
                 // every ptr type can be casted to void* implicitly like
                 // void* anime = ptrToSmth;
                 case PointerType ptr5 when ptr5.TargetType == VoidType.Instance && currentType is PointerType:
-                    {
-                        outExpr = cst;
-                        if (castResult != null)
-                            castResult.CouldBeCasted = true;
-                        break;
-                    }
+
+                // assigning 'null' to any pointer type
+                // void* anime = null;
+                // T* anime2 = null;
+                case PointerType ptr6 when currentType is PointerType ptr7 && ptr7.IsPointerToNull:
+
                 // this is to allow to do this 'int[] arr = null'
                 case ArrayType when currentType is PointerType ptrT1 && ptrT1.IsPointerToNull:
                 case StringType when currentType is PointerType ptrT2 && ptrT2.IsPointerToNull:
