@@ -200,7 +200,7 @@ namespace HapetFrontend
             }
 
             // try handle class-struct shite
-            if (HandleOtherTypes(targetType, currentType, castResult))
+            if (HandleOtherTypes(targetType, currentType, castResult, sourceFile))
             {
                 // here if could be normally casted
                 outExpr = cst;
@@ -217,7 +217,7 @@ namespace HapetFrontend
             return outExpr;
         }
 
-        private bool HandleOtherTypes(HapetType targetType, HapetType currentType, CastResult castResult = null)
+        private bool HandleOtherTypes(HapetType targetType, HapetType currentType, CastResult castResult = null, ProgramFile sourceFile = null)
         {
             // unroll pointers
             if (targetType is PointerType ptr1 && currentType is PointerType ptr2)
@@ -265,7 +265,75 @@ namespace HapetFrontend
                         return true;
                     }
             }
+            
+            // handle generic
+            if (targetType is GenericType genT)
+            {
+                // TODO: check constrains
+                if (castResult != null)
+                    castResult.CouldBeCasted = true;
+                return true;
+            }
 
+            // handling types with generics
+            if (HandleTypesWithGenerics(targetType, currentType, castResult, sourceFile))
+            {
+                // all is ok
+                return true;
+            }
+
+            return false;
+        }
+
+        private bool HandleTypesWithGenerics(HapetType targetType, HapetType currentType, CastResult castResult = null, ProgramFile sourceFile = null)
+        {
+            // we need to fetch decl's names
+            AstIdExpr targetName;
+            AstIdExpr currentName;
+            if (targetType is ClassType clsT1 && currentType is ClassType clsT2)
+            {
+                targetName = clsT1.Declaration.Name;
+                currentName = clsT2.Declaration.Name;
+            }
+            else if (targetType is StructType strT1 && currentType is StructType strT2)
+            {
+                targetName = strT1.Declaration.Name;
+                currentName = strT2.Declaration.Name;
+            }
+            else
+            {
+                return false;
+            }
+
+            // at first - check that the names are the same
+            if (targetName.Name != currentName.Name)
+                return false;
+
+            // we need to go all over the generic id types
+            if (targetName is AstIdGenericExpr genId1 &&
+                currentName is AstIdGenericExpr genId2)
+            {
+                // shite if different amount of generics
+                if (genId1.GenericRealTypes.Count != genId2.GenericRealTypes.Count)
+                    return false;
+
+                // go all over and try to cast
+                for (int i = 0; i < genId1.GenericRealTypes.Count; i++)
+                {
+                    var target = genId1.GenericRealTypes[i];
+                    var current = genId2.GenericRealTypes[i];
+                    var tmpCastResult = new CastResult();
+                    TryCastExpr(target, current, tmpCastResult, sourceFile);
+                    // check that could be casted
+                    if (!tmpCastResult.CouldBeCasted)
+                        return false;
+                }
+
+                // all is ok - return true
+                if (castResult != null)
+                    castResult.CouldBeCasted = true;
+                return true;
+            }
             return false;
         }
     }
