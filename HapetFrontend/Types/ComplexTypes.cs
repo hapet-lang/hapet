@@ -19,8 +19,6 @@ namespace HapetFrontend.Types
 
         public static ClassType LiteralType { get; } = new ClassType(null);
 
-        private Guid Guid { get; set; } // just for debug
-
         public override AstExpression GetAst(AstExpression iniExpr = null)
         {
             return new AstNestedExpr(Declaration.Name.GetCopy(), null)
@@ -35,8 +33,6 @@ namespace HapetFrontend.Types
             : base()
         {
             Declaration = decl;
-
-            Guid = Guid.NewGuid();
         }
 
         public override string ToString()
