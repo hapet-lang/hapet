@@ -1,4 +1,5 @@
-﻿using HapetFrontend.Ast;
+﻿using System.Diagnostics.Metrics;
+using HapetFrontend.Ast;
 using HapetFrontend.Ast.Declarations;
 using HapetFrontend.Ast.Expressions;
 using HapetFrontend.Ast.Statements;
@@ -159,6 +160,11 @@ namespace HapetPostPrepare
                             // renaming func name from 'Anime' to 'Anime(int, float)'
                             newName = newName.GetCopy($"{funcDecl.Name.Name}{funcDecl.Parameters.GetParamsString()}");
                         scopeToDefine = fncDeclParent.Body.SubScope;
+                    }
+                    else
+                    {
+                        _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, funcDecl.Name, [], ErrorCode.Get(CTEN.StmtNotAllowedInThis));
+                        return;
                     }
 
                     // if it is public func - it should be visible in the scope in which func's class is

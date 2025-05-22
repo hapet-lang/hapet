@@ -36,6 +36,8 @@ namespace HapetFrontend.Parsing
                     var _ = lookAhead ? NextLookAhead() : NextToken();
                     var another = ParseIdentifierExpressionInternal(inInfo, allowGenerics: false, allowDots: false, lookAhead: lookAhead);
                     names.Add(another.RightPart as AstIdExpr);
+
+                    isComma = lookAhead ? CheckLookAhead(TokenType.Comma) : CheckToken(TokenType.Comma);
                 }
                 var tupled = new AstIdTupledExpr(names, new Location(names.First().Beginning, names.Last().Ending));
                 ident.RightPart = tupled;

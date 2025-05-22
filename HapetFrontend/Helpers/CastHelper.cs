@@ -111,7 +111,7 @@ namespace HapetFrontend
                         // allow if the var type size is bigger or equal
                         // byte a = 5;
                         // uint b = a;
-                        if (targetType.GetSize() >= targetType.GetSize() &&
+                        if (targetType.GetSize() >= currentType.GetSize() &&
                             (isTargetSigned != null && isCurrentSigned != null) &&
                             (isTargetSigned.Value == isCurrentSigned.Value))
                         {

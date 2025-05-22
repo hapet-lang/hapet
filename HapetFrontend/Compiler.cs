@@ -127,6 +127,13 @@ namespace HapetFrontend
                     continue; // no need to add this shite
                 }
 
+                // should not happen
+                if (currentFile == null)
+                {
+                    MessageHandler.ReportMessage(lexer.Text, s, [], ErrorCode.Get(CTEN.NullProgramFileInMeta));
+                    break;
+                }
+
                 // check for namespace 
                 if (s is AstNamespaceStmt nsStmt)
                 {
@@ -199,7 +206,7 @@ namespace HapetFrontend
             }
             else if (s != null)
             {
-                MessageHandler.ReportMessage(lexer.Text, s, [], ErrorCode.Get(CTEN.StmtNotAllowedInGlobal));
+                MessageHandler.ReportMessage(lexer.Text, s, [], ErrorCode.Get(CTEN.StmtNotAllowedInThis));
             }
         }
 

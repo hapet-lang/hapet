@@ -59,7 +59,7 @@
         CommonIdentAfterDot             = 0x2021,
         VarIniterExpr                   = 0x2022,
         PureUnexpectedToken             = 0x2023,
-        StmtNotAllowedInGlobal          = 0x2024,
+        StmtNotAllowedInThis            = 0x2024,
         AttrNameExpected                = 0x2025,
         NewlineExpected                 = 0x2026,
         RightSideVarDeclNotExpr         = 0x2027,
@@ -216,6 +216,7 @@
         CouldNotGenerateTypeInfo        = 0x500C,
         CouldNotGenerateVTable          = 0x500D,
         VirtualMethodNotFound           = 0x500E,
+        NullProgramFileInMeta           = 0x500F,
 
         // backend errors up to 0x8000
         TypeCouldNotBeConverted         = 0x6001,

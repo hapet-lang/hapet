@@ -208,7 +208,7 @@
 	</Item>
 	<Item>
 		<Number>2024</Number>
-		<Text>This type of statement is not allowed in global scope</Text>
+		<Text>This type of statement is not allowed in the scope</Text>
 	</Item>
     <Item>
         <Number>2025</Number>
@@ -825,6 +825,10 @@
 	<Item>
 		<Number>500E</Number>
 		<Text>(Compiler exception) Virtual method could not be found. Has to be handled in PP</Text>
+	</Item>
+	<Item>
+		<Number>500F</Number>
+		<Text>(Compiler exception) ProgramFile could not be 'null' at this point</Text>
 	</Item>
 
     <!--Backend errors-->
