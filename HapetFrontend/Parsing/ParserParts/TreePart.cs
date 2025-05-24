@@ -131,7 +131,7 @@ namespace HapetFrontend.Parsing
                 if (additional is AstIdExpr idExpr)
                 {
                     AstBinaryExpr asExpr = binExpr.GetDeepCopy() as AstBinaryExpr;
-                    asExpr.Operator = "as";
+                    asExpr.Operator = "isas";
 
                     // creating deep copies of its elements
                     // because we don't want to change 

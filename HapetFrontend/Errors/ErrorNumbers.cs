@@ -200,6 +200,7 @@
         FuncCallNotOnType               = 0x3052,
         PointerTypeExpected             = 0x3053,
         AttrNotInhFromAttr              = 0x3054,
+        ExprTypeNotEvaluated            = 0x3055,
 
         // compiler errors up to 0x6000
         DefaultWasNotInfered            = 0x5001,

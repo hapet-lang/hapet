@@ -16,8 +16,6 @@ namespace HapetPostPrepare
         public DeclSymbol GetFuncFromCandidates(AstIdExpr name, AstCallExpr callExpr, List<AstArgumentExpr> args, 
             AstDeclaration declToSearch, bool callFromObject, out List<AstExpression> castsToBeDone)
         {
-            int bestScore = int.MaxValue;
-            DeclSymbol bestMatch = null;
             castsToBeDone = new List<AstExpression>();
 
             // getting all the candidates
@@ -38,6 +36,9 @@ namespace HapetPostPrepare
                 }
                 return candidates.FirstOrDefault();
             }
+
+            // to handle all decls, their scores and casts
+            List<(int, DeclSymbol, List<AstExpression>)> declWithScores = new List<(int, DeclSymbol, List<AstExpression>)>();
 
             // filter the candidates
             foreach (var cand in candidates)
@@ -126,23 +127,36 @@ namespace HapetPostPrepare
                     break;
                 }
 
-                // getting the best candidate
-                if (score < bestScore)
-                {
-                    bestScore = score;
-                    bestMatch = cand;
-                    castsToBeDone = casts;
-                }
-                else if (score == bestScore && score != int.MaxValue)
+                // add the candidate
+                declWithScores.Add((score, cand, casts));
+            }
+
+            // gg if there is no that func
+            if (declWithScores.Count == 0)
+                return null;
+
+            // we need to sort and handle the decls
+            if (declWithScores.Count > 1)
+            {
+                // sort
+                declWithScores = declWithScores.OrderBy(x => x.Item1).ToList();
+                var best = declWithScores[0];
+                // if the next one has the same score - ambiguous
+                if (declWithScores[1].Item1 == best.Item1)
                 {
                     // ambiguous error here that there are two func and we dk which one to call
                     _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, callExpr,
-                        [bestMatch.Name.Name, cand.Name.Name],
+                        [best.Item2.Name.Name, declWithScores[1].Item2.Name.Name],
                         ErrorCode.Get(CTEN.AmbiguousFunctionCall));
                 }
             }
 
-            return bestMatch;
+            // if the decl has MaxInt score - cringe
+            if (declWithScores[0].Item1 == int.MaxValue)
+                return null;
+
+            castsToBeDone = declWithScores[0].Item3;
+            return declWithScores[0].Item2;
         }
 
         public static AstParamDecl GetParameterByIndexOrName(List<AstParamDecl> pars, AstArgumentExpr arg, int fallbackIndex, out int realIndex)

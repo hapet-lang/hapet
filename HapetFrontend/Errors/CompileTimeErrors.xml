@@ -768,6 +768,10 @@
 		<Number>3054</Number>
 		<Text>The class that is used as an attribute expected to be inherited from System.Attribute class</Text>
 	</Item>
+	<Item>
+        <Number>3055</Number>
+        <Text>Type of the expression could not be evaluated</Text>
+    </Item>
 
     <!--Compiler errors-->
 	<Item>

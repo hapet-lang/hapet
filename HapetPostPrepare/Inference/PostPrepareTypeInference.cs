@@ -574,6 +574,17 @@ namespace HapetPostPrepare
                 // CRINGE :) special cases for as/is/in
                 switch (binExpr.ActualOperator.Name)
                 {
+                    case "isas":
+                        {
+                            // handle it as 'as' 
+                            if (rightExpr.OutType is ClassType)
+                            {
+                                goto case "as";
+                            }
+
+                            binExpr.OutType = rightExpr.OutType;
+                            break;
+                        }
                     case "as":
                         {
                             // we need to change right part to pointer to a class

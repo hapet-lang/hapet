@@ -28,6 +28,14 @@ namespace HapetFrontend
                 return currentExpr;
             }
 
+            // error and return the same expr if currType is null
+            if (currentType == null)
+            {
+                if (castResult == null)
+                    MessageHandler.ReportMessage(sourceFile.Text, currentExpr, [], ErrorCode.Get(CTEN.ExprTypeNotEvaluated));
+                return currentExpr;
+            }
+
             // if the types are equal - no need to cast anything, so return orig
             if (targetType == currentType)
             {
