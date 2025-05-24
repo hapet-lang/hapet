@@ -1,0 +1,50 @@
+/// <summary>
+/// Compares two objects for equivalence, where string comparisons are case-sensitive.
+/// </summary>
+public class Comparer : IComparer
+{
+    public static Comparer Default { get; private set; } = new Comparer();
+
+    // Compares two Objects by calling CompareTo.
+    // If a == b, 0 is returned.
+    // If a implements IComparable, a.CompareTo(b) is returned.
+    // If a doesn't implement IComparable and b does, -(b.CompareTo(a)) is returned.
+    // Otherwise an exception is thrown.
+    //
+    public int Compare(object a, object b)
+    {
+        if (a == b) return 0;
+        if (a == null) return -1;
+        if (b == null) return 1;
+
+        if (a is string sa && b is string sb)
+            return sa.CompareTo(sb);
+
+        if (a is IComparable ia)
+            return ia.CompareTo(b);
+
+        if (b is IComparable ib)
+            return -ib.CompareTo(a);
+
+        // TODO:
+        // throw new ArgumentException(SR.Argument_ImplementIComparable);
+        return 0;
+    }
+}
+
+public class Comparer<T> : IComparer<T> // where T : IComparable<T>
+{
+    public static Comparer<T> Default { get; private set; } = new Comparer<T>();
+
+    public override int Compare(T x, T y)
+    {
+        if (x != null)
+        {
+            // TODO: uncomment when constains supported
+            // if (y != null) return x.CompareTo(y);
+            return 1;
+        }
+        if (y != null) return -1;
+        return 0;
+    }
+}
