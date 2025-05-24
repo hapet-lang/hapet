@@ -115,7 +115,7 @@ public class List<T> : IList<T>
                     T[] newItems = new T[value];
                     if (_size > 0)
                     {
-                        Array.Copy<T, T>(_items, newItems, _size);
+                        Array.Copy<T, T>(_items, 0, newItems, 0, _size);
                     }
                     _items = newItems;
                 }

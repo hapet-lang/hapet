@@ -15,7 +15,6 @@ namespace System;
 /// </summary>
 internal interface IValueTupleInternal : ITuple
 {
-    int GetHashCode(IEqualityComparer comparer);
     string ToStringEnd();
 }
 
@@ -28,7 +27,7 @@ internal interface IValueTupleInternal : ITuple
 /// - their members (such as Item1, Item2, etc) are fields rather than properties.
 /// </summary>
 public struct ValueTuple
-    : IEquatable<ValueTuple>, IStructuralEquatable, IStructuralComparable, IComparable, IComparable<ValueTuple>, IValueTupleInternal, ITuple
+    : IEquatable<ValueTuple>, IStructuralComparable, IComparable, IComparable<ValueTuple>, IValueTupleInternal, ITuple
 {
     /// <summary>
     /// Returns a value that indicates whether the current <see cref="ValueTuple"/> instance is equal to a specified object.
@@ -46,11 +45,6 @@ public struct ValueTuple
     public bool Equals(ValueTuple other)
     {
         return true;
-    }
-
-    bool IStructuralEquatable.Equals(object other, IEqualityComparer comparer)
-    {
-        return other is ValueTuple;
     }
 
     int IComparable.CompareTo(object other)
@@ -87,16 +81,6 @@ public struct ValueTuple
     /// <summary>Returns the hash code for this instance.</summary>
     /// <returns>A 32-bit signed integer hash code.</returns>
     public override int GetHashCode()
-    {
-        return 0;
-    }
-
-    int IStructuralEquatable.GetHashCode(IEqualityComparer comparer)
-    {
-        return 0;
-    }
-
-    int IValueTupleInternal.GetHashCode(IEqualityComparer comparer)
     {
         return 0;
     }
@@ -275,7 +259,7 @@ public struct ValueTuple
 /// <summary>Represents a 1-tuple, or singleton, as a value type.</summary>
 /// <typeparam name="T1">The type of the tuple's only component.</typeparam>
 public struct ValueTuple<T1>
-    : IEquatable<ValueTuple<T1>>, IStructuralEquatable, IStructuralComparable, IComparable, IComparable<ValueTuple<T1>>, IValueTupleInternal, ITuple
+    : IEquatable<ValueTuple<T1>>, IStructuralComparable, IComparable, IComparable<ValueTuple<T1>>, IValueTupleInternal, ITuple
 {
     /// <summary>
     /// The current <see cref="ValueTuple{T1}"/> instance's first component.
@@ -321,12 +305,7 @@ public struct ValueTuple<T1>
     /// </remarks>
     public bool Equals(ValueTuple<T1> other)
     {
-        return EqualityComparer<T1>.Default.Equals(Item1, other.Item1);
-    }
-
-    bool IStructuralEquatable.Equals(object other, IEqualityComparer comparer)
-    {
-        return other is ValueTuple<T1> vt && comparer.Equals(Item1, vt.Item1);
+        return Item1 == other.Item1;
     }
 
     int IComparable.CompareTo(object other)
@@ -383,16 +362,6 @@ public struct ValueTuple<T1>
         return Item1?.GetHashCode() ?? 0;
     }
 
-    int IStructuralEquatable.GetHashCode(IEqualityComparer comparer)
-    {
-        return comparer.GetHashCode(Item1);
-    }
-
-    int IValueTupleInternal.GetHashCode(IEqualityComparer comparer)
-    {
-        return comparer.GetHashCode(Item1);
-    }
-
     /// <summary>
     /// Returns a string that represents the value of this <see cref="ValueTuple{T1}"/> instance.
     /// </summary>
@@ -440,7 +409,7 @@ public struct ValueTuple<T1>
 /// <typeparam name="T1">The type of the tuple's first component.</typeparam>
 /// <typeparam name="T2">The type of the tuple's second component.</typeparam>
 public struct ValueTuple<T1, T2>
-    : IEquatable<ValueTuple<T1, T2>>, IStructuralEquatable, IStructuralComparable, IComparable, IComparable<ValueTuple<T1, T2>>, IValueTupleInternal, ITuple
+    : IEquatable<ValueTuple<T1, T2>>, IStructuralComparable, IComparable, IComparable<ValueTuple<T1, T2>>, IValueTupleInternal, ITuple
 {
     /// <summary>
     /// The current <see cref="ValueTuple{T1, T2}"/> instance's first component.
@@ -493,33 +462,8 @@ public struct ValueTuple<T1, T2>
     /// </remarks>
     public bool Equals(ValueTuple<T1, T2> other)
     {
-        return EqualityComparer<T1>.Default.Equals(Item1, other.Item1)
-            && EqualityComparer<T2>.Default.Equals(Item2, other.Item2);
-    }
-
-    /// <summary>
-    /// Returns a value that indicates whether the current <see cref="ValueTuple{T1, T2}"/> instance is equal to a specified object based on a specified comparison method.
-    /// </summary>
-    /// <param name="other">The object to compare with this instance.</param>
-    /// <param name="comparer">An object that defines the method to use to evaluate whether the two objects are equal.</param>
-    /// <returns><see langword="true"/> if the current instance is equal to the specified object; otherwise, <see langword="false"/>.</returns>
-    ///
-    /// <remarks>
-    /// This member is an explicit interface member implementation. It can be used only when the
-    ///  <see cref="ValueTuple{T1, T2}"/> instance is cast to an <see cref="IStructuralEquatable"/> interface.
-    ///
-    /// The <see cref="IEqualityComparer.Equals"/> implementation is called only if <c>other</c> is not <see langword="null"/>,
-    ///  and if it can be successfully cast (in C#) or converted (in Visual Basic) to a <see cref="ValueTuple{T1, T2}"/>
-    ///  whose components are of the same types as those of the current instance. The IStructuralEquatable.Equals(Object, IEqualityComparer) method
-    ///  first passes the <see cref="Item1"/> values of the <see cref="ValueTuple{T1, T2}"/> objects to be compared to the
-    ///  <see cref="IEqualityComparer.Equals"/> implementation. If this method call returns <see langword="true"/>, the method is
-    ///  called again and passed the <see cref="Item2"/> values of the two <see cref="ValueTuple{T1, T2}"/> instances.
-    /// </remarks>
-    bool IStructuralEquatable.Equals(object other, IEqualityComparer comparer)
-    {
-        return other is ValueTuple<T1, T2> vt &&
-            comparer.Equals(Item1, vt.Item1) &&
-            comparer.Equals(Item2, vt.Item2);
+        return Item1 == other.Item1
+            && Item2 == other.Item2;
     }
 
     int IComparable.CompareTo(object other)
@@ -583,22 +527,6 @@ public struct ValueTuple<T1, T2>
                                 Item2?.GetHashCode() ?? 0);
     }
 
-    int IStructuralEquatable.GetHashCode(IEqualityComparer comparer)
-    {
-        return GetHashCodeCore(comparer);
-    }
-
-    private int GetHashCodeCore(IEqualityComparer comparer)
-    {
-        return HashCode.Combine(comparer.GetHashCode(Item1),
-                                comparer.GetHashCode(Item2));
-    }
-
-    int IValueTupleInternal.GetHashCode(IEqualityComparer comparer)
-    {
-        return GetHashCodeCore(comparer);
-    }
-
     /// <summary>
     /// Returns a string that represents the value of this <see cref="ValueTuple{T1, T2}"/> instance.
     /// </summary>
@@ -651,7 +579,7 @@ public struct ValueTuple<T1, T2>
 /// <typeparam name="T2">The type of the tuple's second component.</typeparam>
 /// <typeparam name="T3">The type of the tuple's third component.</typeparam>
 public struct ValueTuple<T1, T2, T3>
-    : IEquatable<ValueTuple<T1, T2, T3>>, IStructuralEquatable, IStructuralComparable, IComparable, IComparable<ValueTuple<T1, T2, T3>>, IValueTupleInternal, ITuple
+    : IEquatable<ValueTuple<T1, T2, T3>>, IStructuralComparable, IComparable, IComparable<ValueTuple<T1, T2, T3>>, IValueTupleInternal, ITuple
 {
     /// <summary>
     /// The current <see cref="ValueTuple{T1, T2, T3}"/> instance's first component.
@@ -712,14 +640,6 @@ public struct ValueTuple<T1, T2, T3>
         return EqualityComparer<T1>.Default.Equals(Item1, other.Item1)
             && EqualityComparer<T2>.Default.Equals(Item2, other.Item2)
             && EqualityComparer<T3>.Default.Equals(Item3, other.Item3);
-    }
-
-    bool IStructuralEquatable.Equals(object other, IEqualityComparer comparer)
-    {
-        return other is ValueTuple<T1, T2, T3> vt &&
-            comparer.Equals(Item1, vt.Item1) &&
-            comparer.Equals(Item2, vt.Item2) &&
-            comparer.Equals(Item3, vt.Item3);
     }
 
     int IComparable.CompareTo(object other)
@@ -790,23 +710,6 @@ public struct ValueTuple<T1, T2, T3>
                                 Item3?.GetHashCode() ?? 0);
     }
 
-    int IStructuralEquatable.GetHashCode(IEqualityComparer comparer)
-    {
-        return GetHashCodeCore(comparer);
-    }
-
-    private int GetHashCodeCore(IEqualityComparer comparer)
-    {
-        return HashCode.Combine(comparer.GetHashCode(Item1),
-                                comparer.GetHashCode(Item2),
-                                comparer.GetHashCode(Item3));
-    }
-
-    int IValueTupleInternal.GetHashCode(IEqualityComparer comparer)
-    {
-        return GetHashCodeCore(comparer);
-    }
-
     /// <summary>
     /// Returns a string that represents the value of this <see cref="ValueTuple{T1, T2, T3}"/> instance.
     /// </summary>
@@ -856,7 +759,7 @@ public struct ValueTuple<T1, T2, T3>
 /// <typeparam name="T3">The type of the tuple's third component.</typeparam>
 /// <typeparam name="T4">The type of the tuple's fourth component.</typeparam>
 public struct ValueTuple<T1, T2, T3, T4>
-    : IEquatable<ValueTuple<T1, T2, T3, T4>>, IStructuralEquatable, IStructuralComparable, IComparable, IComparable<ValueTuple<T1, T2, T3, T4>>, IValueTupleInternal, ITuple
+    : IEquatable<ValueTuple<T1, T2, T3, T4>>, IStructuralComparable, IComparable, IComparable<ValueTuple<T1, T2, T3, T4>>, IValueTupleInternal, ITuple
 {
     /// <summary>
     /// The current <see cref="ValueTuple{T1, T2, T3, T4}"/> instance's first component.
@@ -924,15 +827,6 @@ public struct ValueTuple<T1, T2, T3, T4>
             && EqualityComparer<T2>.Default.Equals(Item2, other.Item2)
             && EqualityComparer<T3>.Default.Equals(Item3, other.Item3)
             && EqualityComparer<T4>.Default.Equals(Item4, other.Item4);
-    }
-
-    bool IStructuralEquatable.Equals(object other, IEqualityComparer comparer)
-    {
-        return other is ValueTuple<T1, T2, T3, T4> vt &&
-            comparer.Equals(Item1, vt.Item1) &&
-            comparer.Equals(Item2, vt.Item2) &&
-            comparer.Equals(Item3, vt.Item3) &&
-            comparer.Equals(Item4, vt.Item4);
     }
 
     int IComparable.CompareTo(object other)
@@ -1010,24 +904,6 @@ public struct ValueTuple<T1, T2, T3, T4>
                                 Item4?.GetHashCode() ?? 0);
     }
 
-    int IStructuralEquatable.GetHashCode(IEqualityComparer comparer)
-    {
-        return GetHashCodeCore(comparer);
-    }
-
-    private int GetHashCodeCore(IEqualityComparer comparer)
-    {
-        return HashCode.Combine(comparer.GetHashCode(Item1),
-                                comparer.GetHashCode(Item2),
-                                comparer.GetHashCode(Item3),
-                                comparer.GetHashCode(Item4));
-    }
-
-    int IValueTupleInternal.GetHashCode(IEqualityComparer comparer)
-    {
-        return GetHashCodeCore(comparer);
-    }
-
     /// <summary>
     /// Returns a string that represents the value of this <see cref="ValueTuple{T1, T2, T3, T4}"/> instance.
     /// </summary>
@@ -1079,7 +955,7 @@ public struct ValueTuple<T1, T2, T3, T4>
 /// <typeparam name="T4">The type of the tuple's fourth component.</typeparam>
 /// <typeparam name="T5">The type of the tuple's fifth component.</typeparam>
 public struct ValueTuple<T1, T2, T3, T4, T5>
-    : IEquatable<ValueTuple<T1, T2, T3, T4, T5>>, IStructuralEquatable, IStructuralComparable, IComparable, IComparable<ValueTuple<T1, T2, T3, T4, T5>>, IValueTupleInternal, ITuple
+    : IEquatable<ValueTuple<T1, T2, T3, T4, T5>>, IStructuralComparable, IComparable, IComparable<ValueTuple<T1, T2, T3, T4, T5>>, IValueTupleInternal, ITuple
 {
     /// <summary>
     /// The current <see cref="ValueTuple{T1, T2, T3, T4, T5}"/> instance's first component.
@@ -1154,16 +1030,6 @@ public struct ValueTuple<T1, T2, T3, T4, T5>
             && EqualityComparer<T3>.Default.Equals(Item3, other.Item3)
             && EqualityComparer<T4>.Default.Equals(Item4, other.Item4)
             && EqualityComparer<T5>.Default.Equals(Item5, other.Item5);
-    }
-
-    bool IStructuralEquatable.Equals(object other, IEqualityComparer comparer)
-    {
-        return other is ValueTuple<T1, T2, T3, T4, T5> vt &&
-            comparer.Equals(Item1, vt.Item1) &&
-            comparer.Equals(Item2, vt.Item2) &&
-            comparer.Equals(Item3, vt.Item3) &&
-            comparer.Equals(Item4, vt.Item4) &&
-            comparer.Equals(Item5, vt.Item5);
     }
 
     int IComparable.CompareTo(object other)
@@ -1248,25 +1114,6 @@ public struct ValueTuple<T1, T2, T3, T4, T5>
                                 Item5?.GetHashCode() ?? 0);
     }
 
-    int IStructuralEquatable.GetHashCode(IEqualityComparer comparer)
-    {
-        return GetHashCodeCore(comparer);
-    }
-
-    private int GetHashCodeCore(IEqualityComparer comparer)
-    {
-        return HashCode.Combine(comparer.GetHashCode(Item1),
-                                comparer.GetHashCode(Item2),
-                                comparer.GetHashCode(Item3),
-                                comparer.GetHashCode(Item4),
-                                comparer.GetHashCode(Item5));
-    }
-
-    int IValueTupleInternal.GetHashCode(IEqualityComparer comparer)
-    {
-        return GetHashCodeCore(comparer);
-    }
-
     /// <summary>
     /// Returns a string that represents the value of this <see cref="ValueTuple{T1, T2, T3, T4, T5}"/> instance.
     /// </summary>
@@ -1320,7 +1167,7 @@ public struct ValueTuple<T1, T2, T3, T4, T5>
 /// <typeparam name="T5">The type of the tuple's fifth component.</typeparam>
 /// <typeparam name="T6">The type of the tuple's sixth component.</typeparam>
 public struct ValueTuple<T1, T2, T3, T4, T5, T6>
-    : IEquatable<ValueTuple<T1, T2, T3, T4, T5, T6>>, IStructuralEquatable, IStructuralComparable, IComparable, IComparable<ValueTuple<T1, T2, T3, T4, T5, T6>>, IValueTupleInternal, ITuple
+    : IEquatable<ValueTuple<T1, T2, T3, T4, T5, T6>>, IStructuralComparable, IComparable, IComparable<ValueTuple<T1, T2, T3, T4, T5, T6>>, IValueTupleInternal, ITuple
 {
     /// <summary>
     /// The current <see cref="ValueTuple{T1, T2, T3, T4, T5, T6}"/> instance's first component.
@@ -1402,17 +1249,6 @@ public struct ValueTuple<T1, T2, T3, T4, T5, T6>
             && EqualityComparer<T4>.Default.Equals(Item4, other.Item4)
             && EqualityComparer<T5>.Default.Equals(Item5, other.Item5)
             && EqualityComparer<T6>.Default.Equals(Item6, other.Item6);
-    }
-
-    bool IStructuralEquatable.Equals(object other, IEqualityComparer comparer)
-    {
-        return other is ValueTuple<T1, T2, T3, T4, T5, T6> vt &&
-            comparer.Equals(Item1, vt.Item1) &&
-            comparer.Equals(Item2, vt.Item2) &&
-            comparer.Equals(Item3, vt.Item3) &&
-            comparer.Equals(Item4, vt.Item4) &&
-            comparer.Equals(Item5, vt.Item5) &&
-            comparer.Equals(Item6, vt.Item6);
     }
 
     int IComparable.CompareTo(object other)
@@ -1504,26 +1340,6 @@ public struct ValueTuple<T1, T2, T3, T4, T5, T6>
                                 Item6?.GetHashCode() ?? 0);
     }
 
-    int IStructuralEquatable.GetHashCode(IEqualityComparer comparer)
-    {
-        return GetHashCodeCore(comparer);
-    }
-
-    private int GetHashCodeCore(IEqualityComparer comparer)
-    {
-        return HashCode.Combine(comparer.GetHashCode(Item1),
-                                comparer.GetHashCode(Item2),
-                                comparer.GetHashCode(Item3),
-                                comparer.GetHashCode(Item4),
-                                comparer.GetHashCode(Item5),
-                                comparer.GetHashCode(Item6));
-    }
-
-    int IValueTupleInternal.GetHashCode(IEqualityComparer comparer)
-    {
-        return GetHashCodeCore(comparer);
-    }
-
     /// <summary>
     /// Returns a string that represents the value of this <see cref="ValueTuple{T1, T2, T3, T4, T5, T6}"/> instance.
     /// </summary>
@@ -1579,7 +1395,7 @@ public struct ValueTuple<T1, T2, T3, T4, T5, T6>
 /// <typeparam name="T6">The type of the tuple's sixth component.</typeparam>
 /// <typeparam name="T7">The type of the tuple's seventh component.</typeparam>
 public struct ValueTuple<T1, T2, T3, T4, T5, T6, T7>
-    : IEquatable<ValueTuple<T1, T2, T3, T4, T5, T6, T7>>, IStructuralEquatable, IStructuralComparable, IComparable, IComparable<ValueTuple<T1, T2, T3, T4, T5, T6, T7>>, IValueTupleInternal, ITuple
+    : IEquatable<ValueTuple<T1, T2, T3, T4, T5, T6, T7>>, IStructuralComparable, IComparable, IComparable<ValueTuple<T1, T2, T3, T4, T5, T6, T7>>, IValueTupleInternal, ITuple
 {
     /// <summary>
     /// The current <see cref="ValueTuple{T1, T2, T3, T4, T5, T6, T7}"/> instance's first component.
@@ -1668,18 +1484,6 @@ public struct ValueTuple<T1, T2, T3, T4, T5, T6, T7>
             && EqualityComparer<T5>.Default.Equals(Item5, other.Item5)
             && EqualityComparer<T6>.Default.Equals(Item6, other.Item6)
             && EqualityComparer<T7>.Default.Equals(Item7, other.Item7);
-    }
-
-    bool IStructuralEquatable.Equals(object other, IEqualityComparer comparer)
-    {
-        return other is ValueTuple<T1, T2, T3, T4, T5, T6, T7> vt &&
-            comparer.Equals(Item1, vt.Item1) &&
-            comparer.Equals(Item2, vt.Item2) &&
-            comparer.Equals(Item3, vt.Item3) &&
-            comparer.Equals(Item4, vt.Item4) &&
-            comparer.Equals(Item5, vt.Item5) &&
-            comparer.Equals(Item6, vt.Item6) &&
-            comparer.Equals(Item7, vt.Item7);
     }
 
     int IComparable.CompareTo(object other)
@@ -1778,27 +1582,6 @@ public struct ValueTuple<T1, T2, T3, T4, T5, T6, T7>
                                 Item7?.GetHashCode() ?? 0);
     }
 
-    int IStructuralEquatable.GetHashCode(IEqualityComparer comparer)
-    {
-        return GetHashCodeCore(comparer);
-    }
-
-    private int GetHashCodeCore(IEqualityComparer comparer)
-    {
-        return HashCode.Combine(comparer.GetHashCode(Item1),
-                                comparer.GetHashCode(Item2),
-                                comparer.GetHashCode(Item3),
-                                comparer.GetHashCode(Item4),
-                                comparer.GetHashCode(Item5),
-                                comparer.GetHashCode(Item6),
-                                comparer.GetHashCode(Item7));
-    }
-
-    int IValueTupleInternal.GetHashCode(IEqualityComparer comparer)
-    {
-        return GetHashCodeCore(comparer);
-    }
-
     /// <summary>
     /// Returns a string that represents the value of this <see cref="ValueTuple{T1, T2, T3, T4, T5, T6, T7}"/> instance.
     /// </summary>
@@ -1856,7 +1639,7 @@ public struct ValueTuple<T1, T2, T3, T4, T5, T6, T7>
 /// <typeparam name="T7">The type of the tuple's seventh component.</typeparam>
 /// <typeparam name="TRest">The type of the tuple's eighth component.</typeparam>
 public struct ValueTuple<T1, T2, T3, T4, T5, T6, T7, TRest>
-: IEquatable<ValueTuple<T1, T2, T3, T4, T5, T6, T7, TRest>>, IStructuralEquatable, IStructuralComparable, IComparable, IComparable<ValueTuple<T1, T2, T3, T4, T5, T6, T7, TRest>>, IValueTupleInternal, ITuple
+: IEquatable<ValueTuple<T1, T2, T3, T4, T5, T6, T7, TRest>>, IStructuralComparable, IComparable, IComparable<ValueTuple<T1, T2, T3, T4, T5, T6, T7, TRest>>, IValueTupleInternal, ITuple
 where TRest : struct
 {
     /// <summary>
@@ -1959,19 +1742,6 @@ where TRest : struct
             && EqualityComparer<T6>.Default.Equals(Item6, other.Item6)
             && EqualityComparer<T7>.Default.Equals(Item7, other.Item7)
             && EqualityComparer<TRest>.Default.Equals(Rest, other.Rest);
-    }
-
-    bool IStructuralEquatable.Equals(object other, IEqualityComparer comparer)
-    {
-        return other is ValueTuple<T1, T2, T3, T4, T5, T6, T7, TRest> vt &&
-            comparer.Equals(Item1, vt.Item1) &&
-            comparer.Equals(Item2, vt.Item2) &&
-            comparer.Equals(Item3, vt.Item3) &&
-            comparer.Equals(Item4, vt.Item4) &&
-            comparer.Equals(Item5, vt.Item5) &&
-            comparer.Equals(Item6, vt.Item6) &&
-            comparer.Equals(Item7, vt.Item7) &&
-            comparer.Equals(Rest, vt.Rest);
     }
 
     int IComparable.CompareTo(object other)
@@ -2138,87 +1908,6 @@ where TRest : struct
         // TODO: 
         // Debug.Fail("Missed all cases for computing ValueTuple hash code");
         return -1;
-    }
-
-    int IStructuralEquatable.GetHashCode(IEqualityComparer comparer)
-    {
-        return GetHashCodeCore(comparer);
-    }
-
-    private int GetHashCodeCore(IEqualityComparer comparer)
-    {
-        // We want to have a limited hash in this case. We'll use the first 7 elements of the tuple
-        if (Rest is not IValueTupleInternal rest)
-        {
-            return HashCode.Combine(comparer.GetHashCode(Item1), comparer.GetHashCode(Item2), comparer.GetHashCode(Item3),
-                                    comparer.GetHashCode(Item4), comparer.GetHashCode(Item5), comparer.GetHashCode(Item6),
-                                    comparer.GetHashCode(Item7));
-        }
-
-        int size = rest.Length;
-        int restHashCode = rest.GetHashCode(comparer);
-        if (size >= 8)
-        {
-            return restHashCode;
-        }
-
-        // In this case, the rest member has less than 8 elements so we need to combine some our elements with the elements in rest
-        int k = 8 - size;
-        switch (k)
-        {
-            case (1)
-                return HashCode.Combine(comparer.GetHashCode(Item7),
-                                        restHashCode);
-            case (2)
-                return HashCode.Combine(comparer.GetHashCode(Item6),
-                                        comparer.GetHashCode(Item7),
-                                        restHashCode);
-            case (3)
-                return HashCode.Combine(comparer.GetHashCode(Item5),
-                                        comparer.GetHashCode(Item6),
-                                        comparer.GetHashCode(Item7),
-                                        restHashCode);
-            case (4)
-                return HashCode.Combine(comparer.GetHashCode(Item4),
-                                        comparer.GetHashCode(Item5),
-                                        comparer.GetHashCode(Item6),
-                                        comparer.GetHashCode(Item7),
-                                        restHashCode);
-            case (5)
-                return HashCode.Combine(comparer.GetHashCode(Item3),
-                                        comparer.GetHashCode(Item4),
-                                        comparer.GetHashCode(Item5),
-                                        comparer.GetHashCode(Item6),
-                                        comparer.GetHashCode(Item7),
-                                        restHashCode);
-            case (6)
-                return HashCode.Combine(comparer.GetHashCode(Item2),
-                                        comparer.GetHashCode(Item3),
-                                        comparer.GetHashCode(Item4),
-                                        comparer.GetHashCode(Item5),
-                                        comparer.GetHashCode(Item6),
-                                        comparer.GetHashCode(Item7),
-                                        restHashCode);
-            case (7)
-            case (8)
-                return HashCode.Combine(comparer.GetHashCode(Item1),
-                                        comparer.GetHashCode(Item2),
-                                        comparer.GetHashCode(Item3),
-                                        comparer.GetHashCode(Item4),
-                                        comparer.GetHashCode(Item5),
-                                        comparer.GetHashCode(Item6),
-                                        comparer.GetHashCode(Item7),
-                                        restHashCode);
-        }
-
-        // TODO: 
-        // Debug.Fail("Missed all cases for computing ValueTuple hash code");
-        return -1;
-    }
-
-    int IValueTupleInternal.GetHashCode(IEqualityComparer comparer)
-    {
-        return GetHashCodeCore(comparer);
     }
 
     /// <summary>
