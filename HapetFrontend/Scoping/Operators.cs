@@ -102,7 +102,8 @@ namespace HapetFrontend.Scoping
 
         public override int Accepts(HapetType lhs, HapetType rhs)
         {
-            return (LhsType.GetType() == lhs.GetType() && RhsType.GetType() == rhs.GetType()) ? 0 : -1;
+            return ((LhsType.GetType() == lhs.GetType() || lhs.GetType().IsSubclassOf(LhsType.GetType())) && 
+                (RhsType.GetType() == rhs.GetType() || rhs.GetType().IsSubclassOf(RhsType.GetType()))) ? 0 : -1;
         }
     }
 
