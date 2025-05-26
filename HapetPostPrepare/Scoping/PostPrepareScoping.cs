@@ -560,6 +560,9 @@ namespace HapetPostPrepare
                 case AstBaseCtorStmt baseStmt:
                     PostPrepareBaseCtorStmtScoping(baseStmt);
                     break;
+                case AstConstrainStmt constrainStmt:
+                    PostPrepareConstrainScoping(constrainStmt);
+                    break;
 
                 // skip literals
                 case AstNumberExpr:
@@ -896,6 +899,19 @@ namespace HapetPostPrepare
             foreach (var a in baseCtor.Arguments)
             {
                 SetScopeAndParent(a, baseCtor);
+                PostPrepareExprScoping(a);
+            }
+        }
+
+        private void PostPrepareConstrainScoping(AstConstrainStmt constrainStmt)
+        {
+            SetScopeAndParent(constrainStmt.Expr, constrainStmt);
+            PostPrepareExprScoping(constrainStmt.Expr);
+
+            // go over additional 
+            foreach (var a in constrainStmt.AdditionalExprs)
+            {
+                SetScopeAndParent(a, constrainStmt);
                 PostPrepareExprScoping(a);
             }
         }

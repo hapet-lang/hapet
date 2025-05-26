@@ -1,6 +1,7 @@
 ﻿using HapetFrontend.Ast.Declarations;
 using HapetFrontend.Ast.Expressions;
 using HapetFrontend.Ast.Statements;
+using HapetFrontend.Entities;
 using HapetFrontend.Extensions;
 using HapetFrontend.Parsing;
 using HapetFrontend.Scoping;
@@ -54,7 +55,7 @@ namespace HapetFrontend.Ast
         /// Generic parameter constrains like:
         /// ...-T- where T: struct, enum, class { ... }
         /// </summary>
-        public Dictionary<AstIdExpr, List<AstNestedExpr>> GenericConstrains { get; set; } = new Dictionary<AstIdExpr, List<AstNestedExpr>>();
+        public Dictionary<AstIdExpr, List<AstConstrainStmt>> GenericConstrains { get; set; } = new Dictionary<AstIdExpr, List<AstConstrainStmt>>();
 
         /// <summary>
         /// Contains the original generic decl from which the current one is created 

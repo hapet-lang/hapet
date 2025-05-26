@@ -1,6 +1,8 @@
 ﻿using HapetFrontend.Ast;
 using HapetFrontend.Ast.Declarations;
 using HapetFrontend.Ast.Expressions;
+using HapetFrontend.Ast.Statements;
+using HapetFrontend.Entities;
 using HapetFrontend.Helpers;
 using HapetFrontend.Parsing;
 using HapetFrontend.Types;
@@ -29,7 +31,7 @@ namespace HapetPostPrepare
             {
                 var originalGeneric = (decl.Name as AstIdGenericExpr).GenericRealTypes[i];
                 var currGeneric = pureGenerics[i];
-                var currContrains = new List<AstNestedExpr>();
+                var currContrains = new List<AstConstrainStmt>();
                 if (decl.GenericConstrains.TryGetValue(currGeneric, out var constrains))
                     currContrains = constrains;
 

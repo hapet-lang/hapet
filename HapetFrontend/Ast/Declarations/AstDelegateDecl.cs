@@ -1,5 +1,6 @@
 ﻿using HapetFrontend.Ast.Expressions;
 using HapetFrontend.Ast.Statements;
+using HapetFrontend.Entities;
 using HapetFrontend.Helpers;
 using HapetFrontend.Parsing;
 using HapetFrontend.Scoping;
@@ -26,10 +27,10 @@ namespace HapetFrontend.Ast.Declarations
 
         public override AstStatement GetDeepCopy()
         {
-            Dictionary<AstIdExpr, List<AstNestedExpr>> copiedConstrains = new Dictionary<AstIdExpr, List<AstNestedExpr>>();
+            Dictionary<AstIdExpr, List<AstConstrainStmt>> copiedConstrains = new Dictionary<AstIdExpr, List<AstConstrainStmt>>();
             foreach (var cc in GenericConstrains)
             {
-                copiedConstrains.Add(cc.Key.GetDeepCopy() as AstIdExpr, cc.Value.Select(x => x.GetDeepCopy() as AstNestedExpr).ToList());
+                copiedConstrains.Add(cc.Key.GetDeepCopy() as AstIdExpr, cc.Value.Select(x => x.GetDeepCopy() as AstConstrainStmt).ToList());
             }
 
             var copy = new AstDelegateDecl(

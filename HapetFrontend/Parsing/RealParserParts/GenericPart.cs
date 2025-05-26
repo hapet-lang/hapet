@@ -1,5 +1,8 @@
 ﻿using HapetFrontend.Ast;
 using HapetFrontend.Ast.Expressions;
+using HapetFrontend.Ast.Statements;
+using HapetFrontend.Entities;
+using HapetFrontend.Enums;
 using HapetFrontend.Errors;
 using System.Runtime;
 
@@ -7,10 +10,10 @@ namespace HapetFrontend.Parsing
 {
     public partial class Parser
     {
-        private Dictionary<AstIdExpr, List<AstNestedExpr>> ParseGenericConstrains(List<AstIdExpr> generics)
+        private Dictionary<AstIdExpr, List<AstConstrainStmt>> ParseGenericConstrains(List<AstIdExpr> generics)
         {
             var inInfo = new Entities.ParserInInfo();
-            var genericConstrains = new Dictionary<AstIdExpr, List<AstNestedExpr>>();
+            var genericConstrains = new Dictionary<AstIdExpr, List<AstConstrainStmt>>();
 
             var tst = PeekToken();
 
@@ -50,28 +53,34 @@ namespace HapetFrontend.Parsing
 
                 SkipNewlines();
 
-                List<AstNestedExpr> constrains = new List<AstNestedExpr>();
+                List<AstConstrainStmt> constrains = new List<AstConstrainStmt>();
                 while (!CheckTokens(TokenType.OpenBrace, TokenType.KwWhere))
                 {
                     SkipNewlines();
 
                     AstNestedExpr ident = null;
+                    List<AstNestedExpr> additionalExprs = new List<AstNestedExpr>();
+                    GenericConstrainType constrainType = GenericConstrainType.None;
+
                     var tkn = NextToken();
                     switch (tkn.Type)
                     {
                         case TokenType.Identifier:
                             {
                                 ident = ParseIdentifierExpression(inInfo);
+                                constrainType = GenericConstrainType.CustomType;
                                 break;
                             }
                         case TokenType.KwStruct:
                             {
                                 ident = new AstNestedExpr(new AstIdExpr("struct", tkn.Location), null, tkn.Location);
+                                constrainType = GenericConstrainType.StructType;
                                 break;
                             }
                         case TokenType.KwClass:
                             {
                                 ident = new AstNestedExpr(new AstIdExpr("class", tkn.Location), null, tkn.Location);
+                                constrainType = GenericConstrainType.ClassType;
                                 break;
                             }
                         default:
@@ -81,7 +90,10 @@ namespace HapetFrontend.Parsing
                                 break;
                             }
                     }
-                    constrains.Add(ident);
+                    constrains.Add(new AstConstrainStmt(ident, constrainType, ident.Location) 
+                    { 
+                        AdditionalExprs = additionalExprs,
+                    });
                     // if there is something else
                     if (CheckToken(TokenType.Comma))
                     {

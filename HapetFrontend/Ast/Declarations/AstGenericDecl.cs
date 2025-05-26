@@ -1,4 +1,6 @@
 ﻿using HapetFrontend.Ast.Expressions;
+using HapetFrontend.Ast.Statements;
+using HapetFrontend.Entities;
 using HapetFrontend.Helpers;
 using HapetFrontend.Types;
 
@@ -9,7 +11,7 @@ namespace HapetFrontend.Ast.Declarations
         /// <summary>
         /// Declarations that are in the class
         /// </summary>
-        public List<AstDeclaration> Declarations { get; } = new List<AstDeclaration>();
+        public List<AstDeclaration> Declarations { get; set; } = new List<AstDeclaration>();
 
         /// <summary>
         /// The list of types from which the current class is inherited
@@ -19,7 +21,7 @@ namespace HapetFrontend.Ast.Declarations
         /// <summary>
         /// The list of generic constrains
         /// </summary>
-        public List<AstNestedExpr> Constrains { get; set; } = new List<AstNestedExpr>();
+        public List<AstConstrainStmt> Constrains { get; set; } = new List<AstConstrainStmt>();
 
         public override string AAAName => nameof(AstGenericDecl);
 
@@ -31,23 +33,14 @@ namespace HapetFrontend.Ast.Declarations
 
         public override AstStatement GetDeepCopy()
         {
-            Dictionary<AstIdExpr, List<AstNestedExpr>> copiedConstrains = new Dictionary<AstIdExpr, List<AstNestedExpr>>();
-            foreach (var cc in GenericConstrains)
-            {
-                copiedConstrains.Add(cc.Key.GetDeepCopy() as AstIdExpr, cc.Value.Select(x => x.GetDeepCopy() as AstNestedExpr).ToList());
-            }
-
-            var copy = new AstClassDecl(
+            var copy = new AstGenericDecl(
                 Name.GetDeepCopy() as AstIdExpr,
-                Declarations.Select(x => x.GetDeepCopy() as AstDeclaration).ToList(),
                 Documentation, Location)
             {
-                AllRawFields = AllRawFields?.Select(x => x.GetDeepCopy() as AstVarDecl).ToList(),
-                AllVirtualMethods = AllVirtualMethods?.Select(x => x.GetDeepCopy() as AstFuncDecl).ToList(),
-                GenericConstrains = copiedConstrains,
+                Constrains = Constrains?.Select(x => x.GetDeepCopy() as AstConstrainStmt).ToList(),
+                Declarations = Declarations.Select(x => x.GetDeepCopy() as AstDeclaration).ToList(),
                 HasGenericTypes = HasGenericTypes,
                 InheritedFrom = InheritedFrom?.Select(x => x.GetDeepCopy() as AstNestedExpr).ToList(),
-                IsInterface = IsInterface,
                 IsImported = IsImported,
                 Scope = Scope,
                 SourceFile = SourceFile,
