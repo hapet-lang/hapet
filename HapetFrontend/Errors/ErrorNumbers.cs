@@ -274,5 +274,6 @@
         EnumHasSameValue                = 0x3002,
         StaticFuncFromObject            = 0x3003,
         StaticFieldFromObject           = 0x3004,
+        StructCastWithAs                = 0x3005,
     }
 }

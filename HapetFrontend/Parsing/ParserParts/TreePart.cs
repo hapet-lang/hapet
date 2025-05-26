@@ -132,6 +132,7 @@ namespace HapetFrontend.Parsing
                 {
                     AstBinaryExpr asExpr = binExpr.GetDeepCopy() as AstBinaryExpr;
                     asExpr.Operator = "as";
+                    asExpr.IsFromIsOperator = true;
 
                     // creating deep copies of its elements
                     // because we don't want to change 

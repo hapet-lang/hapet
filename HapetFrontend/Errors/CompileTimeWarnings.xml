@@ -40,4 +40,8 @@
         <Number>3004</Number>
         <Text>Const/static fields should not be accessed from an object!</Text>
     </Item>
+	<Item>
+        <Number>3005</Number>
+        <Text>Cast to a struct should not be done via 'as' keyword!</Text>
+    </Item>
 </Items>

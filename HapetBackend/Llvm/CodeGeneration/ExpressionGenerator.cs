@@ -197,77 +197,80 @@ namespace HapetBackend.Llvm
                         {
                             var rightExpr = (binExpr.Right as AstExpression);
 
-                            ClassType leftType;
-                            ClassType rightType = (rightExpr.OutType as PointerType).TargetType as ClassType;
-                            if ((leftExpr.OutType as PointerType).TargetType is ClassType clsT)
+                            if ((rightExpr.OutType as PointerType).TargetType is ClassType)
                             {
-                                leftType = clsT;
-                            }
-                            else
-                            {
-                                // when smth like 'valueTyped as ICringeCock'
-                                return CreateCast(_builder, left, (leftExpr.OutType as PointerType).TargetType, rightType);
-                            }
-
-                            // you would ask - wtf is anyIsInterface?
-                            // then I would say:
-                            /*
-                                class Program
+                                ClassType leftType;
+                                ClassType rightType = (rightExpr.OutType as PointerType).TargetType as ClassType;
+                                if ((leftExpr.OutType as PointerType).TargetType is ClassType clsT)
                                 {
-                                    static void Main() 
-                                    {
-                                        Obj a = new Obj();
-                                        ILoh b = a as ILoh;
-                                        Debug.Assert(b != null);
-                                    }
-                                }
-
-                                interface IBot {}
-                                class Obj : IBot {}
-
-                                interface ILoh {}
-                                class Base : Obj, ILoh {}
-
-                                class Derived : Base {}
-                                */
-                            // https://habr.com/ru/articles/882888/
-                            // this shite has no compile time errors in c#...
-                            bool anyIsInterface = rightType.Declaration.IsInterface || leftType.Declaration.IsInterface;
-                            bool isUpcast = leftType.IsInheritedFrom(rightType);
-                            // check upcast
-                            if (!isUpcast || anyIsInterface)
-                            {
-                                // swap them and check inheritance
-                                bool isDownCast = rightType.IsInheritedFrom(leftType);
-                                if (isDownCast || anyIsInterface)
-                                {
-                                    var ptrToCastTypeInfo = _typeInfoDictionary[rightType];
-                                    var castTypeNull = LLVMValueRef.CreateConstPointerNull(HapetTypeToLLVMType(rightExpr.OutType));
-                                    var casted = _builder.BuildBitCast(left, HapetTypeToLLVMType(rightExpr.OutType), "castedAs");
-
-                                    // WARN: hard cock
-                                    var typeConverter = _currentFunction.Scope.GetSymbolInNamespace("System.Runtime.Conversion", new AstIdExpr("TypeConverter"));
-                                    DeclSymbol downcasterSymbol;
-                                    if (rightType.Declaration.IsInterface)
-                                        downcasterSymbol = (typeConverter.Decl as AstClassDecl).SubScope.GetSymbol(new AstIdExpr("System.Runtime.Conversion.TypeConverter::CanBeDowncastedInterface(void*:System.Runtime.TypeInfoUnsafe*)")) as DeclSymbol;
-                                    else
-                                        downcasterSymbol = (typeConverter.Decl as AstClassDecl).SubScope.GetSymbol(new AstIdExpr("System.Runtime.Conversion.TypeConverter::CanBeDowncasted(void*:System.Runtime.TypeInfoUnsafe*)")) as DeclSymbol;
-                                    var downcasterFunc = _valueMap[downcasterSymbol];
-                                    LLVMTypeRef funcType = _typeMap[downcasterSymbol.Decl.Type.OutType];
-                                    var canBeDowncasted = _builder.BuildCall2(funcType, downcasterFunc, new LLVMValueRef[] { left, ptrToCastTypeInfo }, "canBeDowncasted");
-                                    return _builder.BuildSelect(canBeDowncasted, casted, castTypeNull, "castResult");
+                                    leftType = clsT;
                                 }
                                 else
                                 {
-                                    _messageHandler.ReportMessage(_currentSourceFile.Text, binExpr, [HapetType.AsString(leftType), HapetType.AsString(rightType)], ErrorCode.Get(CTEN.TypeCouldNotBeConverted));
-                                    return default;
+                                    // when smth like 'valueTyped as ICringeCock'
+                                    return CreateCast(_builder, left, (leftExpr.OutType as PointerType).TargetType, rightType);
+                                }
+
+                                // you would ask - wtf is anyIsInterface?
+                                // then I would say:
+                                // https://habr.com/ru/articles/882888/
+                                // this shite has no compile time errors in c#...
+                                bool anyIsInterface = rightType.Declaration.IsInterface || leftType.Declaration.IsInterface;
+                                bool isUpcast = leftType.IsInheritedFrom(rightType);
+                                // check upcast
+                                if (!isUpcast || anyIsInterface)
+                                {
+                                    // swap them and check inheritance
+                                    bool isDownCast = rightType.IsInheritedFrom(leftType);
+                                    if (isDownCast || anyIsInterface)
+                                    {
+                                        var ptrToCastTypeInfo = _typeInfoDictionary[rightType];
+                                        var castTypeNull = LLVMValueRef.CreateConstPointerNull(HapetTypeToLLVMType(rightExpr.OutType));
+                                        var casted = _builder.BuildBitCast(left, HapetTypeToLLVMType(rightExpr.OutType), "castedAs");
+
+                                        // WARN: hard cock
+                                        var typeConverter = _currentFunction.Scope.GetSymbolInNamespace("System.Runtime.Conversion", new AstIdExpr("TypeConverter"));
+                                        DeclSymbol downcasterSymbol;
+                                        if (rightType.Declaration.IsInterface)
+                                            downcasterSymbol = (typeConverter.Decl as AstClassDecl).SubScope.GetSymbol(new AstIdExpr("System.Runtime.Conversion.TypeConverter::CanBeDowncastedInterface(void*:System.Runtime.TypeInfoUnsafe*)")) as DeclSymbol;
+                                        else
+                                            downcasterSymbol = (typeConverter.Decl as AstClassDecl).SubScope.GetSymbol(new AstIdExpr("System.Runtime.Conversion.TypeConverter::CanBeDowncasted(void*:System.Runtime.TypeInfoUnsafe*)")) as DeclSymbol;
+                                        var downcasterFunc = _valueMap[downcasterSymbol];
+                                        LLVMTypeRef funcType = _typeMap[downcasterSymbol.Decl.Type.OutType];
+                                        var canBeDowncasted = _builder.BuildCall2(funcType, downcasterFunc, new LLVMValueRef[] { left, ptrToCastTypeInfo }, "canBeDowncasted");
+                                        return _builder.BuildSelect(canBeDowncasted, casted, castTypeNull, "castResult");
+                                    }
+                                }
+                                else
+                                {
+                                    // just bitcast when upcast shite
+                                    return _builder.BuildBitCast(left, HapetTypeToLLVMType(rightExpr.OutType), "castedAs");
                                 }
                             }
                             else
                             {
-                                // just bitcast when upcast shite
-                                return _builder.BuildBitCast(left, HapetTypeToLLVMType(rightExpr.OutType), "castedAs");
+                                ClassType leftType;
+                                StructType rightType = rightExpr.OutType as StructType;
+                                if ((leftExpr.OutType as PointerType).TargetType is ClassType clsT)
+                                {
+                                    leftType = clsT;
+                                }
+                                else
+                                {
+                                    // TODO: error. user tried to do smth like 
+                                    // valueType as SomeStructType
+                                    return default;
+                                }
+
+                                // check inheritance
+                                bool isDownCast = rightType.IsInheritedFrom(leftType);
+                                if (isDownCast)
+                                {
+                                    return CreateStructCastFromObject(left, rightType, false);
+                                }
                             }
+                            _messageHandler.ReportMessage(_currentSourceFile.Text, binExpr, [HapetType.AsString(leftExpr.OutType), HapetType.AsString(rightExpr.OutType)], ErrorCode.Get(CTEN.TypeCouldNotBeConverted));
+                            return default;
                         }
                     case "is":
                         {

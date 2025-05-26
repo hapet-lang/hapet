@@ -383,45 +383,7 @@ namespace HapetBackend.Llvm
                 }
                 else if (outType is StructType structType)
                 {
-                    // cast from object instance to struct
-
-                    var ptrToCastTypeInfo = _typeInfoDictionary[structType];
-
-                    // WARN: hard cock
-                    var typeConverter = _currentFunction.Scope.GetSymbolInNamespace("System.Runtime.Conversion", new AstIdExpr("TypeConverter"));
-                    DeclSymbol downcasterSymbol;
-                    downcasterSymbol = (typeConverter.Decl as AstClassDecl).SubScope.GetSymbol(new AstIdExpr("System.Runtime.Conversion.TypeConverter::CanBeDowncasted(void*:System.Runtime.TypeInfoUnsafe*)")) as DeclSymbol;
-                    var downcasterFunc = _valueMap[downcasterSymbol];
-                    LLVMTypeRef funcType = _typeMap[downcasterSymbol.Decl.Type.OutType];
-                    var canBeDowncasted = _builder.BuildCall2(funcType, downcasterFunc, new LLVMValueRef[] { val, ptrToCastTypeInfo }, "canBeDowncasted");
-
-                    // creating other blocks
-                    var bbTrue = _lastFunctionValueRef.AppendBasicBlock($"cast.true");
-                    var bbFalse = _lastFunctionValueRef.AppendBasicBlock($"cast.false");
-                    var bbEnd = _lastFunctionValueRef.AppendBasicBlock($"cast.end");
-
-                    var v = _builder.BuildAlloca(HapetTypeToLLVMType(structType), $"tmp_{structType.Declaration.Name.Name}");
-                    _builder.BuildCondBr(canBeDowncasted, bbTrue, bbFalse);
-
-                    // if could be downcasted
-                    _builder.PositionAtEnd(bbTrue);
-                    // get boxed data 
-                    var boxedTypeData = _boxedStructTypes[outType];
-                    // getting struct from the alloced mem
-                    var offseted = _builder.BuildGEP2(_context.Int8Type, val, new LLVMValueRef[] { LLVMValueRef.CreateConstInt(_context.Int32Type, boxedTypeData.Item2) }, "offsetedPtr");
-                    var castedOffseted = _builder.BuildBitCast(offseted, HapetTypeToLLVMType(PointerType.GetPointerType(structType)), "offseted");
-                    var loadedData = _builder.BuildLoad2(HapetTypeToLLVMType(structType), castedOffseted, "loaded");
-                    _builder.BuildStore(loadedData, v);
-                    _builder.BuildBr(bbEnd);
-
-                    // if could not be downcasted
-                    _builder.PositionAtEnd(bbFalse);
-                    // TODO: generate runtime error!!!
-                    _builder.BuildBr(bbEnd);
-
-                    _builder.PositionAtEnd(bbEnd);
-
-                    return _builder.BuildLoad2(HapetTypeToLLVMType(structType), v); // return loaded
+                    return CreateStructCastFromObject(val, structType);
                 }
             }
             if (inType is IntPtrType)
@@ -520,6 +482,59 @@ namespace HapetBackend.Llvm
             }
             // ...
             return val;
+        }
+
+        private LLVMValueRef CreateStructCastFromObject(LLVMValueRef val, StructType structType, bool generateErrorOnInvalidCast = true)
+        {
+            // cast from object instance to struct
+
+            var ptrToCastTypeInfo = _typeInfoDictionary[structType];
+
+            // WARN: hard cock
+            var typeConverter = _currentFunction.Scope.GetSymbolInNamespace("System.Runtime.Conversion", new AstIdExpr("TypeConverter"));
+            DeclSymbol downcasterSymbol;
+            downcasterSymbol = (typeConverter.Decl as AstClassDecl).SubScope.GetSymbol(new AstIdExpr("System.Runtime.Conversion.TypeConverter::CanBeDowncasted(void*:System.Runtime.TypeInfoUnsafe*)")) as DeclSymbol;
+            var downcasterFunc = _valueMap[downcasterSymbol];
+            LLVMTypeRef funcType = _typeMap[downcasterSymbol.Decl.Type.OutType];
+            var canBeDowncasted = _builder.BuildCall2(funcType, downcasterFunc, new LLVMValueRef[] { val, ptrToCastTypeInfo }, "canBeDowncasted");
+
+            // creating other blocks
+            var bbTrue = _lastFunctionValueRef.AppendBasicBlock($"cast.true");
+            var bbFalse = _lastFunctionValueRef.AppendBasicBlock($"cast.false");
+            var bbEnd = _lastFunctionValueRef.AppendBasicBlock($"cast.end");
+
+            var v = _builder.BuildAlloca(HapetTypeToLLVMType(structType), $"tmp_{structType.Declaration.Name.Name}");
+            _builder.BuildCondBr(canBeDowncasted, bbTrue, bbFalse);
+
+            // if could be downcasted
+            _builder.PositionAtEnd(bbTrue);
+            // get boxed data 
+            var boxedTypeData = _boxedStructTypes[structType];
+            // getting struct from the alloced mem
+            var offseted = _builder.BuildGEP2(_context.Int8Type, val, new LLVMValueRef[] { LLVMValueRef.CreateConstInt(_context.Int32Type, boxedTypeData.Item2) }, "offsetedPtr");
+            var castedOffseted = _builder.BuildBitCast(offseted, HapetTypeToLLVMType(PointerType.GetPointerType(structType)), "offseted");
+            var loadedData = _builder.BuildLoad2(HapetTypeToLLVMType(structType), castedOffseted, "loaded");
+            _builder.BuildStore(loadedData, v);
+            _builder.BuildBr(bbEnd);
+
+            // if could not be downcasted
+            _builder.PositionAtEnd(bbFalse);
+            // check if we need to generate an runtime exception on invalid cast
+            if (generateErrorOnInvalidCast)
+            {
+                // TODO: generate runtime error!!!
+            }
+            else
+            {
+                // set default expr to the var
+                var castTypeDefault = GenerateEmptyStructExprCode(new AstEmptyStructExpr(structType));
+                _builder.BuildStore(castTypeDefault, v);
+            }
+            _builder.BuildBr(bbEnd);
+
+            _builder.PositionAtEnd(bbEnd);
+
+            return _builder.BuildLoad2(HapetTypeToLLVMType(structType), v); // return loaded
         }
 
         /// <summary>
