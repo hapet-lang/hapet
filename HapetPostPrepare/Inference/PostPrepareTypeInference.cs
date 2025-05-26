@@ -1106,7 +1106,6 @@ namespace HapetPostPrepare
                 }
                 else
                 {
-                    // TODO: better check - search for common types LUB: 'cond ? ReadOnlyListType : ListType'
                     // TODO: error that the types are not connected to each other
                 }
             }
