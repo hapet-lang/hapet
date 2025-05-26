@@ -1,4 +1,5 @@
 ﻿using HapetFrontend.Ast;
+using HapetFrontend.Ast.Declarations;
 using HapetFrontend.Ast.Expressions;
 using HapetFrontend.Helpers;
 using HapetFrontend.Parsing;
@@ -32,12 +33,18 @@ namespace HapetPostPrepare
                 if (decl.GenericConstrains.TryGetValue(currGeneric, out var constrains))
                     currContrains = constrains;
 
-                // TODO: inference constains
-
-                originalGeneric.OutType = new GenericType(currGeneric, currContrains)
+                // creating the declaration
+                var genericDecl = new AstGenericDecl(currGeneric, location: currGeneric.Location)
                 {
-                    ParentDeclaration = decl.IsImplOfGeneric ? decl.OriginalGenericDecl : decl,
+                    Constrains = currContrains,
+                    ParentDecl = decl.IsImplOfGeneric ? decl.OriginalGenericDecl : decl,
+                    IsNestedDecl = true // for what? but let it be :)
                 };
+
+                // post prepare
+                PostPrepareGenericDeclConstrains(genericDecl);
+
+                originalGeneric.OutType = genericDecl.Type.OutType;
                 currGeneric.OutType = originalGeneric.OutType;
             }
 

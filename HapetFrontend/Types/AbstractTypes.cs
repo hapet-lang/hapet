@@ -47,20 +47,19 @@ namespace HapetFrontend.Types
     /// </summary>
     public class GenericType : AbstractType
     {
-        public AstIdExpr Name { get; set; }
         /// <summary>
         /// The declaration that contains the generic types like 'List[T]'
         /// </summary>
         public AstDeclaration ParentDeclaration { get; set; }
-        public List<AstNestedExpr> Constrains { get; set; }
+        public AstGenericDecl Declaration { get; }
 
-        public static GenericType LiteralType { get; } = new GenericType(null, new List<AstNestedExpr>());
+        public static GenericType LiteralType { get; } = new GenericType(null);
 
         public override string TypeName => "generic";
 
         public override AstExpression GetAst(AstExpression iniExpr = null)
         {
-            return new AstNestedExpr(Name, null)
+            return new AstNestedExpr(Declaration.Name.GetCopy(), null)
             {
                 Scope = iniExpr?.Scope,
                 SourceFile = iniExpr?.SourceFile,
@@ -68,13 +67,12 @@ namespace HapetFrontend.Types
             };
         }
 
-        public GenericType(AstIdExpr name, List<AstNestedExpr> constrains)
+        public GenericType(AstGenericDecl decl)
         {
-            Name = name;
-            Constrains = constrains;
+            Declaration = decl;
         }
 
-        public override string ToString() => Name.Name;
+        public override string ToString() => Declaration.Name.Name;
 
         public static bool AreTypesTheSameIncludingGenerics(HapetType t1, HapetType t2)
         {
