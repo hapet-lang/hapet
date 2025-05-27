@@ -14,11 +14,6 @@ namespace HapetFrontend.Ast.Declarations
         public List<AstDeclaration> Declarations { get; set; } = new List<AstDeclaration>();
 
         /// <summary>
-        /// The list of types from which the current class is inherited
-        /// </summary>
-        public List<AstNestedExpr> InheritedFrom { get; set; } = new List<AstNestedExpr>();
-
-        /// <summary>
         /// The list of generic constrains
         /// </summary>
         public List<AstConstrainStmt> Constrains { get; set; } = new List<AstConstrainStmt>();
@@ -40,7 +35,6 @@ namespace HapetFrontend.Ast.Declarations
                 Constrains = Constrains?.Select(x => x.GetDeepCopy() as AstConstrainStmt).ToList(),
                 Declarations = Declarations.Select(x => x.GetDeepCopy() as AstDeclaration).ToList(),
                 HasGenericTypes = HasGenericTypes,
-                InheritedFrom = InheritedFrom?.Select(x => x.GetDeepCopy() as AstNestedExpr).ToList(),
                 IsImported = IsImported,
                 Scope = Scope,
                 SourceFile = SourceFile,
