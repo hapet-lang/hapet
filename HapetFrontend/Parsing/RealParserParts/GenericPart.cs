@@ -4,6 +4,7 @@ using HapetFrontend.Ast.Statements;
 using HapetFrontend.Entities;
 using HapetFrontend.Enums;
 using HapetFrontend.Errors;
+using System.Collections.Generic;
 using System.Runtime;
 
 namespace HapetFrontend.Parsing
@@ -110,6 +111,15 @@ namespace HapetFrontend.Parsing
                     // if there is nothing else
                     break;
                 }
+
+                // we need to manually add 'object' constrain
+                constrains.Add(new AstConstrainStmt(
+                    new AstNestedExpr(new AstIdExpr("System.Object", nameIdentExpr.Location), null, nameIdentExpr.Location),
+                    GenericConstrainType.CustomType,
+                    nameIdentExpr.Location)
+                {
+                    AdditionalExprs = new List<AstNestedExpr>(),
+                });
 
                 // add it
                 genericConstrains.Add(nameIdentExpr, constrains);
