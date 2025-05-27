@@ -21,7 +21,7 @@ namespace HapetFrontend.Ast.Statements
         /// </summary>
         public List<AstNestedExpr> AdditionalExprs { get; set; }
 
-        public override string AAAName => nameof(AstReturnStmt);
+        public override string AAAName => nameof(AstConstrainStmt);
 
         public AstConstrainStmt(AstNestedExpr expr, GenericConstrainType type, ILocation location = null) : base(location)
         {
