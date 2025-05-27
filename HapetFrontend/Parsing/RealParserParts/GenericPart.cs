@@ -90,10 +90,16 @@ namespace HapetFrontend.Parsing
                                 break;
                             }
                     }
-                    constrains.Add(new AstConstrainStmt(ident, constrainType, ident.Location) 
-                    { 
-                        AdditionalExprs = additionalExprs,
-                    });
+
+                    // possible null
+                    if (ident != null)
+                    {
+                        constrains.Add(new AstConstrainStmt(ident, constrainType, ident.Location)
+                        {
+                            AdditionalExprs = additionalExprs,
+                        });
+                    }
+                    
                     // if there is something else
                     if (CheckToken(TokenType.Comma))
                     {
