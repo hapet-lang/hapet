@@ -112,20 +112,29 @@ namespace HapetFrontend.Parsing
                     break;
                 }
 
-                // we need to manually add 'object' constrain
-                constrains.Add(new AstConstrainStmt(
-                    new AstNestedExpr(new AstIdExpr("System.Object", nameIdentExpr.Location), null, nameIdentExpr.Location),
-                    GenericConstrainType.CustomType,
-                    nameIdentExpr.Location)
-                {
-                    AdditionalExprs = new List<AstNestedExpr>(),
-                });
-
                 // add it
                 genericConstrains.Add(nameIdentExpr, constrains);
 
                 SkipNewlines();
             }
+
+            // we need to manually add 'object' constrain
+            foreach (var g in generics)
+            {
+                // add if does not exist
+                if (!genericConstrains.ContainsKey(g))
+                    genericConstrains.Add(g, new List<AstConstrainStmt>());
+
+                // manually adding the constrain
+                genericConstrains[g].Add(new AstConstrainStmt(
+                    new AstNestedExpr(new AstIdExpr("System.Object", g.Location), null, g.Location),
+                    GenericConstrainType.CustomType,
+                    g.Location)
+                {
+                    AdditionalExprs = new List<AstNestedExpr>(),
+                });
+            }
+
             return genericConstrains;
         }
     }
