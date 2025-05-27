@@ -64,7 +64,6 @@ namespace HapetPostPrepare
                     PostPrepareExprInference(decl.Name.AdditionalData, inInfo, ref outInfo);
 
                 // define in scope
-                // if it is public field - it should be visible in the scope in which var's class is
                 parentSubScope.DefineDeclSymbol(decl.Name.GetCopy(), decl);
             }
         }
