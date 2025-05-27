@@ -34,6 +34,15 @@ namespace HapetPostPrepare
                     InternalVarPP(decl, str.SubScope);
                 }
             }
+            else if (stmt is AstGenericDecl gen)
+            {
+                // infer fields at first
+                foreach (var decl in gen.Declarations.Where(x => x is AstVarDecl).Select(x => x as AstVarDecl).ToList())
+                {
+                    // field 
+                    InternalVarPP(decl, gen.SubScope);
+                }
+            }
             else if (stmt is AstEnumDecl enm)
             {
                 // infer fields at first

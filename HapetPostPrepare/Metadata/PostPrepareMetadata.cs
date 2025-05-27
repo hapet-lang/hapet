@@ -14,6 +14,7 @@ namespace HapetPostPrepare
         public List<AstEnumDecl> AllEnumsMetadata { get; } = new List<AstEnumDecl>();
         public List<AstDelegateDecl> AllDelegatesMetadata { get; } = new List<AstDelegateDecl>();
         public List<AstFuncDecl> AllFunctionsMetadata { get; } = new List<AstFuncDecl>();
+        public List<AstGenericDecl> AllGenericsMetadata { get; } = new List<AstGenericDecl>();
 
         private List<AstClassDecl> _serializeClassesMetadata { get; } = new List<AstClassDecl>();
         private List<AstStructDecl> _serializeStructsMetadata { get; } = new List<AstStructDecl>();
@@ -190,6 +191,10 @@ namespace HapetPostPrepare
             {
                 allFuncs.AddRange(str.Declarations.Where(x => x is AstFuncDecl).Select(x => x as AstFuncDecl));
             }
+            foreach (var gen in AllGenericsMetadata.ToList())
+            {
+                allFuncs.AddRange(gen.Declarations.Where(x => x is AstFuncDecl).Select(x => x as AstFuncDecl));
+            }
 
             foreach (var func in allFuncs)
             {
@@ -237,6 +242,17 @@ namespace HapetPostPrepare
                 PostPrepareMetadataTypeFieldDecls(str);
                 _currentParentStack.RemoveParent();
                 if (str.IsNestedDecl)
+                    _currentParentStack.RemoveParent();
+            }
+            foreach (var gen in AllGenericsMetadata.ToList())
+            {
+                _currentSourceFile = gen.SourceFile;
+                if (gen.IsNestedDecl)
+                    _currentParentStack.AddParent(gen.ParentDecl);
+                _currentParentStack.AddParent(gen);
+                PostPrepareMetadataTypeFieldDecls(gen);
+                _currentParentStack.RemoveParent();
+                if (gen.IsNestedDecl)
                     _currentParentStack.RemoveParent();
             }
             foreach (var enm in AllEnumsMetadata.ToList())

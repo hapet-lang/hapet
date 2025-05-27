@@ -53,6 +53,8 @@ namespace HapetPostPrepare
 
                 // post prepare
                 PostPrepareGenericDeclConstrains(genericDecl, inInfo, ref outInfo);
+                // add it to preparation pipe
+                AllGenericsMetadata.Add(genericDecl);
 
                 originalGeneric.OutType = genericDecl.Type.OutType;
                 currGeneric.OutType = originalGeneric.OutType;

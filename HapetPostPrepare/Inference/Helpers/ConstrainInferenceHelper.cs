@@ -3,6 +3,8 @@ using HapetFrontend.Ast;
 using HapetFrontend.Ast.Declarations;
 using HapetFrontend.Ast.Statements;
 using HapetFrontend.Enums;
+using HapetFrontend.Helpers;
+using HapetFrontend.Parsing;
 using HapetFrontend.Types;
 using HapetPostPrepare.Entities;
 
@@ -46,10 +48,13 @@ namespace HapetPostPrepare
                 // create a copy of the decl 
                 var copied = d.GetDeepCopy() as AstDeclaration;
                 // clear bodies/initializers - there is no need for them
-                if (copied is AstFuncDecl f && f.Body != null)
-                    f.Body.Statements.Clear();
+                if (copied is AstFuncDecl f)
+                    f.Body = null;
                 else if (copied is AstVarDecl v)
                     v.Initializer = null;
+
+                // we should make all the decls abstract
+                SpecialKeysHelper.ReplaceSpecialKeysByTypes(copied, new List<Token>() { Lexer.CreateToken(TokenType.KwAbstract, copied.Location.Beginning) });
 
                 // add the copy
                 decl.Declarations.Add(copied);

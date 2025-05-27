@@ -29,6 +29,17 @@ namespace HapetPostPrepare
                     PPFunc(decl);
                 }
             }
+            else if (stmt is AstGenericDecl gen)
+            {
+                // do not serialize generic funcs
+                var saved = needSerialize;
+                needSerialize = false;
+                foreach (var decl in gen.Declarations.Where(x => x is AstFuncDecl).Select(x => x as AstFuncDecl).ToList())
+                {
+                    PPFunc(decl);
+                }
+                needSerialize = saved;
+            }
             else if (stmt is AstFuncDecl func)
             {
                 PPFunc(func);
