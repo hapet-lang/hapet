@@ -414,8 +414,8 @@ namespace HapetPostPrepare
                         }
                         if (currId.GenericRealTypes[i].OutType is GenericType kType &&
                             genId.GenericRealTypes[i].OutType is GenericType sType &&
-                            kType.ParentDeclaration is AstDeclaration fDecl &&
-                            sType.ParentDeclaration is AstDeclaration sDecl)
+                            kType.Declaration.ParentDecl is AstDeclaration fDecl &&
+                            sType.Declaration.ParentDecl is AstDeclaration sDecl)
                         {
                             // check that original decls are the same
                             var fComp1 = fDecl.IsImplOfGeneric ? fDecl.OriginalGenericDecl : fDecl;

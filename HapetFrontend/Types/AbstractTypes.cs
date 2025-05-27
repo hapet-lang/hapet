@@ -47,10 +47,6 @@ namespace HapetFrontend.Types
     /// </summary>
     public class GenericType : AbstractType
     {
-        /// <summary>
-        /// The declaration that contains the generic types like 'List[T]'
-        /// </summary>
-        public AstDeclaration ParentDeclaration { get; set; }
         public AstGenericDecl Declaration { get; }
 
         public static GenericType LiteralType { get; } = new GenericType(null);
