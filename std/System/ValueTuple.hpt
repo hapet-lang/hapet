@@ -483,7 +483,7 @@ public struct ValueTuple<T1, T2>
     public override int GetHashCode()
     {
         return HashCode.Combine(Item1 == null ? 0 : Item1.GetHashCode(),
-                                item2 == null ? 0 : Item2.GetHashCode());
+                                Item2 == null ? 0 : Item2.GetHashCode());
     }
 
     /// <summary>
