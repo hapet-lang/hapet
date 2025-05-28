@@ -675,8 +675,7 @@ namespace HapetPostPrepare
         {
             // prepare the right side
             PostPrepareExprInference(addrExpr.SubExpression, inInfo, ref outInfo);
-            // create a new reference type from the right side and set the type to itself
-            addrExpr.OutType = ReferenceType.GetRefType(addrExpr.SubExpression.OutType);
+            addrExpr.OutType = PointerType.GetPointerType(addrExpr.SubExpression.OutType);
         }
 
         private void PostPrepareNewExprInference(AstNewExpr newExpr, InInfo inInfo, ref OutInfo outInfo)

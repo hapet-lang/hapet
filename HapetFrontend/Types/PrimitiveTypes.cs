@@ -420,7 +420,7 @@ namespace HapetFrontend.Types
 
         public override string ToString()
         {
-            return $"&{(TargetType == null ? "null" : TargetType)}";
+            return $"ref {(TargetType == null ? "null" : TargetType)}";
         }
 
         public override int Match(HapetType concrete)
