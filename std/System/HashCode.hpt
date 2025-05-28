@@ -61,8 +61,13 @@ public struct HashCode
     private const uint Prime4 = 668265263U;
     private const uint Prime5 = 374761393U;
 
-    private uint _v1, _v2, _v3, _v4;
-    private uint _queue1, _queue2, _queue3;
+    private uint _v1;
+    private uint _v2;
+    private uint _v3;
+    private uint _v4;
+    private uint _queue1;
+    private uint _queue2;
+    private uint _queue3;
     private uint _length;
 
     private static unsafe uint GenerateGlobalSeed()
@@ -274,7 +279,7 @@ public struct HashCode
         return (int)hash;
     }
 
-    private inline static void Initialize(uint* v1, uint* v2, uint* v3, uint* v4)
+    private static inline void Initialize(uint* v1, uint* v2, uint* v3, uint* v4)
     {
         *v1 = s_seed + Prime1 + Prime2;
         *v2 = s_seed + Prime2;
@@ -282,17 +287,17 @@ public struct HashCode
         *v4 = s_seed - Prime1;
     }
 
-    private inline static uint Round(uint hash, uint input)
+    private static inline uint Round(uint hash, uint input)
     {
         return BitOperations.RotateLeft(hash + input * Prime2, 13) * Prime1;
     }
 
-    private inline static uint QueueRound(uint hash, uint queuedValue)
+    private static inline uint QueueRound(uint hash, uint queuedValue)
     {
         return BitOperations.RotateLeft(hash + queuedValue * Prime3, 17) * Prime4;
     }
 
-    private inline static uint MixState(uint v1, uint v2, uint v3, uint v4)
+    private static inline uint MixState(uint v1, uint v2, uint v3, uint v4)
     {
         return BitOperations.RotateLeft(v1, 1) + BitOperations.RotateLeft(v2, 7) + BitOperations.RotateLeft(v3, 12) + BitOperations.RotateLeft(v4, 18);
     }
@@ -302,7 +307,7 @@ public struct HashCode
         return s_seed + Prime5;
     }
 
-    private inline static uint MixFinal(uint hash)
+    private static inline uint MixFinal(uint hash)
     {
         hash ^= hash >> 15;
         hash *= Prime2;
@@ -315,11 +320,6 @@ public struct HashCode
     public void Add<T>(T value)
     {
         Add(value == null ? 0 : value.GetHashCode());
-    }
-
-    public void Add<T>(T value, IEqualityComparer<T> comparer)
-    {
-        Add(value == null ? 0 : (comparer == null ? value.GetHashCode() : comparer.GetHashCode(value)));
     }
 
     private void Add(int value)
