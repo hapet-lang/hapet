@@ -527,7 +527,7 @@ namespace HapetPostPrepare
             else
             {
                 unExpr.ActualOperator = operators[0];
-                unExpr.OutType = unExpr.ActualOperator.ResultType;
+                unExpr.OutType = ReplaceLiteralType(unExpr.ActualOperator.ResultType, unExpr);
 
                 // if the value could be evaluated at the compile time
                 if ((unExpr.SubExpr as AstExpression).OutValue != null && 
@@ -565,7 +565,7 @@ namespace HapetPostPrepare
             else
             {
                 binExpr.ActualOperator = operators[0];
-                binExpr.OutType = binExpr.ActualOperator.ResultType;
+                binExpr.OutType = ReplaceLiteralType(binExpr.ActualOperator.ResultType, binExpr);
 
                 // making some type casts
                 var leftExpr = (binExpr.Left as AstExpression);

@@ -26,6 +26,18 @@ namespace HapetPostPrepare
         }
 
         /// <summary>
+        /// Function is used to replace all literal types with real ones
+        /// </summary>
+        /// <param name="type"></param>
+        /// <returns></returns>
+        public HapetType ReplaceLiteralType(HapetType type, AstExpression exprForSearch)
+        {
+            if (type == StringType.LiteralType)
+                return GetStringType(exprForSearch);
+            return type;
+        }
+
+        /// <summary>
         /// Probably used only for proper error messaging - to not error 
         /// when there are multiple generics
         /// </summary>
