@@ -84,7 +84,7 @@ public struct HashCode
         uint hc1 = (uint)(value1 == null ? 0 : value1.GetHashCode());
 
         uint hash = MixEmptyState();
-        hash += 4;
+        hash += (uint)4;
 
         hash = QueueRound(hash, hc1);
 
@@ -98,7 +98,7 @@ public struct HashCode
         uint hc2 = (uint)(value2 == null ? 0 : value2.GetHashCode());
 
         uint hash = MixEmptyState();
-        hash += 8;
+        hash += (uint)8;
 
         hash = QueueRound(hash, hc1);
         hash = QueueRound(hash, hc2);
@@ -114,7 +114,7 @@ public struct HashCode
         uint hc3 = (uint)(value3 == null ? 0 : value3.GetHashCode());
 
         uint hash = MixEmptyState();
-        hash += 12;
+        hash += (uint)12;
 
         hash = QueueRound(hash, hc1);
         hash = QueueRound(hash, hc2);
@@ -143,7 +143,7 @@ public struct HashCode
         v4 = Round(v4, hc4);
 
         uint hash = MixState(v1, v2, v3, v4);
-        hash += 16;
+        hash += (uint)16;
 
         hash = MixFinal(hash);
         return (int)hash;
@@ -169,7 +169,7 @@ public struct HashCode
         v4 = Round(v4, hc4);
 
         uint hash = MixState(v1, v2, v3, v4);
-        hash += 20;
+        hash += (uint)20;
 
         hash = QueueRound(hash, hc5);
 
@@ -198,7 +198,7 @@ public struct HashCode
         v4 = Round(v4, hc4);
 
         uint hash = MixState(v1, v2, v3, v4);
-        hash += 24;
+        hash += (uint)24;
 
         hash = QueueRound(hash, hc5);
         hash = QueueRound(hash, hc6);
@@ -229,7 +229,7 @@ public struct HashCode
         v4 = Round(v4, hc4);
 
         uint hash = MixState(v1, v2, v3, v4);
-        hash += 28;
+        hash += (uint)28;
 
         hash = QueueRound(hash, hc5);
         hash = QueueRound(hash, hc6);
@@ -267,7 +267,7 @@ public struct HashCode
         v4 = Round(v4, hc8);
 
         uint hash = MixState(v1, v2, v3, v4);
-        hash += 32;
+        hash += (uint)32;
 
         hash = MixFinal(hash);
         return (int)hash;
