@@ -1,0 +1,9 @@
+/// Utility methods for intrinsic bit-twiddling operations.
+public static class BitOperations
+{
+    /// Rotates the specified value left by the specified number of bits.
+    public static uint RotateLeft(uint value, int offset)
+    {
+        return (value << offset) | (value >> (32 - offset));
+    }
+}
