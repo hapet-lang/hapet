@@ -482,7 +482,8 @@ public struct ValueTuple<T1, T2>
     /// <returns>A 32-bit signed integer hash code.</returns>
     public override int GetHashCode()
     {
-        return HashCode.Combine(Item1 == null ? 0 : Item1.GetHashCode(),
+        return HashCode.Combine<int, int>(
+                                Item1 == null ? 0 : Item1.GetHashCode(),
                                 Item2 == null ? 0 : Item2.GetHashCode());
     }
 
@@ -641,7 +642,8 @@ public struct ValueTuple<T1, T2, T3>
     /// <returns>A 32-bit signed integer hash code.</returns>
     public override int GetHashCode()
     {
-        return HashCode.Combine(Item1 == null ? 0 : Item1.GetHashCode(),
+        return HashCode.Combine<int, int, int>(
+                                Item1 == null ? 0 : Item1.GetHashCode(),
                                 Item2 == null ? 0 : Item2.GetHashCode(),
                                 Item3 == null ? 0 : Item3.GetHashCode());
     }
@@ -808,7 +810,8 @@ public struct ValueTuple<T1, T2, T3, T4>
     /// <returns>A 32-bit signed integer hash code.</returns>
     public override int GetHashCode()
     {
-        return HashCode.Combine(Item1 == null ? 0 : Item1.GetHashCode(),
+        return HashCode.Combine<int, int, int, int>(
+                                Item1 == null ? 0 : Item1.GetHashCode(),
                                 Item2 == null ? 0 : Item2.GetHashCode(),
                                 Item3 == null ? 0 : Item3.GetHashCode(),
                                 Item4 == null ? 0 : Item4.GetHashCode());
@@ -988,7 +991,8 @@ public struct ValueTuple<T1, T2, T3, T4, T5>
     /// <returns>A 32-bit signed integer hash code.</returns>
     public override int GetHashCode()
     {
-        return HashCode.Combine(Item1 == null ? 0 : Item1.GetHashCode(),
+        return HashCode.Combine<int, int, int, int, int>(
+                                Item1 == null ? 0 : Item1.GetHashCode(),
                                 Item2 == null ? 0 : Item2.GetHashCode(),
                                 Item3 == null ? 0 : Item3.GetHashCode(),
                                 Item4 == null ? 0 : Item4.GetHashCode(),
@@ -1181,7 +1185,8 @@ public struct ValueTuple<T1, T2, T3, T4, T5, T6>
     /// <returns>A 32-bit signed integer hash code.</returns>
     public override int GetHashCode()
     {
-        return HashCode.Combine(Item1 == null ? 0 : Item1.GetHashCode(),
+        return HashCode.Combine<int, int, int, int, int, int>(
+                                Item1 == null ? 0 : Item1.GetHashCode(),
                                 Item2 == null ? 0 : Item2.GetHashCode(),
                                 Item3 == null ? 0 : Item3.GetHashCode(),
                                 Item4 == null ? 0 : Item4.GetHashCode(),
@@ -1387,7 +1392,8 @@ public struct ValueTuple<T1, T2, T3, T4, T5, T6, T7>
     /// <returns>A 32-bit signed integer hash code.</returns>
     public override int GetHashCode()
     {
-        return HashCode.Combine(Item1 == null ? 0 : Item1.GetHashCode(),
+        return HashCode.Combine<int, int, int, int, int, int, int>(
+                                Item1 == null ? 0 : Item1.GetHashCode(),
                                 Item2 == null ? 0 : Item2.GetHashCode(),
                                 Item3 == null ? 0 : Item3.GetHashCode(),
                                 Item4 == null ? 0 : Item4.GetHashCode(),
@@ -1616,7 +1622,8 @@ where TRest : struct
         // We want to have a limited hash in this case. We'll use the first 7 elements of the tuple
         if (Rest is not IValueTupleInternal)
         {
-            return HashCode.Combine(Item1 == null ? 0 : Item1.GetHashCode(),
+            return HashCode.Combine<int, int, int, int, int, int, int, int>(
+                                    Item1 == null ? 0 : Item1.GetHashCode(),
                                     Item2 == null ? 0 : Item2.GetHashCode(),
                                     Item3 == null ? 0 : Item3.GetHashCode(),
                                     Item4 == null ? 0 : Item4.GetHashCode(),
@@ -1637,32 +1644,38 @@ where TRest : struct
         switch (k)
         {
             case (1)
-                return HashCode.Combine(Item7 == null ? 0 : Item7.GetHashCode(),
+                return HashCode.Combine<int, int>(
+                                        Item7 == null ? 0 : Item7.GetHashCode(),
                                         restHashCode);
             case (2)
-                return HashCode.Combine(Item6 == null ? 0 : Item6.GetHashCode(),
+                return HashCode.Combine<int, int, int>(
+                                        Item6 == null ? 0 : Item6.GetHashCode(),
                                         Item7 == null ? 0 : Item7.GetHashCode(),
                                         restHashCode);
             case (3)
-                return HashCode.Combine(Item5 == null ? 0 : Item5.GetHashCode(),
+                return HashCode.Combine<int, int, int, int(
+                                        Item5 == null ? 0 : Item5.GetHashCode(),
                                         Item6 == null ? 0 : Item6.GetHashCode(),
                                         Item7 == null ? 0 : Item7.GetHashCode(),
                                         restHashCode);
             case (4)
-                return HashCode.Combine(Item4 == null ? 0 : Item4.GetHashCode(),
+                return HashCode.Combine<int, int, int, int, int>(
+                                        Item4 == null ? 0 : Item4.GetHashCode(),
                                         Item5 == null ? 0 : Item5.GetHashCode(),
                                         Item6 == null ? 0 : Item6.GetHashCode(),
                                         Item7 == null ? 0 : Item7.GetHashCode(),
                                         restHashCode);
             case (5)
-                return HashCode.Combine(Item3 == null ? 0 : Item3.GetHashCode(),
+                return HashCode.Combine<int, int, int, int, int, int>(
+                                        Item3 == null ? 0 : Item3.GetHashCode(),
                                         Item4 == null ? 0 : Item4.GetHashCode(),
                                         Item5 == null ? 0 : Item5.GetHashCode(),
                                         Item6 == null ? 0 : Item6.GetHashCode(),
                                         Item7 == null ? 0 : Item7.GetHashCode(),
                                         restHashCode);
             case (6)
-                return HashCode.Combine(Item2 == null ? 0 : Item2.GetHashCode(),
+                return HashCode.Combine<int, int, int, int, int, int, int>(
+                                        Item2 == null ? 0 : Item2.GetHashCode(),
                                         Item3 == null ? 0 : Item3.GetHashCode(),
                                         Item4 == null ? 0 : Item4.GetHashCode(),
                                         Item5 == null ? 0 : Item5.GetHashCode(),
@@ -1671,7 +1684,8 @@ where TRest : struct
                                         restHashCode);
             case (7)
             case (8)
-                return HashCode.Combine(Item1 == null ? 0 : Item1.GetHashCode(),
+                return HashCode.Combine<int, int, int, int, int, int, int, int>(
+                                        Item1 == null ? 0 : Item1.GetHashCode(),
                                         Item2 == null ? 0 : Item2.GetHashCode(),
                                         Item3 == null ? 0 : Item3.GetHashCode(),
                                         Item4 == null ? 0 : Item4.GetHashCode(),
