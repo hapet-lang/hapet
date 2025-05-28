@@ -64,6 +64,7 @@ namespace HapetFrontend.Scoping
             DefineBinaryOperator(new BuiltInBinaryOperator("|", IntType.LiteralType, IntType.LiteralType, IntType.LiteralType, (a, b) => (NumberData)a | (NumberData)b));
             DefineBinaryOperator(new BuiltInBinaryOperator("<<", IntType.LiteralType, IntType.LiteralType, IntType.LiteralType, (a, b) => (NumberData)a << (NumberData)b));
             DefineBinaryOperator(new BuiltInBinaryOperator(">>", IntType.LiteralType, IntType.LiteralType, IntType.LiteralType, (a, b) => (NumberData)a >> (NumberData)b));
+            DefineBinaryOperator(new BuiltInBinaryOperator("^", IntType.LiteralType, IntType.LiteralType, IntType.LiteralType, (a, b) => (NumberData)a ^ (NumberData)b));
 
             DefineBinaryOperator(new BuiltInBinaryOperator("+", CharType.LiteralType, CharType.LiteralType, CharType.LiteralType, (a, b) => (NumberData)a + (NumberData)b));
             DefineBinaryOperator(new BuiltInBinaryOperator("-", CharType.LiteralType, CharType.LiteralType, CharType.LiteralType, (a, b) => (NumberData)a - (NumberData)b));
@@ -74,6 +75,7 @@ namespace HapetFrontend.Scoping
             DefineBinaryOperator(new BuiltInBinaryOperator("|", CharType.LiteralType, CharType.LiteralType, CharType.LiteralType, (a, b) => (NumberData)a | (NumberData)b));
             DefineBinaryOperator(new BuiltInBinaryOperator("<<", CharType.LiteralType, CharType.LiteralType, CharType.LiteralType, (a, b) => (NumberData)a << (NumberData)b));
             DefineBinaryOperator(new BuiltInBinaryOperator(">>", CharType.LiteralType, CharType.LiteralType, CharType.LiteralType, (a, b) => (NumberData)a >> (NumberData)b));
+            DefineBinaryOperator(new BuiltInBinaryOperator("^", CharType.LiteralType, CharType.LiteralType, CharType.LiteralType, (a, b) => (NumberData)a ^ (NumberData)b));
 
             DefineBinaryOperator(new BuiltInBinaryOperator("==", BoolType.Instance, IntType.LiteralType, IntType.LiteralType, (a, b) => (NumberData)a == (NumberData)b));
             DefineBinaryOperator(new BuiltInBinaryOperator("!=", BoolType.Instance, IntType.LiteralType, IntType.LiteralType, (a, b) => (NumberData)a != (NumberData)b));
@@ -182,6 +184,7 @@ namespace HapetFrontend.Scoping
                         // there is no need to set output as the biggest type because the second param is only additional param
                         DefineBinaryOperator(new BuiltInBinaryOperator(">>", type, type, secondType, (a, b) => (NumberData)a >> (NumberData)b));
                         DefineBinaryOperator(new BuiltInBinaryOperator("<<", type, type, secondType, (a, b) => (NumberData)a << (NumberData)b));
+                        DefineBinaryOperator(new BuiltInBinaryOperator("^", type, type, secondType, (a, b) => (NumberData)a ^ (NumberData)b));
                     }
                 }
             }
