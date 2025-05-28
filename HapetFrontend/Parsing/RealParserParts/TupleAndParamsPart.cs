@@ -16,6 +16,10 @@ namespace HapetFrontend.Parsing
             AstExpression expr;
             AstIdExpr name = null;
 
+            // allow multiply in args
+            var savedAllowMul = inInfo.AllowMultiplyExpression;
+            inInfo.AllowMultiplyExpression = true;
+
             var e = ParseExpression(inInfo, ref outInfo);
             beg = e.Beginning;
 
@@ -40,6 +44,8 @@ namespace HapetFrontend.Parsing
             {
                 expr = e as AstExpression;
             }
+
+            inInfo.AllowMultiplyExpression = savedAllowMul;
 
             return new AstArgumentExpr(expr, name, new Location(beg, expr.Ending));
         }
