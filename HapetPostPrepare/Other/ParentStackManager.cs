@@ -37,7 +37,7 @@ namespace HapetPostPrepare.Other
         {
             _parentStack.Push(parent);
 
-            if (parent.HasGenericTypes)
+            if (parent.HasGenericTypes || parent is AstGenericDecl)
                 AddParentGenerics(parent);
         }
 
@@ -45,7 +45,7 @@ namespace HapetPostPrepare.Other
         {
             var poped = _parentStack.Pop();
 
-            if (poped.HasGenericTypes)
+            if (poped.HasGenericTypes || poped is AstGenericDecl)
                 RemoveParentGenerics(poped);
         }
 
@@ -71,6 +71,13 @@ namespace HapetPostPrepare.Other
 
         private void AddParentGenerics(AstDeclaration parent)
         {
+            // check if parent is generic decl itself
+            if (parent is AstGenericDecl genDecl)
+            {
+                _currentGenericIdMappings.Add((genDecl.Name.Name, genDecl.Type.OutType as GenericType));
+                return;
+            }
+
             // getting pure generics from decl
             var typeGenerics = GenericsHelper.GetGenericsFromName(parent.Name as AstIdGenericExpr, _messageHandler);
             var pureGenerics = GenericsHelper.ExtractAllGenericTypes(typeGenerics.Select(x => x as AstExpression).ToList());
@@ -82,6 +89,14 @@ namespace HapetPostPrepare.Other
 
         private void RemoveParentGenerics(AstDeclaration parent)
         {
+            // check if parent is generic decl itself
+            if (parent is AstGenericDecl genDecl)
+            {
+                var theElement = _currentGenericIdMappings.LastOrDefault(x => x.Value.Item1 == genDecl.Name.Name);
+                _currentGenericIdMappings.Remove(theElement);
+                return;
+            }
+
             // getting pure generics from decl
             var typeGenerics = GenericsHelper.GetGenericsFromName(parent.Name as AstIdGenericExpr, _messageHandler);
             var pureGenerics = GenericsHelper.ExtractAllGenericTypes(typeGenerics.Select(x => x as AstExpression).ToList());

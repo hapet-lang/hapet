@@ -301,7 +301,7 @@ namespace HapetPostPrepare
 
                 var smbl2 = GetFuncFromCandidates(newName, callExpr, callExpr.Arguments, structType.Declaration, false, out var casts);
                 smbl2 = OnFoundSymbol(smbl2, callExpr.FuncName);
-                // check if the decl exists. if not - it could be non static method call from a class name
+                // check if the decl exists. if not - it could be non static method call
                 if (smbl2 is DeclSymbol ds && ds.Decl is AstFuncDecl funcDecl)
                 {
                     if (!CheckIfCouldBeAccessed(callExpr, funcDecl))
@@ -327,7 +327,8 @@ namespace HapetPostPrepare
                 var declSymbolOfLeft = callExpr.TypeOrObjectName.TryGetDeclSymbol();
                 if (smbl2 is DeclSymbol ds2 && ds2.Decl is AstFuncDecl funcDecl2)
                 {
-                    // error because user tries to access non static method from a class name
+                    // error because user tries to access non static method from a struct name
+                    // it should be AstVarDecl at least
                     if (declSymbolOfLeft.Decl is AstStructDecl)
                     {
                         _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, callExpr.FuncName, [], ErrorCode.Get(CTEN.NonStaticFuncFromStatic));
@@ -375,8 +376,60 @@ namespace HapetPostPrepare
                 var declSymbolOfLeft = callExpr.TypeOrObjectName.TryGetDeclSymbol();
                 if (smbl2 is DeclSymbol ds2 && ds2.Decl is AstFuncDecl funcDecl2)
                 {
-                    // error because user tries to access non static method from a class name
+                    // error because user tries to access non static method from a struct name
+                    // it should be AstVarDecl at least
                     if (declSymbolOfLeft.Decl is AstStructDecl)
+                    {
+                        _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, callExpr.FuncName, [], ErrorCode.Get(CTEN.NonStaticFuncFromStatic));
+                        return;
+                    }
+
+                    if (!CheckIfCouldBeAccessed(callExpr, funcDecl2) && !funcDecl2.IsPropertyFunction)
+                        _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, callExpr.FuncName, [], ErrorCode.Get(CTEN.FuncCouldNotBeAccessed));
+                    newName = funcDecl2.Name.GetCopy();
+                    callExpr.Arguments.ReplaceWithCasts(casts.Skip(1).ToList());
+                    return;
+                }
+
+                _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, callExpr.FuncName, [], ErrorCode.Get(CTEN.FuncWithNameNotFound));
+            }
+            else if (callExpr.TypeOrObjectName.OutType is GenericType genericType)
+            {
+                // if we are calling like 'T.Anime()' where 'T' is a generic type
+                // we need to rename the func name call like that:
+                newName = funcName.GetCopy($"{genericType.Declaration.Name.Name}::{funcName}{callExpr.Arguments.GetArgsString()}");
+
+                var smbl2 = GetFuncFromCandidates(newName, callExpr, callExpr.Arguments, genericType.Declaration, false, out var casts);
+                smbl2 = OnFoundSymbol(smbl2, callExpr.FuncName);
+                // check if the decl exists. if not - it could be non static method call
+                if (smbl2 is DeclSymbol ds && ds.Decl is AstFuncDecl funcDecl)
+                {
+                    if (!CheckIfCouldBeAccessed(callExpr, funcDecl))
+                        _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, callExpr.FuncName, [], ErrorCode.Get(CTEN.FuncCouldNotBeAccessed));
+                    newName = funcDecl.Name.GetCopy();
+                    callExpr.Arguments.ReplaceWithCasts(casts);
+                    return;
+                }
+
+                // getting the name but with object first param
+                newName = funcName.GetCopy($"{genericType.Declaration.Name.Name}::{funcName}{callExpr.Arguments.GetArgsString(PointerType.GetPointerType(genericType))}");
+
+                List<AstArgumentExpr> argsWithStructParam = new List<AstArgumentExpr>(callExpr.Arguments);
+                var pseudoStructArg = new AstPointerExpr(callExpr.TypeOrObjectName, false, callExpr.TypeOrObjectName)
+                {
+                    Scope = funcName.Scope,
+                };
+                PostPrepareExprInference(pseudoStructArg, inInfo, ref outInfo);
+                argsWithStructParam.Insert(0, new AstArgumentExpr(pseudoStructArg) { OutType = callExpr.TypeOrObjectName.OutType });
+                smbl2 = GetFuncFromCandidates(newName, callExpr, argsWithStructParam, genericType.Declaration, true, out casts);
+                smbl2 = OnFoundSymbol(smbl2, callExpr.FuncName);
+
+                var declSymbolOfLeft = callExpr.TypeOrObjectName.TryGetDeclSymbol();
+                if (smbl2 is DeclSymbol ds2 && ds2.Decl is AstFuncDecl funcDecl2)
+                {
+                    // error because user tries to access non static method from a gen name
+                    // it should be AstVarDecl at least
+                    if (declSymbolOfLeft.Decl is AstGenericDecl)
                     {
                         _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, callExpr.FuncName, [], ErrorCode.Get(CTEN.NonStaticFuncFromStatic));
                         return;

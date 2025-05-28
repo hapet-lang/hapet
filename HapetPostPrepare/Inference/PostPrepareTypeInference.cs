@@ -130,7 +130,7 @@ namespace HapetPostPrepare
                     // the checks are done because it could be a nested func decl
                     Scope scopeToDefine = null;
                     AstIdExpr newName = funcDecl.Name.GetCopy();
-                    if (funcDecl.ContainingParent is AstClassDecl || funcDecl.ContainingParent is AstStructDecl)
+                    if (funcDecl.ContainingParent is AstClassDecl || funcDecl.ContainingParent is AstStructDecl || funcDecl.ContainingParent is AstGenericDecl)
                     {
                         // additional shite to handle explicit funcs and make them
                         // from 'Anime::Test.Func()' into 'Anime::Namespace.Test.Func()'

@@ -1,8 +1,10 @@
 ﻿using System.Runtime;
 using HapetFrontend.Ast;
 using HapetFrontend.Ast.Declarations;
+using HapetFrontend.Ast.Expressions;
 using HapetFrontend.Ast.Statements;
 using HapetFrontend.Enums;
+using HapetFrontend.Extensions;
 using HapetFrontend.Helpers;
 using HapetFrontend.Parsing;
 using HapetFrontend.Types;
@@ -25,6 +27,9 @@ namespace HapetPostPrepare
                     // ...
                 }
             }
+
+            // single post prepare
+            PostPrepareStatementUpToCurrentStep(decl);
         }
 
         private void HandleCustomConstrainType(AstGenericDecl decl, AstConstrainStmt constrain, InInfo inInfo, ref OutInfo outInfo)
@@ -53,12 +58,34 @@ namespace HapetPostPrepare
                 else if (copied is AstVarDecl v)
                     v.Initializer = null;
 
+                // change the parent
+                copied.ContainingParent = decl;
+                // reset name
+                if (copied is AstFuncDecl func1)
+                    func1.Name = func1.Name.GetCopy(func1.Name.Name.GetPureFuncName());
+
                 // we should make all the decls abstract
                 SpecialKeysHelper.ReplaceSpecialKeysByTypes(copied, new List<Token>() { Lexer.CreateToken(TokenType.KwAbstract, copied.Location.Beginning) });
+
+                // we need to change first param in non static funcs
+                if (copied is AstFuncDecl func && !func.SpecialKeys.Contains(TokenType.KwStatic))
+                    ReplaceFirstParamOnNonStaticFunc(func, decl);
 
                 // add the copy
                 decl.Declarations.Add(copied);
             }
+        }
+
+        private void ReplaceFirstParamOnNonStaticFunc(AstFuncDecl func, AstGenericDecl decl)
+        {
+            /// almost the same as in <see cref="FuncPrepareAfterAll"/>
+            var thisParamType = decl.Name.GetCopy();
+            // creating the class instance 'this' param
+            AstExpression paramType = new AstPointerExpr(thisParamType, false);
+            AstIdExpr paramName = new AstIdExpr("this");
+            AstParamDecl thisParam = new AstParamDecl(new AstNestedExpr(paramType, null), paramName);
+            // replacing
+            func.Parameters[0] = thisParam;
         }
     }
 }

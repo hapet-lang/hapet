@@ -279,6 +279,12 @@ namespace HapetPostPrepare
                         scope = declToSearch?.SubScope ?? strTp.Declaration.SubScope;
                         funcInAnotherClass = scope.GetSymbol(idExpr.GetCopy(fullFuncName));
                     }
+                    else if (leftPartId.OutType is GenericType genTp)
+                    {
+                        fullFuncName = $"{genTp}::{nameAndFunc[1]}";
+                        scope = declToSearch?.SubScope ?? genTp.Declaration.SubScope;
+                        funcInAnotherClass = scope.GetSymbol(idExpr.GetCopy(fullFuncName));
+                    }
                     else
                     {
                         // error 
