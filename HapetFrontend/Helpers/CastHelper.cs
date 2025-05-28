@@ -267,6 +267,11 @@ namespace HapetFrontend
                     (cls5.Declaration.Name.Name == "System.Object" ||
                     cls5.Declaration.Name.Name == "System.ValueType" ||
                     cls5.Declaration.IsInterface):
+                // usually when 'object a = genericInstance;'
+                case PointerType ptr5 when
+                    ptr5.TargetType is ClassType cls6 &&
+                    currentType is GenericType &&
+                    (cls6.Declaration.Name.Name == "System.Object"):
                     {
                         if (castResult != null)
                             castResult.CouldBeCasted = true;
