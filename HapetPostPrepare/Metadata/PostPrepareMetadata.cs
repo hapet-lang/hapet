@@ -408,10 +408,18 @@ namespace HapetPostPrepare
             // inferrencing attribtues of functions
             foreach (var fnc in AllFunctionsMetadata.ToList())
             {
+                if (fnc.ContainingParent.IsNestedDecl)
+                    _currentParentStack.AddParent(fnc.ContainingParent.ParentDecl);
+                _currentParentStack.AddParent(fnc.ContainingParent);
+
                 _currentSourceFile = fnc.SourceFile;
                 _currentParentStack.AddParent(fnc);
                 PostPrepareMetadataAttributes(fnc);
                 _currentParentStack.RemoveParent();
+
+                _currentParentStack.RemoveParent();
+                if (fnc.ContainingParent.IsNestedDecl)
+                    _currentParentStack.RemoveParent();
             }
             // inferrencing attribtues of classes
             foreach (var cls in AllClassesMetadata.ToList())
