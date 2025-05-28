@@ -67,8 +67,9 @@ public struct HashCode
 
     private static unsafe uint GenerateGlobalSeed()
     {
-        uint result;
-        Interop.GetRandomBytes((byte*)&result, sizeof(uint));
+        uint result = 0;
+        // TODO:
+        // Interop.GetRandomBytes((byte*)&result, sizeof(uint));
         return result;
     }
 
@@ -131,7 +132,11 @@ public struct HashCode
         uint hc3 = (uint)(value3 == null ? 0 : value3.GetHashCode());
         uint hc4 = (uint)(value4 == null ? 0 : value4.GetHashCode());
 
-        Initialize(out uint v1, out uint v2, out uint v3, out uint v4);
+        uint v1 = 0;
+        uint v2 = 0;
+        uint v3 = 0;
+        uint v4 = 0;
+        Initialize(&v1, &v2, &v3, &v4);
 
         v1 = Round(v1, hc1);
         v2 = Round(v2, hc2);
@@ -153,7 +158,11 @@ public struct HashCode
         uint hc4 = (uint)(value4 == null ? 0 : value4.GetHashCode());
         uint hc5 = (uint)(value5 == null ? 0 : value5.GetHashCode());
 
-        Initialize(out uint v1, out uint v2, out uint v3, out uint v4);
+        uint v1 = 0;
+        uint v2 = 0;
+        uint v3 = 0;
+        uint v4 = 0;
+        Initialize(&v1, &v2, &v3, &v4);
 
         v1 = Round(v1, hc1);
         v2 = Round(v2, hc2);
@@ -178,7 +187,11 @@ public struct HashCode
         uint hc5 = (uint)(value5 == null ? 0 : value5.GetHashCode());
         uint hc6 = (uint)(value6 == null ? 0 : value6.GetHashCode());
 
-        Initialize(out uint v1, out uint v2, out uint v3, out uint v4);
+        uint v1 = 0;
+        uint v2 = 0;
+        uint v3 = 0;
+        uint v4 = 0;
+        Initialize(&v1, &v2, &v3, &v4);
 
         v1 = Round(v1, hc1);
         v2 = Round(v2, hc2);
@@ -205,7 +218,11 @@ public struct HashCode
         uint hc6 = (uint)(value6 == null ? 0 : value6.GetHashCode());
         uint hc7 = (uint)(value7 == null ? 0 : value7.GetHashCode());
 
-        Initialize(out uint v1, out uint v2, out uint v3, out uint v4);
+        uint v1 = 0;
+        uint v2 = 0;
+        uint v3 = 0;
+        uint v4 = 0;
+        Initialize(&v1, &v2, &v3, &v4);
 
         v1 = Round(v1, hc1);
         v2 = Round(v2, hc2);
@@ -234,7 +251,11 @@ public struct HashCode
         uint hc7 = (uint)(value7 == null ? 0 : value7.GetHashCode());
         uint hc8 = (uint)(value8 == null ? 0 : value8.GetHashCode());
 
-        Initialize(out uint v1, out uint v2, out uint v3, out uint v4);
+        uint v1 = 0;
+        uint v2 = 0;
+        uint v3 = 0;
+        uint v4 = 0;
+        Initialize(&v1, &v2, &v3, &v4);
 
         v1 = Round(v1, hc1);
         v2 = Round(v2, hc2);
@@ -253,12 +274,12 @@ public struct HashCode
         return (int)hash;
     }
 
-    private inline static void Initialize(out uint v1, out uint v2, out uint v3, out uint v4)
+    private inline static void Initialize(uint* v1, uint* v2, uint* v3, uint* v4)
     {
-        v1 = s_seed + Prime1 + Prime2;
-        v2 = s_seed + Prime2;
-        v3 = s_seed;
-        v4 = s_seed - Prime1;
+        *v1 = s_seed + Prime1 + Prime2;
+        *v2 = s_seed + Prime2;
+        *v3 = s_seed;
+        *v4 = s_seed - Prime1;
     }
 
     private inline static uint Round(uint hash, uint input)
@@ -342,7 +363,7 @@ public struct HashCode
         else // position == 3
         {
             if (previousLength == 3)
-                Initialize(out _v1, out _v2, out _v3, out _v4);
+                Initialize(&_v1, &_v2, &_v3, &_v4);
 
             _v1 = Round(_v1, _queue1);
             _v2 = Round(_v2, _queue2);
