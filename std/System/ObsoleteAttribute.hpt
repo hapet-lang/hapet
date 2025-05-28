@@ -1,0 +1,12 @@
+/// Marks program elements that are no longer in use.
+[SuppressStaticCtorCallAttribute]
+public class ObsoleteAttribute : Attribute
+{
+    [RequiredAttribute]
+    public string Message;
+    public bool IsError;
+
+    public ObsoleteAttribute()
+    {
+    }
+}

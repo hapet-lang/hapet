@@ -40,13 +40,7 @@ https://raw.githubusercontent.com/Cyan4973/xxHash/5c174cfa4e45a42f94082dc0d4539b
 
 */
 
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Diagnostics;
-using System.Numerics;
-using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
-
+using System;
 
 // xxHash32 is used for the hash code.
 // https://github.com/Cyan4973/xxHash
@@ -426,7 +420,7 @@ public struct HashCode
     //   implementation has to change in the future we don't want to worry
     //   about people who might have incorrectly used this type.
 
-    [Obsolete("HashCode is a mutable struct and should not be compared with other HashCodes. Use ToHashCode to retrieve the computed hash code.", true)]
+    [ObsoleteAttribute("HashCode is a mutable struct and should not be compared with other HashCodes. Use ToHashCode to retrieve the computed hash code.", true)]
     public override int GetHashCode()
     {
         // TODO: 
@@ -434,7 +428,7 @@ public struct HashCode
         return 0;
     }
 
-    [Obsolete("HashCode is a mutable struct and should not be compared with other HashCodes.", true)]
+    [ObsoleteAttribute("HashCode is a mutable struct and should not be compared with other HashCodes.", true)]
     public override bool Equals(object obj)
     {
         // TODO:
