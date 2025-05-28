@@ -67,10 +67,6 @@ namespace HapetFrontend.Parsing
                     return udecl;
                 }
 
-                // just needed :)
-                if (udecl.Type is AstIdExpr idExpr)
-                    udecl.Type = new AstNestedExpr(idExpr, null, idExpr);
-
                 if (udecl.Type is AstNestedExpr id && currT.Type != TokenType.Equal)
                 {
                     // expand ops like 'a += b' into 'a = a + b'
@@ -118,7 +114,7 @@ namespace HapetFrontend.Parsing
                 var func = ParseFuncDeclaration(inInfo, ref outInfo, null, null);
                 if (udecl.Name == null)
                 {
-                    var fncName = udecl.Type is AstIdExpr ? (udecl.Type as AstIdExpr) : ((udecl.Type as AstNestedExpr).RightPart as AstIdExpr);
+                    var fncName = (udecl.Type as AstNestedExpr).UnrollToRightPart<AstIdExpr>();
 
                     // it is ctor/dtor
                     func.Name = fncName.GetCopy();

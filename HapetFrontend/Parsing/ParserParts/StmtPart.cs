@@ -76,13 +76,11 @@ namespace HapetFrontend.Parsing
 
                         // change to udecl like it was previously
                         // https://github.com/hapet-lang/hapet/blob/c15ae05721d3f91fe86a25658ef099d4e84f117f/HapetFrontend/Parsing/RealParserParts/SpecialKeysPart.cs#L62-L69
-                        if (stmt is AstIdExpr idExpr)
+                        if ((stmt is AstIdExpr) ||
+                            (stmt is AstNestedExpr nestExpr && (nestExpr.RightPart is AstIdExpr || nestExpr.RightPart is AstArrayAccessExpr)) ||
+                            (stmt is AstPointerExpr ptrExpr && ptrExpr.IsDereference))
                         {
-                            stmt = new AstUnknownDecl(idExpr, null, stmt);
-                        }
-                        else if (stmt is AstNestedExpr nestExpr && (nestExpr.RightPart is AstIdExpr || nestExpr.RightPart is AstArrayAccessExpr))
-                        {
-                            stmt = new AstUnknownDecl(nestExpr, null, stmt);
+                            stmt = new AstUnknownDecl(new AstNestedExpr(stmt as AstExpression, null, stmt), null, stmt);
                         }
                         else if (stmt is AstTupleExpr tpl)
                         {
