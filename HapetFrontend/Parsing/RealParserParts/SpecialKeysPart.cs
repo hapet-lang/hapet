@@ -34,6 +34,7 @@
                     case TokenType.KwExtern:
                     case TokenType.KwInline:
                     case TokenType.KwSealed:
+                    case TokenType.KwUnsafe:
                         keys.Add(tkn);
                         NextToken();
                         break;

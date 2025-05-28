@@ -19,7 +19,7 @@ namespace HapetFrontend.Helpers
             TokenType instanceKey = default;      // static
             TokenType mutabilityKey = default;    // readonly/const
             TokenType abstractionKey = default;   // abstract/virtual/override
-            TokenType otherKey = default;         // partial/extern/sealed/inline/noexcept/imported
+            TokenType otherKey = default;         // partial/extern/sealed/inline/noexcept/imported/unsafe
 
             for (int i = 0; i < decl.SpecialKeys.Count; ++i)
             {
@@ -327,6 +327,7 @@ namespace HapetFrontend.Helpers
                 case TokenType.KwSealed:
                 case TokenType.KwInline:
                 case TokenType.KwNoexcept:
+                case TokenType.KwUnsafe:
                     {
                         return 6;
                     }
