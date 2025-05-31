@@ -1621,7 +1621,7 @@ where TRest : struct
         // We want to have a limited hash in this case. We'll use the first 7 elements of the tuple
         if (Rest is not IValueTupleInternal)
         {
-            return HashCode.Combine<int, int, int, int, int, int, int, int>(
+            return HashCode.Combine<int, int, int, int, int, int, int>(
                                     Item1 == null ? 0 : Item1.GetHashCode(),
                                     Item2 == null ? 0 : Item2.GetHashCode(),
                                     Item3 == null ? 0 : Item3.GetHashCode(),
