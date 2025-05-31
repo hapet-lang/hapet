@@ -12,19 +12,6 @@ namespace HapetPostPrepare
 {
     public partial class PostPrepare
     {
-        public void PostPrepareAliases(AstIdExpr typeName, Scope scope, AstDeclaration decl)
-        {
-            // kostyl to create aliases :)
-            if (typeName.Name == "System.Object")
-            {
-                _compiler.GlobalScope.DefineDeclSymbol(typeName.GetCopy("object"), decl);
-            }
-            else if (typeName.Name == "System.String")
-            {
-                _compiler.GlobalScope.DefineDeclSymbol(typeName.GetCopy("string"), decl);
-            }
-        }
-
         /// <summary>
         /// Function is used to replace all literal types with real ones
         /// </summary>
