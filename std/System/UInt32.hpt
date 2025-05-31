@@ -1,0 +1,30 @@
+public struct UInt32 : IComparable, IComparable<uint>
+{
+    private uint _value;
+
+    public const uint MaxValue = (uint)0xffffffff;
+    public const uint MinValue = 0;
+
+    public int CompareTo(object value)
+    {
+        if (value == null)
+        {
+            return 1;
+        }
+        if (value is uint i)
+        {
+            if (_value < i) return -1;
+            if (_value > i) return 1;
+            return 0;
+        }
+        // TODO:
+        // throw new ArgumentException(SR.Arg_MustBeInt32);
+    }
+
+    public int CompareTo(uint value)
+    {
+        if (_value < value) return -1;
+        if (_value > value) return 1;
+        return 0;
+    }
+}

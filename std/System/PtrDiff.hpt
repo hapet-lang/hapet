@@ -1,0 +1,27 @@
+public struct PtrDiff : IComparable, IComparable<ptrdiff>
+{
+    private ptrdiff _value;
+
+    public int CompareTo(object value)
+    {
+        if (value == null)
+        {
+            return 1;
+        }
+        if (value is ptrdiff i)
+        {
+            if (_value < i) return -1;
+            if (_value > i) return 1;
+            return 0;
+        }
+        // TODO:
+        // throw new ArgumentException(SR.Arg_MustBeInt32);
+    }
+
+    public int CompareTo(ptrdiff value)
+    {
+        if (_value < value) return -1;
+        if (_value > value) return 1;
+        return 0;
+    }
+}

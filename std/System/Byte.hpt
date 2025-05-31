@@ -1,0 +1,26 @@
+public struct Byte : IComparable, IComparable<byte>
+{
+    private byte _value;
+
+    public const byte MaxValue = (byte)0xFF;
+    public const byte MinValue = 0;
+
+    public int CompareTo(object value)
+    {
+        if (value == null)
+        {
+            return 1;
+        }
+        if (value is not byte)
+        {
+            // TODO:
+            // throw new ArgumentException(SR.Arg_MustBeByte);
+        }
+        return _value - (((byte)value)._value);
+    }
+
+    public int CompareTo(byte value)
+    {
+        return _value - value;
+    }
+}

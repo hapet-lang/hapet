@@ -1,0 +1,30 @@
+public struct UInt64 : IComparable, IComparable<ulong>
+{
+    private ulong _value;
+
+    public const ulong MaxValue = (ulong)0xffffffffffffffff;
+    public const ulong MinValue = 0;
+
+    public int CompareTo(object value)
+    {
+        if (value == null)
+        {
+            return 1;
+        }
+        if (value is ulong i)
+        {
+            if (_value < i) return -1;
+            if (_value > i) return 1;
+            return 0;
+        }
+        // TODO:
+        // throw new ArgumentException(SR.Arg_MustBeInt32);
+    }
+
+    public int CompareTo(ulong value)
+    {
+        if (_value < value) return -1;
+        if (_value > value) return 1;
+        return 0;
+    }
+}

@@ -1,0 +1,26 @@
+public struct Int16 : IComparable, IComparable<short>
+{
+    private short _value;
+
+    public const short MaxValue = (short)0x7FFF;
+    public const short MinValue = unchecked((short)0x8000);
+
+    public int CompareTo(object value)
+    {
+        if (value == null)
+        {
+            return 1;
+        }
+        if (value is short)
+        {
+            return _value - ((short)value)._value;
+        }
+        // TODO:
+        // throw new ArgumentException(SR.Arg_MustBeInt16);
+    }
+
+    public int CompareTo(short value)
+    {
+        return _value - value;
+    }
+}

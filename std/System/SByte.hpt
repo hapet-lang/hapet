@@ -1,0 +1,26 @@
+public struct SByte : IComparable, IComparable<sbyte>
+{
+    private sbyte _value;
+
+    public const sbyte MaxValue = (sbyte)0x7F;
+    public const sbyte MinValue = unchecked((sbyte)0x80);
+
+    public int CompareTo(object value)
+    {
+        if (value == null)
+        {
+            return 1;
+        }
+        if (value is not sbyte)
+        {
+            // TODO:
+            // throw new ArgumentException(SR.Arg_MustBeSByte);
+        }
+        return _value - (((sbyte)value)._value);
+    }
+
+    public int CompareTo(sbyte value)
+    {
+        return _value - value;
+    }
+}

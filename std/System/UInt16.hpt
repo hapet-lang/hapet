@@ -1,0 +1,26 @@
+public struct UInt16 : IComparable, IComparable<ushort>
+{
+    private ushort _value;
+
+    public const ushort MaxValue = (ushort)0xFFFF;
+    public const ushort MinValue = 0;
+
+    public int CompareTo(object value)
+    {
+        if (value == null)
+        {
+            return 1;
+        }
+        if (value is ushort)
+        {
+            return (int)_value - (int)(((ushort)value)._value);
+        }
+        // TODO:
+        // throw new ArgumentException(SR.Arg_MustBeUInt16);
+    }
+
+    public int CompareTo(ushort value)
+    {
+        return (int)_value - (int)value;
+    }
+}
