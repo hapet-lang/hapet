@@ -56,11 +56,10 @@ namespace HapetFrontend.Types
         private BoolType() : base(1, 1) { }
     }
 
-    public class IntType : HapetType
+    public class IntType : StructType
     {
-        private static readonly Dictionary<(int, bool), IntType> _types = new Dictionary<(int, bool), IntType>();
-        public static IntType LiteralType { get; } = new IntType(0, 0, false);
-        public static IntType DefaultType => GetIntType(4, true);
+        public new static IntType LiteralType { get; } = new IntType(null, false);
+        public static IntType DefaultType => HapetType.CurrentTypeContext.GetIntType(4, true);
 
         public override string TypeName => ToString();
 
@@ -79,26 +78,12 @@ namespace HapetFrontend.Types
             };
         }
 
-        protected IntType(int size, int align, bool sign) : base(size, align)
+        public IntType(AstStructDecl astStructDecl, bool sign) : base(astStructDecl)
         {
             Signed = sign;
         }
 
         public bool Signed { get; private set; }
-
-        public static IntType GetIntType(int sizeInBytes, bool signed)
-        {
-            var key = (sizeInBytes, signed);
-
-            if (_types.ContainsKey(key))
-            {
-                return _types[key];
-            }
-
-            var type = new IntType(sizeInBytes, sizeInBytes, signed);
-            _types[key] = type;
-            return type;
-        }
 
         public override string ToString()
         {
@@ -634,19 +619,6 @@ namespace HapetFrontend.Types
 
     public class IntPtrType : IntType
     {
-        private static IntPtrType _instance;
-        public static IntPtrType Instance
-        {
-            get
-            {
-                // intptr size is like that because of the intptr struct:
-                // { ptr }
-                if (_instance == null)
-                    _instance = new IntPtrType(CurrentTypeContext.PointerSize, CurrentTypeContext.PointerSize);
-                return _instance;
-            }
-        }
-
         public override string TypeName => ToString();
 
         public override AstExpression GetAst(AstExpression iniExpr = null)
@@ -664,7 +636,11 @@ namespace HapetFrontend.Types
             };
         }
 
-        private IntPtrType(int size, int align) : base(size, align, false) { }
+        public IntPtrType(AstStructDecl astStructDecl) : base(astStructDecl, false) 
+        { 
+
+        }
+
         public override string ToString() => "uintptr";
 
         public override int Match(HapetType concrete)
@@ -687,19 +663,6 @@ namespace HapetFrontend.Types
 
     public class PtrDiffType : IntType
     {
-        private static PtrDiffType _instance;
-        public static PtrDiffType Instance
-        {
-            get
-            {
-                // ptrdiff size is like that because of the ptrdiff struct:
-                // { ptr }
-                if (_instance == null)
-                    _instance = new PtrDiffType(CurrentTypeContext.PointerSize, CurrentTypeContext.PointerSize);
-                return _instance;
-            }
-        }
-
         public override string TypeName => "ptrdiff";
 
         public override AstExpression GetAst(AstExpression iniExpr = null)
@@ -717,7 +680,10 @@ namespace HapetFrontend.Types
             };
         }
 
-        private PtrDiffType(int size, int align) : base(size, align, true) { }
+        public PtrDiffType(AstStructDecl astStructDecl) : base(astStructDecl, true) 
+        { 
+        
+        }
         public override string ToString() => "ptrdiff";
 
         public override int Match(HapetType concrete)

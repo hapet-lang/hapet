@@ -124,7 +124,7 @@ namespace HapetFrontend.Types
     public class StructType : HapetType
     {
         [JsonIgnore]
-        public AstStructDecl Declaration { get; }
+        public AstStructDecl Declaration { get; set; }
 
         public static StructType LiteralType { get; } = new StructType(null);
 

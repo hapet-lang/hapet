@@ -7,15 +7,15 @@ namespace HapetFrontend.Scoping
     {
         internal void DefineBuiltInTypes()
         {
-            DefineTypeSymbol(new AstIdExpr("sbyte"), IntType.GetIntType(1, true));
-            DefineTypeSymbol(new AstIdExpr("short"), IntType.GetIntType(2, true));
-            DefineTypeSymbol(new AstIdExpr("int"), IntType.GetIntType(4, true));
-            DefineTypeSymbol(new AstIdExpr("long"), IntType.GetIntType(8, true));
+            //DefineTypeSymbol(new AstIdExpr("sbyte"), IntType.GetIntType(1, true));
+            //DefineTypeSymbol(new AstIdExpr("short"), IntType.GetIntType(2, true));
+            //DefineTypeSymbol(new AstIdExpr("int"), IntType.GetIntType(4, true));
+            //DefineTypeSymbol(new AstIdExpr("long"), IntType.GetIntType(8, true));
 
-            DefineTypeSymbol(new AstIdExpr("byte"), IntType.GetIntType(1, false));
-            DefineTypeSymbol(new AstIdExpr("ushort"), IntType.GetIntType(2, false));
-            DefineTypeSymbol(new AstIdExpr("uint"), IntType.GetIntType(4, false));
-            DefineTypeSymbol(new AstIdExpr("ulong"), IntType.GetIntType(8, false));
+            //DefineTypeSymbol(new AstIdExpr("byte"), IntType.GetIntType(1, false));
+            //DefineTypeSymbol(new AstIdExpr("ushort"), IntType.GetIntType(2, false));
+            //DefineTypeSymbol(new AstIdExpr("uint"), IntType.GetIntType(4, false));
+            //DefineTypeSymbol(new AstIdExpr("ulong"), IntType.GetIntType(8, false));
 
             DefineTypeSymbol(new AstIdExpr("half"), FloatType.GetFloatType(2));
             DefineTypeSymbol(new AstIdExpr("float"), FloatType.GetFloatType(4));
@@ -27,8 +27,8 @@ namespace HapetFrontend.Scoping
             DefineTypeSymbol(new AstIdExpr("void"), VoidType.Instance);
 
             DefineTypeSymbol(new AstIdExpr("var"), VarType.Instance);
-            DefineTypeSymbol(new AstIdExpr("uintptr"), IntPtrType.Instance);
-            DefineTypeSymbol(new AstIdExpr("ptrdiff"), PtrDiffType.Instance);
+            //DefineTypeSymbol(new AstIdExpr("uintptr"), IntPtrType.Instance);
+            //DefineTypeSymbol(new AstIdExpr("ptrdiff"), PtrDiffType.Instance);
         }
 
         internal void DefineBuiltInOperators()
@@ -125,20 +125,20 @@ namespace HapetFrontend.Scoping
 
             var numTypes = new HapetType[]
                 {
-                    IntType.GetIntType(1, true),
-                    IntType.GetIntType(2, true),
-                    IntType.GetIntType(4, true),
-                    IntType.GetIntType(8, true),
-                    IntType.GetIntType(1, false),
-                    IntType.GetIntType(2, false),
-                    IntType.GetIntType(4, false),
-                    IntType.GetIntType(8, false),
+                    HapetType.CurrentTypeContext.GetIntType(1, true),
+                    HapetType.CurrentTypeContext.GetIntType(2, true),
+                    HapetType.CurrentTypeContext.GetIntType(4, true),
+                    HapetType.CurrentTypeContext.GetIntType(8, true),
+                    HapetType.CurrentTypeContext.GetIntType(1, false),
+                    HapetType.CurrentTypeContext.GetIntType(2, false),
+                    HapetType.CurrentTypeContext.GetIntType(4, false),
+                    HapetType.CurrentTypeContext.GetIntType(8, false),
                     CharType.DefaultType,
                     FloatType.GetFloatType(2),
                     FloatType.GetFloatType(4),
                     FloatType.GetFloatType(8),
-                    IntPtrType.Instance,
-                    PtrDiffType.Instance
+                    HapetType.CurrentTypeContext.IntPtrTypeInstance,
+                    HapetType.CurrentTypeContext.PtrDiffTypeInstance
                 };
             foreach (var type in numTypes)
             {

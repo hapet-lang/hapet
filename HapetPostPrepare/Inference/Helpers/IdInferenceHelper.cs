@@ -315,48 +315,10 @@ namespace HapetPostPrepare
             }
             idExpr.OutType = typed.Decl.Type.OutType;
 
-            HandleArrayType(typed.Decl, idExpr);
-            HandleStringType(typed.Decl, idExpr);
+            HandleBasicTypes(typed.Decl, idExpr);
             TryAssignConstValueToExpr(idExpr, typed.Decl, inInfo, ref outInfo2);
             TrySaveClassAndStructUsage(typed.Decl);
             idExpr.FindSymbol = typed;
-        }
-
-        private void HandleArrayType(AstDeclaration decl, AstIdExpr idExpr)
-        {
-            // special handle for array type
-            if (decl.Name is AstIdGenericExpr genId && genId.Name == "System.Array" && decl is AstStructDecl arrStructDecl)
-            {
-                var targetType = genId.GenericRealTypes[0].OutType;
-
-                if (targetType == null)
-                    return;
-
-                var existing = HapetType.CurrentTypeContext.ArrayTypeInstances.FirstOrDefault(t => t.Value.TargetType == targetType).Value;
-                if (existing != null)
-                {
-                    idExpr.OutType = existing;
-                    return;
-                }
-
-                var type = new ArrayType(targetType, arrStructDecl);
-
-                HapetType.CurrentTypeContext.ArrayTypeInstances[targetType] = type;
-                idExpr.OutType = type;
-            }
-        }
-
-        private void HandleStringType(AstDeclaration decl, AstIdExpr idExpr)
-        {
-            // special handle for string type
-            if (decl.Name is AstIdExpr id && id.Name == "System.String" && decl is AstStructDecl strStructDecl)
-            {
-                if (HapetType.CurrentTypeContext.StringTypeInstance == null)
-                {
-                    HapetType.CurrentTypeContext.StringTypeInstance = new StringType(strStructDecl);
-                }
-                idExpr.OutType = HapetType.CurrentTypeContext.StringTypeInstance;
-            }
         }
 
         /// <summary>
