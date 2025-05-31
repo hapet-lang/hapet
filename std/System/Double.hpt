@@ -1,0 +1,58 @@
+public struct Double : IComparable, IComparable<double>
+{
+    private double _value;
+
+    public const double MinValue = -1.7976931348623157E+308;
+    public const double MaxValue = 1.7976931348623157E+308;
+
+    // Note Epsilon should be a double whose hex representation is 0x1
+    // on little endian machines.
+    public const double Epsilon = 4.9406564584124654E-324;
+    public const double NegativeInfinity = (double)-1.0 / (double)(0.0);
+    public const double PositiveInfinity = (double)1.0 / (double)(0.0);
+    public const double NaN = (double)0.0 / (double)0.0;
+
+    public int CompareTo(object value)
+    {
+        if (value == null)
+        {
+            return 1;
+        }
+        if (value is not double)
+        {
+            // TODO:
+            // throw new ArgumentException(SR.Arg_MustBeDouble);
+        }
+        return CompareTo((double)other);
+    }
+
+    public int CompareTo(double value)
+    {
+        if (_value < value)
+        {
+            return -1;
+        }
+        if (_value > value)
+        {
+            return 1;
+        }
+        if (_value == value)
+        {
+            return 0;
+        }
+        if (IsNaN(_value))
+        {
+            return IsNaN(value) ? 0 : -1;
+        }
+
+        // TODO: ?
+        // Debug.Assert(IsNaN(value));
+        return 1;
+    }
+
+    public static inline bool IsNaN(double d)
+    {
+        // TODO: is it correct way or need to do as in c#?
+        return d == NaN;
+    }
+}

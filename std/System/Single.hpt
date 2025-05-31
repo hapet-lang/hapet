@@ -1,0 +1,58 @@
+public struct Single : IComparable, IComparable<float>
+{
+    private float _value;
+
+    public const float MinValue = (float)-3.40282346638528859e+38;
+    public const float MaxValue = (float)3.40282346638528859e+38;
+
+    // Note Epsilon should be a float whose hex representation is 0x1
+    // on little endian machines.
+    public const float Epsilon = (float)1.4e-45;
+    public const float NegativeInfinity = (float)-1.0 / (float)0.0;
+    public const float PositiveInfinity = (float)1.0 / (float)0.0;
+    public const float NaN = (float)0.0 / (float)0.0;
+
+    public int CompareTo(object value)
+    {
+        if (value == null)
+        {
+            return 1;
+        }
+        if (value is not float)
+        {
+            // TODO:
+            // throw new ArgumentException(SR.Arg_MustBeFloat);
+        }
+        return CompareTo((float)other);
+    }
+
+    public int CompareTo(float value)
+    {
+        if (_value < value)
+        {
+            return -1;
+        }
+        if (_value > value)
+        {
+            return 1;
+        }
+        if (_value == value)
+        {
+            return 0;
+        }
+        if (IsNaN(_value))
+        {
+            return IsNaN(value) ? 0 : -1;
+        }
+
+        // TODO: ?
+        // Debug.Assert(IsNaN(value));
+        return 1;
+    }
+
+    public static inline bool IsNaN(float d)
+    {
+        // TODO: is it correct way or need to do as in c#?
+        return d == NaN;
+    }
+}
