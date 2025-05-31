@@ -177,11 +177,10 @@ namespace HapetFrontend.Types
         };
     }
 
-    public class FloatType : HapetType
+    public class FloatType : StructType
     {
-        private static Dictionary<int, FloatType> _types = new Dictionary<int, FloatType>();
-        public static FloatType LiteralType { get; } = new FloatType(0, 0);
-        public static FloatType DefaultType => GetFloatType(4);
+        public new static FloatType LiteralType { get; } = new FloatType(null);
+        public static FloatType DefaultType => CurrentTypeContext.GetFloatType(4);
 
         public override string TypeName => ToString();
 
@@ -200,20 +199,7 @@ namespace HapetFrontend.Types
             };
         }
 
-        private FloatType(int size, int align) : base(size, align) { }
-
-        public static FloatType GetFloatType(int bytes)
-        {
-            if (_types.ContainsKey(bytes))
-            {
-                return _types[bytes];
-            }
-
-            var type = new FloatType(bytes, bytes);
-
-            _types[bytes] = type;
-            return type;
-        }
+        public FloatType(AstStructDecl astStructDecl) : base(astStructDecl) { }
 
         public override string ToString()
         {

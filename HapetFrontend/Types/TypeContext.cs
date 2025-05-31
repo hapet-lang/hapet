@@ -39,5 +39,18 @@ namespace HapetFrontend.Types
             IntTypeInstances[key] = empty;
             return empty;
         }
+        public Dictionary<int, FloatType> FloatTypeInstances { get; private set; } = new Dictionary<int, FloatType>();
+        public FloatType GetFloatType(int sizeInBytes)
+        {
+            var key = sizeInBytes;
+            if (FloatTypeInstances.TryGetValue(key, out FloatType value))
+            {
+                return value;
+            }
+            FloatType empty = new FloatType(null);
+            empty.ChangeSize(sizeInBytes);
+            FloatTypeInstances[key] = empty;
+            return empty;
+        }
     }
 }

@@ -17,9 +17,9 @@ namespace HapetFrontend.Scoping
             //DefineTypeSymbol(new AstIdExpr("uint"), IntType.GetIntType(4, false));
             //DefineTypeSymbol(new AstIdExpr("ulong"), IntType.GetIntType(8, false));
 
-            DefineTypeSymbol(new AstIdExpr("half"), FloatType.GetFloatType(2));
-            DefineTypeSymbol(new AstIdExpr("float"), FloatType.GetFloatType(4));
-            DefineTypeSymbol(new AstIdExpr("double"), FloatType.GetFloatType(8));
+            //DefineTypeSymbol(new AstIdExpr("half"), FloatType.GetFloatType(2));
+            //DefineTypeSymbol(new AstIdExpr("float"), FloatType.GetFloatType(4));
+            //DefineTypeSymbol(new AstIdExpr("double"), FloatType.GetFloatType(8));
 
             //DefineTypeSymbol(new AstIdExpr("char"), CharType.DefaultType);
             //DefineTypeSymbol(new AstIdExpr("bool"), boolT);
@@ -105,9 +105,9 @@ namespace HapetFrontend.Scoping
                     HapetType.CurrentTypeContext.GetIntType(4, false),
                     HapetType.CurrentTypeContext.GetIntType(8, false),
                     HapetType.CurrentTypeContext.CharTypeInstance,
-                    FloatType.GetFloatType(2),
-                    FloatType.GetFloatType(4),
-                    FloatType.GetFloatType(8),
+                    HapetType.CurrentTypeContext.GetFloatType(2),
+                    HapetType.CurrentTypeContext.GetFloatType(4),
+                    HapetType.CurrentTypeContext.GetFloatType(8),
                     HapetType.CurrentTypeContext.IntPtrTypeInstance,
                     HapetType.CurrentTypeContext.PtrDiffTypeInstance
                 };
