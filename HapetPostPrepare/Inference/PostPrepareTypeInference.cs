@@ -592,9 +592,11 @@ namespace HapetPostPrepare
                         {
                             // we need to change right part to pointer to a class
                             // so bitcast would be possible
-                            rightExpr.OutType = PointerType.GetPointerType(rightExpr.OutType);
+                            if (rightExpr.OutType is ClassType)
+                                rightExpr.OutType = PointerType.GetPointerType(rightExpr.OutType);
                             binExpr.OutType = HapetType.CurrentTypeContext.BoolTypeInstance;
                             // TODO: check for inheritance!!!
+                            // TODO: many checks with valueType usage
                             break;
                         }
                     default:
