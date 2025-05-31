@@ -277,12 +277,13 @@ namespace HapetPostPrepare
         {
             List<DeclSymbol> candidates = new List<DeclSymbol>();
 
-            candidates.AddRange(Candidates_Step1_InheritedAndCurrent(name, declToSearch, callFromObject));                  // step 1
+            candidates.AddRange(Candidates_Step1_InheritedAndCurrent(name, declToSearch, callFromObject));  // step 1
             candidates.AddRange(Candidates_Step2_CurrentScopeAndParents(name, callExpr));                   // step 2
             var argsAmount = args == null ? -1 : args.Count;
             candidates = Candidates_Step3_MinAmountParams(candidates, argsAmount).ToList();                 // step 3
             candidates = Candidates_Step4_OnlyOneGeneric(name, candidates).ToList();                        // step 4
             candidates = Candidates_Step5_StaticOrNon(candidates, callFromObject).ToList();                 // step 5
+            Candidates_6_RemoveOverrided(candidates, callFromObject);                                       // step 6
 
             return candidates.Distinct().ToList();
         }
@@ -481,6 +482,60 @@ namespace HapetPostPrepare
                     if (d.Decl.SpecialKeys.Contains(HapetFrontend.Parsing.TokenType.KwStatic))
                         yield return d;
                 }
+            }
+        }
+
+        /// <summary>
+        /// The func is going to remove all parent-parent funcs that are already overriden
+        /// Like calling ToString() from a struct would candidate both ValueType and Object
+        /// ToString() methods. So we need to leave only one of them - ValueType'
+        /// </summary>
+        /// <param name="decls"></param>
+        /// <returns></returns>
+        private static void Candidates_6_RemoveOverrided(List<DeclSymbol> decls, bool callFromObject)
+        {
+            List<AstDeclaration> toRemove = new List<AstDeclaration>();
+            foreach (var decl in decls)
+            {
+                // leave the funcs with no override for now
+                if (!decl.Decl.SpecialKeys.Contains(TokenType.KwOverride) && !decl.Decl.SpecialKeys.Contains(TokenType.KwNew))
+                    continue;
+
+                // getting parent of current func and checking other func' parents to find the same
+                var currentParent = decl.Decl.ContainingParent;
+                foreach (var d in decls)
+                {
+                    var nestedParent = d.Decl.ContainingParent;
+                    // skip structs
+                    if (nestedParent.Type.OutType is not ClassType clsTNested)
+                        continue;
+                    // skip non inherited
+                    if (!currentParent.Type.OutType.IsInheritedFrom(clsTNested))
+                        continue;
+
+                    // go up to the biggest parent class
+                    while (clsTNested != null)
+                    {
+                        // search for the same func in parent
+                        var theFunc = clsTNested.Declaration.Declarations.
+                            Where(x => x is AstFuncDecl).
+                            Select(x => x as AstFuncDecl).ToList().
+                            GetSameByNameAndTypes(decl.Decl as AstFuncDecl, out int _, callFromObject);
+                        if (theFunc != null)
+                        {
+                            toRemove.Add(theFunc);
+                        }
+
+                        // get the next parent
+                        clsTNested = clsTNested.Declaration.InheritedFrom.Count > 0 ? clsTNested.Declaration.InheritedFrom[0].OutType as ClassType : null;
+                    }
+                }
+            }
+
+            // remove them
+            foreach (var r in toRemove)
+            {
+                decls.RemoveAll(x => x.Decl == r);
             }
         }
 
