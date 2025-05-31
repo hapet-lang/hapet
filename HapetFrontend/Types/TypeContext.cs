@@ -32,6 +32,7 @@ namespace HapetFrontend.Types
                 return value;
             }
             IntType empty = new IntType(null, signed);
+            empty.ChangeSize(sizeInBytes);
             IntTypeInstances[key] = empty;
             return empty;
         }

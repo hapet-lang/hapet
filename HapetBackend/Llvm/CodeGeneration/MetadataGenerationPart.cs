@@ -73,7 +73,7 @@ namespace HapetBackend.Llvm
 
                 // add typeinfo field 
                 entryTypes.Add(_context.Int8Type.GetPointerTo());
-                entryHapetTypes.Add(PointerType.GetPointerType(IntPtrType.Instance));
+                entryHapetTypes.Add(PointerType.GetPointerType(HapetType.CurrentTypeContext.IntPtrTypeInstance));
 
                 // getting all field except props
                 foreach (var decl in cls.Declarations.Where(x => x is AstVarDecl && x is not AstPropertyDecl).Select(x => x as AstVarDecl))

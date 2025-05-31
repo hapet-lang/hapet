@@ -145,7 +145,7 @@ namespace HapetBackend.Llvm
                 void MakeOperation()
                 {
                     var value = GenerateExpressionCode(expr);
-                    var bo = GetBinOp(unExpr.Operator == "++" ? "+" : "-", expr.OutType, IntType.GetIntType(4, true));
+                    var bo = GetBinOp(unExpr.Operator == "++" ? "+" : "-", expr.OutType, HapetType.CurrentTypeContext.GetIntType(4, true));
                     var toAssign = bo(_builder, value, LLVMValueRef.CreateConstInt(_context.Int32Type, 1), "unOp");
                     var valuePtr = GenerateExpressionCode(expr, true);
                     AssignToVar(valuePtr, toAssign);
@@ -463,7 +463,7 @@ namespace HapetBackend.Llvm
                     var funcType = LLVMTypeRef.CreateFunction(returnType, paramTypes.ToArray(), false);
 
                     // fields of delegate struct
-                    var objectPtr = HapetTypeToLLVMType(PointerType.GetPointerType(IntType.GetIntType(1, false))); // ptr to func object
+                    var objectPtr = HapetTypeToLLVMType(PointerType.GetPointerType(HapetType.CurrentTypeContext.GetIntType(1, false))); // ptr to func object
                     var funcPtr = funcType.GetPointerTo();
 
                     delegateIrType = _context.CreateNamedStruct($"delegate.anon.{fncType.ToCringeString()}");
@@ -474,7 +474,7 @@ namespace HapetBackend.Llvm
                     _delegateAnonTypes[fncType.ToCringeString()] = delegateIrType;
                 }
                 // by default it is a nullptr
-                LLVMValueRef ptrToObject = LLVM.ConstPointerNull(HapetTypeToLLVMType(IntType.GetIntType(1, false)));
+                LLVMValueRef ptrToObject = LLVM.ConstPointerNull(HapetTypeToLLVMType(HapetType.CurrentTypeContext.GetIntType(1, false)));
                 LLVMValueRef ptrToFunc = _valueMap[declSymbol]; // mb ptr to?
                 var allocatedDelegate = _builder.BuildAlloca(delegateIrType, "anonAllocated");
                 // if it is not a static func - get ptr to class
@@ -1034,7 +1034,7 @@ namespace HapetBackend.Llvm
 
             // making consts
             var zeroLlvm = LLVMValueRef.CreateConstInt(_context.Int32Type, 0);
-            var sizeLlvm = LLVMValueRef.CreateConstInt(HapetTypeToLLVMType(IntPtrType.Instance), (ulong)structSize);
+            var sizeLlvm = LLVMValueRef.CreateConstInt(HapetTypeToLLVMType(HapetType.CurrentTypeContext.IntPtrTypeInstance), (ulong)structSize);
 
             // memset
             var marshalDecl = _currentFunction.Scope.GetSymbolInNamespace("System.Runtime.InteropServices", new AstIdExpr("Marshal"));

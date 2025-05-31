@@ -202,7 +202,7 @@ namespace HapetBackend.Llvm
                         var nameBoxed = $"boxed.{s.Declaration.Name.Name}";
                         var llvmTypeBoxed = _context.CreateNamedStruct(nameBoxed);
                         var fieldDeclarationsBoxed = s.Declaration.GetAllRawFields().Select(x => x.Type.OutType).ToList();
-                        fieldDeclarationsBoxed.Insert(0, PointerType.GetPointerType(IntPtrType.Instance)); // the same as in metadata gen
+                        fieldDeclarationsBoxed.Insert(0, PointerType.GetPointerType(HapetType.CurrentTypeContext.IntPtrTypeInstance)); // the same as in metadata gen
                         var (offsetsBoxed, _, memTypesBoxed) = CalcStructData(fieldDeclarationsBoxed, packNumber);
                         
                         llvmTypeBoxed.StructSetBody(memTypesBoxed.ToArray(), packNumber >= 1);
@@ -244,7 +244,7 @@ namespace HapetBackend.Llvm
                     {
                         // this code creates a new string struct so its content could be easily copied to another string var
                         string theString = (string)v;
-                        var stringSizeValueRef = LLVMValueRef.CreateConstInt(HapetTypeToLLVMType(IntType.GetIntType(4, true)), (ulong)theString.Length);
+                        var stringSizeValueRef = LLVMValueRef.CreateConstInt(HapetTypeToLLVMType(HapetType.CurrentTypeContext.GetIntType(4, true)), (ulong)theString.Length);
 
                         // creating global static array
                         var elements = theString.ToCharArray().Select(c => HapetValueToLLVMValue(CharType.DefaultType, c)).ToArray();
@@ -612,20 +612,20 @@ namespace HapetBackend.Llvm
         #region Mallocs
         private LLVMValueRef GetMalloc(int typeSize, int amount, string allocName = "allocated")
         {
-            var tp = LLVMValueRef.CreateConstInt(HapetTypeToLLVMType(IntType.GetIntType(4, true)), (ulong)typeSize);
-            var am = LLVMValueRef.CreateConstInt(HapetTypeToLLVMType(IntType.GetIntType(4, true)), (ulong)amount);
+            var tp = LLVMValueRef.CreateConstInt(HapetTypeToLLVMType(HapetType.CurrentTypeContext.GetIntType(4, true)), (ulong)typeSize);
+            var am = LLVMValueRef.CreateConstInt(HapetTypeToLLVMType(HapetType.CurrentTypeContext.GetIntType(4, true)), (ulong)amount);
             return GetMalloc(tp, am, allocName);
         }
 
         private LLVMValueRef GetMalloc(LLVMValueRef typeSize, int amount, string allocName = "allocated")
         {
-            var am = LLVMValueRef.CreateConstInt(HapetTypeToLLVMType(IntType.GetIntType(4, true)), (ulong)amount);
+            var am = LLVMValueRef.CreateConstInt(HapetTypeToLLVMType(HapetType.CurrentTypeContext.GetIntType(4, true)), (ulong)amount);
             return GetMalloc(typeSize, am, allocName);
         }
 
         private LLVMValueRef GetMalloc(int typeSize, LLVMValueRef amount, string allocName = "allocated")
         {
-            var tp = LLVMValueRef.CreateConstInt(HapetTypeToLLVMType(IntType.GetIntType(4, true)), (ulong)typeSize);
+            var tp = LLVMValueRef.CreateConstInt(HapetTypeToLLVMType(HapetType.CurrentTypeContext.GetIntType(4, true)), (ulong)typeSize);
             return GetMalloc(tp, amount, allocName);
         }
 

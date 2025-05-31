@@ -246,10 +246,11 @@ namespace HapetBackend.Llvm
         #region Loaders
         private LLVMValueRef GetTypeInfoPtr(LLVMTypeRef strType, LLVMValueRef ptrToStr)
         {
+            var intPtrT = HapetType.CurrentTypeContext.IntPtrTypeInstance;
             var zeroRef = LLVMValueRef.CreateConstInt(_context.Int32Type, 0);
             var ptrToFullTypeInfo = _builder.BuildGEP2(strType, ptrToStr, new LLVMValueRef[] { zeroRef, zeroRef }, "fullTypeInfo");
-            var ptrToFullTypeInfoLoaded = _builder.BuildLoad2(LLVMTypeRef.CreatePointer(HapetTypeToLLVMType(IntPtrType.Instance), 0), ptrToFullTypeInfo, "fullTypeInfoLoaded");
-            var ptrToTypeInfo = _builder.BuildGEP2(LLVMTypeRef.CreatePointer(HapetTypeToLLVMType(IntPtrType.Instance), 0), ptrToFullTypeInfoLoaded, new LLVMValueRef[] { zeroRef }, "typeInfo");
+            var ptrToFullTypeInfoLoaded = _builder.BuildLoad2(LLVMTypeRef.CreatePointer(HapetTypeToLLVMType(intPtrT), 0), ptrToFullTypeInfo, "fullTypeInfoLoaded");
+            var ptrToTypeInfo = _builder.BuildGEP2(LLVMTypeRef.CreatePointer(HapetTypeToLLVMType(intPtrT), 0), ptrToFullTypeInfoLoaded, new LLVMValueRef[] { zeroRef }, "typeInfo");
             var ptrToTypeInfoLoaded = _builder.BuildLoad2(LLVMTypeRef.CreatePointer(GetTypeInfoType(), 0), ptrToTypeInfo, "typeInfoLoaded");
             return ptrToTypeInfoLoaded;
         }

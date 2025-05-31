@@ -35,7 +35,7 @@ namespace HapetBackend.Llvm
                 // do not generate loop (just craete it here) if there are ini elements!!!
                 for (int i = 0; i < expr.Elements.Count; ++i)
                 {
-                    var iValueRef = LLVMValueRef.CreateConstInt(HapetTypeToLLVMType(IntType.GetIntType(4, true)), (ulong)i);
+                    var iValueRef = LLVMValueRef.CreateConstInt(HapetTypeToLLVMType(HapetType.CurrentTypeContext.GetIntType(4, true)), (ulong)i);
                     if (expr.SizeExprs.Count > 1)
                     {
                         // generate nested array with ini values

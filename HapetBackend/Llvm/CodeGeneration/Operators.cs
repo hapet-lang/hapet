@@ -221,13 +221,13 @@ namespace HapetBackend.Llvm
             {
                 return (LLVMBuilderRef builder, LLVMValueRef left, LLVMValueRef right, string oper) =>
                 {
-                    var leftV = CreateCast(builder, left, op.LhsType, IntPtrType.Instance);
-                    var rightV = CreateCast(builder, right, op.RhsType, IntPtrType.Instance);
+                    var leftV = CreateCast(builder, left, op.LhsType, HapetType.CurrentTypeContext.IntPtrTypeInstance);
+                    var rightV = CreateCast(builder, right, op.RhsType, HapetType.CurrentTypeContext.IntPtrTypeInstance);
 
                     // getting add func for the new types
-                    var binOp = GetBinOp(op.Name, IntPtrType.Instance, IntPtrType.Instance);
+                    var binOp = GetBinOp(op.Name, HapetType.CurrentTypeContext.IntPtrTypeInstance, HapetType.CurrentTypeContext.IntPtrTypeInstance);
                     var res = binOp(builder, leftV, rightV, oper);
-                    return CreateCast(builder, res, IntPtrType.Instance, op.ResultType);
+                    return CreateCast(builder, res, HapetType.CurrentTypeContext.IntPtrTypeInstance, op.ResultType);
                 };
             }
         }

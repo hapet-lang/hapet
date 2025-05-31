@@ -615,6 +615,15 @@ namespace HapetFrontend.Types
         }
 
         public StringType(AstStructDecl astStructDecl) : base(astStructDecl) { }
+
+        public override int Match(HapetType concrete)
+        {
+            if (concrete is StringType)
+            {
+                return 0;
+            }
+            return -1;
+        }
     }
 
     public class IntPtrType : IntType
