@@ -4,8 +4,8 @@ public struct Half : IComparable, IComparable<half>
 
     // TODO: min, max, Epsilon
 
-    public const half NegativeInfinity = (half)-1.0 / (half)0.0;
-    public const half PositiveInfinity = (half)1.0 / (half)0.0;
+    public const half NegativeInfinity = (half)(-1.0) / (half)(0.0);
+    public const half PositiveInfinity = (half)(1.0) / (half)(0.0);
     public const half NaN = (half)0.0 / (half)0.0;
 
     public int CompareTo(object value)
@@ -19,7 +19,7 @@ public struct Half : IComparable, IComparable<half>
             // TODO:
             // throw new ArgumentException(SR.Arg_MustBeHalf);
         }
-        return CompareTo((half)other);
+        return CompareTo((half)value);
     }
 
     public int CompareTo(half value)

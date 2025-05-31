@@ -2,14 +2,14 @@ public struct Single : IComparable, IComparable<float>
 {
     private float _value;
 
-    public const float MinValue = (float)-3.40282346638528859e+38;
-    public const float MaxValue = (float)3.40282346638528859e+38;
+    public const float MinValue = (float)(-3.40282346638528859e+38);
+    public const float MaxValue = (float)(3.40282346638528859e+38);
 
     // Note Epsilon should be a float whose hex representation is 0x1
     // on little endian machines.
     public const float Epsilon = (float)1.4e-45;
-    public const float NegativeInfinity = (float)-1.0 / (float)0.0;
-    public const float PositiveInfinity = (float)1.0 / (float)0.0;
+    public const float NegativeInfinity = (float)(-1.0) / (float)(0.0);
+    public const float PositiveInfinity = (float)(1.0) / (float)(0.0);
     public const float NaN = (float)0.0 / (float)0.0;
 
     public int CompareTo(object value)
@@ -23,7 +23,7 @@ public struct Single : IComparable, IComparable<float>
             // TODO:
             // throw new ArgumentException(SR.Arg_MustBeFloat);
         }
-        return CompareTo((float)other);
+        return CompareTo((float)value);
     }
 
     public int CompareTo(float value)
