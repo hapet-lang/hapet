@@ -525,9 +525,8 @@ public struct ValueTuple<T1, T2>
                     return Item1;
                 case (1)
                     return Item2;
-                default
-                    return Item1; // TODO: error throw new IndexOutOfRangeException(),
             }
+            return Item1; // TODO: error throw new IndexOutOfRangeException(),
         }
     }
 }
@@ -683,8 +682,8 @@ public struct ValueTuple<T1, T2, T3>
                 case (0) return Item1;
                 case (1) return Item2;
                 case (2) return Item3;
-                default return Item1;// TODO: throw new IndexOutOfRangeException(),
             }
+            return Item1;// TODO: throw new IndexOutOfRangeException(),
         }
     }
 }
@@ -853,8 +852,8 @@ public struct ValueTuple<T1, T2, T3, T4>
                 case (1) return Item2;
                 case (2) return Item3;
                 case (3) return Item4;
-                default return Item1; // TODO: throw new IndexOutOfRangeException(),
             }
+            return Item1; // TODO: throw new IndexOutOfRangeException(),
         }
     }
 }
@@ -1036,8 +1035,8 @@ public struct ValueTuple<T1, T2, T3, T4, T5>
                 case (2) return Item3;
                 case (3) return Item4;
                 case (4) return Item5;
-                default return Item1; // TODO: throw new IndexOutOfRangeException(),
             }
+            return Item1; // TODO: throw new IndexOutOfRangeException(),
         }
     }
 }
@@ -1232,8 +1231,8 @@ public struct ValueTuple<T1, T2, T3, T4, T5, T6>
                 case (3) return Item4;
                 case (4) return Item5;
                 case (5) return Item6;
-                default return Item1; // TODO: throw new IndexOutOfRangeException(),
             }
+            return Item1; // TODO: throw new IndexOutOfRangeException(),
         }
     }
 }
@@ -1441,8 +1440,8 @@ public struct ValueTuple<T1, T2, T3, T4, T5, T6, T7>
                 case (4) return Item5;
                 case (5) return Item6;
                 case (6) return Item7;
-                default return Item1; // TODO: throw new IndexOutOfRangeException(),
             }
+            return Item1; // TODO: throw new IndexOutOfRangeException(),
         }
     }
 }
