@@ -15,7 +15,7 @@ namespace HapetFrontend.Ast.Expressions
         {
             this.RawValue = rawValue;
             OutValue = rawValue.FirstOrDefault();
-            OutType = CharType.DefaultType; // TODO: check prefixes for the size of char
+            OutType = HapetType.CurrentTypeContext.CharTypeInstance; // TODO: check prefixes for the size of char
         }
 
         public override AstStatement GetDeepCopy()

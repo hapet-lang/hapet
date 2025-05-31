@@ -593,7 +593,7 @@ namespace HapetPostPrepare
                             // we need to change right part to pointer to a class
                             // so bitcast would be possible
                             rightExpr.OutType = PointerType.GetPointerType(rightExpr.OutType);
-                            binExpr.OutType = BoolType.Instance;
+                            binExpr.OutType = HapetType.CurrentTypeContext.BoolTypeInstance;
                             // TODO: check for inheritance!!!
                             break;
                         }
@@ -1062,7 +1062,7 @@ namespace HapetPostPrepare
             if (arrayAccExpr.ObjectName.OutType is ArrayType arrayType)
                 outType = arrayType.TargetType;
             else if (arrayAccExpr.ObjectName.OutType is StringType)
-                outType = CharType.DefaultType; // TODO: mb non default could be here? idk :)
+                outType = HapetType.CurrentTypeContext.CharTypeInstance; // TODO: mb non default could be here? idk :)
             else if (arrayAccExpr.ObjectName.OutType is PointerType ptrType)
                 outType = ptrType.TargetType;
             else

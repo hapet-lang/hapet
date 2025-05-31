@@ -263,7 +263,7 @@ namespace HapetFrontend.Types
 
         public override string ToString()
         {
-            if (Declaration.Returns.OutType != VoidType.Instance)
+            if (Declaration.Returns.OutType != CurrentTypeContext.VoidTypeInstance)
                 return $"({Declaration.Returns.OutType}:{Declaration.Name.Name})";
             else
                 return $"(void:{Declaration.Name.Name})";
@@ -295,7 +295,7 @@ namespace HapetFrontend.Types
                 }));
             }
 
-            if (Declaration.Returns.OutType != VoidType.Instance)
+            if (Declaration.Returns.OutType != CurrentTypeContext.VoidTypeInstance)
                 return $"({Declaration.Returns.OutType}:({args}))";
             else
                 return $"(void:({args}))";

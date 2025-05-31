@@ -189,7 +189,7 @@ namespace HapetFrontend
 
                 // every ptr type can be casted to void* implicitly like
                 // void* anime = ptrToSmth;
-                case PointerType ptr5 when ptr5.TargetType == VoidType.Instance && currentType is PointerType:
+                case PointerType ptr5 when ptr5.TargetType == HapetType.CurrentTypeContext.VoidTypeInstance && currentType is PointerType:
 
                 // assigning 'null' to any pointer type
                 // void* anime = null;

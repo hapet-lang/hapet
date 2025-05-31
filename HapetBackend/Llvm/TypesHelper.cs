@@ -89,7 +89,7 @@ namespace HapetBackend.Llvm
 
                 case PointerType p:
                     {
-                        if (p.TargetType == null || p.TargetType == VoidType.Instance)
+                        if (p.TargetType == null || p.TargetType == HapetType.CurrentTypeContext.VoidTypeInstance)
                             return ((LLVMTypeRef)_context.Int8Type).GetPointerTo();
                         return HapetTypeToLLVMType(p.TargetType).GetPointerTo();
                     }
@@ -247,9 +247,10 @@ namespace HapetBackend.Llvm
                         var stringSizeValueRef = LLVMValueRef.CreateConstInt(HapetTypeToLLVMType(HapetType.CurrentTypeContext.GetIntType(4, true)), (ulong)theString.Length);
 
                         // creating global static array
-                        var elements = theString.ToCharArray().Select(c => HapetValueToLLVMValue(CharType.DefaultType, c)).ToArray();
-                        var stringGlobArray = _module.AddGlobal(LLVMTypeRef.CreateArray(HapetTypeToLLVMType(CharType.DefaultType), (uint)theString.Length), "constString");
-                        stringGlobArray.Initializer = LLVMValueRef.CreateConstArray(HapetTypeToLLVMType(CharType.DefaultType), elements);
+                        var charT = HapetType.CurrentTypeContext.CharTypeInstance;
+                        var elements = theString.ToCharArray().Select(c => HapetValueToLLVMValue(charT, c)).ToArray();
+                        var stringGlobArray = _module.AddGlobal(LLVMTypeRef.CreateArray(HapetTypeToLLVMType(charT), (uint)theString.Length), "constString");
+                        stringGlobArray.Initializer = LLVMValueRef.CreateConstArray(HapetTypeToLLVMType(charT), elements);
 
                         var stringType = HapetType.CurrentTypeContext.StringTypeInstance;
 
@@ -375,7 +376,7 @@ namespace HapetBackend.Llvm
                 // like 'string a = null'
                 else if (ptrT == PointerType.NullLiteralType && outType is StringType stringType)
                 {
-                    var nullTarget = LLVMValueRef.CreateConstPointerNull(HapetTypeToLLVMType(PointerType.GetPointerType(CharType.DefaultType)));
+                    var nullTarget = LLVMValueRef.CreateConstPointerNull(HapetTypeToLLVMType(PointerType.GetPointerType(HapetType.CurrentTypeContext.CharTypeInstance)));
                     var v = _builder.BuildAlloca(HapetTypeToLLVMType(stringType), $"nulled_string");
                     var buffer = _builder.BuildGEP2(HapetTypeToLLVMType(stringType), v, new LLVMValueRef[] { LLVMValueRef.CreateConstInt(_context.Int32Type, 1) }, "strBuffer");
                     _builder.BuildStore(nullTarget, buffer);
@@ -649,8 +650,9 @@ namespace HapetBackend.Llvm
             if (_vaStartFunc.HasValue)
                 return _vaStartFunc.Value;
 
-            List<LLVMTypeRef> paramTypes = [HapetTypeToLLVMType(PointerType.GetPointerType(VoidType.Instance))];
-            var returnType = HapetTypeToLLVMType(VoidType.Instance);
+            var voidT = HapetType.CurrentTypeContext.VoidTypeInstance;
+            List<LLVMTypeRef> paramTypes = [HapetTypeToLLVMType(PointerType.GetPointerType(voidT))];
+            var returnType = HapetTypeToLLVMType(voidT);
             var funcType = LLVMTypeRef.CreateFunction(returnType, paramTypes.ToArray(), false);
             var funcValue = _module.AddFunction("llvm.va_start", funcType);
             funcValue.Linkage = LLVMLinkage.LLVMExternalLinkage;
@@ -666,8 +668,9 @@ namespace HapetBackend.Llvm
             if (_vaEndFunc.HasValue)
                 return _vaEndFunc.Value;
 
-            List<LLVMTypeRef> paramTypes = [HapetTypeToLLVMType(PointerType.GetPointerType(VoidType.Instance))];
-            var returnType = HapetTypeToLLVMType(VoidType.Instance);
+            var voidT = HapetType.CurrentTypeContext.VoidTypeInstance;
+            List<LLVMTypeRef> paramTypes = [HapetTypeToLLVMType(PointerType.GetPointerType(voidT))];
+            var returnType = HapetTypeToLLVMType(voidT);
             var funcType = LLVMTypeRef.CreateFunction(returnType, paramTypes.ToArray(), false);
             var funcValue = _module.AddFunction("llvm.va_end", funcType);
             funcValue.Linkage = LLVMLinkage.LLVMExternalLinkage;

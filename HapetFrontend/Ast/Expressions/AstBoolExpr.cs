@@ -12,7 +12,7 @@ namespace HapetFrontend.Ast.Expressions
 
         public AstBoolExpr(bool value, ILocation location = null) : base(location)
         {
-            this.OutType = BoolType.Instance;
+            this.OutType = HapetType.CurrentTypeContext.BoolTypeInstance;
             this.OutValue = value;
         }
 
