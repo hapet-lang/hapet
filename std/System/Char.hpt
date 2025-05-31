@@ -1,0 +1,26 @@
+public struct Char : IComparable, IComparable<char>
+{
+    private char _value;
+
+    public const char MaxValue = (char)0xFFFF;
+    public const char MinValue = (char)0x00;
+
+    public int CompareTo(object value)
+    {
+        if (value == null)
+        {
+            return 1;
+        }
+        if (value is not char)
+        {
+            // TODO:
+            // throw new ArgumentException(SR.Arg_MustBeByte);
+        }
+        return _value - (((char)value)._value);
+    }
+
+    public int CompareTo(char value)
+    {
+        return _value - value;
+    }
+}

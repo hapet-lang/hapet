@@ -1,0 +1,39 @@
+public struct Boolean : IComparable, IComparable<bool>
+{
+    private bool _value;
+
+    public int CompareTo(object value)
+    {
+        if (value == null)
+        {
+            return 1;
+        }
+        if (value is not bool)
+        {
+            // TODO:
+            // throw new ArgumentException(SR.Arg_MustBeByte);
+        }
+        if (_value == ((bool)value)._value)
+        {
+            return 0;
+        }
+        else if (_value == false)
+        {
+            return -1;
+        }
+        return 1;
+    }
+
+    public int CompareTo(bool value)
+    {
+        if (_value == value)
+        {
+            return 0;
+        }
+        else if (_value == false)
+        {
+            return -1;
+        }
+        return 1;
+    }
+}

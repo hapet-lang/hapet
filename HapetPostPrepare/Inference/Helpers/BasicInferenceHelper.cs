@@ -19,6 +19,14 @@ namespace HapetPostPrepare
             {
                 _compiler.GlobalScope.DefineDeclSymbol(typeName.GetCopy("string"), decl);
             }
+            else if (typeName.Name == "System.Void")
+            {
+                _compiler.GlobalScope.DefineDeclSymbol(typeName.GetCopy("void"), decl);
+            }
+            else if (typeName.Name == "System.Boolean")
+            {
+                _compiler.GlobalScope.DefineDeclSymbol(typeName.GetCopy("bool"), decl);
+            }
             // numeric types
             else if (typeName.Name == "System.Byte")
             {
@@ -60,6 +68,10 @@ namespace HapetPostPrepare
             {
                 _compiler.GlobalScope.DefineDeclSymbol(typeName.GetCopy("ptrdiff"), decl);
             }
+            else if (typeName.Name == "System.Char")
+            {
+                _compiler.GlobalScope.DefineDeclSymbol(typeName.GetCopy("char"), decl);
+            }
         }
 
         private void HandleBasicTypes(AstDeclaration decl, AstIdExpr idExpr)
@@ -87,6 +99,18 @@ namespace HapetPostPrepare
                 if (arrT.Declaration == null)
                     arrT.Declaration = structDecl;
                 idExpr.OutType = arrT;
+            }
+            else if (decl.Name is AstIdExpr id0 && id0.Name == "System.Void")
+            {
+                var tp = HapetType.CurrentTypeContext.VoidTypeInstance;
+                tp.Declaration = structDecl;
+                idExpr.OutType = tp;
+            }
+            else if (decl.Name is AstIdExpr id1 && id1.Name == "System.Boolean")
+            {
+                var tp = HapetType.CurrentTypeContext.BoolTypeInstance;
+                tp.Declaration = structDecl;
+                idExpr.OutType = tp;
             }
             // special handle for numeric types
             else if (decl.Name is AstIdExpr id2 && id2.Name == "System.Byte")
@@ -152,6 +176,12 @@ namespace HapetPostPrepare
             else if (decl.Name is AstIdExpr id12 && id12.Name == "System.PtrDiff")
             {
                 var tp = HapetType.CurrentTypeContext.PtrDiffTypeInstance;
+                tp.Declaration = structDecl;
+                idExpr.OutType = tp;
+            }
+            else if (decl.Name is AstIdExpr id13 && id13.Name == "System.Char")
+            {
+                var tp = HapetType.CurrentTypeContext.CharTypeInstance;
                 tp.Declaration = structDecl;
                 idExpr.OutType = tp;
             }

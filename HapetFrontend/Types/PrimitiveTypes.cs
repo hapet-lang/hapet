@@ -6,9 +6,8 @@ using System.Numerics;
 
 namespace HapetFrontend.Types
 {
-    public class VoidType : HapetType
+    public class VoidType : StructType
     {
-        public static VoidType Instance { get; } = new VoidType();
         public override string ToString() => "void";
 
         public override string TypeName => ToString();
@@ -28,12 +27,20 @@ namespace HapetFrontend.Types
             };
         }
 
-        private VoidType() : base(0, 0) { }
+        public VoidType(AstStructDecl astStructDecl) : base(astStructDecl) { }
+
+        public override int Match(HapetType concrete)
+        {
+            if (concrete is VoidType)
+            {
+                return 0;
+            }
+            return -1;
+        }
     }
 
-    public class BoolType : HapetType
+    public class BoolType : StructType
     {
-        public static BoolType Instance { get; } = new BoolType();
         public override string ToString() => "bool";
 
         public override string TypeName => ToString();
@@ -53,7 +60,16 @@ namespace HapetFrontend.Types
             };
         }
 
-        private BoolType() : base(1, 1) { }
+        public BoolType(AstStructDecl astStructDecl) : base(astStructDecl) { }
+
+        public override int Match(HapetType concrete)
+        {
+            if (concrete is BoolType)
+            {
+                return 0;
+            }
+            return -1;
+        }
     }
 
     public class IntType : StructType
@@ -274,8 +290,8 @@ namespace HapetFrontend.Types
         public static int PointerAlignment => CurrentTypeContext.PointerSize;
 
         private static Dictionary<HapetType, PointerType> _types = new Dictionary<HapetType, PointerType>();
-        public static PointerType VoidLiteralType { get; } = new PointerType(VoidType.Instance);
-        public static PointerType NullLiteralType { get; } = new PointerType(VoidType.Instance) { IsPointerToNull = true, };
+        public static PointerType VoidLiteralType { get; } = new PointerType(HapetType.CurrentTypeContext.VoidTypeInstance);
+        public static PointerType NullLiteralType { get; } = new PointerType(HapetType.CurrentTypeContext.VoidTypeInstance) { IsPointerToNull = true, };
 
         public override string TypeName => "ptr";
         /// <summary>
@@ -520,11 +536,9 @@ namespace HapetFrontend.Types
         }
     }
 
-    public class CharType : HapetType
+    public class CharType : StructType
     {
-        private static Dictionary<int, CharType> _types = new Dictionary<int, CharType>();
-        public static CharType LiteralType { get; } = new CharType(0);
-        public static CharType DefaultType => GetCharType(2);
+        public new static CharType LiteralType { get; } = new CharType(null, 2);
 
         public override string TypeName => "char";
 
@@ -543,22 +557,9 @@ namespace HapetFrontend.Types
             };
         }
 
-        private CharType(int size) : base(size, size)
+        public CharType(AstStructDecl astStructDecl, int size) : base(astStructDecl)
         {
-        }
-
-        private static CharType GetCharType(int sizeInBytes)
-        {
-            var key = sizeInBytes;
-
-            if (_types.ContainsKey(key))
-            {
-                return _types[key];
-            }
-
-            var type = new CharType(sizeInBytes);
-            _types[key] = type;
-            return type;
+            _size = size;
         }
 
         public override string ToString()
