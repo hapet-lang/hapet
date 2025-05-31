@@ -19,6 +19,7 @@ public struct Int64 : IComparable, IComparable<long>
         }
         // TODO:
         // throw new ArgumentException(SR.Arg_MustBeInt32);
+        return 0;
     }
 
     public int CompareTo(long value)

@@ -19,6 +19,7 @@ public struct UInt32 : IComparable, IComparable<uint>
         }
         // TODO:
         // throw new ArgumentException(SR.Arg_MustBeInt32);
+        return 0;
     }
 
     public int CompareTo(uint value)

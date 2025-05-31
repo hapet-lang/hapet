@@ -19,6 +19,7 @@ public struct UInt64 : IComparable, IComparable<ulong>
         }
         // TODO:
         // throw new ArgumentException(SR.Arg_MustBeInt32);
+        return 0;
     }
 
     public int CompareTo(ulong value)

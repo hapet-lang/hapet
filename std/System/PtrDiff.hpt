@@ -16,6 +16,7 @@ public struct PtrDiff : IComparable, IComparable<ptrdiff>
         }
         // TODO:
         // throw new ArgumentException(SR.Arg_MustBeInt32);
+        return 0;
     }
 
     public int CompareTo(ptrdiff value)

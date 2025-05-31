@@ -17,6 +17,7 @@ public struct UInt16 : IComparable, IComparable<ushort>
         }
         // TODO:
         // throw new ArgumentException(SR.Arg_MustBeUInt16);
+        return 0;
     }
 
     public int CompareTo(ushort value)
