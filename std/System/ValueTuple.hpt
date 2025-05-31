@@ -1653,7 +1653,7 @@ where TRest : struct
                                         Item7 == null ? 0 : Item7.GetHashCode(),
                                         restHashCode);
             case (3)
-                return HashCode.Combine<int, int, int, int(
+                return HashCode.Combine<int, int, int, int>(
                                         Item5 == null ? 0 : Item5.GetHashCode(),
                                         Item6 == null ? 0 : Item6.GetHashCode(),
                                         Item7 == null ? 0 : Item7.GetHashCode(),
