@@ -134,6 +134,14 @@ namespace HapetBackend.Llvm
                             else theFunc = null;
                             break;
                         }
+                    case "^":
+                        {
+                            // xor 
+                            // checking if the result type of the OP is float - set null
+                            if (op.ResultType is IntType || op.ResultType is CharType) theFunc = LlvmExtensions.BuildXor;
+                            else theFunc = null;
+                            break;
+                        }
                     case "==":
                         {
                             // checking if the result type of the OP is float

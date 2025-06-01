@@ -83,6 +83,11 @@ namespace HapetBackend.Llvm
             using var marshaledName = new MarshaledString(op.AsSpan());
             return LLVM.BuildOr(builder, left, right, marshaledName);
         }
+        public unsafe static LLVMValueRef BuildXor(LLVMBuilderRef builder, LLVMValueRef left, LLVMValueRef right, string op)
+        {
+            using var marshaledName = new MarshaledString(op.AsSpan());
+            return LLVM.BuildXor(builder, left, right, marshaledName);
+        }
         public unsafe static LLVMValueRef BuildLShift(LLVMBuilderRef builder, LLVMValueRef left, LLVMValueRef right, string op)
         {
             using var marshaledName = new MarshaledString(op.AsSpan());
