@@ -643,6 +643,18 @@ namespace HapetBackend.Llvm
         }
         #endregion
 
+        #region Memcmp
+        private LLVMValueRef GetMemcmp(LLVMValueRef ptr1, LLVMValueRef ptr2, LLVMValueRef num, string name = "compared")
+        {
+            // WARN: hard cock
+            var marshalDecl = _currentFunction.Scope.GetSymbolInNamespace("System.Runtime.InteropServices", new AstIdExpr("Marshal"));
+            var memcmpSymbol = (marshalDecl.Decl as AstClassDecl).SubScope.GetSymbol(new AstIdExpr("System.Runtime.InteropServices.Marshal::Memcmp(void*:void*:uintptr)")) as DeclSymbol;
+            var memcmpFunc = _valueMap[memcmpSymbol];
+            LLVMTypeRef funcType = _typeMap[memcmpSymbol.Decl.Type.OutType];
+            return _builder.BuildCall2(funcType, memcmpFunc, new LLVMValueRef[] { ptr1, ptr2, num }, name);
+        }
+        #endregion
+
         #region Variatic args
         private (LLVMTypeRef, LLVMValueRef)? _vaStartFunc;
         private (LLVMTypeRef, LLVMValueRef) GetVaStartFunc()

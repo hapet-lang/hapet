@@ -94,7 +94,7 @@ namespace HapetBackend.Llvm
 
         private LLVMValueRef GenerateUnaryExprCode(AstUnaryExpr unExpr)
         {
-            if (unExpr.ActualOperator is BuiltInUnaryOperator)
+            if (unExpr.ActualOperator is BuiltInUnaryOperator builtInOp)
             {
                 var expr = (unExpr.SubExpr as AstExpression);
                 var value = GenerateExpressionCode(expr);
@@ -102,7 +102,7 @@ namespace HapetBackend.Llvm
                 if (value == default)
                     return default;
 
-                var uo = GetUnOp(unExpr.Operator, expr.OutType);
+                var uo = GetUnOp(builtInOp);
                 var val = uo(_builder, value, "unOp");
                 return val;
             }
@@ -125,7 +125,7 @@ namespace HapetBackend.Llvm
 
         private LLVMValueRef GenerateUnaryIncDecExprCode(AstUnaryIncDecExpr unExpr)
         {
-            if (unExpr.ActualOperator is BuiltInUnaryOperator)
+            if (unExpr.ActualOperator is BuiltInUnaryOperator builtInOp)
             {
                 var expr = (unExpr.SubExpr as AstExpression);
 
@@ -145,7 +145,7 @@ namespace HapetBackend.Llvm
                 void MakeOperation()
                 {
                     var value = GenerateExpressionCode(expr);
-                    var bo = GetBinOp(unExpr.Operator == "++" ? "+" : "-", expr.OutType, HapetType.CurrentTypeContext.GetIntType(4, true));
+                    var bo = SearchBinOp(unExpr.Operator == "++" ? "+" : "-", expr.OutType, HapetType.CurrentTypeContext.GetIntType(4, true));
                     var toAssign = bo(_builder, value, LLVMValueRef.CreateConstInt(_context.Int32Type, 1), "unOp");
                     var valuePtr = GenerateExpressionCode(expr, true);
                     AssignToVar(valuePtr, toAssign);
@@ -182,22 +182,22 @@ namespace HapetBackend.Llvm
 
         private LLVMValueRef GenerateBinaryExprCode(AstBinaryExpr binExpr)
         {
-            if (binExpr.ActualOperator is BuiltInBinaryOperator)
+            if (binExpr.ActualOperator is BuiltInBinaryOperator builtInOp)
             {
-                var leftExpr = (binExpr.Left as AstExpression);
-                var left = GenerateExpressionCode(leftExpr);
-                // return if the value was not properly generated
-                if (left == default)
-                    return default;
-
                 // CRINGE :) special cases for as/is/in
                 switch (binExpr.ActualOperator.Name)
                 {
                     case "as":
                         {
+                            var leftExpr = (binExpr.Left as AstExpression);
+                            var left = GenerateExpressionCode(leftExpr);
+                            // return if the value was not properly generated
+                            if (left == default)
+                                return default;
+
                             var rightExpr = (binExpr.Right as AstExpression);
 
-                            if ((rightExpr.OutType as PointerType).TargetType is ClassType)
+                            if (rightExpr.OutType is PointerType ptrT && ptrT.TargetType is ClassType)
                             {
                                 ClassType leftType;
                                 ClassType rightType = (rightExpr.OutType as PointerType).TargetType as ClassType;
@@ -274,6 +274,12 @@ namespace HapetBackend.Llvm
                         }
                     case "is":
                         {
+                            var leftExpr = (binExpr.Left as AstExpression);
+                            var left = GenerateExpressionCode(leftExpr);
+                            // return if the value was not properly generated
+                            if (left == default)
+                                return default;
+
                             var rightExpr = (binExpr.Right as AstExpression);
 
                             if (leftExpr.OutType is PointerType ptrT && ptrT.TargetType is ClassType leftType)
@@ -372,15 +378,52 @@ namespace HapetBackend.Llvm
                         }
                     default:
                         {
+                            var leftExpr = (binExpr.Left as AstExpression);
                             var rightExpr = (binExpr.Right as AstExpression);
-                            var right = GenerateExpressionCode(rightExpr);
-                            // return if the value was not properly generated
-                            if (right == default)
-                                return default;
+                            if (leftExpr.OutType.IsExactly<StructType>() && rightExpr.OutType.IsExactly<StructType>())
+                            {
+                                // different structs are not the same
+                                if ((leftExpr.OutType as StructType).Declaration != (rightExpr.OutType as StructType).Declaration)
+                                    return GenerateExpressionCode(new AstBoolExpr(false));
 
-                            var bo = GetBinOp(binExpr.Operator, leftExpr.OutType, rightExpr.OutType);
-                            var val = bo(_builder, left, right, "binOp");
-                            return val;
+                                // special keys for struct comparisons
+                                var left = GenerateExpressionCode(leftExpr, true); // we need ptrs
+                                // return if the value was not properly generated
+                                if (left == default)
+                                    return default;
+                                var right = GenerateExpressionCode(rightExpr, true); // we need ptrs
+                                // return if the value was not properly generated
+                                if (right == default)
+                                    return default;
+
+                                // TODO: mb better to not use memcmp because of padding bytes
+                                // better to use comparison by fields?
+
+                                // making memcmp
+                                int structSize = AstDeclaration.GetSizeForAlloc((leftExpr.OutType as StructType).Declaration.GetAllRawFields(), false);
+                                var sizeLlvm = LLVMValueRef.CreateConstInt(HapetTypeToLLVMType(HapetType.CurrentTypeContext.IntPtrTypeInstance), (ulong)structSize);
+                                var compared = GetMemcmp(left, right, sizeLlvm);
+
+                                // need to compare to 0 that they are equal
+                                var fCmp = GetICompare(LLVMIntPredicate.LLVMIntEQ);
+                                var val = fCmp(_builder, compared, LLVMValueRef.CreateConstInt(HapetTypeToLLVMType(HapetType.CurrentTypeContext.BoolTypeInstance), (ulong)0), "binOp");
+                                return val;
+                            }
+                            else
+                            {
+                                var left = GenerateExpressionCode(leftExpr);
+                                // return if the value was not properly generated
+                                if (left == default)
+                                    return default;
+                                var right = GenerateExpressionCode(rightExpr);
+                                // return if the value was not properly generated
+                                if (right == default)
+                                    return default;
+
+                                var bo = GetBinOp(builtInOp);
+                                var val = bo(_builder, left, right, "binOp");
+                                return val;
+                            } 
                         }
                 }
             }

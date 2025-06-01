@@ -84,6 +84,11 @@ namespace HapetFrontend.Types
             return typeString;
         }
 
+        public bool IsExactly<T>() where T : class
+        {
+            return this.GetType() == typeof(T);
+        }
+
         /// <summary>
         /// Returns the preferred type of two other types
         /// Usually used for Numeric types and for Binary expressions

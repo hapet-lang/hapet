@@ -11,4 +11,7 @@ public static class Marshal
 
     [DllImportAttribute("", "memset")]
     public static extern void* Memset(void* memptr, int val, uintptr num);
+
+    [DllImportAttribute("", "memcmp")]
+    public static extern int Memcmp(void* memptr1, void* memptr2, uintptr num);
 }

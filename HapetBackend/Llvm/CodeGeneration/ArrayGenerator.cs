@@ -79,7 +79,7 @@ namespace HapetBackend.Llvm
 
                 // building the condition
                 var left = _builder.BuildLoad2(HapetTypeToLLVMType(IntType.DefaultType), varPtrI, "iLoaded");
-                var bo = builtInBinOperators[("<", IntType.DefaultType, IntType.DefaultType)];
+                var bo = SearchBinOp("<", IntType.DefaultType, IntType.DefaultType);
                 var cmp = bo(_builder, left, currentArraySizeValueRef, "cmpOp");
                 _builder.BuildCondBr(cmp, bbBody, bbEnd);
 
@@ -119,7 +119,7 @@ namespace HapetBackend.Llvm
                 // generating inc code
                 var iLoaded = _builder.BuildLoad2(HapetTypeToLLVMType(IntType.DefaultType), varPtrI, "iLoadedAgain");
                 var oneConst = LLVMValueRef.CreateConstInt(HapetTypeToLLVMType(IntType.DefaultType), (ulong)1);
-                var boSum = builtInBinOperators[("+", IntType.DefaultType, IntType.DefaultType)];
+                var boSum = SearchBinOp("+", IntType.DefaultType, IntType.DefaultType);
                 var summ = boSum(_builder, iLoaded, oneConst, "summOp");
                 _builder.BuildStore(summ, varPtrI);
 

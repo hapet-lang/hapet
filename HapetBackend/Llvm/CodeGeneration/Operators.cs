@@ -1,4 +1,5 @@
-﻿using HapetFrontend.Errors;
+﻿using HapetFrontend.Ast.Declarations;
+using HapetFrontend.Errors;
 using HapetFrontend.Scoping;
 using HapetFrontend.Types;
 using LLVMSharp.Interop;
@@ -7,8 +8,8 @@ namespace HapetBackend.Llvm
 {
     public partial class LlvmCodeGenerator
     {
-        private Dictionary<(string, HapetType, HapetType), Func<LLVMBuilderRef, LLVMValueRef, LLVMValueRef, string, LLVMValueRef>> builtInBinOperators;
-        private Dictionary<(string, HapetType), Func<LLVMBuilderRef, LLVMValueRef, string, LLVMValueRef>> builtInUnOperators;
+        private Dictionary<BuiltInBinaryOperator, Func<LLVMBuilderRef, LLVMValueRef, LLVMValueRef, string, LLVMValueRef>> builtInBinOperators;
+        private Dictionary<BuiltInUnaryOperator, Func<LLVMBuilderRef, LLVMValueRef, string, LLVMValueRef>> builtInUnOperators;
 
         private void InitOperators()
         {
@@ -16,19 +17,26 @@ namespace HapetBackend.Llvm
             InitUnaryOperators();
         }
 
-        private Func<LLVMBuilderRef, LLVMValueRef, LLVMValueRef, string, LLVMValueRef> GetBinOp(string op, HapetType l, HapetType r)
+        private Func<LLVMBuilderRef, LLVMValueRef, LLVMValueRef, string, LLVMValueRef> GetBinOp(BuiltInBinaryOperator op)
         {
-            // this is a kostyl to search for any ptr bin ops
-            var searchL = l is PointerType ? PointerType.VoidLiteralType : l;
-            var searchR = r is PointerType ? PointerType.VoidLiteralType : r;
-            return builtInBinOperators[(op, searchL, searchR)];
+            return builtInBinOperators[op];
         }
 
-        private Func<LLVMBuilderRef, LLVMValueRef, string, LLVMValueRef> GetUnOp(string op, HapetType t)
+        private Func<LLVMBuilderRef, LLVMValueRef, LLVMValueRef, string, LLVMValueRef> SearchBinOp(string name, HapetType left, HapetType right)
         {
-            // this is a kostyl to search for any ptr bin ops
-            var searchT = t is PointerType ? PointerType.VoidLiteralType : t;
-            return builtInUnOperators[(op, searchT)];
+            var ops = _compiler.GlobalScope.GetBinaryOperators(name, left, right);
+            return GetBinOp(ops[0] as BuiltInBinaryOperator); // WARN: there has to be at least one op - PostPrepare has to handle it
+        }
+
+        private Func<LLVMBuilderRef, LLVMValueRef, string, LLVMValueRef> GetUnOp(BuiltInUnaryOperator op)
+        {
+            return builtInUnOperators[op];
+        }
+
+        private Func<LLVMBuilderRef, LLVMValueRef, string, LLVMValueRef> SearchBinOp(string name, HapetType type)
+        {
+            var ops = _compiler.GlobalScope.GetUnaryOperators(name, type);
+            return GetUnOp(ops[0] as BuiltInUnaryOperator); // WARN: there has to be at least one op - PostPrepare has to handle it
         }
 
         private static unsafe Func<LLVMBuilderRef, LLVMValueRef, LLVMValueRef, string, LLVMValueRef> GetICompare(LLVMIntPredicate pred)
@@ -51,7 +59,7 @@ namespace HapetBackend.Llvm
 
         private void InitBinaryOperators()
         {
-            builtInBinOperators = new Dictionary<(string, HapetType, HapetType), Func<LLVMBuilderRef, LLVMValueRef, LLVMValueRef, string, LLVMValueRef>>();
+            builtInBinOperators = new Dictionary<BuiltInBinaryOperator, Func<LLVMBuilderRef, LLVMValueRef, LLVMValueRef, string, LLVMValueRef>>();
             var globalScope = _compiler.GlobalScope;
             var allBuiltInOperators = globalScope.GetBuiltInBinaryOperators();
             foreach (var op in allBuiltInOperators)
@@ -64,10 +72,7 @@ namespace HapetBackend.Llvm
                             // checking if the result type of the OP is float - then use FAdd
                             if (op.ResultType is FloatType) theFunc = LlvmExtensions.BuildFAdd;
                             // special logics for ptrs
-                            else if (op.ResultType is PointerType)
-                            {
-                                theFunc = GetCringeFuncForPtrs(op);
-                            }
+                            else if (op.ResultType is PointerType) theFunc = GetCringeFuncForPtrs(op);
                             else theFunc = LlvmExtensions.BuildAdd;
                             break;
                         }
@@ -76,10 +81,7 @@ namespace HapetBackend.Llvm
                             // checking if the result type of the OP is float - then use FSub
                             if (op.ResultType is FloatType) theFunc = LlvmExtensions.BuildFSub;
                             // special logics for ptrs
-                            else if (op.ResultType is PointerType)
-                            {
-                                theFunc = GetCringeFuncForPtrs(op);
-                            }
+                            else if (op.ResultType is PointerType) theFunc = GetCringeFuncForPtrs(op);
                             else theFunc = LlvmExtensions.BuildSub;
                             break;
                         }
@@ -147,11 +149,10 @@ namespace HapetBackend.Llvm
                             // checking if the result type of the OP is float
                             if (op.RhsType is FloatType) theFunc = GetFCompare(LLVMRealPredicate.LLVMRealOEQ);
                             // special logics for ptrs
-                            else if (op.RhsType is PointerType)
-                            {
-                                theFunc = GetCringeFuncForPtrs(op);
-                            }
+                            else if (op.RhsType is PointerType) theFunc = GetCringeFuncForPtrs(op);
+                            // special logics for ints
                             else theFunc = GetICompare(LLVMIntPredicate.LLVMIntEQ);
+                            // TODO: special keys for strings and arrays
                             break;
                         }
                     case "!=":
@@ -159,11 +160,10 @@ namespace HapetBackend.Llvm
                             // checking if the result type of the OP is float
                             if (op.RhsType is FloatType) theFunc = GetFCompare(LLVMRealPredicate.LLVMRealONE);
                             // special logics for ptrs
-                            else if (op.RhsType is PointerType)
-                            {
-                                theFunc = GetCringeFuncForPtrs(op);
-                            }
+                            else if (op.RhsType is PointerType) theFunc = GetCringeFuncForPtrs(op);
+                            // special logics for ints
                             else theFunc = GetICompare(LLVMIntPredicate.LLVMIntNE);
+                            // TODO: special keys for strings and arrays
                             break;
                         }
                     case "<":
@@ -222,7 +222,7 @@ namespace HapetBackend.Llvm
                         }
                 }
                 if (theFunc != null)
-                    builtInBinOperators.Add((op.Name, op.LhsType, op.RhsType), theFunc);
+                    builtInBinOperators.Add(op, theFunc);
             }
 
             Func<LLVMBuilderRef, LLVMValueRef, LLVMValueRef, string, LLVMValueRef> GetCringeFuncForPtrs(BuiltInBinaryOperator op)
@@ -233,7 +233,7 @@ namespace HapetBackend.Llvm
                     var rightV = CreateCast(builder, right, op.RhsType, HapetType.CurrentTypeContext.IntPtrTypeInstance);
 
                     // getting add func for the new types
-                    var binOp = GetBinOp(op.Name, HapetType.CurrentTypeContext.IntPtrTypeInstance, HapetType.CurrentTypeContext.IntPtrTypeInstance);
+                    var binOp = SearchBinOp(op.Name, HapetType.CurrentTypeContext.IntPtrTypeInstance, HapetType.CurrentTypeContext.IntPtrTypeInstance);
                     var res = binOp(builder, leftV, rightV, oper);
                     return CreateCast(builder, res, HapetType.CurrentTypeContext.IntPtrTypeInstance, op.ResultType);
                 };
@@ -242,7 +242,7 @@ namespace HapetBackend.Llvm
 
         private void InitUnaryOperators()
         {
-            builtInUnOperators = new Dictionary<(string, HapetType), Func<LLVMBuilderRef, LLVMValueRef, string, LLVMValueRef>>();
+            builtInUnOperators = new Dictionary<BuiltInUnaryOperator, Func<LLVMBuilderRef, LLVMValueRef, string, LLVMValueRef>>();
             var globalScope = _compiler.GlobalScope;
             var allBuiltInOperators = globalScope.GetBuiltInUnaryOperators();
             foreach (var op in allBuiltInOperators)
@@ -281,7 +281,7 @@ namespace HapetBackend.Llvm
                         }
                 }
                 if (theFunc != null)
-                    builtInUnOperators.Add((op.Name, op.SubExprType), theFunc);
+                    builtInUnOperators.Add(op, theFunc);
             }
         }
     }
