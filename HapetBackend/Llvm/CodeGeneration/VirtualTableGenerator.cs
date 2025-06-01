@@ -204,12 +204,18 @@ namespace HapetBackend.Llvm
                 List<int> offsets = new List<int>();
                 for (int i = 0; i < intrf.Declaration.AllVirtualMethods.Count; ++i)
                 {
+                    var savedFile = _currentSourceFile;
+
                     var iM = intrf.Declaration.AllVirtualMethods[i];
+                    _currentSourceFile = iM.SourceFile;
                     var m = allClassVirtuals.GetSameByNameAndTypes(iM, out int index);
                     // check m for not null and error if null (compiler error)
-                    _messageHandler.ReportMessage(_currentSourceFile.Text, iM.Name, [], ErrorCode.Get(CTEN.VirtualMethodNotFound));
+                    if (m == null)
+                        _messageHandler.ReportMessage(_currentSourceFile.Text, iM.Name, [], ErrorCode.Get(CTEN.VirtualMethodNotFound));
 
                     offsets.Add(index);
+
+                    _currentSourceFile = savedFile;
                 }
                 allInterfacesWithOffsets.Add((intrf, offsets.ToArray()));
             }
