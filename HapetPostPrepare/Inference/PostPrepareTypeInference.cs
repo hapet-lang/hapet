@@ -48,13 +48,15 @@ namespace HapetPostPrepare
                 _currentSourceFile = delegateDecl.SourceFile;
 
                 var parent = delegateDecl.ContainingParent;
-                if (parent.IsNestedDecl)
+                if (parent != null && parent.IsNestedDecl)
                     _currentParentStack.AddParent(parent.ParentDecl);
-                _currentParentStack.AddParent(parent);
+                if (parent != null)
+                    _currentParentStack.AddParent(parent);
                 PostPrepareDelegateInference(delegateDecl, inInfo, ref outInfo);
-                if (parent.IsNestedDecl)
+                if (parent != null && parent.IsNestedDecl)
                     _currentParentStack.RemoveParent();
-                _currentParentStack.RemoveParent();
+                if (parent != null)
+                    _currentParentStack.RemoveParent();
             }
         }
 
@@ -62,6 +64,8 @@ namespace HapetPostPrepare
         {
             /// WARN: should be already inferred in <see cref="PostPrepareMetadataTypes"/> and <see cref="PostPrepareMetadataTypeFields"/>
             /// WARN: attributes are inferrenced in <see cref="PostPrepareMetadataAttributes"/>
+
+            _currentParentStack.AddParent(delegateDecl);
 
             // inferencing parameters 
             foreach (var p in delegateDecl.Parameters)
@@ -73,6 +77,8 @@ namespace HapetPostPrepare
             {
                 PostPrepareExprInference(delegateDecl.Returns, inInfo, ref outInfo);
             }
+
+            _currentParentStack.RemoveParent();
         }
 
         private void PostPrepareFunctionInference(AstFuncDecl funcDecl, InInfo inInfo, ref OutInfo outInfo)
@@ -731,6 +737,9 @@ namespace HapetPostPrepare
             PostPrepareExprInference(castExpr.SubExpression as AstExpression, inInfo, ref outInfo);
             PostPrepareExprInference(castExpr.TypeExpr as AstExpression, inInfo, ref outInfo);
             castExpr.OutType = (castExpr.TypeExpr as AstExpression).OutType;
+            // cringe kostyl :)
+            if (castExpr.OutType is ClassType)
+                castExpr.OutType = PointerType.GetPointerType(castExpr.OutType);
             castExpr.OutValue = castExpr.SubExpression.OutValue; // WARN: is it ok just to pass the value?
         }
 

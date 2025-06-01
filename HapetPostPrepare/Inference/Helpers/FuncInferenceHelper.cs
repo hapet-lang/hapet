@@ -278,7 +278,7 @@ namespace HapetPostPrepare
             List<DeclSymbol> candidates = new List<DeclSymbol>();
 
             candidates.AddRange(Candidates_Step1_InheritedAndCurrent(name, declToSearch, callFromObject));  // step 1
-            candidates.AddRange(Candidates_Step2_CurrentScopeAndParents(name, callExpr));                   // step 2
+            candidates.AddRange(Candidates_Step2_CurrentScopeAndParents(name, callExpr, callFromObject));   // step 2
             var argsAmount = args == null ? -1 : args.Count;
             candidates = Candidates_Step3_MinAmountParams(candidates, argsAmount).ToList();                 // step 3
             candidates = Candidates_Step4_OnlyOneGeneric(name, candidates).ToList();                        // step 4
@@ -306,7 +306,7 @@ namespace HapetPostPrepare
             }
 
             // add current decl subscope' decls
-            var currentDecls = GetCandidatesInScope(name, declToSearch.SubScope);
+            var currentDecls = GetCandidatesInScope(name, declToSearch.SubScope, callFromObject: callFromObject);
             foreach (var currDecl in currentDecls)
             {
                 // we need to manually check shadowing funcs
@@ -334,11 +334,11 @@ namespace HapetPostPrepare
             return candidates;
         }
 
-        private static List<DeclSymbol> Candidates_Step2_CurrentScopeAndParents(AstIdExpr name, AstCallExpr callExpr)
+        private static List<DeclSymbol> Candidates_Step2_CurrentScopeAndParents(AstIdExpr name, AstCallExpr callExpr, bool callFromObject)
         {
             if (callExpr == null || callExpr.Scope == null)
                 return new List<DeclSymbol>();
-            return GetCandidatesInScope(name, callExpr.Scope, searchParent: true); // also search parents
+            return GetCandidatesInScope(name, callExpr.Scope, searchParent: true, callFromObject: callFromObject); // also search parents
         }
 
         private static IEnumerable<DeclSymbol> Candidates_Step3_MinAmountParams(IEnumerable<DeclSymbol> decls, int argsAmount)
@@ -540,7 +540,7 @@ namespace HapetPostPrepare
         }
 
         #region Helpers
-        private static List<DeclSymbol> GetCandidatesInScope(AstIdExpr classWithFuncName, Scope scopeToSearch, bool searchParent = false)
+        private static List<DeclSymbol> GetCandidatesInScope(AstIdExpr classWithFuncName, Scope scopeToSearch, bool searchParent = false, bool callFromObject = false)
         {
             List<DeclSymbol> candidates = new List<DeclSymbol>();
             // search for the func in the scope
@@ -555,7 +555,10 @@ namespace HapetPostPrepare
                     if ((k.Name.StartsWith(classWithFuncName.Name) || firstKeyPart == onlyFuncName) 
                         && (d.Decl.Name is not AstIdGenericExpr && classWithFuncName is not AstIdGenericExpr))
                     {
-                        candidates.Add(d);
+                        // add static func if not callFromObject and add non-static if callFromObject
+                        if ((callFromObject && !d.Decl.SpecialKeys.Contains(TokenType.KwStatic)) || 
+                            (!callFromObject && d.Decl.SpecialKeys.Contains(TokenType.KwStatic)))
+                            candidates.Add(d);
                         continue;
                     }
 
@@ -566,7 +569,10 @@ namespace HapetPostPrepare
                         int gAmountCall = searchGen.GenericRealTypes.Count;
                         if (onlyFuncName == firstKeyPart && gAmountFunc == gAmountCall)
                         {
-                            candidates.Add(d);
+                            // add static func if not callFromObject and add non-static if callFromObject
+                            if ((callFromObject && !d.Decl.SpecialKeys.Contains(TokenType.KwStatic)) ||
+                                (!callFromObject && d.Decl.SpecialKeys.Contains(TokenType.KwStatic)))
+                                candidates.Add(d);
                             continue;
                         }
                     }
@@ -579,7 +585,10 @@ namespace HapetPostPrepare
                         string pureName = firstKeyPart.GetClassNameWithoutNamespace();
                         if (pureName == pureSearchName)
                         {
-                            candidates.Add(d);
+                            // add static func if not callFromObject and add non-static if callFromObject
+                            if ((callFromObject && !d.Decl.SpecialKeys.Contains(TokenType.KwStatic)) ||
+                                (!callFromObject && d.Decl.SpecialKeys.Contains(TokenType.KwStatic)))
+                                candidates.Add(d);
                             continue;
                         }
                     }
@@ -588,7 +597,7 @@ namespace HapetPostPrepare
 
             // if search in parent scopes
             if (searchParent && scopeToSearch.Parent != null)
-                GetCandidatesInScope(classWithFuncName, scopeToSearch.Parent, searchParent);
+                GetCandidatesInScope(classWithFuncName, scopeToSearch.Parent, searchParent, callFromObject);
 
             return candidates;
         }

@@ -37,9 +37,9 @@ namespace HapetPostPrepare
             {
                 var originalGeneric = (decl.Name as AstIdGenericExpr).GenericRealTypes[i];
                 var currGeneric = pureGenerics[i];
-                var currContrains = new List<AstConstrainStmt>();
-                if (decl.GenericConstrains.TryGetValue(currGeneric, out var constrains))
-                    currContrains = constrains;
+
+                var currContrains = decl.GenericConstrains.FirstOrDefault(x => x.Key.Name == currGeneric.Name).Value;
+                currContrains ??= new List<AstConstrainStmt>();
 
                 // creating the declaration
                 var genericDecl = new AstGenericDecl(currGeneric, location: currGeneric.Location)

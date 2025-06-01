@@ -126,6 +126,9 @@ namespace HapetFrontend.Scoping
             DefineBinaryOperator(new BuiltInCommonBinaryOperator("is", boolT, PointerType.VoidLiteralType, StructType.LiteralType));
             DefineBinaryOperator(new BuiltInCommonBinaryOperator("is", boolT, PointerType.VoidLiteralType, GenericType.LiteralType));
             DefineBinaryOperator(new BuiltInCommonBinaryOperator("is", boolT, StructType.LiteralType, ClassType.LiteralType)); // need to warn when doing it
+            // generics 'is' checks
+            DefineBinaryOperator(new BuiltInCommonBinaryOperator("is", boolT, GenericType.LiteralType, ClassType.LiteralType));
+            DefineBinaryOperator(new BuiltInCommonBinaryOperator("is", boolT, GenericType.LiteralType, StructType.LiteralType));
 
             // WARN: structs are defined here - array/string types checks are in VarInferenceHelper
             DefineBinaryOperator(new BuiltInBinaryOperator("==", boolT, StructType.LiteralType, PointerType.VoidLiteralType));
