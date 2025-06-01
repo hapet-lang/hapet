@@ -65,27 +65,65 @@ namespace HapetBackend.Llvm
             return t;
         }
 
+        #region checks for boxed types creation
+        private bool _isBoolBoxedCreated = false;
+        private readonly List<IntType> _isIntBoxedCreated = new List<IntType>();
+        private readonly List<FloatType> _isFloatBoxedCreated = new List<FloatType>();
+        private bool _isCharBoxedCreated = false;
+        private bool _isVoidBoxedCreated = false;
+        #endregion
+
         private unsafe LLVMTypeRef HapetTypeToLLVMTypeHelper(HapetType ht)
         {
             switch (ht)
             {
                 case BoolType b:
-                    return _context.Int1Type;
+                    {
+                        if (!_isBoolBoxedCreated)
+                        {
+                            _isBoolBoxedCreated = true;
+                            AddBoxedType(b, 0);
+                        }
+                        return _context.Int1Type;
+                    }
 
                 case IntType i:
-                    return _context.GetIntType((uint)i.GetSize() * 8);
+                    {
+                        if (!_isIntBoxedCreated.Contains(i))
+                        {
+                            _isIntBoxedCreated.Add(i);
+                            AddBoxedType(i, 0);
+                        }
+
+                        return _context.GetIntType((uint)i.GetSize() * 8);
+                    }
 
                 case FloatType f:
-                    if (f.GetSize() == 2)
-                        return _context.HalfType;
-                    else if (f.GetSize() == 4)
-                        return _context.FloatType;
-                    else if (f.GetSize() == 8)
-                        return _context.DoubleType;
-                    else throw new NotImplementedException();
+                    {
+                        if (!_isFloatBoxedCreated.Contains(f))
+                        {
+                            _isFloatBoxedCreated.Add(f);
+                            AddBoxedType(f, 0);
+                        }
+
+                        if (f.GetSize() == 2)
+                            return _context.HalfType;
+                        else if (f.GetSize() == 4)
+                            return _context.FloatType;
+                        else if (f.GetSize() == 8)
+                            return _context.DoubleType;
+                        else throw new NotImplementedException();
+                    }
 
                 case CharType c:
-                    return _context.GetIntType((uint)c.GetSize() * 8);
+                    {
+                        if (!_isCharBoxedCreated)
+                        {
+                            _isCharBoxedCreated = true;
+                            AddBoxedType(c, 0);
+                        }
+                        return _context.GetIntType((uint)c.GetSize() * 8);
+                    }
 
                 case PointerType p:
                     {
@@ -99,8 +137,15 @@ namespace HapetBackend.Llvm
                         return HapetTypeToLLVMType(r.TargetType).GetPointerTo();
                     }
 
-                case VoidType _:
-                    return _context.VoidType;
+                case VoidType v:
+                    {
+                        if (!_isVoidBoxedCreated)
+                        {
+                            _isVoidBoxedCreated = true;
+                            AddBoxedType(v, 0);
+                        }
+                        return _context.VoidType;
+                    }
 
                 case FunctionType f:
                     {
@@ -197,22 +242,8 @@ namespace HapetBackend.Llvm
                         else
                             s.ChangeAlignment((int)LLVM.ABIAlignmentOfType(_targetData, llvmType));
 
-
                         // create a boxed type
-                        var nameBoxed = $"boxed.{s.Declaration.Name.Name}";
-                        var llvmTypeBoxed = _context.CreateNamedStruct(nameBoxed);
-                        var fieldDeclarationsBoxed = s.Declaration.GetAllRawFields().Select(x => x.Type.OutType).ToList();
-                        fieldDeclarationsBoxed.Insert(0, PointerType.GetPointerType(HapetType.CurrentTypeContext.IntPtrTypeInstance)); // the same as in metadata gen
-                        var (offsetsBoxed, _, memTypesBoxed) = CalcStructData(fieldDeclarationsBoxed, packNumber);
-                        
-                        llvmTypeBoxed.StructSetBody(memTypesBoxed.ToArray(), packNumber >= 1);
-
-                        uint offs = 0;
-                        if (fieldDeclarationsBoxed.Count > 1)
-                            offs = (uint)_targetData.OffsetOfElement(llvmTypeBoxed, 1);
-
-                        // offset to the first normal field
-                        _boxedStructTypes.Add(s, (llvmTypeBoxed, offs));
+                        AddBoxedType(s, packNumber);
 
                         return llvmType;
                     }
@@ -226,6 +257,25 @@ namespace HapetBackend.Llvm
                 default:
                     throw new NotImplementedException(HapetType.AsString(ht));
             }
+        }
+
+        private void AddBoxedType(StructType type, int packNumber)
+        {
+            // create a boxed type
+            var nameBoxed = $"boxed.{type.Declaration.Name.Name}";
+            var llvmTypeBoxed = _context.CreateNamedStruct(nameBoxed);
+            var fieldDeclarationsBoxed = type.Declaration.GetAllRawFields().Select(x => x.Type.OutType).ToList();
+            fieldDeclarationsBoxed.Insert(0, PointerType.GetPointerType(HapetType.CurrentTypeContext.IntPtrTypeInstance)); // the same as in metadata gen
+            var (offsetsBoxed, _, memTypesBoxed) = CalcStructData(fieldDeclarationsBoxed, packNumber);
+
+            llvmTypeBoxed.StructSetBody(memTypesBoxed.ToArray(), packNumber >= 1);
+
+            uint offs = 0;
+            if (fieldDeclarationsBoxed.Count > 1)
+                offs = (uint)_targetData.OffsetOfElement(llvmTypeBoxed, 1);
+
+            // offset to the first normal field
+            _boxedStructTypes.Add(type, (llvmTypeBoxed, offs));
         }
 
         private unsafe LLVMValueRef HapetValueToLLVMValue(HapetType type, object v)

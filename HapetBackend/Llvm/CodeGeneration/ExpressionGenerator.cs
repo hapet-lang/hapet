@@ -568,7 +568,9 @@ namespace HapetBackend.Llvm
             }
             else
             {
-                v = _valueMap[declSymbol];
+                if (!_valueMap.TryGetValue(declSymbol, out v))
+                    return default;
+
                 // return the ptr to the val. used for AstAddressOf or storing values
                 if (getPtr)
                     return v;
