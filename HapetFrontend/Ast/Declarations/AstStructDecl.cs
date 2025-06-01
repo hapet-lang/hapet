@@ -57,6 +57,8 @@ namespace HapetFrontend.Ast.Declarations
                 GenericConstrains = copiedConstrains,
                 HasGenericTypes = HasGenericTypes,
                 IsImported = IsImported,
+                IsNestedDecl = IsNestedDecl,
+                ParentDecl = ParentDecl,
                 Scope = Scope,
                 SourceFile = SourceFile,
                 SubScope = SubScope,
@@ -71,6 +73,9 @@ namespace HapetFrontend.Ast.Declarations
                     vD.ContainingParent = copy;
                 else if (decl is AstFuncDecl fD)
                     fD.ContainingParent = copy;
+
+                if (decl.IsNestedDecl)
+                    decl.ParentDecl = copy;
             }
 
             return copy;

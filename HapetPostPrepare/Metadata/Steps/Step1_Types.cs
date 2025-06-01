@@ -40,8 +40,12 @@ namespace HapetPostPrepare
             }
             else if (decl is AstStructDecl structDecl)
             {
-                // creating a new struct name with namespace
-                newName = $"{_currentSourceFile.Namespace}.{structDecl.Name.Name}";
+                if (decl.IsNestedDecl)
+                    // we need a pure decl name because it is nested
+                    newName = $"{structDecl.Name.Name}";
+                else
+                    // creating a new struct name with namespace
+                    newName = $"{_currentSourceFile.Namespace}.{structDecl.Name.Name}";
                 AllStructsMetadata.Add(structDecl);
 
                 if (needSerialize)
@@ -49,8 +53,12 @@ namespace HapetPostPrepare
             }
             else if (decl is AstEnumDecl enumDecl)
             {
-                // creating a new enum name with namespace
-                newName = $"{_currentSourceFile.Namespace}.{enumDecl.Name.Name}";
+                if (decl.IsNestedDecl)
+                    // we need a pure decl name because it is nested
+                    newName = $"{enumDecl.Name.Name}";
+                else
+                    // creating a new enum name with namespace
+                    newName = $"{_currentSourceFile.Namespace}.{enumDecl.Name.Name}";
                 AllEnumsMetadata.Add(enumDecl);
 
                 if (needSerialize)
@@ -58,8 +66,12 @@ namespace HapetPostPrepare
             }
             else if (decl is AstDelegateDecl delegateDecl)
             {
-                // creating a new delegate name with namespace
-                newName = $"{_currentSourceFile.Namespace}.{delegateDecl.Name.Name}";
+                if (decl.IsNestedDecl)
+                    // we need a pure decl name because it is nested
+                    newName = $"{delegateDecl.Name.Name}";
+                else
+                    // creating a new delegate name with namespace
+                    newName = $"{_currentSourceFile.Namespace}.{delegateDecl.Name.Name}";
                 AllDelegatesMetadata.Add(delegateDecl);
 
                 if (needSerialize)
@@ -73,16 +85,21 @@ namespace HapetPostPrepare
 
             // TODO: check for partial :)
             decl.Name = decl.Name.GetCopy(newName);
-            var smbl = _currentSourceFile.NamespaceScope.GetSymbol(decl.Name);
+            // if the decl is not nested - declare it in namespace scope
+            Scope scopeToDefine;
+            if (decl.IsNestedDecl) scopeToDefine = decl.ParentDecl.SubScope;
+            else scopeToDefine = _currentSourceFile.NamespaceScope;
+
+            var smbl = scopeToDefine.GetSymbol(decl.Name);
             // TODO: better error like where is the first decl?
             if (smbl != null)
             {
-                _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, decl.Name, [_currentSourceFile.Namespace], ErrorCode.Get(CTEN.NamespaceAlreadyContains));
+                _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, decl.Name, [scopeToDefine.Name], ErrorCode.Get(CTEN.NamespaceAlreadyContains));
             }
             else
             {
-                _currentSourceFile.NamespaceScope.DefineDeclSymbol(decl.Name, decl);
-                PostPrepareAliases(decl.Name, _currentSourceFile.NamespaceScope, decl);
+                scopeToDefine.DefineDeclSymbol(decl.Name, decl);
+                PostPrepareAliases(decl.Name, scopeToDefine, decl);
             }
         }
     }

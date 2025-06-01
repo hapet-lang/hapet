@@ -64,6 +64,8 @@ namespace HapetFrontend.Ast.Declarations
                 HasGenericTypes = HasGenericTypes,
                 InheritedFrom = InheritedFrom?.Select(x => x.GetDeepCopy() as AstNestedExpr).ToList(),
                 IsInterface = IsInterface,
+                IsNestedDecl = IsNestedDecl,
+                ParentDecl = ParentDecl,
                 IsImported = IsImported,
                 Scope = Scope,
                 SourceFile = SourceFile,
@@ -79,6 +81,9 @@ namespace HapetFrontend.Ast.Declarations
                     vD.ContainingParent = copy;
                 else if (decl is AstFuncDecl fD)
                     fD.ContainingParent = copy;
+
+                if (decl.IsNestedDecl)
+                    decl.ParentDecl = copy;
             }
 
             return copy;

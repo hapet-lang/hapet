@@ -41,6 +41,8 @@ namespace HapetFrontend.Ast.Declarations
             {
                 GenericConstrains = copiedConstrains,
                 HasGenericTypes = HasGenericTypes,
+                IsNestedDecl = IsNestedDecl,
+                ParentDecl = ParentDecl,
                 IsImported = IsImported,
                 Scope = Scope,
                 SourceFile = SourceFile,

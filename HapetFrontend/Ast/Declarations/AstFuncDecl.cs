@@ -65,6 +65,8 @@ namespace HapetFrontend.Ast.Declarations
                 ClassFunctionType = ClassFunctionType,
                 GenericConstrains = copiedConstrains,
                 HasGenericTypes = HasGenericTypes,
+                IsNestedDecl = IsNestedDecl,
+                ParentDecl = ParentDecl,
                 IsImported = IsImported,
                 Scope = Scope,
                 SourceFile = SourceFile,
@@ -72,6 +74,17 @@ namespace HapetFrontend.Ast.Declarations
             };
             copy.Attributes.AddRange(Attributes);
             copy.SpecialKeys.AddRange(SpecialKeys);
+
+            // handle containing parent shite
+            if (copy.Body != null)
+                foreach (var stmt in copy.Body.Statements)
+                {
+                    if (stmt is not AstDeclaration decl)
+                        continue;
+
+                    if (decl.IsNestedDecl)
+                        decl.ParentDecl = copy;
+                }
             return copy;
         }
 

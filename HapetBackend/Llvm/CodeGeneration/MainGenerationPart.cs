@@ -1,4 +1,5 @@
-﻿using HapetFrontend.Ast.Declarations;
+﻿using System;
+using HapetFrontend.Ast.Declarations;
 using HapetFrontend.Ast.Expressions;
 using HapetFrontend.Ast.Statements;
 using HapetFrontend.Entities;
@@ -24,11 +25,7 @@ namespace HapetBackend.Llvm
 
             foreach (var func in funcDecls)
             {
-                // skip generic (non-real) classes
-                if (func.ContainingParent?.HasGenericTypes ?? false)
-                    continue;
-                // skip generic (non-real) funcs
-                if (func.HasGenericTypes)
+                if (ShouldTheDeclBeSkippedFromCodeGen(func))
                     continue;
 
                 _currentSourceFile = func.SourceFile;

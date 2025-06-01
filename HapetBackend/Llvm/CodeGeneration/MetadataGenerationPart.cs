@@ -1,4 +1,5 @@
-﻿using HapetFrontend.Ast.Declarations;
+﻿using HapetFrontend.Ast;
+using HapetFrontend.Ast.Declarations;
 using HapetFrontend.Ast.Expressions;
 using HapetFrontend.Errors;
 using HapetFrontend.Extensions;
@@ -28,8 +29,7 @@ namespace HapetBackend.Llvm
             // all over the classes
             foreach (var cls in _postPreparer.AllClassesMetadata)
             {
-                // skip generic (non-real) classes
-                if (cls.HasGenericTypes)
+                if (ShouldTheDeclBeSkippedFromCodeGen(cls))
                     continue;
 
                 _currentSourceFile = cls.SourceFile;
@@ -39,8 +39,7 @@ namespace HapetBackend.Llvm
             // all over the structs
             foreach (var str in _postPreparer.AllStructsMetadata)
             {
-                // skip generic (non-real) structs
-                if (str.HasGenericTypes)
+                if (ShouldTheDeclBeSkippedFromCodeGen(str))
                     continue;
 
                 _currentSourceFile = str.SourceFile;
@@ -50,6 +49,9 @@ namespace HapetBackend.Llvm
             // all over the enums
             foreach (var enm in _postPreparer.AllEnumsMetadata)
             {
+                if (ShouldTheDeclBeSkippedFromCodeGen(enm))
+                    continue;
+
                 _currentSourceFile = enm.SourceFile;
                 // doing that we are registering the type in dict
                 var _ = HapetTypeToLLVMType(enm.Type.OutType);
@@ -60,8 +62,7 @@ namespace HapetBackend.Llvm
         {
             foreach (var cls in _postPreparer.AllClassesMetadata)
             {
-                // skip generic (non-real) classes
-                if (cls.HasGenericTypes)
+                if (ShouldTheDeclBeSkippedFromCodeGen(cls))
                     continue;
 
                 _currentSourceFile = cls.SourceFile;
@@ -116,6 +117,9 @@ namespace HapetBackend.Llvm
             }
             foreach (var enm in _postPreparer.AllEnumsMetadata)
             {
+                if (ShouldTheDeclBeSkippedFromCodeGen(enm))
+                    continue;
+
                 foreach (var decl in enm.Declarations)
                 {
                     // creating a static field of the enum
@@ -131,12 +135,7 @@ namespace HapetBackend.Llvm
         {
             foreach (var func in _postPreparer.AllFunctionsMetadata)
             {
-                // skip generic (non-real) classes
-                if (func.ContainingParent is AstClassDecl cls && cls.HasGenericTypes)
-                    continue;
-
-                // skip generic (non-real) funcs
-                if (func.HasGenericTypes)
+                if (ShouldTheDeclBeSkippedFromCodeGen(func))
                     continue;
 
                 _currentSourceFile = func.SourceFile;
@@ -148,8 +147,7 @@ namespace HapetBackend.Llvm
         {
             foreach (var cls in _postPreparer.AllClassesMetadata)
             {
-                // skip generic (non-real) classes
-                if (cls.HasGenericTypes)
+                if (ShouldTheDeclBeSkippedFromCodeGen(cls))
                     continue;
 
                 // reg type info if non static
@@ -161,8 +159,7 @@ namespace HapetBackend.Llvm
             }
             foreach (var str in _postPreparer.AllStructsMetadata)
             {
-                // skip generic (non-real) structs
-                if (str.HasGenericTypes)
+                if (ShouldTheDeclBeSkippedFromCodeGen(str))
                     continue;
 
                 // reg type info if non static
@@ -172,6 +169,28 @@ namespace HapetBackend.Llvm
                     GenerateVirtualTableConst(str.Type.OutType);
                 }
             }
+        }
+
+        private bool ShouldTheDeclBeSkippedFromCodeGen(AstDeclaration decl)
+        {
+            // skip generic (non-real) parents
+            if (decl.ContainingParent?.HasGenericTypes ?? false)
+                return true;
+            // skip generic (non-real) funcs
+            if (decl.HasGenericTypes)
+                return true;
+            // also skip if parent has generic types
+            if (decl.IsNestedDecl && decl.ParentDecl.HasGenericTypes)
+                return true;
+            // skip genericDecl parents
+            if (decl.ContainingParent is AstGenericDecl)
+                return true;
+            // happens at least when 'decl' is a func in a normal struct and the struct
+            // is nested into a generic class
+            if (decl.ContainingParent != null && decl.ContainingParent.IsNestedDecl && 
+                decl.ContainingParent.ParentDecl.HasGenericTypes)
+                return true;
+            return false;
         }
     }
 }

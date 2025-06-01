@@ -37,6 +37,8 @@ namespace HapetFrontend.Ast.Declarations
                 Documentation, Location)
             {
                 InheritedType = InheritedType.GetDeepCopy() as AstNestedExpr,
+                IsNestedDecl = IsNestedDecl,
+                ParentDecl = ParentDecl,
                 IsImported = IsImported,
                 Scope = Scope,
                 SourceFile = SourceFile,

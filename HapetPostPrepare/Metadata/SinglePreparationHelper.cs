@@ -43,6 +43,10 @@ namespace HapetPostPrepare
             {
                 PostPrepareMetadataDelegates(stmt);
             }
+            if (_currentPreparationStep >= PreparationStep.NestedTypes)
+            {
+                PostPrepareMetadataNestedTypes(stmt);
+            }
             if (_currentPreparationStep >= PreparationStep.Functions)
             {
                 PostPrepareMetadataFunctions(stmt);
