@@ -285,7 +285,7 @@ namespace HapetBackend.Llvm
                             if (leftExpr.OutType is PointerType ptrT && ptrT.TargetType is ClassType leftType)
                             {
                                 ClassType rightType;
-                                if ((rightExpr.OutType as PointerType).TargetType is ClassType clsT)
+                                if (rightExpr.OutType is PointerType ptrT2 && ptrT2.TargetType is ClassType clsT)
                                 {
                                     rightType = clsT;
                                 }
@@ -294,7 +294,7 @@ namespace HapetBackend.Llvm
                                     /// WARN: almost the same as in <see cref="CreateCast"/>
                                     // check cast from object instance to struct
 
-                                    var ptrToCastTypeInfo = _typeInfoDictionary[(rightExpr.OutType as PointerType).TargetType];
+                                    var ptrToCastTypeInfo = _typeInfoDictionary[rightExpr.OutType];
 
                                     // WARN: hard cock
                                     var typeConverter = _currentFunction.Scope.GetSymbolInNamespace("System.Runtime.Conversion", new AstIdExpr("TypeConverter"));

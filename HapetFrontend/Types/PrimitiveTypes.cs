@@ -524,8 +524,6 @@ namespace HapetFrontend.Types
 
     public class CharType : StructType
     {
-        public new static CharType LiteralType { get; } = new CharType(null, 2);
-
         public override string TypeName => "char";
 
         public override AstExpression GetAst(AstExpression iniExpr = null)
@@ -582,8 +580,6 @@ namespace HapetFrontend.Types
 
     public class StringType : StructType
     {
-        public new static StringType LiteralType { get; } = new StringType(null);
-
         public override string TypeName => "string";
 
         public override AstExpression GetAst(AstExpression iniExpr = null)

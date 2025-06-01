@@ -18,71 +18,88 @@ namespace HapetPostPrepare
             else if (typeName.Name == "System.String")
             {
                 _compiler.GlobalScope.DefineDeclSymbol(typeName.GetCopy("string"), decl);
+                decl.Type.OutType = HapetType.CurrentTypeContext.StringTypeInstance;
             }
             else if (typeName.Name == "System.Void")
             {
                 _compiler.GlobalScope.DefineDeclSymbol(typeName.GetCopy("void"), decl);
+                decl.Type.OutType = HapetType.CurrentTypeContext.VoidTypeInstance;
             }
             else if (typeName.Name == "System.Boolean")
             {
                 _compiler.GlobalScope.DefineDeclSymbol(typeName.GetCopy("bool"), decl);
+                decl.Type.OutType = HapetType.CurrentTypeContext.BoolTypeInstance;
             }
             // numeric types
             else if (typeName.Name == "System.Byte")
             {
                 _compiler.GlobalScope.DefineDeclSymbol(typeName.GetCopy("byte"), decl);
+                decl.Type.OutType = HapetType.CurrentTypeContext.GetIntType(1, false);
             }
             else if (typeName.Name == "System.SByte")
             {
                 _compiler.GlobalScope.DefineDeclSymbol(typeName.GetCopy("sbyte"), decl);
+                decl.Type.OutType = HapetType.CurrentTypeContext.GetIntType(1, true);
             }
             else if (typeName.Name == "System.UInt16")
             {
                 _compiler.GlobalScope.DefineDeclSymbol(typeName.GetCopy("ushort"), decl);
+                decl.Type.OutType = HapetType.CurrentTypeContext.GetIntType(2, false);
             }
             else if (typeName.Name == "System.Int16")
             {
                 _compiler.GlobalScope.DefineDeclSymbol(typeName.GetCopy("short"), decl);
+                decl.Type.OutType = HapetType.CurrentTypeContext.GetIntType(2, true);
             }
             else if (typeName.Name == "System.UInt32")
             {
                 _compiler.GlobalScope.DefineDeclSymbol(typeName.GetCopy("uint"), decl);
+                decl.Type.OutType = HapetType.CurrentTypeContext.GetIntType(4, false);
             }
             else if (typeName.Name == "System.Int32")
             {
                 _compiler.GlobalScope.DefineDeclSymbol(typeName.GetCopy("int"), decl);
+                decl.Type.OutType = HapetType.CurrentTypeContext.GetIntType(4, true);
             }
             else if (typeName.Name == "System.UInt64")
             {
                 _compiler.GlobalScope.DefineDeclSymbol(typeName.GetCopy("ulong"), decl);
+                decl.Type.OutType = HapetType.CurrentTypeContext.GetIntType(8, false);
             }
             else if (typeName.Name == "System.Int64")
             {
                 _compiler.GlobalScope.DefineDeclSymbol(typeName.GetCopy("long"), decl);
+                decl.Type.OutType = HapetType.CurrentTypeContext.GetIntType(8, true);
             }
             else if (typeName.Name == "System.UIntPtr")
             {
                 _compiler.GlobalScope.DefineDeclSymbol(typeName.GetCopy("uintptr"), decl);
+                decl.Type.OutType = HapetType.CurrentTypeContext.IntPtrTypeInstance;
             }
             else if (typeName.Name == "System.PtrDiff")
             {
                 _compiler.GlobalScope.DefineDeclSymbol(typeName.GetCopy("ptrdiff"), decl);
+                decl.Type.OutType = HapetType.CurrentTypeContext.PtrDiffTypeInstance;
             }
             else if (typeName.Name == "System.Char")
             {
                 _compiler.GlobalScope.DefineDeclSymbol(typeName.GetCopy("char"), decl);
+                decl.Type.OutType = HapetType.CurrentTypeContext.CharTypeInstance;
             }
             else if (typeName.Name == "System.Double")
             {
                 _compiler.GlobalScope.DefineDeclSymbol(typeName.GetCopy("double"), decl);
+                decl.Type.OutType = HapetType.CurrentTypeContext.GetFloatType(8);
             }
             else if (typeName.Name == "System.Single")
             {
                 _compiler.GlobalScope.DefineDeclSymbol(typeName.GetCopy("float"), decl);
+                decl.Type.OutType = HapetType.CurrentTypeContext.GetFloatType(4);
             }
             else if (typeName.Name == "System.Half")
             {
                 _compiler.GlobalScope.DefineDeclSymbol(typeName.GetCopy("half"), decl);
+                decl.Type.OutType = HapetType.CurrentTypeContext.GetFloatType(2);
             }
         }
 
@@ -111,6 +128,8 @@ namespace HapetPostPrepare
                 if (arrT.Declaration == null)
                     arrT.Declaration = structDecl;
                 idExpr.OutType = arrT;
+
+                decl.Type.OutType = arrT;
             }
             else if (decl.Name is AstIdExpr id0 && id0.Name == "System.Void")
             {

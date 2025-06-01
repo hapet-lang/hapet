@@ -31,7 +31,8 @@ namespace HapetFrontend.Scoping
             // DefineBinaryOperator(new BuiltInBinaryOperator("==", boolT, boolT, boolT, (a, b) => (bool)a == (bool)b));
             // DefineBinaryOperator(new BuiltInBinaryOperator("!=", boolT, boolT, boolT, (a, b) => (bool)a != (bool)b));
 
-            DefineBinaryOperator(new BuiltInBinaryOperator("+", StringType.LiteralType, StringType.LiteralType, StringType.LiteralType, (a, b) => $"{a}{b}"));
+            var stringType = HapetType.CurrentTypeContext.StringTypeInstance;
+            DefineBinaryOperator(new BuiltInBinaryOperator("+", stringType, stringType, stringType, (a, b) => $"{a}{b}"));
 
             var numTypes = new HapetType[]
                 {
