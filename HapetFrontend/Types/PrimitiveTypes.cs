@@ -2,6 +2,7 @@
 using HapetFrontend.Ast.Declarations;
 using HapetFrontend.Ast.Expressions;
 using HapetFrontend.Scoping;
+using System.Drawing;
 using System.Numerics;
 
 namespace HapetFrontend.Types
@@ -27,7 +28,11 @@ namespace HapetFrontend.Types
             };
         }
 
-        public VoidType(AstStructDecl astStructDecl) : base(astStructDecl) { }
+        public VoidType(AstStructDecl astStructDecl) : base(astStructDecl) 
+        {
+            _size = 0;
+            _alignment = 0;
+        }
 
         public override int Match(HapetType concrete)
         {
@@ -60,7 +65,11 @@ namespace HapetFrontend.Types
             };
         }
 
-        public BoolType(AstStructDecl astStructDecl) : base(astStructDecl) { }
+        public BoolType(AstStructDecl astStructDecl) : base(astStructDecl) 
+        {
+            _size = 1;
+            _alignment = 1;
+        }
 
         public override int Match(HapetType concrete)
         {
@@ -74,7 +83,7 @@ namespace HapetFrontend.Types
 
     public class IntType : StructType
     {
-        public new static IntType LiteralType { get; } = new IntType(null, false);
+        public new static IntType LiteralType { get; } = new IntType(null, -1, false);
         public static IntType DefaultType => HapetType.CurrentTypeContext.GetIntType(4, true);
 
         public override string TypeName => ToString();
@@ -94,9 +103,11 @@ namespace HapetFrontend.Types
             };
         }
 
-        public IntType(AstStructDecl astStructDecl, bool sign) : base(astStructDecl)
+        public IntType(AstStructDecl astStructDecl, int size, bool sign) : base(astStructDecl)
         {
             Signed = sign;
+            _size = size;
+            _alignment = size;
         }
 
         public bool Signed { get; private set; }
@@ -179,7 +190,7 @@ namespace HapetFrontend.Types
 
     public class FloatType : StructType
     {
-        public new static FloatType LiteralType { get; } = new FloatType(null);
+        public new static FloatType LiteralType { get; } = new FloatType(null, -1);
         public static FloatType DefaultType => CurrentTypeContext.GetFloatType(4);
 
         public override string TypeName => ToString();
@@ -199,7 +210,11 @@ namespace HapetFrontend.Types
             };
         }
 
-        public FloatType(AstStructDecl astStructDecl) : base(astStructDecl) { }
+        public FloatType(AstStructDecl astStructDecl, int size) : base(astStructDecl) 
+        {
+            _size = size;
+            _alignment = size;
+        }
 
         public override string ToString()
         {
@@ -544,6 +559,7 @@ namespace HapetFrontend.Types
         public CharType(AstStructDecl astStructDecl, int size) : base(astStructDecl)
         {
             _size = size;
+            _alignment = size;
         }
 
         public override string ToString()
@@ -628,7 +644,7 @@ namespace HapetFrontend.Types
             };
         }
 
-        public IntPtrType(AstStructDecl astStructDecl) : base(astStructDecl, false) 
+        public IntPtrType(AstStructDecl astStructDecl) : base(astStructDecl, -1, false) 
         { 
 
         }
@@ -672,7 +688,7 @@ namespace HapetFrontend.Types
             };
         }
 
-        public PtrDiffType(AstStructDecl astStructDecl) : base(astStructDecl, true) 
+        public PtrDiffType(AstStructDecl astStructDecl) : base(astStructDecl, -1, true) 
         { 
         
         }

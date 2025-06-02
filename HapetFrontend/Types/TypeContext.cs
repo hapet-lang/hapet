@@ -34,8 +34,7 @@ namespace HapetFrontend.Types
             {
                 return value;
             }
-            IntType empty = new IntType(null, signed);
-            empty.ChangeSize(sizeInBytes);
+            IntType empty = new IntType(null, sizeInBytes, signed);
             IntTypeInstances[key] = empty;
             return empty;
         }
@@ -47,8 +46,7 @@ namespace HapetFrontend.Types
             {
                 return value;
             }
-            FloatType empty = new FloatType(null);
-            empty.ChangeSize(sizeInBytes);
+            FloatType empty = new FloatType(null, sizeInBytes);
             FloatTypeInstances[key] = empty;
             return empty;
         }

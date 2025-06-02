@@ -75,11 +75,17 @@ namespace HapetPostPrepare
             {
                 _compiler.GlobalScope.DefineDeclSymbol(typeName.GetCopy("uintptr"), decl);
                 decl.Type.OutType = HapetType.CurrentTypeContext.IntPtrTypeInstance;
+
+                // also set size and alignment
+                HapetType.CurrentTypeContext.IntPtrTypeInstance.SetSizeAndAlignment(HapetType.CurrentTypeContext.PointerSize, HapetType.CurrentTypeContext.PointerSize);
             }
             else if (typeName.Name == "System.PtrDiff")
             {
                 _compiler.GlobalScope.DefineDeclSymbol(typeName.GetCopy("ptrdiff"), decl);
                 decl.Type.OutType = HapetType.CurrentTypeContext.PtrDiffTypeInstance;
+
+                // also set size and alignment
+                HapetType.CurrentTypeContext.PtrDiffTypeInstance.SetSizeAndAlignment(HapetType.CurrentTypeContext.PointerSize, HapetType.CurrentTypeContext.PointerSize);
             }
             else if (typeName.Name == "System.Char")
             {
