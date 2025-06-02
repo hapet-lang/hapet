@@ -116,7 +116,10 @@ namespace HapetFrontend.Scoping
 
             // return if found smth in overloaded shite
             if (result.Count > 0)
+            {
+                MakeCandidating(result, lhs, rhs);
                 return result;
+            }
 
             // this is a kostyl to search for any ptr bin ops
             var searchTypeL = lhs is PointerType ? PointerType.VoidLiteralType : lhs;
@@ -127,6 +130,7 @@ namespace HapetFrontend.Scoping
             searchTypeR = searchTypeR is GenericType ? GenericType.LiteralType : searchTypeR;
 
             GetBinaryOperatorsInternal(this, name, searchTypeL, searchTypeR, result, ref level);
+            MakeCandidating(result, lhs, rhs);
             return result;
         }
 
@@ -158,6 +162,58 @@ namespace HapetFrontend.Scoping
                 GetBinaryOperatorsInternal(scopeToSearch.Parent, name, lhs, rhs, result, ref level);
         }
 
+        private void MakeCandidating(List<IBinaryOperator> ops, HapetType lhs, HapetType rhs)
+        {
+            if (ops.Count == 0 || ops.Count == 1)
+                return;
+
+            List<(int, IBinaryOperator)> scores = new List<(int, IBinaryOperator)>();
+            foreach (var op in ops.Where(x => x is not UserDefinedBinaryOperator))
+            {
+                if (op.LhsType == lhs && op.RhsType == rhs)
+                    scores.Add((0, op));
+                else if (op.LhsType == lhs || op.RhsType == rhs)
+                    scores.Add((1, op));
+                else if (op.LhsType.IsExactly(lhs) && op.RhsType.IsExactly(rhs))
+                    scores.Add((2, op));
+                else if (op.LhsType.IsExactly(lhs) || op.RhsType.IsExactly(rhs))
+                    scores.Add((3, op));
+                else
+                    scores.Add((4, op));
+            }
+
+            // sort them
+            var sorted = scores.OrderBy(x => x.Item1).ToList();
+            if (sorted[0].Item1 == sorted[1].Item1)
+            {
+                // gg, they are the same
+                // keep all decls 
+                return;
+            }
+            else if (sorted[0].Item1 < sorted[1].Item1)
+            {
+                // remove all after first
+                for (int i = 1; i < sorted.Count; i++)
+                {
+                    ops.Remove(sorted[i].Item2);
+                }
+            }
+
+            if (ops.Count < 2)
+                return;
+            // there still could be multiple ops for example
+            // one is built in and the second one is user defined
+            if (ops.Any(x => x is UserDefinedBinaryOperator))
+            {
+                // we need to remove all built ins
+                foreach (var op in ops.ToList())
+                {
+                    if (op is BuiltInBinaryOperator)
+                        ops.Remove(op);
+                }
+            }
+        }
+
         /// <summary>
         /// Returns all operators defined for the specified <param name="sub"/> and <param name="name"/>
         /// </summary>
@@ -186,7 +242,10 @@ namespace HapetFrontend.Scoping
 
             // return if found smth in overloaded shite
             if (result.Count > 0)
+            {
+                MakeCandidating(result, sub);
                 return result;
+            }
 
             // this is a kostyl to search for any ptr un ops
             var searchType = sub is PointerType ? PointerType.VoidLiteralType : sub;
@@ -194,6 +253,7 @@ namespace HapetFrontend.Scoping
             searchType = searchType is GenericType ? GenericType.LiteralType : searchType;
 
             GetUnaryOperatorsInternal(this, name, searchType, result, ref level);
+            MakeCandidating(result, sub);
             return result;
         }
 
@@ -223,6 +283,54 @@ namespace HapetFrontend.Scoping
                 return;
             if (scopeToSearch.Parent != null)
                 GetUnaryOperatorsInternal(scopeToSearch.Parent, name, sub, result, ref level);
+        }
+
+        private void MakeCandidating(List<IUnaryOperator> ops, HapetType type)
+        {
+            if (ops.Count == 0 || ops.Count == 1)
+                return;
+
+            List<(int, IUnaryOperator)> scores = new List<(int, IUnaryOperator)>();
+            foreach (var op in ops.Where(x => x is not UserDefinedUnaryOperator))
+            {
+                if (op.SubExprType == type)
+                    scores.Add((0, op));
+                else if (op.SubExprType.IsExactly(type))
+                    scores.Add((2, op));
+                else
+                    scores.Add((4, op));
+            }
+
+            // sort them
+            var sorted = scores.OrderBy(x => x.Item1).ToList();
+            if (sorted[0].Item1 == sorted[1].Item1)
+            {
+                // gg, they are the same
+                // keep all decls 
+                return;
+            }
+            else if (sorted[0].Item1 < sorted[1].Item1)
+            {
+                // remove all after first
+                for (int i = 1; i < sorted.Count; i++)
+                {
+                    ops.Remove(sorted[i].Item2);
+                }
+            }
+
+            if (ops.Count < 2)
+                return;
+            // there still could be multiple ops for example
+            // one is built in and the second one is user defined
+            if (ops.Any(x => x is UserDefinedUnaryOperator))
+            {
+                // we need to remove all built ins
+                foreach (var op in ops.ToList())
+                {
+                    if (op is BuiltInUnaryOperator)
+                        ops.Remove(op);
+                }
+            }
         }
         #endregion
 

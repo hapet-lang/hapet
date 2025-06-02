@@ -149,9 +149,9 @@ namespace HapetFrontend.Types
             if (concrete is ReferenceType r)
                 concrete = r.TargetType;
 
-            if (concrete is IntType t && concrete is not IntPtrType && concrete is not PtrDiffType)
+            if (concrete.IsExactly<IntType>())
             {
-                if (t.Signed != this.Signed)
+                if ((concrete as IntType).Signed != this.Signed)
                     return -1;
 
                 if (concrete.GetSize() != this.GetSize())

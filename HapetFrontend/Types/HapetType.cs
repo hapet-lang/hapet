@@ -89,6 +89,11 @@ namespace HapetFrontend.Types
             return this.GetType() == typeof(T);
         }
 
+        public bool IsExactly(HapetType type)
+        {
+            return this.GetType() == type.GetType();
+        }
+
         /// <summary>
         /// Returns the preferred type of two other types
         /// Usually used for Numeric types and for Binary expressions

@@ -28,8 +28,8 @@ namespace HapetFrontend.Scoping
             DefineBinaryOperator(new BuiltInBinaryOperator("||", boolT, boolT, boolT, (a, b) => (bool)a || (bool)b));
             DefineBinaryOperator(new BuiltInBinaryOperator("|", boolT, boolT, boolT, (a, b) => (bool)a | (bool)b));
             // these are already defined in structs
-            // DefineBinaryOperator(new BuiltInBinaryOperator("==", boolT, boolT, boolT, (a, b) => (bool)a == (bool)b));
-            // DefineBinaryOperator(new BuiltInBinaryOperator("!=", boolT, boolT, boolT, (a, b) => (bool)a != (bool)b));
+            DefineBinaryOperator(new BuiltInBinaryOperator("==", boolT, boolT, boolT, (a, b) => (bool)a == (bool)b));
+            DefineBinaryOperator(new BuiltInBinaryOperator("!=", boolT, boolT, boolT, (a, b) => (bool)a != (bool)b));
 
             var stringType = HapetType.CurrentTypeContext.StringTypeInstance;
             DefineBinaryOperator(new BuiltInBinaryOperator("+", stringType, stringType, stringType, (a, b) => $"{a}{b}"));
@@ -79,8 +79,8 @@ namespace HapetFrontend.Scoping
                     DefineBinaryOperator(new BuiltInBinaryOperator("%", outType, type, secondType, (a, b) => (NumberData)a % (NumberData)b));
 
                     // these are already defined in structs
-                    // DefineBinaryOperator(new BuiltInBinaryOperator("==", boolT, type, secondType, (a, b) => (NumberData)a == (NumberData)b));
-                    // DefineBinaryOperator(new BuiltInBinaryOperator("!=", boolT, type, secondType, (a, b) => (NumberData)a != (NumberData)b));
+                    DefineBinaryOperator(new BuiltInBinaryOperator("==", boolT, type, secondType, (a, b) => (NumberData)a == (NumberData)b));
+                    DefineBinaryOperator(new BuiltInBinaryOperator("!=", boolT, type, secondType, (a, b) => (NumberData)a != (NumberData)b));
 
                     DefineBinaryOperator(new BuiltInBinaryOperator("<", boolT, type, secondType, (a, b) => (NumberData)a < (NumberData)b));
                     DefineBinaryOperator(new BuiltInBinaryOperator("<=", boolT, type, secondType, (a, b) => (NumberData)a <= (NumberData)b));
@@ -105,6 +105,10 @@ namespace HapetFrontend.Scoping
             // for ptr arithmetics
             foreach (var type in numTypes)
             {
+                // skip float types
+                if (type is FloatType)
+                    continue;
+
                 DefineBinaryOperator(new BuiltInBinaryOperator("+", PointerType.VoidLiteralType, type, PointerType.VoidLiteralType));
                 DefineBinaryOperator(new BuiltInBinaryOperator("+", PointerType.VoidLiteralType, PointerType.VoidLiteralType, type));
                 DefineBinaryOperator(new BuiltInBinaryOperator("-", PointerType.VoidLiteralType, PointerType.VoidLiteralType, type));
