@@ -458,6 +458,8 @@ namespace HapetFrontend.Types
 
     public class ArrayType : StructType
     {
+        public new static ArrayType LiteralType { get; } = new ArrayType(null, null);
+
         public HapetType TargetType { get; set; }
 
         public override string TypeName => $"array";

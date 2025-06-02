@@ -53,6 +53,7 @@ namespace HapetBackend.Llvm
                     var llvmType = _typeMap.First(x => x.Key is ArrayType).Value;
 
                     // we need to set size/alignment on every array type instance :)
+                    // TODO: why to every? if there is only one should be
                     at.ChangeSize((int)LLVM.ABISizeOfType(_targetData, llvmType));
                     at.ChangeAlignment((int)LLVM.ABIAlignmentOfType(_targetData, llvmType));
 
@@ -274,8 +275,17 @@ namespace HapetBackend.Llvm
             if (fieldDeclarationsBoxed.Count > 1)
                 offs = (uint)_targetData.OffsetOfElement(llvmTypeBoxed, 1);
 
+            // we need to define there a literal type to be able to access it lately
+            var typeToDefine = type is ArrayType ? ArrayType.LiteralType : type;
             // offset to the first normal field
-            _boxedStructTypes.Add(type, (llvmTypeBoxed, offs));
+            _boxedStructTypes.Add(typeToDefine, (llvmTypeBoxed, offs));
+        }
+
+        private (LLVMTypeRef, uint) GetBoxedType(HapetType type)
+        {
+            // we need to search there a literal type or array
+            var typeToSearch = type is ArrayType ? ArrayType.LiteralType : type;
+            return _boxedStructTypes[typeToSearch];
         }
 
         private unsafe LLVMValueRef HapetValueToLLVMValue(HapetType type, object v)
@@ -514,10 +524,11 @@ namespace HapetBackend.Llvm
             }
             else if (inType is StructType structType) 
             {
-                if (outType is ClassType clsT && (clsT.Declaration.Name.Name == "System.Object" || clsT.Declaration.IsInterface))
+                if (outType is PointerType ptrT2 && ptrT2.TargetType is ClassType clsT && 
+                    (clsT.Declaration.Name.Name == "System.Object" || clsT.Declaration.Name.Name == "System.ValueType" || clsT.Declaration.IsInterface))
                 {
                     // cast from struct instance to object
-                    var boxedTypeData = _boxedStructTypes[inType];
+                    var boxedTypeData = GetBoxedType(inType);
                     int structSize = AstDeclaration.GetSizeForAlloc(structType.Declaration.GetAllRawFields());
                     // allocating memory for struct
                     var v = GetMalloc(structSize, 1);
@@ -560,7 +571,7 @@ namespace HapetBackend.Llvm
             // if could be downcasted
             _builder.PositionAtEnd(bbTrue);
             // get boxed data 
-            var boxedTypeData = _boxedStructTypes[structType];
+            var boxedTypeData = GetBoxedType(structType);
             // getting struct from the alloced mem
             var offseted = _builder.BuildGEP2(_context.Int8Type, val, new LLVMValueRef[] { LLVMValueRef.CreateConstInt(_context.Int32Type, boxedTypeData.Item2) }, "offsetedPtr");
             var castedOffseted = _builder.BuildBitCast(offseted, HapetTypeToLLVMType(PointerType.GetPointerType(structType)), "offseted");
