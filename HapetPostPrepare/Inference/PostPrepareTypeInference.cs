@@ -639,6 +639,9 @@ namespace HapetPostPrepare
                                 }
                             }
 
+                            // make some casts inside
+                            HandleBinExpr(binExpr);
+
                             // if the value could be evaluated at the compile time
                             if (leftExpr.OutValue != null && 
                                 rightExpr.OutValue != null && 
