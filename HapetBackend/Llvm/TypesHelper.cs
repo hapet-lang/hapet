@@ -297,7 +297,9 @@ namespace HapetBackend.Llvm
             switch (type)
             {
                 case BoolType _: return LLVM.ConstInt(HapetTypeToLLVMType(type), (bool)v ? 1ul : 0ul, 0);
-                case CharType _: return LLVM.ConstInt(HapetTypeToLLVMType(type), (char)v, 0);
+                case CharType _:
+                    char val = v is NumberData data ? (char)(int)(data.IntValue) : (char)v;
+                    return LLVM.ConstInt(HapetTypeToLLVMType(type), val, 0);
                 case IntType i: return LLVM.ConstInt(HapetTypeToLLVMType(type), ((NumberData)v).ToULong(), i.Signed ? 1 : 0);
                 case FloatType: return LLVM.ConstReal(HapetTypeToLLVMType(type), ((NumberData)v).ToDouble());
                 case StringType:
