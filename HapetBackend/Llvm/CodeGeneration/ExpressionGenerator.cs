@@ -498,9 +498,11 @@ namespace HapetBackend.Llvm
             // check if it const/static shite
             if (theDecl is AstVarDecl varDecl && (theDecl.SpecialKeys.Contains(TokenType.KwStatic) || theDecl.SpecialKeys.Contains(TokenType.KwConst)))
             {
-                if (varDecl.ContainingParent is not AstClassDecl classDecl)
+                if (varDecl.ContainingParent is not AstClassDecl && varDecl.ContainingParent is not AstStructDecl)
                     return v;
-                var varName = $"{classDecl.Type.OutType}::{varDecl.Name.Name}";
+                // if the decl is impl of gen - take only orig generic
+                var declName = theDecl.ContainingParent.IsImplOfGeneric ? theDecl.ContainingParent.OriginalGenericDecl.Name : theDecl.Name;
+                var varName = $"{GenericsHelper.GetOnlyStringName(declName)}::{varDecl.Name.Name}";
                 v = _module.GetNamedGlobal(varName);
                 if (getPtr)
                     return v;
@@ -910,9 +912,11 @@ namespace HapetBackend.Llvm
                     else if (IsStaticOrConstElement(idExpr.Name, leftPartDeclarations, out AstVarDecl theDecl))
                     {
                         // static/const elements are accessed in different way
-                        if (theDecl.ContainingParent is not AstClassDecl classDecl)
+                        if (theDecl.ContainingParent is not AstClassDecl && theDecl.ContainingParent is not AstStructDecl)
                             return default;
-                        var varName = $"{classDecl.Type.OutType}::{theDecl.Name.Name}";
+                        // if the decl is impl of gen - take only orig generic
+                        var declName = theDecl.ContainingParent.IsImplOfGeneric ? theDecl.ContainingParent.OriginalGenericDecl.Name : theDecl.Name;
+                        var varName = $"{GenericsHelper.GetOnlyStringName(declName)}::{theDecl.Name.Name}";
                         var v = _module.GetNamedGlobal(varName);
                         if (getPtr)
                             return v;
@@ -1339,7 +1343,6 @@ namespace HapetBackend.Llvm
 
             if (stmt.Condition != null)
             {
-                // building the condition
                 var cmp = GenerateExpressionCode(stmt.Condition);
                 if (stmt.BodyFalse != null)
                 {
