@@ -500,10 +500,9 @@ namespace HapetBackend.Llvm
             {
                 if (varDecl.ContainingParent is not AstClassDecl && varDecl.ContainingParent is not AstStructDecl)
                     return v;
-                // if the decl is impl of gen - take only orig generic
-                var declName = theDecl.ContainingParent.IsImplOfGeneric ? theDecl.ContainingParent.OriginalGenericDecl.Name : theDecl.Name;
-                var varName = $"{GenericsHelper.GetOnlyStringName(declName)}::{varDecl.Name.Name}";
-                v = _module.GetNamedGlobal(varName);
+                if (!_valueMap.TryGetValue(declSymbol, out v))
+                    return default;
+
                 if (getPtr)
                     return v;
                 var loaded = _builder.BuildLoad2(HapetTypeToLLVMType(expr.OutType), v, expr.Name);
@@ -914,10 +913,10 @@ namespace HapetBackend.Llvm
                         // static/const elements are accessed in different way
                         if (theDecl.ContainingParent is not AstClassDecl && theDecl.ContainingParent is not AstStructDecl)
                             return default;
-                        // if the decl is impl of gen - take only orig generic
-                        var declName = theDecl.ContainingParent.IsImplOfGeneric ? theDecl.ContainingParent.OriginalGenericDecl.Name : theDecl.Name;
-                        var varName = $"{GenericsHelper.GetOnlyStringName(declName)}::{theDecl.Name.Name}";
-                        var v = _module.GetNamedGlobal(varName);
+                        LLVMValueRef v = default;
+                        if (!_valueMap.TryGetValue(theDecl.Name.FindSymbol, out v))
+                            return default;
+
                         if (getPtr)
                             return v;
                         var loaded = _builder.BuildLoad2(HapetTypeToLLVMType(expr.OutType), v, $"{idExpr.Name}Loaded");

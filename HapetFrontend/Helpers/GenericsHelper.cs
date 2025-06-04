@@ -176,26 +176,5 @@ namespace HapetFrontend.Helpers
             }
             return generics;
         }
-
-        /// <summary>
-        /// Used at least to generate static/const shite in backend normally
-        /// </summary>
-        /// <param name="idExpr"></param>
-        /// <returns></returns>
-        public static string GetOnlyStringName(AstIdExpr idExpr)
-        {
-            if (idExpr is not AstIdGenericExpr genId)
-                return idExpr.Name;
-
-            StringBuilder name = new StringBuilder(idExpr.Name);
-            foreach (var id in genId.GenericRealTypes)
-            {
-                if (id is AstNestedExpr nst)
-                    name.Append($"_{nst.UnrollToRightPart<AstIdExpr>().Name}");
-                else if (id is AstIdExpr id2)
-                    name.Append($"_{id2.Name}");
-            }
-            return name.ToString();
-        }
     }
 }
