@@ -234,6 +234,13 @@ namespace HapetPostPrepare
                     PostPrepareExprInference(thisArg, inInfo, ref outInfo);
                     funcDecl.BaseCtorCall.ThisArgument = thisArg;
 
+                    // this is a kostyl to remove previous base ctor call
+                    // it is possible for impl of generic types/funcs
+                    // so the base ctor call is here from previous type
+                    // so we just need to remove it
+                    if (funcDecl.Body.Statements.Count > 1 && funcDecl.Body.Statements[1] is AstBaseCtorStmt)
+                        funcDecl.Body.Statements.RemoveAt(1);
+
                     // we need to insert it into block so it would be generated normally
                     // but why to the index 1? - https://stackoverflow.com/questions/140490/base-constructor-in-c-sharp-which-gets-called-first
                     funcDecl.Body.Statements.Insert(1, funcDecl.BaseCtorCall);
