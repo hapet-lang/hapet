@@ -125,10 +125,24 @@ namespace HapetFrontend.Scoping
             // 2 - check for similar AstIdExpr
             if (name is not AstIdGenericExpr && name is not AstIdTupledExpr)
             {
-                var k1 = _shadowSymbolTable.Keys.FirstOrDefault(x => x is not AstIdGenericExpr && x is not AstIdTupledExpr && x.Name == name.Name);
+                // checker to check that they are the same
+                var checker = new Func<AstIdExpr, bool>((x) =>
+                {
+                    var c1 = x is not AstIdGenericExpr && x is not AstIdTupledExpr;
+                    var c2 = x.Name == name.Name;
+                    // additional data shite
+                    var c3 = x.AdditionalData == null && name.AdditionalData == null;
+                    if (x.AdditionalData != null && name.AdditionalData != null)
+                    {
+                        c3 = x.AdditionalData.OutType == name.AdditionalData.OutType;
+                    }
+                    return c1 && c2 && c3;
+                });
+
+                var k1 = _shadowSymbolTable.Keys.FirstOrDefault(checker);
                 if (k1 != null)
                     return _shadowSymbolTable[k1];
-                var k2 = _symbolTable.Keys.FirstOrDefault(x => x is not AstIdGenericExpr && x is not AstIdTupledExpr && x.Name == name.Name);
+                var k2 = _symbolTable.Keys.FirstOrDefault(checker);
                 if (k2 != null)
                     return _symbolTable[k2];
             }

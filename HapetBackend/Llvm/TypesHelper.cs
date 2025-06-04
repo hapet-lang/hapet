@@ -480,9 +480,9 @@ namespace HapetBackend.Llvm
                     _builder.BuildStore(nullTarget, buffer);
                     return _builder.BuildLoad2(HapetTypeToLLVMType(stringType), v); // return loaded
                 }
-                else if (outType is StructType structType)
+                else if (outType is StructType structType2)
                 {
-                    return CreateStructCastFromObject(val, structType);
+                    return CreateStructCastFromObject(val, structType2);
                 }
             }
             if (inType is IntPtrType)
@@ -560,7 +560,9 @@ namespace HapetBackend.Llvm
                 }
                 // ...
             }
-            else if (inType is StructType structType) 
+
+            // no need to else-if here - it can handle bacis types transformation
+            if (inType is StructType structType) 
             {
                 if (outType is PointerType ptrT2 && ptrT2.TargetType is ClassType clsT && 
                     (clsT.Declaration.Name.Name == "System.Object" || clsT.Declaration.Name.Name == "System.ValueType" || clsT.Declaration.IsInterface))
