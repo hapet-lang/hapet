@@ -83,7 +83,40 @@ namespace HapetPostPrepare
                 OutInfo outInfo = OutInfo.Default;
 
                 // we need to inference it manually
-                if (stmt is AstDelegateDecl delegateDecl)
+                if (stmt is AstClassDecl cls)
+                {
+                    foreach (var decl in cls.Declarations.Where(x => x is AstFuncDecl).Select(x => x as AstFuncDecl).ToList())
+                    {
+                        PostPrepareFunctionInference(decl, inInfo, ref outInfo);
+                    }
+                    foreach (var decl in cls.Declarations.Where(x => x is AstDelegateDecl).Select(x => x as AstDelegateDecl).ToList())
+                    {
+                        PostPrepareDelegateInference(decl, inInfo, ref outInfo);
+                    }
+                }
+                else if (stmt is AstStructDecl str)
+                {
+                    foreach (var decl in str.Declarations.Where(x => x is AstFuncDecl).Select(x => x as AstFuncDecl).ToList())
+                    {
+                        PostPrepareFunctionInference(decl, inInfo, ref outInfo);
+                    }
+                    foreach (var decl in str.Declarations.Where(x => x is AstDelegateDecl).Select(x => x as AstDelegateDecl).ToList())
+                    {
+                        PostPrepareDelegateInference(decl, inInfo, ref outInfo);
+                    }
+                }
+                else if (stmt is AstGenericDecl gen)
+                {
+                    foreach (var decl in gen.Declarations.Where(x => x is AstFuncDecl).Select(x => x as AstFuncDecl).ToList())
+                    {
+                        PostPrepareFunctionInference(decl, inInfo, ref outInfo);
+                    }
+                    foreach (var decl in gen.Declarations.Where(x => x is AstDelegateDecl).Select(x => x as AstDelegateDecl).ToList())
+                    {
+                        PostPrepareDelegateInference(decl, inInfo, ref outInfo);
+                    }
+                }
+                else if (stmt is AstDelegateDecl delegateDecl)
                 {
                     PostPrepareDelegateInference(delegateDecl, inInfo, ref outInfo);
                 }

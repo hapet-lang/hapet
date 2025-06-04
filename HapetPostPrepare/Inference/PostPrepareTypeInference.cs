@@ -33,30 +33,14 @@ namespace HapetPostPrepare
             {
                 _currentSourceFile = funcDecl.SourceFile;
 
-                var parent = funcDecl.ContainingParent;
-                if (parent.IsNestedDecl)
-                    _currentParentStack.AddParent(parent.ParentDecl);
-                _currentParentStack.AddParent(parent);
                 PostPrepareFunctionInference(funcDecl, inInfo, ref outInfo);
-                if (parent.IsNestedDecl)
-                    _currentParentStack.RemoveParent();
-                _currentParentStack.RemoveParent();
             }
 
             foreach (var delegateDecl in delegates)
             {
                 _currentSourceFile = delegateDecl.SourceFile;
 
-                var parent = delegateDecl.ContainingParent;
-                if (parent != null && parent.IsNestedDecl)
-                    _currentParentStack.AddParent(parent.ParentDecl);
-                if (parent != null)
-                    _currentParentStack.AddParent(parent);
                 PostPrepareDelegateInference(delegateDecl, inInfo, ref outInfo);
-                if (parent != null && parent.IsNestedDecl)
-                    _currentParentStack.RemoveParent();
-                if (parent != null)
-                    _currentParentStack.RemoveParent();
             }
         }
 
@@ -64,6 +48,12 @@ namespace HapetPostPrepare
         {
             /// WARN: should be already inferred in <see cref="PostPrepareMetadataTypes"/> and <see cref="PostPrepareMetadataTypeFields"/>
             /// WARN: attributes are inferrenced in <see cref="PostPrepareMetadataAttributes"/>
+
+            var parent = delegateDecl.ContainingParent;
+            if (parent != null && parent.IsNestedDecl)
+                _currentParentStack.AddParent(parent.ParentDecl);
+            if (parent != null)
+                _currentParentStack.AddParent(parent);
 
             _currentParentStack.AddParent(delegateDecl);
 
@@ -79,11 +69,21 @@ namespace HapetPostPrepare
             }
 
             _currentParentStack.RemoveParent();
+
+            if (parent != null && parent.IsNestedDecl)
+                _currentParentStack.RemoveParent();
+            if (parent != null)
+                _currentParentStack.RemoveParent();
         }
 
         private void PostPrepareFunctionInference(AstFuncDecl funcDecl, InInfo inInfo, ref OutInfo outInfo)
         {
             /// WARN: attributes are inferrenced in <see cref="PostPrepareMetadataAttributes"/>
+
+            var parent = funcDecl.ContainingParent;
+            if (parent.IsNestedDecl)
+                _currentParentStack.AddParent(parent.ParentDecl);
+            _currentParentStack.AddParent(parent);
 
             _currentParentStack.AddParent(funcDecl);
 
@@ -148,7 +148,10 @@ namespace HapetPostPrepare
                         {
                             // safe check - errored somewhere before
                             if (funcDecl.Name.AdditionalData.OutType == null)
+                            {
+                                OnExit();
                                 return;
+                            }
                             explicitInterfaceName = (funcDecl.Name.AdditionalData.OutType as ClassType).Declaration.Name.Name;
                             explicitInterfaceName += '.';
                         }
@@ -170,6 +173,7 @@ namespace HapetPostPrepare
                     else
                     {
                         _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, funcDecl.Name, [], ErrorCode.Get(CTEN.StmtNotAllowedInThis));
+                        OnExit();
                         return;
                     }
 
@@ -236,7 +240,16 @@ namespace HapetPostPrepare
                 }
             }
 
-            _currentParentStack.RemoveParent();
+            OnExit();
+
+            void OnExit()
+            {
+                _currentParentStack.RemoveParent();
+
+                if (parent.IsNestedDecl)
+                    _currentParentStack.RemoveParent();
+                _currentParentStack.RemoveParent();
+            }
         }
 
         private void PostPrepareVarInference(AstVarDecl varDecl, InInfo inInfo, ref OutInfo outInfo)
@@ -376,6 +389,9 @@ namespace HapetPostPrepare
                     break;
                 case AstDefaultExpr defaultExpr:
                     PostPrepareDefaultExprInference(defaultExpr, inInfo, ref outInfo);
+                    break;
+                case AstDefaultGenericExpr defaultGenericExpr:
+                    PostPrepareDefaultGenericExprInference(defaultGenericExpr, inInfo, ref outInfo);
                     break;
                 case AstArrayExpr arrayExpr:
                     PostPrepareArrayExprInference(arrayExpr, inInfo, ref outInfo);
@@ -962,6 +978,16 @@ namespace HapetPostPrepare
             }
             PostPrepareExprInference(defaultExpr.TypeForDefault, inInfo, ref outInfo);
             defaultExpr.OutType = defaultExpr.TypeForDefault.OutType;
+        }
+
+        private void PostPrepareDefaultGenericExprInference(AstDefaultGenericExpr defaultExpr, InInfo inInfo, ref OutInfo outInfo)
+        {
+            if (defaultExpr.TypeForDefault == null)
+            {
+                _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, defaultExpr, [], ErrorCode.Get(CTEN.DefaultWasNotInfered));
+                return;
+            }
+            defaultExpr.OutType = defaultExpr.TypeForDefault;
         }
 
         private void PostPrepareArrayExprInference(AstArrayExpr arrayExpr, InInfo inInfo, ref OutInfo outInfo)
