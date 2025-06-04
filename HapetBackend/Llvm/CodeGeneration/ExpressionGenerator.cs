@@ -842,7 +842,7 @@ namespace HapetBackend.Llvm
                 var idExpr = expr.RightPart as AstIdExpr;
 
                 // we need to get 'struct' elements by ref to access it's elements
-                bool getByRef = (expr.LeftPart.OutType is StructType) || (expr.LeftPart.OutType is ArrayType) || (expr.LeftPart.OutType is StringType);
+                bool getByRef = (expr.LeftPart.OutType is StructType);
                 var leftPart = GenerateExpressionCode(expr.LeftPart, getByRef);
 
                 // getting struct/class/interface declarations and the type
@@ -942,7 +942,7 @@ namespace HapetBackend.Llvm
                         if (leftPartType is StructType strT && strT.IsUserDefinedAlignment)
                             elementIndex = _structOffsets[strT][elementIndex];
 
-                        var tp = HapetTypeToLLVMType(leftPartType);
+                        var tp = HapetTypeToLLVMType(leftPartType, true);
                         LLVMValueRef ret;
 
                         // another way of accessing elements when using interfaces

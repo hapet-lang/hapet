@@ -17,6 +17,10 @@ namespace HapetBackend.Llvm
     {
         private Dictionary<HapetType, LLVMTypeRef> _typeMap = new Dictionary<HapetType, LLVMTypeRef>();
         /// <summary>
+        /// This dict is used to store real structs of types like bool, int, char and etc.
+        /// </summary>
+        private Dictionary<HapetType, LLVMTypeRef> _typeMapWithRealStructs = new Dictionary<HapetType, LLVMTypeRef>();
+        /// <summary>
         /// The value itself (loaded after alloca)
         /// </summary>
         private Dictionary<ISymbol, LLVMValueRef> _valueMap = new Dictionary<ISymbol, LLVMValueRef>();
@@ -39,10 +43,10 @@ namespace HapetBackend.Llvm
         /// </summary>
         private Dictionary<string, LLVMTypeRef> _delegateAnonTypes = new Dictionary<string, LLVMTypeRef>();
 
-        private unsafe LLVMTypeRef HapetTypeToLLVMType(HapetType ht)
+        private unsafe LLVMTypeRef HapetTypeToLLVMType(HapetType ht, bool getRealStruct = false)
         {
             if (_typeMap.TryGetValue(ht, out var tt))
-                return tt;
+                return HandleReturnValue(tt);
 
             // all array types are the same
             if (ht is ArrayType at)
@@ -63,7 +67,41 @@ namespace HapetBackend.Llvm
 
             var t = HapetTypeToLLVMTypeHelper(ht);
             _typeMap[ht] = t;
-            return t;
+            return HandleReturnValue(t);
+
+            // used for return real struct if getRealStruct is true
+            LLVMTypeRef HandleReturnValue(LLVMTypeRef val)
+            {
+                // return the same if no need
+                if (!getRealStruct)
+                    return val;
+                // only structs are allowed
+                if (ht is not StructType s)
+                    return val;
+                // one of these only allowed
+                if (s is not IntType && s is not CharType && s is not FloatType && s is not VoidType && s is not BoolType)
+                    return val;
+                // return if already exists
+                if (_typeMapWithRealStructs.TryGetValue(ht, out var tt))
+                    return tt;
+                
+                // creating the struct
+                var name = $"struct.{s.TypeName}";
+                var llvmType = _context.CreateNamedStruct(name);
+                var fieldDeclarations = s.Declaration.Declarations.
+                    Where(x => x is AstVarDecl && x is not AstPropertyDecl).
+                    Select(x => (x as AstVarDecl).Type.OutType).ToList();
+
+                var (offsets, sssize, memTypes) = CalcStructData(fieldDeclarations, 0);
+
+                // saving the offsets so we can access struct elements easily in the future
+                _structOffsets[s] = offsets;
+
+                llvmType.StructSetBody(memTypes.ToArray(), false);
+
+                _typeMapWithRealStructs[ht] = llvmType;
+                return llvmType;
+            }
         }
 
         #region checks for boxed types creation
@@ -220,10 +258,8 @@ namespace HapetBackend.Llvm
 
                         // creating the struct
                         var name = $"struct.{s.Declaration.Name.Name}";
-
                         var llvmType = _context.CreateNamedStruct(name);
-                        _typeMap[s] = llvmType;
-
+                        _typeMap[s] = llvmType; // need to do this to prevent stackoverflow
                         var fieldDeclarations = s.Declaration.Declarations.
                             Where(x => x is AstVarDecl && x is not AstPropertyDecl).
                             Select(x => (x as AstVarDecl).Type.OutType).ToList();
