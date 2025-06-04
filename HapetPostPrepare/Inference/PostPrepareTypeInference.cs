@@ -207,11 +207,9 @@ namespace HapetPostPrepare
                 }
             }
             else
-            {                
-                // if parent contains Generic shite - do not infer
-                bool allowInfer = !(funcDecl.ContainingParent.HasGenericTypes && !funcDecl.ContainingParent.IsImplOfGeneric);
+            {
                 // inferring body
-                if (funcDecl.Body != null && allowInfer)
+                if (funcDecl.Body != null)
                     PostPrepareBlockInference(funcDecl.Body, inInfo, ref outInfo);
 
                 // check if the class if inherited from smth
