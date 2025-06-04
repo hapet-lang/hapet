@@ -683,6 +683,25 @@ namespace HapetPostPrepare
                 }
             }
 
+            // we also need to replace all generic defaults
+            if (expr is AstDefaultGenericExpr defG)
+            {
+                // getting the name of default
+                var defaultName = defG.TypeForDefault.Declaration.Name.Name;
+
+                // if found the generic entry - replace it
+                if (_currentGenericToRealMappings.TryGetValue(defaultName, out var val))
+                {
+                    // getting default for the new type
+                    value = new AstNestedExpr(AstDefaultExpr.GetDefaultValueForType(val.OutType, defG, _compiler.MessageHandler), null, defG.Location)
+                    {
+                        Scope = defG.Scope,
+                        SourceFile = defG.SourceFile,
+                    };
+                    return true;
+                }
+            }
+
             value = null;
             return false;
         }
