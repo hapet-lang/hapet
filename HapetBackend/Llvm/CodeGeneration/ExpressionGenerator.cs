@@ -40,7 +40,7 @@ namespace HapetBackend.Llvm
                 case AstUnaryIncDecExpr unExpr: return GenerateUnaryIncDecExprCode(unExpr);
                 case AstUnaryExpr unExpr2: return GenerateUnaryExprCode(unExpr2);
                 case AstBinaryExpr binExpr: return GenerateBinaryExprCode(binExpr);
-                case AstPointerExpr pointerExpr: return GeneratePointerExprCode(pointerExpr);
+                case AstPointerExpr pointerExpr: return GeneratePointerExprCode(pointerExpr, getPtr);
                 case AstAddressOfExpr addrExpr: return GenerateAddressOfExprCode(addrExpr);
                 case AstIdExpr idExpr: return GenerateIdExpr(idExpr, getPtr);
                 case AstNewExpr newExpr: return GenerateNewExpr(newExpr);
@@ -449,12 +449,12 @@ namespace HapetBackend.Llvm
             return default;
         }
 
-        private LLVMValueRef GeneratePointerExprCode(AstPointerExpr expr)
+        private LLVMValueRef GeneratePointerExprCode(AstPointerExpr expr, bool getPtr = false)
         {
             if (expr.IsDereference)
             {
-                var theVar = GenerateExpressionCode(expr.SubExpression);
-                var loaded = _builder.BuildLoad2(HapetTypeToLLVMType(expr.OutType), theVar, $"derefed");
+                var theVar = GenerateExpressionCode(expr.SubExpression, getPtr);
+                var loaded = _builder.BuildLoad2(HapetTypeToLLVMType(getPtr ? expr.SubExpression.OutType : expr.OutType), theVar, $"derefed");
                 return loaded;
             }
             else
