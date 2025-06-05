@@ -45,7 +45,6 @@ namespace HapetFrontend.Scoping
                     HapetType.CurrentTypeContext.GetIntType(4, false),
                     HapetType.CurrentTypeContext.GetIntType(8, false),
                     HapetType.CurrentTypeContext.CharTypeInstance,
-                    HapetType.CurrentTypeContext.GetFloatType(2),
                     HapetType.CurrentTypeContext.GetFloatType(4),
                     HapetType.CurrentTypeContext.GetFloatType(8),
                     HapetType.CurrentTypeContext.IntPtrTypeInstance,

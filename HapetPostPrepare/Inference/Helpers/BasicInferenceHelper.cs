@@ -102,11 +102,6 @@ namespace HapetPostPrepare
                 _compiler.GlobalScope.DefineDeclSymbol(typeName.GetCopy("float"), decl);
                 decl.Type.OutType = HapetType.CurrentTypeContext.GetFloatType(4);
             }
-            else if (typeName.Name == "System.Half")
-            {
-                _compiler.GlobalScope.DefineDeclSymbol(typeName.GetCopy("half"), decl);
-                decl.Type.OutType = HapetType.CurrentTypeContext.GetFloatType(2);
-            }
         }
 
         private void HandleBasicTypes(AstDeclaration decl, AstIdExpr idExpr)
@@ -231,12 +226,6 @@ namespace HapetPostPrepare
             else if (decl.Name is AstIdExpr id15 && id15.Name == "System.Single")
             {
                 var tp = HapetType.CurrentTypeContext.GetFloatType(4);
-                tp.Declaration = structDecl;
-                idExpr.OutType = tp;
-            }
-            else if (decl.Name is AstIdExpr id16 && id16.Name == "System.Half")
-            {
-                var tp = HapetType.CurrentTypeContext.GetFloatType(2);
                 tp.Declaration = structDecl;
                 idExpr.OutType = tp;
             }

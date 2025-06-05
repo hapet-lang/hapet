@@ -220,8 +220,6 @@ namespace HapetFrontend.Types
         {
             switch (GetSize())
             {
-                case 2:
-                    return "half";
                 case 4:
                     return "float";
                 case 8:
@@ -248,7 +246,6 @@ namespace HapetFrontend.Types
 
         public double MinValue => GetSize() switch
         {
-            2 => (double)Half.MinValue,
             4 => float.MinValue,
             8 => double.MinValue,
             _ => throw new NotImplementedException()
@@ -256,14 +253,12 @@ namespace HapetFrontend.Types
 
         public double MaxValue => GetSize() switch
         {
-            2 => (double)Half.MaxValue,
             4 => float.MaxValue,
             8 => double.MaxValue,
             _ => throw new NotImplementedException()
         };
         public double NaN => GetSize() switch
         {
-            2 => (double)Half.NaN,
             4 => float.NaN,
             8 => double.NaN,
             _ => throw new NotImplementedException()
@@ -271,7 +266,6 @@ namespace HapetFrontend.Types
 
         public double PosInf => GetSize() switch
         {
-            2 => (double)Half.PositiveInfinity,
             4 => float.PositiveInfinity,
             8 => double.PositiveInfinity,
             _ => throw new InvalidOperationException()
@@ -279,7 +273,6 @@ namespace HapetFrontend.Types
 
         public double NegInf => GetSize() switch
         {
-            2 => (double)Half.NegativeInfinity,
             4 => float.NegativeInfinity,
             8 => double.NegativeInfinity,
             _ => throw new InvalidOperationException()

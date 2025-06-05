@@ -143,9 +143,7 @@ namespace HapetBackend.Llvm
                             AddBoxedType(f, 0);
                         }
 
-                        if (f.GetSize() == 2)
-                            return _context.HalfType;
-                        else if (f.GetSize() == 4)
+                        if (f.GetSize() == 4)
                             return _context.FloatType;
                         else if (f.GetSize() == 8)
                             return _context.DoubleType;
