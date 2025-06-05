@@ -84,6 +84,9 @@ namespace HapetFrontend.Helpers
             process.StartInfo.UseShellExecute = useShellExecute;
             process.StartInfo.CreateNoWindow = createNoWindow;
 
+            // setting output lang to eng
+            process.StartInfo.EnvironmentVariables["VSLANG"] = "1033";
+
             if (stdout != null)
             {
                 process.StartInfo.RedirectStandardOutput = true;
