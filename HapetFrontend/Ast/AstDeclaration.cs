@@ -150,7 +150,7 @@ namespace HapetFrontend.Ast
             {
                 // return cached
                 if (strDecl.AllRawFields != null)
-                    return strDecl.AllRawFields;
+                    return strDecl.AllRawFields.ToList();
                 inheritedFrom = strDecl.InheritedFrom;
                 declarations = strDecl.Declarations;
             }
@@ -158,7 +158,7 @@ namespace HapetFrontend.Ast
             {
                 // return cached
                 if (clsDecl.AllRawFields != null)
-                    return clsDecl.AllRawFields;
+                    return clsDecl.AllRawFields.ToList();
                 inheritedFrom = clsDecl.InheritedFrom;
                 declarations = clsDecl.Declarations;
             }
@@ -215,7 +215,7 @@ namespace HapetFrontend.Ast
                 clsDecl2.AllRawFields = allFields;
             }
 
-            return allFields;
+            return allFields.ToList();
         }
     }
 }

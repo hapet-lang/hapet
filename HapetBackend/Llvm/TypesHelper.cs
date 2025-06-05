@@ -88,9 +88,7 @@ namespace HapetBackend.Llvm
                 // creating the struct
                 var name = $"struct.{s.TypeName}";
                 var llvmType = _context.CreateNamedStruct(name);
-                var fieldDeclarations = s.Declaration.Declarations.
-                    Where(x => x is AstVarDecl && x is not AstPropertyDecl).
-                    Select(x => (x as AstVarDecl).Type.OutType).ToList();
+                var fieldDeclarations = s.Declaration.GetAllRawFields().Select(x => x.Type.OutType).ToList();
 
                 var (offsets, sssize, memTypes) = CalcStructData(fieldDeclarations, 0);
 
@@ -260,9 +258,7 @@ namespace HapetBackend.Llvm
                         var name = $"struct.{s.Declaration.Name.Name}";
                         var llvmType = _context.CreateNamedStruct(name);
                         _typeMap[s] = llvmType; // need to do this to prevent stackoverflow
-                        var fieldDeclarations = s.Declaration.Declarations.
-                            Where(x => x is AstVarDecl && x is not AstPropertyDecl).
-                            Select(x => (x as AstVarDecl).Type.OutType).ToList();
+                        var fieldDeclarations = s.Declaration.GetAllRawFields().Select(x => x.Type.OutType).ToList();
 
                         var (offsets, sssize, memTypes) = CalcStructData(fieldDeclarations, packNumber);
 
