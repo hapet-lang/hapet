@@ -1,5 +1,6 @@
 ﻿using HapetFrontend.Ast.Expressions;
 using HapetFrontend.Ast.Statements;
+using HapetFrontend.Enums;
 using HapetFrontend.Helpers;
 using HapetFrontend.Parsing;
 using HapetFrontend.Types;
@@ -32,13 +33,13 @@ namespace HapetFrontend.Ast.Declarations
             return $"var:{GenericsHelper.GetNameFromAst(Name, null)}";
         }
 
-        public override AstStatement GetDeepCopy()
+        public override AstDeclaration GetOnlyDeclareCopy()
         {
             var copy = new AstVarDecl(
-                Type.GetDeepCopy() as AstNestedExpr,
-                Name.GetDeepCopy() as AstIdExpr,
-                Initializer?.GetDeepCopy() as AstExpression,
-                Documentation, Location)
+               Type.GetDeepCopy() as AstNestedExpr,
+               Name.GetDeepCopy() as AstIdExpr,
+               null,
+               Documentation, Location)
             {
                 IsPropertyField = IsPropertyField,
                 IsImported = IsImported,
@@ -48,6 +49,13 @@ namespace HapetFrontend.Ast.Declarations
             };
             copy.Attributes.AddRange(Attributes);
             copy.SpecialKeys.AddRange(SpecialKeys);
+            return copy;
+        }
+
+        public override AstStatement GetDeepCopy()
+        {
+            var copy = GetOnlyDeclareCopy() as AstVarDecl;
+            copy.Initializer = Initializer?.GetDeepCopy() as AstExpression;
             return copy;
         }
 

@@ -2,6 +2,7 @@
 using HapetFrontend.Ast.Expressions;
 using HapetFrontend.Ast.Statements;
 using HapetFrontend.Entities;
+using HapetFrontend.Enums;
 using HapetFrontend.Extensions;
 using HapetFrontend.Parsing;
 using HapetFrontend.Scoping;
@@ -95,6 +96,11 @@ namespace HapetFrontend.Ast
         {
             this.Name = name;
             this.Documentation = doc;
+        }
+
+        public virtual AstDeclaration GetOnlyDeclareCopy()
+        {
+            throw new NotImplementedException();
         }
 
         /// <summary>

@@ -223,7 +223,8 @@ namespace HapetPostPrepare
                     clsDecl.InheritedFrom.Count > 0 &&
                     funcDecl.BaseCtorCall != null &&
                     clsDecl.InheritedFrom[0].OutType is ClassType baseType &&
-                    !baseType.Declaration.IsInterface)
+                    !baseType.Declaration.IsInterface &&
+                    funcDecl.Body != null)
                 {
                     PostPrepareExprInference(funcDecl.BaseCtorCall, inInfo, ref outInfo);
 
@@ -324,7 +325,10 @@ namespace HapetPostPrepare
             // check for const value that it is compile time evaluated
             if ((varDecl.Initializer == null || varDecl.Initializer.OutValue == null) && varDecl.SpecialKeys.Contains(TokenType.KwConst))
             {
-                _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, varDecl.Name, [], ErrorCode.Get(CTEN.ConstValueNonComptime));
+                // if it is an impl of generic type - no need to error about it 
+                // because probably non-deep copy was created, so do not care
+                if (!(varDecl.ContainingParent.HasGenericTypes && varDecl.ContainingParent.IsImplOfGeneric))
+                    _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, varDecl.Name, [], ErrorCode.Get(CTEN.ConstValueNonComptime));
             }
         }
 
@@ -414,6 +418,8 @@ namespace HapetPostPrepare
                     break;
                 case AstCheckedExpr checkedExpr:
                     PostPrepareCheckedExprInference(checkedExpr, inInfo, ref outInfo);
+                    break;
+                case AstEmptyExpr:
                     break;
                 case AstStringExpr stringExpr:
                     stringExpr.OutType = GetStringType(stringExpr);
@@ -758,9 +764,17 @@ namespace HapetPostPrepare
 
         private void PostPrepareCastExprInference(AstCastExpr castExpr, InInfo inInfo, ref OutInfo outInfo)
         {
-            PostPrepareExprInference(castExpr.SubExpression as AstExpression, inInfo, ref outInfo);
-            PostPrepareExprInference(castExpr.TypeExpr as AstExpression, inInfo, ref outInfo);
-            castExpr.OutType = (castExpr.TypeExpr as AstExpression).OutType;
+            PostPrepareExprInference(castExpr.SubExpression, inInfo, ref outInfo);
+            // it could be null :))
+            if (castExpr.TypeExpr != null)
+            {
+                PostPrepareExprInference(castExpr.TypeExpr, inInfo, ref outInfo);
+                castExpr.OutType = castExpr.TypeExpr.OutType;
+            }
+            else
+            {
+                castExpr.OutType = castExpr.SubExpression.OutType;
+            }
             // cringe kostyl :)
             if (castExpr.OutType is ClassType)
                 castExpr.OutType = PointerType.GetPointerType(castExpr.OutType);
@@ -1000,7 +1014,7 @@ namespace HapetPostPrepare
         private void PostPrepareArrayExprInference(AstArrayExpr arrayExpr, InInfo inInfo, ref OutInfo outInfo)
         {
             PostPrepareExprInference(arrayExpr.SubExpression, inInfo, ref outInfo);
-            arrayExpr.OutType = GetArrayType(arrayExpr.SubExpression.OutType, arrayExpr);
+            arrayExpr.OutType = GetArrayType(arrayExpr.SubExpression, arrayExpr);
         }
 
         private void PostPrepareArrayCreateExprInference(AstArrayCreateExpr arrayExpr, InInfo inInfo, ref OutInfo outInfo)
@@ -1019,7 +1033,7 @@ namespace HapetPostPrepare
             // preparing for ndim arrays
             while (sizeAmount > 1)
             {
-                expectingElementType = GetArrayType(expectingElementType, arrayExpr);
+                expectingElementType = GetArrayType(arrayExpr.TypeName, arrayExpr);
                 sizeAmount--;
             }
 
@@ -1029,7 +1043,7 @@ namespace HapetPostPrepare
                 var e = arrayExpr.Elements[i];
                 PostPrepareExprInference(e, inInfo, ref outInfo);
                 // try to use implicit cast if it can be used
-                arrayExpr.Elements[i] = PostPrepareExpressionWithType(GetPreparedAst(expectingElementType, arrayExpr), e);
+                arrayExpr.Elements[i] = PostPrepareExpressionWithType(expectingElementType, e);
             }
 
             // preparing the array
@@ -1131,7 +1145,7 @@ namespace HapetPostPrepare
             PostPrepareExprInference(expr.FalseExpr, inInfo, ref outInfo);
             // try to cast to the false type
             var castResult1 = new CastResult();
-            PostPrepareExpressionWithType(expr.TrueExpr, expr.FalseExpr, castResult1);
+            PostPrepareExpressionWithType(expr.TrueExpr.OutType, expr.FalseExpr, castResult1);
             // setting the basest type
             // imagine having 'cond ? IEnumerable : List'
             // then IEnumerable should be returned as the most basest type
@@ -1143,7 +1157,7 @@ namespace HapetPostPrepare
             {
                 // try to cast to the true type
                 var castResult2 = new CastResult();
-                PostPrepareExpressionWithType(expr.FalseExpr, expr.TrueExpr, castResult2);
+                PostPrepareExpressionWithType(expr.FalseExpr.OutType, expr.TrueExpr, castResult2);
                 if (castResult2.CouldBeCasted)
                 {
                     expr.OutType = expr.FalseExpr.OutType;
@@ -1270,7 +1284,7 @@ namespace HapetPostPrepare
                 }
 
                 // trying to implicitly cast cast value into switch sub expr
-                cc.Pattern = PostPrepareExpressionWithType(GetPreparedAst(switchStmt.SubExpression.OutType, switchStmt.SubExpression), cc.Pattern);
+                cc.Pattern = PostPrepareExpressionWithType(switchStmt.SubExpression.OutType, cc.Pattern);
 
                 // check that the value is a const 
                 if (cc.Pattern.OutValue == null)
@@ -1372,7 +1386,7 @@ namespace HapetPostPrepare
                         _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, a, [], ErrorCode.Get(CTEN.NonComptimeAttrArg));
 
                     // is going to error if they are different types :)
-                    attrStmt.Arguments[i].Expr = PostPrepareExpressionWithType(GetPreparedAst(theAttrField.Type.OutType, theAttrField.Type), a);
+                    attrStmt.Arguments[i].Expr = PostPrepareExpressionWithType(theAttrField.Type.OutType, a);
                 }
                 else
                 {
@@ -1433,7 +1447,7 @@ namespace HapetPostPrepare
             }
 
             if (targetType != null)
-                return PostPrepareExpressionWithType(GetPreparedAst(targetType, value), value);
+                return PostPrepareExpressionWithType(targetType, value);
             return value;
         }
 

@@ -17,7 +17,8 @@ namespace HapetPostPrepare
 {
     public partial class PostPrepare
     {
-        private AstDeclaration GetRealTypeFromGeneric(AstDeclaration decl, List<AstNestedExpr> genericTypes, AstIdGenericExpr realName)
+        private AstDeclaration GetRealTypeFromGeneric(AstDeclaration decl, List<AstNestedExpr> genericTypes, 
+            AstIdGenericExpr realName, bool implHasGenerics)
         {
             // we need to save previous info about current shite and then reload it 
             var savedSourceFile = _currentSourceFile;
@@ -49,7 +50,18 @@ namespace HapetPostPrepare
                 origDeclPureName = decl.Name.Name.GetClassNameWithoutNamespace();
             }
 
-            var realDecl = decl.GetDeepCopy() as AstDeclaration;
+            AstDeclaration realDecl;
+            // if the new impl has generic types - create a declare-only copy
+            if (implHasGenerics)
+            {
+                realDecl = decl.GetOnlyDeclareCopy();
+            }
+            else
+            {
+                // else - create a full-deep-copy 
+                realDecl = decl.GetDeepCopy() as AstDeclaration;
+            }
+
             realDecl.ContainingParent = decl.ContainingParent;
             realDecl.Parent = decl.Parent;
             realDecl.IsImplOfGeneric = true;

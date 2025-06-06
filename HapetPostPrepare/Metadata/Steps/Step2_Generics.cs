@@ -41,20 +41,8 @@ namespace HapetPostPrepare
                 var currContrains = decl.GenericConstrains.FirstOrDefault(x => x.Key.Name == currGeneric.Name).Value;
                 currContrains ??= new List<AstConstrainStmt>();
 
-                // creating the declaration
-                var genericDecl = new AstGenericDecl(currGeneric, location: currGeneric.Location)
-                {
-                    Constrains = currContrains,
-                    ParentDecl = decl.IsImplOfGeneric ? decl.OriginalGenericDecl : decl,
-                    IsNestedDecl = true, // for what? but let it be :)
-                    SubScope = new Scope($"{currGeneric.Name}_scope", decl.Scope),
-                    SourceFile = decl.SourceFile,
-                };
-
-                // post prepare
-                PostPrepareGenericDeclConstrains(genericDecl, inInfo, ref outInfo);
-                // add it to preparation pipe
-                AllGenericsMetadata.Add(genericDecl);
+                // getting the genericType
+                var genericDecl = GetGenericDeclaration(currContrains, currGeneric, decl, inInfo, ref outInfo);
 
                 originalGeneric.OutType = genericDecl.Type.OutType;
                 currGeneric.OutType = originalGeneric.OutType;

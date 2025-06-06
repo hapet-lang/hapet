@@ -318,6 +318,8 @@ namespace HapetPostPrepare
                 case AstCheckedExpr checkedExpr:
                     ReplaceAllGenericTypesInCheckedExpr(checkedExpr);
                     break;
+                case AstEmptyExpr:
+                    break;
 
                 // statements
                 case AstAssignStmt assignStmt:
@@ -478,6 +480,13 @@ namespace HapetPostPrepare
         private void ReplaceAllGenericTypesInCastExpr(AstCastExpr castExpr)
         {
             ReplaceAllGenericTypesInExpr(castExpr.SubExpression);
+
+            // need to handle this shite here like that
+            if (castExpr.TypeExpr is AstEmptyExpr)
+            {
+                castExpr.TypeExpr = null;
+                return;
+            }
 
             if (IsGenericEntry(castExpr.TypeExpr, out var val))
                 castExpr.TypeExpr = val;

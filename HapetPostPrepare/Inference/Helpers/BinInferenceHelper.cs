@@ -61,15 +61,15 @@ namespace HapetPostPrepare
                     // if both have values - check for preferred and return
                     HapetType preferredType = HapetType.GetPreferredTypeOf(binExpr.Left.OutType, binExpr.Right.OutType, out bool isFirstSelected);
                     if (isFirstSelected)
-                        binExpr.Right = PostPrepareExpressionWithType(GetPreparedAst(preferredType, binExpr), binExpr.Right);
+                        binExpr.Right = PostPrepareExpressionWithType(binExpr.Left.OutType, binExpr.Right);
                     else
-                        binExpr.Left = PostPrepareExpressionWithType(GetPreparedAst(preferredType, binExpr), binExpr.Left);
+                        binExpr.Left = PostPrepareExpressionWithType(binExpr.Right.OutType, binExpr.Left);
                     return;
                 }
 
                 // here - right with no out value!
                 CastResult castResult = new CastResult();
-                var casted = PostPrepareExpressionWithType(binExpr.Right, binExpr.Left, castResult);
+                var casted = PostPrepareExpressionWithType(binExpr.Right.OutType, binExpr.Left, castResult);
                 if (castResult.CouldBeCasted)
                     binExpr.Left = casted;
             }
@@ -77,7 +77,7 @@ namespace HapetPostPrepare
             {
                 // here - left with no out value!
                 CastResult castResult = new CastResult();
-                var casted = PostPrepareExpressionWithType(binExpr.Left, binExpr.Right, castResult);
+                var casted = PostPrepareExpressionWithType(binExpr.Left.OutType, binExpr.Right, castResult);
                 if (castResult.CouldBeCasted)
                     binExpr.Right = casted;
             }
@@ -88,7 +88,7 @@ namespace HapetPostPrepare
                 binExpr.OutType is not PointerType)
             {
                 // cast if they are not the same haha
-                binExpr.Left = PostPrepareExpressionWithType(GetPreparedAst(binExpr.OutType, binExpr), binExpr.Left);
+                binExpr.Left = PostPrepareExpressionWithType(binExpr.OutType, binExpr.Left);
             }
             // creating cast to result type if it is not a bool expr
             if (binExpr.Right.OutType != binExpr.OutType &&
@@ -96,7 +96,7 @@ namespace HapetPostPrepare
                 binExpr.OutType is not PointerType)
             {
                 // cast if they are not the same haha
-                binExpr.Right = PostPrepareExpressionWithType(GetPreparedAst(binExpr.OutType, binExpr), binExpr.Right);
+                binExpr.Right = PostPrepareExpressionWithType(binExpr.OutType, binExpr.Right);
             }
 
             // creating cast to result type if it is a bool expr and left and right are not the same types
@@ -107,9 +107,9 @@ namespace HapetPostPrepare
                 HapetType castingType = HapetType.GetPreferredTypeOf(binExpr.Left.OutType, binExpr.Right.OutType, out bool tookLeft);
                 // if the left type was taken then change the right expr
                 if (tookLeft)
-                    binExpr.Right = PostPrepareExpressionWithType(GetPreparedAst(castingType, binExpr), binExpr.Right);
+                    binExpr.Right = PostPrepareExpressionWithType(binExpr.Left.OutType, binExpr.Right);
                 else
-                    binExpr.Left = PostPrepareExpressionWithType(GetPreparedAst(castingType, binExpr), binExpr.Left);
+                    binExpr.Left = PostPrepareExpressionWithType(binExpr.Right.OutType, binExpr.Left);
             }
 
         }

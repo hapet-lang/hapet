@@ -89,7 +89,7 @@ namespace HapetPostPrepare
             }
 
             AstIdExpr newName = null;
-            SearchForFunctionByCall(callExpr, funcName, inInfo, ref outInfo, ref accessingFromAnObject, ref newName);
+            SearchForFunctionByCall(callExpr, funcName, inInfo, ref outInfo, ref accessingFromAnObject, ref newName, out var declToSearch);
 
             // there was a error somewhere before
             if (newName == null)
@@ -101,7 +101,7 @@ namespace HapetPostPrepare
             callExpr.FuncName.Location = savedCallLocation;
 
             inInfo.FromCallExpr = true;
-            PostPrepareIdentifierInference(callExpr.FuncName, inInfo, ref outInfo);
+            PostPrepareIdentifierInference(callExpr.FuncName, inInfo, ref outInfo, declToSearch);
             inInfo.FromCallExpr = false;
 
             // setting parameters
@@ -133,7 +133,8 @@ namespace HapetPostPrepare
             }
         }
 
-        private void SearchForFunctionByCall(AstCallExpr callExpr, AstIdExpr funcName, InInfo inInfo, ref OutInfo outInfo, ref bool accessingFromAnObject, ref AstIdExpr newName)
+        private void SearchForFunctionByCall(AstCallExpr callExpr, AstIdExpr funcName, InInfo inInfo, ref OutInfo outInfo, 
+            ref bool accessingFromAnObject, ref AstIdExpr newName, out AstDeclaration declToSearch)
         {
             // renaming func call name from 'Anime' to 'Anime(int, float)' WITH OBJECT AS FIRST PARAM
             if (callExpr.TypeOrObjectName == null)
@@ -144,6 +145,7 @@ namespace HapetPostPrepare
                     varDecl.Type.OutType is PointerType ptr1 && ptr1.TargetType is DelegateType)
                 {
                     newName = funcName.GetCopy();
+                    declToSearch = null;
                     return;
                 }
 
@@ -162,6 +164,7 @@ namespace HapetPostPrepare
                     // static func defined in local class
                     newName = funcDecl.Name.GetCopy();
                     callExpr.Arguments.ReplaceWithCasts(casts);
+                    declToSearch = currentParent;
                     return;
                 }
 
@@ -185,11 +188,15 @@ namespace HapetPostPrepare
                         _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, callExpr.FuncName, [], ErrorCode.Get(CTEN.FuncCouldNotBeAccessed));
                     newName = funcDecl2.Name.GetCopy();
                     callExpr.Arguments.ReplaceWithCasts(casts2.Skip(1).ToList()); // skip because the first param is an object
+                    declToSearch = currentParent;
                     return;
                 }
                 accessingFromAnObject = false;
                 if (_compiler.MessageHandler.HasErrors)
+                {
+                    declToSearch = null;
                     return;
+                }
 
                 // check for nested shite
                 newName = funcName.GetCopy($"{callExpr.FuncName.Name}{callExpr.Arguments.GetArgsString()}"); // USE REAL FUNC NAME HERE
@@ -198,6 +205,7 @@ namespace HapetPostPrepare
                 if (smbl2 is DeclSymbol ds3 && ds3.Decl is AstFuncDecl funcDecl3)
                 {
                     newName = funcDecl3.Name.GetCopy();
+                    declToSearch = currentParent;
                     return;
                 }
 
@@ -222,10 +230,14 @@ namespace HapetPostPrepare
                         _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, callExpr.FuncName, [], ErrorCode.Get(CTEN.FuncCouldNotBeAccessed));
                     newName = funcDecl.Name.GetCopy();
                     callExpr.Arguments.ReplaceWithCasts(casts.Skip(1).ToList()); // skip because the first param is an object
+                    declToSearch = clsTp.Declaration;
                     return;
                 }
                 if (_compiler.MessageHandler.HasErrors)
+                {
+                    declToSearch = null;
                     return;
+                }
 
                 // getting the name but without object first param
                 newName = funcName.GetCopy($"{clsTp.Declaration.Name.Name}::{funcName}{callExpr.Arguments.GetArgsString()}");
@@ -237,10 +249,14 @@ namespace HapetPostPrepare
                         _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, callExpr.FuncName, [], ErrorCode.Get(CTEN.FuncCouldNotBeAccessed));
                     newName = funcDecl2.Name.GetCopy();
                     callExpr.Arguments.ReplaceWithCasts(casts2);
+                    declToSearch = clsTp.Declaration;
                     return;
                 }
                 if (_compiler.MessageHandler.HasErrors)
+                {
+                    declToSearch = null;
                     return;
+                }
 
                 // check for generic shite
                 newName = funcName.GetCopy($"{clsTp.Declaration.Name.Name}::{callExpr.FuncName.Name}"); // USE REAL FUNC NAME HERE
@@ -251,6 +267,7 @@ namespace HapetPostPrepare
                     if (!CheckIfCouldBeAccessed(callExpr, funcDecl3))
                         _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, callExpr.FuncName, [], ErrorCode.Get(CTEN.FuncCouldNotBeAccessed));
                     newName = funcDecl3.Name.GetCopy();
+                    declToSearch = clsTp.Declaration;
                     return;
                 }
 
@@ -271,6 +288,7 @@ namespace HapetPostPrepare
                         _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, callExpr.FuncName, [], ErrorCode.Get(CTEN.FuncCouldNotBeAccessed));
                     newName = funcDecl.Name.GetCopy();
                     callExpr.Arguments.ReplaceWithCasts(casts);
+                    declToSearch = clsTpStatic.Declaration;
                     return;
                 }
 
@@ -291,6 +309,8 @@ namespace HapetPostPrepare
                     _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, callExpr.FuncName, [], ErrorCode.Get(CTEN.NonStaticFuncFromStatic));
                 else
                     _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, callExpr.FuncName, [], ErrorCode.Get(CTEN.FuncWithNameNotFound));
+
+                declToSearch = null;
                 return;
             }
             else if (callExpr.TypeOrObjectName.OutType is StructType structType)
@@ -308,6 +328,7 @@ namespace HapetPostPrepare
                         _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, callExpr.FuncName, [], ErrorCode.Get(CTEN.FuncCouldNotBeAccessed));
                     newName = funcDecl.Name.GetCopy();
                     callExpr.Arguments.ReplaceWithCasts(casts);
+                    declToSearch = structType.Declaration;
                     return;
                 }
 
@@ -332,6 +353,7 @@ namespace HapetPostPrepare
                     if (declSymbolOfLeft.Decl is AstStructDecl)
                     {
                         _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, callExpr.FuncName, [], ErrorCode.Get(CTEN.NonStaticFuncFromStatic));
+                        declToSearch = null;
                         return;
                     }
 
@@ -339,6 +361,7 @@ namespace HapetPostPrepare
                         _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, callExpr.FuncName, [], ErrorCode.Get(CTEN.FuncCouldNotBeAccessed));
                     newName = funcDecl2.Name.GetCopy();
                     callExpr.Arguments.ReplaceWithCasts(casts.Skip(1).ToList());
+                    declToSearch = structType.Declaration;
                     return;
                 }
 
@@ -360,6 +383,7 @@ namespace HapetPostPrepare
                         _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, callExpr.FuncName, [], ErrorCode.Get(CTEN.FuncCouldNotBeAccessed));
                     newName = funcDecl.Name.GetCopy();
                     callExpr.Arguments.ReplaceWithCasts(casts);
+                    declToSearch = strTp.Declaration;
                     return;
                 }
 
@@ -381,6 +405,7 @@ namespace HapetPostPrepare
                     if (declSymbolOfLeft.Decl is AstStructDecl)
                     {
                         _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, callExpr.FuncName, [], ErrorCode.Get(CTEN.NonStaticFuncFromStatic));
+                        declToSearch = null;
                         return;
                     }
 
@@ -388,6 +413,7 @@ namespace HapetPostPrepare
                         _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, callExpr.FuncName, [], ErrorCode.Get(CTEN.FuncCouldNotBeAccessed));
                     newName = funcDecl2.Name.GetCopy();
                     callExpr.Arguments.ReplaceWithCasts(casts.Skip(1).ToList());
+                    declToSearch = strTp.Declaration;
                     return;
                 }
 
@@ -408,6 +434,7 @@ namespace HapetPostPrepare
                         _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, callExpr.FuncName, [], ErrorCode.Get(CTEN.FuncCouldNotBeAccessed));
                     newName = funcDecl.Name.GetCopy();
                     callExpr.Arguments.ReplaceWithCasts(casts);
+                    declToSearch = genericType.Declaration;
                     return;
                 }
 
@@ -432,6 +459,7 @@ namespace HapetPostPrepare
                     if (declSymbolOfLeft.Decl is AstGenericDecl)
                     {
                         _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, callExpr.FuncName, [], ErrorCode.Get(CTEN.NonStaticFuncFromStatic));
+                        declToSearch = null;
                         return;
                     }
 
@@ -439,6 +467,7 @@ namespace HapetPostPrepare
                         _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, callExpr.FuncName, [], ErrorCode.Get(CTEN.FuncCouldNotBeAccessed));
                     newName = funcDecl2.Name.GetCopy();
                     callExpr.Arguments.ReplaceWithCasts(casts.Skip(1).ToList());
+                    declToSearch = genericType.Declaration;
                     return;
                 }
 
@@ -449,6 +478,8 @@ namespace HapetPostPrepare
                 // error here: the function call could not be infered
                 _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, callExpr, [], ErrorCode.Get(CTEN.FuncNotInfered));
             }
+
+            declToSearch = null;
 
             DeclSymbol OnFoundSymbol(DeclSymbol typed, AstIdExpr idExpr)
             {

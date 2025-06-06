@@ -61,6 +61,27 @@ namespace HapetFrontend.Ast.Declarations
             return $"prop:{GenericsHelper.GetNameFromAst(Name, null)}";
         }
 
+        public override AstDeclaration GetOnlyDeclareCopy()
+        {
+            var copy = new AstPropertyDecl(
+                Type.GetDeepCopy() as AstNestedExpr,
+                Name.GetDeepCopy() as AstIdExpr,
+                null,
+                Documentation, Location)
+            {
+                HasGet = HasGet,
+                HasSet = HasSet,
+                IsImported = IsImported,
+                HasGenericTypes = HasGenericTypes,
+                Scope = Scope,
+                SourceFile = SourceFile,
+                SubScope = SubScope,
+            };
+            copy.Attributes.AddRange(Attributes);
+            copy.SpecialKeys.AddRange(SpecialKeys);
+            return copy;
+        }
+
         public override AstStatement GetDeepCopy()
         {
             Dictionary<AstIdExpr, List<AstConstrainStmt>> copiedConstrains = new Dictionary<AstIdExpr, List<AstConstrainStmt>>();
@@ -69,25 +90,12 @@ namespace HapetFrontend.Ast.Declarations
                 copiedConstrains.Add(cc.Key.GetDeepCopy() as AstIdExpr, cc.Value.Select(x => x.GetDeepCopy() as AstConstrainStmt).ToList());
             }
 
-            var copy = new AstPropertyDecl(
-                Type.GetDeepCopy() as AstNestedExpr,
-                Name.GetDeepCopy() as AstIdExpr,
-                Initializer?.GetDeepCopy() as AstExpression,
-                Documentation, Location)
-            {
-                HasGet = HasGet,
-                HasSet = HasSet,
-                GetBlock = GetBlock?.GetDeepCopy() as AstBlockExpr,
-                SetBlock = SetBlock?.GetDeepCopy() as AstBlockExpr,
-                IsImported = IsImported,
-                GenericConstrains = copiedConstrains,
-                HasGenericTypes = HasGenericTypes,
-                Scope = Scope,
-                SourceFile = SourceFile,
-                SubScope = SubScope,
-            };
-            copy.Attributes.AddRange(Attributes);
-            copy.SpecialKeys.AddRange(SpecialKeys);
+            var copy = GetOnlyDeclareCopy() as AstPropertyDecl;
+            copy.GenericConstrains = copiedConstrains;
+            copy.Initializer = Initializer?.GetDeepCopy() as AstExpression;
+            copy.GetBlock = GetBlock?.GetDeepCopy() as AstBlockExpr;
+            copy.SetBlock = SetBlock?.GetDeepCopy() as AstBlockExpr;
+            
             return copy;
         }
 

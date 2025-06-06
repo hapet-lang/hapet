@@ -64,7 +64,7 @@ namespace HapetPostPrepare
                     // this shite is to generate values for enum fields
                     if (decl.Initializer == null)
                     {
-                        decl.Initializer = PostPrepareExpressionWithType(GetPreparedAst(decl.Type.OutType, decl.Type), new AstNumberExpr(NumberData.FromInt(currentValue)));
+                        decl.Initializer = PostPrepareExpressionWithType(decl.Type.OutType, new AstNumberExpr(NumberData.FromInt(currentValue)));
                         // warn if the value already exists in enum
                         if (allValues.Contains(currentValue))
                         {

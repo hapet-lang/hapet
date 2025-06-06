@@ -38,6 +38,12 @@ namespace HapetFrontend.Ast.Declarations
             Declarations = declarations;
         }
 
+        public override AstDeclaration GetOnlyDeclareCopy()
+        {
+            var copy = CreateCopyInternal(false);
+            return copy;
+        }
+
         public override AstStatement GetDeepCopy()
         {
             Dictionary<AstIdExpr, List<AstConstrainStmt>> copiedConstrains = new Dictionary<AstIdExpr, List<AstConstrainStmt>>();
@@ -46,15 +52,18 @@ namespace HapetFrontend.Ast.Declarations
                 copiedConstrains.Add(cc.Key.GetDeepCopy() as AstIdExpr, cc.Value.Select(x => x.GetDeepCopy() as AstConstrainStmt).ToList());
             }
 
+            var copy = CreateCopyInternal(true);
+            copy.GenericConstrains = copiedConstrains;
+            return copy;
+        }
+
+        private AstStructDecl CreateCopyInternal(bool doDeepCopy)
+        {
             var copy = new AstStructDecl(
                 Name.GetDeepCopy() as AstIdExpr,
-                Declarations.Select(x => x.GetDeepCopy() as AstDeclaration).ToList(),
+                new List<AstDeclaration>(),
                 Documentation, Location)
             {
-                AllRawFields = AllRawFields?.Select(x => x.GetDeepCopy() as AstVarDecl).ToList(),
-                AllVirtualMethods = AllVirtualMethods?.Select(x => x.GetDeepCopy() as AstFuncDecl).ToList(),
-                InheritedFrom = InheritedFrom?.Select(x => x.GetDeepCopy() as AstNestedExpr).ToList(),
-                GenericConstrains = copiedConstrains,
                 HasGenericTypes = HasGenericTypes,
                 IsImported = IsImported,
                 IsNestedDecl = IsNestedDecl,
@@ -65,6 +74,20 @@ namespace HapetFrontend.Ast.Declarations
             };
             copy.Attributes.AddRange(Attributes);
             copy.SpecialKeys.AddRange(SpecialKeys);
+
+            copy.InheritedFrom = InheritedFrom?.Select(x => x.GetDeepCopy() as AstNestedExpr).ToList();
+
+            // do deep copy of containings if deepCopy selected
+            if (doDeepCopy)
+            {
+                copy.AllRawFields = AllRawFields?.Select(x => x.GetDeepCopy() as AstVarDecl).ToList();
+                copy.AllVirtualMethods = AllVirtualMethods?.Select(x => x.GetDeepCopy() as AstFuncDecl).ToList();
+                copy.Declarations.AddRange(Declarations.Select(x => x.GetDeepCopy() as AstDeclaration));
+            }
+            else
+            {
+                copy.Declarations.AddRange(Declarations.Select(x => x.GetOnlyDeclareCopy()));
+            }
 
             // handle containing parent shite
             foreach (var decl in copy.Declarations)

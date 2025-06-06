@@ -11,9 +11,8 @@ namespace HapetFrontend
 {
     public partial class Compiler
     {
-        public AstExpression TryCastExpr(AstExpression targetExpr, AstExpression currentExpr, CastResult castResult = null, ProgramFile sourceFile = null)
+        public AstExpression TryCastExpr(HapetType targetType, AstExpression currentExpr, CastResult castResult = null, ProgramFile sourceFile = null)
         {
-            HapetType targetType = targetExpr.OutType;
             HapetType currentType = currentExpr.OutType;
             AstExpression outExpr = null;
 
@@ -61,6 +60,13 @@ namespace HapetFrontend
             }
 
             // creating a cast expr to return it further
+            var targetExpr = new AstEmptyExpr(currentExpr)
+            {
+                Scope = currentExpr.Scope,
+                Parent = currentExpr.Parent,
+                SourceFile = currentExpr.SourceFile,
+                OutType = targetType,
+            };
             var cst = new AstCastExpr(targetExpr, currentExpr, currentExpr.Location);
             cst.OutType = targetType;
             cst.Scope = currentExpr.Scope;
@@ -341,7 +347,7 @@ namespace HapetFrontend
                     var target = genId1.GenericRealTypes[i];
                     var current = genId2.GenericRealTypes[i];
                     var tmpCastResult = new CastResult();
-                    TryCastExpr(target, current, tmpCastResult, sourceFile);
+                    TryCastExpr(target.OutType, current, tmpCastResult, sourceFile);
                     // check that could be casted
                     if (!tmpCastResult.CouldBeCasted)
                         return false;

@@ -818,8 +818,8 @@ namespace HapetBackend.Llvm
 
         private unsafe LLVMValueRef GenerateCastExpr(AstCastExpr expr, bool getPtr = false)
         {
-            var sub = GenerateExpressionCode(expr.SubExpression as AstExpression, false);
-            var val = CreateCast(_builder, sub, (expr.SubExpression as AstExpression).OutType, expr.OutType);
+            var sub = GenerateExpressionCode(expr.SubExpression, false);
+            var val = CreateCast(_builder, sub, expr.SubExpression.OutType, expr.OutType);
             if (getPtr)
             {
                 LLVMValueRef varPtr = CreateLocalVariable(expr.OutType, "castHolder");

@@ -25,21 +25,14 @@ namespace HapetFrontend.Ast.Declarations
             Returns = returns;
         }
 
-        public override AstStatement GetDeepCopy()
+        public override AstDeclaration GetOnlyDeclareCopy()
         {
-            Dictionary<AstIdExpr, List<AstConstrainStmt>> copiedConstrains = new Dictionary<AstIdExpr, List<AstConstrainStmt>>();
-            foreach (var cc in GenericConstrains)
-            {
-                copiedConstrains.Add(cc.Key.GetDeepCopy() as AstIdExpr, cc.Value.Select(x => x.GetDeepCopy() as AstConstrainStmt).ToList());
-            }
-
             var copy = new AstDelegateDecl(
                 Parameters.Select(x => x.GetDeepCopy() as AstParamDecl).ToList(),
                 Returns.GetDeepCopy() as AstExpression,
                 Name.GetDeepCopy() as AstIdExpr,
                 Documentation, Location)
             {
-                GenericConstrains = copiedConstrains,
                 HasGenericTypes = HasGenericTypes,
                 IsNestedDecl = IsNestedDecl,
                 ParentDecl = ParentDecl,
@@ -50,6 +43,19 @@ namespace HapetFrontend.Ast.Declarations
             };
             copy.Attributes.AddRange(Attributes);
             copy.SpecialKeys.AddRange(SpecialKeys);
+            return copy;
+        }
+
+        public override AstStatement GetDeepCopy()
+        {
+            Dictionary<AstIdExpr, List<AstConstrainStmt>> copiedConstrains = new Dictionary<AstIdExpr, List<AstConstrainStmt>>();
+            foreach (var cc in GenericConstrains)
+            {
+                copiedConstrains.Add(cc.Key.GetDeepCopy() as AstIdExpr, cc.Value.Select(x => x.GetDeepCopy() as AstConstrainStmt).ToList());
+            }
+
+            var copy = GetOnlyDeclareCopy() as AstDelegateDecl;
+            copy.GenericConstrains = copiedConstrains;
             return copy;
         }
 

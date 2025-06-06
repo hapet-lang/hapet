@@ -530,6 +530,8 @@ namespace HapetPostPrepare
                 case AstCheckedExpr checkedExpr:
                     PostPrepareCheckedExprScoping(checkedExpr);
                     break;
+                case AstEmptyExpr:
+                    break;
 
                 // statements
                 case AstAssignStmt assignStmt:
@@ -706,8 +708,11 @@ namespace HapetPostPrepare
             SetScopeAndParent(castExpr.SubExpression, castExpr);
             PostPrepareExprScoping(castExpr.SubExpression);
 
-            SetScopeAndParent(castExpr.TypeExpr, castExpr);
-            PostPrepareExprScoping(castExpr.TypeExpr);
+            if (castExpr.TypeExpr != null)
+            {
+                SetScopeAndParent(castExpr.TypeExpr, castExpr);
+                PostPrepareExprScoping(castExpr.TypeExpr);
+            }
         }
 
         private void PostPrepareNestedExprScoping(AstNestedExpr nestExpr)

@@ -428,6 +428,10 @@ namespace HapetBackend.Llvm
 
         private LLVMValueRef CreateCast(LLVMBuilderRef builder, LLVMValueRef val, HapetType inType, HapetType outType)
         {
+            // special case
+            if (inType == outType)
+                return val;
+
             // check user oveloads at first
             /// almost the same as in <see cref="HapetPostPrepare.PostPrepare.PostPrepareExpressionWithType"/>
             var castOps = _currentFunction.Scope.GetBinaryOperators("cast", outType, inType);

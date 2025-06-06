@@ -33,13 +33,13 @@ namespace HapetPostPrepare
         }
 
         #region Array handling cringe
-        public ArrayType GetArrayType(HapetType targetType, AstExpression subExpr)
+        public ArrayType GetArrayType(AstExpression targetType, AstExpression subExpr)
         {
             var inInfo = InInfo.Default;
             var outInfo = OutInfo.Default;
 
             List<AstExpression> genTypes;
-            if (targetType == GenericType.LiteralType)
+            if (targetType.OutType == GenericType.LiteralType)
                 genTypes = new List<AstExpression>() 
                 { 
                     new AstNestedExpr(new AstIdExpr("T", subExpr) 
@@ -54,9 +54,7 @@ namespace HapetPostPrepare
                 };
             else
             {
-                var typeAst = targetType.GetAst(subExpr);
-                typeAst.SourceFile = subExpr.SourceFile;
-                typeAst.Scope = subExpr.Scope;
+                var typeAst = targetType;
                 genTypes = new List<AstExpression>()
                 {
                     new AstNestedExpr(typeAst, null, subExpr)

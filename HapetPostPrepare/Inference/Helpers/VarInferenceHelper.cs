@@ -16,6 +16,12 @@ namespace HapetPostPrepare
 {
     public partial class PostPrepare
     {
+        /// <summary>
+        /// WARN!!! use only for non-generic types!!!
+        /// </summary>
+        /// <param name="hpt"></param>
+        /// <param name="parent"></param>
+        /// <returns></returns>
         private AstExpression GetPreparedAst(HapetType hpt, AstStatement parent)
         {
             var ast = hpt.GetAst();
@@ -34,10 +40,8 @@ namespace HapetPostPrepare
         /// <param name="neededType">The type that should be outed</param>
         /// <param name="expr">The expr to be casted</param>
         /// <returns>Casted expr</returns>
-        public AstExpression PostPrepareExpressionWithType(AstExpression neededTypeExpr, AstExpression expr, CastResult castResult = null)
+        public AstExpression PostPrepareExpressionWithType(HapetType neededType, AstExpression expr, CastResult castResult = null)
         {
-            HapetType neededType = neededTypeExpr.OutType;
-
             // assigning function to delegates is made different
             if (neededType is DelegateType delT)
             {
@@ -46,7 +50,7 @@ namespace HapetPostPrepare
                     castResult.CouldBeCasted = true;
                 return PostPrepareDelegateWithType(expr, delT);
             }
-            return _compiler.TryCastExpr(neededTypeExpr, expr, castResult, _currentSourceFile);
+            return _compiler.TryCastExpr(neededType, expr, castResult, _currentSourceFile);
         }
 
         private AstExpression PostPrepareDelegateWithType(AstExpression value, DelegateType targetType)

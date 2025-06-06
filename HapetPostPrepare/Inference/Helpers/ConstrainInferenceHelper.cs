@@ -7,6 +7,7 @@ using HapetFrontend.Enums;
 using HapetFrontend.Extensions;
 using HapetFrontend.Helpers;
 using HapetFrontend.Parsing;
+using HapetFrontend.Scoping;
 using HapetFrontend.Types;
 using HapetPostPrepare.Entities;
 
@@ -14,6 +15,84 @@ namespace HapetPostPrepare
 {
     public partial class PostPrepare
     {
+        private readonly Dictionary<AstGenericDecl, List<AstConstrainStmt>> _allGenericTypes = new Dictionary<AstGenericDecl, List<AstConstrainStmt>>();
+
+        /// <summary>
+        /// Creates or returns existing genericTyped declaration
+        /// </summary>
+        /// <returns></returns>
+        internal AstGenericDecl GetGenericDeclaration(List<AstConstrainStmt> constrains, AstIdExpr currGeneric, 
+            AstDeclaration containingParent, InInfo inInfo, ref OutInfo outInfo)
+        {
+            // handle constrains
+            foreach (var constrain in constrains)
+            {
+                // just inferencing 
+                if (constrain.ConstrainType == GenericConstrainType.CustomType)
+                    PostPrepareExprInference(constrain.Expr, inInfo, ref outInfo);
+            }
+
+            // need to search for the same constrain
+            foreach (var k in _allGenericTypes.Keys)
+            {
+                // skip not the same names
+                //if (k.Name.Name != currGeneric.Name)
+                //    continue;
+
+                List<bool> collisions = new List<bool>();
+                var existingConstrains = _allGenericTypes[k];
+                foreach (var exC in existingConstrains)
+                {
+                    // if it is a user custom type - need to check that 
+                    // expr types are the same
+                    if (exC.ConstrainType == GenericConstrainType.CustomType)
+                    {
+                        bool exists = false;
+                        // search for the same type in current constrains
+                        foreach (var c in constrains)
+                        {
+                            if (c.ConstrainType == GenericConstrainType.CustomType)
+                            {
+                                exists = exC.Expr.OutType == c.Expr.OutType;
+                                if (exists)
+                                    break;
+                            }
+                        }
+                        collisions.Add(exists);
+                    }
+                    else
+                    {
+                        collisions.Add(constrains.Any(x => x.ConstrainType == exC.ConstrainType));
+                    }
+                }
+
+                // if all true and amount of constrains are the same - it is the same generic type
+                if (collisions.All(x => x) && collisions.Count == constrains.Count && constrains.Count == existingConstrains.Count)
+                    return k; // just return the constrain
+            }
+
+            // here - if not found the same in existing
+            // creating the declaration
+            var genericDecl = new AstGenericDecl(currGeneric, location: currGeneric.Location)
+            {
+                Constrains = constrains,
+                ParentDecl = containingParent.IsImplOfGeneric ? containingParent.OriginalGenericDecl : containingParent,
+                IsNestedDecl = true, // for what? but let it be :)
+                SubScope = new Scope($"{currGeneric.Name}_scope", containingParent.Scope),
+                SourceFile = containingParent.SourceFile,
+            };
+
+            // post prepare
+            PostPrepareGenericDeclConstrains(genericDecl, inInfo, ref outInfo);
+            // add it to preparation pipe
+            AllGenericsMetadata.Add(genericDecl);
+
+            // cache it
+            _allGenericTypes.Add(genericDecl, constrains);
+
+            return genericDecl;
+        }
+
         internal void PostPrepareGenericDeclConstrains(AstGenericDecl decl, InInfo inInfo, ref OutInfo outInfo)
         {
             // handle constrains
@@ -51,12 +130,7 @@ namespace HapetPostPrepare
                     continue;
 
                 // create a copy of the decl 
-                var copied = d.GetDeepCopy() as AstDeclaration;
-                // clear bodies/initializers - there is no need for them
-                if (copied is AstFuncDecl f)
-                    f.Body = null;
-                else if (copied is AstVarDecl v)
-                    v.Initializer = null;
+                var copied = d.GetOnlyDeclareCopy();
 
                 // change the parent
                 copied.ContainingParent = decl;

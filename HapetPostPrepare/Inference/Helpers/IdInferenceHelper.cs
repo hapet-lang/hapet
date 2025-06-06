@@ -445,7 +445,8 @@ namespace HapetPostPrepare
             }
 
             // create a new shite with real types
-            var realDecl = GetRealTypeFromGeneric(genDecl, realId.GenericRealTypes.GetNestedList(_compiler.MessageHandler), realName);
+            var realDecl = GetRealTypeFromGeneric(genDecl, realId.GenericRealTypes.GetNestedList(_compiler.MessageHandler), 
+                realName, HasAnyGenericTypes(realId.GenericRealTypes));
             return realDecl;
         }
     }

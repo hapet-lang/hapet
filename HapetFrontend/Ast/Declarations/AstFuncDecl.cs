@@ -44,18 +44,12 @@ namespace HapetFrontend.Ast.Declarations
             Returns = returns;
         }
 
-        public override AstStatement GetDeepCopy()
+        public override AstDeclaration GetOnlyDeclareCopy()
         {
-            Dictionary<AstIdExpr, List<AstConstrainStmt>> copiedConstrains = new Dictionary<AstIdExpr, List<AstConstrainStmt>>();
-            foreach (var cc in GenericConstrains)
-            {
-                copiedConstrains.Add(cc.Key.GetDeepCopy() as AstIdExpr, cc.Value.Select(x => x.GetDeepCopy() as AstConstrainStmt).ToList());
-            }
-
             var copy = new AstFuncDecl(
                 Parameters.Select(x => x.GetDeepCopy() as AstParamDecl).ToList(),
                 Returns.GetDeepCopy() as AstNestedExpr,
-                Body?.GetDeepCopy() as AstBlockExpr,
+                null,
                 Name.GetDeepCopy() as AstIdExpr,
                 Documentation, Location)
             {
@@ -63,7 +57,6 @@ namespace HapetFrontend.Ast.Declarations
                 BaseCtorCall = BaseCtorCall?.GetDeepCopy() as AstBaseCtorStmt,
                 CallingConvention = CallingConvention,
                 ClassFunctionType = ClassFunctionType,
-                GenericConstrains = copiedConstrains,
                 HasGenericTypes = HasGenericTypes,
                 IsNestedDecl = IsNestedDecl,
                 ParentDecl = ParentDecl,
@@ -74,6 +67,20 @@ namespace HapetFrontend.Ast.Declarations
             };
             copy.Attributes.AddRange(Attributes);
             copy.SpecialKeys.AddRange(SpecialKeys);
+            return copy;
+        }
+
+        public override AstStatement GetDeepCopy()
+        {
+            Dictionary<AstIdExpr, List<AstConstrainStmt>> copiedConstrains = new Dictionary<AstIdExpr, List<AstConstrainStmt>>();
+            foreach (var cc in GenericConstrains)
+            {
+                copiedConstrains.Add(cc.Key.GetDeepCopy() as AstIdExpr, cc.Value.Select(x => x.GetDeepCopy() as AstConstrainStmt).ToList());
+            }
+
+            var copy = GetOnlyDeclareCopy() as AstFuncDecl;
+            copy.GenericConstrains = copiedConstrains;
+            copy.Body = Body?.GetDeepCopy() as AstBlockExpr;
 
             // handle containing parent shite
             if (copy.Body != null)
