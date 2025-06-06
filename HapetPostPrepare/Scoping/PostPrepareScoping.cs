@@ -357,17 +357,6 @@ namespace HapetPostPrepare
                 PostPrepareExprScoping(funcDecl.BaseCtorCall);
             }
 
-            // scoping generic shite
-            foreach (var c in funcDecl.GenericConstrains)
-            {
-                foreach (var currentC in c.Value)
-                {
-                    // subscoping generic type constrains
-                    SetScopeAndParent(currentC, funcDecl, funcDecl.SubScope);
-                    PostPrepareExprScoping(currentC);
-                }
-            }
-
             Scope blockScope;
             if (funcDecl.Body != null)
             {
@@ -381,8 +370,19 @@ namespace HapetPostPrepare
                 // creating a Scope in which the params would be
                 blockScope = new Scope($"params_{funcDecl.Name.Name}_scope", funcDecl.Scope);
             }
-
             funcDecl.SubScope = blockScope;
+
+            // scoping generic shite
+            foreach (var c in funcDecl.GenericConstrains)
+            {
+                foreach (var currentC in c.Value)
+                {
+                    // subscoping generic type constrains
+                    SetScopeAndParent(currentC, funcDecl, funcDecl.SubScope);
+                    PostPrepareExprScoping(currentC);
+                }
+            }
+
             // defining parameters in the func scope
             foreach (var p in funcDecl.Parameters)
             {
