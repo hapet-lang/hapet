@@ -192,11 +192,6 @@ namespace HapetPostPrepare
                 var tp = HapetType.CurrentTypeContext.GetIntType(8, true);
                 tp.Declaration = structDecl;
                 idExpr.OutType = tp;
-            }
-            else if (decl.Name is AstIdExpr id10 && id10.Name == "System.Int64")
-            {
-                var tp = HapetType.CurrentTypeContext.GetIntType(8, true);
-                tp.Declaration = structDecl;
                 idExpr.OutType = tp;
             }
             else if (decl.Name is AstIdExpr id11 && id11.Name == "System.UIntPtr")
