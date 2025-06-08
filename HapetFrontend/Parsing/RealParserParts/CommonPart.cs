@@ -67,7 +67,7 @@ namespace HapetFrontend.Parsing
                 currNested.RightPart = genId2;
 
             // while there are more idents or periods
-            while (CheckToken(TokenType.Period))
+            while (lookAhead ? CheckLookAhead(TokenType.Period) : CheckToken(TokenType.Period))
             {
                 if (!allowDots)
                 {
