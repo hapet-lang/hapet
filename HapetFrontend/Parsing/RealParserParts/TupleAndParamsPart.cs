@@ -111,6 +111,18 @@ namespace HapetFrontend.Parsing
                 parModificator = ParameterModificator.Params;
                 NextToken();
             }
+            // check for 'ref'
+            else if (CheckToken(TokenType.KwRef))
+            {
+                parModificator = ParameterModificator.Ref;
+                NextToken();
+            }
+            // check for 'out'
+            else if (CheckToken(TokenType.KwOut))
+            {
+                parModificator = ParameterModificator.Out;
+                NextToken();
+            }
 
             // do not allow multiply here!!! read in desc - why!!!
             var savedAllowMul = inInfo.AllowMultiplyExpression;

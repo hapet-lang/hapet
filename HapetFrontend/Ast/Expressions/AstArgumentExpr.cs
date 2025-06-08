@@ -1,4 +1,5 @@
 ﻿using HapetFrontend.Ast.Declarations;
+using HapetFrontend.Enums;
 
 namespace HapetFrontend.Ast.Expressions
 {
@@ -12,6 +13,11 @@ namespace HapetFrontend.Ast.Expressions
         /// The name of a parameter into which argument is passed
         /// </summary>
         public AstIdExpr Name { get; set; }
+
+        /// <summary>
+        /// The parameter modificator like 'ref', 'out', etc.
+        /// </summary>
+        public ParameterModificator ArgumentModificator { get; set; } = ParameterModificator.None;
 
         public override string AAAName => nameof(AstArgumentExpr);
 
