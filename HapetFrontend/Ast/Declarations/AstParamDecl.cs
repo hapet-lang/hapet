@@ -1,5 +1,6 @@
 ﻿using HapetFrontend.Ast.Expressions;
 using HapetFrontend.Ast.Statements;
+using HapetFrontend.Enums;
 using HapetFrontend.Parsing;
 using HapetFrontend.Types;
 using Newtonsoft.Json;
@@ -14,14 +15,9 @@ namespace HapetFrontend.Ast.Declarations
         public AstExpression DefaultValue { get; set; }
 
         /// <summary>
-        /// 'true' if it has 'params' word
+        /// The parameter modificator like 'ref', 'params', etc.
         /// </summary>
-        public bool IsParams { get; set; }
-
-        /// <summary>
-        /// 'true' if it is an 'arglist' word
-        /// </summary>
-        public bool IsArglist { get; set; }
+        public ParameterModificator ParameterModificator { get; set; } = ParameterModificator.None;
 
         public override string AAAName => nameof(AstParamDecl);
 

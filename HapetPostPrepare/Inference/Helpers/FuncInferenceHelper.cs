@@ -8,6 +8,7 @@ using HapetFrontend.Helpers;
 using HapetFrontend.Errors;
 using HapetFrontend.Ast.Expressions;
 using HapetFrontend.Parsing;
+using HapetFrontend.Enums;
 
 namespace HapetPostPrepare
 {
@@ -59,18 +60,19 @@ namespace HapetPostPrepare
                     if (par == null)
                         break;
 
+                    
+                    var parType = par.Type;
+
                     // cringe to handle 'arglist' kw
-                    if (par.IsArglist)
+                    if (par.ParameterModificator == ParameterModificator.Arglist)
                     {
                         paramsParamDecl = par;
                         score += 4;
                         casts.Add(argExpr);
                         continue;
                     }
-
                     // cringe to handle 'params' kw
-                    var parType = par.Type;
-                    if (par.IsParams) 
+                    else if (par.ParameterModificator == ParameterModificator.Params) 
                     {
                         paramsParamDecl = par;
                         // because usually like 'params object[] pivo'
@@ -189,7 +191,7 @@ namespace HapetPostPrepare
                 var currPar = GetParameterByIndexOrName(pars, currArg, i, out int realIndex);
 
                 // special case for 'params' cringe
-                if (currPar.IsParams)
+                if (currPar.ParameterModificator == ParameterModificator.Params)
                 {
                     // pizdec
                     var exprs = args.Select(x => x.Expr).Skip(i).ToList();
@@ -205,9 +207,8 @@ namespace HapetPostPrepare
                     normalArgs[realIndex] = new AstArgumentExpr(arrCreate); // set and go out
                     break;
                 }
-
                 // special case for 'arglist' cringe
-                if (currPar.IsArglist)
+                else if (currPar.ParameterModificator == ParameterModificator.Arglist)
                 {
                     // pizdec
                     var exprs = args.Select(x => x.Expr).Skip(i).ToList();
@@ -239,7 +240,7 @@ namespace HapetPostPrepare
             }
 
             // we need to create an empty array for 'params' if there was no args
-            var paramsParam = pars.FirstOrDefault(x => x.IsParams);
+            var paramsParam = pars.FirstOrDefault(x => x.ParameterModificator == ParameterModificator.Params);
             if (paramsParam != null)
             {
                 int indexx = pars.IndexOf(paramsParam);
@@ -259,7 +260,7 @@ namespace HapetPostPrepare
             }
 
             // we need to remove arg of 'arglist' if there was no args
-            var arglistParam = pars.FirstOrDefault(x => x.IsArglist);
+            var arglistParam = pars.FirstOrDefault(x => x.ParameterModificator == ParameterModificator.Arglist);
             if (arglistParam != null)
             {
                 int indexx = pars.IndexOf(arglistParam);
@@ -382,7 +383,8 @@ namespace HapetPostPrepare
                     continue;
 
                 // if not bigger - check if the last param with 'params' or 'arglist' cringe - allow
-                if (funcDecl.Parameters.Last().IsParams || funcDecl.Parameters.Last().IsArglist)
+                if (funcDecl.Parameters.Last().ParameterModificator == ParameterModificator.Params || 
+                    funcDecl.Parameters.Last().ParameterModificator == ParameterModificator.Arglist)
                     yield return d;
             }
         }

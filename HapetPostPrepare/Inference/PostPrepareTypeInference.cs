@@ -335,7 +335,7 @@ namespace HapetPostPrepare
         private void PostPrepareParamInference(AstParamDecl paramDecl, InInfo inInfo, ref OutInfo outInfo)
         {
             // no need to inference anything when it is an 'arglist'
-            if (paramDecl.IsArglist)
+            if (paramDecl.ParameterModificator == ParameterModificator.Arglist)
                 return;
 
             PostPrepareExprInference(paramDecl.Type, inInfo, ref outInfo);

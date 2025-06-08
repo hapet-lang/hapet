@@ -100,7 +100,7 @@ namespace HapetFrontend.Extensions
             for (int i = 0; i < pars.Count; i++)
             {
                 var p = pars[i];
-                if (!p.IsArglist)
+                if (p.ParameterModificator != Enums.ParameterModificator.Arglist)
                     sb.Append(p.Type.OutType == null ? "" : HapetType.AsString(p.Type.OutType));
                 else
                     sb.Append("arglist");

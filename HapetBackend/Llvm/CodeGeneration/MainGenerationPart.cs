@@ -3,6 +3,7 @@ using HapetFrontend.Ast.Declarations;
 using HapetFrontend.Ast.Expressions;
 using HapetFrontend.Ast.Statements;
 using HapetFrontend.Entities;
+using HapetFrontend.Enums;
 using HapetFrontend.Errors;
 using HapetFrontend.Extensions;
 using HapetFrontend.Parsing;
@@ -129,7 +130,7 @@ namespace HapetBackend.Llvm
                 {
                     var p = funcDecl.Parameters[i];
                     // skip this shite
-                    if (p.IsArglist)
+                    if (p.ParameterModificator == ParameterModificator.Arglist)
                         continue;
 
                     var addrAlloca = _builder.BuildAlloca(HapetTypeToLLVMType(p.Type.OutType), $"{p.Name.Name}.addr");
@@ -209,7 +210,8 @@ namespace HapetBackend.Llvm
             // the same type
             /// almost the same as in <see cref="HapetTypeToLLVMType"/>
             var f = funcDecl.Type.OutType as FunctionType;
-            var paramTypes = f.Declaration.Parameters.Select(rt => HapetTypeToLLVMType(rt.IsArglist ? ptrToVaListType : rt.Type.OutType)).ToList();
+            var paramTypes = f.Declaration.Parameters.Select(rt => 
+                HapetTypeToLLVMType(rt.ParameterModificator == ParameterModificator.Arglist ? ptrToVaListType : rt.Type.OutType)).ToList();
             var returnType = HapetTypeToLLVMType(f.Declaration.Returns.OutType);
             funcType = LLVMTypeRef.CreateFunction(returnType, paramTypes.ToArray(), false);
 
@@ -231,7 +233,7 @@ namespace HapetBackend.Llvm
             for (int i = 0; i < funcDecl.Parameters.Count; ++i)
             {
                 var p = funcDecl.Parameters[i];
-                if (p.IsArglist)
+                if (p.ParameterModificator == ParameterModificator.Arglist)
                 {
                     // need to create va_list and va_start
                     apAlloca = _builder.BuildAlloca(HapetTypeToLLVMType(vaListType), $"va_list.ap.addr");
@@ -269,7 +271,7 @@ namespace HapetBackend.Llvm
             void TryBuildVaEnd()
             {
                 // check for va
-                if (funcDecl.Parameters.Count == 0 || !funcDecl.Parameters.Last().IsArglist)
+                if (funcDecl.Parameters.Count == 0 || funcDecl.Parameters.Last().ParameterModificator != ParameterModificator.Arglist)
                     return;
 
                 // va end

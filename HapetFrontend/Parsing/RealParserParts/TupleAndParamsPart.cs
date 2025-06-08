@@ -3,6 +3,7 @@ using HapetFrontend.Ast.Declarations;
 using HapetFrontend.Ast.Expressions;
 using HapetFrontend.Ast.Statements;
 using HapetFrontend.Entities;
+using HapetFrontend.Enums;
 using HapetFrontend.Errors;
 using System.Runtime;
 
@@ -91,25 +92,23 @@ namespace HapetFrontend.Parsing
             AstIdExpr pname = null;
             AstStatement ptype = null;
             AstExpression defaultValue = null;
-            bool isParams = false;
-            bool isArglist = false;
+            ParameterModificator parModificator = ParameterModificator.None;
 
             TokenLocation beg = null, end = null;
 
             // check for 'arglist'
             if (CheckToken(TokenType.KwArglist))
             {
-                isArglist = true;
+                parModificator = ParameterModificator.Arglist;
                 var loc = NextToken().Location;
                 beg = loc.Beginning;
                 end = loc.Ending;
                 return GetParam(); // just return it
             }
-
             // check for 'params'
-            if (CheckToken(TokenType.KwParams))
+            else if (CheckToken(TokenType.KwParams))
             {
-                isParams = true;
+                parModificator = ParameterModificator.Params;
                 NextToken();
             }
 
@@ -177,8 +176,7 @@ namespace HapetFrontend.Parsing
             {
                 return new AstParamDecl(ptype as AstNestedExpr, pname, defaultValue, "", new Location(beg, end))
                 {
-                    IsParams = isParams,
-                    IsArglist = isArglist,
+                    ParameterModificator = parModificator,
                 };
             }
         }
