@@ -277,7 +277,8 @@ namespace HapetFrontend.Parsing
             else if (CheckLookAhead(TokenType.CloseParen) ||  // when (Anime*)inst
                     CheckLookAhead(TokenType.OpenBracket) ||  // when a = new Anime*[..]; 
                     CheckLookAhead(TokenType.Semicolon) ||    // when a = Anime*;
-                    CheckLookAhead(TokenType.Asterisk) ||    // when a = Anime**
+                    CheckLookAhead(TokenType.Asterisk) ||     // when a = Anime**
+                    CheckLookAhead(TokenType.Greater) ||      // when Cringe<Anime*>
                     CheckLookAhead(TokenType.EOF))            // :)
             {
                 isPointer = true;
