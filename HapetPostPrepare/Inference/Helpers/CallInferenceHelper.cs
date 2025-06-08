@@ -10,6 +10,8 @@ using HapetFrontend.Types;
 using HapetPostPrepare.Entities;
 using HapetFrontend.Extensions;
 using System.Runtime;
+using System;
+using System.Security.Cryptography;
 
 namespace HapetPostPrepare
 {
@@ -89,7 +91,8 @@ namespace HapetPostPrepare
             }
 
             AstIdExpr newName = null;
-            SearchForFunctionByCall(callExpr, funcName, inInfo, ref outInfo, ref accessingFromAnObject, ref newName, out var declToSearch);
+            SearchForFunctionByCall(callExpr, funcName, inInfo, ref outInfo, ref accessingFromAnObject, 
+                ref newName, out var declToSearch, out var foundFuncSymbol);
 
             // there was a error somewhere before
             if (newName == null)
@@ -101,7 +104,8 @@ namespace HapetPostPrepare
             callExpr.FuncName.Location = savedCallLocation;
 
             inInfo.FromCallExpr = true;
-            PostPrepareIdentifierInference(callExpr.FuncName, inInfo, ref outInfo, declToSearch);
+            IdentifierOnFoundSymbol(callExpr.FuncName, foundFuncSymbol, foundFuncSymbol.Name.Name, inInfo, ref outInfo);
+            // PostPrepareIdentifierInference(callExpr.FuncName, inInfo, ref outInfo, declToSearch);
             inInfo.FromCallExpr = false;
 
             // setting parameters
@@ -134,7 +138,7 @@ namespace HapetPostPrepare
         }
 
         private void SearchForFunctionByCall(AstCallExpr callExpr, AstIdExpr funcName, InInfo inInfo, ref OutInfo outInfo, 
-            ref bool accessingFromAnObject, ref AstIdExpr newName, out AstDeclaration declToSearch)
+            ref bool accessingFromAnObject, ref AstIdExpr newName, out AstDeclaration declToSearch, out DeclSymbol foundSymbol)
         {
             // renaming func call name from 'Anime' to 'Anime(int, float)' WITH OBJECT AS FIRST PARAM
             if (callExpr.TypeOrObjectName == null)
@@ -146,6 +150,7 @@ namespace HapetPostPrepare
                 {
                     newName = funcName.GetCopy();
                     declToSearch = null;
+                    foundSymbol = ds4;
                     return;
                 }
 
@@ -165,6 +170,7 @@ namespace HapetPostPrepare
                     newName = funcDecl.Name.GetCopy();
                     callExpr.Arguments.ReplaceWithCasts(casts);
                     declToSearch = currentParent;
+                    foundSymbol = ds;
                     return;
                 }
 
@@ -189,12 +195,14 @@ namespace HapetPostPrepare
                     newName = funcDecl2.Name.GetCopy();
                     callExpr.Arguments.ReplaceWithCasts(casts2.Skip(1).ToList()); // skip because the first param is an object
                     declToSearch = currentParent;
+                    foundSymbol = ds2;
                     return;
                 }
                 accessingFromAnObject = false;
                 if (_compiler.MessageHandler.HasErrors)
                 {
                     declToSearch = null;
+                    foundSymbol = null;
                     return;
                 }
 
@@ -206,6 +214,7 @@ namespace HapetPostPrepare
                 {
                     newName = funcDecl3.Name.GetCopy();
                     declToSearch = currentParent;
+                    foundSymbol = ds3;
                     return;
                 }
 
@@ -231,11 +240,13 @@ namespace HapetPostPrepare
                     newName = funcDecl.Name.GetCopy();
                     callExpr.Arguments.ReplaceWithCasts(casts.Skip(1).ToList()); // skip because the first param is an object
                     declToSearch = clsTp.Declaration;
+                    foundSymbol = ds;
                     return;
                 }
                 if (_compiler.MessageHandler.HasErrors)
                 {
                     declToSearch = null;
+                    foundSymbol = null;
                     return;
                 }
 
@@ -250,11 +261,13 @@ namespace HapetPostPrepare
                     newName = funcDecl2.Name.GetCopy();
                     callExpr.Arguments.ReplaceWithCasts(casts2);
                     declToSearch = clsTp.Declaration;
+                    foundSymbol = ds2;
                     return;
                 }
                 if (_compiler.MessageHandler.HasErrors)
                 {
                     declToSearch = null;
+                    foundSymbol = null;
                     return;
                 }
 
@@ -268,6 +281,7 @@ namespace HapetPostPrepare
                         _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, callExpr.FuncName, [], ErrorCode.Get(CTEN.FuncCouldNotBeAccessed));
                     newName = funcDecl3.Name.GetCopy();
                     declToSearch = clsTp.Declaration;
+                    foundSymbol = ds3;
                     return;
                 }
 
@@ -289,6 +303,7 @@ namespace HapetPostPrepare
                     newName = funcDecl.Name.GetCopy();
                     callExpr.Arguments.ReplaceWithCasts(casts);
                     declToSearch = clsTpStatic.Declaration;
+                    foundSymbol = ds;
                     return;
                 }
 
@@ -311,6 +326,7 @@ namespace HapetPostPrepare
                     _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, callExpr.FuncName, [], ErrorCode.Get(CTEN.FuncWithNameNotFound));
 
                 declToSearch = null;
+                foundSymbol = null;
                 return;
             }
             else if (callExpr.TypeOrObjectName.OutType is StructType structType)
@@ -329,6 +345,7 @@ namespace HapetPostPrepare
                     newName = funcDecl.Name.GetCopy();
                     callExpr.Arguments.ReplaceWithCasts(casts);
                     declToSearch = structType.Declaration;
+                    foundSymbol = ds;
                     return;
                 }
 
@@ -354,6 +371,7 @@ namespace HapetPostPrepare
                     {
                         _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, callExpr.FuncName, [], ErrorCode.Get(CTEN.NonStaticFuncFromStatic));
                         declToSearch = null;
+                        foundSymbol = null;
                         return;
                     }
 
@@ -362,6 +380,7 @@ namespace HapetPostPrepare
                     newName = funcDecl2.Name.GetCopy();
                     callExpr.Arguments.ReplaceWithCasts(casts.Skip(1).ToList());
                     declToSearch = structType.Declaration;
+                    foundSymbol = ds2;
                     return;
                 }
 
@@ -384,6 +403,7 @@ namespace HapetPostPrepare
                     newName = funcDecl.Name.GetCopy();
                     callExpr.Arguments.ReplaceWithCasts(casts);
                     declToSearch = strTp.Declaration;
+                    foundSymbol = ds;
                     return;
                 }
 
@@ -406,6 +426,7 @@ namespace HapetPostPrepare
                     {
                         _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, callExpr.FuncName, [], ErrorCode.Get(CTEN.NonStaticFuncFromStatic));
                         declToSearch = null;
+                        foundSymbol = null;
                         return;
                     }
 
@@ -414,6 +435,7 @@ namespace HapetPostPrepare
                     newName = funcDecl2.Name.GetCopy();
                     callExpr.Arguments.ReplaceWithCasts(casts.Skip(1).ToList());
                     declToSearch = strTp.Declaration;
+                    foundSymbol = ds2;
                     return;
                 }
 
@@ -435,6 +457,7 @@ namespace HapetPostPrepare
                     newName = funcDecl.Name.GetCopy();
                     callExpr.Arguments.ReplaceWithCasts(casts);
                     declToSearch = genericType.Declaration;
+                    foundSymbol = ds;
                     return;
                 }
 
@@ -460,6 +483,7 @@ namespace HapetPostPrepare
                     {
                         _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, callExpr.FuncName, [], ErrorCode.Get(CTEN.NonStaticFuncFromStatic));
                         declToSearch = null;
+                        foundSymbol = null;
                         return;
                     }
 
@@ -468,6 +492,7 @@ namespace HapetPostPrepare
                     newName = funcDecl2.Name.GetCopy();
                     callExpr.Arguments.ReplaceWithCasts(casts.Skip(1).ToList());
                     declToSearch = genericType.Declaration;
+                    foundSymbol = ds2;
                     return;
                 }
 
@@ -480,6 +505,7 @@ namespace HapetPostPrepare
             }
 
             declToSearch = null;
+            foundSymbol = null;
 
             DeclSymbol OnFoundSymbol(DeclSymbol typed, AstIdExpr idExpr)
             {
