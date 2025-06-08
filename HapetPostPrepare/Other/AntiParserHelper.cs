@@ -253,12 +253,12 @@ namespace HapetPostPrepare
 
         public void AntiParseIdGenericExpr(AstIdGenericExpr genExpr, StringBuilder sb, string offset)
         {
-            sb.Append(GenericsHelper.GetNameFromAst(genExpr, _compiler.MessageHandler));
+            sb.Append(GetNameFromAst(genExpr, _compiler.MessageHandler));
         }
 
         public void AntiParseIdExpr(AstIdExpr idExpr, StringBuilder sb, string offset)
         {
-            sb.Append(GenericsHelper.GetNameFromAst(idExpr, _compiler.MessageHandler));
+            sb.Append(GetNameFromAst(idExpr, _compiler.MessageHandler));
         }
 
         public void AntiParseCallExpr(AstCallExpr callExpr, StringBuilder sb, string offset)
@@ -268,7 +268,7 @@ namespace HapetPostPrepare
                 AntiParseExpr(callExpr.TypeOrObjectName, sb, offset);
                 sb.Append('.');
             }
-            sb.Append(GenericsHelper.GetNameFromAst(callExpr.FuncName, _compiler.MessageHandler));
+            sb.Append(GetNameFromAst(callExpr.FuncName, _compiler.MessageHandler));
             sb.Append('(');
             for (int i = 0; i < callExpr.Arguments.Count; ++i)
             {

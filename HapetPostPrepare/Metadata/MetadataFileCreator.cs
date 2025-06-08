@@ -143,7 +143,7 @@ namespace HapetPostPrepare
                     sb.Append("class ");
             }
             
-            sb.Append($"{GenericsHelper.GetNameFromAst(decl.Name, _compiler.MessageHandler).GetClassNameWithoutNamespace()} ");
+            sb.Append($"{GetNameFromAst(decl.Name, _compiler.MessageHandler).GetClassNameWithoutNamespace()} ");
 
             if (inheritedFrom.Count > 0)
             {
@@ -221,7 +221,7 @@ namespace HapetPostPrepare
             sb.Append("delegate ");
             AntiParseExpr(decl.Returns, sb, additionalOffset);
             sb.Append(' ');
-            sb.Append($"{GenericsHelper.GetNameFromAst(decl.Name, _compiler.MessageHandler).GetClassNameWithoutNamespace()}");
+            sb.Append($"{GetNameFromAst(decl.Name, _compiler.MessageHandler).GetClassNameWithoutNamespace()}");
 
             sb.Append('(');
             for (int i = 0; i < decl.Parameters.Count; ++i)
@@ -374,6 +374,28 @@ namespace HapetPostPrepare
                     if (!string.IsNullOrWhiteSpace(sp))
                         sb.Append($"{additionalOffset}/// {sp}\n");
                 }
+        }
+
+        /// <summary>
+        /// Inversed func of <see cref="GetAstIdFromName"/>
+        /// </summary>
+        /// <param name="idExpr"></param>
+        /// <returns></returns>
+        private string GetNameFromAst(AstIdExpr idExpr, IMessageHandler messageHandler)
+        {
+            if (idExpr is not AstIdGenericExpr genId)
+                return idExpr.Name;
+
+            StringBuilder sb = new StringBuilder("<");
+            for (int i = 0; i < genId.GenericRealTypes.Count; ++i)
+            {
+                var g = genId.GenericRealTypes[i];
+                AntiParseExpr(g, sb, string.Empty);
+                if (i < genId.GenericRealTypes.Count - 1)
+                    sb.Append(", ");
+            }
+            sb.Append('>');
+            return $"{genId.Name}{sb}";
         }
     }
 }
