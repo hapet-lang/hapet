@@ -135,7 +135,7 @@ namespace HapetFrontend.Ast.Declarations
             // add indexer param if it is an indexer
             var prs = new List<AstParamDecl>() { new AstParamDecl(Type.GetDeepCopy() as AstExpression, new AstIdExpr("value")) };
             if (this is AstIndexerDecl indDecl)
-                prs.Insert(0, indDecl.IndexerParameter.GetCopy());
+                prs.Insert(0, indDecl.IndexerParameter.GetDeepCopy() as AstParamDecl);
 
             var func = GetPropaFunc(addFirstParam, false, containingParent);
             func.Parameters.AddRange(prs);
@@ -166,7 +166,7 @@ namespace HapetFrontend.Ast.Declarations
             // add indexer param if it is an indexer
             var prs = new List<AstParamDecl>();
             if (this is AstIndexerDecl indDecl)
-                prs.Add(indDecl.IndexerParameter.GetCopy());
+                prs.Add(indDecl.IndexerParameter.GetDeepCopy() as AstParamDecl);
 
             var func = GetPropaFunc(addFirstParam, true, containingParent);
             func.Parameters.AddRange(prs);

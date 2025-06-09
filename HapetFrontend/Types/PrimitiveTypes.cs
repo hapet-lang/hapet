@@ -285,13 +285,8 @@ namespace HapetFrontend.Types
 
         private static Dictionary<HapetType, PointerType> _types = new Dictionary<HapetType, PointerType>();
         public static PointerType VoidLiteralType { get; } = new PointerType(HapetType.CurrentTypeContext.VoidTypeInstance);
-        public static PointerType NullLiteralType { get; } = new PointerType(HapetType.CurrentTypeContext.VoidTypeInstance) { IsPointerToNull = true, };
 
         public override string TypeName => "ptr";
-        /// <summary>
-        /// Cringe kostyl to search for nullptr types
-        /// </summary>
-        public bool IsPointerToNull { get; set; }
 
         public override AstExpression GetAst(AstExpression iniExpr = null)
         {

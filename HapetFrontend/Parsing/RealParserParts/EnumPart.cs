@@ -64,6 +64,9 @@ namespace HapetFrontend.Parsing
             else if (inherited.Count == 1)
                 enumType = inherited[0];
 
+            // creating decl here to use it further
+            var enumDecl = new AstEnumDecl(enumName, declarations, "");
+
             ConsumeUntil(TokenType.OpenBrace, ErrMsg("{", "at beginning of enum body"), true);
 
             SkipNewlines();
@@ -99,6 +102,7 @@ namespace HapetFrontend.Parsing
                 AstVarDecl decl = new AstVarDecl(enumType, id.RightPart as AstIdExpr, ini, "", new Location(id.Beginning, fieldEnd));
 
                 declarations.Add(decl);
+                decl.ContainingParent = enumDecl;
 
                 next = PeekToken();
                 if (next.Type == TokenType.NewLine)
@@ -118,12 +122,11 @@ namespace HapetFrontend.Parsing
             }
 
             end = Consume(TokenType.CloseBrace, ErrMsg("}", "at end of enum declaration")).Location;
-            var enm = new AstEnumDecl(enumName, declarations, "", new Location(beg, end))
-            {
-                InheritedType = enumType,
-                IsImported = inInfo.ExternalMetadata
-            };
-            return enm;
+
+            enumDecl.Location = new Location(beg, end);
+            enumDecl.InheritedType = enumType;
+            enumDecl.IsImported = inInfo.ExternalMetadata;
+            return enumDecl;
         }
     }
 }

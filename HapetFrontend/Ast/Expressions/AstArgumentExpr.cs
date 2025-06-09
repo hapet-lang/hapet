@@ -35,6 +35,7 @@ namespace HapetFrontend.Ast.Expressions
                 Name?.GetDeepCopy() as AstIdExpr,
                 Location)
             {
+                ArgumentModificator = ArgumentModificator,
                 IsCompileTimeValue = IsCompileTimeValue,
                 OutType = OutType,
                 OutValue = OutValue,

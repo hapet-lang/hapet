@@ -1126,7 +1126,7 @@ namespace HapetBackend.Llvm
 
         private unsafe LLVMValueRef GenerateNullExprCode(AstNullExpr expr)
         {
-            return LLVM.ConstPointerNull(HapetTypeToLLVMType(expr.Target));
+            return LLVM.ConstPointerNull(HapetTypeToLLVMType(expr.OutType));
         }
 
         // statements

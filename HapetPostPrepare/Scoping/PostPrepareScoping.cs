@@ -127,16 +127,12 @@ namespace HapetPostPrepare
 
                 if (decl is AstFuncDecl funcDecl)
                 {
-                    funcDecl.ContainingParent = classDecl;
-
                     /// defining in a scope is done in <see cref="PostPrepareFunctionInference"/>
 
                     PostPrepareFunctionScoping(funcDecl);
                 }
                 else if (decl is AstPropertyDecl propDecl) // property
                 {
-                    propDecl.ContainingParent = classDecl;
-
                     if (propDecl.GetBlock != null)
                     {
                         SetScopeAndParent(propDecl.GetBlock, propDecl);
@@ -160,8 +156,6 @@ namespace HapetPostPrepare
                 }
                 else if (decl is AstVarDecl fieldDecl) // field 
                 {
-                    fieldDecl.ContainingParent = classDecl;
-
                     // setting already defined to 'true' because of some shite with access types
                     PostPrepareVarScoping(fieldDecl, true);
                 }
@@ -212,16 +206,12 @@ namespace HapetPostPrepare
 
                 if (decl is AstFuncDecl funcDecl)
                 {
-                    funcDecl.ContainingParent = structDecl;
-
                     /// defining in a scope is done in <see cref="PostPrepareFunctionInference"/>
 
                     PostPrepareFunctionScoping(funcDecl);
                 }
                 else if (decl is AstPropertyDecl propDecl) // property
                 {
-                    propDecl.ContainingParent = structDecl;
-
                     if (propDecl.GetBlock != null)
                     {
                         SetScopeAndParent(propDecl.GetBlock, propDecl);
@@ -249,8 +239,6 @@ namespace HapetPostPrepare
                 }
                 else if (decl is AstVarDecl fieldDecl) // field 
                 {
-                    fieldDecl.ContainingParent = structDecl;
-
                     // setting already defined to 'true' because of some shite with access types
                     PostPrepareVarScoping(fieldDecl, true);
                 }
@@ -286,7 +274,6 @@ namespace HapetPostPrepare
             foreach (var decl in enumDecl.Declarations)
             {
                 SetScopeAndParent(decl, enumDecl, enumScope);
-                decl.ContainingParent = enumDecl;
 
                 // setting already defined to 'true' because of some shite with access types
                 PostPrepareVarScoping(decl, true);

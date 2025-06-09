@@ -1,4 +1,5 @@
-﻿using HapetFrontend.Ast.Declarations;
+﻿using System.Runtime.CompilerServices;
+using HapetFrontend.Ast.Declarations;
 using HapetFrontend.Entities;
 using HapetFrontend.Scoping;
 using Newtonsoft.Json;

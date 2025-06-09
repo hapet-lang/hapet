@@ -40,7 +40,7 @@ namespace HapetFrontend.Parsing
                 var exprSecond = ParseTernaryExpression(inInfo, ref outInfo);
 
                 // creating null comparison
-                var nulll = new AstNullExpr(PointerType.NullLiteralType, expr);
+                var nulll = new AstNullExpr(null, expr);
                 var nullComparison = new AstBinaryExpr("==", expr as AstExpression, nulll, expr);
                 var ternOp = new AstTernaryExpr(nullComparison, exprSecond as AstExpression, 
                     expr as AstExpression, new Location(expr.Beginning, exprSecond.Ending));
@@ -573,7 +573,7 @@ namespace HapetFrontend.Parsing
                                 inInfo.PreviousNestedForNullCheck = iniNest.GetDeepCopy() as AstNestedExpr;
 
                                 // creating null comparison
-                                var nulll = new AstNullExpr(PointerType.NullLiteralType, expr);
+                                var nulll = new AstNullExpr(null, expr);
                                 var nullComparison = new AstBinaryExpr("==", inInfo.PreviousNestedForNullCheck, nulll, expr);
                                 var normalPart = ParsePostUnaryExpression(inInfo, ref outInfo) as AstExpression;
                                 var ternOp = new AstTernaryExpr(nullComparison, nulll, normalPart, expr);
@@ -642,7 +642,7 @@ namespace HapetFrontend.Parsing
 
                 case TokenType.KwNull:
                     NextToken();
-                    return new AstNullExpr(PointerType.NullLiteralType, new Location(token.Location));
+                    return new AstNullExpr(null, new Location(token.Location));
 
                 case TokenType.KwNew:
                     {

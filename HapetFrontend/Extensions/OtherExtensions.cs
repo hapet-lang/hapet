@@ -101,7 +101,15 @@ namespace HapetFrontend.Extensions
             {
                 var p = pars[i];
                 if (p.ParameterModificator != Enums.ParameterModificator.Arglist)
+                {
+                    if (p.ParameterModificator == Enums.ParameterModificator.Ref)
+                        sb.Append("ref_");
+                    else if (p.ParameterModificator == Enums.ParameterModificator.Out)
+                        sb.Append("out_");
+                    else if (p.ParameterModificator == Enums.ParameterModificator.Params)
+                        sb.Append("params_");
                     sb.Append(p.Type.OutType == null ? "" : HapetType.AsString(p.Type.OutType));
+                }
                 else
                     sb.Append("arglist");
 

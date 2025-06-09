@@ -297,7 +297,6 @@ namespace HapetPostPrepare
                 // there is no ctor. need to create one
                 List<AstStatement> ctorBlockStatements = new List<AstStatement>();
                 // creating ini func call
-                /// make sure that this shite is the same as in <see cref="RenameFromGenericToRealType"/>
                 ctorBlockStatements.Add(new AstCallExpr(
                     new AstNestedExpr(new AstIdExpr("this"), null, comLoc),
                     new AstIdExpr($"{decl.Name.Name}_ini", comLoc), null, comLoc));
@@ -607,8 +606,20 @@ namespace HapetPostPrepare
                 }
 
                 // creating field assing statement
-                var objectName = forStatic ? null : new AstNestedExpr(new AstIdExpr("this"), null);
-                var target = new AstNestedExpr(decl.Name.GetCopy(), objectName, decl);
+                var objectName = forStatic ? null : new AstNestedExpr(new AstIdExpr("this")
+                {
+                    Location = decl.Name.Location,
+                    Scope = decl.Name.Scope,
+                }, null)
+                {
+                    Location = decl.Name.Location,
+                    Scope = decl.Name.Scope,
+                };
+                var target = new AstNestedExpr(decl.Name.GetCopy(), objectName, decl)
+                {
+                    Location = decl.Name.Location,
+                    Scope = decl.Name.Scope,
+                };
                 AstExpression fieldInitializer;
                 if (decl.Initializer != null)
                     fieldInitializer = decl.Initializer;
@@ -659,9 +670,25 @@ namespace HapetPostPrepare
                 else
                     thisParamType = parentDecl.Name.GetCopy();
                 // creating the class instance 'this' param
-                AstExpression paramType = new AstPointerExpr(thisParamType, false);
-                AstIdExpr paramName = new AstIdExpr("this");
-                AstParamDecl thisParam = new AstParamDecl(new AstNestedExpr(paramType, null), paramName);
+                AstIdExpr paramName = new AstIdExpr("this")
+                {
+                    Location = decl.Name.Location,
+                    Scope = decl.SubScope,
+                };
+                AstParamDecl thisParam = new AstParamDecl(new AstNestedExpr(thisParamType, null)
+                {
+                    Location = decl.Name.Location,
+                    Scope = decl.SubScope,
+                }, paramName)
+                {
+                    Location = decl.Name.Location,
+                    Scope = decl.SubScope,
+                };
+
+                // we need to add ref to struct first param
+                if (funcDecl.ContainingParent is AstStructDecl)
+                    thisParam.ParameterModificator = ParameterModificator.Ref;
+
                 // adding the param as the func first param
                 funcDecl.Parameters.Insert(0, thisParam);
             }

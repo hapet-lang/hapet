@@ -81,6 +81,21 @@ namespace HapetPostPrepare
                         parType = tmp.SubExpression; 
                     }
 
+                    // if parameter or argument has ref/out another one also has to have it
+                    if (arg.ArgumentModificator == ParameterModificator.Ref ||
+                        arg.ArgumentModificator == ParameterModificator.Out ||
+                        par.ParameterModificator == ParameterModificator.Ref ||
+                        par.ParameterModificator == ParameterModificator.Out)
+                    {
+                        // they has to be the same
+                        if (arg.ArgumentModificator != par.ParameterModificator)
+                        {
+                            score = int.MaxValue;
+                            casts.Add(null);
+                            break;
+                        }
+                    }
+
                     if (argExpr.OutType == parType.OutType)
                     {
                         score += 0;

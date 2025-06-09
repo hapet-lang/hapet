@@ -28,8 +28,8 @@ namespace HapetPostPrepare
             // structInstance == null
             // this could be possible because of generics generation
             if ((binExpr.Operator == "==" || binExpr.Operator == "!=") &&
-                (binExpr.Left.OutType is StructType && binExpr.Right.OutType == PointerType.NullLiteralType ||
-                binExpr.Left.OutType == PointerType.NullLiteralType && binExpr.Right.OutType is StructType))
+                (binExpr.Left.OutType is StructType && binExpr.Right.OutType is NullType ||
+                binExpr.Left.OutType is NullType && binExpr.Right.OutType is StructType))
             {
                 // just make one expr to be 'true' and another one 'false'
                 binExpr.Right = new AstBoolExpr(true, binExpr);

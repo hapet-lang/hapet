@@ -200,11 +200,11 @@ namespace HapetFrontend
                 // assigning 'null' to any pointer type
                 // void* anime = null;
                 // T* anime2 = null;
-                case PointerType ptr6 when currentType is PointerType ptr7 && ptr7.IsPointerToNull:
+                case PointerType ptr6 when currentType is NullType:
 
                 // this is to allow to do this 'int[] arr = null'
-                case ArrayType when currentType is PointerType ptrT1 && ptrT1.IsPointerToNull:
-                case StringType when currentType is PointerType ptrT2 && ptrT2.IsPointerToNull:
+                case ArrayType when currentType is NullType:
+                case StringType when currentType is NullType:
                     {
                         outExpr = cst;
                         if (castResult != null)
@@ -255,27 +255,23 @@ namespace HapetFrontend
             // handling class-struct casts
             switch (targetType)
             {
-                // usually when 'public static Anime a = new Anime();'
-                case ClassType cls1 when
-                    currentType is ClassType cls2 &&
-                    (cls1 == cls2 || cls2.IsInheritedFrom(cls1)):
+                // usually when 'Anime a = null;'
+                case ClassType when
+                    currentType is NullType:
                 // usually when 'Anime a = new Anime();'
                 // usually when 'object a = new Anime();'
-                case PointerType ptr3 when
-                    ptr3.TargetType is ClassType cls3 &&
+                case ClassType cls3 when
                     currentType is ClassType cls4 &&
                     (cls4 == cls3 || cls4.IsInheritedFrom(cls3)):
                 // usually when 'object a = structInstance;'
                 // usually when 'IAnime a = structInstance;'
-                case PointerType ptr4 when
-                    ptr4.TargetType is ClassType cls5 &&
+                case ClassType cls5 when
                     currentType is StructType &&
                     (cls5.Declaration.Name.Name == "System.Object" ||
                     cls5.Declaration.Name.Name == "System.ValueType" ||
                     cls5.Declaration.IsInterface):
                 // usually when 'object a = genericInstance;'
-                case PointerType ptr5 when
-                    ptr5.TargetType is ClassType cls6 &&
+                case ClassType cls6 when
                     currentType is GenericType &&
                     (cls6.Declaration.Name.Name == "System.Object"):
                     {

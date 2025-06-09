@@ -172,6 +172,13 @@ namespace HapetBackend.Llvm
                         return HapetTypeToLLVMType(r.TargetType).GetPointerTo();
                     }
 
+                case NullType n:
+                    {
+                        if (n.TargetType == null || n.TargetType == HapetType.CurrentTypeContext.VoidTypeInstance)
+                            return ((LLVMTypeRef)_context.Int8Type).GetPointerTo();
+                        return HapetTypeToLLVMType(n.TargetType).GetPointerTo();
+                    }
+
                 case VoidType v:
                     {
                         if (!_isVoidBoxedCreated)
@@ -461,8 +468,22 @@ namespace HapetBackend.Llvm
                 {
                     return builder.BuildPtrToInt(val, HapetTypeToLLVMType(outType));
                 }
+            }
+            if (inType is IntPtrType)
+            {
+                if (outType is PointerType)
+                {
+                    return builder.BuildIntToPtr(val, HapetTypeToLLVMType(outType));
+                }
+                else if (outType is StructType structType2)
+                {
+                    return CreateStructCastFromObject(val, structType2);
+                }
+            }
+            if (inType is NullType)
+            {
                 // like 'int[] a = null'
-                else if (ptrT == PointerType.NullLiteralType && outType is ArrayType arrayType)
+                if (outType is ArrayType arrayType)
                 {
                     var nullTarget = LLVMValueRef.CreateConstPointerNull(HapetTypeToLLVMType(PointerType.GetPointerType(arrayType.TargetType)));
                     var v = _builder.BuildAlloca(HapetTypeToLLVMType(arrayType), $"nulled_array");
@@ -471,24 +492,13 @@ namespace HapetBackend.Llvm
                     return _builder.BuildLoad2(HapetTypeToLLVMType(arrayType), v); // return loaded
                 }
                 // like 'string a = null'
-                else if (ptrT == PointerType.NullLiteralType && outType is StringType stringType)
+                else if (outType is StringType stringType)
                 {
                     var nullTarget = LLVMValueRef.CreateConstPointerNull(HapetTypeToLLVMType(PointerType.GetPointerType(HapetType.CurrentTypeContext.CharTypeInstance)));
                     var v = _builder.BuildAlloca(HapetTypeToLLVMType(stringType), $"nulled_string");
                     var buffer = _builder.BuildGEP2(HapetTypeToLLVMType(stringType), v, new LLVMValueRef[] { LLVMValueRef.CreateConstInt(_context.Int32Type, 1) }, "strBuffer");
                     _builder.BuildStore(nullTarget, buffer);
                     return _builder.BuildLoad2(HapetTypeToLLVMType(stringType), v); // return loaded
-                }
-                else if (outType is StructType structType2)
-                {
-                    return CreateStructCastFromObject(val, structType2);
-                }
-            }
-            if (inType is IntPtrType)
-            {
-                if (outType is PointerType)
-                {
-                    return builder.BuildIntToPtr(val, HapetTypeToLLVMType(outType));
                 }
             }
 

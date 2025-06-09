@@ -247,6 +247,11 @@ namespace HapetPostPrepare
 
         public void AntiParseArgumentExpr(AstArgumentExpr argExpr, StringBuilder sb, string offset)
         {
+            if (argExpr.ArgumentModificator == HapetFrontend.Enums.ParameterModificator.Ref)
+                sb.Append("ref ");
+            else if (argExpr.ArgumentModificator == HapetFrontend.Enums.ParameterModificator.Out)
+                sb.Append("out ");
+
             // TODO: param name
             AntiParseExpr(argExpr.Expr, sb, offset);
         }

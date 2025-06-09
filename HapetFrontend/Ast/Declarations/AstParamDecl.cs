@@ -31,6 +31,7 @@ namespace HapetFrontend.Ast.Declarations
                 DefaultValue?.GetDeepCopy() as AstExpression,
                 Documentation, Location)
             {
+                ParameterModificator = ParameterModificator,
                 Scope = Scope,
                 SourceFile = SourceFile,
                 SubScope = SubScope,
@@ -38,18 +39,6 @@ namespace HapetFrontend.Ast.Declarations
             copy.Attributes.AddRange(Attributes);
             copy.SpecialKeys.AddRange(SpecialKeys);
             return copy;
-        }
-
-        public AstParamDecl GetCopy(string name = "")
-        {
-            AstIdExpr nm = Name;
-            if (!string.IsNullOrWhiteSpace(name))
-                nm = Name.GetCopy(name);
-
-            var np = new AstParamDecl(Type, nm, DefaultValue, Documentation, Location);
-            np.SpecialKeys.AddRange(SpecialKeys);
-            np.Attributes.AddRange(Attributes);
-            return np;
         }
     }
 }

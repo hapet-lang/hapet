@@ -259,9 +259,23 @@ namespace HapetPostPrepare
             for (int i = 0; i < decl.Parameters.Count; ++i)
             {
                 var par = decl.Parameters[i];
-                AntiParseExpr(par.Type, sb, additionalOffset);
-                sb.Append(' ');
-                AntiParseExpr(par.Name, sb, additionalOffset);
+                if (par.ParameterModificator == HapetFrontend.Enums.ParameterModificator.Arglist)
+                {
+                    sb.Append("arglist");
+                }
+                else
+                {
+                    if (par.ParameterModificator == HapetFrontend.Enums.ParameterModificator.Ref)
+                        sb.Append("ref ");
+                    else if (par.ParameterModificator == HapetFrontend.Enums.ParameterModificator.Out)
+                        sb.Append("out ");
+                    else if (par.ParameterModificator == HapetFrontend.Enums.ParameterModificator.Params)
+                        sb.Append("params ");
+
+                    AntiParseExpr(par.Type, sb, additionalOffset);
+                    sb.Append(' ');
+                    AntiParseExpr(par.Name, sb, additionalOffset);
+                } 
 
                 if (i < decl.Parameters.Count - 1)
                     sb.Append(", ");

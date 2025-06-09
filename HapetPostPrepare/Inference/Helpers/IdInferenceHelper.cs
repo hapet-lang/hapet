@@ -115,7 +115,7 @@ namespace HapetPostPrepare
                 else
                     inherited = (currentParent as AstStructDecl).InheritedFrom;
 
-                idExpr.OutType = PointerType.GetPointerType(inherited[0].OutType);
+                idExpr.OutType = inherited[0].OutType;
                 var smbl2 = idExpr.Scope.GetSymbol(idExpr.GetCopy("this"));
                 idExpr.FindSymbol = smbl2;
                 return true;
@@ -403,23 +403,6 @@ namespace HapetPostPrepare
             {
                 var g = realId.GenericRealTypes[i];
                 PostPrepareExprInference(g, inInfo, ref outInfo);
-
-                if (g.OutType is ClassType)
-                {
-                    // the type is actually a pointer to the class
-                    var astPtr = new AstPointerExpr(g, false, g.Location)
-                    {
-                        OutType = PointerType.GetPointerType(g.OutType),
-                        Scope = g.Scope,
-                        SourceFile = g.SourceFile,
-                    };
-                    realId.GenericRealTypes[i] = new AstNestedExpr(astPtr, null, g.Location) 
-                    { 
-                        OutType = astPtr.OutType,
-                        Scope = g.Scope,
-                        SourceFile = g.SourceFile,
-                    };
-                }
             }
 
             // if instantiating with genericTypes are not allowed - 

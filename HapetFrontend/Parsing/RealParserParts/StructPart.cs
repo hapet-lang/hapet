@@ -112,6 +112,7 @@ namespace HapetFrontend.Parsing
                 }
 
                 declarations.Add(realDecl);
+                realDecl.ContainingParent = structDecl;
 
                 next = PeekToken();
                 if (next.Type == TokenType.NewLine)

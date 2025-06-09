@@ -353,12 +353,11 @@ namespace HapetPostPrepare
                 newName = funcName.GetCopy($"{structType.Declaration.Name.Name}::{funcName}{callExpr.Arguments.GetArgsString(PointerType.GetPointerType(structType))}");
 
                 List<AstArgumentExpr> argsWithStructParam = new List<AstArgumentExpr>(callExpr.Arguments);
-                var pseudoStructArg = new AstPointerExpr(callExpr.TypeOrObjectName, false, callExpr.TypeOrObjectName)
-                {
-                    Scope = funcName.Scope,
-                };
-                PostPrepareExprInference(pseudoStructArg, inInfo, ref outInfo);
-                argsWithStructParam.Insert(0, new AstArgumentExpr(pseudoStructArg) { OutType = callExpr.TypeOrObjectName.OutType });
+                argsWithStructParam.Insert(0, new AstArgumentExpr(callExpr.TypeOrObjectName) 
+                { 
+                    OutType = callExpr.TypeOrObjectName.OutType,
+                    ArgumentModificator = HapetFrontend.Enums.ParameterModificator.Ref,
+                });
                 smbl2 = GetFuncFromCandidates(newName, callExpr, argsWithStructParam, structType.Declaration, true, out casts);
                 smbl2 = OnFoundSymbol(smbl2, callExpr.FuncName);
 

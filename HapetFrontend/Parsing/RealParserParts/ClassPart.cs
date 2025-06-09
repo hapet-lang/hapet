@@ -111,6 +111,7 @@ namespace HapetFrontend.Parsing
                     realDecl.ParentDecl = classDecl;
                 }
                 declarations.Add(realDecl);
+                realDecl.ContainingParent = classDecl;
 
                 next = PeekToken();
                 if (next.Type == TokenType.NewLine)

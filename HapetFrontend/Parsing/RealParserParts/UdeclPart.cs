@@ -77,7 +77,7 @@ namespace HapetFrontend.Parsing
                     {
                         /// WARN!!!: the same as in <see cref="ParseNullCoalescingExpression"/>
                         // creating null comparison
-                        var nulll = new AstNullExpr(PointerType.NullLiteralType, id);
+                        var nulll = new AstNullExpr(null, id);
                         var nullComparison = new AstBinaryExpr("==", id.GetDeepCopy() as AstExpression, nulll, id);
                         var ternOp = new AstTernaryExpr(nullComparison, valExpr, id.GetDeepCopy() as AstExpression, binOpExpr.Location);
                         binOpExpr = ternOp;

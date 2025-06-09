@@ -83,4 +83,34 @@ namespace HapetFrontend.Types
             return t1 == t2;
         }
     }
+
+    public class NullType : AbstractType
+    {
+        public HapetType TargetType { get; }
+
+        public static NullType LiteralType { get; } = new NullType(null);
+
+        public override string TypeName => "null";
+
+        public override AstExpression GetAst(AstExpression iniExpr = null)
+        {
+            return new AstNestedExpr(new AstIdExpr("null", iniExpr?.Location)
+            {
+                Scope = iniExpr?.Scope,
+                SourceFile = iniExpr?.SourceFile,
+            }, null)
+            {
+                Scope = iniExpr?.Scope,
+                SourceFile = iniExpr?.SourceFile,
+                Location = iniExpr?.Location,
+            };
+        }
+
+        public NullType(HapetType targetType)
+        {
+            TargetType = targetType;
+        }
+
+        public override string ToString() => "null";
+    }
 }

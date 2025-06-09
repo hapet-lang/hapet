@@ -6,27 +6,20 @@ namespace HapetFrontend.Ast.Expressions
 {
     public class AstNullExpr : AstExpression
     {
-        /// <summary>
-        /// The target type of null
-        /// </summary>
-        public HapetType Target { get; set; }
-
         public override string AAAName => nameof(AstNullExpr);
 
         public AstNullExpr(HapetType target, ILocation location = null) : base(location)
         {
-            Target = target;
-            OutType = PointerType.NullLiteralType;
+            OutType = new NullType(target);
         }
 
         public override AstStatement GetDeepCopy()
         {
             var copy = new AstNullExpr(
-                Target,
+                (OutType as NullType)?.TargetType,
                 Location)
             {
                 IsCompileTimeValue = IsCompileTimeValue,
-                OutType = OutType,
                 OutValue = OutValue,
                 Scope = Scope,
                 SourceFile = SourceFile,
