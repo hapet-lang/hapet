@@ -811,7 +811,7 @@ namespace HapetPostPrepare
 
                 accessingFromAnObject = true;
                 // if left part found symbol is a class decl - static access
-                if (nestExpr.LeftPart.RightPart is AstIdExpr idE && idE.FindSymbol is DeclSymbol ds1 && 
+                if (nestExpr.LeftPart.TryGetDeclSymbol() is DeclSymbol ds1 && 
                     (ds1.Decl is AstClassDecl || ds1.Decl is AstStructDecl))
                 {
                     accessingFromAnObject = false;

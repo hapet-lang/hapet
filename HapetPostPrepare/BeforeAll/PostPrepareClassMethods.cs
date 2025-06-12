@@ -415,6 +415,7 @@ namespace HapetPostPrepare
             var theVar = new AstVarDecl(new AstNestedExpr(new AstIdExpr("bool", comLoc), null, comLoc), new AstIdExpr(theVarName, comLoc), null, "", comLoc);
             theVar.SpecialKeys.Add(Lexer.CreateToken(TokenType.KwStatic, decl.Location.Beginning));
             theVar.SpecialKeys.Insert(0, Lexer.CreateToken(TokenType.KwUnreflected, decl.Location.Beginning));
+            theVar.ContainingParent = decl;
             decls.Add(theVar);
 
             // set 'true' to the var
