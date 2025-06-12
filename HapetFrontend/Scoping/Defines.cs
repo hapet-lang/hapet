@@ -114,29 +114,32 @@ namespace HapetFrontend.Scoping
             }
 
             DefineBinaryOperator(new BuiltInBinaryOperator("==", boolT, PointerType.VoidLiteralType, PointerType.VoidLiteralType));
-            DefineBinaryOperator(new BuiltInBinaryOperator("==", boolT, PointerType.VoidLiteralType, GenericType.LiteralType));
-            DefineBinaryOperator(new BuiltInBinaryOperator("==", boolT, GenericType.LiteralType, PointerType.VoidLiteralType));
+            DefineBinaryOperator(new BuiltInBinaryOperator("==", boolT, NullType.LiteralType, GenericType.LiteralType));
+            DefineBinaryOperator(new BuiltInBinaryOperator("==", boolT, GenericType.LiteralType, NullType.LiteralType));
             DefineBinaryOperator(new BuiltInBinaryOperator("!=", boolT, PointerType.VoidLiteralType, PointerType.VoidLiteralType));
-            DefineBinaryOperator(new BuiltInBinaryOperator("!=", boolT, PointerType.VoidLiteralType, GenericType.LiteralType));
-            DefineBinaryOperator(new BuiltInBinaryOperator("!=", boolT, GenericType.LiteralType, PointerType.VoidLiteralType));
+            DefineBinaryOperator(new BuiltInBinaryOperator("!=", boolT, NullType.LiteralType, GenericType.LiteralType));
+            DefineBinaryOperator(new BuiltInBinaryOperator("!=", boolT, GenericType.LiteralType, NullType.LiteralType));
 
             DefineBinaryOperator(new BuiltInBinaryOperator("==", boolT, GenericType.LiteralType, GenericType.LiteralType));
             DefineBinaryOperator(new BuiltInBinaryOperator("!=", boolT, GenericType.LiteralType, GenericType.LiteralType));
 
-            DefineBinaryOperator(new BuiltInCommonBinaryOperator("as", ClassType.LiteralType, PointerType.VoidLiteralType, ClassType.LiteralType));
-            DefineBinaryOperator(new BuiltInCommonBinaryOperator("as", StructType.LiteralType, PointerType.VoidLiteralType, StructType.LiteralType));
+            DefineBinaryOperator(new BuiltInBinaryOperator("==", boolT, ClassType.LiteralType, ClassType.LiteralType));
+            DefineBinaryOperator(new BuiltInBinaryOperator("!=", boolT, ClassType.LiteralType, ClassType.LiteralType));
 
-            DefineBinaryOperator(new BuiltInCommonBinaryOperator("is", boolT, PointerType.VoidLiteralType, ClassType.LiteralType));
-            DefineBinaryOperator(new BuiltInCommonBinaryOperator("is", boolT, PointerType.VoidLiteralType, StructType.LiteralType));
-            DefineBinaryOperator(new BuiltInCommonBinaryOperator("is", boolT, PointerType.VoidLiteralType, GenericType.LiteralType));
+            DefineBinaryOperator(new BuiltInCommonBinaryOperator("as", ClassType.LiteralType, ClassType.LiteralType, ClassType.LiteralType));
+            DefineBinaryOperator(new BuiltInCommonBinaryOperator("as", StructType.LiteralType, ClassType.LiteralType, StructType.LiteralType));
+
+            DefineBinaryOperator(new BuiltInCommonBinaryOperator("is", boolT, ClassType.LiteralType, ClassType.LiteralType));
+            DefineBinaryOperator(new BuiltInCommonBinaryOperator("is", boolT, ClassType.LiteralType, StructType.LiteralType));
+            DefineBinaryOperator(new BuiltInCommonBinaryOperator("is", boolT, ClassType.LiteralType, GenericType.LiteralType));
             DefineBinaryOperator(new BuiltInCommonBinaryOperator("is", boolT, StructType.LiteralType, ClassType.LiteralType)); // need to warn when doing it
             // generics 'is' checks
             DefineBinaryOperator(new BuiltInCommonBinaryOperator("is", boolT, GenericType.LiteralType, ClassType.LiteralType));
             DefineBinaryOperator(new BuiltInCommonBinaryOperator("is", boolT, GenericType.LiteralType, StructType.LiteralType));
 
             // WARN: structs are defined here - array/string types checks are in VarInferenceHelper
-            DefineBinaryOperator(new BuiltInBinaryOperator("==", boolT, StructType.LiteralType, PointerType.VoidLiteralType));
-            DefineBinaryOperator(new BuiltInBinaryOperator("!=", boolT, StructType.LiteralType, PointerType.VoidLiteralType));
+            DefineBinaryOperator(new BuiltInBinaryOperator("==", boolT, StructType.LiteralType, NullType.LiteralType));
+            DefineBinaryOperator(new BuiltInBinaryOperator("!=", boolT, StructType.LiteralType, NullType.LiteralType));
 
             // just struct equal checking
             DefineBinaryOperator(new BuiltInBinaryOperator("==", boolT, StructType.LiteralType, StructType.LiteralType));
