@@ -121,13 +121,9 @@ namespace HapetFrontend.Scoping
                 return result;
             }
 
-            // this is a kostyl to search for any ptr bin ops
-            var searchTypeL = lhs is PointerType ? PointerType.VoidLiteralType : lhs;
-            var searchTypeR = rhs is PointerType ? PointerType.VoidLiteralType : rhs;
-
-            // this is a kostyl to search for any generic bin ops
-            searchTypeL = searchTypeL is GenericType ? GenericType.LiteralType : searchTypeL;
-            searchTypeR = searchTypeR is GenericType ? GenericType.LiteralType : searchTypeR;
+            // this is a kostyl to search for bin ops
+            var searchTypeL = GetLiteralTypeToSearch(lhs);
+            var searchTypeR = GetLiteralTypeToSearch(rhs);
 
             GetBinaryOperatorsInternal(this, name, searchTypeL, searchTypeR, result, ref level);
             MakeCandidating(result, lhs, rhs);
@@ -247,10 +243,8 @@ namespace HapetFrontend.Scoping
                 return result;
             }
 
-            // this is a kostyl to search for any ptr un ops
-            var searchType = sub is PointerType ? PointerType.VoidLiteralType : sub;
-            // this is a kostyl to search for any generic un ops
-            searchType = searchType is GenericType ? GenericType.LiteralType : searchType;
+            // this is a kostyl to search for any un ops
+            var searchType = GetLiteralTypeToSearch(sub);
 
             GetUnaryOperatorsInternal(this, name, searchType, result, ref level);
             MakeCandidating(result, sub);
@@ -331,6 +325,21 @@ namespace HapetFrontend.Scoping
                         ops.Remove(op);
                 }
             }
+        }
+
+        private HapetType GetLiteralTypeToSearch(HapetType type)
+        {
+            if (type is PointerType)
+                return PointerType.VoidLiteralType;
+            else if (type is GenericType)
+                return GenericType.LiteralType;
+            else if (type is ClassType)
+                return ClassType.LiteralType;
+            else if (type.IsExactly<StructType>())
+                return StructType.LiteralType;
+            else if (type is NullType)
+                return NullType.LiteralType;
+            return type;
         }
         #endregion
 
