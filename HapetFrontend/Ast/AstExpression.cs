@@ -46,14 +46,19 @@ namespace HapetFrontend.Ast
         /// Useful for AstCallExpr' TypeOrObjectName
         /// </summary>
         /// <returns>The decl of the type</returns>
-        public DeclSymbol TryGetDeclSymbol()
+        public DeclSymbol TryGetDeclSymbol(bool allowOnlyNestedAndId = false)
         {
             if (this is AstIdExpr idExpr)
                 return idExpr.FindSymbol as DeclSymbol;
             else if (this is AstNestedExpr nest)
-                return nest.RightPart.TryGetDeclSymbol();
-            else if (this is AstCastExpr cast)
-                return cast.TypeExpr.TryGetDeclSymbol();
+                return nest.RightPart.TryGetDeclSymbol(allowOnlyNestedAndId);
+
+            if (!allowOnlyNestedAndId)
+            {
+                if (this is AstCastExpr cast)
+                    return cast.TypeExpr.TryGetDeclSymbol(allowOnlyNestedAndId);
+            }
+            
             // TODO: other
             return null;
         }

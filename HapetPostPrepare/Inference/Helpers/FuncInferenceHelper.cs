@@ -60,7 +60,6 @@ namespace HapetPostPrepare
                     // break loop if there is no param with specified name
                     if (par == null)
                         break;
-
                     
                     var parType = par.Type;
 
@@ -88,8 +87,15 @@ namespace HapetPostPrepare
                         par.ParameterModificator == ParameterModificator.Ref ||
                         par.ParameterModificator == ParameterModificator.Out)
                     {
+                        // this is a special case when calling a function on a struct
+                        // that has not been overrided. so the first arg has 'ref' 
+                        // modifier and the func's first parameter is just a class
+                        // we need to allow it via cast
+                        bool allow = (i == 0) && callFromObject &&
+                            (arg.ArgumentModificator == ParameterModificator.Ref) && parType.OutType is ClassType;
+
                         // they has to be the same
-                        if (arg.ArgumentModificator != par.ParameterModificator)
+                        if (arg.ArgumentModificator != par.ParameterModificator && !allow)
                         {
                             score = int.MaxValue;
                             casts.Add(null);
@@ -321,6 +327,9 @@ namespace HapetPostPrepare
                 // get parent class decls
                 candidates.AddRange(Candidates_Step1_InheritedAndCurrent(name, inhDecl, callFromObject));
             }
+
+            // remove the same
+            candidates = candidates.Distinct().ToList();
 
             // add current decl subscope' decls
             var currentDecls = GetCandidatesInScope(name, declToSearch.SubScope, callFromObject: callFromObject);

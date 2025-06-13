@@ -402,7 +402,9 @@ namespace HapetPostPrepare
             for (int i = 0; i < realId.GenericRealTypes.Count; ++i)
             {
                 var g = realId.GenericRealTypes[i];
-                PostPrepareExprInference(g, inInfo, ref outInfo);
+                // infer if not infered
+                if (g.OutType == null)
+                    PostPrepareExprInference(g, inInfo, ref outInfo);
             }
 
             // if instantiating with genericTypes are not allowed - 
