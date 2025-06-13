@@ -9,6 +9,7 @@ using HapetFrontend.Errors;
 using HapetFrontend.Ast.Expressions;
 using HapetFrontend.Parsing;
 using HapetFrontend.Enums;
+using System.Reflection.Metadata;
 
 namespace HapetPostPrepare
 {
@@ -361,26 +362,30 @@ namespace HapetPostPrepare
         {
             foreach (var d in decls)
             {
-                var funcDecl = d.Decl as AstFuncDecl;
+                List<AstParamDecl> parameters;
+                if (d.Decl is AstFuncDecl funcDecl)
+                    parameters = funcDecl.Parameters;
+                else
+                    parameters = (d.Decl.Type.OutType as DelegateType).TargetDeclaration.Parameters;
 
                 // if args amount is -1 - then any func is ok
                 if (argsAmount == -1)
                     yield return d;
 
                 // allow if func has equal amount of params and args
-                if (funcDecl.Parameters.Count == argsAmount)
+                if (parameters.Count == argsAmount)
                     yield return d;
 
                 // check if func has bigger amount of params than args
-                if (funcDecl.Parameters.Count > argsAmount)
+                if (parameters.Count > argsAmount)
                 {
                     // we need to be sure that the last params has default values
                     // if not - no yield probably
                     bool isOk = true;
-                    var unsetParsAmount = funcDecl.Parameters.Count - argsAmount;
+                    var unsetParsAmount = parameters.Count - argsAmount;
                     for (int i = 0; i < unsetParsAmount; ++i)
                     {
-                        var thePar = funcDecl.Parameters[funcDecl.Parameters.Count - 1 - i];
+                        var thePar = parameters[parameters.Count - 1 - i];
                         if (thePar.DefaultValue == null)
                         {
                             isOk = false;
@@ -394,12 +399,12 @@ namespace HapetPostPrepare
                 }
 
                 // skip if 0 params - because args amount is non zero!!!
-                if (funcDecl.Parameters.Count == 0)
+                if (parameters.Count == 0)
                     continue;
 
                 // if not bigger - check if the last param with 'params' or 'arglist' cringe - allow
-                if (funcDecl.Parameters.Last().ParameterModificator == ParameterModificator.Params || 
-                    funcDecl.Parameters.Last().ParameterModificator == ParameterModificator.Arglist)
+                if (parameters.Last().ParameterModificator == ParameterModificator.Params ||
+                    parameters.Last().ParameterModificator == ParameterModificator.Arglist)
                     yield return d;
             }
         }
@@ -563,7 +568,7 @@ namespace HapetPostPrepare
             // search for the func in the scope
             foreach (var (k, d) in GetDecls(scopeToSearch))
             {
-                if (d != null && d.Decl is AstFuncDecl)
+                if (d != null && (d.Decl is AstFuncDecl || d.Decl.Type.OutType is DelegateType))
                 {
                     // 1 - name similarity checks - DO NOT ALLOW GENERICS HERE 
                     // generic checks are below
@@ -573,8 +578,10 @@ namespace HapetPostPrepare
                         && (d.Decl.Name is not AstIdGenericExpr && classWithFuncName is not AstIdGenericExpr))
                     {
                         // add static func if not callFromObject and add non-static if callFromObject
+                        // or just add if it is a delegate
                         if ((callFromObject && !d.Decl.SpecialKeys.Contains(TokenType.KwStatic)) || 
-                            (!callFromObject && d.Decl.SpecialKeys.Contains(TokenType.KwStatic)))
+                            (!callFromObject && d.Decl.SpecialKeys.Contains(TokenType.KwStatic)) ||
+                            d.Decl.Type.OutType is DelegateType)
                             candidates.Add(d);
                         continue;
                     }
@@ -587,8 +594,10 @@ namespace HapetPostPrepare
                         if (onlyFuncName == firstKeyPart && gAmountFunc == gAmountCall)
                         {
                             // add static func if not callFromObject and add non-static if callFromObject
+                            // or just add if it is a delegate
                             if ((callFromObject && !d.Decl.SpecialKeys.Contains(TokenType.KwStatic)) ||
-                                (!callFromObject && d.Decl.SpecialKeys.Contains(TokenType.KwStatic)))
+                                (!callFromObject && d.Decl.SpecialKeys.Contains(TokenType.KwStatic)) ||
+                                d.Decl.Type.OutType is DelegateType)
                                 candidates.Add(d);
                             continue;
                         }
@@ -603,8 +612,10 @@ namespace HapetPostPrepare
                         if (pureName == pureSearchName)
                         {
                             // add static func if not callFromObject and add non-static if callFromObject
+                            // or just add if it is a delegate
                             if ((callFromObject && !d.Decl.SpecialKeys.Contains(TokenType.KwStatic)) ||
-                                (!callFromObject && d.Decl.SpecialKeys.Contains(TokenType.KwStatic)))
+                                (!callFromObject && d.Decl.SpecialKeys.Contains(TokenType.KwStatic)) ||
+                                d.Decl.Type.OutType is DelegateType)
                                 candidates.Add(d);
                             continue;
                         }
@@ -614,7 +625,7 @@ namespace HapetPostPrepare
 
             // if search in parent scopes
             if (searchParent && scopeToSearch.Parent != null)
-                GetCandidatesInScope(classWithFuncName, scopeToSearch.Parent, searchParent, callFromObject);
+                candidates.AddRange(GetCandidatesInScope(classWithFuncName, scopeToSearch.Parent, searchParent, callFromObject));
 
             return candidates;
         }
@@ -645,6 +656,9 @@ namespace HapetPostPrepare
             foreach (var d in declsCopied)
             {
                 var funcDecl = d.Decl as AstFuncDecl;
+                // skip delegates
+                if (funcDecl == null)
+                    continue;
                 var onlyFuncName = funcDecl.Name.Name.GetPureFuncName();
 
                 // skip non explicit
@@ -663,6 +677,9 @@ namespace HapetPostPrepare
                 foreach (var dIn in declsCopied)
                 {
                     var funcDeclIn = dIn.Decl as AstFuncDecl;
+                    // skip delegates
+                    if (funcDeclIn == null)
+                        continue;
                     if (funcDeclIn.Name.Name.StartsWith($"{pureSearchParent}::{pureSearchName}("))
                         decls.Remove(dIn);
                 }

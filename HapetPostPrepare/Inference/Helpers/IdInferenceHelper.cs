@@ -420,7 +420,7 @@ namespace HapetPostPrepare
 
             // generating generic shite name
             realName = realId.GetCopy(genDecl.Name.Name);
-            var realDcl = genDecl.Scope.GetSymbol(realName);
+            var realDcl = genDecl.Scope.GetSymbol(realName, handleGenerics: true);
             if (realDcl is DeclSymbol realDclDecl)
             {
                 // return if exists
