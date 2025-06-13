@@ -122,7 +122,7 @@ namespace HapetPostPrepare
                     _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, callExpr.FuncName, [], ErrorCode.Get(CTWN.StaticFuncFromObject), null, ReportType.Warning);
                 }
             }
-            else if (callExpr.FuncName.OutType is PointerType ptr1 && ptr1.TargetType is DelegateType dt)
+            else if (callExpr.FuncName.OutType is DelegateType dt)
             {
                 // call expr type is the same as func return type
                 callExpr.OutType = dt.TargetDeclaration.Returns.OutType;
@@ -146,7 +146,7 @@ namespace HapetPostPrepare
                 // if the type/object name is not presented - the function could be in local variable as delegate
                 var smbl1 = callExpr.Scope.GetSymbol(funcName);
                 if (smbl1 is DeclSymbol ds4 && ds4.Decl is AstDeclaration varDecl && 
-                    varDecl.Type.OutType is PointerType ptr1 && ptr1.TargetType is DelegateType)
+                    varDecl.Type.OutType is DelegateType)
                 {
                     newName = funcName.GetCopy();
                     declToSearch = null;
@@ -313,7 +313,7 @@ namespace HapetPostPrepare
 
                     // check for generic shite
                     newName = funcName.GetCopy($"{clsTp.Declaration.Name.Name}::{callExpr.FuncName.Name}"); // USE REAL FUNC NAME HERE
-                    smbl2 = GetFuncFromCandidates(newName, callExpr, argsWithClassParam, clsTp.Declaration, false, out var casts3);
+                    smbl2 = GetFuncFromCandidates(newName, callExpr, argsWithClassParam, clsTp.Declaration, true, out var casts3);
                     smbl2 = OnFoundSymbol(smbl2, callExpr.FuncName);
                     if (smbl2 is DeclSymbol ds3 && ds3.Decl is AstFuncDecl funcDecl3)
                     {

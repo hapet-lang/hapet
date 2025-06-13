@@ -295,7 +295,7 @@ namespace HapetPostPrepare
             List<DeclSymbol> candidates = new List<DeclSymbol>();
 
             candidates.AddRange(Candidates_Step1_InheritedAndCurrent(name, declToSearch, callFromObject));  // step 1
-            candidates.AddRange(Candidates_Step2_CurrentScopeAndParents(name, callExpr, callFromObject));   // step 2
+            //candidates.AddRange(Candidates_Step2_CurrentScopeAndParents(name, callExpr, callFromObject));   // step 2
             var argsAmount = args == null ? -1 : args.Count;
             candidates = Candidates_Step3_MinAmountParams(candidates, argsAmount).ToList();                 // step 3
             candidates = Candidates_Step4_OnlyOneGeneric(name, candidates).ToList();                        // step 4
