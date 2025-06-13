@@ -423,8 +423,17 @@ namespace HapetPostPrepare
             var realDcl = genDecl.Scope.GetSymbol(realName, handleGenerics: true);
             if (realDcl is DeclSymbol realDclDecl)
             {
-                // return if exists
-                return realDclDecl.Decl;
+                bool areTheSame = true;
+                var declName = realDclDecl.Name as AstIdGenericExpr;
+                // we need to make sure that the generic types are really the same
+                for (int i = 0; i < realName.GenericRealTypes.Count; ++i)
+                {
+                    if (realName.GenericRealTypes[i].OutType != declName.GenericRealTypes[i].OutType)
+                        areTheSame = false;
+                }
+                // return if exists and types are the same
+                if (areTheSame)
+                    return realDclDecl.Decl;
             }
 
             // create a new shite with real types

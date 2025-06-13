@@ -178,38 +178,11 @@ namespace HapetFrontend.Scoping
                     for (int i = 0; i < gAmountSymbol; ++i)
                     {
                         if (genK.GenericRealTypes[i].OutType == genId.GenericRealTypes[i].OutType)
-                        {
                             continue;
-                        }
-
-                        // this is a special keys for decls
-                        // when a new non-generic class is created
-                        // all the funcs are going to be copied inside it with 
-                        // new generics types. we don't need it.
-                        // we would suppose that all the generic
-                        // funcs that are the same but in different 
-                        // non-generic-generic classes - have the 
-                        // same generic types - fix of #80
-                        if (genK.GenericRealTypes[i].OutType is GenericType kType && 
-                            genId.GenericRealTypes[i].OutType is GenericType sType &&
-                            kType.Declaration.ParentDecl is AstDeclaration fDecl &&
-                            sType.Declaration.ParentDecl is AstDeclaration sDecl)
-                        {
-                            // check that original decls are the same
-                            var fComp1 = fDecl.IsImplOfGeneric ? fDecl.OriginalGenericDecl : fDecl;
-                            var fComp2 = sDecl.IsImplOfGeneric ? sDecl.OriginalGenericDecl : sDecl;
-                            if (fComp1 == fComp2 && kType.Declaration.Name.Name == sType.Declaration.Name.Name)
-                            {
-                                continue;
-                            }
-                        }
-
                         allEqual = false;
                         break;
                     }
-                    if (_symbolTable[k] is DeclSymbol ds1 && 
-                        ds1.Decl.IsImplOfGeneric &&
-                        allEqual)
+                    if (allEqual)
                     {
                         theSameGeneric = _symbolTable[k] as DeclSymbol;
                         continue;
