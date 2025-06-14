@@ -506,7 +506,13 @@ namespace HapetBackend.Llvm
 
                 if (getPtr)
                     return v;
-                var loaded = _builder.BuildLoad2(HapetTypeToLLVMType(expr.OutType), v, expr.Name);
+
+                // need to load it as a ptr
+                var varType = expr.OutType;
+                if (varType is ClassType)
+                    varType = PointerType.GetPointerType(varType);
+
+                var loaded = _builder.BuildLoad2(HapetTypeToLLVMType(varType), v, expr.Name);
                 return loaded;
             }
             // this check is done to generate proper delegate
@@ -576,7 +582,13 @@ namespace HapetBackend.Llvm
                 // return the ptr to the val. used for AstAddressOf or storing values
                 if (getPtr)
                     return v;
-                var loaded = _builder.BuildLoad2(HapetTypeToLLVMType(expr.OutType), v, expr.Name);
+
+                // need to load it as a ptr
+                var varType = expr.OutType;
+                if (varType is ClassType)
+                    varType = PointerType.GetPointerType(varType);
+
+                var loaded = _builder.BuildLoad2(HapetTypeToLLVMType(varType), v, expr.Name);
                 return loaded;
             }
         }

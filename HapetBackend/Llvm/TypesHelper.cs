@@ -417,7 +417,7 @@ namespace HapetBackend.Llvm
         {
             // need to make a ptr to a class
             var t = exprType is ClassType ? PointerType.GetPointerType(exprType) : exprType;
-            return CreateLocalVariable(HapetTypeToLLVMType(t), exprType.GetAlignment(), name);
+            return CreateLocalVariable(HapetTypeToLLVMType(t), t.GetAlignment(), name);
         }
 
         private LLVMValueRef CreateLocalVariable(LLVMTypeRef type, int alignment, string name = "temp")
