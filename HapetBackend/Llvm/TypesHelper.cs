@@ -589,6 +589,18 @@ namespace HapetBackend.Llvm
                     return v; // return malloced
                 }
             }
+            else if (inType is ClassType classType)
+            {
+                if (outType is StructType structType2)
+                {
+                    // check inheritance
+                    bool isDownCast = structType2.IsInheritedFrom(classType);
+                    if (isDownCast)
+                    {
+                        return CreateStructCastFromObject(val, structType2, true);
+                    }
+                }
+            }
             // ...
             return val;
         }
