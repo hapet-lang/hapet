@@ -3,6 +3,7 @@ using HapetFrontend.Ast;
 using HapetFrontend.Ast.Declarations;
 using HapetFrontend.Ast.Expressions;
 using HapetFrontend.Ast.Statements;
+using HapetFrontend.Enums;
 using HapetFrontend.Errors;
 using HapetFrontend.Extensions;
 using HapetFrontend.Helpers;
@@ -197,18 +198,18 @@ namespace HapetBackend.Llvm
 
                             var rightExpr = (binExpr.Right as AstExpression);
 
-                            if (rightExpr.OutType is PointerType ptrT && ptrT.TargetType is ClassType)
+                            if (rightExpr.OutType is ClassType)
                             {
                                 ClassType leftType;
-                                ClassType rightType = (rightExpr.OutType as PointerType).TargetType as ClassType;
-                                if ((leftExpr.OutType as PointerType).TargetType is ClassType clsT)
+                                ClassType rightType = rightExpr.OutType as ClassType;
+                                if (leftExpr.OutType is ClassType clsT)
                                 {
                                     leftType = clsT;
                                 }
                                 else
                                 {
                                     // when smth like 'valueTyped as ICringeCock'
-                                    return CreateCast(_builder, left, (leftExpr.OutType as PointerType).TargetType, rightType);
+                                    return CreateCast(_builder, left, leftExpr.OutType, rightType);
                                 }
 
                                 // you would ask - wtf is anyIsInterface?
@@ -225,8 +226,8 @@ namespace HapetBackend.Llvm
                                     if (isDownCast || anyIsInterface)
                                     {
                                         var ptrToCastTypeInfo = _typeInfoDictionary[rightType];
-                                        var castTypeNull = LLVMValueRef.CreateConstPointerNull(HapetTypeToLLVMType(rightExpr.OutType));
-                                        var casted = _builder.BuildBitCast(left, HapetTypeToLLVMType(rightExpr.OutType), "castedAs");
+                                        var castTypeNull = LLVMValueRef.CreateConstPointerNull(HapetTypeToLLVMType(PointerType.GetPointerType(rightType)));
+                                        var casted = _builder.BuildBitCast(left, HapetTypeToLLVMType(PointerType.GetPointerType(rightType)), "castedAs");
 
                                         // WARN: hard cock
                                         var typeConverter = _currentFunction.Scope.GetSymbolInNamespace("System.Runtime.Conversion", new AstIdExpr("TypeConverter"));
@@ -251,13 +252,13 @@ namespace HapetBackend.Llvm
                             {
                                 ClassType leftType;
                                 StructType rightType = rightExpr.OutType as StructType;
-                                if ((leftExpr.OutType as PointerType).TargetType is ClassType clsT)
+                                if (leftExpr.OutType is ClassType clsT)
                                 {
                                     leftType = clsT;
                                 }
                                 else
                                 {
-                                    // TODO: error. user tried to do smth like 
+                                    // TODO: error in PP. user tried to do smth like 
                                     // valueType as SomeStructType
                                     return default;
                                 }
@@ -282,10 +283,10 @@ namespace HapetBackend.Llvm
 
                             var rightExpr = (binExpr.Right as AstExpression);
 
-                            if (leftExpr.OutType is PointerType ptrT && ptrT.TargetType is ClassType leftType)
+                            if (leftExpr.OutType is ClassType leftType)
                             {
                                 ClassType rightType;
-                                if (rightExpr.OutType is PointerType ptrT2 && ptrT2.TargetType is ClassType clsT)
+                                if (rightExpr.OutType is ClassType clsT)
                                 {
                                     rightType = clsT;
                                 }
@@ -354,10 +355,10 @@ namespace HapetBackend.Llvm
                                 // valueType is ISome
 
                                 var leftValueType = leftExpr.OutType as StructType;
-                                ClassType rightType;
-                                if ((rightExpr.OutType as PointerType).TargetType is ClassType clsT)
+                                if (rightExpr.OutType is ClassType)
                                 {
-                                    rightType = clsT;
+                                    // just false
+                                    return GenerateExpressionCode(new AstBoolExpr(binExpr.IsNot));
                                 }
                                 else if (rightExpr.OutType == leftValueType)
                                 {
@@ -371,20 +372,20 @@ namespace HapetBackend.Llvm
                                     // valueType is AnotherValueType
                                     return default;
                                 }
-
-                                // just false
-                                return GenerateExpressionCode(new AstBoolExpr(binExpr.IsNot));
                             }
                         }
                     default:
                         {
                             var leftExpr = (binExpr.Left as AstExpression);
                             var rightExpr = (binExpr.Right as AstExpression);
-                            if (leftExpr.OutType.IsExactly<StructType>() && rightExpr.OutType.IsExactly<StructType>())
+
+                            // special cringe case to compare structs
+                            if (leftExpr.OutType.IsExactly<StructType>() && rightExpr.OutType.IsExactly<StructType>()
+                                && (binExpr.Operator == "==" || binExpr.Operator == "!="))
                             {
                                 // different structs are not the same
                                 if ((leftExpr.OutType as StructType).Declaration != (rightExpr.OutType as StructType).Declaration)
-                                    return GenerateExpressionCode(new AstBoolExpr(false));
+                                    return GenerateExpressionCode(new AstBoolExpr(binExpr.Operator == "!="));
 
                                 // special keys for struct comparisons
                                 var left = GenerateExpressionCode(leftExpr, true); // we need ptrs
@@ -405,7 +406,7 @@ namespace HapetBackend.Llvm
                                 var compared = GetMemcmp(left, right, sizeLlvm);
 
                                 // need to compare to 0 that they are equal
-                                var fCmp = GetICompare(LLVMIntPredicate.LLVMIntEQ);
+                                var fCmp = GetICompare(binExpr.Operator == "!=" ? LLVMIntPredicate.LLVMIntNE : LLVMIntPredicate.LLVMIntEQ);
                                 var val = fCmp(_builder, compared, LLVMValueRef.CreateConstInt(HapetTypeToLLVMType(HapetType.CurrentTypeContext.BoolTypeInstance), (ulong)0), "binOp");
                                 return val;
                             }
@@ -589,9 +590,17 @@ namespace HapetBackend.Llvm
 
                 // getting class ctor
                 string onlyName = classType.Declaration.Name.Name.GetClassNameWithoutNamespace();
-                var ctorName = $"{classType.Declaration.Name.Name}::{onlyName}_ctor" + expr.Arguments.GetArgsString(PointerType.GetPointerType(classType));
+                var ctorName = $"{classType.Declaration.Name.Name}::{onlyName}_ctor(";
                 List<AstArgumentExpr> argsWithClassParam = new List<AstArgumentExpr>(expr.Arguments);
-                argsWithClassParam.Insert(0, new AstArgumentExpr(new AstIdExpr("this") { OutType = PointerType.GetPointerType(classType) }));
+                argsWithClassParam.Insert(0, new AstArgumentExpr(new AstIdExpr("this") 
+                { 
+                    OutType = classType,
+                    Scope = expr.Scope,
+                })
+                {
+                    OutType = classType,
+                    Scope = expr.Scope,
+                });
                 var ctorSymbol = _postPreparer.GetFuncFromCandidates(new AstIdExpr(ctorName), null, argsWithClassParam, classType.Declaration, true, out var casts);
 
                 // error if ctor not found
@@ -630,9 +639,18 @@ namespace HapetBackend.Llvm
             {
                 // getting struct ctor
                 string onlyName = structType.Declaration.Name.Name.GetClassNameWithoutNamespace();
-                var ctorName = $"{structType.Declaration.Name.Name}::{onlyName}_ctor" + expr.Arguments.GetArgsString(PointerType.GetPointerType(structType));
+                var ctorName = $"{structType.Declaration.Name.Name}::{onlyName}_ctor(";
                 List<AstArgumentExpr> argsWithClassParam = new List<AstArgumentExpr>(expr.Arguments);
-                argsWithClassParam.Insert(0, new AstArgumentExpr(new AstIdExpr("this") { OutType = PointerType.GetPointerType(structType) }));
+                argsWithClassParam.Insert(0, new AstArgumentExpr(new AstIdExpr("this")
+                {
+                    OutType = structType,
+                    Scope = expr.Scope,
+                })
+                {
+                    OutType = structType,
+                    Scope = expr.Scope,
+                    ArgumentModificator = ParameterModificator.Ref
+                });
                 var ctorSymbol = _postPreparer.GetFuncFromCandidates(new AstIdExpr(ctorName), null, argsWithClassParam, structType.Declaration, true, out var casts);
 
                 // error if ctor not found
@@ -813,7 +831,10 @@ namespace HapetBackend.Llvm
 
         private unsafe LLVMValueRef GenerateArgumentExpr(AstArgumentExpr expr)
         {
-            return GenerateExpressionCode(expr.Expr);
+            // for ref and out we need to take a pointer
+            bool isRefOrOut = expr.ArgumentModificator == ParameterModificator.Ref || expr.ArgumentModificator == ParameterModificator.Out;
+
+            return GenerateExpressionCode(expr.Expr, isRefOrOut);
         }
 
         private unsafe LLVMValueRef GenerateCastExpr(AstCastExpr expr, bool getPtr = false)
@@ -849,21 +870,9 @@ namespace HapetBackend.Llvm
                 HapetType leftPartType = null;
                 AstDeclaration leftPartDecl = null;
                 List<AstDeclaration> leftPartDeclarations = null;
-                if (expr.LeftPart.OutType is PointerType ptr && ptr.TargetType is ClassType classT)
-                {
-                    leftPartDecl = classT.Declaration;
-                    leftPartDeclarations = classT.Declaration.Declarations.Where(x => x is AstVarDecl).ToList();
-                    leftPartType = classT;
-                }
-                else if (expr.LeftPart.OutType is PointerType ptr2 && ptr2.TargetType is StructType strT)
-                {
-                    leftPartDecl = strT.Declaration;
-                    leftPartDeclarations = strT.Declaration.Declarations.Where(x => x is AstVarDecl).ToList();
-                    leftPartType = strT;
-                }
                 // this is usually when accesing static/const values
                 // like 'Attribute.CoonstField'
-                else if (expr.LeftPart.OutType is ClassType classTT)
+                if (expr.LeftPart.OutType is ClassType classTT)
                 {
                     leftPartDecl = classTT.Declaration;
                     leftPartDeclarations = classTT.Declaration.Declarations.Where(x => x is AstVarDecl).ToList();
@@ -880,18 +889,6 @@ namespace HapetBackend.Llvm
                     leftPartDecl = enumT.Declaration;
                     leftPartDeclarations = enumT.Declaration.Declarations.Select(x => x as AstDeclaration).ToList();
                     leftPartType = enumT;
-                }
-                else if (expr.LeftPart.OutType is ArrayType arrayT)
-                {
-                    leftPartDecl = arrayT.Declaration;
-                    leftPartDeclarations = arrayT.Declaration.Declarations;
-                    leftPartType = arrayT;
-                }
-                else if (expr.LeftPart.OutType is StringType stringT)
-                {
-                    leftPartDecl = AstStringExpr.GetStringStruct(expr.Scope);
-                    leftPartDeclarations = AstStringExpr.GetStringStruct(expr.Scope).Declarations;
-                    leftPartType = stringT;
                 }
 
                 // getting index of the element and the element itself
@@ -1575,7 +1572,7 @@ namespace HapetBackend.Llvm
                 return;
 
             string onlyName = baseStmt.BaseType.Declaration.Name.Name.GetClassNameWithoutNamespace();
-            var ctorName = $"{baseStmt.BaseType.Declaration.Name.Name}::{onlyName}_ctor" + baseStmt.Arguments.GetArgsString(PointerType.GetPointerType(baseStmt.BaseType));
+            var ctorName = $"{baseStmt.BaseType.Declaration.Name.Name}::{onlyName}_ctor(";
             List<AstArgumentExpr> argsWithClassParam = new List<AstArgumentExpr>(baseStmt.Arguments);
             argsWithClassParam.Insert(0, new AstArgumentExpr(baseStmt.ThisArgument));
             var ctorSymbol = _postPreparer.GetFuncFromCandidates(new AstIdExpr(ctorName), null, argsWithClassParam, baseStmt.BaseType.Declaration, true, out var casts);

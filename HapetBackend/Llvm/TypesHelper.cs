@@ -192,30 +192,27 @@ namespace HapetBackend.Llvm
                 case FunctionType f:
                     {
                         // skip arglist params!!!
-                        var paramTypes = f.Declaration.Parameters.Where(x => x.ParameterModificator != ParameterModificator.Arglist).
-                            Select(rt => HapetTypeToLLVMType(rt.Type.OutType)).ToList();
-                        var returnType = HapetTypeToLLVMType(f.Declaration.Returns.OutType);
+                        var pars = f.Declaration.Parameters.Where(x => x.ParameterModificator != ParameterModificator.Arglist);
+                        List<LLVMTypeRef> paramTypes = new List<LLVMTypeRef>();
+                        foreach (var par in pars)
+                        {
+                            // need to take ptr to class type
+                            var pt = par.Type.OutType is ClassType ? PointerType.GetPointerType(par.Type.OutType) : par.Type.OutType;
+
+                            // making it as pointer if it has ref/out modifier
+                            if (par.ParameterModificator == ParameterModificator.Ref || par.ParameterModificator == ParameterModificator.Out)
+                                pt = PointerType.GetPointerType(pt);
+
+                            paramTypes.Add(HapetTypeToLLVMType(pt));
+                        }
+                        // need to make it as a ptr
+                        var retT = f.Declaration.Returns.OutType is ClassType ? PointerType.GetPointerType(f.Declaration.Returns.OutType) : f.Declaration.Returns.OutType;
+                        var returnType = HapetTypeToLLVMType(retT);
 
                         bool hasArgList = f.Declaration.Parameters.FirstOrDefault(x => x.ParameterModificator == ParameterModificator.Arglist) != null;
                         var funcType = LLVMTypeRef.CreateFunction(returnType, paramTypes.ToArray(), hasArgList);
                         return funcType;
                     }
-
-                //case DelegateType d:
-                //    {
-                //        var funcType = GetFunctionTypeOfDelegate(d);
-
-                //        // fields of delegate struct
-                //        var objectPtr = HapetTypeToLLVMType(PointerType.GetPointerType(IntType.GetIntType(1, false))); // ptr to func object
-                //        var funcPtr = funcType.GetPointerTo();
-
-                //        var str = _context.CreateNamedStruct($"delegate.{d.Declaration.Name.Name}");
-                //        str.StructSetBody(new LLVMTypeRef[] {
-                //            ((LLVMTypeRef)funcPtr),
-                //            ((LLVMTypeRef)objectPtr)
-                //        }, false);
-                //        return str;
-                //    }
 
                 case ClassType t:
                     {
@@ -573,7 +570,7 @@ namespace HapetBackend.Llvm
             // no need to else-if here - it can handle bacis types transformation
             if (inType is StructType structType) 
             {
-                if (outType is PointerType ptrT2 && ptrT2.TargetType is ClassType clsT && 
+                if (outType is ClassType clsT && 
                     (clsT.Declaration.Name.Name == "System.Object" || clsT.Declaration.Name.Name == "System.ValueType" || clsT.Declaration.IsInterface))
                 {
                     // cast from struct instance to object
