@@ -790,7 +790,13 @@ namespace HapetBackend.Llvm
 
                     if (getPtr)
                         return varPtr;
-                    return _builder.BuildLoad2(HapetTypeToLLVMType(fncType.Declaration.Returns.OutType), varPtr, "holderLoaded");
+
+                    // need to load it as a ptr
+                    var retType = fncType.Declaration.Returns.OutType;
+                    if (retType is ClassType)
+                        retType = PointerType.GetPointerType(retType);
+
+                    return _builder.BuildLoad2(HapetTypeToLLVMType(retType), varPtr, "holderLoaded");
                 }
 
                 return CreateCall(_builder, funcType, fncType, hapetFunc, args, isBaseCall);
@@ -928,7 +934,13 @@ namespace HapetBackend.Llvm
 
                         if (getPtr)
                             return v;
-                        var loaded = _builder.BuildLoad2(HapetTypeToLLVMType(expr.OutType), v, $"{idExpr.Name}Loaded");
+
+                        // need to load it as a ptr
+                        var varType = expr.OutType;
+                        if (varType is ClassType)
+                            varType = PointerType.GetPointerType(varType);
+
+                        var loaded = _builder.BuildLoad2(HapetTypeToLLVMType(varType), v, $"{idExpr.Name}Loaded");
                         return loaded;
                     }
                     else
@@ -980,9 +992,15 @@ namespace HapetBackend.Llvm
                         // if we need ptr for the shite. usually used to store some values inside vars
                         if (getPtr)
                             return ret;
+
+                        // need to load it as a ptr
+                        var varType = idExpr.OutType;
+                        if (varType is ClassType)
+                            varType = PointerType.GetPointerType(varType);
+
                         // loading the field because it is not registered in _typeMap like a normal variable.
                         // it should be ok for all types of the fields including classes and other shite
-                        var retLoaded = _builder.BuildLoad2(HapetTypeToLLVMType(idExpr.OutType), ret, $"{idExpr.Name}Loaded");
+                        var retLoaded = _builder.BuildLoad2(HapetTypeToLLVMType(varType), ret, $"{idExpr.Name}Loaded");
                         return retLoaded;
                     }
                 }
@@ -1042,8 +1060,8 @@ namespace HapetBackend.Llvm
             // the buffer to be indexed
             LLVMValueRef buffer = default;
 
-            // for now they are identical
-            if (expr.ObjectName.OutType is ArrayType || expr.ObjectName.OutType is StringType)
+            // special case for string for now
+            if (expr.ObjectName.OutType is StringType)
             {
                 // getting arrayBuf from struct and pointer to it
                 LLVMValueRef ptrToArray = GenerateExpressionCode(expr.ObjectName, true);
@@ -1067,7 +1085,12 @@ namespace HapetBackend.Llvm
                 if (getPtr)
                     return arrayEl;
 
-                var retLoaded = _builder.BuildLoad2(HapetTypeToLLVMType(expr.OutType), arrayEl);
+                // need to load it as a ptr
+                var varType = expr.OutType;
+                if (varType is ClassType)
+                    varType = PointerType.GetPointerType(varType);
+
+                var retLoaded = _builder.BuildLoad2(HapetTypeToLLVMType(varType), arrayEl);
                 return retLoaded;
             }
 
@@ -1108,7 +1131,9 @@ namespace HapetBackend.Llvm
             LLVM.AppendExistingBasicBlock(_lastFunctionValueRef, bbEnd);
             _builder.PositionAtEnd(bbEnd);
 
-            return _builder.BuildLoad2(HapetTypeToLLVMType(expr.OutType), varPtr, "ternLoaded");
+            // need to make a ptr to a class
+            var resultType = expr.OutType is ClassType ? PointerType.GetPointerType(expr.OutType) : expr.OutType;
+            return _builder.BuildLoad2(HapetTypeToLLVMType(resultType), varPtr, "ternLoaded");
         }
 
         private unsafe LLVMValueRef GenerateEmptyStructExprCode(AstEmptyStructExpr expr)
