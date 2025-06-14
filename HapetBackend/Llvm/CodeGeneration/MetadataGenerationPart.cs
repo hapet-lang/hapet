@@ -74,20 +74,21 @@ namespace HapetBackend.Llvm
                 var classStruct = HapetTypeToLLVMType(cls.Type.OutType);
 
                 var entryTypes = new List<LLVMTypeRef>();
-                var entryHapetTypes = new List<HapetType>();
 
                 // add typeinfo field 
                 entryTypes.Add(_context.Int8Type.GetPointerTo());
-                entryHapetTypes.Add(PointerType.GetPointerType(HapetType.CurrentTypeContext.IntPtrTypeInstance));
 
                 // getting all field except props
                 foreach (var decl in cls.Declarations.Where(x => x is AstVarDecl && x is not AstPropertyDecl).Select(x => x as AstVarDecl))
                 {
+                    // need to make a ptr to a class
+                    var varType = decl.Type.OutType is ClassType ? PointerType.GetPointerType(decl.Type.OutType) : decl.Type.OutType;
+
                     // check for const/static fields
                     if (decl.SpecialKeys.Contains(TokenType.KwStatic))
                     {
                         // creating a static field of the class
-                        var globStatic = _module.AddGlobal(HapetTypeToLLVMType(decl.Type.OutType), $"{declName.Name}::{decl.Name.Name}");
+                        var globStatic = _module.AddGlobal(HapetTypeToLLVMType(varType), $"{declName.Name}::{decl.Name.Name}");
                         if (decl.Initializer != null)
                         {
                             globStatic.Initializer = GenerateExpressionCode(decl.Initializer);
@@ -95,7 +96,7 @@ namespace HapetBackend.Llvm
                         else
                         {
                             // set default value to it
-                            globStatic.Initializer = GenerateExpressionCode(AstDefaultExpr.GetDefaultValueForType(decl.Type.OutType, null, _compiler.MessageHandler));
+                            globStatic.Initializer = GenerateExpressionCode(AstDefaultExpr.GetDefaultValueForType(varType, null, _compiler.MessageHandler));
                         }
                         _valueMap[decl.GetSymbol] = globStatic;
                     }
@@ -104,19 +105,16 @@ namespace HapetBackend.Llvm
                         // creating a const field of the class
                         // TODO: consts should not create a variable in LLVM IR 
                         // just use their values where needed
-                        var globConst = _module.AddGlobal(HapetTypeToLLVMType(decl.Type.OutType), $"{declName.Name}::{decl.Name.Name}");
-                        globConst.Initializer = HapetValueToLLVMValue(decl.Type.OutType, decl.Initializer.OutValue);
+                        var globConst = _module.AddGlobal(HapetTypeToLLVMType(varType), $"{declName.Name}::{decl.Name.Name}");
+                        globConst.Initializer = HapetValueToLLVMValue(varType, decl.Initializer.OutValue);
                         _valueMap[decl.GetSymbol] = globConst;
                     }
                     else
                     {
                         // if it is non const/static - create a field in struct
-                        entryTypes.Add(HapetTypeToLLVMType(decl.Type.OutType));
-                        entryHapetTypes.Add(decl.Type.OutType);
+                        entryTypes.Add(HapetTypeToLLVMType(varType));
                     }
                 }
-
-                _structTypeElementsMap.Add(cls.Type.OutType, entryHapetTypes);
                 classStruct.StructSetBody(entryTypes.ToArray(), false);
             }
             foreach (var str in _postPreparer.AllStructsMetadata)

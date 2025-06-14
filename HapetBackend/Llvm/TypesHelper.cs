@@ -24,10 +24,6 @@ namespace HapetBackend.Llvm
         /// The value itself (loaded after alloca)
         /// </summary>
         private Dictionary<ISymbol, LLVMValueRef> _valueMap = new Dictionary<ISymbol, LLVMValueRef>();
-        /// <summary>
-        /// Class or struct mapping to their elements
-        /// </summary>
-        private Dictionary<HapetType, List<HapetType>> _structTypeElementsMap = new Dictionary<HapetType, List<HapetType>>();
 
         /// <summary>
         /// Struct offsets mapping when StructLayoutAttribute used
@@ -382,8 +378,11 @@ namespace HapetBackend.Llvm
             int i = 0;
             foreach (var mem in decls)
             {
+                // need to make a ptr to a class
+                var type = mem is ClassType ? PointerType.GetPointerType(mem) : mem;
+
                 // we need to get a minimal type alignment size depending on pack
-                int typeAlignment = Math.Min(mem.GetAlignment(), packNumber);
+                int typeAlignment = Math.Min(type.GetAlignment(), packNumber);
 
                 // if current offset is shity for the member type
                 // we need to append a padding
@@ -397,7 +396,7 @@ namespace HapetBackend.Llvm
                 }
 
                 offsets[i] = (uint)memTypes.Count;
-                memTypes.Add(HapetTypeToLLVMType(mem));
+                memTypes.Add(HapetTypeToLLVMType(type));
                 currentSize += (int)((_targetData.SizeOfTypeInBits(memTypes.Last()) + 7) / 8);
                 i += 1;
             }
@@ -416,7 +415,9 @@ namespace HapetBackend.Llvm
 
         private LLVMValueRef CreateLocalVariable(HapetType exprType, string name = "temp")
         {
-            return CreateLocalVariable(HapetTypeToLLVMType(exprType), exprType.GetAlignment(), name);
+            // need to make a ptr to a class
+            var t = exprType is ClassType ? PointerType.GetPointerType(exprType) : exprType;
+            return CreateLocalVariable(HapetTypeToLLVMType(t), exprType.GetAlignment(), name);
         }
 
         private LLVMValueRef CreateLocalVariable(LLVMTypeRef type, int alignment, string name = "temp")

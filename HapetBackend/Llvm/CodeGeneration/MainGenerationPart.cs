@@ -133,7 +133,15 @@ namespace HapetBackend.Llvm
                     if (p.ParameterModificator == ParameterModificator.Arglist)
                         continue;
 
-                    var addrAlloca = _builder.BuildAlloca(HapetTypeToLLVMType(p.Type.OutType), $"{p.Name.Name}.addr");
+                    // if it is a ref or out or a class - need to make it as a ptr
+                    var paramType = p.Type.OutType;
+                    if (p.Type.OutType is ClassType)
+                        paramType = PointerType.GetPointerType(paramType);
+                    if (p.ParameterModificator == ParameterModificator.Ref ||
+                        p.ParameterModificator == ParameterModificator.Out)
+                        paramType = PointerType.GetPointerType(paramType);
+
+                    var addrAlloca = _builder.BuildAlloca(HapetTypeToLLVMType(paramType), $"{p.Name.Name}.addr");
                     _builder.BuildStore(lfunc.GetParam((uint)i), addrAlloca);
                     _valueMap[p.GetSymbol] = addrAlloca;
                 }
