@@ -18,24 +18,28 @@ namespace HapetLastPrepare
             {
                 if (ShouldTheDeclBeSkippedFromCodeGen(cls))
                     continue;
+                _currentSourceFile = cls.SourceFile;
                 LPRACClass(cls);
             }
             foreach (var str in _postPreparer.AllStructsMetadata)
             {
                 if (ShouldTheDeclBeSkippedFromCodeGen(str))
                     continue;
+                _currentSourceFile = str.SourceFile;
                 LPRACStruct(str);
             }
             foreach (var del in _postPreparer.AllDelegatesMetadata)
             {
                 if (ShouldTheDeclBeSkippedFromCodeGen(del))
                     continue;
+                _currentSourceFile = del.SourceFile;
                 LPRACDelegate(del);
             }
             foreach (var func in _postPreparer.AllFunctionsMetadata)
             {
                 if (ShouldTheDeclBeSkippedFromCodeGen(func))
                     continue;
+                _currentSourceFile = func.SourceFile;
                 LPRACFunction(func);
             }
         }
@@ -121,7 +125,7 @@ namespace HapetLastPrepare
                 }
                 else
                 {
-                    LPRACDecl(decl);
+                    LPRACDecl(d);
                 }
             }
         }
@@ -157,7 +161,7 @@ namespace HapetLastPrepare
                 }
                 else
                 {
-                    LPRACDecl(decl);
+                    LPRACDecl(d);
                 }
             }
         }
@@ -313,7 +317,9 @@ namespace HapetLastPrepare
                 case AstDefaultExpr defaultExpr:
                     LPRACDefaultExpr(defaultExpr);
                     break;
-                case AstDefaultGenericExpr _: // no need to scope anything
+                case AstDefaultGenericExpr _: // no need
+                    break;
+                case AstEmptyStructExpr _: // no need
                     break;
                 case AstArrayExpr arrayExpr:
                     LPRACArrayExpr(arrayExpr);
@@ -483,7 +489,7 @@ namespace HapetLastPrepare
 
         private void LPRACCastExpr(AstCastExpr expr)
         {
-            if (expr.TypeExpr.OutType is ClassType)
+            if (expr.TypeExpr?.OutType is ClassType)
             {
                 expr.TypeExpr = GetPointerType(expr.TypeExpr);
                 expr.OutType = expr.TypeExpr.OutType;
@@ -563,7 +569,8 @@ namespace HapetLastPrepare
             LPRACExpr(stmt.Condition);
 
             LPRACBlockExpr(stmt.BodyTrue);
-            LPRACBlockExpr(stmt.BodyFalse);
+            if (stmt.BodyFalse != null)
+                LPRACBlockExpr(stmt.BodyFalse);
         }
 
         private void LPRACSwitchStmt(AstSwitchStmt stmt)
