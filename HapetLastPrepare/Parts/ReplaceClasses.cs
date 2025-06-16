@@ -1,0 +1,617 @@
+﻿using HapetFrontend.Ast;
+using HapetFrontend.Ast.Declarations;
+using HapetFrontend.Ast.Expressions;
+using HapetFrontend.Ast.Statements;
+using HapetFrontend.Errors;
+using HapetFrontend.Types;
+using System.Runtime;
+using System;
+
+namespace HapetLastPrepare
+{
+    // LPRAC - Last Prepare Replace All Classes
+    public partial class LastPrepare
+    {
+        public void ReplaceAllClasses()
+        {
+            foreach (var cls in _postPreparer.AllClassesMetadata)
+            {
+                if (ShouldTheDeclBeSkippedFromCodeGen(cls))
+                    continue;
+                LPRACClass(cls);
+            }
+            foreach (var str in _postPreparer.AllStructsMetadata)
+            {
+                if (ShouldTheDeclBeSkippedFromCodeGen(str))
+                    continue;
+                LPRACStruct(str);
+            }
+            foreach (var del in _postPreparer.AllDelegatesMetadata)
+            {
+                if (ShouldTheDeclBeSkippedFromCodeGen(del))
+                    continue;
+                LPRACDelegate(del);
+            }
+            foreach (var func in _postPreparer.AllFunctionsMetadata)
+            {
+                if (ShouldTheDeclBeSkippedFromCodeGen(func))
+                    continue;
+                LPRACFunction(func);
+            }
+        }
+
+        private void LPRACDecl(AstDeclaration decl)
+        {
+            if (decl is AstClassDecl classDecl)
+            {
+                LPRACClass(classDecl);
+            }
+            else if (decl is AstStructDecl structDecl)
+            {
+                LPRACStruct(structDecl);
+            }
+            else if (decl is AstDelegateDecl delegateDecl)
+            {
+                LPRACDelegate(delegateDecl);
+            }
+            else if (decl is AstFuncDecl funcDecl)
+            {
+                LPRACFunction(funcDecl);
+            }
+            else if (decl is AstPropertyDecl propDecl)
+            {
+                if (propDecl.GetBlock != null)
+                {
+                    LPRACBlockExpr(propDecl.GetBlock);
+                }
+                if (propDecl.SetBlock != null)
+                {
+                    LPRACBlockExpr(propDecl.SetBlock);
+                }
+
+                foreach (var c in propDecl.GenericConstrains)
+                {
+                    foreach (var currentC in c.Value)
+                    {
+                        LPRACConstrainStmt(currentC);
+                    }
+                }
+
+                if (propDecl is AstIndexerDecl indDecl)
+                {
+                    LPRACParam(indDecl.IndexerParameter);
+                }
+
+                LPRACVar(propDecl);
+            }
+            else if (decl is AstVarDecl varDecl)
+            {
+                LPRACVar(varDecl);
+            }
+        }
+
+        public void LPRACClass(AstClassDecl decl)
+        {
+            LPRACIdExpr(decl.Name);
+
+            foreach (var a in decl.Attributes)
+            {
+                LPRACAttributeStmt(a);
+            }
+
+            foreach (var inh in decl.InheritedFrom)
+            {
+                LPRACNestedExpr(inh);
+            }
+
+            foreach (var c in decl.GenericConstrains)
+            {
+                foreach (var currentC in c.Value)
+                {
+                    LPRACConstrainStmt(currentC);
+                }
+            }
+
+            foreach (var d in decl.Declarations)
+            {
+                if (d is AstFuncDecl)
+                {
+                    // skip funcs - they are prepared in another loop
+                    continue;
+                }
+                else
+                {
+                    LPRACDecl(decl);
+                }
+            }
+        }
+
+        public void LPRACStruct(AstStructDecl decl)
+        {
+            LPRACIdExpr(decl.Name);
+
+            foreach (var a in decl.Attributes)
+            {
+                LPRACAttributeStmt(a);
+            }
+
+            foreach (var inh in decl.InheritedFrom)
+            {
+                LPRACNestedExpr(inh);
+            }
+
+            foreach (var c in decl.GenericConstrains)
+            {
+                foreach (var currentC in c.Value)
+                {
+                    LPRACConstrainStmt(currentC);
+                }
+            }
+
+            foreach (var d in decl.Declarations)
+            {
+                if (d is AstFuncDecl)
+                {
+                    // skip funcs - they are prepared in another loop
+                    continue;
+                }
+                else
+                {
+                    LPRACDecl(decl);
+                }
+            }
+        }
+
+        public void LPRACDelegate(AstDelegateDecl decl)
+        {
+            LPRACIdExpr(decl.Name);
+
+            foreach (var a in decl.Attributes)
+            {
+                LPRACAttributeStmt(a);
+            }
+
+            foreach (var c in decl.GenericConstrains)
+            {
+                foreach (var currentC in c.Value)
+                {
+                    LPRACConstrainStmt(currentC);
+                }
+            }
+
+            foreach (var p in decl.Parameters)
+            {
+                LPRACParam(p);
+            }
+
+            if (decl.Returns.OutType is ClassType)
+            {
+                decl.Returns = GetPointerType(decl.Returns);
+            }
+        }
+
+        public void LPRACFunction(AstFuncDecl decl)
+        {
+            LPRACIdExpr(decl.Name);
+
+            foreach (var a in decl.Attributes)
+            {
+                LPRACAttributeStmt(a);
+            }
+
+            foreach (var c in decl.GenericConstrains)
+            {
+                foreach (var currentC in c.Value)
+                {
+                    LPRACConstrainStmt(currentC);
+                }
+            }
+
+            foreach (var p in decl.Parameters)
+            {
+                LPRACParam(p);
+            }
+
+            if (decl.Returns.OutType is ClassType)
+            {
+                decl.Returns = GetPointerType(decl.Returns);
+            }
+
+            if (decl.Body != null)
+            {
+                LPRACBlockExpr(decl.Body);
+            }
+        }
+
+        public void LPRACVar(AstVarDecl decl)
+        {
+            foreach (var a in decl.Attributes)
+            {
+                LPRACAttributeStmt(a);
+            }
+
+            if (decl.Type.OutType is ClassType)
+            {
+                decl.Type = GetPointerType(decl.Type);
+            }
+
+            if (decl.Initializer != null)
+            {
+                LPRACExpr(decl.Initializer);
+            }
+        }
+
+        public void LPRACParam(AstParamDecl decl)
+        {
+            foreach (var a in decl.Attributes)
+            {
+                LPRACAttributeStmt(a);
+            }
+
+            if (decl.Type.OutType is ClassType)
+            {
+                decl.Type = GetPointerType(decl.Type);
+            }
+
+            if (decl.DefaultValue != null)
+            {
+                LPRACExpr(decl.DefaultValue);
+            }
+        }
+
+        public void LPRACExpr(AstStatement stmt)
+        {
+            // skip nulls
+            if (stmt == null)
+                return;
+
+            switch (stmt)
+            {
+                // special case at least for 'for' loop
+                // when 'for (int i = 0;...)' where 'int i' 
+                // would not be handled by blockExpr
+                case AstVarDecl varDecl:
+                    LPRACVar(varDecl);
+                    break;
+
+                case AstBlockExpr blockExpr:
+                    LPRACBlockExpr(blockExpr);
+                    break;
+                case AstUnaryExpr unExpr:
+                    LPRACUnaryExpr(unExpr);
+                    break;
+                case AstBinaryExpr binExpr:
+                    LPRACBinaryExpr(binExpr);
+                    break;
+                case AstPointerExpr pointerExpr:
+                    LPRACPointerExpr(pointerExpr);
+                    break;
+                case AstAddressOfExpr addrExpr:
+                    LPRACAddressOfExpr(addrExpr);
+                    break;
+                case AstNewExpr newExpr:
+                    LPRACNewExpr(newExpr);
+                    break;
+                case AstArgumentExpr argumentExpr:
+                    LPRACArgumentExpr(argumentExpr);
+                    break;
+                case AstIdGenericExpr genExpr:
+                    LPRACIdGenericExpr(genExpr);
+                    break;
+                case AstIdExpr idExpr:
+                    LPRACIdExpr(idExpr);
+                    break;
+                case AstCallExpr callExpr:
+                    LPRACCallExpr(callExpr);
+                    break;
+                case AstCastExpr castExpr:
+                    LPRACCastExpr(castExpr);
+                    break;
+                case AstNestedExpr nestExpr:
+                    LPRACNestedExpr(nestExpr);
+                    break;
+                case AstDefaultExpr defaultExpr:
+                    LPRACDefaultExpr(defaultExpr);
+                    break;
+                case AstDefaultGenericExpr _: // no need to scope anything
+                    break;
+                case AstArrayExpr arrayExpr:
+                    LPRACArrayExpr(arrayExpr);
+                    break;
+                case AstArrayCreateExpr arrayCreateExpr:
+                    LPRACArrayCreateExpr(arrayCreateExpr);
+                    break;
+                case AstArrayAccessExpr arrayAccExpr:
+                    LPRACArrayAccessExpr(arrayAccExpr);
+                    break;
+                case AstTernaryExpr ternaryExpr:
+                    LPRACTernaryExpr(ternaryExpr);
+                    break;
+                case AstCheckedExpr checkedExpr:
+                    LPRACCheckedExpr(checkedExpr);
+                    break;
+                case AstEmptyExpr:
+                    break;
+
+                // statements
+                case AstAssignStmt assignStmt:
+                    LPRACAssignStmt(assignStmt);
+                    break;
+                case AstForStmt forStmt:
+                    LPRACForStmt(forStmt);
+                    break;
+                case AstWhileStmt whileStmt:
+                    LPRACWhileStmt(whileStmt);
+                    break;
+                case AstIfStmt ifStmt:
+                    LPRACIfStmt(ifStmt);
+                    break;
+                case AstSwitchStmt switchStmt:
+                    LPRACSwitchStmt(switchStmt);
+                    break;
+                case AstCaseStmt caseStmt:
+                    LPRACCaseStmt(caseStmt);
+                    break;
+                case AstBreakContStmt:
+                    // nothing to do
+                    break;
+                case AstReturnStmt returnStmt:
+                    LPRACReturnStmt(returnStmt);
+                    break;
+                case AstAttributeStmt attrStmt:
+                    LPRACAttributeStmt(attrStmt);
+                    break;
+                case AstBaseCtorStmt baseStmt:
+                    LPRACBaseCtorStmt(baseStmt);
+                    break;
+                case AstConstrainStmt constrainStmt:
+                    LPRACConstrainStmt(constrainStmt);
+                    break;
+
+                // skip literals
+                case AstNumberExpr:
+                case AstStringExpr:
+                case AstBoolExpr:
+                case AstCharExpr:
+                case AstNullExpr:
+                    break;
+
+                default:
+                    {
+                        _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, stmt, [stmt.AAAName], ErrorCode.Get(CTEN.StmtNotImplemented));
+                        break;
+                    }
+            }
+        }
+
+        private void LPRACBlockExpr(AstBlockExpr expr)
+        {
+            foreach (var stmt in expr.Statements)
+            {
+                if (stmt == null)
+                    continue;
+
+                // special check for nested function
+                if (stmt is AstFuncDecl)
+                {
+                    // funcs are prepared in another loop
+                    continue;
+                }
+                else
+                {
+                    LPRACExpr(stmt);
+                }
+            }
+        }
+
+        private void LPRACUnaryExpr(AstUnaryExpr expr)
+        {
+            LPRACExpr(expr.SubExpr);
+        }
+
+        private void LPRACBinaryExpr(AstBinaryExpr expr)
+        {
+            LPRACExpr(expr.Left);
+            LPRACExpr(expr.Right);
+
+            // special cringe case
+            if (expr.Operator == "as" || expr.Operator == "is")
+            {
+                if (expr.Right.OutType is ClassType)
+                    expr.Right = GetPointerType(expr.Right);
+            }
+        }
+
+        private void LPRACPointerExpr(AstPointerExpr expr)
+        {
+            LPRACExpr(expr.SubExpression);
+        }
+
+        private void LPRACAddressOfExpr(AstAddressOfExpr expr)
+        {
+            LPRACExpr(expr.SubExpression);
+        }
+
+        private void LPRACNewExpr(AstNewExpr expr)
+        {
+            if (expr.TypeName.OutType is ClassType)
+            {
+                expr.TypeName = GetPointerType(expr.TypeName);
+                expr.OutType = expr.TypeName.OutType;
+            }
+
+            foreach (var a in expr.Arguments)
+            {
+                LPRACArgumentExpr(a);
+            }
+        }
+
+        private void LPRACArgumentExpr(AstArgumentExpr expr)
+        {
+            LPRACExpr(expr.Expr);
+        }
+
+        private void LPRACIdGenericExpr(AstIdGenericExpr expr)
+        {
+            for (int i = 0; i < expr.GenericRealTypes.Count; ++i)
+            {
+                var g = expr.GenericRealTypes[i];
+                if (g.OutType is ClassType)
+                {
+                    expr.GenericRealTypes[i] = GetPointerType(g);
+                }
+            }
+        }
+
+        private void LPRACIdExpr(AstIdExpr expr)
+        {
+
+        }
+
+        private void LPRACCallExpr(AstCallExpr expr)
+        {
+            if (expr.TypeOrObjectName != null)
+            {
+                LPRACExpr(expr.TypeOrObjectName);
+            }
+
+            foreach (var a in expr.Arguments)
+            {
+                LPRACArgumentExpr(a);
+            }
+        }
+
+        private void LPRACCastExpr(AstCastExpr expr)
+        {
+            if (expr.TypeExpr.OutType is ClassType)
+            {
+                expr.TypeExpr = GetPointerType(expr.TypeExpr);
+                expr.OutType = expr.TypeExpr.OutType;
+            }
+
+            LPRACExpr(expr.SubExpression);
+        }
+
+        private void LPRACNestedExpr(AstNestedExpr expr)
+        {
+
+        }
+
+        private void LPRACDefaultExpr(AstDefaultExpr expr)
+        {
+
+        }
+
+        private void LPRACArrayExpr(AstArrayExpr expr)
+        {
+            LPRACExpr(expr.SubExpression);
+        }
+
+        private void LPRACArrayCreateExpr(AstArrayCreateExpr expr)
+        {
+            foreach (var s in expr.SizeExprs)
+            {
+                LPRACExpr(s);
+            }
+            foreach (var e in expr.Elements)
+            {
+                LPRACExpr(e);
+            }
+        }
+
+        private void LPRACArrayAccessExpr(AstArrayAccessExpr expr)
+        {
+            LPRACExpr(expr.ParameterExpr);
+        }
+
+        private void LPRACTernaryExpr(AstTernaryExpr expr)
+        {
+            LPRACExpr(expr.Condition);
+            LPRACExpr(expr.TrueExpr);
+            LPRACExpr(expr.FalseExpr);
+        }
+
+        private void LPRACCheckedExpr(AstCheckedExpr expr)
+        {
+            LPRACExpr(expr.SubExpression);
+        }
+
+        private void LPRACAssignStmt(AstAssignStmt stmt)
+        {
+            LPRACNestedExpr(stmt.Target);
+            LPRACExpr(stmt.Value);
+        }
+
+        private void LPRACForStmt(AstForStmt stmt)
+        {
+            LPRACExpr(stmt.FirstArgument);
+            LPRACExpr(stmt.SecondArgument);
+            LPRACExpr(stmt.ThirdArgument);
+
+            LPRACBlockExpr(stmt.Body);
+        }
+
+        private void LPRACWhileStmt(AstWhileStmt stmt)
+        {
+            LPRACExpr(stmt.Condition);
+
+            LPRACBlockExpr(stmt.Body);
+        }
+
+        private void LPRACIfStmt(AstIfStmt stmt)
+        {
+            LPRACExpr(stmt.Condition);
+
+            LPRACBlockExpr(stmt.BodyTrue);
+            LPRACBlockExpr(stmt.BodyFalse);
+        }
+
+        private void LPRACSwitchStmt(AstSwitchStmt stmt)
+        {
+            LPRACExpr(stmt.SubExpression);
+
+            foreach (var c in stmt.Cases)
+            {
+                LPRACExpr(c);
+            }
+        }
+
+        private void LPRACCaseStmt(AstCaseStmt stmt)
+        {
+            LPRACExpr(stmt.Pattern);
+            LPRACExpr(stmt.Body);
+        }
+
+        private void LPRACReturnStmt(AstReturnStmt stmt)
+        {
+            LPRACExpr(stmt.ReturnExpression);
+        }
+
+        private void LPRACAttributeStmt(AstAttributeStmt stmt)
+        {
+
+        }
+
+        private void LPRACBaseCtorStmt(AstBaseCtorStmt stmt)
+        {
+            foreach (var a in stmt.Arguments)
+            {
+                LPRACExpr(a);
+            }
+        }
+
+        private void LPRACConstrainStmt(AstConstrainStmt stmt)
+        {
+            LPRACExpr(stmt.Expr);
+        }
+
+        public AstNestedExpr GetPointerType(AstExpression expr)
+        {
+            // the return type is actually a pointer to the class
+            var astPtr = new AstPointerExpr(expr, false, expr.Location);
+            astPtr.OutType = PointerType.GetPointerType(astPtr.SubExpression.OutType);
+            astPtr.Scope = expr.Scope;
+            return new AstNestedExpr(astPtr, null, expr.Location) { OutType = astPtr.OutType };
+        }
+    }
+}

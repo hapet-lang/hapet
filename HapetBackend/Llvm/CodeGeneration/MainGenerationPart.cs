@@ -9,6 +9,7 @@ using HapetFrontend.Extensions;
 using HapetFrontend.Parsing;
 using HapetFrontend.Scoping;
 using HapetFrontend.Types;
+using HapetLastPrepare;
 using HapetPostPrepare;
 using LLVMSharp.Interop;
 
@@ -26,7 +27,7 @@ namespace HapetBackend.Llvm
 
             foreach (var func in funcDecls)
             {
-                if (ShouldTheDeclBeSkippedFromCodeGen(func))
+                if (LastPrepare.ShouldTheDeclBeSkippedFromCodeGen(func))
                     continue;
 
                 _currentSourceFile = func.SourceFile;

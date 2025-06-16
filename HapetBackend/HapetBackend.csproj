@@ -9,8 +9,9 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\HapetPostPrepare\HapetPostPrepare.csproj" />
         <ProjectReference Include="..\HapetFrontend\HapetFrontend.csproj" />
+        <ProjectReference Include="..\HapetPostPrepare\HapetPostPrepare.csproj" />
+        <ProjectReference Include="..\HapetLastPrepare\HapetLastPrepare.csproj" />
     </ItemGroup>
 
     <ItemGroup>
