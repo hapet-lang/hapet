@@ -32,7 +32,7 @@ namespace HapetCompiler.Resolvers
 
                 var fullPathToTheFile = $"{data.Item1}/{data.Item2}.mpt";
                 var metaText = File.ReadAllText(fullPathToTheFile);
-                _postPreparer.PostPrepareExternalMetadata(metaText);
+                _compiler.HandleExternalMetadata(metaText);
 
                 PathsToLinkWith.Add(data.Item1);
                 // TODO: is there .lib file when we are on linux?

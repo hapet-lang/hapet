@@ -2,8 +2,6 @@
 using HapetFrontend;
 using HapetFrontend.Entities;
 using HapetFrontend.Helpers;
-using HapetPostPrepare;
-using System.Diagnostics;
 
 namespace HapetCompiler.Resolvers
 {
@@ -12,14 +10,12 @@ namespace HapetCompiler.Resolvers
         private ProjectData _projectData;
         private CompilerSettings _projectSettings;
         private Compiler _compiler;
-        private PostPrepare _postPreparer;
 
-        public void ResolveProjectShite(ProjectData projectData, CompilerSettings projectSettings, Compiler compiler, PostPrepare postPreparer)
+        public void ResolveProjectShite(ProjectData projectData, CompilerSettings projectSettings, Compiler compiler)
         {
             _projectData = projectData;
             _projectSettings = projectSettings;
             _compiler = compiler;
-            _postPreparer = postPreparer;
 
             // TODO: package references
 

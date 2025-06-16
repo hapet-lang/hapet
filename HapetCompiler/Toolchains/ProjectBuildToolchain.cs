@@ -8,6 +8,7 @@ using HapetCompiler.ProjectConf.Data;
 using HapetCompiler.Resolvers;
 using HapetPostPrepare;
 using HapetFrontend.Types;
+using HapetLastPrepare;
 
 namespace HapetCompiler.Toolchains
 {
@@ -44,9 +45,10 @@ namespace HapetCompiler.Toolchains
 
             // setting pointer size for the whole assembly
             HapetType.CurrentTypeContext.PointerSize = ProjectSettings.TargetPlatformData.PointerSize;
-            // creating the compiler and post preparer
+            // creating the compiler and preparers
             var compiler = new Compiler(ProjectSettings, messageHandler);
             var postPreparer = new PostPrepare(compiler);
+            var lastPreparer = new LastPrepare(compiler, postPreparer);
             compiler.InitGlobalScope();
             compiler.CompilationStopwatch = stopwatch;
 
@@ -54,7 +56,7 @@ namespace HapetCompiler.Toolchains
             // save type context
             var cachedTypeContext = HapetType.CurrentTypeContext;
             ProjectReferencesResolver resolver = new ProjectReferencesResolver();
-            resolver.ResolveProjectShite(ProjectData, ProjectSettings, compiler, postPreparer);
+            resolver.ResolveProjectShite(ProjectData, ProjectSettings, compiler);
             if (messageHandler.HasErrors)
                 return (int)CompilerErrors.ProjectReferencesError; // references errors
             // restore it
@@ -75,6 +77,15 @@ namespace HapetCompiler.Toolchains
                 return ppResult; // post prepare errors
             if (messageHandler.HasErrors)
                 return (int)CompilerErrors.PostPrepareError; // post prepare errors
+
+            if (!referenced)
+                messageHandler.ReportMessage([$"{Funcad.GetPrettyTimeString(stopwatch.Elapsed)} Last preparation..."], null, ReportType.Info);
+            // last prepare
+            int lpResult = lastPreparer.StartPreparation();
+            if (lpResult != 0)
+                return lpResult; // last prepare errors
+            if (messageHandler.HasErrors)
+                return (int)CompilerErrors.LastPrepareError; // last prepare errors
 
             if (!referenced)
                 messageHandler.ReportMessage([$"{Funcad.GetPrettyTimeString(stopwatch.Elapsed)} Code generation..."], null, ReportType.Info);

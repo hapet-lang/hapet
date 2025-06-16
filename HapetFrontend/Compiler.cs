@@ -62,6 +62,16 @@ namespace HapetFrontend
             }
         }
 
+        public void HandleExternalMetadata(string metadataText)
+        {
+            // just parsing metadata and adding its files into the compiler
+            var files = ParseMetadata(metadataText);
+            foreach (var f in files)
+            {
+                AddFile(f, f.Name);
+            }
+        }
+
         public ProgramFile AddFile(ProgramFile file, string filePath)
         {
             if (_files.TryGetValue(filePath, out ProgramFile value))
