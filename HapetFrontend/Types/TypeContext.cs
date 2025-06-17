@@ -7,6 +7,7 @@ namespace HapetFrontend.Types
     public class TypeContext
     {
         public int PointerSize { get; set; }
+        public ClassType ObjectTypeInstance { get; private set; } = new ClassType(null);
         public VoidType VoidTypeInstance { get; private set; } = new VoidType(null);
         public BoolType BoolTypeInstance { get; private set; } = new BoolType(null);
         public CharType CharTypeInstance { get; private set; } = new CharType(null, 2); // default is 2 bytes long char

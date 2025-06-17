@@ -74,14 +74,6 @@ namespace HapetLastPrepare
                     LPRACBlockExpr(propDecl.SetBlock);
                 }
 
-                foreach (var c in propDecl.GenericConstrains)
-                {
-                    foreach (var currentC in c.Value)
-                    {
-                        LPRACConstrainStmt(currentC);
-                    }
-                }
-
                 if (propDecl is AstIndexerDecl indDecl)
                 {
                     LPRACParam(indDecl.IndexerParameter);
@@ -97,21 +89,6 @@ namespace HapetLastPrepare
 
         public void LPRACClass(AstClassDecl decl)
         {
-            LPRACIdExpr(decl.Name);
-
-            foreach (var a in decl.Attributes)
-            {
-                LPRACAttributeStmt(a);
-            }
-
-            foreach (var c in decl.GenericConstrains)
-            {
-                foreach (var currentC in c.Value)
-                {
-                    LPRACConstrainStmt(currentC);
-                }
-            }
-
             foreach (var d in decl.Declarations)
             {
                 if (d is AstFuncDecl)
@@ -128,21 +105,6 @@ namespace HapetLastPrepare
 
         public void LPRACStruct(AstStructDecl decl)
         {
-            LPRACIdExpr(decl.Name);
-
-            foreach (var a in decl.Attributes)
-            {
-                LPRACAttributeStmt(a);
-            }
-
-            foreach (var c in decl.GenericConstrains)
-            {
-                foreach (var currentC in c.Value)
-                {
-                    LPRACConstrainStmt(currentC);
-                }
-            }
-
             foreach (var d in decl.Declarations)
             {
                 if (d is AstFuncDecl)
@@ -159,21 +121,6 @@ namespace HapetLastPrepare
 
         public void LPRACDelegate(AstDelegateDecl decl)
         {
-            LPRACIdExpr(decl.Name);
-
-            foreach (var a in decl.Attributes)
-            {
-                LPRACAttributeStmt(a);
-            }
-
-            foreach (var c in decl.GenericConstrains)
-            {
-                foreach (var currentC in c.Value)
-                {
-                    LPRACConstrainStmt(currentC);
-                }
-            }
-
             foreach (var p in decl.Parameters)
             {
                 LPRACParam(p);
@@ -181,27 +128,12 @@ namespace HapetLastPrepare
 
             if (decl.Returns.OutType is ClassType)
             {
-                decl.Returns.OutType = PointerType.GetPointerType(decl.Returns.OutType);
+                decl.Returns = GetPointerType(decl.Returns);
             }
         }
 
         public void LPRACFunction(AstFuncDecl decl)
         {
-            LPRACIdExpr(decl.Name);
-
-            foreach (var a in decl.Attributes)
-            {
-                LPRACAttributeStmt(a);
-            }
-
-            foreach (var c in decl.GenericConstrains)
-            {
-                foreach (var currentC in c.Value)
-                {
-                    LPRACConstrainStmt(currentC);
-                }
-            }
-
             foreach (var p in decl.Parameters)
             {
                 LPRACParam(p);
@@ -209,7 +141,7 @@ namespace HapetLastPrepare
 
             if (decl.Returns.OutType is ClassType)
             {
-                decl.Returns.OutType = PointerType.GetPointerType(decl.Returns.OutType);
+                decl.Returns = GetPointerType(decl.Returns);
             }
 
             if (decl.Body != null)
@@ -220,11 +152,6 @@ namespace HapetLastPrepare
 
         public void LPRACVar(AstVarDecl decl)
         {
-            foreach (var a in decl.Attributes)
-            {
-                LPRACAttributeStmt(a);
-            }
-
             if (decl.Type.OutType is ClassType)
             {
                 decl.Type = GetPointerType(decl.Type);
@@ -238,11 +165,6 @@ namespace HapetLastPrepare
 
         public void LPRACParam(AstParamDecl decl)
         {
-            foreach (var a in decl.Attributes)
-            {
-                LPRACAttributeStmt(a);
-            }
-
             if (decl.Type.OutType is ClassType)
             {
                 decl.Type = GetPointerType(decl.Type);
@@ -464,14 +386,11 @@ namespace HapetLastPrepare
                 var g = expr.GenericRealTypes[i];
                 if (g.OutType is ClassType)
                 {
-                    expr.GenericRealTypes[i].OutType = PointerType.GetPointerType(g.OutType);
+                    expr.GenericRealTypes[i] = GetPointerType(g);
                 }
             }
 
-            if (expr.OutType is ClassType)
-            {
-                expr.OutType = PointerType.GetPointerType(expr.OutType);
-            }
+            expr.OutType = (expr.FindSymbol as DeclSymbol).Decl.Type.OutType;
         }
 
         private void LPRACIdExpr(AstIdExpr expr)
@@ -527,11 +446,21 @@ namespace HapetLastPrepare
 
         private void LPRACArrayExpr(AstArrayExpr expr)
         {
+            if (expr.SubExpression.OutType is ClassType)
+            {
+                expr.SubExpression = GetPointerType(expr.SubExpression);
+            }
+
             LPRACExpr(expr.SubExpression);
         }
 
         private void LPRACArrayCreateExpr(AstArrayCreateExpr expr)
         {
+            if (expr.TypeName.OutType is ClassType)
+            {
+                expr.TypeName = GetPointerType(expr.TypeName);
+            }
+
             foreach (var s in expr.SizeExprs)
             {
                 LPRACExpr(s);
@@ -567,12 +496,22 @@ namespace HapetLastPrepare
         private void LPRACCheckedExpr(AstCheckedExpr expr)
         {
             LPRACExpr(expr.SubExpression);
+
+            if (expr.OutType is ClassType)
+            {
+                expr.OutType = PointerType.GetPointerType(expr.OutType);
+            }
         }
 
         private void LPRACAssignStmt(AstAssignStmt stmt)
         {
             LPRACNestedExpr(stmt.Target);
             LPRACExpr(stmt.Value);
+
+            if (stmt.Value?.OutType is ClassType)
+            {
+                stmt.Value.OutType = PointerType.GetPointerType(stmt.Value.OutType);
+            }
         }
 
         private void LPRACForStmt(AstForStmt stmt)
@@ -604,6 +543,11 @@ namespace HapetLastPrepare
         {
             LPRACExpr(stmt.SubExpression);
 
+            if (stmt.SubExpression?.OutType is ClassType)
+            {
+                stmt.SubExpression.OutType = PointerType.GetPointerType(stmt.SubExpression.OutType);
+            }
+
             foreach (var c in stmt.Cases)
             {
                 LPRACExpr(c);
@@ -613,6 +557,12 @@ namespace HapetLastPrepare
         private void LPRACCaseStmt(AstCaseStmt stmt)
         {
             LPRACExpr(stmt.Pattern);
+
+            if (stmt.Pattern?.OutType is ClassType)
+            {
+                stmt.Pattern.OutType = PointerType.GetPointerType(stmt.Pattern.OutType);
+            }
+
             LPRACExpr(stmt.Body);
         }
 

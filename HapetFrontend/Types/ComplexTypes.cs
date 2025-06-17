@@ -13,7 +13,7 @@ namespace HapetFrontend.Types
     public class ClassType : HapetType
     {
         [JsonIgnore]
-        public AstClassDecl Declaration { get; }
+        public AstClassDecl Declaration { get; set; }
 
         public override string TypeName => "class";
 

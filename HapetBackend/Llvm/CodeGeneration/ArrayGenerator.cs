@@ -15,7 +15,7 @@ namespace HapetBackend.Llvm
         /// <returns>Array struct</returns>
         private unsafe LLVMValueRef GenerateArrayInternal(AstArrayCreateExpr expr, bool getPtr = false)
         {
-            ArrayType arrType = _postPreparer.GetArrayType(expr.TypeName, expr);
+            ArrayType arrType = HapetType.CurrentTypeContext.ArrayTypeInstances[HapetType.CurrentTypeContext.ObjectTypeInstance]; // just get object[] type
             AstExpression currentSizeExpr = expr.SizeExprs.Last();
             LLVMValueRef currentArraySizeValueRef = GenerateExpressionCode(currentSizeExpr);
             LLVMTypeRef arrayTypeRef = HapetTypeToLLVMType(arrType);
