@@ -6,6 +6,7 @@ using HapetFrontend.Errors;
 using HapetFrontend.Types;
 using System.Runtime;
 using System;
+using HapetFrontend.Scoping;
 
 namespace HapetLastPrepare
 {
@@ -180,7 +181,7 @@ namespace HapetLastPrepare
 
             if (decl.Returns.OutType is ClassType)
             {
-                decl.Returns = GetPointerType(decl.Returns);
+                decl.Returns.OutType = PointerType.GetPointerType(decl.Returns.OutType);
             }
         }
 
@@ -208,7 +209,7 @@ namespace HapetLastPrepare
 
             if (decl.Returns.OutType is ClassType)
             {
-                decl.Returns = GetPointerType(decl.Returns);
+                decl.Returns.OutType = PointerType.GetPointerType(decl.Returns.OutType);
             }
 
             if (decl.Body != null)
@@ -475,10 +476,7 @@ namespace HapetLastPrepare
 
         private void LPRACIdExpr(AstIdExpr expr)
         {
-            if (expr.OutType is ClassType)
-            {
-                expr.OutType = PointerType.GetPointerType(expr.OutType);
-            }
+            expr.OutType = (expr.FindSymbol as DeclSymbol).Decl.Type.OutType;
         }
 
         private void LPRACCallExpr(AstCallExpr expr)

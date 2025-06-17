@@ -747,8 +747,8 @@ namespace HapetBackend.Llvm
                 LLVMTypeRef funcType = _typeMap[fncType];
 
                 LLVMValueRef varPtr = default;
-                if (fncType.Declaration.Returns.OutType is not VoidType)
-                    varPtr = CreateLocalVariable(fncType.Declaration.Returns.OutType, "funcRetHolder");
+                if (expr.OutType is not VoidType)
+                    varPtr = CreateLocalVariable(expr.OutType, "funcRetHolder");
 
                 // args shite
                 List<LLVMValueRef> args = new List<LLVMValueRef>();
@@ -778,7 +778,7 @@ namespace HapetBackend.Llvm
 
                 // the return name has to be empty if ret value of func is void
                 // also save the ret value into a var
-                if (fncType.Declaration.Returns.OutType is not VoidType)
+                if (expr.OutType is not VoidType)
                 {
                     // save the value
                     LLVMValueRef ret = CreateCall(_builder, funcType, fncType, hapetFunc, args, isBaseCall, $"funcReturnValue");
@@ -788,7 +788,7 @@ namespace HapetBackend.Llvm
                         return varPtr;
 
                     // need to load it as a ptr
-                    var retType = fncType.Declaration.Returns.OutType;
+                    var retType = expr.OutType;
 
                     return _builder.BuildLoad2(HapetTypeToLLVMType(retType), varPtr, "holderLoaded");
                 }
