@@ -103,6 +103,10 @@ namespace HapetPostPrepare
             callExpr.FuncName = newName.GetCopy();
             callExpr.FuncName.Location = savedCallLocation;
 
+            // func not found...
+            if (foundFuncSymbol == null)
+                return;
+
             inInfo.FromCallExpr = true;
             IdentifierOnFoundSymbol(callExpr.FuncName, foundFuncSymbol, foundFuncSymbol.Name.Name, inInfo, ref outInfo);
             // PostPrepareIdentifierInference(callExpr.FuncName, inInfo, ref outInfo, declToSearch);

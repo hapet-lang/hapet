@@ -217,10 +217,14 @@ namespace HapetFrontend.Ast.Declarations
             {
                 // for generic type - need to create an AstIdGenericExpr
                 AstIdExpr thisParamType = containingParent.Name.GetCopy();
+
                 // creating the class instance 'this' param
-                AstExpression paramType = new AstPointerExpr(thisParamType, false);
                 AstIdExpr paramName = new AstIdExpr("this");
-                AstParamDecl thisParam = new AstParamDecl(new AstNestedExpr(paramType, null), paramName);
+                AstParamDecl thisParam = new AstParamDecl(new AstNestedExpr(thisParamType, null), paramName);
+
+                if (ContainingParent is AstStructDecl)
+                    thisParam.ParameterModificator = Enums.ParameterModificator.Ref;
+
                 // adding the param as the func first param
                 func.Parameters.Insert(0, thisParam);
             }
