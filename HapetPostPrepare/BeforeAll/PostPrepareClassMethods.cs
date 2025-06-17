@@ -531,12 +531,16 @@ namespace HapetPostPrepare
             if (prop.HasGet)
             {
                 // need to create a 'get' method
-                AstFuncDecl getFunc = prop.GetGetFunction(parent, addFirstParam);
+                AstFuncDecl getFunc = prop.GetGetFunction(parent);
                 // add abstract key to the method if it is an interface
                 if (isParentInterface)
                     SpecialKeysHelper.AddSpecialKeyToDecl(getFunc, Lexer.CreateToken(TokenType.KwAbstract, prop.Location.Beginning), 
                         _compiler.MessageHandler, _currentSourceFile);
                 declarationsToAdd.Add(getFunc);
+
+                // add first param if required
+                if (addFirstParam)
+                    FuncPrepareAfterAll(getFunc, parent);
 
                 var origFunc = decls.FirstOrDefault(x => x.Name.Name.Contains($":get_{orig?.Name.Name}("));
                 if (origFunc != null && orig != null)
@@ -545,12 +549,16 @@ namespace HapetPostPrepare
             if (prop.HasSet)
             {
                 // need to create a 'set' method
-                AstFuncDecl setFunc = prop.GetSetFunction(parent, addFirstParam);
+                AstFuncDecl setFunc = prop.GetSetFunction(parent);
                 // add abstract key to the method if it is an interface
                 if (isParentInterface)
                     SpecialKeysHelper.AddSpecialKeyToDecl(setFunc, Lexer.CreateToken(TokenType.KwAbstract, prop.Location.Beginning), 
                         _compiler.MessageHandler, _currentSourceFile);
                 declarationsToAdd.Add(setFunc);
+
+                // add first param if required
+                if (addFirstParam)
+                    FuncPrepareAfterAll(setFunc, parent);
 
                 var origFunc = decls.FirstOrDefault(x => x.Name.Name.Contains($":set_{orig?.Name.Name}("));
                 if (origFunc != null && orig != null)

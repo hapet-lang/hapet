@@ -6,6 +6,7 @@ using HapetFrontend.Types;
 using HapetFrontend;
 using HapetPostPrepare.Entities;
 using HapetFrontend.Ast.Statements;
+using HapetFrontend.Helpers;
 
 namespace HapetPostPrepare
 {
@@ -59,8 +60,8 @@ namespace HapetPostPrepare
                 if (decl is AstClassDecl clsDecl && clsDecl.IsInterface)
                     continue;
 
-                // skip generic (non-real) classes
-                if (decl.HasGenericTypes)
+                // skip generic (non-real) shite
+                if (GenericsHelper.ShouldTheDeclBeSkippedFromCodeGen(decl))
                     continue;
 
                 // check that the class has suppress stor call attr

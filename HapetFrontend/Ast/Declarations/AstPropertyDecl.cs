@@ -130,14 +130,14 @@ namespace HapetFrontend.Ast.Declarations
             return field;
         }
 
-        public AstFuncDecl GetSetFunction(AstDeclaration containingParent, bool addFirstParam = false)
+        public AstFuncDecl GetSetFunction(AstDeclaration containingParent)
         {
             // add indexer param if it is an indexer
             var prs = new List<AstParamDecl>() { new AstParamDecl(Type.GetDeepCopy() as AstExpression, new AstIdExpr("value")) };
             if (this is AstIndexerDecl indDecl)
                 prs.Insert(0, indDecl.IndexerParameter.GetDeepCopy() as AstParamDecl);
 
-            var func = GetPropaFunc(addFirstParam, false, containingParent);
+            var func = GetPropaFunc(false, containingParent);
             func.Parameters.AddRange(prs);
             func.Returns = new AstNestedExpr(new AstIdExpr("void", Location), null, Location);
 
@@ -161,14 +161,14 @@ namespace HapetFrontend.Ast.Declarations
             return func;
         }
 
-        public AstFuncDecl GetGetFunction(AstDeclaration containingParent, bool addFirstParam = false)
+        public AstFuncDecl GetGetFunction(AstDeclaration containingParent)
         {
             // add indexer param if it is an indexer
             var prs = new List<AstParamDecl>();
             if (this is AstIndexerDecl indDecl)
                 prs.Add(indDecl.IndexerParameter.GetDeepCopy() as AstParamDecl);
 
-            var func = GetPropaFunc(addFirstParam, true, containingParent);
+            var func = GetPropaFunc(true, containingParent);
             func.Parameters.AddRange(prs);
             func.Returns = Type.GetDeepCopy() as AstExpression;
 
@@ -192,7 +192,7 @@ namespace HapetFrontend.Ast.Declarations
             return func;
         }
 
-        private AstFuncDecl GetPropaFunc(bool addFirstParam, bool isGet, AstDeclaration containingParent)
+        private AstFuncDecl GetPropaFunc(bool isGet, AstDeclaration containingParent)
         {
             AstFuncDecl func = new AstFuncDecl(
                 new List<AstParamDecl>(),
@@ -211,23 +211,6 @@ namespace HapetFrontend.Ast.Declarations
                 SpecialKeysHelper.ReplaceSpecialKeysByTypes(func, GetSpecialKeys);
             else
                 SpecialKeysHelper.ReplaceSpecialKeysByTypes(func, SetSpecialKeys);
-
-            // if we need to add 'this' param
-            if (addFirstParam)
-            {
-                // for generic type - need to create an AstIdGenericExpr
-                AstIdExpr thisParamType = containingParent.Name.GetCopy();
-
-                // creating the class instance 'this' param
-                AstIdExpr paramName = new AstIdExpr("this");
-                AstParamDecl thisParam = new AstParamDecl(new AstNestedExpr(thisParamType, null), paramName);
-
-                if (ContainingParent is AstStructDecl)
-                    thisParam.ParameterModificator = Enums.ParameterModificator.Ref;
-
-                // adding the param as the func first param
-                func.Parameters.Insert(0, thisParam);
-            }
 
             return func;
         }

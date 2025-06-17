@@ -7,6 +7,7 @@ using HapetFrontend.Types;
 using System.Runtime;
 using System;
 using HapetFrontend.Scoping;
+using HapetFrontend.Helpers;
 
 namespace HapetLastPrepare
 {
@@ -17,28 +18,28 @@ namespace HapetLastPrepare
         {
             foreach (var cls in _postPreparer.AllClassesMetadata)
             {
-                if (ShouldTheDeclBeSkippedFromCodeGen(cls))
+                if (GenericsHelper.ShouldTheDeclBeSkippedFromCodeGen(cls))
                     continue;
                 _currentSourceFile = cls.SourceFile;
                 LPRACClass(cls);
             }
             foreach (var str in _postPreparer.AllStructsMetadata)
             {
-                if (ShouldTheDeclBeSkippedFromCodeGen(str))
+                if (GenericsHelper.ShouldTheDeclBeSkippedFromCodeGen(str))
                     continue;
                 _currentSourceFile = str.SourceFile;
                 LPRACStruct(str);
             }
             foreach (var del in _postPreparer.AllDelegatesMetadata)
             {
-                if (ShouldTheDeclBeSkippedFromCodeGen(del))
+                if (GenericsHelper.ShouldTheDeclBeSkippedFromCodeGen(del))
                     continue;
                 _currentSourceFile = del.SourceFile;
                 LPRACDelegate(del);
             }
             foreach (var func in _postPreparer.AllFunctionsMetadata)
             {
-                if (ShouldTheDeclBeSkippedFromCodeGen(func))
+                if (GenericsHelper.ShouldTheDeclBeSkippedFromCodeGen(func))
                     continue;
                 _currentSourceFile = func.SourceFile;
                 LPRACFunction(func);

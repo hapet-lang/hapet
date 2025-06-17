@@ -31,7 +31,7 @@ namespace HapetBackend.Llvm
             // all over the classes
             foreach (var cls in _postPreparer.AllClassesMetadata)
             {
-                if (LastPrepare.ShouldTheDeclBeSkippedFromCodeGen(cls))
+                if (GenericsHelper.ShouldTheDeclBeSkippedFromCodeGen(cls))
                     continue;
 
                 _currentSourceFile = cls.SourceFile;
@@ -41,7 +41,7 @@ namespace HapetBackend.Llvm
             // all over the structs
             foreach (var str in _postPreparer.AllStructsMetadata)
             {
-                if (LastPrepare.ShouldTheDeclBeSkippedFromCodeGen(str))
+                if (GenericsHelper.ShouldTheDeclBeSkippedFromCodeGen(str))
                     continue;
 
                 _currentSourceFile = str.SourceFile;
@@ -51,7 +51,7 @@ namespace HapetBackend.Llvm
             // all over the enums
             foreach (var enm in _postPreparer.AllEnumsMetadata)
             {
-                if (LastPrepare.ShouldTheDeclBeSkippedFromCodeGen(enm))
+                if (GenericsHelper.ShouldTheDeclBeSkippedFromCodeGen(enm))
                     continue;
 
                 _currentSourceFile = enm.SourceFile;
@@ -64,7 +64,7 @@ namespace HapetBackend.Llvm
         {
             foreach (var cls in _postPreparer.AllClassesMetadata)
             {
-                if (LastPrepare.ShouldTheDeclBeSkippedFromCodeGen(cls))
+                if (GenericsHelper.ShouldTheDeclBeSkippedFromCodeGen(cls))
                     continue;
 
                 _currentSourceFile = cls.SourceFile;
@@ -120,7 +120,7 @@ namespace HapetBackend.Llvm
             }
             foreach (var str in _postPreparer.AllStructsMetadata)
             {
-                if (LastPrepare.ShouldTheDeclBeSkippedFromCodeGen(str))
+                if (GenericsHelper.ShouldTheDeclBeSkippedFromCodeGen(str))
                     continue;
 
                 // if the decl is impl of gen - take only orig generic
@@ -164,7 +164,7 @@ namespace HapetBackend.Llvm
             }
             foreach (var enm in _postPreparer.AllEnumsMetadata)
             {
-                if (LastPrepare.ShouldTheDeclBeSkippedFromCodeGen(enm))
+                if (GenericsHelper.ShouldTheDeclBeSkippedFromCodeGen(enm))
                     continue;
 
                 foreach (var decl in enm.Declarations)
@@ -182,7 +182,7 @@ namespace HapetBackend.Llvm
         {
             foreach (var func in _postPreparer.AllFunctionsMetadata)
             {
-                if (LastPrepare.ShouldTheDeclBeSkippedFromCodeGen(func))
+                if (GenericsHelper.ShouldTheDeclBeSkippedFromCodeGen(func))
                     continue;
 
                 _currentSourceFile = func.SourceFile;
@@ -194,7 +194,7 @@ namespace HapetBackend.Llvm
         {
             foreach (var cls in _postPreparer.AllClassesMetadata)
             {
-                if (LastPrepare.ShouldTheDeclBeSkippedFromCodeGen(cls))
+                if (GenericsHelper.ShouldTheDeclBeSkippedFromCodeGen(cls))
                     continue;
 
                 // reg type info if non static
@@ -206,7 +206,7 @@ namespace HapetBackend.Llvm
             }
             foreach (var str in _postPreparer.AllStructsMetadata)
             {
-                if (LastPrepare.ShouldTheDeclBeSkippedFromCodeGen(str))
+                if (GenericsHelper.ShouldTheDeclBeSkippedFromCodeGen(str))
                     continue;
 
                 // reg type info if non static

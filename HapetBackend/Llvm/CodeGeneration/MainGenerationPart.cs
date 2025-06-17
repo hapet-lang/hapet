@@ -6,6 +6,7 @@ using HapetFrontend.Entities;
 using HapetFrontend.Enums;
 using HapetFrontend.Errors;
 using HapetFrontend.Extensions;
+using HapetFrontend.Helpers;
 using HapetFrontend.Parsing;
 using HapetFrontend.Scoping;
 using HapetFrontend.Types;
@@ -27,7 +28,7 @@ namespace HapetBackend.Llvm
 
             foreach (var func in funcDecls)
             {
-                if (LastPrepare.ShouldTheDeclBeSkippedFromCodeGen(func))
+                if (GenericsHelper.ShouldTheDeclBeSkippedFromCodeGen(func))
                     continue;
 
                 _currentSourceFile = func.SourceFile;
