@@ -289,7 +289,16 @@ namespace HapetPostPrepare
             sb.Append('(');
 
             sb.Append('(');
-            AntiParseExpr(castExpr.TypeExpr, sb, offset);
+            if (castExpr.TypeExpr is AstEmptyExpr)
+            {
+                // create the same type
+                var ast = GetPreparedAst(castExpr.TypeExpr.OutType, castExpr.TypeExpr);
+                AntiParseExpr(ast, sb, offset);
+            }
+            else
+            {
+                AntiParseExpr(castExpr.TypeExpr, sb, offset);
+            }
             sb.Append(')');
 
             sb.Append('(');

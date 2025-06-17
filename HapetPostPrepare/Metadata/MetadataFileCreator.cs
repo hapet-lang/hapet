@@ -349,17 +349,28 @@ namespace HapetPostPrepare
 
                 sb.Append($"{additionalOffset + _fourSpaces}set \n");
                 AntiParseExpr(decl.SetBlock, sb, additionalOffset + _fourSpaces);
-                sb.Append($"{additionalOffset}}}\n");
+                sb.Append($"{additionalOffset}}}");
             }
             else if (decl.HasSet)
-                sb.Append("set; }\n");
+                sb.Append("set; }");
             else
             {
                 if (decl.GetBlock != null && (decl.HasGenericTypes ||
                     (isParentGeneric && !decl.SpecialKeys.Contains(TokenType.KwStatic))))
-                    sb.Append($"{additionalOffset}}}\n");
+                    sb.Append($"{additionalOffset}}}");
                 else
-                    sb.Append("}\n");
+                    sb.Append("}");
+            }
+
+            if (decl.Initializer != null)
+            {
+                sb.Append(" = ");
+                AntiParseExpr(decl.Initializer, sb, additionalOffset);
+                sb.Append(";\n");
+            }
+            else
+            {
+                sb.Append("\n");
             }
         }
 
@@ -376,6 +387,12 @@ namespace HapetPostPrepare
                 sb.Append('.');
             }
             AntiParseExpr(decl.Name, sb, additionalOffset);
+
+            if (decl.Initializer != null)
+            {
+                sb.Append(" = ");
+                AntiParseExpr(decl.Initializer, sb, additionalOffset);
+            }
 
             sb.Append(";\n");
         }
