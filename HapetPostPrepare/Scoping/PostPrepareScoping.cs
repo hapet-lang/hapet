@@ -408,6 +408,8 @@ namespace HapetPostPrepare
                 PostPrepareExprScoping(a);
             }
 
+            PostPrepareExprScoping(varDecl.Name);
+
             PostPrepareExprScoping(varDecl.Type);
             if (varDecl.Initializer != null)
             {
