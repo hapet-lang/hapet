@@ -5,6 +5,7 @@ using HapetFrontend.Errors;
 using HapetFrontend.Extensions;
 using HapetFrontend.Helpers;
 using HapetFrontend.Parsing;
+using HapetFrontend.Scoping;
 using HapetFrontend.Types;
 using HapetLastPrepare;
 using LLVMSharp.Interop;
@@ -15,6 +16,8 @@ namespace HapetBackend.Llvm
 {
     public partial class LlvmCodeGenerator
     {
+        private readonly List<(ISymbol, AstExpression)> _initializersMapList = new List<(ISymbol, AstExpression)>();
+
         /// <summary>
         /// Inits some dicts and other shite with metadata types :)
         /// </summary>
@@ -24,6 +27,7 @@ namespace HapetBackend.Llvm
             GenerateMetadataShiteFuncs();
             GenerateMetadataShiteFields();
             GenerateMetadataShiteAfterAll();
+            GenerateMetadataShiteFieldInitializers();
         }
         
         private void GenerateMetadataShiteTypes()
@@ -86,29 +90,15 @@ namespace HapetBackend.Llvm
                     var varType = decl.Type.OutType;
 
                     // check for const/static fields
-                    if (decl.SpecialKeys.Contains(TokenType.KwStatic))
+                    if (decl.SpecialKeys.Contains(TokenType.KwStatic) || decl.SpecialKeys.Contains(TokenType.KwConst))
                     {
-                        // creating a static field of the class
-                        var globStatic = _module.AddGlobal(HapetTypeToLLVMType(varType), $"{declName.Name}::{decl.Name.Name}");
-                        if (decl.Initializer != null)
-                        {
-                            globStatic.Initializer = GenerateExpressionCode(decl.Initializer);
-                        }
-                        else
-                        {
-                            // set default value to it
-                            globStatic.Initializer = GenerateExpressionCode(AstDefaultExpr.GetDefaultValueForType(varType, null, _compiler.MessageHandler));
-                        }
-                        _valueMap[decl.GetSymbol] = globStatic;
-                    }
-                    else if (decl.SpecialKeys.Contains(TokenType.KwConst))
-                    {
-                        // creating a const field of the class
                         // TODO: consts should not create a variable in LLVM IR 
                         // just use their values where needed
-                        var globConst = _module.AddGlobal(HapetTypeToLLVMType(varType), $"{declName.Name}::{decl.Name.Name}");
-                        globConst.Initializer = HapetValueToLLVMValue(varType, decl.Initializer.OutValue);
-                        _valueMap[decl.GetSymbol] = globConst;
+
+                        // creating a static field of the class
+                        var globStatic = _module.AddGlobal(HapetTypeToLLVMType(varType), $"{declName.Name}::{decl.Name.Name}");
+                        _initializersMapList.Add((decl.GetSymbol, decl.Initializer));
+                        _valueMap[decl.GetSymbol] = globStatic;
                     }
                     else
                     {
@@ -132,29 +122,15 @@ namespace HapetBackend.Llvm
                 foreach (var decl in str.Declarations.Where(x => x is AstVarDecl && x is not AstPropertyDecl).Select(x => x as AstVarDecl))
                 {
                     // check for const/static fields
-                    if (decl.SpecialKeys.Contains(TokenType.KwStatic))
+                    if (decl.SpecialKeys.Contains(TokenType.KwStatic) || decl.SpecialKeys.Contains(TokenType.KwConst))
                     {
-                        // creating a static field of the class
-                        var globStatic = _module.AddGlobal(HapetTypeToLLVMType(decl.Type.OutType), $"{declName.Name}::{decl.Name.Name}");
-                        if (decl.Initializer != null)
-                        {
-                            globStatic.Initializer = GenerateExpressionCode(decl.Initializer);
-                        }
-                        else
-                        {
-                            // set default value to it
-                            globStatic.Initializer = GenerateExpressionCode(AstDefaultExpr.GetDefaultValueForType(decl.Type.OutType, null, _compiler.MessageHandler));
-                        }
-                        _valueMap[decl.GetSymbol] = globStatic;
-                    }
-                    else if (decl.SpecialKeys.Contains(TokenType.KwConst))
-                    {
-                        // creating a const field of the class
                         // TODO: consts should not create a variable in LLVM IR 
                         // just use their values where needed
-                        var globConst = _module.AddGlobal(HapetTypeToLLVMType(decl.Type.OutType), $"{declName.Name}::{decl.Name.Name}");
-                        globConst.Initializer = HapetValueToLLVMValue(decl.Type.OutType, decl.Initializer.OutValue);
-                        _valueMap[decl.GetSymbol] = globConst;
+
+                        // creating a static field of the class
+                        var globStatic = _module.AddGlobal(HapetTypeToLLVMType(decl.Type.OutType), $"{declName.Name}::{decl.Name.Name}");
+                        _initializersMapList.Add((decl.GetSymbol, decl.Initializer));
+                        _valueMap[decl.GetSymbol] = globStatic;
                     }
                     else
                     {
@@ -214,6 +190,38 @@ namespace HapetBackend.Llvm
                 {
                     GenerateTypeInfoConst(str.Type.OutType);
                     GenerateVirtualTableConst(str.Type.OutType);
+                }
+            }
+        }
+
+        private void GenerateMetadataShiteFieldInitializers()
+        {
+            // we do generate initializers of static/const shite here 
+            // because typeInfo is only generated before us
+            // and typeInfo was to generated at GenerateMetadataShiteFields() call
+            // but we could require typeInfo because of some casts
+
+            foreach (var ini in _initializersMapList)
+            {
+                var field = _valueMap[ini.Item1];
+                var decl = (ini.Item1 as DeclSymbol).Decl;
+
+                // special check for const
+                if (decl.SpecialKeys.Contains(TokenType.KwConst))
+                {
+                    field.Initializer = HapetValueToLLVMValue(decl.Type.OutType, ini.Item2.OutValue);
+                    continue;
+                }
+
+                // for static
+                if (ini.Item2 != null)
+                {
+                    field.Initializer = GenerateExpressionCode(ini.Item2);
+                }
+                else
+                {
+                    // set default value to it
+                    field.Initializer = GenerateExpressionCode(AstDefaultExpr.GetDefaultValueForType(decl.Type.OutType, null, _compiler.MessageHandler));
                 }
             }
         }
