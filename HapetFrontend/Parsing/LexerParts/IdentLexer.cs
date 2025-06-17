@@ -89,7 +89,7 @@ namespace HapetFrontend.Parsing
         {
             token.Type = TokenType.NumberLiteral;
             var dataIntBase = 10;
-            var dataStringValue = "";
+            StringBuilder dataStringValue = new StringBuilder();
             var dataType = NumberType.Int;
 
             const int StateError = -1;
@@ -121,12 +121,12 @@ namespace HapetFrontend.Parsing
                         {
                             if (c == '0')
                             {
-                                dataStringValue += '0';
+                                dataStringValue.Append('0');
                                 state = State0;
                             }
                             else if (IsDigit(c))
                             {
-                                dataStringValue += c;
+                                dataStringValue.Append(c);
                                 state = StateDecimalDigit;
                             }
                             else
@@ -144,23 +144,23 @@ namespace HapetFrontend.Parsing
                             if (c == 'x')
                             {
                                 dataIntBase = 16;
-                                dataStringValue = "";
+                                dataStringValue.Clear();
                                 state = StateX;
                             }
                             else if (c == 'b')
                             {
                                 dataIntBase = 2;
-                                dataStringValue = "";
+                                dataStringValue.Clear();
                                 state = StateB;
                             }
                             else if (IsDigit(c))
                             {
-                                dataStringValue += c;
+                                dataStringValue.Append(c);
                                 state = StateDecimalDigit;
                             }
                             else if (c == '.' && Next(location) != '.')
                             {
-                                dataStringValue += c;
+                                dataStringValue.Append(c);
                                 state = StateFloatPoint;
                                 dataType = NumberType.Float;
                             }
@@ -174,10 +174,10 @@ namespace HapetFrontend.Parsing
                     case StateDecimalDigit:
                         {
                             if (IsDigit(c))
-                                dataStringValue += c;
+                                dataStringValue.Append(c);
                             else if (c == '.' && Next(location) != '.')
                             {
-                                dataStringValue += c;
+                                dataStringValue.Append(c);
                                 state = StateFloatPoint;
                                 dataType = NumberType.Float;
 
@@ -197,7 +197,7 @@ namespace HapetFrontend.Parsing
                         {
                             if (IsDigit(c))
                             {
-                                dataStringValue += c;
+                                dataStringValue.Append(c);
                                 state = StateFloatDigit;
                             }
                             else
@@ -212,11 +212,22 @@ namespace HapetFrontend.Parsing
                         {
                             if (IsDigit(c))
                             {
-                                dataStringValue += c;
+                                dataStringValue.Append(c);
                             }
                             else if (c == '_')
                             {
                                 state = StateFloat_;
+                            }
+                            else if (c == 'E' || c == 'e')
+                            {
+                                // just append the exponent
+                                dataStringValue.Append(c);
+                                if (Next(location) == '+' || Next(location) == '-')
+                                {
+                                    // just append the sign
+                                    dataStringValue.Append(Next(location));
+                                    location.Index++;
+                                }
                             }
                             else
                             {
@@ -229,7 +240,7 @@ namespace HapetFrontend.Parsing
                         {
                             if (IsHexDigit(c))
                             {
-                                dataStringValue += c;
+                                dataStringValue.Append(c);
                                 state = StateHexDigit;
                             }
                             else
@@ -243,7 +254,7 @@ namespace HapetFrontend.Parsing
                     case StateHexDigit:
                         {
                             if (IsHexDigit(c))
-                                dataStringValue += c;
+                                dataStringValue.Append(c);
                             else if (c == '_')
                             {
                                 state = StateHex_;
@@ -259,7 +270,7 @@ namespace HapetFrontend.Parsing
                         {
                             if (IsBinaryDigit(c))
                             {
-                                dataStringValue += c;
+                                dataStringValue.Append(c);
                                 state = StateBinaryDigit;
                             }
                             else if (IsDigit(c))
@@ -277,7 +288,7 @@ namespace HapetFrontend.Parsing
                     case StateBinaryDigit:
                         {
                             if (IsBinaryDigit(c))
-                                dataStringValue += c;
+                                dataStringValue.Append(c);
                             else if (c == '_')
                             {
                                 state = StateBinary_;
@@ -297,7 +308,7 @@ namespace HapetFrontend.Parsing
                     case StateDecimal_:
                         if (IsDigit(c))
                         {
-                            dataStringValue += c;
+                            dataStringValue.Append(c);
                             state = StateDecimalDigit;
                         }
                         else
@@ -310,7 +321,7 @@ namespace HapetFrontend.Parsing
                     case StateHex_:
                         if (IsHexDigit(c))
                         {
-                            dataStringValue += c;
+                            dataStringValue.Append(c);
                             state = StateHexDigit;
                         }
                         else
@@ -323,7 +334,7 @@ namespace HapetFrontend.Parsing
                     case StateBinary_:
                         if (IsDigit(c))
                         {
-                            dataStringValue += c;
+                            dataStringValue.Append(c);
                             state = StateBinaryDigit;
                         }
                         else
@@ -336,7 +347,7 @@ namespace HapetFrontend.Parsing
                     case StateFloat_:
                         if (IsDigit(c))
                         {
-                            dataStringValue += c;
+                            dataStringValue.Append(c);
                             state = StateFloatDigit;
                         }
                         else
@@ -360,7 +371,7 @@ namespace HapetFrontend.Parsing
                 return;
             }
 
-            token.Data = new NumberData(dataType, dataStringValue, dataIntBase);
+            token.Data = new NumberData(dataType, dataStringValue.ToString(), dataIntBase);
         }
     }
 }

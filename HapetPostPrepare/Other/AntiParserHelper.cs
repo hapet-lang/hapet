@@ -19,7 +19,20 @@ namespace HapetPostPrepare
             {
                 // consts and literals
                 case AstNumberExpr n:
+                    switch (n.Data.IntBase)
+                    {
+                        case 2:
+                            sb.Append("0b");
+                            break;
+                        case 10:
+                            break;
+                        case 16:
+                            sb.Append("0x");
+                            break;
+                    }
                     sb.Append(n.Data);
+                    if (n.Suffix != null)
+                        sb.Append(n.Suffix);
                     break;
                 case AstStringExpr s:
                     sb.Append($"\"{s.StringValue}\"");
