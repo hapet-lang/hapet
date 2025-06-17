@@ -332,7 +332,7 @@ namespace HapetPostPrepare
             candidates = candidates.Distinct().ToList();
 
             // add current decl subscope' decls
-            var currentDecls = GetCandidatesInScope(name, declToSearch.SubScope, callFromObject: callFromObject);
+            var currentDecls = declToSearch.SubScope.GetFunctionSymbols(name, callFromObject: callFromObject);
             foreach (var currDecl in currentDecls)
             {
                 // we need to manually check shadowing funcs
@@ -364,7 +364,7 @@ namespace HapetPostPrepare
         {
             if (callExpr == null || callExpr.Scope == null)
                 return new List<DeclSymbol>();
-            return GetCandidatesInScope(name, callExpr.Scope, searchParent: true, callFromObject: callFromObject); // also search parents
+            return callExpr.Scope.GetFunctionSymbols(name, searchParent: true, callFromObject: callFromObject); // also search parents
         }
 
         private static IEnumerable<DeclSymbol> Candidates_Step3_MinAmountParams(IEnumerable<DeclSymbol> decls, int argsAmount)
@@ -569,90 +569,6 @@ namespace HapetPostPrepare
                 decls.RemoveAll(x => x.Decl == r);
             }
         }
-
-        #region Helpers
-        private static List<DeclSymbol> GetCandidatesInScope(AstIdExpr classWithFuncName, Scope scopeToSearch, bool searchParent = false, bool callFromObject = false)
-        {
-            List<DeclSymbol> candidates = new List<DeclSymbol>();
-            // search for the func in the scope
-            foreach (var (k, d) in GetDecls(scopeToSearch))
-            {
-                if (d != null && (d.Decl is AstFuncDecl || d.Decl.Type.OutType is DelegateType))
-                {
-                    // 1 - name similarity checks - DO NOT ALLOW GENERICS HERE 
-                    // generic checks are below
-                    var onlyFuncName = classWithFuncName.Name.GetPureFuncName();
-                    var firstKeyPart = k.Name.GetPureFuncName();
-                    if ((k.Name.StartsWith(classWithFuncName.Name) || firstKeyPart == onlyFuncName) 
-                        && (d.Decl.Name is not AstIdGenericExpr && classWithFuncName is not AstIdGenericExpr))
-                    {
-                        // add static func if not callFromObject and add non-static if callFromObject
-                        // or just add if it is a delegate
-                        if ((callFromObject && !d.Decl.SpecialKeys.Contains(TokenType.KwStatic)) || 
-                            (!callFromObject && d.Decl.SpecialKeys.Contains(TokenType.KwStatic)) ||
-                            d.Decl.Type.OutType is DelegateType)
-                            candidates.Add(d);
-                        continue;
-                    }
-
-                    // 2 - generics check
-                    if (classWithFuncName is AstIdGenericExpr searchGen && k is AstIdGenericExpr symbolGen)
-                    {
-                        int gAmountFunc = symbolGen.GenericRealTypes.Count;
-                        int gAmountCall = searchGen.GenericRealTypes.Count;
-                        if (onlyFuncName == firstKeyPart && gAmountFunc == gAmountCall)
-                        {
-                            // add static func if not callFromObject and add non-static if callFromObject
-                            // or just add if it is a delegate
-                            if ((callFromObject && !d.Decl.SpecialKeys.Contains(TokenType.KwStatic)) ||
-                                (!callFromObject && d.Decl.SpecialKeys.Contains(TokenType.KwStatic)) ||
-                                d.Decl.Type.OutType is DelegateType)
-                                candidates.Add(d);
-                            continue;
-                        }
-                    }
-
-                    // 3 - explicit interface impl check
-                    /// the same as in <see cref="OtherExtensions.GetSameByNameAndTypes(List{AstFuncDecl}, AstFuncDecl, out int, bool)"/>
-                    if (d.Decl.Name.AdditionalData != null)
-                    {
-                        string pureSearchName = onlyFuncName.GetClassNameWithoutNamespace();
-                        string pureName = firstKeyPart.GetClassNameWithoutNamespace();
-                        if (pureName == pureSearchName)
-                        {
-                            // add static func if not callFromObject and add non-static if callFromObject
-                            // or just add if it is a delegate
-                            if ((callFromObject && !d.Decl.SpecialKeys.Contains(TokenType.KwStatic)) ||
-                                (!callFromObject && d.Decl.SpecialKeys.Contains(TokenType.KwStatic)) ||
-                                d.Decl.Type.OutType is DelegateType)
-                                candidates.Add(d);
-                            continue;
-                        }
-                    }
-                }
-            }
-
-            // if search in parent scopes
-            if (searchParent && scopeToSearch.Parent != null)
-                candidates.AddRange(GetCandidatesInScope(classWithFuncName, scopeToSearch.Parent, searchParent, callFromObject));
-
-            return candidates;
-        }
-
-        private static IEnumerable<(AstIdExpr, DeclSymbol)> GetDecls(Scope scope)
-        {
-            // search for the func in the shadow
-            foreach (var k in scope.ShadowSymbolTable.Keys)
-            {
-                yield return (k, scope.ShadowSymbolTable[k] as DeclSymbol);
-            }
-            // search for the func in the scope
-            foreach (var k in scope.SymbolTable.Keys)
-            {
-                yield return (k, scope.SymbolTable[k] as DeclSymbol);
-            }
-        }
-        #endregion
 
         private void CheckAndPrepareExplicitFuncs(List<DeclSymbol> decls, AstCallExpr callExpr)
         {

@@ -29,26 +29,23 @@ namespace HapetFrontend.Extensions
 
         public static string GetPureFuncName(this string name, bool keepExplicitData = true)
         {
-            string rightPart;
-            if (!name.Contains("::"))
-                rightPart = string.Concat(name.TakeWhile(x => x != '('));
-            else
-                rightPart = string.Concat(name.Split("::")[1].TakeWhile(x => x != '('));
+            ReadOnlySpan<char> span = name;
 
-            if (!rightPart.Contains('.'))
-                return rightPart;
+            int idxParen = span.IndexOf('(');
+            if (idxParen >= 0)
+                span = span.Slice(0, idxParen);
 
-            var splitted = rightPart.Split('.');
-            var result = splitted[^1];
-            if (keepExplicitData)
+            int idxDoubleColon = span.IndexOf("::");
+            if (idxDoubleColon >= 0)
+                span = span.Slice(idxDoubleColon + 2);
+
+            if (!keepExplicitData)
             {
-                // this is done to handle shite like:
-                // bool System.Collections.IStructuralEquatable.Equals(..
-                // and make it to this:
-                // bool IStructuralEquatable.Equals(..
-                result = string.Join('.', splitted[^2], splitted[^1]);
+                int idxLastDot = span.LastIndexOf('.');
+                if (idxLastDot >= 0)
+                    span = span.Slice(idxLastDot + 1);
             }
-            return result;
+            return span.ToString();
         }
 
         public static string GetClassNameFromFuncName(this string name)

@@ -104,16 +104,19 @@ namespace HapetFrontend.Scoping
             // this cringe is used to search a part namespace
             if (searchPartNamespace)
             {
-                foreach (var k in _shadowSymbolTable.Keys)
+                foreach (var k in _shadowSymbolTable)
                 {
-                    if (k.Name.StartsWith(name.Name) && _shadowSymbolTable[k] is NamespaceSymbol)
-                        return _shadowSymbolTable[k];
+                    if (k.Value is NamespaceSymbol && k.Key.Name.StartsWith(name.Name))
+                        return k.Value;
                 }
-                foreach (var k in _symbolTable.Keys)
+                foreach (var k in _symbolTable)
                 {
-                    if (k.Name.StartsWith(name.Name) && _symbolTable[k] is NamespaceSymbol)
-                        return _symbolTable[k];
+                    if (k.Value is NamespaceSymbol && k.Key.Name.StartsWith(name.Name))
+                        return k.Value;
                 }
+                if (searchParentScope)
+                    return Parent?.GetSymbol(name, searchUsedScopes, searchParentScope, searchPartNamespace, handleGenerics);
+                return null;
             }
 
             // 1 - check for the same AstIdExpr instance
@@ -126,23 +129,29 @@ namespace HapetFrontend.Scoping
             if (name is not AstIdGenericExpr && name is not AstIdTupledExpr)
             {
                 // checker to check that they are the same
-                var checker = new Func<AstIdExpr, bool>((x) =>
-                {
-                    var c1 = x is not AstIdGenericExpr && x is not AstIdTupledExpr;
-                    var c2 = x.Name == name.Name;
-                    // additional data shite
-                    var c3 = x.AdditionalData == null && name.AdditionalData == null;
-                    if (x.AdditionalData != null && name.AdditionalData != null)
-                    {
-                        c3 = x.AdditionalData.OutType == name.AdditionalData.OutType;
-                    }
-                    return c1 && c2 && c3;
-                });
+                //var checker = new Func<AstIdExpr, bool>((x) =>
+                //{
+                //    var c1 = x is not AstIdGenericExpr && x is not AstIdTupledExpr;
+                //    var c2 = x.Name == name.Name;
+                //    // additional data shite
+                //    var c3 = x.AdditionalData == null && name.AdditionalData == null;
+                //    if (x.AdditionalData != null && name.AdditionalData != null)
+                //    {
+                //        c3 = x.AdditionalData.OutType == name.AdditionalData.OutType;
+                //    }
+                //    return c1 && c2 && c3;
+                //});
 
-                var k1 = _shadowSymbolTable.Keys.FirstOrDefault(checker);
+                var k1 = _shadowSymbolTable.Keys.FirstOrDefault(x => x.Name == name.Name && (x is not AstIdGenericExpr && x is not AstIdTupledExpr) && 
+                    ((x.AdditionalData == null && name.AdditionalData == null) || 
+                    ((x.AdditionalData != null && name.AdditionalData != null) && 
+                    x.AdditionalData.OutType == name.AdditionalData.OutType)));
                 if (k1 != null)
                     return _shadowSymbolTable[k1];
-                var k2 = _symbolTable.Keys.FirstOrDefault(checker);
+                var k2 = _symbolTable.Keys.FirstOrDefault(x => x.Name == name.Name && (x is not AstIdGenericExpr && x is not AstIdTupledExpr) &&
+                    ((x.AdditionalData == null && name.AdditionalData == null) ||
+                    ((x.AdditionalData != null && name.AdditionalData != null) &&
+                    x.AdditionalData.OutType == name.AdditionalData.OutType)));
                 if (k2 != null)
                     return _symbolTable[k2];
             }
@@ -157,15 +166,9 @@ namespace HapetFrontend.Scoping
                 // we need to return original one
                 DeclSymbol originalGeneric = null;
                 DeclSymbol theSameGeneric = null;
-                foreach (var k in _symbolTable.Keys)
+                foreach (var k in _symbolTable.Keys.Where(x => x.Name == name.Name && x is AstIdGenericExpr))
                 {
-                    // skip non generic keys
-                    if (k is not AstIdGenericExpr genK)
-                        continue;
-
-                    // if not the same name
-                    if (k.Name != name.Name)
-                        continue;
+                    var genK = k as AstIdGenericExpr;
 
                     // if not the same amount of generics
                     int gAmountSymbol = genK.GenericRealTypes.Count;
@@ -234,6 +237,87 @@ namespace HapetFrontend.Scoping
                 return true;
 
             return false;
+        }
+
+        public List<DeclSymbol> GetFunctionSymbols(AstIdExpr classWithFuncName, bool searchParent = false, bool callFromObject = false)
+        {
+            List<DeclSymbol> candidates = new List<DeclSymbol>();
+            // search for the func in the scope
+            foreach (var (k, d) in GetDecls())
+            {
+                var decl = d as DeclSymbol;
+
+                // 1 - name similarity checks - DO NOT ALLOW GENERICS HERE 
+                // generic checks are below
+                var onlyFuncName = classWithFuncName.Name.GetPureFuncName();
+                var firstKeyPart = k.Name.GetPureFuncName();
+                if ((k.Name.StartsWith(classWithFuncName.Name) || firstKeyPart == onlyFuncName)
+                    && (decl.Decl.Name is not AstIdGenericExpr && classWithFuncName is not AstIdGenericExpr))
+                {
+                    // add static func if not callFromObject and add non-static if callFromObject
+                    // or just add if it is a delegate
+                    if ((callFromObject && !decl.Decl.SpecialKeys.Contains(TokenType.KwStatic)) ||
+                        (!callFromObject && decl.Decl.SpecialKeys.Contains(TokenType.KwStatic)) ||
+                        decl.Decl.Type.OutType is DelegateType)
+                        candidates.Add(decl);
+                    continue;
+                }
+
+                // 2 - generics check
+                if (classWithFuncName is AstIdGenericExpr searchGen && k is AstIdGenericExpr symbolGen)
+                {
+                    int gAmountFunc = symbolGen.GenericRealTypes.Count;
+                    int gAmountCall = searchGen.GenericRealTypes.Count;
+                    if (onlyFuncName == firstKeyPart && gAmountFunc == gAmountCall)
+                    {
+                        // add static func if not callFromObject and add non-static if callFromObject
+                        // or just add if it is a delegate
+                        if ((callFromObject && !decl.Decl.SpecialKeys.Contains(TokenType.KwStatic)) ||
+                            (!callFromObject && decl.Decl.SpecialKeys.Contains(TokenType.KwStatic)) ||
+                            decl.Decl.Type.OutType is DelegateType)
+                            candidates.Add(decl);
+                        continue;
+                    }
+                }
+
+                // 3 - explicit interface impl check
+                /// the same as in <see cref="OtherExtensions.GetSameByNameAndTypes(List{AstFuncDecl}, AstFuncDecl, out int, bool)"/>
+                if (decl.Decl.Name.AdditionalData != null)
+                {
+                    string pureSearchName = onlyFuncName.GetClassNameWithoutNamespace();
+                    string pureName = firstKeyPart.GetClassNameWithoutNamespace();
+                    if (pureName == pureSearchName)
+                    {
+                        // add static func if not callFromObject and add non-static if callFromObject
+                        // or just add if it is a delegate
+                        if ((callFromObject && !decl.Decl.SpecialKeys.Contains(TokenType.KwStatic)) ||
+                            (!callFromObject && decl.Decl.SpecialKeys.Contains(TokenType.KwStatic)) ||
+                            decl.Decl.Type.OutType is DelegateType)
+                            candidates.Add(decl);
+                        continue;
+                    }
+                }
+            }
+
+            // if search in parent scopes
+            if (searchParent && Parent != null)
+                candidates.AddRange(Parent.GetFunctionSymbols(classWithFuncName, searchParent, callFromObject));
+
+            return candidates;
+
+            IEnumerable<KeyValuePair<AstIdExpr, ISymbol>> GetDecls()
+            {
+                // search for the func in the shadow
+                foreach (var k in ShadowSymbolTable.Where(x => x.Value is DeclSymbol ds && (ds.Decl is AstFuncDecl || ds.Decl is AstDelegateDecl)))
+                {
+                    yield return k;
+                }
+                // search for the func in the scope
+                foreach (var k in SymbolTable.Where(x => x.Value is DeclSymbol ds && (ds.Decl is AstFuncDecl || ds.Decl is AstDelegateDecl)))
+                {
+                    yield return k;
+                }
+            }
         }
     }
 }

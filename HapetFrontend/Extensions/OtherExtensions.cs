@@ -133,58 +133,65 @@ namespace HapetFrontend.Extensions
         {
             index = -1;
             AstFuncDecl bestMatch = null;
-            // there is already params type in name like
-            // TestClass::AnimeFunc(int:PivoCls)
-            string searchName = searchFunc.Name.Name.GetPureFuncName();
-            List<HapetType> types = searchFunc.Parameters.Select(x => x.Type?.OutType).ToList();
-            if (skipFirst)
+            string searchName = null;
+            List<HapetType> types = null;
+
+            // if not additional data
+            if (searchFunc.Name.AdditionalData == null)
             {
-                // remove the first param
-                types = types.Skip(1).ToList();
-            }
-            for (int i = 0; i < delcs.Count; ++i)
-            {
-                var x = delcs[i];
-
-                // return if the same
-                if (x == searchFunc)
-                {
-                    index = i;
-                    return x;
-                }
-
-                string currName = x.Name.Name.GetPureFuncName();
-                if (currName != searchName)
-                    continue;
-
-                List<HapetType> typesD = x.Parameters.Select(x => x.Type?.OutType).ToList();
+                // there is already params type in name like
+                // TestClass::AnimeFunc(int:PivoCls)
+                searchName = searchFunc.Name.Name.GetPureFuncName();
+                types = searchFunc.Parameters.Select(x => x.Type?.OutType).ToList();
                 if (skipFirst)
                 {
                     // remove the first param
-                    typesD = typesD.Skip(1).ToList();
+                    types = types.Skip(1).ToList();
                 }
+                for (int i = 0; i < delcs.Count; ++i)
+                {
+                    var x = delcs[i];
 
-                // check for parameter types
-                bool areTypesTheSame = typesD.Count == types.Count;
-                if (!areTypesTheSame)
-                    continue;
-
-                if (areTypesTheSame)
-                    for (int j = 0; j < types.Count; ++j)
+                    // return if the same
+                    if (x == searchFunc)
                     {
-                        var t1 = types[j];
-                        var t2 = typesD[j];
-                        if (!GenericType.AreTypesTheSameIncludingGenerics(t1, t2))
-                        {
-                            areTypesTheSame = false;
-                            break;
-                        }
+                        index = i;
+                        return x;
                     }
-                if (!areTypesTheSame)
-                    continue;
 
-                index = i;
-                bestMatch = x;
+                    string currName = x.Name.Name.GetPureFuncName();
+                    if (currName != searchName)
+                        continue;
+
+                    List<HapetType> typesD = x.Parameters.Select(x => x.Type?.OutType).ToList();
+                    if (skipFirst)
+                    {
+                        // remove the first param
+                        typesD = typesD.Skip(1).ToList();
+                    }
+
+                    // check for parameter types
+                    bool areTypesTheSame = typesD.Count == types.Count;
+                    if (!areTypesTheSame)
+                        continue;
+
+                    if (areTypesTheSame)
+                        for (int j = 0; j < types.Count; ++j)
+                        {
+                            var t1 = types[j];
+                            var t2 = typesD[j];
+                            if (!GenericType.AreTypesTheSameIncludingGenerics(t1, t2))
+                            {
+                                areTypesTheSame = false;
+                                break;
+                            }
+                        }
+                    if (!areTypesTheSame)
+                        continue;
+
+                    index = i;
+                    bestMatch = x;
+                }
             }
 
             // additional search for explicit declarations!!!
