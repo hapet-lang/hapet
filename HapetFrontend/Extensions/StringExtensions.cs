@@ -1,8 +1,4 @@
-﻿using HapetFrontend.Helpers;
-using System.Runtime.CompilerServices;
-using System.Xml.Linq;
-
-namespace HapetFrontend.Extensions
+﻿namespace HapetFrontend.Extensions
 {
     public static class StringExtensions
     {
@@ -14,17 +10,25 @@ namespace HapetFrontend.Extensions
 
         public static string GetClassNameWithoutNamespace(this string name)
         {
-            var elements = name.Split(".");
-            return elements[elements.Length - 1];
+            ReadOnlySpan<char> span = name;
+
+            int idxLastDot = span.LastIndexOf('.');
+            if (idxLastDot >= 0) 
+            {
+                span = span.Slice(idxLastDot + 1);
+                return span.ToString();
+            }
+            return name;
         }
 
         public static string GetNamespaceWithoutClassName(this string name)
         {
-            if (!name.Contains('.'))
-                return string.Empty;
+            ReadOnlySpan<char> span = name;
 
-            var elements = name.Split(".");
-            return string.Join('.', elements.SkipLast(1));
+            int idxLastDot = span.LastIndexOf('.');
+            if (idxLastDot >= 0)
+                return span.Slice(0, idxLastDot).ToString();
+            return string.Empty;
         }
 
         public static string GetPureFuncName(this string name, bool keepExplicitData = true)
@@ -50,14 +54,12 @@ namespace HapetFrontend.Extensions
 
         public static string GetClassNameFromFuncName(this string name)
         {
-            if (!name.Contains("::"))
-                return string.Empty;
-            return name.Split("::")[0];
-        }
+            ReadOnlySpan<char> span = name;
 
-        public static string GetFuncWithClassName(this string name)
-        {
-            return string.Concat(name.TakeWhile(x => x != '('));
+            int idxDoubleColon = span.IndexOf("::");
+            if (idxDoubleColon >= 0)
+                return span.Slice(0, idxDoubleColon).ToString();
+            return string.Empty;
         }
     }
 }
