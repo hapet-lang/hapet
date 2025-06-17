@@ -463,7 +463,7 @@ namespace HapetLastPrepare
                 var g = expr.GenericRealTypes[i];
                 if (g.OutType is ClassType)
                 {
-                    expr.GenericRealTypes[i] = GetPointerType(g);
+                    expr.GenericRealTypes[i].OutType = PointerType.GetPointerType(g.OutType);
                 }
             }
 
@@ -486,6 +486,11 @@ namespace HapetLastPrepare
             if (expr.TypeOrObjectName?.OutType is ClassType && !expr.StaticCall)
             {
                 expr.TypeOrObjectName.OutType = PointerType.GetPointerType(expr.TypeOrObjectName.OutType);
+            }
+
+            if (expr.OutType is ClassType)
+            {
+                expr.OutType = PointerType.GetPointerType(expr.OutType);
             }
 
             if (expr.TypeOrObjectName != null)
@@ -542,6 +547,11 @@ namespace HapetLastPrepare
         private void LPRACArrayAccessExpr(AstArrayAccessExpr expr)
         {
             LPRACExpr(expr.ParameterExpr);
+
+            if (expr.OutType is ClassType)
+            {
+                expr.OutType = PointerType.GetPointerType(expr.OutType);
+            }
         }
 
         private void LPRACTernaryExpr(AstTernaryExpr expr)
@@ -549,6 +559,11 @@ namespace HapetLastPrepare
             LPRACExpr(expr.Condition);
             LPRACExpr(expr.TrueExpr);
             LPRACExpr(expr.FalseExpr);
+
+            if (expr.OutType is ClassType)
+            {
+                expr.OutType = PointerType.GetPointerType(expr.OutType);
+            }
         }
 
         private void LPRACCheckedExpr(AstCheckedExpr expr)
@@ -606,6 +621,11 @@ namespace HapetLastPrepare
         private void LPRACReturnStmt(AstReturnStmt stmt)
         {
             LPRACExpr(stmt.ReturnExpression);
+
+            if (stmt.ReturnExpression?.OutType is ClassType)
+            {
+                stmt.ReturnExpression.OutType = PointerType.GetPointerType(stmt.ReturnExpression.OutType);
+            }
         }
 
         private void LPRACAttributeStmt(AstAttributeStmt stmt)
