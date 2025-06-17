@@ -592,7 +592,7 @@ namespace HapetBackend.Llvm
         private unsafe LLVMValueRef GenerateNewExpr(AstNewExpr expr)
         {
             LLVMValueRef v = default;
-            if (expr.OutType is ClassType classType)
+            if (expr.OutType is PointerType pt && pt.TargetType is ClassType classType)
             {
                 int structSize = AstDeclaration.GetSizeForAlloc(classType.Declaration.GetAllRawFields());
 
@@ -602,11 +602,11 @@ namespace HapetBackend.Llvm
                 List<AstArgumentExpr> argsWithClassParam = new List<AstArgumentExpr>(expr.Arguments);
                 argsWithClassParam.Insert(0, new AstArgumentExpr(new AstIdExpr("this") 
                 { 
-                    OutType = classType,
+                    OutType = expr.OutType,
                     Scope = expr.Scope,
                 })
                 {
-                    OutType = classType,
+                    OutType = expr.OutType,
                     Scope = expr.Scope,
                 });
                 var ctorSymbol = _postPreparer.GetFuncFromCandidates(new AstIdExpr(ctorName), null, argsWithClassParam, classType.Declaration, true, out var casts);
@@ -889,6 +889,12 @@ namespace HapetBackend.Llvm
                     leftPartDecl = classTT.Declaration;
                     leftPartDeclarations = classTT.Declaration.Declarations.Where(x => x is AstVarDecl).ToList();
                     leftPartType = classTT;
+                }
+                else if (expr.LeftPart.OutType is PointerType pt && pt.TargetType is ClassType classT)
+                {
+                    leftPartDecl = classT.Declaration;
+                    leftPartDeclarations = classT.Declaration.Declarations.Where(x => x is AstVarDecl).ToList();
+                    leftPartType = classT;
                 }
                 else if (expr.LeftPart.OutType is StructType structT)
                 {

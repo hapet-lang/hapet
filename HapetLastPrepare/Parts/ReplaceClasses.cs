@@ -103,11 +103,6 @@ namespace HapetLastPrepare
                 LPRACAttributeStmt(a);
             }
 
-            foreach (var inh in decl.InheritedFrom)
-            {
-                LPRACNestedExpr(inh);
-            }
-
             foreach (var c in decl.GenericConstrains)
             {
                 foreach (var currentC in c.Value)
@@ -137,11 +132,6 @@ namespace HapetLastPrepare
             foreach (var a in decl.Attributes)
             {
                 LPRACAttributeStmt(a);
-            }
-
-            foreach (var inh in decl.InheritedFrom)
-            {
-                LPRACNestedExpr(inh);
             }
 
             foreach (var c in decl.GenericConstrains)
@@ -413,6 +403,11 @@ namespace HapetLastPrepare
         private void LPRACUnaryExpr(AstUnaryExpr expr)
         {
             LPRACExpr(expr.SubExpr);
+
+            if (expr.OutType is ClassType)
+            {
+                expr.OutType = PointerType.GetPointerType(expr.OutType);
+            }
         }
 
         private void LPRACBinaryExpr(AstBinaryExpr expr)
@@ -424,7 +419,12 @@ namespace HapetLastPrepare
             if (expr.Operator == "as" || expr.Operator == "is")
             {
                 if (expr.Right.OutType is ClassType)
-                    expr.Right = GetPointerType(expr.Right);
+                    expr.Right.OutType = PointerType.GetPointerType(expr.Right.OutType);
+            }
+
+            if (expr.OutType is ClassType)
+            {
+                expr.OutType = PointerType.GetPointerType(expr.OutType);
             }
         }
 
@@ -440,10 +440,9 @@ namespace HapetLastPrepare
 
         private void LPRACNewExpr(AstNewExpr expr)
         {
-            if (expr.TypeName.OutType is ClassType)
+            if (expr.OutType is ClassType)
             {
-                expr.TypeName = GetPointerType(expr.TypeName);
-                expr.OutType = expr.TypeName.OutType;
+                expr.OutType = PointerType.GetPointerType(expr.OutType);
             }
 
             foreach (var a in expr.Arguments)
@@ -467,15 +466,28 @@ namespace HapetLastPrepare
                     expr.GenericRealTypes[i] = GetPointerType(g);
                 }
             }
+
+            if (expr.OutType is ClassType)
+            {
+                expr.OutType = PointerType.GetPointerType(expr.OutType);
+            }
         }
 
         private void LPRACIdExpr(AstIdExpr expr)
         {
-
+            if (expr.OutType is ClassType)
+            {
+                expr.OutType = PointerType.GetPointerType(expr.OutType);
+            }
         }
 
         private void LPRACCallExpr(AstCallExpr expr)
         {
+            if (expr.TypeOrObjectName?.OutType is ClassType && !expr.StaticCall)
+            {
+                expr.TypeOrObjectName.OutType = PointerType.GetPointerType(expr.TypeOrObjectName.OutType);
+            }
+
             if (expr.TypeOrObjectName != null)
             {
                 LPRACExpr(expr.TypeOrObjectName);
@@ -489,10 +501,9 @@ namespace HapetLastPrepare
 
         private void LPRACCastExpr(AstCastExpr expr)
         {
-            if (expr.TypeExpr?.OutType is ClassType)
+            if (expr.OutType is ClassType)
             {
-                expr.TypeExpr = GetPointerType(expr.TypeExpr);
-                expr.OutType = expr.TypeExpr.OutType;
+                expr.OutType = PointerType.GetPointerType(expr.OutType);
             }
 
             LPRACExpr(expr.SubExpression);
@@ -500,7 +511,10 @@ namespace HapetLastPrepare
 
         private void LPRACNestedExpr(AstNestedExpr expr)
         {
+            LPRACExpr(expr.LeftPart);
+            LPRACExpr(expr.RightPart);
 
+            expr.OutType = expr.RightPart.OutType;
         }
 
         private void LPRACDefaultExpr(AstDefaultExpr expr)
@@ -601,6 +615,11 @@ namespace HapetLastPrepare
 
         private void LPRACBaseCtorStmt(AstBaseCtorStmt stmt)
         {
+            if (stmt.ThisArgument.OutType is ClassType)
+            {
+                stmt.ThisArgument.OutType = PointerType.GetPointerType(stmt.ThisArgument.OutType);
+            }
+
             foreach (var a in stmt.Arguments)
             {
                 LPRACExpr(a);

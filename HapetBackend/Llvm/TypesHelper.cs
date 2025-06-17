@@ -466,6 +466,15 @@ namespace HapetBackend.Llvm
                 {
                     return builder.BuildPtrToInt(val, HapetTypeToLLVMType(outType));
                 }
+                else if (ptrT.TargetType is ClassType classType && outType is StructType structType2)
+                {
+                    // check inheritance
+                    bool isDownCast = structType2.IsInheritedFrom(classType);
+                    if (isDownCast)
+                    {
+                        return CreateStructCastFromObject(val, structType2, true);
+                    }
+                }
             }
             if (inType is IntPtrType)
             {
@@ -571,7 +580,7 @@ namespace HapetBackend.Llvm
             // no need to else-if here - it can handle bacis types transformation
             if (inType is StructType structType) 
             {
-                if (outType is ClassType clsT && 
+                if (outType is PointerType pt && pt.TargetType is ClassType clsT && 
                     (clsT.Declaration.Name.Name == "System.Object" || clsT.Declaration.Name.Name == "System.ValueType" || clsT.Declaration.IsInterface))
                 {
                     // cast from struct instance to object
@@ -587,18 +596,6 @@ namespace HapetBackend.Llvm
                     _builder.BuildStore(val, offseted);
 
                     return v; // return malloced
-                }
-            }
-            else if (inType is ClassType classType)
-            {
-                if (outType is StructType structType2)
-                {
-                    // check inheritance
-                    bool isDownCast = structType2.IsInheritedFrom(classType);
-                    if (isDownCast)
-                    {
-                        return CreateStructCastFromObject(val, structType2, true);
-                    }
                 }
             }
             // ...
