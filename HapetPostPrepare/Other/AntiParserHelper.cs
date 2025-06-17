@@ -3,6 +3,7 @@ using HapetFrontend.Ast.Declarations;
 using HapetFrontend.Ast.Expressions;
 using HapetFrontend.Ast.Statements;
 using HapetFrontend.Errors;
+using HapetFrontend.Extensions;
 using HapetFrontend.Helpers;
 using HapetFrontend.Parsing;
 using System.Diagnostics;
@@ -273,7 +274,8 @@ namespace HapetPostPrepare
                 AntiParseExpr(callExpr.TypeOrObjectName, sb, offset);
                 sb.Append('.');
             }
-            sb.Append(GetNameFromAst(callExpr.FuncName, _compiler.MessageHandler));
+            var fncName = callExpr.FuncName.GetCopy(callExpr.FuncName.Name.GetPureFuncName());
+            sb.Append(GetNameFromAst(fncName, _compiler.MessageHandler));
             sb.Append('(');
             for (int i = 0; i < callExpr.Arguments.Count; ++i)
             {
