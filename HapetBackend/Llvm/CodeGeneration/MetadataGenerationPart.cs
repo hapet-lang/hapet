@@ -83,7 +83,7 @@ namespace HapetBackend.Llvm
                 foreach (var decl in cls.Declarations.Where(x => x is AstVarDecl && x is not AstPropertyDecl).Select(x => x as AstVarDecl))
                 {
                     // need to make a ptr to a class
-                    var varType = decl.Type.OutType is ClassType ? PointerType.GetPointerType(decl.Type.OutType) : decl.Type.OutType;
+                    var varType = decl.Type.OutType;
 
                     // check for const/static fields
                     if (decl.SpecialKeys.Contains(TokenType.KwStatic))

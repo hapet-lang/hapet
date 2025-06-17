@@ -198,11 +198,11 @@ namespace HapetBackend.Llvm
 
                             var rightExpr = (binExpr.Right as AstExpression);
 
-                            if (rightExpr.OutType is ClassType)
+                            if (rightExpr.OutType is PointerType pt1 && pt1.TargetType is ClassType rt)
                             {
                                 ClassType leftType;
-                                ClassType rightType = rightExpr.OutType as ClassType;
-                                if (leftExpr.OutType is ClassType clsT)
+                                ClassType rightType = rt;
+                                if (leftExpr.OutType is PointerType pt2 && pt2.TargetType is ClassType clsT)
                                 {
                                     leftType = clsT;
                                 }
@@ -283,10 +283,10 @@ namespace HapetBackend.Llvm
 
                             var rightExpr = (binExpr.Right as AstExpression);
 
-                            if (leftExpr.OutType is ClassType leftType)
+                            if (leftExpr.OutType is PointerType pt1 && pt1.TargetType is ClassType leftType)
                             {
                                 ClassType rightType;
-                                if (rightExpr.OutType is ClassType clsT)
+                                if (rightExpr.OutType is PointerType pt2 && pt2.TargetType is ClassType clsT)
                                 {
                                     rightType = clsT;
                                 }
@@ -355,7 +355,7 @@ namespace HapetBackend.Llvm
                                 // valueType is ISome
 
                                 var leftValueType = leftExpr.OutType as StructType;
-                                if (rightExpr.OutType is ClassType)
+                                if (rightExpr.OutType is PointerType pt3 && pt3.TargetType is ClassType)
                                 {
                                     // just false
                                     return GenerateExpressionCode(new AstBoolExpr(binExpr.IsNot));
@@ -509,8 +509,6 @@ namespace HapetBackend.Llvm
 
                 // need to load it as a ptr
                 var varType = expr.OutType;
-                if (varType is ClassType)
-                    varType = PointerType.GetPointerType(varType);
 
                 var loaded = _builder.BuildLoad2(HapetTypeToLLVMType(varType), v, expr.Name);
                 return loaded;
@@ -585,8 +583,6 @@ namespace HapetBackend.Llvm
 
                 // need to load it as a ptr
                 var varType = expr.OutType;
-                if (varType is ClassType)
-                    varType = PointerType.GetPointerType(varType);
 
                 var loaded = _builder.BuildLoad2(HapetTypeToLLVMType(varType), v, expr.Name);
                 return loaded;
@@ -793,8 +789,6 @@ namespace HapetBackend.Llvm
 
                     // need to load it as a ptr
                     var retType = fncType.Declaration.Returns.OutType;
-                    if (retType is ClassType)
-                        retType = PointerType.GetPointerType(retType);
 
                     return _builder.BuildLoad2(HapetTypeToLLVMType(retType), varPtr, "holderLoaded");
                 }
@@ -937,8 +931,6 @@ namespace HapetBackend.Llvm
 
                         // need to load it as a ptr
                         var varType = expr.OutType;
-                        if (varType is ClassType)
-                            varType = PointerType.GetPointerType(varType);
 
                         var loaded = _builder.BuildLoad2(HapetTypeToLLVMType(varType), v, $"{idExpr.Name}Loaded");
                         return loaded;
@@ -995,8 +987,6 @@ namespace HapetBackend.Llvm
 
                         // need to load it as a ptr
                         var varType = idExpr.OutType;
-                        if (varType is ClassType)
-                            varType = PointerType.GetPointerType(varType);
 
                         // loading the field because it is not registered in _typeMap like a normal variable.
                         // it should be ok for all types of the fields including classes and other shite
@@ -1087,8 +1077,6 @@ namespace HapetBackend.Llvm
 
                 // need to load it as a ptr
                 var varType = expr.OutType;
-                if (varType is ClassType)
-                    varType = PointerType.GetPointerType(varType);
 
                 var retLoaded = _builder.BuildLoad2(HapetTypeToLLVMType(varType), arrayEl);
                 return retLoaded;
@@ -1132,7 +1120,7 @@ namespace HapetBackend.Llvm
             _builder.PositionAtEnd(bbEnd);
 
             // need to make a ptr to a class
-            var resultType = expr.OutType is ClassType ? PointerType.GetPointerType(expr.OutType) : expr.OutType;
+            var resultType = expr.OutType;
             return _builder.BuildLoad2(HapetTypeToLLVMType(resultType), varPtr, "ternLoaded");
         }
 

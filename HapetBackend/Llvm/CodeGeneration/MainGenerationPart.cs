@@ -136,8 +136,6 @@ namespace HapetBackend.Llvm
 
                     // if it is a ref or out or a class - need to make it as a ptr
                     var paramType = p.Type.OutType;
-                    if (p.Type.OutType is ClassType)
-                        paramType = PointerType.GetPointerType(paramType);
                     if (p.ParameterModificator == ParameterModificator.Ref ||
                         p.ParameterModificator == ParameterModificator.Out)
                         paramType = PointerType.GetPointerType(paramType);

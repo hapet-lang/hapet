@@ -193,7 +193,7 @@ namespace HapetBackend.Llvm
                         foreach (var par in pars)
                         {
                             // need to take ptr to class type
-                            var pt = par.Type.OutType is ClassType ? PointerType.GetPointerType(par.Type.OutType) : par.Type.OutType;
+                            var pt = par.Type.OutType;
 
                             // making it as pointer if it has ref/out modifier
                             if (par.ParameterModificator == ParameterModificator.Ref || par.ParameterModificator == ParameterModificator.Out)
@@ -202,7 +202,7 @@ namespace HapetBackend.Llvm
                             paramTypes.Add(HapetTypeToLLVMType(pt));
                         }
                         // need to make it as a ptr
-                        var retT = f.Declaration.Returns.OutType is ClassType ? PointerType.GetPointerType(f.Declaration.Returns.OutType) : f.Declaration.Returns.OutType;
+                        var retT = f.Declaration.Returns.OutType;
                         var returnType = HapetTypeToLLVMType(retT);
 
                         bool hasArgList = f.Declaration.Parameters.FirstOrDefault(x => x.ParameterModificator == ParameterModificator.Arglist) != null;
@@ -379,7 +379,7 @@ namespace HapetBackend.Llvm
             foreach (var mem in decls)
             {
                 // need to make a ptr to a class
-                var type = mem is ClassType ? PointerType.GetPointerType(mem) : mem;
+                var type = mem;
 
                 // we need to get a minimal type alignment size depending on pack
                 int typeAlignment = Math.Min(type.GetAlignment(), packNumber);
@@ -416,7 +416,7 @@ namespace HapetBackend.Llvm
         private LLVMValueRef CreateLocalVariable(HapetType exprType, string name = "temp")
         {
             // need to make a ptr to a class
-            var t = exprType is ClassType ? PointerType.GetPointerType(exprType) : exprType;
+            var t = exprType;
             return CreateLocalVariable(HapetTypeToLLVMType(t), t.GetAlignment(), name);
         }
 
