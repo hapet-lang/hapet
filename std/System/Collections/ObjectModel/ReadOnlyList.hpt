@@ -23,11 +23,6 @@ public class ReadOnlyList<T> : IList<T>
         this.list = list;
     }
 
-    /// <summary>Gets an empty <see cref="ReadOnlyList{T}"/>.</summary>
-    /// <value>An empty <see cref="ReadOnlyList{T}"/>.</value>
-    /// <remarks>The returned instance is immutable and will always be empty.</remarks>
-    public static ReadOnlyList<T> Empty { get; } = new ReadOnlyList<T>(Array.Empty<T>());
-
     public int Count { get { return list.Count; } }
 
     public T this[int index] 
@@ -59,7 +54,7 @@ public class ReadOnlyList<T> : IList<T>
 
     public IEnumerator<T> GetEnumerator()
     {
-        return list.Count == 0 ? EmptyEnumerator<T>.Instance : list.GetEnumerator();
+        return list.Count == 0 ? EmptyEnumerator.Get<T>() : list.GetEnumerator();
     }
 
     public int IndexOf(T value)
@@ -156,7 +151,7 @@ public static class ReadOnlyList
     /// <returns>A new <see cref="ReadOnlyCollection{T}"/> containing the specified values.</returns>
     public static ReadOnlyCollection<T> CreateCollection<T>(params ReadOnlySpan<T> values)
     {
-        return values.IsEmpty ? ReadOnlyCollection<T>.Empty : new ReadOnlyCollection<T>(values.ToArray());
+        return values.IsEmpty ? Empty<T>() : new ReadOnlyCollection<T>(values.ToArray());
     }
 
     /// <summary>
@@ -171,7 +166,7 @@ public static class ReadOnlyList
     {
         if (values.IsEmpty)
         {
-            return ReadOnlySet<T>.Empty;
+            return Empty<T>();
         }
 
         HashSet<T> hashSet = new HashSet<T>();
@@ -186,4 +181,12 @@ public static class ReadOnlyList
         return new ReadOnlySet<T>(hashSet);
     }
     */
+
+    /// <summary>Gets an empty <see cref="ReadOnlyList{T}"/>.</summary>
+    /// <value>An empty <see cref="ReadOnlyList{T}"/>.</value>
+    /// <remarks>The returned instance is immutable and will always be empty.</remarks>
+    public static ReadOnlyList<T> Empty<T>()
+    {
+        return new ReadOnlyList<T>(Array.Empty<T>());
+    }
 }

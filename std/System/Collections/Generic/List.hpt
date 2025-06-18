@@ -22,16 +22,13 @@ public class List<T> : IList<T>
     internal int _size; // Do not rename (binary serialization)
     internal int _version; // Do not rename (binary serialization)
 
-    // avoid the extra generic instantiation for Array.Empty<T>()
-    private static readonly T[] s_emptyArray = new T[0];
-
     // Constructs a List. The list is initially empty and has a capacity
     // of zero. Upon adding the first element to the list the capacity is
     // increased to DefaultCapacity, and then increased in multiples of two
     // as required.
     public List()
     {
-        _items = s_emptyArray;
+        _items = Array.Empty<T>();
     }
 
     // Constructs a List with a given initial capacity. The list is
@@ -47,7 +44,7 @@ public class List<T> : IList<T>
         }
 
         if (capacity == 0)
-            _items = s_emptyArray;
+            _items = Array.Empty<T>();
         else
             _items = new T[capacity];
     }
@@ -69,7 +66,7 @@ public class List<T> : IList<T>
             int count = c.Count;
             if (count == 0)
             {
-                _items = s_emptyArray;
+                _items = Array.Empty<T>();
             }
             else
             {
@@ -80,7 +77,7 @@ public class List<T> : IList<T>
         }
         else
         {
-            _items = s_emptyArray;
+            _items = Array.Empty<T>();
             IEnumerator<T> en = collection.GetEnumerator();
             while (en.MoveNext())
             {
@@ -121,7 +118,7 @@ public class List<T> : IList<T>
                 }
                 else
                 {
-                    _items = s_emptyArray;
+                    _items = Array.Empty<T>();
                 }
             }
         }
@@ -472,14 +469,14 @@ public class List<T> : IList<T>
     public IEnumerator<T> GetEnumerator() 
     {
         if (Count == 0)
-            return (IEnumerator<T>)EmptyEnumerator<T>.Instance;
+            return (IEnumerator<T>)EmptyEnumerator.Get<T>();
         return GetEnumeratorInternal();
     }
 
     public IEnumerator IEnumerable.GetEnumerator() 
     {
         if (Count == 0)
-            return (IEnumerator)EmptyEnumerator<T>.Instance;
+            return (IEnumerator)EmptyEnumerator.Get<T>();
         return GetEnumeratorInternal();
     }
 
@@ -958,7 +955,7 @@ public class List<T> : IList<T>
     {
         if (_size == 0)
         {
-            return s_emptyArray;
+            return Array.Empty<T>();
         }
 
         T[] array = new T[_size];

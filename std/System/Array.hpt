@@ -7,15 +7,10 @@ public static class Array
 {
     public static int MaxLength { get { return 0X7FFFFFC7; } }
 
-    private static class EmptyArray<T>
-    {
-        // this is the implementation of Array.Empty<T>()
-        internal static readonly T[] Value = new T[0];
-    }
-
     public static T[] Empty<T>()
     {
-        return EmptyArray<T>.Value;
+        // TODO: cache the same
+        return new T[0];
     }
 
     // Copies length elements from sourceArray, starting at sourceIndex, to
@@ -101,7 +96,7 @@ public struct Array<T> : IList<T>
 
     public IEnumerator<T> GetEnumerator()
     {
-        return Length == 0 ? (IEnumerator<T>)EmptyEnumerator<T>.Instance : (IEnumerator<T>)(new ArrayEnumerator<T>(this));
+        return Length == 0 ? (IEnumerator<T>)EmptyEnumerator.Get<T>() : (IEnumerator<T>)(new ArrayEnumerator<T>(this));
     }
 
     public int IndexOf(T item)

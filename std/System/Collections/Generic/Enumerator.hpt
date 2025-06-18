@@ -1,11 +1,18 @@
 using System;
 using System.Collections;
 
+internal static class EmptyEnumerator 
+{
+    public static EmptyEnumerator<T> Get<T>()
+    {
+        // TODO: cache the same
+        return new EmptyEnumerator<T>();
+    }
+}
+
 internal sealed class EmptyEnumerator<T> : IEnumerator<T>, IDisposable
 {
-    public static readonly EmptyEnumerator<T> Instance = new EmptyEnumerator<T>();
-
-    private EmptyEnumerator() { }
+    internal EmptyEnumerator() { }
 
     public object IEnumerator.Current
     {
