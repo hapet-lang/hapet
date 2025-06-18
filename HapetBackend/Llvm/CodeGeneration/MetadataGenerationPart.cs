@@ -212,14 +212,10 @@ namespace HapetBackend.Llvm
                     field.Initializer = HapetValueToLLVMValue(decl.Type.OutType, ini.Item2.OutValue);
                     continue;
                 }
-
                 // for static
-                if (ini.Item2 != null)
-                {
-                    field.Initializer = GenerateExpressionCode(ini.Item2);
-                }
                 else
                 {
+                    // WARN: do not set value from Initializer - it would be set inside stor
                     // set default value to it
                     field.Initializer = GenerateExpressionCode(AstDefaultExpr.GetDefaultValueForType(decl.Type.OutType, null, _compiler.MessageHandler));
                 }
