@@ -238,7 +238,7 @@ namespace HapetPostPrepare
                 // searching for the name with current class name
                 // works only for functions
                 var currentParent = _currentParentStack.GetNearestParentClassOrStruct();
-                string nameWithClass = $"{currentParent.Name.Name}::{name}";
+                string nameWithClass = $"{currentParent?.Name.Name}::{name}";
                 var smblInLocalClass = scope.GetSymbol(idExpr.GetCopy(nameWithClass), handleGenerics: true);
                 if (smblInLocalClass is DeclSymbol typed2)
                 {

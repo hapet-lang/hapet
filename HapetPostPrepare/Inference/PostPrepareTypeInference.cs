@@ -81,9 +81,10 @@ namespace HapetPostPrepare
             /// WARN: attributes are inferrenced in <see cref="PostPrepareMetadataAttributes"/>
 
             var parent = funcDecl.ContainingParent;
-            if (parent.IsNestedDecl)
+            if (parent?.IsNestedDecl ?? false)
                 _currentParentStack.AddParent(parent.ParentDecl);
-            _currentParentStack.AddParent(parent);
+            if (parent != null)
+                _currentParentStack.AddParent(parent);
 
             _currentParentStack.AddParent(funcDecl);
 
@@ -248,9 +249,10 @@ namespace HapetPostPrepare
             {
                 _currentParentStack.RemoveParent();
 
-                if (parent.IsNestedDecl)
+                if (parent?.IsNestedDecl ?? false)
                     _currentParentStack.RemoveParent();
-                _currentParentStack.RemoveParent();
+                if (parent != null)
+                    _currentParentStack.RemoveParent();
             }
         }
 

@@ -7,5 +7,6 @@
         Ctor = 2,
         Dtor = 3,
         StaticCtor = 4,
+        StorCaller = 5,
     }
 }

@@ -7,6 +7,11 @@ using HapetFrontend;
 using HapetPostPrepare.Entities;
 using HapetFrontend.Ast.Statements;
 using HapetFrontend.Helpers;
+using HapetFrontend.Ast;
+using HapetFrontend.Enums;
+using HapetFrontend.Parsing;
+using System.Drawing;
+using System.Runtime;
 
 namespace HapetPostPrepare
 {
@@ -44,8 +49,14 @@ namespace HapetPostPrepare
             InInfo inInfo = InInfo.Default;
             OutInfo outInfo = OutInfo.Default;
 
+            AstBlockExpr bodyOfStorsToCall;
             if (_compiler.MainFunction == null)
-                return;
+            {
+                var storCaller = CreateStorsCallerFunc();
+                bodyOfStorsToCall = storCaller.Body;
+            }
+            else
+                bodyOfStorsToCall = _compiler.MainFunction.Body;
 
             // also add main's func class
             _allUsedClassesAndStructsInProgram.Add(_compiler.MainFunction.ContainingParent as AstClassDecl);
@@ -87,7 +98,7 @@ namespace HapetPostPrepare
                     blockWhereToCall = (body.Statements[0] as AstIfStmt).BodyTrue;
                 }
                 else
-                    blockWhereToCall = _compiler.MainFunction.Body;
+                    blockWhereToCall = bodyOfStorsToCall;
 
                 // creating stor call ast
                 string funcName = $"{decl.Name.Name.GetClassNameWithoutNamespace()}_stor";
@@ -99,6 +110,31 @@ namespace HapetPostPrepare
                 // TODO: sort the static ctors calls by hierarchy
                 blockWhereToCall.Statements.Insert(0, call);
             }
+        }
+
+        private AstFuncDecl CreateStorsCallerFunc()
+        {
+            // just handlers
+            Location loc = new Location(new TokenLocation(), new TokenLocation());
+
+            List<AstStatement> storBlockStatements = new List<AstStatement>();
+            var storBlock = new AstBlockExpr(storBlockStatements, loc);
+
+            // the ctor func
+            var storDecl = new AstFuncDecl(new List<AstParamDecl>(),
+            new AstNestedExpr(new AstIdExpr("void", loc), null, loc),
+            storBlock,
+            new AstIdExpr($"{_compiler.CurrentProjectSettings.ProjectName}_stor_caller"),
+            "", loc);
+            storDecl.SpecialKeys.Add(Lexer.CreateToken(TokenType.KwPublic, loc.Beginning)); // stor is public
+            storDecl.SpecialKeys.Add(Lexer.CreateToken(TokenType.KwStatic, loc.Beginning)); // stor is static
+            storDecl.ClassFunctionType = ClassFunctionType.StorCaller;
+            AllFunctionsMetadata.Add(storDecl);
+
+            PostPrepareDeclScoping(storDecl);
+            PostPrepareStatementUpToCurrentStep(storDecl);
+
+            return storDecl;
         }
     }
 }
