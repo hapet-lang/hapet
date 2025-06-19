@@ -772,6 +772,10 @@
         <Number>3055</Number>
         <Text>Type of the expression could not be evaluated</Text>
     </Item>
+	<Item>
+		<Number>3056</Number>
+		<Text>Static fields and properties with no get/set blocks with polymorphic types are not allowed</Text>
+	</Item>
 
     <!--Compiler errors-->
 	<Item>

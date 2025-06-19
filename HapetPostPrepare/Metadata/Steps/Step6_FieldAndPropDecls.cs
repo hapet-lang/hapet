@@ -1,10 +1,14 @@
 ﻿using HapetFrontend.Ast;
 using HapetFrontend.Ast.Declarations;
 using HapetFrontend.Ast.Expressions;
+using HapetFrontend.Errors;
+using HapetFrontend.Extensions;
+using HapetFrontend.Parsing;
 using HapetFrontend.Scoping;
 using HapetFrontend.Types;
 using HapetPostPrepare.Entities;
 using System;
+using System.Linq;
 
 namespace HapetPostPrepare
 {
@@ -67,6 +71,17 @@ namespace HapetPostPrepare
                 PostPrepareExprInference(decl.Type, inInfo, ref outInfo);
                 if (decl.IsPropertyField)
                     inInfo.MuteErrors = savedMute;
+
+                // do not allow static fields/props with gen types
+                if (HasAnyGenericTypes([decl.Type]))
+                {
+                    var c1 = decl.SpecialKeys.Contains(TokenType.KwStatic);
+                    var c2 = decl.IsExactly<AstVarDecl>() || 
+                        (decl.IsExactly<AstPropertyDecl>() && (decl as AstPropertyDecl).GetBlock == null && (decl as AstPropertyDecl).HasGet);
+                    if (c1 && c2)
+                        _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, decl.Type, 
+                            [], ErrorCode.Get(CTEN.StaticPolyField));
+                }
 
                 // inferencing additional data
                 if (decl.Name.AdditionalData != null)

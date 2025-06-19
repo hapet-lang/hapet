@@ -2,6 +2,7 @@
 using HapetFrontend.Ast.Declarations;
 using HapetFrontend.Entities;
 using HapetFrontend.Scoping;
+using HapetFrontend.Types;
 using Newtonsoft.Json;
 
 namespace HapetFrontend.Ast
@@ -58,6 +59,16 @@ namespace HapetFrontend.Ast
         }
 
         public abstract AstStatement GetDeepCopy();
+
+        public bool IsExactly<T>() where T : class
+        {
+            return this.GetType() == typeof(T);
+        }
+
+        public bool IsExactly(AstStatement type)
+        {
+            return this.GetType() == type.GetType();
+        }
 
         #region Helper functions
         public AstFuncDecl FindContainingFunction()
