@@ -3,7 +3,15 @@
 /// </summary>
 public class Comparer : IComparer
 {
-    public static Comparer Default { get; private set; } = new Comparer();
+    public static Comparer Default()
+    {
+        return new Comparer();
+    }
+
+    public static Comparer<T> Default<T>()
+    {
+        return new Comparer<T>();
+    }
 
     // Compares two Objects by calling CompareTo.
     // If a == b, 0 is returned.
@@ -34,8 +42,6 @@ public class Comparer : IComparer
 
 public class Comparer<T> : IComparer<T> // where T : IComparable<T>
 {
-    public static Comparer<T> Default { get; private set; } = new Comparer<T>();
-
     public override int Compare(T x, T y)
     {
         if (x != null)
