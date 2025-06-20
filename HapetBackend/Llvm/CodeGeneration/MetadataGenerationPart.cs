@@ -1,6 +1,7 @@
 ﻿using HapetFrontend.Ast;
 using HapetFrontend.Ast.Declarations;
 using HapetFrontend.Ast.Expressions;
+using HapetFrontend.Enums;
 using HapetFrontend.Errors;
 using HapetFrontend.Extensions;
 using HapetFrontend.Helpers;
@@ -193,6 +194,11 @@ namespace HapetBackend.Llvm
             foreach (var func in _postPreparer.AllFunctionsMetadata)
             {
                 if (GenericsHelper.ShouldTheDeclBeSkippedFromCodeGen(func))
+                    continue;
+
+                // also we need to skip here stors of generic impls
+                if (func.ContainingParent != null && func.ContainingParent.IsImplOfGeneric && 
+                    func.ClassFunctionType == ClassFunctionType.StaticCtor)
                     continue;
 
                 _currentSourceFile = func.SourceFile;

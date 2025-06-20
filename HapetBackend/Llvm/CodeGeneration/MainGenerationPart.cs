@@ -31,6 +31,11 @@ namespace HapetBackend.Llvm
                 if (GenericsHelper.ShouldTheDeclBeSkippedFromCodeGen(func))
                     continue;
 
+                // also we need to skip here stors of generic impls
+                if (func.ContainingParent != null && func.ContainingParent.IsImplOfGeneric &&
+                    func.ClassFunctionType == ClassFunctionType.StaticCtor)
+                    continue;
+
                 _currentSourceFile = func.SourceFile;
                 // defining global func
                 var funcType = HapetTypeToLLVMType(func.Type.OutType);
