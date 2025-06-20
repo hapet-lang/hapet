@@ -29,6 +29,7 @@ namespace HapetFrontend
 
         public IMessageHandler MessageHandler { get; }
         public CompilerSettings CurrentProjectSettings { get; }
+        public ProjectData CurrentProjectData { get; }
         public Stopwatch CompilationStopwatch { get; set; }
 
         public Scope GlobalScope { get; private set; }
@@ -38,9 +39,10 @@ namespace HapetFrontend
         /// </summary>
         public AstFuncDecl MainFunction { get; set; }
 
-        public Compiler(CompilerSettings projectSettings, IMessageHandler messageHandler)
+        public Compiler(CompilerSettings projectSettings, ProjectData projectData, IMessageHandler messageHandler)
         {
             CurrentProjectSettings = projectSettings;
+            CurrentProjectData = projectData;
             MessageHandler = messageHandler;
         }
 

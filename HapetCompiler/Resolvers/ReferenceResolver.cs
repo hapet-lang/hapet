@@ -37,6 +37,9 @@ namespace HapetCompiler.Resolvers
                 PathsToLinkWith.Add(data.Item1);
                 // TODO: is there .lib file when we are on linux?
                 LibrariesToLinkWith.Add($"{data.Item2}.lib");
+
+                // TODO: change to pure project name that has to be contained inside .mpt file
+                _projectData.AllReferencedProjectNames.Add(data.Item2);
             }
         }
     }

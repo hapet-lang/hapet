@@ -1,11 +1,16 @@
-﻿namespace HapetCompiler.ProjectConf.Data
+﻿namespace HapetFrontend.Entities
 {
     /// <summary>
     /// This shity class is used to handle shite inside '<ItemGroup>' tags
     /// </summary>
-    internal sealed class ProjectData
+    public sealed class ProjectData
     {
         public List<string> References { get; private set; } = new List<string>();
         public List<string> ProjectReferences { get; private set; } = new List<string>();
+
+        /// <summary>
+        /// Contains all the project names that are referenced
+        /// </summary>
+        public List<string> AllReferencedProjectNames { get; private set; } = new List<string>();
     }
 }

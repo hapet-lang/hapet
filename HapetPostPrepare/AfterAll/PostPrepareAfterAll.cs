@@ -115,6 +115,16 @@ namespace HapetPostPrepare
                 // TODO: sort the static ctors calls by hierarchy
                 blockWhereToCall.Statements.Insert(0, call);
             }
+
+            // we also need to call dependent projects' stor_callers
+            foreach (var d in _compiler.CurrentProjectData.AllReferencedProjectNames)
+            {
+                // creating stor call ast
+                string funcName = $"{d}_stor_caller";
+                var call = new AstCallExpr(null, new AstIdExpr(funcName));
+                call.IsSpecialExternalCall = true;
+                bodyOfStorsToCall.Statements.Insert(0, call);
+            }
         }
 
         private AstFuncDecl CreateStorsCallerFunc()

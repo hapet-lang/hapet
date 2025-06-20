@@ -836,6 +836,18 @@ namespace HapetBackend.Llvm
             }
             else
             {
+                // handle special call
+                if (expr.IsSpecialExternalCall)
+                {
+                    // need to declare it at first
+                    var funcType = LLVMTypeRef.CreateFunction(_context.VoidType, [], false);
+                    // declaring external global func
+                    var funcValue = _module.AddFunction(expr.FuncName.Name, funcType);
+                    funcValue.Linkage = LLVMLinkage.LLVMExternalLinkage;
+                    funcValue.DLLStorageClass = LLVMDLLStorageClass.LLVMDLLImportStorageClass;
+
+                    return _builder.BuildCall2(funcType, funcValue, []);
+                }
                 _messageHandler.ReportMessage(_currentSourceFile.Text, expr, [HapetType.AsString(expr.FuncName.OutType)], ErrorCode.Get(CTEN.TheTypeIsNotCallable));
                 return default;
             }

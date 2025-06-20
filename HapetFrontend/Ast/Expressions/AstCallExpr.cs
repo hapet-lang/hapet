@@ -27,6 +27,11 @@ namespace HapetFrontend.Ast.Expressions
         /// </summary>
         public List<AstArgumentExpr> Arguments { get; set; }
 
+        /// <summary>
+        /// 'true' if the call should be handled as an external call
+        /// </summary>
+        public bool IsSpecialExternalCall { get; set; }
+
         public override string AAAName => nameof(AstCallExpr);
 
         public AstCallExpr(AstNestedExpr typeOrObjectName, AstIdExpr funcName, List<AstArgumentExpr> arguments = null, ILocation location = null)
