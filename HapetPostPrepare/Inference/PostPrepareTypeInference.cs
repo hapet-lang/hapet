@@ -198,7 +198,10 @@ namespace HapetPostPrepare
                 }
                 else
                 {
-                    // probably cringe
+                    // we are here only when special system functions are inferencing
+                    /// like <see cref="CreateStorsCallerFunc"/>
+
+                    funcDecl.Scope.DefineDeclSymbol(funcDecl.Name, funcDecl);
                 }
             }
             else

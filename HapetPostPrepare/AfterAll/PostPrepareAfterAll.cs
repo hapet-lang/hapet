@@ -58,10 +58,11 @@ namespace HapetPostPrepare
             else
                 bodyOfStorsToCall = _compiler.MainFunction.Body;
 
-            // also add main's func class
-            _allUsedClassesAndStructsInProgram.Add(_compiler.MainFunction.ContainingParent as AstClassDecl);
-            // WARN! ToList is required! because _allUsedClassesInProgram is going to be modified below for no reason
-            var unique = _allUsedClassesAndStructsInProgram.Distinct().ToList();
+            // add all classes and structs that not imported
+            var unique = new List<AstDeclaration>();
+            unique.AddRange(AllClassesMetadata.Where(x => !x.IsImported));
+            unique.AddRange(AllStructsMetadata.Where(x => !x.IsImported));
+
             foreach (var decl in unique)
             {
                 // setting current source file
@@ -71,8 +72,8 @@ namespace HapetPostPrepare
                 if (decl is AstClassDecl clsDecl && clsDecl.IsInterface)
                     continue;
 
-                // skip generic (non-real) shite
-                if (GenericsHelper.ShouldTheDeclBeSkippedFromCodeGen(decl))
+                // skip generic implemented types
+                if (decl.IsImplOfGeneric)
                     continue;
 
                 // check that the class has suppress stor call attr
@@ -100,12 +101,16 @@ namespace HapetPostPrepare
                 else
                     blockWhereToCall = bodyOfStorsToCall;
 
+                _currentParentStack.AddParent(decl);
+
                 // creating stor call ast
                 string funcName = $"{decl.Name.Name.GetClassNameWithoutNamespace()}_stor";
                 var call = new AstCallExpr(new AstNestedExpr(decl.Name.GetCopy(), null), new AstIdExpr(funcName));
                 SetScopeAndParent(call, blockWhereToCall, blockWhereToCall.SubScope);
                 PostPrepareExprScoping(call);
                 PostPrepareExprInference(call, inInfo, ref outInfo);
+
+                _currentParentStack.RemoveParent();
 
                 // TODO: sort the static ctors calls by hierarchy
                 blockWhereToCall.Statements.Insert(0, call);
@@ -119,6 +124,7 @@ namespace HapetPostPrepare
 
             List<AstStatement> storBlockStatements = new List<AstStatement>();
             var storBlock = new AstBlockExpr(storBlockStatements, loc);
+            storBlock.Statements.Add(new AstReturnStmt(null));
 
             // the ctor func
             var storDecl = new AstFuncDecl(new List<AstParamDecl>(),
@@ -129,8 +135,8 @@ namespace HapetPostPrepare
             storDecl.SpecialKeys.Add(Lexer.CreateToken(TokenType.KwPublic, loc.Beginning)); // stor is public
             storDecl.SpecialKeys.Add(Lexer.CreateToken(TokenType.KwStatic, loc.Beginning)); // stor is static
             storDecl.ClassFunctionType = ClassFunctionType.StorCaller;
-            AllFunctionsMetadata.Add(storDecl);
 
+            SetScopeAndParent(storDecl, null, _compiler.GlobalScope);
             PostPrepareDeclScoping(storDecl);
             PostPrepareStatementUpToCurrentStep(storDecl);
 

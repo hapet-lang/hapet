@@ -41,7 +41,7 @@ namespace HapetPostPrepare
             // the var is used to check when static method is accessed from an object
             bool accessingFromAnObject = false;
 
-            // usually when in the same class
+            // usually null when in the same class
             if (callExpr.TypeOrObjectName != null)
             {
                 // resolve the object on which func is called

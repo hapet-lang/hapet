@@ -69,7 +69,24 @@ namespace HapetBackend.Llvm
             foreach (var cls in _postPreparer.AllClassesMetadata)
             {
                 if (GenericsHelper.ShouldTheDeclBeSkippedFromCodeGen(cls))
+                {
+                    // getting all STATIC/CONST fields except props
+                    foreach (var decl in cls.Declarations.Where(x => x is AstVarDecl && x is not AstPropertyDecl).Select(x => x as AstVarDecl))
+                    {
+                        // need to make a ptr to a class
+                        var varType = decl.Type.OutType;
+
+                        // check for const/static fields
+                        if (decl.SpecialKeys.Contains(TokenType.KwStatic) || decl.SpecialKeys.Contains(TokenType.KwConst))
+                        {
+                            // creating a static field of the class
+                            var globStatic = _module.AddGlobal(HapetTypeToLLVMType(varType), $"{cls.Name.Name}::{decl.Name.Name}");
+                            _initializersMapList.Add((decl.GetSymbol, decl.Initializer));
+                            _valueMap[decl.GetSymbol] = globStatic;
+                        }
+                    }
                     continue;
+                }
 
                 _currentSourceFile = cls.SourceFile;
 
@@ -111,7 +128,24 @@ namespace HapetBackend.Llvm
             foreach (var str in _postPreparer.AllStructsMetadata)
             {
                 if (GenericsHelper.ShouldTheDeclBeSkippedFromCodeGen(str))
+                {
+                    // getting all STATIC/CONST fields except props
+                    foreach (var decl in str.Declarations.Where(x => x is AstVarDecl && x is not AstPropertyDecl).Select(x => x as AstVarDecl))
+                    {
+                        // need to make a ptr to a class
+                        var varType = decl.Type.OutType;
+
+                        // check for const/static fields
+                        if (decl.SpecialKeys.Contains(TokenType.KwStatic) || decl.SpecialKeys.Contains(TokenType.KwConst))
+                        {
+                            // creating a static field of the class
+                            var globStatic = _module.AddGlobal(HapetTypeToLLVMType(varType), $"{str.Name.Name}::{decl.Name.Name}");
+                            _initializersMapList.Add((decl.GetSymbol, decl.Initializer));
+                            _valueMap[decl.GetSymbol] = globStatic;
+                        }
+                    }
                     continue;
+                }
 
                 // if the decl is impl of gen - take only orig generic
                 var declName = str.Name;

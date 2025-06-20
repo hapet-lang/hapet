@@ -179,6 +179,10 @@ namespace HapetFrontend.Helpers
 
         public static bool ShouldTheDeclBeSkippedFromCodeGen(AstDeclaration decl)
         {
+            // DO NOT SKIP ANY STORS!
+            if (decl is AstFuncDecl fnc && fnc.ClassFunctionType == Enums.ClassFunctionType.StaticCtor)
+                return false;
+
             // skip generic (non-real) parents
             if (decl.ContainingParent?.HasGenericTypes ?? false)
                 return true;

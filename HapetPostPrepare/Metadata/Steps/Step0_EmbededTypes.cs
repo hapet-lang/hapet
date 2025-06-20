@@ -2,6 +2,7 @@
 using HapetFrontend.Ast;
 using HapetFrontend.Ast.Declarations;
 using HapetFrontend.Ast.Expressions;
+using HapetFrontend.Ast.Statements;
 using HapetFrontend.Scoping;
 using HapetFrontend.Types;
 
@@ -45,6 +46,10 @@ namespace HapetPostPrepare
             var vaListName = new AstIdExpr(VA_LIST_NAME);
             var structDecl = new AstStructDecl(vaListName, decls);
             VaListType = structDecl.Type.OutType;
+
+            // suppress static call
+            structDecl.Attributes.Add(new AstAttributeStmt(new AstNestedExpr(
+                new AstIdExpr("System.SuppressStaticCtorCallAttribute"), null), new List<AstArgumentExpr>()));
 
             // scoping 
             _compiler.GlobalScope.DefineSymbol(new DeclSymbol(vaListName, structDecl));

@@ -921,7 +921,7 @@ namespace HapetPostPrepare
         /// <param name="anotherScope">Scope to be set to a child. If null then parent scope is used</param>
         private void SetScopeAndParent(AstStatement child, AstStatement parent, Scope anotherScope = null)
         {
-            anotherScope ??= parent.Scope;
+            anotherScope ??= parent?.Scope;
             child.Scope = anotherScope;
             child.Parent = parent;
             child.SourceFile = _currentSourceFile;
