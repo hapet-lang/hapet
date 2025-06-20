@@ -7,13 +7,21 @@ public static class Program
 {
     public static int Main(string[] args)
     {
-        int a = 1;
+        var a = new Anime();
+        a.Asd = 1;
         Test(ref a);
-        return a;
+        return a.Asd;
     }
 
-    public static void Test(ref int a)
+    public static void Test(ref Anime a)
     {
-        a = 5;
+        var aaa = new Anime();
+        aaa.Asd = 5;
+        a = aaa;
     }
+}
+
+public class Anime
+{
+    public int Asd { get; set; }
 }

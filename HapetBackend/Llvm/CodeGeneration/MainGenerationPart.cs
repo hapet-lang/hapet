@@ -297,7 +297,9 @@ namespace HapetBackend.Llvm
             // special case for low level classes
             if (func.Name.Name.StartsWith("System.Runtime.InteropServices.Marshal::") ||
                 func.Name.Name.StartsWith("System.Runtime.Conversion.") ||
-                func.Name.Name.StartsWith("System.Text.Native::"))
+                func.Name.Name.StartsWith("System.Text.Native::") ||
+                func.Name.Name.StartsWith("System.Object::") ||
+                func.Name.Name.StartsWith("System.ValueType::"))
                 return false;
 
             // also we need to skip here stors of generic impls
