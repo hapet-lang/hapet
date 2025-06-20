@@ -136,18 +136,19 @@ namespace HapetFrontend.Extensions
             string searchName = null;
             List<HapetType> types = null;
 
+            types = searchFunc.Parameters.Select(x => x.Type?.OutType).ToList();
+            if (skipFirst)
+            {
+                // remove the first param
+                types = types.Skip(1).ToList();
+            }
+
             // if not additional data
             if (searchFunc.Name.AdditionalData == null)
             {
                 // there is already params type in name like
                 // TestClass::AnimeFunc(int:PivoCls)
                 searchName = searchFunc.Name.Name.GetPureFuncName();
-                types = searchFunc.Parameters.Select(x => x.Type?.OutType).ToList();
-                if (skipFirst)
-                {
-                    // remove the first param
-                    types = types.Skip(1).ToList();
-                }
                 for (int i = 0; i < delcs.Count; ++i)
                 {
                     var x = delcs[i];
