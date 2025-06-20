@@ -577,6 +577,11 @@ namespace HapetBackend.Llvm
                 if (!_valueMap.TryGetValue(declSymbol, out v))
                     return default;
 
+                // for ref and out we need to load a pointer
+                bool isRefOrOut = theDecl is AstParamDecl pD && (pD.ParameterModificator == ParameterModificator.Ref || pD.ParameterModificator == ParameterModificator.Out);
+                if (isRefOrOut)
+                    v = _builder.BuildLoad2(HapetTypeToLLVMType(PointerType.VoidLiteralType), v, $"{expr.Name}_loaded_ref");
+
                 // return the ptr to the val. used for AstAddressOf or storing values
                 if (getPtr)
                     return v;
