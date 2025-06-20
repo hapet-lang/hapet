@@ -16,6 +16,20 @@ namespace HapetFrontend.Parsing
             TokenLocation beg;
             AstExpression expr;
             AstIdExpr name = null;
+            ParameterModificator argModificator = ParameterModificator.None;
+
+            // check for 'ref'
+            if (CheckToken(TokenType.KwRef))
+            {
+                argModificator = ParameterModificator.Ref;
+                NextToken();
+            }
+            // check for 'out'
+            else if (CheckToken(TokenType.KwOut))
+            {
+                argModificator = ParameterModificator.Out;
+                NextToken();
+            }
 
             // allow multiply in args
             var savedAllowMul = inInfo.AllowMultiplyExpression;
@@ -48,7 +62,10 @@ namespace HapetFrontend.Parsing
 
             inInfo.AllowMultiplyExpression = savedAllowMul;
 
-            return new AstArgumentExpr(expr, name, new Location(beg, expr.Ending));
+            return new AstArgumentExpr(expr, name, new Location(beg, expr.Ending))
+            {
+                ArgumentModificator = argModificator,
+            };
         }
 
         private List<AstArgumentExpr> ParseArgumentList(ParserInInfo inInfo, ref ParserOutInfo outInfo, out TokenLocation beg, out TokenLocation end)
