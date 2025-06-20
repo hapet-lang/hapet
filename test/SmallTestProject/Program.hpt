@@ -7,6 +7,13 @@ public static class Program
 {
     public static int Main(string[] args)
     {
-        return 0;
+        int a = 1;
+        Test(ref a);
+        return a;
+    }
+
+    public static void Test(ref int a)
+    {
+        a = 5;
     }
 }
