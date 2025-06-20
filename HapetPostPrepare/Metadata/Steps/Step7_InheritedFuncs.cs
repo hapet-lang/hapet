@@ -138,6 +138,8 @@ namespace HapetPostPrepare
                                 }
                                 else
                                 {
+                                    SpecialKeysHelper.AddSpecialKeyToDecl(currF, Lexer.CreateToken(TokenType.KwOverride, currF.Beginning), null, null);
+
                                     // add it to the new dictionary
                                     currentClassMethods.Remove(currF);
                                     allVirtualFunctions.Add(currF);

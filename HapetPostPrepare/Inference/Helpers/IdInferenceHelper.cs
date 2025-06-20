@@ -317,8 +317,10 @@ namespace HapetPostPrepare
 
             HandleBasicTypes(typed.Decl, idExpr);
             TryAssignConstValueToExpr(idExpr, typed.Decl, inInfo, ref outInfo2);
-            TrySaveClassAndStructUsage(typed.Decl);
             idExpr.FindSymbol = typed;
+
+            // set that it is used 
+            typed.Decl.IsDeclarationUsed = true;
         }
 
         /// <summary>
@@ -341,19 +343,6 @@ namespace HapetPostPrepare
                     PostPrepareExprInference(varDecl.Initializer, inInfo, ref outInfo);
                 }
                 expr.OutValue = varDecl.Initializer.OutValue;
-            }
-        }
-
-        /// <summary>
-        /// Saves class usage to know which were used by the program. 
-        /// This would be used to call static ctors :)
-        /// </summary>
-        /// <param name="decl">The decl to check and mark</param>
-        private void TrySaveClassAndStructUsage(AstDeclaration decl)
-        {
-            if (decl is AstClassDecl || decl is AstStructDecl)
-            {
-                _allUsedClassesAndStructsInProgram.Add(decl);
             }
         }
 

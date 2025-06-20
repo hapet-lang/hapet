@@ -74,6 +74,11 @@ namespace HapetFrontend.Ast
         public AstDeclaration ParentDecl { get; set; }
 
         /// <summary>
+        /// 'true' if the decl is used in the assembly (codegen only for imported)
+        /// </summary>
+        public bool IsDeclarationUsed { get; set; }
+
+        /// <summary>
         /// Getting symbol of itself
         /// </summary>
         [JsonIgnore]

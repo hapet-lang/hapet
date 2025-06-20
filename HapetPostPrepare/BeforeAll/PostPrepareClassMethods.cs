@@ -387,7 +387,6 @@ namespace HapetPostPrepare
             }
         }
 
-        private List<AstDeclaration> _allUsedClassesAndStructsInProgram = new List<AstDeclaration>();
         private void PostPrepareGenerateClassStaticConstructor(AstDeclaration decl, List<AstFuncDecl> ctors)
         {
             // skip interfaces

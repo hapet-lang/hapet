@@ -1,4 +1,5 @@
 ﻿using System;
+using HapetFrontend.Ast;
 using HapetFrontend.Ast.Declarations;
 using HapetFrontend.Ast.Expressions;
 using HapetFrontend.Ast.Statements;
@@ -31,9 +32,7 @@ namespace HapetBackend.Llvm
                 if (GenericsHelper.ShouldTheDeclBeSkippedFromCodeGen(func))
                     continue;
 
-                // also we need to skip here stors of generic impls
-                if (func.ContainingParent != null && func.ContainingParent.IsImplOfGeneric &&
-                    func.ClassFunctionType == ClassFunctionType.StaticCtor)
+                if (IsFunctionShouldBeSkipped(func))
                     continue;
 
                 _currentSourceFile = func.SourceFile;
@@ -291,6 +290,40 @@ namespace HapetBackend.Llvm
                 var endFunc = GetVaStartFunc();
                 _builder.BuildCall2(endFunc.Item1, endFunc.Item2, new LLVMValueRef[] { apAllocaBitcasted });
             }
+        }
+
+        private bool IsFunctionShouldBeSkipped(AstFuncDecl func) 
+        {
+            // special case for low level classes
+            if (func.Name.Name.StartsWith("System.Runtime.InteropServices.Marshal::") ||
+                func.Name.Name.StartsWith("System.Runtime.Conversion.") ||
+                func.Name.Name.StartsWith("System.Text.Native::"))
+                return false;
+
+            // also we need to skip here stors of generic impls
+            if (func.ContainingParent != null && func.ContainingParent.IsImplOfGeneric &&
+                func.ClassFunctionType == ClassFunctionType.StaticCtor)
+                return true;
+
+            // skip generation of imported-not-used functions
+            if (func.IsImported && !func.IsDeclarationUsed &&
+                !func.SpecialKeys.Contains(TokenType.KwVirtual) &&
+                !func.SpecialKeys.Contains(TokenType.KwAbstract) &&
+                !func.SpecialKeys.Contains(TokenType.KwOverride))
+                return true;
+            return false;
+        }
+
+        private bool IsTypeShouldBeSkipped(AstDeclaration decl)
+        {
+            // special case for required types
+            if (decl.Type.OutType == HapetType.CurrentTypeContext.GetArrayType(HapetType.CurrentTypeContext.ObjectTypeInstance))
+                return false;
+
+            // skip generation of imported-not-used decls
+            if (decl.IsImported && !decl.IsDeclarationUsed)
+                return true;
+            return false;
         }
     }
 }

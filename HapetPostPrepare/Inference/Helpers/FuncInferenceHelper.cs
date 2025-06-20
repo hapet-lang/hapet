@@ -349,7 +349,8 @@ namespace HapetPostPrepare
                 {
                     // search for overrided func
                     candidates.Select(x => x.Decl as AstFuncDecl).ToList().GetSameByNameAndTypes(currDecl.Decl as AstFuncDecl, out int index, callFromObject);
-                    candidates[index] = currDecl;
+                    if (index != -1)
+                        candidates[index] = currDecl;
                     continue;
                 }
 

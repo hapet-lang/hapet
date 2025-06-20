@@ -36,6 +36,8 @@ namespace HapetBackend.Llvm
             // all over the classes
             foreach (var cls in _postPreparer.AllClassesMetadata)
             {
+                if (IsTypeShouldBeSkipped(cls))
+                    continue;
                 if (GenericsHelper.ShouldTheDeclBeSkippedFromCodeGen(cls))
                     continue;
 
@@ -46,6 +48,8 @@ namespace HapetBackend.Llvm
             // all over the structs
             foreach (var str in _postPreparer.AllStructsMetadata)
             {
+                if (IsTypeShouldBeSkipped(str))
+                    continue;
                 if (GenericsHelper.ShouldTheDeclBeSkippedFromCodeGen(str))
                     continue;
 
@@ -56,6 +60,8 @@ namespace HapetBackend.Llvm
             // all over the enums
             foreach (var enm in _postPreparer.AllEnumsMetadata)
             {
+                if (IsTypeShouldBeSkipped(enm))
+                    continue;
                 if (GenericsHelper.ShouldTheDeclBeSkippedFromCodeGen(enm))
                     continue;
 
@@ -69,6 +75,9 @@ namespace HapetBackend.Llvm
         {
             foreach (var cls in _postPreparer.AllClassesMetadata)
             {
+                if (IsTypeShouldBeSkipped(cls))
+                    continue;
+
                 if (GenericsHelper.ShouldTheDeclBeSkippedFromCodeGen(cls))
                 {
                     // getting all STATIC/CONST fields except props
@@ -128,6 +137,9 @@ namespace HapetBackend.Llvm
             }
             foreach (var str in _postPreparer.AllStructsMetadata)
             {
+                if (IsTypeShouldBeSkipped(str))
+                    continue;
+
                 if (GenericsHelper.ShouldTheDeclBeSkippedFromCodeGen(str))
                 {
                     // getting all STATIC/CONST fields except props
@@ -175,6 +187,9 @@ namespace HapetBackend.Llvm
             }
             foreach (var enm in _postPreparer.AllEnumsMetadata)
             {
+                if (IsTypeShouldBeSkipped(enm))
+                    continue;
+
                 if (GenericsHelper.ShouldTheDeclBeSkippedFromCodeGen(enm))
                     continue;
 
@@ -196,9 +211,7 @@ namespace HapetBackend.Llvm
                 if (GenericsHelper.ShouldTheDeclBeSkippedFromCodeGen(func))
                     continue;
 
-                // also we need to skip here stors of generic impls
-                if (func.ContainingParent != null && func.ContainingParent.IsImplOfGeneric && 
-                    func.ClassFunctionType == ClassFunctionType.StaticCtor)
+                if (IsFunctionShouldBeSkipped(func))
                     continue;
 
                 _currentSourceFile = func.SourceFile;
@@ -210,6 +223,8 @@ namespace HapetBackend.Llvm
         {
             foreach (var cls in _postPreparer.AllClassesMetadata)
             {
+                if (IsTypeShouldBeSkipped(cls))
+                    continue;
                 if (GenericsHelper.ShouldTheDeclBeSkippedFromCodeGen(cls))
                     continue;
 
@@ -222,6 +237,8 @@ namespace HapetBackend.Llvm
             }
             foreach (var str in _postPreparer.AllStructsMetadata)
             {
+                if (IsTypeShouldBeSkipped(str))
+                    continue;
                 if (GenericsHelper.ShouldTheDeclBeSkippedFromCodeGen(str))
                     continue;
 

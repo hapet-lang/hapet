@@ -59,6 +59,17 @@ namespace HapetPostPrepare.Other
             return null;
         }
 
+        public AstDeclaration GetFurthestParentClassOrStruct()
+        {
+            AstDeclaration fur = null;
+            foreach (var p in _parentStack.AsEnumerable())
+            {
+                if (p is AstClassDecl || p is AstStructDecl)
+                    fur = p;
+            }
+            return fur;
+        }
+
         public AstFuncDecl GetNearestParentFunc()
         {
             foreach (var p in _parentStack.AsEnumerable())
@@ -67,6 +78,11 @@ namespace HapetPostPrepare.Other
                     return func;
             }
             return null;
+        }
+
+        public AstDeclaration GetFurthestParent()
+        {
+            return _parentStack.Last();
         }
 
         private void AddParentGenerics(AstDeclaration parent)
