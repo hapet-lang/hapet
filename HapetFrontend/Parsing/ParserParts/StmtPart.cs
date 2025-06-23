@@ -80,7 +80,7 @@ namespace HapetFrontend.Parsing
                             (stmt is AstNestedExpr nestExpr && (nestExpr.RightPart is AstIdExpr || nestExpr.RightPart is AstArrayAccessExpr)) ||
                             (stmt is AstPointerExpr ptrExpr && ptrExpr.IsDereference))
                         {
-                            stmt = new AstUnknownDecl(new AstNestedExpr(stmt as AstExpression, null, stmt), null, stmt);
+                            stmt = new AstUnknownDecl(stmt is AstNestedExpr nst ? nst : new AstNestedExpr(stmt as AstExpression, null, stmt), null, stmt);
                         }
                         else if (stmt is AstTupleExpr tpl)
                         {
