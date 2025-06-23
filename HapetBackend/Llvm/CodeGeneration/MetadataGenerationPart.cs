@@ -1,6 +1,7 @@
 ﻿using HapetFrontend.Ast;
 using HapetFrontend.Ast.Declarations;
 using HapetFrontend.Ast.Expressions;
+using HapetFrontend.Ast.Statements;
 using HapetFrontend.Enums;
 using HapetFrontend.Errors;
 using HapetFrontend.Extensions;
@@ -89,10 +90,7 @@ namespace HapetBackend.Llvm
                         // check for const/static fields
                         if (decl.SpecialKeys.Contains(TokenType.KwStatic) || decl.SpecialKeys.Contains(TokenType.KwConst))
                         {
-                            // creating a static field of the class
-                            var globStatic = _module.AddGlobal(HapetTypeToLLVMType(varType), $"{cls.Name.Name}::{decl.Name.Name}");
-                            _initializersMapList.Add((decl.GetSymbol, decl.Initializer));
-                            _valueMap[decl.GetSymbol] = globStatic;
+                            CreateStaticField(decl, cls);
                         }
                     }
                     continue;
@@ -119,13 +117,11 @@ namespace HapetBackend.Llvm
                     // check for const/static fields
                     if (decl.SpecialKeys.Contains(TokenType.KwStatic) || decl.SpecialKeys.Contains(TokenType.KwConst))
                     {
-                        // TODO: consts should not create a variable in LLVM IR 
-                        // just use their values where needed
+                        // skip non-pure generic types
+                        if (cls.IsImplOfGeneric)
+                            continue;
 
-                        // creating a static field of the class
-                        var globStatic = _module.AddGlobal(HapetTypeToLLVMType(varType), $"{declName.Name}::{decl.Name.Name}");
-                        _initializersMapList.Add((decl.GetSymbol, decl.Initializer));
-                        _valueMap[decl.GetSymbol] = globStatic;
+                        CreateStaticField(decl, cls);
                     }
                     else
                     {
@@ -151,17 +147,11 @@ namespace HapetBackend.Llvm
                         // check for const/static fields
                         if (decl.SpecialKeys.Contains(TokenType.KwStatic) || decl.SpecialKeys.Contains(TokenType.KwConst))
                         {
-                            // creating a static field of the class
-                            var globStatic = _module.AddGlobal(HapetTypeToLLVMType(varType), $"{str.Name.Name}::{decl.Name.Name}");
-                            _initializersMapList.Add((decl.GetSymbol, decl.Initializer));
-                            _valueMap[decl.GetSymbol] = globStatic;
+                            CreateStaticField(decl, str);
                         }
                     }
                     continue;
                 }
-
-                // if the decl is impl of gen - take only orig generic
-                var declName = str.Name;
 
                 _currentSourceFile = str.SourceFile;
 
@@ -171,13 +161,11 @@ namespace HapetBackend.Llvm
                     // check for const/static fields
                     if (decl.SpecialKeys.Contains(TokenType.KwStatic) || decl.SpecialKeys.Contains(TokenType.KwConst))
                     {
-                        // TODO: consts should not create a variable in LLVM IR 
-                        // just use their values where needed
+                        // skip non-pure generic types
+                        if (str.IsImplOfGeneric)
+                            continue;
 
-                        // creating a static field of the class
-                        var globStatic = _module.AddGlobal(HapetTypeToLLVMType(decl.Type.OutType), $"{declName.Name}::{decl.Name.Name}");
-                        _initializersMapList.Add((decl.GetSymbol, decl.Initializer));
-                        _valueMap[decl.GetSymbol] = globStatic;
+                        CreateStaticField(decl, str);
                     }
                     else
                     {
@@ -201,6 +189,15 @@ namespace HapetBackend.Llvm
                     globStatic.Initializer = GenerateExpressionCode(decl.Initializer);
                     _valueMap[decl.GetSymbol] = globStatic;
                 }
+            }
+
+            void CreateStaticField(AstVarDecl decl, AstDeclaration parent)
+            {
+                var varName = $"{parent.Name.Name}::{decl.Name.Name}";
+                // creating a static field of the decl
+                var globStatic = _module.AddGlobal(HapetTypeToLLVMType(decl.Type.OutType), varName);
+                _initializersMapList.Add((decl.GetSymbol, decl.Initializer));
+                _valueMap[decl.GetSymbol] = globStatic;
             }
         }
 

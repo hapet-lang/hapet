@@ -22,8 +22,10 @@ namespace HapetBackend.Llvm
     {
         private LLVMValueRef GenerateExpressionCode(AstStatement expr, bool getPtr = false)
         {
-            // if the value already evaluated (usually literals or consts)
-            if (expr is AstExpression realExpr && realExpr.OutValue != null)
+            // if the value already evaluated (usually literals) 
+            if (expr is AstExpression realExpr && realExpr.OutValue != null &&
+                (realExpr is AstStringExpr || realExpr is AstNumberExpr || 
+                realExpr is AstBoolExpr || realExpr is AstCharExpr))
             {
                 var result = HapetValueToLLVMValue(realExpr.OutType, realExpr.OutValue);
                 if (result.Handle.ToInt64() != 0)

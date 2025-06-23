@@ -29,7 +29,7 @@ namespace HapetPostPrepare
             }
         }
 
-        private void PostPrepareDeclScoping(AstDeclaration stmt)
+        public void PostPrepareDeclScoping(AstDeclaration stmt)
         {
             _currentParentStack.AddParent(stmt);
             if (stmt is AstClassDecl classDecl)
@@ -919,7 +919,7 @@ namespace HapetPostPrepare
         /// <param name="child">The child</param>
         /// <param name="parent">The parent</param>
         /// <param name="anotherScope">Scope to be set to a child. If null then parent scope is used</param>
-        private void SetScopeAndParent(AstStatement child, AstStatement parent, Scope anotherScope = null)
+        public void SetScopeAndParent(AstStatement child, AstStatement parent, Scope anotherScope = null)
         {
             anotherScope ??= parent?.Scope;
             child.Scope = anotherScope;

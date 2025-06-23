@@ -15,29 +15,33 @@ namespace HapetBackend.Llvm
 {
     public partial class LlvmCodeGenerator
     {
-        private Dictionary<HapetType, LLVMTypeRef> _typeMap = new Dictionary<HapetType, LLVMTypeRef>();
+        private readonly Dictionary<HapetType, LLVMTypeRef> _typeMap = new Dictionary<HapetType, LLVMTypeRef>();
         /// <summary>
         /// This dict is used to store real structs of types like bool, int, char and etc.
         /// </summary>
-        private Dictionary<HapetType, LLVMTypeRef> _typeMapWithRealStructs = new Dictionary<HapetType, LLVMTypeRef>();
+        private readonly Dictionary<HapetType, LLVMTypeRef> _typeMapWithRealStructs = new Dictionary<HapetType, LLVMTypeRef>();
         /// <summary>
         /// The value itself (loaded after alloca)
         /// </summary>
-        private Dictionary<ISymbol, LLVMValueRef> _valueMap = new Dictionary<ISymbol, LLVMValueRef>();
+        private readonly Dictionary<ISymbol, LLVMValueRef> _valueMap = new Dictionary<ISymbol, LLVMValueRef>();
+        /// <summary>
+        /// Used to store get/set funcs for static fields
+        /// </summary>
+        private readonly Dictionary<ISymbol, (LLVMValueRef, LLVMValueRef)> _staticFieldsValueMap = new Dictionary<ISymbol, (LLVMValueRef, LLVMValueRef)>();
 
         /// <summary>
         /// Struct offsets mapping when StructLayoutAttribute used
         /// </summary>
-        private Dictionary<HapetType, uint[]> _structOffsets = new Dictionary<HapetType, uint[]>();
+        private readonly Dictionary<HapetType, uint[]> _structOffsets = new Dictionary<HapetType, uint[]>();
         /// <summary>
         /// Boxed struct mappings with the first param offset
         /// </summary>
-        private Dictionary<HapetType, (LLVMTypeRef, uint)> _boxedStructTypes = new Dictionary<HapetType, (LLVMTypeRef, uint)>();
+        private readonly Dictionary<HapetType, (LLVMTypeRef, uint)> _boxedStructTypes = new Dictionary<HapetType, (LLVMTypeRef, uint)>();
 
         /// <summary>
         /// Anon delegate name to type mappings. Used when creating a delegate and assigning a func to it
         /// </summary>
-        private Dictionary<string, LLVMTypeRef> _delegateAnonTypes = new Dictionary<string, LLVMTypeRef>();
+        private readonly Dictionary<string, LLVMTypeRef> _delegateAnonTypes = new Dictionary<string, LLVMTypeRef>();
 
         private unsafe LLVMTypeRef HapetTypeToLLVMType(HapetType ht, bool getRealStruct = false)
         {

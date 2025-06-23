@@ -162,6 +162,9 @@ namespace HapetLastPrepare
             {
                 LPRACExpr(decl.Initializer);
             }
+
+            // we need to create get/set functions for static/const fields 
+            CreateGetSetForStatic(decl);
         }
 
         public void LPRACParam(AstParamDecl decl)
