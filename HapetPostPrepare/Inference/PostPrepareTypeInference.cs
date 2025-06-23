@@ -454,10 +454,6 @@ namespace HapetPostPrepare
 
         private void PostPrepareBlockInference(AstBlockExpr blockExpr, InInfo inInfo, ref OutInfo outInfo)
         {
-            // list of all replacements that should be done
-            // so all Propa assigns would be replaced with func calls
-            Dictionary<AstAssignStmt, AstCallExpr> repls = new Dictionary<AstAssignStmt, AstCallExpr>();
-
             var prevBlock = _currentBlock;
             _currentBlock = blockExpr;
             // go all over the statements
@@ -465,55 +461,7 @@ namespace HapetPostPrepare
             {
                 if (stmt == null)
                     continue;
-
-                // we need to handle the statements to replaces props with calls
-                if (stmt is AstAssignStmt asgn)
-                {
-                    PostPrepareAssignStmtInference(asgn, inInfo, ref outInfo);
-                    if (outInfo.ItWasProperty)
-                    {
-                        // reset
-                        outInfo.ItWasProperty = false;
-
-                        AstIdExpr propaName = (asgn.Target.RightPart as AstIdExpr);
-                        // creating a call 
-                        var fncVal = new AstArgumentExpr(asgn.Value, null, asgn.Target);
-                        var fncCall = new AstCallExpr(asgn.Target.LeftPart, propaName.GetCopy($"set_{propaName.Name}"), new List<AstArgumentExpr>() { fncVal }, asgn);
-                        SetScopeAndParent(fncCall, asgn.Target.NormalParent, asgn.Target.Scope);
-                        PostPrepareCallExprScoping(fncCall);
-                        PostPrepareCallExprInference(fncCall, inInfo, ref outInfo);
-                        repls.Add(asgn, fncCall);
-                    }
-                    else if (outInfo.ItWasIndexer)
-                    {
-                        // reset
-                        outInfo.ItWasIndexer = false;
-
-                        // if getting indexer to get
-                        var fncName = new AstIdExpr("set_indexer__", asgn.Target);
-                        fncName.Scope = asgn.Target.Scope;
-                        var fncArg = new AstArgumentExpr(outInfo.IndexedIndex, null, asgn.Target);
-                        var fncVal = new AstArgumentExpr(asgn.Value, null, asgn.Target);
-                        var fncCall = new AstCallExpr(outInfo.IndexedObject, fncName, new List<AstArgumentExpr>() { fncArg, fncVal }, asgn);
-                        SetScopeAndParent(fncCall, asgn.Target.NormalParent, asgn.Target.Scope);
-                        PostPrepareCallExprScoping(fncCall);
-                        PostPrepareCallExprInference(fncCall, inInfo, ref outInfo);
-                        repls.Add(asgn, fncCall);
-                    }
-                }
-                else
-                {
-                    PostPrepareExprInference(stmt, inInfo, ref outInfo);
-                }
-            }
-
-            // begin all replacements
-            foreach (var pair in repls)
-            {
-                // replace the assign statement
-                int assignIndex = blockExpr.Statements.IndexOf(pair.Key);
-                blockExpr.Statements.Remove(pair.Key);
-                blockExpr.Statements.Insert(assignIndex, pair.Value);
+                PostPrepareExprInference(stmt, inInfo, ref outInfo);
             }
 
             _currentBlock = prevBlock;
@@ -770,43 +718,14 @@ namespace HapetPostPrepare
                     var thisArg = new AstNestedExpr(new AstIdExpr("this", nestExpr)
                     {
                         Location = nestExpr.Location,
-                        Scope = nestExpr.Scope,
                     }, null, nestExpr)
                     {
                         Location = nestExpr.Location,
-                        Scope = nestExpr.Scope,
                     };
                     SetScopeAndParent(thisArg, nestExpr);
                     PostPrepareExprScoping(thisArg);
                     PostPrepareExprInference(thisArg, inInfo, ref outInfo);
                     nestExpr.LeftPart = thisArg;
-
-                    // if true - found set propa
-                    if (CheckForProperty(dS.Decl, idExpr, inInfo, ref outInfo))
-                        return;
-                }
-
-                // if getting indexer to set smth
-                if (outInfo.ItWasIndexer && inInfo.PropertySet)
-                {
-                    // just skip - it should be handled by AssignInferencer
-                    return;
-                }
-                else if (outInfo.ItWasIndexer)
-                {
-                    // reset
-                    outInfo.ItWasIndexer = false;
-
-                    // if getting indexer to get
-                    var fncName = new AstIdExpr("get_indexer__", nestExpr);
-                    fncName.Scope = nestExpr.Scope;
-                    var fncArg = new AstArgumentExpr(outInfo.IndexedIndex, null, nestExpr);
-                    var fncCall = new AstCallExpr(outInfo.IndexedObject, fncName, new List<AstArgumentExpr>() { fncArg }, nestExpr);
-                    SetScopeAndParent(fncCall, nestExpr.RightPart.NormalParent, nestExpr.RightPart.Scope);
-                    PostPrepareExprScoping(fncCall);
-                    nestExpr.LeftPart = null;
-                    nestExpr.RightPart = fncCall;
-                    PostPrepareCallExprInference(fncCall, inInfo, ref outInfo);
                 }
             }
             else
@@ -838,7 +757,6 @@ namespace HapetPostPrepare
                 if (leftSideDecl == null)
                 {
                     _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, nestExpr.LeftPart, [], ErrorCode.Get(CTEN.ExprNotClassOrStruct));
-                    outInfo.ItWasProperty = false;
                     return;
                 }
 
@@ -846,7 +764,6 @@ namespace HapetPostPrepare
                 if (nestExpr.RightPart is not AstIdExpr idExpr)
                 {
                     _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, nestExpr.RightPart, [], ErrorCode.Get(CTEN.CommonIdentifierExpected));
-                    outInfo.ItWasProperty = false;
                     return;
                 }
 
@@ -864,40 +781,11 @@ namespace HapetPostPrepare
                     {
                         _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, idExpr, [], ErrorCode.Get(CTWN.StaticFieldFromObject), null, HapetFrontend.Entities.ReportType.Warning);
                     }
-
-                    // if true - found set propa
-                    if (CheckForProperty(typed.Decl, idExpr, inInfo, ref outInfo))
-                        return;
                 }
                 else
                 {
                     _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, idExpr, [HapetType.AsString(nestExpr.LeftPart.OutType)], ErrorCode.Get(CTEN.SymbolNotFoundInType));
                 }
-            }
-            outInfo.ItWasProperty = false;
-
-            bool CheckForProperty(AstDeclaration decl, AstIdExpr propaName, InInfo inInfoInside, ref OutInfo outInfoInside)
-            {
-                // if the ast is an access to a property
-                if (decl is AstPropertyDecl)
-                {
-                    // if getting property to set smth
-                    if (inInfoInside.PropertySet)
-                    {
-                        outInfoInside.ItWasProperty = true;
-                        return true;
-                    }
-                    else
-                    {
-                        // if getting propa to get
-                        var fncCall = new AstCallExpr(nestExpr.LeftPart, propaName.GetCopy($"get_{propaName.Name}"), null, nestExpr);
-                        SetScopeAndParent(fncCall, nestExpr.RightPart.NormalParent, nestExpr.RightPart.Scope);
-                        nestExpr.LeftPart = null;
-                        nestExpr.RightPart = fncCall;
-                        PostPrepareCallExprInference(fncCall, inInfoInside, ref outInfoInside);
-                    }
-                }
-                return false;
             }
         }
 
@@ -1020,12 +908,8 @@ namespace HapetPostPrepare
 
         private void PostPrepareArrayAccessExprInference(AstArrayAccessExpr arrayAccExpr, InInfo inInfo, ref OutInfo outInfo)
         {
-            // set propertySet to false because if we are in ArrayAccess - then ObjectName if it is property - has to be 'get_prop'
-            var savedPropSet = inInfo.PropertySet;
-            inInfo.PropertySet = false;
             PostPrepareExprInference(arrayAccExpr.ParameterExpr, inInfo, ref outInfo);
             PostPrepareExprInference(arrayAccExpr.ObjectName, inInfo, ref outInfo);
-            inInfo.PropertySet = savedPropSet;
 
             // at first try to find indexer overload
             string typeName = null;
@@ -1070,9 +954,7 @@ namespace HapetPostPrepare
                 if (smbl != null && smbl.Decl is AstFuncDecl funcDecl)
                 {
                     arrayAccExpr.OutType = funcDecl.Returns.OutType;
-                    outInfo.ItWasIndexer = true;
-                    outInfo.IndexedIndex = arrayAccExpr.ParameterExpr;
-                    outInfo.IndexedObject = arrayAccExpr.ObjectName as AstNestedExpr;
+                    arrayAccExpr.IndexerFuncDeclaration = funcDecl;
                     return; // everything is ok :)
                 }
             }
@@ -1155,10 +1037,7 @@ namespace HapetPostPrepare
         // statements
         private void PostPrepareAssignStmtInference(AstAssignStmt assignStmt, InInfo inInfo, ref OutInfo outInfo)
         {
-            // propaSet is true only here
-            inInfo.PropertySet = true;
             PostPrepareNestedExprInference(assignStmt.Target, inInfo, ref outInfo);
-            inInfo.PropertySet = false;
 
             // cringe error when user tries to assign something directly into enum field
             if (assignStmt.Target.LeftPart != null && assignStmt.Target.LeftPart.OutType is EnumType)
@@ -1169,14 +1048,7 @@ namespace HapetPostPrepare
             // pp assign value
             if (assignStmt.Value != null)
             {
-                // save previous
-                var saved1 = outInfo.ItWasIndexer;
-                var saved2 = outInfo.ItWasProperty;
-                outInfo.ItWasIndexer = false;
-                outInfo.ItWasProperty = false;
                 assignStmt.Value = PostPrepareVarValueAssign(assignStmt.Value, assignStmt.Target.OutType, inInfo, ref outInfo);
-                outInfo.ItWasIndexer = saved1;
-                outInfo.ItWasProperty = saved2;
             }
             else
                 _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, assignStmt, [], ErrorCode.Get(CTEN.NotExprInAssignment));

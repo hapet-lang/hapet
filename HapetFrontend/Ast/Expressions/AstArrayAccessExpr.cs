@@ -15,6 +15,11 @@ namespace HapetFrontend.Ast.Expressions
         /// </summary>
         public AstExpression ParameterExpr { get; set; }
 
+        /// <summary>
+        /// Used only if array-access has to be converted into indexer call
+        /// </summary>
+        public AstFuncDecl IndexerFuncDeclaration { get; set; }
+
         public override string AAAName => nameof(AstArrayAccessExpr);
 
         public AstArrayAccessExpr(AstExpression objectName, AstExpression parameterExpr, ILocation location = null) : base(location)

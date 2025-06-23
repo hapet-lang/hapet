@@ -1,10 +1,661 @@
-﻿namespace HapetLastPrepare
+﻿using HapetFrontend.Ast.Declarations;
+using HapetFrontend.Ast.Expressions;
+using HapetFrontend.Ast.Statements;
+using HapetFrontend.Ast;
+using HapetFrontend.Errors;
+using HapetFrontend.Helpers;
+using HapetFrontend.Scoping;
+using HapetFrontend.Types;
+using HapetLastPrepare.Entities;
+using HapetPostPrepare.Other;
+using HapetPostPrepare;
+using System;
+
+namespace HapetLastPrepare
 {
+    // LPRAP - Last Prepare Replace All Props (and static/const fields)
     public partial class LastPrepare
     {
         public void ReplaceAllProperties()
         {
-            // TODO:
+            OutInfo outInfo = OutInfo.Default;
+            var savedParentStack = _postPreparer._currentParentStack;
+            _postPreparer._currentParentStack = ParentStackManager.Create(_compiler.MessageHandler);
+
+            foreach (var cls in _postPreparer.AllClassesMetadata)
+            {
+                if (GenericsHelper.ShouldTheDeclBeSkippedFromCodeGen(cls))
+                    continue;
+
+                _postPreparer._currentParentStack.AddParent(cls);
+                _currentSourceFile = cls.SourceFile;
+                LPRAPClass(cls, ref outInfo);
+                _postPreparer._currentParentStack.RemoveParent();
+            }
+            foreach (var str in _postPreparer.AllStructsMetadata)
+            {
+                if (GenericsHelper.ShouldTheDeclBeSkippedFromCodeGen(str))
+                    continue;
+
+                _postPreparer._currentParentStack.AddParent(str);
+                _currentSourceFile = str.SourceFile;
+                LPRAPStruct(str, ref outInfo);
+                _postPreparer._currentParentStack.RemoveParent();
+            }
+            foreach (var del in _postPreparer.AllDelegatesMetadata)
+            {
+                if (GenericsHelper.ShouldTheDeclBeSkippedFromCodeGen(del))
+                    continue;
+
+                var parent = del.ContainingParent;
+                if (parent?.IsNestedDecl ?? false)
+                    _postPreparer._currentParentStack.AddParent(parent.ParentDecl);
+                if (parent != null)
+                    _postPreparer._currentParentStack.AddParent(parent);
+                _postPreparer._currentParentStack.AddParent(del);
+
+                _currentSourceFile = del.SourceFile;
+                LPRAPDelegate(del, ref outInfo);
+
+                _postPreparer._currentParentStack.RemoveParent();
+                if (parent?.IsNestedDecl ?? false)
+                    _postPreparer._currentParentStack.RemoveParent();
+                if (parent != null)
+                    _postPreparer._currentParentStack.RemoveParent();
+            }
+            foreach (var func in _postPreparer.AllFunctionsMetadata)
+            {
+                if (GenericsHelper.ShouldTheDeclBeSkippedFromCodeGen(func))
+                    continue;
+
+                var parent = func.ContainingParent;
+                if (parent?.IsNestedDecl ?? false)
+                    _postPreparer._currentParentStack.AddParent(parent.ParentDecl);
+                if (parent != null)
+                    _postPreparer._currentParentStack.AddParent(parent);
+                _postPreparer._currentParentStack.AddParent(func);
+
+                _currentSourceFile = func.SourceFile;
+                LPRAPFunction(func, ref outInfo);
+
+                _postPreparer._currentParentStack.RemoveParent();
+                if (parent?.IsNestedDecl ?? false)
+                    _postPreparer._currentParentStack.RemoveParent();
+                if (parent != null)
+                    _postPreparer._currentParentStack.RemoveParent();
+            }
+
+            _postPreparer._currentParentStack = savedParentStack;
+        }
+
+        private void LPRAPDecl(AstDeclaration decl, ref OutInfo outInfo)
+        {
+            if (decl is AstClassDecl classDecl)
+            {
+                LPRAPClass(classDecl, ref outInfo);
+            }
+            else if (decl is AstStructDecl structDecl)
+            {
+                LPRAPStruct(structDecl, ref outInfo);
+            }
+            else if (decl is AstDelegateDecl delegateDecl)
+            {
+                LPRAPDelegate(delegateDecl, ref outInfo);
+            }
+            else if (decl is AstFuncDecl funcDecl)
+            {
+                LPRAPFunction(funcDecl, ref outInfo);
+            }
+            else if (decl is AstPropertyDecl propDecl)
+            {
+                //if (propDecl.GetBlock != null)
+                //{
+                //    LPRAPBlockExpr(propDecl.GetBlock, ref outInfo);
+                //}
+                //if (propDecl.SetBlock != null)
+                //{
+                //    LPRAPBlockExpr(propDecl.SetBlock, ref outInfo);
+                //}
+
+                LPRAPVar(propDecl, ref outInfo);
+            }
+            else if (decl is AstVarDecl varDecl)
+            {
+                LPRAPVar(varDecl, ref outInfo);
+            }
+        }
+
+        public void LPRAPClass(AstClassDecl decl, ref OutInfo outInfo)
+        {
+            foreach (var d in decl.Declarations)
+            {
+                if (d is AstFuncDecl)
+                {
+                    // skip funcs - they are prepared in another loop
+                    continue;
+                }
+                else
+                {
+                    LPRAPDecl(d, ref outInfo);
+                }
+            }
+        }
+
+        public void LPRAPStruct(AstStructDecl decl, ref OutInfo outInfo)
+        {
+            foreach (var d in decl.Declarations)
+            {
+                if (d is AstFuncDecl)
+                {
+                    // skip funcs - they are prepared in another loop
+                    continue;
+                }
+                else
+                {
+                    LPRAPDecl(d, ref outInfo);
+                }
+            }
+        }
+
+        public void LPRAPDelegate(AstDelegateDecl decl, ref OutInfo outInfo)
+        {
+            foreach (var p in decl.Parameters)
+            {
+                LPRAPParam(p, ref outInfo);
+            }
+        }
+
+        public void LPRAPFunction(AstFuncDecl decl, ref OutInfo outInfo)
+        {
+            foreach (var p in decl.Parameters)
+            {
+                LPRAPParam(p, ref outInfo);
+            }
+
+            if (decl.Body != null)
+            {
+                LPRAPBlockExpr(decl.Body, ref outInfo);
+            }
+        }
+
+        public void LPRAPVar(AstVarDecl decl, ref OutInfo outInfo)
+        {
+            if (decl.Initializer != null)
+            {
+                LPRAPExpr(decl.Initializer, ref outInfo);
+            }
+        }
+
+        public void LPRAPParam(AstParamDecl decl, ref OutInfo outInfo)
+        {
+            if (decl.DefaultValue != null)
+            {
+                LPRAPExpr(decl.DefaultValue, ref outInfo);
+            }
+        }
+
+        public void LPRAPExpr(AstStatement stmt, ref OutInfo outInfo)
+        {
+            // skip nulls
+            if (stmt == null)
+                return;
+
+            switch (stmt)
+            {
+                // special case at least for 'for' loop
+                // when 'for (int i = 0;...)' where 'int i' 
+                // would not be handled by blockExpr
+                case AstVarDecl varDecl:
+                    LPRAPVar(varDecl, ref outInfo);
+                    break;
+
+                case AstBlockExpr blockExpr:
+                    LPRAPBlockExpr(blockExpr, ref outInfo);
+                    break;
+                case AstUnaryExpr unExpr:
+                    LPRAPUnaryExpr(unExpr, ref outInfo);
+                    break;
+                case AstBinaryExpr binExpr:
+                    LPRAPBinaryExpr(binExpr, ref outInfo);
+                    break;
+                case AstPointerExpr pointerExpr:
+                    LPRAPPointerExpr(pointerExpr, ref outInfo);
+                    break;
+                case AstAddressOfExpr addrExpr:
+                    LPRAPAddressOfExpr(addrExpr, ref outInfo);
+                    break;
+                case AstNewExpr newExpr:
+                    LPRAPNewExpr(newExpr, ref outInfo);
+                    break;
+                case AstArgumentExpr argumentExpr:
+                    LPRAPArgumentExpr(argumentExpr, ref outInfo);
+                    break;
+                case AstIdExpr idExpr:
+                    LPRAPIdExpr(idExpr, ref outInfo);
+                    break;
+                case AstCallExpr callExpr:
+                    LPRAPCallExpr(callExpr, ref outInfo);
+                    break;
+                case AstCastExpr castExpr:
+                    LPRAPCastExpr(castExpr, ref outInfo);
+                    break;
+                case AstNestedExpr nestExpr:
+                    LPRAPNestedExpr(nestExpr, ref outInfo);
+                    break;
+                case AstDefaultExpr defaultExpr:
+                    LPRAPDefaultExpr(defaultExpr, ref outInfo);
+                    break;
+                case AstDefaultGenericExpr _: // no need
+                    break;
+                case AstEmptyStructExpr _: // no need
+                    break;
+                case AstArrayExpr arrayExpr:
+                    LPRAPArrayExpr(arrayExpr, ref outInfo);
+                    break;
+                case AstArrayCreateExpr arrayCreateExpr:
+                    LPRAPArrayCreateExpr(arrayCreateExpr, ref outInfo);
+                    break;
+                case AstArrayAccessExpr arrayAccExpr:
+                    LPRAPArrayAccessExpr(arrayAccExpr, ref outInfo);
+                    break;
+                case AstTernaryExpr ternaryExpr:
+                    LPRAPTernaryExpr(ternaryExpr, ref outInfo);
+                    break;
+                case AstCheckedExpr checkedExpr:
+                    LPRAPCheckedExpr(checkedExpr, ref outInfo);
+                    break;
+                case AstEmptyExpr:
+                    break;
+
+                // statements
+                case AstAssignStmt assignStmt:
+                    LPRAPAssignStmt(assignStmt, ref outInfo);
+                    break;
+                case AstForStmt forStmt:
+                    LPRAPForStmt(forStmt, ref outInfo);
+                    break;
+                case AstWhileStmt whileStmt:
+                    LPRAPWhileStmt(whileStmt, ref outInfo);
+                    break;
+                case AstIfStmt ifStmt:
+                    LPRAPIfStmt(ifStmt, ref outInfo);
+                    break;
+                case AstSwitchStmt switchStmt:
+                    LPRAPSwitchStmt(switchStmt, ref outInfo);
+                    break;
+                case AstCaseStmt caseStmt:
+                    LPRAPCaseStmt(caseStmt, ref outInfo);
+                    break;
+                case AstBreakContStmt:
+                    // nothing to do
+                    break;
+                case AstReturnStmt returnStmt:
+                    LPRAPReturnStmt(returnStmt, ref outInfo);
+                    break;
+                case AstAttributeStmt attrStmt:
+                    LPRAPAttributeStmt(attrStmt, ref outInfo);
+                    break;
+                case AstBaseCtorStmt baseStmt:
+                    LPRAPBaseCtorStmt(baseStmt, ref outInfo);
+                    break;
+                case AstConstrainStmt constrainStmt:
+                    LPRAPConstrainStmt(constrainStmt, ref outInfo);
+                    break;
+
+                // skip literals
+                case AstNumberExpr:
+                case AstStringExpr:
+                case AstBoolExpr:
+                case AstCharExpr:
+                case AstNullExpr:
+                    break;
+
+                default:
+                    {
+                        _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, stmt, [stmt.AAAName], ErrorCode.Get(CTEN.StmtNotImplemented));
+                        break;
+                    }
+            }
+        }
+
+        private void LPRAPBlockExpr(AstBlockExpr expr, ref OutInfo outInfo)
+        {
+            // list of all replacements that should be done
+            // so all Propa assigns would be replaced with func calls
+            Dictionary<AstAssignStmt, AstCallExpr> repls = new Dictionary<AstAssignStmt, AstCallExpr>();
+            var tmpInInfo = HapetPostPrepare.Entities.InInfo.Default;
+            var tmpOutInfo = HapetPostPrepare.Entities.OutInfo.Default;
+
+            foreach (var stmt in expr.Statements)
+            {
+                if (stmt == null)
+                    continue;
+
+                // special check for nested function
+                if (stmt is AstFuncDecl)
+                {
+                    // funcs are prepared in another loop
+                    continue;
+                }
+                // we need to handle the statements to replaces props with calls
+                else if (stmt is AstAssignStmt asgn)
+                {
+                    LPRAPAssignStmt(asgn, ref outInfo);
+
+                    // super cringe kostyl because of IDK
+                    var target = asgn.Target;
+                    if (target.LeftPart == null && target.RightPart is AstNestedExpr nst && nst.LeftPart != null)
+                        target = nst;
+
+                    if (outInfo.ItWasProperty)
+                    {
+                        // reset
+                        outInfo.ItWasProperty = false;
+
+                        AstIdExpr propaName = target.UnrollToRightPart<AstIdExpr>();
+                        // creating a call 
+                        var fncVal = new AstArgumentExpr(asgn.Value, null, target);
+                        var fncCall = new AstCallExpr(target.LeftPart, propaName.GetCopy($"set_{propaName.Name}"), new List<AstArgumentExpr>() { fncVal }, asgn);
+                        _postPreparer.SetScopeAndParent(fncCall, target.NormalParent, target.Scope);
+                        _postPreparer.PostPrepareCallExprScoping(fncCall);
+                        _postPreparer.PostPrepareCallExprInference(fncCall, tmpInInfo, ref tmpOutInfo);
+                        repls.Add(asgn, fncCall);
+                    }
+                    else if (outInfo.ItWasIndexer)
+                    {
+                        // reset
+                        outInfo.ItWasIndexer = false;
+
+                        // if getting indexer to get
+                        var fncName = new AstIdExpr("set_indexer__", target);
+                        fncName.Scope = target.Scope;
+                        var fncArg = new AstArgumentExpr(outInfo.IndexedIndex, null, target);
+                        var fncVal = new AstArgumentExpr(asgn.Value, null, target);
+                        var fncCall = new AstCallExpr(outInfo.IndexedObject, fncName, new List<AstArgumentExpr>() { fncArg, fncVal }, asgn);
+                        _postPreparer.SetScopeAndParent(fncCall, target.NormalParent, target.Scope);
+                        _postPreparer.PostPrepareCallExprScoping(fncCall);
+                        _postPreparer.PostPrepareCallExprInference(fncCall, tmpInInfo, ref tmpOutInfo);
+                        repls.Add(asgn, fncCall);
+                    }
+                }
+                else
+                {
+                    LPRAPExpr(stmt, ref outInfo);
+                }
+            }
+
+            // begin all replacements
+            foreach (var pair in repls)
+            {
+                // replace the assign statement
+                int assignIndex = expr.Statements.IndexOf(pair.Key);
+                expr.Statements.Remove(pair.Key);
+                expr.Statements.Insert(assignIndex, pair.Value);
+            }
+        }
+
+        private void LPRAPUnaryExpr(AstUnaryExpr expr, ref OutInfo outInfo)
+        {
+            LPRAPExpr(expr.SubExpr, ref outInfo);
+        }
+
+        private void LPRAPBinaryExpr(AstBinaryExpr expr, ref OutInfo outInfo)
+        {
+            LPRAPExpr(expr.Left, ref outInfo);
+            LPRAPExpr(expr.Right, ref outInfo);
+        }
+
+        private void LPRAPPointerExpr(AstPointerExpr expr, ref OutInfo outInfo)
+        {
+            LPRAPExpr(expr.SubExpression, ref outInfo);
+        }
+
+        private void LPRAPAddressOfExpr(AstAddressOfExpr expr, ref OutInfo outInfo)
+        {
+            LPRAPExpr(expr.SubExpression, ref outInfo);
+        }
+
+        private void LPRAPNewExpr(AstNewExpr expr, ref OutInfo outInfo)
+        {
+            foreach (var a in expr.Arguments)
+            {
+                LPRAPArgumentExpr(a, ref outInfo);
+            }
+        }
+
+        private void LPRAPArgumentExpr(AstArgumentExpr expr, ref OutInfo outInfo)
+        {
+            LPRAPExpr(expr.Expr, ref outInfo);
+        }
+
+        private void LPRAPIdExpr(AstIdExpr expr, ref OutInfo outInfo)
+        {
+            
+        }
+
+        private void LPRAPCallExpr(AstCallExpr expr, ref OutInfo outInfo)
+        {
+            if (expr.TypeOrObjectName != null)
+            {
+                LPRAPExpr(expr.TypeOrObjectName, ref outInfo);
+            }
+
+            foreach (var a in expr.Arguments)
+            {
+                LPRAPArgumentExpr(a, ref outInfo);
+            }
+        }
+
+        private void LPRAPCastExpr(AstCastExpr expr, ref OutInfo outInfo)
+        {
+            LPRAPExpr(expr.SubExpression, ref outInfo);
+        }
+
+        private void LPRAPNestedExpr(AstNestedExpr expr, ref OutInfo outInfo)
+        {
+            var tmpInInfo = HapetPostPrepare.Entities.InInfo.Default;
+            var tmpOutInfo = HapetPostPrepare.Entities.OutInfo.Default;
+
+            LPRAPExpr(expr.LeftPart, ref outInfo);
+            LPRAPExpr(expr.RightPart, ref outInfo);
+            if (expr.LeftPart == null)
+            {
+                // if getting indexer to set smth
+                if (outInfo.ItWasIndexer && outInfo.IsPropertySet)
+                {
+                    // just skip - it should be handled by AssignInferencer
+                    return;
+                }
+                else if (outInfo.ItWasIndexer)
+                {
+                    // reset
+                    outInfo.ItWasIndexer = false;
+
+                    // if getting indexer to get
+                    var fncName = new AstIdExpr("get_indexer__", expr);
+                    fncName.Scope = expr.Scope;
+                    var fncArg = new AstArgumentExpr(outInfo.IndexedIndex, null, expr);
+                    var fncCall = new AstCallExpr(outInfo.IndexedObject, fncName, new List<AstArgumentExpr>() { fncArg }, expr);
+                    _postPreparer.SetScopeAndParent(fncCall, expr.RightPart.NormalParent, expr.RightPart.Scope);
+                    _postPreparer.PostPrepareExprScoping(fncCall);
+                    expr.LeftPart = null;
+                    expr.RightPart = fncCall;
+                    _postPreparer.PostPrepareCallExprInference(fncCall, tmpInInfo, ref tmpOutInfo);
+                }
+            }
+            else
+            {
+                var idExpr = expr.RightPart as AstIdExpr;
+                var smbl = idExpr.FindSymbol;
+                if (smbl is DeclSymbol typed)
+                {
+                    // if true - found set propa
+                    if (CheckForProperty(typed.Decl, idExpr, ref outInfo))
+                        return;
+                }
+            }
+            outInfo.ItWasProperty = false;
+
+            bool CheckForProperty(AstDeclaration decl, AstIdExpr propaName, ref OutInfo outInfoInside)
+            {
+                // if the ast is an access to a property
+                if (decl is AstPropertyDecl)
+                {
+                    // if getting property to set smth
+                    if (outInfoInside.IsPropertySet)
+                    {
+                        outInfoInside.ItWasProperty = true;
+                        return true;
+                    }
+                    else
+                    {
+                        // if getting propa to get
+                        var fncCall = new AstCallExpr(expr.LeftPart, propaName.GetCopy($"get_{propaName.Name}"), null, expr);
+                        _postPreparer.SetScopeAndParent(fncCall, expr.RightPart.NormalParent, expr.RightPart.Scope);
+                        expr.LeftPart = null;
+                        expr.RightPart = fncCall;
+                        _postPreparer.PostPrepareCallExprInference(fncCall, tmpInInfo, ref tmpOutInfo);
+                    }
+                }
+                return false;
+            }
+        }
+
+        private void LPRAPDefaultExpr(AstDefaultExpr expr, ref OutInfo outInfo)
+        {
+
+        }
+
+        private void LPRAPArrayExpr(AstArrayExpr expr, ref OutInfo outInfo)
+        {
+            // nop
+        }
+
+        private void LPRAPArrayCreateExpr(AstArrayCreateExpr expr, ref OutInfo outInfo)
+        {
+            foreach (var s in expr.SizeExprs)
+            {
+                LPRAPExpr(s, ref outInfo);
+            }
+            foreach (var e in expr.Elements)
+            {
+                LPRAPExpr(e, ref outInfo);
+            }
+        }
+
+        private void LPRAPArrayAccessExpr(AstArrayAccessExpr expr, ref OutInfo outInfo)
+        {
+            if (expr.IndexerFuncDeclaration != null)
+            {
+                outInfo.ItWasIndexer = true;
+                outInfo.IndexedIndex = expr.ParameterExpr;
+                outInfo.IndexedObject = expr.ObjectName as AstNestedExpr;
+                return; // everything is ok :)
+            }
+
+            // set propertySet to false because if we are in ArrayAccess - then ObjectName if it is property - has to be 'get_prop'
+            var savedPropSet = outInfo.IsPropertySet;
+            outInfo.IsPropertySet = false;
+            LPRAPExpr(expr.ParameterExpr, ref outInfo);
+            outInfo.IsPropertySet = savedPropSet;
+        }
+
+        private void LPRAPTernaryExpr(AstTernaryExpr expr, ref OutInfo outInfo)
+        {
+            LPRAPExpr(expr.Condition, ref outInfo);
+            LPRAPExpr(expr.TrueExpr, ref outInfo);
+            LPRAPExpr(expr.FalseExpr, ref outInfo);
+        }
+
+        private void LPRAPCheckedExpr(AstCheckedExpr expr, ref OutInfo outInfo)
+        {
+            LPRAPExpr(expr.SubExpression, ref outInfo);
+        }
+
+        private void LPRAPAssignStmt(AstAssignStmt stmt, ref OutInfo outInfo)
+        {
+            // propaSet is true only here
+            outInfo.IsPropertySet = true;
+            LPRAPNestedExpr(stmt.Target, ref outInfo);
+            outInfo.IsPropertySet = false;
+
+            // pp assign value
+            if (stmt.Value != null)
+            {
+                // save previous
+                var saved1 = outInfo.ItWasIndexer;
+                var saved2 = outInfo.ItWasProperty;
+                outInfo.ItWasIndexer = false;
+                outInfo.ItWasProperty = false;
+                LPRAPExpr(stmt.Value, ref outInfo);
+                outInfo.ItWasIndexer = saved1;
+                outInfo.ItWasProperty = saved2;
+            }
+        }
+
+        private void LPRAPForStmt(AstForStmt stmt, ref OutInfo outInfo)
+        {
+            LPRAPExpr(stmt.FirstArgument, ref outInfo);
+            LPRAPExpr(stmt.SecondArgument, ref outInfo);
+            LPRAPExpr(stmt.ThirdArgument, ref outInfo);
+
+            LPRAPBlockExpr(stmt.Body, ref outInfo);
+        }
+
+        private void LPRAPWhileStmt(AstWhileStmt stmt, ref OutInfo outInfo)
+        {
+            LPRAPExpr(stmt.Condition, ref outInfo);
+
+            LPRAPBlockExpr(stmt.Body, ref outInfo);
+        }
+
+        private void LPRAPIfStmt(AstIfStmt stmt, ref OutInfo outInfo)
+        {
+            LPRAPExpr(stmt.Condition, ref outInfo);
+
+            LPRAPBlockExpr(stmt.BodyTrue, ref outInfo);
+            if (stmt.BodyFalse != null)
+                LPRAPBlockExpr(stmt.BodyFalse, ref outInfo);
+        }
+
+        private void LPRAPSwitchStmt(AstSwitchStmt stmt, ref OutInfo outInfo)
+        {
+            LPRAPExpr(stmt.SubExpression, ref outInfo);
+
+            foreach (var c in stmt.Cases)
+            {
+                LPRAPExpr(c, ref outInfo);
+            }
+        }
+
+        private void LPRAPCaseStmt(AstCaseStmt stmt, ref OutInfo outInfo)
+        {
+            LPRAPExpr(stmt.Pattern, ref outInfo);
+
+            LPRAPExpr(stmt.Body, ref outInfo);
+        }
+
+        private void LPRAPReturnStmt(AstReturnStmt stmt, ref OutInfo outInfo)
+        {
+            LPRAPExpr(stmt.ReturnExpression, ref outInfo);
+        }
+
+        private void LPRAPAttributeStmt(AstAttributeStmt stmt, ref OutInfo outInfo)
+        {
+            // nop
+        }
+
+        private void LPRAPBaseCtorStmt(AstBaseCtorStmt stmt, ref OutInfo outInfo)
+        {
+            foreach (var a in stmt.Arguments)
+            {
+                LPRAPExpr(a, ref outInfo);
+            }
+        }
+
+        private void LPRAPConstrainStmt(AstConstrainStmt stmt, ref OutInfo outInfo)
+        {
+            // nop
         }
     }
 }

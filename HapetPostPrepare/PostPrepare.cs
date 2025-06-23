@@ -20,7 +20,7 @@ namespace HapetPostPrepare
         /// <summary>
         /// To handle current stack manager
         /// </summary>
-        private ParentStackManager _currentParentStack;
+        public ParentStackManager _currentParentStack;
 
         /// <summary>
         /// The block that is currently preparing

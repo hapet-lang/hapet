@@ -17,7 +17,7 @@ namespace HapetPostPrepare
 {
     public partial class PostPrepare
     {
-        private void PostPrepareCallExprInference(AstCallExpr callExpr, InInfo inInfo, ref OutInfo outInfo)
+        public void PostPrepareCallExprInference(AstCallExpr callExpr, InInfo inInfo, ref OutInfo outInfo)
         {
             // it wants to be infered again - reset its name and allow it
             if (callExpr.OutType != null && callExpr.FuncName.Name.Contains("::"))

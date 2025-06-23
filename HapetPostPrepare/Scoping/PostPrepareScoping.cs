@@ -452,7 +452,7 @@ namespace HapetPostPrepare
             }
         }
 
-        private void PostPrepareExprScoping(AstStatement expr)
+        public void PostPrepareExprScoping(AstStatement expr)
         {
             switch (expr)
             {
@@ -674,7 +674,7 @@ namespace HapetPostPrepare
             }
         }
 
-        private void PostPrepareCallExprScoping(AstCallExpr callExpr)
+        public void PostPrepareCallExprScoping(AstCallExpr callExpr)
         {
             // usually when in the same class
             if (callExpr.TypeOrObjectName != null)

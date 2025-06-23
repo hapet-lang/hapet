@@ -4,18 +4,13 @@ using HapetFrontend.Ast.Expressions;
 
 namespace HapetPostPrepare.Entities
 {
-    internal class OutInfo
+    public class OutInfo
     {
-        public bool ItWasProperty { get; set; }
-
-        public bool ItWasIndexer { get; set; }
         public AstNestedExpr IndexedObject { get; set; }
         public AstExpression IndexedIndex { get; set; }
 
         public static OutInfo Default => new OutInfo()
         {
-            ItWasProperty = false,
-            ItWasIndexer = false,
         };
     }
 }
