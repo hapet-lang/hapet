@@ -46,6 +46,8 @@ namespace HapetLastPrepare
             _postPreparer.SetScopeAndParent(fSet, varDecl);
             _postPreparer.PostPrepareDeclScoping(fSet);
             _postPreparer.PostPrepareStatementUpToCurrentStep(fSet);
+
+            varDecl.GetSetMethodsForStatic = (fGet, fSet);
         }
     }
 }

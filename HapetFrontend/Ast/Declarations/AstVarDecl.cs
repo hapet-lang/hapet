@@ -20,6 +20,11 @@ namespace HapetFrontend.Ast.Declarations
         /// </summary>
         public bool IsPropertyField { get; set; }
 
+        /// <summary>
+        /// Handles get/set methods to access the static/const field (used only for static/const !!!)
+        /// </summary>
+        public (AstFuncDecl, AstFuncDecl)? GetSetMethodsForStatic { get; set; }
+
         public override string AAAName => nameof(AstVarDecl);
 
         public AstVarDecl(AstExpression type, AstIdExpr name, AstExpression ini = null, string doc = "", ILocation location = null) : base(name, doc, location)
