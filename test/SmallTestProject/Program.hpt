@@ -7,21 +7,8 @@ public static class Program
 {
     public static int Main(string[] args)
     {
-        var a = new Anime();
-        a.Asd = 1;
-        Test(ref a);
-        return a.Asd;
+        TestClass.ChangeTestField();
+        var a = TestClass.TestField;
+        return a;
     }
-
-    public static void Test(ref Anime a)
-    {
-        var aaa = new Anime();
-        aaa.Asd = 5;
-        a = aaa;
-    }
-}
-
-public class Anime
-{
-    public int Asd { get; set; }
 }

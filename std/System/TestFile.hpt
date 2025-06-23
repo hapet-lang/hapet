@@ -1,0 +1,11 @@
+public class TestClass
+{
+    public static int TestField;
+
+    public static void ChangeTestField()
+    {
+        TestField = 5;
+    }
+
+    
+}
