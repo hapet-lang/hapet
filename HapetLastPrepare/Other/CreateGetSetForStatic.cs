@@ -40,8 +40,12 @@ namespace HapetLastPrepare
             _postPreparer.PostPrepareDeclScoping(fGet);
             _postPreparer.PostPrepareStatementUpToCurrentStep(fGet);
 
-            AstFuncDecl fSet = new AstFuncDecl(new List<AstParamDecl>() 
-                { 
+            AstFuncDecl fSet = null;
+            // generate set func only for static - not const
+            if (varDecl.SpecialKeys.Contains(TokenType.KwStatic))
+            {
+                fSet = new AstFuncDecl(new List<AstParamDecl>()
+                {
                     new AstParamDecl(varDecl.Type.GetDeepCopy() as AstExpression, new AstIdExpr("value"))
                 },
                 new AstIdExpr("void"),
@@ -51,16 +55,17 @@ namespace HapetLastPrepare
                     new AstReturnStmt(null)
                 }), new AstIdExpr($"{varDecl.ContainingParent.Name.Name}::set_{varDecl.Name.Name}"));
 
-            fSet.SpecialKeys.Add(Lexer.CreateToken(TokenType.KwStatic, varDecl.Location.Beginning));
-            if (SpecialKeysHelper.HasSpecialKeyType(varDecl, 1, out int ind2))
-                fSet.SpecialKeys.Add(varDecl.SpecialKeys[ind2]);
-            fSet.IsImported = varDecl.IsImported;
-            fSet.IsDeclarationUsed = true;
+                fSet.SpecialKeys.Add(Lexer.CreateToken(TokenType.KwStatic, varDecl.Location.Beginning));
+                if (SpecialKeysHelper.HasSpecialKeyType(varDecl, 1, out int ind2))
+                    fSet.SpecialKeys.Add(varDecl.SpecialKeys[ind2]);
+                fSet.IsImported = varDecl.IsImported;
+                fSet.IsDeclarationUsed = true;
 
-            varDecl.ContainingParent.GetDeclarations().Add(fSet);
-            _postPreparer.SetScopeAndParent(fSet, varDecl);
-            _postPreparer.PostPrepareDeclScoping(fSet);
-            _postPreparer.PostPrepareStatementUpToCurrentStep(fSet);
+                varDecl.ContainingParent.GetDeclarations().Add(fSet);
+                _postPreparer.SetScopeAndParent(fSet, varDecl);
+                _postPreparer.PostPrepareDeclScoping(fSet);
+                _postPreparer.PostPrepareStatementUpToCurrentStep(fSet);
+            }
 
             varDecl.GetSetMethodsForStatic = (fGet, fSet);
         }

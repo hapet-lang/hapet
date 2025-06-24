@@ -13,7 +13,7 @@ namespace HapetPostPrepare
         private void PostPrepareMetadataTypes(AstStatement stmt, bool needSerialize = false)
         {
             // just skip allowed statements
-            if (stmt is AstUsingStmt)
+            if (stmt is AstUsingStmt || stmt is AstFuncDecl)
             {
                 return;
             }
