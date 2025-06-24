@@ -62,18 +62,5 @@ namespace HapetFrontend.Ast
             // TODO: other
             return null;
         }
-
-        public void SetDataFromExpr(AstExpression expr, bool outTypeAndValue = false)
-        {
-            Scope = expr.Scope;
-            if (outTypeAndValue)
-            {
-                OutType = expr.OutType;
-                OutValue = expr.OutValue;
-            }
-            Location = expr.Location;
-            SourceFile = expr.SourceFile;
-            Parent = expr.Parent;
-        }
     }
 }

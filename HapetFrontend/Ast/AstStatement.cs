@@ -84,6 +84,19 @@ namespace HapetFrontend.Ast
             }
             return null;
         }
+
+        public void SetDataFromStmt(AstStatement stmt, bool outTypeAndValue = false)
+        {
+            Scope = stmt.Scope;
+            if (outTypeAndValue && stmt is AstExpression expr && this is AstExpression thisExpr)
+            {
+                thisExpr.OutType = expr.OutType;
+                thisExpr.OutValue = expr.OutValue;
+            }
+            Location = stmt.Location;
+            SourceFile = stmt.SourceFile;
+            Parent = stmt.Parent;
+        }
         #endregion
     }
 }

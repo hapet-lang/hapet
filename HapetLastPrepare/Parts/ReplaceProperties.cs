@@ -342,9 +342,9 @@ namespace HapetLastPrepare
                         AstIdExpr propaName = target.UnrollToRightPart<AstIdExpr>();
                         // creating a call 
                         var fncVal = new AstArgumentExpr(asgn.Value, null);
-                        fncVal.SetDataFromExpr(asgn.Value);
+                        fncVal.SetDataFromStmt(asgn.Value);
                         var fncCall = new AstCallExpr(target.LeftPart, propaName.GetCopy($"set_{propaName.Name}"), new List<AstArgumentExpr>() { fncVal });
-                        fncCall.SetDataFromExpr(target);
+                        fncCall.SetDataFromStmt(target);
                         fncCall.FuncName.OutType = outInfo.Property.SetFunction.Type.OutType;
                         UpdateCallWithFunc(fncCall, outInfo.Property.SetFunction);
 
@@ -357,14 +357,14 @@ namespace HapetLastPrepare
 
                         // if getting indexer to set
                         var fncName = new AstIdExpr("set_indexer__", target);
-                        fncName.SetDataFromExpr(target);
+                        fncName.SetDataFromStmt(target);
                         // creating a call 
                         var fncArg = new AstArgumentExpr(outInfo.IndexedIndex, null);
-                        fncArg.SetDataFromExpr(asgn.Value);
+                        fncArg.SetDataFromStmt(asgn.Value);
                         var fncVal = new AstArgumentExpr(asgn.Value, null);
-                        fncVal.SetDataFromExpr(asgn.Value);
+                        fncVal.SetDataFromStmt(asgn.Value);
                         var fncCall = new AstCallExpr(outInfo.IndexedObject, fncName, new List<AstArgumentExpr>() { fncArg, fncVal });
-                        fncCall.SetDataFromExpr(target);
+                        fncCall.SetDataFromStmt(target);
                         fncCall.FuncName.OutType = outInfo.Property.SetFunction.Type.OutType;
                         UpdateCallWithFunc(fncCall, outInfo.Property.SetFunction);
 
@@ -379,9 +379,9 @@ namespace HapetLastPrepare
                         AstIdExpr varName = target.UnrollToRightPart<AstIdExpr>();
                         // creating a call 
                         var fncVal = new AstArgumentExpr(asgn.Value, null);
-                        fncVal.SetDataFromExpr(asgn.Value);
+                        fncVal.SetDataFromStmt(asgn.Value);
                         var fncCall = new AstCallExpr(target.LeftPart, varName.GetCopy($"set_{varName.Name}"), new List<AstArgumentExpr>() { fncVal });
-                        fncCall.SetDataFromExpr(target);
+                        fncCall.SetDataFromStmt(target);
                         fncCall.FuncName.OutType = gsMethods.Value.Item2.Type.OutType;
                         UpdateCallWithFunc(fncCall, gsMethods.Value.Item2);
 
@@ -483,12 +483,12 @@ namespace HapetLastPrepare
 
                     // if getting indexer to get
                     var fncName = new AstIdExpr("get_indexer__", expr);
-                    fncName.SetDataFromExpr(expr);
+                    fncName.SetDataFromStmt(expr);
                     // creating a call 
                     var fncArg = new AstArgumentExpr(outInfo.IndexedIndex, null, expr);
-                    fncArg.SetDataFromExpr(expr);
+                    fncArg.SetDataFromStmt(expr);
                     var fncCall = new AstCallExpr(outInfo.IndexedObject, fncName, new List<AstArgumentExpr>() { fncArg });
-                    fncCall.SetDataFromExpr(expr);
+                    fncCall.SetDataFromStmt(expr);
                     fncCall.FuncName.OutType = outInfo.Property.GetFunction.Type.OutType;
                     UpdateCallWithFunc(fncCall, outInfo.Property.GetFunction);
 
@@ -529,7 +529,7 @@ namespace HapetLastPrepare
                     {
                         // if getting propa to get
                         var fncCall = new AstCallExpr(expr.LeftPart, propaName.GetCopy($"get_{propaName.Name}"), null);
-                        fncCall.SetDataFromExpr(expr);
+                        fncCall.SetDataFromStmt(expr);
                         fncCall.FuncName.OutType = outInfoInside.Property.GetFunction.Type.OutType;
                         UpdateCallWithFunc(fncCall, outInfoInside.Property.GetFunction);
 
@@ -556,7 +556,7 @@ namespace HapetLastPrepare
                         var gsMethods = vd.GetSetMethodsForStatic;
                         // if getting propa to get
                         var fncCall = new AstCallExpr(expr.LeftPart, varName.GetCopy($"get_{varName.Name}"), null);
-                        fncCall.SetDataFromExpr(expr);
+                        fncCall.SetDataFromStmt(expr);
                         fncCall.FuncName.OutType = gsMethods.Value.Item1.Type.OutType;
                         UpdateCallWithFunc(fncCall, gsMethods.Value.Item1);
 
