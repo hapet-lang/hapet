@@ -1,4 +1,6 @@
-﻿using HapetBackend.Llvm;
+﻿#define PRINT_INTERMEDIATE_TIME
+
+using HapetBackend.Llvm;
 using HapetFrontend.Entities;
 using HapetFrontend;
 using System.Diagnostics;
@@ -42,6 +44,10 @@ namespace HapetCompiler.Toolchains
             projectParser.PrepareProjectFile(); // setting compiler settings from project
             if (messageHandler.HasErrors)
                 return (int)CompilerErrors.ProjectFileParseError; // proj file parsing errors
+
+#if DEBUG && PRINT_INTERMEDIATE_TIME
+            messageHandler.ReportMessage([$"{Funcad.GetPrettyTimeString(stopwatch.Elapsed)} [DEBUG] 1"], null, ReportType.Info);
+#endif
 
             // setting pointer size for the whole assembly
             HapetType.CurrentTypeContext.PointerSize = ProjectSettings.TargetPlatformData.PointerSize;
