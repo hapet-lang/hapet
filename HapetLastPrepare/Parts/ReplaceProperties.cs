@@ -28,7 +28,7 @@ namespace HapetLastPrepare
                     continue;
 
                 _postPreparer._currentParentStack.AddParent(cls);
-                _currentSourceFile = cls.SourceFile;
+                _postPreparer._currentSourceFile = cls.SourceFile;
                 LPRAPClass(cls, ref outInfo);
                 _postPreparer._currentParentStack.RemoveParent();
             }
@@ -38,7 +38,7 @@ namespace HapetLastPrepare
                     continue;
 
                 _postPreparer._currentParentStack.AddParent(str);
-                _currentSourceFile = str.SourceFile;
+                _postPreparer._currentSourceFile = str.SourceFile;
                 LPRAPStruct(str, ref outInfo);
                 _postPreparer._currentParentStack.RemoveParent();
             }
@@ -54,7 +54,7 @@ namespace HapetLastPrepare
                     _postPreparer._currentParentStack.AddParent(parent);
                 _postPreparer._currentParentStack.AddParent(del);
 
-                _currentSourceFile = del.SourceFile;
+                _postPreparer._currentSourceFile = del.SourceFile;
                 LPRAPDelegate(del, ref outInfo);
 
                 _postPreparer._currentParentStack.RemoveParent();
@@ -75,7 +75,7 @@ namespace HapetLastPrepare
                     _postPreparer._currentParentStack.AddParent(parent);
                 _postPreparer._currentParentStack.AddParent(func);
 
-                _currentSourceFile = func.SourceFile;
+                _postPreparer._currentSourceFile = func.SourceFile;
                 LPRAPFunction(func, ref outInfo);
 
                 _postPreparer._currentParentStack.RemoveParent();
@@ -312,7 +312,7 @@ namespace HapetLastPrepare
 
                 default:
                     {
-                        _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, stmt, [stmt.AAAName], ErrorCode.Get(CTEN.StmtNotImplemented));
+                        _compiler.MessageHandler.ReportMessage(_postPreparer._currentSourceFile.Text, stmt, [stmt.AAAName], ErrorCode.Get(CTEN.StmtNotImplemented));
                         break;
                     }
             }
@@ -350,10 +350,11 @@ namespace HapetLastPrepare
 
                         AstIdExpr propaName = target.UnrollToRightPart<AstIdExpr>();
                         // creating a call 
-                        var fncVal = new AstArgumentExpr(asgn.Value, null, target);
-                        var fncCall = new AstCallExpr(target.LeftPart, propaName.GetCopy($"set_{propaName.Name}"), new List<AstArgumentExpr>() { fncVal }, asgn);
-                        _postPreparer.SetScopeAndParent(fncCall, target.NormalParent, target.Scope);
-                        _postPreparer.PostPrepareCallExprScoping(fncCall);
+                        var fncVal = new AstArgumentExpr(asgn.Value, null);
+                        fncVal.SetDataFromExpr(asgn.Value);
+                        var fncCall = new AstCallExpr(target.LeftPart, propaName.GetCopy($"set_{propaName.Name}"), new List<AstArgumentExpr>() { fncVal });
+                        fncCall.SetDataFromExpr(target);
+
                         _postPreparer.PostPrepareCallExprInference(fncCall, tmpInInfo, ref tmpOutInfo);
                         repls.Add(asgn, fncCall);
                     }
@@ -495,8 +496,9 @@ namespace HapetLastPrepare
             bool CheckForProperty(AstDeclaration decl, AstIdExpr propaName, ref OutInfo outInfoInside)
             {
                 // if the ast is an access to a property
-                if (decl is AstPropertyDecl)
+                if (decl is AstPropertyDecl pd)
                 {
+                    outInfoInside.Property = pd;
                     // if getting property to set smth
                     if (outInfoInside.IsPropertySet)
                     {
@@ -548,7 +550,7 @@ namespace HapetLastPrepare
             LPRAPExpr(expr.ObjectName, ref outInfo);
             outInfo.IsPropertySet = savedPropSet;
 
-            if (expr.IndexerFuncDeclaration != null)
+            if (expr.IsIndexerAccess)
             {
                 outInfo.ItWasIndexer = true;
                 outInfo.IndexedIndex = expr.ParameterExpr;

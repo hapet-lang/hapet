@@ -11,11 +11,6 @@ namespace HapetLastPrepare
         private readonly Compiler _compiler;
         private readonly PostPrepare _postPreparer;
 
-        /// <summary>
-        /// File that is currently preparing
-        /// </summary>
-        private ProgramFile _currentSourceFile;
-
         public LastPrepare(Compiler compiler, PostPrepare postPreparer)
         {
             _compiler = compiler;
@@ -28,6 +23,10 @@ namespace HapetLastPrepare
             // because some steps won't work properly without previous
             // 0 is returned because normal error is going to be
             // returned in the caller shite
+
+            CreateRequired();
+            if (_compiler.MessageHandler.HasErrors)
+                return 0;
 
             ReplaceAllProperties();
             if (_compiler.MessageHandler.HasErrors)

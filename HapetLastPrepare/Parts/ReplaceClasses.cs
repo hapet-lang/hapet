@@ -20,28 +20,28 @@ namespace HapetLastPrepare
             {
                 if (GenericsHelper.ShouldTheDeclBeSkippedFromCodeGen(cls))
                     continue;
-                _currentSourceFile = cls.SourceFile;
+                _postPreparer._currentSourceFile = cls.SourceFile;
                 LPRACClass(cls);
             }
             foreach (var str in _postPreparer.AllStructsMetadata)
             {
                 if (GenericsHelper.ShouldTheDeclBeSkippedFromCodeGen(str))
                     continue;
-                _currentSourceFile = str.SourceFile;
+                _postPreparer._currentSourceFile = str.SourceFile;
                 LPRACStruct(str);
             }
             foreach (var del in _postPreparer.AllDelegatesMetadata)
             {
                 if (GenericsHelper.ShouldTheDeclBeSkippedFromCodeGen(del))
                     continue;
-                _currentSourceFile = del.SourceFile;
+                _postPreparer._currentSourceFile = del.SourceFile;
                 LPRACDelegate(del);
             }
             foreach (var func in _postPreparer.AllFunctionsMetadata)
             {
                 if (GenericsHelper.ShouldTheDeclBeSkippedFromCodeGen(func))
                     continue;
-                _currentSourceFile = func.SourceFile;
+                _postPreparer._currentSourceFile = func.SourceFile;
                 LPRACFunction(func);
             }
         }
@@ -162,9 +162,6 @@ namespace HapetLastPrepare
             {
                 LPRACExpr(decl.Initializer);
             }
-
-            // we need to create get/set functions for static/const fields 
-            CreateGetSetForStatic(decl);
         }
 
         public void LPRACParam(AstParamDecl decl)
@@ -301,7 +298,7 @@ namespace HapetLastPrepare
 
                 default:
                     {
-                        _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, stmt, [stmt.AAAName], ErrorCode.Get(CTEN.StmtNotImplemented));
+                        _compiler.MessageHandler.ReportMessage(_postPreparer._currentSourceFile.Text, stmt, [stmt.AAAName], ErrorCode.Get(CTEN.StmtNotImplemented));
                         break;
                     }
             }

@@ -93,10 +93,6 @@ namespace HapetPostPrepare
                 }
             }
 
-            // generate prop's fields and funcs
-            /// removing props is done in <see cref="RemoveAllProperties"/>
-            PostPrepareStructProperties(structDecl, forImported);
-
             // if not for imported - generate other shite
             if (!forImported)
             {
@@ -186,10 +182,6 @@ namespace HapetPostPrepare
                     }
                 }
             }
-
-            // generate prop's fields and funcs
-            /// removing props is done in <see cref="RemoveAllProperties"/>
-            PostPrepareClassProperties(classDecl, forImported);
 
             // if not for imported - generate other shite
             if (!forImported)
@@ -464,114 +456,7 @@ namespace HapetPostPrepare
             {
                 _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, ctors[1], [], ErrorCode.Get(CTEN.ClassStorOnlyOne));
             }
-        }
-
-        /// <summary>
-        /// Function to unwrap all the props in struct
-        /// </summary>
-        /// <param name="structDecl">The struct with props</param>
-        private void PostPrepareStructProperties(AstStructDecl structDecl, bool addFirstParam = false)
-        {
-            List<AstDeclaration> declarationsToAdd = new List<AstDeclaration>();
-            foreach (var prop in structDecl.Declarations.Where(x => x is AstPropertyDecl).Select(x => x as AstPropertyDecl))
-            {
-                declarationsToAdd.AddRange(AddPropertyShiteToDecl(structDecl, prop, addFirstParam));
-            }
-            structDecl.Declarations.AddRange(declarationsToAdd);
-        }
-
-        /// <summary>
-        /// Function to unwrap all the props
-        /// </summary>
-        /// <param name="classDecl">The class with props</param>
-        private void PostPrepareClassProperties(AstClassDecl classDecl, bool addFirstParam = false)
-        {
-            List<AstDeclaration> declarationsToAdd = new List<AstDeclaration>();
-            foreach (var prop in classDecl.Declarations.Where(x => x is AstPropertyDecl).Select(x => x as AstPropertyDecl))
-            {
-                declarationsToAdd.AddRange(AddPropertyShiteToDecl(classDecl, prop, addFirstParam));
-            }
-            classDecl.Declarations.AddRange(declarationsToAdd);
-        }
-
-        public List<AstDeclaration> AddPropertyShiteToDecl(AstDeclaration parent, AstPropertyDecl prop, bool addFirstParam = false)
-        {
-            List<AstDeclaration> declarationsToAdd = new List<AstDeclaration>();
-            bool isParentInterface = false;
-            bool isParentStruct = false;
-            List<AstDeclaration> decls = new List<AstDeclaration>();
-            if (parent is AstClassDecl clsDecl)
-            {
-                isParentInterface = clsDecl.IsInterface;
-                decls = clsDecl.Declarations;
-            }
-            else if (parent is AstStructDecl strDecl)
-            {
-                isParentStruct = true;
-                decls = strDecl.Declarations;
-            }
-
-            AstPropertyDecl orig = prop.OriginalGenericDecl as AstPropertyDecl;
-
-            if (prop.GetBlock == null && prop.SetBlock == null)
-            {
-                // need to create a field :(
-                AstVarDecl propField = prop.GetField(parent, isParentStruct);
-                // add abstract key to the field if it is an interface
-                if (isParentInterface)
-                    SpecialKeysHelper.AddSpecialKeyToDecl(propField, Lexer.CreateToken(TokenType.KwAbstract, prop.Location.Beginning), 
-                        _compiler.MessageHandler, _currentSourceFile);
-                declarationsToAdd.Add(propField);
-
-                var origField = decls.FirstOrDefault(x => x.Name.Name == $"field_{orig?.Name.Name}");
-                if (origField != null && orig != null)
-                    propField.OriginalGenericDecl = origField;
-            }
-            if (prop.HasGet)
-            {
-                // need to create a 'get' method
-                AstFuncDecl getFunc = prop.GetGetFunction(parent);
-                // add abstract key to the method if it is an interface
-                if (isParentInterface)
-                    SpecialKeysHelper.AddSpecialKeyToDecl(getFunc, Lexer.CreateToken(TokenType.KwAbstract, prop.Location.Beginning), 
-                        _compiler.MessageHandler, _currentSourceFile);
-                declarationsToAdd.Add(getFunc);
-
-                // add first param if required
-                if (addFirstParam)
-                    FuncPrepareAfterAll(getFunc, parent);
-
-                var origFunc = decls.FirstOrDefault(x => x.Name.Name.Contains($":get_{orig?.Name.Name}("));
-                if (origFunc != null && orig != null)
-                    getFunc.OriginalGenericDecl = origFunc;
-            }
-            if (prop.HasSet)
-            {
-                // need to create a 'set' method
-                AstFuncDecl setFunc = prop.GetSetFunction(parent);
-                // add abstract key to the method if it is an interface
-                if (isParentInterface)
-                    SpecialKeysHelper.AddSpecialKeyToDecl(setFunc, Lexer.CreateToken(TokenType.KwAbstract, prop.Location.Beginning), 
-                        _compiler.MessageHandler, _currentSourceFile);
-                declarationsToAdd.Add(setFunc);
-
-                // add first param if required
-                if (addFirstParam)
-                    FuncPrepareAfterAll(setFunc, parent);
-
-                var origFunc = decls.FirstOrDefault(x => x.Name.Name.Contains($":set_{orig?.Name.Name}("));
-                if (origFunc != null && orig != null)
-                    setFunc.OriginalGenericDecl = origFunc;
-            }
-
-            // abs has to not have impl
-            if (prop.SpecialKeys.Contains(TokenType.KwAbstract) &&
-                (prop.GetBlock != null || prop.SetBlock != null))
-            {
-                _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, prop.Name, [], ErrorCode.Get(CTEN.AbsPropertyWithBody));
-            }
-            return declarationsToAdd;
-        }
+        }        
 
         private AstBlockExpr GetFieldsToInitialize(AstDeclaration declB, bool forStatic)
         {
@@ -654,7 +539,7 @@ namespace HapetPostPrepare
             return new AstBlockExpr(iniBlockStatements);
         }
 
-        private void FuncPrepareAfterAll(AstDeclaration decl, AstDeclaration parentDecl)
+        public void FuncPrepareAfterAll(AstDeclaration decl, AstDeclaration parentDecl)
         {
             if (decl is not AstFuncDecl funcDecl)
             {

@@ -46,9 +46,17 @@ namespace HapetFrontend.Ast.Declarations
         /// </summary>
         public AstBlockExpr GetBlock { get; set; }
         /// <summary>
+        /// The function that was generated for 'get'
+        /// </summary>
+        public AstFuncDecl GetFunction { get; set; }
+        /// <summary>
         /// Block for 'set'. Could be null
         /// </summary>
         public AstBlockExpr SetBlock { get; set; }
+        /// <summary>
+        /// The function that was generated for 'set'
+        /// </summary>
+        public AstFuncDecl SetFunction { get; set; }
 
         public override string AAAName => nameof(AstPropertyDecl);
 
@@ -158,6 +166,8 @@ namespace HapetFrontend.Ast.Declarations
             {
                 func.Body = SetBlock;
             }
+
+            SetFunction = func;
             return func;
         }
 
@@ -189,6 +199,8 @@ namespace HapetFrontend.Ast.Declarations
             {
                 func.Body = GetBlock;
             }
+
+            GetFunction = func;
             return func;
         }
 

@@ -15,7 +15,7 @@ namespace HapetPostPrepare
         /// <summary>
         /// File that is currently preparing
         /// </summary>
-        private ProgramFile _currentSourceFile;
+        public ProgramFile _currentSourceFile;
 
         /// <summary>
         /// To handle current stack manager

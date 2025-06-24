@@ -85,36 +85,6 @@ namespace HapetPostPrepare
             // pp up to the current metadata step
             PostPrepareStatementUpToCurrentStep(realDecl);
 
-
-            // if it is a property - we need to create and inference its field/get/set
-            if (realDecl is AstPropertyDecl propDecl)
-            {
-                List<AstDeclaration> parentDecls = new List<AstDeclaration>();
-                if (propDecl.ContainingParent is AstClassDecl clsDecl)
-                    parentDecls = clsDecl.Declarations;
-                else if (propDecl.ContainingParent is AstStructDecl strDecl)
-                    parentDecls = strDecl.Declarations;
-
-                var newDecls = AddPropertyShiteToDecl(propDecl.ContainingParent, propDecl, true);
-                foreach (var newD in newDecls)
-                {
-                    newD.IsImplOfGeneric = true;
-                    newD.HasGenericTypes = realDecl.HasGenericTypes;
-                    ReplaceAllGenericTypesInDecl(newD);
-                    // replaces all System.Anime::Func(Pivo) with just Func and etc.
-                    GenericsHelper.ResetDeclarationNames(newD);
-                    // just a pp
-                    SetScopeAndParent(newD, propDecl);
-                    PostPrepareDeclScoping(newD);
-                    // pp up to the current metadata step
-                    PostPrepareStatementUpToCurrentStep(newD);
-                }
-
-                // we really need to add them :)  
-                parentDecls.AddRange(newDecls);
-                parentDecls.Add(realDecl);
-            }
-
             // no need to remove anything from the current parent stack - it would be cleared
 
             // reload previously saved shite

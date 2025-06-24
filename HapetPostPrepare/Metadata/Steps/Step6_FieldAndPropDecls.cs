@@ -56,12 +56,20 @@ namespace HapetPostPrepare
                     InternalVarPP(decl, enm.SubScope);
                 }
             }
+            else if (stmt is AstVarDecl vd)
+            {
+                // field 
+                InternalVarPP(vd, vd.ContainingParent.SubScope);
+            }
 
             void InternalVarPP(AstVarDecl decl, Scope parentSubScope)
             {
                 // p prop generics here
                 if (decl is AstPropertyDecl prop)
                     _ = PostPrepareMetadataGenerics(prop);
+
+                if (decl is AstIndexerDecl indexer)
+                    PostPrepareParamInference(indexer.IndexerParameter, inInfo, ref outInfo);
 
                 // mute all inference errors for var type of property. 
                 // if has to be errored somewhere else

@@ -28,6 +28,7 @@ namespace HapetLastPrepare
                     new AstReturnStmt(varDecl.Name.GetCopy())
                 }), new AstIdExpr($"{varDecl.ContainingParent.Name.Name}::{varDecl.Name.Name}_get"));
 
+            varDecl.ContainingParent.GetDeclarations().Add(fGet);
             _postPreparer.SetScopeAndParent(fGet, varDecl);
             _postPreparer.PostPrepareDeclScoping(fGet);
             _postPreparer.PostPrepareStatementUpToCurrentStep(fGet);
@@ -43,6 +44,7 @@ namespace HapetLastPrepare
                     new AstReturnStmt(null)
                 }), new AstIdExpr($"{varDecl.ContainingParent.Name.Name}::{varDecl.Name.Name}_set"));
 
+            varDecl.ContainingParent.GetDeclarations().Add(fSet);
             _postPreparer.SetScopeAndParent(fSet, varDecl);
             _postPreparer.PostPrepareDeclScoping(fSet);
             _postPreparer.PostPrepareStatementUpToCurrentStep(fSet);

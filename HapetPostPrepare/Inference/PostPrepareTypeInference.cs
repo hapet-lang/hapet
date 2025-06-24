@@ -935,26 +935,20 @@ namespace HapetPostPrepare
             }
             if (typeName != null)
             {
-                // getting the name but with object first param
-                AstIdExpr newName = new AstIdExpr($"{typeName}::get_indexer__({HapetType.AsString(firstParamType)}:{HapetType.AsString(arrayAccExpr.ParameterExpr.OutType)})", arrayAccExpr)
-                {
-                    Scope = arrayAccExpr.Scope,
-                    Parent = arrayAccExpr.Parent,
-                };
+                var ind = declItself.GetDeclarations().
+                    FirstOrDefault(x => 
+                    {
+                        if (x is not AstIndexerDecl ind)
+                            return false;
+                        var cstResult = new CastResult();
+                        _compiler.TryCastExpr(ind.IndexerParameter.Type.OutType, arrayAccExpr.ParameterExpr, cstResult);
+                        return cstResult.CouldBeCasted;
+                    });
 
-                List<AstArgumentExpr> argsWithStructParam = new List<AstArgumentExpr>() 
+                if (ind is AstIndexerDecl indDecl)
                 {
-                    pseudoFirstArg,
-                    new AstArgumentExpr(arrayAccExpr.ParameterExpr) { Scope = arrayAccExpr.ParameterExpr.Scope }
-                };
-                // just for better error message
-                var tmpIndexer = new AstCallExpr(null, new AstIdExpr("'indexer'", arrayAccExpr), null, arrayAccExpr);
-                var smbl = GetFuncFromCandidates(newName, tmpIndexer, argsWithStructParam, declItself, true, out var casts);
-
-                if (smbl != null && smbl.Decl is AstFuncDecl funcDecl)
-                {
-                    arrayAccExpr.OutType = funcDecl.Returns.OutType;
-                    arrayAccExpr.IndexerFuncDeclaration = funcDecl;
+                    arrayAccExpr.OutType = indDecl.Type.OutType;
+                    arrayAccExpr.IsIndexerAccess = true;
                     return; // everything is ok :)
                 }
             }

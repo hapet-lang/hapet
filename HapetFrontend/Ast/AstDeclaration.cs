@@ -149,6 +149,19 @@ namespace HapetFrontend.Ast
         }
 
         /// <summary>
+        /// Helper function that returns declarations shite for class and struct decls
+        /// </summary>
+        /// <returns>Inhertied types</returns>
+        public List<AstDeclaration> GetDeclarations()
+        {
+            if (this is AstClassDecl clsDecl)
+                return clsDecl.Declarations;
+            else if (this is AstStructDecl strDecl)
+                return strDecl.Declarations;
+            return new List<AstDeclaration>();
+        }
+
+        /// <summary>
         /// Returns all the fields (including inherited) 
         /// to properly calculate size to alloc and other cringe
         /// </summary>
