@@ -19,6 +19,8 @@ namespace HapetPostPrepare
             {
                 foreach (var decl in cls.Declarations.Where(x => x is AstFuncDecl).Select(x => x as AstFuncDecl).ToList())
                 {
+                    // set that the function is imported from another assembly
+                    decl.IsImported = isImported;
                     PPFunc(decl);
                 }
             }
@@ -26,6 +28,8 @@ namespace HapetPostPrepare
             {
                 foreach (var decl in str.Declarations.Where(x => x is AstFuncDecl).Select(x => x as AstFuncDecl).ToList())
                 {
+                    // set that the function is imported from another assembly
+                    decl.IsImported = isImported;
                     PPFunc(decl);
                 }
             }
@@ -36,6 +40,8 @@ namespace HapetPostPrepare
                 needSerialize = false;
                 foreach (var decl in gen.Declarations.Where(x => x is AstFuncDecl).Select(x => x as AstFuncDecl).ToList())
                 {
+                    // set that the function is imported from another assembly
+                    decl.IsImported = isImported;
                     PPFunc(decl);
                 }
                 needSerialize = saved;
@@ -61,9 +67,6 @@ namespace HapetPostPrepare
                 {
                     _serializeFunctionsMetadata.Add(func);
                 }
-
-                // set that the function is imported from another assembly
-                func.IsImported = isImported;
 
                 if (func.Body != null && func.Body.Statements.Count > 0)
                     // check for nested funcs - prepare them

@@ -3,6 +3,7 @@ using HapetFrontend.Ast.Declarations;
 using HapetFrontend.Ast.Expressions;
 using HapetFrontend.Ast.Statements;
 using HapetFrontend.Extensions;
+using HapetFrontend.Helpers;
 using HapetFrontend.Parsing;
 using HapetFrontend.Types;
 
@@ -26,7 +27,13 @@ namespace HapetLastPrepare
                 new AstBlockExpr(new List<AstStatement>()
                 {
                     new AstReturnStmt(varDecl.Name.GetCopy())
-                }), new AstIdExpr($"{varDecl.ContainingParent.Name.Name}::{varDecl.Name.Name}_get"));
+                }), new AstIdExpr($"{varDecl.ContainingParent.Name.Name}::get_{varDecl.Name.Name}"));
+
+            fGet.SpecialKeys.Add(Lexer.CreateToken(TokenType.KwStatic, varDecl.Location.Beginning));
+            if (SpecialKeysHelper.HasSpecialKeyType(varDecl, 1, out int ind))
+                fGet.SpecialKeys.Add(varDecl.SpecialKeys[ind]);
+            fGet.IsImported = varDecl.IsImported;
+            fGet.IsDeclarationUsed = true;
 
             varDecl.ContainingParent.GetDeclarations().Add(fGet);
             _postPreparer.SetScopeAndParent(fGet, varDecl);
@@ -42,7 +49,13 @@ namespace HapetLastPrepare
                 {
                     new AstAssignStmt(new AstNestedExpr(varDecl.Name.GetCopy(), null), new AstIdExpr("value")),
                     new AstReturnStmt(null)
-                }), new AstIdExpr($"{varDecl.ContainingParent.Name.Name}::{varDecl.Name.Name}_set"));
+                }), new AstIdExpr($"{varDecl.ContainingParent.Name.Name}::set_{varDecl.Name.Name}"));
+
+            fSet.SpecialKeys.Add(Lexer.CreateToken(TokenType.KwStatic, varDecl.Location.Beginning));
+            if (SpecialKeysHelper.HasSpecialKeyType(varDecl, 1, out int ind2))
+                fSet.SpecialKeys.Add(varDecl.SpecialKeys[ind2]);
+            fSet.IsImported = varDecl.IsImported;
+            fSet.IsDeclarationUsed = true;
 
             varDecl.ContainingParent.GetDeclarations().Add(fSet);
             _postPreparer.SetScopeAndParent(fSet, varDecl);

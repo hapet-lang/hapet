@@ -952,7 +952,6 @@ namespace HapetPostPrepare
                     return; // everything is ok :)
                 }
             }
-            
 
             if (arrayAccExpr.ParameterExpr.OutType is not IntType)
             {

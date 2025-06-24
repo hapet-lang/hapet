@@ -370,6 +370,23 @@ namespace HapetLastPrepare
 
                         repls.Add(asgn, fncCall);
                     }
+                    else if (outInfo.ItWasStaticConst)
+                    {
+                        // reset
+                        outInfo.ItWasStaticConst = false;
+
+                        var gsMethods = outInfo.VarDecl.GetSetMethodsForStatic;
+                        AstIdExpr varName = target.UnrollToRightPart<AstIdExpr>();
+                        // creating a call 
+                        var fncVal = new AstArgumentExpr(asgn.Value, null);
+                        fncVal.SetDataFromExpr(asgn.Value);
+                        var fncCall = new AstCallExpr(target.LeftPart, varName.GetCopy($"set_{varName.Name}"), new List<AstArgumentExpr>() { fncVal });
+                        fncCall.SetDataFromExpr(target);
+                        fncCall.FuncName.OutType = gsMethods.Value.Item2.Type.OutType;
+                        UpdateCallWithFunc(fncCall, gsMethods.Value.Item2);
+
+                        repls.Add(asgn, fncCall);
+                    }
                 }
                 else
                 {
@@ -488,9 +505,13 @@ namespace HapetLastPrepare
                     // if true - found set propa
                     if (CheckForProperty(typed.Decl, idExpr, ref outInfo))
                         return;
+                    // if true - found set field
+                    if (CheckForStaticConst(typed.Decl, idExpr, ref outInfo))
+                        return;
                 }
             }
             outInfo.ItWasProperty = false;
+            outInfo.ItWasStaticConst = false;
 
             bool CheckForProperty(AstDeclaration decl, AstIdExpr propaName, ref OutInfo outInfoInside)
             {
@@ -511,6 +532,33 @@ namespace HapetLastPrepare
                         fncCall.SetDataFromExpr(expr);
                         fncCall.FuncName.OutType = outInfoInside.Property.GetFunction.Type.OutType;
                         UpdateCallWithFunc(fncCall, outInfoInside.Property.GetFunction);
+
+                        expr.LeftPart = null;
+                        expr.RightPart = fncCall;
+                    }
+                }
+                return false;
+            }
+
+            bool CheckForStaticConst(AstDeclaration decl, AstIdExpr varName, ref OutInfo outInfoInside)
+            {
+                if (decl is AstVarDecl vd && (vd.SpecialKeys.Contains(TokenType.KwStatic) || vd.SpecialKeys.Contains(TokenType.KwConst)))
+                {
+                    outInfoInside.VarDecl = vd;
+                    // if getting var to set smth
+                    if (outInfoInside.IsStaticConstSet)
+                    {
+                        outInfoInside.ItWasStaticConst = true;
+                        return true;
+                    }
+                    else
+                    {
+                        var gsMethods = vd.GetSetMethodsForStatic;
+                        // if getting propa to get
+                        var fncCall = new AstCallExpr(expr.LeftPart, varName.GetCopy($"get_{varName.Name}"), null);
+                        fncCall.SetDataFromExpr(expr);
+                        fncCall.FuncName.OutType = gsMethods.Value.Item1.Type.OutType;
+                        UpdateCallWithFunc(fncCall, gsMethods.Value.Item1);
 
                         expr.LeftPart = null;
                         expr.RightPart = fncCall;
@@ -586,11 +634,14 @@ namespace HapetLastPrepare
                 // save previous
                 var saved1 = outInfo.ItWasIndexer;
                 var saved2 = outInfo.ItWasProperty;
+                var saved3 = outInfo.ItWasStaticConst;
                 outInfo.ItWasIndexer = false;
                 outInfo.ItWasProperty = false;
+                outInfo.ItWasStaticConst = false;
                 LPRAPExpr(stmt.Value, ref outInfo);
                 outInfo.ItWasIndexer = saved1;
                 outInfo.ItWasProperty = saved2;
+                outInfo.ItWasStaticConst = saved3;
             }
         }
 
