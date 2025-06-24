@@ -10,6 +10,8 @@ using HapetLastPrepare.Entities;
 using HapetPostPrepare.Other;
 using HapetPostPrepare;
 using System;
+using HapetFrontend.Parsing;
+using HapetFrontend.Extensions;
 
 namespace HapetLastPrepare
 {
@@ -108,15 +110,6 @@ namespace HapetLastPrepare
             }
             else if (decl is AstPropertyDecl propDecl)
             {
-                //if (propDecl.GetBlock != null)
-                //{
-                //    LPRAPBlockExpr(propDecl.GetBlock, ref outInfo);
-                //}
-                //if (propDecl.SetBlock != null)
-                //{
-                //    LPRAPBlockExpr(propDecl.SetBlock, ref outInfo);
-                //}
-
                 LPRAPVar(propDecl, ref outInfo);
             }
             else if (decl is AstVarDecl varDecl)
@@ -323,8 +316,6 @@ namespace HapetLastPrepare
             // list of all replacements that should be done
             // so all Propa assigns would be replaced with func calls
             Dictionary<AstAssignStmt, AstCallExpr> repls = new Dictionary<AstAssignStmt, AstCallExpr>();
-            var tmpInInfo = HapetPostPrepare.Entities.InInfo.Default;
-            var tmpOutInfo = HapetPostPrepare.Entities.OutInfo.Default;
 
             foreach (var stmt in expr.Statements)
             {
@@ -354,8 +345,9 @@ namespace HapetLastPrepare
                         fncVal.SetDataFromExpr(asgn.Value);
                         var fncCall = new AstCallExpr(target.LeftPart, propaName.GetCopy($"set_{propaName.Name}"), new List<AstArgumentExpr>() { fncVal });
                         fncCall.SetDataFromExpr(target);
+                        fncCall.FuncName.OutType = outInfo.Property.SetFunction.Type.OutType;
+                        UpdateCallWithFunc(fncCall, outInfo.Property.SetFunction);
 
-                        _postPreparer.PostPrepareCallExprInference(fncCall, tmpInInfo, ref tmpOutInfo);
                         repls.Add(asgn, fncCall);
                     }
                     else if (outInfo.ItWasIndexer)
@@ -363,15 +355,19 @@ namespace HapetLastPrepare
                         // reset
                         outInfo.ItWasIndexer = false;
 
-                        // if getting indexer to get
+                        // if getting indexer to set
                         var fncName = new AstIdExpr("set_indexer__", target);
-                        fncName.Scope = target.Scope;
-                        var fncArg = new AstArgumentExpr(outInfo.IndexedIndex, null, target);
-                        var fncVal = new AstArgumentExpr(asgn.Value, null, target);
-                        var fncCall = new AstCallExpr(outInfo.IndexedObject, fncName, new List<AstArgumentExpr>() { fncArg, fncVal }, asgn);
-                        _postPreparer.SetScopeAndParent(fncCall, target.NormalParent, target.Scope);
-                        _postPreparer.PostPrepareCallExprScoping(fncCall);
-                        _postPreparer.PostPrepareCallExprInference(fncCall, tmpInInfo, ref tmpOutInfo);
+                        fncName.SetDataFromExpr(target);
+                        // creating a call 
+                        var fncArg = new AstArgumentExpr(outInfo.IndexedIndex, null);
+                        fncArg.SetDataFromExpr(asgn.Value);
+                        var fncVal = new AstArgumentExpr(asgn.Value, null);
+                        fncVal.SetDataFromExpr(asgn.Value);
+                        var fncCall = new AstCallExpr(outInfo.IndexedObject, fncName, new List<AstArgumentExpr>() { fncArg, fncVal });
+                        fncCall.SetDataFromExpr(target);
+                        fncCall.FuncName.OutType = outInfo.Property.SetFunction.Type.OutType;
+                        UpdateCallWithFunc(fncCall, outInfo.Property.SetFunction);
+
                         repls.Add(asgn, fncCall);
                     }
                 }
@@ -427,7 +423,7 @@ namespace HapetLastPrepare
 
         private void LPRAPIdExpr(AstIdExpr expr, ref OutInfo outInfo)
         {
-            
+
         }
 
         private void LPRAPCallExpr(AstCallExpr expr, ref OutInfo outInfo)
@@ -470,14 +466,17 @@ namespace HapetLastPrepare
 
                     // if getting indexer to get
                     var fncName = new AstIdExpr("get_indexer__", expr);
-                    fncName.Scope = expr.Scope;
+                    fncName.SetDataFromExpr(expr);
+                    // creating a call 
                     var fncArg = new AstArgumentExpr(outInfo.IndexedIndex, null, expr);
-                    var fncCall = new AstCallExpr(outInfo.IndexedObject, fncName, new List<AstArgumentExpr>() { fncArg }, expr);
-                    _postPreparer.SetScopeAndParent(fncCall, expr.RightPart.NormalParent, expr.RightPart.Scope);
-                    _postPreparer.PostPrepareExprScoping(fncCall);
+                    fncArg.SetDataFromExpr(expr);
+                    var fncCall = new AstCallExpr(outInfo.IndexedObject, fncName, new List<AstArgumentExpr>() { fncArg });
+                    fncCall.SetDataFromExpr(expr);
+                    fncCall.FuncName.OutType = outInfo.Property.GetFunction.Type.OutType;
+                    UpdateCallWithFunc(fncCall, outInfo.Property.GetFunction);
+
                     expr.LeftPart = null;
                     expr.RightPart = fncCall;
-                    _postPreparer.PostPrepareCallExprInference(fncCall, tmpInInfo, ref tmpOutInfo);
                 }
             }
             else
@@ -508,11 +507,13 @@ namespace HapetLastPrepare
                     else
                     {
                         // if getting propa to get
-                        var fncCall = new AstCallExpr(expr.LeftPart, propaName.GetCopy($"get_{propaName.Name}"), null, expr);
-                        _postPreparer.SetScopeAndParent(fncCall, expr.RightPart.NormalParent, expr.RightPart.Scope);
+                        var fncCall = new AstCallExpr(expr.LeftPart, propaName.GetCopy($"get_{propaName.Name}"), null);
+                        fncCall.SetDataFromExpr(expr);
+                        fncCall.FuncName.OutType = outInfoInside.Property.GetFunction.Type.OutType;
+                        UpdateCallWithFunc(fncCall, outInfoInside.Property.GetFunction);
+
                         expr.LeftPart = null;
                         expr.RightPart = fncCall;
-                        _postPreparer.PostPrepareCallExprInference(fncCall, tmpInInfo, ref tmpOutInfo);
                     }
                 }
                 return false;
@@ -550,8 +551,9 @@ namespace HapetLastPrepare
             LPRAPExpr(expr.ObjectName, ref outInfo);
             outInfo.IsPropertySet = savedPropSet;
 
-            if (expr.IsIndexerAccess)
+            if (expr.IndexerDecl != null)
             {
+                outInfo.Property = expr.IndexerDecl;
                 outInfo.ItWasIndexer = true;
                 outInfo.IndexedIndex = expr.ParameterExpr;
                 outInfo.IndexedObject = expr.ObjectName as AstNestedExpr;
@@ -655,6 +657,16 @@ namespace HapetLastPrepare
         private void LPRAPConstrainStmt(AstConstrainStmt stmt, ref OutInfo outInfo)
         {
             // nop
+        }
+
+        private static void UpdateCallWithFunc(AstCallExpr call, AstFuncDecl decl)
+        {
+            /// same as in <see cref="PostPrepare.PostPrepareCallExprInference"/>
+
+            // checking if it is a static func
+            call.StaticCall = decl.SpecialKeys.Contains(TokenType.KwStatic);
+            // call expr type is the same as func return type
+            call.OutType = decl.Returns.OutType;
         }
     }
 }

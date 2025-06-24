@@ -16,9 +16,9 @@ namespace HapetFrontend.Ast.Expressions
         public AstExpression ParameterExpr { get; set; }
 
         /// <summary>
-        /// 'true' if the access is performed via indexer
+        /// The indexer decl is accessing via indexer
         /// </summary>
-        public bool IsIndexerAccess { get; set; }
+        public AstIndexerDecl IndexerDecl { get; set; }
 
         public override string AAAName => nameof(AstArrayAccessExpr);
 
@@ -36,7 +36,7 @@ namespace HapetFrontend.Ast.Expressions
                 Location)
             {
                 IsCompileTimeValue = IsCompileTimeValue,
-                IsIndexerAccess = IsIndexerAccess,
+                IndexerDecl = IndexerDecl,
                 OutType = OutType,
                 OutValue = OutValue,
                 Scope = Scope,

@@ -948,7 +948,7 @@ namespace HapetPostPrepare
                 if (ind is AstIndexerDecl indDecl)
                 {
                     arrayAccExpr.OutType = indDecl.Type.OutType;
-                    arrayAccExpr.IsIndexerAccess = true;
+                    arrayAccExpr.IndexerDecl = indDecl;
                     return; // everything is ok :)
                 }
             }
