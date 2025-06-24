@@ -7,8 +7,9 @@ public static class Program
 {
     public static int Main(string[] args)
     {
-        TestClass.ChangeTestField();
-        var a = TestClass.TestField;
-        return a;
+        //TestClass.ChangeTestField();
+        //var a = TestClass.TestField;
+
+        return 0;
     }
 }

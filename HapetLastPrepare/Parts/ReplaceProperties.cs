@@ -342,11 +342,7 @@ namespace HapetLastPrepare
                 {
                     LPRAPAssignStmt(asgn, ref outInfo);
 
-                    // super cringe kostyl because of IDK
                     var target = asgn.Target;
-                    if (target.LeftPart == null && target.RightPart is AstNestedExpr nst && nst.LeftPart != null)
-                        target = nst;
-
                     if (outInfo.ItWasProperty)
                     {
                         // reset
@@ -545,6 +541,13 @@ namespace HapetLastPrepare
 
         private void LPRAPArrayAccessExpr(AstArrayAccessExpr expr, ref OutInfo outInfo)
         {
+            // set propertySet to false because if we are in ArrayAccess - then ObjectName if it is property - has to be 'get_prop'
+            var savedPropSet = outInfo.IsPropertySet;
+            outInfo.IsPropertySet = false;
+            LPRAPExpr(expr.ParameterExpr, ref outInfo);
+            LPRAPExpr(expr.ObjectName, ref outInfo);
+            outInfo.IsPropertySet = savedPropSet;
+
             if (expr.IndexerFuncDeclaration != null)
             {
                 outInfo.ItWasIndexer = true;
@@ -552,12 +555,6 @@ namespace HapetLastPrepare
                 outInfo.IndexedObject = expr.ObjectName as AstNestedExpr;
                 return; // everything is ok :)
             }
-
-            // set propertySet to false because if we are in ArrayAccess - then ObjectName if it is property - has to be 'get_prop'
-            var savedPropSet = outInfo.IsPropertySet;
-            outInfo.IsPropertySet = false;
-            LPRAPExpr(expr.ParameterExpr, ref outInfo);
-            outInfo.IsPropertySet = savedPropSet;
         }
 
         private void LPRAPTernaryExpr(AstTernaryExpr expr, ref OutInfo outInfo)

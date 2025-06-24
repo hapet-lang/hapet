@@ -36,6 +36,7 @@ namespace HapetFrontend.Ast.Expressions
                 Location)
             {
                 IsCompileTimeValue = IsCompileTimeValue,
+                IndexerFuncDeclaration = IndexerFuncDeclaration,
                 OutType = OutType,
                 OutValue = OutValue,
                 Scope = Scope,
