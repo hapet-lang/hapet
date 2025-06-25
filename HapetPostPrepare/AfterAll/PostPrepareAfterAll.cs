@@ -27,7 +27,7 @@ namespace HapetPostPrepare
                         continue;
 
                     var funcDecl = decl as AstFuncDecl;
-                    if (funcDecl.Name.Name.EndsWith("Main(System.String[])") &&
+                    if (funcDecl.Name.Name == "Main" &&
                         funcDecl.Returns.OutType == HapetType.CurrentTypeContext.GetIntType(4, true) &&
                         funcDecl.Parameters.Count == 1)
                     {

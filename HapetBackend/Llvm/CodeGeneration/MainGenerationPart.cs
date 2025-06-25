@@ -301,11 +301,12 @@ namespace HapetBackend.Llvm
         private bool IsFunctionShouldBeSkipped(AstFuncDecl func) 
         {
             // special case for low level classes
-            if (func.Name.Name.StartsWith("System.Runtime.InteropServices.Marshal::") ||
-                func.Name.Name.StartsWith("System.Runtime.Conversion.") ||
-                func.Name.Name.StartsWith("System.Text.Native::") ||
-                func.Name.Name.StartsWith("System.Object::") ||
-                func.Name.Name.StartsWith("System.ValueType::"))
+            if (func.ContainingParent != null && (
+                func.ContainingParent.Name.Name.StartsWith("System.Runtime.InteropServices.Marshal") ||
+                func.ContainingParent.Name.Name.StartsWith("System.Runtime.Conversion") ||
+                func.ContainingParent.Name.Name.StartsWith("System.Text.Native") ||
+                func.ContainingParent.Name.Name.StartsWith("System.Object") ||
+                func.ContainingParent.Name.Name.StartsWith("System.ValueType")))
                 return false;
 
             // allow special funcs if the containing type is used

@@ -97,7 +97,7 @@ namespace HapetBackend.Llvm
 
             // calling proper function to create normal string array from this shite of C
             var nativeDecl = _compiler.MainFunction.Scope.GetSymbolInNamespace("System.Text", new AstIdExpr("Native"));
-            var getParamsSymbol = (nativeDecl.Decl as AstClassDecl).SubScope.GetSymbol(new AstIdExpr("System.Text.Native::GetParametersArray(int:byte**)")) as DeclSymbol;
+            var getParamsSymbol = (nativeDecl.Decl as AstClassDecl).SubScope.GetSymbol(new AstIdExpr("GetParametersArray")) as DeclSymbol;
             var getParamsFunc = _valueMap[getParamsSymbol];
             LLVMTypeRef getParamsFuncType = _typeMap[getParamsSymbol.Decl.Type.OutType];
             LLVMValueRef stringArray = _builder.BuildCall2(getParamsFuncType, getParamsFunc, mainFuncParams.ToArray(), "stringArr");
