@@ -9,7 +9,7 @@ namespace HapetPostPrepare
 {
     public partial class PostPrepare
     {
-        private void PostPrepareMetadataFunctions(AstStatement stmt, bool needSerialize = false, bool isImported = false)
+        private void PostPrepareMetadataFunctions(AstStatement stmt, bool needSerialize = false)
         {
             // just handlers
             InInfo inInfo = InInfo.Default;
@@ -19,8 +19,6 @@ namespace HapetPostPrepare
             {
                 foreach (var decl in cls.Declarations.Where(x => x is AstFuncDecl).Select(x => x as AstFuncDecl).ToList())
                 {
-                    // set that the function is imported from another assembly
-                    decl.IsImported = isImported;
                     PPFunc(decl);
                 }
             }
@@ -28,8 +26,6 @@ namespace HapetPostPrepare
             {
                 foreach (var decl in str.Declarations.Where(x => x is AstFuncDecl).Select(x => x as AstFuncDecl).ToList())
                 {
-                    // set that the function is imported from another assembly
-                    decl.IsImported = isImported;
                     PPFunc(decl);
                 }
             }
@@ -40,8 +36,6 @@ namespace HapetPostPrepare
                 needSerialize = false;
                 foreach (var decl in gen.Declarations.Where(x => x is AstFuncDecl).Select(x => x as AstFuncDecl).ToList())
                 {
-                    // set that the function is imported from another assembly
-                    decl.IsImported = isImported;
                     PPFunc(decl);
                 }
                 needSerialize = saved;
@@ -72,7 +66,7 @@ namespace HapetPostPrepare
                     // check for nested funcs - prepare them
                     foreach (var nestedFunc in func.Body.Statements.Where(x => x is AstFuncDecl).Select(x => x as AstFuncDecl).ToList())
                     {
-                        PostPrepareMetadataFunctions(nestedFunc, false, isImported);
+                        PostPrepareMetadataFunctions(nestedFunc, false);
                     }
             }
         }

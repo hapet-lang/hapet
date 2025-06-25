@@ -204,8 +204,8 @@ namespace HapetPostPrepare
                     _currentParentStack.AddParent(func.ContainingParent.ParentDecl);
                 _currentParentStack.AddParent(func.ContainingParent);
 
-                bool isImported = func.ContainingParent.IsImported;
-                PostPrepareMetadataFunctions(func, !isImported, isImported);
+                bool isImported = func.IsImported;
+                PostPrepareMetadataFunctions(func, !isImported);
 
                 _currentParentStack.RemoveParent();
                 if (func.ContainingParent.IsNestedDecl)
