@@ -302,6 +302,13 @@ namespace HapetBackend.Llvm
                 func.Name.Name.StartsWith("System.ValueType::"))
                 return false;
 
+            // allow special funcs if the containing type is used
+            if ((func.ClassFunctionType == ClassFunctionType.Ctor ||
+                func.ClassFunctionType == ClassFunctionType.Dtor ||
+                func.ClassFunctionType == ClassFunctionType.Initializer) &&
+                func.ContainingParent.IsDeclarationUsed)
+                return false;
+
             // also we need to skip here stors of generic impls
             if (func.ContainingParent != null && func.ContainingParent.IsImplOfGeneric &&
                 func.ClassFunctionType == ClassFunctionType.StaticCtor)

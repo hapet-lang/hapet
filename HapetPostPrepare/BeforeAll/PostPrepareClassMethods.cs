@@ -120,6 +120,22 @@ namespace HapetPostPrepare
                     FuncPrepareAfterAll(decl, structDecl);
                 }
             }
+            else
+            {
+                var specialFuncs = structDecl.Declarations.Where(x => x is AstFuncDecl && 
+                                                                (x.Name.Name == ($"{structDecl.Name.Name}_ini") ||
+                                                                 x.Name.Name == ($"{structDecl.Name.Name}_ctor") ||
+                                                                 x.Name.Name == ($"{structDecl.Name.Name}_stor"))); // static ctor
+                foreach (var f in specialFuncs)
+                {
+                    if (f.Name.Name.EndsWith("_ini"))
+                        (f as AstFuncDecl).ClassFunctionType = ClassFunctionType.Initializer;
+                    else if (f.Name.Name.EndsWith("_ctor"))
+                        (f as AstFuncDecl).ClassFunctionType = ClassFunctionType.Ctor;
+                    else if (f.Name.Name.EndsWith("_stor"))
+                        (f as AstFuncDecl).ClassFunctionType = ClassFunctionType.StaticCtor;
+                }
+            }
         }
 
         /// <summary>
@@ -244,7 +260,26 @@ namespace HapetPostPrepare
                 {
                     FuncPrepareAfterAll(decl, classDecl);
                 }
-            } 
+            }
+            else
+            {
+                var specialFuncs = classDecl.Declarations.Where(x => x is AstFuncDecl &&
+                                                               (x.Name.Name == ($"{classDecl.Name.Name}_ini") ||
+                                                                x.Name.Name == ($"{classDecl.Name.Name}_ctor") ||
+                                                                x.Name.Name == ($"{classDecl.Name.Name}_stor") || // static ctor
+                                                                x.Name.Name == ($"{classDecl.Name.Name}_dtor")));
+                foreach (var f in specialFuncs)
+                {
+                    if (f.Name.Name.EndsWith("_ini"))
+                        (f as AstFuncDecl).ClassFunctionType = ClassFunctionType.Initializer;
+                    else if (f.Name.Name.EndsWith("_ctor"))
+                        (f as AstFuncDecl).ClassFunctionType = ClassFunctionType.Ctor;
+                    else if (f.Name.Name.EndsWith("_stor"))
+                        (f as AstFuncDecl).ClassFunctionType = ClassFunctionType.StaticCtor;
+                    else if (f.Name.Name.EndsWith("_dtor"))
+                        (f as AstFuncDecl).ClassFunctionType = ClassFunctionType.Dtor;
+                }
+            }
         }
 
         private void PostPrepareGenerateClassInitializer(AstDeclaration decl)
