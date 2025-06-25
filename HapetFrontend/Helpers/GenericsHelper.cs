@@ -43,9 +43,7 @@ namespace HapetFrontend.Helpers
                 }
                 else if (d is AstFuncDecl f)
                 {
-                    // check if it is really infered
-                    if (f.Name.Name.Contains("::"))
-                        return f.Name.Name.GetPureFuncName();
+                    return f.Name.Name;
                 }
                 return d.Name.Name;
             }
@@ -201,6 +199,28 @@ namespace HapetFrontend.Helpers
                 decl.ContainingParent.ParentDecl.HasGenericTypes)
                 return true;
             return false;
+        }
+
+        /// <summary>
+        /// Creates SomeType[int:string] string for codegen
+        /// </summary>
+        /// <param name="name"></param>
+        /// <returns></returns>
+        public static string GetCodegenGenericName(AstIdExpr name, IMessageHandler messageHandler)
+        {
+            if (name is not AstIdGenericExpr genId)
+                return name.Name;
+
+            StringBuilder sb = new StringBuilder("[");
+            for (int i = 0; i < genId.GenericRealTypes.Count; ++i)
+            {
+                var g = genId.GenericRealTypes[i];
+                sb.Append(g.GetNested(messageHandler).TryFlatten(null, null));
+                if (i < genId.GenericRealTypes.Count - 1)
+                    sb.Append(':');
+            }
+            sb.Append(']');
+            return $"{genId.Name}{sb}";
         }
     }
 }

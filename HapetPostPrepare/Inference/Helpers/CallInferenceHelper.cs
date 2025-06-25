@@ -23,7 +23,7 @@ namespace HapetPostPrepare
             if (callExpr.OutType != null && callExpr.FuncName.Name.Contains("::"))
             {
                 var theName = callExpr.FuncName.Name;
-                var resetedName = theName.GetPureFuncName();
+                var resetedName = theName;
                 callExpr.FuncName = callExpr.FuncName.GetCopy(resetedName);
             }
 
@@ -163,7 +163,7 @@ namespace HapetPostPrepare
 
                 // if the type/object name is not presented - the function is in the same class
                 // but we need to know is it static or not
-                newName = funcName.GetCopy($"{currentParent.Name.Name}::{funcName}(");
+                newName = funcName.GetCopy();
                 var smbl2 = GetFuncFromCandidates(newName, callExpr, callExpr.Arguments, currentParent, false, out var casts);
                 smbl2 = OnFoundSymbol(smbl2, callExpr.FuncName);
                 if (smbl2 is DeclSymbol ds && ds.Decl is AstFuncDecl funcDecl)
@@ -186,7 +186,7 @@ namespace HapetPostPrepare
                 PostPrepareExprInference(callExpr.TypeOrObjectName, inInfo, ref outInfo);
 
                 // if it is a non static func defined in local class
-                newName = funcName.GetCopy($"{currentParent.Name.Name}::{funcName}(");
+                newName = funcName.GetCopy();
                 List<AstArgumentExpr> argsWithClassParam = new List<AstArgumentExpr>(callExpr.Arguments);
                 var firstParArg = new AstArgumentExpr(callExpr.TypeOrObjectName) { OutType = callExpr.TypeOrObjectName.OutType };
                 argsWithClassParam.Insert(0, firstParArg);
@@ -216,7 +216,7 @@ namespace HapetPostPrepare
                 }
 
                 // check for nested shite
-                newName = funcName.GetCopy($"{callExpr.FuncName.Name}("); // USE REAL FUNC NAME HERE
+                newName = funcName.GetCopy(); // USE REAL FUNC NAME HERE
                 smbl2 = GetFuncFromCandidates(newName, callExpr, callExpr.Arguments, currentParent, false, out var casts3);
                 smbl2 = OnFoundSymbol(smbl2, callExpr.FuncName);
                 if (smbl2 is DeclSymbol ds3 && ds3.Decl is AstFuncDecl funcDecl3)
@@ -236,7 +236,7 @@ namespace HapetPostPrepare
                 {
                     // if we are calling like 'A.Anime()' where 'A' is a class
                     // we need to rename the func name call like that:
-                    newName = funcName.GetCopy($"{clsTp.Declaration.Name.Name}::{funcName}(");
+                    newName = funcName.GetCopy();
 
                     var smbl2 = GetFuncFromCandidates(newName, callExpr, callExpr.Arguments, clsTp.Declaration, false, out var casts);
                     smbl2 = OnFoundSymbol(smbl2, callExpr.FuncName);
@@ -253,7 +253,7 @@ namespace HapetPostPrepare
                     }
 
                     // getting the name but with object first param
-                    newName = funcName.GetCopy($"{clsTp.Declaration.Name.Name}::{funcName}(");
+                    newName = funcName.GetCopy();
 
                     List<AstArgumentExpr> argsWithClassParam = new List<AstArgumentExpr>(callExpr.Arguments);
                     argsWithClassParam.Insert(0, new AstArgumentExpr(callExpr.TypeOrObjectName) { OutType = callExpr.TypeOrObjectName.OutType });
@@ -275,7 +275,7 @@ namespace HapetPostPrepare
 
                     // if we are calling like 'a.Anime()' where 'a' is an object
                     // we need to rename the func name call like that:
-                    newName = funcName.GetCopy($"{clsTp.Declaration.Name.Name}::{funcName}(");
+                    newName = funcName.GetCopy();
                     List<AstArgumentExpr> argsWithClassParam = new List<AstArgumentExpr>(callExpr.Arguments);
                     argsWithClassParam.Insert(0, new AstArgumentExpr(callExpr.TypeOrObjectName) { OutType = callExpr.TypeOrObjectName.OutType });
                     var smbl2 = GetFuncFromCandidates(newName, callExpr, argsWithClassParam, clsTp.Declaration, true, out var casts);
@@ -300,7 +300,7 @@ namespace HapetPostPrepare
                     }
 
                     // getting the name but without object first param
-                    newName = funcName.GetCopy($"{clsTp.Declaration.Name.Name}::{funcName}(");
+                    newName = funcName.GetCopy();
                     smbl2 = GetFuncFromCandidates(newName, callExpr, callExpr.Arguments, clsTp.Declaration, false, out var casts2);
                     smbl2 = OnFoundSymbol(smbl2, callExpr.FuncName);
                     if (smbl2 is DeclSymbol ds2 && ds2.Decl is AstFuncDecl funcDecl2)
@@ -321,7 +321,7 @@ namespace HapetPostPrepare
                     }
 
                     // check for generic shite
-                    newName = funcName.GetCopy($"{clsTp.Declaration.Name.Name}::{callExpr.FuncName.Name}("); // USE REAL FUNC NAME HERE
+                    newName = funcName.GetCopy(); // USE REAL FUNC NAME HERE
                     smbl2 = GetFuncFromCandidates(newName, callExpr, argsWithClassParam, clsTp.Declaration, true, out var casts3);
                     smbl2 = OnFoundSymbol(smbl2, callExpr.FuncName);
                     if (smbl2 is DeclSymbol ds3 && ds3.Decl is AstFuncDecl funcDecl3)
@@ -342,7 +342,7 @@ namespace HapetPostPrepare
             {
                 // if we are calling like 'A.Anime()' where 'A' is a struct
                 // we need to rename the func name call like that:
-                newName = funcName.GetCopy($"{structType.Declaration.Name.Name}::{funcName}(");
+                newName = funcName.GetCopy();
 
                 var smbl2 = GetFuncFromCandidates(newName, callExpr, callExpr.Arguments, structType.Declaration, false, out var casts);
                 smbl2 = OnFoundSymbol(smbl2, callExpr.FuncName);
@@ -359,7 +359,7 @@ namespace HapetPostPrepare
                 }
 
                 // getting the name but with object first param
-                newName = funcName.GetCopy($"{structType.Declaration.Name.Name}::{funcName}(");
+                newName = funcName.GetCopy();
 
                 List<AstArgumentExpr> argsWithStructParam = new List<AstArgumentExpr>(callExpr.Arguments);
                 argsWithStructParam.Insert(0, new AstArgumentExpr(callExpr.TypeOrObjectName) 
@@ -398,7 +398,7 @@ namespace HapetPostPrepare
             {
                 // if we are calling like 'T.Anime()' where 'T' is a generic type
                 // we need to rename the func name call like that:
-                newName = funcName.GetCopy($"{genericType.Declaration.Name.Name}::{funcName}(");
+                newName = funcName.GetCopy();
 
                 var smbl2 = GetFuncFromCandidates(newName, callExpr, callExpr.Arguments, genericType.Declaration, false, out var casts);
                 smbl2 = OnFoundSymbol(smbl2, callExpr.FuncName);
@@ -415,7 +415,7 @@ namespace HapetPostPrepare
                 }
 
                 // getting the name but with object first param
-                newName = funcName.GetCopy($"{genericType.Declaration.Name.Name}::{funcName}(");
+                newName = funcName.GetCopy();
 
                 List<AstArgumentExpr> argsWithStructParam = new List<AstArgumentExpr>(callExpr.Arguments);
                 var pseudoStructArg = new AstPointerExpr(callExpr.TypeOrObjectName, false, callExpr.TypeOrObjectName)

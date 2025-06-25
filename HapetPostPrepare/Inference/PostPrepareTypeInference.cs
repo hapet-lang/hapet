@@ -129,36 +129,10 @@ namespace HapetPostPrepare
                     AstIdExpr newName = funcDecl.Name.GetCopy();
                     if (funcDecl.ContainingParent is AstClassDecl || funcDecl.ContainingParent is AstStructDecl || funcDecl.ContainingParent is AstGenericDecl)
                     {
-                        // additional shite to handle explicit funcs and make them
-                        // from 'Anime::Test.Func()' into 'Anime::Namespace.Test.Func()'
-                        // so it would be easier sooner to infer some shite
-                        string explicitInterfaceName = "";
-                        string funcName = funcDecl.Name.Name;
-                        string pureName = funcName.GetPureFuncName();
-                        if (funcDecl.Name.AdditionalData != null)
-                        {
-                            // safe check - errored somewhere before
-                            if (funcDecl.Name.AdditionalData.OutType == null)
-                            {
-                                OnExit();
-                                return;
-                            }
-                            explicitInterfaceName = (funcDecl.Name.AdditionalData.OutType as ClassType).Declaration.Name.Name;
-                            explicitInterfaceName += '.';
-                        }
-
-                        // it could already contain all the shite if the func is imported from another assembly :)
-                        if (!funcDecl.Name.Name.Contains("::"))
-                            // renaming func name from 'Anime' to 'Cls::Anime(int, float)'
-                            newName = newName.GetCopy($"{funcDecl.ContainingParent.Name.Name}::{explicitInterfaceName}{pureName}{funcDecl.Parameters.GetParamsString()}");
                         scopeToDefine = funcDecl.ContainingParent.SubScope;
                     }
                     else if (funcDecl.ContainingParent is AstFuncDecl fncDeclParent)
                     {
-                        // it could already contain all the shite if the func is imported from another assembly :)
-                        if (!funcDecl.Name.Name.Contains("::"))
-                            // renaming func name from 'Anime' to 'Anime(int, float)'
-                            newName = newName.GetCopy($"{funcDecl.Name.Name}{funcDecl.Parameters.GetParamsString()}");
                         scopeToDefine = fncDeclParent.Body.SubScope;
                     }
                     else

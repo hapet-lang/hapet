@@ -55,14 +55,19 @@ namespace HapetPostPrepare
             else
             {
                 var typeAst = targetType;
-                genTypes = new List<AstExpression>()
+                var nst = new AstNestedExpr(typeAst, null, subExpr)
                 {
-                    new AstNestedExpr(typeAst, null, subExpr)
-                    {
-                        Scope = subExpr.Scope,
-                        SourceFile = subExpr.SourceFile,
-                    }
+                    Scope = subExpr.Scope,
+                    SourceFile = subExpr.SourceFile,
                 };
+                if (typeAst is AstNestedExpr nstTarget)
+                {
+                    // fix nested if target is also nested
+                    nst.RightPart = nstTarget.RightPart;
+                    nst.LeftPart = nstTarget.LeftPart;
+                }
+
+                genTypes = new List<AstExpression>() { nst };
             }
                 
             var idExpr = new AstIdGenericExpr("System.Array", genTypes, subExpr) 

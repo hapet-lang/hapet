@@ -110,5 +110,13 @@ namespace HapetFrontend.Ast.Expressions
                 return default;
             }
         }
+
+        public void AddToTheEnd(AstNestedExpr newNst)
+        {
+            if (LeftPart == null)
+                LeftPart = newNst;
+            else
+                LeftPart.AddToTheEnd(newNst);
+        }
     }
 }

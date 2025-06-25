@@ -116,7 +116,7 @@ namespace HapetPostPrepare
                                 {
                                     // the method is implemented in parent class and current class
                                     // we need to error
-                                    _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, currF,
+                                    _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, currF.Name,
                                         [HapetType.AsString(definedInOneOfTheParents.ContainingParent.Type.OutType)], ErrorCode.Get(CTEN.MethodAlreadyDefined));
                                     continue;
                                 }

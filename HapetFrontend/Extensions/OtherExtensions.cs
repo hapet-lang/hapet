@@ -148,10 +148,12 @@ namespace HapetFrontend.Extensions
             {
                 // there is already params type in name like
                 // TestClass::AnimeFunc(int:PivoCls)
-                searchName = searchFunc.Name.Name.GetPureFuncName();
+                searchName = searchFunc.Name.Name;
                 for (int i = 0; i < delcs.Count; ++i)
                 {
                     var x = delcs[i];
+                    if (x.Name.AdditionalData != null)
+                        continue;
 
                     // return if the same
                     if (x == searchFunc)
@@ -160,7 +162,7 @@ namespace HapetFrontend.Extensions
                         return x;
                     }
 
-                    string currName = x.Name.Name.GetPureFuncName();
+                    string currName = x.Name.Name;
                     if (currName != searchName)
                         continue;
 
@@ -197,19 +199,16 @@ namespace HapetFrontend.Extensions
 
             // additional search for explicit declarations!!!
             // if any of them are like 'Namespace.BaseCls::Intrf.Func(...);'
-            searchName = searchFunc.Name.Name.GetPureFuncName();
             string interfaceSearchName = "";
             if (searchFunc.Name.AdditionalData != null)
                 interfaceSearchName = (searchFunc.Name.AdditionalData.OutType as ClassType).Declaration.Name.Name;
-            string pureSearchName = searchName.GetClassNameWithoutNamespace();
             for (int i = 0; i < delcs.Count; ++i)
             {
                 var x = delcs[i];
-                string currName = x.Name.Name.GetPureFuncName();
+                string currName = x.Name.Name;
                 string interfaceName = "";
                 if (x.Name.AdditionalData != null)
                     interfaceName = (x.Name.AdditionalData.OutType as ClassType).Declaration.Name.Name;
-                string pureName = currName.GetClassNameWithoutNamespace();
 
                 List<HapetType> typesD = x.Parameters.Select(x => x.Type?.OutType).ToList();
                 if (skipFirst)
@@ -221,8 +220,8 @@ namespace HapetFrontend.Extensions
                 bool areNamesEqual = false;
                 if (string.IsNullOrWhiteSpace(interfaceSearchName) && !string.IsNullOrWhiteSpace(interfaceName))
                 {
-                    string parentSearch = searchFunc.Name.Name.GetClassNameFromFuncName();
-                    if (parentSearch == interfaceName && pureName == pureSearchName)
+                    string parentSearch = searchFunc.ContainingParent.Name.Name;
+                    if (parentSearch == interfaceName && currName == searchName)
                         areNamesEqual = true;
                     else
                     {
@@ -232,14 +231,14 @@ namespace HapetFrontend.Extensions
                         // so we need to check this inheritance and allow it
                         var theExplicitDecl = x.Name.AdditionalData.OutType;
                         bool isInherited = theExplicitDecl.IsInheritedFrom(searchFunc.ContainingParent.Type.OutType as ClassType);
-                        if (isInherited && pureName == pureSearchName)
+                        if (isInherited && currName == searchName)
                             areNamesEqual = true;
                     }
                 }
                 else if (!string.IsNullOrWhiteSpace(interfaceSearchName) && string.IsNullOrWhiteSpace(interfaceName))
                 {
-                    string parentSearch = x.Name.Name.GetClassNameFromFuncName();
-                    if (parentSearch == interfaceSearchName && pureName == pureSearchName)
+                    string parentSearch = x.ContainingParent.Name.Name;
+                    if (parentSearch == interfaceSearchName && currName == searchName)
                         areNamesEqual = true;
                 }
                 if (!areNamesEqual)

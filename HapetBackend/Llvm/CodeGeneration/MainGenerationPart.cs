@@ -53,13 +53,19 @@ namespace HapetBackend.Llvm
         {
             _currentFunction = funcDecl;
 
-            funcType ??= HapetTypeToLLVMType(funcDecl.Type.OutType);
-
-            string funcName = funcDecl.Name.Name;
+            funcType ??= HapetTypeToLLVMType(funcDecl.Type.OutType);            
 
             // if it is for metadata - only 'declares' would be generated that would be replaced with 'defines' in the future
             if (forMetadata)
             {
+                // making cool func name 
+                string funcName = GenericsHelper.GetCodegenGenericName(funcDecl.Name, _messageHandler);
+                if (funcDecl.ContainingParent != null)
+                {
+                    string clsName = GenericsHelper.GetCodegenGenericName(funcDecl.ContainingParent.Name, _messageHandler);
+                    funcName = $"{clsName}::{funcName}";
+                }
+
                 // declaring global func
                 LLVMValueRef lfunc = _module.AddFunction(funcName, funcType.Value);
 

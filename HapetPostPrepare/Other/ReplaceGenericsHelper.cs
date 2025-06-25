@@ -5,6 +5,7 @@ using HapetFrontend.Ast.Statements;
 using HapetFrontend.Errors;
 using HapetFrontend.Extensions;
 using HapetFrontend.Helpers;
+using HapetFrontend.Types;
 using HapetPostPrepare.Entities;
 
 namespace HapetPostPrepare
@@ -497,7 +498,13 @@ namespace HapetPostPrepare
         private void ReplaceAllGenericTypesInNestedExpr(AstNestedExpr nestExpr)
         {
             if (IsGenericEntry(nestExpr.RightPart, out var val))
-                nestExpr.RightPart = val;
+            {
+                // we need to make replaces more carefully
+                var savedLeft = nestExpr.LeftPart;
+                nestExpr.RightPart = val.RightPart;
+                nestExpr.LeftPart = val.LeftPart.GetDeepCopy() as AstNestedExpr;
+                nestExpr.LeftPart?.AddToTheEnd(savedLeft);
+            }
             else
                 ReplaceAllGenericTypesInExpr(nestExpr.RightPart);
 

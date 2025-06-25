@@ -287,7 +287,7 @@ namespace HapetPostPrepare
                 AntiParseExpr(callExpr.TypeOrObjectName, sb, offset);
                 sb.Append('.');
             }
-            var fncName = callExpr.FuncName.GetCopy(callExpr.FuncName.Name.GetPureFuncName());
+            var fncName = callExpr.FuncName.GetCopy();
             sb.Append(GetNameFromAst(fncName, _compiler.MessageHandler));
             sb.Append('(');
             for (int i = 0; i < callExpr.Arguments.Count; ++i)

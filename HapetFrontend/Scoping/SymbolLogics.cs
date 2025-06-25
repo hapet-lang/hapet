@@ -249,9 +249,9 @@ namespace HapetFrontend.Scoping
 
                 // 1 - name similarity checks - DO NOT ALLOW GENERICS HERE 
                 // generic checks are below
-                var onlyFuncName = classWithFuncName.Name.GetPureFuncName();
-                var firstKeyPart = k.Name.GetPureFuncName();
-                if ((k.Name.StartsWith(classWithFuncName.Name) || firstKeyPart == onlyFuncName)
+                var onlyFuncName = classWithFuncName.Name;
+                var firstKeyPart = k.Name;
+                if ((firstKeyPart == onlyFuncName)
                     && (decl.Decl.Name is not AstIdGenericExpr && classWithFuncName is not AstIdGenericExpr))
                 {
                     // add static func if not callFromObject and add non-static if callFromObject
@@ -284,8 +284,8 @@ namespace HapetFrontend.Scoping
                 /// the same as in <see cref="OtherExtensions.GetSameByNameAndTypes(List{AstFuncDecl}, AstFuncDecl, out int, bool)"/>
                 if (decl.Decl.Name.AdditionalData != null)
                 {
-                    string pureSearchName = onlyFuncName.GetClassNameWithoutNamespace();
-                    string pureName = firstKeyPart.GetClassNameWithoutNamespace();
+                    string pureSearchName = onlyFuncName;
+                    string pureName = firstKeyPart;
                     if (pureName == pureSearchName)
                     {
                         // add static func if not callFromObject and add non-static if callFromObject

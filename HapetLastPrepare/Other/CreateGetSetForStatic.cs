@@ -27,7 +27,7 @@ namespace HapetLastPrepare
                 new AstBlockExpr(new List<AstStatement>()
                 {
                     new AstReturnStmt(varDecl.Name.GetCopy())
-                }), new AstIdExpr($"{varDecl.ContainingParent.Name.Name}::get_{varDecl.Name.Name}"));
+                }), new AstIdExpr($"get_{varDecl.Name.Name}"));
 
             fGet.SpecialKeys.Add(Lexer.CreateToken(TokenType.KwStatic, varDecl.Location.Beginning));
             if (SpecialKeysHelper.HasSpecialKeyType(varDecl, 1, out int ind))
@@ -53,7 +53,7 @@ namespace HapetLastPrepare
                 {
                     new AstAssignStmt(new AstNestedExpr(varDecl.Name.GetCopy(), null), new AstIdExpr("value")),
                     new AstReturnStmt(null)
-                }), new AstIdExpr($"{varDecl.ContainingParent.Name.Name}::set_{varDecl.Name.Name}"));
+                }), new AstIdExpr($"set_{varDecl.Name.Name}"));
 
                 fSet.SpecialKeys.Add(Lexer.CreateToken(TokenType.KwStatic, varDecl.Location.Beginning));
                 if (SpecialKeysHelper.HasSpecialKeyType(varDecl, 1, out int ind2))

@@ -253,7 +253,7 @@ namespace HapetPostPrepare
                 AntiParseExpr(decl.Name.AdditionalData, sb, additionalOffset);
                 sb.Append('.');
             }
-            AntiParseExpr(decl.Name.GetCopy(decl.Name.Name.GetPureFuncName(keepExplicitData: false)), sb, additionalOffset);
+            AntiParseExpr(decl.Name.GetCopy(decl.Name.Name), sb, additionalOffset);
 
             sb.Append('(');
             for (int i = 0; i < decl.Parameters.Count; ++i)

@@ -136,7 +136,7 @@ namespace HapetPostPrepare
                 copied.ContainingParent = decl;
                 // reset name
                 if (copied is AstFuncDecl func1)
-                    func1.Name = func1.Name.GetCopy(func1.Name.Name.GetPureFuncName());
+                    func1.Name = func1.Name.GetCopy();
 
                 // we should make all the decls abstract
                 SpecialKeysHelper.ReplaceSpecialKeysByTypes(copied, new List<Token>() { Lexer.CreateToken(TokenType.KwAbstract, copied.Location.Beginning) });

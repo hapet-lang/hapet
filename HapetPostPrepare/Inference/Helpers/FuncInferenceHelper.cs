@@ -585,7 +585,7 @@ namespace HapetPostPrepare
                 // skip delegates
                 if (funcDecl == null)
                     continue;
-                var onlyFuncName = funcDecl.Name.Name.GetPureFuncName();
+                var onlyFuncName = funcDecl.Name.Name;
 
                 // skip non explicit
                 if (funcDecl.Name.AdditionalData == null)
@@ -599,14 +599,14 @@ namespace HapetPostPrepare
 
                 // search if there funcs from interfaces - remove them also
                 string pureSearchParent = (funcDecl.Name.AdditionalData.OutType as ClassType).Declaration.Name.Name;
-                string pureSearchName = onlyFuncName.GetClassNameWithoutNamespace();
+                string pureSearchName = onlyFuncName;
                 foreach (var dIn in declsCopied)
                 {
                     var funcDeclIn = dIn.Decl as AstFuncDecl;
                     // skip delegates
                     if (funcDeclIn == null)
                         continue;
-                    if (funcDeclIn.Name.Name.StartsWith($"{pureSearchParent}::{pureSearchName}("))
+                    if (funcDeclIn.Name.Name == pureSearchName)
                         decls.Remove(dIn);
                 }
             }

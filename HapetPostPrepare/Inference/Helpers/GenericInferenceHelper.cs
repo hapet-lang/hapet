@@ -34,11 +34,6 @@ namespace HapetPostPrepare
             string origDeclPureName = decl.Name.Name;
             if (decl is AstFuncDecl funcDecl)
             {
-                if (funcDecl.Name.Name.Contains("::"))
-                    origDeclPureName = funcDecl.Name.Name.GetPureFuncName();
-                else
-                    origDeclPureName = funcDecl.Name.Name;
-
                 // we also need to add containing parent to stack
                 var parent = funcDecl.ContainingParent;
                 if (parent.IsNestedDecl)
