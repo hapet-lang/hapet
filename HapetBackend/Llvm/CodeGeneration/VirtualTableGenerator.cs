@@ -24,12 +24,12 @@ namespace HapetBackend.Llvm
             if (type is ClassType clsType)
             {
                 parent = clsType.Declaration.InheritedFrom.FirstOrDefault(x => x.OutType is ClassType clss && !clss.Declaration.IsInterface)?.OutType as ClassType;
-                typeNameString = clsType.Declaration.Name.Name;
+                typeNameString = GenericsHelper.GetCodegenGenericName(clsType.Declaration.Name, _messageHandler);
             }
             else if (type is StructType strType)
             {
                 parent = strType.Declaration.InheritedFrom.FirstOrDefault(x => x.OutType is ClassType clss && !clss.Declaration.IsInterface)?.OutType as ClassType;
-                typeNameString = strType.Declaration.Name.Name;
+                typeNameString = GenericsHelper.GetCodegenGenericName(strType.Declaration.Name, _messageHandler);
             }
             else
             {
@@ -80,12 +80,12 @@ namespace HapetBackend.Llvm
             if (type is ClassType classType)
             {
                 allVirtualMethods = classType.Declaration.AllVirtualMethods;
-                typeNameString = classType.Declaration.Name.Name;
+                typeNameString = GenericsHelper.GetCodegenGenericName(classType.Declaration.Name, _messageHandler);
             }
             else if (type is StructType structType)
             {
                 allVirtualMethods = structType.Declaration.AllVirtualMethods;
-                typeNameString = structType.Declaration.Name.Name;
+                typeNameString = GenericsHelper.GetCodegenGenericName(structType.Declaration.Name, _messageHandler);
             }
             else
             {
