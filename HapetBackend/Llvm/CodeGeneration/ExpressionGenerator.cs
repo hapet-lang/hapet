@@ -849,7 +849,7 @@ namespace HapetBackend.Llvm
                     // need to declare it at first
                     var funcType = LLVMTypeRef.CreateFunction(_context.VoidType, [], false);
                     // declaring external global func
-                    var funcValue = _module.AddFunction(expr.FuncName.Name, funcType);
+                    var funcValue = _module.AddFunction($"{expr.FuncName.Name}()", funcType);
                     funcValue.Linkage = LLVMLinkage.LLVMExternalLinkage;
                     funcValue.DLLStorageClass = LLVMDLLStorageClass.LLVMDLLImportStorageClass;
 

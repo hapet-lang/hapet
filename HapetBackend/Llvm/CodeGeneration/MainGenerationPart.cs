@@ -59,7 +59,7 @@ namespace HapetBackend.Llvm
             if (forMetadata)
             {
                 // making cool func name 
-                string funcName = GenericsHelper.GetCodegenGenericName(funcDecl.Name, _messageHandler);
+                string funcName = $"{GenericsHelper.GetCodegenGenericName(funcDecl.Name, _messageHandler)}{funcDecl.Parameters.GetParamsString()}";
                 if (funcDecl.ContainingParent != null)
                 {
                     string clsName = GenericsHelper.GetCodegenGenericName(funcDecl.ContainingParent.Name, _messageHandler);
