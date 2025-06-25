@@ -122,6 +122,7 @@ namespace HapetFrontend.Ast.Declarations
             };
             field.Attributes.AddRange(Attributes);
             field.IsPropertyField = true;
+            field.IsImported = IsImported;
 
             // no special keys for struct
             if (!forStruct)
@@ -217,6 +218,7 @@ namespace HapetFrontend.Ast.Declarations
             func.ContainingParent = containingParent; // it has to be
             func.IsPropertyFunction = true;
             func.SourceFile = SourceFile;
+            func.IsImported = IsImported;
 
             // add specific special keys
             if (isGet)
