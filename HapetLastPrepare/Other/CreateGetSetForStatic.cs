@@ -34,6 +34,7 @@ namespace HapetLastPrepare
                 fGet.SpecialKeys.Add(varDecl.SpecialKeys[ind]);
             fGet.IsImported = varDecl.IsImported;
             fGet.IsDeclarationUsed = true;
+            fGet.ContainingParent = varDecl.ContainingParent;
 
             varDecl.ContainingParent.GetDeclarations().Add(fGet);
             _postPreparer.SetScopeAndParent(fGet, varDecl);
@@ -60,6 +61,7 @@ namespace HapetLastPrepare
                     fSet.SpecialKeys.Add(varDecl.SpecialKeys[ind2]);
                 fSet.IsImported = varDecl.IsImported;
                 fSet.IsDeclarationUsed = true;
+                fSet.ContainingParent = varDecl.ContainingParent;
 
                 varDecl.ContainingParent.GetDeclarations().Add(fSet);
                 _postPreparer.SetScopeAndParent(fSet, varDecl);
