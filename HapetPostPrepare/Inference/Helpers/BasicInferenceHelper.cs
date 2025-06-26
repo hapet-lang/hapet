@@ -18,6 +18,11 @@ namespace HapetPostPrepare
                 decl.Type.OutType = HapetType.CurrentTypeContext.ObjectTypeInstance;
                 HapetType.CurrentTypeContext.ObjectTypeInstance.Declaration = decl as AstClassDecl;
             }
+            else if (typeName.Name == "System.Delegate")
+            {
+                decl.Type.OutType = HapetType.CurrentTypeContext.DelegateTypeInstance;
+                HapetType.CurrentTypeContext.DelegateTypeInstance.Declaration = decl as AstClassDecl;
+            }
             else if (typeName.Name == "System.String")
             {
                 _compiler.GlobalScope.DefineDeclSymbol(typeName.GetCopy("string"), decl);

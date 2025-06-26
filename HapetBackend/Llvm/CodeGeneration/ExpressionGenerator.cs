@@ -805,7 +805,7 @@ namespace HapetBackend.Llvm
             else if (expr.FuncName.OutType is DelegateType delType)
             {
                 var hapetDelegate = GenerateIdExpr(expr.FuncName, true);
-                LLVMTypeRef delegateType = _typeMap[expr.FuncName.OutType];
+                LLVMTypeRef delegateType = _delegateAnonTypes[delType.ToCringeString()];
 
                 LLVMValueRef varPtr = default;
                 if (delType.TargetDeclaration.Returns.OutType is not VoidType)
