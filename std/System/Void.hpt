@@ -1,4 +1,4 @@
-/// This class represents the void return type
+[SuppressStaticCtorCall]
 public struct Void
 {
 }

@@ -1,3 +1,6 @@
+using System;
+
+[SuppressStaticCtorCall]
 public struct Double : IComparable, IComparable<double>
 {
     private double _value;

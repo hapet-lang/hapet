@@ -1,11 +1,11 @@
 using System;
 
-[SuppressStaticCtorCallAttribute]
+[SuppressStaticCtorCall]
 public sealed class DllImportAttribute : Attribute
 {
-    [RequiredAttribute]
+    [Required]
     public string DllName;
-    [RequiredAttribute]
+    [Required]
     public string EntryPoint;
 
     public DllImportAttribute()

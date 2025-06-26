@@ -1,5 +1,7 @@
+using System;
 using System.Runtime;
 
+[SuppressStaticCtorCall]
 public static class VtableHelper
 {
     public static void* GetMethodByIndex(void* obj, int index)

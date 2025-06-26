@@ -1,3 +1,4 @@
+[SuppressStaticCtorCall]
 public class Object
 {
     public void GetType()

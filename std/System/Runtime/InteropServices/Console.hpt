@@ -1,8 +1,8 @@
 using System;
 
-[SuppressStaticCtorCallAttribute]
+[SuppressStaticCtorCall]
 public static class Console
 {
-    [DllImportAttribute("", "puts")]
+    [DllImport("", "puts")]
     public static extern int Puts(byte* data);
 }

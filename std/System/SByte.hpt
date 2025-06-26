@@ -1,3 +1,4 @@
+[SuppressStaticCtorCall]
 public struct SByte : IComparable, IComparable<sbyte>
 {
     private sbyte _value;

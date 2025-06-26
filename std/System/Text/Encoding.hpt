@@ -1,6 +1,6 @@
 using System;
 
-[SuppressStaticCtorCallAttribute]
+[SuppressStaticCtorCall]
 public class Encoding
 {
     public static int GetByteCount(byte* chars)

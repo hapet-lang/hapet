@@ -1,8 +1,8 @@
 /// Marks program elements that are no longer in use.
-[SuppressStaticCtorCallAttribute]
+[SuppressStaticCtorCall]
 public class ObsoleteAttribute : Attribute
 {
-    [RequiredAttribute]
+    [Required]
     public string Message;
     public bool IsError;
 

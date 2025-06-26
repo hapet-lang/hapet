@@ -1,17 +1,17 @@
 using System;
 
-[SuppressStaticCtorCallAttribute]
+[SuppressStaticCtorCall]
 public static class Marshal
 {
-    [DllImportAttribute("", "malloc")]
+    [DllImport("", "malloc")]
     public static extern void* Malloc(int size);
 
-    [DllImportAttribute("", "free")]
+    [DllImport("", "free")]
     public static extern void Free(void* ptr);
 
-    [DllImportAttribute("", "memset")]
+    [DllImport("", "memset")]
     public static extern void* Memset(void* memptr, int val, uintptr num);
 
-    [DllImportAttribute("", "memcmp")]
+    [DllImport("", "memcmp")]
     public static extern int Memcmp(void* memptr1, void* memptr2, uintptr num);
 }

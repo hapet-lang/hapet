@@ -1,4 +1,5 @@
 // Base interface for all synchronizable shite
+[SuppressStaticCtorCall]
 public interface ISynchronizable
 {
     // SyncRoot will return an Object to use for synchronization

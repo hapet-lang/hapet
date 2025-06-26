@@ -1,3 +1,4 @@
+[SuppressStaticCtorCall]
 public interface ICloneable
 {
     object Clone();

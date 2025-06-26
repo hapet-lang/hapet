@@ -1,7 +1,7 @@
 // Custom attribute to indicate that the field
 // of another attribute has to be set.
 // Could be also used in other purposes
-[SuppressStaticCtorCallAttribute]
+[SuppressStaticCtorCall]
 public class RequiredAttribute : Attribute
 {
     public RequiredAttribute()

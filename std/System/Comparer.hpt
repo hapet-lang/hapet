@@ -1,6 +1,9 @@
+using System;
+
 /// <summary>
 /// Compares two objects for equivalence, where string comparisons are case-sensitive.
 /// </summary>
+[SuppressStaticCtorCall]
 public class Comparer : IComparer
 {
     public static Comparer Default()

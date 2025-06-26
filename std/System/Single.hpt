@@ -1,3 +1,4 @@
+[SuppressStaticCtorCall]
 public struct Single : IComparable, IComparable<float>
 {
     private float _value;

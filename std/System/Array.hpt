@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 
@@ -46,6 +47,7 @@ public static class Array
     }
 }
 
+[SuppressStaticCtorCall]
 public struct Array<T> : IList<T>
 {
     public int Length { get; internal set; }
@@ -170,6 +172,7 @@ public struct Array<T> : IList<T>
     public bool IsFixedSize { get { return true; } }
 }
 
+[SuppressStaticCtorCall]
 internal sealed class ArrayEnumerator<T> : IEnumerator<T>, ICloneable
 {
     private Array<T> _array;

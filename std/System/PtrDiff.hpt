@@ -1,3 +1,4 @@
+[SuppressStaticCtorCall]
 public struct PtrDiff : IComparable, IComparable<ptrdiff>
 {
     private ptrdiff _value;

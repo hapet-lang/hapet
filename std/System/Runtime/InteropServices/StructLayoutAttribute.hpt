@@ -1,9 +1,9 @@
 using System;
 
-[SuppressStaticCtorCallAttribute]
+[SuppressStaticCtorCall]
 public sealed class StructLayoutAttribute : Attribute
 {
-    [RequiredAttribute]
+    [Required]
     public int Pack;
 
     public StructLayoutAttribute()

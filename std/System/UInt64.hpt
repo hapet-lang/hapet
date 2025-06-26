@@ -1,3 +1,4 @@
+[SuppressStaticCtorCall]
 public struct UInt64 : IComparable, IComparable<ulong>
 {
     private ulong _value;

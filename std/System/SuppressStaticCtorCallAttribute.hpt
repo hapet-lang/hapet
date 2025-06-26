@@ -2,7 +2,7 @@
 // static ctor won't be called.
 // Use the attribute if the class doesn't 
 // have any static shite.
-[SuppressStaticCtorCallAttribute]
+[SuppressStaticCtorCall]
 public class SuppressStaticCtorCallAttribute : Attribute
 {
 }

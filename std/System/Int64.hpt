@@ -1,3 +1,4 @@
+[SuppressStaticCtorCall]
 public struct Int64 : IComparable, IComparable<long>
 {
     private long _value;

@@ -1,3 +1,6 @@
+using System;
+
+[SuppressStaticCtorCall]
 public struct VirtualTableUnsafe
 {
     VirtualTableUnsafe* Parent;

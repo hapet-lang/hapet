@@ -1,3 +1,4 @@
+[SuppressStaticCtorCall]
 public abstract class ValueType
 {
     public override bool Equals(object obj)

@@ -1,3 +1,6 @@
+using System;
+
+[SuppressStaticCtorCall]
 public struct Byte : IComparable, IComparable<byte>
 {
     private byte _value;

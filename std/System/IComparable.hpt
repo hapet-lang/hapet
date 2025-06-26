@@ -1,13 +1,9 @@
-// Licensed to the .NET Foundation under one or more agreements.
-// The .NET Foundation licenses this file to you under the MIT license.
-
-namespace System;
-
 // The IComparable interface is implemented by classes that support an
 // ordering of instances of the class. The ordering represented by
 // IComparable can be used to sort arrays and collections of objects
 // that implement the interface.
 //
+[SuppressStaticCtorCall]
 public interface IComparable
 {
     // Interface does not need to be marked with the serializable attribute
@@ -41,6 +37,7 @@ public interface IComparable
 
 // Generic version of IComparable.
 
+[SuppressStaticCtorCall]
 public interface IComparable<T>
 {
     // Interface does not need to be marked with the serializable attribute

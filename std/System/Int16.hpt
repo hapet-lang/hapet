@@ -1,3 +1,4 @@
+[SuppressStaticCtorCall]
 public struct Int16 : IComparable, IComparable<short>
 {
     private short _value;

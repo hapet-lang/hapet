@@ -1,4 +1,7 @@
+using System;
+
 /// Utility methods for intrinsic bit-twiddling operations.
+[SuppressStaticCtorCall]
 public static class BitOperations
 {
     /// Rotates the specified value left by the specified number of bits.

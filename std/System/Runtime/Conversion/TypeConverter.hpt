@@ -1,5 +1,7 @@
+using System;
 using System.Runtime;
 
+[SuppressStaticCtorCall]
 public static class TypeConverter
 {
     public static bool CanBeDowncasted(void* obj, TypeInfoUnsafe* type)
