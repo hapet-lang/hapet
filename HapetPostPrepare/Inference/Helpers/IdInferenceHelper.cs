@@ -317,6 +317,7 @@ namespace HapetPostPrepare
 
             HandleBasicTypes(typed.Decl, idExpr);
             TryAssignConstValueToExpr(idExpr, typed.Decl, inInfo, ref outInfo2);
+            CheckForObsoleteAttr(typed.Decl, idExpr);
             idExpr.FindSymbol = typed;
 
             // set that it is used 
@@ -343,6 +344,28 @@ namespace HapetPostPrepare
                     PostPrepareExprInference(varDecl.Initializer, inInfo, ref outInfo);
                 }
                 expr.OutValue = varDecl.Initializer.OutValue;
+            }
+        }
+
+        private void CheckForObsoleteAttr(AstDeclaration decl, AstIdExpr idExpr) 
+        {
+            if (decl.Attributes.Count == 0)
+                return;
+            var obs = decl.Attributes.FirstOrDefault(x => x.AttributeName.OutType is ClassType clsT && clsT.Declaration.Name.Name == "System.ObsoleteAttribute");
+            if (obs == null)
+                return;
+
+            // if it is a warning
+            if (obs.Arguments.Count == 1 || (obs.Arguments[1].OutValue is bool b && b == false))
+            {
+                _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, idExpr,
+                    [decl.Name.Name, (string)obs.Arguments[0].OutValue], ErrorCode.Get(CTWN.DeclIsObsolete), 
+                    reportType: HapetFrontend.Entities.ReportType.Warning);
+            }
+            else
+            {
+                _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, idExpr, 
+                    [decl.Name.Name, (string)obs.Arguments[0].OutValue], ErrorCode.Get(CTEN.DeclIsObsolete));
             }
         }
 

@@ -44,4 +44,8 @@
         <Number>3005</Number>
         <Text>Cast to a struct should not be done via 'as' keyword!</Text>
     </Item>
+	<Item>
+		<Number>3006</Number>
+		<Text>{0} is obsolete: '{1}'</Text>
+	</Item>
 </Items>

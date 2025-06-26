@@ -780,6 +780,10 @@
 		<Number>3057</Number>
 		<Text>Attribute class with the name could not be found</Text>
 	</Item>
+	<Item>
+		<Number>3058</Number>
+		<Text>{0} is obsolete: '{1}'</Text>
+	</Item>
 
     <!--Compiler errors-->
 	<Item>

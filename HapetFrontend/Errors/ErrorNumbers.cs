@@ -203,6 +203,7 @@
         ExprTypeNotEvaluated            = 0x3055,
         StaticPolyField                 = 0x3056,
         AttrNotFound                    = 0x3057,
+        DeclIsObsolete                  = 0x3058,
 
         // compiler errors up to 0x6000
         DefaultWasNotInfered            = 0x5001,
@@ -277,5 +278,6 @@
         StaticFuncFromObject            = 0x3003,
         StaticFieldFromObject           = 0x3004,
         StructCastWithAs                = 0x3005,
+        DeclIsObsolete                  = 0x3006,
     }
 }
