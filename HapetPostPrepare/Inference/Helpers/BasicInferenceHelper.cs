@@ -114,7 +114,7 @@ namespace HapetPostPrepare
                 return;
 
             // special handle for string type
-            if (decl.Name is AstIdExpr id && id.Name == "System.String")
+            if (decl.Name.Name == "System.String")
             {
                 // set the decl to the string type
                 HapetType.CurrentTypeContext.StringTypeInstance.Declaration = structDecl;
@@ -135,93 +135,93 @@ namespace HapetPostPrepare
 
                 decl.Type.OutType = arrT;
             }
-            else if (decl.Name is AstIdExpr id0 && id0.Name == "System.Void")
+            else if (decl.Name.Name == "System.Void")
             {
                 var tp = HapetType.CurrentTypeContext.VoidTypeInstance;
                 tp.Declaration = structDecl;
                 idExpr.OutType = tp;
             }
-            else if (decl.Name is AstIdExpr id1 && id1.Name == "System.Boolean")
+            else if (decl.Name.Name == "System.Boolean")
             {
                 var tp = HapetType.CurrentTypeContext.BoolTypeInstance;
                 tp.Declaration = structDecl;
                 idExpr.OutType = tp;
             }
             // special handle for numeric types
-            else if (decl.Name is AstIdExpr id2 && id2.Name == "System.Byte")
+            else if (decl.Name.Name == "System.Byte")
             {
                 var tp = HapetType.CurrentTypeContext.GetIntType(1, false);
                 tp.Declaration = structDecl;
                 idExpr.OutType = tp;
             }
-            else if (decl.Name is AstIdExpr id3 && id3.Name == "System.SByte")
+            else if (decl.Name.Name == "System.SByte")
             {
                 var tp = HapetType.CurrentTypeContext.GetIntType(1, true);
                 tp.Declaration = structDecl;
                 idExpr.OutType = tp;
             }
-            else if (decl.Name is AstIdExpr id4 && id4.Name == "System.UInt16")
+            else if (decl.Name.Name == "System.UInt16")
             {
                 var tp = HapetType.CurrentTypeContext.GetIntType(2, false);
                 tp.Declaration = structDecl;
                 idExpr.OutType = tp;
             }
-            else if (decl.Name is AstIdExpr id5 && id5.Name == "System.Int16")
+            else if (decl.Name.Name == "System.Int16")
             {
                 var tp = HapetType.CurrentTypeContext.GetIntType(2, true);
                 tp.Declaration = structDecl;
                 idExpr.OutType = tp;
             }
-            else if (decl.Name is AstIdExpr id6 && id6.Name == "System.UInt32")
+            else if (decl.Name.Name == "System.UInt32")
             {
                 var tp = HapetType.CurrentTypeContext.GetIntType(4, false);
                 tp.Declaration = structDecl;
                 idExpr.OutType = tp;
             }
-            else if (decl.Name is AstIdExpr id7 && id7.Name == "System.Int32")
+            else if (decl.Name.Name == "System.Int32")
             {
                 var tp = HapetType.CurrentTypeContext.GetIntType(4, true);
                 tp.Declaration = structDecl;
                 idExpr.OutType = tp;
             }
-            else if (decl.Name is AstIdExpr id8 && id8.Name == "System.UInt64")
+            else if (decl.Name.Name == "System.UInt64")
             {
                 var tp = HapetType.CurrentTypeContext.GetIntType(8, false);
                 tp.Declaration = structDecl;
                 idExpr.OutType = tp;
             }
-            else if (decl.Name is AstIdExpr id9 && id9.Name == "System.Int64")
+            else if (decl.Name.Name == "System.Int64")
             {
                 var tp = HapetType.CurrentTypeContext.GetIntType(8, true);
                 tp.Declaration = structDecl;
                 idExpr.OutType = tp;
                 idExpr.OutType = tp;
             }
-            else if (decl.Name is AstIdExpr id11 && id11.Name == "System.UIntPtr")
+            else if (decl.Name.Name == "System.UIntPtr")
             {
                 var tp = HapetType.CurrentTypeContext.IntPtrTypeInstance;
                 tp.Declaration = structDecl;
                 idExpr.OutType = tp;
             }
-            else if (decl.Name is AstIdExpr id12 && id12.Name == "System.PtrDiff")
+            else if (decl.Name.Name == "System.PtrDiff")
             {
                 var tp = HapetType.CurrentTypeContext.PtrDiffTypeInstance;
                 tp.Declaration = structDecl;
                 idExpr.OutType = tp;
             }
-            else if (decl.Name is AstIdExpr id13 && id13.Name == "System.Char")
+            else if (decl.Name.Name == "System.Char")
             {
                 var tp = HapetType.CurrentTypeContext.CharTypeInstance;
                 tp.Declaration = structDecl;
                 idExpr.OutType = tp;
             }
-            else if (decl.Name is AstIdExpr id14 && id14.Name == "System.Double")
+            else if (decl.Name.Name == "System.Double")
             {
                 var tp = HapetType.CurrentTypeContext.GetFloatType(8);
                 tp.Declaration = structDecl;
                 idExpr.OutType = tp;
             }
-            else if (decl.Name is AstIdExpr id15 && id15.Name == "System.Single")
+            else if (decl.Name.Name == "System.Single")
             {
                 var tp = HapetType.CurrentTypeContext.GetFloatType(4);
                 tp.Declaration = structDecl;
