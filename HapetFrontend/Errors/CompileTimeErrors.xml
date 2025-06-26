@@ -1,9 +1,9 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <Items>
-	<Item>
-		<Number>0000</Number>
-		<Text>Airat Abdrakov is a teapot :)</Text>
-	</Item>
+    <Item>
+        <Number>0000</Number>
+        <Text>Airat Abdrakov is a teapot :)</Text>
+    </Item>
     
     <!--Project errors-->
     <Item>
@@ -18,10 +18,10 @@
         <Number>0003</Number>
         <Text>Unexpected tag {0}</Text>
     </Item>
-	<Item>
-		<Number>0004</Number>
-		<Text>Exception while parsing {0}:\n{1}</Text>
-	</Item>
+    <Item>
+        <Number>0004</Number>
+        <Text>Exception while parsing {0}:\n{1}</Text>
+    </Item>
     <Item>
         <Number>0005</Number>
         <Text>hapet command must be specified. For example 'hapet build ...'</Text>
@@ -50,20 +50,20 @@
         <Number>000B</Number>
         <Text>Assembly {0} could not be found. Please check project references properly</Text>
     </Item>
-	<Item>
-		<Number>000C</Number>
-		<Text>Referenced project could not be found by path '{0}'</Text>
-	</Item>
+    <Item>
+        <Number>000C</Number>
+        <Text>Referenced project could not be found by path '{0}'</Text>
+    </Item>
 
     <!--Lexer errors-->
     <Item>
         <Number>1001</Number>
         <Text>'{0}' could not be found</Text>
     </Item>
-	<Item>
-		<Number>1002</Number>
-		<Text>Unexpected end while parsing string literal</Text>
-	</Item>
+    <Item>
+        <Number>1002</Number>
+        <Text>Unexpected end while parsing string literal</Text>
+    </Item>
 
     <!--Parser errors-->
     <Item>
@@ -74,10 +74,10 @@
         <Number>2002</Number>
         <Text>Expression expected before '{0}'</Text>
     </Item>
-	<Item>
-		<Number>201E</Number>
-		<Text>Expression expected after '{0}'</Text>
-	</Item>
+    <Item>
+        <Number>201E</Number>
+        <Text>Expression expected after '{0}'</Text>
+    </Item>
     <Item>
         <Number>2003</Number>
         <Text>Expression expected after '{0}'</Text>
@@ -174,42 +174,42 @@
         <Number>201A</Number>
         <Text>Failed to parse expression, unpexpected token ({0}) {1}</Text>
     </Item>
-	<Item>
-		<Number>201B</Number>
-		<Text>Expected {0} {1}</Text>
-	</Item>
-	<Item>
-		<Number>201C</Number>
-		<Text>Unexpected Token ({0}) {1}, expected {2}</Text>
-	</Item>
-	<Item>
-		<Number>201D</Number>
-		<Text>Unexpected token '{0}' in expression</Text>
-	</Item>
-	<Item>
-		<Number>201F</Number>
-		<Text>Identifier expected to be here</Text>
-	</Item>
-	<Item>
-		<Number>2020</Number>
-		<Text>The '.' was not expected here</Text>
-	</Item>
-	<Item>
-		<Number>2021</Number>
-		<Text>Identifier expected after '.'</Text>
-	</Item>
-	<Item>
-		<Number>2022</Number>
-		<Text>Variable initializer has to be an expresssion</Text>
-	</Item>
-	<Item>
-		<Number>2023</Number>
-		<Text>Unexpected token</Text>
-	</Item>
-	<Item>
-		<Number>2024</Number>
-		<Text>This type of statement is not allowed in the scope</Text>
-	</Item>
+    <Item>
+        <Number>201B</Number>
+        <Text>Expected {0} {1}</Text>
+    </Item>
+    <Item>
+        <Number>201C</Number>
+        <Text>Unexpected Token ({0}) {1}, expected {2}</Text>
+    </Item>
+    <Item>
+        <Number>201D</Number>
+        <Text>Unexpected token '{0}' in expression</Text>
+    </Item>
+    <Item>
+        <Number>201F</Number>
+        <Text>Identifier expected to be here</Text>
+    </Item>
+    <Item>
+        <Number>2020</Number>
+        <Text>The '.' was not expected here</Text>
+    </Item>
+    <Item>
+        <Number>2021</Number>
+        <Text>Identifier expected after '.'</Text>
+    </Item>
+    <Item>
+        <Number>2022</Number>
+        <Text>Variable initializer has to be an expresssion</Text>
+    </Item>
+    <Item>
+        <Number>2023</Number>
+        <Text>Unexpected token</Text>
+    </Item>
+    <Item>
+        <Number>2024</Number>
+        <Text>This type of statement is not allowed in the scope</Text>
+    </Item>
     <Item>
         <Number>2025</Number>
         <Text>Attribute name expected to be here</Text>
@@ -378,57 +378,57 @@
         <Number>204E</Number>
         <Text>The declaration type is not allowed in struct type</Text>
     </Item>
-	<Item>
-		<Number>204F</Number>
-		<Text>Parameters expected after overloading operator</Text>
-	</Item>
-	<Item>
-		<Number>2050</Number>
-		<Text>Too many parameters after overloading operator</Text>
-	</Item>
-	<Item>
-		<Number>2051</Number>
-		<Text>Unexpected operator to be overloaded as unary operator</Text>
-	</Item>
-	<Item>
-		<Number>2052</Number>
-		<Text>Unexpected operator to be overloaded as binary operator</Text>
-	</Item>
-	<Item>
-		<Number>2053</Number>
-		<Text>Generic type name expected to be here</Text>
-	</Item>
-	<Item>
-		<Number>2054</Number>
-		<Text>Generic type with the name not found</Text>
-	</Item>
-	<Item>
-		<Number>2055</Number>
-		<Text>Generic property excepted to have 'get' and/or 'set' bodies</Text>
-	</Item>
-	<Item>
-		<Number>2056</Number>
-		<Text>Declarations are expected in {0} body</Text>
-	</Item>
-	<Item>
-		<Number>2057</Number>
-		<Text>Nested function declaration is not expected to be here</Text>
-	</Item>
-	<Item>
-		<Number>2058</Number>
-		<Text>String value expected to be here</Text>
-	</Item>
-	<Item>
-		<Number>2059</Number>
-		<Text>Unknown directive name</Text>
-	</Item>
-	<Item>
-		<Number>205A</Number>
-		<Text>Unknown generic type constrain</Text>
-	</Item>
+    <Item>
+        <Number>204F</Number>
+        <Text>Parameters expected after overloading operator</Text>
+    </Item>
+    <Item>
+        <Number>2050</Number>
+        <Text>Too many parameters after overloading operator</Text>
+    </Item>
+    <Item>
+        <Number>2051</Number>
+        <Text>Unexpected operator to be overloaded as unary operator</Text>
+    </Item>
+    <Item>
+        <Number>2052</Number>
+        <Text>Unexpected operator to be overloaded as binary operator</Text>
+    </Item>
+    <Item>
+        <Number>2053</Number>
+        <Text>Generic type name expected to be here</Text>
+    </Item>
+    <Item>
+        <Number>2054</Number>
+        <Text>Generic type with the name not found</Text>
+    </Item>
+    <Item>
+        <Number>2055</Number>
+        <Text>Generic property excepted to have 'get' and/or 'set' bodies</Text>
+    </Item>
+    <Item>
+        <Number>2056</Number>
+        <Text>Declarations are expected in {0} body</Text>
+    </Item>
+    <Item>
+        <Number>2057</Number>
+        <Text>Nested function declaration is not expected to be here</Text>
+    </Item>
+    <Item>
+        <Number>2058</Number>
+        <Text>String value expected to be here</Text>
+    </Item>
+    <Item>
+        <Number>2059</Number>
+        <Text>Unknown directive name</Text>
+    </Item>
+    <Item>
+        <Number>205A</Number>
+        <Text>Unknown generic type constrain</Text>
+    </Item>
 
 
-	<!--Post prepare errors-->
+    <!--Post prepare errors-->
     <Item>
         <Number>3001</Number>
         <Text>Enum type itself could not be assigned to anything</Text>
@@ -437,153 +437,153 @@
         <Number>3002</Number>
         <Text>Required type of the expression could not be evaluated</Text>
     </Item>
-	<Item>
-		<Number>3003</Number>
-		<Text>Array cannot has initialization values when its size is not a const</Text>
-	</Item>
-	<Item>
-		<Number>3004</Number>
-		<Text>
-			Array initialization values amount and its size are different but they have to be the same. \n
-			You set {0} in array definition but there are {1} elements presented
-		</Text>
-	</Item>
-	<Item>
-		<Number>3005</Number>
-		<Text>The element has to be an array type</Text>
-	</Item>
-	<Item>
-		<Number>3006</Number>
-		<Text>The declaration has to be 'static' or 'const' because it is declared in a 'static' class</Text>
-	</Item>
-	<Item>
-		<Number>3007</Number>
-		<Text>Functions with the name that starts with 'get_' or 'set_' are not allowed</Text>
-	</Item>
-	<Item>
-		<Number>3008</Number>
-		<Text>Please rename the field because a property named {0} is going to generate the field</Text>
-	</Item>
-	<Item>
-		<Number>3009</Number>
-		<Text>Fields and properties cannot have the same names in a class</Text>
-	</Item>
-	<Item>
-		<Number>300A</Number>
-		<Text>Function with the name is not allowed in the {0} class</Text>
-	</Item>
-	<Item>
-		<Number>300B</Number>
-		<Text>Only one destructor could be declared in a class</Text>
-	</Item>
-	<Item>
-		<Number>300C</Number>
-		<Text>Only one static constructor could be declared in a class/struct</Text>
-	</Item>
-	<Item>
-		<Number>300D</Number>
-		<Text>The statement expected to be a declaration</Text>
-	</Item>
-	<Item>
-		<Number>300E</Number>
-		<Text>The declaration type is not allowed in namespace scope</Text>
-	</Item>
-	<Item>
-		<Number>300F</Number>
-		<Text>Namespace '{0}' already contains a declaration with the name</Text>
-	</Item>
-	<Item>
-		<Number>3010</Number>
-		<Text>Enum type expected to be an integer</Text>
-	</Item>
-	<Item>
-		<Number>3011</Number>
-		<Text>The {0} type already has an implementation of the field. Implicit shadowing is not allowed</Text>
-	</Item>
-	<Item>
-		<Number>3012</Number>
-		<Text>The {0} type already has a field that {1} type has to implement for {2} interface</Text>
-	</Item>
-	<Item>
-		<Number>3013</Number>
-		<Text>The {0} type does not have an implementation of {1} field</Text>
-	</Item>
-	<Item>
-		<Number>3014</Number>
-		<Text>The initializer has to be compile time evaluated</Text>
-	</Item>
-	<Item>
-		<Number>3015</Number>
-		<Text>The initializer has to be numeric type</Text>
-	</Item>
-	<Item>
-		<Number>3016</Number>
-		<Text>Variable declaration with 'var' key has to have an initializer</Text>
-	</Item>
-	<Item>
-		<Number>3017</Number>
-		<Text>Variable declaration cannot have 'void' type</Text>
-	</Item>
-	<Item>
-		<Number>3018</Number>
-		<Text>Token {0} is not allowed here</Text>
-	</Item>
-	<Item>
-		<Number>3019</Number>
-		<Text>The const field has to have compile time evaluated value</Text>
-	</Item>
-	<Item>
-		<Number>301A</Number>
-		<Text>Undefined operator '{0}' for type {1}</Text>
-	</Item>
-	<Item>
-		<Number>301B</Number>
-		<Text>Too many operators '{0}' defined for type {1}</Text>
-	</Item>
-	<Item>
-		<Number>301C</Number>
-		<Text>Undefined operator '{0}' for types {1} and {2}</Text>
-	</Item>
-	<Item>
-		<Number>301D</Number>
-		<Text>Too many operators '{0}' defined for types {1} and {2}</Text>
-	</Item>
-	<Item>
-		<Number>301E</Number>
-		<Text>Operator '{0}' could not be used with void*</Text>
-	</Item>
-	<Item>
-		<Number>301F</Number>
-		<Text>An instance of an interface or an abstract class could not be created</Text>
-	</Item>
-	<Item>
-		<Number>3020</Number>
-		<Text>The declaration could not be accessed from here</Text>
-	</Item>
-	<Item>
-		<Number>3021</Number>
-		<Text>The type could not be inferred</Text>
-	</Item>
-	<Item>
-		<Number>3022</Number>
-		<Text>The function could not be accessed from here</Text>
-	</Item>
-	<Item>
-		<Number>3023</Number>
-		<Text>Function with the name could not be found</Text>
-	</Item>
-	<Item>
-		<Number>3024</Number>
-		<Text>The non-static method could only be accessed from an object</Text>
-	</Item>
-	<Item>
-		<Number>3025</Number>
-		<Text>The function could not be inferred</Text>
-	</Item>
-	<Item>
-		<Number>3026</Number>
-		<Text>The calling thing has to be a function or a delegate</Text>
-	</Item>
+    <Item>
+        <Number>3003</Number>
+        <Text>Array cannot has initialization values when its size is not a const</Text>
+    </Item>
+    <Item>
+        <Number>3004</Number>
+        <Text>
+            Array initialization values amount and its size are different but they have to be the same. \n
+            You set {0} in array definition but there are {1} elements presented
+        </Text>
+    </Item>
+    <Item>
+        <Number>3005</Number>
+        <Text>The element has to be an array type</Text>
+    </Item>
+    <Item>
+        <Number>3006</Number>
+        <Text>The declaration has to be 'static' or 'const' because it is declared in a 'static' class</Text>
+    </Item>
+    <Item>
+        <Number>3007</Number>
+        <Text>Functions with the name that starts with 'get_' or 'set_' are not allowed</Text>
+    </Item>
+    <Item>
+        <Number>3008</Number>
+        <Text>Please rename the field because a property named {0} is going to generate the field</Text>
+    </Item>
+    <Item>
+        <Number>3009</Number>
+        <Text>Fields and properties cannot have the same names in a class</Text>
+    </Item>
+    <Item>
+        <Number>300A</Number>
+        <Text>Function with the name is not allowed in the {0} class</Text>
+    </Item>
+    <Item>
+        <Number>300B</Number>
+        <Text>Only one destructor could be declared in a class</Text>
+    </Item>
+    <Item>
+        <Number>300C</Number>
+        <Text>Only one static constructor could be declared in a class/struct</Text>
+    </Item>
+    <Item>
+        <Number>300D</Number>
+        <Text>The statement expected to be a declaration</Text>
+    </Item>
+    <Item>
+        <Number>300E</Number>
+        <Text>The declaration type is not allowed in namespace scope</Text>
+    </Item>
+    <Item>
+        <Number>300F</Number>
+        <Text>Namespace '{0}' already contains a declaration with the name</Text>
+    </Item>
+    <Item>
+        <Number>3010</Number>
+        <Text>Enum type expected to be an integer</Text>
+    </Item>
+    <Item>
+        <Number>3011</Number>
+        <Text>The {0} type already has an implementation of the field. Implicit shadowing is not allowed</Text>
+    </Item>
+    <Item>
+        <Number>3012</Number>
+        <Text>The {0} type already has a field that {1} type has to implement for {2} interface</Text>
+    </Item>
+    <Item>
+        <Number>3013</Number>
+        <Text>The {0} type does not have an implementation of {1} field</Text>
+    </Item>
+    <Item>
+        <Number>3014</Number>
+        <Text>The initializer has to be compile time evaluated</Text>
+    </Item>
+    <Item>
+        <Number>3015</Number>
+        <Text>The initializer has to be numeric type</Text>
+    </Item>
+    <Item>
+        <Number>3016</Number>
+        <Text>Variable declaration with 'var' key has to have an initializer</Text>
+    </Item>
+    <Item>
+        <Number>3017</Number>
+        <Text>Variable declaration cannot have 'void' type</Text>
+    </Item>
+    <Item>
+        <Number>3018</Number>
+        <Text>Token {0} is not allowed here</Text>
+    </Item>
+    <Item>
+        <Number>3019</Number>
+        <Text>The const field has to have compile time evaluated value</Text>
+    </Item>
+    <Item>
+        <Number>301A</Number>
+        <Text>Undefined operator '{0}' for type {1}</Text>
+    </Item>
+    <Item>
+        <Number>301B</Number>
+        <Text>Too many operators '{0}' defined for type {1}</Text>
+    </Item>
+    <Item>
+        <Number>301C</Number>
+        <Text>Undefined operator '{0}' for types {1} and {2}</Text>
+    </Item>
+    <Item>
+        <Number>301D</Number>
+        <Text>Too many operators '{0}' defined for types {1} and {2}</Text>
+    </Item>
+    <Item>
+        <Number>301E</Number>
+        <Text>Operator '{0}' could not be used with void*</Text>
+    </Item>
+    <Item>
+        <Number>301F</Number>
+        <Text>An instance of an interface or an abstract class could not be created</Text>
+    </Item>
+    <Item>
+        <Number>3020</Number>
+        <Text>The declaration could not be accessed from here</Text>
+    </Item>
+    <Item>
+        <Number>3021</Number>
+        <Text>The type could not be inferred</Text>
+    </Item>
+    <Item>
+        <Number>3022</Number>
+        <Text>The function could not be accessed from here</Text>
+    </Item>
+    <Item>
+        <Number>3023</Number>
+        <Text>Function with the name could not be found</Text>
+    </Item>
+    <Item>
+        <Number>3024</Number>
+        <Text>The non-static method could only be accessed from an object</Text>
+    </Item>
+    <Item>
+        <Number>3025</Number>
+        <Text>The function could not be inferred</Text>
+    </Item>
+    <Item>
+        <Number>3026</Number>
+        <Text>The calling thing has to be a function or a delegate</Text>
+    </Item>
     <Item>
         <Number>3027</Number>
         <Text>The type of the expression has to be a class or a struct</Text>
@@ -648,148 +648,148 @@
         <Number>3036</Number>
         <Text>The expression expected to be a function</Text>
     </Item>
-	<Item>
-		<Number>3037</Number>
-		<Text>Main function could not be found</Text>
-	</Item>
-	<Item>
-		<Number>3038</Number>
-		<Text>Type of the index has to be an integer type</Text>
-	</Item>
-	<Item>
-		<Number>3039</Number>
-		<Text>Expression expected on the right side of assignment</Text>
-	</Item>
-	<Item>
-		<Number>303A</Number>
-		<Text>Return statement with no args expected</Text>
-	</Item>
-	<Item>
-		<Number>303B</Number>
-		<Text>The {0} type already has an implementation of the method. Implicit shadowing is not allowed</Text>
-	</Item>
-	<Item>
-		<Number>303C</Number>
-		<Text>The {0} type already has a method {1} that {2} type has to implement for {3} interface</Text>
-	</Item>
-	<Item>
-		<Number>303D</Number>
-		<Text>The {0} type does not have an implementation of {1} method</Text>
-	</Item>
-	<Item>
-		<Number>303E</Number>
-		<Text>The function shadows {0} function. Implicit shadowing is not allowed</Text>
-	</Item>
-	<Item>
-		<Number>303F</Number>
-		<Text>The property shadows {0} property. Implicit shadowing is not allowed</Text>
-	</Item>
-	<Item>
-		<Number>3040</Number>
-		<Text>The type has to have {0} method implementation</Text>
-	</Item>
-	<Item>
-		<Number>3041</Number>
-		<Text>The type has to have {0} property implementation</Text>
-	</Item>
-	<Item>
-		<Number>3042</Number>
-		<Text>Abstract method cannot have body</Text>
-	</Item>
-	<Item>
-		<Number>3043</Number>
-		<Text>Abstract property cannot have get/set bodies</Text>
-	</Item>
-	<Item>
-		<Number>3044</Number>
-		<Text>Sealed type cannot be derived</Text>
-	</Item>
-	<Item>
-		<Number>3045</Number>
-		<Text>Type {0} in interface list expected to be an interface</Text>
-	</Item>
-	<Item>
-		<Number>3046</Number>
-		<Text>Type {0} cannot derive from {1} type, probably because the second one is value typed</Text>
-	</Item>
-	<Item>
-		<Number>3047</Number>
-		<Text>Ambiguous user defined conversions when converting from {0} to {1}</Text>
-	</Item>
-	<Item>
-		<Number>3048</Number>
-		<Text>The keyword '{0}' has to be before keyword '{1}'</Text>
-	</Item>
-	<Item>
-		<Number>3049</Number>
-		<Text>Keywords '{0}' and '{1}' are ambiguous. Only one of them has to be defined</Text>
-	</Item>
-	<Item>
-		<Number>304A</Number>
-		<Text>Variable declaration with 'var' key cannot have 'default' initializer</Text>
-	</Item>
-	<Item>
-		<Number>304B</Number>
-		<Text>The {0} type already has an implementation of the property. Implicit shadowing is not allowed</Text>
-	</Item>
-	<Item>
-		<Number>304C</Number>
-		<Text>The {0} type does not have an implementation of {1} property</Text>
-	</Item>
-	<Item>
-		<Number>304D</Number>
-		<Text>The {0} method could not be found - probably because of its explicit implementation</Text>
-	</Item>
-	<Item>
-		<Number>304E</Number>
-		<Text>The nested function's parent not found</Text>
-	</Item>
-	<Item>
-		<Number>304F</Number>
-		<Text>The nested type's parent not found</Text>
-	</Item>
-	<Item>
-		<Number>3050</Number>
-		<Text>Parent's static constructor not found</Text>
-	</Item>
-	<Item>
-		<Number>3051</Number>
-		<Text>The name is ambiguous between the following functions {0} and {1}</Text>
-	</Item>
-	<Item>
-		<Number>3052</Number>
-		<Text>Functions could only be called on types/objects not on {0}</Text>
-	</Item>
-	<Item>
-		<Number>3053</Number>
-		<Text>Pointer type expected to be dereferenced - got {0}</Text>
-	</Item>
-	<Item>
-		<Number>3054</Number>
-		<Text>The class that is used as an attribute expected to be inherited from System.Attribute class</Text>
-	</Item>
-	<Item>
+    <Item>
+        <Number>3037</Number>
+        <Text>Main function could not be found</Text>
+    </Item>
+    <Item>
+        <Number>3038</Number>
+        <Text>Type of the index has to be an integer type</Text>
+    </Item>
+    <Item>
+        <Number>3039</Number>
+        <Text>Expression expected on the right side of assignment</Text>
+    </Item>
+    <Item>
+        <Number>303A</Number>
+        <Text>Return statement with no args expected</Text>
+    </Item>
+    <Item>
+        <Number>303B</Number>
+        <Text>The {0} type already has an implementation of the method. Implicit shadowing is not allowed</Text>
+    </Item>
+    <Item>
+        <Number>303C</Number>
+        <Text>The {0} type already has a method {1} that {2} type has to implement for {3} interface</Text>
+    </Item>
+    <Item>
+        <Number>303D</Number>
+        <Text>The {0} type does not have an implementation of {1} method</Text>
+    </Item>
+    <Item>
+        <Number>303E</Number>
+        <Text>The function shadows {0} function. Implicit shadowing is not allowed</Text>
+    </Item>
+    <Item>
+        <Number>303F</Number>
+        <Text>The property shadows {0} property. Implicit shadowing is not allowed</Text>
+    </Item>
+    <Item>
+        <Number>3040</Number>
+        <Text>The type has to have {0} method implementation</Text>
+    </Item>
+    <Item>
+        <Number>3041</Number>
+        <Text>The type has to have {0} property implementation</Text>
+    </Item>
+    <Item>
+        <Number>3042</Number>
+        <Text>Abstract method cannot have body</Text>
+    </Item>
+    <Item>
+        <Number>3043</Number>
+        <Text>Abstract property cannot have get/set bodies</Text>
+    </Item>
+    <Item>
+        <Number>3044</Number>
+        <Text>Sealed type cannot be derived</Text>
+    </Item>
+    <Item>
+        <Number>3045</Number>
+        <Text>Type {0} in interface list expected to be an interface</Text>
+    </Item>
+    <Item>
+        <Number>3046</Number>
+        <Text>Type {0} cannot derive from {1} type, probably because the second one is value typed</Text>
+    </Item>
+    <Item>
+        <Number>3047</Number>
+        <Text>Ambiguous user defined conversions when converting from {0} to {1}</Text>
+    </Item>
+    <Item>
+        <Number>3048</Number>
+        <Text>The keyword '{0}' has to be before keyword '{1}'</Text>
+    </Item>
+    <Item>
+        <Number>3049</Number>
+        <Text>Keywords '{0}' and '{1}' are ambiguous. Only one of them has to be defined</Text>
+    </Item>
+    <Item>
+        <Number>304A</Number>
+        <Text>Variable declaration with 'var' key cannot have 'default' initializer</Text>
+    </Item>
+    <Item>
+        <Number>304B</Number>
+        <Text>The {0} type already has an implementation of the property. Implicit shadowing is not allowed</Text>
+    </Item>
+    <Item>
+        <Number>304C</Number>
+        <Text>The {0} type does not have an implementation of {1} property</Text>
+    </Item>
+    <Item>
+        <Number>304D</Number>
+        <Text>The {0} method could not be found - probably because of its explicit implementation</Text>
+    </Item>
+    <Item>
+        <Number>304E</Number>
+        <Text>The nested function's parent not found</Text>
+    </Item>
+    <Item>
+        <Number>304F</Number>
+        <Text>The nested type's parent not found</Text>
+    </Item>
+    <Item>
+        <Number>3050</Number>
+        <Text>Parent's static constructor not found</Text>
+    </Item>
+    <Item>
+        <Number>3051</Number>
+        <Text>The name is ambiguous between the following functions {0} and {1}</Text>
+    </Item>
+    <Item>
+        <Number>3052</Number>
+        <Text>Functions could only be called on types/objects not on {0}</Text>
+    </Item>
+    <Item>
+        <Number>3053</Number>
+        <Text>Pointer type expected to be dereferenced - got {0}</Text>
+    </Item>
+    <Item>
+        <Number>3054</Number>
+        <Text>The class that is used as an attribute expected to be inherited from System.Attribute class</Text>
+    </Item>
+    <Item>
         <Number>3055</Number>
         <Text>Type of the expression could not be evaluated</Text>
     </Item>
-	<Item>
-		<Number>3056</Number>
-		<Text>Static fields and properties with no get/set blocks with polymorphic types are not allowed</Text>
-	</Item>
-	<Item>
-		<Number>3057</Number>
-		<Text>Attribute class with the name could not be found</Text>
-	</Item>
-	<Item>
-		<Number>3058</Number>
-		<Text>{0} is obsolete: '{1}'</Text>
-	</Item>
+    <Item>
+        <Number>3056</Number>
+        <Text>Static fields and properties with no get/set blocks with polymorphic types are not allowed</Text>
+    </Item>
+    <Item>
+        <Number>3057</Number>
+        <Text>Attribute class with the name could not be found</Text>
+    </Item>
+    <Item>
+        <Number>3058</Number>
+        <Text>{0} is obsolete: '{1}'</Text>
+    </Item>
 
     <!--Compiler errors-->
-	<Item>
-		<Number>5001</Number>
-		<Text>(Compiler exception) The default had to be infered previously by caller</Text>
-	</Item>
+    <Item>
+        <Number>5001</Number>
+        <Text>(Compiler exception) The default had to be infered previously by caller</Text>
+    </Item>
     <Item>
         <Number>5002</Number>
         <Text>(Compiler exception) Unexpected operator {0}</Text>
@@ -814,44 +814,44 @@
         <Number>5007</Number>
         <Text>(Compiler exception) Could not generate access code for the {0} type</Text>
     </Item>
-	<Item>
-		<Number>5008</Number>
-		<Text>(Compiler exception) Stmt could not be prepared when current step is None</Text>
-	</Item>
-	<Item>
-		<Number>5009</Number>
-		<Text>(Compiler exception) There is no default value for the {0} type</Text>
-	</Item>
-	<Item>
-		<Number>500A</Number>
-		<Text>(Compiler exception) There are no fields to initialize in {0}</Text>
-	</Item>
-	<Item>
-		<Number>500B</Number>
-		<Text>(Compiler exception) Only one double colon (::) expected to be in the func' name - {0}</Text>
-	</Item>
-	<Item>
-		<Number>500C</Number>
-		<Text>(Compiler exception) Type info could not be generated for {0}</Text>
-	</Item>
-	<Item>
-		<Number>500D</Number>
-		<Text>(Compiler exception) Virtual table could not be generated for {0}</Text>
-	</Item>
-	<Item>
-		<Number>500E</Number>
-		<Text>(Compiler exception) Virtual method could not be found. Has to be handled in PP</Text>
-	</Item>
-	<Item>
-		<Number>500F</Number>
-		<Text>(Compiler exception) ProgramFile could not be 'null' at this point</Text>
-	</Item>
+    <Item>
+        <Number>5008</Number>
+        <Text>(Compiler exception) Stmt could not be prepared when current step is None</Text>
+    </Item>
+    <Item>
+        <Number>5009</Number>
+        <Text>(Compiler exception) There is no default value for the {0} type</Text>
+    </Item>
+    <Item>
+        <Number>500A</Number>
+        <Text>(Compiler exception) There are no fields to initialize in {0}</Text>
+    </Item>
+    <Item>
+        <Number>500B</Number>
+        <Text>(Compiler exception) Only one double colon (::) expected to be in the func' name - {0}</Text>
+    </Item>
+    <Item>
+        <Number>500C</Number>
+        <Text>(Compiler exception) Type info could not be generated for {0}</Text>
+    </Item>
+    <Item>
+        <Number>500D</Number>
+        <Text>(Compiler exception) Virtual table could not be generated for {0}</Text>
+    </Item>
+    <Item>
+        <Number>500E</Number>
+        <Text>(Compiler exception) Virtual method could not be found. Has to be handled in PP</Text>
+    </Item>
+    <Item>
+        <Number>500F</Number>
+        <Text>(Compiler exception) ProgramFile could not be 'null' at this point</Text>
+    </Item>
 
     <!--Backend errors-->
-	<Item>
-		<Number>6001</Number>
-		<Text>Type {0} could not be converted to type {1} anyhow</Text>
-	</Item>
+    <Item>
+        <Number>6001</Number>
+        <Text>Type {0} could not be converted to type {1} anyhow</Text>
+    </Item>
     <Item>
         <Number>6002</Number>
         <Text>[LLVM-validate-module] {0}</Text>
@@ -868,7 +868,7 @@
         <Number>6005</Number>
         <Text>Call of {0} is not supported</Text>
     </Item>
-	
+    
     <Item>
         <Number>6007</Number>
         <Text>The element '{0}' could not be accessed. You are probably trying to access a non static/const field</Text>

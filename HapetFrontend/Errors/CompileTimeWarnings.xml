@@ -1,9 +1,9 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <Items>
-	<Item>
-		<Number>0000</Number>
-		<Text>Airat Abdrakov is a teapot :)</Text>
-	</Item>
+    <Item>
+        <Number>0000</Number>
+        <Text>Airat Abdrakov is a teapot :)</Text>
+    </Item>
 
     <!--Project warnings-->
 
@@ -18,34 +18,34 @@
         <Number>2002</Number>
         <Text>All the statements after '{0}' would be ignored by compiler!</Text>
     </Item>
-	<Item>
-		<Number>2003</Number>
-		<Text>Fields should not be defined in interfaces! Use it at Your own risk :)</Text>
-	</Item>
+    <Item>
+        <Number>2003</Number>
+        <Text>Fields should not be defined in interfaces! Use it at Your own risk :)</Text>
+    </Item>
 
-	<!--Post prepare warnings-->
-	<Item>
-		<Number>3001</Number>
-		<Text>Static constructor can only have 'static' keyword. Other keywords will be ignored!</Text>
-	</Item>
-	<Item>
-		<Number>3002</Number>
-		<Text>Enum field with the same value already exists!</Text>
-	</Item>
-	<Item>
-		<Number>3003</Number>
-		<Text>Static methods should not be accessed from an object!</Text>
-	</Item>
+    <!--Post prepare warnings-->
+    <Item>
+        <Number>3001</Number>
+        <Text>Static constructor can only have 'static' keyword. Other keywords will be ignored!</Text>
+    </Item>
+    <Item>
+        <Number>3002</Number>
+        <Text>Enum field with the same value already exists!</Text>
+    </Item>
+    <Item>
+        <Number>3003</Number>
+        <Text>Static methods should not be accessed from an object!</Text>
+    </Item>
     <Item>
         <Number>3004</Number>
         <Text>Const/static fields should not be accessed from an object!</Text>
     </Item>
-	<Item>
+    <Item>
         <Number>3005</Number>
         <Text>Cast to a struct should not be done via 'as' keyword!</Text>
     </Item>
-	<Item>
-		<Number>3006</Number>
-		<Text>{0} is obsolete: '{1}'</Text>
-	</Item>
+    <Item>
+        <Number>3006</Number>
+        <Text>{0} is obsolete: '{1}'</Text>
+    </Item>
 </Items>
