@@ -7,9 +7,6 @@ public static class Program
 {
     public static int Main(string[] args)
     {
-        TestClass.ChangeTestField();
-        var a = TestClass.TestField;
-
-        return a;
+        return 0;
     }
 }
