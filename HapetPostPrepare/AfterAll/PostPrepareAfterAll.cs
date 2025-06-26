@@ -79,7 +79,7 @@ namespace HapetPostPrepare
                 // check that the class has suppress stor call attr
                 // and skip the class without calling it's stor
                 string suppressAttrName = "System.SuppressStaticCtorCallAttribute";
-                var suppressAttr = decl.Attributes.FirstOrDefault(x => x.AttributeName.TryFlatten(_compiler.MessageHandler, _currentSourceFile) == suppressAttrName);
+                var suppressAttr = decl.Attributes.FirstOrDefault(x => x.AttributeName.OutType is ClassType clsT && clsT.Declaration.Name.Name == suppressAttrName);
                 if (suppressAttr != null)
                     continue;
 
