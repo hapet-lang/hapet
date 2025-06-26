@@ -61,9 +61,11 @@ namespace HapetPostPrepare
 
             // if user assigns a delegate to another
             if (value.OutType is DelegateType)
-            {
                 return value;
-            }
+
+            // allow nulls 
+            if (value.OutType is NullType)
+                return value;
 
             // the var is used to check when static method is accessed from an object
             bool accessingFromAnObject = false;
