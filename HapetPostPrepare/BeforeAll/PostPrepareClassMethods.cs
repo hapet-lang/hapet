@@ -150,7 +150,7 @@ namespace HapetPostPrepare
             {
                 var foundNonStatic = classDecl.Declarations.FirstOrDefault(dd => !dd.SpecialKeys.Contains(TokenType.KwStatic) && !dd.SpecialKeys.Contains(TokenType.KwConst));
                 if (foundNonStatic != null)
-                    _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, foundNonStatic, [], ErrorCode.Get(CTEN.ClassStaticMemStatic));
+                    _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, foundNonStatic.Name, [], ErrorCode.Get(CTEN.ClassStaticMemStatic));
             }
 
             // getting all functions in the class
