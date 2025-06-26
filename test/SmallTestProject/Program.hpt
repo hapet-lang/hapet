@@ -5,6 +5,8 @@ using System.Runtime;
 
 public static class Program
 {
+    public static event Action<int> MyEvent;
+
     public static int Main(string[] args)
     {
         return 0;

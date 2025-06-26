@@ -16,6 +16,11 @@ namespace HapetFrontend.Ast.Declarations
         public AstExpression Initializer { get; set; }
 
         /// <summary>
+        /// 'true' if the field is event field
+        /// </summary>
+        public bool IsEvent { get; set; }
+
+        /// <summary>
         /// Used for easier infferencing. Mean that the field is for get/set func
         /// </summary>
         public bool IsPropertyField { get; set; }

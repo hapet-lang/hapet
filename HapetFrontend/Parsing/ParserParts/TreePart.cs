@@ -661,6 +661,15 @@ namespace HapetFrontend.Parsing
                         return ParseIdentifierExpression(inInfo, iniNested: new AstNestedExpr(new AstIdExpr("base", CurrentToken.Location), null, CurrentToken.Location));
                     }
 
+                case TokenType.KwEvent:
+                    {
+                        NextToken();
+                        var udecl = ParseAtomicExpression(inInfo, ref outInfo);
+                        if (udecl is AstUnknownDecl u)
+                            u.IsEvent = true;
+                        return udecl;
+                    }
+
                 case TokenType.KwImplicit:
                 case TokenType.KwExplicit:
                     {

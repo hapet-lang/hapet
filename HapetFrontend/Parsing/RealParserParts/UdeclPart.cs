@@ -106,6 +106,7 @@ namespace HapetFrontend.Parsing
                 varDecl.Attributes.AddRange(attrs);
                 varDecl.SpecialKeys.AddRange(udecl.SpecialKeys);
                 varDecl.IsImported = inInfo.ExternalMetadata;
+                varDecl.IsEvent = udecl.IsEvent;
 
                 OnExit();
                 return varDecl;

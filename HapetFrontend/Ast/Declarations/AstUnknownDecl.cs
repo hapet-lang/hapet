@@ -15,6 +15,11 @@ namespace HapetFrontend.Ast.Declarations
         /// </summary>
         public AstTupleExpr TupledName { get; set; }
 
+        /// <summary>
+        /// 'true' if the udecl is event field
+        /// </summary>
+        public bool IsEvent { get; set; }
+
         public override string AAAName => nameof(AstUnknownDecl);
 
         public AstUnknownDecl(AstExpression type, AstIdExpr name, ILocation Location = null) : base(name, "", Location)
