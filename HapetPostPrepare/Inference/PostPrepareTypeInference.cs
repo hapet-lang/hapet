@@ -1141,22 +1141,36 @@ namespace HapetPostPrepare
 
         private void PostPrepareAttributeStmtInference(AstAttributeStmt attrStmt, InInfo inInfo, ref OutInfo outInfo)
         {
-            // purified type string with namespace in it!
-            // we need this so when saving the attributes into metafile 
-            // we would know namespace of the attribute and so on.
-            // (kostyl?)
-            var newTypeAst = attrStmt.AttributeName.GetTypeAstId(_compiler.MessageHandler, _currentSourceFile);
-            PostPrepareExprInference(newTypeAst, inInfo, ref outInfo);
-            attrStmt.AttributeName.SetTypeAstId(newTypeAst);
+            string attrNameFlatten = attrStmt.AttributeName.TryFlatten(_compiler.MessageHandler, _currentSourceFile);
+            AstIdExpr fullTypeAstId = new AstIdExpr(attrNameFlatten);
+            fullTypeAstId.SetDataFromStmt(attrStmt.AttributeName);
+
+            var saved = inInfo.MuteErrors;
+            inInfo.MuteErrors = true;
+            PostPrepareExprInference(fullTypeAstId, inInfo, ref outInfo);
+            // not found by pure name - try to add 'Attribute' to the end
+            if (fullTypeAstId.OutType == null)
+            {
+                fullTypeAstId.Name = $"{fullTypeAstId.Name}Attribute";
+                PostPrepareExprInference(fullTypeAstId, inInfo, ref outInfo);
+            }
+            inInfo.MuteErrors = saved;
 
             // check that the attr ast was infered properly
-            if (attrStmt.AttributeName.OutType == null)
+            if (fullTypeAstId.OutType == null)
+            {
+                _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, attrStmt.AttributeName, [], ErrorCode.Get(CTEN.AttrNotFound));
                 return;
+            }
+
+            // if infered normally
+            attrStmt.AttributeName.OutType = fullTypeAstId.OutType;
 
             // check that this cringe is inherited from attribute cls
             if (!(attrStmt.AttributeName.OutType is ClassType ct && 
                 ct.Declaration.InheritedFrom.Count > 0 && 
-                ct.Declaration.InheritedFrom[0].TryFlatten(null, null) == "System.Attribute"))
+                ct.Declaration.InheritedFrom[0].OutType is ClassType clsT && 
+                clsT.Declaration.Name.Name == "System.Attribute"))
             {
                 // check that the shite is inherited from 'System.Attribute'
                 _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, attrStmt.AttributeName, [], ErrorCode.Get(CTEN.AttrNotInhFromAttr));

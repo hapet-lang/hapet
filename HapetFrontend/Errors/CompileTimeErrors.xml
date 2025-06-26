@@ -776,6 +776,10 @@
 		<Number>3056</Number>
 		<Text>Static fields and properties with no get/set blocks with polymorphic types are not allowed</Text>
 	</Item>
+	<Item>
+		<Number>3057</Number>
+		<Text>Attribute class with the name could not be found</Text>
+	</Item>
 
     <!--Compiler errors-->
 	<Item>

@@ -68,33 +68,6 @@ namespace HapetFrontend.Ast.Expressions
             return $"{LeftPart.TryFlatten(messageHandler, file)}.{GenericsHelper.GetNameFromAst(idExpr, messageHandler)}";
         }
 
-        /// <summary>
-        /// Types in program with namespaces are parsed into AstNested shite. 
-        /// But for easier types inference we should convert AstNested into pure AstId
-        /// And this approuch would help with metadata types (where we should save type with its namespace)
-        /// </summary>
-        /// <param name="messageHandler">Message handler</param>
-        /// <param name="file">The file that is currently preparing (to get text for error)</param>
-        /// <returns>Flatten string inside AstId</returns>
-        public AstIdExpr GetTypeAstId(IMessageHandler messageHandler, ProgramFile file)
-        {
-            string currentFlatten = TryFlatten(messageHandler, file);
-            AstIdExpr fullTypeAstId = new AstIdExpr(currentFlatten, Location);
-            fullTypeAstId.Parent = Parent;
-            fullTypeAstId.OutValue = OutValue;
-            fullTypeAstId.OutType = OutType;
-            fullTypeAstId.Scope = Scope;
-            fullTypeAstId.SourceFile = SourceFile;
-            return fullTypeAstId;
-        }
-
-        public void SetTypeAstId(AstIdExpr astId)
-        {
-            RightPart = astId;
-            LeftPart = null;
-            OutType = astId.OutType;
-        }
-
         public T UnrollToRightPart<T>()
         {
             if (RightPart is T)

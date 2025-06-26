@@ -18,7 +18,7 @@ namespace HapetPostPrepare
                 // inferencing attrs
                 foreach (var a in fnc.Attributes)
                 {
-                    PostPrepareExprInference(a, inInfo, ref outInfo);
+                    PostPrepareAttributeStmtInference(a, inInfo, ref outInfo);
                 }
                 // inferencing params attrs
                 foreach (var p in fnc.Parameters)
@@ -26,7 +26,7 @@ namespace HapetPostPrepare
                     // inferencing attrs
                     foreach (var a in p.Attributes)
                     {
-                        PostPrepareExprInference(a, inInfo, ref outInfo);
+                        PostPrepareAttributeStmtInference(a, inInfo, ref outInfo);
                     }
                 }
             }
@@ -38,13 +38,13 @@ namespace HapetPostPrepare
                     // inferencing attrs
                     foreach (var a in decl.Attributes)
                     {
-                        PostPrepareExprInference(a, inInfo, ref outInfo);
+                        PostPrepareAttributeStmtInference(a, inInfo, ref outInfo);
                     }
                 }
                 // inferencing attrs
                 foreach (var a in cls.Attributes)
                 {
-                    PostPrepareExprInference(a, inInfo, ref outInfo);
+                    PostPrepareAttributeStmtInference(a, inInfo, ref outInfo);
                 }
             }
             else if (stmt is AstStructDecl str)
@@ -52,7 +52,7 @@ namespace HapetPostPrepare
                 // inferencing attrs
                 foreach (var a in str.Attributes)
                 {
-                    PostPrepareExprInference(a, inInfo, ref outInfo);
+                    PostPrepareAttributeStmtInference(a, inInfo, ref outInfo);
                 }
             }
             else if (stmt is AstEnumDecl enm)
@@ -60,7 +60,7 @@ namespace HapetPostPrepare
                 // inferencing attrs
                 foreach (var a in enm.Attributes)
                 {
-                    PostPrepareExprInference(a, inInfo, ref outInfo);
+                    PostPrepareAttributeStmtInference(a, inInfo, ref outInfo);
                 }
             }
             else if (stmt is AstDelegateDecl del)
@@ -68,7 +68,7 @@ namespace HapetPostPrepare
                 // inferencing attrs
                 foreach (var a in del.Attributes)
                 {
-                    PostPrepareExprInference(a, inInfo, ref outInfo);
+                    PostPrepareAttributeStmtInference(a, inInfo, ref outInfo);
                 }
                 // inferencing params attrs
                 foreach (var p in del.Parameters)
@@ -76,7 +76,7 @@ namespace HapetPostPrepare
                     // inferencing attrs
                     foreach (var a in p.Attributes)
                     {
-                        PostPrepareExprInference(a, inInfo, ref outInfo);
+                        PostPrepareAttributeStmtInference(a, inInfo, ref outInfo);
                     }
                 }
             }
