@@ -33,133 +33,30 @@ namespace HapetPostPrepare
         {
             if (decl is AstClassDecl classDecl)
             {
-                PostPrepareClassMethodsInternal(classDecl, file.IsImported);
+                PostPrepareStructMethodsInternal__(classDecl, file.IsImported);
                 foreach (var d in classDecl.Declarations)
                     PostPrepareDeclMethodsInternal(d, file); // probably nested decls
             }
             else if (decl is AstStructDecl structDecl)
             {
-                PostPrepareStructMethodsInternal(structDecl, file.IsImported);
+                PostPrepareStructMethodsInternal__(structDecl, file.IsImported);
                 foreach (var d in structDecl.Declarations)
                     PostPrepareDeclMethodsInternal(d, file); // probably nested decls
             }
         }
 
-        /// <summary>
-        /// WARN!!! almost the same as <see cref="PostPrepareClassMethodsInternal"/>
-        /// Some changes made here - has to be also made in upper shite
-        /// </summary>
-        /// <param name="structDecl"></param>
-        private void PostPrepareStructMethodsInternal(AstStructDecl structDecl, bool forImported = false)
-        {
-            // getting all functions in the class
-            var allFuncs = structDecl.Declarations.Where(x => x is AstFuncDecl).Select(x => x as AstFuncDecl);
-
-            // error if user created a func with the get/set name
-            var propFuncs = allFuncs.Where(x => x.Name.Name.StartsWith($"get_") || x.Name.Name.StartsWith($"set_"));
-            foreach (var fnc in propFuncs)
-            {
-                _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, fnc.Name, [], ErrorCode.Get(CTEN.ClassFuncGetSetName));
-            }
-
-            // getting all props in the class
-            var allProps = structDecl.Declarations.Where(x => x is AstPropertyDecl).Select(x => x as AstPropertyDecl);
-            var allFields = structDecl.Declarations.Where(x => x is AstVarDecl varD && x is not AstPropertyDecl).Select(x => x as AstVarDecl);
-            foreach (var pp in allProps)
-            {
-                // check if there is already a field named like 'field_Prop'
-                // error in this situation because we probably going to generate the field
-                // also check if the prop is really going to gen field
-                var theField = allFields.FirstOrDefault(x => x.Name.Name == $"field_{pp.Name.Name}");
-                if (theField != null)
-                {
-                    // also check if the prop is really going to gen field
-                    if (pp.GetBlock == null && pp.SetBlock == null)
-                        _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, theField, [pp.Name.Name], ErrorCode.Get(CTEN.ClassPropFieldExists));
-                }
-            }
-            PrepareEventFields(allFields);
-
-            // getting all fields and props and error if there are equal names
-            var allFieldsAndProps = structDecl.Declarations.Where(x => x is AstVarDecl).Select(x => x as AstVarDecl).ToList();
-            for (int i = 0; i < allFieldsAndProps.Count; ++i)
-            {
-                for (int j = i; j < allFieldsAndProps.Count; ++j)
-                {
-                    if (j == i)
-                        continue;
-                    if (allFieldsAndProps[i].Name.Name == allFieldsAndProps[j].Name.Name &&
-                        allFieldsAndProps[i].Name.AdditionalData == null &&
-                        allFieldsAndProps[j].Name.AdditionalData == null)
-                    {
-                        // TODO: show previous field decl
-                        _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, allFieldsAndProps[j], [], ErrorCode.Get(CTEN.ClassPropsFieldsSame));
-                    }
-                }
-            }
-
-            // if not for imported - generate other shite
-            if (!forImported)
-            {
-                // get funcs again after this :) sorry
-                allFuncs = structDecl.Declarations.Where(x => x is AstFuncDecl).Select(x => x as AstFuncDecl);
-
-                // error if user created a func with the initializer name
-                var specialFuncs = allFuncs.Where(x => (x.Name.Name.EndsWith($"::{structDecl.Name.Name}_ini") ||
-                                                        x.Name.Name.EndsWith($"::{structDecl.Name.Name}_ctor") ||
-                                                        x.Name.Name.EndsWith($"::{structDecl.Name.Name}_stor"))); // static ctor
-                foreach (var fnc in specialFuncs)
-                {
-                    _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, fnc.Name, [structDecl.Name.Name], ErrorCode.Get(CTEN.ClassFuncNameNotAllowed));
-                }
-
-                // static ctor is always generated
-                PostPrepareGenerateClassStaticConstructor(structDecl, allFuncs.Where(x => x.ClassFunctionType == ClassFunctionType.StaticCtor).ToList());
-                PostPrepareGenerateClassInitializer(structDecl);
-                // passing all the existing ctors
-                PostPrepareGenerateClassConstructor(structDecl, allFuncs.Where(x => x.ClassFunctionType == ClassFunctionType.Ctor).ToList());
-
-                // 
-                foreach (var decl in structDecl.Declarations)
-                {
-                    FuncPrepareAfterAll(decl, structDecl);
-                }
-            }
-            else
-            {
-                var specialFuncs = structDecl.Declarations.Where(x => x is AstFuncDecl && 
-                                                                (x.Name.Name == ($"{structDecl.Name.Name}_ini") ||
-                                                                 x.Name.Name == ($"{structDecl.Name.Name}_ctor") ||
-                                                                 x.Name.Name == ($"{structDecl.Name.Name}_stor"))); // static ctor
-                foreach (var f in specialFuncs)
-                {
-                    if (f.Name.Name.EndsWith("_ini"))
-                        (f as AstFuncDecl).ClassFunctionType = ClassFunctionType.Initializer;
-                    else if (f.Name.Name.EndsWith("_ctor"))
-                        (f as AstFuncDecl).ClassFunctionType = ClassFunctionType.Ctor;
-                    else if (f.Name.Name.EndsWith("_stor"))
-                        (f as AstFuncDecl).ClassFunctionType = ClassFunctionType.StaticCtor;
-                }
-            }
-        }
-
-        /// <summary>
-        /// WARN!!! almost the same as <see cref="PostPrepareStructMethodsInternal"/>
-        /// Some changes made here - has to be also made in upper shite
-        /// </summary>
-        /// <param name="classDecl"></param>
-        private void PostPrepareClassMethodsInternal(AstClassDecl classDecl, bool forImported = false)
+        private void PostPrepareStructMethodsInternal__(AstDeclaration decl, bool forImported = false)
         {
             // check that all decls in the class are also static
-            if (classDecl.SpecialKeys.Contains(TokenType.KwStatic))
+            if (decl is AstClassDecl && decl.SpecialKeys.Contains(TokenType.KwStatic))
             {
-                var foundNonStatic = classDecl.Declarations.FirstOrDefault(dd => !dd.SpecialKeys.Contains(TokenType.KwStatic) && !dd.SpecialKeys.Contains(TokenType.KwConst));
+                var foundNonStatic = decl.GetDeclarations().FirstOrDefault(dd => !dd.SpecialKeys.Contains(TokenType.KwStatic) && !dd.SpecialKeys.Contains(TokenType.KwConst));
                 if (foundNonStatic != null)
                     _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, foundNonStatic.Name, [], ErrorCode.Get(CTEN.ClassStaticMemStatic));
             }
 
             // getting all functions in the class
-            var allFuncs = classDecl.Declarations.Where(x => x is AstFuncDecl).Select(x => x as AstFuncDecl);
+            var allFuncs = decl.GetDeclarations().Where(x => x is AstFuncDecl).Select(x => x as AstFuncDecl);
 
             // error if user created a func with the get/set name
             var propFuncs = allFuncs.Where(x => x.Name.Name.StartsWith($"get_") || x.Name.Name.StartsWith($"set_"));
@@ -169,8 +66,8 @@ namespace HapetPostPrepare
             }
 
             // getting all props in the class
-            var allProps = classDecl.Declarations.Where(x => x is AstPropertyDecl).Select(x => x as AstPropertyDecl);
-            var allFields = classDecl.Declarations.Where(x => x is AstVarDecl varD && x is not AstPropertyDecl).Select(x => x as AstVarDecl);
+            var allProps = decl.GetDeclarations().Where(x => x is AstPropertyDecl).Select(x => x as AstPropertyDecl);
+            var allFields = decl.GetDeclarations().Where(x => x is AstVarDecl varD && x is not AstPropertyDecl).Select(x => x as AstVarDecl);
             foreach (var pp in allProps)
             {
                 // check if there is already a field named like 'field_Prop'
@@ -187,7 +84,7 @@ namespace HapetPostPrepare
             PrepareEventFields(allFields);
 
             // getting all fields and props and error if there are equal names
-            var allFieldsAndProps = classDecl.Declarations.Where(x => x is AstVarDecl).Select(x => x as AstVarDecl).ToList();
+            var allFieldsAndProps = decl.GetDeclarations().Where(x => x is AstVarDecl).Select(x => x as AstVarDecl).ToList();
             for (int i = 0; i < allFieldsAndProps.Count; ++i)
             {
                 for (int j = i; j < allFieldsAndProps.Count; ++j)
@@ -195,7 +92,7 @@ namespace HapetPostPrepare
                     if (j == i)
                         continue;
                     // if have the same names and NOT explicits
-                    if (allFieldsAndProps[i].Name.Name == allFieldsAndProps[j].Name.Name && 
+                    if (allFieldsAndProps[i].Name.Name == allFieldsAndProps[j].Name.Name &&
                         allFieldsAndProps[i].Name.AdditionalData == null &&
                         allFieldsAndProps[j].Name.AdditionalData == null)
                     {
@@ -213,15 +110,15 @@ namespace HapetPostPrepare
                 decls.AddRange(allProps);
                 decls.AddRange(allFuncs);
                 // getting all fields and mark them abstract if it is an interface
-                if (classDecl.IsInterface)
+                if (decl is AstClassDecl classDecl && classDecl.IsInterface)
                 {
                     foreach (var f in decls)
                     {
                         // add abstract key to the field if it is an interface
-                        SpecialKeysHelper.AddSpecialKeyToDecl(f, Lexer.CreateToken(TokenType.KwAbstract, f.Location.Beginning), 
+                        SpecialKeysHelper.AddSpecialKeyToDecl(f, Lexer.CreateToken(TokenType.KwAbstract, f.Location.Beginning),
                             _compiler.MessageHandler, _currentSourceFile);
                         // and public :)
-                        SpecialKeysHelper.AddSpecialKeyToDecl(f, Lexer.CreateToken(TokenType.KwPublic, f.Location.Beginning), 
+                        SpecialKeysHelper.AddSpecialKeyToDecl(f, Lexer.CreateToken(TokenType.KwPublic, f.Location.Beginning),
                             _compiler.MessageHandler, _currentSourceFile);
                     }
                 }
@@ -232,48 +129,50 @@ namespace HapetPostPrepare
                     {
                         // 1 - is access special key type!!!
                         if (!SpecialKeysHelper.HasSpecialKeyType(f, 1, out int _))
-                            SpecialKeysHelper.AddSpecialKeyToDecl(f, Lexer.CreateToken(TokenType.KwPrivate, f.Location.Beginning), 
+                            SpecialKeysHelper.AddSpecialKeyToDecl(f, Lexer.CreateToken(TokenType.KwPrivate, f.Location.Beginning),
                                 _compiler.MessageHandler, _currentSourceFile);
                     }
                 }
 
                 // get funcs again after this :) sorry
-                allFuncs = classDecl.Declarations.Where(x => x is AstFuncDecl).Select(x => x as AstFuncDecl);
+                allFuncs = decl.GetDeclarations().Where(x => x is AstFuncDecl).Select(x => x as AstFuncDecl);
 
                 // error if user created a func with the initializer name
-                var specialFuncs = allFuncs.Where(x => (x.Name.Name.EndsWith($"::{classDecl.Name.Name}_ini") ||
-                                                        x.Name.Name.EndsWith($"::{classDecl.Name.Name}_ctor") ||
-                                                        x.Name.Name.EndsWith($"::{classDecl.Name.Name}_stor") || // static ctor
-                                                        x.Name.Name.EndsWith($"::{classDecl.Name.Name}_dtor")));
+                var specialFuncs = allFuncs.Where(x => (x.Name.Name.EndsWith($"::{decl.Name.Name}_ini") ||
+                                                        x.Name.Name.EndsWith($"::{decl.Name.Name}_ctor") ||
+                                                        x.Name.Name.EndsWith($"::{decl.Name.Name}_stor") || // static ctor
+                                                        x.Name.Name.EndsWith($"::{decl.Name.Name}_dtor")));
                 foreach (var fnc in specialFuncs)
                 {
-                    _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, fnc.Name, [classDecl.Name.Name], ErrorCode.Get(CTEN.ClassFuncNameNotAllowed));
+                    _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, fnc.Name, [decl.Name.Name], ErrorCode.Get(CTEN.ClassFuncNameNotAllowed));
                 }
 
                 // static ctor is always generated
-                PostPrepareGenerateClassStaticConstructor(classDecl, allFuncs.Where(x => x.ClassFunctionType == ClassFunctionType.StaticCtor).ToList());
+                PostPrepareGenerateClassStaticConstructor(decl, allFuncs.Where(x => x.ClassFunctionType == ClassFunctionType.StaticCtor).ToList());
                 // generating all the shite only if the class is not static
-                if (!classDecl.SpecialKeys.Contains(TokenType.KwStatic))
+                if (!decl.SpecialKeys.Contains(TokenType.KwStatic))
                 {
-                    PostPrepareGenerateClassInitializer(classDecl);
+                    PostPrepareGenerateClassInitializer(decl);
                     // passing all the existing ctors
-                    PostPrepareGenerateClassConstructor(classDecl, allFuncs.Where(x => x.ClassFunctionType == ClassFunctionType.Ctor).ToList());
-                    PostPrepareGenerateClassDestructor(classDecl, allFuncs.Where(x => x.ClassFunctionType == ClassFunctionType.Dtor).ToList());
+                    PostPrepareGenerateClassConstructor(decl, allFuncs.Where(x => x.ClassFunctionType == ClassFunctionType.Ctor).ToList());
+                    // do not generate dtor for structs?
+                    if (decl is not AstStructDecl)
+                        PostPrepareGenerateClassDestructor(decl, allFuncs.Where(x => x.ClassFunctionType == ClassFunctionType.Dtor).ToList());
                 }
 
                 // 
-                foreach (var decl in classDecl.Declarations)
+                foreach (var d in decl.GetDeclarations())
                 {
-                    FuncPrepareAfterAll(decl, classDecl);
+                    FuncPrepareAfterAll(d, decl);
                 }
             }
             else
             {
-                var specialFuncs = classDecl.Declarations.Where(x => x is AstFuncDecl &&
-                                                               (x.Name.Name == ($"{classDecl.Name.Name}_ini") ||
-                                                                x.Name.Name == ($"{classDecl.Name.Name}_ctor") ||
-                                                                x.Name.Name == ($"{classDecl.Name.Name}_stor") || // static ctor
-                                                                x.Name.Name == ($"{classDecl.Name.Name}_dtor")));
+                var specialFuncs = decl.GetDeclarations().Where(x => x is AstFuncDecl &&
+                                                               (x.Name.Name == ($"{decl.Name.Name}_ini") ||
+                                                                x.Name.Name == ($"{decl.Name.Name}_ctor") ||
+                                                                x.Name.Name == ($"{decl.Name.Name}_stor") || // static ctor
+                                                                x.Name.Name == ($"{decl.Name.Name}_dtor")));
                 foreach (var f in specialFuncs)
                 {
                     if (f.Name.Name.EndsWith("_ini"))
