@@ -215,7 +215,7 @@ namespace HapetFrontend.Helpers
             for (int i = 0; i < genId.GenericRealTypes.Count; ++i)
             {
                 var g = genId.GenericRealTypes[i];
-                sb.Append(g.GetNested(messageHandler).TryFlatten(null, null));
+                sb.Append(g.GetNested(messageHandler).TryFlatten(null, null, true));
                 if (i < genId.GenericRealTypes.Count - 1)
                     sb.Append(':');
             }

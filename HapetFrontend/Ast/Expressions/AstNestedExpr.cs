@@ -53,7 +53,7 @@ namespace HapetFrontend.Ast.Expressions
         /// <param name="messageHandler">Message handler</param>
         /// <param name="file">The file that is currently preparing (to get text for error)</param>
         /// <returns>Flatten string</returns>
-        public string TryFlatten(IMessageHandler messageHandler, ProgramFile file)
+        public string TryFlatten(IMessageHandler messageHandler, ProgramFile file, bool forCodegen = false)
         {
             if (RightPart is not AstIdExpr idExpr)
             {
@@ -62,10 +62,11 @@ namespace HapetFrontend.Ast.Expressions
                 return string.Empty;
             }
 
+            var idName = forCodegen ? GenericsHelper.GetCodegenGenericName(idExpr, messageHandler) : GenericsHelper.GetNameFromAst(idExpr, messageHandler);
             if (LeftPart == null)
-                return GenericsHelper.GetNameFromAst(idExpr, messageHandler);
+                return idName;
 
-            return $"{LeftPart.TryFlatten(messageHandler, file)}.{GenericsHelper.GetNameFromAst(idExpr, messageHandler)}";
+            return $"{LeftPart.TryFlatten(messageHandler, file)}.{idName}";
         }
 
         public T UnrollToRightPart<T>()
