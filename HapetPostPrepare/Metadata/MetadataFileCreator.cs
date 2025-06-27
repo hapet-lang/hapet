@@ -159,6 +159,8 @@ namespace HapetPostPrepare
 
             // TODO: generic constraiins 
 
+            bool hasParentParentGenerics = decl.IsNestedDecl && decl.ParentDecl.HasGenericTypes;
+
             AstDeclaration theDecl = decl;
             List<AstDeclaration> decls = new List<AstDeclaration>();
             if (theDecl is AstClassDecl clsDecl1)
@@ -193,11 +195,11 @@ namespace HapetPostPrepare
 
                 if (d is AstFuncDecl func)
                 {
-                    CreateFuncDecl(func, sb, additionalOffset + _fourSpaces, theDecl.HasGenericTypes);
+                    CreateFuncDecl(func, sb, additionalOffset + _fourSpaces, theDecl.HasGenericTypes || hasParentParentGenerics);
                 }
                 else if (d is AstPropertyDecl prop)
                 {
-                    CreatePropertyDecl(prop, sb, additionalOffset + _fourSpaces, theDecl.HasGenericTypes);
+                    CreatePropertyDecl(prop, sb, additionalOffset + _fourSpaces, theDecl.HasGenericTypes || hasParentParentGenerics);
                 }
                 else if (d is AstVarDecl field)
                 {

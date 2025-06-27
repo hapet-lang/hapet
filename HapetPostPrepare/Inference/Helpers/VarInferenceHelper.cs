@@ -43,12 +43,12 @@ namespace HapetPostPrepare
         public AstExpression PostPrepareExpressionWithType(HapetType neededType, AstExpression expr, CastResult castResult = null)
         {
             // assigning function to delegates is made different
-            if (neededType is DelegateType delT)
+            if (expr.OutType is FunctionType)
             {
                 // not always could be casted - do it inside the func
                 if (castResult != null)
                     castResult.CouldBeCasted = true;
-                return PostPrepareDelegateWithType(expr, delT);
+                return PostPrepareDelegateWithType(expr, neededType as DelegateType);
             }
             return _compiler.TryCastExpr(neededType, expr, castResult, _currentSourceFile);
         }
@@ -226,8 +226,6 @@ namespace HapetPostPrepare
             {
                 // call expr type is the same as func return type
                 value.OutType = dt;
-                // no need anymore
-                nestFuncName.LeftPart = null;
             }
             else
             {

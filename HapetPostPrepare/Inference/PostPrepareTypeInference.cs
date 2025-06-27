@@ -1256,14 +1256,10 @@ namespace HapetPostPrepare
                 }
                 value = defaultOfDefault;
             }
-            // do not infer the expr if target is a delegate
-            else if (targetType is not DelegateType)
+            if (inferValue)
             {
-                if (inferValue)
-                {
-                    // if it is not a default
-                    PostPrepareExprInference(value, inInfo, ref outInfo);
-                }
+                // if it is not a default
+                PostPrepareExprInference(value, inInfo, ref outInfo);
             }
 
             if (targetType != null)

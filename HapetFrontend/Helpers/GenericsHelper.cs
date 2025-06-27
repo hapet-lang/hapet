@@ -222,5 +222,35 @@ namespace HapetFrontend.Helpers
             sb.Append(']');
             return $"{genId.Name}{sb}";
         }
+
+        public static string GetCodegenFunctionName(AstFuncDecl funcDecl, IMessageHandler messageHandler)
+        {
+            // making cool func name 
+            string funcName = $"{GenericsHelper.GetCodegenGenericName(funcDecl.Name, messageHandler)}{funcDecl.Parameters.GetParamsString()}";
+
+            if (funcDecl.Name.AdditionalData != null)
+            {
+                string clsName = GenericsHelper.GetCodegenGenericName((funcDecl.Name.AdditionalData.OutType as ClassType).Declaration.Name, messageHandler);
+                funcName = $"{clsName}.{funcName}";
+            }
+
+            if (funcDecl.IsNestedDecl)
+            {
+                string parentName = GenericsHelper.GetCodegenFunctionName(funcDecl.ParentDecl as AstFuncDecl, messageHandler);
+                funcName = $"{parentName}:{funcName}";
+            }
+            else if (funcDecl.ContainingParent != null)
+            {
+                string clsName = GenericsHelper.GetCodegenGenericName(funcDecl.ContainingParent.Name, messageHandler);
+                funcName = $"{clsName}::{funcName}";
+
+                if (funcDecl.ContainingParent.IsNestedDecl)
+                {
+                    string clsClsName = GenericsHelper.GetCodegenGenericName(funcDecl.ContainingParent.ParentDecl.Name, messageHandler);
+                    funcName = $"{clsClsName}.{funcName}";
+                }
+            }
+            return funcName;
+        }
     }
 }

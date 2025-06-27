@@ -52,13 +52,6 @@ namespace HapetFrontend
                 return currentExpr;
             }
 
-            // assigning function to delegates is made different
-            if (targetType is DelegateType delT)
-            {
-                // WARN: it has to be handled in PP
-                return currentExpr;
-            }
-
             // creating a cast expr to return it further
             var targetExpr = new AstEmptyExpr(currentExpr)
             {

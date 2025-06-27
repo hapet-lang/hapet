@@ -41,8 +41,6 @@ namespace HapetLastPrepare
                     CreateGetSetForProps(pd);
                 else if (d is AstVarDecl vd)
                     CreateGetSetForStatic(vd);
-                else
-                    CreateRequiredInDecl(d);
             }
         }
     }

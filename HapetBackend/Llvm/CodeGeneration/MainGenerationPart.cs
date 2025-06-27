@@ -53,23 +53,22 @@ namespace HapetBackend.Llvm
         {
             _currentFunction = funcDecl;
 
+            // which imported functions has to be generated with body
+            var allowFunctionBodyToBeGenerated = funcDecl.IsImplOfGeneric || (funcDecl.ContainingParent?.IsImplOfGeneric ?? false) || 
+                (funcDecl.IsNestedDecl && funcDecl.ParentDecl.IsImplOfGeneric) || 
+                ((funcDecl.ContainingParent?.IsNestedDecl ?? false) && funcDecl.ContainingParent.ParentDecl.IsImplOfGeneric);
+
             funcType ??= HapetTypeToLLVMType(funcDecl.Type.OutType);            
 
             // if it is for metadata - only 'declares' would be generated that would be replaced with 'defines' in the future
             if (forMetadata)
             {
-                // making cool func name 
-                string funcName = $"{GenericsHelper.GetCodegenGenericName(funcDecl.Name, _messageHandler)}{funcDecl.Parameters.GetParamsString()}";
-                if (funcDecl.ContainingParent != null)
-                {
-                    string clsName = GenericsHelper.GetCodegenGenericName(funcDecl.ContainingParent.Name, _messageHandler);
-                    funcName = $"{clsName}::{funcName}";
-                }
+                string funcName = GenericsHelper.GetCodegenFunctionName(funcDecl, _messageHandler);
 
                 // declaring global func
                 LLVMValueRef lfunc = _module.AddFunction(funcName, funcType.Value);
 
-                if (funcDecl.IsImported && (!funcDecl.IsImplOfGeneric && !funcDecl.ContainingParent.IsImplOfGeneric))
+                if (funcDecl.IsImported && !allowFunctionBodyToBeGenerated)
                 {
                     // this is an imported function from another assembly
                     lfunc.Linkage = LLVMLinkage.LLVMExternalLinkage;
@@ -119,7 +118,7 @@ namespace HapetBackend.Llvm
             else
             {
                 // skip imported funcs that are not generics
-                if (funcDecl.IsImported && (!funcDecl.IsImplOfGeneric && !funcDecl.ContainingParent.IsImplOfGeneric))
+                if (funcDecl.IsImported && !allowFunctionBodyToBeGenerated)
                     return;
 
                 // skip interface funcs
@@ -173,7 +172,10 @@ namespace HapetBackend.Llvm
                     GenerateBlockExprCode(funcDecl.Body);
                 }
 
-                lfunc.VerifyFunction(LLVMVerifierFailureAction.LLVMPrintMessageAction);
+                if (!lfunc.VerifyFunction(LLVMVerifierFailureAction.LLVMReturnStatusAction))
+                {
+                    _messageHandler.ReportMessage([$"Failed to validate function '{lfunc.Name}'"], ErrorCode.Get(CTEN.LLVMValidateError), ReportType.Error);
+                }
             }
         }
 
