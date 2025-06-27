@@ -74,6 +74,7 @@ namespace HapetPostPrepare
                         _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, theField, [pp.Name.Name], ErrorCode.Get(CTEN.ClassPropFieldExists));
                 }
             }
+            PrepareEventFields(allFields);
 
             // getting all fields and props and error if there are equal names
             var allFieldsAndProps = structDecl.Declarations.Where(x => x is AstVarDecl).Select(x => x as AstVarDecl).ToList();
@@ -179,6 +180,7 @@ namespace HapetPostPrepare
                         _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, theField, [pp.Name.Name], ErrorCode.Get(CTEN.ClassPropFieldExists));
                 }
             }
+            PrepareEventFields(allFields);
 
             // getting all fields and props and error if there are equal names
             var allFieldsAndProps = classDecl.Declarations.Where(x => x is AstVarDecl).Select(x => x as AstVarDecl).ToList();
@@ -639,6 +641,17 @@ namespace HapetPostPrepare
                 !funcDecl.IsPropertyFunction)
             {
                 _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, funcDecl.Name, [], ErrorCode.Get(CTEN.AbsMethodWithBody));
+            }
+        }
+
+        private void PrepareEventFields(IEnumerable<AstVarDecl> fields)
+        {
+            foreach (var field in fields) 
+            {
+                if (!field.IsEvent)
+                    continue;
+
+                field.Type = new AstNestedExpr(new AstIdGenericExpr("System.Event", [field.Type], field.Type), null, field.Type);
             }
         }
     }

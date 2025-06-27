@@ -82,15 +82,14 @@ namespace HapetPostPrepare
             }
 
             // when assigning to a delegate type - function name is expected
-            if (valueHandler is not AstNestedExpr nestFuncName)
+            if (valueHandler is not AstNestedExpr nestFuncName || nestFuncName.RightPart is not AstIdExpr idFuncName)
             {
+                // try to just infer the value
+                PostPrepareExprInference(valueHandler, inInfo, ref outInfo);
+                if (valueHandler.OutType is DelegateType)
+                    return valueHandler; // all is ok
+
                 _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, valueHandler, [], ErrorCode.Get(CTEN.DelegFuncNameExpected));
-                return valueHandler;
-            }
-            // when assigning to a delegate type - function name is expected
-            if (nestFuncName.RightPart is not AstIdExpr idFuncName)
-            {
-                _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, valueHandler, [], ErrorCode.Get(CTEN.CommonIdentifierExpected));
                 return valueHandler;
             }
 
@@ -210,19 +209,25 @@ namespace HapetPostPrepare
             // setting parameters
             if (nestFuncName.RightPart.OutType is FunctionType ft)
             {
-                // checking if it is a static func
-                bool isStaticFunc = ft.Declaration.SpecialKeys.Contains(TokenType.KwStatic);
                 // call expr type is the same as func return type
-                nestFuncName.OutType = ft;
-
+                value.OutType = ft;
                 // no need anymore
                 nestFuncName.LeftPart = null;
 
+                // checking if it is a static func
+                bool isStaticFunc = ft.Declaration.SpecialKeys.Contains(TokenType.KwStatic);
                 // warn if accessing from an object
                 if (accessingFromAnObject && isStaticFunc)
                 {
                     _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, valueHandler, [], ErrorCode.Get(CTWN.StaticFuncFromObject), null, ReportType.Warning);
                 }
+            }
+            else if (nestFuncName.RightPart.OutType is DelegateType dt)
+            {
+                // call expr type is the same as func return type
+                value.OutType = dt;
+                // no need anymore
+                nestFuncName.LeftPart = null;
             }
             else
             {

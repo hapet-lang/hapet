@@ -542,7 +542,8 @@ namespace HapetLastPrepare
 
             bool CheckForStaticConst(AstDeclaration decl, AstIdExpr varName, ref OutInfo outInfoInside)
             {
-                if (decl is AstVarDecl vd && (vd.SpecialKeys.Contains(TokenType.KwStatic) || vd.SpecialKeys.Contains(TokenType.KwConst)))
+                if (decl is not AstPropertyDecl && decl is AstVarDecl vd && 
+                    (vd.SpecialKeys.Contains(TokenType.KwStatic) || vd.SpecialKeys.Contains(TokenType.KwConst)))
                 {
                     outInfoInside.VarDecl = vd;
                     // if getting var to set smth

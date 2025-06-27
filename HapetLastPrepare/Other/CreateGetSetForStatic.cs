@@ -47,7 +47,7 @@ namespace HapetLastPrepare
             {
                 fSet = new AstFuncDecl(new List<AstParamDecl>()
                 {
-                    new AstParamDecl(varDecl.Type.GetDeepCopy() as AstExpression, new AstIdExpr("value", varDecl.Name.Location), location : varDecl.Name.Location)
+                    new AstParamDecl(varDecl.Type.GetDeepCopy() as AstExpression, new AstIdExpr("value", varDecl.Name.Location), location: varDecl.Name.Location)
                 },
                 new AstIdExpr("void", varDecl.Name.Location),
                 new AstBlockExpr(new List<AstStatement>()
