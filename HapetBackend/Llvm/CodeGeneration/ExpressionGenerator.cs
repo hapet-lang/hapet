@@ -54,6 +54,7 @@ namespace HapetBackend.Llvm
                 case AstArrayCreateExpr arrayCreateExpr: return GenerateArrayCreateExprCode(arrayCreateExpr, getPtr);
                 case AstArrayAccessExpr arrayAccessExpr: return GenerateArrayAccessExprCode(arrayAccessExpr, getPtr);
                 case AstTernaryExpr ternaryExpr: return GenerateTernaryExprCode(ternaryExpr);
+                case AstCheckedExpr checkedExpr: return GenerateCheckedExprCode(checkedExpr);
                 case AstEmptyStructExpr emptyStructExpr: return GenerateEmptyStructExprCode(emptyStructExpr);
 
                 case AstNullExpr nullExpr: return GenerateNullExprCode(nullExpr);
@@ -1147,6 +1148,12 @@ namespace HapetBackend.Llvm
             // need to make a ptr to a class
             var resultType = expr.OutType;
             return _builder.BuildLoad2(HapetTypeToLLVMType(resultType), varPtr, "ternLoaded");
+        }
+
+        private unsafe LLVMValueRef GenerateCheckedExprCode(AstCheckedExpr expr)
+        {
+            // TODO: 
+            return GenerateExpressionCode(expr.SubExpression);
         }
 
         private unsafe LLVMValueRef GenerateEmptyStructExprCode(AstEmptyStructExpr expr)
