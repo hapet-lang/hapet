@@ -73,17 +73,25 @@ namespace HapetPostPrepare
             // TODO: probably needed when allowing delegates for non-static funcs
             //var delegateParams = targetType.TargetDeclaration.Parameters.Skip(1).ToList(); // no need for the first param
 
-            // when assigning to a delegate type - function name is expected
-            if (value is not AstNestedExpr nestFuncName)
+            AstExpression valueHandler = value;
+            // if it is an AstIdExpr - make a nested
+            if (value is AstIdExpr valueId)
             {
-                _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, value, [], ErrorCode.Get(CTEN.DelegFuncNameExpected));
-                return value;
+                valueHandler = new AstNestedExpr(valueId, null);
+                valueHandler.SetDataFromStmt(valueId);
+            }
+
+            // when assigning to a delegate type - function name is expected
+            if (valueHandler is not AstNestedExpr nestFuncName)
+            {
+                _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, valueHandler, [], ErrorCode.Get(CTEN.DelegFuncNameExpected));
+                return valueHandler;
             }
             // when assigning to a delegate type - function name is expected
             if (nestFuncName.RightPart is not AstIdExpr idFuncName)
             {
-                _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, value, [], ErrorCode.Get(CTEN.CommonIdentifierExpected));
-                return value;
+                _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, valueHandler, [], ErrorCode.Get(CTEN.CommonIdentifierExpected));
+                return valueHandler;
             }
 
             // usually when in the same class
@@ -103,61 +111,97 @@ namespace HapetPostPrepare
             // renaming func call name from 'Anime' to 'Anime(int, float)' WITH OBJECT AS FIRST PARAM
             else if (nestFuncName.LeftPart == null)
             {
-                var currentParent = _currentParentStack.GetNearestParentClassOrStruct();
-                // if the type/object name is not presented - the function is in the same class
-                // but we need to know is it static or not
-                newName = idFuncName.GetCopy($"{currentParent.Name.Name}::{idFuncName.Name}{delegateParams.GetParamsString()}");
-                var smbl2 = idFuncName.Scope.GetSymbol(newName);
-                if (smbl2 is DeclSymbol)
+                // at first we need to search for the symbol in local scope - it could be a var with delegate type
+                var smbl2 = idFuncName.Scope.GetSymbol(idFuncName, handleGenerics: true);
+                if (smbl2 is DeclSymbol dclS && dclS.Decl is not AstFuncDecl)
                 {
-                    // static func defined in local class
+                    newName = dclS.Name.GetCopy();
+                }
+                else if (smbl2 is DeclSymbol dclS2 && dclS2.Decl is AstFuncDecl func && func.IsNestedDecl)
+                {
+                    // func defined in function
+                    newName = func.Name.GetCopy();
                 }
                 else
                 {
-                    // if it is a non static func defined in local class
-                    newName = idFuncName.GetCopy($"{currentParent.Name.Name}::{idFuncName.Name}{delegateParams.GetParamsString(PointerType.GetPointerType(currentParent.Type.OutType))}");
-                    accessingFromAnObject = true;
-                    // we need to create this one because code generator requires the parameter of this shite
-                    nestFuncName.LeftPart = new AstNestedExpr(new AstIdExpr("this"), null, value);
-                    SetScopeAndParent(nestFuncName.LeftPart, value);
-                    PostPrepareExprScoping(nestFuncName.LeftPart);
-                    PostPrepareExprInference(nestFuncName.LeftPart, inInfo, ref outInfo);
-                }
-            }
-            else if (nestFuncName.LeftPart.OutType is PointerType ptrTp && ptrTp.TargetType is ClassType clsTp)
-            {
-                // if we are calling like 'a.Anime()' where 'a' is an object
-                // we need to rename the func name call like that:
-                newName = idFuncName.GetCopy($"{clsTp.Declaration.Name.Name}::{idFuncName.Name}{delegateParams.GetParamsString(nestFuncName.LeftPart.OutType)}");
-                // check if the decl exists. if not - it could be static method call from an object
-                if (clsTp.Declaration.SubScope.GetSymbol(newName) == null)
-                {
-                    // getting the name but without object first param
-                    newName = idFuncName.GetCopy($"{clsTp.Declaration.Name.Name}::{idFuncName.Name}{delegateParams.GetParamsString()}");
-                }
-                accessingFromAnObject = true;
-            }
-            else if (nestFuncName.LeftPart.OutType is ClassType clsTpStatic)
-            {
-                // if we are calling like 'A.Anime()' where 'A' is a class
-                // we need to rename the func name call like that:
-                newName = idFuncName.GetCopy($"{clsTpStatic.Declaration.Name.Name}::{idFuncName.Name}{delegateParams.GetParamsString()}");
-                // check if the decl exists. if not - it could be non static method call from a class name
-                if (clsTpStatic.Declaration.SubScope.GetSymbol(newName) == null)
-                {
-                    // getting the name but without object first param
-                    newName = idFuncName.GetCopy($"{clsTpStatic.Declaration.Name.Name}::{idFuncName.Name}{delegateParams.GetParamsString(PointerType.GetPointerType(clsTpStatic))}");
-                    // error because user tries to access non static method from a class name
-                    if (clsTpStatic.Declaration.SubScope.GetSymbol(newName) != null)
+                    var currentParent = _currentParentStack.GetNearestParentClassOrStruct();
+
+                    var args = delegateParams.GetArgsFromParams();
+                    var smbl3 = GetFuncFromCandidates(idFuncName, args, currentParent, false, out var _);
+                    if (smbl3 != null)
                     {
-                        _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, idFuncName, [], ErrorCode.Get(CTEN.NonStaticFuncFromStatic));
+                        newName = smbl3.Name.GetCopy();
+                    }
+                    else
+                    {
+                        args = delegateParams.GetArgsFromParams(currentParent.Type.OutType);
+                        smbl3 = GetFuncFromCandidates(idFuncName, args, currentParent, true, out var _);
+                        if (smbl3 != null)
+                        {
+                            // if it is a non static func defined in local class
+                            newName = smbl3.Name.GetCopy();
+                            accessingFromAnObject = true;
+
+                            // we need to create this one because code generator requires the parameter of this shite
+                            nestFuncName.LeftPart = new AstNestedExpr(new AstIdExpr("this"), null, valueHandler);
+                            SetScopeAndParent(nestFuncName.LeftPart, valueHandler);
+                            PostPrepareExprScoping(nestFuncName.LeftPart);
+                            PostPrepareExprInference(nestFuncName.LeftPart, inInfo, ref outInfo);
+                        }
+                        else
+                        {
+                            // not found anything
+                        }
                     }
                 }
             }
-            else
+            else if (nestFuncName.LeftPart.OutType is ClassType clsTp)
             {
-                // error here: the function call could not be infered
-                _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, value, [], ErrorCode.Get(CTEN.FuncNotInfered));
+                // this check is done to handle static-call
+                if (nestFuncName.LeftPart.TryGetDeclSymbol(true) is DeclSymbol dds2 && dds2.Decl is AstClassDecl cls)
+                {
+                    // if we are calling like 'A.Anime()' where 'A' is a class
+                    var args = delegateParams.GetArgsFromParams();
+                    var smbl3 = GetFuncFromCandidates(idFuncName, args, cls, false, out var _);
+                    // check if the decl exists. if not - it could be non static method call from a class name
+                    if (smbl3 == null)
+                    {
+                        // getting the name but without object first param
+                        args = delegateParams.GetArgsFromParams(clsTp);
+                        smbl3 = GetFuncFromCandidates(idFuncName, args, cls, true, out var _);
+                        // error because user tries to access non static method from a class name
+                        if (smbl3 != null)
+                        {
+                            _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, idFuncName, [], ErrorCode.Get(CTEN.NonStaticFuncFromStatic));
+                        }
+                    }
+                    else
+                    {
+                        newName = smbl3.Name.GetCopy();
+                    }
+                }
+                else
+                {
+                    // if we are calling like 'a.Anime()' where 'a' is an object
+                    var args = delegateParams.GetArgsFromParams(clsTp);
+                    var smbl3 = GetFuncFromCandidates(idFuncName, args, clsTp.Declaration, true, out var _);
+                    // check if the decl exists. if not - it could be static method call from an object
+                    if (smbl3 == null)
+                    {
+                        // not found
+                    }
+                    else
+                    {
+                        newName = smbl3.Name.GetCopy();
+                        accessingFromAnObject = true;
+                    }
+                }
+            }
+            if (newName == null)
+            {
+                // error here: the function could not be infered
+                _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, valueHandler, [], ErrorCode.Get(CTEN.FuncNotInfered));
+                return value;
             }
 
             nestFuncName.RightPart = newName;
@@ -177,13 +221,13 @@ namespace HapetPostPrepare
                 // warn if accessing from an object
                 if (accessingFromAnObject && isStaticFunc)
                 {
-                    _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, value, [], ErrorCode.Get(CTWN.StaticFuncFromObject), null, ReportType.Warning);
+                    _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, valueHandler, [], ErrorCode.Get(CTWN.StaticFuncFromObject), null, ReportType.Warning);
                 }
             }
             else
             {
                 // error here
-                _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, value, [], ErrorCode.Get(CTEN.ExprExpectedToBeFunc));
+                _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, valueHandler, [], ErrorCode.Get(CTEN.ExprExpectedToBeFunc));
             }
 
             return value;

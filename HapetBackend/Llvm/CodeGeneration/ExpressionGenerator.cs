@@ -616,7 +616,7 @@ namespace HapetBackend.Llvm
                     OutType = expr.OutType,
                     Scope = expr.Scope,
                 });
-                var ctorSymbol = _postPreparer.GetFuncFromCandidates(new AstIdExpr(ctorName), null, argsWithClassParam, classType.Declaration, true, out var casts);
+                var ctorSymbol = _postPreparer.GetFuncFromCandidates(new AstIdExpr(ctorName), argsWithClassParam, classType.Declaration, true, out var casts);
 
                 // error if ctor not found
                 if (ctorSymbol == null)
@@ -666,7 +666,7 @@ namespace HapetBackend.Llvm
                     Scope = expr.Scope,
                     ArgumentModificator = ParameterModificator.Ref
                 });
-                var ctorSymbol = _postPreparer.GetFuncFromCandidates(new AstIdExpr(ctorName), null, argsWithClassParam, structType.Declaration, true, out var casts);
+                var ctorSymbol = _postPreparer.GetFuncFromCandidates(new AstIdExpr(ctorName), argsWithClassParam, structType.Declaration, true, out var casts);
 
                 // error if ctor not found
                 if (ctorSymbol == null)
@@ -1625,7 +1625,7 @@ namespace HapetBackend.Llvm
             var ctorName = $"{onlyName}_ctor";
             List<AstArgumentExpr> argsWithClassParam = new List<AstArgumentExpr>(baseStmt.Arguments);
             argsWithClassParam.Insert(0, new AstArgumentExpr(baseStmt.ThisArgument));
-            var ctorSymbol = _postPreparer.GetFuncFromCandidates(new AstIdExpr(ctorName), null, argsWithClassParam, baseStmt.BaseType.Declaration, true, out var casts);
+            var ctorSymbol = _postPreparer.GetFuncFromCandidates(new AstIdExpr(ctorName), argsWithClassParam, baseStmt.BaseType.Declaration, true, out var casts);
 
             // error if ctor not found
             if (ctorSymbol == null)

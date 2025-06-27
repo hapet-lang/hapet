@@ -49,38 +49,27 @@ namespace HapetFrontend.Extensions
             }
         }
 
-        public static string GetArgsString(this List<AstArgumentExpr> args, HapetType containingClass = null)
+        public static List<AstArgumentExpr> GetArgsFromParams(this List<AstParamDecl> pars, HapetType containingClass = null)
         {
-            // WARN: ':' is used so linker would work :)))
-            StringBuilder sb = new StringBuilder();
-            sb.Append('(');
-
-            // class is passed as a first parameter
+            List<AstArgumentExpr> args = new List<AstArgumentExpr>();
             if (containingClass != null)
             {
-                sb.Append(HapetType.AsString(containingClass));
-                if (args.Count > 0)
-                    sb.Append(':');
+                var arg = new AstArgumentExpr(new AstEmptyExpr()
+                {
+                    OutType = containingClass
+                })
+                {
+                    OutType = containingClass
+                };
+                args.Add(arg);
             }
-
-            for (int i = 0; i < args.Count; i++)
+            foreach (var p in pars)
             {
-                // null is handled in another way
-                var a = args[i];
-                if (a.Expr is AstNullExpr)
-                {
-                    sb.Append("null");
-                }
-                else
-                {
-                    sb.Append(a.OutType != null ? HapetType.AsString(a.OutType) : string.Empty);
-                }
-
-                if (i != args.Count - 1)
-                    sb.Append(':');
+                var arg = new AstArgumentExpr(p.Type);
+                arg.SetDataFromStmt(p.Type);
+                args.Add(arg);
             }
-            sb.Append(')');
-            return sb.ToString();
+            return args;
         }
 
         public static string GetParamsString(this List<AstParamDecl> pars, HapetType containingClass = null)

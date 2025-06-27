@@ -15,16 +15,16 @@ namespace HapetPostPrepare
 {
     public partial class PostPrepare
     {
-        public DeclSymbol GetFuncFromCandidates(AstIdExpr name, AstCallExpr callExpr, List<AstArgumentExpr> args, 
+        public DeclSymbol GetFuncFromCandidates(AstIdExpr name, List<AstArgumentExpr> args, 
             AstDeclaration declToSearch, bool callFromObject, out List<AstExpression> castsToBeDone)
         {
             castsToBeDone = new List<AstExpression>();
 
             // getting all the candidates
-            List<DeclSymbol> candidates = GetAllCandidates(name, callExpr, declToSearch, args, callFromObject);
+            List<DeclSymbol> candidates = GetAllCandidates(name, declToSearch, args, callFromObject);
 
             // handle explicit shite
-            CheckAndPrepareExplicitFuncs(candidates, callExpr);
+            CheckAndPrepareExplicitFuncs(candidates, name);
 
             // there has to be only one func when no args is set
             if (args == null)
@@ -32,7 +32,7 @@ namespace HapetPostPrepare
                 if (candidates.Count > 1)
                 {
                     // error
-                    _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, callExpr, 
+                    _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, name, 
                         [candidates[0].Name.Name, candidates[1].Name.Name], 
                         ErrorCode.Get(CTEN.AmbiguousFunctionCall));
                 }
@@ -169,7 +169,7 @@ namespace HapetPostPrepare
                 if (declWithScores[1].Item1 == best.Item1)
                 {
                     // ambiguous error here that there are two func and we dk which one to call
-                    _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, callExpr,
+                    _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, name,
                         [best.Item2.Name.Name, declWithScores[1].Item2.Name.Name],
                         ErrorCode.Get(CTEN.AmbiguousFunctionCall));
                 }
@@ -295,7 +295,7 @@ namespace HapetPostPrepare
             return normalArgs;
         }
 
-        private static List<DeclSymbol> GetAllCandidates(AstIdExpr name, AstCallExpr callExpr, AstDeclaration declToSearch, 
+        private static List<DeclSymbol> GetAllCandidates(AstIdExpr name, AstDeclaration declToSearch, 
             List<AstArgumentExpr> args, bool callFromObject)
         {
             List<DeclSymbol> candidates = new List<DeclSymbol>();
@@ -571,7 +571,7 @@ namespace HapetPostPrepare
             }
         }
 
-        private void CheckAndPrepareExplicitFuncs(List<DeclSymbol> decls, AstCallExpr callExpr)
+        private void CheckAndPrepareExplicitFuncs(List<DeclSymbol> decls, AstIdExpr funcName)
         {
             // return when less than 1 - not explicit
             if (decls.Count < 1)
@@ -613,7 +613,7 @@ namespace HapetPostPrepare
 
             if (thereWasExplicitShite && decls.Count == 0)
             {
-                _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, callExpr?.FuncName, [callExpr?.FuncName.Name], ErrorCode.Get(CTEN.ExplicitMethodCall));
+                _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, funcName, [funcName.Name], ErrorCode.Get(CTEN.ExplicitMethodCall));
             }
         }
     }

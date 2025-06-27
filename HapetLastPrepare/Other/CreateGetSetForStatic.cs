@@ -26,8 +26,8 @@ namespace HapetLastPrepare
                 varDecl.Type.GetDeepCopy() as AstExpression,
                 new AstBlockExpr(new List<AstStatement>()
                 {
-                    new AstReturnStmt(varDecl.Name.GetCopy())
-                }), new AstIdExpr($"get_{varDecl.Name.Name}"));
+                    new AstReturnStmt(varDecl.Name.GetCopy(), varDecl.Name.Location)
+                }, varDecl.Name.Location), new AstIdExpr($"get_{varDecl.Name.Name}", varDecl.Name.Location), location: varDecl.Name.Location);
 
             fGet.SpecialKeys.Add(Lexer.CreateToken(TokenType.KwStatic, varDecl.Location.Beginning));
             if (SpecialKeysHelper.HasSpecialKeyType(varDecl, 1, out int ind))
@@ -47,14 +47,14 @@ namespace HapetLastPrepare
             {
                 fSet = new AstFuncDecl(new List<AstParamDecl>()
                 {
-                    new AstParamDecl(varDecl.Type.GetDeepCopy() as AstExpression, new AstIdExpr("value"))
+                    new AstParamDecl(varDecl.Type.GetDeepCopy() as AstExpression, new AstIdExpr("value", varDecl.Name.Location), location : varDecl.Name.Location)
                 },
-                new AstIdExpr("void"),
+                new AstIdExpr("void", varDecl.Name.Location),
                 new AstBlockExpr(new List<AstStatement>()
                 {
-                    new AstAssignStmt(new AstNestedExpr(varDecl.Name.GetCopy(), null), new AstIdExpr("value")),
-                    new AstReturnStmt(null)
-                }), new AstIdExpr($"set_{varDecl.Name.Name}"));
+                    new AstAssignStmt(new AstNestedExpr(varDecl.Name.GetCopy(), null, varDecl.Name.Location), new AstIdExpr("value", varDecl.Name.Location), varDecl.Name.Location),
+                    new AstReturnStmt(null, varDecl.Name.Location)
+                }, varDecl.Name.Location), new AstIdExpr($"set_{varDecl.Name.Name}", varDecl.Name.Location), location: varDecl.Name.Location);
 
                 fSet.SpecialKeys.Add(Lexer.CreateToken(TokenType.KwStatic, varDecl.Location.Beginning));
                 if (SpecialKeysHelper.HasSpecialKeyType(varDecl, 1, out int ind2))
