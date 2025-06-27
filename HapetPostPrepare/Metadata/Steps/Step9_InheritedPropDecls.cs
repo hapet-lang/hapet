@@ -16,7 +16,11 @@ namespace HapetPostPrepare
         private void PostPrepareMetadataTypeInheritedPropsDecls(AstStatement stmt)
         {
             // this is needed just to check that all virtual/abstract props are implemented
-            GetDeclarationProps__(stmt as AstDeclaration);
+            var virtProps = GetDeclarationProps__(stmt as AstDeclaration);
+            if (stmt is AstClassDecl cls)
+                cls.AllVirtualProps = virtProps;
+            else if (stmt is AstStructDecl str)
+                str.AllVirtualProps = virtProps;
         }
 
         // to check all virtual/abstract props including inherited

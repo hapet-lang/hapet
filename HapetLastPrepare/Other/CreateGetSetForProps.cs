@@ -21,6 +21,20 @@ namespace HapetLastPrepare
                 _postPreparer.SetScopeAndParent(d, propDecl);
                 _postPreparer.PostPrepareDeclScoping(d);
                 _postPreparer.PostPrepareStatementUpToCurrentStep(d);
+
+                // we need to add the funcs to arr
+                if ((propDecl.SpecialKeys.ContainsAny(TokenType.KwAbstract, TokenType.KwVirtual, TokenType.KwOverride) ||
+                    propDecl.ContainingParent.GetAllVirtualProps().Contains(propDecl)) &&
+                    d is AstFuncDecl fncD)
+                {
+                    List<AstFuncDecl> virt = null;
+                    if (propDecl.ContainingParent is AstClassDecl clsD)
+                        virt = clsD.AllVirtualMethods;
+                    else if (propDecl.ContainingParent is AstStructDecl strD)
+                        virt = strD.AllVirtualMethods;
+
+                    virt?.Add(fncD);
+                }
             }
         }
 

@@ -36,6 +36,10 @@ namespace HapetLastPrepare
             if (_compiler.MessageHandler.HasErrors)
                 return 0;
 
+            AppendVirtuals();
+            if (_compiler.MessageHandler.HasErrors)
+                return 0;
+
             return 0;
         }
     }

@@ -161,6 +161,24 @@ namespace HapetFrontend.Ast
             return new List<AstDeclaration>();
         }
 
+        public List<AstPropertyDecl> GetAllVirtualProps()
+        {
+            if (this is AstClassDecl clsDecl)
+                return clsDecl.AllVirtualProps;
+            else if (this is AstStructDecl strDecl)
+                return strDecl.AllVirtualProps;
+            return new List<AstPropertyDecl>();
+        }
+
+        public List<AstFuncDecl> GetAllVirtualMethods()
+        {
+            if (this is AstClassDecl clsDecl)
+                return clsDecl.AllVirtualMethods;
+            else if (this is AstStructDecl strDecl)
+                return strDecl.AllVirtualMethods;
+            return new List<AstFuncDecl>();
+        }
+
         /// <summary>
         /// Returns all the fields (including inherited) 
         /// to properly calculate size to alloc and other cringe

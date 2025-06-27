@@ -16,6 +16,11 @@ namespace HapetFrontend.Extensions
             return tokens.FirstOrDefault(x => x.Type == tt) != null;
         }
 
+        public static bool ContainsAny(this List<Token> tokens, params TokenType[] tt)
+        {
+            return tokens.Any(x => tt.Contains(x.Type));
+        }
+
         public static Token GetType(this List<Token> tokens, TokenType tt)
         {
             return tokens.FirstOrDefault(x => x.Type == tt);

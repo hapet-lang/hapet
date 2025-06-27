@@ -27,6 +27,10 @@ namespace HapetFrontend.Ast.Declarations
         /// All original virtual methods (including inherited) 
         /// </summary>
         public List<AstFuncDecl> AllVirtualMethods { get; set; }
+        /// <summary>
+        /// Used by get/set generator to be able to put these get/set's into <see cref="AllVirtualMethods"/>
+        /// </summary>
+        public List<AstPropertyDecl> AllVirtualProps { get; set; }
 
         public override string AAAName => nameof(AstStructDecl);
 
