@@ -731,6 +731,76 @@ namespace HapetBackend.Llvm
             _builder.BuildStore(allocated, fti);
         }
 
+        #region Delegate shite
+        private LLVMTypeRef GetDelegateAnonType(DelegateType delType)
+        {
+            LLVMTypeRef delegateIrType;
+            var delDecl = delType.TargetDeclaration;
+            if (_delegateAnonTypes.TryGetValue(delType.ToCringeString(), out LLVMTypeRef irType))
+            {
+                delegateIrType = irType;
+            }
+            else
+            {
+                List<LLVMTypeRef> paramTypes = delDecl.Parameters.Select(rt => HapetTypeToLLVMType(rt.Type.OutType)).ToList();
+                var returnType = HapetTypeToLLVMType(delDecl.Returns.OutType);
+                var funcType = LLVMTypeRef.CreateFunction(returnType, paramTypes.ToArray(), false);
+
+                // fields of delegate struct
+                var objectPtr = HapetTypeToLLVMType(PointerType.GetPointerType(HapetType.CurrentTypeContext.GetIntType(1, false))); // ptr to func object
+                var funcPtr = funcType.GetPointerTo();
+
+                delegateIrType = _context.CreateNamedStruct($"delegate.anon.{delType.ToCringeString()}");
+                delegateIrType.StructSetBody(new LLVMTypeRef[] {
+                            ((LLVMTypeRef)funcPtr),
+                            ((LLVMTypeRef)objectPtr)
+                        }, false);
+                _delegateAnonTypes[delType.ToCringeString()] = delegateIrType;
+            }
+            return delegateIrType;
+        }
+
+        private LLVMTypeRef GetDelegateAnonType(FunctionType fncType)
+        {
+            LLVMTypeRef delegateIrType;
+            var fncDecl = fncType.Declaration;
+            if (_delegateAnonTypes.TryGetValue(fncType.ToCringeString(), out LLVMTypeRef irType))
+            {
+                delegateIrType = irType;
+            }
+            else
+            {
+                List<LLVMTypeRef> paramTypes;
+                // creating anon delegate type
+                if (fncType.IsStaticFunction())
+                {
+                    // the func is static...
+                    paramTypes = fncDecl.Parameters.Select(rt => HapetTypeToLLVMType(rt.Type.OutType)).ToList();
+                }
+                else
+                {
+                    // the func is non-static...
+                    // skip the first param with class object ptr
+                    paramTypes = fncDecl.Parameters.Skip(1).Select(rt => HapetTypeToLLVMType(rt.Type.OutType)).ToList();
+                }
+                var returnType = HapetTypeToLLVMType(fncDecl.Returns.OutType);
+                var funcType = LLVMTypeRef.CreateFunction(returnType, paramTypes.ToArray(), false);
+
+                // fields of delegate struct
+                var objectPtr = HapetTypeToLLVMType(PointerType.GetPointerType(HapetType.CurrentTypeContext.GetIntType(1, false))); // ptr to func object
+                var funcPtr = funcType.GetPointerTo();
+
+                delegateIrType = _context.CreateNamedStruct($"delegate.anon.{fncType.ToCringeString()}");
+                delegateIrType.StructSetBody(new LLVMTypeRef[] {
+                            ((LLVMTypeRef)funcPtr),
+                            ((LLVMTypeRef)objectPtr)
+                        }, false);
+                _delegateAnonTypes[fncType.ToCringeString()] = delegateIrType;
+            }
+            return delegateIrType;
+        }
+        #endregion
+
         #region Mallocs
         private LLVMValueRef GetMalloc(int typeSize, int amount, string allocName = "allocated")
         {

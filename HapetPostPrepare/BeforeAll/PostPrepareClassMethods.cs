@@ -34,10 +34,14 @@ namespace HapetPostPrepare
             if (decl is AstClassDecl classDecl)
             {
                 PostPrepareClassMethodsInternal(classDecl, file.IsImported);
+                foreach (var d in classDecl.Declarations)
+                    PostPrepareDeclMethodsInternal(d, file); // probably nested decls
             }
             else if (decl is AstStructDecl structDecl)
             {
                 PostPrepareStructMethodsInternal(structDecl, file.IsImported);
+                foreach (var d in structDecl.Declarations)
+                    PostPrepareDeclMethodsInternal(d, file); // probably nested decls
             }
         }
 
@@ -580,8 +584,6 @@ namespace HapetPostPrepare
         {
             if (decl is not AstFuncDecl funcDecl)
             {
-                // probably nested decls
-                PostPrepareDeclMethodsInternal(decl, parentDecl.SourceFile);
                 return;
             }
 

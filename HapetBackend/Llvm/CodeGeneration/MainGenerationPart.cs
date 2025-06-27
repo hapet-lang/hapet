@@ -69,7 +69,7 @@ namespace HapetBackend.Llvm
                 // declaring global func
                 LLVMValueRef lfunc = _module.AddFunction(funcName, funcType.Value);
 
-                if (funcDecl.IsImported && !funcDecl.IsImplOfGeneric)
+                if (funcDecl.IsImported && (!funcDecl.IsImplOfGeneric && !funcDecl.ContainingParent.IsImplOfGeneric))
                 {
                     // this is an imported function from another assembly
                     lfunc.Linkage = LLVMLinkage.LLVMExternalLinkage;
@@ -119,7 +119,7 @@ namespace HapetBackend.Llvm
             else
             {
                 // skip imported funcs that are not generics
-                if (funcDecl.IsImported && !funcDecl.IsImplOfGeneric)
+                if (funcDecl.IsImported && (!funcDecl.IsImplOfGeneric && !funcDecl.ContainingParent.IsImplOfGeneric))
                     return;
 
                 // skip interface funcs

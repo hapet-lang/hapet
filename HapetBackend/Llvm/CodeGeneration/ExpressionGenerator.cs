@@ -520,40 +520,8 @@ namespace HapetBackend.Llvm
             else if (expr.OutType is FunctionType fncType && theDecl is AstFuncDecl fncDecl)
             {
                 // this whole shite is done to create anon delegate of the specified function
-                LLVMTypeRef delegateIrType;
-                if (_delegateAnonTypes.TryGetValue(fncType.ToCringeString(), out LLVMTypeRef irType))
-                {
-                    delegateIrType = irType;
-                }
-                else
-                {
-                    List<LLVMTypeRef> paramTypes;
-                    // creating anon delegate type
-                    if (fncType.IsStaticFunction())
-                    {
-                        // the func is static...
-                        paramTypes = fncDecl.Parameters.Select(rt => HapetTypeToLLVMType(rt.Type.OutType)).ToList();
-                    }
-                    else
-                    {
-                        // the func is non-static...
-                        // skip the first param with class object ptr
-                        paramTypes = fncDecl.Parameters.Skip(1).Select(rt => HapetTypeToLLVMType(rt.Type.OutType)).ToList();
-                    }
-                    var returnType = HapetTypeToLLVMType(fncDecl.Returns.OutType);
-                    var funcType = LLVMTypeRef.CreateFunction(returnType, paramTypes.ToArray(), false);
-
-                    // fields of delegate struct
-                    var objectPtr = HapetTypeToLLVMType(PointerType.GetPointerType(HapetType.CurrentTypeContext.GetIntType(1, false))); // ptr to func object
-                    var funcPtr = funcType.GetPointerTo();
-
-                    delegateIrType = _context.CreateNamedStruct($"delegate.anon.{fncType.ToCringeString()}");
-                    delegateIrType.StructSetBody(new LLVMTypeRef[] {
-                            ((LLVMTypeRef)funcPtr),
-                            ((LLVMTypeRef)objectPtr)
-                        }, false);
-                    _delegateAnonTypes[fncType.ToCringeString()] = delegateIrType;
-                }
+                LLVMTypeRef delegateIrType = GetDelegateAnonType(fncType);
+                
                 // by default it is a nullptr
                 LLVMValueRef ptrToObject = LLVM.ConstPointerNull(HapetTypeToLLVMType(HapetType.CurrentTypeContext.GetIntType(1, false)));
                 LLVMValueRef ptrToFunc = _valueMap[declSymbol]; // mb ptr to?
@@ -806,7 +774,7 @@ namespace HapetBackend.Llvm
             else if (expr.FuncName.OutType is DelegateType delType)
             {
                 var hapetDelegate = GenerateIdExpr(expr.FuncName, true);
-                LLVMTypeRef delegateType = _delegateAnonTypes[delType.ToCringeString()];
+                LLVMTypeRef delegateType = GetDelegateAnonType(delType);
 
                 LLVMValueRef varPtr = default;
                 if (delType.TargetDeclaration.Returns.OutType is not VoidType)
