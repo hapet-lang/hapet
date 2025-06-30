@@ -3,9 +3,9 @@ using System;
 [SuppressStaticCtorCall]
 public struct TypeInfoUnsafe
 {
-    byte* Name;
-    TypeInfoUnsafe* Parent;
-    TypeInfoUnsafe** Interfaces;
-    int** InterfaceOffsets;
-    byte InterfaceCount;
+    public byte* Name;
+    public TypeInfoUnsafe* Parent;
+    public TypeInfoUnsafe** Interfaces;
+    public int** InterfaceOffsets;
+    public byte InterfaceCount;
 }

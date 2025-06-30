@@ -3,10 +3,10 @@ using System;
 [SuppressStaticCtorCall]
 public struct VirtualTableUnsafe
 {
-    VirtualTableUnsafe* Parent;
-    void** VirtualMethods; // ptr to malloc of ptrs to funcs
-    int VirtualMethodsCount;
-    VirtualTableUnsafe** Interfaces;
-    int** InterfaceOffsets;
-    byte InterfaceCount;
+    public VirtualTableUnsafe* Parent;
+    public void** VirtualMethods; // ptr to malloc of ptrs to funcs
+    public int VirtualMethodsCount;
+    public VirtualTableUnsafe** Interfaces;
+    public int** InterfaceOffsets;
+    public byte InterfaceCount;
 }

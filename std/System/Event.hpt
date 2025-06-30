@@ -4,9 +4,10 @@ public class Event<T>
 {
     internal List<T> _delegates = new List<T>();
 
-    public static void operator +(Event<T> me, T newDelegate)
+    public static Event<T> operator +(Event<T> me, T newDelegate)
     {
         me.Add(newDelegate);
+        return me;
     } 
 
     public void Add(T newDelegate)
@@ -14,9 +15,10 @@ public class Event<T>
         _delegates.Add(newDelegate);
     }
 
-    public static void operator -(Event<T> me, T oldDelegate)
+    public static Event<T> operator -(Event<T> me, T oldDelegate)
     {
         me.Remove(oldDelegate);
+        return me;
     } 
 
     public void Remove(T oldDelegate)
