@@ -130,9 +130,8 @@ namespace HapetFrontend.Parsing
                 return null;
             }
 
-            string name = AstOverloadDecl.GenerateName(overloadType, op, returns as AstNestedExpr);
             var endLocation = body == null ? possibleEndLocation : body.Ending;
-            var overload = new AstOverloadDecl(paramDecls, returns, body, new AstIdExpr(name), "", new Location(udecl.Beginning, endLocation));
+            var overload = new AstOverloadDecl(paramDecls, returns, body, new AstIdExpr(""), "", new Location(udecl.Beginning, endLocation));
 
             // set up shite
             overload.OverloadType = overloadType;

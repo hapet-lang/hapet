@@ -115,7 +115,7 @@ namespace HapetBackend.Llvm
                 if (mtd.SpecialKeys.Contains(HapetFrontend.Parsing.TokenType.KwAbstract))
                     methPtrs.Add(nullPtr);
                 else
-                    methPtrs.Add(_valueMap[mtd.GetSymbol]);
+                    methPtrs.Add(_valueMap[mtd.Symbol]);
             }
             methodsArray.Initializer = LLVMValueRef.CreateConstArray(arrayElementType, methPtrs.ToArray());
             methodsArray.IsGlobalConstant = true;

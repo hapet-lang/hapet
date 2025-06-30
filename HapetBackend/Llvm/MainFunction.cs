@@ -105,7 +105,7 @@ namespace HapetBackend.Llvm
             //var parsss = new LLVMValueRef[] { LLVM.ConstPointerNull(HapetTypeToLLVMType(HapetType.CurrentTypeContext.GetArrayType(HapetType.CurrentTypeContext.StringTypeInstance))) };
 
             { // call main function
-                var hapetMain = _valueMap[_compiler.MainFunction.GetSymbol];
+                var hapetMain = _valueMap[_compiler.MainFunction.Symbol];
                 LLVMTypeRef funcType = _typeMap[_compiler.MainFunction.Type.OutType];
                 var exitCode = _builder.BuildCall2(funcType, hapetMain, parsss, "exitCode");
                 _builder.BuildRet(exitCode);

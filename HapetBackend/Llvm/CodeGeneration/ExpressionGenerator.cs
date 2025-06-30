@@ -119,7 +119,7 @@ namespace HapetBackend.Llvm
                     return default;
 
                 var fncType = _typeMap[userDef.Function];
-                var fncValue = _valueMap[userDef.Function.Declaration.GetSymbol];
+                var fncValue = _valueMap[userDef.Function.Declaration.Symbol];
 
                 return _builder.BuildCall2(fncType, fncValue, new LLVMValueRef[] { value }, "unOp");
             }
@@ -176,7 +176,7 @@ namespace HapetBackend.Llvm
                 {
                     var value = GenerateExpressionCode(expr);
                     var fncType = _typeMap[userDef.Function];
-                    var fncValue = _valueMap[userDef.Function.Declaration.GetSymbol];
+                    var fncValue = _valueMap[userDef.Function.Declaration.Symbol];
                     _builder.BuildCall2(fncType, fncValue, new LLVMValueRef[] { value });
                 }
             }
@@ -445,7 +445,7 @@ namespace HapetBackend.Llvm
                     return default;
 
                 var fncType = _typeMap[userDef.Function];
-                var fncValue = _valueMap[userDef.Function.Declaration.GetSymbol];
+                var fncValue = _valueMap[userDef.Function.Declaration.Symbol];
 
                 return _builder.BuildCall2(fncType, fncValue, new LLVMValueRef[] { left, right }, "binOp");
             }
@@ -719,7 +719,7 @@ namespace HapetBackend.Llvm
 
             if (expr.FuncName.OutType is FunctionType fncType)
             {
-                var hapetFunc = _valueMap[fncType.Declaration.GetSymbol];
+                var hapetFunc = _valueMap[fncType.Declaration.Symbol];
                 LLVMTypeRef funcType = _typeMap[fncType];
 
                 LLVMValueRef varPtr = default;

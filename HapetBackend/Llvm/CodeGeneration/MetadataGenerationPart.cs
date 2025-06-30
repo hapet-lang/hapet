@@ -191,7 +191,7 @@ namespace HapetBackend.Llvm
                     var globStatic = _module.AddGlobal(HapetTypeToLLVMType(decl.Type.OutType), $"{enm.Type.OutType}::{decl.Name.Name}");
                     // decl.Initializer is checked in Metadata PP. could not be null
                     globStatic.Initializer = GenerateExpressionCode(decl.Initializer);
-                    _valueMap[decl.GetSymbol] = globStatic;
+                    _valueMap[decl.Symbol] = globStatic;
                 }
             }
 
@@ -200,8 +200,8 @@ namespace HapetBackend.Llvm
                 var varName = $"{parent.Name.Name}::{decl.Name.Name}";
                 // creating a static field of the decl
                 var globStatic = _module.AddGlobal(HapetTypeToLLVMType(decl.Type.OutType), varName);
-                _initializersMapList.Add((decl.GetSymbol, decl.Initializer));
-                _valueMap[decl.GetSymbol] = globStatic;
+                _initializersMapList.Add((decl.Symbol, decl.Initializer));
+                _valueMap[decl.Symbol] = globStatic;
             }
         }
 

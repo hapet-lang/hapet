@@ -103,8 +103,8 @@ namespace HapetBackend.Llvm
                     LLVM.AddAttributeAtIndex(lfunc, LLVMAttributeIndex.LLVMAttributeFunctionIndex, attr);
                 }
 
-                // caching the function											 
-                _valueMap[funcDecl.GetSymbol] = lfunc;
+                // caching the function	
+                _valueMap[funcDecl.Symbol] = lfunc;
                 _lastFunctionValueRef = lfunc;
 
                 // setting parameter names
@@ -126,7 +126,7 @@ namespace HapetBackend.Llvm
                     return;
 
                 // getting the func
-                LLVMValueRef lfunc = _valueMap[funcDecl.GetSymbol];
+                LLVMValueRef lfunc = _valueMap[funcDecl.Symbol];
                 _lastFunctionValueRef = lfunc;
 
                 // check if there is no implementation and it is not an extern shite
@@ -152,7 +152,7 @@ namespace HapetBackend.Llvm
 
                     var addrAlloca = _builder.BuildAlloca(HapetTypeToLLVMType(paramType), $"{p.Name.Name}.addr");
                     _builder.BuildStore(lfunc.GetParam((uint)i), addrAlloca);
-                    _valueMap[p.GetSymbol] = addrAlloca;
+                    _valueMap[p.Symbol] = addrAlloca;
                 }
 
                 // function body
@@ -192,7 +192,7 @@ namespace HapetBackend.Llvm
 
             // _refMap[varDecl.GetSymbol] = varPtr;
             // _valueMap[varDecl.GetSymbol] = _builder.BuildLoad2(HapetTypeToLLVMType(varDecl.Type.OutType), varPtr, varDecl.Name.Name);
-            _valueMap[varDecl.GetSymbol] = varPtr;
+            _valueMap[varDecl.Symbol] = varPtr;
         }
 
         private void GenerateExternFunctionBody(AstFuncDecl funcDecl)
@@ -268,7 +268,7 @@ namespace HapetBackend.Llvm
                 }
                 else
                 {
-                    var vptr = _valueMap[p.GetSymbol];
+                    var vptr = _valueMap[p.Symbol];
                     var loaded = _builder.BuildLoad2(HapetTypeToLLVMType(p.Type.OutType), vptr, p.Name.Name);
                     parameters.Add(loaded);
                 }

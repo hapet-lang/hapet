@@ -9,6 +9,7 @@ using HapetFrontend.Types;
 using HapetFrontend.Entities;
 using HapetFrontend.Errors;
 using HapetFrontend.Parsing;
+using HapetFrontend.Enums;
 
 namespace HapetFrontend.Helpers
 {
@@ -225,6 +226,10 @@ namespace HapetFrontend.Helpers
 
         public static string GetCodegenFunctionName(AstFuncDecl funcDecl, IMessageHandler messageHandler)
         {
+            // need to generate a normal name for the overload
+            if (funcDecl is AstOverloadDecl over)
+                funcDecl.Name = funcDecl.Name.GetCopy(AstOverloadDecl.GenerateName(over.OverloadType, over.Operator, over.Parameters));
+
             // making cool func name 
             string funcName = $"{GenericsHelper.GetCodegenGenericName(funcDecl.Name, messageHandler)}{funcDecl.Parameters.GetParamsString()}";
 

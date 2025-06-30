@@ -86,7 +86,9 @@ namespace HapetFrontend.Scoping
 
         public bool DefineDeclSymbol(AstIdExpr name, AstDeclaration decl)
         {
-            return DefineSymbol(new DeclSymbol(name, decl));
+            var smbl = new DeclSymbol(name, decl);
+            decl.Symbol = smbl;
+            return DefineSymbol(smbl);
         }
 
         public bool RemoveDeclSymbol(AstIdExpr name, AstDeclaration decl)

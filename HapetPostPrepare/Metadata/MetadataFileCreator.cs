@@ -3,6 +3,7 @@ using HapetFrontend.Ast.Declarations;
 using HapetFrontend.Ast.Expressions;
 using HapetFrontend.Ast.Statements;
 using HapetFrontend.Entities;
+using HapetFrontend.Enums;
 using HapetFrontend.Extensions;
 using HapetFrontend.Helpers;
 using HapetFrontend.Parsing;
@@ -255,7 +256,11 @@ namespace HapetPostPrepare
                 AntiParseExpr(decl.Name.AdditionalData, sb, additionalOffset);
                 sb.Append('.');
             }
-            AntiParseExpr(decl.Name.GetCopy(decl.Name.Name), sb, additionalOffset);
+            if (decl is AstOverloadDecl over &&
+                (over.OverloadType == OverloadType.UnaryOperator || over.OverloadType == OverloadType.BinaryOperator))
+                sb.Append($"operator {over.Operator}");
+            else
+                AntiParseExpr(decl.Name.GetCopy(decl.Name.Name), sb, additionalOffset);
 
             sb.Append('(');
             for (int i = 0; i < decl.Parameters.Count; ++i)

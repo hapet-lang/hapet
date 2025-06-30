@@ -1,7 +1,10 @@
 ﻿using HapetFrontend.Ast.Expressions;
 using HapetFrontend.Ast.Statements;
 using HapetFrontend.Enums;
+using HapetFrontend.Helpers;
 using HapetFrontend.Parsing;
+using HapetFrontend.Types;
+using System.Text;
 
 namespace HapetFrontend.Ast.Declarations
 {
@@ -26,7 +29,7 @@ namespace HapetFrontend.Ast.Declarations
             var copy = new AstOverloadDecl(
                 Parameters.Select(x => x.GetDeepCopy() as AstParamDecl).ToList(),
                 Returns.GetDeepCopy() as AstNestedExpr,
-                Body.GetDeepCopy() as AstBlockExpr,
+                Body?.GetDeepCopy() as AstBlockExpr,
                 Name.GetDeepCopy() as AstIdExpr,
                 Documentation, Location)
             {
@@ -34,8 +37,7 @@ namespace HapetFrontend.Ast.Declarations
                 Operator = Operator,
 
                 IsPropertyFunction = IsPropertyFunction,
-                ContainingParent = ContainingParent.GetDeepCopy() as AstDeclaration,
-                BaseCtorCall = BaseCtorCall.GetDeepCopy() as AstBaseCtorStmt,
+                BaseCtorCall = BaseCtorCall?.GetDeepCopy() as AstBaseCtorStmt,
                 CallingConvention = CallingConvention,
                 ClassFunctionType = ClassFunctionType,
                 Scope = Scope,
@@ -47,21 +49,33 @@ namespace HapetFrontend.Ast.Declarations
             return copy;
         }
 
-        public static string GenerateName(OverloadType overloadType, string op, AstNestedExpr type)
+        public static string GenerateName(OverloadType overloadType, string op, List<AstParamDecl> types)
         {
             string opNorm = string.Empty;
             switch (op)
             {
-                case "+": opNorm = "Plus"; break;
-                case "-": opNorm = "Minus"; break;
-                case "*": opNorm = "Prod"; break;
-                case "/": opNorm = "Div"; break;
-                case "%": opNorm = "Proc"; break;
+                case "+": opNorm = "pl"; break;
+                case "-": opNorm = "mn"; break;
+                case "*": opNorm = "pr"; break;
+                case "/": opNorm = "dv"; break;
+                case "%": opNorm = "os"; break;
             }
 
-            string typeFlatten = type == null ? string.Empty : type.TryFlatten(null, null);
+            string ovNorm = string.Empty;
+            switch (overloadType)
+            {
+                case OverloadType.UnaryOperator: ovNorm = "un"; break;
+                case OverloadType.BinaryOperator: ovNorm = "bn"; break;
+                case OverloadType.ExplicitCast: ovNorm = "ex"; break;
+                case OverloadType.ImplicitCast: ovNorm = "im"; break;
+            }
 
-            return $"{overloadType}_{opNorm}_{typeFlatten}";
+            StringBuilder typesNorm = new StringBuilder();
+            foreach (var t in types)
+            {
+                typesNorm.Append($"_{HapetType.AsString(t.Type.OutType)}");
+            }
+            return $"{ovNorm}_{opNorm}{typesNorm}";
         }
     }
 }

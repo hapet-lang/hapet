@@ -48,7 +48,8 @@ namespace HapetCompiler.Toolchains
                 return (int)CompilerErrors.ProjectFileParseError; // proj file parsing errors
 
 #if DEBUG && PRINT_INTERMEDIATE_TIME
-            messageHandler.ReportMessage([$"{Funcad.GetPrettyTimeString(_stopwatch.Elapsed)} [DEBUG] 1"], null, ReportType.Info);
+            if (!referenced)
+                messageHandler.ReportMessage([$"{Funcad.GetPrettyTimeString(_stopwatch.Elapsed)} After project file parsing..."], null, ReportType.Info);
 #endif
 
             // setting pointer size for the whole assembly

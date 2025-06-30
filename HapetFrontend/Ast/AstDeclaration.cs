@@ -82,13 +82,7 @@ namespace HapetFrontend.Ast
         /// Getting symbol of itself
         /// </summary>
         [JsonIgnore]
-        public virtual ISymbol GetSymbol
-        {
-            get
-            {
-                return Scope.GetSymbol(Name);
-            }
-        }
+        public ISymbol Symbol { get; set; }
 
         /// <summary>
         /// Is the declaration imported from another assembly
