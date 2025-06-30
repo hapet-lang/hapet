@@ -502,7 +502,7 @@ namespace HapetPostPrepare
                 // we need to make replaces more carefully
                 var savedLeft = nestExpr.LeftPart;
                 nestExpr.RightPart = val.RightPart;
-                nestExpr.LeftPart = val.LeftPart.GetDeepCopy() as AstNestedExpr;
+                nestExpr.LeftPart = val.LeftPart?.GetDeepCopy() as AstNestedExpr;
                 nestExpr.LeftPart?.AddToTheEnd(savedLeft);
             }
             else

@@ -291,10 +291,11 @@ namespace HapetPostPrepare
 
             // TODO: generic constraiins 
 
-            // if the func is generic && not abstract - serialize
-            // if parent is generic && func is not static  && func not abstract - serialize
-            if ((decl.HasGenericTypes || (isParentGeneric && !decl.SpecialKeys.Contains(TokenType.KwStatic))) && 
-                !decl.SpecialKeys.Contains(TokenType.KwAbstract))
+            // if the func is generic && not abstract && not stor - serialize
+            // if parent is generic && func not abstract && not stor - serialize
+            if ((decl.HasGenericTypes || isParentGeneric) && 
+                !decl.SpecialKeys.Contains(TokenType.KwAbstract) &&
+                decl.ClassFunctionType != ClassFunctionType.StaticCtor)
             {
                 sb.Append('\n');
 

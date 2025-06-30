@@ -826,8 +826,15 @@ namespace HapetPostPrepare
         {
             if (defaultExpr.TypeForDefault == null)
             {
-                _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, defaultExpr, [], ErrorCode.Get(CTEN.DefaultWasNotInfered));
-                return;
+                // try to assign current func's return type
+                var func = _currentParentStack.GetNearestParentFunc();
+                if (func != null && func.Returns.OutType is not VoidType)
+                    defaultExpr.TypeForDefault = func.Returns.GetDeepCopy() as AstExpression;
+                else
+                {
+                    _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, defaultExpr, [], ErrorCode.Get(CTEN.DefaultWasNotInfered));
+                    return;
+                }                
             }
             PostPrepareExprInference(defaultExpr.TypeForDefault, inInfo, ref outInfo);
             defaultExpr.OutType = defaultExpr.TypeForDefault.OutType;
