@@ -553,6 +553,13 @@ namespace HapetPostPrepare
                     continue;
 
                 field.Type = new AstNestedExpr(new AstIdGenericExpr("System.Event", [field.Type], field.Type), null, field.Type);
+                if (field.Initializer != null)
+                {
+                    // TODO: error - events should not have initializers, we need to create them by our own
+                }
+
+                // create our own initer
+                field.Initializer = new AstNewExpr(field.Type.GetDeepCopy() as AstNestedExpr, new List<AstArgumentExpr>(), field.Type.Location);
             }
         }
     }
