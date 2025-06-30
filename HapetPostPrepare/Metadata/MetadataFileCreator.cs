@@ -378,8 +378,17 @@ namespace HapetPostPrepare
 
         private void CreateFieldDecl(AstVarDecl decl, StringBuilder sb, string additionalOffset)
         {
-            // return type
-            AntiParseExpr(decl.Type, sb, additionalOffset);
+            if (decl.IsEvent)
+            {
+                sb.Append("event ");
+                // type without System.Event
+                AntiParseExpr(((decl.Type as AstNestedExpr).RightPart as AstIdGenericExpr).GenericRealTypes[0], sb, additionalOffset);
+            }
+            else
+            {
+                // type
+                AntiParseExpr(decl.Type, sb, additionalOffset);
+            }
             sb.Append(' ');
 
             // add additional string
@@ -390,7 +399,8 @@ namespace HapetPostPrepare
             }
             AntiParseExpr(decl.Name, sb, additionalOffset);
 
-            if (decl.Initializer != null)
+            // do not add initializer if it is an event
+            if (decl.Initializer != null && !decl.IsEvent)
             {
                 sb.Append(" = ");
                 AntiParseExpr(decl.Initializer, sb, additionalOffset);
