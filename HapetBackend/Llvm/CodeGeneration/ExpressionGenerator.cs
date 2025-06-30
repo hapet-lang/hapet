@@ -517,7 +517,7 @@ namespace HapetBackend.Llvm
                 return loaded;
             }
             // this check is done to generate proper delegate
-            else if (expr.OutType is FunctionType fncType && theDecl is AstFuncDecl fncDecl)
+            else if (expr.OutType is FunctionType fncType && theDecl is AstFuncDecl)
             {
                 // this whole shite is done to create anon delegate of the specified function
                 LLVMTypeRef delegateIrType = GetDelegateAnonType(fncType);
@@ -538,10 +538,7 @@ namespace HapetBackend.Llvm
                 var funcPtrr = _builder.BuildStructGEP2(delegateIrType, allocatedDelegate, 0, "funcPtr");
                 _builder.BuildStore(ptrToFunc, funcPtrr);
 
-                if (getPtr)
-                    return allocatedDelegate;
-                var loaded = _builder.BuildLoad2(delegateIrType, allocatedDelegate, "anonDelegateLoaded");
-                return loaded;
+                return allocatedDelegate;
             }
             else
             {
