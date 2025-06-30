@@ -129,6 +129,7 @@ namespace HapetFrontend.Parsing
                     !CheckLookAhead(TokenType.KwWhere) &&    // when Anime<T> where T ...
                     !CheckLookAhead(TokenType.Semicolon) &&  // when a = abs.Anime<T>; - generic prop
                     !CheckLookAhead(TokenType.Asterisk) &&   // when a = abs.Anime<T>*;
+                    !CheckLookAhead(TokenType.KwOperator) && // when Anime<T> operator ...;
                     !CheckLookAhead(TokenType.EOF))          // :)
                 {
                     var tmp = PeekLookAhead();
@@ -278,6 +279,7 @@ namespace HapetFrontend.Parsing
                     CheckLookAhead(TokenType.OpenBracket) ||  // when a = new Anime*[..]; 
                     CheckLookAhead(TokenType.Semicolon) ||    // when a = Anime*;
                     CheckLookAhead(TokenType.Asterisk) ||     // when a = Anime**
+                    CheckLookAhead(TokenType.KwOperator) ||   // when Anime* operator ...
                     CheckLookAhead(TokenType.Greater) ||      // when Cringe<Anime*>
                     CheckLookAhead(TokenType.EOF))            // :)
             {

@@ -30,6 +30,9 @@ namespace HapetCompiler.Toolchains
             Stopwatch stopwatch = new Stopwatch();
             stopwatch.Start();
 
+            // save type context
+            var cachedTypeContext = HapetType.CurrentTypeContext;
+
             if (!referenced)
                 messageHandler.ReportMessage([$"{Funcad.GetPrettyTimeString(stopwatch.Elapsed)} Project preparation..."], null, ReportType.Info);
             // setting the type context
@@ -59,51 +62,76 @@ namespace HapetCompiler.Toolchains
             compiler.CompilationStopwatch = stopwatch;
 
             // references
-            // save type context
-            var cachedTypeContext = HapetType.CurrentTypeContext;
             ProjectReferencesResolver resolver = new ProjectReferencesResolver();
             resolver.ResolveProjectShite(ProjectData, ProjectSettings, compiler);
             if (messageHandler.HasErrors)
+            {
+                OnExit();
                 return (int)CompilerErrors.ProjectReferencesError; // references errors
-            // restore it
-            HapetType.CurrentTypeContext = cachedTypeContext;
+            }
 
             if (!referenced)
                 messageHandler.ReportMessage([$"{Funcad.GetPrettyTimeString(stopwatch.Elapsed)} Parsing..."], null, ReportType.Info);
             // gen ast shite
             compiler.GenerateAstTree();
             if (messageHandler.HasErrors)
+            {
+                OnExit();
                 return (int)CompilerErrors.ParsingError; // parsing errors
+            }
 
             if (!referenced)
                 messageHandler.ReportMessage([$"{Funcad.GetPrettyTimeString(stopwatch.Elapsed)} Post preparation..."], null, ReportType.Info);
             // post prepare
             int ppResult = postPreparer.StartPreparation();
             if (ppResult != 0)
+            {
+                OnExit();
                 return ppResult; // post prepare errors
+            }
             if (messageHandler.HasErrors)
+            {
+                OnExit();
                 return (int)CompilerErrors.PostPrepareError; // post prepare errors
+            }
 
             if (!referenced)
                 messageHandler.ReportMessage([$"{Funcad.GetPrettyTimeString(stopwatch.Elapsed)} Last preparation..."], null, ReportType.Info);
             // last prepare
             int lpResult = lastPreparer.StartPreparation();
             if (lpResult != 0)
+            {
+                OnExit();
                 return lpResult; // last prepare errors
+            }
             if (messageHandler.HasErrors)
+            {
+                OnExit();
                 return (int)CompilerErrors.LastPrepareError; // last prepare errors
+            }
 
             if (!referenced)
                 messageHandler.ReportMessage([$"{Funcad.GetPrettyTimeString(stopwatch.Elapsed)} Code generation..."], null, ReportType.Info);
             // code gen
             bool codeGenOk = GenerateAndCompileCode(compiler, postPreparer, resolver, messageHandler);
             if (messageHandler.HasErrors || !codeGenOk)
+            {
+                OnExit();
                 return (int)CompilerErrors.CodeGenerationError; // code generation errors
+            }
 
             // all is ok :)
             if (!referenced)
                 messageHandler.ReportMessage([$"{Funcad.GetPrettyTimeString(stopwatch.Elapsed)} Done..."], null, ReportType.Info);
+
+            OnExit();
             return (int)CompilerErrors.Ok;
+
+            void OnExit()
+            {
+                // restore it
+                HapetType.CurrentTypeContext = cachedTypeContext;
+            }
         }
 
         private static bool GenerateAndCompileCode(Compiler compiler, PostPrepare postPreparer, ProjectReferencesResolver resolver, IMessageHandler messageHandler)

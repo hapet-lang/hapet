@@ -78,20 +78,6 @@ namespace HapetPostPrepare
             PostPrepareIdentifierInference(idExpr, inInfo, ref outInfo);
             return idExpr.OutType as ArrayType;
         }
-
-        public StringType GetStringType(AstExpression subExpr)
-        {
-            var inInfo = InInfo.Default;
-            var outInfo = OutInfo.Default;
-
-            var idExpr = new AstIdExpr("System.String", subExpr)
-            {
-                Scope = subExpr.Scope,
-                SourceFile = subExpr.SourceFile,
-            };
-            PostPrepareIdentifierInference(idExpr, inInfo, ref outInfo);
-            return idExpr.OutType as StringType;
-        }
         #endregion
     }
 }

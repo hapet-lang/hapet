@@ -372,10 +372,12 @@ namespace HapetPostPrepare
                 case AstCheckedExpr checkedExpr:
                     PostPrepareCheckedExprInference(checkedExpr, inInfo, ref outInfo);
                     break;
+                case AstEmptyStructExpr:
+                    break;
                 case AstEmptyExpr:
                     break;
                 case AstStringExpr stringExpr:
-                    stringExpr.OutType = GetStringType(stringExpr);
+                    stringExpr.OutType = HapetType.CurrentTypeContext.StringTypeInstance;
                     break;
 
                 // statements
@@ -1325,7 +1327,7 @@ namespace HapetPostPrepare
                     };
                     if (parent != null)
                     {
-                        return parent.Scope.IsParentOf(accessor.Scope);
+                        return parent.SubScope.IsParentOf(accessor.Scope);
                     }
 
                     return false;
