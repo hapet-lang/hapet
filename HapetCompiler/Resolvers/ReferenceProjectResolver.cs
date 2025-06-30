@@ -1,4 +1,5 @@
 ﻿using HapetCompiler.Toolchains;
+using HapetFrontend;
 using HapetFrontend.Entities;
 using HapetFrontend.Errors;
 using HapetFrontend.Helpers;
@@ -23,7 +24,7 @@ namespace HapetCompiler.Resolvers
                     _compiler.MessageHandler.ReportMessage([projectPathNormalized], ErrorCode.Get(CTEN.RefProjectNotFound));
 
                 // building the project
-                var toolchain = new ProjectBuildToolchain([]); // TODO: params?
+                var toolchain = new ProjectBuildToolchain(_compiler.CompilationStopwatch, []); // TODO: params?
                 toolchain.Build(pathToReferenced, _compiler.MessageHandler, true);
 
                 string referencedProjectOutFolder = toolchain.ProjectSettings.OutputDirectory.Replace("\\", "/", StringComparison.InvariantCulture).TrimStart('/');

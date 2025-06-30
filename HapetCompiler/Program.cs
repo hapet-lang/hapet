@@ -1,6 +1,7 @@
 ﻿using HapetCompiler.Toolchains;
 using HapetFrontend;
 using HapetFrontend.Errors;
+using System.Diagnostics;
 using System.Text;
 
 namespace HapetCompiler
@@ -28,8 +29,13 @@ namespace HapetCompiler
                             messageHandler.ReportMessage(["build"], ErrorCode.Get(CTEN.NoHapetProjectPathSpecified));
                             return (int)CompilerErrors.HapetCommandParamsError;
                         }
+
+                        // make the stopwatch here
+                        Stopwatch stopwatch = new Stopwatch();
+                        stopwatch.Start();
+
                         // skip the first two args because they are already used
-                        ProjectBuildToolchain projectToolchain = new ProjectBuildToolchain(args.Skip(2).ToArray());
+                        ProjectBuildToolchain projectToolchain = new ProjectBuildToolchain(stopwatch, args.Skip(2).ToArray());
                         return projectToolchain.Build(args[1], messageHandler);
                     }
                 case "restore":

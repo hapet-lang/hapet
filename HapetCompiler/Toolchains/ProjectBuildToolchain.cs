@@ -19,22 +19,21 @@ namespace HapetCompiler.Toolchains
         public CompilerSettings ProjectSettings { get; set; }
         public ProjectData ProjectData { get; set; }
 
+        private readonly Stopwatch _stopwatch;
         private readonly string[] _cmdArgs; // TODO: use them for ProjectXmlParser
-        public ProjectBuildToolchain(string[] args)
+        public ProjectBuildToolchain(Stopwatch stopwatch, string[] args)
         {
+            _stopwatch = stopwatch;
             _cmdArgs = args;
         }
 
         public int Build(string projectPath, IMessageHandler messageHandler, bool referenced = false)
         {
-            Stopwatch stopwatch = new Stopwatch();
-            stopwatch.Start();
-
             // save type context
             var cachedTypeContext = HapetType.CurrentTypeContext;
 
             if (!referenced)
-                messageHandler.ReportMessage([$"{Funcad.GetPrettyTimeString(stopwatch.Elapsed)} Project preparation..."], null, ReportType.Info);
+                messageHandler.ReportMessage([$"{Funcad.GetPrettyTimeString(_stopwatch.Elapsed)} Project preparation..."], null, ReportType.Info);
             // setting the type context
             HapetType.CurrentTypeContext = new TypeContext();
             // creating settings instances for the project
@@ -49,7 +48,7 @@ namespace HapetCompiler.Toolchains
                 return (int)CompilerErrors.ProjectFileParseError; // proj file parsing errors
 
 #if DEBUG && PRINT_INTERMEDIATE_TIME
-            messageHandler.ReportMessage([$"{Funcad.GetPrettyTimeString(stopwatch.Elapsed)} [DEBUG] 1"], null, ReportType.Info);
+            messageHandler.ReportMessage([$"{Funcad.GetPrettyTimeString(_stopwatch.Elapsed)} [DEBUG] 1"], null, ReportType.Info);
 #endif
 
             // setting pointer size for the whole assembly
@@ -59,7 +58,7 @@ namespace HapetCompiler.Toolchains
             var postPreparer = new PostPrepare(compiler);
             var lastPreparer = new LastPrepare(compiler, postPreparer);
             compiler.InitGlobalScope();
-            compiler.CompilationStopwatch = stopwatch;
+            compiler.CompilationStopwatch = _stopwatch;
 
             // references
             ProjectReferencesResolver resolver = new ProjectReferencesResolver();
@@ -71,7 +70,7 @@ namespace HapetCompiler.Toolchains
             }
 
             if (!referenced)
-                messageHandler.ReportMessage([$"{Funcad.GetPrettyTimeString(stopwatch.Elapsed)} Parsing..."], null, ReportType.Info);
+                messageHandler.ReportMessage([$"{Funcad.GetPrettyTimeString(_stopwatch.Elapsed)} Parsing..."], null, ReportType.Info);
             // gen ast shite
             compiler.GenerateAstTree();
             if (messageHandler.HasErrors)
@@ -81,7 +80,7 @@ namespace HapetCompiler.Toolchains
             }
 
             if (!referenced)
-                messageHandler.ReportMessage([$"{Funcad.GetPrettyTimeString(stopwatch.Elapsed)} Post preparation..."], null, ReportType.Info);
+                messageHandler.ReportMessage([$"{Funcad.GetPrettyTimeString(_stopwatch.Elapsed)} Post preparation..."], null, ReportType.Info);
             // post prepare
             int ppResult = postPreparer.StartPreparation();
             if (ppResult != 0)
@@ -96,7 +95,7 @@ namespace HapetCompiler.Toolchains
             }
 
             if (!referenced)
-                messageHandler.ReportMessage([$"{Funcad.GetPrettyTimeString(stopwatch.Elapsed)} Last preparation..."], null, ReportType.Info);
+                messageHandler.ReportMessage([$"{Funcad.GetPrettyTimeString(_stopwatch.Elapsed)} Last preparation..."], null, ReportType.Info);
             // last prepare
             int lpResult = lastPreparer.StartPreparation();
             if (lpResult != 0)
@@ -111,7 +110,7 @@ namespace HapetCompiler.Toolchains
             }
 
             if (!referenced)
-                messageHandler.ReportMessage([$"{Funcad.GetPrettyTimeString(stopwatch.Elapsed)} Code generation..."], null, ReportType.Info);
+                messageHandler.ReportMessage([$"{Funcad.GetPrettyTimeString(_stopwatch.Elapsed)} Code generation..."], null, ReportType.Info);
             // code gen
             bool codeGenOk = GenerateAndCompileCode(compiler, postPreparer, resolver, messageHandler);
             if (messageHandler.HasErrors || !codeGenOk)
@@ -122,7 +121,7 @@ namespace HapetCompiler.Toolchains
 
             // all is ok :)
             if (!referenced)
-                messageHandler.ReportMessage([$"{Funcad.GetPrettyTimeString(stopwatch.Elapsed)} Done..."], null, ReportType.Info);
+                messageHandler.ReportMessage([$"{Funcad.GetPrettyTimeString(_stopwatch.Elapsed)} Done..."], null, ReportType.Info);
 
             OnExit();
             return (int)CompilerErrors.Ok;
