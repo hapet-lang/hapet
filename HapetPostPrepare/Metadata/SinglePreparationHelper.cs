@@ -119,6 +119,10 @@ namespace HapetPostPrepare
                 else if (stmt is AstDelegateDecl delegateDecl)
                 {
                     PostPrepareDelegateInference(delegateDecl, inInfo, ref outInfo);
+                    foreach (var decl in delegateDecl.Functions)
+                    {
+                        PostPrepareFunctionInference(decl, inInfo, ref outInfo);
+                    }
                 }
                 else if (stmt is AstFuncDecl funcDecl)
                 {

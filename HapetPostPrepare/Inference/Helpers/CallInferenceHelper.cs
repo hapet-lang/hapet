@@ -228,12 +228,14 @@ namespace HapetPostPrepare
             }
             else if (callExpr.TypeOrObjectName.OutType is ClassType clsTp)
             {
+                AstDeclaration declToSearchLocal = clsTp is DelegateType delT ? delT.TargetDeclaration : clsTp.Declaration;
+
                 // this check is done to handle static-call
                 if (callExpr.TypeOrObjectName.TryGetDeclSymbol(true) is DeclSymbol dds2 && dds2.Decl is AstClassDecl)
                 {
                     // if we are calling like 'A.Anime()' where 'A' is a class
 
-                    var smbl2 = GetFuncFromCandidates(funcName, callExpr.Arguments, clsTp.Declaration, false, out var casts);
+                    var smbl2 = GetFuncFromCandidates(funcName, callExpr.Arguments, declToSearchLocal, false, out var casts);
                     smbl2 = OnFoundSymbol(smbl2, callExpr.FuncName);
                     // check if the decl exists. if not - it could be non static method call from a class name
                     if (smbl2 is DeclSymbol ds && ds.Decl is AstFuncDecl funcDecl)
@@ -242,14 +244,14 @@ namespace HapetPostPrepare
                             _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, callExpr.FuncName, [], ErrorCode.Get(CTEN.FuncCouldNotBeAccessed));
                         newName = funcDecl.Name.GetCopy();
                         callExpr.Arguments.ReplaceWithCasts(casts);
-                        declToSearch = clsTp.Declaration;
+                        declToSearch = declToSearchLocal;
                         foundSymbol = ds;
                         return;
                     }
 
                     List<AstArgumentExpr> argsWithClassParam = new List<AstArgumentExpr>(callExpr.Arguments);
                     argsWithClassParam.Insert(0, new AstArgumentExpr(callExpr.TypeOrObjectName) { OutType = callExpr.TypeOrObjectName.OutType });
-                    smbl2 = GetFuncFromCandidates(funcName, argsWithClassParam, clsTp.Declaration, true, out var _);
+                    smbl2 = GetFuncFromCandidates(funcName, argsWithClassParam, declToSearchLocal, true, out var _);
                     smbl2 = OnFoundSymbol(smbl2, callExpr.FuncName);
                     // error because user tries to access non static method from a class name
                     if (smbl2 != null)
@@ -269,7 +271,7 @@ namespace HapetPostPrepare
 
                     List<AstArgumentExpr> argsWithClassParam = new List<AstArgumentExpr>(callExpr.Arguments);
                     argsWithClassParam.Insert(0, new AstArgumentExpr(callExpr.TypeOrObjectName) { OutType = callExpr.TypeOrObjectName.OutType });
-                    var smbl2 = GetFuncFromCandidates(funcName, argsWithClassParam, clsTp.Declaration, true, out var casts);
+                    var smbl2 = GetFuncFromCandidates(funcName, argsWithClassParam, declToSearchLocal, true, out var casts);
                     smbl2 = OnFoundSymbol(smbl2, callExpr.FuncName);
 
                     // check if the decl exists. if not - it could be static method call from an object
@@ -279,7 +281,7 @@ namespace HapetPostPrepare
                             _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, callExpr.FuncName, [], ErrorCode.Get(CTEN.FuncCouldNotBeAccessed));
                         newName = funcDecl.Name.GetCopy();
                         callExpr.Arguments.ReplaceWithCasts(casts.Skip(1).ToList()); // skip because the first param is an object
-                        declToSearch = clsTp.Declaration;
+                        declToSearch = declToSearchLocal;
                         foundSymbol = ds;
                         return;
                     }
@@ -290,7 +292,7 @@ namespace HapetPostPrepare
                         return;
                     }
 
-                    smbl2 = GetFuncFromCandidates(funcName, callExpr.Arguments, clsTp.Declaration, false, out var casts2);
+                    smbl2 = GetFuncFromCandidates(funcName, callExpr.Arguments, declToSearchLocal, false, out var casts2);
                     smbl2 = OnFoundSymbol(smbl2, callExpr.FuncName);
                     if (smbl2 is DeclSymbol ds2 && ds2.Decl is AstFuncDecl funcDecl2)
                     {
@@ -298,7 +300,7 @@ namespace HapetPostPrepare
                             _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, callExpr.FuncName, [], ErrorCode.Get(CTEN.FuncCouldNotBeAccessed));
                         newName = funcDecl2.Name.GetCopy();
                         callExpr.Arguments.ReplaceWithCasts(casts2);
-                        declToSearch = clsTp.Declaration;
+                        declToSearch = declToSearchLocal;
                         foundSymbol = ds2;
                         return;
                     }
@@ -310,14 +312,14 @@ namespace HapetPostPrepare
                     }
 
                     // check for generic shite
-                    smbl2 = GetFuncFromCandidates(funcName, argsWithClassParam, clsTp.Declaration, true, out var casts3);
+                    smbl2 = GetFuncFromCandidates(funcName, argsWithClassParam, declToSearchLocal, true, out var casts3);
                     smbl2 = OnFoundSymbol(smbl2, callExpr.FuncName);
                     if (smbl2 is DeclSymbol ds3 && ds3.Decl is AstFuncDecl funcDecl3)
                     {
                         if (!CheckIfCouldBeAccessed(callExpr, funcDecl3))
                             _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, callExpr.FuncName, [], ErrorCode.Get(CTEN.FuncCouldNotBeAccessed));
                         newName = funcDecl3.Name.GetCopy();
-                        declToSearch = clsTp.Declaration;
+                        declToSearch = declToSearchLocal;
                         foundSymbol = ds3;
                         return;
                     }

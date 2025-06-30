@@ -787,7 +787,8 @@ namespace HapetBackend.Llvm
                     args.Add(GenerateExpressionCode(a));
                 }
 
-                var loadedDelegate = _builder.BuildLoad2(delegateType, hapetDelegate, $"delegateLoaded");
+                var loadedDelegatePtr = _builder.BuildLoad2(delegateType.GetPointerTo(), hapetDelegate, $"delegateLoadedPtr");
+                var loadedDelegate = _builder.BuildLoad2(delegateType, loadedDelegatePtr, $"delegateLoaded");
                 // TODO: also load object pointer when delegate has non-static method :)
                 var theRealFuncExtracted = _builder.BuildExtractValue(loadedDelegate, 0, "funcExtracted");
                 // getting the function type to call

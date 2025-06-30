@@ -195,6 +195,10 @@ namespace HapetPostPrepare
             {
                 allFuncs.AddRange(gen.Declarations.Where(x => x is AstFuncDecl).Select(x => x as AstFuncDecl));
             }
+            foreach (var dlg in AllDelegatesMetadata.ToList())
+            {
+                allFuncs.AddRange(dlg.Functions);
+            }
 
             foreach (var func in allFuncs)
             {

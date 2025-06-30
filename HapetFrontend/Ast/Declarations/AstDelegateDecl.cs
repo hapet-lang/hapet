@@ -14,6 +14,8 @@ namespace HapetFrontend.Ast.Declarations
         public List<AstParamDecl> Parameters { get; set; }
         public AstExpression Returns { get; set; }
 
+        public List<AstFuncDecl> Functions { get; } = new List<AstFuncDecl>();
+
         public override string AAAName => nameof(AstDelegateDecl);
 
         public AstDelegateDecl(List<AstParamDecl> parameters, AstExpression returns, AstIdExpr name, string doc = "", ILocation location = null) : base(name, doc, location)
