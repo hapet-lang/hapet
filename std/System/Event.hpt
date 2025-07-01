@@ -2,7 +2,7 @@ using System.Collections.Generic;
 
 public class Event<T>
 {
-    internal List<T> _delegates = new List<T>();
+    internal List<T> _delegates = new List<T>(); // do not rename
 
     public static Event<T> operator +(Event<T> me, T newDelegate)
     {

@@ -36,34 +36,5 @@ namespace HapetPostPrepare
                 }
             }
         }
-
-        private void AddInvokeDeclarationToDelegate(AstDelegateDecl del)
-        {
-            List<AstArgumentExpr> args = new List<AstArgumentExpr>();
-            foreach (var p in del.Parameters)
-                args.Add(new AstArgumentExpr(p.Name.GetCopy()));
-
-            AstBlockExpr body = new AstBlockExpr(new List<AstStatement>());
-            AstCallExpr call = new AstCallExpr(null, new AstIdExpr("this"), args);
-            if (del.Returns.OutType is VoidType)
-                body.Statements.Add(call);
-            else
-                body.Statements.Add(new AstReturnStmt(call));
-
-            AstFuncDecl func = new AstFuncDecl(
-                del.Parameters.Select(x => x.GetDeepCopy() as AstParamDecl).ToList(),
-                del.Returns.GetDeepCopy() as AstExpression,
-                body,
-                new AstIdExpr("Invoke"),
-                "");
-            func.ContainingParent = del;
-            func.SpecialKeys.Add(Lexer.CreateToken(TokenType.KwPublic, del.Beginning));
-            del.Functions.Add(func);
-
-            FuncPrepareAfterAll(func, del);
-            SetScopeAndParent(func, del, del.SubScope);
-            PostPrepareFunctionScoping(func);
-            PostPrepareStatementUpToCurrentStep(func);
-        }
     }
 }

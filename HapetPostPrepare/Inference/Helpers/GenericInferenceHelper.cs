@@ -75,6 +75,11 @@ namespace HapetPostPrepare
             ReplaceAllGenericTypesInDecl(realDecl);
             // replaces all System.Anime::Func(Pivo) with just Func and etc.
             GenericsHelper.ResetDeclarationNames(realDecl);
+
+            // add invoke method to event
+            if (realName.Name == "System.Event")
+                AddInvokeDeclarationToEvent(realDecl as AstClassDecl, implHasGenerics);
+
             // just a pp
             PostPrepareDeclScoping(realDecl);
             // pp up to the current metadata step
