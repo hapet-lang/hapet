@@ -3,8 +3,6 @@ using HapetFrontend.Ast.Declarations;
 using HapetFrontend.Ast.Expressions;
 using HapetFrontend.Types;
 using HapetPostPrepare.Entities;
-using static System.Runtime.InteropServices.JavaScript.JSType;
-using System.Xml.Linq;
 using HapetFrontend.Scoping;
 using HapetFrontend.Ast.Statements;
 using HapetFrontend.Parsing;
@@ -22,7 +20,7 @@ namespace HapetPostPrepare
             if (stmt is AstDelegateDecl del)
             {
                 // have to do it here!!!
-                del.Type.OutType = DelegateType.GetDelegateType(del, del.Scope);
+                (del.Type.OutType as DelegateType).Declaration = HapetType.CurrentTypeContext.DelegateTypeInstance.Declaration;
 
                 PostPrepareDelegateInference(del, inInfo, ref outInfo);
 
