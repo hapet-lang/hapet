@@ -547,6 +547,9 @@ namespace HapetPostPrepare
                                     SetScopeAndParent(rightExpr, parent);
                                     PostPrepareExprInference(rightExpr, inInfo, ref outInfo);
                                     binExpr.Right = rightExpr;
+
+                                    // also change the outType of binExpr
+                                    binExpr.OutType = ptrT;
                                 }
                                 else if (rightExpr.OutType is PointerType ptrT2)
                                 {
@@ -560,6 +563,9 @@ namespace HapetPostPrepare
                                     SetScopeAndParent(leftExpr, parent);
                                     PostPrepareExprInference(leftExpr, inInfo, ref outInfo);
                                     binExpr.Left = leftExpr;
+
+                                    // also change the outType of binExpr
+                                    binExpr.OutType = ptrT2;
                                 }
                             }
 
