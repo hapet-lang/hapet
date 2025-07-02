@@ -21,7 +21,7 @@ public static class Array
     {
         TSource* srcP = sourceArray.Buffer + sourceIndex;
         TDest* dstP = destinationArray.Buffer + destinationIndex;
-        Marshal.Memcpy(dstP, srcP, (uintptr)length);
+        Marshal.Memcpy(dstP, srcP, (uintptr)(length * sizeof(TSource)));
     }
 
     public static int IndexOf<T>(T[] array, T value, int startIndex, int count)
