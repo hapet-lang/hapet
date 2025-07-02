@@ -377,18 +377,7 @@ namespace HapetPostPrepare
             var theDecl = decl.Decl;
             var realDecl = CreateRealTypeFromGeneric(theDecl, genId, out var realName, true);
 
-            DeclSymbol realDclDecl;
-            // func is defined by itself
-            if (theDecl is not AstFuncDecl)
-            {
-                // define the real decl in the same scope where generic one exists
-                realDclDecl = new DeclSymbol(realName, realDecl);
-                theDecl.Scope.DefineSymbol(realDclDecl);
-            }
-            else
-            {
-                realDclDecl = theDecl.Scope.GetSymbol(realDecl.Name) as DeclSymbol;
-            }
+            DeclSymbol realDclDecl = theDecl.Scope.GetSymbol(realDecl.Name) as DeclSymbol;
             return realDclDecl;
         }
 
