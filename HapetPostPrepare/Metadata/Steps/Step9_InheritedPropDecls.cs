@@ -62,7 +62,7 @@ namespace HapetPostPrepare
                 if (inh.RightPart is AstIdGenericExpr genInhId)
                 {
                     // WARN: allow genericTypes here - because we want to purely check the types
-                    inhDecl = CreateRealTypeFromGeneric(inhDecl, genInhId, out var _, true) as AstClassDecl;
+                    inhDecl = CreateRealTypeFromGeneric(inhDecl, genInhId, null, out var _, true) as AstClassDecl;
                 }
 
                 // if the inh type is an interface

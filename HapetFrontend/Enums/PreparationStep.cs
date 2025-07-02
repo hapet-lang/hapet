@@ -1,4 +1,4 @@
-﻿namespace HapetPostPrepare.Entities
+﻿namespace HapetFrontend.Enums
 {
     /// <summary>
     /// Долго объяснять нахуя эта штука нужна, поэтому напишу поруске
@@ -12,8 +12,11 @@
     /// научиться инференсить их "в реальном времени". Это когда мы уже прошли
     /// этапы или несколько этапов генерации метадаты и нам нужно загерать 
     /// новый класс. Эта проблема и будет решаться разбиением на этапы.
+    /// 
+    /// upd 01.07.2025 - перенесен в фронт, чтобы отслеживать текущий шаг обработки
+    /// у конкретного declaration
     /// </summary>
-    internal enum PreparationStep
+    public enum PreparationStep
     {
         None, 
         Types,
@@ -27,6 +30,7 @@
         InheritedFieldDecls,
         InheritedPropDecls,
         FieldAndPropInits,
+        NestedTypesInside,
         Attributes,
         MetadataCreation,
         PropsRemoval,

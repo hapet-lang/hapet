@@ -1,4 +1,5 @@
-﻿using System.Diagnostics.Metrics;
+﻿using System;
+using System.Diagnostics.Metrics;
 using HapetFrontend.Ast;
 using HapetFrontend.Ast.Declarations;
 using HapetFrontend.Ast.Expressions;
@@ -34,13 +35,6 @@ namespace HapetPostPrepare
                 _currentSourceFile = funcDecl.SourceFile;
 
                 PostPrepareFunctionInference(funcDecl, inInfo, ref outInfo);
-            }
-
-            foreach (var delegateDecl in delegates)
-            {
-                _currentSourceFile = delegateDecl.SourceFile;
-
-                PostPrepareDelegateInference(delegateDecl, inInfo, ref outInfo);
             }
         }
 
@@ -87,6 +81,13 @@ namespace HapetPostPrepare
                 _currentParentStack.AddParent(parent);
 
             _currentParentStack.AddParent(funcDecl);
+
+            if (funcDecl.Name.Name.Contains("CopyTo") &&
+                                    funcDecl.ContainingParent.Name is AstIdGenericExpr gen && gen.GenericRealTypes.Count == 1 &&
+                                    gen.GenericRealTypes[0].OutType is IntType)
+            {
+
+            }
 
             // if the function inference is for metadata - infer everything except body
             // if not - infer only body because func decl already infered from metadata :)
@@ -181,6 +182,8 @@ namespace HapetPostPrepare
             }
             else
             {
+                funcDecl.CurrentPreparationStep = PreparationStep.Inferencing;
+
                 // inferring body
                 if (funcDecl.Body != null)
                     PostPrepareBlockInference(funcDecl.Body, inInfo, ref outInfo);
@@ -583,10 +586,11 @@ namespace HapetPostPrepare
 
         private void PostPreparePointerExprInference(AstPointerExpr pointerExpr, InInfo inInfo, ref OutInfo outInfo)
         {
-            // prepare the right side
-            PostPrepareExprInference(pointerExpr.SubExpression, inInfo, ref outInfo);
             if (pointerExpr.IsDereference)
             {
+                // prepare the right side
+                PostPrepareExprInference(pointerExpr.SubExpression, inInfo, ref outInfo);
+
                 // if it is a deref - right type has to be a ptr
                 var rightType = pointerExpr.SubExpression.OutType as PointerType;
                 if (rightType == null)
@@ -601,6 +605,18 @@ namespace HapetPostPrepare
             }
             else
             {
+                inInfo.FunctionsToCallAfterGenericCreated.TryPeek(out var prev);
+                inInfo.FunctionsToCallAfterGenericCreated.Push((type) =>
+                {
+                    pointerExpr.OutType = PointerType.GetPointerType(type);
+                    prev?.Invoke(pointerExpr.OutType);
+                });
+
+                // prepare the right side
+                PostPrepareExprInference(pointerExpr.SubExpression, inInfo, ref outInfo);
+
+                inInfo.FunctionsToCallAfterGenericCreated.Pop();
+
                 // create a new pointer type from the right side and set the type to itself
                 pointerExpr.OutType = PointerType.GetPointerType(pointerExpr.SubExpression.OutType);
             }
@@ -680,9 +696,18 @@ namespace HapetPostPrepare
 
             if (nestExpr.LeftPart == null)
             {
+                inInfo.FunctionsToCallAfterGenericCreated.TryPeek(out var prev);
+                inInfo.FunctionsToCallAfterGenericCreated.Push((type) =>
+                {
+                    nestExpr.OutType = type;
+                    prev?.Invoke(type);
+                });
+
                 PostPrepareExprInference(nestExpr.RightPart, inInfo, ref outInfo);
                 nestExpr.OutType = nestExpr.RightPart.OutType;
                 nestExpr.OutValue = nestExpr.RightPart.OutValue;
+
+                inInfo.FunctionsToCallAfterGenericCreated.Pop();
 
                 // kostyl to add 'this' as left part 
                 if (nestExpr.RightPart is AstIdExpr idExpr && 
@@ -853,8 +878,17 @@ namespace HapetPostPrepare
 
         private void PostPrepareArrayExprInference(AstArrayExpr arrayExpr, InInfo inInfo, ref OutInfo outInfo)
         {
+            inInfo.FunctionsToCallAfterGenericCreated.TryPeek(out var prev);
+            inInfo.FunctionsToCallAfterGenericCreated.Push((type) =>
+            {
+                arrayExpr.OutType = GetArrayType(GetPreparedAst(type, arrayExpr), arrayExpr);
+                prev?.Invoke(type);
+            });
+
             PostPrepareExprInference(arrayExpr.SubExpression, inInfo, ref outInfo);
             arrayExpr.OutType = GetArrayType(arrayExpr.SubExpression, arrayExpr);
+
+            inInfo.FunctionsToCallAfterGenericCreated.Pop();
         }
 
         private void PostPrepareArrayCreateExprInference(AstArrayCreateExpr arrayExpr, InInfo inInfo, ref OutInfo outInfo)

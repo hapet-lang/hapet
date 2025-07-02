@@ -1,6 +1,7 @@
 ﻿using HapetFrontend;
 using HapetFrontend.Ast;
 using HapetFrontend.Ast.Declarations;
+using HapetFrontend.Enums;
 using HapetFrontend.Helpers;
 using HapetPostPrepare.Entities;
 using System;
@@ -13,7 +14,7 @@ namespace HapetPostPrepare
         public List<AstStructDecl> AllStructsMetadata { get; } = new List<AstStructDecl>();
         public List<AstEnumDecl> AllEnumsMetadata { get; } = new List<AstEnumDecl>();
         public List<AstDelegateDecl> AllDelegatesMetadata { get; } = new List<AstDelegateDecl>();
-        public List<AstFuncDecl> AllFunctionsMetadata { get; } = new List<AstFuncDecl>();
+        public List<AstFuncDecl> AllFunctionsMetadata { get; set; } = new List<AstFuncDecl>();
         public List<AstGenericDecl> AllGenericsMetadata { get; } = new List<AstGenericDecl>();
 
         private List<AstClassDecl> _serializeClassesMetadata { get; } = new List<AstClassDecl>();
@@ -31,14 +32,15 @@ namespace HapetPostPrepare
             AllPostPrepareMetadataEmbededTypes();
             AllPostPrepareMetadataTypes();
             AllPostPrepareMetadataGenerics();
-            AllPostPrepareMetadataInheritance();
             AllPostPrepareMetadataDelegates();
             AllPostPrepareMetadataNestedTypes();
             AllPostPrepareMetadataFunctions();
             AllPostPrepareMetadataTypeFieldDecls();
+            AllPostPrepareMetadataInheritance();
             AllPostPrepareMetadataInheritedFunctions();
             AllPostPrepareMetadataTypeInheritedFieldDecls();
             AllPostPrepareMetadataTypeInheritedPropsDecls();
+            AllPostPrepareMetadataNestedTypesInside();
             AllPostPrepareMetadataTypeFieldInits();
             AllPostPrepareMetadataAttributes();
 
@@ -66,13 +68,16 @@ namespace HapetPostPrepare
 
         private void AllPostPrepareMetadataTypes()
         {
-            _currentPreparationStep = PreparationStep.Types;
+            var step = PreparationStep.Types;
+            _currentPreparationStep = step;
 
             foreach (var (path, file) in _compiler.GetFiles())
             {
                 _currentSourceFile = file;
                 foreach (var stmt in file.Statements)
                 {
+                    stmt.CurrentPreparationStep = step;
+
                     // do not serialize imported shite
                     var needSerialize = (!(stmt as AstDeclaration)?.IsImported ?? false);
                     PostPrepareMetadataTypes(stmt, needSerialize);
@@ -82,11 +87,14 @@ namespace HapetPostPrepare
 
         private void AllPostPrepareMetadataGenerics()
         {
-            _currentPreparationStep = PreparationStep.Generics;
+            var step = PreparationStep.Generics;
+            _currentPreparationStep = step;
 
             // resolve generic shite of classes
             foreach (var cls in AllClassesMetadata.ToList())
             {
+                cls.CurrentPreparationStep = step;
+
                 _currentSourceFile = cls.SourceFile;
                 _currentParentStack.AddParent(cls);
                 bool _ = PostPrepareMetadataGenerics(cls);
@@ -95,6 +103,8 @@ namespace HapetPostPrepare
             // resolve generic shite of structs
             foreach (var str in AllStructsMetadata.ToList())
             {
+                str.CurrentPreparationStep = step;
+
                 _currentSourceFile = str.SourceFile;
                 _currentParentStack.AddParent(str);
                 bool _ = PostPrepareMetadataGenerics(str);
@@ -103,6 +113,8 @@ namespace HapetPostPrepare
             // resolve generic shite of delegates
             foreach (var del in AllDelegatesMetadata.ToList())
             {
+                del.CurrentPreparationStep = step;
+
                 _currentSourceFile = del.SourceFile;
                 _currentParentStack.AddParent(del);
                 bool _ = PostPrepareMetadataGenerics(del);
@@ -110,43 +122,16 @@ namespace HapetPostPrepare
             }
         }
 
-        private void AllPostPrepareMetadataInheritance()
-        {
-            _currentPreparationStep = PreparationStep.Inheritance;
-
-            // resolve inheritance shite of classes
-            foreach (var cls in AllClassesMetadata.ToList())
-            {
-                _currentSourceFile = cls.SourceFile;
-                _currentParentStack.AddParent(cls);
-                PostPrepareMetadataInheritance(cls);
-                _currentParentStack.RemoveParent();
-            }
-            // resolve inheritance shite of structs
-            foreach (var str in AllStructsMetadata.ToList())
-            {
-                _currentSourceFile = str.SourceFile;
-                _currentParentStack.AddParent(str);
-                PostPrepareMetadataInheritance(str);
-                _currentParentStack.RemoveParent();
-            }
-            // resolve inheritance shite of enums
-            foreach (var enm in AllEnumsMetadata.ToList())
-            {
-                _currentSourceFile = enm.SourceFile;
-                _currentParentStack.AddParent(enm);
-                PostPrepareMetadataInheritance(enm);
-                _currentParentStack.RemoveParent();
-            }
-        }
-
         private void AllPostPrepareMetadataDelegates()
         {
-            _currentPreparationStep = PreparationStep.Delegates;
+            var step = PreparationStep.Delegates;
+            _currentPreparationStep = step;
 
             // inferrencing delegates
             foreach (var del in AllDelegatesMetadata.ToList())
             {
+                del.CurrentPreparationStep = step;
+
                 _currentSourceFile = del.SourceFile;
                 _currentParentStack.AddParent(del);
                 PostPrepareMetadataDelegates(del);
@@ -156,11 +141,14 @@ namespace HapetPostPrepare
 
         private void AllPostPrepareMetadataNestedTypes()
         {
-            _currentPreparationStep = PreparationStep.NestedTypes;
+            var step = PreparationStep.NestedTypes;
+            _currentPreparationStep = step;
 
             // inferrencing nested types
             foreach (var cls in AllClassesMetadata.ToList())
             {
+                cls.CurrentPreparationStep = step;
+
                 _currentSourceFile = cls.SourceFile;
                 _currentParentStack.AddParent(cls);
 
@@ -169,6 +157,8 @@ namespace HapetPostPrepare
             }
             foreach (var str in AllStructsMetadata.ToList())
             {
+                str.CurrentPreparationStep = step;
+
                 _currentSourceFile = str.SourceFile;
                 _currentParentStack.AddParent(str);
 
@@ -179,7 +169,8 @@ namespace HapetPostPrepare
 
         private void AllPostPrepareMetadataFunctions()
         {
-            _currentPreparationStep = PreparationStep.Functions;
+            var step = PreparationStep.Functions;
+            _currentPreparationStep = step;
 
             var allFuncs = new List<AstFuncDecl>();
             // inferrencing funcs
@@ -202,6 +193,10 @@ namespace HapetPostPrepare
 
             foreach (var func in allFuncs)
             {
+                if (func.ContainingParent != null)
+                    func.ContainingParent.CurrentPreparationStep = step;
+                func.CurrentPreparationStep = step;
+
                 _currentSourceFile = func.SourceFile;
 
                 if (func.ContainingParent.IsNestedDecl)
@@ -217,16 +212,16 @@ namespace HapetPostPrepare
             }
         }
 
-        /// <summary>
-        /// We need to infer all decl at first and only then - their intializers
-        /// </summary>
         private void AllPostPrepareMetadataTypeFieldDecls()
         {
-            _currentPreparationStep = PreparationStep.FieldAndPropDecls;
+            var step = PreparationStep.FieldAndPropDecls;
+            _currentPreparationStep = step;
 
             // resolve all fields of classes
             foreach (var cls in AllClassesMetadata.ToList())
             {
+                cls.CurrentPreparationStep = step;
+
                 _currentSourceFile = cls.SourceFile;
                 if (cls.IsNestedDecl)
                     _currentParentStack.AddParent(cls.ParentDecl);
@@ -239,6 +234,8 @@ namespace HapetPostPrepare
             // resolve all fields of structs
             foreach (var str in AllStructsMetadata.ToList())
             {
+                str.CurrentPreparationStep = step;
+
                 _currentSourceFile = str.SourceFile;
                 if (str.IsNestedDecl)
                     _currentParentStack.AddParent(str.ParentDecl);
@@ -250,6 +247,8 @@ namespace HapetPostPrepare
             }
             foreach (var gen in AllGenericsMetadata.ToList())
             {
+                gen.CurrentPreparationStep = step;
+
                 _currentSourceFile = gen.SourceFile;
                 if (gen.IsNestedDecl)
                     _currentParentStack.AddParent(gen.ParentDecl);
@@ -261,6 +260,8 @@ namespace HapetPostPrepare
             }
             foreach (var enm in AllEnumsMetadata.ToList())
             {
+                enm.CurrentPreparationStep = step;
+
                 _currentSourceFile = enm.SourceFile;
                 if (enm.IsNestedDecl)
                     _currentParentStack.AddParent(enm.ParentDecl);
@@ -272,12 +273,67 @@ namespace HapetPostPrepare
             }
         }
 
+        /// <summary>
+        /// We need to infer all decl at first and only then - their intializers
+        /// </summary>
+        private void AllPostPrepareMetadataInheritance()
+        {
+            var step = PreparationStep.Inheritance;
+            _currentPreparationStep = step;
+
+            // resolve inheritance shite of classes
+            foreach (var cls in AllClassesMetadata.ToList())
+            {
+                cls.CurrentPreparationStep = step;
+
+                _currentSourceFile = cls.SourceFile;
+                if (cls.IsNestedDecl)
+                    _currentParentStack.AddParent(cls.ParentDecl);
+                _currentParentStack.AddParent(cls);
+                PostPrepareMetadataInheritance(cls);
+                _currentParentStack.RemoveParent();
+                if (cls.IsNestedDecl)
+                    _currentParentStack.RemoveParent();
+            }
+            // resolve inheritance shite of structs
+            foreach (var str in AllStructsMetadata.ToList())
+            {
+                str.CurrentPreparationStep = step;
+
+                _currentSourceFile = str.SourceFile;
+                if (str.IsNestedDecl)
+                    _currentParentStack.AddParent(str.ParentDecl);
+                _currentParentStack.AddParent(str);
+                PostPrepareMetadataInheritance(str);
+                _currentParentStack.RemoveParent();
+                if (str.IsNestedDecl)
+                    _currentParentStack.RemoveParent();
+            }
+            // resolve inheritance shite of enums
+            foreach (var enm in AllEnumsMetadata.ToList())
+            {
+                enm.CurrentPreparationStep = step;
+
+                _currentSourceFile = enm.SourceFile;
+                if (enm.IsNestedDecl)
+                    _currentParentStack.AddParent(enm.ParentDecl);
+                _currentParentStack.AddParent(enm);
+                PostPrepareMetadataInheritance(enm);
+                _currentParentStack.RemoveParent();
+                if (enm.IsNestedDecl)
+                    _currentParentStack.RemoveParent();
+            }
+        }
+
         private void AllPostPrepareMetadataInheritedFunctions()
         {
-            _currentPreparationStep = PreparationStep.InheritedFunctions;
+            var step = PreparationStep.InheritedFunctions;
+            _currentPreparationStep = step;
 
             foreach (var cls in AllClassesMetadata.ToList())
             {
+                cls.CurrentPreparationStep = step;
+
                 _currentSourceFile = cls.SourceFile;
                 if (cls.IsNestedDecl)
                     _currentParentStack.AddParent(cls.ParentDecl);
@@ -289,6 +345,8 @@ namespace HapetPostPrepare
             }
             foreach (var str in AllStructsMetadata.ToList())
             {
+                str.CurrentPreparationStep = step;
+
                 _currentSourceFile = str.SourceFile;
                 if (str.IsNestedDecl)
                     _currentParentStack.AddParent(str.ParentDecl);
@@ -302,7 +360,8 @@ namespace HapetPostPrepare
 
         private void AllPostPrepareMetadataTypeInheritedFieldDecls()
         {
-            _currentPreparationStep = PreparationStep.InheritedFieldDecls;
+            var step = PreparationStep.InheritedFieldDecls;
+            _currentPreparationStep = step;
 
             var classes = AllClassesMetadata.ToList();
             var structures = AllStructsMetadata.ToList();
@@ -310,6 +369,8 @@ namespace HapetPostPrepare
             // resolve all inherited fields of classes
             foreach (var cls in classes)
             {
+                cls.CurrentPreparationStep = step;
+
                 _currentSourceFile = cls.SourceFile;
                 if (cls.IsNestedDecl)
                     _currentParentStack.AddParent(cls.ParentDecl);
@@ -321,6 +382,8 @@ namespace HapetPostPrepare
             }
             foreach (var str in structures)
             {
+                str.CurrentPreparationStep = step;
+
                 _currentSourceFile = str.SourceFile;
                 if (str.IsNestedDecl)
                     _currentParentStack.AddParent(str.ParentDecl);
@@ -334,7 +397,8 @@ namespace HapetPostPrepare
 
         private void AllPostPrepareMetadataTypeInheritedPropsDecls()
         {
-            _currentPreparationStep = PreparationStep.InheritedPropDecls;
+            var step = PreparationStep.InheritedPropDecls;
+            _currentPreparationStep = step;
 
             var classes = AllClassesMetadata.ToList();
             var structures = AllStructsMetadata.ToList();
@@ -342,6 +406,8 @@ namespace HapetPostPrepare
             // resolve all inherited props of classes
             foreach (var cls in classes)
             {
+                cls.CurrentPreparationStep = step;
+
                 _currentSourceFile = cls.SourceFile;
                 if (cls.IsNestedDecl)
                     _currentParentStack.AddParent(cls.ParentDecl);
@@ -353,6 +419,8 @@ namespace HapetPostPrepare
             }
             foreach (var str in structures)
             {
+                str.CurrentPreparationStep = step;
+
                 _currentSourceFile = str.SourceFile;
                 if (str.IsNestedDecl)
                     _currentParentStack.AddParent(str.ParentDecl);
@@ -364,13 +432,44 @@ namespace HapetPostPrepare
             }
         }
 
+        private void AllPostPrepareMetadataNestedTypesInside()
+        {
+            var step = PreparationStep.NestedTypesInside;
+            _currentPreparationStep = step;
+
+            // inferrencing nested types
+            foreach (var cls in AllClassesMetadata.ToList())
+            {
+                cls.CurrentPreparationStep = step;
+
+                _currentSourceFile = cls.SourceFile;
+                _currentParentStack.AddParent(cls);
+
+                PostPrepareMetadataNestedTypesInside(cls);
+                _currentParentStack.RemoveParent();
+            }
+            foreach (var str in AllStructsMetadata.ToList())
+            {
+                str.CurrentPreparationStep = step;
+
+                _currentSourceFile = str.SourceFile;
+                _currentParentStack.AddParent(str);
+
+                PostPrepareMetadataNestedTypesInside(str);
+                _currentParentStack.RemoveParent();
+            }
+        }
+
         private void AllPostPrepareMetadataTypeFieldInits()
         {
-            _currentPreparationStep = PreparationStep.FieldAndPropInits;
+            var step = PreparationStep.FieldAndPropInits;
+            _currentPreparationStep = step;
 
             // resolve all fields of classes
             foreach (var cls in AllClassesMetadata.ToList())
             {
+                cls.CurrentPreparationStep = step;
+
                 _currentSourceFile = cls.SourceFile;
                 if (cls.IsNestedDecl)
                     _currentParentStack.AddParent(cls.ParentDecl);
@@ -383,6 +482,8 @@ namespace HapetPostPrepare
             // resolve all fields of structs
             foreach (var str in AllStructsMetadata.ToList())
             {
+                str.CurrentPreparationStep = step;
+
                 _currentSourceFile = str.SourceFile;
                 if (str.IsNestedDecl)
                     _currentParentStack.AddParent(str.ParentDecl);
@@ -394,6 +495,8 @@ namespace HapetPostPrepare
             }
             foreach (var enm in AllEnumsMetadata.ToList())
             {
+                enm.CurrentPreparationStep = step;
+
                 _currentSourceFile = enm.SourceFile;
                 if (enm.IsNestedDecl)
                     _currentParentStack.AddParent(enm.ParentDecl);
@@ -407,11 +510,14 @@ namespace HapetPostPrepare
 
         private void AllPostPrepareMetadataAttributes()
         {
-            _currentPreparationStep = PreparationStep.Attributes;
+            var step = PreparationStep.Attributes;
+            _currentPreparationStep = step;
 
             // inferrencing attribtues of functions
             foreach (var fnc in AllFunctionsMetadata.ToList())
             {
+                fnc.CurrentPreparationStep = step;
+
                 if (fnc.ContainingParent.IsNestedDecl)
                     _currentParentStack.AddParent(fnc.ContainingParent.ParentDecl);
                 _currentParentStack.AddParent(fnc.ContainingParent);
@@ -428,6 +534,8 @@ namespace HapetPostPrepare
             // inferrencing attribtues of classes
             foreach (var cls in AllClassesMetadata.ToList())
             {
+                cls.CurrentPreparationStep = step;
+
                 _currentSourceFile = cls.SourceFile;
                 _currentParentStack.AddParent(cls);
                 PostPrepareMetadataAttributes(cls);
@@ -436,6 +544,8 @@ namespace HapetPostPrepare
             // inferrencing attribtues of structs
             foreach (var str in AllStructsMetadata.ToList())
             {
+                str.CurrentPreparationStep = step;
+
                 _currentSourceFile = str.SourceFile;
                 _currentParentStack.AddParent(str);
                 PostPrepareMetadataAttributes(str);
@@ -444,6 +554,8 @@ namespace HapetPostPrepare
             // inferrencing attribtues of enums
             foreach (var enm in AllEnumsMetadata.ToList())
             {
+                enm.CurrentPreparationStep = step;
+
                 _currentSourceFile = enm.SourceFile;
                 _currentParentStack.AddParent(enm);
                 PostPrepareMetadataAttributes(enm);
@@ -452,6 +564,8 @@ namespace HapetPostPrepare
             // inferrencing attribtues of delegates
             foreach (var del in AllDelegatesMetadata.ToList())
             {
+                del.CurrentPreparationStep = step;
+
                 _currentSourceFile = del.SourceFile;
                 _currentParentStack.AddParent(del);
                 PostPrepareMetadataAttributes(del);

@@ -310,26 +310,6 @@ namespace HapetFrontend.Types
 
     public class DelegateType : ClassType
     {
-        public static DelegateType GetDelegateType(AstDelegateDecl targetDecl, Scope scope)
-        {
-            return GetDelegateType(targetDecl, AstDelegateDecl.GetDelegateClass(scope));
-        }
-
-        public static DelegateType GetDelegateType(AstDelegateDecl targetDecl, AstClassDecl delClassDecl)
-        {
-            if (targetDecl == null)
-                return null;
-
-            var existing = CurrentTypeContext.DelegateTypeInstances.FirstOrDefault(t => t.Value.TargetDeclaration == targetDecl).Value;
-            if (existing != null)
-                return existing;
-
-            var type = new DelegateType(targetDecl, delClassDecl);
-
-            CurrentTypeContext.DelegateTypeInstances[targetDecl] = type;
-            return type;
-        }
-
         public override string TypeName => "delegate";
 
         public AstDelegateDecl TargetDeclaration { get; set; }
@@ -344,8 +324,8 @@ namespace HapetFrontend.Types
             };
         }
 
-        private DelegateType(AstDelegateDecl targetDecl, AstClassDecl decl)
-            : base(decl)
+        public DelegateType(AstDelegateDecl targetDecl)
+            : base(null)
         {
             TargetDeclaration = targetDecl;
         }

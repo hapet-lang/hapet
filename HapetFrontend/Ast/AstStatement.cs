@@ -1,6 +1,7 @@
 ﻿using System.Runtime.CompilerServices;
 using HapetFrontend.Ast.Declarations;
 using HapetFrontend.Entities;
+using HapetFrontend.Enums;
 using HapetFrontend.Scoping;
 using HapetFrontend.Types;
 using Newtonsoft.Json;
@@ -42,6 +43,8 @@ namespace HapetFrontend.Ast
         /// </summary>
         [JsonIgnore]
         public AstStatement NormalParent => Parent as AstStatement;
+
+        public PreparationStep CurrentPreparationStep { get; set; } = PreparationStep.None;
 
         /// <summary>
         /// This propa is only used when debugging to see which ast i see

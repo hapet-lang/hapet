@@ -1,17 +1,16 @@
 ﻿using HapetFrontend.Ast;
 using HapetFrontend.Ast.Declarations;
+using HapetFrontend.Enums;
 using HapetFrontend.Errors;
 using HapetFrontend.Scoping;
 using HapetFrontend.Types;
 using HapetPostPrepare.Entities;
-using System;
-using System.Runtime;
 
 namespace HapetPostPrepare
 {
     public partial class PostPrepare
     {
-        public void PostPrepareStatementUpToCurrentStep(AstStatement stmt)
+        public void PostPrepareStatementUpToCurrentStep(AstStatement stmt, bool skipFirstStep = false)
         {
             if (_currentPreparationStep == PreparationStep.None)
             {
@@ -27,60 +26,79 @@ namespace HapetPostPrepare
                 _currentParentStack.AddParent(dcl);
 
             // go all over the steps down
-            if (_currentPreparationStep >= PreparationStep.Types)
+            if (_currentPreparationStep >= PreparationStep.Types && stmt.CurrentPreparationStep < PreparationStep.Types && !skipFirstStep)
             {
+                stmt.CurrentPreparationStep = PreparationStep.Types;
                 PostPrepareMetadataTypes(stmt, false);
             }
-            if (_currentPreparationStep >= PreparationStep.Generics)
+            if (_currentPreparationStep >= PreparationStep.Generics && stmt.CurrentPreparationStep < PreparationStep.Generics)
             {
+                stmt.CurrentPreparationStep = PreparationStep.Generics;
                 PostPrepareMetadataGenerics(stmt);
             }
-            if (_currentPreparationStep >= PreparationStep.Inheritance)
+            if (_currentPreparationStep >= PreparationStep.Delegates && stmt.CurrentPreparationStep < PreparationStep.Delegates)
             {
-                PostPrepareMetadataInheritance(stmt);
-            }
-            if (_currentPreparationStep >= PreparationStep.Delegates)
-            {
+                stmt.CurrentPreparationStep = PreparationStep.Delegates;
                 PostPrepareMetadataDelegates(stmt);
             }
-            if (_currentPreparationStep >= PreparationStep.NestedTypes)
+            if (_currentPreparationStep >= PreparationStep.NestedTypes && stmt.CurrentPreparationStep < PreparationStep.NestedTypes) 
             {
+                stmt.CurrentPreparationStep = PreparationStep.NestedTypes;
                 PostPrepareMetadataNestedTypes(stmt);
             }
-            if (_currentPreparationStep >= PreparationStep.Functions)
+            if (_currentPreparationStep >= PreparationStep.Functions && stmt.CurrentPreparationStep < PreparationStep.Functions) 
             {
+                stmt.CurrentPreparationStep = PreparationStep.Functions;
                 PostPrepareMetadataFunctions(stmt);
             }
-            if (_currentPreparationStep >= PreparationStep.FieldAndPropDecls)
+            if (_currentPreparationStep >= PreparationStep.FieldAndPropDecls && stmt.CurrentPreparationStep < PreparationStep.FieldAndPropDecls) 
             {
+                stmt.CurrentPreparationStep = PreparationStep.FieldAndPropDecls;
                 PostPrepareMetadataTypeFieldDecls(stmt);
             }
-            if (_currentPreparationStep >= PreparationStep.InheritedFunctions)
+            if (_currentPreparationStep >= PreparationStep.Inheritance && stmt.CurrentPreparationStep < PreparationStep.Inheritance) 
             {
+                stmt.CurrentPreparationStep = PreparationStep.Inheritance;
+                PostPrepareMetadataInheritance(stmt);
+            }
+            if (_currentPreparationStep >= PreparationStep.InheritedFunctions && stmt.CurrentPreparationStep < PreparationStep.InheritedFunctions)
+            {
+                stmt.CurrentPreparationStep = PreparationStep.InheritedFunctions;
                 PostPrepareMetadataInheritedFunctions(stmt);
             }
-            if (_currentPreparationStep >= PreparationStep.InheritedFieldDecls)
+            if (_currentPreparationStep >= PreparationStep.InheritedFieldDecls && stmt.CurrentPreparationStep < PreparationStep.InheritedFieldDecls)
             {
+                stmt.CurrentPreparationStep = PreparationStep.InheritedFieldDecls;
                 PostPrepareMetadataTypeInheritedFieldDecls(stmt);
             }
-            if (_currentPreparationStep >= PreparationStep.InheritedPropDecls)
+            if (_currentPreparationStep >= PreparationStep.InheritedPropDecls && stmt.CurrentPreparationStep < PreparationStep.InheritedPropDecls)
             {
+                stmt.CurrentPreparationStep = PreparationStep.InheritedPropDecls;
                 PostPrepareMetadataTypeInheritedPropsDecls(stmt);
             }
-            if (_currentPreparationStep >= PreparationStep.FieldAndPropInits)
+            if (_currentPreparationStep >= PreparationStep.NestedTypesInside && stmt.CurrentPreparationStep < PreparationStep.NestedTypesInside)
             {
+                stmt.CurrentPreparationStep = PreparationStep.NestedTypesInside;
+                PostPrepareMetadataNestedTypesInside(stmt);
+            }
+            if (_currentPreparationStep >= PreparationStep.FieldAndPropInits && stmt.CurrentPreparationStep < PreparationStep.FieldAndPropInits)
+            {
+                stmt.CurrentPreparationStep = PreparationStep.FieldAndPropInits;
                 PostPrepareMetadataTypeFieldInits(stmt);
             }
-            if (_currentPreparationStep >= PreparationStep.Attributes)
+            if (_currentPreparationStep >= PreparationStep.Attributes && stmt.CurrentPreparationStep < PreparationStep.Attributes)
             {
+                stmt.CurrentPreparationStep = PreparationStep.Attributes;
                 PostPrepareMetadataAttributes(stmt);
             }
 
-            if (_currentPreparationStep >= PreparationStep.Inferencing)
+            if (_currentPreparationStep >= PreparationStep.Inferencing && stmt.CurrentPreparationStep < PreparationStep.Inferencing)
             {
                 // just handlers
                 InInfo inInfo = InInfo.Default;
                 OutInfo outInfo = OutInfo.Default;
+
+                stmt.CurrentPreparationStep = PreparationStep.Inferencing;
 
                 // we need to inference it manually
                 if (stmt is AstClassDecl cls)

@@ -52,9 +52,10 @@ namespace HapetPostPrepare
                 // p func generics here
                 bool _ = PostPrepareMetadataGenerics(func);
 
+                var saved = inInfo.ForMetadata;
                 inInfo.ForMetadata = true;
                 PostPrepareFunctionInference(func, inInfo, ref outInfo);
-                inInfo.ForMetadata = false;
+                inInfo.ForMetadata = saved;
 
                 // if func serialization required
                 if (needSerialize)

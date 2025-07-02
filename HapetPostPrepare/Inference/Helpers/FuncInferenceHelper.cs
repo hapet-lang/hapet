@@ -308,7 +308,7 @@ namespace HapetPostPrepare
             candidates = Candidates_Step5_StaticOrNon(candidates, callFromObject).ToList();                 // step 5
             Candidates_6_RemoveOverrided(candidates, callFromObject);                                       // step 6
 
-            return candidates.Distinct().ToList();
+            return candidates.DistinctBy(x => x.Decl).ToList();
         }
 
         private static List<DeclSymbol> Candidates_Step1_InheritedAndCurrent(AstIdExpr name, AstDeclaration declToSearch, bool callFromObject)
@@ -329,7 +329,7 @@ namespace HapetPostPrepare
             }
 
             // remove the same
-            candidates = candidates.Distinct().ToList();
+            candidates = candidates.DistinctBy(x => x.Decl).ToList();
 
             // add current decl subscope' decls
             var currentDecls = declToSearch.SubScope.GetFunctionSymbols(name, callFromObject: callFromObject);
