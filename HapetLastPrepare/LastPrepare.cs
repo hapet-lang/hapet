@@ -1,8 +1,5 @@
-﻿using HapetFrontend.Entities;
-using HapetFrontend;
+﻿using HapetFrontend;
 using HapetPostPrepare;
-using HapetFrontend.Ast.Declarations;
-using HapetFrontend.Ast;
 
 namespace HapetLastPrepare
 {
@@ -23,6 +20,10 @@ namespace HapetLastPrepare
             // because some steps won't work properly without previous
             // 0 is returned because normal error is going to be
             // returned in the caller shite
+
+            LastPrepareInheritedShite();
+            if (_compiler.MessageHandler.HasErrors)
+                return 0;
 
             CreateRequired();
             if (_compiler.MessageHandler.HasErrors)

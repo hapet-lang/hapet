@@ -36,9 +36,6 @@ namespace HapetPostPrepare
             AllPostPrepareMetadataNestedTypes();
             AllPostPrepareMetadataFunctions();
             AllPostPrepareMetadataTypeFieldDecls();
-            AllPostPrepareMetadataInheritedFunctions();
-            AllPostPrepareMetadataTypeInheritedFieldDecls();
-            AllPostPrepareMetadataTypeInheritedPropsDecls();
             AllPostPrepareMetadataTypeFieldInits();
             AllPostPrepareMetadataAttributes();
 
@@ -268,98 +265,6 @@ namespace HapetPostPrepare
                 PostPrepareMetadataTypeFieldDecls(enm);
                 _currentParentStack.RemoveParent();
                 if (enm.IsNestedDecl)
-                    _currentParentStack.RemoveParent();
-            }
-        }
-
-        private void AllPostPrepareMetadataInheritedFunctions()
-        {
-            _currentPreparationStep = PreparationStep.InheritedFunctions;
-
-            foreach (var cls in AllClassesMetadata.ToList())
-            {
-                _currentSourceFile = cls.SourceFile;
-                if (cls.IsNestedDecl)
-                    _currentParentStack.AddParent(cls.ParentDecl);
-                _currentParentStack.AddParent(cls);
-                PostPrepareMetadataInheritedFunctions(cls);
-                _currentParentStack.RemoveParent();
-                if (cls.IsNestedDecl)
-                    _currentParentStack.RemoveParent();
-            }
-            foreach (var str in AllStructsMetadata.ToList())
-            {
-                _currentSourceFile = str.SourceFile;
-                if (str.IsNestedDecl)
-                    _currentParentStack.AddParent(str.ParentDecl);
-                _currentParentStack.AddParent(str);
-                PostPrepareMetadataInheritedFunctions(str);
-                _currentParentStack.RemoveParent();
-                if (str.IsNestedDecl)
-                    _currentParentStack.RemoveParent();
-            }
-        }
-
-        private void AllPostPrepareMetadataTypeInheritedFieldDecls()
-        {
-            _currentPreparationStep = PreparationStep.InheritedFieldDecls;
-
-            var classes = AllClassesMetadata.ToList();
-            var structures = AllStructsMetadata.ToList();
-
-            // resolve all inherited fields of classes
-            foreach (var cls in classes)
-            {
-                _currentSourceFile = cls.SourceFile;
-                if (cls.IsNestedDecl)
-                    _currentParentStack.AddParent(cls.ParentDecl);
-                _currentParentStack.AddParent(cls);
-                PostPrepareMetadataTypeInheritedFieldDecls(cls);
-                _currentParentStack.RemoveParent();
-                if (cls.IsNestedDecl)
-                    _currentParentStack.RemoveParent();
-            }
-            foreach (var str in structures)
-            {
-                _currentSourceFile = str.SourceFile;
-                if (str.IsNestedDecl)
-                    _currentParentStack.AddParent(str.ParentDecl);
-                _currentParentStack.AddParent(str);
-                PostPrepareMetadataTypeInheritedFieldDecls(str);
-                _currentParentStack.RemoveParent();
-                if (str.IsNestedDecl)
-                    _currentParentStack.RemoveParent();
-            }
-        }
-
-        private void AllPostPrepareMetadataTypeInheritedPropsDecls()
-        {
-            _currentPreparationStep = PreparationStep.InheritedPropDecls;
-
-            var classes = AllClassesMetadata.ToList();
-            var structures = AllStructsMetadata.ToList();
-
-            // resolve all inherited props of classes
-            foreach (var cls in classes)
-            {
-                _currentSourceFile = cls.SourceFile;
-                if (cls.IsNestedDecl)
-                    _currentParentStack.AddParent(cls.ParentDecl);
-                _currentParentStack.AddParent(cls);
-                PostPrepareMetadataTypeInheritedPropsDecls(cls);
-                _currentParentStack.RemoveParent();
-                if (cls.IsNestedDecl)
-                    _currentParentStack.RemoveParent();
-            }
-            foreach (var str in structures)
-            {
-                _currentSourceFile = str.SourceFile;
-                if (str.IsNestedDecl)
-                    _currentParentStack.AddParent(str.ParentDecl);
-                _currentParentStack.AddParent(str);
-                PostPrepareMetadataTypeInheritedPropsDecls(str);
-                _currentParentStack.RemoveParent();
-                if (str.IsNestedDecl)
                     _currentParentStack.RemoveParent();
             }
         }

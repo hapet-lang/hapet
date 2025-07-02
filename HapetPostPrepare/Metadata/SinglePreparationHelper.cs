@@ -55,18 +55,6 @@ namespace HapetPostPrepare
             {
                 PostPrepareMetadataTypeFieldDecls(stmt);
             }
-            if (_currentPreparationStep >= PreparationStep.InheritedFunctions)
-            {
-                PostPrepareMetadataInheritedFunctions(stmt);
-            }
-            if (_currentPreparationStep >= PreparationStep.InheritedFieldDecls)
-            {
-                PostPrepareMetadataTypeInheritedFieldDecls(stmt);
-            }
-            if (_currentPreparationStep >= PreparationStep.InheritedPropDecls)
-            {
-                PostPrepareMetadataTypeInheritedPropsDecls(stmt);
-            }
             if (_currentPreparationStep >= PreparationStep.FieldAndPropInits)
             {
                 PostPrepareMetadataTypeFieldInits(stmt);
