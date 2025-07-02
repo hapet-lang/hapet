@@ -308,20 +308,12 @@ namespace HapetPostPrepare
         {
             if (!CheckIfCouldBeAccessed(idExpr, typed.Decl) && !inInfo.FromCallExpr && !inInfo.MuteErrors)
                 _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, idExpr, [], ErrorCode.Get(CTEN.DeclCouldNotBeAccessed));
-            
-            inInfo.FunctionsToCallAfterGenericCreated.TryPeek(out var prev);
-            inInfo.FunctionsToCallAfterGenericCreated.Push((type) =>
-            {
-                idExpr.OutType = type;
-                prev?.Invoke(type);
-            });
-
-            typed = CheckForGenericType(typed, idExpr, inInfo);
-            idExpr.OutType = typed.Decl.Type.OutType;
+            typed = CheckForGenericType(typed, idExpr);
             if (!string.IsNullOrWhiteSpace(name))
+            {
                 idExpr.Name = name;
-
-            inInfo.FunctionsToCallAfterGenericCreated.Pop();
+            }
+            idExpr.OutType = typed.Decl.Type.OutType;
 
             HandleBasicTypes(typed.Decl, idExpr);
             TryAssignConstValueToExpr(idExpr, typed.Decl, inInfo, ref outInfo2);
@@ -330,8 +322,6 @@ namespace HapetPostPrepare
 
             // set that it is used 
             typed.Decl.IsDeclarationUsed = true;
-
-            GoUpToCurrentPreparationStep(typed.Decl);
         }
 
         /// <summary>
@@ -379,29 +369,32 @@ namespace HapetPostPrepare
             }
         }
 
-        private void GoUpToCurrentPreparationStep(AstDeclaration decl)
-        {
-            if (_currentPreparationStep - decl.CurrentPreparationStep > 1) 
-            {
-                PostPrepareStatementUpToCurrentStep(decl);
-            }
-        }
-
-        private DeclSymbol CheckForGenericType(DeclSymbol decl, AstIdExpr idExpr, InInfo inInfo)
+        private DeclSymbol CheckForGenericType(DeclSymbol decl, AstIdExpr idExpr)
         {
             if (idExpr is not AstIdGenericExpr genId)
                 return decl;
 
             var theDecl = decl.Decl;
-            var realDecl = CreateRealTypeFromGeneric(theDecl, genId, inInfo, out var realName, true);
+            var realDecl = CreateRealTypeFromGeneric(theDecl, genId, out var realName, true);
 
-            DeclSymbol realDclDecl = theDecl.Scope.GetSymbol(realDecl.Name) as DeclSymbol;
+            DeclSymbol realDclDecl;
+            // func is defined by itself
+            if (theDecl is not AstFuncDecl)
+            {
+                // define the real decl in the same scope where generic one exists
+                realDclDecl = new DeclSymbol(realName, realDecl);
+                theDecl.Scope.DefineSymbol(realDclDecl);
+            }
+            else
+            {
+                realDclDecl = theDecl.Scope.GetSymbol(realDecl.Name) as DeclSymbol;
+            }
             return realDclDecl;
         }
 
-        public AstDeclaration CreateRealTypeFromGeneric(AstDeclaration genDecl, AstIdGenericExpr realId, InInfo inInfo, out AstIdGenericExpr realName, bool allowRealGeneric = false)
+        public AstDeclaration CreateRealTypeFromGeneric(AstDeclaration genDecl, AstIdGenericExpr realId, out AstIdGenericExpr realName, bool allowRealGeneric = false)
         {
-            InInfo inInfoHandler = InInfo.Default;
+            InInfo inInfo = InInfo.Default;
             OutInfo outInfo = OutInfo.Default;
 
             if (!genDecl.HasGenericTypes)
@@ -423,7 +416,7 @@ namespace HapetPostPrepare
                 var g = realId.GenericRealTypes[i];
                 // infer if not infered
                 if (g.OutType == null)
-                    PostPrepareExprInference(g, inInfoHandler, ref outInfo);
+                    PostPrepareExprInference(g, inInfo, ref outInfo);
             }
 
             // if instantiating with genericTypes are not allowed - 
@@ -459,7 +452,7 @@ namespace HapetPostPrepare
 
             // create a new shite with real types
             var realDecl = GetRealTypeFromGeneric(genDecl, realId.GenericRealTypes.GetNestedList(_compiler.MessageHandler), 
-                realName, HasAnyGenericTypes(realId.GenericRealTypes), inInfo);
+                realName, HasAnyGenericTypes(realId.GenericRealTypes));
             return realDecl;
         }
     }

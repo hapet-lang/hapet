@@ -445,7 +445,7 @@ namespace HapetPostPrepare
                 if (typed == null)
                     return typed;
 
-                return CheckForGenericType(typed, idExpr, null);
+                return CheckForGenericType(typed, idExpr);
             }
         }
     }

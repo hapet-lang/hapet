@@ -18,7 +18,7 @@ namespace HapetPostPrepare
     public partial class PostPrepare
     {
         private AstDeclaration GetRealTypeFromGeneric(AstDeclaration decl, List<AstNestedExpr> genericTypes, 
-            AstIdGenericExpr realName, bool implHasGenerics, InInfo inInfo)
+            AstIdGenericExpr realName, bool implHasGenerics)
         {
             // we need to save previous info about current shite and then reload it 
             var savedSourceFile = _currentSourceFile;
@@ -64,15 +64,6 @@ namespace HapetPostPrepare
             realDecl.Name = realName;
             // no need to reset HasGenericTypes when using generic shite from another generic
             realDecl.HasGenericTypes = HasAnyGenericTypes(genericTypes.Select(x => x as AstExpression).ToList());
-
-            // cool callback
-            Action<HapetType> lastAction = null;
-            inInfo?.FunctionsToCallAfterGenericCreated.TryPeek(out lastAction);
-            if (inInfo?.FunctionsToCallAfterGenericCreated.Count >= 3)
-            {
-
-            }
-            lastAction?.Invoke(realDecl.Type.OutType);
 
             // resetting some shite - it has to be done again
             ResetSomeDeclParams(realDecl);

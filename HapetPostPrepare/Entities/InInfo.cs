@@ -1,7 +1,4 @@
-﻿using HapetFrontend.Ast;
-using HapetFrontend.Types;
-
-namespace HapetPostPrepare.Entities
+﻿namespace HapetPostPrepare.Entities
 {
     public class InInfo
     {
@@ -9,8 +6,6 @@ namespace HapetPostPrepare.Entities
         public bool AllowSpecialKeys { get; set; }
         public bool FromCallExpr { get; set; }
         public bool MuteErrors { get; set; }
-
-        public Stack<Action<HapetType>> FunctionsToCallAfterGenericCreated { get; } = new Stack<Action<HapetType>>();
 
         public static InInfo Default => new InInfo()
         {

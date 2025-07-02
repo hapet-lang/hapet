@@ -148,10 +148,6 @@ namespace HapetFrontend.Types
             if (type == null)
                 return false;
 
-            // get original generic
-            if (type.Declaration.IsImplOfGeneric)
-                type = type.Declaration.OriginalGenericDecl.Type.OutType as ClassType;
-
             List<AstNestedExpr> inhFrom;
             if (this is ClassType clsT)
                 inhFrom = clsT.Declaration.InheritedFrom;
@@ -163,11 +159,6 @@ namespace HapetFrontend.Types
             foreach (var expr in inhFrom)
             {
                 var outT = expr.OutType as ClassType;
-
-                // get original generic
-                if (outT.Declaration.IsImplOfGeneric)
-                    outT = outT.Declaration.OriginalGenericDecl.Type.OutType as ClassType;
-
                 if (outT == type || (checkParents && outT.IsInheritedFrom(type)))
                     return true;
             }

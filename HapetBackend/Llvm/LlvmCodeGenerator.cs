@@ -70,9 +70,6 @@ namespace HapetBackend.Llvm
             _rawBuilder = _module.Context.CreateBuilder();
             _voidPointerType = ((LLVMTypeRef)_context.Int8Type).GetPointerTo();
 
-            // remove the same
-            _postPreparer.AllFunctionsMetadata = _postPreparer.AllFunctionsMetadata.Distinct().ToList();
-
             // init built in operators for llvm
             InitOperators();
 

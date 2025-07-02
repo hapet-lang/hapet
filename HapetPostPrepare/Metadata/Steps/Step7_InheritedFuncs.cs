@@ -71,12 +71,8 @@ namespace HapetPostPrepare
                 // need to create a specific type of the inheritance
                 if (inh.RightPart is AstIdGenericExpr genInhId)
                 {
-                    if (inhDecl.Name.Name.Contains("IList") && genInhId.GenericRealTypes.Count == 1 && genInhId.GenericRealTypes[0].OutType is IntType)
-                    {
-
-                    }
                     // WARN: allow genericTypes here - because we want to purely check the types
-                    inhDecl = CreateRealTypeFromGeneric(inhDecl, genInhId, null, out var _, true) as AstClassDecl;
+                    inhDecl = CreateRealTypeFromGeneric(inhDecl, genInhId, out var _, true) as AstClassDecl;
                 }
 
                 // if the inh type is an interface
@@ -129,13 +125,6 @@ namespace HapetPostPrepare
                             else
                             {
                                 // if the method was not presented previously
-
-                                if (inhF.Name.Name.Contains("CopyTo") && decl.Name.Name.Contains("Array") &&
-                                    inhF.ContainingParent.Name is AstIdGenericExpr gen && gen.GenericRealTypes.Count == 1 &&
-                                    gen.GenericRealTypes[0].OutType is IntType)
-                                {
-
-                                }
 
                                 // need to check that we do implement it
                                 var currF = currentClassMethods.GetSameByNameAndTypes(inhF, out int _, skipFirst);
