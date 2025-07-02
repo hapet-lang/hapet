@@ -11,7 +11,7 @@ namespace HapetPostPrepare
 {
     public partial class PostPrepare
     {
-        public void PostPrepareStatementUpToCurrentStep(AstStatement stmt)
+        public void PostPrepareStatementUpToCurrentStep(AstStatement stmt, bool skipFirstStep = false)
         {
             if (_currentPreparationStep == PreparationStep.None)
             {
@@ -27,7 +27,7 @@ namespace HapetPostPrepare
                 _currentParentStack.AddParent(dcl);
 
             // go all over the steps down
-            if (_currentPreparationStep >= PreparationStep.Types)
+            if (_currentPreparationStep >= PreparationStep.Types && !skipFirstStep)
             {
                 PostPrepareMetadataTypes(stmt, false);
             }
@@ -54,6 +54,10 @@ namespace HapetPostPrepare
             if (_currentPreparationStep >= PreparationStep.FieldAndPropDecls)
             {
                 PostPrepareMetadataTypeFieldDecls(stmt);
+            }
+            if (_currentPreparationStep >= PreparationStep.NestedTypesInside)
+            {
+                PostPrepareMetadataNestedTypesInside(stmt);
             }
             if (_currentPreparationStep >= PreparationStep.FieldAndPropInits)
             {

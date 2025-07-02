@@ -36,6 +36,7 @@ namespace HapetPostPrepare
             AllPostPrepareMetadataNestedTypes();
             AllPostPrepareMetadataFunctions();
             AllPostPrepareMetadataTypeFieldDecls();
+            AllPostPrepareMetadataNestedTypesInside();
             AllPostPrepareMetadataTypeFieldInits();
             AllPostPrepareMetadataAttributes();
 
@@ -266,6 +267,29 @@ namespace HapetPostPrepare
                 _currentParentStack.RemoveParent();
                 if (enm.IsNestedDecl)
                     _currentParentStack.RemoveParent();
+            }
+        }
+
+        private void AllPostPrepareMetadataNestedTypesInside()
+        {
+            _currentPreparationStep = PreparationStep.NestedTypesInside;
+
+            // inferrencing nested types
+            foreach (var cls in AllClassesMetadata.ToList())
+            {
+                _currentSourceFile = cls.SourceFile;
+                _currentParentStack.AddParent(cls);
+
+                PostPrepareMetadataNestedTypesInside(cls);
+                _currentParentStack.RemoveParent();
+            }
+            foreach (var str in AllStructsMetadata.ToList())
+            {
+                _currentSourceFile = str.SourceFile;
+                _currentParentStack.AddParent(str);
+
+                PostPrepareMetadataNestedTypesInside(str);
+                _currentParentStack.RemoveParent();
             }
         }
 

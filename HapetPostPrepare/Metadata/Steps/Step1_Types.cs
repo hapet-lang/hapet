@@ -31,9 +31,11 @@ namespace HapetPostPrepare
                     // we need a pure decl name because it is nested
                     newName = $"{classDecl.Name.Name}";
                 else
+                {
                     // creating a new class name with namespace
                     newName = $"{_currentSourceFile.Namespace}.{classDecl.Name.Name}";
-                AllClassesMetadata.Add(classDecl);
+                    AllClassesMetadata.Add(classDecl);
+                }
 
                 if (needSerialize)
                     _serializeClassesMetadata.Add(classDecl);
@@ -44,9 +46,11 @@ namespace HapetPostPrepare
                     // we need a pure decl name because it is nested
                     newName = $"{structDecl.Name.Name}";
                 else
+                {
                     // creating a new struct name with namespace
                     newName = $"{_currentSourceFile.Namespace}.{structDecl.Name.Name}";
-                AllStructsMetadata.Add(structDecl);
+                    AllStructsMetadata.Add(structDecl);
+                }
 
                 if (needSerialize)
                     _serializeStructsMetadata.Add(structDecl);
@@ -57,9 +61,11 @@ namespace HapetPostPrepare
                     // we need a pure decl name because it is nested
                     newName = $"{enumDecl.Name.Name}";
                 else
+                {
                     // creating a new enum name with namespace
                     newName = $"{_currentSourceFile.Namespace}.{enumDecl.Name.Name}";
-                AllEnumsMetadata.Add(enumDecl);
+                    AllEnumsMetadata.Add(enumDecl);
+                }
 
                 if (needSerialize)
                     _serializeEnumsMetadata.Add(enumDecl);
@@ -70,9 +76,11 @@ namespace HapetPostPrepare
                     // we need a pure decl name because it is nested
                     newName = $"{delegateDecl.Name.Name}";
                 else
+                {
                     // creating a new delegate name with namespace
                     newName = $"{_currentSourceFile.Namespace}.{delegateDecl.Name.Name}";
-                AllDelegatesMetadata.Add(delegateDecl);
+                    AllDelegatesMetadata.Add(delegateDecl);
+                }
 
                 if (needSerialize)
                     _serializeDelegatesMetadata.Add(delegateDecl);

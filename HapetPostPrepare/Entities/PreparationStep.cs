@@ -23,6 +23,7 @@
         NestedTypes,
         Functions,
         FieldAndPropDecls,
+        NestedTypesInside,
         FieldAndPropInits,
         Attributes,
         MetadataCreation,
