@@ -18,6 +18,7 @@ namespace HapetFrontend.Scoping
         private void DefineLiteralOperators()
         {
             var boolT = HapetType.CurrentTypeContext.BoolTypeInstance;
+            var ptrToVoid = HapetType.CurrentTypeContext.PtrToVoidType;
 
             // literal types
             DefineUnaryOperator("!", boolT, boolT, b => !(bool)b);
@@ -108,15 +109,15 @@ namespace HapetFrontend.Scoping
                 if (type is FloatType)
                     continue;
 
-                DefineBinaryOperator(new BuiltInBinaryOperator("+", PointerType.VoidLiteralType, type, PointerType.VoidLiteralType));
-                DefineBinaryOperator(new BuiltInBinaryOperator("+", PointerType.VoidLiteralType, PointerType.VoidLiteralType, type));
-                DefineBinaryOperator(new BuiltInBinaryOperator("-", PointerType.VoidLiteralType, PointerType.VoidLiteralType, type));
+                DefineBinaryOperator(new BuiltInBinaryOperator("+", ptrToVoid, type, ptrToVoid));
+                DefineBinaryOperator(new BuiltInBinaryOperator("+", ptrToVoid, ptrToVoid, type));
+                DefineBinaryOperator(new BuiltInBinaryOperator("-", ptrToVoid, ptrToVoid, type));
             }
 
-            DefineBinaryOperator(new BuiltInBinaryOperator("==", boolT, PointerType.VoidLiteralType, PointerType.VoidLiteralType));
+            DefineBinaryOperator(new BuiltInBinaryOperator("==", boolT, ptrToVoid, ptrToVoid));
             DefineBinaryOperator(new BuiltInBinaryOperator("==", boolT, NullType.LiteralType, GenericType.LiteralType));
             DefineBinaryOperator(new BuiltInBinaryOperator("==", boolT, GenericType.LiteralType, NullType.LiteralType));
-            DefineBinaryOperator(new BuiltInBinaryOperator("!=", boolT, PointerType.VoidLiteralType, PointerType.VoidLiteralType));
+            DefineBinaryOperator(new BuiltInBinaryOperator("!=", boolT, ptrToVoid, ptrToVoid));
             DefineBinaryOperator(new BuiltInBinaryOperator("!=", boolT, NullType.LiteralType, GenericType.LiteralType));
             DefineBinaryOperator(new BuiltInBinaryOperator("!=", boolT, GenericType.LiteralType, NullType.LiteralType));
 

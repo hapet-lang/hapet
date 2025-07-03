@@ -9,6 +9,7 @@ namespace HapetFrontend.Types
         public int PointerSize { get; set; }
         public ClassType ObjectTypeInstance { get; private set; } = new ClassType(null);
         public VoidType VoidTypeInstance { get; private set; } = new VoidType(null);
+        public PointerType PtrToVoidType { get; private set; }
         public BoolType BoolTypeInstance { get; private set; } = new BoolType(null);
         public CharType CharTypeInstance { get; private set; } = new CharType(null, 2); // default is 2 bytes long char
         public StringType StringTypeInstance { get; private set; } = new StringType(null);
@@ -50,6 +51,11 @@ namespace HapetFrontend.Types
             FloatType empty = new FloatType(null, sizeInBytes);
             FloatTypeInstances[key] = empty;
             return empty;
+        }
+
+        public void Init()
+        {
+            PtrToVoidType = PointerType.GetPointerType(VoidTypeInstance);
         }
     }
 }

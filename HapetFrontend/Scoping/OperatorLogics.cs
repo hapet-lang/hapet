@@ -330,7 +330,7 @@ namespace HapetFrontend.Scoping
         private HapetType GetLiteralTypeToSearch(HapetType type)
         {
             if (type is PointerType)
-                return PointerType.VoidLiteralType;
+                return HapetType.CurrentTypeContext.PtrToVoidType;
             else if (type is GenericType)
                 return GenericType.LiteralType;
             else if (type is ClassType)

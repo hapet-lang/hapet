@@ -54,6 +54,7 @@ namespace HapetCompiler.Toolchains
 
             // setting pointer size for the whole assembly
             HapetType.CurrentTypeContext.PointerSize = ProjectSettings.TargetPlatformData.PointerSize;
+            HapetType.CurrentTypeContext.Init();
             // creating the compiler and preparers
             var compiler = new Compiler(ProjectSettings, ProjectData, messageHandler);
             var postPreparer = new PostPrepare(compiler);

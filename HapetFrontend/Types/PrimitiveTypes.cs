@@ -284,7 +284,6 @@ namespace HapetFrontend.Types
         public static int PointerAlignment => CurrentTypeContext.PointerSize;
 
         private static Dictionary<HapetType, PointerType> _types = new Dictionary<HapetType, PointerType>();
-        public static PointerType VoidLiteralType { get; } = new PointerType(HapetType.CurrentTypeContext.VoidTypeInstance);
 
         public override string TypeName => "ptr";
 
@@ -299,10 +298,7 @@ namespace HapetFrontend.Types
         }
 
         private PointerType(HapetType target) : base(
-            target switch
-            {
-                _ => CurrentTypeContext.PointerSize * 1,
-            }, PointerAlignment)
+            CurrentTypeContext.PointerSize, PointerAlignment)
         {
             TargetType = target;
         }

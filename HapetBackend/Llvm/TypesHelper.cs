@@ -380,7 +380,7 @@ namespace HapetBackend.Llvm
         {
             if (withTypeInfo)
             {
-                var tp = new AstIdExpr("uintptr") { OutType = PointerType.VoidLiteralType };
+                var tp = new AstIdExpr("uintptr") { OutType = HapetType.CurrentTypeContext.PtrToVoidType };
                 decls.Insert(0, new AstVarDecl(new AstNestedExpr(tp, null) { OutType = tp.OutType }, new AstIdExpr("typeinfo")));
             }
 
@@ -397,7 +397,7 @@ namespace HapetBackend.Llvm
                 // getting the type
                 var type = mem.Type.OutType;
                 // we need to get a minimal type alignment size depending on pack
-                int typeAlignment = Math.Min(type.GetAlignment(), packNumber);
+                int typeAlignment = packNumber > 0 ? Math.Min(type.GetAlignment(), packNumber) : type.GetAlignment();
                 Debug.Assert(typeAlignment > 0);
 
                 // update biggest alignment
