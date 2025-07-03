@@ -646,8 +646,7 @@ namespace HapetFrontend.Parsing
                     {
                         NextToken();
 
-                        Consume(TokenType.CloseParen, ErrMsg("(", "after sizeof/alignof/typeof expression"));
-                        NextToken();
+                        Consume(TokenType.OpenParen, ErrMsg("(", "after sizeof/alignof/typeof expression"));
 
                         var saved = inInfo.AllowMultiplyExpression;
                         var saved1 = inInfo.PreferGenericShite;
