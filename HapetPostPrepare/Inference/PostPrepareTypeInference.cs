@@ -373,6 +373,9 @@ namespace HapetPostPrepare
                 case AstCheckedExpr checkedExpr:
                     PostPrepareCheckedExprInference(checkedExpr, inInfo, ref outInfo);
                     break;
+                case AstSATOfExpr satExpr:
+                    PostPrepareSATExprInference(satExpr, inInfo, ref outInfo);
+                    break;
                 case AstEmptyStructExpr:
                     break;
                 case AstEmptyExpr:
@@ -1015,6 +1018,19 @@ namespace HapetPostPrepare
             PostPrepareExprInference(expr.SubExpression, inInfo, ref outInfo);
             expr.OutType = expr.SubExpression.OutType;
             expr.OutValue = expr.SubExpression.OutValue;
+        }
+
+        private void PostPrepareSATExprInference(AstSATOfExpr expr, InInfo inInfo, ref OutInfo outInfo)
+        {
+            PostPrepareExprInference(expr.TargetType, inInfo, ref outInfo);
+            if (expr.ExprType == TokenType.KwSizeof || expr.ExprType == TokenType.KwAlignof)
+            {
+                expr.OutType = HapetType.CurrentTypeContext.GetIntType(4, true);
+            }
+            else
+            {
+                // TODO: typeof handle here
+            }
         }
 
         // statements

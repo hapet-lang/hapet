@@ -138,6 +138,9 @@ namespace HapetPostPrepare
                 case AstCheckedExpr checkedExpr:
                     AntiParseCheckedExpr(checkedExpr, sb, offset);
                     break;
+                case AstSATOfExpr satExpr:
+                    AntiParseSATExpr(satExpr, sb, offset);
+                    break;
 
                 // statements
                 case AstAssignStmt assignStmt:
@@ -398,6 +401,19 @@ namespace HapetPostPrepare
                 sb.Append("unchecked");
             sb.Append('(');
             AntiParseExpr(checkedExpr.SubExpression, sb, offset);
+            sb.Append(')');
+        }
+
+        public void AntiParseSATExpr(AstSATOfExpr satExpr, StringBuilder sb, string offset)
+        {
+            if (satExpr.ExprType == TokenType.KwSizeof)
+                sb.Append("sizeof");
+            else if (satExpr.ExprType == TokenType.KwAlignof)
+                sb.Append("alignof");
+            else if(satExpr.ExprType == TokenType.KwTypeof)
+                sb.Append("typeof");
+            sb.Append('(');
+            AntiParseExpr(satExpr.TargetType, sb, offset);
             sb.Append(')');
         }
 

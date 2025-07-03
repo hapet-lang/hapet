@@ -519,6 +519,9 @@ namespace HapetPostPrepare
                 case AstCheckedExpr checkedExpr:
                     PostPrepareCheckedExprScoping(checkedExpr);
                     break;
+                case AstSATOfExpr satExpr:
+                    PostPrepareSATExprScoping(satExpr);
+                    break;
                 case AstEmptyExpr:
                     break;
 
@@ -768,6 +771,12 @@ namespace HapetPostPrepare
         {
             SetScopeAndParent(checkedExpr.SubExpression, checkedExpr);
             PostPrepareExprScoping(checkedExpr.SubExpression);
+        }
+
+        private void PostPrepareSATExprScoping(AstSATOfExpr satExpr)
+        {
+            SetScopeAndParent(satExpr.TargetType, satExpr);
+            PostPrepareExprScoping(satExpr.TargetType);
         }
 
         // statements

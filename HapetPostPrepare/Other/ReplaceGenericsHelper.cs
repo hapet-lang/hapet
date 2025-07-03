@@ -319,6 +319,9 @@ namespace HapetPostPrepare
                 case AstCheckedExpr checkedExpr:
                     ReplaceAllGenericTypesInCheckedExpr(checkedExpr);
                     break;
+                case AstSATOfExpr satExpr:
+                    ReplaceAllGenericTypesInSATExpr(satExpr);
+                    break;
                 case AstEmptyExpr:
                     break;
 
@@ -567,6 +570,11 @@ namespace HapetPostPrepare
         private void ReplaceAllGenericTypesInCheckedExpr(AstCheckedExpr checkedExpr) 
         {
             ReplaceAllGenericTypesInExpr(checkedExpr.SubExpression);
+        }
+
+        private void ReplaceAllGenericTypesInSATExpr(AstSATOfExpr satExpr)
+        {
+            ReplaceAllGenericTypesInNestedExpr(satExpr.TargetType);
         }
 
         // statements
