@@ -1,32 +1,31 @@
-﻿namespace HapetFrontend.Ast.Expressions
+﻿using HapetFrontend.Parsing;
+
+namespace HapetFrontend.Ast.Expressions
 {
     /// <summary>
     /// Handle for sizeof, alignof, typeof intrinsics
     /// </summary>
     public class AstSATOfExpr : AstExpression
     {
-        public enum SATType
-        {
-            Sizeof,
-            Alignof,
-            Typeof,
-        }
-
-        public SATType ExprType { get; set; }
+        /// <summary>
+        /// One of <see cref="TokenType.KwSizeof"/>, <see cref="TokenType.KwAlignof"/>, <see cref="TokenType.KwTypeof"/>
+        /// </summary>
+        public TokenType ExprType { get; set; }
 
         /// <summary>
         /// Type on which the SAT is applied
         /// </summary>
         public AstNestedExpr TargetType { get; set; }
 
-        public AstSATOfExpr(SATType exprType, ILocation location = null) : base(location)
+        public AstSATOfExpr(AstNestedExpr targetType, TokenType exprType, ILocation location = null) : base(location)
         {
+            TargetType = targetType;
             ExprType = exprType;
         }
 
         public override AstStatement GetDeepCopy()
         {
-            var copy = new AstSATOfExpr(ExprType, Location)
+            var copy = new AstSATOfExpr(TargetType, ExprType, Location)
             {
                 IsCompileTimeValue = IsCompileTimeValue,
                 OutType = OutType,

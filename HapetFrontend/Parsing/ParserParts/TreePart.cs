@@ -628,7 +628,7 @@ namespace HapetFrontend.Parsing
                             inInfo.AllowMultiplyExpression = true;
                             var subExpr = ParseExpression(inInfo, ref outInfo) as AstExpression;
                             inInfo.AllowMultiplyExpression = saved;
-                            Consume(TokenType.CloseParen, ErrMsg(")", "after checked/unchecked' sub expression"));
+                            Consume(TokenType.CloseParen, ErrMsg(")", "after checked/unchecked expression"));
 
                             return new AstCheckedExpr(subExpr, new Location(token.Location)) { IsChecked = (token.Type == TokenType.KwChecked) };
                         }
@@ -638,6 +638,30 @@ namespace HapetFrontend.Parsing
                             // TODO: make it as AstCheckedStmt
                             throw new NotImplementedException();
                         }
+                    }
+
+                case TokenType.KwTypeof:
+                case TokenType.KwSizeof:
+                case TokenType.KwAlignof:
+                    {
+                        NextToken();
+
+                        Consume(TokenType.CloseParen, ErrMsg("(", "after sizeof/alignof/typeof expression"));
+                        NextToken();
+
+                        var saved = inInfo.AllowMultiplyExpression;
+                        var saved1 = inInfo.PreferGenericShite;
+                        inInfo.AllowMultiplyExpression = false;
+                        inInfo.PreferGenericShite = true;
+                        var subExpr = ParseExpression(inInfo, ref outInfo) as AstExpression;
+                        inInfo.AllowMultiplyExpression = saved;
+                        inInfo.PreferGenericShite = saved1;
+
+                        Consume(TokenType.CloseParen, ErrMsg(")", "after sizeof/alignof/typeof expression"));
+
+                        var nst = subExpr as AstNestedExpr;
+                        Debug.Assert(nst != null);
+                        return new AstSATOfExpr(nst, token.Type, new Location(token.Location));
                     }
 
                 case TokenType.KwNull:
