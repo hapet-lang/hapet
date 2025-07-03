@@ -14,6 +14,11 @@
 
         public SATType ExprType { get; set; }
 
+        /// <summary>
+        /// Type on which the SAT is applied
+        /// </summary>
+        public AstNestedExpr TargetType { get; set; }
+
         public AstSATOfExpr(SATType exprType, ILocation location = null) : base(location)
         {
             ExprType = exprType;
