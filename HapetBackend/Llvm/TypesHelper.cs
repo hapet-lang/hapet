@@ -10,6 +10,7 @@ using HapetFrontend.Parsing;
 using HapetFrontend.Scoping;
 using HapetFrontend.Types;
 using LLVMSharp.Interop;
+using System.Diagnostics;
 
 namespace HapetBackend.Llvm
 {
@@ -34,9 +35,9 @@ namespace HapetBackend.Llvm
         /// </summary>
         private readonly Dictionary<HapetType, uint[]> _structOffsets = new Dictionary<HapetType, uint[]>();
         /// <summary>
-        /// Boxed struct mappings with the first param offset
+        /// Boxed struct mappings with the first param offset and size
         /// </summary>
-        private readonly Dictionary<HapetType, (LLVMTypeRef, uint)> _boxedStructTypes = new Dictionary<HapetType, (LLVMTypeRef, uint)>();
+        private readonly Dictionary<HapetType, (LLVMTypeRef, uint, int)> _boxedStructTypes = new Dictionary<HapetType, (LLVMTypeRef, uint, int)>();
 
         /// <summary>
         /// Anon delegate name to type mappings. Used when creating a delegate and assigning a func to it
@@ -58,8 +59,8 @@ namespace HapetBackend.Llvm
 
                     // we need to set size/alignment on every array type instance :)
                     // TODO: why to every? if there is only one should be
-                    at.ChangeSize((int)LLVM.ABISizeOfType(_targetData, llvmType));
-                    at.ChangeAlignment((int)LLVM.ABIAlignmentOfType(_targetData, llvmType));
+                    //at.ChangeSize((int)LLVM.ABISizeOfType(_targetData, llvmType));
+                    //at.ChangeAlignment((int)LLVM.ABIAlignmentOfType(_targetData, llvmType));
 
                     return llvmType;
                 }
@@ -88,9 +89,8 @@ namespace HapetBackend.Llvm
                 // creating the struct
                 var name = $"struct.{s.TypeName}";
                 var llvmType = _context.CreateNamedStruct(name);
-                var fieldDeclarations = s.Declaration.GetAllRawFields().Select(x => x.Type.OutType).ToList();
-
-                var (offsets, sssize, memTypes) = CalcStructData(fieldDeclarations, 0);
+                var fieldDeclarations = s.Declaration.GetAllRawFields();
+                var (offsets, sssize, memTypes, _) = CalcStructData(fieldDeclarations, 0, false);
 
                 // saving the offsets so we can access struct elements easily in the future
                 _structOffsets[s] = offsets;
@@ -216,7 +216,18 @@ namespace HapetBackend.Llvm
 
                 case ClassType t:
                     {
-                        return _context.CreateNamedStruct($"class.{t.Declaration.Name.Name}"); ;
+                        // creating a class
+                        var name = $"class.{t.Declaration.Name.Name}";
+                        var llvmType = _context.CreateNamedStruct(name);
+                        _typeMap[t] = llvmType; // need to do this to prevent stackoverflow
+                        var fieldDeclarations = t.Declaration.GetAllRawFields();
+                        var (offsets, sssize, memTypes, algn) = CalcStructData(fieldDeclarations, 0, true);
+
+                        llvmType.StructSetBody(memTypes.ToArray(), false);
+
+                        // getting size and align
+                        t.SetSizeAndAlignment(sssize, algn);
+                        return llvmType;
                     }
 
                 case EnumType e:
@@ -261,22 +272,16 @@ namespace HapetBackend.Llvm
                         var name = $"struct.{s.Declaration.Name.Name}";
                         var llvmType = _context.CreateNamedStruct(name);
                         _typeMap[s] = llvmType; // need to do this to prevent stackoverflow
-                        var fieldDeclarations = s.Declaration.GetAllRawFields().Select(x => x.Type.OutType).ToList();
-
-                        var (offsets, sssize, memTypes) = CalcStructData(fieldDeclarations, packNumber);
+                        var fieldDeclarations = s.Declaration.GetAllRawFields();
+                        var (offsets, sssize, memTypes, algn) = CalcStructData(fieldDeclarations, packNumber, false);
 
                         // saving the offsets so we can access struct elements easily in the future
                         _structOffsets[s] = offsets;
 
                         llvmType.StructSetBody(memTypes.ToArray(), packNumber >= 1);
 
-                        // getting size of the struct that is calced inside LLVM
-                        s.ChangeSize((int)LLVM.ABISizeOfType(_targetData, llvmType));
-                        // getting the alignment of the struct
-                        if (packNumber >= 1)
-                            s.ChangeAlignment(packNumber);
-                        else
-                            s.ChangeAlignment((int)LLVM.ABIAlignmentOfType(_targetData, llvmType));
+                        // getting size and align
+                        s.SetSizeAndAlignment(sssize, packNumber >= 1 ? packNumber : algn);
 
                         // create a boxed type
                         AddBoxedType(s, packNumber);
@@ -300,9 +305,8 @@ namespace HapetBackend.Llvm
             // create a boxed type
             var nameBoxed = $"boxed.{type.Declaration.Name.Name}";
             var llvmTypeBoxed = _context.CreateNamedStruct(nameBoxed);
-            var fieldDeclarationsBoxed = type.Declaration.GetAllRawFields().Select(x => x.Type.OutType).ToList();
-            fieldDeclarationsBoxed.Insert(0, PointerType.GetPointerType(HapetType.CurrentTypeContext.IntPtrTypeInstance)); // the same as in metadata gen
-            var (offsetsBoxed, _, memTypesBoxed) = CalcStructData(fieldDeclarationsBoxed, packNumber);
+            var fieldDeclarationsBoxed = type.Declaration.GetAllRawFields();
+            var (offsetsBoxed, boxedSize, memTypesBoxed, algn) = CalcStructData(fieldDeclarationsBoxed, packNumber, true);
 
             llvmTypeBoxed.StructSetBody(memTypesBoxed.ToArray(), packNumber >= 1);
 
@@ -313,10 +317,10 @@ namespace HapetBackend.Llvm
             // we need to define there a literal type to be able to access it lately
             var typeToDefine = type is ArrayType ? ArrayType.LiteralType : type;
             // offset to the first normal field
-            _boxedStructTypes.Add(typeToDefine, (llvmTypeBoxed, offs));
+            _boxedStructTypes.Add(typeToDefine, (llvmTypeBoxed, offs, boxedSize));
         }
 
-        private (LLVMTypeRef, uint) GetBoxedType(HapetType type)
+        private (LLVMTypeRef, uint, int) GetBoxedType(HapetType type)
         {
             // we need to search there a literal type or array
             var typeToSearch = type is ArrayType ? ArrayType.LiteralType : type;
@@ -372,49 +376,70 @@ namespace HapetBackend.Llvm
             return new LLVMValueRef();
         }
 
-        private unsafe (uint[], int, List<LLVMTypeRef>) CalcStructData(List<HapetType> decls, int packNumber)
+        private unsafe (uint[], int, List<LLVMTypeRef>, int) CalcStructData(List<AstVarDecl> decls, int packNumber, bool withTypeInfo = true)
         {
+            if (withTypeInfo)
+            {
+                var tp = new AstIdExpr("uintptr") { OutType = PointerType.VoidLiteralType };
+                decls.Insert(0, new AstVarDecl(new AstNestedExpr(tp, null) { OutType = tp.OutType }, new AstIdExpr("typeinfo")));
+            }
+
             // WARN: this shite with alignment is done like 'LayoutKind.Sequential' in C#
             // so all the members are going to be aligned properly by their types
             var memTypes = new List<LLVMTypeRef>(decls.Count);
             var offsets = new uint[decls.Count];
             int currentSize = 0;
+            int biggestAlignment = 0;
             int i = 0;
+            int padding;
             foreach (var mem in decls)
             {
-                // need to make a ptr to a class
-                var type = mem;
-
+                // getting the type
+                var type = mem.Type.OutType;
                 // we need to get a minimal type alignment size depending on pack
                 int typeAlignment = Math.Min(type.GetAlignment(), packNumber);
+                Debug.Assert(typeAlignment > 0);
 
+                // update biggest alignment
+                if (typeAlignment > biggestAlignment)
+                    biggestAlignment = typeAlignment;
+
+                padding = typeAlignment - currentSize % typeAlignment;
                 // if current offset is shity for the member type
                 // we need to append a padding
                 // WARN: create offsets only if pack is set or bigger than 1
                 if (packNumber > 1 && currentSize % typeAlignment != 0)
                 {
                     // add padding
-                    int padding = typeAlignment - currentSize % typeAlignment;
                     memTypes.Add(LLVM.ArrayType(LLVM.Int8Type(), (uint)padding));
-                    currentSize += padding;
                 }
+                currentSize += padding;
 
                 offsets[i] = (uint)memTypes.Count;
                 memTypes.Add(HapetTypeToLLVMType(type));
-                currentSize += (int)((_targetData.SizeOfTypeInBits(memTypes.Last()) + 7) / 8);
+                currentSize += type.GetSize();
                 i += 1;
             }
+
             // add padding at the end
             // WARN: create offsets only if pack is set or bigger than 1
             if (packNumber > 1 && currentSize % packNumber != 0)
             {
+                padding = packNumber - currentSize % packNumber;
                 // add padding
-                int padding = packNumber - currentSize % packNumber;
                 memTypes.Add(LLVM.ArrayType(LLVM.Int8Type(), (uint)padding));
-                currentSize += padding;
             }
+            else if (currentSize % biggestAlignment != 0)
+            {
+                padding = biggestAlignment - currentSize % biggestAlignment;
+            }
+            else
+            {
+                padding = 0;
+            }
+            currentSize += padding;
 
-            return (offsets, currentSize, memTypes);
+            return (offsets, currentSize, memTypes, biggestAlignment);
         }
 
         private LLVMValueRef CreateLocalVariable(HapetType exprType, string name = "temp")
@@ -589,7 +614,7 @@ namespace HapetBackend.Llvm
                 {
                     // cast from struct instance to object
                     var boxedTypeData = GetBoxedType(inType);
-                    int structSize = AstDeclaration.GetSizeForAlloc(structType.Declaration.GetAllRawFields());
+                    int structSize = boxedTypeData.Item3;
                     // allocating memory for struct
                     var v = GetMalloc(structSize, 1);
                     // set up type data ptr!!!

@@ -404,7 +404,7 @@ namespace HapetBackend.Llvm
                                 // better to use comparison by fields?
 
                                 // making memcmp
-                                int structSize = AstDeclaration.GetSizeForAlloc((leftExpr.OutType as StructType).Declaration.GetAllRawFields(), false);
+                                int structSize = leftExpr.OutType.GetSize();
                                 var sizeLlvm = LLVMValueRef.CreateConstInt(HapetTypeToLLVMType(HapetType.CurrentTypeContext.IntPtrTypeInstance), (ulong)structSize);
                                 var compared = GetMemcmp(left, right, sizeLlvm);
 
@@ -567,7 +567,7 @@ namespace HapetBackend.Llvm
             LLVMValueRef v = default;
             if (expr.OutType is PointerType pt && pt.TargetType is ClassType classType)
             {
-                int structSize = AstDeclaration.GetSizeForAlloc(classType.Declaration.GetAllRawFields());
+                int structSize = classType.GetSize();
 
                 // getting class ctor
                 string onlyName = classType.Declaration.Name.Name.GetClassNameWithoutNamespace();
@@ -1126,7 +1126,7 @@ namespace HapetBackend.Llvm
         {
             // getting types
             var structType = expr.TypeForDefault;
-            int structSize = AstDeclaration.GetSizeForAlloc(structType.Declaration.GetAllRawFields(), false);
+            int structSize = structType.GetSize();
             var allocated = _builder.BuildAlloca(HapetTypeToLLVMType(structType), "allocatedEmpty");
 
             // making consts

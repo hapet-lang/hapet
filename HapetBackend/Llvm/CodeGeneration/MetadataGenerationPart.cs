@@ -99,16 +99,6 @@ namespace HapetBackend.Llvm
 
                 _currentSourceFile = cls.SourceFile;
 
-                // if the decl is impl of gen - take only orig generic
-                var declName = cls.Name;
-
-                var classStruct = HapetTypeToLLVMType(cls.Type.OutType);
-
-                var entryTypes = new List<LLVMTypeRef>();
-
-                // add typeinfo field 
-                entryTypes.Add(_context.Int8Type.GetPointerTo());
-
                 // getting all field except props
                 foreach (var decl in cls.Declarations.Where(x => x is AstVarDecl && x is not AstPropertyDecl).Select(x => x as AstVarDecl))
                 {
@@ -127,11 +117,9 @@ namespace HapetBackend.Llvm
                     }
                     else
                     {
-                        // if it is non const/static - create a field in struct
-                        entryTypes.Add(HapetTypeToLLVMType(varType));
+                        /// handled inside <see cref="HapetTypeToLLVMType"/>
                     }
                 }
-                classStruct.StructSetBody(entryTypes.ToArray(), false);
             }
             foreach (var str in _postPreparer.AllStructsMetadata)
             {

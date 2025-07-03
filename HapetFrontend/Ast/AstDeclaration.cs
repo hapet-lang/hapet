@@ -103,33 +103,6 @@ namespace HapetFrontend.Ast
         }
 
         /// <summary>
-        /// Returns the real struct size for allocation
-        /// Could be used only after <see cref="GenerateTypeInfoConst"/> from backend
-        /// </summary>
-        /// <returns>The size</returns>
-        public static int GetSizeForAlloc(List<AstVarDecl> fields, bool withTypeInfo = true)
-        {
-            if (withTypeInfo)
-            {
-                var tp = new AstIdExpr("uintptr") { OutType = PointerType.VoidLiteralType };
-                fields.Insert(0, new AstVarDecl(new AstNestedExpr(tp, null) { OutType = tp.OutType }, new AstIdExpr("typeinfo")));
-            }
-            int totalSize = 0;
-            // go all over the fields and calc the size
-            for (int i = 0; i < fields.Count; ++i)
-            {
-                var field = fields[i];
-                var fieldType = field.Type.OutType;
-
-                int fieldAlignment = fieldType.GetAlignment() == 0 ? fieldType.GetSize() : fieldType.GetAlignment();
-                int padding = (fieldAlignment - (totalSize % fieldAlignment)) % fieldAlignment;  // Alignment
-                totalSize += padding;  // Add padding for the alignment
-                totalSize += fieldType.GetSize();  // Add field size
-            }
-            return totalSize;
-        }
-
-        /// <summary>
         /// Helper function that returns inherited shite for class and struct decls
         /// </summary>
         /// <returns>Inhertied types</returns>
