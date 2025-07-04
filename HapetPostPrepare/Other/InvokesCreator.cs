@@ -20,7 +20,7 @@ namespace HapetPostPrepare
             if (del.Returns.OutType is VoidType)
                 body.Statements.Add(call);
             else
-                body.Statements.Add(new AstReturnStmt(call));
+                body.Statements.Add(new AstReturnStmt(new AstNestedExpr(call, null)));
 
             AstFuncDecl func = new AstFuncDecl(
                 del.Parameters.Select(x => x.GetDeepCopy() as AstParamDecl).ToList(),
@@ -63,9 +63,9 @@ namespace HapetPostPrepare
             var third = new AstUnaryIncDecExpr("++", new AstNestedExpr(new AstIdExpr("i"), null)) { IsPrefix = true };
 
             AstBlockExpr forLoopBody = new AstBlockExpr(new List<AstStatement>());
-            var currDelegate = new AstVarDecl(new AstNestedExpr(new AstIdExpr("var"), null), new AstIdExpr("currDel"), 
-                new AstArrayAccessExpr(new AstNestedExpr(new AstIdExpr("_delegates"), new AstNestedExpr(new AstIdExpr("this"), null)), 
-                new AstNestedExpr(new AstIdExpr("i"), null)));
+            var currDelegate = new AstVarDecl(new AstNestedExpr(new AstIdExpr("var"), null), new AstIdExpr("currDel"),
+                new AstNestedExpr(new AstArrayAccessExpr(new AstNestedExpr(new AstIdExpr("_delegates"), new AstNestedExpr(new AstIdExpr("this"), null)), 
+                new AstNestedExpr(new AstIdExpr("i"), null)), null));
             forLoopBody.Statements.Add(currDelegate);
             var callDelegate = new AstCallExpr(null, new AstIdExpr("currDel"), args);
             forLoopBody.Statements.Add(callDelegate);
