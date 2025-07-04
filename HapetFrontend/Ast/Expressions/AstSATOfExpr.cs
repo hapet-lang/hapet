@@ -8,7 +8,7 @@ namespace HapetFrontend.Ast.Expressions
     public class AstSATOfExpr : AstExpression
     {
         /// <summary>
-        /// One of <see cref="TokenType.KwSizeof"/>, <see cref="TokenType.KwAlignof"/>, <see cref="TokenType.KwTypeof"/>
+        /// One of <see cref="TokenType.KwSizeof"/>, <see cref="TokenType.KwAlignof"/>, <see cref="TokenType.KwTypeof"/>, <see cref="TokenType.KwNameof"/>
         /// </summary>
         public TokenType ExprType { get; set; }
 
@@ -16,6 +16,8 @@ namespace HapetFrontend.Ast.Expressions
         /// Type on which the SAT is applied
         /// </summary>
         public AstNestedExpr TargetType { get; set; }
+
+        public override string AAAName => nameof(AstSATOfExpr);
 
         public AstSATOfExpr(AstNestedExpr targetType, TokenType exprType, ILocation location = null) : base(location)
         {

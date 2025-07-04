@@ -643,6 +643,7 @@ namespace HapetFrontend.Parsing
                 case TokenType.KwTypeof:
                 case TokenType.KwSizeof:
                 case TokenType.KwAlignof:
+                case TokenType.KwNameof:
                     {
                         NextToken();
 

@@ -1027,6 +1027,10 @@ namespace HapetPostPrepare
             {
                 expr.OutType = HapetType.CurrentTypeContext.GetIntType(4, true);
             }
+            else if (expr.ExprType == TokenType.KwNameof)
+            {
+                expr.OutType = HapetType.CurrentTypeContext.StringTypeInstance;
+            }
             else
             {
                 // TODO: typeof handle here

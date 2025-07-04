@@ -412,6 +412,8 @@ namespace HapetPostPrepare
                 sb.Append("alignof");
             else if(satExpr.ExprType == TokenType.KwTypeof)
                 sb.Append("typeof");
+            else if (satExpr.ExprType == TokenType.KwNameof)
+                sb.Append("nameof");
             sb.Append('(');
             AntiParseExpr(satExpr.TargetType, sb, offset);
             sb.Append(')');
