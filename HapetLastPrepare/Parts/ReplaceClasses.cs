@@ -250,7 +250,8 @@ namespace HapetLastPrepare
                 case AstCheckedExpr checkedExpr:
                     LPRACCheckedExpr(checkedExpr);
                     break;
-                case AstSATOfExpr:
+                case AstSATOfExpr satExpr:
+                    LPRACSATExpr(satExpr);
                     break;
                 case AstEmptyExpr:
                     break;
@@ -504,6 +505,11 @@ namespace HapetLastPrepare
             {
                 expr.OutType = PointerType.GetPointerType(expr.OutType);
             }
+        }
+
+        private void LPRACSATExpr(AstSATOfExpr expr)
+        {
+            LPRACExpr(expr.TargetType);
         }
 
         private void LPRACAssignStmt(AstAssignStmt stmt)
