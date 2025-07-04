@@ -509,7 +509,10 @@ namespace HapetLastPrepare
 
         private void LPRACSATExpr(AstSATOfExpr expr)
         {
-            LPRACExpr(expr.TargetType);
+            if (expr.TargetType.OutType is ClassType)
+            {
+                expr.TargetType = GetPointerType(expr.TargetType);
+            }
         }
 
         private void LPRACAssignStmt(AstAssignStmt stmt)
