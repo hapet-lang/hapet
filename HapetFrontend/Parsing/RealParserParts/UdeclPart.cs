@@ -72,7 +72,7 @@ namespace HapetFrontend.Parsing
                 if (udecl.Type is AstNestedExpr id && currT.Type != TokenType.Equal)
                 {
                     // expand ops like 'a += b' into 'a = a + b'
-                    AstExpression binOpExpr = new AstBinaryExpr(op, id, valExpr, new Location(id.Location.Beginning, val.Location.Ending));
+                    AstExpression binOpExpr = new AstBinaryExpr(op, id.GetDeepCopy() as AstNestedExpr, valExpr, new Location(id.Location.Beginning, val.Location.Ending));
                     if (op == "??")
                     {
                         /// WARN!!!: the same as in <see cref="ParseNullCoalescingExpression"/>

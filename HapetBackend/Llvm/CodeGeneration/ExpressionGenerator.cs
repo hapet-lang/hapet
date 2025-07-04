@@ -774,24 +774,68 @@ namespace HapetBackend.Llvm
 
                 var loadedDelegatePtr = _builder.BuildLoad2(delegateType.GetPointerTo(), hapetDelegate, $"delegateLoadedPtr");
                 var loadedDelegate = _builder.BuildLoad2(delegateType, loadedDelegatePtr, $"delegateLoaded");
-                // TODO: also load object pointer when delegate has non-static method :)
+
                 var theRealFuncExtracted = _builder.BuildExtractValue(loadedDelegate, 0, "funcExtracted");
+                var ptrToObject = _builder.BuildExtractValue(loadedDelegate, 1, "ptrToObject");
+
+                // creating other blocks
+                var bbTrue = _lastFunctionValueRef.AppendBasicBlock($"del.null");
+                var bbFalse = _lastFunctionValueRef.AppendBasicBlock($"del.notnull");
+                var bbEnd = _lastFunctionValueRef.AppendBasicBlock($"del.end");
+
+                var nullPtrT = PointerType.GetPointerType(HapetType.CurrentTypeContext.GetIntType(1, false));
+                var nullPtr = LLVM.ConstPointerNull(HapetTypeToLLVMType(HapetType.CurrentTypeContext.GetIntType(1, false)));
+                var leftV = CreateCast(_builder, nullPtr, nullPtrT, HapetType.CurrentTypeContext.IntPtrTypeInstance);
+                var rightV = CreateCast(_builder, ptrToObject, nullPtrT, HapetType.CurrentTypeContext.IntPtrTypeInstance);
+                var binOp = SearchBinOp("==", HapetType.CurrentTypeContext.IntPtrTypeInstance, HapetType.CurrentTypeContext.IntPtrTypeInstance);
+                var res = binOp(_builder, leftV, rightV, "cmpResult");
+                _builder.BuildCondBr(res, bbTrue, bbFalse);
+
+                // if obj is null
+                _builder.PositionAtEnd(bbTrue);
+
                 // getting the function type to call
                 var funcType = GetFunctionTypeOfDelegate(delType);
-
                 // the return name has to be empty if ret value of func is void
                 // also save the ret value into a var
                 if (delType.TargetDeclaration.Returns.OutType is not VoidType)
                 {
                     LLVMValueRef ret = _builder.BuildCall2(funcType, theRealFuncExtracted, args.ToArray(), $"delReturnValue");
                     _builder.BuildStore(ret, varPtr);
+                }
+                else
+                {
+                    _builder.BuildCall2(funcType, theRealFuncExtracted, args.ToArray());
+                }
+                _builder.BuildBr(bbEnd);
 
+                // if obj is not null
+                _builder.PositionAtEnd(bbFalse);
+                funcType = GetFunctionTypeOfDelegate(delType, false);
+                args.Insert(0, ptrToObject);
+                // the return name has to be empty if ret value of func is void
+                // also save the ret value into a var
+                if (delType.TargetDeclaration.Returns.OutType is not VoidType)
+                {
+                    LLVMValueRef ret = _builder.BuildCall2(funcType, theRealFuncExtracted, args.ToArray(), $"delReturnValue");
+                    _builder.BuildStore(ret, varPtr);
+                }
+                else
+                {
+                    _builder.BuildCall2(funcType, theRealFuncExtracted, args.ToArray());
+                }
+                _builder.BuildBr(bbEnd);
+
+                _builder.PositionAtEnd(bbEnd);
+
+                if (delType.TargetDeclaration.Returns.OutType is not VoidType)
+                {
                     if (getPtr)
                         return varPtr;
                     return _builder.BuildLoad2(HapetTypeToLLVMType(delType.TargetDeclaration.Returns.OutType), varPtr, "holderLoaded");
                 }
-
-                return _builder.BuildCall2(funcType, theRealFuncExtracted, args.ToArray());
+                else
+                    return default;
             }
             else
             {

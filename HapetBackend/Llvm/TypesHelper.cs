@@ -715,9 +715,11 @@ namespace HapetBackend.Llvm
             _builder.BuildStore(value, varPtr);
         }
 
-        private LLVMTypeRef GetFunctionTypeOfDelegate(DelegateType del)
+        private LLVMTypeRef GetFunctionTypeOfDelegate(DelegateType del, bool isStaticCall = true)
         {
             var paramTypes = del.TargetDeclaration.Parameters.Select(rt => HapetTypeToLLVMType(rt.Type.OutType)).ToList();
+            if (!isStaticCall)
+                paramTypes.Insert(0, HapetTypeToLLVMType(HapetType.CurrentTypeContext.GetIntType(1, false)).GetPointerTo());
             var returnType = HapetTypeToLLVMType(del.TargetDeclaration.Returns.OutType);
             return LLVMTypeRef.CreateFunction(returnType, paramTypes.ToArray(), false);
         }

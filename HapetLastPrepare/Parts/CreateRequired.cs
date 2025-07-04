@@ -10,15 +10,11 @@ namespace HapetLastPrepare
         {
             foreach (var cls in _postPreparer.AllClassesMetadata)
             {
-                if (GenericsHelper.ShouldTheDeclBeSkippedFromCodeGen(cls))
-                    continue;
                 _postPreparer._currentSourceFile = cls.SourceFile;
                 CreateRequiredInDecl(cls);
             }
             foreach (var str in _postPreparer.AllStructsMetadata)
             {
-                if (GenericsHelper.ShouldTheDeclBeSkippedFromCodeGen(str))
-                    continue;
                 _postPreparer._currentSourceFile = str.SourceFile;
                 CreateRequiredInDecl(str);
             }

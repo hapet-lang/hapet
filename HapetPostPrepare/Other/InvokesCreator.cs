@@ -67,7 +67,7 @@ namespace HapetPostPrepare
                 new AstNestedExpr(new AstArrayAccessExpr(new AstNestedExpr(new AstIdExpr("_delegates"), new AstNestedExpr(new AstIdExpr("this"), null)), 
                 new AstNestedExpr(new AstIdExpr("i"), null)), null));
             forLoopBody.Statements.Add(currDelegate);
-            var callDelegate = new AstCallExpr(null, new AstIdExpr("currDel"), args);
+            var callDelegate = new AstCallExpr(new AstNestedExpr(new AstIdExpr("currDel"), null), new AstIdExpr("Invoke"), args);
             forLoopBody.Statements.Add(callDelegate);
             AstForStmt forLoop = new AstForStmt(first, second, third, forLoopBody);
             body.Statements.Add(forLoop);

@@ -12,6 +12,9 @@ namespace HapetLastPrepare
     {
         private void CreateGetSetForProps(AstPropertyDecl propDecl)
         {
+            if (GenericsHelper.ShouldTheDeclBeSkippedFromCodeGen(propDecl.ContainingParent))
+                return;
+
             var newDecls = AddPropertyShiteToDecl(propDecl);
             propDecl.ContainingParent.GetDeclarations().AddRange(newDecls);
             foreach (var d in newDecls)

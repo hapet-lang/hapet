@@ -32,6 +32,11 @@ namespace HapetFrontend.Ast.Declarations
         /// </summary>
         public bool IsPropertyFunction { get; set; }
 
+        /// <summary>
+        /// Used for easier infferencing. Mean that the func is a get/set func for static/const vars
+        /// </summary>
+        public bool IsStaticVarFunction { get; set; }
+
         public override string AAAName => nameof(AstFuncDecl);
 
         public AstFuncDecl(List<AstParamDecl> parameters, AstExpression returns, AstBlockExpr body, AstIdExpr name, string doc = "", ILocation location = null) : base(name, doc, location)
