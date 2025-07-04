@@ -55,6 +55,7 @@ namespace HapetBackend.Llvm
                 case AstArrayAccessExpr arrayAccessExpr: return GenerateArrayAccessExprCode(arrayAccessExpr, getPtr);
                 case AstTernaryExpr ternaryExpr: return GenerateTernaryExprCode(ternaryExpr);
                 case AstCheckedExpr checkedExpr: return GenerateCheckedExprCode(checkedExpr);
+                case AstSATOfExpr satExpr: return GenerateSATExprCode(satExpr);
                 case AstEmptyStructExpr emptyStructExpr: return GenerateEmptyStructExprCode(emptyStructExpr);
 
                 case AstNullExpr nullExpr: return GenerateNullExprCode(nullExpr);
@@ -1120,6 +1121,22 @@ namespace HapetBackend.Llvm
         {
             // TODO: 
             return GenerateExpressionCode(expr.SubExpression);
+        }
+
+        private unsafe LLVMValueRef GenerateSATExprCode(AstSATOfExpr expr)
+        {
+            switch (expr.ExprType)
+            {
+                case TokenType.KwSizeof:
+                    return LLVMValueRef.CreateConstInt(_context.Int32Type, (ulong)expr.TargetType.OutType.GetSize());
+                case TokenType.KwAlignof:
+                    return LLVMValueRef.CreateConstInt(_context.Int32Type, (ulong)expr.TargetType.OutType.GetAlignment());
+                case TokenType.KwNameof:
+                    return HapetValueToLLVMValue(HapetType.CurrentTypeContext.StringTypeInstance, expr.TargetType.TryFlatten(null, null));
+                case TokenType.KwTypeof:
+                    return default; // TODO:
+            }
+            throw new InvalidDataException();
         }
 
         private unsafe LLVMValueRef GenerateEmptyStructExprCode(AstEmptyStructExpr expr)

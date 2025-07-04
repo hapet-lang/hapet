@@ -250,6 +250,8 @@ namespace HapetLastPrepare
                 case AstCheckedExpr checkedExpr:
                     LPRACCheckedExpr(checkedExpr);
                     break;
+                case AstSATOfExpr:
+                    break;
                 case AstEmptyExpr:
                     break;
 
