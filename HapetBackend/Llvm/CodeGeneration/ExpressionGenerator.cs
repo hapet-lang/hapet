@@ -13,6 +13,7 @@ using HapetFrontend.Types;
 using HapetPostPrepare;
 using LLVMSharp.Interop;
 using System;
+using System.Diagnostics;
 using System.Text;
 using System.Xml.Linq;
 
@@ -520,26 +521,9 @@ namespace HapetBackend.Llvm
             // this check is done to generate proper delegate
             else if (expr.OutType is FunctionType fncType && theDecl is AstFuncDecl)
             {
-                // this whole shite is done to create anon delegate of the specified function
-                LLVMTypeRef delegateIrType = GetDelegateAnonType(fncType);
-                
                 // by default it is a nullptr
                 LLVMValueRef ptrToObject = LLVM.ConstPointerNull(HapetTypeToLLVMType(HapetType.CurrentTypeContext.GetIntType(1, false)));
-                LLVMValueRef ptrToFunc = _valueMap[declSymbol]; // mb ptr to?
-                var allocatedDelegate = _builder.BuildAlloca(delegateIrType, "anonAllocated");
-                // if it is not a static func - get ptr to class
-                if (!fncType.IsStaticFunction())
-                {
-                    ptrToObject = _valueMap[expr.Scope.GetSymbol(new AstIdExpr("this"))];
-                }
-                // the 1 is because delegate struct has object field as it's 1 param
-                var objPtr = _builder.BuildStructGEP2(delegateIrType, allocatedDelegate, 1, "objectPtr");
-                _builder.BuildStore(ptrToObject, objPtr);
-                // setting the func ptr
-                var funcPtrr = _builder.BuildStructGEP2(delegateIrType, allocatedDelegate, 0, "funcPtr");
-                _builder.BuildStore(ptrToFunc, funcPtrr);
-
-                return allocatedDelegate;
+                return CreateDelegateFromFunction(fncType, declSymbol, ptrToObject);
             }
             else
             {
@@ -930,6 +914,18 @@ namespace HapetBackend.Llvm
                     }
                     else
                     {
+                        // check if getting function
+                        if (idExpr.OutType is FunctionType fncT)
+                        {
+                            // by default it is a nullptr
+                            LLVMValueRef ptrToObject;
+                            if (fncT.IsStaticFunction())
+                                ptrToObject = LLVM.ConstPointerNull(HapetTypeToLLVMType(HapetType.CurrentTypeContext.GetIntType(1, false)));
+                            else
+                                ptrToObject = leftPart;
+                            return CreateDelegateFromFunction(fncT, idExpr.FindSymbol as DeclSymbol, ptrToObject);
+                        }
+
                         // usually this happens when user tries to access non static/const field from a class/struct name
                         if (leftPart == default)
                         {
@@ -939,6 +935,7 @@ namespace HapetBackend.Llvm
 
                         // getting the index of the element
                         uint elementIndex = GetElementIndex(idExpr.Name, leftPartDecl);
+                        Debug.Assert(elementIndex != uint.MaxValue);
 
                         // this is because the first field in class - is it reflection data (?)
                         if (leftPartType is ClassType clsTT && !clsTT.Declaration.IsInterface)
@@ -1003,7 +1000,7 @@ namespace HapetBackend.Llvm
         private static uint GetElementIndex(string name, AstDeclaration parentDecl)
         {
             AstDeclaration lastFound = null;
-            uint lastFoundIndex = 0;
+            uint lastFoundIndex = uint.MaxValue;
 
             // getting pure decls without consts and statics
             var pureDecls = parentDecl.GetAllRawFields();

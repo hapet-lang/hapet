@@ -1,7 +1,9 @@
 ﻿using HapetFrontend.Ast;
 using HapetFrontend.Ast.Declarations;
 using HapetFrontend.Ast.Expressions;
+using HapetFrontend.Extensions;
 using HapetFrontend.Helpers;
+using HapetFrontend.Parsing;
 using HapetFrontend.Scoping;
 using Microsoft.VisualBasic.FileIO;
 using Newtonsoft.Json;
@@ -293,8 +295,7 @@ namespace HapetFrontend.Types
 
         public bool IsStaticFunction()
         {
-            return (Declaration.Parameters.FirstOrDefault() == null ||
-                (Declaration.Parameters.FirstOrDefault().Type.OutType is not PointerType && Declaration.Parameters.FirstOrDefault().Name.Name != "this"));
+            return Declaration.SpecialKeys.Contains(TokenType.KwStatic);
         }
     }
 

@@ -827,6 +827,23 @@ namespace HapetBackend.Llvm
             }
             return delegateIrType;
         }
+
+        private unsafe LLVMValueRef CreateDelegateFromFunction(FunctionType func, DeclSymbol declSymbol, LLVMValueRef ptrToObject)
+        {
+            // this whole shite is done to create anon delegate of the specified function
+            LLVMTypeRef delegateIrType = GetDelegateAnonType(func);
+            LLVMValueRef ptrToFunc = _valueMap[declSymbol]; // mb ptr to?
+
+            var allocatedDelegate = _builder.BuildAlloca(delegateIrType, "anonAllocated");
+            // the 1 is because delegate struct has object field as it's 1 param
+            var objPtr = _builder.BuildStructGEP2(delegateIrType, allocatedDelegate, 1, "objectPtr");
+            _builder.BuildStore(ptrToObject, objPtr);
+            // setting the func ptr
+            var funcPtrr = _builder.BuildStructGEP2(delegateIrType, allocatedDelegate, 0, "funcPtr");
+            _builder.BuildStore(ptrToFunc, funcPtrr);
+
+            return allocatedDelegate;
+        }
         #endregion
 
         #region Mallocs
