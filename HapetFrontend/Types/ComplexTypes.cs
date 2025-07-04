@@ -151,16 +151,6 @@ namespace HapetFrontend.Types
             Declaration = decl;
         }
 
-        public void ChangeSize(int size)
-        {
-            _size = size;
-        }
-
-        public void ChangeAlignment(int alignment)
-        {
-            _alignment = alignment;
-        }
-
         public override string ToString()
         {
             return $"{Declaration.Name}";

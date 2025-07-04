@@ -55,14 +55,10 @@ namespace HapetBackend.Llvm
                 var kw = _typeMap.Any(x => x.Key is ArrayType);
                 if (kw)
                 {
-                    var llvmType = _typeMap.First(x => x.Key is ArrayType).Value;
-
+                    var entry = _typeMap.First(x => x.Key is ArrayType);
                     // we need to set size/alignment on every array type instance :)
-                    // TODO: why to every? if there is only one should be
-                    //at.ChangeSize((int)LLVM.ABISizeOfType(_targetData, llvmType));
-                    //at.ChangeAlignment((int)LLVM.ABIAlignmentOfType(_targetData, llvmType));
-
-                    return llvmType;
+                    at.SetSizeAndAlignment(entry.Key.GetSize(), entry.Key.GetAlignment());
+                    return entry.Value;
                 }
             }
 
@@ -396,6 +392,13 @@ namespace HapetBackend.Llvm
             {
                 // getting the type
                 var type = mem.Type.OutType;
+
+                // if the field type is not yet calculated
+                if (type.GetAlignment() <= 0 && (type is ClassType || type is StructType))
+                {
+                    _ = HapetTypeToLLVMType(type);
+                }
+
                 // we need to get a minimal type alignment size depending on pack
                 int typeAlignment = packNumber > 0 ? Math.Min(type.GetAlignment(), packNumber) : type.GetAlignment();
                 Debug.Assert(typeAlignment > 0);
@@ -429,7 +432,7 @@ namespace HapetBackend.Llvm
                 // add padding
                 memTypes.Add(LLVM.ArrayType(LLVM.Int8Type(), (uint)padding));
             }
-            else if (currentSize % biggestAlignment != 0)
+            else if (biggestAlignment != 0 && currentSize % biggestAlignment != 0)
             {
                 padding = biggestAlignment - currentSize % biggestAlignment;
             }
