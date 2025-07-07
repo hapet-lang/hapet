@@ -10,7 +10,7 @@
         /// </summary>
         public bool IsTypedTuple { get; set; }
 
-        public bool IsFullyNamed => Names.All(x => x != null);
+        public bool IsFullyNamed => Names?.All(x => x != null) ?? false;
 
         public override string AAAName => nameof(AstTupleExpr);
 

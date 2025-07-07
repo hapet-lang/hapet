@@ -41,6 +41,9 @@ namespace HapetPostPrepare
             // 0 is returned because normal error is going to be
             // returned in the caller shite
 
+            // replace tuples before inferencing!!!
+            ReplaceAllTuplesInDecls();
+
             PostPrepareSpecialKeys();
             if (_compiler.MessageHandler.HasErrors)
                 return 0;
@@ -50,9 +53,6 @@ namespace HapetPostPrepare
             PostPrepareScoping();
             if (_compiler.MessageHandler.HasErrors)
                 return 0;
-
-            // replace tuples before inferencing!!!
-            ReplaceAllTuplesInDecls();
 
             // generate metadata file
             int result = PostPrepareMetadata();
