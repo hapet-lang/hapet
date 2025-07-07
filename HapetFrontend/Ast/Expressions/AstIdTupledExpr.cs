@@ -8,7 +8,7 @@ namespace HapetFrontend.Ast.Expressions
     /// </summary>
     public class AstIdTupledExpr : AstIdExpr
     {
-        public override string AAAName => nameof(AstIdGenericExpr);
+        public override string AAAName => nameof(AstIdTupledExpr);
 
         /// <summary>
         /// To handle real names
