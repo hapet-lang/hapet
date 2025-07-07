@@ -1,3 +1,5 @@
+using System.Runtime.InteropServices;
+
 [SuppressStaticCtorCall]
 public struct String : IComparable, IComparable<string>
 {
@@ -15,4 +17,24 @@ public struct String : IComparable, IComparable<string>
         // TODO:
         return 0;
     }
+
+    public static string operator +(string s1, string s2)
+    {
+        int globI = 0;
+        char* buf = (char*)Marshal.Malloc((s1.Length + s2.Length) * sizeof(char)); // 2 is size of char
+        for (int i = 0; i < s1.Length; ++i)
+        {
+            buf[globI] = s1.Buffer[i];
+            globI++;
+        }
+        for (int i = 0; i < s2.Length; ++i)
+        {
+            buf[globI] = s2.Buffer[i];
+            globI++;
+        }
+        string s = new string();
+        s.Length = s1.Length + s2.Length;
+        s.Buffer = buf;
+        return s;
+    } 
 }
