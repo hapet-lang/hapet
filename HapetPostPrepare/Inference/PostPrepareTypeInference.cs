@@ -624,6 +624,20 @@ namespace HapetPostPrepare
 
         private void PostPrepareNewExprInference(AstNewExpr newExpr, InInfo inInfo, ref OutInfo outInfo)
         {
+            foreach (var a in newExpr.Arguments)
+            {
+                PostPrepareExprInference(a, inInfo, ref outInfo);
+            }
+
+            // we need to create types here because at TupleReplace time 
+            // we don't know the types of the expr
+            if (newExpr.IsTupleCreation)
+            {
+                var genId = (newExpr.TypeName as AstNestedExpr).RightPart as AstIdGenericExpr;
+                var types = newExpr.Arguments.Select(x => GetPreparedAst(x.OutType, x));
+                genId.GenericRealTypes.AddRange(types);
+            }
+
             // prepare the right side
             PostPrepareExprInference(newExpr.TypeName, inInfo, ref outInfo);
             // the type of newExpr is the same as the type of its name expr
@@ -635,11 +649,6 @@ namespace HapetPostPrepare
                 clsType.Declaration.SpecialKeys.Contains(TokenType.KwAbstract)))
             {
                 _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, newExpr, [], ErrorCode.Get(CTEN.CreateInterfOrAbsCls));
-            }
-
-            foreach (var a in newExpr.Arguments)
-            {
-                PostPrepareExprInference(a, inInfo, ref outInfo);
             }
         }
 

@@ -15,6 +15,11 @@ namespace HapetFrontend.Ast.Expressions
         /// </summary>
         public List<AstArgumentExpr> Arguments { get; set; }
 
+        /// <summary>
+        /// For easier inference
+        /// </summary>
+        public bool IsTupleCreation { get; set; }
+
         public override string AAAName => nameof(AstNewExpr);
 
         public AstNewExpr(AstNestedExpr typeName, List<AstArgumentExpr> arguments = null, ILocation location = null)

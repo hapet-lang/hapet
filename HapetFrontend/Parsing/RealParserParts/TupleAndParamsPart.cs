@@ -271,7 +271,7 @@ namespace HapetFrontend.Parsing
                 var tpl = new AstTupleExpr(list2.Select(x => x.Type).ToList(), new Location(beg2, end2));
                 tpl.Names = list2.Select(x => x.Name).ToList();
                 tpl.IsTypedTuple = true;
-                return tpl;
+                return new AstNestedExpr(tpl, null, tpl.Location);
             }
 
             var list = ParseArgumentList(inInfo, ref outInfo, out var beg, out var end);
@@ -316,7 +316,8 @@ namespace HapetFrontend.Parsing
                 }
             }
 
-            return new AstTupleExpr(list.Select(x => x.Expr).ToList(), new Location(beg, end)) { IsTypedTuple = false };
+            var tpl2 = new AstTupleExpr(list.Select(x => x.Expr).ToList(), new Location(beg, end)) { IsTypedTuple = false };
+            return new AstNestedExpr(tpl2, null, tpl2.Location);
 
             AstExpression HandleOneElement(AstExpression element, TokenLocation beg, TokenLocation end, ref ParserOutInfo outInfo)
             {
@@ -349,19 +350,19 @@ namespace HapetFrontend.Parsing
             }
         }
 
-        private AstUnknownDecl PrepareTupleExpr(AstTupleExpr tpl, ParserInInfo inInfo, ref ParserOutInfo outInfo)
+        private AstUnknownDecl PrepareTupleExpr(AstNestedExpr nst, AstTupleExpr tpl, ParserInInfo inInfo, ref ParserOutInfo outInfo)
         {
             AstUnknownDecl decl;
             if (tpl.IsFullyNamed)
             {
                 // (int a, int b) = (3, 4);
-                decl = new AstUnknownDecl(tpl, null, tpl);
+                decl = new AstUnknownDecl(nst, null, nst);
             }
             else
             {
                 // expect the name
                 var name = ParseIdentifierExpression(inInfo, allowDots: false, allowGenerics: false, allowTupled: true);
-                decl = new AstUnknownDecl(tpl, name.RightPart as AstIdExpr, tpl);
+                decl = new AstUnknownDecl(nst, name.RightPart as AstIdExpr, nst);
             }
             return decl;
         }

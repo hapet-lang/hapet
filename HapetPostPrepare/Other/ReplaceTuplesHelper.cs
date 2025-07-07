@@ -4,6 +4,7 @@ using HapetFrontend.Ast.Expressions;
 using HapetFrontend.Ast.Statements;
 using HapetFrontend.Entities;
 using HapetFrontend.Errors;
+using System.Diagnostics;
 
 namespace HapetPostPrepare
 {
@@ -272,7 +273,35 @@ namespace HapetPostPrepare
 
         private void ReplaceAllTuplesInNested(AstNestedExpr expr)
         {
-            // TODO: handle tuples here
+            ReplaceAllTuplesInStmt(expr.LeftPart);
+
+            if (expr.RightPart is AstTupleExpr tuple)
+            {
+                Debug.Assert(expr.LeftPart == null); // has to be null when tuple
+
+                foreach (var t in tuple.Elements)
+                    ReplaceAllTuplesInStmt(t);
+
+                if (tuple.IsTypedTuple)
+                {
+                    var tpG = new AstIdGenericExpr("ValueTuple", tuple.Elements, tuple.Location);
+                    var tp = new AstNestedExpr(new AstIdExpr("System", tuple.Location), null, tuple.Location);
+                    expr.LeftPart = tp;
+                    expr.RightPart = tpG;
+                }
+                else
+                {
+                    var tpG = new AstIdGenericExpr("ValueTuple", new List<AstExpression>(), tuple.Location);
+                    var tp = new AstNestedExpr(tpG, new AstNestedExpr(new AstIdExpr("System", tuple.Location), null, tuple.Location), tuple.Location);
+                    var args = tuple.Elements.Select(x => new AstArgumentExpr(x, location: x.Location)).ToList();
+                    var newTuple = new AstNewExpr(tp, args, tuple.Location) { IsTupleCreation = true };
+                    expr.RightPart = newTuple;
+                }
+            }
+            else
+            {
+                ReplaceAllTuplesInStmt(expr.RightPart);
+            }
         }
 
         private void ReplaceAllTuplesInDefault(AstDefaultExpr expr)
