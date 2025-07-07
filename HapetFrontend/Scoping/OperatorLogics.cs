@@ -180,13 +180,13 @@ namespace HapetFrontend.Scoping
 
             // sort them
             var sorted = scores.OrderBy(x => x.Item1).ToList();
-            if (sorted[0].Item1 == sorted[1].Item1)
+            if (sorted.Count > 1 && sorted[0].Item1 == sorted[1].Item1)
             {
                 // gg, they are the same
                 // keep all decls 
                 return;
             }
-            else if (sorted[0].Item1 < sorted[1].Item1)
+            else if (sorted.Count > 1 && sorted[0].Item1 < sorted[1].Item1)
             {
                 // remove all after first
                 for (int i = 1; i < sorted.Count; i++)
