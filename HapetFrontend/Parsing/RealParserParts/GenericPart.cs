@@ -84,6 +84,37 @@ namespace HapetFrontend.Parsing
                                 constrainType = GenericConstrainType.ClassType;
                                 break;
                             }
+                        case TokenType.KwDelegate:
+                            {
+                                ident = new AstNestedExpr(new AstIdExpr("delegate", tkn.Location), null, tkn.Location);
+                                constrainType = GenericConstrainType.DelegateType;
+                                break;
+                            }
+                        case TokenType.KwEnum:
+                            {
+                                ident = new AstNestedExpr(new AstIdExpr("enum", tkn.Location), null, tkn.Location);
+                                constrainType = GenericConstrainType.EnumType;
+                                break;
+                            }
+                        case TokenType.KwNew:
+                            {
+                                ident = new AstNestedExpr(new AstIdExpr("new", tkn.Location), null, tkn.Location);
+                                constrainType = GenericConstrainType.NewType;
+
+                                Consume(TokenType.OpenParen, ErrMsg("(", "after 'new' keyword"));
+                                while (CheckToken(TokenType.Identifier))
+                                {
+                                    var id = ParseIdentifierExpression(inInfo);
+                                    additionalExprs.Add(id);
+
+                                    if (CheckToken(TokenType.Comma))
+                                        NextToken();
+                                    else if (CheckToken(TokenType.CloseParen))
+                                        break;
+                                }
+                                Consume(TokenType.CloseParen, ErrMsg(")", "after 'new' keyword"));
+                                break;
+                            }
                         default:
                             {
                                 // error if cringe constrain

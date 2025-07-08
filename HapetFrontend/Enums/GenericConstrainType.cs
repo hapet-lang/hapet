@@ -8,6 +8,6 @@
         ClassType = 3,      // it is like 'class'
         StructType = 4,     // it is like 'struct'
         DelegateType = 5,   // it is like 'delegate'
-
+        EnumType = 6,       // it is like 'enum'
     }
 }
