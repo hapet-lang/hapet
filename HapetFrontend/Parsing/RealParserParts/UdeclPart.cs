@@ -13,6 +13,7 @@ namespace HapetFrontend.Parsing
 {
     public partial class Parser
     {
+        private int _numberOfCurrentTmpTupleHandler = 0;
         private AstStatement PrepareUnknownDecl(AstUnknownDecl udecl, List<AstAttributeStmt> attrs, ParserInInfo inInfo, ref ParserOutInfo outInfo)
         {
             TokenLocation end = udecl.Ending;
@@ -46,7 +47,7 @@ namespace HapetFrontend.Parsing
 
                     var tuple = (udecl.Type as AstNestedExpr).RightPart as AstTupleExpr;
                     // we need to name a tmp var:
-                    udecl.Name = new AstIdExpr("_tmpTuple", tuple.Location); // TODO: different names for tmps
+                    udecl.Name = new AstIdExpr($"dev:_tmpTuple{_numberOfCurrentTmpTupleHandler++}", tuple.Location); // TODO: different names for tmps
                     for (int i = 0; i < tuple.Names.Count; ++i)
                     {
                         var type = tuple.Elements[i].GetDeepCopy() as AstExpression;
@@ -71,7 +72,7 @@ namespace HapetFrontend.Parsing
 
                     var tuple = (udecl.Type as AstNestedExpr).RightPart as AstTupleExpr;
                     // we need to name a tmp var:
-                    udecl.Name = new AstIdExpr("_tmpTuple", tuple.Location); // TODO: different names for tmps
+                    udecl.Name = new AstIdExpr($"dev:_tmpTuple{_numberOfCurrentTmpTupleHandler++}", tuple.Location); // TODO: different names for tmps
                     for (int i = 0; i < tupledName.RealNames.Count; ++i)
                     {
                         var type = tuple.Elements[i].GetDeepCopy() as AstExpression;
