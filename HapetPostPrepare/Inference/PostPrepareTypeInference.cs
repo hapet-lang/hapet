@@ -270,7 +270,10 @@ namespace HapetPostPrepare
                     return;
                 }
                 else
+                {
                     varDecl.Type.OutType = varDecl.Initializer.OutType;
+                    varDecl.Type.TupleNameList = varDecl.Initializer.TupleNameList;
+                }
             }
 
             // pp assign value
@@ -766,6 +769,17 @@ namespace HapetPostPrepare
                     return;
                 }
 
+                // handle here tuple custom names
+                if (nestExpr.LeftPart.TryGetDeclSymbol() is DeclSymbol ds2 && 
+                    (ds2.Decl is AstVarDecl || ds2.Decl is AstParamDecl) &&
+                    ds2.Decl.Type.TupleNameList != null &&
+                    leftSideDecl.Name.Name == "System.ValueTuple")
+                {
+                    var entry = ds2.Decl.Type.TupleNameList.FirstOrDefault(x => x.Name == idExpr.Name);
+                    var entryIndex = ds2.Decl.Type.TupleNameList.IndexOf(entry);
+                    idExpr = idExpr.GetCopy($"Item{entryIndex + 1}");
+                }
+
                 var saved = inInfo.MuteErrors;
                 inInfo.MuteErrors = true;
                 // searching for the symbol in the class/struct
@@ -775,7 +789,9 @@ namespace HapetPostPrepare
                 var smbl = idExpr.FindSymbol;
                 if (smbl is DeclSymbol typed)
                 {
-                    idExpr.OutType = typed.Decl.Type.OutType;
+                    nestExpr.RightPart = idExpr.GetCopy();
+                    nestExpr.RightPart.OutType = typed.Decl.Type.OutType;
+                    (nestExpr.RightPart as AstIdExpr).FindSymbol = idExpr.FindSymbol;
                     nestExpr.OutType = idExpr.OutType;
                     nestExpr.OutValue = idExpr.OutValue;
 

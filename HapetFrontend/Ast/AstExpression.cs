@@ -30,6 +30,12 @@ namespace HapetFrontend.Ast
         /// </summary>
         public bool IsCompileTimeValue { get; protected set; } = false;
 
+        /// <summary>
+        /// This is a cringe kostyl to handle exprs like (a: 1, b: 3)...
+        /// So when they are assigned into a variable - idk, i forgot the thought
+        /// </summary>
+        public List<AstIdExpr> TupleNameList { get; set; }
+
         public override string AAAName => nameof(AstExpression);
 
         public AstExpression(ILocation location = null) : base(location)

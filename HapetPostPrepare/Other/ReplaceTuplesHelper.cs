@@ -288,6 +288,8 @@ namespace HapetPostPrepare
                     var tp = new AstNestedExpr(new AstIdExpr("System", tuple.Location), null, tuple.Location);
                     expr.LeftPart = tp;
                     expr.RightPart = tpG;
+
+                    expr.TupleNameList = tuple.Names;
                 }
                 else
                 {
@@ -296,6 +298,8 @@ namespace HapetPostPrepare
                     var args = tuple.Elements.Select(x => new AstArgumentExpr(x, location: x.Location)).ToList();
                     var newTuple = new AstNewExpr(tp, args, tuple.Location) { IsTupleCreation = true };
                     expr.RightPart = newTuple;
+
+                    expr.TupleNameList = tuple.Names;
                 }
             }
             else
