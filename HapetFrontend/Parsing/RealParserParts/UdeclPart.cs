@@ -24,6 +24,22 @@ namespace HapetFrontend.Parsing
             // variable declaration with initializer
             // allow shite like (int a, int b) = ...
             bool isFullyNamedTuple = (udecl.Type is AstNestedExpr nst && nst.RightPart is AstTupleExpr tpl && tpl.IsFullyNamed);
+
+            // this is possible when function return type is fully named tuple
+            // like: public static (int a, int b) SomeFunc() ...
+            if (isFullyNamedTuple && CheckToken(TokenType.Identifier) && udecl.Name == null)
+            {
+                /// WARN: same as in <see cref="ParseAtomicExpression"/>
+                // allowDots is true because of explicit interface impls
+                // allowGenerics because of Anime<T>.Func explicit impls
+                var name = ParseIdentifierExpression(inInfo, allowDots: true, allowGenerics: true, expectIdent: true, allowTupled: (inInfo.AllowTypedTuple && !inInfo.IsInTupleParsing));
+                if (name.RightPart is not AstIdExpr idExpr)
+                {
+                    ReportMessage(name.Location, [], ErrorCode.Get(CTEN.DeclNameIsNotIdent));
+                }
+                udecl.Name = name.RightPart as AstIdExpr;
+            }
+
             if (CheckToken(TokenType.Equal) && (udecl.Name != null || isFullyNamedTuple))
             {
                 NextToken();

@@ -484,7 +484,11 @@ namespace HapetPostPrepare
             PostPrepareExprInference(binExpr.Left as AstExpression, inInfo, ref outInfo);
             PostPrepareExprInference(binExpr.Right as AstExpression, inInfo, ref outInfo);
 
-            var operators = binExpr.Scope.GetBinaryOperators(binExpr.Operator, (binExpr.Left as AstExpression).OutType, (binExpr.Right as AstExpression).OutType);
+            // error somewhere previously
+            if (binExpr.Left.OutType == null || binExpr.Right.OutType == null)
+                return;
+
+            var operators = binExpr.Scope.GetBinaryOperators(binExpr.Operator, binExpr.Left.OutType, binExpr.Right.OutType);
             if (operators.Count == 0)
             {
                 _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, binExpr, 
