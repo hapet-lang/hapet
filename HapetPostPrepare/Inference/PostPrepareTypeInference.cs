@@ -707,6 +707,7 @@ namespace HapetPostPrepare
             {
                 PostPrepareExprInference(nestExpr.RightPart, inInfo, ref outInfo);
                 nestExpr.OutType = nestExpr.RightPart.OutType;
+                nestExpr.TupleNameList = nestExpr.RightPart.TupleNameList;
                 nestExpr.OutValue = nestExpr.RightPart.OutValue;
 
                 // kostyl to add 'this' as left part 
@@ -793,6 +794,7 @@ namespace HapetPostPrepare
                     nestExpr.RightPart.OutType = typed.Decl.Type.OutType;
                     (nestExpr.RightPart as AstIdExpr).FindSymbol = idExpr.FindSymbol;
                     nestExpr.OutType = idExpr.OutType;
+                    nestExpr.TupleNameList = idExpr.TupleNameList;
                     nestExpr.OutValue = idExpr.OutValue;
 
                     // check if the var is a static/const field and user is accessing it from an object

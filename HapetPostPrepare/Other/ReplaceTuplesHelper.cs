@@ -289,6 +289,7 @@ namespace HapetPostPrepare
                     expr.LeftPart = tp;
                     expr.RightPart = tpG;
 
+                    expr.RightPart.TupleNameList = tuple.Names;
                     expr.TupleNameList = tuple.Names;
                 }
                 else
@@ -299,6 +300,7 @@ namespace HapetPostPrepare
                     var newTuple = new AstNewExpr(tp, args, tuple.Location) { IsTupleCreation = true };
                     expr.RightPart = newTuple;
 
+                    expr.RightPart.TupleNameList = tuple.Names;
                     expr.TupleNameList = tuple.Names;
                 }
             }

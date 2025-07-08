@@ -109,6 +109,7 @@ namespace HapetPostPrepare
                 callExpr.StaticCall = ft.Declaration.SpecialKeys.Contains(TokenType.KwStatic);
                 // call expr type is the same as func return type
                 callExpr.OutType = ft.Declaration.Returns.OutType;
+                callExpr.TupleNameList = ft.Declaration.Returns.TupleNameList;
 
                 // warn if accessing from an object
                 if (accessingFromAnObject && callExpr.StaticCall)
@@ -120,6 +121,7 @@ namespace HapetPostPrepare
             {
                 // call expr type is the same as func return type
                 callExpr.OutType = dt.TargetDeclaration.Returns.OutType;
+                callExpr.TupleNameList = dt.TargetDeclaration.Returns.TupleNameList;
 
                 callExpr.StaticCall = true; // doesn;t mean anything when calling delegates
             }
