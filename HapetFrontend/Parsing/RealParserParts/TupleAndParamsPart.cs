@@ -327,7 +327,9 @@ namespace HapetFrontend.Parsing
 
             OnExit();
 
-            var tpl2 = new AstTupleExpr(list.Select(x => x.Expr).ToList(), new Location(beg, end)) { IsTypedTuple = false };
+            var tpl2 = new AstTupleExpr(list.Select(x => x.Expr).ToList(), new Location(beg, end));
+            tpl2.Names = list.Select(x => x.Name).ToList();
+            tpl2.IsTypedTuple = false;
             return new AstNestedExpr(tpl2, null, tpl2.Location);
 
             AstExpression HandleOneElement(AstExpression element, TokenLocation beg, TokenLocation end, ref ParserOutInfo outInfo)
