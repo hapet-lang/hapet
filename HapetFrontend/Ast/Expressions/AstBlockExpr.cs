@@ -34,6 +34,7 @@ namespace HapetFrontend.Ast.Expressions
                 Scope = Scope,
                 SourceFile = SourceFile,
                 SubScope = SubScope,
+                TupleNameList = TupleNameList,
             };
             return copy;
         }

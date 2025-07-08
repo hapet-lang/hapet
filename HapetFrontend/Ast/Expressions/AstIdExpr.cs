@@ -63,6 +63,7 @@ namespace HapetFrontend.Ast.Expressions
                 OutValue = OutValue,
                 Scope = Scope,
                 SourceFile = SourceFile,
+                TupleNameList = TupleNameList,
             };
             return copy;
         }
@@ -85,6 +86,7 @@ namespace HapetFrontend.Ast.Expressions
                 OutType = this.OutType,
                 OutValue = this.OutValue,
                 SourceFile = this.SourceFile,
+                TupleNameList = TupleNameList,
             };
             return newId;
         }

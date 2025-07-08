@@ -27,6 +27,7 @@
                 OutValue = OutValue,
                 Scope = Scope,
                 SourceFile = SourceFile,
+                TupleNameList = TupleNameList,
             };
             return copy;
         }
