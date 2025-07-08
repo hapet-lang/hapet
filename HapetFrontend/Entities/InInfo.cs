@@ -52,6 +52,11 @@ namespace HapetFrontend.Entities
         public bool SkipDefaultSemicolonChecks { get; set; }
 
         /// <summary>
+        /// 'true' if currently tuple is parsing. Used to restrict AstIdTupled parsing
+        /// </summary>
+        public bool IsInTupleParsing { get; set; }
+
+        /// <summary>
         /// This shite is used for func decl
         /// </summary>
         public AstUnknownDecl CurrentUdecl { get; set; }

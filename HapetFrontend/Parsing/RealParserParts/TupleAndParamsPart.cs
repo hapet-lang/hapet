@@ -250,6 +250,9 @@ namespace HapetFrontend.Parsing
 
         private AstStatement ParseTupleExpression(ParserInInfo inInfo, ref ParserOutInfo outInfo)
         {
+            var saved1 = inInfo.IsInTupleParsing;
+            inInfo.IsInTupleParsing = true;
+
             // expecting (int, int b) here
             if (inInfo.AllowTypedTuple)
             {
@@ -258,15 +261,19 @@ namespace HapetFrontend.Parsing
                 {
                     if (list2[0].Type is AstNestedExpr)
                     {
+                        OnExit();
                         return HandleOneElement(list2[0].Type, beg2, end2, ref outInfo);
                     }
                     else
                     {
+                        OnExit();
                         // just a more priority for expr
                         // like '(a & b) == 0'
                         return list2[0].Type;
                     }
                 }
+
+                OnExit();
 
                 var tpl = new AstTupleExpr(list2.Select(x => x.Type).ToList(), new Location(beg2, end2));
                 tpl.Names = list2.Select(x => x.Name).ToList();
@@ -305,16 +312,20 @@ namespace HapetFrontend.Parsing
                 {
                     if (list[0].Expr is AstNestedExpr)
                     {
+                        OnExit();
                         return HandleOneElement(list[0].Expr, beg, end, ref outInfo);
                     }
                     else
                     {
+                        OnExit();
                         // just a more priority for expr
                         // like '(a & b) == 0'
                         return list[0].Expr;
                     }
                 }
             }
+
+            OnExit();
 
             var tpl2 = new AstTupleExpr(list.Select(x => x.Expr).ToList(), new Location(beg, end)) { IsTypedTuple = false };
             return new AstNestedExpr(tpl2, null, tpl2.Location);
@@ -347,6 +358,11 @@ namespace HapetFrontend.Parsing
                     // a = (b) + (c)
                     return element;
                 }
+            }
+
+            void OnExit()
+            {
+                inInfo.IsInTupleParsing = saved1;
             }
         }
 

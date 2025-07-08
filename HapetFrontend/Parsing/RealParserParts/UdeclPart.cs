@@ -22,7 +22,8 @@ namespace HapetFrontend.Parsing
 
             // variable declaration with initializer
             // allow shite like (int a, int b) = ...
-            if (CheckToken(TokenType.Equal) && (udecl.Name != null || (udecl.Type is AstTupleExpr tpl && tpl.IsFullyNamed)))
+            bool isFullyNamedTuple = (udecl.Type is AstNestedExpr nst && nst.RightPart is AstTupleExpr tpl && tpl.IsFullyNamed);
+            if (CheckToken(TokenType.Equal) && (udecl.Name != null || isFullyNamedTuple))
             {
                 NextToken();
                 initializer = ParseExpression(inInfo, ref outInfo);
@@ -31,6 +32,31 @@ namespace HapetFrontend.Parsing
                 if (initializer is not AstExpression)
                 {
                     ReportMessage(initializer.Location, [], ErrorCode.Get(CTEN.VarIniterExpr));
+                }
+
+                // name is empty when fully named tuple
+                if (udecl.Name == null && isFullyNamedTuple)
+                {
+                    // this code will do this shite:
+                    // (int a, string b) = SomeCringeFunc();
+                    // is going to be:
+                    // (int, string) tmp = SomeCringeFunc();
+                    // int a = tmp.Item1;
+                    // string b = tmp.Item2;
+
+                    var tuple = (udecl.Type as AstNestedExpr).RightPart as AstTupleExpr;
+                    // we need to name a tmp var:
+                    udecl.Name = new AstIdExpr("_tmpTuple", tuple.Location); // TODO: different names for tmps
+                    for (int i = 0; i < tuple.Names.Count; ++i)
+                    {
+                        var type = tuple.Elements[i].GetDeepCopy() as AstExpression;
+                        var name = tuple.Names[i];
+                        var init = new AstNestedExpr(new AstIdExpr($"Item{i + 1}", tuple.Location), new AstNestedExpr(udecl.Name.GetCopy(), null, tuple.Location));
+                        var varDeclInside = new AstVarDecl(type, name, init, "", name.Location);
+                        outInfo.StatementsToAddAfter.Add(varDeclInside);
+                    }
+                    // reset names, no need for them anymore
+                    tuple.Names = null;
                 }
 
                 var varDecl = new AstVarDecl(udecl.Type, udecl.Name, initializer as AstExpression, udecl.Documentation, new Location(udecl.Beginning, end));

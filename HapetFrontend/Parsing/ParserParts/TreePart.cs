@@ -142,7 +142,7 @@ namespace HapetFrontend.Parsing
                         idExpr.GetDeepCopy() as AstIdExpr,
                         asExpr.GetDeepCopy() as AstExpression,
                         "", binExpr);
-                    outInfo.IsOpDeclarations.Add(varDecl);
+                    outInfo.StatementsToAddBefore.Add(varDecl);
                 }
 
                 // error if it is not an expr
@@ -734,7 +734,7 @@ namespace HapetFrontend.Parsing
                         {
                             // allowDots is true because of explicit interface impls
                             // allowGenerics because of Anime<T>.Func explicit impls
-                            var name = ParseIdentifierExpression(inInfo, allowDots: true, allowGenerics: true, expectIdent: true, allowTupled: inInfo.AllowTypedTuple);
+                            var name = ParseIdentifierExpression(inInfo, allowDots: true, allowGenerics: true, expectIdent: true, allowTupled: (inInfo.AllowTypedTuple && !inInfo.IsInTupleParsing));
                             if (name.RightPart is not AstIdExpr idExpr)
                             {
                                 ReportMessage(id.Location, [], ErrorCode.Get(CTEN.DeclNameIsNotIdent));

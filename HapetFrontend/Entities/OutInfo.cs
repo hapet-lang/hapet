@@ -9,8 +9,14 @@ namespace HapetFrontend.Entities
         };
 
         /// <summary>
-        /// List to handle 'anime is Anime a' shite
+        /// List to handle statements that need to be added before main statement. 
+        /// Handled in BlockExprParsing
         /// </summary>
-        public List<AstVarDecl> IsOpDeclarations { get; private set; } = new List<AstVarDecl>();
+        public List<AstVarDecl> StatementsToAddBefore { get; private set; } = new List<AstVarDecl>();
+        /// <summary>
+        /// List to handle statements that need to be added after main statement. 
+        /// Handled in BlockExprParsing
+        /// </summary>
+        public List<AstVarDecl> StatementsToAddAfter { get; private set; } = new List<AstVarDecl>();
     }
 }

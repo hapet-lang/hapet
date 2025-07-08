@@ -1,4 +1,5 @@
 ﻿using System.Data;
+using System.Diagnostics;
 using HapetFrontend.Ast;
 using HapetFrontend.Ast.Declarations;
 using HapetFrontend.Ast.Expressions;
@@ -398,7 +399,8 @@ namespace HapetPostPrepare
         /// <param name="alreadyDefined">It could be already defined for example by classDecl (because of public/private shite)</param>
         private void PostPrepareVarScoping(AstVarDecl varDecl, bool doNotDefine = false)
         {
-            SetScopeAndParent(varDecl.Name, varDecl);
+            if (varDecl.Name != null)
+                SetScopeAndParent(varDecl.Name, varDecl);
             SetScopeAndParent(varDecl.Type, varDecl);
 
             // scoping var attrs
@@ -408,9 +410,10 @@ namespace HapetPostPrepare
                 PostPrepareExprScoping(a);
             }
 
-            PostPrepareExprScoping(varDecl.Name);
-
+            if (varDecl.Name != null)
+                PostPrepareExprScoping(varDecl.Name);
             PostPrepareExprScoping(varDecl.Type);
+
             if (varDecl.Initializer != null)
             {
                 SetScopeAndParent(varDecl.Initializer, varDecl);
@@ -418,7 +421,10 @@ namespace HapetPostPrepare
             }
             // define it in the scope if it is not yet
             if (!doNotDefine)
+            {
+                Debug.Assert(varDecl.Name != null);
                 varDecl.Scope.DefineDeclSymbol(varDecl.Name, varDecl);
+            }
         }
 
         private void PostPrepareParamScoping(AstParamDecl paramDecl)
