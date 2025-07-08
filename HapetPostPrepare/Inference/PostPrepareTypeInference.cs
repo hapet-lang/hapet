@@ -766,8 +766,12 @@ namespace HapetPostPrepare
                     return;
                 }
 
+                var saved = inInfo.MuteErrors;
+                inInfo.MuteErrors = true;
                 // searching for the symbol in the class/struct
                 PostPrepareIdentifierInference(idExpr, inInfo, ref outInfo, leftSideDecl);
+                inInfo.MuteErrors = saved;
+
                 var smbl = idExpr.FindSymbol;
                 if (smbl is DeclSymbol typed)
                 {
