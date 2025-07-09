@@ -375,13 +375,13 @@ namespace HapetPostPrepare
                 return decl;
 
             var theDecl = decl.Decl;
-            var realDecl = CreateRealTypeFromGeneric(theDecl, genId, out var realName, true);
+            var realDecl = CreateRealTypeFromGeneric(theDecl, genId, out var realName);
 
             DeclSymbol realDclDecl = theDecl.Scope.GetSymbol(realDecl.Name) as DeclSymbol;
             return realDclDecl;
         }
 
-        public AstDeclaration CreateRealTypeFromGeneric(AstDeclaration genDecl, AstIdGenericExpr realId, out AstIdGenericExpr realName, bool allowRealGeneric = false)
+        public AstDeclaration CreateRealTypeFromGeneric(AstDeclaration genDecl, AstIdGenericExpr realId, out AstIdGenericExpr realName)
         {
             InInfo inInfo = InInfo.Default;
             OutInfo outInfo = OutInfo.Default;
@@ -406,19 +406,6 @@ namespace HapetPostPrepare
                 // infer if not infered
                 if (g.OutType == null)
                     PostPrepareExprInference(g, inInfo, ref outInfo);
-            }
-
-            // if instantiating with genericTypes are not allowed - 
-            // check that the types are not generic
-            if (!allowRealGeneric)
-            {
-                // no need to create new decls with non-real-generics
-                if (HasAnyGenericTypes(realId.GenericRealTypes))
-                {
-                    // TODO: check for compatibility (? tf i mean by it)
-                    realName = genDecl.Name as AstIdGenericExpr;
-                    return genDecl;
-                }
             }
 
             // generating generic shite name
