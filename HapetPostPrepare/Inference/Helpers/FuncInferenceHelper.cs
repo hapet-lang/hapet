@@ -10,6 +10,7 @@ using HapetFrontend.Ast.Expressions;
 using HapetFrontend.Parsing;
 using HapetFrontend.Enums;
 using System.Reflection.Metadata;
+using System;
 
 namespace HapetPostPrepare
 {
@@ -72,13 +73,10 @@ namespace HapetPostPrepare
                         continue;
                     }
                     // cringe to handle 'params' kw
-                    else if (par.ParameterModificator == ParameterModificator.Params) 
+                    else if (par.ParameterModificator == ParameterModificator.Params)
                     {
                         paramsParamDecl = par;
-                        // because usually like 'params object[] pivo'
-                        // but we need to compare pure 'object' type then :)
-                        var tmp = (par.Type as AstNestedExpr).RightPart as AstArrayExpr;
-                        parType = tmp.SubExpression; 
+                        parType = GetSubTypeOfParamsParam(par);
                     }
 
                     // if parameter or argument has ref/out another one also has to have it
@@ -224,9 +222,16 @@ namespace HapetPostPrepare
                         new Location(exprs.First().Beginning, exprs.Last().Ending)
                     )
                     {
+                        OutType = GetArrayType(GetSubTypeOfParamsParam(currPar, true), currPar.Type),
                         Scope = currArg.Scope
                     };
-                    normalArgs[realIndex] = new AstArgumentExpr(arrCreate); // set and go out
+
+                    // need to cast because could be 'params IEnumerable<int> p'
+                    var cast = new AstCastExpr(currPar.Type, arrCreate, arrCreate.Location)
+                    {
+                        OutType = currPar.Type.OutType,
+                    };
+                    normalArgs[realIndex] = new AstArgumentExpr(cast); // set and go out
                     break;
                 }
                 // special case for 'arglist' cringe
@@ -293,6 +298,35 @@ namespace HapetPostPrepare
             }
 
             return normalArgs;
+        }
+
+        private AstExpression GetSubTypeOfParamsParam(AstParamDecl param, bool handlePointeredClasses = false)
+        {
+            // because usually like 'params object[] pivo'
+            // but we need to compare pure 'object' type then :)
+            if ((param.Type as AstNestedExpr).RightPart is AstArrayExpr arr)
+            {
+                return arr.SubExpression;
+            }
+            else if ((param.Type as AstNestedExpr).RightPart is AstIdGenericExpr genId)
+            {
+                // this could be when 'param IEnumerable<int> a' 
+                return genId.GenericRealTypes[0];
+            }
+
+            if (handlePointeredClasses && (param.Type as AstNestedExpr).RightPart is AstPointerExpr pE && 
+                pE.SubExpression is AstIdGenericExpr genId2)
+            {
+                // this could be when 'param IEnumerable<int>* a' 
+                return genId2.GenericRealTypes[0];
+            }
+            else if (handlePointeredClasses && (param.Type as AstNestedExpr).RightPart is AstPointerExpr pE2 && 
+                pE2.SubExpression is AstNestedExpr nst2 && nst2.RightPart is AstIdGenericExpr genId3)
+            {
+                // this could be when 'param System.IEnumerable<int>* a' 
+                return genId3.GenericRealTypes[0];
+            }
+            return null;
         }
 
         private static List<DeclSymbol> GetAllCandidates(AstIdExpr name, AstDeclaration declToSearch, 

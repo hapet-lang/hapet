@@ -615,9 +615,12 @@ namespace HapetLastPrepare
         {
             // the return type is actually a pointer to the class
             var astPtr = new AstPointerExpr(expr, false, expr.Location);
+            astPtr.SetDataFromStmt(expr);
             astPtr.OutType = PointerType.GetPointerType(astPtr.SubExpression.OutType);
-            astPtr.Scope = expr.Scope;
-            return new AstNestedExpr(astPtr, null, expr.Location) { OutType = astPtr.OutType };
+            var nst = new AstNestedExpr(astPtr, null, expr.Location);
+            nst.SetDataFromStmt(expr);
+            nst.OutType = astPtr.OutType;
+            return nst;
         }
     }
 }

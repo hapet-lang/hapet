@@ -620,8 +620,11 @@ namespace HapetBackend.Llvm
                     int structSize = boxedTypeData.Item3;
                     // allocating memory for struct
                     var v = GetMalloc(structSize, 1);
+
+                    // cringe kostyl
+                    var typeToSearch = structType is ArrayType ? HapetType.CurrentTypeContext.ArrayTypeInstances[HapetType.CurrentTypeContext.ObjectTypeInstance] : structType;
                     // set up type data ptr!!!
-                    SetTypeInfo(v, structType);
+                    SetTypeInfo(v, typeToSearch);
 
                     // storing struct into the alloced mem
                     var offseted = _builder.BuildGEP2(_context.Int8Type, v, new LLVMValueRef[] { LLVMValueRef.CreateConstInt(_context.Int32Type, boxedTypeData.Item2) }, "offsetedPtr");
