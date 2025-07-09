@@ -30,6 +30,9 @@ namespace HapetPostPrepare
                 // just inferencing 
                 if (constrain.ConstrainType == GenericConstrainType.CustomType)
                     PostPrepareExprInference(constrain.Expr, inInfo, ref outInfo);
+                else if (constrain.ConstrainType == GenericConstrainType.NewType)
+                    foreach (var t in constrain.AdditionalExprs)
+                        PostPrepareExprInference(t, inInfo, ref outInfo);
             }
 
             // need to search for the same constrain
@@ -59,6 +62,21 @@ namespace HapetPostPrepare
                             }
                         }
                         collisions.Add(exists);
+                    }
+                    else if (exC.ConstrainType == GenericConstrainType.NewType)
+                    {
+                        var cNew = constrains.FirstOrDefault(x => x.ConstrainType == GenericConstrainType.NewType);
+                        bool allTheSame = cNew != null && exC.AdditionalExprs.Count == cNew.AdditionalExprs.Count;
+                        if (allTheSame)
+                            for (int i = 0; i < exC.AdditionalExprs.Count; ++i)
+                            {
+                                if (exC.AdditionalExprs[i].OutType != cNew.AdditionalExprs[i].OutType)
+                                {
+                                    allTheSame = false;
+                                    break;
+                                }
+                            }
+                        collisions.Add(allTheSame);
                     }
                     else
                     {
