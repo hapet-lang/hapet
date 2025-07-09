@@ -113,6 +113,8 @@ namespace HapetPostPrepare
 
         internal void PostPrepareGenericDeclConstrains(AstGenericDecl decl, InInfo inInfo, ref OutInfo outInfo)
         {
+            List<AstNestedExpr> inheritedFrom = new List<AstNestedExpr>();
+
             // handle constrains
             foreach (var constrain in decl.Constrains)
             {
@@ -120,10 +122,12 @@ namespace HapetPostPrepare
                 {
                     case GenericConstrainType.CustomType:
                         HandleCustomConstrainType(decl, constrain, inInfo, ref outInfo);
+                        inheritedFrom.Add(constrain.Expr);
                         break;
                     // ...
                 }
             }
+            decl.InheritedFrom = inheritedFrom;
 
             // single post prepare
             PostPrepareStatementUpToCurrentStep(decl);

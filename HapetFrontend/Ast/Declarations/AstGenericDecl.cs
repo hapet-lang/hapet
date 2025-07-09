@@ -18,6 +18,11 @@ namespace HapetFrontend.Ast.Declarations
         /// </summary>
         public List<AstConstrainStmt> Constrains { get; set; } = new List<AstConstrainStmt>();
 
+        /// <summary>
+        /// The list of types from which the current generic is inherited
+        /// </summary>
+        public List<AstNestedExpr> InheritedFrom { get; set; } = new List<AstNestedExpr>();
+
         public override string AAAName => nameof(AstGenericDecl);
 
         public AstGenericDecl(AstIdExpr name, string doc = "", ILocation location = null) : base(name, doc, location)

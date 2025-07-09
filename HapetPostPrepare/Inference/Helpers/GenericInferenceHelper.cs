@@ -161,7 +161,13 @@ namespace HapetPostPrepare
                             // if not the same - try to check inherited
                             if (!allow)
                             {
-                                AstDeclaration decl = type.OutType is ClassType cls ? cls.Declaration : (type.OutType as StructType).Declaration;
+                                AstDeclaration decl;
+                                if (type.OutType is ClassType cls)
+                                    decl = cls.Declaration;
+                                else if (type.OutType is GenericType gen)
+                                    decl = gen.Declaration;
+                                else
+                                    decl = (type.OutType as StructType).Declaration;
                                 allow = IsInheritedFromWithInference(decl, c.Expr.OutType);
                             }
                             constrainErrorName = HapetType.AsString(c.Expr.OutType);
@@ -174,7 +180,7 @@ namespace HapetPostPrepare
 
                             constrainErrorName = "new(...)"; // better text?
 
-                            if (type.OutType is not ClassType || type.OutType is not StructType || 
+                            if (type.OutType is not ClassType || type.OutType is not StructType || type.OutType is not GenericType ||
                                 (type.OutType is ClassType clsT && clsT.Declaration.IsInterface))
                             {
                                 allow = false;
@@ -183,6 +189,8 @@ namespace HapetPostPrepare
                             AstDeclaration decl;
                             if (type.OutType is ClassType cls)
                                 decl = cls.Declaration;
+                            else if (type.OutType is GenericType gen)
+                                decl = gen.Declaration;
                             else
                                 decl = (type.OutType as StructType).Declaration;
 

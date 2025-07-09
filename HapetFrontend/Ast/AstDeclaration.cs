@@ -112,6 +112,8 @@ namespace HapetFrontend.Ast
                 return clsDecl.InheritedFrom;
             else if (this is AstStructDecl strDecl)
                 return strDecl.InheritedFrom;
+            else if (this is AstGenericDecl genDecl)
+                return genDecl.InheritedFrom;
             return new List<AstNestedExpr>();
         }
 
@@ -125,6 +127,8 @@ namespace HapetFrontend.Ast
                 return clsDecl.Declarations;
             else if (this is AstStructDecl strDecl)
                 return strDecl.Declarations;
+            else if (this is AstGenericDecl genDecl)
+                return genDecl.Declarations;
             return new List<AstDeclaration>();
         }
 
