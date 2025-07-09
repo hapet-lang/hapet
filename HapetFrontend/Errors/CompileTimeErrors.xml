@@ -784,6 +784,10 @@
         <Number>3058</Number>
         <Text>{0} is obsolete: '{1}'</Text>
     </Item>
+	<Item>
+		<Number>3059</Number>
+		<Text>The type does not satisfy the constraint: {0}</Text>
+	</Item>
 
     <!--Compiler errors-->
     <Item>

@@ -12,6 +12,8 @@ using HapetFrontend.Helpers;
 using HapetPostPrepare.Other;
 using HapetFrontend.Types;
 using HapetFrontend.Entities;
+using HapetFrontend.Enums;
+using HapetFrontend.Errors;
 
 namespace HapetPostPrepare
 {
@@ -65,9 +67,6 @@ namespace HapetPostPrepare
             // no need to reset HasGenericTypes when using generic shite from another generic
             realDecl.HasGenericTypes = HasAnyGenericTypes(genericTypes.Select(x => x as AstExpression).ToList());
 
-            // resetting some shite - it has to be done again
-            ResetSomeDeclParams(realDecl);
-
             // getting pure generics from original generic decl
             var pureGenerics = GenericsHelper.GetGenericsFromName(decl.Name as AstIdGenericExpr, _compiler.MessageHandler);
             // replaces all T with normal types like int
@@ -92,18 +91,6 @@ namespace HapetPostPrepare
             _currentParentStack = savedParentStack;
 
             return realDecl;
-        }
-
-        private void ResetSomeDeclParams(AstDeclaration decl)
-        {
-            if (decl is AstClassDecl clsDecl)
-            {
-                clsDecl.AllVirtualMethods = null;
-            }
-            else if (decl is AstStructDecl strDecl)
-            {
-                strDecl.AllVirtualMethods = null;
-            }
         }
 
         /// <summary>
@@ -131,6 +118,128 @@ namespace HapetPostPrepare
                 }
             }
             return false;
+        }
+
+        private bool CheckIfTheTypesAreAllowedForConstrains(AstDeclaration genDecl, List<AstExpression> realTypes)
+        {
+            var allNorm = new List<bool>();
+            var pureGenerics = GenericsHelper.GetGenericsFromName(genDecl.Name as AstIdGenericExpr, _compiler.MessageHandler);
+            for (int i = 0; i < pureGenerics.Count; ++i)
+            {
+                var currGeneric = pureGenerics[i];
+                var currType = realTypes[i];
+                var currContrains = genDecl.GenericConstrains.FirstOrDefault(x => x.Key.Name == currGeneric.Name).Value;
+
+                var result = CheckIfAllowedForConstrains(currContrains, currType);
+                allNorm.Add(result);
+            }
+            return allNorm.All(x => x);
+        }
+
+        private bool CheckIfAllowedForConstrains(List<AstConstrainStmt> constrains, AstExpression type)
+        {
+            var allNorm = new List<bool>();
+            foreach (var c in constrains)
+            {
+                bool allow = false;
+                string constrainErrorName = "none";
+                switch (c.ConstrainType)
+                {
+                    case GenericConstrainType.CustomType:
+                        {
+                            allow = type.OutType == c.Expr.OutType || type.OutType.IsInheritedFrom(c.Expr.OutType as ClassType);
+                            constrainErrorName = HapetType.AsString(c.Expr.OutType);
+                            break;
+                        }
+                    case GenericConstrainType.NewType:
+                        {
+                            InInfo inInfo = InInfo.Default;
+                            OutInfo outInfo = OutInfo.Default;
+
+                            constrainErrorName = "new(...)"; // better text?
+
+                            if (type.OutType is not ClassType || type.OutType is not StructType || 
+                                (type.OutType is ClassType clsT && clsT.Declaration.IsInterface))
+                            {
+                                allow = false;
+                                break;
+                            }
+                            AstDeclaration decl;
+                            if (type.OutType is ClassType cls)
+                                decl = cls.Declaration;
+                            else
+                                decl = (type.OutType as StructType).Declaration;
+
+                            // getting all ctors of the class/struct
+                            foreach (var ctor in decl.GetDeclarations().Where(x => x is AstFuncDecl f && f.ClassFunctionType == ClassFunctionType.Ctor))
+                            {
+                                var func = ctor as AstFuncDecl;
+                                // skip first because it is a ptr to a type
+                                if (func.Parameters.Count - 1 != c.AdditionalExprs.Count)
+                                    continue;
+
+                                bool allTheSame = true;
+                                // go all over params and check types
+                                for (int i = 0; i < func.Parameters.Count - 1; ++i)
+                                {
+                                    var p = func.Parameters[i + 1];
+                                    var newP = c.AdditionalExprs[i];
+
+                                    // it could be not yet infered - so infer it
+                                    if (p.Type.OutType == null)
+                                        PostPrepareExprInference(p.Type, inInfo, ref outInfo);
+
+                                    if (p.Type.OutType != newP.OutType)
+                                    {
+                                        allTheSame = false;
+                                        continue;
+                                    }
+                                }
+
+                                // if all the parameter types are the same
+                                if (allTheSame)
+                                {
+                                    allow = true;
+                                    break;
+                                }
+                            }
+                            break;
+                        }
+                    case GenericConstrainType.ClassType:
+                        {
+                            allow = type.OutType is ClassType;
+                            constrainErrorName = "class";
+                            break;
+                        }
+                    case GenericConstrainType.StructType:
+                        {
+                            allow = type.OutType is StructType;
+                            constrainErrorName = "struct";
+                            break;
+                        }
+                    case GenericConstrainType.DelegateType:
+                        {
+                            allow = type.OutType is DelegateType;
+                            constrainErrorName = "delegate";
+                            break;
+                        }
+                    case GenericConstrainType.EnumType:
+                        {
+                            allow = type.OutType is EnumType;
+                            constrainErrorName = "enum";
+                            break;
+                        }
+                }
+
+                if (!allow)
+                {
+                    _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, type,
+                        [constrainErrorName], ErrorCode.Get(CTEN.NotSatisfyConstrain));
+                }
+                allNorm.Add(allow);
+            }
+
+            return allNorm.All(x => x);
         }
     }
 }

@@ -426,6 +426,10 @@ namespace HapetPostPrepare
                     return realDclDecl.Decl;
             }
 
+            // check for constrains. if something goes wrong - it will error inside the function
+            if (!CheckIfTheTypesAreAllowedForConstrains(genDecl, realId.GenericRealTypes))
+                return genDecl;
+
             // create a new shite with real types
             var realDecl = GetRealTypeFromGeneric(genDecl, realId.GenericRealTypes.GetNestedList(_compiler.MessageHandler), 
                 realName, HasAnyGenericTypes(realId.GenericRealTypes));

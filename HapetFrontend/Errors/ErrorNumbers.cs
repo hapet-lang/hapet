@@ -204,6 +204,7 @@
         StaticPolyField                 = 0x3056,
         AttrNotFound                    = 0x3057,
         DeclIsObsolete                  = 0x3058,
+        NotSatisfyConstrain             = 0x3059,
 
         // compiler errors up to 0x6000
         DefaultWasNotInfered            = 0x5001,
