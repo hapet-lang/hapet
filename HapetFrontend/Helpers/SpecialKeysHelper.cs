@@ -15,11 +15,14 @@ namespace HapetFrontend.Helpers
 
             TokenType syncKey = default;          // async
             TokenType accessKey = default;        // public/protected/internal/private/unreflected
-            TokenType shadowKey = default;        // new
-            TokenType instanceKey = default;      // static
+            TokenType instanceKey = default;      // abstract/static/sealed
             TokenType mutabilityKey = default;    // readonly/const
-            TokenType abstractionKey = default;   // abstract/virtual/override
-            TokenType otherKey = default;         // partial/extern/sealed/inline/noexcept/imported/unsafe
+            TokenType shadowKey = default;        // new/virtual/override
+            TokenType partialKey = default;       // partial
+            TokenType externKey = default;        // extern
+            TokenType inlineKey = default;        // inline
+            TokenType noexceptKey = default;      // noexcept
+            TokenType unsafeKey = default;        // unsafe
 
             for (int i = 0; i < decl.SpecialKeys.Count; ++i)
             {
@@ -29,44 +32,62 @@ namespace HapetFrontend.Helpers
                 {
                     case 0:
                         {
-                            TokenType[] asArr = [accessKey, shadowKey, instanceKey, mutabilityKey, abstractionKey, otherKey];
+                            TokenType[] asArr = [accessKey, instanceKey, mutabilityKey, shadowKey, partialKey, externKey, inlineKey, noexceptKey, unsafeKey];
                             Handler(asArr, currKey, ref syncKey);
                             break;
                         }
                     case 1:
                         {
-                            TokenType[] asArr = [shadowKey, instanceKey, mutabilityKey, abstractionKey, otherKey];
+                            TokenType[] asArr = [instanceKey, mutabilityKey, shadowKey, partialKey, externKey, inlineKey, noexceptKey, unsafeKey];
                             Handler(asArr, currKey, ref accessKey);
                             break;
                         }
                     case 2:
                         {
-                            TokenType[] asArr = [instanceKey, mutabilityKey, abstractionKey, otherKey];
-                            Handler(asArr, currKey, ref shadowKey);
+                            TokenType[] asArr = [mutabilityKey, shadowKey, partialKey, externKey, inlineKey, noexceptKey, unsafeKey];
+                            Handler(asArr, currKey, ref instanceKey);
                             break;
                         }
                     case 3:
                         {
-                            TokenType[] asArr = [mutabilityKey, abstractionKey, otherKey];
-                            Handler(asArr, currKey, ref instanceKey);
+                            TokenType[] asArr = [shadowKey, partialKey, externKey, inlineKey, noexceptKey, unsafeKey];
+                            Handler(asArr, currKey, ref mutabilityKey);
                             break;
                         }
                     case 4:
                         {
-                            TokenType[] asArr = [abstractionKey, otherKey];
-                            Handler(asArr, currKey, ref mutabilityKey);
+                            TokenType[] asArr = [partialKey, externKey, inlineKey, noexceptKey, unsafeKey];
+                            Handler(asArr, currKey, ref shadowKey);
                             break;
                         }
                     case 5:
                         {
-                            TokenType[] asArr = [otherKey];
-                            Handler(asArr, currKey, ref abstractionKey);
+                            TokenType[] asArr = [externKey, inlineKey, noexceptKey, unsafeKey];
+                            Handler(asArr, currKey, ref partialKey);
                             break;
                         }
                     case 6:
                         {
+                            TokenType[] asArr = [inlineKey, noexceptKey, unsafeKey];
+                            Handler(asArr, currKey, ref externKey);
+                            break;
+                        }
+                    case 7:
+                        {
+                            TokenType[] asArr = [noexceptKey, unsafeKey];
+                            Handler(asArr, currKey, ref inlineKey);
+                            break;
+                        }
+                    case 8:
+                        {
+                            TokenType[] asArr = [unsafeKey];
+                            Handler(asArr, currKey, ref noexceptKey);
+                            break;
+                        }
+                    case 9:
+                        {
                             TokenType[] asArr = [];
-                            Handler(asArr, currKey, ref otherKey);
+                            Handler(asArr, currKey, ref unsafeKey);
                             break;
                         }
                 }
@@ -99,11 +120,14 @@ namespace HapetFrontend.Helpers
         {
             TokenType syncKey = default;          // async
             TokenType accessKey = default;        // public/protected/internal/private/unreflected
-            TokenType shadowKey = default;        // new
-            TokenType instanceKey = default;      // static
+            TokenType instanceKey = default;      // static/abstract/sealed
             TokenType mutabilityKey = default;    // readonly/const
-            TokenType abstractionKey = default;   // abstract/virtual/override
-            TokenType otherKey = default;         // partial/extern/sealed/inline/noexcept/imported
+            TokenType shadowKey = default;        // new/virtual/override
+            TokenType partialKey = default;       // partial
+            TokenType externKey = default;        // extern
+            TokenType inlineKey = default;        // inline
+            TokenType noexceptKey = default;      // noexcept
+            TokenType unsafeKey = default;        // unsafe
 
             for (int i = 0; i < decl.SpecialKeys.Count; ++i)
             {
@@ -118,19 +142,28 @@ namespace HapetFrontend.Helpers
                         accessKey = currKey.Type;
                         break;
                     case 2:
-                        shadowKey = currKey.Type;
-                        break;
-                    case 3:
                         instanceKey = currKey.Type;
                         break;
-                    case 4:
+                    case 3:
                         mutabilityKey = currKey.Type;
                         break;
+                    case 4:
+                        shadowKey = currKey.Type;
+                        break;
                     case 5:
-                        abstractionKey = currKey.Type;
+                        partialKey = currKey.Type;
                         break;
                     case 6:
-                        otherKey = currKey.Type;
+                        externKey = currKey.Type;
+                        break;
+                    case 7:
+                        inlineKey = currKey.Type;
+                        break;
+                    case 8:
+                        noexceptKey = currKey.Type;
+                        break;
+                    case 9:
+                        unsafeKey = currKey.Type;
                         break;
                 }
             }
@@ -171,25 +204,6 @@ namespace HapetFrontend.Helpers
                     }
                 case 2:
                     {
-                        if (shadowKey != default)
-                        {
-                            if (doError)
-                                messageHandler.ReportMessage(sourceFile.Text, decl.Name,
-                                    [Lexer.GetKeywordFromToken(specialKey.Type), Lexer.GetKeywordFromToken(shadowKey)],
-                                    ErrorCode.Get(CTEN.AlreadyDefinedSpecialKey));
-                            break;
-                        }
-
-                        int index = 0;
-                        if (syncKey != default)
-                            index++;
-                        if (accessKey != default)
-                            index++;
-                        decl.SpecialKeys.Insert(index, specialKey);
-                        break;
-                    }
-                case 3:
-                    {
                         if (instanceKey != default)
                         {
                             if (doError)
@@ -204,12 +218,10 @@ namespace HapetFrontend.Helpers
                             index++;
                         if (accessKey != default)
                             index++;
-                        if (shadowKey != default)
-                            index++;
                         decl.SpecialKeys.Insert(index, specialKey);
                         break;
                     }
-                case 4:
+                case 3:
                     {
                         if (mutabilityKey != default)
                         {
@@ -225,20 +237,41 @@ namespace HapetFrontend.Helpers
                             index++;
                         if (accessKey != default)
                             index++;
+                        if (instanceKey != default)
+                            index++;
+                        decl.SpecialKeys.Insert(index, specialKey);
+                        break;
+                    }
+                case 4:
+                    {
                         if (shadowKey != default)
+                        {
+                            if (doError)
+                                messageHandler.ReportMessage(sourceFile.Text, decl.Name,
+                                    [Lexer.GetKeywordFromToken(specialKey.Type), Lexer.GetKeywordFromToken(shadowKey)],
+                                    ErrorCode.Get(CTEN.AlreadyDefinedSpecialKey));
+                            break;
+                        }
+
+                        int index = 0;
+                        if (syncKey != default)
+                            index++;
+                        if (accessKey != default)
                             index++;
                         if (instanceKey != default)
+                            index++;
+                        if (mutabilityKey != default)
                             index++;
                         decl.SpecialKeys.Insert(index, specialKey);
                         break;
                     }
                 case 5:
                     {
-                        if (abstractionKey != default)
+                        if (partialKey != default)
                         {
                             if (doError)
                                 messageHandler.ReportMessage(sourceFile.Text, decl.Name,
-                                    [Lexer.GetKeywordFromToken(specialKey.Type), Lexer.GetKeywordFromToken(abstractionKey)],
+                                    [Lexer.GetKeywordFromToken(specialKey.Type), Lexer.GetKeywordFromToken(partialKey)],
                                     ErrorCode.Get(CTEN.AlreadyDefinedSpecialKey));
                             break;
                         }
@@ -248,22 +281,22 @@ namespace HapetFrontend.Helpers
                             index++;
                         if (accessKey != default)
                             index++;
-                        if (shadowKey != default)
-                            index++;
                         if (instanceKey != default)
                             index++;
                         if (mutabilityKey != default)
+                            index++;
+                        if (shadowKey != default)
                             index++;
                         decl.SpecialKeys.Insert(index, specialKey);
                         break;
                     }
                 case 6:
                     {
-                        if (otherKey != default)
+                        if (externKey != default)
                         {
                             if (doError)
                                 messageHandler.ReportMessage(sourceFile.Text, decl.Name,
-                                    [Lexer.GetKeywordFromToken(specialKey.Type), Lexer.GetKeywordFromToken(otherKey)],
+                                    [Lexer.GetKeywordFromToken(specialKey.Type), Lexer.GetKeywordFromToken(externKey)],
                                     ErrorCode.Get(CTEN.AlreadyDefinedSpecialKey));
                             break;
                         }
@@ -273,13 +306,106 @@ namespace HapetFrontend.Helpers
                             index++;
                         if (accessKey != default)
                             index++;
+                        if (instanceKey != default)
+                            index++;
+                        if (mutabilityKey != default)
+                            index++;
                         if (shadowKey != default)
+                            index++;
+                        if (partialKey != default)
+                            index++;
+                        decl.SpecialKeys.Insert(index, specialKey);
+                        break;
+                    }
+                case 7:
+                    {
+                        if (inlineKey != default)
+                        {
+                            if (doError)
+                                messageHandler.ReportMessage(sourceFile.Text, decl.Name,
+                                    [Lexer.GetKeywordFromToken(specialKey.Type), Lexer.GetKeywordFromToken(inlineKey)],
+                                    ErrorCode.Get(CTEN.AlreadyDefinedSpecialKey));
+                            break;
+                        }
+
+                        int index = 0;
+                        if (syncKey != default)
+                            index++;
+                        if (accessKey != default)
                             index++;
                         if (instanceKey != default)
                             index++;
                         if (mutabilityKey != default)
                             index++;
-                        if (abstractionKey != default)
+                        if (shadowKey != default)
+                            index++;
+                        if (partialKey != default)
+                            index++;
+                        if (externKey != default)
+                            index++;
+                        decl.SpecialKeys.Insert(index, specialKey);
+                        break;
+                    }
+                case 8:
+                    {
+                        if (noexceptKey != default)
+                        {
+                            if (doError)
+                                messageHandler.ReportMessage(sourceFile.Text, decl.Name,
+                                    [Lexer.GetKeywordFromToken(specialKey.Type), Lexer.GetKeywordFromToken(noexceptKey)],
+                                    ErrorCode.Get(CTEN.AlreadyDefinedSpecialKey));
+                            break;
+                        }
+
+                        int index = 0;
+                        if (syncKey != default)
+                            index++;
+                        if (accessKey != default)
+                            index++;
+                        if (instanceKey != default)
+                            index++;
+                        if (mutabilityKey != default)
+                            index++;
+                        if (shadowKey != default)
+                            index++;
+                        if (partialKey != default)
+                            index++;
+                        if (externKey != default)
+                            index++;
+                        if (inlineKey != default)
+                            index++;
+                        decl.SpecialKeys.Insert(index, specialKey);
+                        break;
+                    }
+                case 9:
+                    {
+                        if (unsafeKey != default)
+                        {
+                            if (doError)
+                                messageHandler.ReportMessage(sourceFile.Text, decl.Name,
+                                    [Lexer.GetKeywordFromToken(specialKey.Type), Lexer.GetKeywordFromToken(unsafeKey)],
+                                    ErrorCode.Get(CTEN.AlreadyDefinedSpecialKey));
+                            break;
+                        }
+
+                        int index = 0;
+                        if (syncKey != default)
+                            index++;
+                        if (accessKey != default)
+                            index++;
+                        if (instanceKey != default)
+                            index++;
+                        if (mutabilityKey != default)
+                            index++;
+                        if (shadowKey != default)
+                            index++;
+                        if (partialKey != default)
+                            index++;
+                        if (externKey != default)
+                            index++;
+                        if (inlineKey != default)
+                            index++;
+                        if (noexceptKey != default)
                             index++;
                         decl.SpecialKeys.Insert(index, specialKey);
                         break;
@@ -303,33 +429,43 @@ namespace HapetFrontend.Helpers
                     {
                         return 1;
                     }
-                case TokenType.KwNew:
+                
+                case TokenType.KwStatic:
+                case TokenType.KwAbstract:
+                case TokenType.KwSealed:
                     {
                         return 2;
-                    }
-                case TokenType.KwStatic:
-                    {
-                        return 3;
                     }
                 case TokenType.KwReadonly:
                 case TokenType.KwConst:
                     {
-                        return 4;
+                        return 3;
                     }
-                case TokenType.KwAbstract:
+                case TokenType.KwNew:
                 case TokenType.KwVirtual:
                 case TokenType.KwOverride:
                     {
-                        return 5;
+                        return 4;
                     }
                 case TokenType.KwPartial:
+                    {
+                        return 5;
+                    }
                 case TokenType.KwExtern:
-                case TokenType.KwSealed:
-                case TokenType.KwInline:
-                case TokenType.KwNoexcept:
-                case TokenType.KwUnsafe:
                     {
                         return 6;
+                    }
+                case TokenType.KwInline:
+                    {
+                        return 7;
+                    }
+                case TokenType.KwNoexcept:
+                    {
+                        return 8;
+                    }
+                case TokenType.KwUnsafe:
+                    {
+                        return 9;
                     }
             }
             return -1;
