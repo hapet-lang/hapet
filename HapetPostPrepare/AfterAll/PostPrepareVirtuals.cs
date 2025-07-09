@@ -6,13 +6,12 @@ using HapetFrontend.Helpers;
 using HapetFrontend.Parsing;
 using HapetFrontend.Types;
 using HapetFrontend.Extensions;
-using System.Linq;
 
-namespace HapetLastPrepare
+namespace HapetPostPrepare
 {
-    public partial class LastPrepare
+    public partial class PostPrepare
     {
-        private void LastPrepareInheritedShite()
+        private void PostPrepareInheritedShite()
         {
             AllPostPrepareMetadataInheritedFunctions();
             AllPostPrepareMetadataTypeInheritedFieldDecls();
@@ -22,7 +21,7 @@ namespace HapetLastPrepare
         #region Methods
         private void AllPostPrepareMetadataInheritedFunctions()
         {
-            foreach (var cls in _postPreparer.AllClassesMetadata.ToList())
+            foreach (var cls in AllClassesMetadata.ToList())
             {
                 if (GenericsHelper.ShouldTheDeclBeSkippedFromCodeGen(cls))
                 {
@@ -30,16 +29,16 @@ namespace HapetLastPrepare
                     continue;
                 }
 
-                _postPreparer._currentSourceFile = cls.SourceFile;
+                _currentSourceFile = cls.SourceFile;
                 if (cls.IsNestedDecl)
-                    _postPreparer._currentParentStack.AddParent(cls.ParentDecl);
-                _postPreparer._currentParentStack.AddParent(cls);
+                    _currentParentStack.AddParent(cls.ParentDecl);
+                _currentParentStack.AddParent(cls);
                 PostPrepareMetadataInheritedFunctions(cls);
-                _postPreparer._currentParentStack.RemoveParent();
+                _currentParentStack.RemoveParent();
                 if (cls.IsNestedDecl)
-                    _postPreparer._currentParentStack.RemoveParent();
+                    _currentParentStack.RemoveParent();
             }
-            foreach (var str in _postPreparer.AllStructsMetadata.ToList())
+            foreach (var str in AllStructsMetadata.ToList())
             {
                 if (GenericsHelper.ShouldTheDeclBeSkippedFromCodeGen(str))
                 {
@@ -47,14 +46,14 @@ namespace HapetLastPrepare
                     continue;
                 }
 
-                _postPreparer._currentSourceFile = str.SourceFile;
+                _currentSourceFile = str.SourceFile;
                 if (str.IsNestedDecl)
-                    _postPreparer._currentParentStack.AddParent(str.ParentDecl);
-                _postPreparer._currentParentStack.AddParent(str);
+                    _currentParentStack.AddParent(str.ParentDecl);
+                _currentParentStack.AddParent(str);
                 PostPrepareMetadataInheritedFunctions(str);
-                _postPreparer._currentParentStack.RemoveParent();
+                _currentParentStack.RemoveParent();
                 if (str.IsNestedDecl)
-                    _postPreparer._currentParentStack.RemoveParent();
+                    _currentParentStack.RemoveParent();
             }
         }
 
@@ -159,7 +158,7 @@ namespace HapetLastPrepare
                                 {
                                     // the method is implemented in parent class and current class
                                     // we need to error
-                                    _compiler.MessageHandler.ReportMessage(_postPreparer._currentSourceFile.Text, currF.Name,
+                                    _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, currF.Name,
                                         [HapetType.AsString(definedInOneOfTheParents.ContainingParent.Type.OutType)], ErrorCode.Get(CTEN.MethodAlreadyDefined));
                                     continue;
                                 }
@@ -175,7 +174,7 @@ namespace HapetLastPrepare
                                 {
                                     if (!inhF.IsPropertyFunction)
                                         // error - the method of the interface was not implemented
-                                        _compiler.MessageHandler.ReportMessage(_postPreparer._currentSourceFile.Text, inh,
+                                        _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, inh,
                                             [HapetType.AsString(decl.Type.OutType),
                                                 inhF.Name.Name], ErrorCode.Get(CTEN.NoMethodImplementation));
                                 }
@@ -248,7 +247,7 @@ namespace HapetLastPrepare
                         continue;
 
                     // error - function shadowing
-                    _compiler.MessageHandler.ReportMessage(_postPreparer._currentSourceFile.Text, currM.Name,
+                    _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, currM.Name,
                         [HapetType.AsString(parentFnc.Type.OutType)], ErrorCode.Get(CTEN.FunctionShadowing));
                 }
                 else if (parentFnc != null && currM.SpecialKeys.Contains(TokenType.KwNew))
@@ -276,7 +275,7 @@ namespace HapetLastPrepare
                             continue;
 
                         // error - implementation of method not found in curr class
-                        _compiler.MessageHandler.ReportMessage(_postPreparer._currentSourceFile.Text, decl.Name,
+                        _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, decl.Name,
                             [m.Name.Name], ErrorCode.Get(CTEN.NoAbsMethodImpl));
                     }
                 }
@@ -296,8 +295,8 @@ namespace HapetLastPrepare
         #region Fields
         private void AllPostPrepareMetadataTypeInheritedFieldDecls()
         {
-            var classes = _postPreparer.AllClassesMetadata.ToList();
-            var structures = _postPreparer.AllStructsMetadata.ToList();
+            var classes = AllClassesMetadata.ToList();
+            var structures = AllStructsMetadata.ToList();
 
             // resolve all inherited fields of classes
             foreach (var cls in classes)
@@ -305,28 +304,28 @@ namespace HapetLastPrepare
                 if (GenericsHelper.ShouldTheDeclBeSkippedFromCodeGen(cls))
                     continue;
 
-                _postPreparer._currentSourceFile = cls.SourceFile;
+                _currentSourceFile = cls.SourceFile;
                 if (cls.IsNestedDecl)
-                    _postPreparer._currentParentStack.AddParent(cls.ParentDecl);
-                _postPreparer._currentParentStack.AddParent(cls);
+                    _currentParentStack.AddParent(cls.ParentDecl);
+                _currentParentStack.AddParent(cls);
                 PostPrepareMetadataTypeInheritedFieldDecls(cls);
-                _postPreparer._currentParentStack.RemoveParent();
+                _currentParentStack.RemoveParent();
                 if (cls.IsNestedDecl)
-                    _postPreparer._currentParentStack.RemoveParent();
+                    _currentParentStack.RemoveParent();
             }
             foreach (var str in structures)
             {
                 if (GenericsHelper.ShouldTheDeclBeSkippedFromCodeGen(str))
                     continue;
 
-                _postPreparer._currentSourceFile = str.SourceFile;
+                _currentSourceFile = str.SourceFile;
                 if (str.IsNestedDecl)
-                    _postPreparer._currentParentStack.AddParent(str.ParentDecl);
-                _postPreparer._currentParentStack.AddParent(str);
+                    _currentParentStack.AddParent(str.ParentDecl);
+                _currentParentStack.AddParent(str);
                 PostPrepareMetadataTypeInheritedFieldDecls(str);
-                _postPreparer._currentParentStack.RemoveParent();
+                _currentParentStack.RemoveParent();
                 if (str.IsNestedDecl)
-                    _postPreparer._currentParentStack.RemoveParent();
+                    _currentParentStack.RemoveParent();
             }
         }
 
@@ -410,7 +409,7 @@ namespace HapetLastPrepare
                                 {
                                     // the field is implemented in parent class and current class
                                     // we need to error
-                                    _compiler.MessageHandler.ReportMessage(_postPreparer._currentSourceFile.Text, currF,
+                                    _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, currF,
                                         [HapetType.AsString(definedInOneOfTheParents.ContainingParent.Type.OutType)], ErrorCode.Get(CTEN.FieldAlreadyDefined));
                                     continue;
                                 }
@@ -426,7 +425,7 @@ namespace HapetLastPrepare
                                 {
                                     if (!inhF.IsPropertyField)
                                         // error - the field of the interface was not implemented
-                                        _compiler.MessageHandler.ReportMessage(_postPreparer._currentSourceFile.Text, inh,
+                                        _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, inh,
                                             [HapetType.AsString(decl.Type.OutType), inhF.Name.Name], ErrorCode.Get(CTEN.NoFieldImplementation));
                                 }
                                 else
@@ -487,7 +486,7 @@ namespace HapetLastPrepare
                 if (parentProp != null && !currP.SpecialKeys.Contains(TokenType.KwNew))
                 {
                     // error - property shadowing
-                    _compiler.MessageHandler.ReportMessage(_postPreparer._currentSourceFile.Text, currP.Name,
+                    _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, currP.Name,
                         [$"{parentProp.ContainingParent.Name.Name}::{parentProp.Name.Name}"], ErrorCode.Get(CTEN.PropertyShadowing));
                 }
                 else if (parentProp != null && currP.SpecialKeys.Contains(TokenType.KwNew))
@@ -511,7 +510,7 @@ namespace HapetLastPrepare
                     if (p.SpecialKeys.Contains(TokenType.KwAbstract))
                     {
                         // error - implementation of method not found in curr class
-                        _compiler.MessageHandler.ReportMessage(_postPreparer._currentSourceFile.Text, decl.Name,
+                        _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, decl.Name,
                             [$"{p.ContainingParent.Name.Name}::{p.Name.Name}"], ErrorCode.Get(CTEN.NoAbsPropertyImpl));
                     }
                 }
@@ -531,8 +530,8 @@ namespace HapetLastPrepare
         #region Properties
         private void AllPostPrepareMetadataTypeInheritedPropsDecls()
         {
-            var classes = _postPreparer.AllClassesMetadata.ToList();
-            var structures = _postPreparer.AllStructsMetadata.ToList();
+            var classes = AllClassesMetadata.ToList();
+            var structures = AllStructsMetadata.ToList();
 
             // resolve all inherited props of classes
             foreach (var cls in classes)
@@ -543,14 +542,14 @@ namespace HapetLastPrepare
                     continue;
                 }
 
-                _postPreparer._currentSourceFile = cls.SourceFile;
+                _currentSourceFile = cls.SourceFile;
                 if (cls.IsNestedDecl)
-                    _postPreparer._currentParentStack.AddParent(cls.ParentDecl);
-                _postPreparer._currentParentStack.AddParent(cls);
+                    _currentParentStack.AddParent(cls.ParentDecl);
+                _currentParentStack.AddParent(cls);
                 PostPrepareMetadataTypeInheritedPropsDecls(cls);
-                _postPreparer._currentParentStack.RemoveParent();
+                _currentParentStack.RemoveParent();
                 if (cls.IsNestedDecl)
-                    _postPreparer._currentParentStack.RemoveParent();
+                    _currentParentStack.RemoveParent();
             }
             foreach (var str in structures)
             {
@@ -560,14 +559,14 @@ namespace HapetLastPrepare
                     continue;
                 }
 
-                _postPreparer._currentSourceFile = str.SourceFile;
+                _currentSourceFile = str.SourceFile;
                 if (str.IsNestedDecl)
-                    _postPreparer._currentParentStack.AddParent(str.ParentDecl);
-                _postPreparer._currentParentStack.AddParent(str);
+                    _currentParentStack.AddParent(str.ParentDecl);
+                _currentParentStack.AddParent(str);
                 PostPrepareMetadataTypeInheritedPropsDecls(str);
-                _postPreparer._currentParentStack.RemoveParent();
+                _currentParentStack.RemoveParent();
                 if (str.IsNestedDecl)
-                    _postPreparer._currentParentStack.RemoveParent();
+                    _currentParentStack.RemoveParent();
             }
         }
 
@@ -659,7 +658,7 @@ namespace HapetLastPrepare
                                 {
                                     // the prop is implemented in parent class and current class
                                     // we need to error
-                                    _compiler.MessageHandler.ReportMessage(_postPreparer._currentSourceFile.Text, currF.Name,
+                                    _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, currF.Name,
                                         [HapetType.AsString(definedInOneOfTheParents.ContainingParent.Type.OutType)], ErrorCode.Get(CTEN.PropaAlreadyDefined));
                                     continue;
                                 }
@@ -674,7 +673,7 @@ namespace HapetLastPrepare
                                 if (currF == null)
                                 {
                                     // error - the prop of the interface was not implemented
-                                    _compiler.MessageHandler.ReportMessage(_postPreparer._currentSourceFile.Text, inh,
+                                    _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, inh,
                                         [HapetType.AsString(decl.Type.OutType), inhF.Name.Name], ErrorCode.Get(CTEN.NoPropaImplementation));
                                 }
                                 else
@@ -735,7 +734,7 @@ namespace HapetLastPrepare
                 if (parentProp != null && !currP.SpecialKeys.Contains(TokenType.KwNew))
                 {
                     // error - property shadowing
-                    _compiler.MessageHandler.ReportMessage(_postPreparer._currentSourceFile.Text, currP.Name,
+                    _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, currP.Name,
                         [$"{parentProp.ContainingParent.Name.Name}::{parentProp.Name.Name}"], ErrorCode.Get(CTEN.PropertyShadowing));
                 }
                 else if (parentProp != null && currP.SpecialKeys.Contains(TokenType.KwNew))
@@ -759,7 +758,7 @@ namespace HapetLastPrepare
                     if (p.SpecialKeys.Contains(TokenType.KwAbstract))
                     {
                         // error - implementation of method not found in curr class
-                        _compiler.MessageHandler.ReportMessage(_postPreparer._currentSourceFile.Text, decl.Name,
+                        _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, decl.Name,
                             [$"{p.ContainingParent.Name.Name}::{p.Name.Name}"], ErrorCode.Get(CTEN.NoAbsPropertyImpl));
                     }
                 }

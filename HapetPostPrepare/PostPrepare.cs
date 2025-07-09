@@ -63,6 +63,10 @@ namespace HapetPostPrepare
             if (_compiler.MessageHandler.HasErrors)
                 return 0;
 
+            PostPrepareInheritedShite();
+            if (_compiler.MessageHandler.HasErrors)
+                return 0;
+
             SearchForMainFunction();
             if (_compiler.MessageHandler.HasErrors)
                 return 0;
