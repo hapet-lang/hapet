@@ -120,8 +120,15 @@ namespace HapetPostPrepare
             return false;
         }
 
+        private readonly Stack<(AstDeclaration, List<AstExpression>)> _currentlyCheckingDeclarations = new Stack<(AstDeclaration, List<AstExpression>)>();
         private bool CheckIfTheTypesAreAllowedForConstrains(AstDeclaration genDecl, List<AstExpression> realTypes)
         {
+            // check if the decl with types is already preparing - preventing stack overflow
+            if (_currentlyCheckingDeclarations.Any(x => x.Item1 == genDecl && x.Item2 == realTypes))
+                return false;
+
+            _currentlyCheckingDeclarations.Push((genDecl, realTypes));
+
             var allNorm = new List<bool>();
             var pureGenerics = GenericsHelper.GetGenericsFromName(genDecl.Name as AstIdGenericExpr, _compiler.MessageHandler);
             for (int i = 0; i < pureGenerics.Count; ++i)
@@ -133,6 +140,9 @@ namespace HapetPostPrepare
                 var result = CheckIfAllowedForConstrains(currContrains, currType);
                 allNorm.Add(result);
             }
+
+            _currentlyCheckingDeclarations.Pop();
+
             return allNorm.All(x => x);
         }
 
@@ -147,7 +157,13 @@ namespace HapetPostPrepare
                 {
                     case GenericConstrainType.CustomType:
                         {
-                            allow = type.OutType == c.Expr.OutType || type.OutType.IsInheritedFrom(c.Expr.OutType as ClassType);
+                            allow = type.OutType == c.Expr.OutType;
+                            // if not the same - try to check inherited
+                            if (!allow)
+                            {
+                                AstDeclaration decl = type.OutType is ClassType cls ? cls.Declaration : (type.OutType as StructType).Declaration;
+                                allow = IsInheritedFromWithInference(decl, c.Expr.OutType);
+                            }
                             constrainErrorName = HapetType.AsString(c.Expr.OutType);
                             break;
                         }
@@ -240,6 +256,28 @@ namespace HapetPostPrepare
             }
 
             return allNorm.All(x => x);
+        }
+
+        private bool IsInheritedFromWithInference(AstDeclaration type, HapetType from)
+        {
+            if (type == null)
+                return false;
+
+            InInfo inInfo = InInfo.Default;
+            OutInfo outInfo = OutInfo.Default;
+
+            List<AstNestedExpr> inhFrom = type.GetInheritedTypes();
+            foreach (var expr in inhFrom)
+            {
+                // infer if not yet
+                if (expr.OutType == null)
+                    PostPrepareExprInference(expr, inInfo, ref outInfo);
+
+                var outT = expr.OutType as ClassType;
+                if (outT == from || IsInheritedFromWithInference(outT.Declaration, from))
+                    return true;
+            }
+            return false;
         }
     }
 }
