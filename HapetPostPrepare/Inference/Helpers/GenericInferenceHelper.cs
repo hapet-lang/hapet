@@ -178,9 +178,9 @@ namespace HapetPostPrepare
                             InInfo inInfo = InInfo.Default;
                             OutInfo outInfo = OutInfo.Default;
 
-                            constrainErrorName = "new(...)"; // better text?
+                            constrainErrorName = "new"; // better text with param types?
 
-                            if (type.OutType is not ClassType || type.OutType is not StructType || type.OutType is not GenericType ||
+                            if ((type.OutType is not ClassType && type.OutType is not StructType && type.OutType is not GenericType) ||
                                 (type.OutType is ClassType clsT && clsT.Declaration.IsInterface))
                             {
                                 allow = false;

@@ -63,7 +63,7 @@ namespace HapetFrontend.Parsing
                     List<AstNestedExpr> additionalExprs = new List<AstNestedExpr>();
                     GenericConstrainType constrainType = GenericConstrainType.None;
 
-                    var tkn = NextToken();
+                    var tkn = PeekToken();
                     switch (tkn.Type)
                     {
                         case TokenType.Identifier:
@@ -74,30 +74,35 @@ namespace HapetFrontend.Parsing
                             }
                         case TokenType.KwStruct:
                             {
+                                NextToken();
                                 ident = new AstNestedExpr(new AstIdExpr("struct", tkn.Location), null, tkn.Location);
                                 constrainType = GenericConstrainType.StructType;
                                 break;
                             }
                         case TokenType.KwClass:
                             {
+                                NextToken();
                                 ident = new AstNestedExpr(new AstIdExpr("class", tkn.Location), null, tkn.Location);
                                 constrainType = GenericConstrainType.ClassType;
                                 break;
                             }
                         case TokenType.KwDelegate:
                             {
+                                NextToken();
                                 ident = new AstNestedExpr(new AstIdExpr("delegate", tkn.Location), null, tkn.Location);
                                 constrainType = GenericConstrainType.DelegateType;
                                 break;
                             }
                         case TokenType.KwEnum:
                             {
+                                NextToken();
                                 ident = new AstNestedExpr(new AstIdExpr("enum", tkn.Location), null, tkn.Location);
                                 constrainType = GenericConstrainType.EnumType;
                                 break;
                             }
                         case TokenType.KwNew:
                             {
+                                NextToken();
                                 ident = new AstNestedExpr(new AstIdExpr("new", tkn.Location), null, tkn.Location);
                                 constrainType = GenericConstrainType.NewType;
 
