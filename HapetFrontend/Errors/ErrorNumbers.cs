@@ -205,6 +205,8 @@
         AttrNotFound                    = 0x3057,
         DeclIsObsolete                  = 0x3058,
         NotSatisfyConstrain             = 0x3059,
+        DuplicateConstrain              = 0x305A,
+        OnlyOneOnTheConstrains          = 0x305B,
 
         // compiler errors up to 0x6000
         DefaultWasNotInfered            = 0x5001,

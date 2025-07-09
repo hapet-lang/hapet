@@ -788,6 +788,14 @@
 		<Number>3059</Number>
 		<Text>The type does not satisfy the constraint: {0}</Text>
 	</Item>
+	<Item>
+		<Number>305A</Number>
+		<Text>Duplicate constraints are not allowed</Text>
+	</Item>
+	<Item>
+		<Number>305B</Number>
+		<Text>The 'class', 'struct', 'enum' and 'delegate' constraints cannot be combined</Text>
+	</Item>
 
     <!--Compiler errors-->
     <Item>

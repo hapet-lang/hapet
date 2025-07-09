@@ -4,6 +4,7 @@ using HapetFrontend.Ast.Declarations;
 using HapetFrontend.Ast.Expressions;
 using HapetFrontend.Ast.Statements;
 using HapetFrontend.Enums;
+using HapetFrontend.Errors;
 using HapetFrontend.Extensions;
 using HapetFrontend.Helpers;
 using HapetFrontend.Parsing;
@@ -88,6 +89,9 @@ namespace HapetPostPrepare
                 if (collisions.All(x => x) && collisions.Count == constrains.Count && constrains.Count == existingConstrains.Count)
                     return k; // just return the constrain
             }
+
+            // check that constrains are ok
+            CheckIfConstrainsAreOk(constrains);
 
             // here - if not found the same in existing
             // creating the declaration
@@ -182,6 +186,52 @@ namespace HapetPostPrepare
             AstParamDecl thisParam = new AstParamDecl(new AstNestedExpr(paramType, null), paramName);
             // replacing
             func.Parameters[0] = thisParam;
+        }
+
+        private bool CheckIfConstrainsAreOk(List<AstConstrainStmt> constrains) 
+        {
+            var allChecks = new List<bool>();
+            // 1 - check for duplicates
+            List<AstConstrainStmt> bucket = new List<AstConstrainStmt>();
+            foreach (var c in constrains)
+            {
+                bool found = false;
+                if (c.ConstrainType == GenericConstrainType.CustomType)
+                {
+                    found = bucket.FirstOrDefault(x => x.ConstrainType == c.ConstrainType && x.Expr.OutType == c.Expr.OutType) != null;
+                }
+                else
+                {
+                    found = bucket.FirstOrDefault(x => x.ConstrainType == c.ConstrainType) != null;
+                }
+                allChecks.Add(!found);
+                // if found duplicate
+                if (found)
+                {
+                    _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, c,
+                        [], ErrorCode.Get(CTEN.DuplicateConstrain));
+                }
+                bucket.Add(c);
+            }
+
+            // 2 - check for only class/struct/enum/delegate
+            var strC = constrains.FirstOrDefault(x => x.ConstrainType == GenericConstrainType.StructType);
+            var clsC = constrains.FirstOrDefault(x => x.ConstrainType == GenericConstrainType.ClassType);
+            var enmC = constrains.FirstOrDefault(x => x.ConstrainType == GenericConstrainType.EnumType);
+            var delC = constrains.FirstOrDefault(x => x.ConstrainType == GenericConstrainType.DelegateType);
+
+            var notNulls = (new AstConstrainStmt[] { strC, clsC, enmC, delC }).Where(x => x != null).ToArray();
+            if (notNulls.Length > 1)
+            {
+                foreach (var c in notNulls)
+                {
+                    _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, c,
+                        [], ErrorCode.Get(CTEN.OnlyOneOnTheConstrains));
+                }
+                allChecks.Add(false);
+            }
+
+            return allChecks.All(x => x);
         }
     }
 }
