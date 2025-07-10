@@ -49,19 +49,6 @@ namespace HapetBackend.Llvm
             if (_typeMap.TryGetValue(ht, out var tt))
                 return HandleReturnValue(tt);
 
-            // all array types are the same
-            if (ht is ArrayType at)
-            {
-                var kw = _typeMap.Any(x => x.Key is ArrayType);
-                if (kw)
-                {
-                    var entry = _typeMap.First(x => x.Key is ArrayType);
-                    // we need to set size/alignment on every array type instance :)
-                    at.SetSizeAndAlignment(entry.Key.GetSize(), entry.Key.GetAlignment());
-                    return entry.Value;
-                }
-            }
-
             var t = HapetTypeToLLVMTypeHelper(ht);
             _typeMap[ht] = t;
             return HandleReturnValue(t);
@@ -311,7 +298,7 @@ namespace HapetBackend.Llvm
                 offs = (uint)_targetData.OffsetOfElement(llvmTypeBoxed, 1);
 
             // we need to define there a literal type to be able to access it lately
-            var typeToDefine = type is ArrayType ? ArrayType.LiteralType : type;
+            var typeToDefine = type;
             // offset to the first normal field
             _boxedStructTypes.Add(typeToDefine, (llvmTypeBoxed, offs, boxedSize));
         }
@@ -319,7 +306,7 @@ namespace HapetBackend.Llvm
         private (LLVMTypeRef, uint, int) GetBoxedType(HapetType type)
         {
             // we need to search there a literal type or array
-            var typeToSearch = type is ArrayType ? ArrayType.LiteralType : type;
+            var typeToSearch = type;
             return _boxedStructTypes[typeToSearch];
         }
 
@@ -622,7 +609,7 @@ namespace HapetBackend.Llvm
                     var v = GetMalloc(structSize, 1);
 
                     // cringe kostyl
-                    var typeToSearch = structType is ArrayType ? HapetType.CurrentTypeContext.ArrayTypeInstances[HapetType.CurrentTypeContext.ObjectTypeInstance] : structType;
+                    var typeToSearch = structType;
                     // set up type data ptr!!!
                     SetTypeInfo(v, typeToSearch);
 
