@@ -19,6 +19,8 @@ namespace HapetBackend.Llvm
     public partial class LlvmCodeGenerator
     {
         private readonly List<(ISymbol, AstExpression)> _initializersMapList = new List<(ISymbol, AstExpression)>();
+        private bool _typeInfoGenAllowed = false;
+        private readonly List<StructType> _typeInfoGenListQueue = new List<StructType>();
 
         /// <summary>
         /// Inits some dicts and other shite with metadata types :)
@@ -231,12 +233,25 @@ namespace HapetBackend.Llvm
                 if (GenericsHelper.ShouldTheDeclBeSkippedFromCodeGen(str))
                     continue;
 
+                // we want to generate type info only for boxed types
+                if (str.OriginalOfBoxedType == null)
+                    continue;
+
                 // reg type info if non static
                 if (!str.SpecialKeys.Contains(TokenType.KwStatic))
                 {
                     GenerateTypeInfoConst(str.Type.OutType);
                     GenerateVirtualTableConst(str.Type.OutType);
                 }
+
+                // create a boxed type
+                var llvmTypeBoxed = HapetTypeToLLVMType(str.Type.OutType);
+                uint offs = 0;
+                if (str.Declarations.Count > 1)
+                    offs = (uint)_targetData.OffsetOfElement(llvmTypeBoxed, 1);
+
+                // offset to the first normal field
+                _boxedStructTypes.Add(str.OriginalOfBoxedType.Type.OutType, (llvmTypeBoxed, offs, str.Type.OutType.GetSize(), str.Type.OutType as StructType));
             }
         }
 

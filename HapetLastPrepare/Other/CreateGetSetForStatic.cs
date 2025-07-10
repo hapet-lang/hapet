@@ -50,7 +50,7 @@ namespace HapetLastPrepare
                 {
                     new AstParamDecl(varDecl.Type.GetDeepCopy() as AstExpression, new AstIdExpr("value", varDecl.Name.Location), location: varDecl.Name.Location)
                 },
-                new AstIdExpr("void", varDecl.Name.Location),
+                new AstNestedExpr(new AstIdExpr("void", varDecl.Name.Location), null, varDecl.Name.Location),
                 new AstBlockExpr(new List<AstStatement>()
                 {
                     new AstAssignStmt(new AstNestedExpr(varDecl.Name.GetCopy(), null, varDecl.Name.Location), new AstIdExpr("value", varDecl.Name.Location), varDecl.Name.Location),

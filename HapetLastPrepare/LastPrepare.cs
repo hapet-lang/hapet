@@ -21,6 +21,10 @@ namespace HapetLastPrepare
             // 0 is returned because normal error is going to be
             // returned in the caller shite
 
+            CreateBoxedTypes();
+            if (_compiler.MessageHandler.HasErrors)
+                return 0;
+
             CreateRequired();
             if (_compiler.MessageHandler.HasErrors)
                 return 0;
