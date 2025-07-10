@@ -32,12 +32,6 @@ namespace HapetFrontend.Ast.Declarations
         /// </summary>
         public List<AstPropertyDecl> AllVirtualProps { get; set; }
 
-        /// <summary>
-        /// If not null - the current type is boxed type and the 
-        /// property contains original struct type
-        /// </summary>
-        public AstStructDecl OriginalOfBoxedType { get; set; }
-
         public override string AAAName => nameof(AstStructDecl);
 
         public AstStructDecl(AstIdExpr name, List<AstDeclaration> declarations, string doc = "", ILocation location = null) : base(name, doc, location)

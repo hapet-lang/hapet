@@ -36,9 +36,8 @@ namespace HapetBackend.Llvm
         private readonly Dictionary<HapetType, uint[]> _structOffsets = new Dictionary<HapetType, uint[]>();
         /// <summary>
         /// Boxed struct mappings with the first param offset and size
-        /// Type | offset to the first param | size | boxed hapet type
         /// </summary>
-        private readonly Dictionary<HapetType, (LLVMTypeRef, uint, int, StructType)> _boxedStructTypes = new Dictionary<HapetType, (LLVMTypeRef, uint, int, StructType)>();
+        private readonly Dictionary<HapetType, (LLVMTypeRef, uint, int)> _boxedStructTypes = new Dictionary<HapetType, (LLVMTypeRef, uint, int)>();
 
         /// <summary>
         /// Anon delegate name to type mappings. Used when creating a delegate and assigning a func to it
@@ -286,9 +285,25 @@ namespace HapetBackend.Llvm
 
         private void AddBoxedType(StructType type, int packNumber)
         {
+            // create a boxed type
+            var nameBoxed = $"boxed.{type.Declaration.Name.Name}";
+            var llvmTypeBoxed = _context.CreateNamedStruct(nameBoxed);
+            var fieldDeclarationsBoxed = type.Declaration.GetAllRawFields();
+            var (offsetsBoxed, boxedSize, memTypesBoxed, algn) = CalcStructData(fieldDeclarationsBoxed, packNumber, true);
+
+            llvmTypeBoxed.StructSetBody(memTypesBoxed.ToArray(), packNumber >= 1);
+
+            uint offs = 0;
+            if (fieldDeclarationsBoxed.Count > 1)
+                offs = (uint)_targetData.OffsetOfElement(llvmTypeBoxed, 1);
+
+            // we need to define there a literal type to be able to access it lately
+            var typeToDefine = type;
+            // offset to the first normal field
+            _boxedStructTypes.Add(typeToDefine, (llvmTypeBoxed, offs, boxedSize));
         }
 
-        private (LLVMTypeRef, uint, int, StructType) GetBoxedType(HapetType type)
+        private (LLVMTypeRef, uint, int) GetBoxedType(HapetType type)
         {
             // we need to search there a literal type or array
             var typeToSearch = type;
@@ -593,8 +608,10 @@ namespace HapetBackend.Llvm
                     // allocating memory for struct
                     var v = GetMalloc(structSize, 1);
 
+                    // cringe kostyl
+                    var typeToSearch = structType;
                     // set up type data ptr!!!
-                    SetTypeInfo(v, boxedTypeData.Item4);
+                    SetTypeInfo(v, typeToSearch);
 
                     // storing struct into the alloced mem
                     var offseted = _builder.BuildGEP2(_context.Int8Type, v, new LLVMValueRef[] { LLVMValueRef.CreateConstInt(_context.Int32Type, boxedTypeData.Item2) }, "offsetedPtr");

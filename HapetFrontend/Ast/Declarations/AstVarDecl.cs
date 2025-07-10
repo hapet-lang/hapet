@@ -30,11 +30,6 @@ namespace HapetFrontend.Ast.Declarations
         /// </summary>
         public (AstFuncDecl, AstFuncDecl)? GetSetMethodsForStatic { get; set; }
 
-        /// <summary>
-        /// 'true' if the field is used for stor
-        /// </summary>
-        public bool IsStaticCtorField { get; set; }
-
         public override string AAAName => nameof(AstVarDecl);
 
         public AstVarDecl(AstExpression type, AstIdExpr name, AstExpression ini = null, string doc = "", ILocation location = null) : base(name, doc, location)
@@ -61,7 +56,6 @@ namespace HapetFrontend.Ast.Declarations
                 Scope = Scope,
                 SourceFile = SourceFile,
                 SubScope = SubScope,
-                IsStaticCtorField = IsStaticCtorField,
             };
             copy.Attributes.AddRange(Attributes);
             copy.SpecialKeys.AddRange(SpecialKeys);
@@ -82,8 +76,7 @@ namespace HapetFrontend.Ast.Declarations
                 Parent = decl,
                 Scope = decl.SubScope,
                 SourceFile = decl.SourceFile,
-                ContainingParent = decl,
-                IsStaticCtorField = IsStaticCtorField
+                ContainingParent = decl
             };
             varDecl.Attributes.AddRange(Attributes);
             varDecl.SpecialKeys.AddRange(SpecialKeys);
