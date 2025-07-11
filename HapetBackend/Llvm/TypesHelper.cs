@@ -293,14 +293,8 @@ namespace HapetBackend.Llvm
 
             llvmTypeBoxed.StructSetBody(memTypesBoxed.ToArray(), packNumber >= 1);
 
-            uint offs = 0;
-            if (fieldDeclarationsBoxed.Count > 1)
-                offs = (uint)_targetData.OffsetOfElement(llvmTypeBoxed, 1);
-
-            // we need to define there a literal type to be able to access it lately
-            var typeToDefine = type;
             // offset to the first normal field
-            _boxedStructTypes.Add(typeToDefine, (llvmTypeBoxed, offs, boxedSize));
+            _boxedStructTypes.Add(type, (llvmTypeBoxed, 0, boxedSize));
         }
 
         private (LLVMTypeRef, uint, int) GetBoxedType(HapetType type)
@@ -361,12 +355,6 @@ namespace HapetBackend.Llvm
 
         private unsafe (uint[], int, List<LLVMTypeRef>, int) CalcStructData(List<AstVarDecl> decls, int packNumber, bool withTypeInfo = true)
         {
-            if (withTypeInfo)
-            {
-                var tp = new AstIdExpr("uintptr") { OutType = HapetType.CurrentTypeContext.PtrToVoidType };
-                decls.Insert(0, new AstVarDecl(new AstNestedExpr(tp, null) { OutType = tp.OutType }, new AstIdExpr("typeinfo")));
-            }
-
             // WARN: this shite with alignment is done like 'LayoutKind.Sequential' in C#
             // so all the members are going to be aligned properly by their types
             var memTypes = new List<LLVMTypeRef>(decls.Count);
@@ -375,6 +363,12 @@ namespace HapetBackend.Llvm
             int biggestAlignment = 0;
             int i = 0;
             int padding;
+
+            if (withTypeInfo)
+            {
+                currentSize += 8; // WARN: cringe alloc for Typeinfo ptr
+            }
+
             foreach (var mem in decls)
             {
                 // getting the type
@@ -501,6 +495,19 @@ namespace HapetBackend.Llvm
                 {
                     return builder.BuildIntToPtr(val, HapetTypeToLLVMType(outType));
                 }
+                else if (outType is IntType)
+                {
+                    if (inType.GetSize() > outType.GetSize())
+                    {
+                        return builder.BuildTruncOrBitCast(val, HapetTypeToLLVMType(outType));
+                    }
+                    else if (inType.GetSize() < outType.GetSize())
+                    {
+                        return builder.BuildZExtOrBitCast(val, HapetTypeToLLVMType(outType));
+                    }
+                    // if the same size just return it
+                    return val;
+                }
                 else if (outType is StructType structType2)
                 {
                     return CreateStructCastFromObject(val, structType2);
@@ -607,6 +614,11 @@ namespace HapetBackend.Llvm
                     int structSize = boxedTypeData.Item3;
                     // allocating memory for struct
                     var v = GetMalloc(structSize, 1);
+                    // making offset
+                    // WARN: always 8 offset is here
+                    var normalOffset = LLVMValueRef.CreateConstInt(_context.Int32Type, (ulong)1);
+                    // get ptr by offset
+                    v = _builder.BuildGEP2(_context.Int64Type, v, new LLVMValueRef[] { normalOffset }, "offsetedV");
 
                     // cringe kostyl
                     var typeToSearch = structType;
@@ -614,8 +626,7 @@ namespace HapetBackend.Llvm
                     SetTypeInfo(v, typeToSearch);
 
                     // storing struct into the alloced mem
-                    var offseted = _builder.BuildGEP2(_context.Int8Type, v, new LLVMValueRef[] { LLVMValueRef.CreateConstInt(_context.Int32Type, boxedTypeData.Item2) }, "offsetedPtr");
-                    _builder.BuildStore(val, offseted);
+                    _builder.BuildStore(val, v);
 
                     return v; // return malloced
                 }
@@ -648,11 +659,8 @@ namespace HapetBackend.Llvm
 
             // if could be downcasted
             _builder.PositionAtEnd(bbTrue);
-            // get boxed data 
-            var boxedTypeData = GetBoxedType(structType);
             // getting struct from the alloced mem
-            var offseted = _builder.BuildGEP2(_context.Int8Type, val, new LLVMValueRef[] { LLVMValueRef.CreateConstInt(_context.Int32Type, boxedTypeData.Item2) }, "offsetedPtr");
-            var castedOffseted = _builder.BuildBitCast(offseted, HapetTypeToLLVMType(PointerType.GetPointerType(structType)), "offseted");
+            var castedOffseted = _builder.BuildBitCast(val, HapetTypeToLLVMType(PointerType.GetPointerType(structType)), "offseted");
             var loadedData = _builder.BuildLoad2(HapetTypeToLLVMType(structType), castedOffseted, "loaded");
             _builder.BuildStore(loadedData, v);
             _builder.BuildBr(bbEnd);
@@ -736,19 +744,12 @@ namespace HapetBackend.Llvm
             _builder.BuildStore(_virtualTableDictionary[type], ptrToVtable);
 
             // save the array into first field
-            LLVMTypeRef tp;
-            LLVMValueRef fti;
-            if (type is ClassType)
-            {
-                tp = HapetTypeToLLVMType(type);
-                fti = _builder.BuildStructGEP2(tp, v, 0, "fullTypeInfoPtr");
-            }
-            else
-            {
-                //tp = HapetTypeToLLVMType(type);
-                fti = _builder.BuildGEP2(_context.Int8Type, v, new LLVMValueRef[] { LLVMValueRef.CreateConstInt(_context.Int32Type, 0) }, "fullTypeInfoPtr");
-            }
-            _builder.BuildStore(allocated, fti);
+            var typeConverter = _currentFunction.Scope.GetSymbolInNamespace("System.Runtime.Conversion", new AstIdExpr("TypeConverter"));
+            DeclSymbol setterSymbol;
+            setterSymbol = (typeConverter.Decl as AstClassDecl).SubScope.GetSymbol(new AstIdExpr("SetTypeInfo")) as DeclSymbol;
+            var setterFunc = _valueMap[setterSymbol];
+            LLVMTypeRef funcType = _typeMap[setterSymbol.Decl.Type.OutType];
+            _builder.BuildCall2(funcType, setterFunc, new LLVMValueRef[] { v, allocated });
         }
 
         #region Delegate shite

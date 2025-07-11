@@ -244,6 +244,7 @@ namespace HapetBackend.Llvm
         #endregion
 
         #region Loaders
+        [Obsolete("Rewrite to use of negative offsets or do not use")]
         private LLVMValueRef GetTypeInfoPtr(LLVMTypeRef strType, LLVMValueRef ptrToStr)
         {
             var intPtrT = HapetType.CurrentTypeContext.IntPtrTypeInstance;
@@ -255,6 +256,7 @@ namespace HapetBackend.Llvm
             return ptrToTypeInfoLoaded;
         }
 
+        [Obsolete("Rewrite to use of negative offsets or do not use")]
         private LLVMValueRef GetParentTypeInfoPtr(LLVMValueRef ptrToTypeInfo)
         {
             var zeroRef = LLVMValueRef.CreateConstInt(_context.Int32Type, 0);

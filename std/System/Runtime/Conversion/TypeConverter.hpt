@@ -9,7 +9,9 @@ public static class TypeConverter
         if ((uintptr)obj == (uintptr)0)
             return false;
 
-        TypeInfoUnsafe** fullInfo = *((TypeInfoUnsafe***)obj);
+        void* negativeOffseted = (void*)((ulong*)obj - 1);
+
+        TypeInfoUnsafe** fullInfo = *((TypeInfoUnsafe***)negativeOffseted);
         TypeInfoUnsafe* typeInfo = *((TypeInfoUnsafe**)fullInfo);
         TypeInfoUnsafe* currTypeInfo = typeInfo;
 
@@ -28,7 +30,9 @@ public static class TypeConverter
         if ((uintptr)obj == (uintptr)0)
             return false;
 
-        TypeInfoUnsafe** fullInfo = *((TypeInfoUnsafe***)obj);
+        void* negativeOffseted = (void*)((ulong*)obj - 1);
+
+        TypeInfoUnsafe** fullInfo = *((TypeInfoUnsafe***)negativeOffseted);
         TypeInfoUnsafe* typeInfo = *((TypeInfoUnsafe**)fullInfo);
         TypeInfoUnsafe* currTypeInfo = typeInfo;
 
@@ -66,7 +70,9 @@ public static class TypeConverter
         if ((uintptr)obj == (uintptr)0)
             return 0;
 
-        TypeInfoUnsafe** fullInfo = *((TypeInfoUnsafe***)obj);
+        void* negativeOffseted = (void*)((ulong*)obj - 1);
+
+        TypeInfoUnsafe** fullInfo = *((TypeInfoUnsafe***)negativeOffseted);
         TypeInfoUnsafe* typeInfoPtr = *((TypeInfoUnsafe**)fullInfo);
         TypeInfoUnsafe typeInfo = *((TypeInfoUnsafe*)typeInfoPtr);
 
@@ -82,5 +88,11 @@ public static class TypeConverter
             }
         }
         return offset;
+    }
+
+    public static void SetTypeInfo(void* obj, void* typeInfo)
+    {
+        ulong* negativeP = (ulong*)obj - 1;
+        *negativeP = (ulong)(uintptr)typeInfo;
     }
 }

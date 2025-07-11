@@ -581,6 +581,11 @@ namespace HapetBackend.Llvm
 
                 // allocating memory for struct
                 v = GetMalloc(structSize, 1);
+                // making offset
+                // WARN: always 8 offset is here
+                var normalOffset = LLVMValueRef.CreateConstInt(_context.Int32Type, (ulong)1);
+                // get ptr by offset
+                v = _builder.BuildGEP2(_context.Int64Type, v, new LLVMValueRef[] { normalOffset }, "offsetedV");
 
                 // set up type data ptr!!!
                 SetTypeInfo(v, classType);
@@ -981,10 +986,6 @@ namespace HapetBackend.Llvm
                         uint elementIndex = GetElementIndex(idExpr.Name, leftPartDecl);
                         Debug.Assert(elementIndex != uint.MaxValue);
 
-                        // this is because the first field in class - is it reflection data (?)
-                        if (leftPartType is ClassType clsTT && !clsTT.Declaration.IsInterface)
-                            elementIndex += 1;
-
                         // getting normal element index when user used custom struct alignment
                         if (leftPartType is StructType strT && strT.IsUserDefinedAlignment)
                             elementIndex = _structOffsets[strT][elementIndex];
@@ -1004,11 +1005,8 @@ namespace HapetBackend.Llvm
                             LLVMTypeRef funcType = _typeMap[offseterSymbol.Decl.Type.OutType];
                             var offset = _builder.BuildCall2(funcType, offseterFunc, new LLVMValueRef[] { leftPart, ptrToTypeInfo, elementIndexValueRef }, "interfaceOffset");
 
-                            // we need this to also skip TypeInfo ptr at the beginning of the class instance
-                            var normalOffset = _builder.BuildAdd(offset, LLVMValueRef.CreateConstInt(_context.Int32Type, (ulong)HapetType.CurrentTypeContext.PointerSize), "offsetWithTypeInfoPtr");
-
                             // get ptr by offset
-                            ret = _builder.BuildGEP2(_context.Int8Type, leftPart, new LLVMValueRef[] { normalOffset }, idExpr.Name);
+                            ret = _builder.BuildGEP2(_context.Int8Type, leftPart, new LLVMValueRef[] { offset }, idExpr.Name);
                         }
                         else
                         {

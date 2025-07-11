@@ -9,7 +9,9 @@ public static class VtableHelper
         if ((uintptr)obj == (uintptr)0)
             return null;
 
-        VirtualTableUnsafe** fullInfo = ((VirtualTableUnsafe***)obj)[0];
+        void* negativeOffseted = (void*)((ulong*)obj - 1);
+
+        VirtualTableUnsafe** fullInfo = ((VirtualTableUnsafe***)negativeOffseted)[0];
         VirtualTableUnsafe* vtablePtr = fullInfo[1];
         VirtualTableUnsafe vtable = *vtablePtr;
 
@@ -21,7 +23,9 @@ public static class VtableHelper
         if ((uintptr)obj == (uintptr)0)
             return null;
 
-        VirtualTableUnsafe** fullInfo = ((VirtualTableUnsafe***)obj)[0];
+        void* negativeOffseted = (void*)((ulong*)obj - 1);
+
+        VirtualTableUnsafe** fullInfo = ((VirtualTableUnsafe***)negativeOffseted)[0];
         VirtualTableUnsafe* vtablePtr = fullInfo[1];
         VirtualTableUnsafe vtable = *vtablePtr;
 
