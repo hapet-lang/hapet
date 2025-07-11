@@ -727,14 +727,15 @@ namespace HapetBackend.Llvm
             // create an array of ptrs:
             // [ptrToTypeInfo, ptrToVtable]
             //
-            //		  example class
-            //		{ ptr, ..., ... }   
-            //		   ↓
-            //		[ ptr, ptr ]
-            //		   |     \
-            //		   |      ↓
-            //		   ↓   "VirtualTableStruct"
-            //	"TypeInfoStruct"
+            //       example class
+            //        -1    0    1
+            //      { ptr, ..., ... }   
+            //         ↓
+            //      [ ptr, ptr ]
+            //         |     \
+            //         |      ↓
+            //         ↓   "VirtualTableStruct"
+            //  "TypeInfoStruct"
 
             // allocating memory for the data in array
             var allocated = GetMalloc(HapetType.CurrentTypeContext.PointerSize, 2, "allocForTypeInfo");
