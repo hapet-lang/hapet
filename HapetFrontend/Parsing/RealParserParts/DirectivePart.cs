@@ -26,6 +26,8 @@ namespace HapetFrontend.Parsing
                 case "elif": type = DirectiveType.Elif; break;
                 case "else": type = DirectiveType.Else; break;
                 case "endif": type = DirectiveType.EndIf; break;
+
+                case "define": type = DirectiveType.Define; break;
             }
 
             switch (type) 
@@ -42,12 +44,25 @@ namespace HapetFrontend.Parsing
                     }
                 case DirectiveType.MetadataMeta:
                 case DirectiveType.MetadataEndMeta:
+                case DirectiveType.Else:
+                case DirectiveType.EndIf:
                     {
                         return new AstDirectiveStmt(null, type, new Location(tkn.Location, tkn.Location.Ending));
                     }
                 case DirectiveType.If: 
+                case DirectiveType.Elif: 
                     {
                         var expr = ParseExpression(inInfo, ref outInfo);
+                        return new AstDirectiveStmt(expr, type, new Location(tkn.Location, expr.Location.Ending));
+                    }
+                case DirectiveType.Define:
+                    {
+                        var expr = ParseExpression(inInfo, ref outInfo);
+                        if (!(expr is AstNestedExpr nst && nst.RightPart is AstIdExpr))
+                        {
+                            // error here
+                            ReportMessage(expr.Location, [], ErrorCode.Get(CTEN.CommonIdentifierExpected));
+                        }
                         return new AstDirectiveStmt(expr, type, new Location(tkn.Location, expr.Location.Ending));
                     }
             }
@@ -123,14 +138,21 @@ namespace HapetFrontend.Parsing
 
             bool IsDirectiveDefined(AstDirectiveStmt dir)
             {
+                Func<AstDirectiveStmt, bool> check = (a) =>
+                {
+                    string nameA = a.RightPart is AstNestedExpr nst ? (nst.RightPart as AstIdExpr).Name : (a.RightPart as AstIdExpr).Name;
+                    string nameDir = dir.RightPart is AstNestedExpr nst2 ? (nst2.RightPart as AstIdExpr).Name : (dir.RightPart as AstIdExpr).Name;
+                    return nameA == nameDir;
+                };
+
                 foreach (var a in file.Defines)
                 {
-                    if (a.RightPart is AstIdExpr idE && dir.RightPart is AstIdExpr idE2 && idE.Name == idE2.Name)
+                    if (check(a))
                         return true;
                 }
                 foreach (var a in _compiler.GlobalDefines)
                 {
-                    if (a.RightPart is AstIdExpr idE && dir.RightPart is AstIdExpr idE2 && idE.Name == idE2.Name)
+                    if (check(a))
                         return true;
                 }
                 return false;

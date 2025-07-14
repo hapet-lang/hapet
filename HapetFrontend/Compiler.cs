@@ -175,10 +175,11 @@ namespace HapetFrontend
                     continue;
                 }
 
+                // just handle directive and do not add them
                 if (s is AstDirectiveStmt dir3)
                     HandleDirective(dir3, parser, currentFile, lexer, inInfo, ref outInfo);
-
-                HandleStatement(s, currentFile, lexer);
+                else
+                    HandleStatement(s, currentFile, lexer);
             }
 
             return allFiles;
@@ -205,10 +206,11 @@ namespace HapetFrontend
                 if (s == null)
                     break;
 
+                // just handle directive and do not add them
                 if (s is AstDirectiveStmt dir3)
                     HandleDirective(dir3, parser, file, lexer, inInfo, ref outInfo);
-
-                HandleStatement(s, file, lexer);
+                else
+                    HandleStatement(s, file, lexer);
             }
 
             string normalNamespace = CompilerUtils.GetNamespace(CurrentProjectSettings.ProjectPath, CurrentProjectSettings.RootNamespace, fileName);
@@ -231,6 +233,11 @@ namespace HapetFrontend
                         var statementsToAdd = parser.HandleIfDirective(directive, file, inInfo, ref outInfo);
                         foreach (var s in statementsToAdd)
                             HandleStatement(s, file, lexer);
+                        break;
+                    }
+                case Enums.DirectiveType.Define:
+                    {
+                        file.Defines.Add(directive);
                         break;
                     }
             }
