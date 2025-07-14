@@ -14,6 +14,7 @@ namespace HapetFrontend.Parsing
         void UpdateLookAheadLocation();
         Token NextLookAhead(bool skipWhitespaces);
         Token PeekLookAhead(bool skipWhitespaces);
+        void SkipLine();
 
         void ChangeFilename(string filename);
     }

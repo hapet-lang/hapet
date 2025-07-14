@@ -6,5 +6,12 @@
         MetadataFile = 1, // #file directive in .mpt file
         MetadataMeta = 2, // #meta that contains json props like version, deps and other
         MetadataEndMeta = 3, // #endmeta 
+
+        If = 4,
+        Elif = 5,
+        Else = 6,
+        EndIf = 7,
+
+        Define = 8,
     }
 }

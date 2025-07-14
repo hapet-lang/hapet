@@ -9,6 +9,7 @@ using HapetFrontend.Helpers;
 using HapetFrontend.Parsing;
 using HapetFrontend.Scoping;
 using Newtonsoft.Json;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Diagnostics.Metrics;
@@ -21,12 +22,12 @@ namespace HapetFrontend
         /// <summary>
         /// Path and file
         /// </summary>
-        private Dictionary<string, ProgramFile> _files = new Dictionary<string, ProgramFile>();
+        private readonly Dictionary<string, ProgramFile> _files = new Dictionary<string, ProgramFile>();
 
         /// <summary>
         /// All the namespaces in the project
         /// </summary>
-        private Dictionary<string, Scope> _nameSpaces = new Dictionary<string, Scope>();
+        private readonly Dictionary<string, Scope> _nameSpaces = new Dictionary<string, Scope>();
 
         public IMessageHandler MessageHandler { get; }
         public CompilerSettings CurrentProjectSettings { get; }
@@ -34,6 +35,10 @@ namespace HapetFrontend
         public Stopwatch CompilationStopwatch { get; set; }
 
         public Scope GlobalScope { get; private set; }
+        /// <summary>
+        /// Handles all the #define's that could be accessed accross the whole project
+        /// </summary>
+        public List<AstDirectiveStmt> GlobalDefines { get; private set; } = new List<AstDirectiveStmt>();
 
         /// <summary>
         /// The main function like an entry point of a program
@@ -111,7 +116,7 @@ namespace HapetFrontend
             if (lexer == null)
                 return null;
 
-            var parser = new Parser(lexer, MessageHandler);
+            var parser = new Parser(lexer, this, MessageHandler);
 
             List<ProgramFile> allFiles = new List<ProgramFile>();
             ProgramFile currentFile = null;
@@ -170,6 +175,9 @@ namespace HapetFrontend
                     continue;
                 }
 
+                if (s is AstDirectiveStmt dir3)
+                    HandleDirective(dir3, parser, currentFile, lexer, inInfo, ref outInfo);
+
                 HandleStatement(s, currentFile, lexer);
             }
 
@@ -183,7 +191,7 @@ namespace HapetFrontend
             if (lexer == null)
                 return null;
 
-            var parser = new Parser(lexer, MessageHandler);
+            var parser = new Parser(lexer, this, MessageHandler);
 
             var file = new ProgramFile(fileName, lexer.Text);
             _files[fileName] = file;
@@ -197,6 +205,9 @@ namespace HapetFrontend
                 if (s == null)
                     break;
 
+                if (s is AstDirectiveStmt dir3)
+                    HandleDirective(dir3, parser, file, lexer, inInfo, ref outInfo);
+
                 HandleStatement(s, file, lexer);
             }
 
@@ -209,6 +220,20 @@ namespace HapetFrontend
             file.Namespace = normalNamespace;
 
             return file;
+        }
+
+        private void HandleDirective(AstDirectiveStmt directive, Parser parser, ProgramFile file, ILexer lexer, ParserInInfo inInfo, ref ParserOutInfo outInfo)
+        {
+            switch (directive.DirectiveType)
+            {
+                case Enums.DirectiveType.If:
+                    {
+                        var statementsToAdd = parser.HandleIfDirective(directive, file, inInfo, ref outInfo);
+                        foreach (var s in statementsToAdd)
+                            HandleStatement(s, file, lexer);
+                        break;
+                    }
+            }
         }
 
         private void HandleStatement(AstStatement s, ProgramFile file, ILexer lexer)

@@ -16,6 +16,7 @@ namespace HapetFrontend.Parsing
         private delegate AstStatement ExpressionParser(ParserInInfo inInfo, ref ParserOutInfo outInfo);
 
         private readonly ILexer _lexer;
+        private readonly Compiler _compiler;
         private readonly IMessageHandler _messageHandler;
 
         private Token _lastNonWhitespace = null;
@@ -25,9 +26,10 @@ namespace HapetFrontend.Parsing
 
         private readonly StringBuilder _docString = new StringBuilder();
 
-        public Parser(ILexer lex, IMessageHandler messageHandler)
+        public Parser(ILexer lex, Compiler compiler, IMessageHandler messageHandler)
         {
             _lexer = lex;
+            _compiler = compiler;
             _messageHandler = messageHandler;
         }
 

@@ -30,6 +30,10 @@ namespace HapetFrontend.Entities
 
         public List<AstStatement> Statements { get; } = new List<AstStatement>();
         public List<AstUsingStmt> Usings { get; set; } = new List<AstUsingStmt>();
+        /// <summary>
+        /// Handles all the #define's that could be accessed accross the whole file
+        /// </summary>
+        public List<AstDirectiveStmt> Defines { get; private set; } = new List<AstDirectiveStmt>();
 
         public ProgramFile(string name, string text)
         {
