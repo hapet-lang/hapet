@@ -40,7 +40,7 @@ namespace HapetCompiler.ProjectConf
                             }
                         case "Define":
                             {
-                                _projectData.Defines.Add("");
+                                _projectData.Defines.Add(childnode.InnerText);
                                 break;
                             }
                         default:
