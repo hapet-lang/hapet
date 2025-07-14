@@ -138,10 +138,11 @@ namespace HapetFrontend.Parsing
 
             bool IsDirectiveDefined(AstDirectiveStmt dir)
             {
+                string nameDir = dir.RightPart is AstNestedExpr nst2 ? (nst2.RightPart as AstIdExpr).Name : (dir.RightPart as AstIdExpr).Name;
+
                 Func<AstDirectiveStmt, bool> check = (a) =>
                 {
                     string nameA = a.RightPart is AstNestedExpr nst ? (nst.RightPart as AstIdExpr).Name : (a.RightPart as AstIdExpr).Name;
-                    string nameDir = dir.RightPart is AstNestedExpr nst2 ? (nst2.RightPart as AstIdExpr).Name : (dir.RightPart as AstIdExpr).Name;
                     return nameA == nameDir;
                 };
 
@@ -150,9 +151,9 @@ namespace HapetFrontend.Parsing
                     if (check(a))
                         return true;
                 }
-                foreach (var a in _compiler.GlobalDefines)
+                foreach (var a in _compiler.CurrentProjectData.Defines)
                 {
-                    if (check(a))
+                    if (a == nameDir)
                         return true;
                 }
                 return false;

@@ -38,6 +38,11 @@ namespace HapetCompiler.ProjectConf
                                 _projectData.References.Add(thePathToDll);
                                 break;
                             }
+                        case "Define":
+                            {
+                                _projectData.Defines.Add("");
+                                break;
+                            }
                         default:
                             {
                                 var loc = NodeLocationFinder.GetLocationOfNode(_projectFileText, childnode, _projectPathAbsolute);

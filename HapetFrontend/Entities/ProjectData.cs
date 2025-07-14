@@ -9,6 +9,11 @@
         public List<string> ProjectReferences { get; private set; } = new List<string>();
 
         /// <summary>
+        /// Handles all the define's that could be accessed accross the whole project
+        /// </summary>
+        public List<string> Defines { get; private set; } = new List<string>();
+
+        /// <summary>
         /// Contains all the project names that are referenced
         /// </summary>
         public List<string> AllReferencedProjectNames { get; private set; } = new List<string>();

@@ -35,10 +35,6 @@ namespace HapetFrontend
         public Stopwatch CompilationStopwatch { get; set; }
 
         public Scope GlobalScope { get; private set; }
-        /// <summary>
-        /// Handles all the #define's that could be accessed accross the whole project
-        /// </summary>
-        public List<AstDirectiveStmt> GlobalDefines { get; private set; } = new List<AstDirectiveStmt>();
 
         /// <summary>
         /// The main function like an entry point of a program
