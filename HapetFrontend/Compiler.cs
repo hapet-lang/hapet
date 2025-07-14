@@ -70,14 +70,15 @@ namespace HapetFrontend
             }
         }
 
-        public void HandleExternalMetadata(string metadataText)
+        public MetadataMetadataJson HandleExternalMetadata(string metadataText)
         {
             // just parsing metadata and adding its files into the compiler
-            var files = ParseMetadata(metadataText);
+            var files = ParseMetadata(metadataText, out var metadata);
             foreach (var f in files)
             {
                 AddFile(f, f.Name);
             }
+            return metadata;
         }
 
         public ProgramFile AddFile(ProgramFile file, string filePath)
@@ -109,8 +110,9 @@ namespace HapetFrontend
             return file;
         }
 
-        public List<ProgramFile> ParseMetadata(string metadataText)
+        public List<ProgramFile> ParseMetadata(string metadataText, out MetadataMetadataJson metadata)
         {
+            metadata = null;
             var lexer = Lexer.FromString(metadataText, MessageHandler, "metadata");
 
             if (lexer == null)
@@ -141,7 +143,7 @@ namespace HapetFrontend
                     var end = parser.ParseTopLevel(inInfo, ref outInfo);
 
                     var metaText = lexer.Text.Substring(s.Location.Ending.End, end.Location.Beginning.Index - s.Location.Ending.End);
-                    var metadataMetadataJson = JsonConvert.DeserializeObject<MetadataMetadataJson>(metaText); // why do we need it
+                    metadata = JsonConvert.DeserializeObject<MetadataMetadataJson>(metaText); // why do we need it
                     continue; // no need to add this shite
                 }
 
