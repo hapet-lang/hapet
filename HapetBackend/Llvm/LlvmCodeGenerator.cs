@@ -47,7 +47,7 @@ namespace HapetBackend.Llvm
             this._postPreparer = postPreparer ?? throw new ArgumentNullException(nameof(postPreparer));
             this._messageHandler = messageHandler ?? throw new ArgumentNullException(nameof(messageHandler));
             this._outDir = _compiler.CurrentProjectSettings.OutputDirectory;
-            this._targetFile = _compiler.CurrentProjectSettings.ProjectName;
+            this._targetFile = _compiler.CurrentProjectSettings.AssemblyName;
 
             // getting the target LLVM triple
             this._targetTriple = CompilerSettings.GetTargetTriple(_compiler.CurrentProjectSettings.TargetPlatformData);

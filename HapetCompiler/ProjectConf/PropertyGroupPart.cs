@@ -49,6 +49,8 @@ namespace HapetCompiler.ProjectConf
             if (!Directory.Exists(_projectSettings.OutputDirectory)) Directory.CreateDirectory(_projectSettings.OutputDirectory);
             // setting the root namespace
             _projectSettings.RootNamespace = GetValueOrDefault("RootNamespace", _projectSettings.ProjectName);
+            // setting assembly name
+            _projectSettings.AssemblyName = GetValueOrDefault("AssemblyName", _projectSettings.ProjectName);
 
             // setting unsafe code allowence
             _projectSettings.AllowUnsafeCode = GetValueOrDefault("AllowUnsafeCode", false);

@@ -8,6 +8,7 @@ using HapetFrontend.Extensions;
 using HapetFrontend.Helpers;
 using HapetFrontend.Parsing;
 using HapetFrontend.Scoping;
+using Newtonsoft.Json;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Diagnostics.Metrics;
@@ -127,6 +128,17 @@ namespace HapetFrontend
                 var s = parser.ParseTopLevel(inInfo, ref outInfo);
                 if (s == null)
                     break;
+
+                if (s is AstDirectiveStmt dir2 && dir2.DirectiveType == Enums.DirectiveType.MetadataMeta)
+                {
+                    while (lexer.PeekToken().Type != TokenType.SharpIdentifier)
+                        lexer.SkipLine();
+                    var end = parser.ParseTopLevel(inInfo, ref outInfo);
+
+                    var metaText = lexer.Text.Substring(s.Location.Ending.End, end.Location.Beginning.Index - s.Location.Ending.End);
+                    var metadataMetadataJson = JsonConvert.DeserializeObject<MetadataMetadataJson>(metaText); // why do we need it
+                    continue; // no need to add this shite
+                }
 
                 // create a virtual file of the directive
                 if (s is AstDirectiveStmt dir && dir.DirectiveType == Enums.DirectiveType.MetadataFile)

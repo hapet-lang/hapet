@@ -32,7 +32,7 @@ namespace HapetCompiler.Resolvers
                 Funcad.CopyFilesRecursively(referencedProjectOutFolder, _projectSettings.OutputDirectory);
 
                 // adding the reference to dll
-                _projectData.References.Add(toolchain.ProjectSettings.ProjectName);
+                _projectData.References.Add(toolchain.ProjectSettings.AssemblyName);
             }
         }
     }

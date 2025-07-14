@@ -81,6 +81,10 @@ namespace HapetFrontend
         /// </summary>
         public string ProjectName { get; set; }
         /// <summary>
+        /// The name of output assembly file. Default is <see cref="ProjectName"/>
+        /// </summary>
+        public string AssemblyName { get; set; }
+        /// <summary>
         /// The version of the project that is going to be compiled
         /// </summary>
         public string ProjectVersion { get; set; }

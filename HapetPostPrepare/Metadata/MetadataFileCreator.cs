@@ -8,6 +8,7 @@ using HapetFrontend.Extensions;
 using HapetFrontend.Helpers;
 using HapetFrontend.Parsing;
 using HapetPostPrepare.Entities;
+using Newtonsoft.Json;
 using System.Text;
 
 namespace HapetPostPrepare
@@ -21,12 +22,12 @@ namespace HapetPostPrepare
         private void GenerateMetadataFile()
         {
             _currentPreparationStep = PreparationStep.MetadataCreation;
+            StringBuilder globalStringBuilder = new StringBuilder();
 
-            var projectVersion = _compiler.CurrentProjectSettings.ProjectVersion;
+            // create #meta block
+            CreateMetadataMetadata(globalStringBuilder);
 
             SortDeclarations();
-
-            StringBuilder globalStringBuilder = new StringBuilder();
             foreach (var srt in _sortedDeclsByFiles)
             {
                 _currentSourceFile = srt.Key;
@@ -35,8 +36,8 @@ namespace HapetPostPrepare
 
             // WARN: take care about the shite that is goin on here
             var outFolderPath = _compiler.CurrentProjectSettings.OutputDirectory;
-            var projectName = _compiler.CurrentProjectSettings.ProjectName;
-            File.WriteAllText($"{outFolderPath}/{projectName}.mpt", globalStringBuilder.ToString());
+            var asmName = _compiler.CurrentProjectSettings.AssemblyName;
+            File.WriteAllText($"{outFolderPath}/{asmName}.mpt", globalStringBuilder.ToString());
         }
 
         private void SortDeclarations()
@@ -71,6 +72,21 @@ namespace HapetPostPrepare
                     _sortedDeclsByFiles[del.SourceFile] = new List<AstDeclaration>() { del };
             }
             // no need to sort func - they would be taken when serializing classes/structs
+        }
+
+        private void CreateMetadataMetadata(StringBuilder sb)
+        {
+            // #meta block
+            var metadataMetadataJson = new MetadataMetadataJson()
+            {
+                Name = _compiler.CurrentProjectSettings.ProjectName,
+                Version = _compiler.CurrentProjectSettings.ProjectVersion,
+                Dependencies = _compiler.CurrentProjectData.References.ToArray(),
+            };
+            var metadataMetadataText = JsonConvert.SerializeObject(metadataMetadataJson, Formatting.Indented);
+            sb.AppendLine("#meta");
+            sb.AppendLine(metadataMetadataText);
+            sb.AppendLine("#endmeta");
         }
 
         private void CreateFileDeclarations(ProgramFile file, List<AstDeclaration> decls, StringBuilder sb)

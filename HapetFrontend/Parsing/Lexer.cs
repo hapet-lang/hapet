@@ -92,6 +92,20 @@ namespace HapetFrontend.Parsing
             _lookAheadLocation.File = filename;
         }
 
+        public void SkipLine()
+        {
+            while (_location.Index < _text.Length)
+            {
+                Token t = PeekToken();
+                if (t.Type == TokenType.NewLine)
+                {
+                    NextToken();
+                    break;
+                }
+                NextToken();
+            }
+        }
+
         public Token PeekToken()
         {
             if (_peek == null)
