@@ -1,10 +1,12 @@
-﻿using HapetFrontend.Ast.Declarations;
+﻿using HapetFrontend.Ast;
+using HapetFrontend.Ast.Declarations;
 using HapetFrontend.Ast.Expressions;
 using HapetFrontend.Errors;
 using HapetFrontend.Extensions;
 using HapetFrontend.Helpers;
 using HapetFrontend.Types;
 using LLVMSharp.Interop;
+using System;
 using System.Xml.Linq;
 
 namespace HapetBackend.Llvm
@@ -21,14 +23,17 @@ namespace HapetBackend.Llvm
 
             // create if does not exists
             ClassType parent;
+            AstDeclaration decl;
             string typeNameString;
             if (type is ClassType clsType)
             {
+                decl = clsType.Declaration;
                 parent = clsType.Declaration.InheritedFrom.FirstOrDefault(x => x.OutType is ClassType clss && !clss.Declaration.IsInterface)?.OutType as ClassType;
                 typeNameString = GenericsHelper.GetCodegenGenericName(clsType.Declaration.Name, _messageHandler);
             }
             else if (type is StructType strType)
             {
+                decl = strType.Declaration;
                 parent = strType.Declaration.InheritedFrom.FirstOrDefault(x => x.OutType is ClassType clss && !clss.Declaration.IsInterface)?.OutType as ClassType;
                 typeNameString = GenericsHelper.GetCodegenGenericName(strType.Declaration.Name, _messageHandler);
             }
@@ -40,24 +45,31 @@ namespace HapetBackend.Llvm
             }
 
             LLVMTypeRef typeInfoType = GetTypeInfoType();
-
-            // name param
-            LLVMValueRef typeName = _module.AddGlobal(LLVMTypeRef.CreateArray(_context.Int8Type, (uint)(typeNameString.Length + 1)), $"TypeInfoName::{typeNameString}");
-            typeName.Initializer = _context.GetConstString(typeNameString, false);
-            typeName.IsGlobalConstant = true;
-            // parent param
-            var ptrT = LLVMTypeRef.CreatePointer(typeInfoType, 0);
-            var nullPtr = LLVMValueRef.CreateConstPointerNull(ptrT);
-            LLVMValueRef parentRef = parent == null ? nullPtr : GenerateTypeInfoConst(parent);
-            // interfaces
-            var (interfaces, interfaceOffsets) = GetInterfacesArray(type, out int interfacesCount);
-            LLVMValueRef interfacesCountRef = LLVMValueRef.CreateConstInt(_context.Int8Type, (ulong)interfacesCount);
-
             var globConst = _module.AddGlobal(typeInfoType, $"TypeInfo::{typeNameString}");
-            globConst.Initializer = LLVMValueRef.CreateConstNamedStruct(typeInfoType, new LLVMValueRef[] { typeName, parentRef, interfaces, interfaceOffsets, interfacesCountRef });
-            globConst.Linkage = (LLVMLinkage.LLVMInternalLinkage);
             globConst.IsGlobalConstant = true;
+            globConst.Linkage = LLVMLinkage.LLVMExternalLinkage;
 
+            if (decl.IsImported)
+            {
+                globConst.DLLStorageClass = LLVMDLLStorageClass.LLVMDLLImportStorageClass;
+            }
+            else
+            {
+                // name param
+                LLVMValueRef typeName = _module.AddGlobal(LLVMTypeRef.CreateArray(_context.Int8Type, (uint)(typeNameString.Length + 1)), $"TypeInfoName::{typeNameString}");
+                typeName.Initializer = _context.GetConstString(typeNameString, false);
+                typeName.IsGlobalConstant = true;
+                // parent param
+                var ptrT = LLVMTypeRef.CreatePointer(typeInfoType, 0);
+                var nullPtr = LLVMValueRef.CreateConstPointerNull(ptrT);
+                LLVMValueRef parentRef = parent == null ? nullPtr : GenerateTypeInfoConst(parent);
+                // interfaces
+                var (interfaces, interfaceOffsets) = GetInterfacesArray(type, out int interfacesCount);
+                LLVMValueRef interfacesCountRef = LLVMValueRef.CreateConstInt(_context.Int8Type, (ulong)interfacesCount);
+
+                globConst.Initializer = LLVMValueRef.CreateConstNamedStruct(typeInfoType, new LLVMValueRef[] { typeName, parentRef, interfaces, interfaceOffsets, interfacesCountRef });
+                globConst.DLLStorageClass = LLVMDLLStorageClass.LLVMDLLExportStorageClass;
+            }
             _typeInfoDictionary.Add(type, globConst);
 
             return globConst;

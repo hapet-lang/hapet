@@ -1,10 +1,12 @@
-﻿using HapetFrontend.Ast.Declarations;
+﻿using HapetFrontend.Ast;
+using HapetFrontend.Ast.Declarations;
 using HapetFrontend.Ast.Expressions;
 using HapetFrontend.Errors;
 using HapetFrontend.Extensions;
 using HapetFrontend.Helpers;
 using HapetFrontend.Types;
 using LLVMSharp.Interop;
+using System;
 
 namespace HapetBackend.Llvm
 {
@@ -20,14 +22,17 @@ namespace HapetBackend.Llvm
 
             // create if does not exists
             ClassType parent;
+            AstDeclaration decl;
             string typeNameString;
             if (type is ClassType clsType)
             {
+                decl = clsType.Declaration;
                 parent = clsType.Declaration.InheritedFrom.FirstOrDefault(x => x.OutType is ClassType clss && !clss.Declaration.IsInterface)?.OutType as ClassType;
                 typeNameString = GenericsHelper.GetCodegenGenericName(clsType.Declaration.Name, _messageHandler);
             }
             else if (type is StructType strType)
             {
+                decl = strType.Declaration;
                 parent = strType.Declaration.InheritedFrom.FirstOrDefault(x => x.OutType is ClassType clss && !clss.Declaration.IsInterface)?.OutType as ClassType;
                 typeNameString = GenericsHelper.GetCodegenGenericName(strType.Declaration.Name, _messageHandler);
             }
@@ -53,7 +58,13 @@ namespace HapetBackend.Llvm
 
             var globConst = _module.AddGlobal(virtualTableType, $"VirtualTable::{typeNameString}");
             globConst.Initializer = LLVMValueRef.CreateConstNamedStruct(virtualTableType, new LLVMValueRef[] { parentRef, virtualMethods, virtualMethodsCountRef, interfaces, interfaceOffsets, interfacesCountRef });
-            globConst.Linkage = (LLVMLinkage.LLVMInternalLinkage);
+
+            globConst.Linkage = LLVMLinkage.LLVMExternalLinkage;
+            if (decl.IsImported)
+                globConst.DLLStorageClass = LLVMDLLStorageClass.LLVMDLLImportStorageClass;
+            else
+                globConst.DLLStorageClass = LLVMDLLStorageClass.LLVMDLLExportStorageClass;
+            
             globConst.IsGlobalConstant = true;
 
             _virtualTableDictionary.Add(type, globConst);

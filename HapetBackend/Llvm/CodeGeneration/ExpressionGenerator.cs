@@ -784,9 +784,9 @@ namespace HapetBackend.Llvm
                 var ptrToObject = _builder.BuildExtractValue(loadedDelegate, 1, "ptrToObject");
 
                 // creating other blocks
-                var bbTrue = _lastFunctionValueRef.AppendBasicBlock($"del.null");
-                var bbFalse = _lastFunctionValueRef.AppendBasicBlock($"del.notnull");
-                var bbEnd = _lastFunctionValueRef.AppendBasicBlock($"del.end");
+                var bbTrue = _lastFunctionValueRef.AppendBasicBlockInContext(_context, $"del.null");
+                var bbFalse = _lastFunctionValueRef.AppendBasicBlockInContext(_context, $"del.notnull");
+                var bbEnd = _lastFunctionValueRef.AppendBasicBlockInContext(_context, $"del.end");
 
                 var nullPtrT = PointerType.GetPointerType(HapetType.CurrentTypeContext.GetIntType(1, false));
                 var nullPtr = LLVM.ConstPointerNull(HapetTypeToLLVMType(HapetType.CurrentTypeContext.GetIntType(1, false)));
@@ -1123,7 +1123,7 @@ namespace HapetBackend.Llvm
             // WARN: almost the same as AstIfStmt!!!
             bool needVariable = expr.OutType is not VoidType;
 
-            var bbBody = _lastFunctionValueRef.AppendBasicBlock($"tern.body");
+            var bbBody = _lastFunctionValueRef.AppendBasicBlockInContext(_context, $"tern.body");
 
             // creating other blocks
             var bbElse = _context.CreateBasicBlock($"tern.else");
@@ -1254,8 +1254,8 @@ namespace HapetBackend.Llvm
             if (stmt.FirstArgument != null)
                 GenerateExpressionCode(stmt.FirstArgument);
 
-            var bbCond = _lastFunctionValueRef.AppendBasicBlock($"for{_forCounter}.cond");
-            var bbBody = _lastFunctionValueRef.AppendBasicBlock($"for{_forCounter}.body");
+            var bbCond = _lastFunctionValueRef.AppendBasicBlockInContext(_context, $"for{_forCounter}.cond");
+            var bbBody = _lastFunctionValueRef.AppendBasicBlockInContext(_context, $"for{_forCounter}.body");
 
             // creating other blocks
             var bbInc = _context.CreateBasicBlock($"for{_forCounter}.inc");
@@ -1346,8 +1346,8 @@ namespace HapetBackend.Llvm
             var prevWhileInc = _currentLoopInc;
             var prevWhileEnd = _currentLoopEnd;
 
-            var bbCond = _lastFunctionValueRef.AppendBasicBlock($"while{_whileCounter}.cond");
-            var bbBody = _lastFunctionValueRef.AppendBasicBlock($"while{_whileCounter}.body");
+            var bbCond = _lastFunctionValueRef.AppendBasicBlockInContext(_context, $"while{_whileCounter}.cond");
+            var bbBody = _lastFunctionValueRef.AppendBasicBlockInContext(_context, $"while{_whileCounter}.body");
 
             // creating other blocks
             var bbEnd = _context.CreateBasicBlock($"while{_whileCounter}.end");
@@ -1421,7 +1421,7 @@ namespace HapetBackend.Llvm
 
             _ifCounter++;
 
-            var bbBody = _lastFunctionValueRef.AppendBasicBlock($"if{_ifCounter}.body");
+            var bbBody = _lastFunctionValueRef.AppendBasicBlockInContext(_context, $"if{_ifCounter}.body");
 
             // creating other blocks
             var bbElse = _context.CreateBasicBlock($"if{_ifCounter}.else");
@@ -1543,7 +1543,7 @@ namespace HapetBackend.Llvm
                 }
                 else
                 {
-                    currBb = _lastFunctionValueRef.AppendBasicBlock($"switch{_switchCounter}.case{caseCounter++}");
+                    currBb = _lastFunctionValueRef.AppendBasicBlockInContext(_context, $"switch{_switchCounter}.case{caseCounter++}");
                 }
                 _builder.PositionAtEnd(currBb);
 

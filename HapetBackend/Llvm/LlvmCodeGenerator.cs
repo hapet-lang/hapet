@@ -5,6 +5,7 @@ using HapetFrontend.Entities;
 using HapetFrontend.Errors;
 using HapetFrontend.Helpers;
 using HapetPostPrepare;
+using LLVMSharp;
 using LLVMSharp.Interop;
 using Newtonsoft.Json;
 using System.Diagnostics;
@@ -27,7 +28,6 @@ namespace HapetBackend.Llvm
         private LLVMTargetDataRef _targetData;
         private LLVMContextRef _context;
         private LLVMBuilderRef _builder;
-        private LLVMBuilderRef _rawBuilder;
         private LLVMTypeRef _voidPointerType;
 
         private List<string> _libsToBeLinked;
@@ -52,7 +52,8 @@ namespace HapetBackend.Llvm
             // getting the target LLVM triple
             this._targetTriple = CompilerSettings.GetTargetTriple(_compiler.CurrentProjectSettings.TargetPlatformData);
 
-            _module = LLVMModuleRef.CreateWithName($"{_compiler.CurrentProjectSettings.ProjectName}-module");
+            _context = LLVMContextRef.Create();
+            _module = _context.CreateModuleWithName($"{_compiler.CurrentProjectSettings.ProjectName}-module");
             _module.Target = _targetTriple;
 
             var target = LLVMTargetRef.GetTargetFromTriple(_targetTriple);
@@ -63,11 +64,8 @@ namespace HapetBackend.Llvm
             _targetData = targetMachine.CreateTargetDataLayout();
             _module.SetDataLayout(_targetData);
             LLVM.EnablePrettyStackTrace();
-            _context = _module.Context;
 
             _builder = _context.CreateBuilder();
-
-            _rawBuilder = _module.Context.CreateBuilder();
             _voidPointerType = ((LLVMTypeRef)_context.Int8Type).GetPointerTo();
 
             // init built in operators for llvm
@@ -127,6 +125,7 @@ namespace HapetBackend.Llvm
         {
             _builder.Dispose();
             _module.Dispose();
+            _context.Dispose();
         }
 
 #pragma warning disable CA1002 // Do not expose generic lists

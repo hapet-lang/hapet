@@ -134,7 +134,7 @@ namespace HapetBackend.Llvm
                     return;
 
                 // params body
-                var paramsBody = lfunc.AppendBasicBlock("params");
+                var paramsBody = lfunc.AppendBasicBlockInContext(_context, "params");
                 _builder.PositionAtEnd(paramsBody);
                 // generating params allocs
                 for (int i = 0; i < funcDecl.Parameters.Count; ++i)
@@ -156,7 +156,7 @@ namespace HapetBackend.Llvm
                 }
 
                 // function body
-                var bbBody = lfunc.AppendBasicBlock("entry");
+                var bbBody = lfunc.AppendBasicBlockInContext(_context, "entry");
                 _builder.BuildBr(bbBody);
                 _builder.PositionAtEnd(bbBody);
 

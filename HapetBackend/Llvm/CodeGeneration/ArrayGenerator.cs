@@ -61,8 +61,8 @@ namespace HapetBackend.Llvm
                 var zeroConst = LLVMValueRef.CreateConstInt(HapetTypeToLLVMType(IntType.DefaultType), (ulong)0);
                 _builder.BuildStore(zeroConst, varPtrI);
 
-                var bbCond = _lastFunctionValueRef.AppendBasicBlock($"for{_forCounter}.cond");
-                var bbBody = _lastFunctionValueRef.AppendBasicBlock($"for{_forCounter}.body");
+                var bbCond = _lastFunctionValueRef.AppendBasicBlockInContext(_context, $"for{_forCounter}.cond");
+                var bbBody = _lastFunctionValueRef.AppendBasicBlockInContext(_context, $"for{_forCounter}.body");
 
                 // creating other blocks
                 var bbInc = _context.CreateBasicBlock($"for{_forCounter}.inc");

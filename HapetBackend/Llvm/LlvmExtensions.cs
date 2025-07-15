@@ -20,6 +20,12 @@ namespace HapetBackend.Llvm
             return LLVM.PointerType(self, 0);
         }
 
+        public unsafe static LLVMBasicBlockRef AppendBasicBlockInContext(this LLVMValueRef self, LLVMContextRef context, string name)
+        {
+            using var marshaledName = new MarshaledString(name.AsSpan());
+            return LLVM.AppendBasicBlockInContext(context, self, marshaledName);
+        }
+
         #region Builder remake
         public unsafe static LLVMValueRef BuildAdd(LLVMBuilderRef builder, LLVMValueRef left, LLVMValueRef right, string op)
         {

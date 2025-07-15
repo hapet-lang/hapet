@@ -26,7 +26,7 @@ namespace HapetBackend.Llvm
                     crtMainFuncType = LLVMTypeRef.CreateFunction(_context.VoidType, Array.Empty<LLVMTypeRef>(), false);
                     crtMainFunc = _module.AddFunction("__main", crtMainFuncType);
                     crtMainFunc.Linkage = LLVMLinkage.LLVMExternalLinkage;
-                    var crtEntry = crtMainFunc.AppendBasicBlock("entry");
+                    var crtEntry = crtMainFunc.AppendBasicBlockInContext(_context, "entry");
                     _builder.PositionAtEnd(crtEntry);
                     _builder.BuildRetVoid();
 
@@ -67,9 +67,9 @@ namespace HapetBackend.Llvm
                     break;
             }
 
-            var entry = lfunc.AppendBasicBlock("entry");
-            var pars = lfunc.AppendBasicBlock("params");
-            var main = lfunc.AppendBasicBlock("mainpart");
+            var entry = lfunc.AppendBasicBlockInContext(_context, "entry");
+            var pars = lfunc.AppendBasicBlockInContext(_context, "params");
+            var main = lfunc.AppendBasicBlockInContext(_context, "mainpart");
 
             _builder.PositionAtEnd(entry);
             // if crt main func call should be placed 

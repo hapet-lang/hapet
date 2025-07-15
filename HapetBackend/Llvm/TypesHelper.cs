@@ -650,9 +650,9 @@ namespace HapetBackend.Llvm
             var canBeDowncasted = _builder.BuildCall2(funcType, downcasterFunc, new LLVMValueRef[] { val, ptrToCastTypeInfo }, "canBeDowncasted");
 
             // creating other blocks
-            var bbTrue = _lastFunctionValueRef.AppendBasicBlock($"cast.true");
-            var bbFalse = _lastFunctionValueRef.AppendBasicBlock($"cast.false");
-            var bbEnd = _lastFunctionValueRef.AppendBasicBlock($"cast.end");
+            var bbTrue = _lastFunctionValueRef.AppendBasicBlockInContext(_context, $"cast.true");
+            var bbFalse = _lastFunctionValueRef.AppendBasicBlockInContext(_context, $"cast.false");
+            var bbEnd = _lastFunctionValueRef.AppendBasicBlockInContext(_context, $"cast.end");
 
             var v = _builder.BuildAlloca(HapetTypeToLLVMType(structType), $"tmp_{structType.Declaration.Name.Name}");
             _builder.BuildCondBr(canBeDowncasted, bbTrue, bbFalse);
