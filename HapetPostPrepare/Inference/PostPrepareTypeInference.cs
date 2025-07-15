@@ -1013,6 +1013,14 @@ namespace HapetPostPrepare
 
             PostPrepareExprInference(expr.TrueExpr, inInfo, ref outInfo);
             PostPrepareExprInference(expr.FalseExpr, inInfo, ref outInfo);
+
+            // this could be when 'a?.FuncTest();' is made
+            if (expr.TrueExpr.OutType is VoidType || expr.FalseExpr.OutType is VoidType)
+            {
+                expr.OutType = expr.TrueExpr.OutType is VoidType ? expr.TrueExpr.OutType : expr.FalseExpr.OutType;
+                return;
+            }
+
             // try to cast to the false type
             var castResult1 = new CastResult();
             PostPrepareExpressionWithType(expr.TrueExpr.OutType, expr.FalseExpr, castResult1);

@@ -1121,6 +1121,7 @@ namespace HapetBackend.Llvm
         private unsafe LLVMValueRef GenerateTernaryExprCode(AstTernaryExpr expr)
         {
             // WARN: almost the same as AstIfStmt!!!
+            bool needVariable = expr.OutType is not VoidType;
 
             var bbBody = _lastFunctionValueRef.AppendBasicBlock($"tern.body");
 
@@ -1129,7 +1130,9 @@ namespace HapetBackend.Llvm
             var bbEnd = _context.CreateBasicBlock($"tern.end");
 
             // tmp var
-            var varPtr = CreateLocalVariable(expr.OutType, "tmpTernVar");
+            LLVMValueRef varPtr = default; 
+            if (needVariable)
+                varPtr = CreateLocalVariable(expr.OutType, "tmpTernVar");
 
             // building the condition
             var cmp = GenerateExpressionCode(expr.Condition);
@@ -1137,23 +1140,31 @@ namespace HapetBackend.Llvm
 
             // body
             _builder.PositionAtEnd(bbBody);
-            AssignToVar(varPtr, GenerateExpressionCode(expr.TrueExpr));
+            var r1 = GenerateExpressionCode(expr.TrueExpr);
+            if (needVariable)
+                AssignToVar(varPtr, r1);
             _builder.BuildBr(bbEnd);
 
             // else
             LLVM.AppendExistingBasicBlock(_lastFunctionValueRef, bbElse);
             _builder.PositionAtEnd(bbElse);
             // generating else code
-            AssignToVar(varPtr, GenerateExpressionCode(expr.FalseExpr));
+            var r2 = GenerateExpressionCode(expr.FalseExpr);
+            if (needVariable)
+                AssignToVar(varPtr, r2);
             _builder.BuildBr(bbEnd);
 
             // appending them sooner
             LLVM.AppendExistingBasicBlock(_lastFunctionValueRef, bbEnd);
             _builder.PositionAtEnd(bbEnd);
 
-            // need to make a ptr to a class
-            var resultType = expr.OutType;
-            return _builder.BuildLoad2(HapetTypeToLLVMType(resultType), varPtr, "ternLoaded");
+            if (needVariable)
+            {
+                // need to make a ptr to a class
+                var resultType = expr.OutType;
+                return _builder.BuildLoad2(HapetTypeToLLVMType(resultType), varPtr, "ternLoaded");
+            }
+            return default;
         }
 
         private unsafe LLVMValueRef GenerateCheckedExprCode(AstCheckedExpr expr)
