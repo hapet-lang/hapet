@@ -16,9 +16,4 @@
 		<ProjectReference Include="../../std/System/System.hptproj" />
 		<!--<Reference Include="System" />-->
 	</ItemGroup>
-
-	<ItemGroup>
-		<Define Name="Pivo">1.0.0</Define>
-		<Define Name="Pivo2"></Define>
-	</ItemGroup>
 </Project>
