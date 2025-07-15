@@ -8,7 +8,12 @@ namespace HapetFrontend.Ast.Statements
         /// <summary>
         /// The right part of directive
         /// </summary>
-        public AstStatement RightPart { get; set; }
+        public AstIdExpr RightPart { get; set; }
+
+        /// <summary>
+        /// Value of directive define
+        /// </summary>
+        public AstExpression Value { get; set; }
 
         /// <summary>
         /// The type of the directive
@@ -17,7 +22,7 @@ namespace HapetFrontend.Ast.Statements
 
         public override string AAAName => nameof(AstDirectiveStmt);
 
-        public AstDirectiveStmt(AstStatement right, DirectiveType type, ILocation location = null) : base(location)
+        public AstDirectiveStmt(AstIdExpr right, DirectiveType type, ILocation location = null) : base(location)
         {
             RightPart = right;
             DirectiveType = type;
@@ -26,11 +31,12 @@ namespace HapetFrontend.Ast.Statements
         public override AstStatement GetDeepCopy()
         {
             var copy = new AstDirectiveStmt(
-                RightPart.GetDeepCopy() as AstStatement,
+                RightPart.GetDeepCopy() as AstIdExpr,
                 DirectiveType,
                 Location)
             {
                 Scope = Scope,
+                Value = Value.GetDeepCopy() as AstExpression,
                 SourceFile = SourceFile,
             };
             return copy;

@@ -4,6 +4,7 @@ using HapetFrontend.Ast.Statements;
 using HapetFrontend.Entities;
 using HapetFrontend.Enums;
 using HapetFrontend.Errors;
+using System.Diagnostics;
 using System.Diagnostics.Metrics;
 using System.Runtime;
 
@@ -34,13 +35,13 @@ namespace HapetFrontend.Parsing
             {
                 case DirectiveType.MetadataFile:
                     {
-                        var expr = ParseExpression(inInfo, ref outInfo);
+                        var expr = ParseExpression(inInfo, ref outInfo) as AstExpression;
                         if (expr is not AstStringExpr)
                         {
                             // error here
                             ReportMessage(expr.Location, [], ErrorCode.Get(CTEN.CommonStringExpected));
                         }
-                        return new AstDirectiveStmt(expr, type, new Location(tkn.Location, expr.Location.Ending));
+                        return new AstDirectiveStmt(null, type, new Location(tkn.Location, expr.Location.Ending)) { Value = expr };
                     }
                 case DirectiveType.MetadataMeta:
                 case DirectiveType.MetadataEndMeta:
@@ -52,18 +53,26 @@ namespace HapetFrontend.Parsing
                 case DirectiveType.If: 
                 case DirectiveType.Elif: 
                     {
-                        var expr = ParseExpression(inInfo, ref outInfo);
-                        return new AstDirectiveStmt(expr, type, new Location(tkn.Location, expr.Location.Ending));
+                        var expr = ParseExpression(inInfo, ref outInfo) as AstExpression;
+                        return new AstDirectiveStmt(null, type, new Location(tkn.Location, expr.Location.Ending)) { Value = expr };
                     }
                 case DirectiveType.Define:
                     {
                         var expr = ParseExpression(inInfo, ref outInfo);
-                        if (!(expr is AstNestedExpr nst && nst.RightPart is AstIdExpr))
+                        if (!(expr is AstNestedExpr nst && nst.RightPart is AstIdExpr idExpr))
                         {
                             // error here
                             ReportMessage(expr.Location, [], ErrorCode.Get(CTEN.CommonIdentifierExpected));
+                            return new AstEmptyStmt();
                         }
-                        return new AstDirectiveStmt(expr, type, new Location(tkn.Location, expr.Location.Ending));
+
+                        AstExpression value = null;
+                        if (!CheckToken(TokenType.NewLine))
+                        {
+                            value = ParseExpression(inInfo, ref outInfo) as AstExpression;
+                        }
+
+                        return new AstDirectiveStmt(idExpr, type, new Location(tkn.Location, expr.Location.Ending)) { Value = value };
                     }
             }
 
@@ -84,25 +93,12 @@ namespace HapetFrontend.Parsing
                     break;
                 }
 
-                if (currentDir.RightPart is AstExpression expr)
+                if (IsDirectiveDefined(currentDir))
                 {
-                    if (expr.OutValue is bool b)
-                    {
-                        if (b)
-                        {
-                            toReturn = GetUpToNextDirective(inInfo, ref outInfo);
-                            break;
-                        }
-                    }
-                    else
-                    {
-                        if (IsDirectiveDefined(currentDir))
-                        {
-                            toReturn = GetUpToNextDirective(inInfo, ref outInfo);
-                            break;
-                        }
-                    }
+                    toReturn = GetUpToNextDirective(inInfo, ref outInfo);
+                    break;
                 }
+
                 // if still here - skip statements
                 SkipUpToNextDirective();
                 currentDir = ParseTopLevel(inInfo, ref outInfo) as AstDirectiveStmt;
@@ -138,25 +134,80 @@ namespace HapetFrontend.Parsing
 
             bool IsDirectiveDefined(AstDirectiveStmt dir)
             {
-                string nameDir = dir.RightPart is AstNestedExpr nst2 ? (nst2.RightPart as AstIdExpr).Name : (dir.RightPart as AstIdExpr).Name;
+                InferenceDirectiveValue(dir.Value, file);
+                return dir.Value.OutValue is bool b ? b : false;
+            }
+        }
 
-                Func<AstDirectiveStmt, bool> check = (a) =>
-                {
-                    string nameA = a.RightPart is AstNestedExpr nst ? (nst.RightPart as AstIdExpr).Name : (a.RightPart as AstIdExpr).Name;
-                    return nameA == nameDir;
-                };
-
+        private void InferenceDirectiveValue(AstExpression expr, ProgramFile file)
+        {
+            if (expr is AstNestedExpr nst)
+            {
+                Debug.Assert(nst.LeftPart == null); // why not null here? should be null
+                InferenceDirectiveValue(nst.RightPart, file);
+                nst.OutValue = nst.RightPart.OutValue;
+                return;
+            }
+            else if (expr is AstIdExpr id)
+            {
+                // just an id, so search for the same define names
                 foreach (var a in file.Defines)
                 {
-                    if (check(a))
-                        return true;
+                    if (a.RightPart?.Name == id.Name && a.Value == null)
+                    {
+                        id.OutValue = true;
+                        return;
+                    }
+                    else if (a.RightPart?.Name == id.Name && a.Value != null)
+                    {
+                        InferenceDirectiveValue(a.Value, file);
+                        id.OutValue = a.Value.OutValue;
+                        return;
+                    }
                 }
                 foreach (var a in _compiler.CurrentProjectData.Defines)
                 {
-                    if (a == nameDir)
-                        return true;
+                    if (a.Key == id.Name && string.IsNullOrWhiteSpace(a.Value))
+                    {
+                        id.OutValue = true;
+                        return;
+                    }
+                    else if (a.Key == id.Name && !string.IsNullOrWhiteSpace(a.Value))
+                    {
+                        id.OutValue = a.Value;
+                        return;
+                    }
                 }
-                return false;
+                id.OutValue = false; // not found
+            }
+            else if (expr is AstBinaryExpr bin)
+            {
+                bin.OutValue = false;
+
+                InferenceDirectiveValue(bin.Right, file);
+                InferenceDirectiveValue(bin.Left, file);
+                if (bin.Left.OutValue is string s1 && bin.Right.OutValue is string s2)
+                {
+                    if (bin.Operator == "==")
+                        bin.OutValue = s1 == s2;
+                    else if (bin.Operator == "!=")
+                        bin.OutValue = s1 != s2;
+                }
+                else if (bin.Left.OutValue is int i1 && bin.Right.OutValue is int i2)
+                {
+                    if (bin.Operator == "==")
+                        bin.OutValue = i1 == i2;
+                    else if (bin.Operator == "!=")
+                        bin.OutValue = i1 != i2;
+                    else if (bin.Operator == ">")
+                        bin.OutValue = i1 > i2;
+                    else if (bin.Operator == "<")
+                        bin.OutValue = i1 < i2;
+                    else if (bin.Operator == ">=")
+                        bin.OutValue = i1 >= i2;
+                    else if (bin.Operator == "<=")
+                        bin.OutValue = i1 <= i2;
+                }
             }
         }
     }

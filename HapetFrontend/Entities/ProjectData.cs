@@ -11,7 +11,7 @@
         /// <summary>
         /// Handles all the define's that could be accessed accross the whole project
         /// </summary>
-        public List<string> Defines { get; private set; } = new List<string>();
+        public Dictionary<string, string> Defines { get; private set; } = new Dictionary<string, string>();
 
         /// <summary>
         /// Contains all the project names that are referenced

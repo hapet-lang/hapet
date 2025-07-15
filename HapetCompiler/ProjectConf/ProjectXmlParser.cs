@@ -83,6 +83,7 @@ namespace HapetCompiler.ProjectConf
         {
             PreparePropertyGroups();
             PrepareItemGroups();
+            SetDefaultDefines();
         }
     }
 }

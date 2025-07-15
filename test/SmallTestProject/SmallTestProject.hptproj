@@ -18,6 +18,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<Define>Pivo</Define>
+		<Define Name="Pivo">1.0.0</Define>
+		<Define Name="Pivo2"></Define>
 	</ItemGroup>
 </Project>

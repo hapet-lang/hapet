@@ -147,7 +147,7 @@ namespace HapetFrontend
                 if (s is AstDirectiveStmt dir && dir.DirectiveType == Enums.DirectiveType.MetadataFile)
                 {
                     // creating a virtual file
-                    currentFile = new ProgramFile((dir.RightPart as AstStringExpr).StringValue, lexer.Text);
+                    currentFile = new ProgramFile((dir.Value as AstStringExpr).StringValue, lexer.Text);
                     allFiles.Add(currentFile);
                     // change lexer locations' filename
                     lexer.ChangeFilename(currentFile.Name);

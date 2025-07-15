@@ -40,7 +40,8 @@ namespace HapetCompiler.ProjectConf
                             }
                         case "Define":
                             {
-                                _projectData.Defines.Add(childnode.InnerText);
+                                string name = childnode.Attributes.GetNamedItem("Name").Value;
+                                _projectData.Defines.Add(name, childnode.InnerText);
                                 break;
                             }
                         default:
