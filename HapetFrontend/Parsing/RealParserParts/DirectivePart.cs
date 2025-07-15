@@ -209,6 +209,16 @@ namespace HapetFrontend.Parsing
                         bin.OutValue = i1 <= i2;
                 }
             }
+            else if (expr is AstUnaryExpr un)
+            {
+                un.OutValue = false;
+
+                InferenceDirectiveValue(un.SubExpr, file);
+                if (un.SubExpr.OutValue is bool b1 && un.Operator == "!")
+                {
+                    un.OutValue = !b1;
+                }
+            }
         }
     }
 }
