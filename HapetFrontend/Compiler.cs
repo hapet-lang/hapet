@@ -238,6 +238,15 @@ namespace HapetFrontend
                         file.Defines.Add(directive);
                         break;
                     }
+                case Enums.DirectiveType.Undef:
+                    {
+                        var d = file.Defines.FirstOrDefault(x => x.RightPart.Name == directive.RightPart.Name);
+                        if (d != null)
+                            file.Defines.Remove(d);
+                        else 
+                            CurrentProjectData.Defines.Remove(directive.RightPart.Name);
+                        break;
+                    }
             }
         }
 

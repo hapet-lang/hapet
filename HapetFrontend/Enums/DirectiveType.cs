@@ -13,5 +13,6 @@
         EndIf = 7,
 
         Define = 8,
+        Undef = 9,
     }
 }

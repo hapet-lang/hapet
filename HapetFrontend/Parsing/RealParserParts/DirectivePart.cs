@@ -57,6 +57,7 @@ namespace HapetFrontend.Parsing
                         return new AstDirectiveStmt(null, type, new Location(tkn.Location, expr.Location.Ending)) { Value = expr };
                     }
                 case DirectiveType.Define:
+                case DirectiveType.Undef:
                     {
                         var expr = ParseExpression(inInfo, ref outInfo);
                         if (!(expr is AstNestedExpr nst && nst.RightPart is AstIdExpr idExpr))
@@ -192,6 +193,23 @@ namespace HapetFrontend.Parsing
                         bin.OutValue = s1 == s2;
                     else if (bin.Operator == "!=")
                         bin.OutValue = s1 != s2;
+                    else
+                    {
+                        // expect to versions comparisons
+                        var p1 = Version.TryParse(s1, out Version ver1);
+                        var p2 = Version.TryParse(s2, out Version ver2);
+                        if (p1 && p2)
+                        {
+                            if (bin.Operator == ">")
+                                bin.OutValue = ver1 > ver2;
+                            else if (bin.Operator == "<")
+                                bin.OutValue = ver1 < ver2;
+                            else if (bin.Operator == ">=")
+                                bin.OutValue = ver1 >= ver2;
+                            else if (bin.Operator == "<=")
+                                bin.OutValue = ver1 <= ver2;
+                        }
+                    }
                 }
                 else if (bin.Left.OutValue is int i1 && bin.Right.OutValue is int i2)
                 {
