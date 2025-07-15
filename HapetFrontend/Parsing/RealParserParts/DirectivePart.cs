@@ -208,6 +208,17 @@ namespace HapetFrontend.Parsing
                     else if (bin.Operator == "<=")
                         bin.OutValue = i1 <= i2;
                 }
+                else if (bin.Left.OutValue is bool b1 && bin.Right.OutValue is bool b2)
+                {
+                    if (bin.Operator == "==")
+                        bin.OutValue = b1 == b2;
+                    else if (bin.Operator == "!=")
+                        bin.OutValue = b1 != b2;
+                    else if (bin.Operator == "||")
+                        bin.OutValue = b1 || b2;
+                    else if (bin.Operator == "&&")
+                        bin.OutValue = b1 && b2;
+                }
             }
             else if (expr is AstUnaryExpr un)
             {
