@@ -29,10 +29,16 @@ namespace HapetFrontend.Parsing
                 case "endif": type = DirectiveType.EndIf; break;
 
                 case "define": type = DirectiveType.Define; break;
+                case "undef": type = DirectiveType.Undef; break;
+
+                case "error": type = DirectiveType.Error; break;
+                case "warning": type = DirectiveType.Warning; break;
             }
 
             switch (type) 
             {
+                case DirectiveType.Error:
+                case DirectiveType.Warning:
                 case DirectiveType.MetadataFile:
                     {
                         var expr = ParseExpression(inInfo, ref outInfo) as AstExpression;

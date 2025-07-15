@@ -247,6 +247,16 @@ namespace HapetFrontend
                             CurrentProjectData.Defines.Remove(directive.RightPart.Name);
                         break;
                     }
+                case Enums.DirectiveType.Error:
+                    {
+                        MessageHandler.ReportMessage(lexer.Text, directive, [directive.Value.OutValue as string], ErrorCode.Get(CTEN.UserDefinedError));
+                        break;
+                    }
+                case Enums.DirectiveType.Warning:
+                    {
+                        MessageHandler.ReportMessage(lexer.Text, directive, [directive.Value.OutValue as string], ErrorCode.Get(CTWN.UserDefinedWarning), reportType: ReportType.Warning);
+                        break;
+                    }
             }
         }
 

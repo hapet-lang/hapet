@@ -22,6 +22,10 @@
         <Number>2003</Number>
         <Text>Fields should not be defined in interfaces! Use it at Your own risk :)</Text>
     </Item>
+    <Item>
+        <Number>2004</Number>
+        <Text>User defined warning with message: {0}</Text>
+    </Item>
 
     <!--Post prepare warnings-->
     <Item>

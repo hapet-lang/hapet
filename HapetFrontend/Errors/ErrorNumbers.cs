@@ -114,6 +114,7 @@
         CommonStringExpected            = 0x2058,
         UnexpectedDirective             = 0x2059,
         UnexpectedGenericConstrain      = 0x205A,
+        UserDefinedError                = 0x205B,
 
         // post preparer errors up to 0x5000
         EnumCouldNotBeAssigned          = 0x3001,
@@ -274,6 +275,7 @@
         ArrayEmptyCreation              = 0x2001,
         StmtsWouldBeIgnored             = 0x2002,
         FieldsInInterface               = 0x2003,
+        UserDefinedWarning              = 0x2004,
 
         // post preparer warnings up to 0x5000
         StaticCtorKwsIgnored            = 0x3001,

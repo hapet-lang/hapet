@@ -426,6 +426,10 @@
         <Number>205A</Number>
         <Text>Unknown generic type constrain</Text>
     </Item>
+    <Item>
+        <Number>205B</Number>
+        <Text>User defined error with message: {0}</Text>
+    </Item>
 
 
     <!--Post prepare errors-->
@@ -784,18 +788,18 @@
         <Number>3058</Number>
         <Text>{0} is obsolete: '{1}'</Text>
     </Item>
-	<Item>
-		<Number>3059</Number>
-		<Text>The type does not satisfy the constraint: {0}</Text>
-	</Item>
-	<Item>
-		<Number>305A</Number>
-		<Text>Duplicate constraints are not allowed</Text>
-	</Item>
-	<Item>
-		<Number>305B</Number>
-		<Text>The 'class', 'struct', 'enum' and 'delegate' constraints cannot be combined</Text>
-	</Item>
+    <Item>
+        <Number>3059</Number>
+        <Text>The type does not satisfy the constraint: {0}</Text>
+    </Item>
+    <Item>
+        <Number>305A</Number>
+        <Text>Duplicate constraints are not allowed</Text>
+    </Item>
+    <Item>
+        <Number>305B</Number>
+        <Text>The 'class', 'struct', 'enum' and 'delegate' constraints cannot be combined</Text>
+    </Item>
 
     <!--Compiler errors-->
     <Item>

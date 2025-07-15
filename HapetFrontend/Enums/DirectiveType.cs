@@ -14,5 +14,8 @@
 
         Define = 8,
         Undef = 9,
+
+        Error = 10,
+        Warning = 11,
     }
 }
