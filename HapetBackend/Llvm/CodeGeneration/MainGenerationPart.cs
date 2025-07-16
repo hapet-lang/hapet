@@ -349,6 +349,7 @@ namespace HapetBackend.Llvm
             // is decl used or
             // decl is propa field/func and propa is used
             bool isUsed = decl.IsDeclarationUsed ||
+                          _compiler.CurrentProjectSettings.TargetFormat == HapetFrontend.TargetFormat.Library || // all used for library
                           (decl is AstVarDecl vd1 && vd1.IsPropertyField && vd1.NormalParent is AstDeclaration pd1 && pd1.IsDeclarationUsed) ||
                           (decl is AstFuncDecl fd1 && fd1.IsPropertyFunction && fd1.NormalParent is AstDeclaration pd2 && pd2.IsDeclarationUsed);
             return isUsed;

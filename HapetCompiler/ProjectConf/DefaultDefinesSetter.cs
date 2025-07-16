@@ -18,7 +18,7 @@ namespace HapetCompiler.ProjectConf
             _projectData.Defines.Add("CURRENT_PLATFORM", CompilerSettings.CurrentPlatformData.Name);
 
             // debug or release
-            if (_projectSettings.ProjectConfiguration == "Debug")
+            if (_projectSettings.IsDebug)
                 _projectData.Defines.Add("DEBUG", null);
             else
                 _projectData.Defines.Add("RELEASE", null);
