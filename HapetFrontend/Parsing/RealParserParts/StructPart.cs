@@ -1,6 +1,7 @@
 ﻿using HapetFrontend.Ast;
 using HapetFrontend.Ast.Declarations;
 using HapetFrontend.Ast.Expressions;
+using HapetFrontend.Ast.Statements;
 using HapetFrontend.Entities;
 using HapetFrontend.Errors;
 using HapetFrontend.Helpers;
@@ -76,20 +77,48 @@ namespace HapetFrontend.Parsing
 
             ConsumeUntil(TokenType.OpenBrace, ErrMsg("{", "at beginning of struct body"), true);
 
+            Token next;
             SkipNewlines();
             while (true)
             {
-                var next = PeekToken();
+                next = PeekToken();
                 if (next.Type == TokenType.CloseBrace || next.Type == TokenType.EOF)
                     break;
 
                 // clear doc string so parent's doc won't be there
                 ClearDocString();
                 var decl = ParseTopLevel(inInfo, ref outInfo);
+                
+                if (HandleStatement(decl, inInfo, ref outInfo))
+                    break;
+            }
+
+            end = Consume(TokenType.CloseBrace, ErrMsg("}", "at end of struct declaration")).Location;
+
+            structDecl.Location = new Location(beg, end);
+            structDecl.InheritedFrom = inherited;
+            structDecl.HasGenericTypes = generics.Count > 0;
+            structDecl.GenericConstrains = genericConstrains;
+            structDecl.IsImported = inInfo.ExternalMetadata;
+            return structDecl;
+
+            bool HandleStatement(AstStatement decl, ParserInInfo inInfo, ref ParserOutInfo outInfo)
+            {
                 if (decl is not AstDeclaration realDecl)
                 {
-                    ReportMessage(decl, ["class"], ErrorCode.Get(CTEN.DeclExpectedInClassStruct));
-                    continue;
+                    if (decl is AstDirectiveStmt dir)
+                    {
+                        // cringe kostyl to handle directives
+                        var statementsToAdd = HandleDirective(dir, CurrentSourceFile, inInfo, ref outInfo);
+                        foreach (var s in statementsToAdd)
+                        {
+                            if (HandleStatement(s, inInfo, ref outInfo))
+                                return true;
+                        }
+                    }
+                    else
+                        ReportMessage(decl, ["struct"], ErrorCode.Get(CTEN.DeclExpectedInClassStruct));
+                    return false;
                 }
 
                 // mark the decl as nested if it is:
@@ -103,12 +132,12 @@ namespace HapetFrontend.Parsing
                 }
 
                 // error - unexpected decl in struct type
-                if (decl is not AstVarDecl && 
-                    decl is not AstFuncDecl &&
-                    decl is not AstClassDecl &&
-                    decl is not AstStructDecl)
+                if (realDecl is not AstVarDecl &&
+                    realDecl is not AstFuncDecl &&
+                    realDecl is not AstClassDecl &&
+                    realDecl is not AstStructDecl)
                 {
-                    ReportMessage(decl, [], ErrorCode.Get(CTEN.UnexpectedDeclInStruct));
+                    ReportMessage(realDecl, [], ErrorCode.Get(CTEN.UnexpectedDeclInStruct));
                 }
 
                 declarations.Add(realDecl);
@@ -121,24 +150,16 @@ namespace HapetFrontend.Parsing
                 }
                 else if (next.Type == TokenType.CloseBrace || next.Type == TokenType.EOF)
                 {
-                    break;
+                    return true;
                 }
-                else if (decl is AstVarDecl && next.Type == TokenType.Semicolon)
+                else if (realDecl is AstVarDecl && next.Type == TokenType.Semicolon)
                 {
                     // it is just a ';' at the end of class field
                     NextToken();
                     SkipNewlines();
                 }
+                return false;
             }
-
-            end = Consume(TokenType.CloseBrace, ErrMsg("}", "at end of struct declaration")).Location;
-
-            structDecl.Location = new Location(beg, end);
-            structDecl.InheritedFrom = inherited;
-            structDecl.HasGenericTypes = generics.Count > 0;
-            structDecl.GenericConstrains = genericConstrains;
-            structDecl.IsImported = inInfo.ExternalMetadata;
-            return structDecl;
         }
     }
 }

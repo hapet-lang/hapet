@@ -1,10 +1,12 @@
 ﻿using HapetFrontend.Ast;
 using HapetFrontend.Ast.Declarations;
 using HapetFrontend.Ast.Expressions;
+using HapetFrontend.Ast.Statements;
 using HapetFrontend.Entities;
 using HapetFrontend.Errors;
 using HapetFrontend.Helpers;
 using System.Collections.Generic;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace HapetFrontend.Parsing
 {
@@ -85,20 +87,56 @@ namespace HapetFrontend.Parsing
 
             ConsumeUntil(TokenType.OpenBrace, ErrMsg("{", "at beginning of class body"), true);
 
+            Token next;
             SkipNewlines();
             while (true)
             {
-                var next = PeekToken();
+                next = PeekToken();
                 if (next.Type == TokenType.CloseBrace || next.Type == TokenType.EOF)
                     break;
 
                 // clear doc string so parent's doc won't be there
                 ClearDocString();
                 var decl = ParseTopLevel(inInfo, ref outInfo);
+
+                if (HandleStatement(decl, inInfo, ref outInfo))
+                    break;
+            }
+            end = Consume(TokenType.CloseBrace, ErrMsg("}", "at end of declaration")).Location;
+
+            if (isInterface)
+            {
+                // check if there are fields - warn user
+                var field = declarations.FirstOrDefault(x => x is AstVarDecl && x is not AstPropertyDecl);
+                if (field != null)
+                    ReportMessage(field.Location, [], ErrorCode.Get(CTWN.FieldsInInterface), reportType: Entities.ReportType.Warning);
+            }
+
+            classDecl.Location = new Location(beg, end);
+            classDecl.InheritedFrom = inherited;
+            classDecl.IsInterface = isInterface;
+            classDecl.HasGenericTypes = generics.Count > 0;
+            classDecl.GenericConstrains = genericConstrains;
+            classDecl.IsImported = inInfo.ExternalMetadata;
+            return classDecl;
+
+            bool HandleStatement(AstStatement decl, ParserInInfo inInfo, ref ParserOutInfo outInfo)
+            {
                 if (decl is not AstDeclaration realDecl)
                 {
-                    ReportMessage(decl, ["class"], ErrorCode.Get(CTEN.DeclExpectedInClassStruct));
-                    continue;
+                    if (decl is AstDirectiveStmt dir)
+                    {
+                        // cringe kostyl to handle directives
+                        var statementsToAdd = HandleDirective(dir, CurrentSourceFile, inInfo, ref outInfo);
+                        foreach (var s in statementsToAdd)
+                        {
+                            if (HandleStatement(s, inInfo, ref outInfo))
+                                return true;
+                        }
+                    }
+                    else
+                        ReportMessage(decl, ["class"], ErrorCode.Get(CTEN.DeclExpectedInClassStruct));
+                    return false;
                 }
 
                 // mark the decl as nested if it is:
@@ -120,7 +158,7 @@ namespace HapetFrontend.Parsing
                 }
                 else if (next.Type == TokenType.CloseBrace || next.Type == TokenType.EOF)
                 {
-                    break;
+                    return true;
                 }
                 else if (decl is AstVarDecl && next.Type == TokenType.Semicolon)
                 {
@@ -128,24 +166,8 @@ namespace HapetFrontend.Parsing
                     NextToken();
                     SkipNewlines();
                 }
+                return false;
             }
-            end = Consume(TokenType.CloseBrace, ErrMsg("}", "at end of declaration")).Location;
-
-            if (isInterface)
-            {
-                // check if there are fields - warn user
-                var field = declarations.FirstOrDefault(x => x is AstVarDecl && x is not AstPropertyDecl);
-                if (field != null)
-                    ReportMessage(field.Location, [], ErrorCode.Get(CTWN.FieldsInInterface), reportType: Entities.ReportType.Warning);
-            }
-
-            classDecl.Location = new Location(beg, end);
-            classDecl.InheritedFrom = inherited;
-            classDecl.IsInterface = isInterface;
-            classDecl.HasGenericTypes = generics.Count > 0;
-            classDecl.GenericConstrains = genericConstrains;
-            classDecl.IsImported = inInfo.ExternalMetadata;
-            return classDecl;
         }
     }
 }

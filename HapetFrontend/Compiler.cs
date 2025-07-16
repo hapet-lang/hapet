@@ -128,6 +128,8 @@ namespace HapetFrontend
 
             while (true)
             {
+                parser.CurrentSourceFile = currentFile;
+
                 var s = parser.ParseTopLevel(inInfo, ref outInfo);
                 if (s == null)
                     break;
@@ -175,7 +177,11 @@ namespace HapetFrontend
 
                 // just handle directive and do not add them
                 if (s is AstDirectiveStmt dir3)
-                    HandleDirective(dir3, parser, currentFile, lexer, inInfo, ref outInfo);
+                {
+                    var statementsToAdd = parser.HandleDirective(dir3, currentFile, inInfo, ref outInfo);
+                    foreach (var ss in statementsToAdd)
+                        HandleStatement(ss, currentFile, lexer);
+                }
                 else
                     HandleStatement(s, currentFile, lexer);
             }
@@ -200,13 +206,19 @@ namespace HapetFrontend
             ParserOutInfo outInfo = ParserOutInfo.Default;
             while (true)
             {
+                parser.CurrentSourceFile = file;
+
                 var s = parser.ParseTopLevel(inInfo, ref outInfo);
                 if (s == null)
                     break;
 
                 // just handle directive and do not add them
                 if (s is AstDirectiveStmt dir3)
-                    HandleDirective(dir3, parser, file, lexer, inInfo, ref outInfo);
+                {
+                    var statementsToAdd = parser.HandleDirective(dir3, file, inInfo, ref outInfo);
+                    foreach (var ss in statementsToAdd)
+                        HandleStatement(ss, file, lexer);
+                }
                 else
                     HandleStatement(s, file, lexer);
             }
@@ -220,44 +232,6 @@ namespace HapetFrontend
             file.Namespace = normalNamespace;
 
             return file;
-        }
-
-        private void HandleDirective(AstDirectiveStmt directive, Parser parser, ProgramFile file, ILexer lexer, ParserInInfo inInfo, ref ParserOutInfo outInfo)
-        {
-            switch (directive.DirectiveType)
-            {
-                case Enums.DirectiveType.If:
-                    {
-                        var statementsToAdd = parser.HandleIfDirective(directive, file, inInfo, ref outInfo);
-                        foreach (var s in statementsToAdd)
-                            HandleStatement(s, file, lexer);
-                        break;
-                    }
-                case Enums.DirectiveType.Define:
-                    {
-                        file.Defines.Add(directive);
-                        break;
-                    }
-                case Enums.DirectiveType.Undef:
-                    {
-                        var d = file.Defines.FirstOrDefault(x => x.RightPart.Name == directive.RightPart.Name);
-                        if (d != null)
-                            file.Defines.Remove(d);
-                        else 
-                            CurrentProjectData.Defines.Remove(directive.RightPart.Name);
-                        break;
-                    }
-                case Enums.DirectiveType.Error:
-                    {
-                        MessageHandler.ReportMessage(lexer.Text, directive, [directive.Value.OutValue as string], ErrorCode.Get(CTEN.UserDefinedError));
-                        break;
-                    }
-                case Enums.DirectiveType.Warning:
-                    {
-                        MessageHandler.ReportMessage(lexer.Text, directive, [directive.Value.OutValue as string], ErrorCode.Get(CTWN.UserDefinedWarning), reportType: ReportType.Warning);
-                        break;
-                    }
-            }
         }
 
         private void HandleStatement(AstStatement s, ProgramFile file, ILexer lexer)

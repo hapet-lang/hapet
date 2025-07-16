@@ -88,6 +88,42 @@ namespace HapetFrontend.Parsing
             return new AstEmptyStmt();
         }
 
+        internal List<AstStatement> HandleDirective(AstDirectiveStmt directive, ProgramFile file, ParserInInfo inInfo, ref ParserOutInfo outInfo)
+        {
+            switch (directive.DirectiveType)
+            {
+                case Enums.DirectiveType.If:
+                    {
+                        return HandleIfDirective(directive, file, inInfo, ref outInfo);
+                    }
+                case Enums.DirectiveType.Define:
+                    {
+                        file.Defines.Add(directive);
+                        break;
+                    }
+                case Enums.DirectiveType.Undef:
+                    {
+                        var d = file.Defines.FirstOrDefault(x => x.RightPart.Name == directive.RightPart.Name);
+                        if (d != null)
+                            file.Defines.Remove(d);
+                        else
+                            _compiler.CurrentProjectData.Defines.Remove(directive.RightPart.Name);
+                        break;
+                    }
+                case Enums.DirectiveType.Error:
+                    {
+                        _messageHandler.ReportMessage(_lexer.Text, directive, [directive.Value.OutValue as string], ErrorCode.Get(CTEN.UserDefinedError));
+                        break;
+                    }
+                case Enums.DirectiveType.Warning:
+                    {
+                        _messageHandler.ReportMessage(_lexer.Text, directive, [directive.Value.OutValue as string], ErrorCode.Get(CTWN.UserDefinedWarning), reportType: ReportType.Warning);
+                        break;
+                    }
+            }
+            return new List<AstStatement>();
+        }
+
         internal List<AstStatement> HandleIfDirective(AstDirectiveStmt ifDir, ProgramFile file, ParserInInfo inInfo, ref ParserOutInfo outInfo)
         {
             List<AstStatement> toReturn = null;

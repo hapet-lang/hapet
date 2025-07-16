@@ -22,6 +22,8 @@ namespace HapetFrontend.Parsing
         private Token _lastNonWhitespace = null;
 
         private Token _currentToken = null;
+        public ProgramFile CurrentSourceFile { get; set; }
+
         private Token CurrentToken => _currentToken; // probably could be public
 
         private readonly StringBuilder _docString = new StringBuilder();
