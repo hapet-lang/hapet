@@ -44,6 +44,7 @@ namespace HapetBackend.Llvm.Linkers.Windows
             filename = Path.Combine(dir, filename);
             var lldArgs = new List<string>();
             lldArgs.Add($"/out:{filename}{outFileExtension}");
+            lldArgs.Add($"/IMPLIB:{filename}.lib");
             // lldArgs.Add("/errorlimit:0"); // gives me a warning
 
             // current compiler directory
@@ -83,13 +84,13 @@ namespace HapetBackend.Llvm.Linkers.Windows
             if (!LinkPlatformLibraries(compiler, lldArgs, messageHandler, target))
                 return false;
 
+            // generated object files
+            lldArgs.Add(objFile);
+
             foreach (var linc in libraries)
             {
                 lldArgs.Add(linc);
             }
-
-            // generated object files
-            lldArgs.Add(objFile);
 
             // searching for win linker
             string vsBinFolder = FindVisualStudioBinaryDirectory();
@@ -104,12 +105,14 @@ namespace HapetBackend.Llvm.Linkers.Windows
                 messageHandler.ReportMessage([], ErrorCode.Get(CTEN.NoVisualStudioHost));
                 return false;
             }
-            string vsLinkerFile = $"{vsLinkerFolder}\\link.exe";
+            string vsLinkerFile = $"lld-link.exe";
             if (!File.Exists(vsLinkerFile))
             {
                 messageHandler.ReportMessage([], ErrorCode.Get(CTEN.NoVisualStudioLinker));
                 return false;
             }
+
+            lldArgs.Add("/lldmingw");
 
             if (verbose)
                 Console.WriteLine("[LINKER] " + vsLinkerFile + " " + string.Join(" ", lldArgs.Select(a => $"\"{a}\"")));

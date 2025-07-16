@@ -44,29 +44,30 @@ namespace HapetBackend.Llvm
             }
 
             LLVMTypeRef virtualTableType = GetVirtualTableType();
-
-            // parent param
-            var ptrT = LLVMTypeRef.CreatePointer(virtualTableType, 0);
-            var nullPtr = LLVMValueRef.CreateConstPointerNull(ptrT);
-            LLVMValueRef parentRef = parent == null ? nullPtr : GenerateVirtualTableConst(parent);
-            // virtual methods
-            var virtualMethods = GetVtableArray(type, out int virtualMethodsCount);
-            LLVMValueRef virtualMethodsCountRef = LLVMValueRef.CreateConstInt(_context.Int32Type, (ulong)virtualMethodsCount);
-            // interfaces
-            var (interfaces, interfaceOffsets) = GetVtableInterfacesArray(type, out int interfacesCount);
-            LLVMValueRef interfacesCountRef = LLVMValueRef.CreateConstInt(_context.Int8Type, (ulong)interfacesCount);
-
             var globConst = _module.AddGlobal(virtualTableType, $"VirtualTable::{typeNameString}");
-            globConst.Initializer = LLVMValueRef.CreateConstNamedStruct(virtualTableType, new LLVMValueRef[] { parentRef, virtualMethods, virtualMethodsCountRef, interfaces, interfaceOffsets, interfacesCountRef });
-
-            globConst.Linkage = LLVMLinkage.LLVMExternalLinkage;
-            if (decl.IsImported)
-                globConst.DLLStorageClass = LLVMDLLStorageClass.LLVMDLLImportStorageClass;
-            else
-                globConst.DLLStorageClass = LLVMDLLStorageClass.LLVMDLLExportStorageClass;
-            
             globConst.IsGlobalConstant = true;
+            globConst.Linkage = LLVMLinkage.LLVMExternalLinkage;
 
+            if (decl.IsImported)
+            {
+                globConst.DLLStorageClass = LLVMDLLStorageClass.LLVMDLLImportStorageClass;
+            }
+            else
+            {
+                // parent param
+                var ptrT = LLVMTypeRef.CreatePointer(virtualTableType, 0);
+                var nullPtr = LLVMValueRef.CreateConstPointerNull(ptrT);
+                LLVMValueRef parentRef = parent == null ? nullPtr : GenerateVirtualTableConst(parent);
+                // virtual methods
+                var virtualMethods = GetVtableArray(type, out int virtualMethodsCount);
+                LLVMValueRef virtualMethodsCountRef = LLVMValueRef.CreateConstInt(_context.Int32Type, (ulong)virtualMethodsCount);
+                // interfaces
+                var (interfaces, interfaceOffsets) = GetVtableInterfacesArray(type, out int interfacesCount);
+                LLVMValueRef interfacesCountRef = LLVMValueRef.CreateConstInt(_context.Int8Type, (ulong)interfacesCount);
+
+                globConst.Initializer = LLVMValueRef.CreateConstNamedStruct(virtualTableType, new LLVMValueRef[] { parentRef, virtualMethods, virtualMethodsCountRef, interfaces, interfaceOffsets, interfacesCountRef });
+                globConst.DLLStorageClass = LLVMDLLStorageClass.LLVMDLLExportStorageClass;
+            }
             _virtualTableDictionary.Add(type, globConst);
 
             return globConst;
