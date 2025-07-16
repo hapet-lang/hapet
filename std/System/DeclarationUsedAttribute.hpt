@@ -1,0 +1,7 @@
+[SuppressStaticCtorCall]
+public class DeclarationUsedAttribute : Attribute
+{
+    public DeclarationUsedAttribute()
+    {
+    }
+}

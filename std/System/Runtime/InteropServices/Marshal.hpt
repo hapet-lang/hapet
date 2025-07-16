@@ -3,18 +3,23 @@ using System;
 [SuppressStaticCtorCall]
 public static class Marshal
 {
+    [DeclarationUsed]
     [DllImport("", "malloc")]
     public static extern void* Malloc(int size);
 
+    [DeclarationUsed]
     [DllImport("", "free")]
     public static extern void Free(void* ptr);
 
+    [DeclarationUsed]
     [DllImport("", "memset")]
     public static extern void* Memset(void* memptr, int val, uintptr num);
 
+    [DeclarationUsed]
     [DllImport("", "memcpy")]
     public static extern void* Memcpy(void* dst, void* src, uintptr count);
 
+    [DeclarationUsed]
     [DllImport("", "memcmp")]
     public static extern int Memcmp(void* memptr1, void* memptr2, uintptr num);
 }

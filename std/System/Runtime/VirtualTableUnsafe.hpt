@@ -1,5 +1,6 @@
 using System;
 
+[DeclarationUsed]
 [SuppressStaticCtorCall]
 public struct VirtualTableUnsafe
 {

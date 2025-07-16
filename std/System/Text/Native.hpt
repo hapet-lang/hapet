@@ -4,6 +4,7 @@ using System.Text;
 [SuppressStaticCtorCall]
 public class Native
 {
+    [DeclarationUsed]
     public static string[] GetParametersArray(int argc, byte** argv)
     {
         string[] arr = new string[argc];

@@ -1,18 +1,22 @@
+[DeclarationUsed]
 [SuppressStaticCtorCall]
 public abstract class ValueType
 {
+    [DeclarationUsed]
     public override bool Equals(object obj)
     {
         // TODO:
         return true;
     }
 
+    [DeclarationUsed]
     public override int GetHashCode()
     {
         // TODO: 
         return 0;
     }
 
+    [DeclarationUsed]
     public override string ToString()
     {
         // TODO:

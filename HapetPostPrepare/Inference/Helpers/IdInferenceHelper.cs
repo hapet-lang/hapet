@@ -319,9 +319,6 @@ namespace HapetPostPrepare
             TryAssignConstValueToExpr(idExpr, typed.Decl, inInfo, ref outInfo2);
             CheckForObsoleteAttr(typed.Decl, idExpr);
             idExpr.FindSymbol = typed;
-
-            // set that it is used 
-            typed.Decl.IsDeclarationUsed = true;
         }
 
         /// <summary>

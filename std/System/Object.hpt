@@ -1,22 +1,27 @@
+[DeclarationUsed]
 [SuppressStaticCtorCall]
 public class Object
 {
+    [DeclarationUsed]
     public void GetType()
     {
         // TODO:
     }
 
+    [DeclarationUsed]
     public virtual string ToString()
     {
         // TODO: get type name
         return "";
     }
 
+    [DeclarationUsed]
     public virtual bool Equals(object obj)
     {
         return this == obj;
     }
 
+    [DeclarationUsed]
     public static bool Equals(object objA, object objB)
     {
         if (objA == objB)
@@ -35,6 +40,7 @@ public class Object
         return objA == objB;
     }
 
+    [DeclarationUsed]
     public virtual int GetHashCode()
     {
         // TODO: 
