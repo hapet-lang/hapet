@@ -272,12 +272,6 @@ namespace HapetBackend.Llvm
                         return llvmType;
                     }
 
-                case TupleType t:
-                    {
-                        var memTypes = t.Members.Select(m => HapetTypeToLLVMType(m.type)).ToArray();
-                        return _context.GetStructType(memTypes, false);
-                    }
-
                 default:
                     throw new NotImplementedException(HapetType.AsString(ht));
             }

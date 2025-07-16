@@ -33,10 +33,5 @@ namespace HapetFrontend.Ast.Expressions
             };
             return copy;
         }
-
-        public static AstStructDecl GetStringStruct(Scope scope)
-        {
-            return (scope.GetSymbolInNamespace("System", new AstIdExpr("String")) as DeclSymbol).Decl as AstStructDecl;
-        }
     }
 }

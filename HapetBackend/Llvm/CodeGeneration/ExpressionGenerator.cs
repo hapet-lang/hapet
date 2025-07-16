@@ -1227,7 +1227,7 @@ namespace HapetBackend.Llvm
             // so stmts like 'a = (b = 3);' would be allowed...
         }
 
-        private static ulong _forCounter;
+        private ulong _forCounter;
         // these blocks are needed for break and continue statements
         private LLVMBasicBlockRef _currentLoopInc = null;
         private LLVMBasicBlockRef _currentLoopEnd = null;
@@ -1325,7 +1325,7 @@ namespace HapetBackend.Llvm
             _currentLoopEnd = prevForEnd;
         }
 
-        private static ulong _whileCounter;
+        private ulong _whileCounter;
         private unsafe void GenerateWhileStmt(AstWhileStmt stmt)
         {
             // WARN: this strange code is not just for 'fun'
@@ -1406,7 +1406,7 @@ namespace HapetBackend.Llvm
             _currentLoopEnd = prevWhileEnd;
         }
 
-        private static ulong _ifCounter;
+        private ulong _ifCounter;
         private unsafe void GenerateIfStmt(AstIfStmt stmt)
         {
             // WARN: this strange code is not just for 'fun'
@@ -1500,7 +1500,7 @@ namespace HapetBackend.Llvm
             _builder.PositionAtEnd(bbEnd);
         }
 
-        private static ulong _switchCounter;
+        private ulong _switchCounter;
         private unsafe void GenerateSwitchStmt(AstSwitchStmt stmt)
         {
             _switchCounter++;

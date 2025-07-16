@@ -60,10 +60,5 @@ namespace HapetFrontend.Ast.Declarations
             copy.GenericConstrains = copiedConstrains;
             return copy;
         }
-
-        public static AstClassDecl GetDelegateClass(Scope scope)
-        {
-            return (scope.GetSymbolInNamespace("System", new AstIdExpr("Delegate")) as DeclSymbol).Decl as AstClassDecl;
-        }
     }
 }

@@ -7,11 +7,11 @@ using System.Runtime.InteropServices;
 
 namespace HapetBackend.Llvm.Linkers.Windows
 {
-    public static partial class WinLinker
+    public partial class WinLinker
     {
-        private static Compiler _compiler;
+        private Compiler _compiler;
 
-        public static bool Link(Compiler compiler, string targetFile, string objFile, IEnumerable<string> libraryIncludeDirectories, IEnumerable<string> libraries, IMessageHandler messageHandler)
+        public bool Link(Compiler compiler, string targetFile, string objFile, IEnumerable<string> libraryIncludeDirectories, IEnumerable<string> libraries, IMessageHandler messageHandler)
         {
             ArgumentNullException.ThrowIfNull(compiler);
             ArgumentNullException.ThrowIfNull(libraryIncludeDirectories);

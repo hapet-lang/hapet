@@ -4,9 +4,9 @@ using HapetFrontend.Errors;
 
 namespace HapetBackend.Llvm.Linkers.Windows
 {
-    public static partial class WinLinker
+    public partial class WinLinker
     {
-        private static bool LinkPlatformLibraries(Compiler compiler, List<string> lldArgs, IMessageHandler messageHandler, string target)
+        private bool LinkPlatformLibraries(Compiler compiler, List<string> lldArgs, IMessageHandler messageHandler, string target)
         {
             // platform libraries
             switch (compiler.CurrentProjectSettings.TargetPlatformData.TargetPlatform)

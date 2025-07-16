@@ -5,8 +5,6 @@ using HapetFrontend.Ast.Statements;
 using HapetFrontend.Entities;
 using HapetFrontend.Errors;
 using HapetFrontend.Helpers;
-using System.Collections.Generic;
-using static System.Net.Mime.MediaTypeNames;
 
 namespace HapetFrontend.Parsing
 {

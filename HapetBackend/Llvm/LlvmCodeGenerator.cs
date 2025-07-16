@@ -168,7 +168,7 @@ namespace HapetBackend.Llvm
             {
                 case TargetPlatform.Win86:
                 case TargetPlatform.Win64:
-                    return WinLinker.Link(_compiler, exeFile, objFile, libraryIncludeDirectories, libraries, messageHandler);
+                    return (new WinLinker()).Link(_compiler, exeFile, objFile, libraryIncludeDirectories, libraries, messageHandler);
                 case TargetPlatform.Linux86:
                 case TargetPlatform.Linux64:
                 // TODO: ... 

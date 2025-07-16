@@ -1,11 +1,12 @@
 ﻿using HapetFrontend.Entities;
 using HapetFrontend.Errors;
+using HapetFrontend.Extensions;
 using Microsoft.Win32;
 using System.Security.AccessControl;
 
 namespace HapetBackend.Llvm.Linkers.Windows
 {
-    public static partial class WinLinker
+    public partial class WinLinker
     {
         internal sealed class HapetWindowsSdk
         {
@@ -15,7 +16,7 @@ namespace HapetBackend.Llvm.Linkers.Windows
             public string UmPath { get; set; }
         }
 
-        public static string GetLatestSdkVersion(string sdkPath, string[] skips = null)
+        public string GetLatestSdkVersion(string sdkPath, string[] skips = null)
         {
             int v0 = 0, v1 = 0, v2 = 0, v3 = 0;
             string version = null;
@@ -54,7 +55,7 @@ namespace HapetBackend.Llvm.Linkers.Windows
         }
 
 #pragma warning disable CA1416 // Проверка совместимости платформы
-        internal static HapetWindowsSdk FindWindowsSdk(string target, IMessageHandler messageHandler)
+        internal HapetWindowsSdk FindWindowsSdk(string target, IMessageHandler messageHandler)
         {
             using (var localMachine = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Default))
 

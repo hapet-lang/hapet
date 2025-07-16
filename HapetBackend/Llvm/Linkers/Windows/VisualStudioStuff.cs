@@ -1,28 +1,13 @@
 ﻿using HapetFrontend;
 using HapetFrontend.Helpers;
+using HapetFrontend.Extensions;
 using System.Text;
 using System.Text.RegularExpressions;
 
 namespace HapetBackend.Llvm.Linkers.Windows
 {
-    public static partial class WinLinker
+    public partial class WinLinker
     {
-        public static IEnumerable<string> Scan(this string value, string pattern)
-        {
-            var regex = new Regex(pattern);
-            var matches = regex.Match(value);
-
-            foreach (Group c in matches.Groups)
-            {
-                yield return c.Value;
-            }
-        }
-
-        public static IEnumerable<string> Scan1(this string value, string pattern)
-        {
-            return value.Scan(pattern).Skip(1);
-        }
-
 #pragma warning disable CA1812 // Class is not instantiated
         internal sealed class VsWhere
         {
@@ -43,7 +28,7 @@ namespace HapetBackend.Llvm.Linkers.Windows
         }
 #pragma warning restore CA1812 // Class is not instantiated
 
-        private static (int, string) FindVSInstallDirWithVsWhere(int skipLatest = 0)
+        private (int, string) FindVSInstallDirWithVsWhere(int skipLatest = 0)
         {
             try
             {
@@ -148,7 +133,7 @@ namespace HapetBackend.Llvm.Linkers.Windows
             }
         }
 
-        public static string FindVisualStudioLibraryDirectory()
+        public string FindVisualStudioLibraryDirectory()
         {
             var (version, dir) = FindVSInstallDirWithVsWhere();
 
@@ -164,7 +149,7 @@ namespace HapetBackend.Llvm.Linkers.Windows
             return FindVSLibDir(version, dir);
         }
 
-        public static string FindVisualStudioBinaryDirectory()
+        public string FindVisualStudioBinaryDirectory()
         {
             var (version, dir) = FindVSInstallDirWithVsWhere();
 
