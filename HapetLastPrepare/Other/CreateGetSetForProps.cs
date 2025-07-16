@@ -19,7 +19,7 @@ namespace HapetLastPrepare
             propDecl.ContainingParent.GetDeclarations().AddRange(newDecls);
             foreach (var d in newDecls)
             {
-                d.IsDeclarationUsed = true;
+                d.IsDeclarationUsed = propDecl.IsDeclarationUsed;
 
                 _postPreparer.SetScopeAndParent(d, propDecl);
                 _postPreparer.PostPrepareDeclScoping(d);

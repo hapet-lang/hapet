@@ -33,7 +33,7 @@ namespace HapetLastPrepare
             if (SpecialKeysHelper.HasSpecialKeyType(varDecl, 1, out int ind))
                 fGet.SpecialKeys.Add(varDecl.SpecialKeys[ind]);
             fGet.IsImported = varDecl.IsImported;
-            fGet.IsDeclarationUsed = true;
+            fGet.IsDeclarationUsed = varDecl.IsDeclarationUsed;
             fGet.IsStaticVarFunction = true;
             fGet.ContainingParent = varDecl.ContainingParent;
 
@@ -61,7 +61,7 @@ namespace HapetLastPrepare
                 if (SpecialKeysHelper.HasSpecialKeyType(varDecl, 1, out int ind2))
                     fSet.SpecialKeys.Add(varDecl.SpecialKeys[ind2]);
                 fSet.IsImported = varDecl.IsImported;
-                fSet.IsDeclarationUsed = true;
+                fSet.IsDeclarationUsed = varDecl.IsDeclarationUsed;
                 fSet.IsStaticVarFunction = true;
                 fSet.ContainingParent = varDecl.ContainingParent;
 

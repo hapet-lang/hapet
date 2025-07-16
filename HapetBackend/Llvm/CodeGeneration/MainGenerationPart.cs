@@ -315,7 +315,7 @@ namespace HapetBackend.Llvm
             if ((func.ClassFunctionType == ClassFunctionType.Ctor ||
                 func.ClassFunctionType == ClassFunctionType.Dtor ||
                 func.ClassFunctionType == ClassFunctionType.Initializer) &&
-                func.ContainingParent.IsDeclarationUsed)
+                GetNormalDeclIsUsed(func.ContainingParent))
                 return false;
 
             // also we need to skip here stors of generic impls
@@ -324,7 +324,7 @@ namespace HapetBackend.Llvm
                 return true;
 
             // skip generation of imported-not-used functions
-            if (func.IsImported && !func.IsDeclarationUsed &&
+            if (func.IsImported && !GetNormalDeclIsUsed(func) &&
                 !func.SpecialKeys.Contains(TokenType.KwVirtual) &&
                 !func.SpecialKeys.Contains(TokenType.KwAbstract) &&
                 !func.SpecialKeys.Contains(TokenType.KwOverride))
@@ -339,9 +339,19 @@ namespace HapetBackend.Llvm
                 return false;
 
             // skip generation of imported-not-used decls
-            if (decl.IsImported && !decl.IsDeclarationUsed)
+            if (decl.IsImported && !GetNormalDeclIsUsed(decl))
                 return true;
             return false;
+        }
+
+        private bool GetNormalDeclIsUsed(AstDeclaration decl)
+        {
+            // is decl used or
+            // decl is propa field/func and propa is used
+            bool isUsed = decl.IsDeclarationUsed ||
+                          (decl is AstVarDecl vd1 && vd1.IsPropertyField && vd1.NormalParent is AstDeclaration pd1 && pd1.IsDeclarationUsed) ||
+                          (decl is AstFuncDecl fd1 && fd1.IsPropertyFunction && fd1.NormalParent is AstDeclaration pd2 && pd2.IsDeclarationUsed);
+            return isUsed;
         }
     }
 }
