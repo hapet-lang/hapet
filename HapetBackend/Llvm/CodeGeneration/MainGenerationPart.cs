@@ -216,7 +216,7 @@ namespace HapetBackend.Llvm
             string dllName = dllImportAttr.Arguments[0].OutValue as string;
             string entryPoint = dllImportAttr.Arguments[1].OutValue as string;
 
-            HapetType vaListType = _postPreparer.VaListType;
+            HapetType vaListType = HapetType.CurrentTypeContext.VaListType;
             HapetType ptrToVaListType = PointerType.GetPointerType(vaListType);
             LLVMTypeRef funcType;
             LLVMValueRef funcValue;

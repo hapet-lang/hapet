@@ -28,7 +28,6 @@ namespace HapetPostPrepare
 
         private int PostPrepareMetadata()
         {
-            AllPostPrepareMetadataEmbededTypes();
             AllPostPrepareMetadataTypes();
             AllPostPrepareMetadataGenerics();
             AllPostPrepareMetadataInheritance();
@@ -55,11 +54,6 @@ namespace HapetPostPrepare
             RemoveAllProperties();
 
             return 0;
-        }
-
-        private void AllPostPrepareMetadataEmbededTypes()
-        {
-            PostPrepareMetadataEmbededTypes();
         }
 
         private void AllPostPrepareMetadataTypes()

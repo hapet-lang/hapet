@@ -18,6 +18,11 @@ namespace HapetPostPrepare
                 decl.Type.OutType = HapetType.CurrentTypeContext.ObjectTypeInstance;
                 HapetType.CurrentTypeContext.ObjectTypeInstance.Declaration = decl as AstClassDecl;
             }
+            else if (typeName.Name == "System.Runtime.InteropServices.VaList")
+            {
+                decl.Type.OutType = HapetType.CurrentTypeContext.VaListType;
+                HapetType.CurrentTypeContext.VaListType.Declaration = decl as AstStructDecl;
+            }
             else if (typeName.Name == "System.Delegate")
             {
                 decl.Type.OutType = HapetType.CurrentTypeContext.DelegateTypeInstance;

@@ -1,0 +1,16 @@
+using System;
+
+// https://llvm.org/docs/LangRef.html#variable-argument-handling-intrinsics
+[SuppressStaticCtorCall]
+public struct VaList
+{
+// TODO: WARN:!!! not linux64 but UNIX 86_64. linux != unix 
+#if TARGET_PLATFORM == "linux-x64"
+    public int Hz1;
+    public int Hz2;
+    public byte* Hz3;
+    public byte* Hz4;
+#else
+    public byte* Hz1;
+#endif
+}
