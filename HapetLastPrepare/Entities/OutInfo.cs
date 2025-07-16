@@ -13,10 +13,6 @@ namespace HapetLastPrepare.Entities
         public AstNestedExpr IndexedObject { get; set; }
         public AstExpression IndexedIndex { get; set; }
 
-        public bool ItWasStaticConst { get; set; }
-        public AstVarDecl VarDecl { get; set; }
-        public bool IsStaticConstSet { get; set; }
-
         public static OutInfo Default => new OutInfo()
         {
         };

@@ -35,8 +35,6 @@ namespace HapetLastPrepare
             {
                 if (d is AstPropertyDecl pd)
                     CreateGetSetForProps(pd);
-                else if (d is AstVarDecl vd)
-                    CreateGetSetForStatic(vd);
             }
         }
     }

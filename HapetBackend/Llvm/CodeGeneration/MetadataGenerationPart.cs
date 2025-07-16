@@ -81,19 +81,18 @@ namespace HapetBackend.Llvm
 
                 if (GenericsHelper.ShouldTheDeclBeSkippedFromCodeGen(cls))
                 {
-                    if (!cls.IsImported)
-                        // getting all STATIC/CONST fields except props
-                        foreach (var decl in cls.Declarations.Where(x => x is AstVarDecl && x is not AstPropertyDecl).Select(x => x as AstVarDecl))
-                        {
-                            // need to make a ptr to a class
-                            var varType = decl.Type.OutType;
+                    // getting all STATIC/CONST fields except props
+                    foreach (var decl in cls.Declarations.Where(x => x is AstVarDecl && x is not AstPropertyDecl).Select(x => x as AstVarDecl))
+                    {
+                        // need to make a ptr to a class
+                        var varType = decl.Type.OutType;
 
-                            // check for const/static fields
-                            if (decl.SpecialKeys.Contains(TokenType.KwStatic) || decl.SpecialKeys.Contains(TokenType.KwConst))
-                            {
-                                CreateStaticField(decl, cls);
-                            }
+                        // check for const/static fields
+                        if (decl.SpecialKeys.Contains(TokenType.KwStatic) || decl.SpecialKeys.Contains(TokenType.KwConst))
+                        {
+                            CreateStaticField(decl, cls, cls.IsImported);
                         }
+                    }
                     continue;
                 }
 
@@ -112,8 +111,7 @@ namespace HapetBackend.Llvm
                         if (cls.IsImplOfGeneric)
                             continue;
 
-                        if (!cls.IsImported)
-                            CreateStaticField(decl, cls);
+                        CreateStaticField(decl, cls, cls.IsImported);
                     }
                     else
                     {
@@ -128,19 +126,18 @@ namespace HapetBackend.Llvm
 
                 if (GenericsHelper.ShouldTheDeclBeSkippedFromCodeGen(str))
                 {
-                    if (!str.IsImported)
-                        // getting all STATIC/CONST fields except props
-                        foreach (var decl in str.Declarations.Where(x => x is AstVarDecl && x is not AstPropertyDecl).Select(x => x as AstVarDecl))
-                        {
-                            // need to make a ptr to a class
-                            var varType = decl.Type.OutType;
+                    // getting all STATIC/CONST fields except props
+                    foreach (var decl in str.Declarations.Where(x => x is AstVarDecl && x is not AstPropertyDecl).Select(x => x as AstVarDecl))
+                    {
+                        // need to make a ptr to a class
+                        var varType = decl.Type.OutType;
 
-                            // check for const/static fields
-                            if (decl.SpecialKeys.Contains(TokenType.KwStatic) || decl.SpecialKeys.Contains(TokenType.KwConst))
-                            {
-                                CreateStaticField(decl, str);
-                            }
+                        // check for const/static fields
+                        if (decl.SpecialKeys.Contains(TokenType.KwStatic) || decl.SpecialKeys.Contains(TokenType.KwConst))
+                        {
+                            CreateStaticField(decl, str, str.IsImported);
                         }
+                    }
                     continue;
                 }
 
@@ -156,8 +153,7 @@ namespace HapetBackend.Llvm
                         if (str.IsImplOfGeneric)
                             continue;
 
-                        if (!str.IsImported)
-                            CreateStaticField(decl, str);
+                        CreateStaticField(decl, str, str.IsImported);
                     }
                     else
                     {
@@ -183,12 +179,22 @@ namespace HapetBackend.Llvm
                 }
             }
 
-            void CreateStaticField(AstVarDecl decl, AstDeclaration parent)
+            void CreateStaticField(AstVarDecl decl, AstDeclaration parent, bool isImported)
             {
                 var varName = $"{parent.Name.Name}::{decl.Name.Name}";
                 // creating a static field of the decl
                 var globStatic = _module.AddGlobal(HapetTypeToLLVMType(decl.Type.OutType), varName);
-                _initializersMapList.Add((decl.Symbol, decl.Initializer));
+                globStatic.Linkage = LLVMLinkage.LLVMExternalLinkage;
+
+                if (isImported)
+                {
+                    globStatic.DLLStorageClass = LLVMDLLStorageClass.LLVMDLLImportStorageClass;
+                }
+                else
+                {
+                    globStatic.DLLStorageClass = LLVMDLLStorageClass.LLVMDLLExportStorageClass;
+                    _initializersMapList.Add((decl.Symbol, decl.Initializer));
+                }
                 _valueMap[decl.Symbol] = globStatic;
             }
         }
