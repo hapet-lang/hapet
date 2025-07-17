@@ -303,11 +303,15 @@ namespace HapetLastPrepare
                 CheckUsedDeclsExpr(expr.GenericRealTypes[i]);
             }
 
+            if (expr.FindSymbol == null)
+                return;
             CheckUsedDeclsDecl((expr.FindSymbol as DeclSymbol).Decl);
         }
 
         private void CheckUsedDeclsIdExpr(AstIdExpr expr)
         {
+            if (expr.FindSymbol == null)
+                return;
             CheckUsedDeclsDecl((expr.FindSymbol as DeclSymbol).Decl);
         }
 
@@ -317,6 +321,8 @@ namespace HapetLastPrepare
             {
                 CheckUsedDeclsExpr(expr.TypeOrObjectName);
             }
+
+            CheckUsedDeclsExpr(expr.FuncName);
 
             foreach (var a in expr.Arguments)
             {
