@@ -135,6 +135,9 @@ namespace HapetPostPrepare
                 d.ContainingParent = alreadyDeclared;
                 d.Scope = alreadyDeclared.SubScope;
             }
+
+            // TODO: handle stors, ctors, ini, error on double dtors/stors
+
             alreadyDeclared.GetDeclarations().AddRange(declsToAdd);
 
             // remove from inference
