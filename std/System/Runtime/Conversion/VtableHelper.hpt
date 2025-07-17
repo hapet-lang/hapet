@@ -4,6 +4,7 @@ using System.Runtime;
 [SuppressStaticCtorCall]
 public static class VtableHelper
 {
+    [DeclarationUsed]
     public static void* GetMethodByIndex(void* obj, int index)
     {
         if ((uintptr)obj == (uintptr)0)
@@ -18,6 +19,7 @@ public static class VtableHelper
         return vtable.VirtualMethods[index];
     }
 
+    [DeclarationUsed]
     public static void* GetInterfaceMethodByIndex(void* obj, VirtualTableUnsafe* interfaceVtable, int methodIndex)
     {
         if ((uintptr)obj == (uintptr)0)

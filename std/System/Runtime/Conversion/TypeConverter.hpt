@@ -4,6 +4,7 @@ using System.Runtime;
 [SuppressStaticCtorCall]
 public static class TypeConverter
 {
+    [DeclarationUsed]
     public static bool CanBeDowncasted(void* obj, TypeInfoUnsafe* type)
     {
         if ((uintptr)obj == (uintptr)0)
@@ -25,6 +26,7 @@ public static class TypeConverter
         return false;
     }
 
+    [DeclarationUsed]
     public static bool CanBeDowncastedInterface(void* obj, TypeInfoUnsafe* type)
     {
         if ((uintptr)obj == (uintptr)0)
@@ -46,6 +48,7 @@ public static class TypeConverter
         return false;
     }
 
+    [DeclarationUsed]
     private static bool TypeImplementsInterface(TypeInfoUnsafe* type, TypeInfoUnsafe* searchType, bool checkInh)
     {
         TypeInfoUnsafe a = *((TypeInfoUnsafe*)type);
@@ -64,6 +67,7 @@ public static class TypeConverter
         return false;
     }
 
+    [DeclarationUsed]
     public static int GetInterfaceOffset(void* obj, TypeInfoUnsafe* interfaceType, int fieldIndex)
     {
         // TODO: throw exception
@@ -90,6 +94,7 @@ public static class TypeConverter
         return offset;
     }
 
+    [DeclarationUsed]
     public static void SetTypeInfo(void* obj, void* typeInfo)
     {
         ulong* negativeP = (ulong*)obj - 1;
