@@ -112,6 +112,7 @@ namespace HapetBackend.Llvm.Linkers.Windows
                 return false;
             }
 
+            // allows exporting variable symbols
             lldArgs.Add("/lldmingw");
 
             if (verbose)
