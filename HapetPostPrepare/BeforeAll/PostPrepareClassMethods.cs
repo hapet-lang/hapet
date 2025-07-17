@@ -347,6 +347,7 @@ namespace HapetPostPrepare
             theVar.SpecialKeys.Add(Lexer.CreateToken(TokenType.KwStatic, decl.Location.Beginning));
             theVar.SpecialKeys.Insert(0, Lexer.CreateToken(TokenType.KwUnreflected, decl.Location.Beginning));
             theVar.ContainingParent = decl;
+            theVar.IsStaticCtorField = true;
             decls.Add(theVar);
 
             // set 'true' to the var

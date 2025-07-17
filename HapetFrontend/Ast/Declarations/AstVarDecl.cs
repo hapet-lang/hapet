@@ -26,9 +26,9 @@ namespace HapetFrontend.Ast.Declarations
         public bool IsPropertyField { get; set; }
 
         /// <summary>
-        /// Handles get/set methods to access the static/const field (used only for static/const !!!)
+        /// 'true' if used to handle static ctor condition
         /// </summary>
-        public (AstFuncDecl, AstFuncDecl)? GetSetMethodsForStatic { get; set; }
+        public bool IsStaticCtorField { get; set; }
 
         public override string AAAName => nameof(AstVarDecl);
 
@@ -53,6 +53,7 @@ namespace HapetFrontend.Ast.Declarations
             {
                 IsPropertyField = IsPropertyField,
                 IsImported = IsImported,
+                IsStaticCtorField = IsStaticCtorField,
                 Scope = Scope,
                 SourceFile = SourceFile,
                 SubScope = SubScope,
@@ -75,6 +76,7 @@ namespace HapetFrontend.Ast.Declarations
             {
                 Parent = decl,
                 Scope = decl.SubScope,
+                IsStaticCtorField = IsStaticCtorField,
                 SourceFile = decl.SourceFile,
                 ContainingParent = decl
             };

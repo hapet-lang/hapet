@@ -6,6 +6,8 @@ using HapetFrontend.Extensions;
 using HapetFrontend.Scoping;
 using HapetFrontend.Helpers;
 using HapetFrontend.Types;
+using HapetFrontend.Parsing;
+using HapetFrontend.Enums;
 namespace HapetPostPrepare
 {
     public partial class PostPrepare
@@ -102,12 +104,49 @@ namespace HapetPostPrepare
             // TODO: better error like where is the first decl?
             if (smbl != null)
             {
-                _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, decl.Name, [scopeToDefine.Name], ErrorCode.Get(CTEN.NamespaceAlreadyContains));
+                // check for partials
+                if (smbl is DeclSymbol ds && ds.Decl.SpecialKeys.Contains(TokenType.KwPartial) && decl.SpecialKeys.Contains(TokenType.KwPartial))
+                {
+                    HandlePartialDeclarations(ds.Decl, decl);
+                }
+                else
+                {
+                    // TODO: different error when nested
+                    _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, decl.Name, [_currentSourceFile.Namespace], ErrorCode.Get(CTEN.NamespaceAlreadyContains));
+                }
             }
             else
             {
                 scopeToDefine.DefineDeclSymbol(decl.Name, decl);
                 PostPrepareAliases(decl.Name, scopeToDefine, decl);
+            }
+        }
+
+        private void HandlePartialDeclarations(AstDeclaration alreadyDeclared, AstDeclaration newOne)
+        {
+            alreadyDeclared.GetInheritedTypes().AddRange(newOne.GetInheritedTypes());
+            // skip here non-default funcs and static ctor field
+            var declsToAdd = newOne.GetDeclarations().Where(x => !(
+                (x is AstFuncDecl fnc && fnc.ClassFunctionType != ClassFunctionType.Default) || 
+                (x is AstVarDecl vd && vd.IsStaticCtorField)));
+            // change parent and subscope
+            foreach (var d in declsToAdd)
+            {
+                d.ContainingParent = alreadyDeclared;
+                d.Scope = alreadyDeclared.SubScope;
+            }
+            alreadyDeclared.GetDeclarations().AddRange(declsToAdd);
+
+            // remove from inference
+            if (newOne is AstClassDecl cls)
+            {
+                AllClassesMetadata.RemoveAll(x => x == cls);
+                _serializeClassesMetadata.RemoveAll(x => x == cls);
+            }
+            else if (newOne is AstStructDecl str)
+            {
+                AllStructsMetadata.RemoveAll(x => x == str);
+                _serializeStructsMetadata.RemoveAll(x => x == str);
             }
         }
     }
