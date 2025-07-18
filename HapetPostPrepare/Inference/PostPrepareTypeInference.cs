@@ -202,7 +202,7 @@ namespace HapetPostPrepare
                     var thisArg = new AstIdExpr("this", funcDecl.BaseCtorCall) 
                     { 
                         Location = funcDecl.BaseCtorCall.Location,
-                        Scope = funcDecl.BaseCtorCall.Scope,
+                        Scope = funcDecl.Body.SubScope,
                     };
                     SetScopeAndParent(thisArg, funcDecl.Body, funcDecl.Body.SubScope);
                     PostPrepareExprInference(thisArg, inInfo, ref outInfo);

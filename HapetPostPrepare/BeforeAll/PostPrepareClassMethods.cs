@@ -31,18 +31,12 @@ namespace HapetPostPrepare
 
         private void PostPrepareDeclMethodsInternal(AstDeclaration decl, ProgramFile file)
         {
-            if (decl is AstClassDecl classDecl)
-            {
-                PostPrepareStructMethodsInternal__(classDecl, file.IsImported);
-                foreach (var d in classDecl.Declarations)
-                    PostPrepareDeclMethodsInternal(d, file); // probably nested decls
-            }
-            else if (decl is AstStructDecl structDecl)
-            {
-                PostPrepareStructMethodsInternal__(structDecl, file.IsImported);
-                foreach (var d in structDecl.Declarations)
-                    PostPrepareDeclMethodsInternal(d, file); // probably nested decls
-            }
+            if (decl is not AstClassDecl && decl is not AstStructDecl)
+                return;
+
+            PostPrepareStructMethodsInternal__(decl, file.IsImported);
+            foreach (var d in decl.GetDeclarations())
+                PostPrepareDeclMethodsInternal(d, file); // probably nested decls
         }
 
         private void PostPrepareStructMethodsInternal__(AstDeclaration decl, bool forImported = false)
@@ -208,11 +202,9 @@ namespace HapetPostPrepare
             iniDecl.SpecialKeys.Insert(0, Lexer.CreateToken(TokenType.KwPrivate, decl.Location.Beginning)); // ini is private because it is called inside ctors
             iniDecl.ClassFunctionType = ClassFunctionType.Initializer;
             iniDecl.ContainingParent = decl;
+            iniDecl.IsSyntheticDeclaration = true;
 
-            if (decl is AstClassDecl classDecl)
-                classDecl.Declarations.Insert(0, iniDecl);
-            else if (decl is AstStructDecl structDecl)
-                structDecl.Declarations.Insert(0, iniDecl);
+            decl.GetDeclarations().Insert(0, iniDecl);
         }
 
         private void PostPrepareGenerateClassConstructor(AstDeclaration decl, List<AstFuncDecl> ctors)
@@ -245,11 +237,9 @@ namespace HapetPostPrepare
                 ctorDecl.SpecialKeys.Add(Lexer.CreateToken(TokenType.KwPublic, decl.Location.Beginning)); // default ctor is public
                 ctorDecl.ClassFunctionType = ClassFunctionType.Ctor;
                 ctorDecl.ContainingParent = decl;
+                ctorDecl.IsSyntheticDeclaration = true;
 
-                if (decl is AstClassDecl classDecl)
-                    classDecl.Declarations.Insert(1, ctorDecl); // the first one has to be ini func
-                else if (decl is AstStructDecl structDecl)
-                    structDecl.Declarations.Insert(1, ctorDecl); // the first one has to be ini func
+                decl.GetDeclarations().Insert(1, ctorDecl); // the first one has to be ini func
             }
             else
             {
@@ -297,11 +287,9 @@ namespace HapetPostPrepare
                 dtorDecl.SpecialKeys.Add(Lexer.CreateToken(TokenType.KwPublic, decl.Location.Beginning)); // default dtor is public
                 dtorDecl.ClassFunctionType = ClassFunctionType.Dtor;
                 dtorDecl.ContainingParent = decl;
+                dtorDecl.IsSyntheticDeclaration = true;
 
-                if (decl is AstClassDecl classDecl)
-                    classDecl.Declarations.Add(dtorDecl);
-                else if (decl is AstStructDecl structDecl)
-                    structDecl.Declarations.Add(dtorDecl);
+                decl.GetDeclarations().Add(dtorDecl);
             }
             else if (dtors.Count == 1)
             {
@@ -328,11 +316,7 @@ namespace HapetPostPrepare
             // location for all the things
             var comLoc = decl.Name.Location;
 
-            List<AstDeclaration> decls;
-            if (decl is AstStructDecl strDecl)
-                decls = strDecl.Declarations;
-            else
-                decls = (decl as AstClassDecl).Declarations;
+            List<AstDeclaration> decls = decl.GetDeclarations();
 
             // creating the ini block for fields
             var iniBlock = GetFieldsToInitialize(decl, true);
@@ -348,6 +332,7 @@ namespace HapetPostPrepare
             theVar.SpecialKeys.Insert(0, Lexer.CreateToken(TokenType.KwUnreflected, decl.Location.Beginning));
             theVar.ContainingParent = decl;
             theVar.IsStaticCtorField = true;
+            theVar.IsSyntheticDeclaration = true;
             decls.Add(theVar);
 
             // set 'true' to the var
@@ -375,7 +360,10 @@ namespace HapetPostPrepare
                 storDecl.SpecialKeys.Add(Lexer.CreateToken(TokenType.KwStatic, decl.Location.Beginning)); // stor is static
                 storDecl.ClassFunctionType = ClassFunctionType.StaticCtor;
                 storDecl.ContainingParent = decl;
+                storDecl.IsSyntheticDeclaration = true;
                 decls.Add(storDecl);
+
+                storDecl.IsSyntheticDeclaration = true;
             }
             else if (ctors.Count == 1)
             {
@@ -403,13 +391,9 @@ namespace HapetPostPrepare
         {
             // gettings all field decls and init them
             IEnumerable<AstVarDecl> allVarDecls;
-            if (declB is AstClassDecl classDecl)
+            if (declB is AstClassDecl || declB is AstStructDecl)
             {
-                allVarDecls = classDecl.Declarations.Where(x => x is AstVarDecl && x is not AstIndexerDecl).Select(x => x as AstVarDecl);
-            }
-            else if (declB is AstStructDecl structDecl)
-            {
-                allVarDecls = structDecl.Declarations.Where(x => x is AstVarDecl && x is not AstIndexerDecl).Select(x => x as AstVarDecl);
+                allVarDecls = declB.GetDeclarations().Where(x => x is AstVarDecl && x is not AstIndexerDecl).Select(x => x as AstVarDecl);
             }
             else
             {

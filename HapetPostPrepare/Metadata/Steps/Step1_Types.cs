@@ -136,7 +136,75 @@ namespace HapetPostPrepare
                 d.Scope = alreadyDeclared.SubScope;
             }
 
-            // TODO: handle stors, ctors, ini, error on double dtors/stors
+            // handle ini
+            var newIni = newOne.GetDeclarations().FirstOrDefault(x => x is AstFuncDecl fd && fd.ClassFunctionType == ClassFunctionType.Initializer);
+            var oldIni = alreadyDeclared.GetDeclarations().FirstOrDefault(x => x is AstFuncDecl fd && fd.ClassFunctionType == ClassFunctionType.Initializer);
+            if (newIni is AstFuncDecl newIniF && oldIni is AstFuncDecl oldIniF)
+            {
+                // just add all statements from new decl to old
+                foreach (var s in newIniF.Body.Statements)
+                {
+                    // skip last (? not sure) return stmt
+                    if (s is AstReturnStmt)
+                        continue;
+                    oldIniF.Body.Statements.Add(s);
+                }
+            }
+
+            // handle ctor
+            var newCtors = newOne.GetDeclarations().Where(x => x is AstFuncDecl fd && fd.ClassFunctionType == ClassFunctionType.Ctor);
+            var oldCtors = alreadyDeclared.GetDeclarations().Where(x => x is AstFuncDecl fd && fd.ClassFunctionType == ClassFunctionType.Ctor).ToArray();
+            foreach (var ct in newCtors)
+            {
+                // skip synthetic shite
+                if (ct.IsSyntheticDeclaration)
+                    continue;
+                // just replace ini call in new ctor
+                (ct as AstFuncDecl).Body.Statements[0] = (oldCtors[0] as AstFuncDecl).Body.Statements[0];
+                (ct as AstFuncDecl).Parameters[0].Type = (oldCtors[0] as AstFuncDecl).Parameters[0].Type;
+
+                ct.ContainingParent = alreadyDeclared;
+                ct.Scope = alreadyDeclared.SubScope;
+                alreadyDeclared.GetDeclarations().Add(ct);
+            }
+
+            // handle dtor
+            var newDtor = newOne.GetDeclarations().FirstOrDefault(x => x is AstFuncDecl fd && fd.ClassFunctionType == ClassFunctionType.Dtor);
+            var oldDtor = alreadyDeclared.GetDeclarations().FirstOrDefault(x => x is AstFuncDecl fd && fd.ClassFunctionType == ClassFunctionType.Dtor);
+            if (newDtor is AstFuncDecl newDtorF && oldDtor is AstFuncDecl oldDtorF)
+            {
+                // just add all statements from new decl to old
+                foreach (var s in newDtorF.Body.Statements)
+                {
+                    // skip last (? not sure) return stmt
+                    if (s is AstReturnStmt)
+                        continue;
+                    oldDtorF.Body.Statements.Add(s);
+                }
+
+                // TODO: error if new and old are not synthetic at the same time
+            }
+
+            // handle stor
+            var newStor = newOne.GetDeclarations().FirstOrDefault(x => x is AstFuncDecl fd && fd.ClassFunctionType == ClassFunctionType.StaticCtor);
+            var oldStor = alreadyDeclared.GetDeclarations().FirstOrDefault(x => x is AstFuncDecl fd && fd.ClassFunctionType == ClassFunctionType.StaticCtor);
+            if (newStor is AstFuncDecl newStorF && oldStor is AstFuncDecl oldStorF)
+            {
+                // getting all initers from stor block without storVar assign (skip last)
+                var statementsNew = (newStorF.Body.Statements[0] as AstIfStmt).BodyTrue.Statements.SkipLast(1);
+                // block with init statements in old stor
+                var blockOld = (oldStorF.Body.Statements[0] as AstIfStmt).BodyTrue;
+                // just add all statements from new decl to old
+                foreach (var s in statementsNew)
+                {
+                    // skip last (? not sure) return stmt
+                    if (s is AstReturnStmt)
+                        continue;
+                    blockOld.Statements.Add(s);
+                }
+
+                // TODO: error if new and old are not synthetic at the same time
+            }
 
             alreadyDeclared.GetDeclarations().AddRange(declsToAdd);
 
