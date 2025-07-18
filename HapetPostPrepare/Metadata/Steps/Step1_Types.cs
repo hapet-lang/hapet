@@ -160,11 +160,12 @@ namespace HapetPostPrepare
                 if (ct.IsSyntheticDeclaration)
                     continue;
                 // just replace ini call in new ctor
-                (ct as AstFuncDecl).Body.Statements[0] = (oldCtors[0] as AstFuncDecl).Body.Statements[0];
-                (ct as AstFuncDecl).Parameters[0].Type = (oldCtors[0] as AstFuncDecl).Parameters[0].Type;
+                (ct as AstFuncDecl).Body.Statements[0] = (oldCtors[0] as AstFuncDecl).Body.Statements[0].GetDeepCopy() as AstStatement;
+                (ct as AstFuncDecl).Parameters[0].Type = (oldCtors[0] as AstFuncDecl).Parameters[0].Type.GetDeepCopy() as AstExpression;
 
                 ct.ContainingParent = alreadyDeclared;
                 ct.Scope = alreadyDeclared.SubScope;
+                PostPrepareDeclScoping(ct);
                 alreadyDeclared.GetDeclarations().Add(ct);
             }
 
