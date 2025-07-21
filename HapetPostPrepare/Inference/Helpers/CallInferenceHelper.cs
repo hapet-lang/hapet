@@ -148,6 +148,14 @@ namespace HapetPostPrepare
                     foundSymbol = ds4;
                     return;
                 }
+                // check for nested
+                if (smbl1 is DeclSymbol ds5 && ds5.Decl is AstFuncDecl fncDecl &&
+                    fncDecl.IsNestedDecl)
+                {
+                    declToSearch = fncDecl.ParentDecl;
+                    foundSymbol = ds5;
+                    return;
+                }
 
                 // getting parent of the func
                 var currentParent = _currentParentStack.GetNearestParentClassOrStruct();

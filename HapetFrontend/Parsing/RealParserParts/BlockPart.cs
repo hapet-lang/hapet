@@ -4,6 +4,7 @@ using HapetFrontend.Ast.Expressions;
 using HapetFrontend.Ast.Statements;
 using HapetFrontend.Entities;
 using HapetFrontend.Errors;
+using HapetFrontend.Extensions;
 
 namespace HapetFrontend.Parsing
 {
@@ -95,6 +96,14 @@ namespace HapetFrontend.Parsing
                         nestedFunc.IsNestedDecl = true;
                         nestedFunc.ParentDecl = inInfo.ParentFuncDecl;
                         nestedFunc.SpecialKeys.AddRange(specialKeys);
+                        _compiler.LambdasAndNested.Add(nestedFunc);
+
+                        // for now only static allowed
+                        if (!nestedFunc.SpecialKeys.Contains(TokenType.KwStatic))
+                        {
+                            // error here that is not expected
+                            ReportMessage(nestedFunc.Name, [], ErrorCode.Get(CTEN.NonStaticNestedLambda));
+                        }
                     }
 
                     next = PeekToken();

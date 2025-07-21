@@ -430,6 +430,10 @@
         <Number>205B</Number>
         <Text>User defined error with message: {0}</Text>
     </Item>
+    <Item>
+        <Number>205C</Number>
+        <Text>Non-static nested/lambda declaration is not allowed for now</Text>
+    </Item>
 
 
     <!--Post prepare errors-->
@@ -799,6 +803,10 @@
     <Item>
         <Number>305B</Number>
         <Text>The 'class', 'struct', 'enum' and 'delegate' constraints cannot be combined</Text>
+    </Item>
+    <Item>
+        <Number>305C</Number>
+        <Text>A static nested/lambda cannot contain a reference to '{0}'</Text>
     </Item>
 
     <!--Compiler errors-->

@@ -91,6 +91,10 @@ namespace HapetPostPrepare
                 case AstVarDecl varDecl:
                     ReplaceAllTuplesInDecl(varDecl);
                     break;
+                // nested
+                case AstFuncDecl fncDecl:
+                    ReplaceAllTuplesInDecl(fncDecl);
+                    break;
 
                 case AstBlockExpr blockExpr:
                     ReplaceAllTuplesInBlock(blockExpr);

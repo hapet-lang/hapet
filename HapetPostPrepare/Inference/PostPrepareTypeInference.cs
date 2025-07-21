@@ -181,9 +181,17 @@ namespace HapetPostPrepare
             }
             else
             {
+                // set nested/lambda inference
+                var prev = inInfo.NestedLambdaFunctionInference;
+                if (funcDecl.IsNestedDecl)
+                    inInfo.NestedLambdaFunctionInference = funcDecl;
+
                 // inferring body
                 if (funcDecl.Body != null)
                     PostPrepareBlockInference(funcDecl.Body, inInfo, ref outInfo);
+
+                if (funcDecl.IsNestedDecl)
+                    inInfo.NestedLambdaFunctionInference = prev;
 
                 // check if the class if inherited from smth
                 // and call base ctor
@@ -443,6 +451,9 @@ namespace HapetPostPrepare
             foreach (var stmt in blockExpr.Statements.ToList())
             {
                 if (stmt == null)
+                    continue;
+                // skip nested, they are prepared by themselfzz
+                if (stmt is AstFuncDecl)
                     continue;
                 PostPrepareExprInference(stmt, inInfo, ref outInfo);
             }

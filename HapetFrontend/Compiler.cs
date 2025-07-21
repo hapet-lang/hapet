@@ -41,6 +41,11 @@ namespace HapetFrontend
         /// </summary>
         public AstFuncDecl MainFunction { get; set; }
 
+        /// <summary>
+        /// Handles all lambda and nested func declarations for easier inference
+        /// </summary>
+        public readonly List<AstStatement> LambdasAndNested = new List<AstStatement>();
+
         public Compiler(CompilerSettings projectSettings, ProjectData projectData, IMessageHandler messageHandler)
         {
             CurrentProjectSettings = projectSettings;

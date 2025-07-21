@@ -1,6 +1,7 @@
 ﻿using HapetFrontend.Ast.Expressions;
 using HapetFrontend.Ast.Statements;
 using HapetFrontend.Enums;
+using HapetFrontend.Parsing;
 using HapetFrontend.Types;
 using Newtonsoft.Json;
 using System.Xml.Linq;
@@ -9,6 +10,11 @@ namespace HapetFrontend.Ast.Declarations
 {
     public class AstLambdaDecl : AstExpression
     {
+        /// <summary>
+        /// Keys like public/static/virtual and other
+        /// </summary>
+        public List<Token> SpecialKeys { get; private set; } = new List<Token>();
+
         public List<AstParamDecl> Parameters { get; set; }
         public AstExpression Returns { get; set; }
         public AstBlockExpr Body { get; set; }

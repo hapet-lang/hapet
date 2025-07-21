@@ -318,6 +318,7 @@ namespace HapetPostPrepare
             HandleBasicTypes(typed.Decl, idExpr);
             TryAssignConstValueToExpr(idExpr, typed.Decl, inInfo, ref outInfo2);
             CheckForObsoleteAttr(typed.Decl, idExpr);
+            CheckNestedLambdaScopes(typed.Decl, idExpr, inInfo);
             idExpr.FindSymbol = typed;
         }
 
@@ -363,6 +364,31 @@ namespace HapetPostPrepare
             {
                 _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, idExpr, 
                     [decl.Name.Name, (string)obs.Arguments[0].OutValue], ErrorCode.Get(CTEN.DeclIsObsolete));
+            }
+        }
+
+        private void CheckNestedLambdaScopes(AstDeclaration decl, AstIdExpr idExpr, InInfo inInfo)
+        {
+            if (inInfo.NestedLambdaFunctionInference == null)
+                return;
+            if (decl.SpecialKeys.Contains(TokenType.KwStatic))
+                return;
+
+            // check if the nested/lambda is static
+            var isNstLambdaStatic = inInfo.NestedLambdaFunctionInference is AstFuncDecl fnc2 ? fnc2.SpecialKeys.Contains(TokenType.KwStatic) :
+                    (inInfo.NestedLambdaFunctionInference as AstLambdaDecl).SpecialKeys.Contains(TokenType.KwStatic);
+            // check that the var and param are in the local scope
+            if ((decl is AstVarDecl || decl is AstParamDecl) && isNstLambdaStatic)
+            {
+                var declScope = decl.Scope;
+                var nstScope = inInfo.NestedLambdaFunctionInference is AstFuncDecl fnc ? fnc.SubScope :
+                    (inInfo.NestedLambdaFunctionInference as AstLambdaDecl).Body.Scope;
+                var gg = nstScope.IsChildOf(declScope);
+                if (gg)
+                {
+                    // error - cannot access this shite from static nested/lambda 
+                    _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, idExpr, [idExpr.Name], ErrorCode.Get(CTEN.StaticLambdaToParams));
+                }
             }
         }
 

@@ -115,6 +115,7 @@
         UnexpectedDirective             = 0x2059,
         UnexpectedGenericConstrain      = 0x205A,
         UserDefinedError                = 0x205B,
+        NonStaticNestedLambda           = 0x205C, // would be obsolete
 
         // post preparer errors up to 0x5000
         EnumCouldNotBeAssigned          = 0x3001,
@@ -208,6 +209,7 @@
         NotSatisfyConstrain             = 0x3059,
         DuplicateConstrain              = 0x305A,
         OnlyOneOnTheConstrains          = 0x305B,
+        StaticLambdaToParams            = 0x305C,
 
         // compiler errors up to 0x6000
         DefaultWasNotInfered            = 0x5001,
