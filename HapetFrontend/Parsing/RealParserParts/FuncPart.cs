@@ -66,14 +66,5 @@ namespace HapetFrontend.Parsing
             theFunc.IsImported = inInfo.ExternalMetadata;
             return theFunc;
         }
-
-        private AstLambdaDecl ParseLambdaDeclaration(ParserInInfo inInfo, ref ParserOutInfo outInfo, List<AstParamDecl> parameters, TokenLocation beg, bool allowCommaForTuple)
-        {
-            ConsumeUntil(TokenType.Arrow, ErrMsg("=>", "in lambda"));
-
-            AstBlockExpr body = ParseBlockExpression(inInfo, ref outInfo);
-
-            return new AstLambdaDecl(parameters, body, null, new Location(beg, body.Ending));
-        }
     }
 }

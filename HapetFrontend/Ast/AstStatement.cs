@@ -1,4 +1,5 @@
 ﻿using System.Runtime.CompilerServices;
+using System.Xml.Linq;
 using HapetFrontend.Ast.Declarations;
 using HapetFrontend.Entities;
 using HapetFrontend.Scoping;

@@ -160,10 +160,6 @@ namespace HapetLastPrepare
 
         public void LPRAPFunction(AstFuncDecl decl, ref OutInfo outInfo)
         {
-            // no need to swap anything in this kind of funcs
-            if (decl.IsStaticVarFunction)
-                return;
-
             foreach (var p in decl.Parameters)
             {
                 LPRAPParam(p, ref outInfo);
@@ -264,6 +260,9 @@ namespace HapetLastPrepare
                 case AstSATOfExpr:
                     break;
                 case AstEmptyExpr:
+                    break;
+                case AstLambdaExpr exprExpr:
+                    LPRAPLambdaExpr(exprExpr, ref outInfo);
                     break;
 
                 // statements
@@ -560,6 +559,19 @@ namespace HapetLastPrepare
         private void LPRAPCheckedExpr(AstCheckedExpr expr, ref OutInfo outInfo)
         {
             LPRAPExpr(expr.SubExpression, ref outInfo);
+        }
+
+        private void LPRAPLambdaExpr(AstLambdaExpr expr, ref OutInfo outInfo)
+        {
+            foreach (var p in expr.Parameters)
+            {
+                LPRAPParam(p, ref outInfo);
+            }
+
+            if (expr.Body != null)
+            {
+                LPRAPBlockExpr(expr.Body, ref outInfo);
+            }
         }
 
         private void LPRAPAssignStmt(AstAssignStmt stmt, ref OutInfo outInfo)

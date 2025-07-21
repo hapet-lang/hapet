@@ -13,7 +13,7 @@ namespace HapetLastPrepare
                 {
 
                 }
-                else if (d is AstLambdaDecl)
+                else if (d is AstLambdaExpr)
                 {
 
                 }

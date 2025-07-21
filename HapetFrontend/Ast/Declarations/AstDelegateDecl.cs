@@ -60,5 +60,22 @@ namespace HapetFrontend.Ast.Declarations
             copy.GenericConstrains = copiedConstrains;
             return copy;
         }
+
+        /// <summary>
+        /// Returns string with return type and args types but without name of func
+        /// </summary>
+        /// <returns></returns>
+        public string ToCringeString()
+        {
+            string args = string.Join(":", Parameters.Select(p =>
+            {
+                return p.Type.OutType.ToString();
+            }));
+
+            if (Returns.OutType != HapetType.CurrentTypeContext.VoidTypeInstance)
+                return $"({Returns.OutType}:({args}))";
+            else
+                return $"(void:({args}))";
+        }
     }
 }

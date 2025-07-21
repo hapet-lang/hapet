@@ -2,13 +2,14 @@
 using HapetFrontend.Ast.Statements;
 using HapetFrontend.Enums;
 using HapetFrontend.Parsing;
+using HapetFrontend.Scoping;
 using HapetFrontend.Types;
 using Newtonsoft.Json;
 using System.Xml.Linq;
 
 namespace HapetFrontend.Ast.Declarations
 {
-    public class AstLambdaDecl : AstExpression
+    public class AstLambdaExpr : AstExpression
     {
         /// <summary>
         /// Keys like public/static/virtual and other
@@ -19,12 +20,18 @@ namespace HapetFrontend.Ast.Declarations
         public AstExpression Returns { get; set; }
         public AstBlockExpr Body { get; set; }
 
+        /// <summary>
+        /// The inner scope of the decl. Used to get access to it's content
+		/// Not for every decl!!!
+        /// </summary>
+        public Scope SubScope { get; set; }
+
         [JsonIgnore]
         public FunctionType FunctionType => OutType as FunctionType;
 
-        public override string AAAName => nameof(AstLambdaDecl);
+        public override string AAAName => nameof(AstLambdaExpr);
 
-        public AstLambdaDecl(List<AstParamDecl> parameters, AstBlockExpr body, AstExpression retType, ILocation location = null)
+        public AstLambdaExpr(List<AstParamDecl> parameters, AstBlockExpr body, AstExpression retType, ILocation location = null)
             : base(location)
         {
             OutType = new FunctionType(null);
@@ -36,7 +43,7 @@ namespace HapetFrontend.Ast.Declarations
 
         public override AstStatement GetDeepCopy()
         {
-            var copy = new AstLambdaDecl(
+            var copy = new AstLambdaExpr(
                 Parameters.Select(x => x.GetDeepCopy() as AstParamDecl).ToList(),
                 Body.GetDeepCopy() as AstBlockExpr,
                 Returns.GetDeepCopy() as AstExpression,
@@ -49,6 +56,27 @@ namespace HapetFrontend.Ast.Declarations
                 SourceFile = SourceFile,
             };
             return copy;
+        }
+
+        /// <summary>
+        /// Returns string with return type and args types but without name of func
+        /// USED FOR FUNC and LAMBDA
+        /// </summary>
+        /// <returns></returns>
+        public string ToCringeString()
+        {
+            string args;
+
+            // the func is static...
+            args = string.Join(":", Parameters.Select(p =>
+            {
+                return p.Type.OutType.ToString();
+            }));
+
+            if (Returns.OutType != HapetType.CurrentTypeContext.VoidTypeInstance)
+                return $"({Returns.OutType}:({args}))";
+            else
+                return $"(void:({args}))";
         }
     }
 }

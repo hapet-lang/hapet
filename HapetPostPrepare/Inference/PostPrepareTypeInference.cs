@@ -391,6 +391,9 @@ namespace HapetPostPrepare
                     break;
                 case AstEmptyExpr:
                     break;
+                case AstLambdaExpr lambdaExpr:
+                    PostPrepareLambdaExprInference(lambdaExpr, inInfo, ref outInfo);
+                    break;
                 case AstStringExpr stringExpr:
                     stringExpr.OutType = HapetType.CurrentTypeContext.StringTypeInstance;
                     break;
@@ -1091,6 +1094,11 @@ namespace HapetPostPrepare
             }
         }
 
+        private void PostPrepareLambdaExprInference(AstLambdaExpr expr, InInfo inInfo, ref OutInfo outInfo)
+        {
+            // should not be inferenced here !!!
+        }
+
         // statements
         private void PostPrepareAssignStmtInference(AstAssignStmt assignStmt, InInfo inInfo, ref OutInfo outInfo)
         {
@@ -1346,7 +1354,7 @@ namespace HapetPostPrepare
                 }
                 value = defaultOfDefault;
             }
-            if (inferValue && value is not AstLambdaDecl)
+            if (inferValue && value is not AstLambdaExpr)
             {
                 // if it is not a default
                 PostPrepareExprInference(value, inInfo, ref outInfo);

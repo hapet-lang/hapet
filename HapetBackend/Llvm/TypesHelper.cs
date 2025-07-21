@@ -750,37 +750,26 @@ namespace HapetBackend.Llvm
         #region Delegate shite
         private LLVMTypeRef GetDelegateAnonType(DelegateType delType)
         {
-            LLVMTypeRef delegateIrType;
-            var delDecl = delType.TargetDeclaration;
-            if (_delegateAnonTypes.TryGetValue(delType.ToCringeString(), out LLVMTypeRef irType))
-            {
-                delegateIrType = irType;
-            }
-            else
-            {
-                List<LLVMTypeRef> paramTypes = delDecl.Parameters.Select(rt => HapetTypeToLLVMType(rt.Type.OutType)).ToList();
-                var returnType = HapetTypeToLLVMType(delDecl.Returns.OutType);
-                var funcType = LLVMTypeRef.CreateFunction(returnType, paramTypes.ToArray(), false);
+            return GetDelegateAnonTypeInternal(true, delType.TargetDeclaration.ToCringeString(),
+                delType.TargetDeclaration.Parameters, delType.TargetDeclaration.Returns);
+        }
 
-                // fields of delegate struct
-                var objectPtr = HapetTypeToLLVMType(PointerType.GetPointerType(HapetType.CurrentTypeContext.GetIntType(1, false))); // ptr to func object
-                var funcPtr = funcType.GetPointerTo();
-
-                delegateIrType = _context.CreateNamedStruct($"delegate.anon.{delType.ToCringeString()}");
-                delegateIrType.StructSetBody(new LLVMTypeRef[] {
-                            ((LLVMTypeRef)funcPtr),
-                            ((LLVMTypeRef)objectPtr)
-                        }, false);
-                _delegateAnonTypes[delType.ToCringeString()] = delegateIrType;
-            }
-            return delegateIrType;
+        private LLVMTypeRef GetDelegateAnonType(AstLambdaExpr lambda)
+        {
+            return GetDelegateAnonTypeInternal(true, lambda.ToCringeString(),
+                lambda.Parameters, lambda.Returns);
         }
 
         private LLVMTypeRef GetDelegateAnonType(FunctionType fncType)
         {
+            return GetDelegateAnonTypeInternal(fncType.IsStaticFunction(), fncType.Declaration.ToCringeString(), 
+                fncType.Declaration.Parameters, fncType.Declaration.Returns);
+        }
+
+        private LLVMTypeRef GetDelegateAnonTypeInternal(bool isStatic, string cringeString, List<AstParamDecl> parameters, AstExpression returns)
+        {
             LLVMTypeRef delegateIrType;
-            var fncDecl = fncType.Declaration;
-            if (_delegateAnonTypes.TryGetValue(fncType.ToCringeString(), out LLVMTypeRef irType))
+            if (_delegateAnonTypes.TryGetValue(cringeString, out LLVMTypeRef irType))
             {
                 delegateIrType = irType;
             }
@@ -788,30 +777,30 @@ namespace HapetBackend.Llvm
             {
                 List<LLVMTypeRef> paramTypes;
                 // creating anon delegate type
-                if (fncType.IsStaticFunction())
+                if (isStatic)
                 {
                     // the func is static...
-                    paramTypes = fncDecl.Parameters.Select(rt => HapetTypeToLLVMType(rt.Type.OutType)).ToList();
+                    paramTypes = parameters.Select(rt => HapetTypeToLLVMType(rt.Type.OutType)).ToList();
                 }
                 else
                 {
                     // the func is non-static...
                     // skip the first param with class object ptr
-                    paramTypes = fncDecl.Parameters.Skip(1).Select(rt => HapetTypeToLLVMType(rt.Type.OutType)).ToList();
+                    paramTypes = parameters.Skip(1).Select(rt => HapetTypeToLLVMType(rt.Type.OutType)).ToList();
                 }
-                var returnType = HapetTypeToLLVMType(fncDecl.Returns.OutType);
+                var returnType = HapetTypeToLLVMType(returns.OutType);
                 var funcType = LLVMTypeRef.CreateFunction(returnType, paramTypes.ToArray(), false);
 
                 // fields of delegate struct
                 var objectPtr = HapetTypeToLLVMType(PointerType.GetPointerType(HapetType.CurrentTypeContext.GetIntType(1, false))); // ptr to func object
                 var funcPtr = funcType.GetPointerTo();
 
-                delegateIrType = _context.CreateNamedStruct($"delegate.anon.{fncType.ToCringeString()}");
+                delegateIrType = _context.CreateNamedStruct($"delegate.anon.{cringeString}");
                 delegateIrType.StructSetBody(new LLVMTypeRef[] {
                             ((LLVMTypeRef)funcPtr),
                             ((LLVMTypeRef)objectPtr)
                         }, false);
-                _delegateAnonTypes[fncType.ToCringeString()] = delegateIrType;
+                _delegateAnonTypes[cringeString] = delegateIrType;
             }
             return delegateIrType;
         }
@@ -822,6 +811,53 @@ namespace HapetBackend.Llvm
             LLVMTypeRef delegateIrType = GetDelegateAnonType(func);
             LLVMValueRef ptrToFunc = _valueMap[declSymbol]; // mb ptr to?
 
+            return CreateDelegateInstanceInternal(delegateIrType, ptrToFunc, ptrToObject);
+        }
+
+        private unsafe LLVMValueRef CreateDelegateFromLambda(AstLambdaExpr lambda, LLVMValueRef ptrToObject)
+        {
+            var currentBasicBlock = ptrToObject.GetIncomingBlock
+
+            // this whole shite is done to create anon delegate of the specified lambda
+            LLVMTypeRef delegateIrType = GetDelegateAnonType(lambda);
+
+            // making function
+            List<LLVMTypeRef> paramTypes = lambda.Parameters.Select(x => HapetTypeToLLVMType(x.Type.OutType)).ToList();
+            LLVMTypeRef returnType = HapetTypeToLLVMType(lambda.Returns.OutType);
+            LLVMTypeRef funcType = LLVMTypeRef.CreateFunction(returnType, paramTypes.ToArray(), false);
+            LLVMValueRef lfunc = _module.AddFunction($"lambda_{lambda.ToCringeString()}", funcType);
+            lfunc.Linkage = LLVMLinkage.LLVMInternalLinkage;
+            // setting parameter names
+            for (int i = 0; i < lambda.Parameters.Count; ++i)
+            {
+                var p = lambda.Parameters[i];
+                if (p.Name != null) lfunc.Params[i].Name = p.Name.Name;
+            }
+            // params body
+            var paramsBody = lfunc.AppendBasicBlockInContext(_context, "params");
+            _builder.PositionAtEnd(paramsBody);
+            // generating params allocs
+            for (int i = 0; i < lambda.Parameters.Count; ++i)
+            {
+                var p = lambda.Parameters[i];
+                var paramType = p.Type.OutType;
+                var addrAlloca = _builder.BuildAlloca(HapetTypeToLLVMType(paramType), $"{p.Name.Name}.addr");
+                _builder.BuildStore(lfunc.GetParam((uint)i), addrAlloca);
+                _valueMap[p.Symbol] = addrAlloca;
+            }
+            // function body
+            var bbBody = lfunc.AppendBasicBlockInContext(_context, "entry");
+            _builder.BuildBr(bbBody);
+            _builder.PositionAtEnd(bbBody);
+            GenerateBlockExprCode(lambda.Body);
+            if (!lfunc.VerifyFunction(LLVMVerifierFailureAction.LLVMReturnStatusAction))
+                _messageHandler.ReportMessage([$"Failed to validate function '{lfunc.Name}'"], ErrorCode.Get(CTEN.LLVMValidateError), ReportType.Error);
+
+            return CreateDelegateInstanceInternal(delegateIrType, lfunc, ptrToObject);
+        }
+
+        private unsafe LLVMValueRef CreateDelegateInstanceInternal(LLVMTypeRef delegateIrType, LLVMValueRef ptrToFunc, LLVMValueRef ptrToObject)
+        {
             var allocatedDelegate = _builder.BuildAlloca(delegateIrType, "anonAllocated");
             // the 1 is because delegate struct has object field as it's 1 param
             var objPtr = _builder.BuildStructGEP2(delegateIrType, allocatedDelegate, 1, "objectPtr");

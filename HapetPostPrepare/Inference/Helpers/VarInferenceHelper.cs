@@ -43,7 +43,7 @@ namespace HapetPostPrepare
         public AstExpression PostPrepareExpressionWithType(HapetType neededType, AstExpression expr, CastResult castResult = null)
         {
             // assigning lambda is made different
-            if (expr.OutType is FunctionType && expr is AstLambdaDecl lmbd)
+            if (expr.OutType is FunctionType && expr is AstLambdaExpr lmbd)
             {
                 return PostPrepareLambdaWithType(lmbd, neededType as DelegateType);
             }
@@ -241,7 +241,7 @@ namespace HapetPostPrepare
             return value;
         }
 
-        private AstExpression PostPrepareLambdaWithType(AstLambdaDecl value, DelegateType targetType)
+        private AstExpression PostPrepareLambdaWithType(AstLambdaExpr value, DelegateType targetType)
         {
             var delegateParams = targetType.TargetDeclaration.Parameters;
             if (value.Parameters.Count != delegateParams.Count)

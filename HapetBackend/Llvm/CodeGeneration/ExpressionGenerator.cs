@@ -58,6 +58,7 @@ namespace HapetBackend.Llvm
                 case AstCheckedExpr checkedExpr: return GenerateCheckedExprCode(checkedExpr);
                 case AstSATOfExpr satExpr: return GenerateSATExprCode(satExpr);
                 case AstEmptyStructExpr emptyStructExpr: return GenerateEmptyStructExprCode(emptyStructExpr);
+                case AstLambdaExpr lambdaExpr: return GenerateLambdaExprCode(lambdaExpr);
 
                 case AstNullExpr nullExpr: return GenerateNullExprCode(nullExpr);
 
@@ -1209,6 +1210,13 @@ namespace HapetBackend.Llvm
 
             var loaded = _builder.BuildLoad2(HapetTypeToLLVMType(structType), allocated, "loadedEmpty");
             return loaded;
+        }
+
+        private unsafe LLVMValueRef GenerateLambdaExprCode(AstLambdaExpr expr)
+        {
+            // by default it is a nullptr
+            LLVMValueRef ptrToObject = LLVM.ConstPointerNull(HapetTypeToLLVMType(HapetType.CurrentTypeContext.GetIntType(1, false)));
+            return CreateDelegateFromLambda(expr, ptrToObject);
         }
 
         private unsafe LLVMValueRef GenerateNullExprCode(AstNullExpr expr)

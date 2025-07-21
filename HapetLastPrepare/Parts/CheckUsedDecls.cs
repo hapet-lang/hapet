@@ -197,6 +197,9 @@ namespace HapetLastPrepare
                     break;
                 case AstEmptyExpr:
                     break;
+                case AstLambdaExpr lambdaExpr:
+                    CheckUsedDeclsLambdaExpr(lambdaExpr);
+                    break;
 
                 // statements
                 case AstAssignStmt assignStmt:
@@ -388,6 +391,20 @@ namespace HapetLastPrepare
         {
             if (expr.TargetType != null)
                 CheckUsedDeclsExpr(expr.TargetType);
+        }
+
+        private void CheckUsedDeclsLambdaExpr(AstLambdaExpr expr)
+        {
+            foreach (var p in expr.Parameters)
+            {
+                CheckUsedDeclsDecl(p);
+            }
+            CheckUsedDeclsExpr(expr.Returns);
+
+            if (expr.Body != null)
+            {
+                CheckUsedDeclsBlockExpr(expr.Body);
+            }
         }
 
         private void CheckUsedDeclsAssignStmt(AstAssignStmt stmt)

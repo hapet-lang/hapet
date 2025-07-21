@@ -255,6 +255,9 @@ namespace HapetLastPrepare
                     break;
                 case AstEmptyExpr:
                     break;
+                case AstLambdaExpr lambdaExpr:
+                    LPRACLambdaExpr(lambdaExpr);
+                    break;
 
                 // statements
                 case AstAssignStmt assignStmt:
@@ -512,6 +515,24 @@ namespace HapetLastPrepare
             if (expr.TargetType.OutType is ClassType)
             {
                 expr.TargetType = GetPointerType(expr.TargetType);
+            }
+        }
+
+        private void LPRACLambdaExpr(AstLambdaExpr expr)
+        {
+            foreach (var p in expr.Parameters)
+            {
+                LPRACParam(p);
+            }
+
+            if (expr.Returns.OutType is ClassType)
+            {
+                expr.Returns = GetPointerType(expr.Returns);
+            }
+
+            if (expr.Body != null)
+            {
+                LPRACBlockExpr(expr.Body);
             }
         }
 

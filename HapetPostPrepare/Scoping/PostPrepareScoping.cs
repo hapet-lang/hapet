@@ -530,6 +530,9 @@ namespace HapetPostPrepare
                     break;
                 case AstEmptyExpr:
                     break;
+                case AstLambdaExpr lambdaExpr:
+                    PostPrepareLambdaExprScoping(lambdaExpr);
+                    break;
 
                 // statements
                 case AstAssignStmt assignStmt:
@@ -783,6 +786,39 @@ namespace HapetPostPrepare
         {
             SetScopeAndParent(satExpr.TargetType, satExpr);
             PostPrepareExprScoping(satExpr.TargetType);
+        }
+
+        private void PostPrepareLambdaExprScoping(AstLambdaExpr lambdaExpr)
+        {
+            Scope blockScope;
+            if (lambdaExpr.Body != null)
+            {
+                // body scope is the same
+                SetScopeAndParent(lambdaExpr.Body, lambdaExpr);
+                blockScope = PostPrepareBlockScoping(lambdaExpr.Body, $"lambda_scope");
+            }
+            else
+            {
+                // WARN!!!! do not set the scope the same as func scope because its params would be visible in class or smth
+                // creating a Scope in which the params would be
+                blockScope = new Scope($"params_lambda_scope", lambdaExpr.Scope);
+            }
+            lambdaExpr.SubScope = blockScope;
+
+            // defining parameters in the func scope
+            foreach (var p in lambdaExpr.Parameters)
+            {
+                // settings the block scope to the parameters (so they are in the scope of the block)
+                SetScopeAndParent(p, lambdaExpr, blockScope);
+                PostPrepareParamScoping(p);
+            }
+
+            if (lambdaExpr.Returns != null)
+            {
+                // return type is the same
+                SetScopeAndParent(lambdaExpr.Returns, lambdaExpr, blockScope);
+                PostPrepareExprScoping(lambdaExpr.Returns);
+            }
         }
 
         // statements

@@ -8,6 +8,7 @@ using HapetFrontend.Scoping;
 using HapetFrontend.Types;
 using Newtonsoft.Json;
 using System.Text;
+using System.Xml.Linq;
 
 namespace HapetFrontend.Ast.Declarations
 {
@@ -31,11 +32,6 @@ namespace HapetFrontend.Ast.Declarations
         /// Used for easier infferencing. Mean that the func is a get/set func
         /// </summary>
         public bool IsPropertyFunction { get; set; }
-
-        /// <summary>
-        /// Used for easier infferencing. Mean that the func is a get/set func for static/const vars
-        /// </summary>
-        public bool IsStaticVarFunction { get; set; }
 
         public override string AAAName => nameof(AstFuncDecl);
 
@@ -103,6 +99,39 @@ namespace HapetFrontend.Ast.Declarations
         public override string ToString()
         {
             return $"func:{Name}";
+        }
+
+        /// <summary>
+        /// Returns string with return type and args types but without name of func
+        /// USED FOR FUNC and LAMBDA
+        /// </summary>
+        /// <returns></returns>
+        public string ToCringeString()
+        {
+            string args;
+
+            if ((Type.OutType as FunctionType).IsStaticFunction())
+            {
+                // the func is static...
+                args = string.Join(":", Parameters.Select(p =>
+                {
+                    return p.Type.OutType.ToString();
+                }));
+            }
+            else
+            {
+                // the func is non-static...
+                // skip the first param with class object ptr
+                args = string.Join(":", Parameters.Skip(1).Select(p =>
+                {
+                    return p.Type.OutType.ToString();
+                }));
+            }
+
+            if (Returns.OutType != HapetType.CurrentTypeContext.VoidTypeInstance)
+                return $"({Returns.OutType}:({args}))";
+            else
+                return $"(void:({args}))";
         }
     }
 }

@@ -376,13 +376,13 @@ namespace HapetPostPrepare
 
             // check if the nested/lambda is static
             var isNstLambdaStatic = inInfo.NestedLambdaFunctionInference is AstFuncDecl fnc2 ? fnc2.SpecialKeys.Contains(TokenType.KwStatic) :
-                    (inInfo.NestedLambdaFunctionInference as AstLambdaDecl).SpecialKeys.Contains(TokenType.KwStatic);
+                    (inInfo.NestedLambdaFunctionInference as AstLambdaExpr).SpecialKeys.Contains(TokenType.KwStatic);
             // check that the var and param are in the local scope
             if ((decl is AstVarDecl || decl is AstParamDecl) && isNstLambdaStatic)
             {
                 var declScope = decl.Scope;
                 var nstScope = inInfo.NestedLambdaFunctionInference is AstFuncDecl fnc ? fnc.SubScope :
-                    (inInfo.NestedLambdaFunctionInference as AstLambdaDecl).Body.Scope;
+                    (inInfo.NestedLambdaFunctionInference as AstLambdaExpr).SubScope;
                 var gg = nstScope.IsChildOf(declScope);
                 if (gg)
                 {

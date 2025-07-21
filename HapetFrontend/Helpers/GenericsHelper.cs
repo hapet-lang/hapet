@@ -181,9 +181,6 @@ namespace HapetFrontend.Helpers
             // DO NOT SKIP ANY STORS!
             if (decl is AstFuncDecl fnc && fnc.ClassFunctionType == Enums.ClassFunctionType.StaticCtor)
                 return false;
-            // DO NOT SKIP ANY GET/SET FUNCS FOR STATIC/CONST!
-            if (decl is AstFuncDecl fnc2 && fnc2.IsStaticVarFunction)
-                return false;
 
             // skip generic (non-real) parents
             if (decl.ContainingParent?.HasGenericTypes ?? false)
