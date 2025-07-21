@@ -1216,7 +1216,7 @@ namespace HapetBackend.Llvm
         {
             // by default it is a nullptr
             LLVMValueRef ptrToObject = LLVM.ConstPointerNull(HapetTypeToLLVMType(HapetType.CurrentTypeContext.GetIntType(1, false)));
-            return CreateDelegateFromLambda(expr, ptrToObject);
+            return CreateDelegateFromLambda(expr.OutType as LambdaType, ptrToObject);
         }
 
         private unsafe LLVMValueRef GenerateNullExprCode(AstNullExpr expr)

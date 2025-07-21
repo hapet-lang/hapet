@@ -754,10 +754,10 @@ namespace HapetBackend.Llvm
                 delType.TargetDeclaration.Parameters, delType.TargetDeclaration.Returns);
         }
 
-        private LLVMTypeRef GetDelegateAnonType(AstLambdaExpr lambda)
+        private LLVMTypeRef GetDelegateAnonType(LambdaType lambda)
         {
-            return GetDelegateAnonTypeInternal(true, lambda.ToCringeString(),
-                lambda.Parameters, lambda.Returns);
+            return GetDelegateAnonTypeInternal(true, lambda.Declaration.ToCringeString(),
+                lambda.Declaration.Parameters, lambda.Declaration.Returns);
         }
 
         private LLVMTypeRef GetDelegateAnonType(FunctionType fncType)
@@ -810,49 +810,14 @@ namespace HapetBackend.Llvm
             // this whole shite is done to create anon delegate of the specified function
             LLVMTypeRef delegateIrType = GetDelegateAnonType(func);
             LLVMValueRef ptrToFunc = _valueMap[declSymbol]; // mb ptr to?
-
             return CreateDelegateInstanceInternal(delegateIrType, ptrToFunc, ptrToObject);
         }
 
-        private unsafe LLVMValueRef CreateDelegateFromLambda(AstLambdaExpr lambda, LLVMValueRef ptrToObject)
+        private unsafe LLVMValueRef CreateDelegateFromLambda(LambdaType lambda, LLVMValueRef ptrToObject)
         {
-            var currentBasicBlock = ptrToObject.GetIncomingBlock
-
             // this whole shite is done to create anon delegate of the specified lambda
             LLVMTypeRef delegateIrType = GetDelegateAnonType(lambda);
-
-            // making function
-            List<LLVMTypeRef> paramTypes = lambda.Parameters.Select(x => HapetTypeToLLVMType(x.Type.OutType)).ToList();
-            LLVMTypeRef returnType = HapetTypeToLLVMType(lambda.Returns.OutType);
-            LLVMTypeRef funcType = LLVMTypeRef.CreateFunction(returnType, paramTypes.ToArray(), false);
-            LLVMValueRef lfunc = _module.AddFunction($"lambda_{lambda.ToCringeString()}", funcType);
-            lfunc.Linkage = LLVMLinkage.LLVMInternalLinkage;
-            // setting parameter names
-            for (int i = 0; i < lambda.Parameters.Count; ++i)
-            {
-                var p = lambda.Parameters[i];
-                if (p.Name != null) lfunc.Params[i].Name = p.Name.Name;
-            }
-            // params body
-            var paramsBody = lfunc.AppendBasicBlockInContext(_context, "params");
-            _builder.PositionAtEnd(paramsBody);
-            // generating params allocs
-            for (int i = 0; i < lambda.Parameters.Count; ++i)
-            {
-                var p = lambda.Parameters[i];
-                var paramType = p.Type.OutType;
-                var addrAlloca = _builder.BuildAlloca(HapetTypeToLLVMType(paramType), $"{p.Name.Name}.addr");
-                _builder.BuildStore(lfunc.GetParam((uint)i), addrAlloca);
-                _valueMap[p.Symbol] = addrAlloca;
-            }
-            // function body
-            var bbBody = lfunc.AppendBasicBlockInContext(_context, "entry");
-            _builder.BuildBr(bbBody);
-            _builder.PositionAtEnd(bbBody);
-            GenerateBlockExprCode(lambda.Body);
-            if (!lfunc.VerifyFunction(LLVMVerifierFailureAction.LLVMReturnStatusAction))
-                _messageHandler.ReportMessage([$"Failed to validate function '{lfunc.Name}'"], ErrorCode.Get(CTEN.LLVMValidateError), ReportType.Error);
-
+            LLVMValueRef lfunc = _valueMap[lambda.Declaration.Symbol];
             return CreateDelegateInstanceInternal(delegateIrType, lfunc, ptrToObject);
         }
 

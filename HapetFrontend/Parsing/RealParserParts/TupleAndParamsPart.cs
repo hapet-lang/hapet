@@ -404,7 +404,9 @@ namespace HapetFrontend.Parsing
             SkipNewlines();
 
             var body = ParseBlockExpression(inInfo, ref outInfo);
-            return new AstLambdaExpr(paramss, body, null, new Location(beg, body.Ending));
+            var lambda = new AstLambdaExpr(paramss, body, null, new Location(beg, body.Ending));
+            _compiler.LambdasAndNested.Add(lambda);
+            return lambda;
         }
 
         private AstUnknownDecl PrepareTupleExpr(AstNestedExpr nst, AstTupleExpr tpl, ParserInInfo inInfo, ref ParserOutInfo outInfo)

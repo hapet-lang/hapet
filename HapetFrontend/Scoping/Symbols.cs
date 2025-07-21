@@ -1,4 +1,5 @@
 ﻿using HapetFrontend.Ast;
+using HapetFrontend.Ast.Declarations;
 using HapetFrontend.Ast.Expressions;
 using HapetFrontend.Entities;
 using HapetFrontend.Types;
@@ -37,6 +38,21 @@ namespace HapetFrontend.Scoping
         {
             this.Name = name;
             this.Decl = decl;
+        }
+    }
+
+    /// <summary>
+    /// Used probably only in <see cref="AstLambdaExpr"/> for easier backend
+    /// </summary>
+    public class StmtSymbol : ISymbol
+    {
+        public AstIdExpr Name { get; private set; }
+        public AstStatement Stmt { get; private set; }
+
+        public StmtSymbol(AstIdExpr name, AstStatement stmt)
+        {
+            this.Name = name;
+            this.Stmt = stmt;
         }
     }
 }

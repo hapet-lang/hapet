@@ -1097,6 +1097,7 @@ namespace HapetPostPrepare
         private void PostPrepareLambdaExprInference(AstLambdaExpr expr, InInfo inInfo, ref OutInfo outInfo)
         {
             // should not be inferenced here !!!
+            /// inferenced in <see cref="PostPrepareLambdaWithType"/>
         }
 
         // statements

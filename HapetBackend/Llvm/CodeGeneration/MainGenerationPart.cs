@@ -41,6 +41,12 @@ namespace HapetBackend.Llvm
                 funcs.Add(func, funcType);
             }
 
+            foreach (var l in _compiler.LambdasAndNested) 
+            {
+                if (l is not AstLambdaExpr lambda)
+                    continue;
+                GenerateLambdaExprCodeMain(lambda);
+            }
             foreach (var (funcDecl, funcType) in funcs)
             {
                 _currentSourceFile = funcDecl.SourceFile;
@@ -193,6 +199,51 @@ namespace HapetBackend.Llvm
             // _refMap[varDecl.GetSymbol] = varPtr;
             // _valueMap[varDecl.GetSymbol] = _builder.BuildLoad2(HapetTypeToLLVMType(varDecl.Type.OutType), varPtr, varDecl.Name.Name);
             _valueMap[varDecl.Symbol] = varPtr;
+        }
+
+        private void GenerateLambdaExprCodeMain(AstLambdaExpr lambda)
+        {
+            // making function
+            List<LLVMTypeRef> paramTypes = lambda.Parameters.Select(x => HapetTypeToLLVMType(x.Type.OutType)).ToList();
+            LLVMTypeRef returnType = HapetTypeToLLVMType(lambda.Returns.OutType);
+            LLVMTypeRef funcType = LLVMTypeRef.CreateFunction(returnType, paramTypes.ToArray(), false);
+            LLVMValueRef lfunc = _module.AddFunction($"lambda_{lambda.ToCringeString()}", funcType);
+            lfunc.Linkage = LLVMLinkage.LLVMInternalLinkage;
+            // setting parameter names
+            for (int i = 0; i < lambda.Parameters.Count; ++i)
+            {
+                var p = lambda.Parameters[i];
+                if (p.Name != null) lfunc.Params[i].Name = p.Name.Name;
+            }
+            // params body
+            var paramsBody = lfunc.AppendBasicBlockInContext(_context, "params");
+            _builder.PositionAtEnd(paramsBody);
+            // generating params allocs
+            for (int i = 0; i < lambda.Parameters.Count; ++i)
+            {
+                var p = lambda.Parameters[i];
+                var paramType = p.Type.OutType;
+                var addrAlloca = _builder.BuildAlloca(HapetTypeToLLVMType(paramType), $"{p.Name.Name}.addr");
+                _builder.BuildStore(lfunc.GetParam((uint)i), addrAlloca);
+                _valueMap[p.Symbol] = addrAlloca;
+            }
+            // function body
+            var bbBody = lfunc.AppendBasicBlockInContext(_context, "entry");
+            _builder.BuildBr(bbBody);
+            _builder.PositionAtEnd(bbBody);
+
+            // checking for 'return' existance at the end. if not - add
+            if (lambda.Body != null &&
+                lambda.Body.Statements.LastOrDefault() is not AstReturnStmt)
+            {
+                lambda.Body.Statements.Add(new AstReturnStmt(null));
+            }
+            GenerateBlockExprCode(lambda.Body);
+
+            if (!lfunc.VerifyFunction(LLVMVerifierFailureAction.LLVMReturnStatusAction))
+                _messageHandler.ReportMessage([$"Failed to validate function '{lfunc.Name}'"], ErrorCode.Get(CTEN.LLVMValidateError), ReportType.Error);
+
+            _valueMap[lambda.Symbol] = lfunc;
         }
 
         private void GenerateExternFunctionBody(AstFuncDecl funcDecl)

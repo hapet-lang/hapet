@@ -21,20 +21,27 @@ namespace HapetFrontend.Ast.Declarations
         public AstBlockExpr Body { get; set; }
 
         /// <summary>
+        /// Getting symbol of itself
+        /// </summary>
+        [JsonIgnore]
+        public ISymbol Symbol { get; set; }
+
+        /// <summary>
         /// The inner scope of the decl. Used to get access to it's content
 		/// Not for every decl!!!
         /// </summary>
         public Scope SubScope { get; set; }
 
         [JsonIgnore]
-        public FunctionType FunctionType => OutType as FunctionType;
+        public LambdaType FunctionType => OutType as LambdaType;
 
         public override string AAAName => nameof(AstLambdaExpr);
 
         public AstLambdaExpr(List<AstParamDecl> parameters, AstBlockExpr body, AstExpression retType, ILocation location = null)
             : base(location)
         {
-            OutType = new FunctionType(null);
+            OutType = new LambdaType(this);
+            Symbol = new StmtSymbol(new AstIdExpr("lambdaSymbol"), this);
 
             this.Parameters = parameters;
             this.Returns = retType;

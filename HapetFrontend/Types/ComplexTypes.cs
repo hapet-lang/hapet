@@ -224,4 +224,31 @@ namespace HapetFrontend.Types
             return $"{Declaration.Name.Name}";
         }
     }
+
+    public class LambdaType : HapetType
+    {
+        [JsonIgnore]
+        public AstLambdaExpr Declaration { get; set; }
+
+        public override string TypeName => "lambda";
+
+        public override AstExpression GetAst(AstExpression iniExpr = null)
+        {
+            throw new NotSupportedException("GetAst not supported for LambdaType");
+        }
+
+        public LambdaType(AstLambdaExpr decl)
+            : base(CurrentTypeContext.PointerSize, PointerType.PointerAlignment)
+        {
+            Declaration = decl;
+        }
+
+        public override string ToString()
+        {
+            if (Declaration.Returns.OutType != CurrentTypeContext.VoidTypeInstance)
+                return $"({Declaration.Returns.OutType}:_lambda)";
+            else
+                return $"(void:_lambda)";
+        }
+    }
 }

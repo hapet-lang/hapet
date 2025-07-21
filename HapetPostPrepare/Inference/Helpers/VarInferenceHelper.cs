@@ -11,6 +11,7 @@ using HapetFrontend.Parsing;
 using HapetFrontend.Scoping;
 using HapetFrontend.Types;
 using HapetPostPrepare.Entities;
+using System.Runtime;
 
 namespace HapetPostPrepare
 {
@@ -43,7 +44,7 @@ namespace HapetPostPrepare
         public AstExpression PostPrepareExpressionWithType(HapetType neededType, AstExpression expr, CastResult castResult = null)
         {
             // assigning lambda is made different
-            if (expr.OutType is FunctionType && expr is AstLambdaExpr lmbd)
+            if (expr.OutType is LambdaType && expr is AstLambdaExpr lmbd)
             {
                 return PostPrepareLambdaWithType(lmbd, neededType as DelegateType);
             }
@@ -243,6 +244,10 @@ namespace HapetPostPrepare
 
         private AstExpression PostPrepareLambdaWithType(AstLambdaExpr value, DelegateType targetType)
         {
+            // just handlers
+            InInfo inInfo = InInfo.Default;
+            OutInfo outInfo = OutInfo.Default;
+
             var delegateParams = targetType.TargetDeclaration.Parameters;
             if (value.Parameters.Count != delegateParams.Count)
             {
@@ -256,6 +261,16 @@ namespace HapetPostPrepare
                 value.Parameters[i].Type = delegateParams[i].Type.GetDeepCopy() as AstExpression;
             }
             value.Returns = targetType.TargetDeclaration.Returns.GetDeepCopy() as AstExpression;
+
+            // inference
+            foreach (var p in value.Parameters)
+            {
+                PostPrepareParamInference(p, inInfo, ref outInfo);
+            }
+            PostPrepareExprInference(value.Returns, inInfo, ref outInfo);
+            if (value.Body != null)
+                PostPrepareBlockInference(value.Body, inInfo, ref outInfo);
+
             return value;
         }
     }
