@@ -13,7 +13,7 @@ namespace HapetPostPrepare.Other
     public class ParentStackManager
     {
         private IMessageHandler _messageHandler;
-        private Stack<AstDeclaration> _parentStack { get; } = new Stack<AstDeclaration>();
+        private Stack<AstStatement> _parentStack { get; } = new Stack<AstStatement>();
 
         /// <summary>
         /// The dict is going to be used as a holder
@@ -33,20 +33,20 @@ namespace HapetPostPrepare.Other
             };
         }
 
-        public void AddParent(AstDeclaration parent)
+        public void AddParent(AstStatement parent)
         {
             _parentStack.Push(parent);
 
-            if (parent.HasGenericTypes || parent is AstGenericDecl)
-                AddParentGenerics(parent);
+            if (parent is AstDeclaration decl && (decl.HasGenericTypes || decl is AstGenericDecl))
+                AddParentGenerics(decl);
         }
 
         public void RemoveParent()
         {
             var poped = _parentStack.Pop();
 
-            if (poped.HasGenericTypes || poped is AstGenericDecl)
-                RemoveParentGenerics(poped);
+            if (poped is AstDeclaration decl && (decl.HasGenericTypes || decl is AstGenericDecl))
+                RemoveParentGenerics(decl);
         }
 
         public AstDeclaration GetNearestParentClassOrStruct()
@@ -54,7 +54,7 @@ namespace HapetPostPrepare.Other
             foreach (var p in _parentStack.AsEnumerable())
             {
                 if (p is AstClassDecl || p is AstStructDecl)
-                    return p;
+                    return p as AstDeclaration;
             }
             return null;
         }
@@ -65,7 +65,7 @@ namespace HapetPostPrepare.Other
             foreach (var p in _parentStack.AsEnumerable())
             {
                 if (p is AstClassDecl || p is AstStructDecl)
-                    fur = p;
+                    fur = p as AstDeclaration;
             }
             return fur;
         }
@@ -80,9 +80,19 @@ namespace HapetPostPrepare.Other
             return null;
         }
 
+        public AstStatement GetNearestParentFuncOrLambda()
+        {
+            foreach (var p in _parentStack.AsEnumerable())
+            {
+                if (p is AstFuncDecl || p is AstLambdaExpr)
+                    return p;
+            }
+            return null;
+        }
+
         public AstDeclaration GetFurthestParent()
         {
-            return _parentStack.Last();
+            return _parentStack.Last() as AstDeclaration;
         }
 
         private void AddParentGenerics(AstDeclaration parent)

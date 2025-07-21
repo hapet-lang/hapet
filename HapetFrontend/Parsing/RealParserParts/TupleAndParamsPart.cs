@@ -396,7 +396,23 @@ namespace HapetFrontend.Parsing
             // else - just identifier
             else
             {
-                // TODO: when x => x... supported
+                // when x => x... supported
+                var id = ParseIdentifierExpression(inInfo, allowDots: false, allowGenerics: false, expectIdent: true);
+                if (id.RightPart is not AstIdExpr)
+                {
+                    ReportMessage(id.RightPart.Location, [], ErrorCode.Get(CTEN.ParameterNameNotIdent));
+                }
+                paramss.Add(new AstParamDecl(null, id.RightPart as AstIdExpr, null, "", id.RightPart.Location));
+                beg = id.Beginning;
+            }
+
+            // handle params like 'a' not 'int a' - need to swap Name and Type here
+            foreach (var par in paramss)
+            {
+                if (par.Name != null)
+                    continue;
+                par.Name = (par.Type as AstNestedExpr).RightPart as AstIdExpr;
+                par.Type = null;
             }
 
             SkipNewlines();

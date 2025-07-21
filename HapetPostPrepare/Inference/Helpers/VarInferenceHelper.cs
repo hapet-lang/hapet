@@ -259,8 +259,14 @@ namespace HapetPostPrepare
             for (int i = 0; i < delegateParams.Count; ++i)
             {
                 value.Parameters[i].Type = delegateParams[i].Type.GetDeepCopy() as AstExpression;
+                SetScopeAndParent(value.Parameters[i].Type, value.Parameters[i]);
+                PostPrepareExprScoping(value.Parameters[i].Type);
             }
             value.Returns = targetType.TargetDeclaration.Returns.GetDeepCopy() as AstExpression;
+            SetScopeAndParent(value.Returns, value, value.Scope);
+            PostPrepareExprScoping(value.Returns);
+
+            _currentParentStack.AddParent(value);
 
             // inference
             foreach (var p in value.Parameters)
@@ -270,6 +276,8 @@ namespace HapetPostPrepare
             PostPrepareExprInference(value.Returns, inInfo, ref outInfo);
             if (value.Body != null)
                 PostPrepareBlockInference(value.Body, inInfo, ref outInfo);
+
+            _currentParentStack.RemoveParent();
 
             return value;
         }

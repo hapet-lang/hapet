@@ -886,9 +886,11 @@ namespace HapetPostPrepare
             if (defaultExpr.TypeForDefault == null)
             {
                 // try to assign current func's return type
-                var func = _currentParentStack.GetNearestParentFunc();
-                if (func != null && func.Returns.OutType is not VoidType)
-                    defaultExpr.TypeForDefault = func.Returns.GetDeepCopy() as AstExpression;
+                var func = _currentParentStack.GetNearestParentFuncOrLambda();
+                var funcRet = func is AstFuncDecl fnc ? fnc.Returns : (func as AstLambdaExpr).Returns;
+
+                if (func != null && funcRet.OutType is not VoidType)
+                    defaultExpr.TypeForDefault = funcRet.GetDeepCopy() as AstExpression;
                 else
                 {
                     _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, defaultExpr, [], ErrorCode.Get(CTEN.DefaultWasNotInfered));
@@ -1210,31 +1212,33 @@ namespace HapetPostPrepare
 
         private void PostPrepareReturnStmtInference(AstReturnStmt returnStmt, InInfo inInfo, ref OutInfo outInfo)
         {
-            var currentFunction = _currentParentStack.GetNearestParentFunc();
+            var currentFunction = _currentParentStack.GetNearestParentFuncOrLambda();
+            var currFuncRet = currentFunction is AstFuncDecl fnc ? fnc.Returns : (currentFunction as AstLambdaExpr).Returns;
+            var currFuncLoc = currentFunction is AstFuncDecl fnc2 ? fnc2.Name : currentFunction;
 
             if (returnStmt.ReturnExpression != null)
             {
                 // if user tries to return smth but func ret type is void =^0
-                if (currentFunction.Returns.OutType is VoidType)
+                if (currFuncRet.OutType is VoidType)
                 {
-                    _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, currentFunction.Name, [], ErrorCode.Get(CTEN.EmptyReturnExpected));
+                    _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, currFuncLoc, [], ErrorCode.Get(CTEN.EmptyReturnExpected));
                     return;
                 }
 
                 // casting to func return type
-                returnStmt.ReturnExpression = PostPrepareVarValueAssign(returnStmt.ReturnExpression, currentFunction.Returns.OutType, inInfo, ref outInfo);
+                returnStmt.ReturnExpression = PostPrepareVarValueAssign(returnStmt.ReturnExpression, currFuncRet.OutType, inInfo, ref outInfo);
             }
-            else if (returnStmt.ReturnExpression == null && currentFunction.Returns.OutType is not VoidType)
+            else if (returnStmt.ReturnExpression == null && currFuncRet.OutType is not VoidType)
             {
                 // TODO: better return stmts checks. like in if/else blocks and so on
                 if (returnStmt.Location == null)
                 {
                     // it is a manually added 'return' statement
-                    var theFunc = returnStmt.FindContainingFunction();
-                    _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, theFunc.Name, [HapetType.AsString(currentFunction.Returns.OutType)], ErrorCode.Get(CTEN.NotEnoughReturns));
+                    var theFunc = returnStmt.FindContainingFunction(); // TODO: also lambda?
+                    _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, theFunc.Name, [HapetType.AsString(currFuncRet.OutType)], ErrorCode.Get(CTEN.NotEnoughReturns));
                 }
                 else
-                    _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, returnStmt, [HapetType.AsString(currentFunction.Returns.OutType)], ErrorCode.Get(CTEN.EmptyReturnStmt));
+                    _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, returnStmt, [HapetType.AsString(currFuncRet.OutType)], ErrorCode.Get(CTEN.EmptyReturnStmt));
             }
         }
 

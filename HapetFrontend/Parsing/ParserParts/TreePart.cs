@@ -702,6 +702,13 @@ namespace HapetFrontend.Parsing
 
                 case TokenType.Identifier:
                     {
+                        // need to check for => after the id - if it there - it is a lambda
+                        var idLookAhead = ParseIdentifierExpression(inInfo, lookAhead: true, allowDots: false, allowGenerics: false, expectIdent: true);
+                        if (CheckLookAhead(TokenType.Arrow))
+                        {
+                            return ParseLambdaDecl(inInfo, ref outInfo);
+                        }
+
                         var id = ParseIdentifierExpression(inInfo, iniNested: inInfo.PreviousNestedForNullCheck);
 
                         // if it is a pointer or array type

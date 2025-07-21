@@ -443,7 +443,8 @@ namespace HapetPostPrepare
                 PostPrepareExprScoping(a);
             }
 
-            PostPrepareExprScoping(paramDecl.Type);
+            if (paramDecl.Type != null)
+                PostPrepareExprScoping(paramDecl.Type);
             if (paramDecl.DefaultValue != null)
             {
                 // preparing scopes of default values if they exist
