@@ -42,8 +42,13 @@ namespace HapetPostPrepare
         /// <returns>Casted expr</returns>
         public AstExpression PostPrepareExpressionWithType(HapetType neededType, AstExpression expr, CastResult castResult = null)
         {
+            // assigning lambda is made different
+            if (expr.OutType is FunctionType && expr is AstLambdaDecl lmbd)
+            {
+                return PostPrepareLambdaWithType(lmbd, neededType as DelegateType);
+            }
             // assigning function to delegates is made different
-            if (expr.OutType is FunctionType)
+            else if (expr.OutType is FunctionType)
             {
                 // not always could be casted - do it inside the func
                 if (castResult != null)
@@ -233,6 +238,24 @@ namespace HapetPostPrepare
                 _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, valueHandler, [], ErrorCode.Get(CTEN.ExprExpectedToBeFunc));
             }
 
+            return value;
+        }
+
+        private AstExpression PostPrepareLambdaWithType(AstLambdaDecl value, DelegateType targetType)
+        {
+            var delegateParams = targetType.TargetDeclaration.Parameters;
+            if (value.Parameters.Count != delegateParams.Count)
+            {
+                // TODO: error and quit
+                return value;
+            }
+
+            // setting types to lambda params and return
+            for (int i = 0; i < delegateParams.Count; ++i)
+            {
+                value.Parameters[i].Type = delegateParams[i].Type.GetDeepCopy() as AstExpression;
+            }
+            value.Returns = targetType.TargetDeclaration.Returns.GetDeepCopy() as AstExpression;
             return value;
         }
     }

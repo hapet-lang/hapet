@@ -1346,7 +1346,7 @@ namespace HapetPostPrepare
                 }
                 value = defaultOfDefault;
             }
-            if (inferValue)
+            if (inferValue && value is not AstLambdaDecl)
             {
                 // if it is not a default
                 PostPrepareExprInference(value, inInfo, ref outInfo);

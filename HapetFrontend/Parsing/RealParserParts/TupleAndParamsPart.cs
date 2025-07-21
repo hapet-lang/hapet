@@ -281,6 +281,23 @@ namespace HapetFrontend.Parsing
                 return new AstNestedExpr(tpl, null, tpl.Location);
             }
 
+            // need to lookahead for =>
+            bool isLambda;
+            UpdateLookAheadLocation();
+            int tmpParenCounter = 1;
+            NextLookAhead();
+            while (tmpParenCounter != 0)
+            {
+                var curr = NextLookAhead();
+                if (curr.Type == TokenType.OpenParen)
+                    tmpParenCounter++;
+                else if (curr.Type == TokenType.CloseParen)
+                    tmpParenCounter--;
+            }
+            isLambda = NextLookAhead().Type == TokenType.Arrow;
+            if (isLambda)
+                return ParseLambdaDecl(inInfo, ref outInfo);
+
             var list = ParseArgumentList(inInfo, ref outInfo, out var beg, out var end);
 
             //if (CheckToken(TokenType.Arrow))
@@ -366,6 +383,28 @@ namespace HapetFrontend.Parsing
             {
                 inInfo.IsInTupleParsing = saved1;
             }
+        }
+
+        private AstStatement ParseLambdaDecl(ParserInInfo inInfo, ref ParserOutInfo outInfo)
+        {
+            TokenLocation beg = null;
+            List<AstParamDecl> paramss = new List<AstParamDecl>();
+            if (CheckToken(TokenType.OpenParen))
+            {
+                paramss.AddRange(ParseParameterList(inInfo, ref outInfo, TokenType.OpenParen, TokenType.CloseParen, out beg, out var _, true));
+            }
+            // else - just identifier
+            else
+            {
+                // TODO: when x => x... supported
+            }
+
+            SkipNewlines();
+            Consume(TokenType.Arrow, ErrMsg("=>", "before lambda block"));
+            SkipNewlines();
+
+            var body = ParseBlockExpression(inInfo, ref outInfo);
+            return new AstLambdaDecl(paramss, body, null, new Location(beg, body.Ending));
         }
 
         private AstUnknownDecl PrepareTupleExpr(AstNestedExpr nst, AstTupleExpr tpl, ParserInInfo inInfo, ref ParserOutInfo outInfo)

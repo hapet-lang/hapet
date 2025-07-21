@@ -27,6 +27,8 @@ namespace HapetFrontend.Ast.Declarations
         public AstLambdaDecl(List<AstParamDecl> parameters, AstBlockExpr body, AstExpression retType, ILocation location = null)
             : base(location)
         {
+            OutType = new FunctionType(null);
+
             this.Parameters = parameters;
             this.Returns = retType;
             this.Body = body;
