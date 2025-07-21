@@ -44,7 +44,7 @@ namespace HapetFrontend
         /// <summary>
         /// Handles all lambda and nested func declarations for easier inference
         /// </summary>
-        public readonly List<AstStatement> LambdasAndNested = new List<AstStatement>();
+        public List<AstStatement> LambdasAndNested { get; } = new List<AstStatement>();
 
         public Compiler(CompilerSettings projectSettings, ProjectData projectData, IMessageHandler messageHandler)
         {
