@@ -10,7 +10,7 @@ namespace HapetFrontend.Parsing
 {
     public partial class Parser
     {
-        private AstFuncDecl ParseFuncDeclaration(ParserInInfo inInfo, ref ParserOutInfo outInfo, List<AstParamDecl> parameters, Location paramsLocation)
+        private AstFuncDecl ParseFuncDeclaration(ParserInInfo inInfo, ref ParserOutInfo outInfo, List<AstParamDecl> parameters, Location paramsLocation, bool isReturnVoid)
         {
             if (parameters == null)
             {
@@ -53,6 +53,8 @@ namespace HapetFrontend.Parsing
             inInfo.ParentFuncDecl = theFunc;
             if (CheckToken(TokenType.Semicolon))
                 NextToken(); // do nothing
+            else if (CheckToken(TokenType.Arrow))
+                body = ParseFunctionArrow(inInfo, ref outInfo, isReturnVoid);
             else
                 body = ParseBlockExpression(inInfo, ref outInfo);
             inInfo.AllowNestedFunc = false;
@@ -65,6 +67,24 @@ namespace HapetFrontend.Parsing
             theFunc.GenericConstrains = genericConstrains;
             theFunc.IsImported = inInfo.ExternalMetadata;
             return theFunc;
+        }
+
+        private AstBlockExpr ParseFunctionArrow(ParserInInfo inInfo, ref ParserOutInfo outInfo, bool isReturnVoid)
+        {
+            NextToken();
+
+            // getting only one stmt if there are no braces
+            var onlyStmt = ParseStatement(inInfo, ref outInfo);
+
+            // if not void type - add return
+            if (!isReturnVoid)
+                onlyStmt = new AstReturnStmt(onlyStmt as AstExpression, onlyStmt.Location);
+
+            var body = new AstBlockExpr(new List<AstStatement>() { onlyStmt }, onlyStmt);
+
+            // try eat semicolon or error
+            CheckSemicolonAfterStmt(onlyStmt);
+            return body;
         }
     }
 }

@@ -180,7 +180,9 @@ namespace HapetFrontend.Parsing
             // func declaration 
             else if (CheckToken(TokenType.OpenParen))
             {
-                var func = ParseFuncDeclaration(inInfo, ref outInfo, null, null);
+                bool isVoidType = udecl.Name == null || (udecl.Type is AstNestedExpr nst2 && nst2.RightPart is AstIdExpr idE && idE.Name == "void");
+
+                var func = ParseFuncDeclaration(inInfo, ref outInfo, null, null, isVoidType);
                 if (udecl.Name == null)
                 {
                     var fncName = (udecl.Type as AstNestedExpr).UnrollToRightPart<AstIdExpr>();

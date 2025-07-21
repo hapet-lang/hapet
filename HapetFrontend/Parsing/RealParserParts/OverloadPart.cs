@@ -27,6 +27,7 @@ namespace HapetFrontend.Parsing
 
             // kostyl to always get type
             AstExpression returns = udecl.Name ?? udecl.Type;
+            bool isVoidType = returns is AstNestedExpr nst && nst.RightPart is AstIdExpr idE && idE.Name == "void";
 
             // cast override
             if ((CheckToken(TokenType.KwImplicit) || CheckToken(TokenType.KwExplicit)))
@@ -49,7 +50,7 @@ namespace HapetFrontend.Parsing
                 returns = ParseExpression(inInfo, ref outInfo) as AstExpression;
                 inInfo.AllowMultiplyExpression = saved1;
 
-                var func = ParseFuncDeclaration(inInfo, ref outInfo, null, null);
+                var func = ParseFuncDeclaration(inInfo, ref outInfo, null, null, isVoidType);
                 paramDecls = func.Parameters;
                 body = func.Body;
                 possibleEndLocation = func.Location.Ending;
@@ -105,7 +106,7 @@ namespace HapetFrontend.Parsing
                     op = ">>";
                 }
 
-                var func = ParseFuncDeclaration(inInfo, ref outInfo, null, null);
+                var func = ParseFuncDeclaration(inInfo, ref outInfo, null, null, isVoidType);
                 paramDecls = func.Parameters;
                 body = func.Body;
                 possibleEndLocation = func.Location.Ending;
