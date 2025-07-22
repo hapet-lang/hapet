@@ -72,20 +72,6 @@ namespace HapetFrontend.Ast
         }
 
         #region Helper functions
-        public AstFuncDecl FindContainingFunction()
-        {
-            var currentParent = NormalParent;
-            while (currentParent != null)
-            {
-                if (currentParent is AstFuncDecl funcDecl)
-                {
-                    return funcDecl;
-                }
-                currentParent = currentParent.NormalParent;
-            }
-            return null;
-        }
-
         public void SetDataFromStmt(AstStatement stmt, bool outTypeAndValue = false)
         {
             Scope = stmt.Scope;

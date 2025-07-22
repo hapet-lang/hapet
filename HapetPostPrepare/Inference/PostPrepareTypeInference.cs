@@ -1,4 +1,5 @@
-﻿using System.Diagnostics.Metrics;
+﻿using System.Diagnostics;
+using System.Diagnostics.Metrics;
 using HapetFrontend.Ast;
 using HapetFrontend.Ast.Declarations;
 using HapetFrontend.Ast.Expressions;
@@ -713,7 +714,10 @@ namespace HapetPostPrepare
                 PostPrepareExpressionWithType(castExpr.TypeExpr.OutType, castExpr.SubExpression, castResult);
                 if (!castResult.CouldBeCasted && !castResult.CouldBeNarrowed)
                 {
-                    // TODO: error - impossible cast
+                    // error - impossible cast
+                    _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, castExpr.SubExpression, 
+                        [HapetType.AsString(castExpr.SubExpression.OutType), HapetType.AsString(castExpr.TypeExpr.OutType)],
+                        ErrorCode.Get(CTEN.TypeCouldNotBeImplCasted));
                 }
             }
             else
@@ -1074,7 +1078,10 @@ namespace HapetPostPrepare
                 }
                 else
                 {
-                    // TODO: error that the types are not connected to each other
+                    // error that the types are not connected to each other
+                    _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, expr.Location, 
+                        [HapetType.AsString(expr.TrueExpr.OutType), HapetType.AsString(expr.FalseExpr.OutType)], 
+                        ErrorCode.Get(CTEN.TypeOfTernaryNotDeterminated));
                 }
             }
 
@@ -1263,8 +1270,9 @@ namespace HapetPostPrepare
                 if (returnStmt.Location == null)
                 {
                     // it is a manually added 'return' statement
-                    var theFunc = returnStmt.FindContainingFunction(); // TODO: also lambda?
-                    _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, theFunc.Name, [HapetType.AsString(currFuncRet.OutType)], ErrorCode.Get(CTEN.NotEnoughReturns));
+                    var contParent = _currentParentStack.GetNearestParentFuncOrLambda();
+                    var theNameLocation = contParent is AstFuncDecl fncc ? fncc.Name.Location : (contParent as AstLambdaExpr).Location;
+                    _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, theNameLocation, [HapetType.AsString(currFuncRet.OutType)], ErrorCode.Get(CTEN.NotEnoughReturns));
                 }
                 else
                     _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, returnStmt, [HapetType.AsString(currFuncRet.OutType)], ErrorCode.Get(CTEN.EmptyReturnStmt));

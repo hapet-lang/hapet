@@ -210,6 +210,9 @@
         DuplicateConstrain              = 0x305A,
         OnlyOneOnTheConstrains          = 0x305B,
         StaticLambdaToParams            = 0x305C,
+        LambdaCouldNotBeCastedToDel     = 0x305D,
+        TypeCouldNotBeExplCasted        = 0x305E,
+        TypeOfTernaryNotDeterminated    = 0x305F,
 
         // compiler errors up to 0x6000
         DefaultWasNotInfered            = 0x5001,

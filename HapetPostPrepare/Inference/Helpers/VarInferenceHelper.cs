@@ -81,8 +81,6 @@ namespace HapetPostPrepare
             // the var is used to check when static method is accessed from an object
             bool accessingFromAnObject = false;
             var delegateParams = targetType.TargetDeclaration.Parameters;
-            // TODO: probably needed when allowing delegates for non-static funcs
-            //var delegateParams = targetType.TargetDeclaration.Parameters.Skip(1).ToList(); // no need for the first param
 
             AstExpression valueHandler = value;
             // if it is an AstIdExpr - make a nested
@@ -186,9 +184,7 @@ namespace HapetPostPrepare
                         smbl3 = GetFuncFromCandidates(idFuncName, args, cls, true, out var _);
                         // error because user tries to access non static method from a class name
                         if (smbl3 != null && castResult == null)
-                        {
                             _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, idFuncName, [], ErrorCode.Get(CTEN.NonStaticFuncFromStatic));
-                        }
                     }
                     else
                     {
@@ -265,10 +261,10 @@ namespace HapetPostPrepare
             var delegateParams = targetType.TargetDeclaration.Parameters;
             if (value.Parameters.Count != delegateParams.Count)
             {
+                // error and quit
                 if (castResult == null)
-                {
-                    // TODO: error and quit
-                }
+                    _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, value, 
+                        [HapetType.AsString(targetType)], ErrorCode.Get(CTEN.LambdaCouldNotBeCastedToDel));
                 return value;
             }
 
