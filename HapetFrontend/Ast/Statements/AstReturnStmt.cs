@@ -9,6 +9,16 @@ namespace HapetFrontend.Ast.Statements
         /// </summary>
         public AstExpression ReturnExpression { get; set; }
 
+        /// <summary>
+        /// 'true' for => in lambdas because it could be and could not be return - inference required
+        /// </summary>
+        public bool IsWeakReturn { get; set; }
+
+        /// <summary>
+        /// Statement of weak return
+        /// </summary>
+        public AstStatement WeakReturnStatement { get; set; }
+
         public override string AAAName => nameof(AstReturnStmt);
 
         public AstReturnStmt(AstExpression expr, ILocation location = null) : base(location)
@@ -22,6 +32,8 @@ namespace HapetFrontend.Ast.Statements
                 ReturnExpression?.GetDeepCopy() as AstExpression,
                 Location)
             {
+                IsWeakReturn = IsWeakReturn,
+                WeakReturnStatement = WeakReturnStatement?.GetDeepCopy() as AstStatement,
                 Scope = Scope,
                 SourceFile = SourceFile,
             };

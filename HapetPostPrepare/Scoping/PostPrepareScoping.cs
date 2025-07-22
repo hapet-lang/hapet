@@ -929,6 +929,11 @@ namespace HapetPostPrepare
                 SetScopeAndParent(returnStmt.ReturnExpression, returnStmt);
                 PostPrepareExprScoping(returnStmt.ReturnExpression);
             }
+            if (returnStmt.WeakReturnStatement != null)
+            {
+                SetScopeAndParent(returnStmt.WeakReturnStatement, returnStmt);
+                PostPrepareExprScoping(returnStmt.WeakReturnStatement);
+            }
         }
 
         private void PostPrepareAttributeStmtScoping(AstAttributeStmt attrStmt)

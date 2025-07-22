@@ -459,6 +459,13 @@ namespace HapetPostPrepare
                 if (stmt is AstFuncDecl)
                     continue;
                 PostPrepareExprInference(stmt, inInfo, ref outInfo);
+
+                // handle weak return statements
+                if (outInfo.NeedToAddFromWeakReturn.Count > 0)
+                {
+                    int currI = blockExpr.Statements.IndexOf(stmt);
+                    blockExpr.Statements.Insert(currI, outInfo.NeedToAddFromWeakReturn.Pop());
+                }
             }
 
             _currentBlock = prevBlock;
@@ -1215,6 +1222,19 @@ namespace HapetPostPrepare
             var currentFunction = _currentParentStack.GetNearestParentFuncOrLambda();
             var currFuncRet = currentFunction is AstFuncDecl fnc ? fnc.Returns : (currentFunction as AstLambdaExpr).Returns;
             var currFuncLoc = currentFunction is AstFuncDecl fnc2 ? fnc2.Name : currentFunction;
+
+            // handle weak return
+            if (returnStmt.IsWeakReturn && currentFunction is AstLambdaExpr)
+            {
+                returnStmt.IsWeakReturn = false;
+                // if it is not a void type - make a normal return
+                if (currFuncRet.OutType is not VoidType)
+                    returnStmt.ReturnExpression = returnStmt.WeakReturnStatement as AstExpression;
+                // has to be handled by block expr
+                else
+                    outInfo.NeedToAddFromWeakReturn.Push(returnStmt.WeakReturnStatement);
+                returnStmt.WeakReturnStatement = null;
+            }
 
             if (returnStmt.ReturnExpression != null)
             {

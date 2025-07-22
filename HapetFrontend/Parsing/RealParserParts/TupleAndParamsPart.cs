@@ -419,7 +419,22 @@ namespace HapetFrontend.Parsing
             Consume(TokenType.Arrow, ErrMsg("=>", "before lambda block"));
             SkipNewlines();
 
-            var body = ParseBlockExpression(inInfo, ref outInfo);
+            AstBlockExpr body;
+            if (CheckToken(TokenType.OpenBrace))
+            {
+                body = ParseBlockExpression(inInfo, ref outInfo);
+            }
+            else
+            {
+                // getting only one stmt if there are no braces
+                var onlyStmt = ParseStatement(inInfo, ref outInfo);
+                var weakReturnStmt = new AstReturnStmt(null, onlyStmt.Location)
+                {
+                    IsWeakReturn = true,
+                    WeakReturnStatement = onlyStmt,
+                };
+                body = new AstBlockExpr(new List<AstStatement>() { weakReturnStmt }, onlyStmt);
+            }
             var lambda = new AstLambdaExpr(paramss, body, null, new Location(beg, body.Ending));
             _compiler.LambdasAndNested.Add(lambda);
             return lambda;

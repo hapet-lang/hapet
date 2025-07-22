@@ -415,6 +415,7 @@ namespace HapetPostPrepare
         private void ReplaceAllTuplesInReturn(AstReturnStmt expr)
         {
             ReplaceAllTuplesInStmt(expr.ReturnExpression);
+            ReplaceAllTuplesInStmt(expr.WeakReturnStatement);
         }
 
         private void ReplaceAllTuplesInAttribute(AstAttributeStmt expr)
