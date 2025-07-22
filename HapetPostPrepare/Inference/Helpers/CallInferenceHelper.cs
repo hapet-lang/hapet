@@ -174,34 +174,41 @@ namespace HapetPostPrepare
                     return;
                 }
 
+                // try check accessing from object
                 accessingFromAnObject = true;
                 // we need to create this one because code generator requires the parameter of this shite
                 callExpr.TypeOrObjectName = new AstNestedExpr(new AstIdExpr("this", callExpr), null, callExpr);
                 SetScopeAndParent(callExpr.TypeOrObjectName, callExpr);
                 PostPrepareExprScoping(callExpr.TypeOrObjectName);
+                var saved1 = inInfo.MuteErrors;
+                inInfo.MuteErrors = true;
                 PostPrepareExprInference(callExpr.TypeOrObjectName, inInfo, ref outInfo);
-
-                // if it is a non static func defined in local class
-                List<AstArgumentExpr> argsWithClassParam = new List<AstArgumentExpr>(callExpr.Arguments);
-                var firstParArg = new AstArgumentExpr(callExpr.TypeOrObjectName) { OutType = callExpr.TypeOrObjectName.OutType };
-                argsWithClassParam.Insert(0, firstParArg);
-
-                // we need to set it to ref if it is a StructType
-                if (currentParent is AstStructDecl)
-                    firstParArg.ArgumentModificator = HapetFrontend.Enums.ParameterModificator.Ref;
-
-                smbl2 = GetFuncFromCandidates(funcName, argsWithClassParam, currentParent, true, out var casts2);
-                smbl2 = OnFoundSymbol(smbl2, callExpr.FuncName);
-                if (smbl2 is DeclSymbol ds2 && ds2.Decl is AstFuncDecl funcDecl2)
+                inInfo.MuteErrors = saved1;
+                if (callExpr.TypeOrObjectName.OutType != null)
                 {
-                    if (!CheckIfCouldBeAccessed(callExpr, funcDecl2))
-                        _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, callExpr.FuncName, [], ErrorCode.Get(CTEN.FuncCouldNotBeAccessed));
-                    callExpr.Arguments.ReplaceWithCasts(casts2.Skip(1).ToList()); // skip because the first param is an object
-                    declToSearch = currentParent;
-                    foundSymbol = ds2;
-                    return;
+                    // if it is a non static func defined in local class
+                    List<AstArgumentExpr> argsWithClassParam = new List<AstArgumentExpr>(callExpr.Arguments);
+                    var firstParArg = new AstArgumentExpr(callExpr.TypeOrObjectName) { OutType = callExpr.TypeOrObjectName.OutType };
+                    argsWithClassParam.Insert(0, firstParArg);
+
+                    // we need to set it to ref if it is a StructType
+                    if (currentParent is AstStructDecl)
+                        firstParArg.ArgumentModificator = HapetFrontend.Enums.ParameterModificator.Ref;
+
+                    smbl2 = GetFuncFromCandidates(funcName, argsWithClassParam, currentParent, true, out var casts2);
+                    smbl2 = OnFoundSymbol(smbl2, callExpr.FuncName);
+                    if (smbl2 is DeclSymbol ds2 && ds2.Decl is AstFuncDecl funcDecl2)
+                    {
+                        if (!CheckIfCouldBeAccessed(callExpr, funcDecl2))
+                            _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, callExpr.FuncName, [], ErrorCode.Get(CTEN.FuncCouldNotBeAccessed));
+                        callExpr.Arguments.ReplaceWithCasts(casts2.Skip(1).ToList()); // skip because the first param is an object
+                        declToSearch = currentParent;
+                        foundSymbol = ds2;
+                        return;
+                    }
                 }
                 accessingFromAnObject = false;
+
                 if (_compiler.MessageHandler.HasErrors)
                 {
                     declToSearch = null;
