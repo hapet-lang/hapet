@@ -46,20 +46,17 @@ namespace HapetPostPrepare
             // assigning lambda is made different
             if (expr.OutType is LambdaType && expr is AstLambdaExpr lmbd)
             {
-                return PostPrepareLambdaWithType(lmbd, neededType as DelegateType);
+                return PostPrepareLambdaWithType(lmbd, neededType as DelegateType, castResult);
             }
             // assigning function to delegates is made different
             else if (expr.OutType is FunctionType)
             {
-                // not always could be casted - do it inside the func
-                if (castResult != null)
-                    castResult.CouldBeCasted = true;
-                return PostPrepareDelegateWithType(expr, neededType as DelegateType);
+                return PostPrepareDelegateWithType(expr, neededType as DelegateType, castResult);
             }
             return _compiler.TryCastExpr(neededType, expr, castResult, _currentSourceFile);
         }
 
-        private AstExpression PostPrepareDelegateWithType(AstExpression value, DelegateType targetType)
+        private AstExpression PostPrepareDelegateWithType(AstExpression value, DelegateType targetType, CastResult castResult = null)
         {
             // just handlers
             InInfo inInfo = InInfo.Default;
@@ -67,11 +64,19 @@ namespace HapetPostPrepare
 
             // if user assigns a delegate to another
             if (value.OutType is DelegateType)
+            {
+                if (castResult != null)
+                    castResult.CouldBeCasted = (value.OutType == targetType);
                 return value;
+            }
 
             // allow nulls 
             if (value.OutType is NullType)
+            {
+                if (castResult != null)
+                    castResult.CouldBeCasted = true;
                 return value;
+            }
 
             // the var is used to check when static method is accessed from an object
             bool accessingFromAnObject = false;
@@ -93,9 +98,14 @@ namespace HapetPostPrepare
                 // try to just infer the value
                 PostPrepareExprInference(valueHandler, inInfo, ref outInfo);
                 if (valueHandler.OutType is DelegateType)
+                {
+                    if (castResult != null)
+                        castResult.CouldBeCasted = (valueHandler.OutType == targetType);
                     return valueHandler; // all is ok
+                }
 
-                _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, valueHandler, [], ErrorCode.Get(CTEN.DelegFuncNameExpected));
+                if (castResult == null)
+                    _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, valueHandler, [], ErrorCode.Get(CTEN.DelegFuncNameExpected));
                 return valueHandler;
             }
 
@@ -175,7 +185,7 @@ namespace HapetPostPrepare
                         args = delegateParams.GetArgsFromParams(clsTp);
                         smbl3 = GetFuncFromCandidates(idFuncName, args, cls, true, out var _);
                         // error because user tries to access non static method from a class name
-                        if (smbl3 != null)
+                        if (smbl3 != null && castResult == null)
                         {
                             _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, idFuncName, [], ErrorCode.Get(CTEN.NonStaticFuncFromStatic));
                         }
@@ -205,7 +215,8 @@ namespace HapetPostPrepare
             if (newName == null)
             {
                 // error here: the function could not be infered
-                _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, valueHandler, [], ErrorCode.Get(CTEN.FuncNotInfered));
+                if (castResult == null)
+                    _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, valueHandler, [], ErrorCode.Get(CTEN.FuncNotInfered));
                 return value;
             }
 
@@ -223,7 +234,7 @@ namespace HapetPostPrepare
                 // checking if it is a static func
                 bool isStaticFunc = ft.Declaration.SpecialKeys.Contains(TokenType.KwStatic);
                 // warn if accessing from an object
-                if (accessingFromAnObject && isStaticFunc)
+                if (accessingFromAnObject && isStaticFunc && castResult == null)
                 {
                     _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, valueHandler, [], ErrorCode.Get(CTWN.StaticFuncFromObject), null, ReportType.Warning);
                 }
@@ -236,13 +247,16 @@ namespace HapetPostPrepare
             else
             {
                 // error here
-                _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, valueHandler, [], ErrorCode.Get(CTEN.ExprExpectedToBeFunc));
+                if (castResult == null)
+                    _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, valueHandler, [], ErrorCode.Get(CTEN.ExprExpectedToBeFunc));
             }
 
+            if (castResult != null)
+                castResult.CouldBeCasted = true;
             return value;
         }
 
-        private AstExpression PostPrepareLambdaWithType(AstLambdaExpr value, DelegateType targetType)
+        private AstExpression PostPrepareLambdaWithType(AstLambdaExpr value, DelegateType targetType, CastResult castResult = null)
         {
             // just handlers
             InInfo inInfo = InInfo.Default;
@@ -251,7 +265,10 @@ namespace HapetPostPrepare
             var delegateParams = targetType.TargetDeclaration.Parameters;
             if (value.Parameters.Count != delegateParams.Count)
             {
-                // TODO: error and quit
+                if (castResult == null)
+                {
+                    // TODO: error and quit
+                }
                 return value;
             }
 
@@ -278,6 +295,9 @@ namespace HapetPostPrepare
                 PostPrepareBlockInference(value.Body, inInfo, ref outInfo);
 
             _currentParentStack.RemoveParent();
+
+            if (castResult != null)
+                castResult.CouldBeCasted = true;
 
             return value;
         }

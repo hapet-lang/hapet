@@ -707,11 +707,20 @@ namespace HapetPostPrepare
             {
                 PostPrepareExprInference(castExpr.TypeExpr, inInfo, ref outInfo);
                 castExpr.OutType = castExpr.TypeExpr.OutType;
+
+                // check that the cast is possible
+                var castResult = new CastResult();
+                PostPrepareExpressionWithType(castExpr.TypeExpr.OutType, castExpr.SubExpression, castResult);
+                if (!castResult.CouldBeCasted && !castResult.CouldBeNarrowed)
+                {
+                    // TODO: error - impossible cast
+                }
             }
             else
             {
                 castExpr.OutType = castExpr.SubExpression.OutType;
             }
+
             castExpr.OutValue = castExpr.SubExpression.OutValue; // WARN: is it ok just to pass the value?
         }
 
