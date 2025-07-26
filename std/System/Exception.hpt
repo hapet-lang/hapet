@@ -1,0 +1,12 @@
+public abstract class Exception
+{
+    protected string _message;
+    public virtual string Message => _message;
+
+    public virtual string StackTrace => "";
+
+    public Exception()
+    {
+        
+    }
+}
