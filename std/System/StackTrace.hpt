@@ -1,0 +1,14 @@
+public static class StackTrace
+{
+    private static List<string> _stackTrace = new List<string>();
+
+    public static void Push(string name)
+    {
+        _stackTrace.Add(name);
+    }
+
+    public static void Pop()
+    {
+        _stackTrace.RemoveAt(_stackTrace.Count - 1);
+    }
+}
