@@ -9,7 +9,7 @@ public class ReadOnlyList<T> : IList<T>
 {
     private readonly IList<T> list; // Do not rename (binary serialization)
 
-    public ReadOnlyCollection(IList<T> list)
+    public ReadOnlyList(IList<T> list)
     {
         if (list == null)
         {

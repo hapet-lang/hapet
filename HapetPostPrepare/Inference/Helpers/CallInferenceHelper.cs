@@ -438,8 +438,21 @@ namespace HapetPostPrepare
             {
                 if (typed == null)
                     return typed;
+                if (idExpr is not AstIdGenericExpr genId)
+                    return typed;
+                if (!typed.Decl.HasGenericTypes || typed.Decl.IsImplOfGeneric)
+                    return typed;
 
-                return CheckForGenericType(typed, idExpr);
+                // check for constrains. if something goes wrong - it will error inside the function
+                if (!CheckIfTheTypesAreAllowedForConstrains(typed.Decl, genId.GenericRealTypes))
+                    return typed;
+
+                // generating generic shite name
+                var realName = genId.GetCopy(typed.Decl.Name.Name);
+                // create a new shite with real types
+                var realDecl = GetRealTypeFromGeneric(typed.Decl, genId.GenericRealTypes.GetNestedList(_compiler.MessageHandler),
+                    realName, HasAnyGenericTypes(genId.GenericRealTypes));
+                return realDecl.Symbol as DeclSymbol;
             }
         }
     }

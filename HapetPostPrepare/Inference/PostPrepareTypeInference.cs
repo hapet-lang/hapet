@@ -715,9 +715,10 @@ namespace HapetPostPrepare
                 if (!castResult.CouldBeCasted && !castResult.CouldBeNarrowed)
                 {
                     // error - impossible cast
-                    _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, castExpr.SubExpression, 
-                        [HapetType.AsString(castExpr.SubExpression.OutType), HapetType.AsString(castExpr.TypeExpr.OutType)],
-                        ErrorCode.Get(CTEN.TypeCouldNotBeImplCasted));
+                    // TODO: only if really impossible like (cls1)notInheritedCls2
+                    //_compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, castExpr.SubExpression, 
+                    //    [HapetType.AsString(castExpr.SubExpression.OutType), HapetType.AsString(castExpr.TypeExpr.OutType)],
+                    //    ErrorCode.Get(CTEN.TypeCouldNotBeImplCasted));
                 }
             }
             else

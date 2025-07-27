@@ -8,6 +8,7 @@ using System.Runtime;
 using System;
 using HapetFrontend.Scoping;
 using HapetFrontend.Helpers;
+using System.Collections.Generic;
 
 namespace HapetLastPrepare
 {
@@ -378,6 +379,7 @@ namespace HapetLastPrepare
             foreach (var a in expr.Arguments)
             {
                 LPRACArgumentExpr(a);
+                a.OutType = a.Expr.OutType;
             }
         }
 

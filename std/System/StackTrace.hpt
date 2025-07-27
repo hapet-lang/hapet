@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+
 public static class StackTrace
 {
     private static List<string> _stackTrace = new List<string>();
