@@ -5,17 +5,19 @@ using System.Runtime;
 
 public static class Program
 {
-    public static event Action<int> MyEvent;
-
     public static int Main(string[] args)
     {
-        MyEvent += (Action<int>)TestFunc;
-
+        Test();
         return 0;
     }
 
-    private static void TestFunc(int a)
+    public static void Test()
     {
-        
+        throw new CustomException();
     }
+}
+
+public class CustomException : Exception
+{
+
 }
