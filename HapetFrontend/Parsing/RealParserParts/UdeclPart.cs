@@ -208,7 +208,7 @@ namespace HapetFrontend.Parsing
                 return func;
             }
             // properties 
-            else if (CheckToken(TokenType.OpenBrace))
+            else if (CheckToken(TokenType.OpenBrace) || CheckToken(TokenType.Arrow))
             {
                 var prop = PreparePropertyDecl(udecl, udecl.Documentation, inInfo, ref outInfo);
                 prop.Attributes.AddRange(attrs);

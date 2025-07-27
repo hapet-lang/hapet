@@ -5,6 +5,7 @@ using HapetFrontend.Errors;
 using HapetFrontend.Entities;
 using System.Diagnostics;
 using HapetFrontend.Helpers;
+using HapetFrontend.Ast.Statements;
 
 namespace HapetFrontend.Parsing
 {
@@ -35,72 +36,94 @@ namespace HapetFrontend.Parsing
             TokenLocation beg = udecl.Beginning;
             TokenLocation end = beg;
 
-            Consume(TokenType.OpenBrace, ErrMsg("symbol '{'", "at beginning of property declaration"));
-            SkipNewlines();
+            List<Token> getSpecialKeys = new List<Token>();
+            List<Token> setSpecialKeys = new List<Token>();
 
-            // special keys of 'get'
-            List<Token> getSpecialKeys = ParseSpecialKeys();
-            SkipNewlines();
-
-            // if it has 'get'
-            if (CheckToken(TokenType.KwGet))
+            if (CheckToken(TokenType.Arrow))
             {
-                Consume(TokenType.KwGet, ErrMsg("keyword 'get'", "..."));
-                SkipNewlines();
-                hasGet = true;
+                // => property
 
-                // check what is going next
-                if (CheckToken(TokenType.Semicolon))
-                {
-                    // no body here
-                    Consume(TokenType.Semicolon, ErrMsg("symbol ';'", "after 'get'"));
-                }
-                else if (CheckToken(TokenType.OpenBrace))
-                {
-                    // the 'get' block
-                    getBody = ParseBlockExpression(inInfo, ref outInfo);
-                }
-                else
-                {
-                    ReportMessage(PeekToken().Location, [], ErrorCode.Get(CTEN.UnexpectedTokenAfterGet));
-                }
-                SkipNewlines();
+                NextToken();
+                // getting only one stmt if there are no braces
+                var onlyExpr = ParseExpression(inInfo, ref outInfo);
+                onlyExpr = new AstReturnStmt(onlyExpr as AstExpression, onlyExpr.Location);
+                var body = new AstBlockExpr(new List<AstStatement>() { onlyExpr }, onlyExpr);
+
+                // try eat semicolon or error
+                CheckSemicolonAfterStmt(onlyExpr);
+                getBody = body;
             }
-            // special keys of 'set'
-            List<Token> setSpecialKeys = ParseSpecialKeys();
-            SkipNewlines();
-            if (CheckToken(TokenType.KwSet))
+            else
             {
-                Consume(TokenType.KwSet, ErrMsg("keyword 'set'", "..."));
-                SkipNewlines();
-                hasSet = true;
+                // { get; set; } property
 
-                // check what is going next
-                if (CheckToken(TokenType.Semicolon))
-                {
-                    // no body here
-                    Consume(TokenType.Semicolon, ErrMsg("symbol ';'", "after 'set'"));
-                }
-                else if (CheckToken(TokenType.OpenBrace))
-                {
-                    // the 'set' block
-                    setBody = ParseBlockExpression(inInfo, ref outInfo);
-                }
-                else
-                {
-                    ReportMessage(PeekToken().Location, [], ErrorCode.Get(CTEN.UnexpectedTokenAfterSet));
-                }
+                Consume(TokenType.OpenBrace, ErrMsg("symbol '{'", "at beginning of property declaration"));
                 SkipNewlines();
 
-                // check if 'get' goes after 'set' and error
+                // special keys of 'get'
+                getSpecialKeys = ParseSpecialKeys();
+                SkipNewlines();
+
+                // if it has 'get'
                 if (CheckToken(TokenType.KwGet))
                 {
-                    ReportMessage(PeekToken().Location, [], ErrorCode.Get(CTEN.GetNotBeforeSet));
+                    Consume(TokenType.KwGet, ErrMsg("keyword 'get'", "..."));
+                    SkipNewlines();
+                    hasGet = true;
+
+                    // check what is going next
+                    if (CheckToken(TokenType.Semicolon))
+                    {
+                        // no body here
+                        Consume(TokenType.Semicolon, ErrMsg("symbol ';'", "after 'get'"));
+                    }
+                    else if (CheckToken(TokenType.OpenBrace))
+                    {
+                        // the 'get' block
+                        getBody = ParseBlockExpression(inInfo, ref outInfo);
+                    }
+                    else
+                    {
+                        ReportMessage(PeekToken().Location, [], ErrorCode.Get(CTEN.UnexpectedTokenAfterGet));
+                    }
+                    SkipNewlines();
                 }
+                // special keys of 'set'
+                setSpecialKeys = ParseSpecialKeys();
+                SkipNewlines();
+                if (CheckToken(TokenType.KwSet))
+                {
+                    Consume(TokenType.KwSet, ErrMsg("keyword 'set'", "..."));
+                    SkipNewlines();
+                    hasSet = true;
+
+                    // check what is going next
+                    if (CheckToken(TokenType.Semicolon))
+                    {
+                        // no body here
+                        Consume(TokenType.Semicolon, ErrMsg("symbol ';'", "after 'set'"));
+                    }
+                    else if (CheckToken(TokenType.OpenBrace))
+                    {
+                        // the 'set' block
+                        setBody = ParseBlockExpression(inInfo, ref outInfo);
+                    }
+                    else
+                    {
+                        ReportMessage(PeekToken().Location, [], ErrorCode.Get(CTEN.UnexpectedTokenAfterSet));
+                    }
+                    SkipNewlines();
+
+                    // check if 'get' goes after 'set' and error
+                    if (CheckToken(TokenType.KwGet))
+                    {
+                        ReportMessage(PeekToken().Location, [], ErrorCode.Get(CTEN.GetNotBeforeSet));
+                    }
+                }
+                // end of propa
+                end = Consume(TokenType.CloseBrace, ErrMsg("symbol '}'", "at end of property declaration")).Location;
             }
 
-            // end of propa
-            end = Consume(TokenType.CloseBrace, ErrMsg("symbol '}'", "at end of property declaration")).Location;
             SkipNewlines();
 
             // property initializer
