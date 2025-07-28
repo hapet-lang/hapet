@@ -1418,8 +1418,7 @@ namespace HapetPostPrepare
             if (accessee is AstBuiltInTypeDecl)
                 return true;
 
-            // if it is a nested - check that is it accessed within the parent class
-            if (accessee.IsNestedDecl && accessee.Scope.IsParentOf(accessor.Scope))
+            if (accessee.Scope.IsParentOf(accessor.Scope))
             {
                 return true;
             }
@@ -1476,12 +1475,6 @@ namespace HapetPostPrepare
             // could be a usual variable/param
             if (accessee is AstParamDecl ||
                 (accessee is AstVarDecl vd2 && vd2.ContainingParent == null))
-            {
-                return true;
-            }
-
-            // allow access to all struct fields!!!
-            if (accessee is AstVarDecl && accessee.ContainingParent is AstStructDecl)
             {
                 return true;
             }

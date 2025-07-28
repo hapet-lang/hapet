@@ -52,6 +52,7 @@ namespace HapetFrontend.Parsing
                 // try eat semicolon or error
                 CheckSemicolonAfterStmt(onlyExpr);
                 getBody = body;
+                hasGet = true;
             }
             else
             {
