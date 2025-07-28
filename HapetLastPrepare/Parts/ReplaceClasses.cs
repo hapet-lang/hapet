@@ -294,6 +294,9 @@ namespace HapetLastPrepare
                 case AstConstrainStmt constrainStmt:
                     LPRACConstrainStmt(constrainStmt);
                     break;
+                case AstThrowStmt throwStmt:
+                    LPRACThrowStmt(throwStmt);
+                    break;
 
                 // skip literals
                 case AstNumberExpr:
@@ -632,6 +635,16 @@ namespace HapetLastPrepare
         private void LPRACConstrainStmt(AstConstrainStmt stmt)
         {
             LPRACExpr(stmt.Expr);
+        }
+
+        private void LPRACThrowStmt(AstThrowStmt stmt)
+        {
+            LPRACExpr(stmt.ThrowExpression);
+
+            if (stmt.ThrowExpression?.OutType is ClassType)
+            {
+                stmt.ThrowExpression.OutType = PointerType.GetPointerType(stmt.ThrowExpression.OutType);
+            }
         }
 
         public AstNestedExpr GetPointerType(AstExpression expr)

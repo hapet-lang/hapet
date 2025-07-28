@@ -235,6 +235,9 @@ namespace HapetLastPrepare
                 case AstConstrainStmt constrainStmt:
                     CheckUsedDeclsConstrainStmt(constrainStmt);
                     break;
+                case AstThrowStmt throwStmt:
+                    CheckUsedDeclsThrowStmt(throwStmt);
+                    break;
 
                 // skip literals
                 case AstNumberExpr:
@@ -480,6 +483,11 @@ namespace HapetLastPrepare
         {
             if (stmt.Expr != null)
                 CheckUsedDeclsExpr(stmt.Expr);
+        }
+
+        private void CheckUsedDeclsThrowStmt(AstThrowStmt stmt)
+        {
+            CheckUsedDeclsExpr(stmt.ThrowExpression);
         }
     }
 }

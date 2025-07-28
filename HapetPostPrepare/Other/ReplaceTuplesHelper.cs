@@ -197,6 +197,9 @@ namespace HapetPostPrepare
                 case AstConstrainStmt constrainStmt:
                     ReplaceAllTuplesInConstrain(constrainStmt);
                     break;
+                case AstThrowStmt throwStmt:
+                    ReplaceAllTuplesInThrow(throwStmt);
+                    break;
 
                 // skip literals
                 case AstNumberExpr:
@@ -433,6 +436,11 @@ namespace HapetPostPrepare
         private void ReplaceAllTuplesInConstrain(AstConstrainStmt expr)
         {
             // probably nothing to do here
+        }
+
+        private void ReplaceAllTuplesInThrow(AstThrowStmt stmt)
+        {
+            ReplaceAllTuplesInStmt(stmt.ThrowExpression);
         }
     }
 }

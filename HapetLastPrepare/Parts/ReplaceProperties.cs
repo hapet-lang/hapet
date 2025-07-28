@@ -299,6 +299,9 @@ namespace HapetLastPrepare
                 case AstConstrainStmt constrainStmt:
                     LPRAPConstrainStmt(constrainStmt, ref outInfo);
                     break;
+                case AstThrowStmt throwStmt:
+                    LPRAPThrowStmt(throwStmt, ref outInfo);
+                    break;
 
                 // skip literals
                 case AstNumberExpr:
@@ -658,6 +661,11 @@ namespace HapetLastPrepare
         private void LPRAPConstrainStmt(AstConstrainStmt stmt, ref OutInfo outInfo)
         {
             // nop
+        }
+
+        private void LPRAPThrowStmt(AstThrowStmt stmt, ref OutInfo outInfo)
+        {
+            LPRAPExpr(stmt.ThrowExpression, ref outInfo);
         }
 
         private static void UpdateCallWithFunc(AstCallExpr call, AstFuncDecl decl)

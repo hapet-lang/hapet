@@ -569,6 +569,9 @@ namespace HapetPostPrepare
                 case AstConstrainStmt constrainStmt:
                     PostPrepareConstrainScoping(constrainStmt);
                     break;
+                case AstThrowStmt throwStmt:
+                    PostPrepareThrowScoping(throwStmt);
+                    break;
 
                 // skip literals
                 case AstNumberExpr:
@@ -967,6 +970,12 @@ namespace HapetPostPrepare
                 SetScopeAndParent(a, constrainStmt);
                 PostPrepareExprScoping(a);
             }
+        }
+
+        private void PostPrepareThrowScoping(AstThrowStmt throwStmt)
+        {
+            SetScopeAndParent(throwStmt.ThrowExpression, throwStmt);
+            PostPrepareExprScoping(throwStmt.ThrowExpression);
         }
 
 

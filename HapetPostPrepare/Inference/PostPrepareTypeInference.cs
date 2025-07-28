@@ -430,6 +430,9 @@ namespace HapetPostPrepare
                 case AstBaseCtorStmt baseStmt:
                     PostPrepareBaseCtorStmtInference(baseStmt, inInfo, ref outInfo);
                     break;
+                case AstThrowStmt throwStmt:
+                    PostPrepareThrowStmtInference(throwStmt, inInfo, ref outInfo);
+                    break;
 
                 // skip literals
                 case AstNumberExpr:
@@ -1382,6 +1385,11 @@ namespace HapetPostPrepare
             {
                 PostPrepareExprInference(a, inInfo, ref outInfo);
             }
+        }
+
+        private void PostPrepareThrowStmtInference(AstThrowStmt throwStmt, InInfo inInfo, ref OutInfo outInfo)
+        {
+            PostPrepareExprInference(throwStmt.ThrowExpression, inInfo, ref outInfo);
         }
 
         private AstExpression PostPrepareVarValueAssign(AstExpression value, HapetType targetType, InInfo inInfo, ref OutInfo outInfo, bool inferValue = true)
