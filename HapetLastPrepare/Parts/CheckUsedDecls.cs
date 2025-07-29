@@ -70,10 +70,30 @@ namespace HapetLastPrepare
 
         public void CheckUsedDeclsClass(AstClassDecl decl)
         {
+            // if we inherit from a class/interface - all its fields/props/methods should be 
+            // marked as used, because at codegen they are needed
+            foreach (var i in decl.InheritedFrom)
+            {
+                CheckUsedDeclsExpr(i);
+                foreach (var d in (i.OutType as ClassType).Declaration.Declarations)
+                {
+                    CheckUsedDeclsDecl(d);
+                }
+            }
         }
 
         public void CheckUsedDeclsStruct(AstStructDecl decl)
         {
+            // if we inherit from a class/interface - all its fields/props/methods should be 
+            // marked as used, because at codegen they are needed
+            foreach (var i in decl.InheritedFrom)
+            {
+                CheckUsedDeclsExpr(i);
+                foreach (var d in (i.OutType as ClassType).Declaration.Declarations)
+                {
+                    CheckUsedDeclsDecl(d);
+                }
+            }
         }
 
         public void CheckUsedDeclsDelegate(AstDelegateDecl decl)
