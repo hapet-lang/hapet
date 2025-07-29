@@ -434,6 +434,10 @@
         <Number>205C</Number>
         <Text>Non-static nested/lambda declaration is not allowed for now</Text>
     </Item>
+    <Item>
+        <Number>205D</Number>
+        <Text>A 'new' expression expected after 'throw' word</Text>
+    </Item>
 
 
     <!--Post prepare errors-->

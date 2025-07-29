@@ -24,6 +24,9 @@ namespace HapetFrontend.Parsing
                 case TokenType.KwReturn:
                     toReturn = ParseReturnStatement(inInfo, ref outInfo);
                     break;
+                case TokenType.KwThrow:
+                    toReturn = ParseThrowStatement(inInfo, ref outInfo);
+                    break;
 
                 case TokenType.KwWhile:
                     toReturn = ParseWhileStatement(inInfo, ref outInfo);

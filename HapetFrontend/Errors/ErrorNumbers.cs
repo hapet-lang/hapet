@@ -116,6 +116,7 @@
         UnexpectedGenericConstrain      = 0x205A,
         UserDefinedError                = 0x205B,
         NonStaticNestedLambda           = 0x205C, // would be obsolete
+        NewExprExpectedAfterThrow       = 0x205D,
 
         // post preparer errors up to 0x5000
         EnumCouldNotBeAssigned          = 0x3001,
