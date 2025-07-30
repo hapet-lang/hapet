@@ -71,6 +71,7 @@ namespace HapetBackend.Llvm
                 case AstBreakContStmt breakContStmt: GenerateBreakContStmt(breakContStmt); return null;
                 case AstReturnStmt returnStmt: GenerateReturnStmt(returnStmt); return null;
                 case AstBaseCtorStmt baseStmt: GenerateBaseCtorStmt(baseStmt); return null;
+                case AstThrowStmt throwStmt: GenerateThrowStmt(throwStmt); return null;
 
                 default:
                     {
@@ -1696,6 +1697,10 @@ namespace HapetBackend.Llvm
             var ctorFunc = _valueMap[ctorSymbol];
             LLVMTypeRef ctorType = _typeMap[ctorSymbol.Decl.Type.OutType];
             _builder.BuildCall2(ctorType, ctorFunc, args.ToArray());
+        }
+
+        private void GenerateThrowStmt(AstThrowStmt throwStmt)
+        {
         }
     }
 }
