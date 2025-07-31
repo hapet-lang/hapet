@@ -23,7 +23,29 @@ namespace HapetCompiler.ProjectConf
             else
                 _projectData.Defines.Add("RELEASE", null);
 
+            // setting target and current arch
+            SetArch(_projectSettings.TargetPlatformData, "TARGET_");
+            SetArch(CompilerSettings.CurrentPlatformData, "CURRENT_");
 
+            void SetArch(PlatformData data, string additionalString)
+            {
+                // arch
+                switch (data.TargetPlatform)
+                {
+                    case TargetPlatform.Win86:
+                    case TargetPlatform.Linux86:
+                        {
+                            _projectData.Defines.Add($"{additionalString}ARCH", "x86");
+                            break;
+                        }
+                    case TargetPlatform.Win64:
+                    case TargetPlatform.Linux64:
+                        {
+                            _projectData.Defines.Add($"{additionalString}ARCH", "x64");
+                            break;
+                        }
+                }
+            }
         }
     }
 }
