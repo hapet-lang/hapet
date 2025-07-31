@@ -1,0 +1,67 @@
+#if TARGET_ARCH == "x86"
+private struct JmpBuf
+{
+    private uint Ebp;
+    private uint Ebx;
+    private uint Edi;
+    private uint Esi;
+    private uint Esp;
+    private uint Eip;
+    private uint Registration;
+    private uint TryLevel;
+    private uint Cookie;
+    private uint UnwindFunc;
+    private uint UnwindData0;
+    private uint UnwindData1;
+    private uint UnwindData2;
+    private uint UnwindData3;
+    private uint UnwindData4;
+    private uint UnwindData5;
+}
+#elif TARGET_ARCH == "x64"
+private struct SetJmpFloat128
+{
+    private ulong Part0;
+    private ulong Part1;
+}
+
+private struct JmpBuf
+{
+    private ulong Frame;
+    private ulong Rbx;
+    private ulong Rsp;
+    private ulong Rbp;
+    private ulong Rsi;
+    private ulong Rdi;
+    private ulong R12;
+    private ulong R13;
+    private ulong R14;
+    private ulong R15;
+    private ulong Rip;
+    
+    private uint MxCsr;
+    private ushort FpCsr;
+    private ushort Spare;
+
+    private SetJmpFloat128 Xmm6;
+    private SetJmpFloat128 Xmm7;
+    private SetJmpFloat128 Xmm8;
+    private SetJmpFloat128 Xmm9;
+    private SetJmpFloat128 Xmm10;
+    private SetJmpFloat128 Xmm11;
+    private SetJmpFloat128 Xmm12;
+    private SetJmpFloat128 Xmm13;
+    private SetJmpFloat128 Xmm14;
+    private SetJmpFloat128 Xmm15;
+}
+#endif
+
+private static class ExceptionHelper
+{
+    private static delegate void DtorDelegate(void* obj);
+
+    private static void Throw(void* thrownObject, DtorDelegate dtor)
+    {
+
+    }
+}
