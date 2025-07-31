@@ -72,6 +72,7 @@ namespace HapetBackend.Llvm
                 case AstReturnStmt returnStmt: GenerateReturnStmt(returnStmt); return null;
                 case AstBaseCtorStmt baseStmt: GenerateBaseCtorStmt(baseStmt); return null;
                 case AstThrowStmt throwStmt: GenerateThrowStmt(throwStmt); return null;
+                case AstTryCatchStmt tryCatchStmt: GenerateTryCatchStmt(tryCatchStmt); return null;
 
                 default:
                     {
@@ -1699,8 +1700,13 @@ namespace HapetBackend.Llvm
             _builder.BuildCall2(ctorType, ctorFunc, args.ToArray());
         }
 
-        private void GenerateThrowStmt(AstThrowStmt throwStmt)
+        private void GenerateThrowStmt(AstThrowStmt stmt)
         {
+        }
+
+        private void GenerateTryCatchStmt(AstTryCatchStmt stmt)
+        {
+
         }
     }
 }
