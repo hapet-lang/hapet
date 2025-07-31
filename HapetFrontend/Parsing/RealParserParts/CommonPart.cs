@@ -301,6 +301,8 @@ namespace HapetFrontend.Parsing
                 s is not AstIfStmt &&
                 s is not AstCaseStmt &&
                 s is not AstSwitchStmt &&
+                s is not AstTryCatchStmt &&
+                s is not AstCatchStmt &&
                 s is not AstFuncDecl &&
                 s is not AstBlockExpr &&
                 s is not AstClassDecl &&
