@@ -302,6 +302,12 @@ namespace HapetLastPrepare
                 case AstThrowStmt throwStmt:
                     LPRAPThrowStmt(throwStmt, ref outInfo);
                     break;
+                case AstTryCatchStmt tryCatchStmt:
+                    LPRAPTryCatchStmt(tryCatchStmt, ref outInfo);
+                    break;
+                case AstCatchStmt catchStmt:
+                    LPRAPCatchStmt(catchStmt, ref outInfo);
+                    break;
 
                 // skip literals
                 case AstNumberExpr:
@@ -666,6 +672,21 @@ namespace HapetLastPrepare
         private void LPRAPThrowStmt(AstThrowStmt stmt, ref OutInfo outInfo)
         {
             LPRAPExpr(stmt.ThrowExpression, ref outInfo);
+        }
+
+        private void LPRAPTryCatchStmt(AstTryCatchStmt stmt, ref OutInfo outInfo)
+        {
+            LPRAPExpr(stmt.TryBlock, ref outInfo);
+            foreach (var c in stmt.CatchBlocks)
+                LPRAPExpr(c, ref outInfo);
+            if (stmt.FinallyBlock != null)
+                LPRAPExpr(stmt.FinallyBlock, ref outInfo);
+        }
+
+        private void LPRAPCatchStmt(AstCatchStmt stmt, ref OutInfo outInfo)
+        {
+            LPRAPExpr(stmt.CatchBlock, ref outInfo);
+            LPRAPParam(stmt.CatchParam, ref outInfo);
         }
 
         private static void UpdateCallWithFunc(AstCallExpr call, AstFuncDecl decl)

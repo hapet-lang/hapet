@@ -572,6 +572,12 @@ namespace HapetPostPrepare
                 case AstThrowStmt throwStmt:
                     PostPrepareThrowScoping(throwStmt);
                     break;
+                case AstTryCatchStmt tryCatchStmt:
+                    PostPrepareTryCatchScoping(tryCatchStmt);
+                    break;
+                case AstCatchStmt сatchStmt:
+                    PostPrepareCatchScoping(сatchStmt);
+                    break;
 
                 // skip literals
                 case AstNumberExpr:
@@ -976,6 +982,34 @@ namespace HapetPostPrepare
         {
             SetScopeAndParent(throwStmt.ThrowExpression, throwStmt);
             PostPrepareExprScoping(throwStmt.ThrowExpression);
+        }
+
+        private void PostPrepareTryCatchScoping(AstTryCatchStmt stmt)
+        {
+            SetScopeAndParent(stmt.TryBlock, stmt);
+            PostPrepareExprScoping(stmt.TryBlock);
+
+            foreach (var c in stmt.CatchBlocks)
+            {
+                SetScopeAndParent(c, stmt);
+                PostPrepareExprScoping(c);
+            }
+
+            if (stmt.FinallyBlock != null)
+            {
+                SetScopeAndParent(stmt.FinallyBlock, stmt);
+                PostPrepareExprScoping(stmt.FinallyBlock);
+            }
+        }
+
+        private void PostPrepareCatchScoping(AstCatchStmt stmt)
+        {
+            SetScopeAndParent(stmt.CatchBlock, stmt);
+            var blockScope = PostPrepareBlockScoping(stmt.CatchBlock);
+
+            // settings the block scope to the parameters (so they are in the scope of the block)
+            SetScopeAndParent(stmt.CatchParam, stmt, blockScope);
+            PostPrepareParamScoping(stmt.CatchParam);
         }
 
 

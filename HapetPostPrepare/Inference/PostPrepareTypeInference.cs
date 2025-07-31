@@ -433,6 +433,12 @@ namespace HapetPostPrepare
                 case AstThrowStmt throwStmt:
                     PostPrepareThrowStmtInference(throwStmt, inInfo, ref outInfo);
                     break;
+                case AstTryCatchStmt tryCatchStmt:
+                    PostPrepareTryCatchStmtInference(tryCatchStmt, inInfo, ref outInfo);
+                    break;
+                case AstCatchStmt catchStmt:
+                    PostPrepareCatchStmtInference(catchStmt, inInfo, ref outInfo);
+                    break;
 
                 // skip literals
                 case AstNumberExpr:
@@ -1390,6 +1396,21 @@ namespace HapetPostPrepare
         private void PostPrepareThrowStmtInference(AstThrowStmt throwStmt, InInfo inInfo, ref OutInfo outInfo)
         {
             PostPrepareExprInference(throwStmt.ThrowExpression, inInfo, ref outInfo);
+        }
+
+        private void PostPrepareTryCatchStmtInference(AstTryCatchStmt stmt, InInfo inInfo, ref OutInfo outInfo)
+        {
+            PostPrepareExprInference(stmt.TryBlock, inInfo, ref outInfo);
+            foreach (var c in stmt.CatchBlocks)
+                PostPrepareExprInference(c, inInfo, ref outInfo);
+            if (stmt.FinallyBlock != null)
+                PostPrepareExprInference(stmt.FinallyBlock, inInfo, ref outInfo);
+        }
+
+        private void PostPrepareCatchStmtInference(AstCatchStmt stmt, InInfo inInfo, ref OutInfo outInfo)
+        {
+            PostPrepareExprInference(stmt.CatchBlock, inInfo, ref outInfo);
+            PostPrepareParamInference(stmt.CatchParam, inInfo, ref outInfo);
         }
 
         private AstExpression PostPrepareVarValueAssign(AstExpression value, HapetType targetType, InInfo inInfo, ref OutInfo outInfo, bool inferValue = true)

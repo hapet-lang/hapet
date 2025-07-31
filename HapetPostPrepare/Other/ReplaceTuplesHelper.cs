@@ -200,6 +200,12 @@ namespace HapetPostPrepare
                 case AstThrowStmt throwStmt:
                     ReplaceAllTuplesInThrow(throwStmt);
                     break;
+                case AstTryCatchStmt tryCatchStmt:
+                    ReplaceAllTuplesInTryCatch(tryCatchStmt);
+                    break;
+                case AstCatchStmt catchStmt:
+                    ReplaceAllTuplesInCatch(catchStmt);
+                    break;
 
                 // skip literals
                 case AstNumberExpr:
@@ -441,6 +447,20 @@ namespace HapetPostPrepare
         private void ReplaceAllTuplesInThrow(AstThrowStmt stmt)
         {
             ReplaceAllTuplesInStmt(stmt.ThrowExpression);
+        }
+
+        private void ReplaceAllTuplesInTryCatch(AstTryCatchStmt stmt)
+        {
+            ReplaceAllTuplesInStmt(stmt.TryBlock);
+            ReplaceAllTuplesInStmt(stmt.FinallyBlock);
+            foreach (var c in stmt.CatchBlocks)
+                ReplaceAllTuplesInStmt(c);
+        }
+
+        private void ReplaceAllTuplesInCatch(AstCatchStmt stmt)
+        {
+            ReplaceAllTuplesInStmt(stmt.CatchBlock);
+            ReplaceAllTuplesInDecl(stmt.CatchParam);
         }
     }
 }

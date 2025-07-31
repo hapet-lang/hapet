@@ -258,6 +258,12 @@ namespace HapetLastPrepare
                 case AstThrowStmt throwStmt:
                     CheckUsedDeclsThrowStmt(throwStmt);
                     break;
+                case AstTryCatchStmt tryCatchStmt:
+                    CheckUsedDeclsTryCatchStmt(tryCatchStmt);
+                    break;
+                case AstCatchStmt catchStmt:
+                    CheckUsedDeclsCatchStmt(catchStmt);
+                    break;
 
                 // skip literals
                 case AstNumberExpr:
@@ -508,6 +514,21 @@ namespace HapetLastPrepare
         private void CheckUsedDeclsThrowStmt(AstThrowStmt stmt)
         {
             CheckUsedDeclsExpr(stmt.ThrowExpression);
+        }
+
+        private void CheckUsedDeclsTryCatchStmt(AstTryCatchStmt stmt)
+        {
+            CheckUsedDeclsExpr(stmt.TryBlock);
+            foreach (var c in stmt.CatchBlocks)
+                CheckUsedDeclsExpr(c);
+            if (stmt.FinallyBlock != null)
+                CheckUsedDeclsExpr(stmt.FinallyBlock);
+        }
+
+        private void CheckUsedDeclsCatchStmt(AstCatchStmt stmt)
+        {
+            CheckUsedDeclsExpr(stmt.CatchBlock);
+            CheckUsedDeclsDecl(stmt.CatchParam);
         }
     }
 }

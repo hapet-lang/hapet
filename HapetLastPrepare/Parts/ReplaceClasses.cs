@@ -297,6 +297,12 @@ namespace HapetLastPrepare
                 case AstThrowStmt throwStmt:
                     LPRACThrowStmt(throwStmt);
                     break;
+                case AstTryCatchStmt tryCatchStmt:
+                    LPRACTryCatchStmt(tryCatchStmt);
+                    break;
+                case AstCatchStmt catchStmt:
+                    LPRACCatchStmt(catchStmt);
+                    break;
 
                 // skip literals
                 case AstNumberExpr:
@@ -645,6 +651,21 @@ namespace HapetLastPrepare
             {
                 stmt.ThrowExpression.OutType = PointerType.GetPointerType(stmt.ThrowExpression.OutType);
             }
+        }
+
+        private void LPRACTryCatchStmt(AstTryCatchStmt stmt)
+        {
+            LPRACExpr(stmt.TryBlock);
+            foreach (var c in stmt.CatchBlocks)
+                LPRACExpr(c);
+            if (stmt.FinallyBlock != null)
+                LPRACExpr(stmt.FinallyBlock);
+        }
+
+        private void LPRACCatchStmt(AstCatchStmt stmt)
+        {
+            LPRACExpr(stmt.CatchBlock);
+            LPRACParam(stmt.CatchParam);
         }
 
         public AstNestedExpr GetPointerType(AstExpression expr)
