@@ -7,7 +7,18 @@ public static class Program
 {
     public static int Main(string[] args)
     {
-        Test();
+        try
+        {
+            Test();
+        }
+        catch (CustomException e)
+        {
+            var cstm = e.Message;
+        }
+        finally
+        {
+
+        }
         return 0;
     }
 
@@ -19,5 +30,8 @@ public static class Program
 
 public class CustomException : Exception
 {
-
+    public CustomException()
+    {
+        this._message = "Anime322";
+    }
 }
