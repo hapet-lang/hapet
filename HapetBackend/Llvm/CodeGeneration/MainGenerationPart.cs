@@ -358,13 +358,6 @@ namespace HapetBackend.Llvm
 
         private bool IsFunctionShouldBeSkipped(AstFuncDecl func) 
         {
-            // allow special funcs if the containing type is used
-            if ((func.ClassFunctionType == ClassFunctionType.Ctor ||
-                func.ClassFunctionType == ClassFunctionType.Dtor ||
-                func.ClassFunctionType == ClassFunctionType.Initializer) &&
-                GetNormalDeclIsUsed(func.ContainingParent))
-                return false;
-
             // also we need to skip here stors of generic impls
             if (func.ContainingParent != null && func.ContainingParent.IsImplOfGeneric &&
                 func.ClassFunctionType == ClassFunctionType.StaticCtor)

@@ -1,4 +1,5 @@
 ﻿using HapetFrontend.Ast.Declarations;
+using HapetFrontend.Scoping;
 using System.Text;
 
 namespace HapetFrontend.Ast.Expressions
@@ -14,6 +15,11 @@ namespace HapetFrontend.Ast.Expressions
         /// The arguments to be passed into type constructor
         /// </summary>
         public List<AstArgumentExpr> Arguments { get; set; }
+
+        /// <summary>
+        /// Symbol of ctor for the new expr
+        /// </summary>
+        public DeclSymbol ConstructorSymbol { get; set; }
 
         /// <summary>
         /// For easier inference
@@ -36,6 +42,7 @@ namespace HapetFrontend.Ast.Expressions
                 Arguments.Select(x => x.GetDeepCopy() as AstArgumentExpr).ToList(),
                 Location)
             {
+                ConstructorSymbol = ConstructorSymbol,
                 IsCompileTimeValue = IsCompileTimeValue,
                 OutType = OutType,
                 OutValue = OutValue,

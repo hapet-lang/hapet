@@ -214,6 +214,7 @@
         LambdaCouldNotBeCastedToDel     = 0x305D,
         TypeCouldNotBeExplCasted        = 0x305E,
         TypeOfTernaryNotDeterminated    = 0x305F,
+        CtorWithArgTypesNotFound        = 0x3060,
 
         // compiler errors up to 0x6000
         DefaultWasNotInfered            = 0x5001,
@@ -236,7 +237,6 @@
         TypeCouldNotBeConverted         = 0x6001,
         LLVMValidateError               = 0x6002,
         NoObjectFileGenerated           = 0x6003,
-        CtorWithArgTypesNotFound        = 0x6004,
         TheTypeIsNotCallable            = 0x6005,
 
         NonStaticFieldAccess            = 0x6007, 

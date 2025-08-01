@@ -824,6 +824,10 @@
         <Number>305F</Number>
         <Text>Type of ternary operator cannot be determined because there are no implicit casts between '{0}' and '{1}'</Text>
     </Item>
+    <Item>
+        <Number>3060</Number>
+        <Text>Constructor with specified argument types could not be found in {0}</Text>
+    </Item>
 
     <!--Compiler errors-->
     <Item>
@@ -899,10 +903,6 @@
     <Item>
         <Number>6003</Number>
         <Text>Object file could not be generated due to some errors</Text>
-    </Item>
-    <Item>
-        <Number>6004</Number>
-        <Text>Constructor with specified argument types was not found in the {0} class</Text>
     </Item>
     <Item>
         <Number>6005</Number>

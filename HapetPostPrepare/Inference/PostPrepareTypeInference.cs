@@ -688,6 +688,46 @@ namespace HapetPostPrepare
             {
                 _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, newExpr, [], ErrorCode.Get(CTEN.CreateInterfOrAbsCls));
             }
+
+            // searching for ctor
+            if (newExpr.TypeName.OutType is ClassType || newExpr.TypeName.OutType is StructType)
+            {
+                // getting decl
+                AstDeclaration decl;
+                if (newExpr.TypeName.OutType is ClassType clsT)
+                    decl = clsT.Declaration;
+                else
+                    decl = (newExpr.TypeName.OutType as StructType).Declaration;
+
+                string onlyName = decl.Name.Name.GetClassNameWithoutNamespace();
+                var ctorName = $"{onlyName}_ctor";
+                List<AstArgumentExpr> argsWithClassParam = new List<AstArgumentExpr>(newExpr.Arguments);
+                argsWithClassParam.Insert(0, new AstArgumentExpr(new AstIdExpr("this")
+                {
+                    OutType = newExpr.OutType,
+                    Scope = newExpr.Scope,
+                })
+                {
+                    OutType = newExpr.OutType,
+                    Scope = newExpr.Scope,
+                });
+
+                // add ref to first param if struct
+                if (decl is AstStructDecl)
+                    argsWithClassParam[0].ArgumentModificator = ParameterModificator.Ref;
+
+                var ctorSymbol = GetFuncFromCandidates(new AstIdExpr(ctorName), argsWithClassParam, decl, true, out var casts);
+                // error if ctor not found
+                if (ctorSymbol == null)
+                {
+                    _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, newExpr.TypeName, [decl.Name.Name], ErrorCode.Get(CTEN.CtorWithArgTypesNotFound));
+                    return;
+                }
+                newExpr.ConstructorSymbol = ctorSymbol as DeclSymbol;
+
+                // replace with casts to required
+                newExpr.Arguments.ReplaceWithCasts(casts.Skip(1).ToList());
+            }
         }
 
         private void PostPrepareArgumentExprInference(AstArgumentExpr argumentExpr, InInfo inInfo, ref OutInfo outInfo)

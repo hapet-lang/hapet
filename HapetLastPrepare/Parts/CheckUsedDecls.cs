@@ -321,6 +321,7 @@ namespace HapetLastPrepare
             {
                 CheckUsedDeclsArgumentExpr(a);
             }
+            CheckUsedDeclsDecl(expr.ConstructorSymbol.Decl);
         }
 
         private void CheckUsedDeclsArgumentExpr(AstArgumentExpr expr)

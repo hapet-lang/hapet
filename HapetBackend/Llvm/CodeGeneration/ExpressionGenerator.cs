@@ -563,29 +563,7 @@ namespace HapetBackend.Llvm
                 int structSize = classType.GetSize();
 
                 // getting class ctor
-                string onlyName = classType.Declaration.Name.Name.GetClassNameWithoutNamespace();
-                var ctorName = $"{onlyName}_ctor";
-                List<AstArgumentExpr> argsWithClassParam = new List<AstArgumentExpr>(expr.Arguments);
-                argsWithClassParam.Insert(0, new AstArgumentExpr(new AstIdExpr("this") 
-                { 
-                    OutType = expr.OutType,
-                    Scope = expr.Scope,
-                })
-                {
-                    OutType = expr.OutType,
-                    Scope = expr.Scope,
-                });
-                var ctorSymbol = _postPreparer.GetFuncFromCandidates(new AstIdExpr(ctorName), argsWithClassParam, classType.Declaration, true, out var casts);
-
-                // error if ctor not found
-                if (ctorSymbol == null)
-                {
-                    _messageHandler.ReportMessage(_currentSourceFile.Text, expr.TypeName, [classType.Declaration.Name.Name], ErrorCode.Get(CTEN.CtorWithArgTypesNotFound));
-                    return v;
-                }
-
-                // replace with casts to required
-                expr.Arguments.ReplaceWithCasts(casts.Skip(1).ToList());
+                var ctorSymbol = expr.ConstructorSymbol;
 
                 // allocating memory for struct
                 v = GetMalloc(structSize, 1);
@@ -617,31 +595,7 @@ namespace HapetBackend.Llvm
             else if (expr.OutType is StructType structType)
             {
                 // getting struct ctor
-                string onlyName = structType.Declaration.Name.Name.GetClassNameWithoutNamespace();
-                var ctorName = $"{onlyName}_ctor";
-                List<AstArgumentExpr> argsWithClassParam = new List<AstArgumentExpr>(expr.Arguments);
-                argsWithClassParam.Insert(0, new AstArgumentExpr(new AstIdExpr("this")
-                {
-                    OutType = structType,
-                    Scope = expr.Scope,
-                })
-                {
-                    OutType = structType,
-                    Scope = expr.Scope,
-                    ArgumentModificator = ParameterModificator.Ref
-                });
-                var ctorSymbol = _postPreparer.GetFuncFromCandidates(new AstIdExpr(ctorName), argsWithClassParam, structType.Declaration, true, out var casts);
-
-                // error if ctor not found
-                if (ctorSymbol == null)
-                {
-                    _messageHandler.ReportMessage(_currentSourceFile.Text, expr.TypeName, [structType.Declaration.Name.Name], ErrorCode.Get(CTEN.CtorWithArgTypesNotFound));
-                    return v;
-                }
-
-                // replace with casts to required
-                expr.Arguments.ReplaceWithCasts(casts.Skip(1).ToList());
-
+                var ctorSymbol = expr.ConstructorSymbol;
                 v = _builder.BuildAlloca(HapetTypeToLLVMType(structType), $"var_{structType.Declaration.Name.Name}");
 
                 // other args
