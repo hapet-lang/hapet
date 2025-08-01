@@ -75,6 +75,7 @@ namespace HapetBackend.Llvm
             _builder.PositionAtEnd(bbTry);
             // generating try block code
             GenerateExpressionCode(stmt.TryBlock);
+            _builder.BuildBr(bbFinally);
 
             // create catch dispatch/blocks
             // -1 because we already have main dispatch block
@@ -109,9 +110,15 @@ namespace HapetBackend.Llvm
                 var currCatchIndex = 0;
                 while (currCatchIndex < stmt.CatchBlocks.Count)
                 {
-                    // check if could be casted
-                    LLVMValueRef cmpRes = default;
                     var nextCatch = catches[currCatchIndex];
+
+                    // check if could be casted
+                    var excClass = _currentFunction.Scope.GetSymbolInNamespace("System", new AstIdExpr("Exception"));
+                    LLVMValueRef cmpRes = CheckIsCouldBeCasted(
+                        currException, 
+                        PointerType.GetPointerType(excClass.Decl.Type.OutType), 
+                        stmt.CatchBlocks[currCatchIndex].CatchParam.Type.OutType, false, 
+                        stmt.CatchBlocks[currCatchIndex].CatchParam.Location);
 
                     // if not last catch - build br to next catch
                     if (currCatchIndex + 1 != stmt.CatchBlocks.Count)

@@ -1409,8 +1409,8 @@ namespace HapetPostPrepare
 
         private void PostPrepareCatchStmtInference(AstCatchStmt stmt, InInfo inInfo, ref OutInfo outInfo)
         {
-            PostPrepareExprInference(stmt.CatchBlock, inInfo, ref outInfo);
             PostPrepareParamInference(stmt.CatchParam, inInfo, ref outInfo);
+            PostPrepareExprInference(stmt.CatchBlock, inInfo, ref outInfo);
         }
 
         private AstExpression PostPrepareVarValueAssign(AstExpression value, HapetType targetType, InInfo inInfo, ref OutInfo outInfo, bool inferValue = true)

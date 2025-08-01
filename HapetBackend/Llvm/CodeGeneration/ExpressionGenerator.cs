@@ -291,96 +291,7 @@ namespace HapetBackend.Llvm
 
                             var rightExpr = (binExpr.Right as AstExpression);
 
-                            if (leftExpr.OutType is PointerType pt1 && pt1.TargetType is ClassType leftType)
-                            {
-                                ClassType rightType;
-                                if (rightExpr.OutType is PointerType pt2 && pt2.TargetType is ClassType clsT)
-                                {
-                                    rightType = clsT;
-                                }
-                                else
-                                {
-                                    /// WARN: almost the same as in <see cref="CreateCast"/>
-                                    // check cast from object instance to struct
-
-                                    var ptrToCastTypeInfo = _typeInfoDictionary[rightExpr.OutType];
-
-                                    // WARN: hard cock
-                                    var typeConverter = _currentFunction.Scope.GetSymbolInNamespace("System.Runtime.Conversion", new AstIdExpr("TypeConverter"));
-                                    DeclSymbol downcasterSymbol;
-                                    downcasterSymbol = (typeConverter.Decl as AstClassDecl).SubScope.GetSymbol(new AstIdExpr("CanBeDowncasted")) as DeclSymbol;
-                                    var downcasterFunc = _valueMap[downcasterSymbol];
-                                    LLVMTypeRef funcType = _typeMap[downcasterSymbol.Decl.Type.OutType];
-                                    var canBeDowncasted = _builder.BuildCall2(funcType, downcasterFunc, new LLVMValueRef[] { left, ptrToCastTypeInfo }, "canBeDowncasted");
-                                    return canBeDowncasted;
-                                }
-
-                                // you would ask - wtf is anyIsInterface? - read upper 
-
-                                bool anyIsInterface = rightType.Declaration.IsInterface || leftType.Declaration.IsInterface;
-                                bool isUpcast = leftType.IsInheritedFrom(rightType);
-                                // check upcast
-                                if (!isUpcast || anyIsInterface)
-                                {
-                                    // swap them and check inheritance
-                                    bool isDownCast = rightType.IsInheritedFrom(leftType);
-                                    if (isDownCast || anyIsInterface)
-                                    {
-                                        var ptrToCastTypeInfo = _typeInfoDictionary[rightType];
-
-                                        // WARN: hard cock
-                                        var typeConverter = _currentFunction.Scope.GetSymbolInNamespace("System.Runtime.Conversion", new AstIdExpr("TypeConverter"));
-                                        DeclSymbol downcasterSymbol;
-                                        if (rightType.Declaration.IsInterface)
-                                            downcasterSymbol = (typeConverter.Decl as AstClassDecl).SubScope.GetSymbol(new AstIdExpr("CanBeDowncastedInterface")) as DeclSymbol;
-                                        else
-                                            downcasterSymbol = (typeConverter.Decl as AstClassDecl).SubScope.GetSymbol(new AstIdExpr("CanBeDowncasted")) as DeclSymbol;
-                                        var downcasterFunc = _valueMap[downcasterSymbol];
-                                        LLVMTypeRef funcType = _typeMap[downcasterSymbol.Decl.Type.OutType];
-                                        var canBeDowncasted = _builder.BuildCall2(funcType, downcasterFunc, new LLVMValueRef[] { left, ptrToCastTypeInfo }, "canBeDowncasted");
-
-                                        // if 'is not' cringe - negate
-                                        if (binExpr.IsNot)
-                                            canBeDowncasted = _builder.BuildNot(canBeDowncasted, "negated");
-
-                                        return canBeDowncasted;
-                                    }
-                                    else
-                                    {
-                                        _messageHandler.ReportMessage(_currentSourceFile.Text, binExpr, [HapetType.AsString(leftType), HapetType.AsString(rightType)], ErrorCode.Get(CTEN.TypeCouldNotBeConverted));
-                                        return default;
-                                    }
-                                }
-                                else
-                                {
-                                    // just true when upcast shite
-                                    return GenerateExpressionCode(new AstBoolExpr(!binExpr.IsNot));
-                                }
-                            }
-                            else
-                            {
-                                // cringe shite like 
-                                // valueType is ISome
-
-                                var leftValueType = leftExpr.OutType as StructType;
-                                if (rightExpr.OutType is PointerType pt3 && pt3.TargetType is ClassType)
-                                {
-                                    // just false
-                                    return GenerateExpressionCode(new AstBoolExpr(binExpr.IsNot));
-                                }
-                                else if (rightExpr.OutType == leftValueType)
-                                {
-                                    // just true - it is like
-                                    // valueType is TheSameType
-                                    return GenerateExpressionCode(new AstBoolExpr(!binExpr.IsNot));
-                                }
-                                else
-                                {
-                                    // TODO: error - user tried to do shite like
-                                    // valueType is AnotherValueType
-                                    return default;
-                                }
-                            }
+                            return CheckIsCouldBeCasted(left, leftExpr.OutType, rightExpr.OutType, binExpr.IsNot, binExpr.Location);
                         }
                     default:
                         {
@@ -456,6 +367,100 @@ namespace HapetBackend.Llvm
             }
             _messageHandler.ReportMessage(_currentSourceFile.Text, binExpr, [binExpr.ToString()], ErrorCode.Get(CTEN.StmtNotImplemented));
             return default;
+        }
+        
+        private LLVMValueRef CheckIsCouldBeCasted(LLVMValueRef obj, HapetType objType, HapetType requiredType, bool isNot = false, ILocation castLocation = null)
+        {
+            if (objType is PointerType pt1 && pt1.TargetType is ClassType leftType)
+            {
+                ClassType rightType;
+                if (requiredType is PointerType pt2 && pt2.TargetType is ClassType clsT)
+                {
+                    rightType = clsT;
+                }
+                else
+                {
+                    /// WARN: almost the same as in <see cref="CreateCast"/>
+                    // check cast from object instance to struct
+
+                    var ptrToCastTypeInfo = _typeInfoDictionary[requiredType];
+
+                    // WARN: hard cock
+                    var typeConverter = _currentFunction.Scope.GetSymbolInNamespace("System.Runtime.Conversion", new AstIdExpr("TypeConverter"));
+                    DeclSymbol downcasterSymbol;
+                    downcasterSymbol = (typeConverter.Decl as AstClassDecl).SubScope.GetSymbol(new AstIdExpr("CanBeDowncasted")) as DeclSymbol;
+                    var downcasterFunc = _valueMap[downcasterSymbol];
+                    LLVMTypeRef funcType = _typeMap[downcasterSymbol.Decl.Type.OutType];
+                    var canBeDowncasted = _builder.BuildCall2(funcType, downcasterFunc, new LLVMValueRef[] { obj, ptrToCastTypeInfo }, "canBeDowncasted");
+                    return canBeDowncasted;
+                }
+
+                // you would ask - wtf is anyIsInterface? - read upper 
+
+                bool anyIsInterface = rightType.Declaration.IsInterface || leftType.Declaration.IsInterface;
+                bool isUpcast = leftType.IsInheritedFrom(rightType);
+                // check upcast
+                if (!isUpcast || anyIsInterface)
+                {
+                    // swap them and check inheritance
+                    bool isDownCast = rightType.IsInheritedFrom(leftType);
+                    if (isDownCast || anyIsInterface)
+                    {
+                        var ptrToCastTypeInfo = _typeInfoDictionary[rightType];
+
+                        // WARN: hard cock
+                        var typeConverter = _currentFunction.Scope.GetSymbolInNamespace("System.Runtime.Conversion", new AstIdExpr("TypeConverter"));
+                        DeclSymbol downcasterSymbol;
+                        if (rightType.Declaration.IsInterface)
+                            downcasterSymbol = (typeConverter.Decl as AstClassDecl).SubScope.GetSymbol(new AstIdExpr("CanBeDowncastedInterface")) as DeclSymbol;
+                        else
+                            downcasterSymbol = (typeConverter.Decl as AstClassDecl).SubScope.GetSymbol(new AstIdExpr("CanBeDowncasted")) as DeclSymbol;
+                        var downcasterFunc = _valueMap[downcasterSymbol];
+                        LLVMTypeRef funcType = _typeMap[downcasterSymbol.Decl.Type.OutType];
+                        var canBeDowncasted = _builder.BuildCall2(funcType, downcasterFunc, new LLVMValueRef[] { obj, ptrToCastTypeInfo }, "canBeDowncasted");
+
+                        // if 'is not' cringe - negate
+                        if (isNot)
+                            canBeDowncasted = _builder.BuildNot(canBeDowncasted, "negated");
+
+                        return canBeDowncasted;
+                    }
+                    else
+                    {
+                        _messageHandler.ReportMessage(_currentSourceFile.Text, castLocation, [HapetType.AsString(leftType), HapetType.AsString(rightType)], ErrorCode.Get(CTEN.TypeCouldNotBeConverted));
+                        return default;
+                    }
+                }
+                else
+                {
+                    // just true when upcast shite
+                    return GenerateExpressionCode(new AstBoolExpr(!isNot));
+                }
+            }
+            else
+            {
+                // cringe shite like 
+                // valueType is ISome
+
+                var leftValueType = objType as StructType;
+                if (requiredType is PointerType pt3 && pt3.TargetType is ClassType)
+                {
+                    // just false
+                    return GenerateExpressionCode(new AstBoolExpr(isNot));
+                }
+                else if (requiredType == leftValueType)
+                {
+                    // just true - it is like
+                    // valueType is TheSameType
+                    return GenerateExpressionCode(new AstBoolExpr(!isNot));
+                }
+                else
+                {
+                    // TODO: error - user tried to do shite like
+                    // valueType is AnotherValueType
+                    return default;
+                }
+            }
         }
 
         private LLVMValueRef GeneratePointerExprCode(AstPointerExpr expr, bool getPtr = false)
