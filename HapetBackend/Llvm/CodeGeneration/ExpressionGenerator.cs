@@ -1699,14 +1699,5 @@ namespace HapetBackend.Llvm
             LLVMTypeRef ctorType = _typeMap[ctorSymbol.Decl.Type.OutType];
             _builder.BuildCall2(ctorType, ctorFunc, args.ToArray());
         }
-
-        private void GenerateThrowStmt(AstThrowStmt stmt)
-        {
-        }
-
-        private void GenerateTryCatchStmt(AstTryCatchStmt stmt)
-        {
-
-        }
     }
 }
