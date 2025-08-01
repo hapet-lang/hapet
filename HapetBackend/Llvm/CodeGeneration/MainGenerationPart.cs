@@ -266,6 +266,9 @@ namespace HapetBackend.Llvm
             }
             string dllName = dllImportAttr.Arguments[0].OutValue as string;
             string entryPoint = dllImportAttr.Arguments[1].OutValue as string;
+            bool isSupp = false;
+            if (dllImportAttr.Arguments.Count > 2 && dllImportAttr.Arguments[2].OutValue is bool b)
+                isSupp = b;
 
             HapetType vaListType = HapetType.CurrentTypeContext.VaListType;
             HapetType ptrToVaListType = PointerType.GetPointerType(vaListType);
@@ -289,7 +292,9 @@ namespace HapetBackend.Llvm
             // declaring external global func
             funcValue = _module.AddFunction(entryPoint, funcType);
             funcValue.Linkage = LLVMLinkage.LLVMExternalLinkage;
-            funcValue.DLLStorageClass = LLVMDLLStorageClass.LLVMDLLImportStorageClass;
+            // check if suppress dllimport attr
+            if (!isSupp)
+                funcValue.DLLStorageClass = LLVMDLLStorageClass.LLVMDLLImportStorageClass;
 
             // setting parameter names
             for (int i = 0; i < funcDecl.Parameters.Count; ++i)

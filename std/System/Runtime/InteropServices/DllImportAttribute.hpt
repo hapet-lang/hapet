@@ -7,6 +7,8 @@ public sealed class DllImportAttribute : Attribute
     public string DllName;
     [Required]
     public string EntryPoint;
+    // If suppress of low level dllimport required
+    public bool SuppressDllImportAttribute;
 
     public DllImportAttribute()
     {

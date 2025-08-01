@@ -69,10 +69,10 @@ private struct JmpBuf
 private static class ExceptionHelper
 {
     [DeclarationUsed]
-    [DllImport("", "setjmp")]
+    [DllImport("", "setjmp", true)]
     public static extern inline int SetJmp(void* env);
     [DeclarationUsed]
-    [DllImport("", "longjmp")]
+    [DllImport("", "longjmp", true)]
     public static extern inline void LongJmp(void* env, int val);
 
     private static List<uintptr> _jmpBufs = new List<uintptr>();
