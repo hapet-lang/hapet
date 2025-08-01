@@ -26,6 +26,7 @@ private struct JmpBuf
 #elif TARGET_ARCH == "x64"
 [DeclarationUsed]
 [SuppressStaticCtorCall]
+[StructLayoutAttribute(16)]
 private struct SetJmpFloat128
 {
     private ulong Part0;
@@ -68,13 +69,6 @@ private struct JmpBuf
 [DeclarationUsed]
 private static class ExceptionHelper
 {
-    [DeclarationUsed]
-    [DllImport("", "setjmp", true)]
-    public static extern inline int SetJmp(void* env);
-    [DeclarationUsed]
-    [DllImport("", "longjmp", true)]
-    public static extern inline void LongJmp(void* env, int val);
-
     private static List<uintptr> _jmpBufs = new List<uintptr>();
     private static Exception _currentException;
 

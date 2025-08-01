@@ -664,8 +664,8 @@ namespace HapetLastPrepare
 
         private void LPRACCatchStmt(AstCatchStmt stmt)
         {
-            LPRACExpr(stmt.CatchBlock);
             LPRACParam(stmt.CatchParam);
+            LPRACExpr(stmt.CatchBlock);
         }
 
         public AstNestedExpr GetPointerType(AstExpression expr)

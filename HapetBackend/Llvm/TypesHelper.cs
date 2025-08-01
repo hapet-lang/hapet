@@ -227,7 +227,8 @@ namespace HapetBackend.Llvm
 
                         // enable packing if there is a proper attribute
                         // getting attribute if it exists
-                        var layoutAttr = s.Declaration.Attributes.FirstOrDefault(x => x.AttributeName.TryFlatten(null, null) == "System.Runtime.InteropServices.StructLayoutAttribute");
+                        var layoutAttr = s.Declaration.Attributes.FirstOrDefault(x => 
+                            (x.AttributeName.OutType as ClassType).Declaration.Name.Name == "System.Runtime.InteropServices.StructLayoutAttribute");
                         int packNumber = 0;
                         if (layoutAttr != null)
                         {
@@ -382,7 +383,7 @@ namespace HapetBackend.Llvm
                 if (typeAlignment > biggestAlignment)
                     biggestAlignment = typeAlignment;
 
-                padding = typeAlignment - currentSize % typeAlignment;
+                padding = currentSize % typeAlignment != 0 ? typeAlignment - currentSize % typeAlignment : 0;
                 // if current offset is shity for the member type
                 // we need to append a padding
                 // WARN: create offsets only if pack is set or bigger than 1
@@ -398,6 +399,10 @@ namespace HapetBackend.Llvm
                 currentSize += type.GetSize();
                 i += 1;
             }
+
+            // set packing as biggest alignment if it is really bigger
+            if (packNumber > biggestAlignment)
+                biggestAlignment = packNumber;
 
             // add padding at the end
             // WARN: create offsets only if pack is set or bigger than 1

@@ -14,14 +14,19 @@ namespace HapetBackend.Llvm
     {
         private void GenerateThrowStmt(AstThrowStmt stmt)
         {
+            DeclSymbol helper;
+            DeclSymbol methSymbol;
+            LLVMValueRef methFunc;
+            LLVMTypeRef methType;
+
             // generating exception
             var exc = GenerateExpressionCode(stmt.ThrowExpression);
             // and store it in ExceptionHelper
             // WARN: hard cock
-            var helper = _currentFunction.Scope.GetSymbolInNamespace("System.Runtime.InteropServices", new AstIdExpr("ExceptionHelper"));
-            var methSymbol = (helper.Decl as AstClassDecl).SubScope.GetSymbol(new AstIdExpr("SetException")) as DeclSymbol;
-            var methFunc = _valueMap[methSymbol];
-            LLVMTypeRef methType = _typeMap[methSymbol.Decl.Type.OutType];
+            helper = _currentFunction.Scope.GetSymbolInNamespace("System.Runtime.InteropServices", new AstIdExpr("ExceptionHelper"));
+            methSymbol = (helper.Decl as AstClassDecl).SubScope.GetSymbol(new AstIdExpr("SetException")) as DeclSymbol;
+            methFunc = _valueMap[methSymbol];
+            methType = _typeMap[methSymbol.Decl.Type.OutType];
             _builder.BuildCall2(methType, methFunc, new LLVMValueRef[] { exc });
 
             // getting last jmpbuf
@@ -32,11 +37,7 @@ namespace HapetBackend.Llvm
             var jmpBuf = _builder.BuildCall2(methType, methFunc, new LLVMValueRef[] {  }, "jmpBuf");
 
             // making longjmp
-            // WARN: hard cock
-            methSymbol = (helper.Decl as AstClassDecl).SubScope.GetSymbol(new AstIdExpr("LongJmp")) as DeclSymbol;
-            methFunc = _valueMap[methSymbol];
-            methType = _typeMap[methSymbol.Decl.Type.OutType];
-            _builder.BuildCall2(methType, methFunc, new LLVMValueRef[] { jmpBuf, LLVMValueRef.CreateConstInt(_context.Int32Type, (ulong)1) });
+            _builder.BuildCall2(_longJmpFunc.Item1, _longJmpFunc.Item2, new LLVMValueRef[] { jmpBuf, LLVMValueRef.CreateConstInt(_context.Int32Type, (ulong)1) });
         }
 
         private unsafe void GenerateTryCatchStmt(AstTryCatchStmt stmt)
@@ -54,11 +55,7 @@ namespace HapetBackend.Llvm
             _builder.BuildCall2(methType, methFunc, new LLVMValueRef[] { varPtr });
 
             // call setjmp
-            // WARN: hard cock
-            methSymbol = (helper.Decl as AstClassDecl).SubScope.GetSymbol(new AstIdExpr("SetJmp")) as DeclSymbol;
-            methFunc = _valueMap[methSymbol];
-            methType = _typeMap[methSymbol.Decl.Type.OutType];
-            var res = _builder.BuildCall2(methType, methFunc, new LLVMValueRef[] { varPtr });
+            var res = _builder.BuildCall2(_setJmpFunc.Item1, _setJmpFunc.Item2, new LLVMValueRef[] { varPtr });
 
             // creating required blocks
             var bbTry = _context.CreateBasicBlock($"try.block");
