@@ -87,7 +87,7 @@ namespace HapetBackend.Llvm
                 catches[i] = _context.CreateBasicBlock($"catch{i}.block");
             }
 
-            // second - main dispatch
+            // second - dispatch and catch blocks
             LLVM.AppendExistingBasicBlock(_lastFunctionValueRef, bbDispatch);
             _builder.PositionAtEnd(bbDispatch);
             // if there are no breaks - just go to finally
@@ -137,9 +137,43 @@ namespace HapetBackend.Llvm
                 // making all the catches
                 for (int i = 0; i < stmt.CatchBlocks.Count; ++i) 
                 {
-                    
+                    // append the catch
+                    var currRealCatch = stmt.CatchBlocks[i];
+                    var currCatch = catches[i];
+                    LLVM.AppendExistingBasicBlock(_lastFunctionValueRef, currCatch);
+                    _builder.PositionAtEnd(currCatch);
+                    // creating exception variable to handle cought exception
+                    var excVar = CreateLocalVariable(currRealCatch.CatchParam.Type.OutType, currRealCatch.CatchParam.Name.Name);
+                    AssignToVar(excVar, currException);
+                    _valueMap[currRealCatch.CatchParam.Symbol] = excVar;
+                    // generate the catch block itself
+                    GenerateExpressionCode(currRealCatch.CatchBlock);
+                    _builder.BuildBr(bbFinally);
                 }
             }
+
+            // third - finally
+            LLVM.AppendExistingBasicBlock(_lastFunctionValueRef, bbFinally);
+            _builder.PositionAtEnd(bbFinally);
+            // popping current jmpbuf 
+            // WARN: hard cock
+            methSymbol = (helper.Decl as AstClassDecl).SubScope.GetSymbol(new AstIdExpr("Pop")) as DeclSymbol;
+            methFunc = _valueMap[methSymbol];
+            methType = _typeMap[methSymbol.Decl.Type.OutType];
+            _builder.BuildCall2(methType, methFunc, new LLVMValueRef[] { });
+            // if user defined block exists - generate statements from it
+            if (stmt.FinallyBlock != null)
+            {
+                GenerateExpressionCode(stmt.FinallyBlock);
+            }
+
+            // create end bb
+            var bbEnd = _context.CreateBasicBlock($"try.catch.end");
+            _builder.BuildBr(bbEnd);
+
+            // append the end
+            LLVM.AppendExistingBasicBlock(_lastFunctionValueRef, bbEnd);
+            _builder.PositionAtEnd(bbEnd);
         }
     }
 }
