@@ -61,12 +61,14 @@ namespace HapetBackend.Llvm.Linkers.Windows
                         //lldArgs.Add("odbc32.lib");
                         //lldArgs.Add("odbccp32.lib");
 
-                        lldArgs.Add("legacy_stdio_definitions.lib");
+                        //lldArgs.Add("legacy_stdio_definitions.lib");
                         //lldArgs.Add("legacy_stdio_wide_specifiers.lib");
                         // lldArgs.Add("libclang.lib");
                         // lldArgs.Add("libvcruntimed.lib");
                         lldArgs.Add("msvcrt.lib");
                         lldArgs.Add("ucrt.lib");
+                        //lldArgs.Add("vcruntime.lib");
+                        //lldArgs.Add("libcmt.lib");
                         //lldArgs.Add("libcmt.lib");
                         //lldArgs.Add("shlwapi.lib");
                         break;
