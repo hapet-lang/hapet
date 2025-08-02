@@ -38,6 +38,8 @@ namespace HapetBackend.Llvm
 
             // making longjmp
             _builder.BuildCall2(_longJmpFunc.Item1, _longJmpFunc.Item2, new LLVMValueRef[] { jmpBuf, LLVMValueRef.CreateConstInt(_context.Int32Type, (ulong)1) });
+            // create unreachable
+            _builder.BuildUnreachable();
         }
 
         private unsafe void GenerateTryCatchStmt(AstTryCatchStmt stmt)
