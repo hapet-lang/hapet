@@ -183,6 +183,8 @@ namespace HapetBackend.Llvm
             void CreateStaticField(AstVarDecl decl, AstDeclaration parent, bool isImported)
             {
                 var varName = $"{parent.Name.Name}::{decl.Name.Name}";
+                if (isImported)
+                    varName = GetSpecialNameForImportingVariables(varName);
                 // creating a static field of the decl
                 var globStatic = _module.AddGlobal(HapetTypeToLLVMType(decl.Type.OutType), varName);
                 globStatic.Linkage = LLVMLinkage.LLVMExternalLinkage;
@@ -301,6 +303,25 @@ namespace HapetBackend.Llvm
             funcValue = _module.AddFunction("longjmp", funcType);
             funcValue.Linkage = LLVMLinkage.LLVMExternalLinkage;
             _longJmpFunc = (funcType, funcValue);
+        }
+
+
+        /// <summary>
+        /// This is a cringe function that makes be able to import 
+        /// static global variables from other modules
+        /// </summary>
+        /// <param name="name">Original name</param>
+        /// <returns>Name that should be used to be able to import</returns>
+        private string GetSpecialNameForImportingVariables(string name)
+        {
+            switch (_compiler.CurrentProjectSettings.TargetPlatformData.TargetPlatform)
+            {
+                case HapetFrontend.TargetPlatform.Win86:
+                        return $"\u0001__imp__{name}";
+                case HapetFrontend.TargetPlatform.Win64:
+                        return $"\u0001__imp_{name}";
+            }
+            return name;
         }
     }
 }

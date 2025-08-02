@@ -112,9 +112,6 @@ namespace HapetBackend.Llvm.Linkers.Windows
                 return false;
             }
 
-            // allows exporting variable symbols
-            lldArgs.Add("/lldmingw");
-
             if (verbose)
                 Console.WriteLine("[LINKER] " + vsLinkerFile + " " + string.Join(" ", lldArgs.Select(a => $"\"{a}\"")));
 

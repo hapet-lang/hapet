@@ -7,6 +7,7 @@ using HapetFrontend.Helpers;
 using HapetFrontend.Types;
 using LLVMSharp.Interop;
 using System;
+using System.Xml.Linq;
 
 namespace HapetBackend.Llvm
 {
@@ -44,7 +45,10 @@ namespace HapetBackend.Llvm
             }
 
             LLVMTypeRef virtualTableType = GetVirtualTableType();
-            var globConst = _module.AddGlobal(virtualTableType, $"VirtualTable::{typeNameString}");
+            string name = $"VirtualTable::{typeNameString}";
+            if (decl.IsImported)
+                name = GetSpecialNameForImportingVariables(name);
+            var globConst = _module.AddGlobal(virtualTableType, name);
             globConst.IsGlobalConstant = true;
             globConst.Linkage = LLVMLinkage.LLVMExternalLinkage;
 
