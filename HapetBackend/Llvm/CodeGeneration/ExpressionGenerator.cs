@@ -90,13 +90,14 @@ namespace HapetBackend.Llvm
                 if (stmt == null)
                     continue;
 
-                // check for nested func
-                if (stmt is AstFuncDecl)
-                {
-                    // skip, no need to generate anything
-                }
-                else
+                // skip nested func
+                if (stmt is not AstFuncDecl)
                     GenerateExpressionCode(stmt);
+
+                // no need to generate anything after throw
+                // throw gen will add unreachable
+                if (stmt is AstThrowStmt)
+                    break;
             }
             return result;
         }

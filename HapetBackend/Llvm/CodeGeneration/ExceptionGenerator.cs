@@ -44,7 +44,7 @@ namespace HapetBackend.Llvm
         {
             // alloca jmpbuf
             var jmpBufStruct = _currentFunction.Scope.GetSymbolInNamespace("System.Runtime.InteropServices", new AstIdExpr("JmpBuf"));
-            var varPtr = CreateLocalVariable(jmpBufStruct.Decl.Type.OutType, "jmpbuf");
+            var varPtr = CreateLocalVariable(HapetTypeToLLVMType(jmpBufStruct.Decl.Type.OutType), 16, "jmpbuf");
 
             // pushing current jmpbuf 
             // WARN: hard cock
