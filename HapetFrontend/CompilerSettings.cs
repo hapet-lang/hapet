@@ -33,7 +33,7 @@ namespace HapetFrontend
         {
             new PlatformData()
             {
-                Name = "win-32", TargetPlatform = TargetPlatform.Win86,
+                Name = "win-x86", TargetPlatform = TargetPlatform.Win86,
                 PointerSize = 4,
                 ObjectFileExtension = ".obj",
                 ExecutableFileExtension = ".exe",
@@ -41,7 +41,7 @@ namespace HapetFrontend
             },
             new PlatformData()
             {
-                Name = "win-64", TargetPlatform = TargetPlatform.Win64,
+                Name = "win-x64", TargetPlatform = TargetPlatform.Win64,
                 PointerSize = 8,
                 ObjectFileExtension = ".obj",
                 ExecutableFileExtension = ".exe",
@@ -49,7 +49,7 @@ namespace HapetFrontend
             },
             new PlatformData()
             {
-                Name = "linux-32", TargetPlatform = TargetPlatform.Linux86,
+                Name = "linux-x86", TargetPlatform = TargetPlatform.Linux86,
                 PointerSize = 4,
                 ObjectFileExtension = ".o",
                 ExecutableFileExtension = "",
@@ -57,7 +57,7 @@ namespace HapetFrontend
             },
             new PlatformData()
             {
-                Name = "linux-64", TargetPlatform = TargetPlatform.Linux64,
+                Name = "linux-x64", TargetPlatform = TargetPlatform.Linux64,
                 PointerSize = 8,
                 ObjectFileExtension = ".o",
                 ExecutableFileExtension = "",

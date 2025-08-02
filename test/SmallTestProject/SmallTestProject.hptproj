@@ -8,7 +8,7 @@
 		<Optimization>0</Optimization>
 		<Verbose>true</Verbose>
 
-        <!--<TargetPlatform>win-32</TargetPlatform>-->
+        <!--<TargetPlatform>win-x32</TargetPlatform>-->
         <TargetFormat>Console</TargetFormat>
 	</PropertyGroup>
 
