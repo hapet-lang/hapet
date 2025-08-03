@@ -69,7 +69,7 @@ private struct JmpBuf
 [DeclarationUsed]
 private static class ExceptionHelper
 {
-#if (TARGET_PLATFORM == "win-x64") || (TARGET_PLATFORM == "win-x86")
+#if TARGET_PLATFORM == "win-x64"
     [DeclarationUsed]
     [DllImport("", "_setjmp", true)]
     private static extern inline int SetJmp(void* env, void* p2);
@@ -79,6 +79,13 @@ private static class ExceptionHelper
     [DeclarationUsed]
     [DllImport("", "llvm.frameaddress.p0", true)]
     private static extern inline void* FrameAddress(int immarg);
+#elif TARGET_PLATFORM == "win-x86"
+    [DeclarationUsed]
+    [DllImport("", "_setjmp3", true)]
+    private static extern inline int SetJmp(void* env, int p2, arglist);
+    [DeclarationUsed]
+    [DllImport("", "longjmp", true)]
+    private static extern inline void LongJmp(void* env, int val);
 #else
     [DeclarationUsed]
     [DllImport("", "setjmp", true)]

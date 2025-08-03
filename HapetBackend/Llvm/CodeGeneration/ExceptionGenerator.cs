@@ -34,7 +34,7 @@ namespace HapetBackend.Llvm
             methSymbol = (helper.Decl as AstClassDecl).SubScope.GetSymbol(new AstIdExpr("Peek")) as DeclSymbol;
             methFunc = _valueMap[methSymbol];
             methType = _typeMap[methSymbol.Decl.Type.OutType];
-            var jmpBuf = _builder.BuildCall2(methType, methFunc, new LLVMValueRef[] {  }, "jmpBuf");
+            var jmpBuf = _builder.BuildCall2(methType, methFunc, new LLVMValueRef[] {  }, "jmpbuf");
 
             // making longjmp
             methSymbol = (helper.Decl as AstClassDecl).SubScope.GetSymbol(new AstIdExpr("LongJmp")) as DeclSymbol;
@@ -49,7 +49,13 @@ namespace HapetBackend.Llvm
         {
             // alloca jmpbuf
             var jmpBufStruct = _currentFunction.Scope.GetSymbolInNamespace("System.Runtime.InteropServices", new AstIdExpr("JmpBuf"));
-            var varPtr = CreateLocalVariable(HapetTypeToLLVMType(jmpBufStruct.Decl.Type.OutType), 16, "jmpbuf");
+            LLVMValueRef jmpBuf;
+
+            // for windows x64 target we need to manually align it up to 16
+            if (_compiler.CurrentProjectSettings.TargetPlatformData.TargetPlatform == HapetFrontend.TargetPlatform.Win64)
+                jmpBuf = CreateLocalVariable(HapetTypeToLLVMType(jmpBufStruct.Decl.Type.OutType), 16, "jmpbuf");
+            else
+                jmpBuf = CreateLocalVariable(jmpBufStruct.Decl.Type.OutType, "jmpbuf");
 
             // pushing current jmpbuf 
             // WARN: hard cock
@@ -57,12 +63,11 @@ namespace HapetBackend.Llvm
             var methSymbol = (helper.Decl as AstClassDecl).SubScope.GetSymbol(new AstIdExpr("Push")) as DeclSymbol;
             var methFunc = _valueMap[methSymbol];
             var methType = _typeMap[methSymbol.Decl.Type.OutType];
-            _builder.BuildCall2(methType, methFunc, new LLVMValueRef[] { varPtr });
+            _builder.BuildCall2(methType, methFunc, new LLVMValueRef[] { jmpBuf });
 
             LLVMValueRef setJmpResult;
-            // on Windows platform 'setjmp' function receives 2 parameters
-            if (_compiler.CurrentProjectSettings.TargetPlatformData.TargetPlatform == HapetFrontend.TargetPlatform.Win86 ||
-                _compiler.CurrentProjectSettings.TargetPlatformData.TargetPlatform == HapetFrontend.TargetPlatform.Win64)
+            // on Windows x64 platform 'setjmp' function receives 2 parameters and should call FrameAddress
+            if (_compiler.CurrentProjectSettings.TargetPlatformData.TargetPlatform == HapetFrontend.TargetPlatform.Win64)
             {
                 // call frameaddress
                 methSymbol = (helper.Decl as AstClassDecl).SubScope.GetSymbol(new AstIdExpr("FrameAddress")) as DeclSymbol;
@@ -73,7 +78,16 @@ namespace HapetBackend.Llvm
                 methSymbol = (helper.Decl as AstClassDecl).SubScope.GetSymbol(new AstIdExpr("SetJmp")) as DeclSymbol;
                 methFunc = _valueMap[methSymbol];
                 methType = _typeMap[methSymbol.Decl.Type.OutType];
-                setJmpResult = _builder.BuildCall2(methType, methFunc, new LLVMValueRef[] { varPtr, addrPtr });
+                setJmpResult = _builder.BuildCall2(methType, methFunc, new LLVMValueRef[] { jmpBuf, addrPtr });
+            }
+            // on Windows x86 platform 'setjmp' function receives 2 parameters and arglist
+            else if (_compiler.CurrentProjectSettings.TargetPlatformData.TargetPlatform == HapetFrontend.TargetPlatform.Win86)
+            {
+                // call setjmp
+                methSymbol = (helper.Decl as AstClassDecl).SubScope.GetSymbol(new AstIdExpr("SetJmp")) as DeclSymbol;
+                methFunc = _valueMap[methSymbol];
+                methType = _typeMap[methSymbol.Decl.Type.OutType];
+                setJmpResult = _builder.BuildCall2(methType, methFunc, new LLVMValueRef[] { jmpBuf, LLVMValueRef.CreateConstInt(_context.Int32Type, (ulong)0) });
             }
             else
             {
@@ -81,7 +95,7 @@ namespace HapetBackend.Llvm
                 methSymbol = (helper.Decl as AstClassDecl).SubScope.GetSymbol(new AstIdExpr("SetJmp")) as DeclSymbol;
                 methFunc = _valueMap[methSymbol];
                 methType = _typeMap[methSymbol.Decl.Type.OutType];
-                setJmpResult = _builder.BuildCall2(methType, methFunc, new LLVMValueRef[] { varPtr });
+                setJmpResult = _builder.BuildCall2(methType, methFunc, new LLVMValueRef[] { jmpBuf });
             }
 
             // creating required blocks
