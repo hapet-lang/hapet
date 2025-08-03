@@ -37,7 +37,10 @@ namespace HapetBackend.Llvm
             var jmpBuf = _builder.BuildCall2(methType, methFunc, new LLVMValueRef[] {  }, "jmpBuf");
 
             // making longjmp
-            _builder.BuildCall2(_longJmpFunc.Item1, _longJmpFunc.Item2, new LLVMValueRef[] { jmpBuf, LLVMValueRef.CreateConstInt(_context.Int32Type, (ulong)1) });
+            methSymbol = (helper.Decl as AstClassDecl).SubScope.GetSymbol(new AstIdExpr("LongJmp")) as DeclSymbol;
+            methFunc = _valueMap[methSymbol];
+            methType = _typeMap[methSymbol.Decl.Type.OutType];
+            _builder.BuildCall2(methType, methFunc, new LLVMValueRef[] { jmpBuf, LLVMValueRef.CreateConstInt(_context.Int32Type, (ulong)1) });
             // create unreachable
             _builder.BuildUnreachable();
         }
@@ -56,8 +59,30 @@ namespace HapetBackend.Llvm
             var methType = _typeMap[methSymbol.Decl.Type.OutType];
             _builder.BuildCall2(methType, methFunc, new LLVMValueRef[] { varPtr });
 
-            // call setjmp
-            var res = _builder.BuildCall2(_setJmpFunc.Item1, _setJmpFunc.Item2, new LLVMValueRef[] { varPtr });
+            LLVMValueRef setJmpResult;
+            // on Windows platform 'setjmp' function receives 2 parameters
+            if (_compiler.CurrentProjectSettings.TargetPlatformData.TargetPlatform == HapetFrontend.TargetPlatform.Win86 ||
+                _compiler.CurrentProjectSettings.TargetPlatformData.TargetPlatform == HapetFrontend.TargetPlatform.Win64)
+            {
+                // call frameaddress
+                methSymbol = (helper.Decl as AstClassDecl).SubScope.GetSymbol(new AstIdExpr("FrameAddress")) as DeclSymbol;
+                methFunc = _valueMap[methSymbol];
+                methType = _typeMap[methSymbol.Decl.Type.OutType];
+                var addrPtr = _builder.BuildCall2(methType, methFunc, new LLVMValueRef[] { LLVMValueRef.CreateConstInt(_context.Int32Type, (ulong)0) });
+                // call setjmp
+                methSymbol = (helper.Decl as AstClassDecl).SubScope.GetSymbol(new AstIdExpr("SetJmp")) as DeclSymbol;
+                methFunc = _valueMap[methSymbol];
+                methType = _typeMap[methSymbol.Decl.Type.OutType];
+                setJmpResult = _builder.BuildCall2(methType, methFunc, new LLVMValueRef[] { varPtr, addrPtr });
+            }
+            else
+            {
+                // call setjmp
+                methSymbol = (helper.Decl as AstClassDecl).SubScope.GetSymbol(new AstIdExpr("SetJmp")) as DeclSymbol;
+                methFunc = _valueMap[methSymbol];
+                methType = _typeMap[methSymbol.Decl.Type.OutType];
+                setJmpResult = _builder.BuildCall2(methType, methFunc, new LLVMValueRef[] { varPtr });
+            }
 
             // creating required blocks
             var bbTry = _context.CreateBasicBlock($"try.block");
@@ -66,7 +91,7 @@ namespace HapetBackend.Llvm
 
             // compare to 1
             var binOp = SearchBinOp("==", HapetType.CurrentTypeContext.GetIntType(4, true), HapetType.CurrentTypeContext.GetIntType(4, true));
-            var resCmp = binOp(_builder, res, LLVMValueRef.CreateConstInt(_context.Int32Type, (ulong)1), "cmpResult");
+            var resCmp = binOp(_builder, setJmpResult, LLVMValueRef.CreateConstInt(_context.Int32Type, (ulong)1), "cmpResult");
             _builder.BuildCondBr(resCmp, bbDispatch, bbTry); // if 0 - try, if 1 - dispatch
 
             // first - try
@@ -113,7 +138,7 @@ namespace HapetBackend.Llvm
 
                     // check if could be casted
                     var excClass = _currentFunction.Scope.GetSymbolInNamespace("System", new AstIdExpr("Exception"));
-                    LLVMValueRef cmpRes = CheckIsCouldBeCasted(
+                    LLVMValueRef canBeCasted = CheckIsCouldBeCasted(
                         currException, 
                         PointerType.GetPointerType(excClass.Decl.Type.OutType), 
                         stmt.CatchBlocks[currCatchIndex].CatchParam.Type.OutType, false, 
@@ -125,7 +150,7 @@ namespace HapetBackend.Llvm
                         // getting the next dispatch
                         var nextDispatch = catches[currCatchIndex];
                         // if 0 - go dispatch again, if 1 - go catch
-                        _builder.BuildCondBr(cmpRes, nextDispatch, nextCatch);
+                        _builder.BuildCondBr(canBeCasted, nextCatch, nextDispatch);
 
                         // append the dispatch
                         LLVM.AppendExistingBasicBlock(_lastFunctionValueRef, nextDispatch);
@@ -135,7 +160,7 @@ namespace HapetBackend.Llvm
                     else 
                     {
                         // if 0 - go finally, if 1 - go catch
-                        _builder.BuildCondBr(cmpRes, bbFinally, nextCatch);
+                        _builder.BuildCondBr(canBeCasted, nextCatch, bbFinally);
                     }
                     currCatchIndex++;
                 }
@@ -154,7 +179,7 @@ namespace HapetBackend.Llvm
                     _valueMap[currRealCatch.CatchParam.Symbol] = excVar;
                     // generate the catch block itself
                     GenerateExpressionCode(currRealCatch.CatchBlock);
-                    _builder.BuildBr(bbFinally);
+                    //_builder.BuildBr(bbFinally);
                 }
             }
 

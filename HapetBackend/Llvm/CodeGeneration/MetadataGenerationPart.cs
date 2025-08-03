@@ -30,7 +30,6 @@ namespace HapetBackend.Llvm
             GenerateMetadataShiteFields();
             GenerateMetadataShiteAfterAll();
             GenerateMetadataShiteFieldInitializers();
-            GenerateSpecialFuncs();
         }
         
         private void GenerateMetadataShiteTypes()
@@ -276,35 +275,6 @@ namespace HapetBackend.Llvm
                 }
             }
         }
-
-        private (LLVMTypeRef, LLVMValueRef) _setJmpFunc;
-        private (LLVMTypeRef, LLVMValueRef) _longJmpFunc;
-        private void GenerateSpecialFuncs()
-        {
-            // setjmp
-            List<HapetType> pars = new List<HapetType>()
-            {
-                HapetType.CurrentTypeContext.PtrToVoidType,
-            };
-            HapetType ret = HapetType.CurrentTypeContext.GetIntType(4, true);
-            var funcType = LLVMTypeRef.CreateFunction(HapetTypeToLLVMType(ret), pars.Select(rt => HapetTypeToLLVMType(rt)).ToArray(), false);
-            var funcValue = _module.AddFunction("setjmp", funcType);
-            funcValue.Linkage = LLVMLinkage.LLVMExternalLinkage;
-            _setJmpFunc = (funcType, funcValue);
-
-            // longjmp
-            pars = new List<HapetType>()
-            {
-                HapetType.CurrentTypeContext.PtrToVoidType,
-                HapetType.CurrentTypeContext.GetIntType(4, true)
-            };
-            ret = HapetType.CurrentTypeContext.VoidTypeInstance;
-            funcType = LLVMTypeRef.CreateFunction(HapetTypeToLLVMType(ret), pars.Select(rt => HapetTypeToLLVMType(rt)).ToArray(), false);
-            funcValue = _module.AddFunction("longjmp", funcType);
-            funcValue.Linkage = LLVMLinkage.LLVMExternalLinkage;
-            _longJmpFunc = (funcType, funcValue);
-        }
-
 
         /// <summary>
         /// This is a cringe function that makes be able to import 
