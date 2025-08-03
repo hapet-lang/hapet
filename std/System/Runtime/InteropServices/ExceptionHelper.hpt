@@ -72,20 +72,20 @@ private static class ExceptionHelper
 #if (TARGET_PLATFORM == "win-x64") || (TARGET_PLATFORM == "win-x86")
     [DeclarationUsed]
     [DllImport("", "_setjmp", true)]
-    unreflected static extern inline int SetJmp(void* env, void* p2);
+    private static extern inline int SetJmp(void* env, void* p2);
     [DeclarationUsed]
     [DllImport("", "longjmp", true)]
-    unreflected static extern inline void LongJmp(void* env, int val);
+    private static extern inline void LongJmp(void* env, int val);
     [DeclarationUsed]
     [DllImport("", "llvm.frameaddress.p0", true)]
-    unreflected static extern inline void* FrameAddress(int immarg);
+    private static extern inline void* FrameAddress(int immarg);
 #else
     [DeclarationUsed]
     [DllImport("", "setjmp", true)]
-    unreflected static extern inline int SetJmp(void* env);
+    private static extern inline int SetJmp(void* env);
     [DeclarationUsed]
     [DllImport("", "longjmp", true)]
-    unreflected static extern inline void LongJmp(void* env, int val);
+    private static extern inline void LongJmp(void* env, int val);
 #endif
 
     private static List<uintptr> _jmpBufs = new List<uintptr>();

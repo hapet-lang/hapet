@@ -69,6 +69,14 @@ namespace HapetBackend.Llvm
             // if it is for metadata - only 'declares' would be generated that would be replaced with 'defines' in the future
             if (forMetadata)
             {
+                // special case for inlined extern functions
+                if (funcDecl.SpecialKeys.Contains(TokenType.KwInline) && funcDecl.SpecialKeys.Contains(TokenType.KwExtern))
+                {
+                    GenerateInlinedExternFunction(funcDecl, funcType.Value);
+                    return;
+                }
+                
+                // making cool name
                 string funcName = GenericsHelper.GetCodegenFunctionName(funcDecl, _messageHandler);
 
                 // declaring global func
@@ -123,6 +131,10 @@ namespace HapetBackend.Llvm
             }
             else
             {
+                // special case for inlined extern functions - just skip body gen for them
+                if (funcDecl.SpecialKeys.Contains(TokenType.KwInline) && funcDecl.SpecialKeys.Contains(TokenType.KwExtern))
+                    return;
+
                 // skip imported funcs that are not generics
                 if (funcDecl.IsImported && !allowFunctionBodyToBeGenerated)
                     return;
@@ -246,21 +258,51 @@ namespace HapetBackend.Llvm
             _valueMap[lambda.Symbol] = lfunc;
         }
 
+        private void GenerateInlinedExternFunction(AstFuncDecl funcDecl, LLVMTypeRef funcType)
+        {
+            string dllImportAttrFullName = "System.Runtime.InteropServices.DllImportAttribute"; // WARN: hard cock
+            var dllImportAttr = funcDecl.GetAttribute(dllImportAttrFullName);
+            // many checks are here
+            if (dllImportAttr == null)
+            {
+                // TODO: check in PP
+                _messageHandler.ReportMessage(_currentSourceFile.Text, funcDecl, [], ErrorCode.Get(CTEN.ExternFuncNoAttr));
+                return;
+            }
+            string dllName = dllImportAttr.Arguments[0].OutValue as string;
+            string entryPoint = dllImportAttr.Arguments[1].OutValue as string;
+            bool isSupp = false;
+            if (dllImportAttr.Arguments.Count > 2 && dllImportAttr.Arguments[2].OutValue is bool b)
+                isSupp = b;
+
+            // declaring global func
+            LLVMValueRef lfunc = _module.AddFunction(entryPoint, funcType);
+            lfunc.Linkage = LLVMLinkage.LLVMExternalLinkage;
+            // check if suppress dllimport attr
+            if (!isSupp) lfunc.DLLStorageClass = LLVMDLLStorageClass.LLVMDLLImportStorageClass;
+
+            // setting parameter names
+            for (int i = 0; i < funcDecl.Parameters.Count; ++i)
+            {
+                var p = funcDecl.Parameters[i];
+                if (p.Name != null)
+                    lfunc.GetParams()[i].Name = p.Name.Name;
+            }
+            // caching the function	
+            _valueMap[funcDecl.Symbol] = lfunc;
+            _lastFunctionValueRef = lfunc;
+        }
+
         private void GenerateExternFunctionBody(AstFuncDecl funcDecl)
         {
             // creating extern call of C func
             string dllImportAttrFullName = "System.Runtime.InteropServices.DllImportAttribute"; // WARN: hard cock
-            var dllImportAttr = funcDecl.Attributes.FirstOrDefault(x =>
-            {
-                // could be if an attr was not infered properly
-                if (x.AttributeName.OutType == null)
-                    return false;
-                return HapetType.AsString(x.AttributeName.OutType) == dllImportAttrFullName;
-            });
+            var dllImportAttr = funcDecl.GetAttribute(dllImportAttrFullName);
 
             // many checks are here
             if (dllImportAttr == null)
             {
+                // TODO: check in PP
                 _messageHandler.ReportMessage(_currentSourceFile.Text, funcDecl, [], ErrorCode.Get(CTEN.ExternFuncNoAttr));
                 return;
             }
@@ -293,8 +335,7 @@ namespace HapetBackend.Llvm
             funcValue = _module.AddFunction(entryPoint, funcType);
             funcValue.Linkage = LLVMLinkage.LLVMExternalLinkage;
             // check if suppress dllimport attr
-            if (!isSupp)
-                funcValue.DLLStorageClass = LLVMDLLStorageClass.LLVMDLLImportStorageClass;
+            if (!isSupp) funcValue.DLLStorageClass = LLVMDLLStorageClass.LLVMDLLImportStorageClass;
 
             // setting parameter names
             for (int i = 0; i < funcDecl.Parameters.Count; ++i)

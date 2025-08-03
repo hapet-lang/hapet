@@ -235,5 +235,17 @@ namespace HapetFrontend.Ast
 
             return allFields.ToList();
         }
+
+        public AstAttributeStmt GetAttribute(string name)
+        {
+            var attr = this.Attributes.FirstOrDefault(x =>
+            {
+                // could be if an attr was not infered properly
+                if (x.AttributeName.OutType == null)
+                    return false;
+                return (x.AttributeName.OutType as ClassType).Declaration.Name.Name == name;
+            });
+            return attr;
+        }
     }
 }
