@@ -118,7 +118,7 @@ namespace HapetBackend.Llvm
                 {
                     var p = funcDecl.Parameters[i];
                     if (p.Name != null)
-                        lfunc.Params[i].Name = p.Name.Name;
+                        lfunc.GetParams()[i].Name = p.Name.Name;
                 }
             }
             else
@@ -213,7 +213,7 @@ namespace HapetBackend.Llvm
             for (int i = 0; i < lambda.Parameters.Count; ++i)
             {
                 var p = lambda.Parameters[i];
-                if (p.Name != null) lfunc.Params[i].Name = p.Name.Name;
+                if (p.Name != null) lfunc.GetParams()[i].Name = p.Name.Name;
             }
             // params body
             var paramsBody = lfunc.AppendBasicBlockInContext(_context, "params");
@@ -301,7 +301,7 @@ namespace HapetBackend.Llvm
             {
                 var p = funcDecl.Parameters[i];
                 if (p.Name != null)
-                    funcValue.Params[i].Name = p.Name.Name;
+                    funcValue.GetParams()[i].Name = p.Name.Name;
             }
 
             // generating params
