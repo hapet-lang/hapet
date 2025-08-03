@@ -167,6 +167,10 @@ namespace HapetLastPrepare
 
         public void LPRACParam(AstParamDecl decl)
         {
+            // no need to do anything with it
+            if (decl.ParameterModificator == HapetFrontend.Enums.ParameterModificator.Arglist)
+                return;
+
             if (decl.Type.OutType is ClassType)
             {
                 decl.Type = GetPointerType(decl.Type);
