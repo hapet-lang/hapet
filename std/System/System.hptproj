@@ -9,6 +9,6 @@
 		<Verbose>false</Verbose>
 
         <TargetFormat>Library</TargetFormat>
-        <!--<TargetPlatform>win-x32</TargetPlatform>-->
+        <!--<TargetPlatform>win-x86</TargetPlatform>-->
 	</PropertyGroup>
 </Project>
