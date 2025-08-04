@@ -403,10 +403,6 @@ namespace HapetBackend.Llvm
             if (func.ContainingParent != null && func.ContainingParent.IsImplOfGeneric &&
                 func.ClassFunctionType == ClassFunctionType.StaticCtor)
                 return true;
-            // do not skip any stors that are not impl of generics
-            if (func.ContainingParent != null && !func.ContainingParent.IsImplOfGeneric &&
-                func.ClassFunctionType == ClassFunctionType.StaticCtor && !func.IsImported)
-                return false;
 
             // skip generation of imported-not-used functions
             if (func.IsImported && !GetNormalDeclIsUsed(func) &&
@@ -436,7 +432,7 @@ namespace HapetBackend.Llvm
                 return false;
 
             // skip generation of imported-not-used decls
-            if (decl.IsImported && !GetNormalDeclIsUsed(decl))
+            if (!GetNormalDeclIsUsed(decl))
                 return true;
             return false;
         }

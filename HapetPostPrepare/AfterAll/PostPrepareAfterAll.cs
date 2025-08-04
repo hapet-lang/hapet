@@ -110,6 +110,14 @@ namespace HapetPostPrepare
                 PostPrepareExprScoping(call);
                 PostPrepareExprInference(call, inInfo, ref outInfo);
 
+                // set that stor and stor_var are used
+                {
+                    var stor = decl.GetDeclarations().FirstOrDefault(x => x is AstFuncDecl fnc && fnc.ClassFunctionType == ClassFunctionType.StaticCtor);
+                    stor.IsDeclarationUsed = true;
+                    var stor_var = decl.GetDeclarations().FirstOrDefault(x => x is AstVarDecl vd && vd.IsStaticCtorField);
+                    stor_var.IsDeclarationUsed = true;
+                }
+
                 _currentParentStack.RemoveParent();
 
                 // TODO: sort the static ctors calls by hierarchy
