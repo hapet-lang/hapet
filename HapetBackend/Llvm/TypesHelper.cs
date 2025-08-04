@@ -200,7 +200,8 @@ namespace HapetBackend.Llvm
                 case ClassType t:
                     {
                         // creating a class
-                        var name = $"class.{t.Declaration.Name.Name}";
+                        var coolName = GenericsHelper.GetCodegenGenericName(t.Declaration.Name, _messageHandler);
+                        var name = $"class.{coolName}";
                         var llvmType = _context.CreateNamedStruct(name);
                         _typeMap[t] = llvmType; // need to do this to prevent stackoverflow
                         var fieldDeclarations = t.Declaration.GetAllRawFields();
@@ -253,7 +254,8 @@ namespace HapetBackend.Llvm
                         }
 
                         // creating the struct
-                        var name = $"struct.{s.Declaration.Name.Name}";
+                        var coolName = GenericsHelper.GetCodegenGenericName(s.Declaration.Name, _messageHandler);
+                        var name = $"struct.{coolName}";
                         var llvmType = _context.CreateNamedStruct(name);
                         _typeMap[s] = llvmType; // need to do this to prevent stackoverflow
                         var fieldDeclarations = s.Declaration.GetAllRawFields();
