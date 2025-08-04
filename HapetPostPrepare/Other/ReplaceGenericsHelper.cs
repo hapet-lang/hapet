@@ -5,6 +5,7 @@ using HapetFrontend.Ast.Statements;
 using HapetFrontend.Errors;
 using HapetFrontend.Extensions;
 using HapetFrontend.Helpers;
+using HapetFrontend.Parsing;
 using HapetFrontend.Types;
 using HapetPostPrepare.Entities;
 
@@ -303,6 +304,8 @@ namespace HapetPostPrepare
                     break;
                 case AstDefaultExpr defaultExpr:
                     ReplaceAllGenericTypesInDefaultExpr(defaultExpr);
+                    break;
+                case AstEmptyStructExpr: // no need
                     break;
                 case AstArrayExpr arrayExpr:
                     ReplaceAllGenericTypesInArrayExpr(arrayExpr);

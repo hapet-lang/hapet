@@ -511,6 +511,8 @@ namespace HapetPostPrepare
                     break;
                 case AstDefaultGenericExpr _: // no need to scope anything
                     break;
+                case AstEmptyStructExpr _: // no need
+                    break;
                 case AstArrayExpr arrayExpr:
                     PostPrepareArrayExprScoping(arrayExpr);
                     break;

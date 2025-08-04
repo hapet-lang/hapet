@@ -43,6 +43,13 @@ namespace HapetPostPrepare
         /// <returns>Casted expr</returns>
         public AstExpression PostPrepareExpressionWithType(HapetType neededType, AstExpression expr, CastResult castResult = null)
         {
+            // special case for empty struct expr
+            if (expr is AstEmptyStructExpr es)
+            {
+                es.TypeForDefault = neededType as StructType;
+                return expr;
+            }    
+
             // assigning lambda is made different
             if (expr.OutType is LambdaType && expr is AstLambdaExpr lmbd)
             {

@@ -49,8 +49,6 @@ namespace HapetFrontend.Ast.Expressions
                     break;
                 case ClassType:
                 case PointerType:
-                case ArrayType:
-                case StringType:
                     outExpr = new AstNullExpr(tp, orig);
                     break;
                 case StructType st:
