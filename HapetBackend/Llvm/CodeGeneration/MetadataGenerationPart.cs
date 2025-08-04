@@ -183,7 +183,7 @@ namespace HapetBackend.Llvm
             {
                 var varName = $"{parent.Name.Name}::{decl.Name.Name}";
                 if (isImported)
-                    varName = GetSpecialNameForImportingVariables(varName);
+                    varName = GetSpecialNameForImportingVariables(varName, decl.SpecialKeys.Contains(TokenType.KwConst));
                 // creating a static field of the decl
                 var globStatic = _module.AddGlobal(HapetTypeToLLVMType(decl.Type.OutType), varName);
                 globStatic.Linkage = LLVMLinkage.LLVMExternalLinkage;
