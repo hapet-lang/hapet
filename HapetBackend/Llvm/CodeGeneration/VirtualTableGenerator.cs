@@ -47,7 +47,7 @@ namespace HapetBackend.Llvm
             LLVMTypeRef virtualTableType = GetVirtualTableType();
             string name = $"VirtualTable::{typeNameString}";
             if (decl.IsImported)
-                name = GetSpecialNameForImportingVariables(name);
+                name = GetSpecialNameForImportingVariables(name, true);
             var globConst = _module.AddGlobal(virtualTableType, name);
             globConst.IsGlobalConstant = true;
             globConst.Linkage = LLVMLinkage.LLVMExternalLinkage;

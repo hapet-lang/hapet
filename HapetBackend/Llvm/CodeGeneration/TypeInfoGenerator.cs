@@ -47,7 +47,7 @@ namespace HapetBackend.Llvm
             LLVMTypeRef typeInfoType = GetTypeInfoType();
             string name = $"TypeInfo::{typeNameString}";
             if (decl.IsImported)
-                name = GetSpecialNameForImportingVariables(name);
+                name = GetSpecialNameForImportingVariables(name, true);
             var globConst = _module.AddGlobal(typeInfoType, name);
             globConst.IsGlobalConstant = true;
             globConst.Linkage = LLVMLinkage.LLVMExternalLinkage;
