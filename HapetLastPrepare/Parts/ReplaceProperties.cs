@@ -699,7 +699,8 @@ namespace HapetLastPrepare
             call.OutType = decl.Returns.OutType;
 
             // check decl usage inside
-            CheckUsedDeclsDecl(decl);
+            if (decl.NormalParent is AstDeclaration dcl && dcl.IsDeclarationUsed)
+                CheckUsedDeclsDecl(decl);
         }
 
         private bool CheckForProperty(AstNestedExpr expr, AstDeclaration decl, AstIdExpr propaName, ref OutInfo outInfoInside)
