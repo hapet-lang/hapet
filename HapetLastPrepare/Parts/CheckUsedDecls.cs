@@ -5,6 +5,7 @@ using HapetFrontend.Ast;
 using HapetFrontend.Errors;
 using HapetFrontend.Scoping;
 using HapetFrontend.Types;
+using HapetFrontend.Enums;
 
 namespace HapetLastPrepare
 {
@@ -16,6 +17,18 @@ namespace HapetLastPrepare
                 return;
 
             CheckUsedDeclsDecl(_compiler.MainFunction);
+
+            // set that stor and stor_var are used
+            var unique = new List<AstDeclaration>();
+            unique.AddRange(_postPreparer.AllClassesMetadata.Where(x => !x.IsImported));
+            unique.AddRange(_postPreparer.AllStructsMetadata.Where(x => !x.IsImported));
+            foreach (var decl in unique)
+            {
+                var stor = decl.GetDeclarations().FirstOrDefault(x => x is AstFuncDecl fnc && fnc.ClassFunctionType == ClassFunctionType.StaticCtor);
+                CheckUsedDeclsDecl(stor);
+                var stor_var = decl.GetDeclarations().FirstOrDefault(x => x is AstVarDecl vd && vd.IsStaticCtorField);
+                CheckUsedDeclsDecl(stor_var);
+            }
         }
 
         private void CheckUsedDeclsDecl(AstDeclaration decl)

@@ -83,10 +83,7 @@ namespace HapetBackend.Llvm
         {
             foreach (var cls in _postPreparer.AllClassesMetadata)
             {
-                if (IsTypeShouldBeSkipped(cls))
-                    continue;
-
-                if (GenericsHelper.ShouldTheDeclBeSkippedFromCodeGen(cls))
+                if (IsTypeShouldBeSkipped(cls) || GenericsHelper.ShouldTheDeclBeSkippedFromCodeGen(cls))
                 {
                     // getting all STATIC/CONST fields except props
                     foreach (var decl in cls.Declarations.Where(x => x is AstVarDecl && x is not AstPropertyDecl).Select(x => x as AstVarDecl))
@@ -128,10 +125,7 @@ namespace HapetBackend.Llvm
             }
             foreach (var str in _postPreparer.AllStructsMetadata)
             {
-                if (IsTypeShouldBeSkipped(str))
-                    continue;
-
-                if (GenericsHelper.ShouldTheDeclBeSkippedFromCodeGen(str))
+                if (IsTypeShouldBeSkipped(str) || GenericsHelper.ShouldTheDeclBeSkippedFromCodeGen(str))
                 {
                     // getting all STATIC/CONST fields except props
                     foreach (var decl in str.Declarations.Where(x => x is AstVarDecl && x is not AstPropertyDecl).Select(x => x as AstVarDecl))
@@ -188,6 +182,9 @@ namespace HapetBackend.Llvm
 
             void CreateStaticField(AstVarDecl decl, AstDeclaration parent, bool isImported)
             {
+                if (!GetNormalDeclIsUsed(decl))
+                    return;
+
                 var varName = $"{parent.Name.Name}::{decl.Name.Name}";
                 // creating a static field of the decl
                 var globStatic = _module.AddGlobal(HapetTypeToLLVMType(decl.Type.OutType), varName);

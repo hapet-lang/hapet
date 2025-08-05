@@ -689,7 +689,7 @@ namespace HapetLastPrepare
             LPRAPParam(stmt.CatchParam, ref outInfo);
         }
 
-        private static void UpdateCallWithFunc(AstCallExpr call, AstFuncDecl decl)
+        private void UpdateCallWithFunc(AstCallExpr call, AstFuncDecl decl)
         {
             /// same as in <see cref="PostPrepare.PostPrepareCallExprInference"/>
 
@@ -697,6 +697,9 @@ namespace HapetLastPrepare
             call.StaticCall = decl.SpecialKeys.Contains(TokenType.KwStatic);
             // call expr type is the same as func return type
             call.OutType = decl.Returns.OutType;
+
+            // check decl usage inside
+            CheckUsedDeclsDecl(decl);
         }
 
         private bool CheckForProperty(AstNestedExpr expr, AstDeclaration decl, AstIdExpr propaName, ref OutInfo outInfoInside)

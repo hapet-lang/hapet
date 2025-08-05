@@ -19,11 +19,12 @@ namespace HapetLastPrepare
             propDecl.ContainingParent.GetDeclarations().AddRange(newDecls);
             foreach (var d in newDecls)
             {
-                d.IsDeclarationUsed = propDecl.IsDeclarationUsed;
-
                 _postPreparer.SetScopeAndParent(d, propDecl);
                 _postPreparer.PostPrepareDeclScoping(d);
                 _postPreparer.PostPrepareStatementUpToCurrentStep(d);
+
+                if (propDecl.IsDeclarationUsed)
+                    CheckUsedDeclsDecl(d);
 
                 // we need to add the funcs to arr
                 if ((propDecl.SpecialKeys.ContainsAny(TokenType.KwAbstract, TokenType.KwVirtual, TokenType.KwOverride) ||
