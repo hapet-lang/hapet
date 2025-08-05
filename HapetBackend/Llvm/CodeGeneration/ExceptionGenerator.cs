@@ -193,7 +193,7 @@ namespace HapetBackend.Llvm
                     _valueMap[currRealCatch.CatchParam.Symbol] = excVar;
                     // generate the catch block itself
                     GenerateExpressionCode(currRealCatch.CatchBlock);
-                    //_builder.BuildBr(bbFinally);
+                    _builder.BuildBr(bbFinally);
                 }
             }
 
