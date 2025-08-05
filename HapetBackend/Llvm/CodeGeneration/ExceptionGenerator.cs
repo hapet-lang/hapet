@@ -102,6 +102,7 @@ namespace HapetBackend.Llvm
             var bbTry = _context.CreateBasicBlock($"try.block");
             var bbDispatch = _context.CreateBasicBlock($"dispatch.main.block");
             var bbFinally = _context.CreateBasicBlock($"finally.block");
+            var bbRethrow = _context.CreateBasicBlock($"rethrow.block");
 
             // compare to 1
             var binOp = SearchBinOp("==", HapetType.CurrentTypeContext.GetIntType(4, true), HapetType.CurrentTypeContext.GetIntType(4, true));
@@ -173,8 +174,8 @@ namespace HapetBackend.Llvm
                     // if last - build br to finally
                     else 
                     {
-                        // if 0 - go finally, if 1 - go catch
-                        _builder.BuildCondBr(canBeCasted, nextCatch, bbFinally);
+                        // if 0 - go rethrow, if 1 - go catch
+                        _builder.BuildCondBr(canBeCasted, nextCatch, bbRethrow);
                     }
                     currCatchIndex++;
                 }
@@ -197,7 +198,28 @@ namespace HapetBackend.Llvm
                 }
             }
 
-            // third - finally
+            // third - rethrow
+            LLVM.AppendExistingBasicBlock(_lastFunctionValueRef, bbRethrow);
+            _builder.PositionAtEnd(bbRethrow);
+            // TODO: call finally before rethrow and remove below call after it
+            methSymbol = (helper.Decl as AstClassDecl).SubScope.GetSymbol(new AstIdExpr("Pop")) as DeclSymbol;
+            methFunc = _valueMap[methSymbol];
+            methType = _typeMap[methSymbol.Decl.Type.OutType];
+            _builder.BuildCall2(methType, methFunc, new LLVMValueRef[] { });
+            // getting next jmpbuf
+            methSymbol = (helper.Decl as AstClassDecl).SubScope.GetSymbol(new AstIdExpr("Peek")) as DeclSymbol;
+            methFunc = _valueMap[methSymbol];
+            methType = _typeMap[methSymbol.Decl.Type.OutType];
+            var jmpBufNext = _builder.BuildCall2(methType, methFunc, new LLVMValueRef[] { }, "jmpbufNext");
+            // making longjmp
+            methSymbol = (helper.Decl as AstClassDecl).SubScope.GetSymbol(new AstIdExpr("LongJmp")) as DeclSymbol;
+            methFunc = _valueMap[methSymbol];
+            methType = _typeMap[methSymbol.Decl.Type.OutType];
+            _builder.BuildCall2(methType, methFunc, new LLVMValueRef[] { jmpBufNext, LLVMValueRef.CreateConstInt(_context.Int32Type, (ulong)1) });
+            // create unreachable
+            _builder.BuildUnreachable();
+
+            // fourth - finally
             LLVM.AppendExistingBasicBlock(_lastFunctionValueRef, bbFinally);
             _builder.PositionAtEnd(bbFinally);
             // popping current jmpbuf 
