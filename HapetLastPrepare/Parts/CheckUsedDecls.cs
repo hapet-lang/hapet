@@ -416,6 +416,8 @@ namespace HapetLastPrepare
         {
             CheckUsedDeclsExpr(expr.ObjectName);
             CheckUsedDeclsExpr(expr.ParameterExpr);
+            if (expr.IndexerDecl != null)
+                CheckUsedDeclsDecl(expr.IndexerDecl);
         }
 
         private void CheckUsedDeclsTernaryExpr(AstTernaryExpr expr)
