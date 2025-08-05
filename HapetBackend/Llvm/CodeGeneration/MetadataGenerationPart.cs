@@ -20,6 +20,9 @@ namespace HapetBackend.Llvm
     {
         private readonly List<(ISymbol, AstExpression)> _initializersMapList = new List<(ISymbol, AstExpression)>();
 
+        private (LLVMTypeRef, LLVMValueRef) _typeInfoInitializer;
+        private (LLVMTypeRef, LLVMValueRef) _vTableInitializer;
+
         /// <summary>
         /// Inits some dicts and other shite with metadata types :)
         /// </summary>
@@ -30,6 +33,10 @@ namespace HapetBackend.Llvm
             GenerateMetadataShiteFields();
             GenerateMetadataShiteAfterAll();
             GenerateMetadataShiteFieldInitializers();
+
+            // create typeinfo and vtable initers
+            _typeInfoInitializer = CreateTypeInfoInitializer();
+            _vTableInitializer = CreateVTableInitializer();
         }
         
         private void GenerateMetadataShiteTypes()
@@ -182,8 +189,6 @@ namespace HapetBackend.Llvm
             void CreateStaticField(AstVarDecl decl, AstDeclaration parent, bool isImported)
             {
                 var varName = $"{parent.Name.Name}::{decl.Name.Name}";
-                if (isImported)
-                    varName = GetSpecialNameForImportingVariables(varName, decl.SpecialKeys.Contains(TokenType.KwConst));
                 // creating a static field of the decl
                 var globStatic = _module.AddGlobal(HapetTypeToLLVMType(decl.Type.OutType), varName);
                 globStatic.Linkage = LLVMLinkage.LLVMExternalLinkage;
@@ -279,28 +284,6 @@ namespace HapetBackend.Llvm
                         field.Initializer = LLVMValueRef.CreateConstNull(HapetTypeToLLVMType(decl.Type.OutType));
                 }
             }
-        }
-
-        /// <summary>
-        /// This is a cringe function that makes be able to import 
-        /// static global variables from other modules
-        /// </summary>
-        /// <param name="name">Original name</param>
-        /// <returns>Name that should be used to be able to import</returns>
-        private string GetSpecialNameForImportingVariables(string name, bool needImp = false)
-        {
-            // __imp_ prefix is required on windows platform when 
-            // importing global symbol had non-default initializer.
-            // if it had default one - no need for __imp_
-            string additionalString = needImp ? "__imp_" : "";
-            switch (_compiler.CurrentProjectSettings.TargetPlatformData.TargetPlatform)
-            {
-                case HapetFrontend.TargetPlatform.Win86:
-                        return $"\u0001{additionalString}_{name}";
-                case HapetFrontend.TargetPlatform.Win64:
-                        return $"\u0001{additionalString}{name}";
-            }
-            return name;
         }
     }
 }

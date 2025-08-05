@@ -46,8 +46,6 @@ namespace HapetBackend.Llvm
 
             LLVMTypeRef virtualTableType = GetVirtualTableType();
             string name = $"VirtualTable::{typeNameString}";
-            if (decl.IsImported)
-                name = GetSpecialNameForImportingVariables(name, true);
             var globConst = _module.AddGlobal(virtualTableType, name);
             globConst.IsGlobalConstant = true;
             globConst.Linkage = LLVMLinkage.LLVMExternalLinkage;
@@ -58,23 +56,79 @@ namespace HapetBackend.Llvm
             }
             else
             {
+                globConst.DLLStorageClass = LLVMDLLStorageClass.LLVMDLLExportStorageClass;
+                globConst.Initializer = LLVMValueRef.CreateConstNull(virtualTableType);
+                _vTablesToInit.Add((type, typeNameString, parent));
+            }
+            _virtualTableDictionary.Add(type, globConst);
+
+            return globConst;
+        }
+
+        private readonly List<(HapetType type, string typeName, ClassType parent)> _vTablesToInit = new List<(HapetType, string, ClassType)>();
+        private (LLVMTypeRef, LLVMValueRef) CreateVTableInitializer()
+        {
+            // to check if it was inited only once
+            var globStatic = _module.AddGlobal(HapetTypeToLLVMType(HapetType.CurrentTypeContext.BoolTypeInstance),
+                $"is_{_compiler.CurrentProjectSettings.ProjectName}_vtable_initer_called");
+            globStatic.Linkage = LLVMLinkage.LLVMExternalLinkage;
+            globStatic.Initializer = LLVMValueRef.CreateConstInt(HapetTypeToLLVMType(HapetType.CurrentTypeContext.BoolTypeInstance), 0);
+
+            // create a func to init all the v tables
+            var ltype = LLVMTypeRef.CreateFunction(HapetTypeToLLVMType(HapetType.CurrentTypeContext.VoidTypeInstance), [], false);
+            var lfunc = _module.AddFunction($"{_compiler.CurrentProjectSettings.ProjectName}_vtable_initer", ltype);
+            lfunc.Linkage = LLVMLinkage.LLVMExternalLinkage;
+            lfunc.DLLStorageClass = LLVMDLLStorageClass.LLVMDLLExportStorageClass;
+
+            // make check that is already inited
+            var entry = lfunc.AppendBasicBlockInContext(_context, "entry");
+            var notInited = lfunc.AppendBasicBlockInContext(_context, "not.inited");
+            var end = lfunc.AppendBasicBlockInContext(_context, "end");
+
+            _builder.PositionAtEnd(entry);
+            var loadedVar = _builder.BuildLoad2(HapetTypeToLLVMType(HapetType.CurrentTypeContext.BoolTypeInstance), globStatic, "isInited");
+            _builder.BuildCondBr(loadedVar, end, notInited);
+
+            _builder.PositionAtEnd(notInited);
+            _builder.BuildStore(LLVMValueRef.CreateConstInt(HapetTypeToLLVMType(HapetType.CurrentTypeContext.BoolTypeInstance), 1), globStatic);
+
+            // need to call all dependent initers
+            foreach (var d in _compiler.CurrentProjectData.AllReferencedProjectNames)
+            {
+                string funcName = $"{d}_vtable_initer";
+                LLVMValueRef lfuncDep = _module.AddFunction(funcName, ltype);
+                lfuncDep.Linkage = LLVMLinkage.LLVMExternalLinkage;
+                lfuncDep.DLLStorageClass = LLVMDLLStorageClass.LLVMDLLImportStorageClass;
+                _builder.BuildCall2(ltype, lfuncDep, []);
+            }
+
+            // make all inites here
+            foreach (var tp in _vTablesToInit)
+            {
+                var virtualTableType = GetVirtualTableType();
+                var globConst = _virtualTableDictionary[tp.type];
+                var parent = tp.parent;
+
                 // parent param
                 var ptrT = LLVMTypeRef.CreatePointer(virtualTableType, 0);
                 var nullPtr = LLVMValueRef.CreateConstPointerNull(ptrT);
                 LLVMValueRef parentRef = parent == null ? nullPtr : GenerateVirtualTableConst(parent);
                 // virtual methods
-                var virtualMethods = GetVtableArray(type, out int virtualMethodsCount);
+                var virtualMethods = GetVtableArray(tp.type, out int virtualMethodsCount);
                 LLVMValueRef virtualMethodsCountRef = LLVMValueRef.CreateConstInt(_context.Int32Type, (ulong)virtualMethodsCount);
                 // interfaces
-                var (interfaces, interfaceOffsets) = GetVtableInterfacesArray(type, out int interfacesCount);
+                var (interfaces, interfaceOffsets) = GetVtableInterfacesArray(tp.type, out int interfacesCount);
                 LLVMValueRef interfacesCountRef = LLVMValueRef.CreateConstInt(_context.Int8Type, (ulong)interfacesCount);
 
-                globConst.Initializer = LLVMValueRef.CreateConstNamedStruct(virtualTableType, new LLVMValueRef[] { parentRef, virtualMethods, virtualMethodsCountRef, interfaces, interfaceOffsets, interfacesCountRef });
-                globConst.DLLStorageClass = LLVMDLLStorageClass.LLVMDLLExportStorageClass;
+                _builder.BuildStore(LLVMValueRef.CreateConstNamedStruct(virtualTableType, 
+                    new LLVMValueRef[] { parentRef, virtualMethods, virtualMethodsCountRef, interfaces, interfaceOffsets, interfacesCountRef }), globConst);
             }
-            _virtualTableDictionary.Add(type, globConst);
+            _builder.BuildBr(end);
 
-            return globConst;
+            _builder.PositionAtEnd(end);
+            _builder.BuildRetVoid();
+
+            return (ltype, lfunc);
         }
 
         private LLVMTypeRef _virtualTableType;

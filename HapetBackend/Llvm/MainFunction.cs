@@ -95,6 +95,10 @@ namespace HapetBackend.Llvm
 
             _builder.PositionAtEnd(main);
 
+            // need to initialize typeinfos and vtables before any code
+            _builder.BuildCall2(_typeInfoInitializer.Item1, _typeInfoInitializer.Item2, []);
+            _builder.BuildCall2(_vTableInitializer.Item1, _vTableInitializer.Item2, []);
+
             // calling proper function to create normal string array from this shite of C
             var nativeDecl = _compiler.MainFunction.Scope.GetSymbolInNamespace("System.Text", new AstIdExpr("Native"));
             var getParamsSymbol = (nativeDecl.Decl as AstClassDecl).SubScope.GetSymbol(new AstIdExpr("GetParametersArray")) as DeclSymbol;

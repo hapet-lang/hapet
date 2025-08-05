@@ -46,8 +46,6 @@ namespace HapetBackend.Llvm
 
             LLVMTypeRef typeInfoType = GetTypeInfoType();
             string name = $"TypeInfo::{typeNameString}";
-            if (decl.IsImported)
-                name = GetSpecialNameForImportingVariables(name, true);
             var globConst = _module.AddGlobal(typeInfoType, name);
             globConst.IsGlobalConstant = true;
             globConst.Linkage = LLVMLinkage.LLVMExternalLinkage;
@@ -58,6 +56,60 @@ namespace HapetBackend.Llvm
             }
             else
             {
+                globConst.DLLStorageClass = LLVMDLLStorageClass.LLVMDLLExportStorageClass;
+                globConst.Initializer = LLVMValueRef.CreateConstNull(typeInfoType);
+                _typeInfosToInit.Add((type, typeNameString, parent));
+            }
+            _typeInfoDictionary.Add(type, globConst);
+
+            return globConst;
+        }
+
+        private readonly List<(HapetType type, string typeName, ClassType parent)> _typeInfosToInit = new List<(HapetType, string, ClassType)>();
+        private (LLVMTypeRef, LLVMValueRef) CreateTypeInfoInitializer()
+        {
+            // to check if it was inited only once
+            var globStatic = _module.AddGlobal(HapetTypeToLLVMType(HapetType.CurrentTypeContext.BoolTypeInstance), 
+                $"is_{_compiler.CurrentProjectSettings.ProjectName}_typeinfo_initer_called");
+            globStatic.Linkage = LLVMLinkage.LLVMExternalLinkage;
+            globStatic.Initializer = LLVMValueRef.CreateConstInt(HapetTypeToLLVMType(HapetType.CurrentTypeContext.BoolTypeInstance), 0);
+
+            // create a func to init all the type infos
+            var ltype = LLVMTypeRef.CreateFunction(HapetTypeToLLVMType(HapetType.CurrentTypeContext.VoidTypeInstance), [], false);
+            var lfunc = _module.AddFunction($"{_compiler.CurrentProjectSettings.ProjectName}_typeinfo_initer", ltype);
+            lfunc.Linkage = LLVMLinkage.LLVMExternalLinkage;
+            lfunc.DLLStorageClass = LLVMDLLStorageClass.LLVMDLLExportStorageClass;
+
+            // make check that is already inited
+            var entry = lfunc.AppendBasicBlockInContext(_context, "entry");
+            var notInited = lfunc.AppendBasicBlockInContext(_context, "not.inited");
+            var end = lfunc.AppendBasicBlockInContext(_context, "end");
+
+            _builder.PositionAtEnd(entry);
+            var loadedVar = _builder.BuildLoad2(HapetTypeToLLVMType(HapetType.CurrentTypeContext.BoolTypeInstance), globStatic, "isInited");
+            _builder.BuildCondBr(loadedVar, end, notInited);
+
+            _builder.PositionAtEnd(notInited);
+            _builder.BuildStore(LLVMValueRef.CreateConstInt(HapetTypeToLLVMType(HapetType.CurrentTypeContext.BoolTypeInstance), 1), globStatic);
+
+            // need to call all dependent initers
+            foreach (var d in _compiler.CurrentProjectData.AllReferencedProjectNames)
+            {
+                string funcName = $"{d}_typeinfo_initer";
+                LLVMValueRef lfuncDep = _module.AddFunction(funcName, ltype);
+                lfuncDep.Linkage = LLVMLinkage.LLVMExternalLinkage;
+                lfuncDep.DLLStorageClass = LLVMDLLStorageClass.LLVMDLLImportStorageClass;
+                _builder.BuildCall2(ltype, lfuncDep, []);
+            }
+
+            // make all inites here
+            foreach (var tp in _typeInfosToInit)
+            {
+                var typeInfoType = GetTypeInfoType();
+                var globConst = _typeInfoDictionary[tp.type];
+                var typeNameString = tp.typeName;
+                var parent = tp.parent;
+
                 // name param
                 LLVMValueRef typeName = _module.AddGlobal(LLVMTypeRef.CreateArray(_context.Int8Type, (uint)(typeNameString.Length + 1)), $"TypeInfoName::{typeNameString}");
                 typeName.Initializer = _context.GetConstString(typeNameString, false);
@@ -67,15 +119,18 @@ namespace HapetBackend.Llvm
                 var nullPtr = LLVMValueRef.CreateConstPointerNull(ptrT);
                 LLVMValueRef parentRef = parent == null ? nullPtr : GenerateTypeInfoConst(parent);
                 // interfaces
-                var (interfaces, interfaceOffsets) = GetInterfacesArray(type, out int interfacesCount);
+                var (interfaces, interfaceOffsets) = GetInterfacesArray(tp.type, out int interfacesCount);
                 LLVMValueRef interfacesCountRef = LLVMValueRef.CreateConstInt(_context.Int8Type, (ulong)interfacesCount);
 
-                globConst.Initializer = LLVMValueRef.CreateConstNamedStruct(typeInfoType, new LLVMValueRef[] { typeName, parentRef, interfaces, interfaceOffsets, interfacesCountRef });
-                globConst.DLLStorageClass = LLVMDLLStorageClass.LLVMDLLExportStorageClass;
+                _builder.BuildStore(LLVMValueRef.CreateConstNamedStruct(typeInfoType, 
+                    new LLVMValueRef[] { typeName, parentRef, interfaces, interfaceOffsets, interfacesCountRef }), globConst);
             }
-            _typeInfoDictionary.Add(type, globConst);
+            _builder.BuildBr(end);
 
-            return globConst;
+            _builder.PositionAtEnd(end);
+            _builder.BuildRetVoid();
+
+            return (ltype, lfunc);
         }
 
         private LLVMTypeRef _typeInfoType;
