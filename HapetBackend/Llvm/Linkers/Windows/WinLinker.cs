@@ -44,8 +44,8 @@ namespace HapetBackend.Llvm.Linkers.Windows
             filename = Path.Combine(dir, filename);
             var lldArgs = new List<string>();
             lldArgs.Add($"/out:{filename}{outFileExtension}");
-            lldArgs.Add($"/IMPLIB:{filename}.lib");
-            // lldArgs.Add("/errorlimit:0"); // gives me a warning
+            if (compiler.CurrentProjectSettings.TargetFormat != TargetFormat.Console && compiler.CurrentProjectSettings.TargetFormat != TargetFormat.Windowed)
+                lldArgs.Add($"/IMPLIB:{filename}.lib");
 
             // current compiler directory
             var exePath = Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
@@ -80,12 +80,12 @@ namespace HapetBackend.Llvm.Linkers.Windows
             else
                 lldArgs.Add($"/DLL"); // TODO: is it ok for linux and other?
 
+            // generated object files
+            lldArgs.Add(objFile);
+
             // link platform specific shite
             if (!LinkPlatformLibraries(compiler, lldArgs, messageHandler, target))
                 return false;
-
-            // generated object files
-            lldArgs.Add(objFile);
 
             foreach (var linc in libraries)
             {
