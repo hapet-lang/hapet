@@ -509,14 +509,6 @@ namespace HapetPostPrepare
                 funcDecl.Parameters.Insert(0, thisParam);
             }
 
-            // checking for 'return' existance at the end. if not - add
-            if (funcDecl.Body != null && 
-                funcDecl.Body.Statements.LastOrDefault() is not AstReturnStmt &&
-                funcDecl.Body.Statements.LastOrDefault() is not AstFuncDecl) // allow nested funcs at the end
-            {
-                funcDecl.Body.Statements.Add(new AstReturnStmt(null));
-            }
-
             // adding virtual key to all overrides
             if (funcDecl.SpecialKeys.Contains(TokenType.KwOverride))
                 funcDecl.SpecialKeys.Add(Lexer.CreateToken(TokenType.KwVirtual, funcDecl.SpecialKeys.GetType(TokenType.KwOverride).Location.Beginning));

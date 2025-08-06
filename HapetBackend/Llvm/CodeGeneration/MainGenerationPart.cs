@@ -188,6 +188,11 @@ namespace HapetBackend.Llvm
                 {
                     // genereting inside stuff of the function
                     GenerateBlockExprCode(funcDecl.Body);
+                    // if function return type is void and there is no br/ret and the end - add it
+                    if (funcDecl.Returns.OutType is VoidType && !IsBlockHasItsOwnBr(funcDecl.Body))
+                    {
+                        _builder.BuildRetVoid();
+                    }
                 }
 
                 if (!lfunc.VerifyFunction(LLVMVerifierFailureAction.LLVMReturnStatusAction))
