@@ -626,7 +626,7 @@
     </Item>
     <Item>
         <Number>302E</Number>
-        <Text>Not enough 'return {0}' statements in function</Text>
+        <Text>Not all code paths have 'return {0}'</Text>
     </Item>
     <Item>
         <Number>302F</Number>

@@ -191,6 +191,9 @@ namespace HapetPostPrepare
                 if (funcDecl.Body != null)
                     PostPrepareBlockInference(funcDecl.Body, inInfo, ref outInfo);
 
+                // check for enough returns
+                CheckThatThereIsEnoughReturnsInFunc(funcDecl);
+
                 if (funcDecl.IsNestedDecl)
                     inInfo.NestedLambdaFunctionInference = prev;
 
@@ -1316,16 +1319,7 @@ namespace HapetPostPrepare
             }
             else if (returnStmt.ReturnExpression == null && currFuncRet.OutType is not VoidType)
             {
-                // TODO: better return stmts checks. like in if/else blocks and so on
-                if (returnStmt.Location == null)
-                {
-                    // it is a manually added 'return' statement
-                    var contParent = _currentParentStack.GetNearestParentFuncOrLambda();
-                    var theNameLocation = contParent is AstFuncDecl fncc ? fncc.Name.Location : (contParent as AstLambdaExpr).Location;
-                    _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, theNameLocation, [HapetType.AsString(currFuncRet.OutType)], ErrorCode.Get(CTEN.NotEnoughReturns));
-                }
-                else
-                    _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, returnStmt, [HapetType.AsString(currFuncRet.OutType)], ErrorCode.Get(CTEN.EmptyReturnStmt));
+                _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, returnStmt, [HapetType.AsString(currFuncRet.OutType)], ErrorCode.Get(CTEN.EmptyReturnStmt));
             }
         }
 
