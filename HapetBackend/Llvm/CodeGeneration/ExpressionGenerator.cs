@@ -1264,7 +1264,7 @@ namespace HapetBackend.Llvm
             LLVM.AppendExistingBasicBlock(_lastFunctionValueRef, bbEnd);
 
             // check if it has br/ret 
-            if (!IsBlockHasItsOwnBr(stmt.Body))
+            if (!AstBlockExpr.IsBlockHasItsOwnBr(stmt.Body))
             {
                 // setting br without condition into inc block from body block
                 _builder.BuildBr(bbInc);
@@ -1341,7 +1341,7 @@ namespace HapetBackend.Llvm
             }
 
             // check if it has br/ret 
-            if (!IsBlockHasItsOwnBr(stmt.Body))
+            if (!AstBlockExpr.IsBlockHasItsOwnBr(stmt.Body))
             {
                 // setting br without condition into inc block from body block
                 _builder.BuildBr(bbCond);
@@ -1403,7 +1403,7 @@ namespace HapetBackend.Llvm
             GenerateExpressionCode(stmt.BodyTrue);
 
             // check if it has br/ret 
-            if (!IsBlockHasItsOwnBr(stmt.BodyTrue))
+            if (!AstBlockExpr.IsBlockHasItsOwnBr(stmt.BodyTrue))
             {
                 // setting br without condition into inc block from body block
                 _builder.BuildBr(bbEnd);
@@ -1418,7 +1418,7 @@ namespace HapetBackend.Llvm
                 GenerateExpressionCode(stmt.BodyFalse);
 
                 // check if it has br/ret 
-                if (!IsBlockHasItsOwnBr(stmt.BodyFalse))
+                if (!AstBlockExpr.IsBlockHasItsOwnBr(stmt.BodyFalse))
                 {
                     // setting br without condition into inc block from body block
                     _builder.BuildBr(bbEnd);
@@ -1483,7 +1483,7 @@ namespace HapetBackend.Llvm
                 var _ = GenerateExpressionCode(cc.Body);
 
                 // check if it has br/ret 
-                if (!IsBlockHasItsOwnBr(cc.Body))
+                if (!AstBlockExpr.IsBlockHasItsOwnBr(cc.Body))
                 {
                     // setting br into end block from body block
                     _builder.BuildBr(bbEnd);

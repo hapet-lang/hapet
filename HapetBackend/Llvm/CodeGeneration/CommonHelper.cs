@@ -11,17 +11,6 @@ namespace HapetBackend.Llvm
 {
     public partial class LlvmCodeGenerator
     {
-        private bool IsBlockHasItsOwnBr(AstBlockExpr block)
-        {
-            // if the last statement of the block is already
-            // a return then there is no
-            // need to create our own!!!
-            return block != null &&
-                   block.Statements.Count > 0 &&
-                   (block.Statements.Last() is AstReturnStmt ||
-                   block.Statements.Last() is AstBreakContStmt);
-        }
-
         private bool IsFunctionShouldBeSkipped(AstFuncDecl func)
         {
             // also we need to skip here stors of generic impls

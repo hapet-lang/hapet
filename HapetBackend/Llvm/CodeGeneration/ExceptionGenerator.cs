@@ -115,7 +115,7 @@ namespace HapetBackend.Llvm
             // generating try block code
             GenerateExpressionCode(stmt.TryBlock);
             // check if it has br/ret 
-            if (!IsBlockHasItsOwnBr(stmt.TryBlock))
+            if (!AstBlockExpr.IsBlockHasItsOwnBr(stmt.TryBlock))
             {
                 // setting br into the block
                 _builder.BuildBr(bbFinally);
@@ -201,7 +201,7 @@ namespace HapetBackend.Llvm
                     GenerateExpressionCode(currRealCatch.CatchBlock);
 
                     // check if it has br/ret 
-                    if (!IsBlockHasItsOwnBr(currRealCatch.CatchBlock))
+                    if (!AstBlockExpr.IsBlockHasItsOwnBr(currRealCatch.CatchBlock))
                     {
                         // setting br into the block
                         _builder.BuildBr(bbFinally);
@@ -248,7 +248,7 @@ namespace HapetBackend.Llvm
             // create end bb
             var bbEnd = _context.CreateBasicBlock($"try.catch.end");
             // check if it has br/ret 
-            if (!IsBlockHasItsOwnBr(stmt.FinallyBlock))
+            if (!AstBlockExpr.IsBlockHasItsOwnBr(stmt.FinallyBlock))
             {
                 // setting br into the block
                 _builder.BuildBr(bbEnd);

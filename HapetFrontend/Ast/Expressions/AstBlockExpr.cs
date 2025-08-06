@@ -1,4 +1,5 @@
 ﻿using HapetFrontend.Ast.Declarations;
+using HapetFrontend.Ast.Statements;
 using HapetFrontend.Scoping;
 
 namespace HapetFrontend.Ast.Expressions
@@ -37,6 +38,30 @@ namespace HapetFrontend.Ast.Expressions
                 TupleNameList = TupleNameList,
             };
             return copy;
+        }
+
+        // helpers
+
+        public static bool IsBlockHasItsOwnBr(AstBlockExpr block, bool returnOnly = false)
+        {
+            // if the last statement of the block is already
+            // a return then there is no
+            // need to create our own!!!
+            return block != null && IsBlockHasItsOwnBr(block.Statements, returnOnly);
+        }
+
+        public static bool IsBlockHasItsOwnBr(List<AstStatement> stmts, bool returnOnly = false)
+        {
+            // if the last statement of the block is already
+            // a return then there is no
+            // need to create our own!!!
+            if (stmts.Count <= 0)
+                return false;
+            if (stmts.Last() is AstReturnStmt)
+                return true;
+            if (!returnOnly && stmts.Last() is AstBreakContStmt)
+                return true;
+            return false;
         }
     }
 }
