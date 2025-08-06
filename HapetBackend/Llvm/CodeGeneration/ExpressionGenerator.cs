@@ -1263,18 +1263,8 @@ namespace HapetBackend.Llvm
             LLVM.AppendExistingBasicBlock(_lastFunctionValueRef, bbInc);
             LLVM.AppendExistingBasicBlock(_lastFunctionValueRef, bbEnd);
 
-
-            if (stmt.Body != null &&
-                stmt.Body.Statements.Count > 0 &&
-                (stmt.Body.Statements.Last() is AstReturnStmt ||
-                stmt.Body.Statements.Last() is AstBreakContStmt))
-            {
-                // if the last statement of the block is already
-                // a return or break or continue then there is no
-                // need to create our own!!!
-                // so this case is empty
-            }
-            else
+            // check if it has br/ret 
+            if (!IsBlockHasItsOwnBr(stmt.Body))
             {
                 // setting br without condition into inc block from body block
                 _builder.BuildBr(bbInc);
@@ -1350,17 +1340,8 @@ namespace HapetBackend.Llvm
                 GenerateExpressionCode(stmt.Body);
             }
 
-            if (stmt.Body != null &&
-                stmt.Body.Statements.Count > 0 &&
-                (stmt.Body.Statements.Last() is AstReturnStmt ||
-                stmt.Body.Statements.Last() is AstBreakContStmt))
-            {
-                // if the last statement of the block is already
-                // a return or break or continue then there is no
-                // need to create our own!!!
-                // so this case is empty
-            }
-            else
+            // check if it has br/ret 
+            if (!IsBlockHasItsOwnBr(stmt.Body))
             {
                 // setting br without condition into inc block from body block
                 _builder.BuildBr(bbCond);
@@ -1412,29 +1393,17 @@ namespace HapetBackend.Llvm
             }
             else
             {
-                // if the second param is null (should not happen!!! - checked in Parsing) - just move to the body block
+                // if the condition is null (should not happen!!! - checked in Parsing) - just move to the body block
                 _builder.BuildBr(bbBody);
             }
 
             // body
             _builder.PositionAtEnd(bbBody);
-            if (stmt.BodyTrue != null)
-            {
-                // generating body code
-                GenerateExpressionCode(stmt.BodyTrue);
-            }
+            // generating body code
+            GenerateExpressionCode(stmt.BodyTrue);
 
-            if (stmt.BodyTrue != null &&
-                stmt.BodyTrue.Statements.Count > 0 &&
-                (stmt.BodyTrue.Statements.Last() is AstReturnStmt ||
-                stmt.BodyTrue.Statements.Last() is AstBreakContStmt))
-            {
-                // if the last statement of the block is already
-                // a return then there is no
-                // need to create our own!!!
-                // so this case is empty
-            }
-            else
+            // check if it has br/ret 
+            if (!IsBlockHasItsOwnBr(stmt.BodyTrue))
             {
                 // setting br without condition into inc block from body block
                 _builder.BuildBr(bbEnd);
@@ -1448,16 +1417,8 @@ namespace HapetBackend.Llvm
                 // generating else code
                 GenerateExpressionCode(stmt.BodyFalse);
 
-                if (stmt.BodyFalse.Statements.Count > 0 &&
-                    (stmt.BodyFalse.Statements.Last() is AstReturnStmt ||
-                    stmt.BodyFalse.Statements.Last() is AstBreakContStmt))
-                {
-                    // if the last statement of the block is already
-                    // a return then there is no
-                    // need to create our own!!!
-                    // so this case is empty
-                }
-                else
+                // check if it has br/ret 
+                if (!IsBlockHasItsOwnBr(stmt.BodyFalse))
                 {
                     // setting br without condition into inc block from body block
                     _builder.BuildBr(bbEnd);
@@ -1521,17 +1482,8 @@ namespace HapetBackend.Llvm
                 // TODO: the return value could be used for returnable switch-case exprs :))
                 var _ = GenerateExpressionCode(cc.Body);
 
-                if (cc.Body != null &&
-                    cc.Body.Statements.Count > 0 &&
-                    (cc.Body.Statements.Last() is AstReturnStmt ||
-                    cc.Body.Statements.Last() is AstBreakContStmt))
-                {
-                    // if the last statement of the block is already
-                    // a return or break or continue then there is no
-                    // need to create our own!!!
-                    // so this case is empty
-                }
-                else
+                // check if it has br/ret 
+                if (!IsBlockHasItsOwnBr(cc.Body))
                 {
                     // setting br into end block from body block
                     _builder.BuildBr(bbEnd);
