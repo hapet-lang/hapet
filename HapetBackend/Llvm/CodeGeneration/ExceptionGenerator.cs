@@ -47,10 +47,13 @@ namespace HapetBackend.Llvm
 
         private unsafe void GenerateTryCatchStmt(AstTryCatchStmt stmt)
         {
+            // this variable will be 'true' if finnaly has to go back using 'indirectbr'
+            LLVMValueRef needGoBack = CreateLocalVariable(HapetType.CurrentTypeContext.BoolTypeInstance, "needGoBack");
+            _builder.BuildStore(LLVMValueRef.CreateConstInt(HapetTypeToLLVMType(HapetType.CurrentTypeContext.BoolTypeInstance), 0), needGoBack);
+
             // alloca jmpbuf
             var jmpBufStruct = _currentFunction.Scope.GetSymbolInNamespace("System.Runtime.InteropServices", new AstIdExpr("JmpBuf"));
             LLVMValueRef jmpBuf;
-
             // for windows x64 target we need to manually align it up to 16
             if (_compiler.CurrentProjectSettings.TargetPlatformData.TargetPlatform == HapetFrontend.TargetPlatform.Win64)
                 jmpBuf = CreateLocalVariable(HapetTypeToLLVMType(jmpBufStruct.Decl.Type.OutType), 16, "jmpbuf");
@@ -103,6 +106,7 @@ namespace HapetBackend.Llvm
             var bbDispatch = _context.CreateBasicBlock($"dispatch.main.block");
             var bbFinally = _context.CreateBasicBlock($"finally.block");
             var bbRethrow = _context.CreateBasicBlock($"rethrow.block");
+            var bbEnd = _context.CreateBasicBlock($"try.catch.end");
 
             // compare to 1
             var binOp = SearchBinOp("==", HapetType.CurrentTypeContext.GetIntType(4, true), HapetType.CurrentTypeContext.GetIntType(4, true));
@@ -245,8 +249,17 @@ namespace HapetBackend.Llvm
                 GenerateExpressionCode(stmt.FinallyBlock);
             }
 
-            // create end bb
-            var bbEnd = _context.CreateBasicBlock($"try.catch.end");
+            // cringe shite to always handle finally block before exits
+            var needGoBackLoaded = _builder.BuildLoad2(HapetTypeToLLVMType(HapetType.CurrentTypeContext.BoolTypeInstance), needGoBack);
+            var bbNeedGoBack = _context.CreateBasicBlock($"finally.goback.block");
+            var bbNoNeedGoBack = _context.CreateBasicBlock($"finally.nogoback.block");
+            // if 0 - no go back, if 1 - go back
+            _builder.BuildCondBr(needGoBackLoaded, bbNeedGoBack, bbNoNeedGoBack);
+            LLVM.AppendExistingBasicBlock(_lastFunctionValueRef, bbNeedGoBack);
+            _builder.PositionAtEnd(bbNeedGoBack);
+            // TODO: make indirectbr here
+            LLVM.AppendExistingBasicBlock(_lastFunctionValueRef, bbNoNeedGoBack);
+            _builder.PositionAtEnd(bbNoNeedGoBack);
             // check if it has br/ret 
             if (!AstBlockExpr.IsBlockHasItsOwnBr(stmt.FinallyBlock))
             {

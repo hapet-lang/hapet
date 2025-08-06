@@ -42,15 +42,15 @@ namespace HapetFrontend.Ast.Expressions
 
         // helpers
 
-        public static bool IsBlockHasItsOwnBr(AstBlockExpr block, bool returnOnly = false)
+        public static bool IsBlockHasItsOwnBr(AstBlockExpr block, bool returnAndThrowOnly = false)
         {
             // if the last statement of the block is already
             // a return then there is no
             // need to create our own!!!
-            return block != null && IsBlockHasItsOwnBr(block.Statements, returnOnly);
+            return block != null && IsBlockHasItsOwnBr(block.Statements, returnAndThrowOnly);
         }
 
-        public static bool IsBlockHasItsOwnBr(List<AstStatement> stmts, bool returnOnly = false)
+        public static bool IsBlockHasItsOwnBr(List<AstStatement> stmts, bool returnAndThrowOnly = false)
         {
             // if the last statement of the block is already
             // a return then there is no
@@ -59,7 +59,9 @@ namespace HapetFrontend.Ast.Expressions
                 return false;
             if (stmts.Last() is AstReturnStmt)
                 return true;
-            if (!returnOnly && stmts.Last() is AstBreakContStmt)
+            if (stmts.Last() is AstThrowStmt)
+                return true;
+            if (!returnAndThrowOnly && stmts.Last() is AstBreakContStmt)
                 return true;
             return false;
         }
