@@ -114,7 +114,12 @@ namespace HapetBackend.Llvm
             _builder.PositionAtEnd(bbTry);
             // generating try block code
             GenerateExpressionCode(stmt.TryBlock);
-            _builder.BuildBr(bbFinally);
+            // check if it has br/ret 
+            if (!IsBlockHasItsOwnBr(stmt.TryBlock))
+            {
+                // setting br into the block
+                _builder.BuildBr(bbFinally);
+            }
 
             // create catch dispatch/blocks
             // -1 because we already have main dispatch block
@@ -194,7 +199,13 @@ namespace HapetBackend.Llvm
                     _valueMap[currRealCatch.CatchParam.Symbol] = excVar;
                     // generate the catch block itself
                     GenerateExpressionCode(currRealCatch.CatchBlock);
-                    _builder.BuildBr(bbFinally);
+
+                    // check if it has br/ret 
+                    if (!IsBlockHasItsOwnBr(currRealCatch.CatchBlock))
+                    {
+                        // setting br into the block
+                        _builder.BuildBr(bbFinally);
+                    }
                 }
             }
 
@@ -236,7 +247,12 @@ namespace HapetBackend.Llvm
 
             // create end bb
             var bbEnd = _context.CreateBasicBlock($"try.catch.end");
-            _builder.BuildBr(bbEnd);
+            // check if it has br/ret 
+            if (!IsBlockHasItsOwnBr(stmt.FinallyBlock))
+            {
+                // setting br into the block
+                _builder.BuildBr(bbEnd);
+            }
 
             // append the end
             LLVM.AppendExistingBasicBlock(_lastFunctionValueRef, bbEnd);
