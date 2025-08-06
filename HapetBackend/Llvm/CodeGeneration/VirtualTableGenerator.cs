@@ -211,11 +211,11 @@ namespace HapetBackend.Llvm
             string typeNameString;
             if (type is ClassType clsType)
             {
-                typeNameString = clsType.Declaration.Name.Name;
+                typeNameString = GenericsHelper.GetCodegenGenericName(clsType.Declaration.Name, _messageHandler);
             }
             else if (type is StructType strType)
             {
-                typeNameString = strType.Declaration.Name.Name;
+                typeNameString = GenericsHelper.GetCodegenGenericName(strType.Declaration.Name, _messageHandler);
             }
             else
             {
