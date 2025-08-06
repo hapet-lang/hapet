@@ -189,9 +189,12 @@ namespace HapetBackend.Llvm
                     // genereting inside stuff of the function
                     GenerateBlockExprCode(funcDecl.Body);
                     // if function return type is void and there is no br/ret and the end - add it
-                    if (funcDecl.Returns.OutType is VoidType && !AstBlockExpr.IsBlockHasItsOwnBr(funcDecl.Body))
+                    if (!AstBlockExpr.IsBlockHasItsOwnBr(funcDecl.Body))
                     {
-                        _builder.BuildRetVoid();
+                        if (funcDecl.Returns.OutType is VoidType)
+                            _builder.BuildRetVoid();
+                        else
+                            _builder.BuildUnreachable(); /// it should be safe because of <see cref="PostPrepare.CheckThatThereIsEnoughReturnsInFunc(AstFuncDecl)"/>
                     }
                 }
 
