@@ -45,11 +45,15 @@ namespace HapetBackend.Llvm
             _builder.BuildUnreachable();
         }
 
+        private List<AstTryCatchStmt> _tryCatchStatements = new List<AstTryCatchStmt>();
         private List<LLVMValueRef> _needGoBackVariables = new List<LLVMValueRef>();
         private List<LLVMBasicBlockRef> _finallyBlocks = new List<LLVMBasicBlockRef>();
         private List<List<LLVMBasicBlockRef>> _indirectBlockBlocks = new List<List<LLVMBasicBlockRef>>();
         private unsafe void GenerateTryCatchStmt(AstTryCatchStmt stmt)
         {
+            // add current one
+            _tryCatchStatements.Add(stmt);
+
             // this variable will be 'true' if finnaly has to go back using 'indirectbr'
             LLVMValueRef needGoBack = CreateLocalVariable(HapetType.CurrentTypeContext.PtrToVoidType, "needGoBack");
             var nullValue = LLVMValueRef.CreateConstPointerNull(HapetTypeToLLVMType(HapetType.CurrentTypeContext.PtrToVoidType));
@@ -292,6 +296,7 @@ namespace HapetBackend.Llvm
             _finallyBlocks.RemoveAt(_finallyBlocks.Count - 1);
             _needGoBackVariables.RemoveAt(_needGoBackVariables.Count - 1);
             _indirectBlockBlocks.RemoveAt(_indirectBlockBlocks.Count - 1);
+            _tryCatchStatements.RemoveAt(_tryCatchStatements.Count - 1);
         }
     }
 }

@@ -1201,6 +1201,7 @@ namespace HapetBackend.Llvm
         // these blocks are needed for break and continue statements
         private LLVMBasicBlockRef _currentLoopInc = null;
         private LLVMBasicBlockRef _currentLoopEnd = null;
+        private AstStatement _currentLoop = null;
         private unsafe void GenerateForStmt(AstForStmt stmt)
         {
             // WARN: this strange code is not just for 'fun'
@@ -1220,6 +1221,7 @@ namespace HapetBackend.Llvm
             // saving previous blocks because of nesting
             var prevForInc = _currentLoopInc;
             var prevForEnd = _currentLoopEnd;
+            var prevLoop = _currentLoop;
 
             if (stmt.FirstArgument != null)
                 GenerateExpressionCode(stmt.FirstArgument);
@@ -1236,6 +1238,7 @@ namespace HapetBackend.Llvm
 
             _currentLoopInc = bbInc;
             _currentLoopEnd = bbEnd;
+            _currentLoop = stmt;
 
             // condition
             _builder.PositionAtEnd(bbCond);
@@ -1283,6 +1286,7 @@ namespace HapetBackend.Llvm
             // restoring prev blocks
             _currentLoopInc = prevForInc;
             _currentLoopEnd = prevForEnd;
+            _currentLoop = prevLoop;
         }
 
         private ulong _whileCounter;
@@ -1305,6 +1309,7 @@ namespace HapetBackend.Llvm
             // so the Cond block is used directly
             var prevWhileInc = _currentLoopInc;
             var prevWhileEnd = _currentLoopEnd;
+            var prevLoop = _currentLoop;
 
             var bbCond = _lastFunctionValueRef.AppendBasicBlockInContext(_context, $"while{_whileCounter}.cond");
             var bbBody = _lastFunctionValueRef.AppendBasicBlockInContext(_context, $"while{_whileCounter}.body");
@@ -1317,6 +1322,7 @@ namespace HapetBackend.Llvm
 
             _currentLoopInc = bbCond; // check upper WARN
             _currentLoopEnd = bbEnd;
+            _currentLoop = stmt;
 
             // condition
             _builder.PositionAtEnd(bbCond);
@@ -1355,6 +1361,7 @@ namespace HapetBackend.Llvm
             // restoring prev blocks
             _currentLoopInc = prevWhileInc;
             _currentLoopEnd = prevWhileEnd;
+            _currentLoop = prevLoop;
         }
 
         private ulong _ifCounter;
@@ -1440,11 +1447,13 @@ namespace HapetBackend.Llvm
             bool userDefinedDefaultCase = stmt.Cases.Any(x => x.IsDefaultCase);
 
             var prevLoopEnd = _currentLoopEnd;
+            var prevLoop = _currentLoop;
 
             var bbDefault = _context.CreateBasicBlock($"switch{_switchCounter}.default");
             var bbEnd = _context.CreateBasicBlock($"switch{_switchCounter}.end");
 
             _currentLoopEnd = bbEnd;
+            _currentLoop = stmt;
 
             var subExprOfSwitch = GenerateExpressionCode(stmt.SubExpression);
             // this cringe shite is because the default case always exists even if user has not defined it!!!
@@ -1525,10 +1534,42 @@ namespace HapetBackend.Llvm
 
             // restoring prev block
             _currentLoopEnd = prevLoopEnd;
+            _currentLoop = prevLoop;
         }
 
-        private void GenerateBreakContStmt(AstBreakContStmt stmt)
+        private unsafe void GenerateBreakContStmt(AstBreakContStmt stmt)
         {
+            // need to generate finally block moves
+            if (_needGoBackVariables.Count > 0)
+            {
+                // go from last element
+                for (int i = _needGoBackVariables.Count - 1; i >= 0; --i)
+                {
+                    // check if we need to call finallies or not
+                    var nearestTry = _tryCatchStatements[i];
+                    if (_currentLoop.Scope.IsChildOf(nearestTry.TryBlock.Scope))
+                    {
+                        // break loop - it is nested _currentLoop, so no need to gen finally calls
+                        break;
+                    }
+
+                    // make the block into which execution will be returned
+                    var beforeBrContBlock = _context.CreateBasicBlock($"before.brcont");
+
+                    // set var that finally need to go back
+                    var needGoBack = _needGoBackVariables[i];
+                    _builder.BuildStore(_lastFunctionValueRef.GetBlockAddress(beforeBrContBlock), needGoBack);
+                    // increase amount of go backs
+                    _indirectBlockBlocks[i].Add(beforeBrContBlock);
+                    // and build br to the finally
+                    _builder.BuildBr(_finallyBlocks[i]);
+
+                    // just make the block
+                    LLVM.AppendExistingBasicBlock(_lastFunctionValueRef, beforeBrContBlock);
+                    _builder.PositionAtEnd(beforeBrContBlock);
+                }
+            }
+
             // just generating shite that jumps between blocks :)
             if (stmt.IsBreak)
             {
