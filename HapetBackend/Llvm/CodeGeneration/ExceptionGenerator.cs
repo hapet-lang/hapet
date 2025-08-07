@@ -45,11 +45,17 @@ namespace HapetBackend.Llvm
             _builder.BuildUnreachable();
         }
 
+        private List<LLVMValueRef> _needGoBackVariables = new List<LLVMValueRef>();
+        private List<LLVMBasicBlockRef> _finallyBlocks = new List<LLVMBasicBlockRef>();
+        private List<List<LLVMBasicBlockRef>> _indirectBlockBlocks = new List<List<LLVMBasicBlockRef>>();
         private unsafe void GenerateTryCatchStmt(AstTryCatchStmt stmt)
         {
             // this variable will be 'true' if finnaly has to go back using 'indirectbr'
-            LLVMValueRef needGoBack = CreateLocalVariable(HapetType.CurrentTypeContext.BoolTypeInstance, "needGoBack");
-            _builder.BuildStore(LLVMValueRef.CreateConstInt(HapetTypeToLLVMType(HapetType.CurrentTypeContext.BoolTypeInstance), 0), needGoBack);
+            LLVMValueRef needGoBack = CreateLocalVariable(HapetType.CurrentTypeContext.PtrToVoidType, "needGoBack");
+            var nullValue = LLVMValueRef.CreateConstPointerNull(HapetTypeToLLVMType(HapetType.CurrentTypeContext.PtrToVoidType));
+            _builder.BuildStore(nullValue, needGoBack);
+            _needGoBackVariables.Add(needGoBack);
+            _indirectBlockBlocks.Add(new List<LLVMBasicBlockRef>());
 
             // alloca jmpbuf
             var jmpBufStruct = _currentFunction.Scope.GetSymbolInNamespace("System.Runtime.InteropServices", new AstIdExpr("JmpBuf"));
@@ -107,6 +113,9 @@ namespace HapetBackend.Llvm
             var bbFinally = _context.CreateBasicBlock($"finally.block");
             var bbRethrow = _context.CreateBasicBlock($"rethrow.block");
             var bbEnd = _context.CreateBasicBlock($"try.catch.end");
+
+            // pushing finally block
+            _finallyBlocks.Add(bbFinally);
 
             // compare to 1
             var binOp = SearchBinOp("==", HapetType.CurrentTypeContext.GetIntType(4, true), HapetType.CurrentTypeContext.GetIntType(4, true));
@@ -250,14 +259,22 @@ namespace HapetBackend.Llvm
             }
 
             // cringe shite to always handle finally block before exits
-            var needGoBackLoaded = _builder.BuildLoad2(HapetTypeToLLVMType(HapetType.CurrentTypeContext.BoolTypeInstance), needGoBack);
+            var needGoBackLoaded = _builder.BuildLoad2(HapetTypeToLLVMType(HapetType.CurrentTypeContext.IntPtrTypeInstance), needGoBack);
+            var zeroNullValue = LLVMValueRef.CreateConstInt(HapetTypeToLLVMType(HapetType.CurrentTypeContext.IntPtrTypeInstance), 0);
+            var isNullCmp = _builder.BuildICmp(LLVMIntPredicate.LLVMIntEQ, needGoBackLoaded, zeroNullValue);
+
             var bbNeedGoBack = _context.CreateBasicBlock($"finally.goback.block");
             var bbNoNeedGoBack = _context.CreateBasicBlock($"finally.nogoback.block");
-            // if 0 - no go back, if 1 - go back
-            _builder.BuildCondBr(needGoBackLoaded, bbNeedGoBack, bbNoNeedGoBack);
+            // if 0 - no go back, if ptr - go back
+            _builder.BuildCondBr(isNullCmp, bbNoNeedGoBack, bbNeedGoBack);
             LLVM.AppendExistingBasicBlock(_lastFunctionValueRef, bbNeedGoBack);
             _builder.PositionAtEnd(bbNeedGoBack);
-            // TODO: make indirectbr here
+            // make indirectbr here
+            var needGoBackLoadedAsPtr = _builder.BuildLoad2(HapetTypeToLLVMType(HapetType.CurrentTypeContext.PtrToVoidType), needGoBack);
+            var indirectBr = _builder.BuildIndirectBr(needGoBackLoadedAsPtr, (uint)_indirectBlockBlocks[_indirectBlockBlocks.Count - 1].Count);
+            foreach (var bl in _indirectBlockBlocks[_indirectBlockBlocks.Count - 1])
+                indirectBr.AddDestination(bl);
+            // make normal block
             LLVM.AppendExistingBasicBlock(_lastFunctionValueRef, bbNoNeedGoBack);
             _builder.PositionAtEnd(bbNoNeedGoBack);
             // check if it has br/ret 
@@ -270,6 +287,11 @@ namespace HapetBackend.Llvm
             // append the end
             LLVM.AppendExistingBasicBlock(_lastFunctionValueRef, bbEnd);
             _builder.PositionAtEnd(bbEnd);
+
+            // popping it
+            _finallyBlocks.RemoveAt(_finallyBlocks.Count - 1);
+            _needGoBackVariables.RemoveAt(_needGoBackVariables.Count - 1);
+            _indirectBlockBlocks.RemoveAt(_indirectBlockBlocks.Count - 1);
         }
     }
 }

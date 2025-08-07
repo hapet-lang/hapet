@@ -55,6 +55,7 @@ namespace HapetBackend.Llvm
         }
 
         private LLVMValueRef _lastFunctionValueRef;
+        private LLVMValueRef _lastFunctionReturnHandlerValueRef;
         private unsafe void GenerateFuncCode(AstFuncDecl funcDecl, LLVMTypeRef? funcType = null, bool forMetadata = false)
         {
             _currentFunction = funcDecl;
@@ -177,6 +178,10 @@ namespace HapetBackend.Llvm
                 var bbBody = lfunc.AppendBasicBlockInContext(_context, "entry");
                 _builder.BuildBr(bbBody);
                 _builder.PositionAtEnd(bbBody);
+
+                // need to create return handler here because it is accessable in all blocks in func
+                if (funcDecl.Returns.OutType is not VoidType)
+                    _lastFunctionReturnHandlerValueRef = CreateLocalVariable(funcDecl.Returns.OutType, "returnHandler");
 
                 // different behaviour when extern func
                 if (funcDecl.SpecialKeys.Contains(TokenType.KwExtern))

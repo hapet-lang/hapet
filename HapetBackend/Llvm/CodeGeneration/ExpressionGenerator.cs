@@ -1550,16 +1550,43 @@ namespace HapetBackend.Llvm
             }
         }
 
-        private void GenerateReturnStmt(AstReturnStmt returnStmt)
+        private unsafe void GenerateReturnStmt(AstReturnStmt returnStmt)
         {
-            LLVMValueRef result = null;
             if (returnStmt.ReturnExpression != null)
-                result = GenerateExpressionCode(returnStmt.ReturnExpression);
+            {
+                var result = GenerateExpressionCode(returnStmt.ReturnExpression);
+                _builder.BuildStore(result, _lastFunctionReturnHandlerValueRef);
+            }
+
+            // need to generate finally block moves
+            if (_needGoBackVariables.Count > 0)
+            {
+                // go from last element
+                for (int i = _needGoBackVariables.Count - 1; i >= 0; --i)
+                {
+                    // make the block into which execution will be returned
+                    var beforeRetBlock = _context.CreateBasicBlock($"before.return");
+
+                    // set var that finally need to go back
+                    var needGoBack = _needGoBackVariables[i];
+                    _builder.BuildStore(_lastFunctionValueRef.GetBlockAddress(beforeRetBlock), needGoBack);
+                    // increase amount of go backs
+                    _indirectBlockBlocks[i].Add(beforeRetBlock);
+                    // and build br to the finally
+                    _builder.BuildBr(_finallyBlocks[i]);
+
+                    // just make the block
+                    LLVM.AppendExistingBasicBlock(_lastFunctionValueRef, beforeRetBlock);
+                    _builder.PositionAtEnd(beforeRetBlock);
+                }
+            }
 
             // return logics
-            if (result != null)
+            if (returnStmt.ReturnExpression != null)
             {
                 // return value
+                var result = _builder.BuildLoad2(HapetTypeToLLVMType(returnStmt.ReturnExpression.OutType), 
+                    _lastFunctionReturnHandlerValueRef, "retHandlerLoaded");
                 _builder.BuildRet(result);
             }
             else if (_currentFunction.Returns.OutType is VoidType)
