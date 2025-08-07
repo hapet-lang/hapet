@@ -418,6 +418,14 @@ namespace HapetBackend.Llvm
             {
                 padding = biggestAlignment - currentSize % biggestAlignment;
             }
+            else if (!withTypeInfo && decls.Count == 0)
+            {
+                // special case to handle empty struct
+
+                // to make size == 1
+                padding = 1;
+                biggestAlignment = HapetType.CurrentTypeContext.PointerSize;
+            }
             else
             {
                 padding = 0;
