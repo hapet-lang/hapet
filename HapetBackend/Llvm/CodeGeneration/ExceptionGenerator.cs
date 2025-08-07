@@ -12,22 +12,26 @@ namespace HapetBackend.Llvm
 {
     public partial class LlvmCodeGenerator
     {
-        private void GenerateThrowStmt(AstThrowStmt stmt)
+        private void GenerateThrowStmt(AstThrowStmt stmt, bool isRethrow = false)
         {
             DeclSymbol helper;
             DeclSymbol methSymbol;
             LLVMValueRef methFunc;
             LLVMTypeRef methType;
-
-            // generating exception
-            var exc = GenerateExpressionCode(stmt.ThrowExpression);
-            // and store it in ExceptionHelper
-            // WARN: hard cock
             helper = _currentFunction.Scope.GetSymbolInNamespace("System.Runtime.InteropServices", new AstIdExpr("ExceptionHelper"));
-            methSymbol = (helper.Decl as AstClassDecl).SubScope.GetSymbol(new AstIdExpr("SetException")) as DeclSymbol;
-            methFunc = _valueMap[methSymbol];
-            methType = _typeMap[methSymbol.Decl.Type.OutType];
-            _builder.BuildCall2(methType, methFunc, new LLVMValueRef[] { exc });
+
+            // if not rethrow - generate the exception. if rethrow - exception already exists
+            if (!isRethrow)
+            {
+                // generating exception
+                var exc = GenerateExpressionCode(stmt.ThrowExpression);
+                // and store it in ExceptionHelper
+                // WARN: hard cock
+                methSymbol = (helper.Decl as AstClassDecl).SubScope.GetSymbol(new AstIdExpr("SetException")) as DeclSymbol;
+                methFunc = _valueMap[methSymbol];
+                methType = _typeMap[methSymbol.Decl.Type.OutType];
+                _builder.BuildCall2(methType, methFunc, new LLVMValueRef[] { exc });
+            }
 
             // getting last jmpbuf
             // WARN: hard cock
@@ -155,7 +159,7 @@ namespace HapetBackend.Llvm
             // if there are no breaks - just go to finally
             if (stmt.CatchBlocks.Count == 0)
             {
-                _builder.BuildBr(bbFinally);
+                _builder.BuildBr(bbRethrow);
             }
             // else go dispatch
             else
@@ -229,23 +233,25 @@ namespace HapetBackend.Llvm
             // third - rethrow
             LLVM.AppendExistingBasicBlock(_lastFunctionValueRef, bbRethrow);
             _builder.PositionAtEnd(bbRethrow);
-            // TODO: call finally before rethrow and remove below call after it
-            methSymbol = (helper.Decl as AstClassDecl).SubScope.GetSymbol(new AstIdExpr("Pop")) as DeclSymbol;
-            methFunc = _valueMap[methSymbol];
-            methType = _typeMap[methSymbol.Decl.Type.OutType];
-            _builder.BuildCall2(methType, methFunc, new LLVMValueRef[] { });
-            // getting next jmpbuf
-            methSymbol = (helper.Decl as AstClassDecl).SubScope.GetSymbol(new AstIdExpr("Peek")) as DeclSymbol;
-            methFunc = _valueMap[methSymbol];
-            methType = _typeMap[methSymbol.Decl.Type.OutType];
-            var jmpBufNext = _builder.BuildCall2(methType, methFunc, new LLVMValueRef[] { }, "jmpbufNext");
-            // making longjmp
-            methSymbol = (helper.Decl as AstClassDecl).SubScope.GetSymbol(new AstIdExpr("LongJmp")) as DeclSymbol;
-            methFunc = _valueMap[methSymbol];
-            methType = _typeMap[methSymbol.Decl.Type.OutType];
-            _builder.BuildCall2(methType, methFunc, new LLVMValueRef[] { jmpBufNext, LLVMValueRef.CreateConstInt(_context.Int32Type, (ulong)1) });
-            // create unreachable
-            _builder.BuildUnreachable();
+            // call finally before rethrow
+            {
+                // make the block into which execution will be returned
+                var beforeRethrowBlock = _context.CreateBasicBlock($"before.rethrow");
+
+                // set var that finally need to go back
+                _builder.BuildStore(_lastFunctionValueRef.GetBlockAddress(beforeRethrowBlock), needGoBack);
+                // increase amount of go backs
+                _indirectBlockBlocks[_indirectBlockBlocks.Count - 1].Add(beforeRethrowBlock);
+                // and build br to the finally
+                _builder.BuildBr(_finallyBlocks[_finallyBlocks.Count - 1]);
+
+                // just make the block
+                LLVM.AppendExistingBasicBlock(_lastFunctionValueRef, beforeRethrowBlock);
+                _builder.PositionAtEnd(beforeRethrowBlock);
+
+                // making rethrow
+                GenerateThrowStmt(null, true);
+            }
 
             // fourth - finally
             LLVM.AppendExistingBasicBlock(_lastFunctionValueRef, bbFinally);
