@@ -1,3 +1,6 @@
+// Licensed to the hapet-lang under one or more agreements.
+// The hapet-lang licenses this file to you under the MIT license.
+
 // Custom attribute to indicate that the field
 // of another attribute has to be set.
 // Could be also used in other purposes
