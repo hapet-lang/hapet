@@ -65,23 +65,11 @@ namespace HapetLastPrepare
             {
                 LPRACFunction(funcDecl);
             }
-            else if (decl is AstPropertyDecl propDecl)
+            else if (decl is AstPropertyDecl)
             {
-                if (propDecl.GetBlock != null)
-                {
-                    LPRACBlockExpr(propDecl.GetBlock);
-                }
-                if (propDecl.SetBlock != null)
-                {
-                    LPRACBlockExpr(propDecl.SetBlock);
-                }
-
-                if (propDecl is AstIndexerDecl indDecl)
-                {
-                    LPRACParam(indDecl.IndexerParameter);
-                }
-
-                LPRACVar(propDecl);
+                // no need to do anything with props
+                // they are not handled as props anymore here 
+                // their funcs will be prepared
             }
             else if (decl is AstVarDecl varDecl)
             {
@@ -496,6 +484,7 @@ namespace HapetLastPrepare
         private void LPRACArrayAccessExpr(AstArrayAccessExpr expr)
         {
             LPRACExpr(expr.ParameterExpr);
+            LPRACExpr(expr.ObjectName);
 
             if (expr.OutType is ClassType)
             {
