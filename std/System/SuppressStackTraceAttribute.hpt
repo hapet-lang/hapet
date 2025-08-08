@@ -1,0 +1,6 @@
+// Custom attribute to indicate that 
+// StackTrace for the func won't be handled
+[SuppressStaticCtorCall]
+public class SuppressStackTraceAttribute : Attribute
+{
+}

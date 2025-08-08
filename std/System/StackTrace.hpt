@@ -1,16 +1,90 @@
 using System.Collections.Generic;
+using System.Runtime.InteropServices;
 
+[DeclarationUsed]
 public static class StackTrace
 {
-    private static List<string> _stackTrace = new List<string>();
+    [DeclarationUsed]
+    private static LightList<string> _stackTrace = new LightList<string>();
 
+    [DeclarationUsed]
     public static void Push(string name)
     {
         _stackTrace.Add(name);
     }
 
+    [DeclarationUsed]
     public static void Pop()
     {
         _stackTrace.RemoveAt(_stackTrace.Count - 1);
     }
+
+    public static string Peek()
+    {
+        return _stackTrace[_stackTrace.Count - 1];
+    }
+}
+
+[DeclarationUsed]
+internal class LightList<T>
+{
+    internal T[] _items;
+    internal int _size;
+
+    [SuppressStackTrace]
+    private inline void ChangeCapacity(int newCapacity)
+    {
+        T[] newItems = new T[newCapacity];
+        if (_size > 0)
+        {
+            TSource* srcP = _items.Buffer;
+            TDest* dstP = newItems.Buffer;
+            Memcpy(dstP, srcP, (uintptr)(_size * sizeof(T)));
+        }
+        _items = newItems;
+    }
+
+    [SuppressStackTrace]
+    internal inline void Add(T item)
+    {
+        if ((uint)_size >= (uint)_items.Length)
+        {
+            int capacity = _size + 1;
+            int newCapacity = _items.Length == 0 ? DefaultCapacity : 2 * _items.Length;
+            if (newCapacity < capacity) newCapacity = capacity;
+            ChangeCapacity(newCapacity);
+        }
+        _items[_size++] = item;
+    }
+
+    [SuppressStackTrace]
+    internal inline void RemoveAt(int index)
+    {
+        _size--;
+        if (index < _size)
+        {
+            TSource* srcP = _items.Buffer + 1;
+            TDest* dstP = _items.Buffer;
+            Memcpy(dstP, srcP, (uintptr)((_size - index) * sizeof(T)));
+        }
+        _items[_size] = default(T);
+    }
+
+    [SuppressStackTrace]
+    public T this[int index]
+    {
+        get
+        {
+            return _items.Buffer[index];
+        }
+        set
+        {
+            _items.Buffer[index] = value;
+        }
+    }
+    
+    [DeclarationUsed]
+    [SuppressStackTrace]
+    [DllImport("", "memcpy")]
+    private static extern inline void* Memcpy(void* dst, void* src, uintptr count);
 }
