@@ -266,17 +266,7 @@ namespace HapetPostPrepare
             AntiParseExpr(decl.Returns, sb, additionalOffset);
             sb.Append(' ');
 
-            // add additional string
-            if (decl.Name.AdditionalData != null)
-            {
-                AntiParseExpr(decl.Name.AdditionalData, sb, additionalOffset);
-                sb.Append('.');
-            }
-            if (decl is AstOverloadDecl over &&
-                (over.OverloadType == OverloadType.UnaryOperator || over.OverloadType == OverloadType.BinaryOperator))
-                sb.Append($"operator {over.Operator}");
-            else
-                AntiParseExpr(decl.Name.GetCopy(decl.Name.Name), sb, additionalOffset);
+            sb.Append(GetFuncNameAsOriginal(decl));
 
             sb.Append('(');
             for (int i = 0; i < decl.Parameters.Count; ++i)
@@ -463,6 +453,23 @@ namespace HapetPostPrepare
             }
             sb.Append('>');
             return $"{genId.Name}{sb}";
+        }
+
+        public string GetFuncNameAsOriginal(AstFuncDecl decl)
+        {
+            StringBuilder sb = new StringBuilder();
+            // add additional string
+            if (decl.Name.AdditionalData != null)
+            {
+                AntiParseExpr(decl.Name.AdditionalData, sb, string.Empty);
+                sb.Append('.');
+            }
+            if (decl is AstOverloadDecl over &&
+                (over.OverloadType == OverloadType.UnaryOperator || over.OverloadType == OverloadType.BinaryOperator))
+                sb.Append($"operator {over.Operator}");
+            else
+                AntiParseExpr(decl.Name.GetCopy(decl.Name.Name), sb, string.Empty);
+            return sb.ToString();
         }
     }
 }

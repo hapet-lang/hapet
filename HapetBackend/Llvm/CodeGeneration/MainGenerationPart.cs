@@ -221,7 +221,7 @@ namespace HapetBackend.Llvm
                             _builder.BuildStore(nullValue, _lastFunctionDeferBasicBlockGoBack);
 
                             // making cool name
-                            string funcName = GenericsHelper.GetCodegenFunctionName(funcDecl, _messageHandler);
+                            string funcName = _postPreparer.GetFuncNameAsOriginal(funcDecl); // TODO: also add namespace, class and params
                             LLVMValueRef funcNameConst = HapetValueToLLVMValue(HapetType.CurrentTypeContext.StringTypeInstance, funcName);
                             // push stacktrace
                             methSymbol = (helper.Decl as AstClassDecl).SubScope.GetSymbol(new AstIdExpr("Push")) as DeclSymbol;
