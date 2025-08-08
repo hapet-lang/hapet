@@ -99,6 +99,16 @@ namespace HapetBackend.Llvm
             _builder.BuildCall2(_typeInfoInitializer.Item1, _typeInfoInitializer.Item2, []);
             _builder.BuildCall2(_vTableInitializer.Item1, _vTableInitializer.Item2, []);
 
+            // need to call stors caller
+            {
+                GenerateFuncCode(_compiler.StorsCallerFunction, null, true);
+                GenerateFuncCode(_compiler.StorsCallerFunction, null, false);
+                _builder.PositionAtEnd(main);
+                var callerValue = _valueMap[_compiler.StorsCallerFunction.Symbol];
+                var callerType = _typeMap[_compiler.StorsCallerFunction.Type.OutType];
+                _builder.BuildCall2(callerType, callerValue, []);
+            }
+
             // calling proper function to create normal string array from this shite of C
             var nativeDecl = _compiler.MainFunction.Scope.GetSymbolInNamespace("System.Text", new AstIdExpr("Native"));
             var getParamsSymbol = (nativeDecl.Decl as AstClassDecl).SubScope.GetSymbol(new AstIdExpr("GetParametersArray")) as DeclSymbol;

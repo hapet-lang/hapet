@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using HapetFrontend.Ast;
 using HapetFrontend.Ast.Declarations;
 using HapetFrontend.Ast.Expressions;
@@ -56,6 +57,10 @@ namespace HapetBackend.Llvm
 
         private LLVMValueRef _lastFunctionValueRef;
         private LLVMValueRef _lastFunctionReturnHandlerValueRef;
+
+        private LLVMBasicBlockRef _lastFunctionDeferBasicBlock;
+        private LLVMValueRef _lastFunctionDeferBasicBlockGoBack;
+        private List<LLVMBasicBlockRef> _lastFunctionDeferIndirectBlocks = new List<LLVMBasicBlockRef>();
         private unsafe void GenerateFuncCode(AstFuncDecl funcDecl, LLVMTypeRef? funcType = null, bool forMetadata = false)
         {
             _currentFunction = funcDecl;
@@ -183,6 +188,10 @@ namespace HapetBackend.Llvm
                 if (funcDecl.Returns.OutType is not VoidType)
                     _lastFunctionReturnHandlerValueRef = CreateLocalVariable(funcDecl.Returns.OutType, "returnHandler");
 
+                // some functions reuire suppress of defer/stacktrace
+                bool doSuppressStackTrace = funcDecl.Attributes.FirstOrDefault(x => 
+                    (x.AttributeName.OutType as ClassType).Declaration.Name.Name == "System.SuppressStackTraceAttribute") != null;
+
                 // different behaviour when extern func
                 if (funcDecl.SpecialKeys.Contains(TokenType.KwExtern))
                 {
@@ -191,15 +200,67 @@ namespace HapetBackend.Llvm
                 }
                 else
                 {
+                    DeclSymbol helper;
+                    DeclSymbol methSymbol;
+                    LLVMValueRef methFunc;
+                    LLVMTypeRef methType;
+                    helper = _currentFunction.Scope.GetSymbolInNamespace("System", new AstIdExpr("StackTrace"));
+
+                    _lastFunctionDeferBasicBlock = default;
+                    _lastFunctionDeferBasicBlockGoBack = default;
+                    // if not suppress defer/stacktrace
+                    if (!doSuppressStackTrace)
+                    {
+                        // set up defer shite
+                        _lastFunctionDeferIndirectBlocks.Clear();
+                        _lastFunctionDeferBasicBlock = _context.CreateBasicBlock($"func.defer");
+                        {
+                            // this variable will contain 'ptr' when defer has to go back using 'indirectbr'
+                            _lastFunctionDeferBasicBlockGoBack = CreateLocalVariable(HapetType.CurrentTypeContext.PtrToVoidType, "needGoBackDefer");
+                            var nullValue = LLVMValueRef.CreateConstPointerNull(HapetTypeToLLVMType(HapetType.CurrentTypeContext.PtrToVoidType));
+                            _builder.BuildStore(nullValue, _lastFunctionDeferBasicBlockGoBack);
+
+                            // making cool name
+                            string funcName = GenericsHelper.GetCodegenFunctionName(funcDecl, _messageHandler);
+                            LLVMValueRef funcNameConst = HapetValueToLLVMValue(HapetType.CurrentTypeContext.StringTypeInstance, funcName);
+                            // push stacktrace
+                            methSymbol = (helper.Decl as AstClassDecl).SubScope.GetSymbol(new AstIdExpr("Push")) as DeclSymbol;
+                            methFunc = _valueMap[methSymbol];
+                            methType = _typeMap[methSymbol.Decl.Type.OutType];
+                            _builder.BuildCall2(methType, methFunc, new LLVMValueRef[] { funcNameConst });
+                        }
+                    }
+
                     // genereting inside stuff of the function
                     GenerateBlockExprCode(funcDecl.Body);
                     // if function return type is void and there is no br/ret and the end - add it
                     if (!AstBlockExpr.IsBlockHasItsOwnBr(funcDecl.Body))
                     {
                         if (funcDecl.Returns.OutType is VoidType)
-                            _builder.BuildRetVoid();
+                            GenerateReturnStmt(new AstReturnStmt(null)); // need to call the func because of defer
                         else
                             _builder.BuildUnreachable(); /// it should be safe because of <see cref="PostPrepare.CheckThatThereIsEnoughReturnsInFunc(AstFuncDecl)"/>
+                    }
+
+                    // if not suppress defer/stacktrace
+                    if (!doSuppressStackTrace)
+                    {
+                        // make up defer shite
+                        LLVM.AppendExistingBasicBlock(_lastFunctionValueRef, _lastFunctionDeferBasicBlock);
+                        _builder.PositionAtEnd(_lastFunctionDeferBasicBlock);
+                        {
+                            // pop stacktrace
+                            methSymbol = (helper.Decl as AstClassDecl).SubScope.GetSymbol(new AstIdExpr("Pop")) as DeclSymbol;
+                            methFunc = _valueMap[methSymbol];
+                            methType = _typeMap[methSymbol.Decl.Type.OutType];
+                            _builder.BuildCall2(methType, methFunc, new LLVMValueRef[] { });
+
+                            // go back 
+                            var needGoBackLoadedAsPtr = _builder.BuildLoad2(HapetTypeToLLVMType(HapetType.CurrentTypeContext.PtrToVoidType), _lastFunctionDeferBasicBlockGoBack);
+                            var indirectBr = _builder.BuildIndirectBr(needGoBackLoadedAsPtr, (uint)_lastFunctionDeferIndirectBlocks.Count);
+                            foreach (var bl in _lastFunctionDeferIndirectBlocks)
+                                indirectBr.AddDestination(bl);
+                        }
                     }
                 }
 
@@ -289,7 +350,7 @@ namespace HapetBackend.Llvm
                 isSupp = b;
 
             // declaring global func
-            LLVMValueRef lfunc = _module.AddFunction(entryPoint, funcType);
+            LLVMValueRef lfunc = _module.GetOrCreateFunction(entryPoint, funcType);
             lfunc.Linkage = LLVMLinkage.LLVMExternalLinkage;
             // check if suppress dllimport attr
             if (!isSupp) lfunc.DLLStorageClass = LLVMDLLStorageClass.LLVMDLLImportStorageClass;

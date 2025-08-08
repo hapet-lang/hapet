@@ -12,6 +12,7 @@ using HapetFrontend.Enums;
 using HapetFrontend.Parsing;
 using System.Drawing;
 using System.Runtime;
+using HapetFrontend.Scoping;
 
 namespace HapetPostPrepare
 {
@@ -49,20 +50,26 @@ namespace HapetPostPrepare
             InInfo inInfo = InInfo.Default;
             OutInfo outInfo = OutInfo.Default;
 
-            AstBlockExpr bodyOfStorsToCall;
-            if (_compiler.MainFunction == null)
+            // call other stor callers in caller and all current stors
+            _compiler.StorsCallerFunction = CreateStorsCallerFunc();
+            AstBlockExpr bodyOfStorsToCall = _compiler.StorsCallerFunction.Body;
+
+            // we also need to call dependent projects' stor_callers
+            foreach (var d in _compiler.CurrentProjectData.AllReferencedProjectNames)
             {
-                var storCaller = CreateStorsCallerFunc();
-                bodyOfStorsToCall = storCaller.Body;
+                // creating stor call ast
+                string funcName = $"{d}_stor_caller";
+                var call = new AstCallExpr(null, new AstIdExpr(funcName));
+                call.IsSpecialExternalCall = true;
+                bodyOfStorsToCall.Statements.Insert(0, call);
             }
-            else
-                bodyOfStorsToCall = _compiler.MainFunction.Body;
 
             // add all classes and structs that not imported
             var unique = new List<AstDeclaration>();
             unique.AddRange(AllClassesMetadata.Where(x => !x.IsImported));
             unique.AddRange(AllStructsMetadata.Where(x => !x.IsImported));
 
+            List<AstCallExpr> allStorCalls = new List<AstCallExpr>();
             foreach (var decl in unique)
             {
                 // setting current source file
@@ -78,8 +85,7 @@ namespace HapetPostPrepare
 
                 // check that the class has suppress stor call attr
                 // and skip the class without calling it's stor
-                string suppressAttrName = "System.SuppressStaticCtorCallAttribute";
-                var suppressAttr = decl.Attributes.FirstOrDefault(x => x.AttributeName.OutType is ClassType clsT && clsT.Declaration.Name.Name == suppressAttrName);
+                var suppressAttr = decl.GetAttribute("System.SuppressStaticCtorCallAttribute");
                 if (suppressAttr != null)
                     continue;
 
@@ -112,19 +118,13 @@ namespace HapetPostPrepare
 
                 _currentParentStack.RemoveParent();
 
-                // TODO: sort the static ctors calls by hierarchy
-                blockWhereToCall.Statements.Insert(0, call);
+                // if nested - add to parent stor - else sort
+                if (decl.IsNestedDecl)
+                    blockWhereToCall.Statements.Add(call);
+                else
+                    allStorCalls.Add(call);
             }
-
-            // we also need to call dependent projects' stor_callers
-            foreach (var d in _compiler.CurrentProjectData.AllReferencedProjectNames)
-            {
-                // creating stor call ast
-                string funcName = $"{d}_stor_caller";
-                var call = new AstCallExpr(null, new AstIdExpr(funcName));
-                call.IsSpecialExternalCall = true;
-                bodyOfStorsToCall.Statements.Insert(0, call);
-            }
+            bodyOfStorsToCall.Statements.AddRange(allStorCalls.OrderBy(StorSorterFunc));
         }
 
         private AstFuncDecl CreateStorsCallerFunc()
@@ -134,7 +134,6 @@ namespace HapetPostPrepare
 
             List<AstStatement> storBlockStatements = new List<AstStatement>();
             var storBlock = new AstBlockExpr(storBlockStatements, loc);
-            storBlock.Statements.Add(new AstReturnStmt(null));
 
             // the ctor func
             var storDecl = new AstFuncDecl(new List<AstParamDecl>(),
@@ -146,11 +145,46 @@ namespace HapetPostPrepare
             storDecl.SpecialKeys.Add(Lexer.CreateToken(TokenType.KwStatic, loc.Beginning)); // stor is static
             storDecl.ClassFunctionType = ClassFunctionType.StorCaller;
 
+            // no need for stack trace inside it
+            storDecl.Attributes.Add(new AstAttributeStmt(new AstNestedExpr(new AstIdExpr("System.SuppressStackTraceAttribute"), null), [], loc));
+
             SetScopeAndParent(storDecl, null, _compiler.GlobalScope);
             PostPrepareDeclScoping(storDecl);
             PostPrepareStatementUpToCurrentStep(storDecl);
 
             return storDecl;
+        }
+
+        private int StorSorterFunc(AstCallExpr call)
+        {
+            if (call.FuncName.Name.Contains("StackTrace"))
+                return 0;
+            if (call.FuncName.Name.Contains("ExceptionHelper"))
+                return 1;
+            else
+                return int.MaxValue;
+        }
+
+        private void MakeOtherShite()
+        {
+            // need to add SuppressStackTrace attr to _ini if parent has it
+            // all classes and structs that not imported
+            var unique = new List<AstDeclaration>();
+            unique.AddRange(AllClassesMetadata.Where(x => !x.IsImported));
+            unique.AddRange(AllStructsMetadata.Where(x => !x.IsImported));
+            foreach (var decl in unique)
+            {
+                // setting current source file
+                _currentSourceFile = decl.SourceFile;
+                var suppressAttr = decl.GetAttribute("System.SuppressStackTraceAttribute");
+                if (suppressAttr == null)
+                    continue;
+                string funcName = $"{decl.Name.Name.GetClassNameWithoutNamespace()}_ini";
+                var iniDecl = decl.SubScope.GetSymbol(new AstIdExpr(funcName)) as DeclSymbol;
+                if (iniDecl == null)
+                    continue;
+                iniDecl.Decl.Attributes.Add(suppressAttr);
+            }
         }
     }
 }

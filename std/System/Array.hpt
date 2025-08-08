@@ -13,6 +13,7 @@ public static class Array
 {
     public static int MaxLength { get { return 0X7FFFFFC7; } }
 
+    [SuppressStackTrace]
     public static T[] Empty<T>()
     {
         // TODO: cache the same

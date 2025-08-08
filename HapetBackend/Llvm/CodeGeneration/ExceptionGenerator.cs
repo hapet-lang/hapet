@@ -58,7 +58,7 @@ namespace HapetBackend.Llvm
             // add current one
             _tryCatchStatements.Add(stmt);
 
-            // this variable will be 'true' if finnaly has to go back using 'indirectbr'
+            // this variable will contain 'ptr' if finally has to go back using 'indirectbr'
             LLVMValueRef needGoBack = CreateLocalVariable(HapetType.CurrentTypeContext.PtrToVoidType, "needGoBack");
             var nullValue = LLVMValueRef.CreateConstPointerNull(HapetTypeToLLVMType(HapetType.CurrentTypeContext.PtrToVoidType));
             _builder.BuildStore(nullValue, needGoBack);

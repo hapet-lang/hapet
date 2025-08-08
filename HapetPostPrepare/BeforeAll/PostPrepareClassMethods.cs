@@ -364,6 +364,7 @@ namespace HapetPostPrepare
                 decls.Add(storDecl);
 
                 storDecl.IsSyntheticDeclaration = true;
+                storDecl.Attributes.Add(new AstAttributeStmt(new AstNestedExpr(new AstIdExpr("System.SuppressStackTraceAttribute"), null), [], comLoc));
             }
             else if (ctors.Count == 1)
             {
@@ -380,6 +381,8 @@ namespace HapetPostPrepare
 
                 // add check into user defined stor
                 ctorFunc.Body.Statements.Add(checkForInited);
+
+                ctorFunc.Attributes.Add(new AstAttributeStmt(new AstNestedExpr(new AstIdExpr("System.SuppressStackTraceAttribute"), null), [], ctorFunc.Location));
             }
             else
             {

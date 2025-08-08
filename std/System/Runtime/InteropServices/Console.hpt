@@ -7,5 +7,5 @@ using System;
 public static class Console
 {
     [DllImport("", "puts")]
-    public static extern int Puts(byte* data);
+    public static extern inline int Puts(byte* data);
 }

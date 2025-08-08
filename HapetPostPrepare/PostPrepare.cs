@@ -71,6 +71,8 @@ namespace HapetPostPrepare
             if (_compiler.MessageHandler.HasErrors)
                 return 0;
             CallAllStaticCtors();
+
+            MakeOtherShite();
             return 0;
         }
     }

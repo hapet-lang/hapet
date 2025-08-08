@@ -1,4 +1,5 @@
 ﻿using LLVMSharp.Interop;
+using System;
 using System.Xml.Linq;
 
 namespace HapetBackend.Llvm
@@ -24,6 +25,14 @@ namespace HapetBackend.Llvm
         {
             using var marshaledName = new MarshaledString(name.AsSpan());
             return LLVM.AppendBasicBlockInContext(context, self, marshaledName);
+        }
+
+        public unsafe static LLVMValueRef GetOrCreateFunction(this LLVMModuleRef module, string name, LLVMTypeRef type)
+        {
+            var f = module.GetNamedFunction(name);
+            if (f != default)
+                return f;
+            return module.AddFunction(name, type);
         }
 
         #region Builder remake

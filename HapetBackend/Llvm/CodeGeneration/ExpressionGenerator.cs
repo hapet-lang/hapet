@@ -515,6 +515,10 @@ namespace HapetBackend.Llvm
             {
                 if (varDecl.ContainingParent is not AstClassDecl && varDecl.ContainingParent is not AstStructDecl)
                     return v;
+                // we need to get original var decl
+                if (varDecl.ContainingParent.IsImplOfGeneric)
+                    declSymbol = varDecl.ContainingParent.OriginalGenericDecl.GetDeclarations().GetSameDeclByTypeAndNamePure(varDecl, out int _).Symbol as DeclSymbol;
+                
                 if (!_valueMap.TryGetValue(declSymbol, out v))
                     return default;
 
@@ -1599,6 +1603,8 @@ namespace HapetBackend.Llvm
                 _builder.BuildStore(result, _lastFunctionReturnHandlerValueRef);
             }
 
+            // next bbs handler
+            LLVMBasicBlockRef beforeRetBlock;
             // need to generate finally block moves
             if (_needGoBackVariables.Count > 0)
             {
@@ -1606,8 +1612,7 @@ namespace HapetBackend.Llvm
                 for (int i = _needGoBackVariables.Count - 1; i >= 0; --i)
                 {
                     // make the block into which execution will be returned
-                    var beforeRetBlock = _context.CreateBasicBlock($"before.return");
-
+                    beforeRetBlock = _context.CreateBasicBlock($"before.return");
                     // set var that finally need to go back
                     var needGoBack = _needGoBackVariables[i];
                     _builder.BuildStore(_lastFunctionValueRef.GetBlockAddress(beforeRetBlock), needGoBack);
@@ -1620,6 +1625,22 @@ namespace HapetBackend.Llvm
                     LLVM.AppendExistingBasicBlock(_lastFunctionValueRef, beforeRetBlock);
                     _builder.PositionAtEnd(beforeRetBlock);
                 }
+            }
+            // if func has defer
+            if (_lastFunctionDeferBasicBlock != default)
+            {
+                // call function defer
+                // make the block into which execution will be returned
+                beforeRetBlock = _context.CreateBasicBlock($"before.return");
+                // set var that finally need to go back
+                _builder.BuildStore(_lastFunctionValueRef.GetBlockAddress(beforeRetBlock), _lastFunctionDeferBasicBlockGoBack);
+                // increase amount of go backs
+                _lastFunctionDeferIndirectBlocks.Add(beforeRetBlock);
+                // and build br to the finally
+                _builder.BuildBr(_lastFunctionDeferBasicBlock);
+                // just make the block
+                LLVM.AppendExistingBasicBlock(_lastFunctionValueRef, beforeRetBlock);
+                _builder.PositionAtEnd(beforeRetBlock);
             }
 
             // return logics

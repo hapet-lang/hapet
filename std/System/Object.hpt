@@ -3,9 +3,13 @@
 // Some modifications were made for hapet-lang compatibility.
 
 [DeclarationUsed]
+[SuppressStackTrace] // applied to _ini
 [SuppressStaticCtorCall]
 public class Object
 {
+    [SuppressStackTrace]
+    public Object() { }
+
     [DeclarationUsed]
     public void GetType()
     {

@@ -215,6 +215,7 @@ namespace HapetFrontend.Ast.Declarations
                 "",
                 Location);
             func.SpecialKeys.AddRange(SpecialKeys);
+            func.Attributes.AddRange(Attributes);
             func.ContainingParent = containingParent; // it has to be
             func.IsPropertyFunction = true;
             func.SourceFile = SourceFile;

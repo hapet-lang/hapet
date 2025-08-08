@@ -42,6 +42,11 @@ namespace HapetFrontend
         public AstFuncDecl MainFunction { get; set; }
 
         /// <summary>
+        /// The function that calls dependent stors callers and current stors
+        /// </summary>
+        public AstFuncDecl StorsCallerFunction { get; set; }
+
+        /// <summary>
         /// Handles all lambda and nested func declarations for easier inference
         /// </summary>
         public List<AstStatement> LambdasAndNested { get; } = new List<AstStatement>();
