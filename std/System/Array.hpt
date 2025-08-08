@@ -53,7 +53,9 @@ public static class Array
 [SuppressStaticCtorCall]
 public struct Array<T> : IList<T>
 {
+    [SuppressStackTrace]
     public int Length { get; internal set; }
+    [SuppressStackTrace]
     internal T* Buffer { get; set; }
 
     public int Count { get { return Length; } }
