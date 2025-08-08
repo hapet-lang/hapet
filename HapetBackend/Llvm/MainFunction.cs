@@ -95,12 +95,29 @@ namespace HapetBackend.Llvm
 
             _builder.PositionAtEnd(main);
 
-            // need to initialize typeinfos and vtables before any code
-            _builder.BuildCall2(_typeInfoInitializer.Item1, _typeInfoInitializer.Item2, []);
-            _builder.BuildCall2(_vTableInitializer.Item1, _vTableInitializer.Item2, []);
-
-            // need to call stors caller
+            DeclSymbol parentDecl;
+            DeclSymbol funcDecl;
+            LLVMValueRef funcValue;
+            LLVMTypeRef funcType;
+            // some special calls before main code begins
             {
+                // need to initialize typeinfos and vtables before any code
+                _builder.BuildCall2(_typeInfoInitializer.Item1, _typeInfoInitializer.Item2, []);
+                _builder.BuildCall2(_vTableInitializer.Item1, _vTableInitializer.Item2, []);
+
+                // need to call at first stors of System.StackTrace and System.Runtime.InteropServices.ExceptionHelper
+                parentDecl = _compiler.MainFunction.Scope.GetSymbolInNamespace("System", new AstIdExpr("StackTrace"));
+                funcDecl = (parentDecl.Decl as AstClassDecl).SubScope.GetSymbol(new AstIdExpr("StackTrace_stor")) as DeclSymbol;
+                funcValue = _valueMap[funcDecl];
+                funcType = _typeMap[funcDecl.Decl.Type.OutType];
+                _builder.BuildCall2(funcType, funcValue, []);
+                parentDecl = _compiler.MainFunction.Scope.GetSymbolInNamespace("System.Runtime.InteropServices", new AstIdExpr("ExceptionHelper"));
+                funcDecl = (parentDecl.Decl as AstClassDecl).SubScope.GetSymbol(new AstIdExpr("ExceptionHelper_stor")) as DeclSymbol;
+                funcValue = _valueMap[funcDecl];
+                funcType = _typeMap[funcDecl.Decl.Type.OutType];
+                _builder.BuildCall2(funcType, funcValue, []);
+
+                // need to call stors caller
                 GenerateFuncCode(_compiler.StorsCallerFunction, null, true);
                 GenerateFuncCode(_compiler.StorsCallerFunction, null, false);
                 _builder.PositionAtEnd(main);
@@ -110,18 +127,18 @@ namespace HapetBackend.Llvm
             }
 
             // calling proper function to create normal string array from this shite of C
-            var nativeDecl = _compiler.MainFunction.Scope.GetSymbolInNamespace("System.Text", new AstIdExpr("Native"));
-            var getParamsSymbol = (nativeDecl.Decl as AstClassDecl).SubScope.GetSymbol(new AstIdExpr("GetParametersArray")) as DeclSymbol;
-            var getParamsFunc = _valueMap[getParamsSymbol];
-            LLVMTypeRef getParamsFuncType = _typeMap[getParamsSymbol.Decl.Type.OutType];
-            LLVMValueRef stringArray = _builder.BuildCall2(getParamsFuncType, getParamsFunc, mainFuncParams.ToArray(), "stringArr");
+            parentDecl = _compiler.MainFunction.Scope.GetSymbolInNamespace("System.Text", new AstIdExpr("Native"));
+            funcDecl = (parentDecl.Decl as AstClassDecl).SubScope.GetSymbol(new AstIdExpr("GetParametersArray")) as DeclSymbol;
+            funcValue = _valueMap[funcDecl];
+            funcType = _typeMap[funcDecl.Decl.Type.OutType];
+            LLVMValueRef stringArray = _builder.BuildCall2(funcType, funcValue, mainFuncParams.ToArray(), "stringArr");
             var parsss = new LLVMValueRef[] { stringArray };
             //var parsss = new LLVMValueRef[] { LLVM.ConstPointerNull(HapetTypeToLLVMType(HapetType.CurrentTypeContext.GetArrayType(HapetType.CurrentTypeContext.StringTypeInstance))) };
 
             { // call main function
-                var hapetMain = _valueMap[_compiler.MainFunction.Symbol];
-                LLVMTypeRef funcType = _typeMap[_compiler.MainFunction.Type.OutType];
-                var exitCode = _builder.BuildCall2(funcType, hapetMain, parsss, "exitCode");
+                funcValue = _valueMap[_compiler.MainFunction.Symbol];
+                funcType = _typeMap[_compiler.MainFunction.Type.OutType];
+                var exitCode = _builder.BuildCall2(funcType, funcValue, parsss, "exitCode");
                 _builder.BuildRet(exitCode);
             }
         }

@@ -13,6 +13,11 @@ namespace HapetBackend.Llvm
     {
         private bool IsFunctionShouldBeSkipped(AstFuncDecl func)
         {
+            // do not skip these stors
+            if (func.ClassFunctionType == ClassFunctionType.StaticCtor &&
+                (func.ContainingParent.Name.Name == "System.StackTrace" || func.ContainingParent.Name.Name == "System.Runtime.InteropServices.ExceptionHelper"))
+                return false;
+
             // also we need to skip here stors of generic impls
             if (func.ContainingParent != null && func.ContainingParent.IsImplOfGeneric &&
                 func.ClassFunctionType == ClassFunctionType.StaticCtor)
