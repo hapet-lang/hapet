@@ -1,11 +1,17 @@
 // Licensed to the hapet-lang under one or more agreements.
 // The hapet-lang licenses this file to you under the MIT license.
 
-using System;
+using System.Text;
+using System.Runtime.InteropServices;
 
 [SuppressStaticCtorCall]
 public static class Console
 {
     [DllImport("", "puts")]
     public static extern inline int Puts(byte* data);
+
+    public static void WriteLine(string text)
+    {
+        Puts(UTF8Encoding.GetBytesUnsafe(text));
+    }
 }
