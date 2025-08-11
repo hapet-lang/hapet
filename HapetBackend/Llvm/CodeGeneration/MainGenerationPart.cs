@@ -157,6 +157,11 @@ namespace HapetBackend.Llvm
                 if (funcDecl.Body == null && !funcDecl.SpecialKeys.Contains(TokenType.KwExtern))
                     return;
 
+                // clean up some defer shite
+                _lastFunctionDeferBasicBlock = default;
+                _lastFunctionDeferBasicBlockGoBack = default;
+                _lastFunctionDeferIndirectBlocks.Clear();
+
                 // params body
                 var paramsBody = lfunc.AppendBasicBlockInContext(_context, "params");
                 _builder.PositionAtEnd(paramsBody);
@@ -178,19 +183,70 @@ namespace HapetBackend.Llvm
                     _builder.BuildStore(lfunc.GetParam((uint)i), addrAlloca);
                     _valueMap[p.Symbol] = addrAlloca;
                 }
-
-                // function body
-                var bbBody = lfunc.AppendBasicBlockInContext(_context, "entry");
-                _builder.BuildBr(bbBody);
-                _builder.PositionAtEnd(bbBody);
+                var configBody = lfunc.AppendBasicBlockInContext(_context, "config");
+                _builder.BuildBr(configBody);
+                _builder.PositionAtEnd(configBody);
 
                 // need to create return handler here because it is accessable in all blocks in func
                 if (funcDecl.Returns.OutType is not VoidType)
                     _lastFunctionReturnHandlerValueRef = CreateLocalVariable(funcDecl.Returns.OutType, "returnHandler");
 
-                // some functions reuire suppress of defer/stacktrace
-                bool doSuppressStackTrace = funcDecl.Attributes.FirstOrDefault(x => 
+                // some functions require suppress of defer/stacktrace
+                bool doSuppressStackTrace = funcDecl.Attributes.FirstOrDefault(x =>
                     (x.AttributeName.OutType as ClassType).Declaration.Name.Name == "System.SuppressStackTraceAttribute") != null;
+
+                // if stacktrace is not suppressed then make "exception-handler" to call defer on exception
+                if (doSuppressStackTrace)
+                {
+                    // function body
+                    var bbBody = lfunc.AppendBasicBlockInContext(_context, "entry");
+                    _builder.BuildBr(bbBody);
+                    _builder.PositionAtEnd(bbBody);
+                }
+                else
+                {
+                    // this variable will contain 'ptr' when defer has to go back using 'indirectbr'
+                    _lastFunctionDeferBasicBlockGoBack = CreateLocalVariable(HapetType.CurrentTypeContext.PtrToVoidType, "needGoBackDefer");
+                    var nullValue = LLVMValueRef.CreateConstPointerNull(HapetTypeToLLVMType(HapetType.CurrentTypeContext.PtrToVoidType));
+                    _builder.BuildStore(nullValue, _lastFunctionDeferBasicBlockGoBack);
+
+                    _lastFunctionDeferBasicBlock = _context.CreateBasicBlock($"func.defer");
+
+                    var bbException = _context.CreateBasicBlock("on.exception");
+                    // make the block into which execution will be returned
+                    var beforeRetBlock = _context.CreateBasicBlock($"after.defer.on.exception");
+                    var bbBody = _context.CreateBasicBlock("entry");
+
+                    // similar to try-catch generation
+                    // making jmp shite here
+                    var jmpBuf = CreateJmpBuffer();
+                    PushJmpBuf(jmpBuf);
+                    var setJmpResult = CreateSetJmpCall(jmpBuf);
+
+                    //// compare to 1
+                    var binOp = SearchBinOp("==", HapetType.CurrentTypeContext.GetIntType(4, true), HapetType.CurrentTypeContext.GetIntType(4, true));
+                    var resCmp = binOp(_builder, setJmpResult, LLVMValueRef.CreateConstInt(_context.Int32Type, (ulong)1), "cmpResult");
+                    _builder.BuildCondBr(resCmp, bbException, bbBody); // if 0 - normal func, if 1 - call defer and rethrow
+
+                    LLVM.AppendExistingBasicBlock(_lastFunctionValueRef, bbException);
+                    _builder.PositionAtEnd(bbException);
+                    // call function defer
+                    // set var that finally need to go back
+                    _builder.BuildStore(_lastFunctionValueRef.GetBlockAddress(beforeRetBlock), _lastFunctionDeferBasicBlockGoBack);
+                    // increase amount of go backs
+                    _lastFunctionDeferIndirectBlocks.Add(beforeRetBlock);
+                    // and build br to the finally
+                    _builder.BuildBr(_lastFunctionDeferBasicBlock);
+
+                    LLVM.AppendExistingBasicBlock(_lastFunctionValueRef, beforeRetBlock);
+                    _builder.PositionAtEnd(beforeRetBlock);
+                    // making rethrow
+                    GenerateThrowStmt(null, true);
+
+                    // go generate normal function body
+                    LLVM.AppendExistingBasicBlock(_lastFunctionValueRef, bbBody);
+                    _builder.PositionAtEnd(bbBody);
+                }
 
                 // different behaviour when extern func
                 if (funcDecl.SpecialKeys.Contains(TokenType.KwExtern))
@@ -206,20 +262,11 @@ namespace HapetBackend.Llvm
                     LLVMTypeRef methType;
                     helper = _currentFunction.Scope.GetSymbolInNamespace("System", new AstIdExpr("StackTrace"));
 
-                    _lastFunctionDeferBasicBlock = default;
-                    _lastFunctionDeferBasicBlockGoBack = default;
                     // if not suppress defer/stacktrace
                     if (!doSuppressStackTrace)
                     {
                         // set up defer shite
-                        _lastFunctionDeferIndirectBlocks.Clear();
-                        _lastFunctionDeferBasicBlock = _context.CreateBasicBlock($"func.defer");
                         {
-                            // this variable will contain 'ptr' when defer has to go back using 'indirectbr'
-                            _lastFunctionDeferBasicBlockGoBack = CreateLocalVariable(HapetType.CurrentTypeContext.PtrToVoidType, "needGoBackDefer");
-                            var nullValue = LLVMValueRef.CreateConstPointerNull(HapetTypeToLLVMType(HapetType.CurrentTypeContext.PtrToVoidType));
-                            _builder.BuildStore(nullValue, _lastFunctionDeferBasicBlockGoBack);
-
                             // making cool name
                             string funcName = _postPreparer.GetFuncNameAsOriginal(funcDecl); // TODO: also add namespace, class and params
                             LLVMValueRef funcNameConst = HapetValueToLLVMValue(HapetType.CurrentTypeContext.StringTypeInstance, funcName);
@@ -250,6 +297,13 @@ namespace HapetBackend.Llvm
                         _builder.PositionAtEnd(_lastFunctionDeferBasicBlock);
                         {
                             // pop stacktrace
+                            methSymbol = (helper.Decl as AstClassDecl).SubScope.GetSymbol(new AstIdExpr("Pop")) as DeclSymbol;
+                            methFunc = _valueMap[methSymbol];
+                            methType = _typeMap[methSymbol.Decl.Type.OutType];
+                            _builder.BuildCall2(methType, methFunc, new LLVMValueRef[] { });
+
+                            // popping current jmpbuf 
+                            helper = _currentFunction.Scope.GetSymbolInNamespace("System.Runtime.InteropServices", new AstIdExpr("ExceptionHelper"));
                             methSymbol = (helper.Decl as AstClassDecl).SubScope.GetSymbol(new AstIdExpr("Pop")) as DeclSymbol;
                             methFunc = _valueMap[methSymbol];
                             methType = _typeMap[methSymbol.Decl.Type.OutType];

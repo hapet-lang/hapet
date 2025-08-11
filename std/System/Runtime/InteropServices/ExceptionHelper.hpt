@@ -98,34 +98,39 @@ private static class ExceptionHelper
     private static extern inline void LongJmp(void* env, int val);
 #endif
 
-    private static List<uintptr> _jmpBufs = new List<uintptr>();
+    private static LightList<uintptr> _jmpBufs = new LightList<uintptr>();
     private static Exception _currentException;
 
     [DeclarationUsed]
+    [SuppressStackTrace]
     private static void Push(void* jmpBuf)
     {
         _jmpBufs.Add((uintptr)jmpBuf);
     }
 
     [DeclarationUsed]
+    [SuppressStackTrace]
     private static void Pop()
     {
         _jmpBufs.RemoveAt(_jmpBufs.Count - 1);
     }
 
     [DeclarationUsed]
+    [SuppressStackTrace]
     private static void* Peek()
     {
         return (void*)_jmpBufs[_jmpBufs.Count - 1];
     }
 
     [DeclarationUsed]
+    [SuppressStackTrace]
     private static void SetException(Exception e)
     {
         _currentException = e;
     }
 
     [DeclarationUsed]
+    [SuppressStackTrace]
     private static Exception GetException()
     {
         return _currentException;
