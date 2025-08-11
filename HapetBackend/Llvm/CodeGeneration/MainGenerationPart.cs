@@ -223,7 +223,7 @@ namespace HapetBackend.Llvm
                     PushJmpBuf(jmpBuf);
                     var setJmpResult = CreateSetJmpCall(jmpBuf);
 
-                    //// compare to 1
+                    // compare to 1
                     var binOp = SearchBinOp("==", HapetType.CurrentTypeContext.GetIntType(4, true), HapetType.CurrentTypeContext.GetIntType(4, true));
                     var resCmp = binOp(_builder, setJmpResult, LLVMValueRef.CreateConstInt(_context.Int32Type, (ulong)1), "cmpResult");
                     _builder.BuildCondBr(resCmp, bbException, bbBody); // if 0 - normal func, if 1 - call defer and rethrow
@@ -256,26 +256,13 @@ namespace HapetBackend.Llvm
                 }
                 else
                 {
-                    DeclSymbol helper;
-                    DeclSymbol methSymbol;
-                    LLVMValueRef methFunc;
-                    LLVMTypeRef methType;
-                    helper = _currentFunction.Scope.GetSymbolInNamespace("System", new AstIdExpr("StackTrace"));
-
                     // if not suppress defer/stacktrace
                     if (!doSuppressStackTrace)
                     {
                         // set up defer shite
-                        {
-                            // making cool name
-                            string funcName = _postPreparer.GetFuncNameAsOriginal(funcDecl); // TODO: also add namespace, class and params
-                            LLVMValueRef funcNameConst = HapetValueToLLVMValue(HapetType.CurrentTypeContext.StringTypeInstance, funcName);
-                            // push stacktrace
-                            methSymbol = (helper.Decl as AstClassDecl).SubScope.GetSymbol(new AstIdExpr("Push")) as DeclSymbol;
-                            methFunc = _valueMap[methSymbol];
-                            methType = _typeMap[methSymbol.Decl.Type.OutType];
-                            _builder.BuildCall2(methType, methFunc, new LLVMValueRef[] { funcNameConst });
-                        }
+                        // making cool name
+                        string funcName = _postPreparer.GetFuncNameAsOriginal(funcDecl); // TODO: also add namespace, class and params
+                        PushStackTrace(funcName);
                     }
 
                     // genereting inside stuff of the function
@@ -297,17 +284,9 @@ namespace HapetBackend.Llvm
                         _builder.PositionAtEnd(_lastFunctionDeferBasicBlock);
                         {
                             // pop stacktrace
-                            methSymbol = (helper.Decl as AstClassDecl).SubScope.GetSymbol(new AstIdExpr("Pop")) as DeclSymbol;
-                            methFunc = _valueMap[methSymbol];
-                            methType = _typeMap[methSymbol.Decl.Type.OutType];
-                            _builder.BuildCall2(methType, methFunc, new LLVMValueRef[] { });
-
+                            PopStackTrace();
                             // popping current jmpbuf 
-                            helper = _currentFunction.Scope.GetSymbolInNamespace("System.Runtime.InteropServices", new AstIdExpr("ExceptionHelper"));
-                            methSymbol = (helper.Decl as AstClassDecl).SubScope.GetSymbol(new AstIdExpr("Pop")) as DeclSymbol;
-                            methFunc = _valueMap[methSymbol];
-                            methType = _typeMap[methSymbol.Decl.Type.OutType];
-                            _builder.BuildCall2(methType, methFunc, new LLVMValueRef[] { });
+                            PopJmpBuf();
 
                             // go back 
                             var needGoBackLoadedAsPtr = _builder.BuildLoad2(HapetTypeToLLVMType(HapetType.CurrentTypeContext.PtrToVoidType), _lastFunctionDeferBasicBlockGoBack);

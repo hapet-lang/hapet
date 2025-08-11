@@ -4,6 +4,7 @@ using HapetFrontend.Ast.Expressions;
 using HapetFrontend.Scoping;
 using HapetFrontend.Types;
 using LLVMSharp.Interop;
+using System.Data.Common;
 
 namespace HapetBackend.Llvm
 {
@@ -117,10 +118,48 @@ namespace HapetBackend.Llvm
                 funcType = _typeMap[funcDecl.Decl.Type.OutType];
                 _builder.BuildCall2(funcType, funcValue, []);
 
+                // making global try-catch
+                // only try and catch here
+                var bbTry = _context.CreateBasicBlock($"try.block");
+                var bbCatch = _context.CreateBasicBlock($"catch.block");
+                {
+                    /// WARN: the same as in <see cref="GenerateTryCatchStmt"/>
+                    LLVMValueRef needGoBack = CreateLocalVariable(HapetType.CurrentTypeContext.PtrToVoidType, "needGoBack");
+                    var nullValue = LLVMValueRef.CreateConstPointerNull(HapetTypeToLLVMType(HapetType.CurrentTypeContext.PtrToVoidType));
+                    _builder.BuildStore(nullValue, needGoBack);
+                    _needGoBackVariables.Add(needGoBack);
+                    _indirectBlockBlocks.Add(new List<LLVMBasicBlockRef>());
+
+                    var jmpBuf = CreateJmpBuffer();
+                    PushJmpBuf(jmpBuf);
+                    var setJmpResult = CreateSetJmpCall(jmpBuf);
+
+                    // pushing "finally" block :))
+                    _finallyBlocks.Add(bbCatch);
+
+                    // compare to 1
+                    var binOp = SearchBinOp("==", HapetType.CurrentTypeContext.GetIntType(4, true), HapetType.CurrentTypeContext.GetIntType(4, true));
+                    var resCmp = binOp(_builder, setJmpResult, LLVMValueRef.CreateConstInt(_context.Int32Type, (ulong)1), "cmpResult");
+                    _builder.BuildCondBr(resCmp, bbCatch, bbTry); // if 0 - try, if 1 - catch
+
+                    LLVM.AppendExistingBasicBlock(lfunc, bbCatch);
+                    _builder.PositionAtEnd(bbCatch);
+                    // TODO: get exception and print stacktrace
+                    parentDecl = _compiler.MainFunction.Scope.GetSymbolInNamespace("System", new AstIdExpr("Console"));
+                    funcDecl = (parentDecl.Decl as AstClassDecl).SubScope.GetSymbol(new AstIdExpr("WriteLine")) as DeclSymbol;
+                    funcValue = _valueMap[funcDecl];
+                    funcType = _typeMap[funcDecl.Decl.Type.OutType];
+                    _builder.BuildCall2(funcType, funcValue, new LLVMValueRef[] { HapetValueToLLVMValue(HapetType.CurrentTypeContext.StringTypeInstance, "Exception...") });
+                    _builder.BuildRet(LLVMValueRef.CreateConstInt(returnType, 1));
+
+                    LLVM.AppendExistingBasicBlock(lfunc, bbTry);
+                    _builder.PositionAtEnd(bbTry);
+                }
+
                 // need to call stors caller
                 GenerateFuncCode(_compiler.StorsCallerFunction, null, true);
                 GenerateFuncCode(_compiler.StorsCallerFunction, null, false);
-                _builder.PositionAtEnd(main);
+                _builder.PositionAtEnd(bbTry);
                 var callerValue = _valueMap[_compiler.StorsCallerFunction.Symbol];
                 var callerType = _typeMap[_compiler.StorsCallerFunction.Type.OutType];
                 _builder.BuildCall2(callerType, callerValue, []);

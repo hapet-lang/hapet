@@ -217,12 +217,7 @@ namespace HapetBackend.Llvm
             // fourth - finally
             LLVM.AppendExistingBasicBlock(_lastFunctionValueRef, bbFinally);
             _builder.PositionAtEnd(bbFinally);
-            // popping current jmpbuf 
-            // WARN: hard cock
-            methSymbol = (helper.Decl as AstClassDecl).SubScope.GetSymbol(new AstIdExpr("Pop")) as DeclSymbol;
-            methFunc = _valueMap[methSymbol];
-            methType = _typeMap[methSymbol.Decl.Type.OutType];
-            _builder.BuildCall2(methType, methFunc, new LLVMValueRef[] { });
+            PopJmpBuf();
             // if user defined block exists - generate statements from it
             if (stmt.FinallyBlock != null)
             {
@@ -327,6 +322,38 @@ namespace HapetBackend.Llvm
                 setJmpResult = _builder.BuildCall2(methType, methFunc, new LLVMValueRef[] { jmpBuf });
             }
             return setJmpResult;
+        }
+
+        private void PopJmpBuf()
+        {
+            // popping current jmpbuf 
+            // WARN: hard cock
+            var helper = _currentFunction.Scope.GetSymbolInNamespace("System.Runtime.InteropServices", new AstIdExpr("ExceptionHelper"));
+            var methSymbol = (helper.Decl as AstClassDecl).SubScope.GetSymbol(new AstIdExpr("Pop")) as DeclSymbol;
+            var methFunc = _valueMap[methSymbol];
+            var methType = _typeMap[methSymbol.Decl.Type.OutType];
+            _builder.BuildCall2(methType, methFunc, new LLVMValueRef[] { });
+        }
+
+        private void PushStackTrace(string name)
+        {
+            LLVMValueRef funcNameConst = HapetValueToLLVMValue(HapetType.CurrentTypeContext.StringTypeInstance, name);
+            // push stacktrace
+            var helper = _currentFunction.Scope.GetSymbolInNamespace("System", new AstIdExpr("StackTrace"));
+            var methSymbol = (helper.Decl as AstClassDecl).SubScope.GetSymbol(new AstIdExpr("Push")) as DeclSymbol;
+            var methFunc = _valueMap[methSymbol];
+            var methType = _typeMap[methSymbol.Decl.Type.OutType];
+            _builder.BuildCall2(methType, methFunc, new LLVMValueRef[] { funcNameConst });
+        }
+
+        private void PopStackTrace()
+        {
+            // push stacktrace
+            var helper = _currentFunction.Scope.GetSymbolInNamespace("System", new AstIdExpr("StackTrace"));
+            var methSymbol = (helper.Decl as AstClassDecl).SubScope.GetSymbol(new AstIdExpr("Pop")) as DeclSymbol;
+            var methFunc = _valueMap[methSymbol];
+            var methType = _typeMap[methSymbol.Decl.Type.OutType];
+            _builder.BuildCall2(methType, methFunc, new LLVMValueRef[] { });
         }
     }
 }
