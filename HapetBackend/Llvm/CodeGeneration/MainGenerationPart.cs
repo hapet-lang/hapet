@@ -271,7 +271,7 @@ namespace HapetBackend.Llvm
                     if (!AstBlockExpr.IsBlockHasItsOwnBr(funcDecl.Body))
                     {
                         if (funcDecl.Returns.OutType is VoidType)
-                            GenerateReturnStmt(new AstReturnStmt(null)); // need to call the func because of defer
+                            GenerateReturnStmt(new AstReturnStmt(null) { Parent = funcDecl }); // need to call the func because of defer
                         else
                             _builder.BuildUnreachable(); /// it should be safe because of <see cref="PostPrepare.CheckThatThereIsEnoughReturnsInFunc(AstFuncDecl)"/>
                     }

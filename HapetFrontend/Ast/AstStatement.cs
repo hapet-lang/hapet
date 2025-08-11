@@ -84,6 +84,20 @@ namespace HapetFrontend.Ast
             SourceFile = stmt.SourceFile;
             Parent = stmt.Parent;
         }
+
+        public AstFuncDecl FindContainingFunction()
+        {
+            var currentParent = NormalParent;
+            while (currentParent != null)
+            {
+                if (currentParent is AstFuncDecl funcDecl)
+                {
+                    return funcDecl;
+                }
+                currentParent = currentParent.NormalParent;
+            }
+            return null;
+        }
         #endregion
     }
 }

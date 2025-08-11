@@ -1,6 +1,7 @@
 ﻿using HapetFrontend;
 using HapetFrontend.Ast.Declarations;
 using HapetFrontend.Ast.Expressions;
+using HapetFrontend.Ast.Statements;
 using HapetFrontend.Scoping;
 using HapetFrontend.Types;
 using LLVMSharp.Interop;
@@ -12,6 +13,10 @@ namespace HapetBackend.Llvm
     {
         private unsafe void GenerateMainFunction()
         {
+            AstFuncDecl pseudoMainFunc = new AstFuncDecl(null, null, null, new AstIdExpr("__main"))
+            {
+                Scope = _compiler.MainFunction.Scope,
+            };
             string mainFuncName = null;
             LLVMTypeRef returnType = _context.VoidType;
             LLVMTypeRef[] paramTypes = Array.Empty<LLVMTypeRef>();
@@ -67,6 +72,7 @@ namespace HapetBackend.Llvm
                 case TargetPlatform.Linux64:
                     break;
             }
+            _currentFunction = pseudoMainFunc;
 
             var entry = lfunc.AppendBasicBlockInContext(_context, "entry");
             var pars = lfunc.AppendBasicBlockInContext(_context, "params");
@@ -123,6 +129,9 @@ namespace HapetBackend.Llvm
                 var bbTry = _context.CreateBasicBlock($"try.block");
                 var bbCatch = _context.CreateBasicBlock($"catch.block");
                 {
+                    // add current one
+                    _tryCatchStatements.Add(new AstTryCatchStmt(null, null, null));
+
                     /// WARN: the same as in <see cref="GenerateTryCatchStmt"/>
                     LLVMValueRef needGoBack = CreateLocalVariable(HapetType.CurrentTypeContext.PtrToVoidType, "needGoBack");
                     var nullValue = LLVMValueRef.CreateConstPointerNull(HapetTypeToLLVMType(HapetType.CurrentTypeContext.PtrToVoidType));
@@ -159,6 +168,7 @@ namespace HapetBackend.Llvm
                 // need to call stors caller
                 GenerateFuncCode(_compiler.StorsCallerFunction, null, true);
                 GenerateFuncCode(_compiler.StorsCallerFunction, null, false);
+                _currentFunction = pseudoMainFunc;
                 _builder.PositionAtEnd(bbTry);
                 var callerValue = _valueMap[_compiler.StorsCallerFunction.Symbol];
                 var callerType = _typeMap[_compiler.StorsCallerFunction.Type.OutType];

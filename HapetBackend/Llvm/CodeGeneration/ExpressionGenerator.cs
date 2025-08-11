@@ -1546,16 +1546,18 @@ namespace HapetBackend.Llvm
             // need to generate finally block moves
             if (_needGoBackVariables.Count > 0)
             {
+                var contFunc = stmt.FindContainingFunction();
                 // go from last element
                 for (int i = _needGoBackVariables.Count - 1; i >= 0; --i)
                 {
                     // check if we need to call finallies or not
                     var nearestTry = _tryCatchStatements[i];
-                    if (_currentLoop.Scope.IsChildOf(nearestTry.TryBlock.Scope))
-                    {
-                        // break loop - it is nested _currentLoop, so no need to gen finally calls
+                    // if try-catch is not in the same function
+                    if (nearestTry.FindContainingFunction() != contFunc)
                         break;
-                    }
+                    // break loop - it is nested _currentLoop, so no need to gen finally calls
+                    if (_currentLoop.Scope.IsChildOf(nearestTry.TryBlock.Scope))
+                        break;
 
                     // make the block into which execution will be returned
                     var beforeBrContBlock = _context.CreateBasicBlock($"before.brcont");
@@ -1603,6 +1605,7 @@ namespace HapetBackend.Llvm
                 _builder.BuildStore(result, _lastFunctionReturnHandlerValueRef);
             }
 
+            var contFunc = returnStmt.FindContainingFunction();
             // next bbs handler
             LLVMBasicBlockRef beforeRetBlock;
             // need to generate finally block moves
@@ -1611,6 +1614,11 @@ namespace HapetBackend.Llvm
                 // go from last element
                 for (int i = _needGoBackVariables.Count - 1; i >= 0; --i)
                 {
+                    // check if we need to call finallies or not
+                    var nearestTry = _tryCatchStatements[i];
+                    // if try-catch is not in the same function
+                    if (nearestTry.FindContainingFunction() != contFunc)
+                        break;
                     // make the block into which execution will be returned
                     beforeRetBlock = _context.CreateBasicBlock($"before.return");
                     // set var that finally need to go back
@@ -1627,7 +1635,7 @@ namespace HapetBackend.Llvm
                 }
             }
             // if func has defer
-            if (_lastFunctionDeferBasicBlock != default)
+            if (_lastFunctionDeferBasicBlock != default && _currentFunction == contFunc)
             {
                 // call function defer
                 // make the block into which execution will be returned
