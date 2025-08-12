@@ -8,7 +8,7 @@ namespace HapetFrontend.Parsing
 {
     public partial class Parser
     {
-        private AstStatement ParseArrayExpr(ParserInInfo inInfo, ref ParserOutInfo outInfo, AstExpression type, TokenLocation beg)
+        private AstStatement ParseArrayExpr(ParserInInfo inInfo, ref ParserOutInfo outInfo, AstExpression type, TokenLocation beg, bool isUnsafeNew)
         {
             // by default it is null because the size could not be defined
             // when values are presented
@@ -63,7 +63,10 @@ namespace HapetFrontend.Parsing
                     // error here. because size was not defined and elements are also were not
                     ReportMessage(new Location(type.Location.Beginning, CurrentToken.Location.Ending), [], ErrorCode.Get(CTEN.ArraySizeNotSpecified));
                 }
-                return new AstArrayCreateExpr(type, sizeExprs, new List<AstExpression>(), new Location(beg, CurrentToken.Location.Ending));
+                return new AstArrayCreateExpr(type, sizeExprs, new List<AstExpression>(), new Location(beg, CurrentToken.Location.Ending))
+                {
+                    IsUnsafeNew = isUnsafeNew
+                };
             }
             else if (CheckToken(TokenType.OpenBrace))
             {
@@ -84,7 +87,10 @@ namespace HapetFrontend.Parsing
                 if (sizeExprs.Last() == null)
                     sizeExprs[sizeExprs.Count - 1] = new AstNumberExpr(NumberData.FromInt(elements.Count));
 
-                return new AstArrayCreateExpr(type, sizeExprs, elements, new Location(beg, CurrentToken.Location.Ending));
+                return new AstArrayCreateExpr(type, sizeExprs, elements, new Location(beg, CurrentToken.Location.Ending)) 
+                {
+                    IsUnsafeNew = isUnsafeNew
+                };
             }
 
             // error here like unexpected token

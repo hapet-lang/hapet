@@ -19,6 +19,12 @@ namespace HapetFrontend.Ast.Expressions
         /// </summary>
         public List<AstExpression> Elements { get; set; }
 
+        /// <summary>
+        /// The 'new' expr could be used with 'unsafe' kw so allocation will be
+        /// done using 'Marshal.Malloc' but not 'Gc.Malloc'
+        /// </summary>
+        public bool IsUnsafeNew { get; set; }
+
         public override string AAAName => nameof(AstArrayCreateExpr);
 
         public AstArrayCreateExpr(AstExpression type, List<AstExpression> sizeExprs, List<AstExpression> elements, ILocation location = null) : base(location)

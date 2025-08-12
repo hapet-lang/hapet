@@ -11,9 +11,18 @@ namespace HapetFrontend.Parsing
         private AstStatement ParseNewExpression(ParserInInfo inInfo, ref ParserOutInfo outInfo)
         {
             TokenLocation beg = null;
+            bool isUnsafeNew = false;
 
             beg ??= Consume(TokenType.KwNew, ErrMsg("keyword 'new'", "at beginning of type instancing expression")).Location;
             SkipNewlines();
+
+            // new expr could be unsafe
+            if (CheckToken(TokenType.KwUnsafe))
+            {
+                NextToken();
+                SkipNewlines();
+                isUnsafeNew = true;
+            }
 
             // do not allow array expressions after 'new' word!!! but allow pointers
             var saved = inInfo.AllowArrayExpression;
@@ -32,7 +41,7 @@ namespace HapetFrontend.Parsing
                     ReportMessage(type.Location, [], ErrorCode.Get(CTEN.TypeNameNotExpr));
                     return ParseEmptyExpression();
                 }
-                return ParseArrayExpr(inInfo, ref outInfo, expr, beg);
+                return ParseArrayExpr(inInfo, ref outInfo, expr, beg, isUnsafeNew);
             }
             else if (CheckToken(TokenType.OpenParen)) // probably class instance creation
             {
@@ -42,7 +51,7 @@ namespace HapetFrontend.Parsing
                     return ParseEmptyExpression();
                 }
                 var args = ParseArgumentList(inInfo, ref outInfo, out var _, out var end);
-                return new AstNewExpr(nestExpr, args, new Location(beg, end));
+                return new AstNewExpr(nestExpr, args, new Location(beg, end)) { IsUnsafeNew = isUnsafeNew };
             }
 
             // error here that unexpected token .. after typeName

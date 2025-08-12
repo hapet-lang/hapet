@@ -20,6 +20,7 @@ namespace HapetBackend.Llvm
             LLVMValueRef currentArraySizeValueRef = GenerateExpressionCode(currentSizeExpr);
             LLVMTypeRef arrayTypeRef = HapetTypeToLLVMType(arrType);
 
+            // TODO: check for unsafe
             // allocating mem for the array buf
             LLVMValueRef allocated;
             if (expr.SizeExprs.Count > 1)
