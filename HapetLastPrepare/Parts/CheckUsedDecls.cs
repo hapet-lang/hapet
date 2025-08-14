@@ -335,6 +335,11 @@ namespace HapetLastPrepare
                 CheckUsedDeclsArgumentExpr(a);
             }
             CheckUsedDeclsDecl(expr.ConstructorSymbol.Decl);
+
+            // if ctor is used then dtor is also has to be used
+            var parent = expr.ConstructorSymbol.Decl.ContainingParent;
+            var dtor = parent.GetDeclarations().FirstOrDefault(x => x is AstFuncDecl fnc && fnc.ClassFunctionType == ClassFunctionType.Dtor);
+            CheckUsedDeclsDecl(dtor);
         }
 
         private void CheckUsedDeclsArgumentExpr(AstArgumentExpr expr)

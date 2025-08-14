@@ -149,9 +149,7 @@ namespace HapetPostPrepare
                     PostPrepareGenerateClassInitializer(decl);
                     // passing all the existing ctors
                     PostPrepareGenerateClassConstructor(decl, allFuncs.Where(x => x.ClassFunctionType == ClassFunctionType.Ctor).ToList());
-                    // do not generate dtor for structs?
-                    if (decl is not AstStructDecl)
-                        PostPrepareGenerateClassDestructor(decl, allFuncs.Where(x => x.ClassFunctionType == ClassFunctionType.Dtor).ToList());
+                    PostPrepareGenerateClassDestructor(decl, allFuncs.Where(x => x.ClassFunctionType == ClassFunctionType.Dtor).ToList());
                 }
 
                 // 
@@ -295,11 +293,6 @@ namespace HapetPostPrepare
             {
                 var dtorFunc = dtors[0];
                 dtorFunc.Name = dtorFunc.Name.GetCopy($"{dtorFunc.Name.Name}_dtor");
-
-                // TODO: do i need to insert smth here? probably need to extern 'free' and call it at the end
-                //ct.Body.Statements.Insert(0, new AstCallExpr(
-                //	new AstNestedExpr(new AstIdExpr("this"), null),
-                //	new AstIdExpr($"{classDecl.Name.Name}_ini")));
             }
             else
             {
