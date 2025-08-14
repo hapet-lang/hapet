@@ -1,24 +1,51 @@
 // Licensed to the hapet-lang under one or more agreements.
 // The hapet-lang licenses this file to you under the MIT license.
 
+using System.Runtime;
 using System.Runtime.InteropServices;
 
 public static class Gc
 {
-    private GcList<ObjectHeader> _mallocList = unsafe new GcList<ObjectHeader>();
+    private static void* _mainRoot = null;
+    public static void SetMainRoot(void* mainRoot)
+    {
+        _mainRoot = mainRoot;
+    }
+
+    private static GcList<ObjectHeader> _mallocList = new unsafe GcList<ObjectHeader>();
     public static void* Malloc(int size)
     {
-        return null;
+        void* mem = Marshal.Malloc(size);
+        ObjectHeader objectHeader = new unsafe ObjectHeader();
+        objectHeader.IsMarked = false;
+        objectHeader.Size = size;
+        _mallocList.Add(objectHeader);
+        return mem;
+    }
+    public static void* NewClassInstance(int size, TypeInfoUnsafe* typeInfo)
+    {
+        // getting dtor delegate
+        var del = (*typeInfo).DtorDelegate;
+        // mallocing
+        var mem = Malloc(size);
+        // getting the last one that we allocated and 
+        // set that it is a class instance
+        _mallocList[_mallocList.Count - 1].IsClassInstance = true;
+        _mallocList[_mallocList.Count - 1].Dtor = del;
+        return mem;
     }
 }
 
+public delegate void DtorDelegate(void* obj);
 private struct ObjectHeader
 {
     internal bool IsMarked;
     internal int Size;
+    internal void* Obj;
+    internal bool IsClassInstance;
+    internal DtorDelegate Dtor;
 }
 
-[DeclarationUsed]
 [SuppressStackTrace] // applied to _ini
 private class GcList<T>
 {
