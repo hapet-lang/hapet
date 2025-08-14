@@ -10,6 +10,7 @@ public static class Console
     [DllImport("", "puts")]
     public static extern inline int Puts(byte* data);
 
+    [DeclarationUsed]
     public static void WriteLine(string text)
     {
         Puts(UTF8Encoding.GetBytesUnsafe(text));
