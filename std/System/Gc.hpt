@@ -30,8 +30,10 @@ public static class Gc
         var mem = Malloc(size);
         // getting the last one that we allocated and 
         // set that it is a class instance
-        _mallocList[_mallocList.Count - 1].IsClassInstance = true;
-        _mallocList[_mallocList.Count - 1].Dtor = del;
+        var tmpOh = _mallocList[_mallocList.Count - 1];
+        tmpOh.IsClassInstance = true;
+        tmpOh.Dtor = del;
+        _mallocList[_mallocList.Count - 1] = tmpOh;
         return mem;
     }
 }
