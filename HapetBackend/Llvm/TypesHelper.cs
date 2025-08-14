@@ -783,6 +783,12 @@ namespace HapetBackend.Llvm
 
         private LLVMTypeRef GetDelegateAnonTypeInternal(bool isStatic, string cringeString, List<AstParamDecl> parameters, AstExpression returns)
         {
+            return GetDelegateAnonTypeInternal(isStatic, cringeString, 
+                parameters.Select(rt => HapetTypeToLLVMType(rt.Type.OutType)).ToList(), HapetTypeToLLVMType(returns.OutType));
+        }
+
+        private LLVMTypeRef GetDelegateAnonTypeInternal(bool isStatic, string cringeString, List<LLVMTypeRef> parameters, LLVMTypeRef returnType)
+        {
             LLVMTypeRef delegateIrType;
             if (_delegateAnonTypes.TryGetValue(cringeString, out LLVMTypeRef irType))
             {
@@ -790,20 +796,19 @@ namespace HapetBackend.Llvm
             }
             else
             {
-                List<LLVMTypeRef> paramTypes;
+                IEnumerable<LLVMTypeRef> paramTypes;
                 // creating anon delegate type
                 if (isStatic)
                 {
                     // the func is static...
-                    paramTypes = parameters.Select(rt => HapetTypeToLLVMType(rt.Type.OutType)).ToList();
+                    paramTypes = parameters;
                 }
                 else
                 {
                     // the func is non-static...
                     // skip the first param with class object ptr
-                    paramTypes = parameters.Skip(1).Select(rt => HapetTypeToLLVMType(rt.Type.OutType)).ToList();
+                    paramTypes = parameters.Skip(1);
                 }
-                var returnType = HapetTypeToLLVMType(returns.OutType);
                 var funcType = LLVMTypeRef.CreateFunction(returnType, paramTypes.ToArray(), false);
 
                 // fields of delegate struct
