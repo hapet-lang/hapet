@@ -360,6 +360,7 @@ namespace HapetLastPrepare
                         var fncCall = new AstCallExpr(target.LeftPart, propaName.GetCopy($"set_{propaName.Name}"), new List<AstArgumentExpr>() { fncVal });
                         fncCall.SetDataFromStmt(target);
                         fncCall.FuncName.OutType = outInfo.Property.SetFunction.Type.OutType;
+                        fncCall.FuncName.FindSymbol = outInfo.Property.SetFunction.Symbol;
                         UpdateCallWithFunc(fncCall, outInfo.Property.SetFunction);
 
                         repls.Add(asgn, fncCall);
@@ -380,6 +381,7 @@ namespace HapetLastPrepare
                         var fncCall = new AstCallExpr(outInfo.IndexedObject, fncName, new List<AstArgumentExpr>() { fncArg, fncVal });
                         fncCall.SetDataFromStmt(target);
                         fncCall.FuncName.OutType = outInfo.Property.SetFunction.Type.OutType;
+                        fncCall.FuncName.FindSymbol = outInfo.Property.SetFunction.Symbol;
                         UpdateCallWithFunc(fncCall, outInfo.Property.SetFunction);
 
                         repls.Add(asgn, fncCall);
@@ -491,6 +493,7 @@ namespace HapetLastPrepare
                     var fncCall = new AstCallExpr(outInfo.IndexedObject, fncName, new List<AstArgumentExpr>() { fncArg });
                     fncCall.SetDataFromStmt(expr);
                     fncCall.FuncName.OutType = outInfo.Property.GetFunction.Type.OutType;
+                    fncCall.FuncName.FindSymbol = outInfo.Property.GetFunction.Symbol;
                     UpdateCallWithFunc(fncCall, outInfo.Property.GetFunction);
 
                     expr.LeftPart = null;
@@ -726,6 +729,7 @@ namespace HapetLastPrepare
                     var fncCall = new AstCallExpr(expr.LeftPart, propaName.GetCopy($"get_{propaName.Name}"), null);
                     fncCall.SetDataFromStmt(expr);
                     fncCall.FuncName.OutType = outInfoInside.Property.GetFunction.Type.OutType;
+                    fncCall.FuncName.FindSymbol = outInfoInside.Property.GetFunction.Symbol;
                     UpdateCallWithFunc(fncCall, outInfoInside.Property.GetFunction);
 
                     expr.LeftPart = null;

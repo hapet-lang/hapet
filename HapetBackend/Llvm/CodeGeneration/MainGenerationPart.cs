@@ -140,14 +140,19 @@ namespace HapetBackend.Llvm
                 // special case for inlined extern functions - just skip body gen for them
                 if (funcDecl.SpecialKeys.Contains(TokenType.KwInline) && funcDecl.SpecialKeys.Contains(TokenType.KwExtern))
                     return;
-
                 // skip imported funcs that are not generics
                 if (funcDecl.IsImported && !allowFunctionBodyToBeGenerated)
                     return;
-
                 // skip interface funcs
                 if (funcDecl.ContainingParent is AstClassDecl clsD && clsD.IsInterface)
                     return;
+                // skip funcs that are used only for declaration
+                if (funcDecl.IsDeclarationUsedOnlyDeclare)
+                {
+                    _builder.PositionAtEnd(_valueMap[funcDecl.Symbol].AppendBasicBlockInContext(_context, "no.way"));
+                    _builder.BuildUnreachable();
+                    return;
+                }
 
                 // getting the func
                 LLVMValueRef lfunc = _valueMap[funcDecl.Symbol];

@@ -22,7 +22,6 @@ namespace HapetLastPrepare
             // returned in the caller shite
 
             HandleLambdas();
-            CheckUsedDecls();
 
             CreateRequired();
             if (_compiler.MessageHandler.HasErrors)
@@ -31,6 +30,8 @@ namespace HapetLastPrepare
             ReplaceAllProperties();
             if (_compiler.MessageHandler.HasErrors)
                 return 0;
+
+            CheckUsedDecls();
 
             ReplaceAllClasses();
             if (_compiler.MessageHandler.HasErrors)

@@ -36,6 +36,9 @@ namespace HapetLastPrepare
 
         private void CheckUsedDeclsDecl(AstDeclaration decl)
         {
+            // need to reset it so there won't be problems at codegen
+            decl.IsDeclarationUsedOnlyDeclare = false;
+
             if (decl.IsDeclarationUsed)
                 return;
             decl.IsDeclarationUsed = true;
@@ -128,8 +131,7 @@ namespace HapetLastPrepare
                         d.SpecialKeys.Contains(TokenType.KwAbstract) ||
                         d.SpecialKeys.Contains(TokenType.KwOverride))
                     {
-                        CheckUsedDeclsDecl(d);
-                        //d.IsDeclarationUsed = true;
+                        d.IsDeclarationUsedOnlyDeclare = true;
                     }
                 }
             }

@@ -46,7 +46,7 @@ namespace HapetBackend.Llvm
         {
             // is decl used or
             // decl is propa field/func and propa is used
-            bool isUsed = decl.IsDeclarationUsed ||
+            bool isUsed = decl.IsDeclarationUsed || decl.IsDeclarationUsedOnlyDeclare ||
                           _compiler.CurrentProjectSettings.TargetFormat == HapetFrontend.TargetFormat.Library; // all used for library
 
             var attr = decl.Attributes.FirstOrDefault(x => (x.AttributeName.OutType as ClassType).Declaration.Name.Name == "System.DeclarationUsedAttribute");

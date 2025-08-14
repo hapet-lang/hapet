@@ -23,9 +23,6 @@ namespace HapetLastPrepare
                 _postPreparer.PostPrepareDeclScoping(d);
                 _postPreparer.PostPrepareStatementUpToCurrentStep(d);
 
-                if (propDecl.IsDeclarationUsed)
-                    CheckUsedDeclsDecl(d);
-
                 // we need to add the funcs to arr
                 if ((propDecl.SpecialKeys.ContainsAny(TokenType.KwAbstract, TokenType.KwVirtual, TokenType.KwOverride) ||
                     propDecl.ContainingParent.GetAllVirtualProps().Contains(propDecl)) &&

@@ -77,6 +77,10 @@ namespace HapetFrontend.Ast
         /// 'true' if the decl is used in the assembly (codegen only for imported)
         /// </summary>
         public bool IsDeclarationUsed { get; set; }
+        /// <summary>
+        /// 'true' if the decl is used in the assembly BUT without body (only declaration) (codegen only for imported)
+        /// </summary>
+        public bool IsDeclarationUsedOnlyDeclare { get; set; }
 
         /// <summary>
         /// Getting symbol of itself
