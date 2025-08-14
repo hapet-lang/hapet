@@ -180,11 +180,13 @@ namespace HapetPostPrepare
                                 }
                                 else
                                 {
-                                    SpecialKeysHelper.AddSpecialKeyToDecl(currF, Lexer.CreateToken(TokenType.KwOverride, currF.Beginning), null, null);
-
                                     // add it to the new dictionary
                                     currentClassMethods.Remove(currF);
                                     allVirtualFunctions.Add(currF);
+
+                                    // add to it override special key
+                                    SpecialKeysHelper.AddSpecialKeyToDecl(currF, Lexer.CreateToken(TokenType.KwOverride, currF.Location.Beginning),
+                                        _compiler.MessageHandler, _currentSourceFile, false);
                                 }
                             }
                         }
@@ -433,6 +435,10 @@ namespace HapetPostPrepare
                                     // add it to the new dictionary
                                     currentFieldDecls.Remove(currF);
                                     allFieldDecls.Add(currF);
+
+                                    // add to it override special key
+                                    SpecialKeysHelper.AddSpecialKeyToDecl(currF, Lexer.CreateToken(TokenType.KwOverride, currF.Location.Beginning),
+                                        _compiler.MessageHandler, _currentSourceFile, false);
                                 }
                             }
                         }
@@ -584,6 +590,10 @@ namespace HapetPostPrepare
         // to check all virtual/abstract props including inherited
         private List<AstPropertyDecl> GetDeclarationProps__(AstDeclaration decl)
         {
+            if (decl.Name.Name.Contains("List"))
+            {
+
+            }
             // all virtual/abstract props
             List<AstPropertyDecl> allPropDecls = new List<AstPropertyDecl>();
             List<AstNestedExpr> inheritedFrom;
@@ -681,6 +691,10 @@ namespace HapetPostPrepare
                                     // add it to the new dictionary
                                     currentPropDecls.Remove(currF);
                                     allPropDecls.Add(currF);
+
+                                    // add to it override special key
+                                    SpecialKeysHelper.AddSpecialKeyToDecl(currF, Lexer.CreateToken(TokenType.KwOverride, currF.Location.Beginning),
+                                        _compiler.MessageHandler, _currentSourceFile, false);
                                 }
                             }
                         }

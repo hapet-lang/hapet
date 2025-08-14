@@ -23,19 +23,9 @@ namespace HapetBackend.Llvm
                 func.ClassFunctionType == ClassFunctionType.StaticCtor)
                 return true;
 
-            // skip generation of imported-not-used functions
-            if (func.IsImported && !GetNormalDeclIsUsed(func) &&
-                !func.SpecialKeys.Contains(TokenType.KwVirtual) &&
-                !func.SpecialKeys.Contains(TokenType.KwAbstract) &&
-                !func.SpecialKeys.Contains(TokenType.KwOverride))
-                return true;
-
-            // if the containing type is used - then vtable and typeinfo would be generated - so need to all virtual funcs
-            // except for imported shite - their vtable and typeinfo are imported
-            if (func.ContainingParent != null && GetNormalDeclIsUsed(func.ContainingParent) && (
-                func.SpecialKeys.Contains(TokenType.KwVirtual) ||
-                func.SpecialKeys.Contains(TokenType.KwAbstract) ||
-                func.SpecialKeys.Contains(TokenType.KwOverride)) && !func.IsImported)
+            // do not skip dtors of used classes/structs
+            if (func.ContainingParent != null && GetNormalDeclIsUsed(func.ContainingParent) &&
+                func.ClassFunctionType == ClassFunctionType.Dtor)
                 return false;
 
             if (!GetNormalDeclIsUsed(func))
@@ -46,10 +36,6 @@ namespace HapetBackend.Llvm
 
         private bool IsTypeShouldBeSkipped(AstDeclaration decl)
         {
-            // special case for required types
-            if (decl.Type.OutType == HapetType.CurrentTypeContext.GetArrayType(HapetType.CurrentTypeContext.ObjectTypeInstance))
-                return false;
-
             // skip generation of imported-not-used decls
             if (!GetNormalDeclIsUsed(decl))
                 return true;
@@ -61,9 +47,7 @@ namespace HapetBackend.Llvm
             // is decl used or
             // decl is propa field/func and propa is used
             bool isUsed = decl.IsDeclarationUsed ||
-                          _compiler.CurrentProjectSettings.TargetFormat == HapetFrontend.TargetFormat.Library || // all used for library
-                          (decl is AstVarDecl vd1 && vd1.IsPropertyField && vd1.NormalParent is AstDeclaration pd1 && pd1.IsDeclarationUsed) ||
-                          (decl is AstFuncDecl fd1 && fd1.IsPropertyFunction && fd1.NormalParent is AstDeclaration pd2 && pd2.IsDeclarationUsed);
+                          _compiler.CurrentProjectSettings.TargetFormat == HapetFrontend.TargetFormat.Library; // all used for library
 
             var attr = decl.Attributes.FirstOrDefault(x => (x.AttributeName.OutType as ClassType).Declaration.Name.Name == "System.DeclarationUsedAttribute");
             isUsed = isUsed || (attr != null);

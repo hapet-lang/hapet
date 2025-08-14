@@ -6,6 +6,9 @@ using HapetFrontend.Errors;
 using HapetFrontend.Scoping;
 using HapetFrontend.Types;
 using HapetFrontend.Enums;
+using HapetFrontend.Parsing;
+using System;
+using HapetFrontend.Extensions;
 
 namespace HapetLastPrepare
 {
@@ -93,6 +96,8 @@ namespace HapetLastPrepare
                     CheckUsedDeclsDecl(d);
                 }
             }
+
+            CheckVirtuals(decl);
         }
 
         public void CheckUsedDeclsStruct(AstStructDecl decl)
@@ -105,6 +110,27 @@ namespace HapetLastPrepare
                 foreach (var d in (i.OutType as ClassType).Declaration.Declarations)
                 {
                     CheckUsedDeclsDecl(d);
+                }
+            }
+
+            CheckVirtuals(decl);
+        }
+
+        private void CheckVirtuals(AstDeclaration decl)
+        {
+            // we need to set all its virtual funcs to used to be able 
+            // to generate vtables
+            if (!decl.IsImported || (decl.IsImported && (decl.IsImplOfGeneric || decl.IsNestedDecl && decl.ParentDecl.IsImplOfGeneric)))
+            {
+                foreach (var d in decl.GetDeclarations())
+                {
+                    if (d.SpecialKeys.Contains(TokenType.KwVirtual) ||
+                        d.SpecialKeys.Contains(TokenType.KwAbstract) ||
+                        d.SpecialKeys.Contains(TokenType.KwOverride))
+                    {
+                        CheckUsedDeclsDecl(d);
+                        //d.IsDeclarationUsed = true;
+                    }
                 }
             }
         }

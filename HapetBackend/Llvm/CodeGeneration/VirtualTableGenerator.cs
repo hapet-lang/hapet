@@ -16,7 +16,7 @@ namespace HapetBackend.Llvm
         private readonly Dictionary<HapetType, LLVMValueRef> _virtualTableDictionary = new Dictionary<HapetType, LLVMValueRef>();
 
         #region Type info 
-        private unsafe LLVMValueRef GenerateVirtualTableConst(HapetType type)
+        private unsafe LLVMValueRef GenerateVirtualTableConst(HapetType type, bool initialize = false)
         {
             if (_virtualTableDictionary.TryGetValue(type, out LLVMValueRef value))
                 return value;
@@ -49,7 +49,7 @@ namespace HapetBackend.Llvm
             var globConst = _module.AddGlobal(virtualTableType, name);
             globConst.Linkage = LLVMLinkage.LLVMExternalLinkage;
 
-            if (decl.IsImported)
+            if (decl.IsImported && !decl.IsImplOfGeneric && !(decl.IsNestedDecl && decl.ParentDecl.IsImplOfGeneric))
             {
                 globConst.DLLStorageClass = LLVMDLLStorageClass.LLVMDLLImportStorageClass;
             }
@@ -57,7 +57,11 @@ namespace HapetBackend.Llvm
             {
                 globConst.DLLStorageClass = LLVMDLLStorageClass.LLVMDLLExportStorageClass;
                 globConst.Initializer = LLVMValueRef.CreateConstNull(virtualTableType);
-                _vTablesToInit.Add((type, typeNameString, parent));
+
+                if (!initialize)
+                    _vTablesToInit.Add((type, typeNameString, parent));
+                else
+                    GenerateInitializerForVTable(type, typeNameString, parent);
             }
             _virtualTableDictionary.Add(type, globConst);
 
@@ -104,23 +108,7 @@ namespace HapetBackend.Llvm
             // make all inites here
             foreach (var tp in _vTablesToInit)
             {
-                var virtualTableType = GetVirtualTableType();
-                var globConst = _virtualTableDictionary[tp.type];
-                var parent = tp.parent;
-
-                // parent param
-                var ptrT = LLVMTypeRef.CreatePointer(virtualTableType, 0);
-                var nullPtr = LLVMValueRef.CreateConstPointerNull(ptrT);
-                LLVMValueRef parentRef = parent == null ? nullPtr : GenerateVirtualTableConst(parent);
-                // virtual methods
-                var virtualMethods = GetVtableArray(tp.type, out int virtualMethodsCount);
-                LLVMValueRef virtualMethodsCountRef = LLVMValueRef.CreateConstInt(_context.Int32Type, (ulong)virtualMethodsCount);
-                // interfaces
-                var (interfaces, interfaceOffsets) = GetVtableInterfacesArray(tp.type, out int interfacesCount);
-                LLVMValueRef interfacesCountRef = LLVMValueRef.CreateConstInt(_context.Int8Type, (ulong)interfacesCount);
-
-                _builder.BuildStore(LLVMValueRef.CreateConstNamedStruct(virtualTableType, 
-                    new LLVMValueRef[] { parentRef, virtualMethods, virtualMethodsCountRef, interfaces, interfaceOffsets, interfacesCountRef }), globConst);
+                GenerateInitializerForVTable(tp.type, tp.typeName, tp.parent);
             }
             _builder.BuildBr(end);
 
@@ -128,6 +116,26 @@ namespace HapetBackend.Llvm
             _builder.BuildRetVoid();
 
             return (ltype, lfunc);
+        }
+
+        public void GenerateInitializerForVTable(HapetType type, string typeNameString, ClassType parent)
+        {
+            var virtualTableType = GetVirtualTableType();
+            var globConst = _virtualTableDictionary[type];
+
+            // parent param
+            var ptrT = LLVMTypeRef.CreatePointer(virtualTableType, 0);
+            var nullPtr = LLVMValueRef.CreateConstPointerNull(ptrT);
+            LLVMValueRef parentRef = parent == null ? nullPtr : GenerateVirtualTableConst(parent, true);
+            // virtual methods
+            var virtualMethods = GetVtableArray(type, out int virtualMethodsCount);
+            LLVMValueRef virtualMethodsCountRef = LLVMValueRef.CreateConstInt(_context.Int32Type, (ulong)virtualMethodsCount);
+            // interfaces
+            var (interfaces, interfaceOffsets) = GetVtableInterfacesArray(type, out int interfacesCount);
+            LLVMValueRef interfacesCountRef = LLVMValueRef.CreateConstInt(_context.Int8Type, (ulong)interfacesCount);
+
+            _builder.BuildStore(LLVMValueRef.CreateConstNamedStruct(virtualTableType,
+                new LLVMValueRef[] { parentRef, virtualMethods, virtualMethodsCountRef, interfaces, interfaceOffsets, interfacesCountRef }), globConst);
         }
 
         private LLVMTypeRef _virtualTableType;
@@ -225,14 +233,15 @@ namespace HapetBackend.Llvm
                 return (default, default);
             }
 
-            LLVMValueRef interfacesArray = _module.AddGlobal(LLVMTypeRef.CreateArray(arrayElementType, (uint)(interfaces.Count)), $"VirtualTableInterfacesArray::{typeNameString}");
+            LLVMTypeRef interfacesArrayType = LLVMTypeRef.CreateArray(arrayElementType, (uint)(interfaces.Count));
+            LLVMValueRef interfacesArray = _module.AddGlobal(interfacesArrayType, $"VirtualTableInterfacesArray::{typeNameString}");
             LLVMValueRef interfaceOffsetsArray = _module.AddGlobal(LLVMTypeRef.CreateArray(LLVMTypeRef.CreatePointer(_context.Int32Type, 0), (uint)(interfaces.Count)), $"VirtualTableInterfaceOffsetsArray::{typeNameString}");
 
             List<LLVMValueRef> intPtrs = new List<LLVMValueRef>(interfaces.Count);
             List<LLVMValueRef> offsetArrays = new List<LLVMValueRef>(interfaces.Count);
             foreach (var intf in interfaces)
             {
-                intPtrs.Add(GenerateVirtualTableConst(intf.Item1));
+                intPtrs.Add(GenerateVirtualTableConst(intf.Item1, true));
 
                 LLVMValueRef interfaceOffsetsCurr = _module.AddGlobal(LLVMTypeRef.CreateArray(_context.Int32Type, (uint)(intf.Item2.Length)), $"VirtualTableInterfaceOffsets{offsetArrays.Count}::{typeNameString}");
 
@@ -241,8 +250,8 @@ namespace HapetBackend.Llvm
                 offsetArrays.Add(interfaceOffsetsCurr);
             }
 
-            interfacesArray.Initializer = LLVMValueRef.CreateConstArray(arrayElementType, intPtrs.ToArray());
-            interfacesArray.IsGlobalConstant = true;
+            interfacesArray.Initializer = LLVMValueRef.CreateConstNull(interfacesArrayType);
+            _builder.BuildStore(LLVMValueRef.CreateConstArray(arrayElementType, intPtrs.ToArray()), interfacesArray);
 
             interfaceOffsetsArray.Initializer = LLVMValueRef.CreateConstArray(LLVMTypeRef.CreatePointer(_context.Int32Type, 0), offsetArrays.ToArray());
             interfaceOffsetsArray.IsGlobalConstant = true;
