@@ -462,7 +462,12 @@ namespace HapetLastPrepare
             var tmpInInfo = HapetPostPrepare.Entities.InInfo.Default;
             var tmpOutInfo = HapetPostPrepare.Entities.OutInfo.Default;
 
+            // set propertySet to false because if we are in LeftPart prep - then if it is property - has to be 'get_prop'
+            var savedPropSet = outInfo.IsPropertySet;
+            outInfo.IsPropertySet = false;
             LPRAPExpr(expr.LeftPart, ref outInfo);
+            outInfo.IsPropertySet = savedPropSet;
+
             LPRAPExpr(expr.RightPart, ref outInfo);
             if (expr.LeftPart == null)
             {
