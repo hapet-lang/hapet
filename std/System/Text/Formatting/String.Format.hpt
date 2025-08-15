@@ -140,8 +140,8 @@ public unsafe sealed partial class StringBuffer
         if (destinationIndex + count > destination.Length || destinationIndex < 0)
             throw new ArgumentOutOfRangeException(nameof(destinationIndex));
 
-        fixed (char* destPtr = &destination[destinationIndex])
-            CopyTo(destPtr, sourceIndex, count);
+        char* destPtr = destination.Buffer + destinationIndex;
+        CopyTo(destPtr, sourceIndex, count);
     }
 
     /// <summary>
@@ -157,11 +157,12 @@ public unsafe sealed partial class StringBuffer
         if (sourceIndex + count > currentCount || sourceIndex < 0)
             throw new ArgumentOutOfRangeException(nameof(sourceIndex));
 
-        fixed (char* s = buffer)
+        var src = buffer.Buffer + sourceIndex;
+        for (int i = 0; i < count; i++)
         {
-            var src = s + sourceIndex;
-            for (int i = 0; i < count; i++)
-                *dest++ = *src++;
+            *dest = *src;
+            dest++;
+            src++;
         }
     }
 
@@ -182,8 +183,7 @@ public unsafe sealed partial class StringBuffer
         if (encoding == null)
             throw new ArgumentNullException(nameof(encoding));
 
-        fixed (char* s = buffer)
-            return encoding.GetBytes(s, count, dest, count);
+        return encoding.GetBytes(buffer.Buffer, count, dest, count);
     }
 
     /// <summary>
@@ -215,13 +215,14 @@ public unsafe sealed partial class StringBuffer
             throw new ArgumentOutOfRangeException(nameof(count));
 
         CheckCapacity(count);
-        fixed (char* b = &buffer[currentCount])
+        char* b = buffer.Buffer + currentCount;
+        var ptr = b;
+        for (int i = 0; i < count; i++)
         {
-            var ptr = b;
-            for (int i = 0; i < count; i++)
-                *ptr++ = c;
-            currentCount += count;
+            *ptr = c;
+            ptr++;
         }
+        currentCount += count;
     }
 
     /// <summary>
@@ -249,8 +250,7 @@ public unsafe sealed partial class StringBuffer
         if (startIndex < 0 || startIndex + count > value.Length)
             throw new ArgumentOutOfRangeException(nameof(startIndex));
 
-        fixed (char* s = value)
-            Append(s + startIndex, count);
+        Append(value.Buffer + startIndex, count);
     }
 
     /// <summary>
@@ -266,8 +266,8 @@ public unsafe sealed partial class StringBuffer
         if (startIndex < 0 || startIndex + count > values.Length)
             throw new ArgumentOutOfRangeException(nameof(startIndex));
 
-        fixed (char* s = &values[startIndex])
-            Append(s, count);
+        char* s = values.Buffer + startIndex;
+        Append(s, count);
     }
 
     /// <summary>
@@ -278,13 +278,15 @@ public unsafe sealed partial class StringBuffer
     public void Append(char* str, int count)
     {
         CheckCapacity(count);
-        fixed (char* b = &buffer[currentCount])
+        char* b = buffer.Buffer + currentCount;
+        var dest = b;
+        for (int i = 0; i < count; i++)
         {
-            var dest = b;
-            for (int i = 0; i < count; i++)
-                *dest++ = *str++;
-            currentCount += count;
+            *dest = *str;
+            dest++;
+            str++;
         }
+        currentCount += count;
     }
 
     /// <summary>
@@ -423,20 +425,18 @@ public unsafe sealed partial class StringBuffer
         if (format == null)
             throw new ArgumentNullException(nameof(format));
 
-        fixed (char* formatPtr = format)
+        char* formatPtr = format.Buffer;
+        var curr = formatPtr;
+        var end = curr + format.Length;
+        var segmentsLeft = false;
+        var prevArgIndex = 0;
+        do
         {
-            var curr = formatPtr;
-            var end = curr + format.Length;
-            var segmentsLeft = false;
-            var prevArgIndex = 0;
-            do
-            {
-                CheckCapacity((int)(end - curr));
-                fixed (char* bufferPtr = &buffer[currentCount])
-                    segmentsLeft = AppendSegment(ref curr, end, bufferPtr, ref prevArgIndex, ref args);
-            }
-            while (segmentsLeft);
+            CheckCapacity((int)(end - curr));
+            char* bufferPtr = buffer + currentCount;
+            segmentsLeft = AppendSegment(ref curr, end, bufferPtr, ref prevArgIndex, ref args);
         }
+        while (segmentsLeft);
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -514,7 +514,7 @@ public unsafe sealed partial class StringBuffer
         curr++;
         if (c == ':')
         {
-            var specifierBuffer = stackalloc char[MaxSpecifierSize];
+            var specifierBuffer = (new char[MaxSpecifierSize]).Buffer;
             var specifierEnd = specifierBuffer + MaxSpecifierSize;
             var specifierPtr = specifierBuffer;
 
@@ -549,7 +549,8 @@ public unsafe sealed partial class StringBuffer
 
                 if (specifierPtr == specifierEnd)
                     ThrowError();
-                *specifierPtr++ = c;
+                *specifierPtr = c;
+                specifierPtr++;
             }
         }
         else
