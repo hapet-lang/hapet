@@ -19,6 +19,7 @@ public static class Gc
         ObjectHeader objectHeader = new unsafe ObjectHeader();
         objectHeader.IsMarked = false;
         objectHeader.Size = size;
+        objectHeader.Obj = mem;
         _mallocList.Add(objectHeader);
         return mem;
     }
@@ -35,6 +36,51 @@ public static class Gc
         tmpOh.Dtor = del;
         _mallocList[_mallocList.Count - 1] = tmpOh;
         return mem;
+    }
+
+    public static void Collect()
+    {
+        Mark();
+    }
+
+    private static void Mark()
+    {
+        // var to get current stack ptr
+        uintptr curr = 0;
+        uintptr currRef = (uintptr)(&curr);
+
+        // for linux/win x64/x86 stack goes down
+        uintptr step = (uintptr)sizeof(uintptr);
+        for (uintptr i = currRef; i < (uintptr)_mainRoot; i += step)
+        {
+            MarkPointer((void*)i);
+        }
+    }
+
+    private static void MarkPointer(void* ptr)
+    {
+        // derefing the ptr and gettings its ptrsize value
+        uintptr deref = (uintptr)(*((uintptr*)ptr));
+        for (int i = 0; i < _mallocList.Count; ++i)
+        {
+            // getting the obj
+            uintptr obj = (uintptr)_mallocList[i].Obj;
+            if (obj != deref)
+                continue;
+
+            // mark it
+            var c = _mallocList[i];
+            c.IsMarked = true;
+            _mallocList[i] = c;
+
+            // try to go over the alloced mem
+            uintptr step = (uintptr)sizeof(uintptr);
+            for (uintptr j = obj; j < obj + (uintptr)_mallocList[i].Size; j += step)
+            {
+                uintptr deref2 = (uintptr)(*((uintptr*)j));
+                MarkPointer((void*)deref2);
+            }
+        }
     }
 }
 
