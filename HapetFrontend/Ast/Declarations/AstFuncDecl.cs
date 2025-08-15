@@ -27,6 +27,10 @@ namespace HapetFrontend.Ast.Declarations
         /// Statement of calling base ctor. Used only for ctors!!!!
         /// </summary>
         public AstBaseCtorStmt BaseCtorCall { get; set; }
+        /// <summary>
+        /// Statement of calling another ctor. Used only for ctors!!!!
+        /// </summary>
+        public AstBaseCtorStmt ThisCtorCall { get; set; }
 
         /// <summary>
         /// Used for easier infferencing. Mean that the func is a get/set func
@@ -56,6 +60,7 @@ namespace HapetFrontend.Ast.Declarations
             {
                 IsPropertyFunction = IsPropertyFunction,
                 BaseCtorCall = BaseCtorCall?.GetDeepCopy() as AstBaseCtorStmt,
+                ThisCtorCall = ThisCtorCall?.GetDeepCopy() as AstBaseCtorStmt,
                 CallingConvention = CallingConvention,
                 ClassFunctionType = ClassFunctionType,
                 HasGenericTypes = HasGenericTypes,

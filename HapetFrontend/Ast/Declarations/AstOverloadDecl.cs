@@ -38,6 +38,7 @@ namespace HapetFrontend.Ast.Declarations
 
                 IsPropertyFunction = IsPropertyFunction,
                 BaseCtorCall = BaseCtorCall?.GetDeepCopy() as AstBaseCtorStmt,
+                ThisCtorCall = ThisCtorCall?.GetDeepCopy() as AstBaseCtorStmt,
                 CallingConvention = CallingConvention,
                 ClassFunctionType = ClassFunctionType,
                 Scope = Scope,

@@ -21,6 +21,7 @@ namespace HapetFrontend.Parsing
 
             AstBlockExpr body = null;
             AstBaseCtorStmt baseCtorCall = null;
+            AstBaseCtorStmt thisCtorCall = null; // call of another ctor from one ctor 
             List<AstIdExpr> generics = new List<AstIdExpr>();
 
             // getting generics from parsed udecl' name
@@ -36,9 +37,24 @@ namespace HapetFrontend.Parsing
             {
                 NextToken();
                 SkipNewlines();
-                var bsTkn = Consume(TokenType.KwBase, ErrMsg("'base'", "after ':'"));
-                var args = ParseArgumentList(inInfo, ref outInfo, out var _, out var end);
-                baseCtorCall = new AstBaseCtorStmt(args, new Location(bsTkn.Location, end));
+                if (CheckToken(TokenType.KwBase))
+                {
+                    var bsTkn = Consume(TokenType.KwBase, ErrMsg("'base'", "after ':'"));
+                    var args = ParseArgumentList(inInfo, ref outInfo, out var _, out var end);
+                    baseCtorCall = new AstBaseCtorStmt(args, new Location(bsTkn.Location, end));
+                }
+                else
+                {
+                    var thiss = ParseIdentifierExpression(inInfo, allowDots: false, allowGenerics: false, expectIdent: true);
+                    if (thiss.RightPart is not AstIdExpr idExpr || idExpr.Name != "this")
+                    {
+                        ReportMessage(thiss.Location, [], ErrorCode.Get(CTEN.PureUnexpectedToken));
+                        return null;
+                    }
+                    var args = ParseArgumentList(inInfo, ref outInfo, out var _, out var end);
+                    thisCtorCall = new AstBaseCtorStmt(args, new Location(thiss.Location.Beginning, end));
+                    thisCtorCall.IsThisCtorCall = true;
+                }
             }
 
             // parsing constrains
@@ -63,6 +79,7 @@ namespace HapetFrontend.Parsing
             theFunc.Body = body;
             theFunc.Location = new Location(paramsLocation.Beginning, body?.Ending ?? paramsLocation.Ending);
             theFunc.BaseCtorCall = baseCtorCall;
+            theFunc.ThisCtorCall = thisCtorCall;
             theFunc.HasGenericTypes = generics.Count > 0;
             theFunc.GenericConstrains = genericConstrains;
             theFunc.IsImported = inInfo.ExternalMetadata;

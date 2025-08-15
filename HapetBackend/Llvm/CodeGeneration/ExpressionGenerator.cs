@@ -1681,14 +1681,27 @@ namespace HapetBackend.Llvm
         private void GenerateBaseCtorStmt(AstBaseCtorStmt baseStmt)
         {
             // do not generate for interface or empty
-            if (baseStmt.BaseType == null || baseStmt.BaseType.Declaration.IsInterface)
+            if ((baseStmt.BaseType == null && !baseStmt.IsThisCtorCall) || (baseStmt.BaseType?.Declaration.IsInterface ?? false))
                 return;
 
-            string onlyName = baseStmt.BaseType.Declaration.Name.Name.GetClassNameWithoutNamespace();
-            var ctorName = $"{onlyName}_ctor";
-            List<AstArgumentExpr> argsWithClassParam = new List<AstArgumentExpr>(baseStmt.Arguments);
-            argsWithClassParam.Insert(0, new AstArgumentExpr(baseStmt.ThisArgument));
-            var ctorSymbol = _postPreparer.GetFuncFromCandidates(new AstIdExpr(ctorName), argsWithClassParam, baseStmt.BaseType.Declaration, true, out var casts);
+            DeclSymbol ctorSymbol;
+            List<AstExpression> casts;
+            if (baseStmt.IsThisCtorCall)
+            {
+                string onlyName = baseStmt.BaseType.Declaration.Name.Name.GetClassNameWithoutNamespace();
+                var ctorName = $"{onlyName}_ctor";
+                List<AstArgumentExpr> argsWithClassParam = new List<AstArgumentExpr>(baseStmt.Arguments);
+                argsWithClassParam.Insert(0, new AstArgumentExpr(baseStmt.ThisArgument));
+                ctorSymbol = _postPreparer.GetFuncFromCandidates(new AstIdExpr(ctorName), argsWithClassParam, baseStmt.BaseType.Declaration, true, out casts);
+            }
+            else
+            {
+                string onlyName = _currentFunction.ContainingParent.Name.Name.GetClassNameWithoutNamespace();
+                var ctorName = $"{onlyName}_ctor";
+                List<AstArgumentExpr> argsWithClassParam = new List<AstArgumentExpr>(baseStmt.Arguments);
+                argsWithClassParam.Insert(0, new AstArgumentExpr(baseStmt.ThisArgument));
+                ctorSymbol = _postPreparer.GetFuncFromCandidates(new AstIdExpr(ctorName), argsWithClassParam, _currentFunction.ContainingParent, true, out casts);
+            }
 
             // error if ctor not found
             if (ctorSymbol == null)

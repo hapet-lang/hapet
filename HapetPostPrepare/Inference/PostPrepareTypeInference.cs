@@ -231,6 +231,39 @@ namespace HapetPostPrepare
                     // but why to the index 1? - https://stackoverflow.com/questions/140490/base-constructor-in-c-sharp-which-gets-called-first
                     funcDecl.Body.Statements.Insert(1, funcDecl.BaseCtorCall);
                 }
+
+                // check if need to call another ctor
+                if (funcDecl.ClassFunctionType == HapetFrontend.Enums.ClassFunctionType.Ctor &&
+                    funcDecl.ThisCtorCall != null &&
+                    funcDecl.Body != null)
+                {
+                    PostPrepareExprInference(funcDecl.ThisCtorCall, inInfo, ref outInfo);
+
+                    // preparing shite for easier code gen
+                    funcDecl.ThisCtorCall.BaseType = null;
+                    var thisArg = new AstIdExpr("this", funcDecl.ThisCtorCall)
+                    {
+                        Location = funcDecl.ThisCtorCall.Location,
+                        Scope = funcDecl.Body.SubScope,
+                    };
+                    SetScopeAndParent(thisArg, funcDecl.Body, funcDecl.Body.SubScope);
+                    PostPrepareExprInference(thisArg, inInfo, ref outInfo);
+                    funcDecl.ThisCtorCall.ThisArgument = thisArg;
+
+                    // this is a kostyl to remove previous this ctor call
+                    // it is possible for impl of generic types/funcs
+                    // so the base ctor call is here from previous type
+                    // so we just need to remove it
+                    var thisCCOld = funcDecl.Body.Statements.FirstOrDefault(x => x is AstBaseCtorStmt bcc && bcc.IsThisCtorCall);
+                    if (thisCCOld != null) funcDecl.Body.Statements.Remove(thisCCOld);
+
+                    // we need to insert it into block so it would be generated normally
+                    // we need to insert it right after base ctor call (if exists)
+                    if (funcDecl.Body.Statements.Count > 1 && funcDecl.Body.Statements[1] is AstBaseCtorStmt)
+                        funcDecl.Body.Statements.Insert(2, funcDecl.ThisCtorCall);
+                    else
+                        funcDecl.Body.Statements.Insert(1, funcDecl.ThisCtorCall);
+                }
             }
 
             OnExit();

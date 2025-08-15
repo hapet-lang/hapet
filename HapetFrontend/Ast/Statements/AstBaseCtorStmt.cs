@@ -20,6 +20,11 @@ namespace HapetFrontend.Ast.Statements
         /// </summary>
         public AstIdExpr ThisArgument { get; set; }
 
+        /// <summary>
+        /// 'true' if it is a 'this' ctor call
+        /// </summary>
+        public bool IsThisCtorCall { get; set; }
+
         public override string AAAName => nameof(AstBaseCtorStmt);
 
         public AstBaseCtorStmt(List<AstArgumentExpr> arguments = null, ILocation location = null)
@@ -35,6 +40,7 @@ namespace HapetFrontend.Ast.Statements
                 Location)
             {
                 BaseType = BaseType,
+                IsThisCtorCall = IsThisCtorCall,
                 ThisArgument = ThisArgument?.GetDeepCopy() as AstIdExpr,
                 Scope = Scope,
                 SourceFile = SourceFile,
