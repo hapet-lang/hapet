@@ -16,7 +16,7 @@ public static class Gc
     public static void* Malloc(int size)
     {
         void* mem = Marshal.Malloc(size);
-        ObjectHeader objectHeader = new unsafe ObjectHeader();
+        ObjectHeader objectHeader = new ObjectHeader();
         objectHeader.IsMarked = false;
         objectHeader.Size = size;
         objectHeader.Obj = mem;
@@ -41,6 +41,7 @@ public static class Gc
     public static void Collect()
     {
         Mark();
+        Sweep();
     }
 
     private static void Mark()
@@ -80,6 +81,38 @@ public static class Gc
                 uintptr deref2 = (uintptr)(*((uintptr*)j));
                 MarkPointer((void*)deref2);
             }
+        }
+    }
+
+    private static void Sweep()
+    {
+        // sweep em all
+        GcList<int> toDelete = new GcList<int>();
+        for (int i = 0; i < _mallocList.Count; ++i)
+        {
+            if (_mallocList[i].IsMarked)
+            {
+                // demark it
+                var c = _mallocList[i];
+                c.IsMarked = false;
+                _mallocList[i] = c;
+                continue;
+            }
+
+            // call dtor if class instance
+            if (_mallocList[i].IsClassInstance)
+            {
+                _mallocList[i].Dtor.Invoke(_mallocList[i].Obj);
+            }
+            // free
+            Marshal.Free(_mallocList[i].Obj);
+            toDelete.Add(i);
+        }
+
+        // deleting them from back so indexes would stay in place
+        for (int i = toDelete.Count - 1; i >= 0; --i)
+        {
+            _mallocList.RemoveAt(toDelete[i]);
         }
     }
 }
