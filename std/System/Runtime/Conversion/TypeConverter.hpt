@@ -101,4 +101,12 @@ public static class TypeConverter
         ulong* negativeP = (ulong*)obj - 1;
         *negativeP = (ulong)(uintptr)typeInfo;
     }
+
+    [DeclarationUsed]
+    [SuppressStackTrace]
+    public static void FreeTypeInfo(void* obj)
+    {
+        ulong* negativeP = (ulong*)obj - 1;
+        Marshal.Free(negativeP);
+    }
 }
