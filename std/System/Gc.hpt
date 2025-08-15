@@ -8,12 +8,14 @@ using System.Runtime.InteropServices;
 public static class Gc
 {
     private static void* _mainRoot = null;
+    [DeclarationUsed]
     public static void SetMainRoot(void* mainRoot)
     {
         _mainRoot = mainRoot;
     }
 
     private static GcList<ObjectHeader> _mallocList = new unsafe GcList<ObjectHeader>();
+    [DeclarationUsed]
     public static void* Malloc(int size)
     {
         void* mem = Marshal.Malloc(size);
@@ -24,6 +26,8 @@ public static class Gc
         _mallocList.Add(objectHeader);
         return mem;
     }
+
+    [DeclarationUsed]
     public static void* NewClassInstance(int size, TypeInfoUnsafe* typeInfo)
     {
         // getting dtor delegate
@@ -39,6 +43,7 @@ public static class Gc
         return mem;
     }
 
+    [DeclarationUsed]
     public static void Collect()
     {
         Mark();
