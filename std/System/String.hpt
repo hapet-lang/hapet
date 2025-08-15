@@ -7,7 +7,9 @@ using System.Runtime.InteropServices;
 [SuppressStaticCtorCall]
 public struct String : IComparable, IComparable<string>
 {
+    [SuppressStackTrace]
     public int Length { get; internal set; }
+    [SuppressStackTrace]
     internal char* Buffer { get; set; }
 
     public int CompareTo(object other)

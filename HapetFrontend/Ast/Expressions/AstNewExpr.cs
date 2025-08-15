@@ -52,6 +52,7 @@ namespace HapetFrontend.Ast.Expressions
                 IsCompileTimeValue = IsCompileTimeValue,
                 OutType = OutType,
                 OutValue = OutValue,
+                IsUnsafeNew = IsUnsafeNew,
                 Scope = Scope,
                 SourceFile = SourceFile,
                 TupleNameList = TupleNameList,

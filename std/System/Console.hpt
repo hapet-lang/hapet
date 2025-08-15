@@ -14,6 +14,8 @@ public static class Console
     [SuppressStackTrace]
     public static void WriteLine(string text)
     {
-        Puts(UTF8Encoding.GetBytesUnsafe(text));
+        byte* bytes = UTF8Encoding.GetBytesUnsafe(text);
+        Puts(bytes);
+        Marshal.Free(bytes);
     }
 }

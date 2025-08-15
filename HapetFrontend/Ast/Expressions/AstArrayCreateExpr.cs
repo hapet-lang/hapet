@@ -45,6 +45,7 @@ namespace HapetFrontend.Ast.Expressions
                 IsCompileTimeValue = IsCompileTimeValue,
                 OutType = OutType,
                 OutValue = OutValue,
+                IsUnsafeNew = IsUnsafeNew,
                 Scope = Scope,
                 SourceFile = SourceFile,
                 TupleNameList = TupleNameList,
@@ -61,6 +62,7 @@ namespace HapetFrontend.Ast.Expressions
                 Scope = Scope,
                 SourceFile = SourceFile,
                 OutValue = OutValue,
+                IsUnsafeNew = IsUnsafeNew,
                 IsCompileTimeValue = IsCompileTimeValue
             };
         }
