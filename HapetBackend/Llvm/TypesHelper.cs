@@ -622,7 +622,7 @@ namespace HapetBackend.Llvm
                     var boxedTypeData = GetBoxedType(inType);
                     int structSize = boxedTypeData.Item3;
                     // allocating memory for struct
-                    var v = GetMalloc(structSize, 1);
+                    var v = GetNewClassInstance(structSize, _typeInfoDictionary[structType]);
                     // making offset
                     // WARN: always 8 offset is here
                     var normalOffset = LLVMValueRef.CreateConstInt(_context.Int32Type, (ulong)1);
@@ -856,6 +856,28 @@ namespace HapetBackend.Llvm
         #endregion
 
         #region Mallocs
+        private LLVMValueRef GetNewClassInstance(int typeSize, LLVMValueRef typeInfoPtr, string allocName = "allocated")
+        {
+            var marshalDecl = _currentFunction.Scope.GetSymbolInNamespace("System", new AstIdExpr("Gc"));
+            var mallocSymbol = (marshalDecl.Decl as AstClassDecl).SubScope.GetSymbol(new AstIdExpr("NewClassInstance")) as DeclSymbol;
+            var mallocFunc = _valueMap[mallocSymbol];
+            LLVMTypeRef funcType = _typeMap[mallocSymbol.Decl.Type.OutType];
+            var tp = LLVMValueRef.CreateConstInt(HapetTypeToLLVMType(HapetType.CurrentTypeContext.GetIntType(4, true)), (ulong)typeSize);
+            return _builder.BuildCall2(funcType, mallocFunc, new LLVMValueRef[] { tp, typeInfoPtr }, allocName);
+        }
+        private LLVMValueRef GetSafeMalloc(int typeSize, LLVMValueRef amount, string allocName = "allocated")
+        {
+            // WARN: hard cock
+            var marshalDecl = _currentFunction.Scope.GetSymbolInNamespace("System", new AstIdExpr("Gc"));
+            var mallocSymbol = (marshalDecl.Decl as AstClassDecl).SubScope.GetSymbol(new AstIdExpr("Malloc")) as DeclSymbol;
+            var mallocFunc = _valueMap[mallocSymbol];
+            LLVMTypeRef funcType = _typeMap[mallocSymbol.Decl.Type.OutType];
+            // calc size to malloc = amount * typeSize
+            var tp = LLVMValueRef.CreateConstInt(HapetTypeToLLVMType(HapetType.CurrentTypeContext.GetIntType(4, true)), (ulong)typeSize);
+            var sizeToMalloc = _builder.BuildMul(amount, tp, "sizeToMalloc");
+            return _builder.BuildCall2(funcType, mallocFunc, new LLVMValueRef[] { sizeToMalloc }, allocName);
+        }
+
         private LLVMValueRef GetMalloc(int typeSize, int amount, string allocName = "allocated")
         {
             var tp = LLVMValueRef.CreateConstInt(HapetTypeToLLVMType(HapetType.CurrentTypeContext.GetIntType(4, true)), (ulong)typeSize);

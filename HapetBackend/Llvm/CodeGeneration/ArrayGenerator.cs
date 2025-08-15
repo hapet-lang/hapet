@@ -19,16 +19,23 @@ namespace HapetBackend.Llvm
             AstExpression currentSizeExpr = expr.SizeExprs.Last();
             LLVMValueRef currentArraySizeValueRef = GenerateExpressionCode(currentSizeExpr);
             LLVMTypeRef arrayTypeRef = HapetTypeToLLVMType(arrType);
-
-            // TODO: check for unsafe
-            // allocating mem for the array buf
-            LLVMValueRef allocated;
+            
+            // checking how much to malloc
+            int sizeToMalloc;
             if (expr.SizeExprs.Count > 1)
                 // allocating memory for the array
-                allocated = GetMalloc(arrType.GetSize(), currentArraySizeValueRef);
+                sizeToMalloc = arrType.GetSize();
             else
                 // allocating memory for the data in array
-                allocated = GetMalloc(expr.TypeName.OutType.GetSize(), currentArraySizeValueRef);
+                sizeToMalloc = expr.TypeName.OutType.GetSize();
+
+            // allocating mem for the array buf
+            // check for unsafe malloc
+            LLVMValueRef allocated;
+            if (expr.IsUnsafeNew)
+                allocated = GetMalloc(sizeToMalloc, currentArraySizeValueRef);
+            else
+                allocated = GetSafeMalloc(sizeToMalloc, currentArraySizeValueRef);
 
             // different generation depending on ini elements
             if (expr.Elements.Count > 0)

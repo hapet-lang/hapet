@@ -571,7 +571,11 @@ namespace HapetBackend.Llvm
                 var ctorSymbol = expr.ConstructorSymbol;
 
                 // allocating memory for struct
-                v = GetMalloc(structSize, 1); // TODO: check for unsafe
+                // check for unsafe
+                if (expr.IsUnsafeNew)
+                    v = GetMalloc(structSize, 1);
+                else
+                    v = GetNewClassInstance(structSize, _typeInfoDictionary[classType]);
                 // making offset
                 // WARN: always 8 offset is here
                 var normalOffset = LLVMValueRef.CreateConstInt(_context.Int32Type, (ulong)1);
