@@ -353,8 +353,14 @@ namespace HapetFrontend.Parsing
             {
                 var next = PeekToken();
                 // WARN: could be better checks?
-                var castNextToken = new TokenType[] { TokenType.OpenParen, TokenType.Identifier,
-                            TokenType.NumberLiteral, TokenType.StringLiteral, TokenType.CharLiteral };
+                var castNextToken = new TokenType[] 
+                { 
+                    TokenType.OpenParen, TokenType.Identifier,
+                    TokenType.NumberLiteral, TokenType.StringLiteral, 
+                    TokenType.CharLiteral, TokenType.KwSizeof,
+                    TokenType.KwTypeof, TokenType.KwAlignof,
+                    TokenType.KwNameof
+                };
                 if (castNextToken.Contains(next.Type))
                 {
                     // probably a cast 
