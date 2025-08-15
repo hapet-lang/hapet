@@ -1,6 +1,8 @@
 // Licensed to the hapet-lang under one or more agreements.
 // The hapet-lang licenses this file to you under the MIT license.
 
+#define DEBUG_GC
+
 using System;
 using System.Runtime;
 using System.Runtime.Conversion;
@@ -22,7 +24,9 @@ public static class Gc
     [SuppressStackTrace]
     public static void* Malloc(int size)
     {
-        Console.WriteLine("Malloced");
+#if DEBUG_GC
+        Console.WriteLine("Malloc");
+#endif
         void* mem = Marshal.Malloc(size);
         ObjectHeader objectHeader = new ObjectHeader();
         objectHeader.IsMarked = false;
@@ -84,6 +88,10 @@ public static class Gc
             if (obj != deref)
                 continue;
 
+#if DEBUG_GC
+            Console.WriteLine("Marking");
+#endif
+
             // mark it
             var c = _mallocList[i];
             c.IsMarked = true;
@@ -114,6 +122,10 @@ public static class Gc
                 _mallocList[i] = c;
                 continue;
             }
+
+#if DEBUG_GC
+            Console.WriteLine("Clearing");
+#endif
 
             // call dtor if class instance
             if (_mallocList[i].IsClassInstance)
