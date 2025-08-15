@@ -15,7 +15,9 @@ namespace HapetBackend.Llvm
         {
             // do not skip these stors
             if (func.ClassFunctionType == ClassFunctionType.StaticCtor &&
-                (func.ContainingParent.Name.Name == "System.StackTrace" || func.ContainingParent.Name.Name == "System.Runtime.InteropServices.ExceptionHelper"))
+                (func.ContainingParent.Name.Name == "System.StackTrace" ||
+                func.ContainingParent.Name.Name == "System.Gc" ||
+                func.ContainingParent.Name.Name == "System.Runtime.InteropServices.ExceptionHelper"))
                 return false;
 
             // also we need to skip here stors of generic impls

@@ -1,14 +1,17 @@
 // Licensed to the hapet-lang under one or more agreements.
 // The hapet-lang licenses this file to you under the MIT license.
 
+using System;
 using System.Runtime;
 using System.Runtime.Conversion;
 using System.Runtime.InteropServices;
 
+[DeclarationUsed]
 public static class Gc
 {
     private static void* _mainRoot = null;
     [DeclarationUsed]
+    [SuppressStackTrace]
     public static void SetMainRoot(void* mainRoot)
     {
         _mainRoot = mainRoot;
@@ -16,6 +19,7 @@ public static class Gc
 
     private static GcList<ObjectHeader> _mallocList = new unsafe GcList<ObjectHeader>();
     [DeclarationUsed]
+    [SuppressStackTrace]
     public static void* Malloc(int size)
     {
         void* mem = Marshal.Malloc(size);
@@ -28,6 +32,7 @@ public static class Gc
     }
 
     [DeclarationUsed]
+    [SuppressStackTrace]
     public static void* NewClassInstance(int size, TypeInfoUnsafe* typeInfo)
     {
         // getting dtor delegate
@@ -44,12 +49,14 @@ public static class Gc
     }
 
     [DeclarationUsed]
+    [SuppressStackTrace]
     public static void Collect()
     {
         Mark();
         Sweep();
     }
 
+    [SuppressStackTrace]
     private static void Mark()
     {
         // var to get current stack ptr
@@ -64,6 +71,7 @@ public static class Gc
         }
     }
 
+    [SuppressStackTrace]
     private static void MarkPointer(void* ptr)
     {
         // derefing the ptr and gettings its ptrsize value
@@ -90,6 +98,7 @@ public static class Gc
         }
     }
 
+    [SuppressStackTrace]
     private static void Sweep()
     {
         // sweep em all
@@ -126,6 +135,7 @@ public static class Gc
 }
 
 public delegate void DtorDelegate(void* obj);
+[SuppressStackTrace]
 private struct ObjectHeader
 {
     internal bool IsMarked;
@@ -133,6 +143,11 @@ private struct ObjectHeader
     internal void* Obj;
     internal bool IsClassInstance;
     internal DtorDelegate Dtor;
+
+    [SuppressStackTrace]
+    internal ObjectHeader()
+    {
+    }
 }
 
 [SuppressStackTrace] // applied to _ini

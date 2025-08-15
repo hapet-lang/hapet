@@ -112,12 +112,20 @@ namespace HapetBackend.Llvm
                 _builder.BuildCall2(_typeInfoInitializer.Item1, _typeInfoInitializer.Item2, []);
                 _builder.BuildCall2(_vTableInitializer.Item1, _vTableInitializer.Item2, []);
 
-                // need to call at first stors of System.StackTrace and System.Runtime.InteropServices.ExceptionHelper
+                // need to call at first stors 
+                // of System.Gc
+                parentDecl = _compiler.MainFunction.Scope.GetSymbolInNamespace("System", new AstIdExpr("Gc"));
+                funcDecl = (parentDecl.Decl as AstClassDecl).SubScope.GetSymbol(new AstIdExpr("Gc_stor")) as DeclSymbol;
+                funcValue = _valueMap[funcDecl];
+                funcType = _typeMap[funcDecl.Decl.Type.OutType];
+                _builder.BuildCall2(funcType, funcValue, []);
+                // of System.StackTrace
                 parentDecl = _compiler.MainFunction.Scope.GetSymbolInNamespace("System", new AstIdExpr("StackTrace"));
                 funcDecl = (parentDecl.Decl as AstClassDecl).SubScope.GetSymbol(new AstIdExpr("StackTrace_stor")) as DeclSymbol;
                 funcValue = _valueMap[funcDecl];
                 funcType = _typeMap[funcDecl.Decl.Type.OutType];
                 _builder.BuildCall2(funcType, funcValue, []);
+                // of System.Runtime.InteropServices.ExceptionHelper
                 parentDecl = _compiler.MainFunction.Scope.GetSymbolInNamespace("System.Runtime.InteropServices", new AstIdExpr("ExceptionHelper"));
                 funcDecl = (parentDecl.Decl as AstClassDecl).SubScope.GetSymbol(new AstIdExpr("ExceptionHelper_stor")) as DeclSymbol;
                 funcValue = _valueMap[funcDecl];

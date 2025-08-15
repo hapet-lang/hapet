@@ -157,12 +157,17 @@ namespace HapetPostPrepare
 
         private int StorSorterFunc(AstCallExpr call)
         {
-            if (call.FuncName.Name.Contains("StackTrace"))
-                return 0;
-            if (call.FuncName.Name.Contains("ExceptionHelper"))
-                return 1;
-            else
-                return int.MaxValue;
+            //if (call.FuncName.Name.Contains("Gc"))
+            //    return -1;
+            //if (call.FuncName.Name.Contains("StackTrace"))
+            //    return 0;
+            //if (call.FuncName.Name.Contains("ExceptionHelper"))
+            //    return 1;
+            //else
+            //    return int.MaxValue;
+
+            // no need now. all special stors are called manually before main
+            return 0;
         }
 
         private void MakeOtherShite()

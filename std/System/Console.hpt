@@ -11,6 +11,7 @@ public static class Console
     public static extern inline int Puts(byte* data);
 
     [DeclarationUsed]
+    [SuppressStackTrace]
     public static void WriteLine(string text)
     {
         Puts(UTF8Encoding.GetBytesUnsafe(text));
