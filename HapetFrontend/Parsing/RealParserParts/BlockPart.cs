@@ -5,6 +5,7 @@ using HapetFrontend.Ast.Statements;
 using HapetFrontend.Entities;
 using HapetFrontend.Errors;
 using HapetFrontend.Extensions;
+using System.Collections.Generic;
 
 namespace HapetFrontend.Parsing
 {
@@ -31,20 +32,72 @@ namespace HapetFrontend.Parsing
                 if (next.Type == TokenType.CloseBrace || next.Type == TokenType.EOF)
                     break;
 
-                // get current special keys - useful for nested funcs :)
-                List<Token> specialKeys = ParseSpecialKeys(); 
+                statements.AddRange(ParseOneBlockStmt(inInfo, ref outInfo, out bool shouldStop, ref foundBrStatement, ref afterBrStatementReported, skipDefaultSemicolonChecks));
+                if (shouldStop)
+                    break;
 
-                // do not allow nested funcs in nested shite. only in current!!!
-                var saved1 = inInfo.AllowNestedFunc;
-                var saved2 = inInfo.ParentFuncDecl;
-                inInfo.AllowNestedFunc = false;
-                inInfo.ParentFuncDecl = null;
-                var s = ParseStatement(inInfo, ref outInfo);
-                inInfo.AllowNestedFunc = saved1;
-                inInfo.ParentFuncDecl = saved2;
+                SkipNewlines();
+            }
 
+            var end = Consume(TokenType.CloseBrace, ErrMsg("}", "at end of block expression")).Location;
+
+            return new AstBlockExpr(statements, new Location(beg, end));
+
+            
+        }
+
+        /// <summary>
+        /// This func tries to parse only one statement. But there could be more than one :)
+        /// Because of directives
+        /// </summary>
+        /// <param name="inInfo"></param>
+        /// <param name="outInfo"></param>
+        /// <param name="shouldStop"></param>
+        /// <returns></returns>
+        private List<AstStatement> ParseOneBlockStmt(ParserInInfo inInfo, ref ParserOutInfo outInfo, out bool shouldStop, 
+            ref string foundBrStatement, ref bool afterBrStatementReported, bool skipDefaultSemicolonChecks)
+        {
+            shouldStop = false;
+
+            // get current special keys - useful for nested funcs :)
+            var specialKeys = ParseSpecialKeys();
+            var statements = new List<AstStatement>();
+
+            // do not allow nested funcs in nested shite. only in current!!!
+            var saved1 = inInfo.AllowNestedFunc;
+            var saved2 = inInfo.ParentFuncDecl;
+            inInfo.AllowNestedFunc = false;
+            inInfo.ParentFuncDecl = null;
+            var s = ParseStatement(inInfo, ref outInfo);
+            inInfo.AllowNestedFunc = saved1;
+            inInfo.ParentFuncDecl = saved2;
+
+            if (HandleStatement(s, inInfo, ref outInfo, ref foundBrStatement, ref afterBrStatementReported, true))
+                shouldStop = true;
+
+            return statements;
+
+            bool HandleStatement(AstStatement s, ParserInInfo inInfo, ref ParserOutInfo outInfo, 
+                ref string foundBrStatement, ref bool afterBrStatementReported, bool checkSemicolons)
+            {
                 if (s != null)
                 {
+                    if (s is AstDirectiveStmt dir)
+                    {
+                        // cringe kostyl to handle directives
+                        var saved = inInfo.HandleDirectiveInBlock;
+                        inInfo.HandleDirectiveInBlock = true;
+                        var statementsToAdd = HandleDirective(dir, CurrentSourceFile, inInfo, ref outInfo);
+                        inInfo.HandleDirectiveInBlock = saved;
+                        foreach (var stt in statementsToAdd)
+                        {
+                            // do not check semicolons here - they are already checked in HandleDirective
+                            if (HandleStatement(stt, inInfo, ref outInfo, ref foundBrStatement, ref afterBrStatementReported, false))
+                                return true;
+                        }
+                        return false;
+                    }
+
                     // check that stmt is not after return/break OR is a nested function
                     if (string.IsNullOrWhiteSpace(foundBrStatement) || s is AstFuncDecl)
                     {
@@ -70,8 +123,9 @@ namespace HapetFrontend.Parsing
                         ReportMessage(s, [foundBrStatement], ErrorCode.Get(CTWN.StmtsWouldBeIgnored), Entities.ReportType.Warning);
                     }
 
-                    // try eat semicolon or error
-                    CheckSemicolonAfterStmt(s, skipDefaultSemicolonChecks);
+                    if (checkSemicolons)
+                        // try eat semicolon or error
+                        CheckSemicolonAfterStmt(s, skipDefaultSemicolonChecks);
 
                     // save the statment name to warn if there is something after it
                     switch (s)
@@ -95,7 +149,11 @@ namespace HapetFrontend.Parsing
 
                         nestedFunc.IsNestedDecl = true;
                         nestedFunc.ParentDecl = inInfo.ParentFuncDecl;
-                        nestedFunc.SpecialKeys.AddRange(specialKeys);
+                        if (specialKeys != null)
+                        {
+                            nestedFunc.SpecialKeys.AddRange(specialKeys);
+                            specialKeys = null;
+                        }
                         _compiler.LambdasAndNested.Add(nestedFunc);
 
                         // for now only static allowed
@@ -106,16 +164,12 @@ namespace HapetFrontend.Parsing
                         }
                     }
 
-                    next = PeekToken();
+                    var next = PeekToken();
                     if (next.Type == TokenType.CloseBrace || next.Type == TokenType.EOF)
-                        break;
+                        return true;
                 }
-                SkipNewlines();
+                return false;
             }
-
-            var end = Consume(TokenType.CloseBrace, ErrMsg("}", "at end of block expression")).Location;
-
-            return new AstBlockExpr(statements, new Location(beg, end));
         }
     }
 }

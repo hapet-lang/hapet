@@ -73,8 +73,17 @@ namespace HapetFrontend.Parsing
                             return new AstEmptyStmt();
                         }
 
+                        var nxt = PeekToken();
+                        TokenType[] allowed = new TokenType[] 
+                        {
+                            TokenType.Identifier,
+                            TokenType.NumberLiteral,
+                            TokenType.OpenParen,
+                            TokenType.StringLiteral,
+                            TokenType.CharLiteral,
+                        };
                         AstExpression value = null;
-                        if (!CheckToken(TokenType.NewLine))
+                        if (allowed.Contains(nxt.Type))
                         {
                             value = ParseExpression(inInfo, ref outInfo) as AstExpression;
                         }
@@ -160,7 +169,17 @@ namespace HapetFrontend.Parsing
                 SkipNewlines();
                 while (_lexer.PeekToken().Type != TokenType.SharpIdentifier)
                 {
-                    toAdd.Add(ParseTopLevel(inInfo, ref outInfo));
+                    if (inInfo.HandleDirectiveInBlock)
+                    {
+                        string pp1 = "";
+                        bool pp2 = false;
+                        var ss = ParseOneBlockStmt(inInfo, ref outInfo, out bool _, ref pp1, ref pp2, inInfo.SkipDefaultSemicolonChecks);
+                        toAdd.AddRange(ss);
+                    }
+                    else
+                    {
+                        toAdd.Add(ParseTopLevel(inInfo, ref outInfo));
+                    }
                     SkipNewlines();
                 }
                 return toAdd;

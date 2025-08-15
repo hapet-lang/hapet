@@ -57,6 +57,12 @@ namespace HapetFrontend.Entities
         public bool IsInTupleParsing { get; set; }
 
         /// <summary>
+        /// 'true' if statements inside 'if' directives should be handled as statements 
+        /// in block expr. (This adds ; requirement)
+        /// </summary>
+        public bool HandleDirectiveInBlock { get; set; }
+
+        /// <summary>
         /// This shite is used for func decl
         /// </summary>
         public AstUnknownDecl CurrentUdecl { get; set; }
