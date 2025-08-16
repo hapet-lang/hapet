@@ -74,6 +74,7 @@ namespace HapetBackend.Llvm
                 case AstBaseCtorStmt baseStmt: GenerateBaseCtorStmt(baseStmt); return null;
                 case AstThrowStmt throwStmt: GenerateThrowStmt(throwStmt); return null;
                 case AstTryCatchStmt tryCatchStmt: GenerateTryCatchStmt(tryCatchStmt); return null;
+                case AstGotoStmt gotoStmt: GenerateGotoStmt(gotoStmt); return null;
 
                 default:
                     {
@@ -95,9 +96,9 @@ namespace HapetBackend.Llvm
                 if (stmt is not AstFuncDecl)
                     GenerateExpressionCode(stmt);
 
-                // no need to generate anything after throw
+                // no need to generate anything after throw, goto
                 // throw gen will add unreachable
-                if (stmt is AstThrowStmt)
+                if (stmt is AstThrowStmt || stmt is AstGotoStmt)
                     break;
             }
             return result;
@@ -1525,6 +1526,7 @@ namespace HapetBackend.Llvm
         }
 
         private ulong _switchCounter;
+        private Dictionary<AstCaseStmt, LLVMBasicBlockRef> _caseBlockDictionary;
         private unsafe void GenerateSwitchStmt(AstSwitchStmt stmt)
         {
             _switchCounter++;
@@ -1532,6 +1534,7 @@ namespace HapetBackend.Llvm
             // checking if there is a user defined default case
             bool userDefinedDefaultCase = stmt.Cases.Any(x => x.IsDefaultCase);
 
+            var prevCaseBlockDic = _caseBlockDictionary;
             var prevLoopEnd = _currentLoopEnd;
             var prevLoop = _currentLoop;
 
@@ -1547,7 +1550,18 @@ namespace HapetBackend.Llvm
 
             // counter for the names of the cases
             int caseCounter = 0;
-
+            // need to fill up dictionary on case-bb to handle goto stmts
+            _caseBlockDictionary = new Dictionary<AstCaseStmt, LLVMBasicBlockRef>();
+            foreach (var cc in stmt.Cases)
+            {
+                LLVMBasicBlockRef bb;
+                if (cc.IsDefaultCase)
+                    bb = bbDefault;
+                else
+                    bb = _context.CreateBasicBlock($"switch{_switchCounter}.case{caseCounter++}");
+                _caseBlockDictionary.Add(cc, bb);
+            }
+            
             // this list holds all the falling cases.
             // when the non-falling occured all the falling are also going to be prepared
             List<AstCaseStmt> fallingCases = new List<AstCaseStmt>();
@@ -1561,16 +1575,8 @@ namespace HapetBackend.Llvm
                 }
 
                 // creating a block for the case
-                LLVMBasicBlockRef currBb;
-                if (cc.IsDefaultCase)
-                {
-                    LLVM.AppendExistingBasicBlock(_lastFunctionValueRef, bbDefault);
-                    currBb = bbDefault;
-                }
-                else
-                {
-                    currBb = _lastFunctionValueRef.AppendBasicBlockInContext(_context, $"switch{_switchCounter}.case{caseCounter++}");
-                }
+                LLVMBasicBlockRef currBb = _caseBlockDictionary[cc];
+                LLVM.AppendExistingBasicBlock(_lastFunctionValueRef, currBb);
                 _builder.PositionAtEnd(currBb);
 
                 // generating the block
@@ -1619,6 +1625,7 @@ namespace HapetBackend.Llvm
             _builder.PositionAtEnd(bbEnd);
 
             // restoring prev block
+            _caseBlockDictionary = prevCaseBlockDic;
             _currentLoopEnd = prevLoopEnd;
             _currentLoop = prevLoop;
         }
@@ -1802,6 +1809,12 @@ namespace HapetBackend.Llvm
             var ctorFunc = _valueMap[ctorSymbol];
             LLVMTypeRef ctorType = _typeMap[ctorSymbol.Decl.Type.OutType];
             _builder.BuildCall2(ctorType, ctorFunc, args.ToArray());
+        }
+
+        private void GenerateGotoStmt(AstGotoStmt stmt)
+        {
+            var bb = _caseBlockDictionary[stmt.CaseToGoInto];
+            _builder.BuildBr(bb);
         }
     }
 }
