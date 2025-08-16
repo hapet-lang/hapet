@@ -215,6 +215,8 @@
         TypeCouldNotBeExplCasted        = 0x305E,
         TypeOfTernaryNotDeterminated    = 0x305F,
         CtorWithArgTypesNotFound        = 0x3060,
+        GotoIsNotInSwitchCase           = 0x3061,
+        GotoLabelNotFoundInCases        = 0x3062,
 
         // compiler errors up to 0x6000
         DefaultWasNotInfered            = 0x5001,

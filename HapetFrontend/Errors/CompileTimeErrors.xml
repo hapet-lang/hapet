@@ -828,6 +828,14 @@
         <Number>3060</Number>
         <Text>Constructor with specified argument types could not be found in {0}</Text>
     </Item>
+    <Item>
+        <Number>3061</Number>
+        <Text>Goto statement has to be used in switch-case statement</Text>
+    </Item>
+    <Item>
+        <Number>3062</Number>
+        <Text>Case with the label '{0}' could not be found</Text>
+    </Item>
 
     <!--Compiler errors-->
     <Item>

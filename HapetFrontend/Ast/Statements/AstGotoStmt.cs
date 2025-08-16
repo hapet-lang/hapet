@@ -9,6 +9,11 @@ namespace HapetFrontend.Ast.Statements
         /// </summary>
         public string GotoLabel { get; set; }
 
+        /// <summary>
+        /// JUst a storage for the case. Not null after PP
+        /// </summary>
+        public AstCaseStmt CaseToGoInto { get; set; }
+
         public override string AAAName => nameof(AstGotoStmt);
 
         public AstGotoStmt(string label, ILocation location = null) : base(location)

@@ -478,6 +478,9 @@ namespace HapetPostPrepare
                 case AstCatchStmt catchStmt:
                     PostPrepareCatchStmtInference(catchStmt, inInfo, ref outInfo);
                     break;
+                case AstGotoStmt gotoStmt:
+                    PostPrepareGotoStmtInference(gotoStmt, inInfo, ref outInfo);
+                    break;
 
                 // skip literals
                 case AstNumberExpr:
@@ -1494,6 +1497,44 @@ namespace HapetPostPrepare
         {
             PostPrepareParamInference(stmt.CatchParam, inInfo, ref outInfo);
             PostPrepareExprInference(stmt.CatchBlock, inInfo, ref outInfo);
+        }
+
+        private void PostPrepareGotoStmtInference(AstGotoStmt stmt, InInfo inInfo, ref OutInfo outInfo)
+        {
+            // need to check if the label even exists
+            // search for switch-case stmt
+            var currParent = stmt.NormalParent;
+            while (currParent is not AstSwitchStmt && currParent != null)
+                currParent = currParent.NormalParent;
+
+            // check if parent even exists
+            if (currParent == null)
+            {
+                // switch-case not found - error
+                _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, stmt, [], ErrorCode.Get(CTEN.GotoIsNotInSwitchCase));
+                return;
+            }
+
+            // go all over cases and search the case
+            AstCaseStmt cs = null;
+            foreach (var c in (currParent as AstSwitchStmt).Cases)
+            {
+                if (c.LabelForGoto != null && c.LabelForGoto == stmt.GotoLabel)
+                {
+                    cs = c;
+                    break;
+                }
+            }
+
+            // check if found the case
+            if (cs == null)
+            {
+                // there is no case with that label - error
+                _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, stmt, [stmt.GotoLabel], ErrorCode.Get(CTEN.GotoLabelNotFoundInCases));
+                return;
+            }
+
+            stmt.CaseToGoInto = cs;
         }
 
         private AstExpression PostPrepareVarValueAssign(AstExpression value, HapetType targetType, InInfo inInfo, ref OutInfo outInfo, bool inferValue = true)

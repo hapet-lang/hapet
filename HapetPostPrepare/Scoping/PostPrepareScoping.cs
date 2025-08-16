@@ -583,6 +583,8 @@ namespace HapetPostPrepare
                 case AstCatchStmt сatchStmt:
                     PostPrepareCatchScoping(сatchStmt);
                     break;
+                case AstGotoStmt:
+                    break;
 
                 // skip literals
                 case AstNumberExpr:

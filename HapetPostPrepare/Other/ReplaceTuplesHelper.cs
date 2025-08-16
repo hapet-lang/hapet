@@ -209,6 +209,8 @@ namespace HapetPostPrepare
                 case AstCatchStmt catchStmt:
                     ReplaceAllTuplesInCatch(catchStmt);
                     break;
+                case AstGotoStmt:
+                    break;
 
                 // skip literals
                 case AstNumberExpr:
