@@ -770,15 +770,13 @@ public unsafe struct StringView
         if (count != rhs.Length)
             return false;
 
-        fixed (char* r = rhs)
+        char* r = rhs.Buffer;
+        var lhsPtr = lhs.Data;
+        var rhsPtr = r;
+        for (int i = 0; i < count; i++)
         {
-            var lhsPtr = lhs.Data;
-            var rhsPtr = r;
-            for (int i = 0; i < count; i++)
-            {
-                if (*lhsPtr++ != *rhsPtr++)
-                    return false;
-            }
+            if (*lhsPtr++ != *rhsPtr++)
+                return false;
         }
 
         return true;
@@ -891,22 +889,22 @@ sealed class CachedCulture
             (NegativeSign.Length + PositiveSign.Length) * 2;
     }
 
-    static readonly string[] PositiveCurrencyFormats = {
+    static readonly string[] PositiveCurrencyFormats = new string[] {
         "$#", "#$", "$ #", "# $"
     };
 
-    static readonly string[] NegativeCurrencyFormats = {
+    static readonly string[] NegativeCurrencyFormats = new string[] {
         "($#)", "-$#", "$-#", "$#-",
         "(#$)", "-#$", "#-$", "#$-",
         "-# $", "-$ #", "# $-", "$ #-",
         "$ -#", "#- $", "($ #)", "(# $)"
     };
 
-    static readonly string[] PositivePercentFormats = {
+    static readonly string[] PositivePercentFormats = new string[] {
         "# %", "#%", "%#", "% #"
     };
 
-    static readonly string[] NegativePercentFormats = {
+    static readonly string[] NegativePercentFormats = new string[] {
         "-# %", "-#%", "-%#",
         "%-#", "%#-",
         "#-%", "#%-",
@@ -914,7 +912,7 @@ sealed class CachedCulture
         "% -#", "#- %"
     };
 
-    static readonly string[] NegativeNumberFormats = {
+    static readonly string[] NegativeNumberFormats = new string[] {
         "(#)", "-#", "- #", "#-", "# -",
     };
 
@@ -1023,12 +1021,13 @@ unsafe static partial class Numeric
         // ANDing with 0xFFDF has the effect of uppercasing the character
         switch (fmt & 0xFFDF)
         {
-            case 'G':
+            case ('G')
+            {
                 if (digits > 0)
                     goto default;
                 else
                     goto case 'D';
-
+            }
             case 'D':
                 Int32ToDecStr(formatter, value, digits, culture.NegativeSign);
                 break;

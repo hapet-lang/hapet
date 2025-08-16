@@ -126,7 +126,10 @@ namespace HapetFrontend.Parsing
                 }
                 SkipNewlines();
 
+                var saved = inInfo.AllowMultiplyExpression;
+                inInfo.AllowMultiplyExpression = true;
                 var val = ParseExpression(inInfo, ref outInfo);
+                inInfo.AllowMultiplyExpression = saved;
 
                 if (val is not AstExpression valExpr)
                 {
