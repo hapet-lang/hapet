@@ -137,6 +137,7 @@ namespace HapetFrontend.Parsing
         {
             AstExpression pattern = null;
             AstBlockExpr body = null;
+            string gotoLabel = null;
             bool isDefault = false;
             bool isFalling = false;
 
@@ -179,6 +180,21 @@ namespace HapetFrontend.Parsing
 
             SkipNewlines();
 
+            // check for goto label
+            if (CheckToken(TokenType.Identifier))
+            {
+                var expr = ParseExpression(inInfo, ref outInfo);
+                if (!(expr is AstNestedExpr nst && nst.RightPart is AstIdExpr idExpr))
+                {
+                    // error here
+                    ReportMessage(expr.Location, [], ErrorCode.Get(CTEN.CommonIdentifierExpected));
+                    return new AstEmptyStmt();
+                }
+                gotoLabel = idExpr.Name;
+            }
+
+            SkipNewlines();
+
             if (CheckToken(TokenType.KwCase))
             {
                 isFalling = true;
@@ -190,6 +206,7 @@ namespace HapetFrontend.Parsing
             }
 
             var cs = new AstCaseStmt(pattern, body, new Location(beg, end));
+            cs.LabelForGoto = gotoLabel;
             cs.IsDefaultCase = isDefault;
             cs.IsFallingCase = isFalling;
             return cs;

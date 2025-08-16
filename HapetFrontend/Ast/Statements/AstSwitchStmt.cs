@@ -82,6 +82,7 @@ namespace HapetFrontend.Ast.Statements
                 Body?.GetDeepCopy() as AstBlockExpr,
                 Location)
             {
+                LabelForGoto = LabelForGoto,
                 IsDefaultCase = IsDefaultCase,
                 IsFallingCase = IsFallingCase,
                 Scope = Scope,
