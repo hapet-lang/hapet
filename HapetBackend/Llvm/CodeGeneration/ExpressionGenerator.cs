@@ -1764,7 +1764,7 @@ namespace HapetBackend.Llvm
 
             DeclSymbol ctorSymbol;
             List<AstExpression> casts;
-            if (baseStmt.IsThisCtorCall)
+            if (!baseStmt.IsThisCtorCall)
             {
                 string onlyName = baseStmt.BaseType.Declaration.Name.Name.GetClassNameWithoutNamespace();
                 var ctorName = $"{onlyName}_ctor";
