@@ -427,6 +427,7 @@ namespace HapetFrontend.Parsing
         private AstStatement ParsePostUnaryExpression(ParserInInfo inInfo, ref ParserOutInfo outInfo)
         {
             var expr = ParseAtomicExpression(inInfo, ref outInfo);
+            SkipNewlines();
 
             // just move forward the udecl :)
             if (expr is AstUnknownDecl)
@@ -451,6 +452,7 @@ namespace HapetFrontend.Parsing
                                 return expr;
                             }
 
+                            SkipNewlines();
                             bool dotsAfter = CheckToken(TokenType.Period);
 
                             var callExpr = new AstCallExpr(nestExpr.LeftPart, idExpr.GetCopy(), args, new Location(expr.Beginning, end));
@@ -463,6 +465,7 @@ namespace HapetFrontend.Parsing
                             if (dotsAfter)
                             {
                                 NextToken();
+                                SkipNewlines();
                                 // here we are getting the rest 'dwd.Lmao'
                                 expr = ParseIdentifierExpression(inInfo, iniNested: expr as AstNestedExpr);
                                 // so after this the upper loop will check if there is a OpenParent and so on
@@ -514,6 +517,7 @@ namespace HapetFrontend.Parsing
                             var arrAcc = new AstArrayAccessExpr(expr as AstExpression, args[0] as AstExpression, new Location(expr.Beginning, end));
                             expr = new AstNestedExpr(arrAcc, null, arrAcc);
 
+                            SkipNewlines();
                             // check for dots after this!!! there could be a.arr[i].Length
                             // for better understand imagine we have 'a.arr[i].Length;'
                             // and this is the first entry. So we already parsed here 'a.arr[i]' 
@@ -521,6 +525,7 @@ namespace HapetFrontend.Parsing
                             if (CheckToken(TokenType.Period))
                             {
                                 NextToken();
+                                SkipNewlines();
                                 // here we are getting the rest '.Length'
                                 expr = ParseIdentifierExpression(inInfo, iniNested: expr as AstNestedExpr);
                                 // so after this the upper loop will check if there is a OpenParent and so on

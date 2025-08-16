@@ -91,7 +91,7 @@ namespace HapetPostPrepare
 
         private void CreateFileDeclarations(ProgramFile file, List<AstDeclaration> decls, StringBuilder sb)
         {
-            sb.Append($"#file \"{CompilerUtils.GetFileRelativePath(_compiler.CurrentProjectSettings.ProjectPath, file.Name)}\"\n");
+            sb.Append($"#file \"{CompilerUtils.GetFileRelativePath(_compiler.CurrentProjectSettings.ProjectPath, file.Name)}\";\n");
             sb.Append($"namespace {file.Namespace};\n");
 
             // serialize usings

@@ -35,6 +35,9 @@ namespace HapetFrontend.Parsing
                 case "warning": type = DirectiveType.Warning; break;
             }
 
+            var saved = inInfo.CurrentlyParsingDirective;
+            inInfo.CurrentlyParsingDirective = true;
+            AstStatement toReturn = null;
             switch (type) 
             {
                 case DirectiveType.Error:
@@ -47,20 +50,25 @@ namespace HapetFrontend.Parsing
                             // error here
                             ReportMessage(expr.Location, [], ErrorCode.Get(CTEN.CommonStringExpected));
                         }
-                        return new AstDirectiveStmt(null, type, new Location(tkn.Location, expr.Location.Ending)) { Value = expr };
+                        toReturn = new AstDirectiveStmt(null, type, new Location(tkn.Location, expr.Location.Ending)) { Value = expr };
+                        Consume(TokenType.Semicolon, ErrMsg(";", "at the end of the statement"));
+                        break;
                     }
                 case DirectiveType.MetadataMeta:
                 case DirectiveType.MetadataEndMeta:
                 case DirectiveType.Else:
                 case DirectiveType.EndIf:
                     {
-                        return new AstDirectiveStmt(null, type, new Location(tkn.Location, tkn.Location.Ending));
+                        toReturn = new AstDirectiveStmt(null, type, new Location(tkn.Location, tkn.Location.Ending));
+                        break;
                     }
                 case DirectiveType.If: 
                 case DirectiveType.Elif: 
                     {
                         var expr = ParseExpression(inInfo, ref outInfo) as AstExpression;
-                        return new AstDirectiveStmt(null, type, new Location(tkn.Location, expr.Location.Ending)) { Value = expr };
+                        toReturn = new AstDirectiveStmt(null, type, new Location(tkn.Location, expr.Location.Ending)) { Value = expr };
+                        Consume(TokenType.Semicolon, ErrMsg(";", "at the end of the statement"));
+                        break;
                     }
                 case DirectiveType.Define:
                 case DirectiveType.Undef:
@@ -70,7 +78,8 @@ namespace HapetFrontend.Parsing
                         {
                             // error here
                             ReportMessage(expr.Location, [], ErrorCode.Get(CTEN.CommonIdentifierExpected));
-                            return new AstEmptyStmt();
+                            toReturn = new AstEmptyStmt();
+                            break;
                         }
 
                         var nxt = PeekToken();
@@ -88,9 +97,16 @@ namespace HapetFrontend.Parsing
                             value = ParseExpression(inInfo, ref outInfo) as AstExpression;
                         }
 
-                        return new AstDirectiveStmt(idExpr, type, new Location(tkn.Location, expr.Location.Ending)) { Value = value };
+                        toReturn = new AstDirectiveStmt(idExpr, type, new Location(tkn.Location, expr.Location.Ending)) { Value = value };
+                        Consume(TokenType.Semicolon, ErrMsg(";", "at the end of the statement"));
+                        break;
                     }
             }
+
+            inInfo.CurrentlyParsingDirective = saved;
+
+            if (toReturn != null)
+                return toReturn;
 
             // error here
             ReportMessage(tkn.Location, [], ErrorCode.Get(CTEN.UnexpectedDirective));

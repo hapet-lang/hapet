@@ -8,7 +8,7 @@ using System;
 public struct VaList
 {
 // TODO: WARN:!!! not linux64 but UNIX 86_64. linux != unix 
-#if TARGET_PLATFORM == "linux-x64"
+#if TARGET_PLATFORM == "linux-x64";
     public int Hz1;
     public int Hz2;
     public byte* Hz3;

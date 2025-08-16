@@ -4,7 +4,7 @@
 using System;
 using System.Collections.Generic;
 
-#if TARGET_ARCH == "x86"
+#if TARGET_ARCH == "x86";
 [DeclarationUsed]
 [SuppressStaticCtorCall]
 private struct JmpBuf
@@ -26,7 +26,7 @@ private struct JmpBuf
     private uint UnwindData4;
     private uint UnwindData5;
 }
-#elif TARGET_ARCH == "x64"
+#elif TARGET_ARCH == "x64";
 [DeclarationUsed]
 [SuppressStaticCtorCall]
 [StructLayoutAttribute(16)]
@@ -72,7 +72,7 @@ private struct JmpBuf
 [DeclarationUsed]
 private static class ExceptionHelper
 {
-#if TARGET_PLATFORM == "win-x64"
+#if TARGET_PLATFORM == "win-x64";
     [DeclarationUsed]
     [DllImport("", "_setjmp", true)]
     private static extern inline int SetJmp(void* env, void* p2);
@@ -82,7 +82,7 @@ private static class ExceptionHelper
     [DeclarationUsed]
     [DllImport("", "llvm.frameaddress.p0", true)]
     private static extern inline void* FrameAddress(int immarg);
-#elif TARGET_PLATFORM == "win-x86"
+#elif TARGET_PLATFORM == "win-x86";
     [DeclarationUsed]
     [DllImport("", "_setjmp3", true)]
     private static extern inline int SetJmp(void* env, int p2, arglist);

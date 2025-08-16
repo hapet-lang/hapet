@@ -63,6 +63,11 @@ namespace HapetFrontend.Entities
         public bool HandleDirectiveInBlock { get; set; }
 
         /// <summary>
+        /// 'true' if directive is parsing now
+        /// </summary>
+        public bool CurrentlyParsingDirective { get; set; }
+
+        /// <summary>
         /// This shite is used for func decl
         /// </summary>
         public AstUnknownDecl CurrentUdecl { get; set; }

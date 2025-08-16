@@ -66,6 +66,15 @@ namespace HapetFrontend.Parsing
             if (allowGenerics && HandleGenericWithLookAhead(inInfo, currNested.RightPart as AstIdExpr, out var genId2, lookAhead))
                 currNested.RightPart = genId2;
 
+            // do not skip any lines if directive is parsing
+            // all directives should be one-lined
+            if (!inInfo.CurrentlyParsingDirective)
+            {
+                // skip new lines
+                if (lookAhead) SkipNewlinesAhead();
+                else SkipNewlines();
+            }
+
             // while there are more idents or periods
             while (lookAhead ? CheckLookAhead(TokenType.Period) : CheckToken(TokenType.Period))
             {
@@ -79,6 +88,16 @@ namespace HapetFrontend.Parsing
                 }
 
                 var __ = lookAhead ? NextLookAhead() : NextToken();
+
+                // do not skip any lines if directive is parsing
+                // all directives should be one-lined
+                if (!inInfo.CurrentlyParsingDirective)
+                {
+                    // skip new lines
+                    if (lookAhead) SkipNewlinesAhead();
+                    else SkipNewlines();
+                }
+
                 if ((lookAhead ? CheckLookAhead(identType) : CheckToken(identType)))
                 {
                     next = lookAhead ? NextLookAhead() : NextToken();
