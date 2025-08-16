@@ -55,20 +55,8 @@ namespace HapetFrontend.Parsing
 
             SkipNewlines();
 
-            // defined only size
-            if (CheckToken(TokenType.Semicolon))
-            {
-                if (sizeExprs.Any(x => x == null))
-                {
-                    // error here. because size was not defined and elements are also were not
-                    ReportMessage(new Location(type.Location.Beginning, CurrentToken.Location.Ending), [], ErrorCode.Get(CTEN.ArraySizeNotSpecified));
-                }
-                return new AstArrayCreateExpr(type, sizeExprs, new List<AstExpression>(), new Location(beg, CurrentToken.Location.Ending))
-                {
-                    IsUnsafeNew = isUnsafeNew
-                };
-            }
-            else if (CheckToken(TokenType.OpenBrace))
+            // defined elements
+            if (CheckToken(TokenType.OpenBrace))
             {
                 // allow only the last size to be null!!! because in other way it is very hard to prepare
                 bool allExceptTheLastAreNotNull = sizeExprs.SkipLast(1).All(x => x != null);
@@ -92,10 +80,19 @@ namespace HapetFrontend.Parsing
                     IsUnsafeNew = isUnsafeNew
                 };
             }
-
-            // error here like unexpected token
-            ReportMessage(PeekToken().Location, [], ErrorCode.Get(CTEN.ArrayUnexpectedToken));
-            return ParseEmptyExpression();
+            // defined only size
+            else
+            {
+                if (sizeExprs.Any(x => x == null))
+                {
+                    // error here. because size was not defined and elements are also were not
+                    ReportMessage(new Location(type.Location.Beginning, CurrentToken.Location.Ending), [], ErrorCode.Get(CTEN.ArraySizeNotSpecified));
+                }
+                return new AstArrayCreateExpr(type, sizeExprs, new List<AstExpression>(), new Location(beg, CurrentToken.Location.Ending))
+                {
+                    IsUnsafeNew = isUnsafeNew
+                };
+            }
         }
 
         private List<AstExpression> ParseArrayElementsExpression(ParserInInfo inInfo, ref ParserOutInfo outInfo)
