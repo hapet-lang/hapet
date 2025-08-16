@@ -510,7 +510,7 @@ namespace HapetLastPrepare
             CheckUsedDeclsBlockExpr(stmt.Body);
         }
 
-        private void CheckUsedDeclsDoWhileStmt(AstWhileStmt stmt)
+        private void CheckUsedDeclsDoWhileStmt(AstDoWhileStmt stmt)
         {
             CheckUsedDeclsExpr(stmt.Condition);
 
