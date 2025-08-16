@@ -80,6 +80,37 @@ namespace HapetFrontend.Parsing
             return new AstWhileStmt(condition, body, new Location(beg.Location, end.Location));
         }
 
+        private AstDoWhileStmt ParseDoWhileStatement(ParserInInfo inInfo, ref ParserOutInfo outInfo)
+        {
+            AstExpression condition = null;
+            AstBlockExpr body;
+
+            var beg = Consume(TokenType.KwDo, ErrMsg("keyword 'do'", "at beginning of 'do-while' loop"));
+
+            // parse its body
+            body = GetLoopOrCondBlock(inInfo, ref outInfo);
+
+            Consume(TokenType.KwWhile, ErrMsg("keyword 'while'", "at the end of 'do-while' loop"));
+
+            // parse arguments
+            Consume(TokenType.OpenParen, ErrMsg("'('", "at the begining of 'while' keyword"));
+
+            // if there is a condition param
+            if (!CheckToken(TokenType.CloseParen))
+            {
+                var expr = ParseExpression(inInfo, ref outInfo);
+
+                if (expr is not AstExpression)
+                    ReportMessage(expr, [], ErrorCode.Get(CTEN.WhileLoopParamNotExpr));
+                condition = expr as AstExpression;
+            }
+            else
+                ReportMessage(PeekToken().Location, [], ErrorCode.Get(CTEN.WhileLoopNoCondition));
+            var end = Consume(TokenType.CloseParen, ErrMsg("')'", "after the condition"));
+
+            return new AstDoWhileStmt(condition, body, new Location(beg.Location, end.Location));
+        }
+
         private AstBlockExpr GetLoopOrCondBlock(ParserInInfo inInfo, ref ParserOutInfo outInfo)
         {
             SkipNewlines();

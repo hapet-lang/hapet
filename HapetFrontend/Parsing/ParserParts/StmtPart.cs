@@ -34,6 +34,9 @@ namespace HapetFrontend.Parsing
                 case TokenType.KwFor:
                     toReturn = ParseForStatement(inInfo, ref outInfo);
                     break;
+                case TokenType.KwDo:
+                    toReturn = ParseDoWhileStatement(inInfo, ref outInfo);
+                    break;
                 case TokenType.KwIf:
                     toReturn = ParseIfStatement(inInfo, ref outInfo);
                     break;

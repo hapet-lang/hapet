@@ -106,7 +106,7 @@ namespace HapetFrontend.Parsing
         KwFor,
         KwForeach, // would be used anywhere?
         KwWhile,
-        KwDo, // would be used anywhere?
+        KwDo, 
         KwGoto, // would be used anywhere?
 
         // exceptions

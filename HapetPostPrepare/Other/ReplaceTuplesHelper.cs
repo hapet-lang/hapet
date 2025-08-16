@@ -173,6 +173,9 @@ namespace HapetPostPrepare
                 case AstWhileStmt whileStmt:
                     ReplaceAllTuplesInWhile(whileStmt);
                     break;
+                case AstDoWhileStmt doWhileStmt:
+                    ReplaceAllTuplesInDoWhile(doWhileStmt);
+                    break;
                 case AstIfStmt ifStmt:
                     ReplaceAllTuplesInIf(ifStmt);
                     break;
@@ -396,6 +399,12 @@ namespace HapetPostPrepare
         }
 
         private void ReplaceAllTuplesInWhile(AstWhileStmt expr)
+        {
+            ReplaceAllTuplesInStmt(expr.Condition);
+            ReplaceAllTuplesInStmt(expr.Body);
+        }
+
+        private void ReplaceAllTuplesInDoWhile(AstDoWhileStmt expr)
         {
             ReplaceAllTuplesInStmt(expr.Condition);
             ReplaceAllTuplesInStmt(expr.Body);
