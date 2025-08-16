@@ -80,41 +80,7 @@ namespace HapetFrontend.Parsing
                 var theBlock = ParseBlockExpression(inInfo, ref outInfo);
                 inInfo.SkipDefaultSemicolonChecks = savedSkip;
 
-                List<AstCaseStmt> cases = new List<AstCaseStmt>();
-
-                // serching for default
-                AstExpression prevWasDefault = null;
-                foreach (var s in theBlock.Statements)
-                {
-                    if (s is not AstCaseStmt caseStmt)
-                    {
-                        if (s is AstDefaultExpr defExpr)
-                        {
-                            prevWasDefault = defExpr;
-                            continue;
-                        }
-
-                        // this cringe is done to handle default case :((
-                        if (s is AstBlockExpr block && prevWasDefault != null)
-                        {
-                            cases.Add(new AstCaseStmt(null, block, prevWasDefault) { IsDefaultCase = true });
-                            prevWasDefault = null;
-                        }
-                        else if (s is AstStatement stmt && prevWasDefault != null)
-                        {
-                            cases.Add(new AstCaseStmt(null, new AstBlockExpr(new List<AstStatement>() { stmt }, stmt), prevWasDefault) { IsDefaultCase = true });
-                            prevWasDefault = null;
-                        }
-                        else
-                        {
-                            // error here. all the statements have to be cases
-                            ReportMessage(s, [], ErrorCode.Get(CTEN.CaseExpectedToBeStmt));
-                        }
-                        continue;
-                    }
-                    cases.Add(caseStmt);
-                }
-
+                List<AstCaseStmt> cases = theBlock.Statements.Select(x => x as AstCaseStmt).ToList();
                 return new AstSwitchStmt(condition, cases, new Location(beg.Location, end.Location));
             }
             else if (CheckToken(TokenType.Semicolon))
@@ -133,27 +99,22 @@ namespace HapetFrontend.Parsing
             }
         }
 
-        private AstStatement ParseCaseStatement(ParserInInfo inInfo, ref ParserOutInfo outInfo)
+        private AstStatement ParseCaseStatement(ParserInInfo inInfo, ref ParserOutInfo outInfo, bool fromDefault, TokenLocation defaultBegin)
         {
             AstExpression pattern = null;
             AstBlockExpr body = null;
             string gotoLabel = null;
-            bool isDefault = false;
+            bool isDefault = fromDefault;
             bool isFalling = false;
 
             TokenLocation beg;
             TokenLocation end;
 
             // the case could start with 'default' word
-            if (CheckToken(TokenType.KwDefault))
-            {
-                isDefault = true;
-                beg = Consume(TokenType.KwDefault, ErrMsg("keyword 'default'", "at beginning of 'default' case statement")).Location;
-            }
+            if (fromDefault)
+                beg = defaultBegin;
             else
-            {
                 beg = Consume(TokenType.KwCase, ErrMsg("keyword 'case'", "at beginning of 'case' statement")).Location;
-            }
 
             // by default :)
             end = beg;
@@ -181,16 +142,10 @@ namespace HapetFrontend.Parsing
             SkipNewlines();
 
             // check for goto label
-            if (CheckToken(TokenType.Identifier))
+            if (CheckToken(TokenType.DollarIdentifier))
             {
-                var expr = ParseExpression(inInfo, ref outInfo);
-                if (!(expr is AstNestedExpr nst && nst.RightPart is AstIdExpr idExpr))
-                {
-                    // error here
-                    ReportMessage(expr.Location, [], ErrorCode.Get(CTEN.CommonIdentifierExpected));
-                    return new AstEmptyStmt();
-                }
-                gotoLabel = idExpr.Name;
+                var lbl = NextToken();
+                gotoLabel = lbl.Data as string;
             }
 
             SkipNewlines();

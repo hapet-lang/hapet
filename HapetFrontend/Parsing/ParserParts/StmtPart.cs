@@ -45,7 +45,7 @@ namespace HapetFrontend.Parsing
                     toReturn = ParseSwitchStatement(inInfo, ref outInfo);
                     break;
                 case TokenType.KwCase:
-                    toReturn = ParseCaseStatement(inInfo, ref outInfo);
+                    toReturn = ParseCaseStatement(inInfo, ref outInfo, false, null);
                     break;
 
                 case TokenType.KwTry:

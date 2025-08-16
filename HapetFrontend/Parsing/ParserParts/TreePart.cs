@@ -606,6 +606,13 @@ namespace HapetFrontend.Parsing
                     {
                         NextToken();
 
+                        // it is a default case
+                        SkipNewlines();
+                        if (CheckTokens(TokenType.OpenBrace, TokenType.DollarIdentifier))
+                        {
+                            return ParseCaseStatement(inInfo, ref outInfo, true, token.Location);
+                        }
+
                         // only type is expected
                         AstExpression typeExpr = null;
                         if (CheckToken(TokenType.OpenParen))
@@ -617,6 +624,7 @@ namespace HapetFrontend.Parsing
                             inInfo.AllowMultiplyExpression = saved;
                             Consume(TokenType.CloseParen, ErrMsg(")", "after default' type arg"));
                         }
+
                         // it is just a 'default' word
                         return new AstDefaultExpr(new Location(token.Location)) { TypeForDefault = typeExpr };
                     }
