@@ -90,6 +90,7 @@ namespace HapetFrontend.Parsing
             // parse its body
             body = GetLoopOrCondBlock(inInfo, ref outInfo);
 
+            SkipNewlines();
             Consume(TokenType.KwWhile, ErrMsg("keyword 'while'", "at the end of 'do-while' loop"));
 
             // parse arguments
