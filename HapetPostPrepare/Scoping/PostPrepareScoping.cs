@@ -547,6 +547,9 @@ namespace HapetPostPrepare
                 case AstWhileStmt whileStmt:
                     PostPrepareWhileStmtScoping(whileStmt);
                     break;
+                case AstDoWhileStmt doWhileStmt:
+                    PostPrepareDoWhileStmtScoping(doWhileStmt);
+                    break;
                 case AstIfStmt ifStmt:
                     PostPrepareIfStmtScoping(ifStmt);
                     break;
@@ -876,6 +879,21 @@ namespace HapetPostPrepare
             SetScopeAndParent(whileStmt.Body, whileStmt);
 
             string scopename = $"while_{_whileCounter++}_scope";
+            var whileScope = PostPrepareBlockScoping(whileStmt.Body, scopename);
+
+            if (whileStmt.Condition != null)
+            {
+                SetScopeAndParent(whileStmt.Condition, whileStmt, whileScope);
+                PostPrepareExprScoping(whileStmt.Condition);
+            }
+        }
+
+        private static ulong _doWhileCounter = 0;
+        private void PostPrepareDoWhileStmtScoping(AstDoWhileStmt whileStmt)
+        {
+            SetScopeAndParent(whileStmt.Body, whileStmt);
+
+            string scopename = $"do_while_{_doWhileCounter++}_scope";
             var whileScope = PostPrepareBlockScoping(whileStmt.Body, scopename);
 
             if (whileStmt.Condition != null)

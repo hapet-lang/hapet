@@ -446,6 +446,9 @@ namespace HapetPostPrepare
                 case AstWhileStmt whileStmt:
                     PostPrepareWhileStmtInference(whileStmt, inInfo, ref outInfo);
                     break;
+                case AstDoWhileStmt doWhileStmt:
+                    PostPrepareDoWhileStmtInference(doWhileStmt, inInfo, ref outInfo);
+                    break;
                 case AstIfStmt ifStmt:
                     PostPrepareIfStmtInference(ifStmt, inInfo, ref outInfo);
                     break;
@@ -1252,6 +1255,19 @@ namespace HapetPostPrepare
         }
 
         private void PostPrepareWhileStmtInference(AstWhileStmt whileStmt, InInfo inInfo, ref OutInfo outInfo)
+        {
+            PostPrepareExprInference(whileStmt.Condition, inInfo, ref outInfo);
+
+            // error if it is not a bool type because it has to be
+            if (whileStmt.Condition.OutType is not BoolType)
+            {
+                _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, whileStmt.Condition, [], ErrorCode.Get(CTEN.ExprIsNotBool));
+            }
+
+            PostPrepareExprInference(whileStmt.Body, inInfo, ref outInfo);
+        }
+
+        private void PostPrepareDoWhileStmtInference(AstDoWhileStmt whileStmt, InInfo inInfo, ref OutInfo outInfo)
         {
             PostPrepareExprInference(whileStmt.Condition, inInfo, ref outInfo);
 
