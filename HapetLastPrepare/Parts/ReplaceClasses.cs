@@ -262,6 +262,9 @@ namespace HapetLastPrepare
                 case AstWhileStmt whileStmt:
                     LPRACWhileStmt(whileStmt);
                     break;
+                case AstDoWhileStmt doWhileStmt:
+                    LPRACDoWhileStmt(doWhileStmt);
+                    break;
                 case AstIfStmt ifStmt:
                     LPRACIfStmt(ifStmt);
                     break;
@@ -561,6 +564,13 @@ namespace HapetLastPrepare
         }
 
         private void LPRACWhileStmt(AstWhileStmt stmt)
+        {
+            LPRACExpr(stmt.Condition);
+
+            LPRACBlockExpr(stmt.Body);
+        }
+
+        private void LPRACDoWhileStmt(AstDoWhileStmt stmt)
         {
             LPRACExpr(stmt.Condition);
 

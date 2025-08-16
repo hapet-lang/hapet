@@ -272,6 +272,9 @@ namespace HapetLastPrepare
                 case AstWhileStmt whileStmt:
                     CheckUsedDeclsWhileStmt(whileStmt);
                     break;
+                case AstDoWhileStmt doWhileStmt:
+                    CheckUsedDeclsDoWhileStmt(doWhileStmt);
+                    break;
                 case AstIfStmt ifStmt:
                     CheckUsedDeclsIfStmt(ifStmt);
                     break;
@@ -501,6 +504,13 @@ namespace HapetLastPrepare
         }
 
         private void CheckUsedDeclsWhileStmt(AstWhileStmt stmt)
+        {
+            CheckUsedDeclsExpr(stmt.Condition);
+
+            CheckUsedDeclsBlockExpr(stmt.Body);
+        }
+
+        private void CheckUsedDeclsDoWhileStmt(AstWhileStmt stmt)
         {
             CheckUsedDeclsExpr(stmt.Condition);
 
