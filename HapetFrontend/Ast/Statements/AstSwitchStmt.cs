@@ -64,6 +64,11 @@ namespace HapetFrontend.Ast.Statements
         /// </summary>
         public bool IsFallingCase { get; set; }
 
+        /// <summary>
+        /// The label used by goto
+        /// </summary>
+        public string LabelForGoto { get; set; }
+
         public AstCaseStmt(AstExpression pattern, AstBlockExpr body, ILocation location = null) : base(location)
         {
             Pattern = pattern;
