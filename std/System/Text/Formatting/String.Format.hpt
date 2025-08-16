@@ -1024,30 +1024,31 @@ unsafe static partial class Numeric
             case ('G')
             {
                 if (digits > 0)
-                    goto default;
+                    goto caseDefault;
                 else
-                    goto case 'D';
+                    goto caseD;
             }
-            case 'D':
+            case ('D') $caseD
+            {
                 Int32ToDecStr(formatter, value, digits, culture.NegativeSign);
-                break;
-
-            case 'X':
+            }
+            case ('X')
+            {
                 // fmt-('X'-'A'+1) gives us the base hex character in either
                 // uppercase or lowercase, depending on the casing of fmt
                 Int32ToHexStr(formatter, (uint)value, fmt - ('X' - 'A' + 10), digits);
-                break;
-
-            default:
+            }
+            default $caseDefault
+            {
                 var number = new Number();
-                var buffer = stackalloc char[MaxNumberDigits + 1];
+                var buffer = (new char[MaxNumberDigits + 1]).Buffer;
                 number.Digits = buffer;
                 Int32ToNumber(value, ref number);
                 if (fmt != 0)
                     NumberToString(formatter, ref number, fmt, digits, culture);
                 else
                     NumberToCustomFormatString(formatter, ref number, specifier, culture);
-                break;
+            }
         }
     }
 
@@ -1059,32 +1060,34 @@ unsafe static partial class Numeric
         // ANDing with 0xFFDF has the effect of uppercasing the character
         switch (fmt & 0xFFDF)
         {
-            case 'G':
+            case ('G')
+            {
                 if (digits > 0)
-                    goto default;
+                    goto caseDefault;
                 else
-                    goto case 'D';
-
-            case 'D':
+                    goto caseD;
+            }
+            case ('D') $caseD
+            {
                 UInt32ToDecStr(formatter, value, digits);
-                break;
-
-            case 'X':
+            }
+            case ('X')
+            {
                 // fmt-('X'-'A'+1) gives us the base hex character in either
                 // uppercase or lowercase, depending on the casing of fmt
                 Int32ToHexStr(formatter, value, fmt - ('X' - 'A' + 10), digits);
-                break;
-
-            default:
+            }
+            default $caseDefault
+            {
                 var number = new Number();
-                var buffer = stackalloc char[MaxNumberDigits + 1];
+                var buffer = (new char[MaxNumberDigits + 1]).Buffer;
                 number.Digits = buffer;
                 UInt32ToNumber(value, ref number);
                 if (fmt != 0)
                     NumberToString(formatter, ref number, fmt, digits, culture);
                 else
                     NumberToCustomFormatString(formatter, ref number, specifier, culture);
-                break;
+            }
         }
     }
 
@@ -1096,32 +1099,34 @@ unsafe static partial class Numeric
         // ANDing with 0xFFDF has the effect of uppercasing the character
         switch (fmt & 0xFFDF)
         {
-            case 'G':
+            case ('G')
+            {
                 if (digits > 0)
-                    goto default;
+                    goto caseDefault;
                 else
-                    goto case 'D';
-
-            case 'D':
+                    goto caseD;
+            }
+            case ('D') $caseD
+            {
                 Int64ToDecStr(formatter, value, digits, culture.NegativeSign);
-                break;
-
-            case 'X':
+            }
+            case ('X')
+            {
                 // fmt-('X'-'A'+1) gives us the base hex character in either
                 // uppercase or lowercase, depending on the casing of fmt
                 Int64ToHexStr(formatter, (ulong)value, fmt - ('X' - 'A' + 10), digits);
-                break;
-
-            default:
+            }
+            default $caseDefault
+            {
                 var number = new Number();
-                var buffer = stackalloc char[MaxNumberDigits + 1];
+                var buffer = (new char[MaxNumberDigits + 1]).Buffer;
                 number.Digits = buffer;
                 Int64ToNumber(value, ref number);
                 if (fmt != 0)
                     NumberToString(formatter, ref number, fmt, digits, culture);
                 else
                     NumberToCustomFormatString(formatter, ref number, specifier, culture);
-                break;
+            }
         }
     }
 
@@ -1133,32 +1138,34 @@ unsafe static partial class Numeric
         // ANDing with 0xFFDF has the effect of uppercasing the character
         switch (fmt & 0xFFDF)
         {
-            case 'G':
+            case ('G')
+            {
                 if (digits > 0)
-                    goto default;
+                    goto caseDefault;
                 else
-                    goto case 'D';
-
-            case 'D':
+                    goto caseD;
+            }
+            case ('D') $caseD
+            {
                 UInt64ToDecStr(formatter, value, digits);
-                break;
-
-            case 'X':
+            }
+            case ('X')
+            {
                 // fmt-('X'-'A'+1) gives us the base hex character in either
                 // uppercase or lowercase, depending on the casing of fmt
                 Int64ToHexStr(formatter, value, fmt - ('X' - 'A' + 10), digits);
-                break;
-
-            default:
+            }
+            default $caseDefault
+            {
                 var number = new Number();
-                var buffer = stackalloc char[MaxNumberDigits + 1];
+                var buffer = (new char[MaxNumberDigits + 1]).Buffer;
                 number.Digits = buffer;
                 UInt64ToNumber(value, ref number);
                 if (fmt != 0)
                     NumberToString(formatter, ref number, fmt, digits, culture);
                 else
                     NumberToCustomFormatString(formatter, ref number, specifier, culture);
-                break;
+            }
         }
     }
 
@@ -1171,19 +1178,20 @@ unsafe static partial class Numeric
         // ANDing with 0xFFDF has the effect of uppercasing the character
         switch (fmt & 0xFFDF)
         {
-            case 'G':
+            case ('G')
+            {
                 if (digits > 7)
                     precision = 9;
-                break;
-
-            case 'E':
+            }
+            case ('E')
+            {
                 if (digits > 6)
                     precision = 9;
-                break;
+            }
         }
 
         var number = new Number();
-        var buffer = stackalloc char[MaxFloatingDigits + 1];
+        var buffer = (new char[MaxFloatingDigits + 1]).Buffer;
         number.Digits = buffer;
         DoubleToNumber(value, precision, ref number);
 
@@ -1218,19 +1226,20 @@ unsafe static partial class Numeric
         // ANDing with 0xFFDF has the effect of uppercasing the character
         switch (fmt & 0xFFDF)
         {
-            case 'G':
+            case ('G')
+            {
                 if (digits > 15)
                     precision = 17;
-                break;
-
-            case 'E':
+            }
+            case ('E')
+            {
                 if (digits > 14)
                     precision = 17;
-                break;
+            }
         }
 
         var number = new Number();
-        var buffer = stackalloc char[MaxFloatingDigits + 1];
+        var buffer = (new char[MaxFloatingDigits + 1]).Buffer;
         number.Digits = buffer;
         DoubleToNumber(value, precision, ref number);
 
@@ -1276,42 +1285,38 @@ unsafe static partial class Numeric
         // ANDing with 0xFFDF has the effect of uppercasing the character
         switch (format & 0xFFDF)
         {
-            case 'C':
-                {
-                    var cultureData = culture.CurrencyData;
-                    var bufferSize = cultureData.GetBufferSize(ref maxDigits, number.Scale);
-                    RoundNumber(ref number, number.Scale + maxDigits);
+            case ('C')
+            {
+                var cultureData = culture.CurrencyData;
+                var bufferSize = cultureData.GetBufferSize(ref maxDigits, number.Scale);
+                RoundNumber(ref number, number.Scale + maxDigits);
 
-                    var buffer = stackalloc char[bufferSize];
-                    var ptr = FormatCurrency(
-                        buffer,
-                        ref number,
-                        maxDigits,
-                        cultureData,
-                        number.Sign > 0 ? culture.CurrencyNegativePattern : culture.CurrencyPositivePattern,
-                        culture.CurrencySymbol
-                    );
+                var buffer = (new char[bufferSize]).Buffer;
+                var ptr = FormatCurrency(
+                    buffer,
+                    ref number,
+                    maxDigits,
+                    cultureData,
+                    number.Sign > 0 ? culture.CurrencyNegativePattern : culture.CurrencyPositivePattern,
+                    culture.CurrencySymbol
+                );
 
-                    formatter.Append(buffer, (int)(ptr - buffer));
-                    break;
-                }
+                formatter.Append(buffer, (int)(ptr - buffer));
+            }
+            case ('F')
+            {
+                var cultureData = culture.FixedData;
+                var bufferSize = cultureData.GetBufferSize(ref maxDigits, number.Scale);
+                RoundNumber(ref number, number.Scale + maxDigits);
 
-            case 'F':
-                {
-                    var cultureData = culture.FixedData;
-                    var bufferSize = cultureData.GetBufferSize(ref maxDigits, number.Scale);
-                    RoundNumber(ref number, number.Scale + maxDigits);
+                var buffer = (new char[bufferSize]).Buffer;
+                var ptr = buffer;
+                if (number.Sign > 0)
+                    AppendString(&ptr, cultureData.NegativeSign);
 
-                    var buffer = stackalloc char[bufferSize];
-                    var ptr = buffer;
-                    if (number.Sign > 0)
-                        AppendString(&ptr, cultureData.NegativeSign);
-
-                    ptr = FormatFixed(ptr, ref number, maxDigits, cultureData);
-                    formatter.Append(buffer, (int)(ptr - buffer));
-                    break;
-                }
-
+                ptr = FormatFixed(ptr, ref number, maxDigits, cultureData);
+                formatter.Append(buffer, (int)(ptr - buffer));
+            }
             case 'N':
                 {
                     var cultureData = culture.NumberData;
