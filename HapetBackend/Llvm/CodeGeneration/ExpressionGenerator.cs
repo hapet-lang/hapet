@@ -66,6 +66,7 @@ namespace HapetBackend.Llvm
                 case AstAssignStmt assignStmt: GenerateAssignStmt(assignStmt); return null;
                 case AstForStmt forStmt: GenerateForStmt(forStmt); return null;
                 case AstWhileStmt whileStmt: GenerateWhileStmt(whileStmt); return null;
+                case AstDoWhileStmt doWhileStmt: GenerateDoWhileStmt(doWhileStmt); return null;
                 case AstIfStmt ifStmt: GenerateIfStmt(ifStmt); return null;
                 case AstSwitchStmt switchStmt: GenerateSwitchStmt(switchStmt); return null;
                 case AstBreakContStmt breakContStmt: GenerateBreakContStmt(breakContStmt); return null;
@@ -1360,6 +1361,83 @@ namespace HapetBackend.Llvm
                 // setting br without condition into inc block from body block
                 _builder.BuildBr(bbCond);
             }
+
+            // appending them sooner
+            LLVM.AppendExistingBasicBlock(_lastFunctionValueRef, bbEnd);
+
+            _builder.PositionAtEnd(bbEnd);
+
+            // restoring prev blocks
+            _currentLoopInc = prevWhileInc;
+            _currentLoopEnd = prevWhileEnd;
+            _currentLoop = prevLoop;
+        }
+
+        private ulong _doWhileCounter;
+        private unsafe void GenerateDoWhileStmt(AstDoWhileStmt stmt)
+        {
+            // WARN: this strange code is not just for 'fun'
+            // when creating nested 'do-while' loops it would be easier to read LLVM IR code with that shite
+            // so for example if we have two nested 'do-while' loops it would look like this:
+            // while1.body: ...
+            //   while2.body: ...
+            //   while2.cond: ...
+            //   while2.end: ...
+            // while1.cond: ...
+            // while1.end: ...
+
+            _doWhileCounter++;
+
+            // saving previous blocks because of nesting
+            // WARN: for 'do-while' loops there are no Inc block
+            // so the Cond block is used directly
+            var prevWhileInc = _currentLoopInc;
+            var prevWhileEnd = _currentLoopEnd;
+            var prevLoop = _currentLoop;
+
+            var bbBody = _lastFunctionValueRef.AppendBasicBlockInContext(_context, $"while{_whileCounter}.body");
+
+            // creating other blocks
+            var bbCond = _context.CreateBasicBlock($"while{_whileCounter}.cond");
+            var bbEnd = _context.CreateBasicBlock($"while{_whileCounter}.end");
+
+            // directly br into loop body
+            _builder.BuildBr(bbBody);
+
+            _currentLoopInc = bbCond; // check upper WARN
+            _currentLoopEnd = bbEnd;
+            _currentLoop = stmt;
+
+            // body
+            _builder.PositionAtEnd(bbBody);
+            if (stmt.Body != null)
+            {
+                // generating body code
+                GenerateExpressionCode(stmt.Body);
+            }
+
+            // check if it has br/ret 
+            if (!AstBlockExpr.IsBlockHasItsOwnBr(stmt.Body))
+            {
+                // setting br without condition into inc block from body block
+                _builder.BuildBr(bbCond);
+            }
+
+            // appending them sooner
+            LLVM.AppendExistingBasicBlock(_lastFunctionValueRef, bbCond);
+            // condition
+            _builder.PositionAtEnd(bbCond);
+            if (stmt.Condition != null)
+            {
+                // building the condition
+                var cmp = GenerateExpressionCode(stmt.Condition);
+                _builder.BuildCondBr(cmp, bbBody, bbEnd);
+            }
+            else
+            {
+                // if the second param is null (should not happen!!! - checked in Parsing) - just move to the body block
+                _builder.BuildBr(bbBody);
+            }            
 
             // appending them sooner
             LLVM.AppendExistingBasicBlock(_lastFunctionValueRef, bbEnd);
