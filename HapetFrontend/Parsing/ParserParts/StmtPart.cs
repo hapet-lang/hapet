@@ -52,6 +52,10 @@ namespace HapetFrontend.Parsing
                     toReturn = ParseTryCatchStatement(inInfo, ref outInfo);
                     break;
 
+                case TokenType.KwGoto:
+                    toReturn = ParseGotoStatement(inInfo, ref outInfo);
+                    break;
+
                 case TokenType.KwContinue:
                 case TokenType.KwBreak:
                     NextToken();
