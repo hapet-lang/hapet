@@ -308,6 +308,8 @@ namespace HapetLastPrepare
                 case AstCatchStmt catchStmt:
                     CheckUsedDeclsCatchStmt(catchStmt);
                     break;
+                case AstGotoStmt:
+                    break;
 
                 // skip literals
                 case AstNumberExpr:

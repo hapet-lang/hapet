@@ -298,6 +298,8 @@ namespace HapetLastPrepare
                 case AstCatchStmt catchStmt:
                     LPRACCatchStmt(catchStmt);
                     break;
+                case AstGotoStmt:
+                    break;
 
                 // skip literals
                 case AstNumberExpr:
