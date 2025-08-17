@@ -514,7 +514,7 @@ public unsafe sealed partial class StringBuffer
         curr++;
         if (c == ':')
         {
-            var specifierBuffer = (new char[MaxSpecifierSize]).Buffer;
+            var specifierBuffer = (stackalloc char[MaxSpecifierSize]).Buffer;
             var specifierEnd = specifierBuffer + MaxSpecifierSize;
             var specifierPtr = specifierBuffer;
 
@@ -1041,7 +1041,7 @@ unsafe static partial class Numeric
             default $caseDefault
             {
                 var number = new Number();
-                var buffer = (new char[MaxNumberDigits + 1]).Buffer;
+                var buffer = (stackalloc char[MaxNumberDigits + 1]).Buffer;
                 number.Digits = buffer;
                 Int32ToNumber(value, ref number);
                 if (fmt != 0)
@@ -1080,7 +1080,7 @@ unsafe static partial class Numeric
             default $caseDefault
             {
                 var number = new Number();
-                var buffer = (new char[MaxNumberDigits + 1]).Buffer;
+                var buffer = (stackalloc char[MaxNumberDigits + 1]).Buffer;
                 number.Digits = buffer;
                 UInt32ToNumber(value, ref number);
                 if (fmt != 0)
@@ -1119,7 +1119,7 @@ unsafe static partial class Numeric
             default $caseDefault
             {
                 var number = new Number();
-                var buffer = (new char[MaxNumberDigits + 1]).Buffer;
+                var buffer = (stackalloc char[MaxNumberDigits + 1]).Buffer;
                 number.Digits = buffer;
                 Int64ToNumber(value, ref number);
                 if (fmt != 0)
@@ -1158,7 +1158,7 @@ unsafe static partial class Numeric
             default $caseDefault
             {
                 var number = new Number();
-                var buffer = (new char[MaxNumberDigits + 1]).Buffer;
+                var buffer = (stackalloc char[MaxNumberDigits + 1]).Buffer;
                 number.Digits = buffer;
                 UInt64ToNumber(value, ref number);
                 if (fmt != 0)
@@ -1191,7 +1191,7 @@ unsafe static partial class Numeric
         }
 
         var number = new Number();
-        var buffer = (new char[MaxFloatingDigits + 1]).Buffer;
+        var buffer = (stackalloc char[MaxFloatingDigits + 1]).Buffer;
         number.Digits = buffer;
         DoubleToNumber(value, precision, ref number);
 
@@ -1239,7 +1239,7 @@ unsafe static partial class Numeric
         }
 
         var number = new Number();
-        var buffer = (new char[MaxFloatingDigits + 1]).Buffer;
+        var buffer = (stackalloc char[MaxFloatingDigits + 1]).Buffer;
         number.Digits = buffer;
         DoubleToNumber(value, precision, ref number);
 
@@ -1291,7 +1291,7 @@ unsafe static partial class Numeric
                 var bufferSize = cultureData.GetBufferSize(ref maxDigits, number.Scale);
                 RoundNumber(ref number, number.Scale + maxDigits);
 
-                var buffer = (new char[bufferSize]).Buffer;
+                var buffer = (stackalloc char[bufferSize]).Buffer;
                 var ptr = FormatCurrency(
                     buffer,
                     ref number,
@@ -1309,7 +1309,7 @@ unsafe static partial class Numeric
                 var bufferSize = cultureData.GetBufferSize(ref maxDigits, number.Scale);
                 RoundNumber(ref number, number.Scale + maxDigits);
 
-                var buffer = (new char[bufferSize]).Buffer;
+                var buffer = (stackalloc char[bufferSize]).Buffer;
                 var ptr = buffer;
                 if (number.Sign > 0)
                     AppendString(&ptr, cultureData.NegativeSign);
