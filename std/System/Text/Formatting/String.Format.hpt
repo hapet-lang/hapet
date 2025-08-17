@@ -1317,119 +1317,111 @@ unsafe static partial class Numeric
                 ptr = FormatFixed(ptr, ref number, maxDigits, cultureData);
                 formatter.Append(buffer, (int)(ptr - buffer));
             }
-            case 'N':
+            case ('N')
+            {
+                var cultureData = culture.NumberData;
+                var bufferSize = cultureData.GetBufferSize(ref maxDigits, number.Scale);
+                RoundNumber(ref number, number.Scale + maxDigits);
+
+                var buffer = (stackalloc char[bufferSize]).Buffer;
+                var ptr = FormatNumber(
+                    buffer,
+                    ref number,
+                    maxDigits,
+                    number.Sign > 0 ? culture.NumberNegativePattern : culture.NumberPositivePattern,
+                    cultureData
+                );
+
+                formatter.Append(buffer, (int)(ptr - buffer));
+            }
+            case ('E')
+            {
+                var cultureData = culture.ScientificData;
+                var bufferSize = cultureData.GetBufferSize(ref maxDigits, number.Scale);
+                maxDigits++;
+
+                RoundNumber(ref number, maxDigits);
+
+                var buffer = stackalloc char[bufferSize];
+                var ptr = buffer;
+                if (number.Sign > 0)
+                    AppendString(&ptr, cultureData.NegativeSign);
+
+                ptr = FormatScientific(
+                    ptr,
+                    ref number,
+                    maxDigits,
+                    format, // TODO: fix casing
+                    cultureData.DecimalSeparator,
+                    culture.PositiveSign,
+                    culture.NegativeSign
+                );
+
+                formatter.Append(buffer, (int)(ptr - buffer));
+            }
+            case ('P')
+            {
+                number.Scale += 2;
+                var cultureData = culture.PercentData;
+                var bufferSize = cultureData.GetBufferSize(ref maxDigits, number.Scale);
+                RoundNumber(ref number, number.Scale + maxDigits);
+
+                var buffer = stackalloc char[bufferSize];
+                var ptr = FormatPercent(
+                    buffer,
+                    ref number,
+                    maxDigits,
+                    cultureData,
+                    number.Sign > 0 ? culture.PercentNegativePattern : culture.PercentPositivePattern,
+                    culture.PercentSymbol
+                );
+
+                formatter.Append(buffer, (int)(ptr - buffer));
+            }
+            case ('G')
+            {
+                var enableRounding = true;
+                if (maxDigits < 1)
                 {
-                    var cultureData = culture.NumberData;
-                    var bufferSize = cultureData.GetBufferSize(ref maxDigits, number.Scale);
-                    RoundNumber(ref number, number.Scale + maxDigits);
-
-                    var buffer = stackalloc char[bufferSize];
-                    var ptr = FormatNumber(
-                        buffer,
-                        ref number,
-                        maxDigits,
-                        number.Sign > 0 ? culture.NumberNegativePattern : culture.NumberPositivePattern,
-                        cultureData
-                    );
-
-                    formatter.Append(buffer, (int)(ptr - buffer));
-                    break;
-                }
-
-            case 'E':
-                {
-                    var cultureData = culture.ScientificData;
-                    var bufferSize = cultureData.GetBufferSize(ref maxDigits, number.Scale);
-                    maxDigits++;
-
-                    RoundNumber(ref number, maxDigits);
-
-                    var buffer = stackalloc char[bufferSize];
-                    var ptr = buffer;
-                    if (number.Sign > 0)
-                        AppendString(&ptr, cultureData.NegativeSign);
-
-                    ptr = FormatScientific(
-                        ptr,
-                        ref number,
-                        maxDigits,
-                        format, // TODO: fix casing
-                        cultureData.DecimalSeparator,
-                        culture.PositiveSign,
-                        culture.NegativeSign
-                    );
-
-                    formatter.Append(buffer, (int)(ptr - buffer));
-                    break;
-                }
-
-            case 'P':
-                {
-                    number.Scale += 2;
-                    var cultureData = culture.PercentData;
-                    var bufferSize = cultureData.GetBufferSize(ref maxDigits, number.Scale);
-                    RoundNumber(ref number, number.Scale + maxDigits);
-
-                    var buffer = stackalloc char[bufferSize];
-                    var ptr = FormatPercent(
-                        buffer,
-                        ref number,
-                        maxDigits,
-                        cultureData,
-                        number.Sign > 0 ? culture.PercentNegativePattern : culture.PercentPositivePattern,
-                        culture.PercentSymbol
-                    );
-
-                    formatter.Append(buffer, (int)(ptr - buffer));
-                    break;
-                }
-
-            case 'G':
-                {
-                    var enableRounding = true;
-                    if (maxDigits < 1)
+                    if (isDecimal && maxDigits == -1)
                     {
-                        if (isDecimal && maxDigits == -1)
-                        {
-                            // if we're formatting a decimal, default to 29 digits precision
-                            // only for G formatting without a precision specifier
-                            maxDigits = DecimalPrecision;
-                            enableRounding = false;
-                        }
-                        else
-                            maxDigits = number.Precision;
+                        // if we're formatting a decimal, default to 29 digits precision
+                        // only for G formatting without a precision specifier
+                        maxDigits = DecimalPrecision;
+                        enableRounding = false;
                     }
-
-                    var bufferSize = maxDigits + culture.DecimalBufferSize;
-                    var buffer = stackalloc char[bufferSize];
-                    var ptr = buffer;
-
-                    // round for G formatting only if a precision is given
-                    // we need to handle the minus zero case also
-                    if (enableRounding)
-                        RoundNumber(ref number, maxDigits);
-                    else if (isDecimal && number.Digits[0] == 0)
-                        number.Sign = 0;
-
-                    if (number.Sign > 0)
-                        AppendString(&ptr, culture.NegativeSign);
-
-                    ptr = FormatGeneral(
-                        ptr,
-                        ref number,
-                        maxDigits,
-                        (char)(format - ('G' - 'E')),
-                        culture.NumberData.DecimalSeparator,
-                        culture.PositiveSign,
-                        culture.NegativeSign,
-                        !enableRounding
-                    );
-
-                    formatter.Append(buffer, (int)(ptr - buffer));
-                    break;
+                    else
+                        maxDigits = number.Precision;
                 }
 
-            default:
+                var bufferSize = maxDigits + culture.DecimalBufferSize;
+                var buffer = stackalloc char[bufferSize];
+                var ptr = buffer;
+
+                // round for G formatting only if a precision is given
+                // we need to handle the minus zero case also
+                if (enableRounding)
+                    RoundNumber(ref number, maxDigits);
+                else if (isDecimal && number.Digits[0] == 0)
+                    number.Sign = 0;
+
+                if (number.Sign > 0)
+                    AppendString(&ptr, culture.NegativeSign);
+
+                ptr = FormatGeneral(
+                    ptr,
+                    ref number,
+                    maxDigits,
+                    (char)(format - ('G' - 'E')),
+                    culture.NumberData.DecimalSeparator,
+                    culture.PositiveSign,
+                    culture.NegativeSign,
+                    !enableRounding
+                );
+
+                formatter.Append(buffer, (int)(ptr - buffer));
+            }
+            default
                 throw new FormatException(string.Format(SR.UnknownFormatSpecifier, format));
         }
     }
@@ -1441,10 +1433,17 @@ unsafe static partial class Numeric
             char c = currencyFormat[i];
             switch (c)
             {
-                case '#': buffer = FormatFixed(buffer, ref number, maxDigits, data); break;
-                case '-': AppendString(&buffer, data.NegativeSign); break;
-                case '$': AppendString(&buffer, currencySymbol); break;
-                default: *buffer++ = c; break;
+                case ('#')
+                    buffer = FormatFixed(buffer, ref number, maxDigits, data);
+                case ('-') 
+                    AppendString(&buffer, data.NegativeSign);
+                case ('$') 
+                    AppendString(&buffer, currencySymbol);
+                default
+                {
+                    *buffer = c; 
+                    buffer++;
+                }
             }
         }
 
@@ -1458,9 +1457,15 @@ unsafe static partial class Numeric
             char c = format[i];
             switch (c)
             {
-                case '#': buffer = FormatFixed(buffer, ref number, maxDigits, data); break;
-                case '-': AppendString(&buffer, data.NegativeSign); break;
-                default: *buffer++ = c; break;
+                case ('#') 
+                    buffer = FormatFixed(buffer, ref number, maxDigits, data);
+                case ('-') 
+                    AppendString(&buffer, data.NegativeSign);
+                default
+                {
+                    *buffer = c;
+                    buffer++;
+                }
             }
         }
 
@@ -1474,10 +1479,17 @@ unsafe static partial class Numeric
             char c = format[i];
             switch (c)
             {
-                case '#': buffer = FormatFixed(buffer, ref number, maxDigits, data); break;
-                case '-': AppendString(&buffer, data.NegativeSign); break;
-                case '%': AppendString(&buffer, percentSymbol); break;
-                default: *buffer++ = c; break;
+                case ('#') 
+                    buffer = FormatFixed(buffer, ref number, maxDigits, data);
+                case ('-') 
+                    AppendString(&buffer, data.NegativeSign); 
+                case ('%') 
+                    AppendString(&buffer, percentSymbol); 
+                default
+                {
+                    *buffer = c;
+                    buffer++;
+                }
             }
         }
 
@@ -1685,7 +1697,7 @@ unsafe static partial class Numeric
                 bufferLength = negativeLength + maxDigits;
         }
 
-        var buffer = stackalloc char[bufferLength];
+        var buffer = (stackalloc char[bufferLength]).Buffer;
         var p = Int32ToDecChars(buffer + bufferLength, value >= 0 ? (uint)value : (uint)-value, digits);
         if (value < 0)
         {
@@ -1699,7 +1711,7 @@ unsafe static partial class Numeric
 
     static void UInt32ToDecStr(StringBuffer formatter, uint value, int digits)
     {
-        var buffer = stackalloc char[100];
+        var buffer = (stackalloc char[100]).Buffer;
         if (digits < 1)
             digits = 1;
 
@@ -1709,7 +1721,7 @@ unsafe static partial class Numeric
 
     static void Int32ToHexStr(StringBuffer formatter, uint value, int hexBase, int digits)
     {
-        var buffer = stackalloc char[100];
+        var buffer = (stackalloc char[100]).Buffer;
         if (digits < 1)
             digits = 1;
 
@@ -1734,7 +1746,7 @@ unsafe static partial class Numeric
                 bufferLength = negativeLength + maxDigits;
         }
 
-        var buffer = stackalloc char[bufferLength];
+        var buffer = (stackalloc char[bufferLength]).Buffer;
         var p = buffer + bufferLength;
         var uv = (ulong)value;
         while (High32(uv) != 0)
@@ -1759,7 +1771,7 @@ unsafe static partial class Numeric
         if (digits < 1)
             digits = 1;
 
-        var buffer = stackalloc char[100];
+        var buffer = (stackalloc char[100]).Buffer;
         var p = buffer + 100;
         while (High32(value) != 0)
         {
@@ -1773,7 +1785,7 @@ unsafe static partial class Numeric
 
     static void Int64ToHexStr(StringBuffer formatter, ulong value, int hexBase, int digits)
     {
-        var buffer = stackalloc char[100];
+        var buffer = (stackalloc char[100]).Buffer;
         char* ptr;
         if (High32(value) != 0)
         {
@@ -1794,13 +1806,17 @@ unsafe static partial class Numeric
     {
         while (value != 0)
         {
-            *--p = (char)(value % 10 + '0');
+            --p;
+            *p = (char)(value % 10 + '0');
             value /= 10;
             digits--;
         }
 
         while (--digits >= 0)
-            *--p = '0';
+        {
+            --p;
+            *p = '0';
+        }
         return p;
     }
 
@@ -1809,8 +1825,9 @@ unsafe static partial class Numeric
         while (--digits >= 0 || value != 0)
         {
             var digit = value & 0xF;
-            *--p = (char)(digit + (digit < 10 ? '0' : hexBase));
-            value >>= 4;
+            --p;
+            *p = (char)(digit + (digit < 10 ? '0' : hexBase));
+            value = value >> 4;
         }
         return p;
     }
@@ -1824,19 +1841,23 @@ unsafe static partial class Numeric
         }
 
         char* curr = specifier.Data;
-        char first = *curr++;
+        char first = *curr;
+        curr++;
         if ((first >= 'A' && first <= 'Z') || (first >= 'a' && first <= 'z'))
         {
             int n = -1;
-            char c = *curr++;
+            char c = *curr;
+            curr++;
             if (c >= '0' && c <= '9')
             {
                 n = c - '0';
-                c = *curr++;
+                c = *curr;
+                curr++;
                 while (c >= '0' && c <= '9')
                 {
                     n = n * 10 + c - '0';
-                    c = *curr++;
+                    c = *curr;
+                    curr++;
                     if (n >= 10)
                         break;
                 }
@@ -1864,14 +1885,18 @@ unsafe static partial class Numeric
             value = -value;
         }
 
-        var buffer = stackalloc char[Int32Precision + 1];
+        var buffer = (stackalloc char[Int32Precision + 1]).Buffer;
         var ptr = Int32ToDecChars(buffer + Int32Precision, (uint)value, 0);
         var len = (int)(buffer + Int32Precision - ptr);
         number.Scale = len;
 
         var dest = number.Digits;
         while (--len >= 0)
-            *dest++ = *ptr++;
+        {
+            *dest = *ptr;
+            dest++;
+            ptr++;
+        }
         *dest = '\0';
     }
 
@@ -1880,14 +1905,18 @@ unsafe static partial class Numeric
         number.Precision = UInt32Precision;
         number.Sign = 0;
 
-        var buffer = stackalloc char[UInt32Precision + 1];
+        var buffer = (stackalloc char[UInt32Precision + 1]).Buffer;
         var ptr = Int32ToDecChars(buffer + UInt32Precision, value, 0);
         var len = (int)(buffer + UInt32Precision - ptr);
         number.Scale = len;
 
         var dest = number.Digits;
         while (--len >= 0)
-            *dest++ = *ptr++;
+        {
+            *dest = *ptr;
+            dest++;
+            ptr++;
+        }
         *dest = '\0';
     }
 
@@ -1902,7 +1931,7 @@ unsafe static partial class Numeric
             value = -value;
         }
 
-        var buffer = stackalloc char[Int64Precision + 1];
+        var buffer = (stackalloc char[Int64Precision + 1]).Buffer;
         var ptr = buffer + Int64Precision;
         var uv = (ulong)value;
         while (High32(uv) != 0)
@@ -1914,7 +1943,11 @@ unsafe static partial class Numeric
 
         var dest = number.Digits;
         while (--len >= 0)
-            *dest++ = *ptr++;
+        {
+            *dest = *ptr;
+            dest++;
+            ptr++;
+        }
         *dest = '\0';
     }
 
@@ -1923,7 +1956,7 @@ unsafe static partial class Numeric
         number.Precision = UInt64Precision;
         number.Sign = 0;
 
-        var buffer = stackalloc char[UInt64Precision + 1];
+        var buffer = (stackalloc char[UInt64Precision + 1]).Buffer;
         var ptr = buffer + UInt64Precision;
         while (High32(value) != 0)
             ptr = Int32ToDecChars(ptr, Int64DivMod(ref value), 9);
@@ -1935,7 +1968,11 @@ unsafe static partial class Numeric
 
         var dest = number.Digits;
         while (--len >= 0)
-            *dest++ = *ptr++;
+        {
+            *dest = *ptr;
+            dest++;
+            ptr++;
+        }
         *dest = '\0';
     }
 
@@ -1943,7 +1980,7 @@ unsafe static partial class Numeric
     {
         number.Precision = precision;
 
-        uint sign, exp, mantHi, mantLo;
+        uint sign; uint exp; uint mantHi; uint mantLo;
         ExplodeDouble(value, out sign, out exp, out mantHi, out mantLo);
 
         if (exp == 0x7FF)
@@ -1976,19 +2013,26 @@ unsafe static partial class Numeric
                 while (intPart != 0)
                 {
                     reducedInt = ModF(intPart / 10, out intPart);
-                    *--p = (char)((int)((reducedInt + 0.03) * 10) + '0');
+                    --p;
+                    *p = (char)((int)((reducedInt + 0.03) * 10) + '0');
                     shift++;
                 }
                 while (p < end)
-                    *digits++ = *p++;
+                {
+                    *digits = *p;
+                    digits++;
+                    ptr++;
+                }
             }
             else if (fracPart > 0)
             {
                 // normalize the fractional part
-                while ((reducedInt = fracPart * 10) < 1)
+                reducedInt = fracPart * 10;
+                while (reducedInt < 1)
                 {
                     fracPart = reducedInt;
                     shift--;
+                    reducedInt = fracPart * 10;
                 }
             }
 
@@ -1998,7 +2042,8 @@ unsafe static partial class Numeric
             {
                 fracPart *= 10;
                 fracPart = ModF(fracPart, out reducedInt);
-                *digits++ = (char)((int)reducedInt + '0');
+                *digits = (char)((int)reducedInt + '0');
+                digits++;
             }
 
             // round the result if necessary
@@ -2008,7 +2053,10 @@ unsafe static partial class Numeric
             {
                 *p = '0';
                 if (p > number.Digits)
-                    ++*--p;
+                {
+                    --p;
+                    *p = *p + 1;
+                }
                 else
                 {
                     *p = '1';
@@ -2030,7 +2078,7 @@ unsafe static partial class Numeric
         number.Precision = DecimalPrecision;
 
         // loop for as long as the decimal is larger than 32 bits
-        var buffer = stackalloc char[DecimalPrecision + 1];
+        var buffer = (stackalloc char[DecimalPrecision + 1]).Buffer;
         var p = buffer + DecimalPrecision;
         var hi = *(value + 1);
         var lo = *(value + 2);
@@ -2058,7 +2106,11 @@ unsafe static partial class Numeric
 
         var dest = number.Digits;
         while (--len >= 0)
-            *dest++ = *p++;
+        {
+            *dest = *p;
+            dest++;
+            p++;
+        }
         *dest = '\0';
     }
 
@@ -2096,19 +2148,23 @@ unsafe static partial class Numeric
 
     static void AppendString(char** buffer, string value)
     {
-        fixed (char* pinnedString = value)
+        char* pinnedString = value.Buffer;
+        var length = value.Length;
+        for (var src = pinnedString; src < pinnedString + length; )
         {
-            var length = value.Length;
-            for (var src = pinnedString; src < pinnedString + length; (*buffer)++, src++)
-                **buffer = *src;
+            **buffer = *src;
+            (*buffer)++;
+            src++;
         }
     }
 
     static int StrLen(char* str)
     {
         int count = 0;
-        while (*str++ != 0)
+        while ((*str)++ != 0)
+        {
             count++;
+        }
 
         return count;
     }
