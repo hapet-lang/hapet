@@ -6,6 +6,7 @@ using HapetFrontend.Entities;
 using HapetFrontend.Enums;
 using HapetFrontend.Errors;
 using System.Runtime;
+using System.Xml.Linq;
 
 namespace HapetFrontend.Parsing
 {
@@ -269,7 +270,9 @@ namespace HapetFrontend.Parsing
                         OnExit();
                         // just a more priority for expr
                         // like '(a & b) == 0'
-                        return list2[0].Type;
+                        if (list2[0].Type is AstNestedExpr)
+                            return list2[0].Type;
+                        return new AstNestedExpr(list2[0].Type, null, list2[0].Type.Location);
                     }
                 }
 
@@ -337,7 +340,9 @@ namespace HapetFrontend.Parsing
                         OnExit();
                         // just a more priority for expr
                         // like '(a & b) == 0'
-                        return list[0].Expr;
+                        if (list[0].Expr is AstNestedExpr)
+                            return list[0].Expr;
+                        return new AstNestedExpr(list[0].Expr, null, list[0].Expr.Location);
                     }
                 }
             }
@@ -381,7 +386,9 @@ namespace HapetFrontend.Parsing
                 {
                     // probably just smth like
                     // a = (b) + (c)
-                    return element;
+                    if (element is AstNestedExpr)
+                        return element;
+                    return new AstNestedExpr(element, null, element.Location);
                 }
             }
 
