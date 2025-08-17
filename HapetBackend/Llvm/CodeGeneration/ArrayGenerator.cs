@@ -32,11 +32,19 @@ namespace HapetBackend.Llvm
             // allocating mem for the array buf
             // check for unsafe malloc
             LLVMValueRef allocated;
-            if (expr.IsUnsafeNew)
-                allocated = GetMalloc(sizeToMalloc, currentArraySizeValueRef);
+            if (expr.IsStackAlloc)
+            {
+                // if stackalloc - use alloca
+                allocated = _builder.BuildArrayAlloca(HapetTypeToLLVMType(expr.TypeName.OutType), currentArraySizeValueRef, "allocedArray");
+            }
             else
-                allocated = GetSafeMalloc(sizeToMalloc, currentArraySizeValueRef);
-
+            {
+                if (expr.IsUnsafeNew)
+                    allocated = GetMalloc(sizeToMalloc, currentArraySizeValueRef);
+                else
+                    allocated = GetSafeMalloc(sizeToMalloc, currentArraySizeValueRef);
+            }
+            
             // different generation depending on ini elements
             if (expr.Elements.Count > 0)
             {
