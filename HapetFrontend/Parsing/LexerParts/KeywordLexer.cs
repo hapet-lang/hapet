@@ -50,6 +50,7 @@ namespace HapetFrontend.Parsing
 
                 case "default": token.Type = TokenType.KwDefault; break;
                 case "new": token.Type = TokenType.KwNew; break;
+                case "stackalloc": token.Type = TokenType.KwStackAlloc; break;
                 case "base": token.Type = TokenType.KwBase; break;
                 case "sizeof": token.Type = TokenType.KwSizeof; break;
                 case "alignof": token.Type = TokenType.KwAlignof; break;

@@ -138,6 +138,7 @@ namespace HapetFrontend.Parsing
         KwGlobal, // would be used anywhere?
         KwDefault,
         KwNew,
+        KwStackAlloc,
         KwBase,
         KwSizeof,
         KwAlignof,

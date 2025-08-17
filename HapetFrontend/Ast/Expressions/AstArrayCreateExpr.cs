@@ -25,6 +25,11 @@ namespace HapetFrontend.Ast.Expressions
         /// </summary>
         public bool IsUnsafeNew { get; set; }
 
+        /// <summary>
+        /// 'true' if the array has to be allocated on stack
+        /// </summary>
+        public bool IsStackAlloc { get; set; }
+
         public override string AAAName => nameof(AstArrayCreateExpr);
 
         public AstArrayCreateExpr(AstExpression type, List<AstExpression> sizeExprs, List<AstExpression> elements, ILocation location = null) : base(location)

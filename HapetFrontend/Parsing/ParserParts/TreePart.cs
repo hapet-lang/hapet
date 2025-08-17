@@ -682,8 +682,9 @@ namespace HapetFrontend.Parsing
                     return new AstNullExpr(null, new Location(token.Location));
 
                 case TokenType.KwNew:
+                case TokenType.KwStackAlloc:
                     {
-                        return ParseNewExpression(inInfo, ref outInfo);
+                        return ParseNewExpression(inInfo, ref outInfo, token.Type == TokenType.KwStackAlloc);
                     }
 
                 case TokenType.KwBase:

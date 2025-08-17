@@ -8,7 +8,7 @@ namespace HapetFrontend.Parsing
 {
     public partial class Parser
     {
-        private AstStatement ParseArrayExpr(ParserInInfo inInfo, ref ParserOutInfo outInfo, AstExpression type, TokenLocation beg, bool isUnsafeNew)
+        private AstStatement ParseArrayExpr(ParserInInfo inInfo, ref ParserOutInfo outInfo, AstExpression type, TokenLocation beg, bool isUnsafeNew, bool isStackAlloc)
         {
             // by default it is null because the size could not be defined
             // when values are presented
@@ -77,7 +77,8 @@ namespace HapetFrontend.Parsing
 
                 return new AstArrayCreateExpr(type, sizeExprs, elements, new Location(beg, CurrentToken.Location.Ending)) 
                 {
-                    IsUnsafeNew = isUnsafeNew
+                    IsUnsafeNew = isUnsafeNew,
+                    IsStackAlloc = isStackAlloc,
                 };
             }
             // defined only size
@@ -90,7 +91,8 @@ namespace HapetFrontend.Parsing
                 }
                 return new AstArrayCreateExpr(type, sizeExprs, new List<AstExpression>(), new Location(beg, CurrentToken.Location.Ending))
                 {
-                    IsUnsafeNew = isUnsafeNew
+                    IsUnsafeNew = isUnsafeNew,
+                    IsStackAlloc = isStackAlloc,
                 };
             }
         }

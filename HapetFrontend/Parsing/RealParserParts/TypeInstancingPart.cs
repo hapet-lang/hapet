@@ -8,12 +8,15 @@ namespace HapetFrontend.Parsing
 {
     public partial class Parser
     {
-        private AstStatement ParseNewExpression(ParserInInfo inInfo, ref ParserOutInfo outInfo)
+        private AstStatement ParseNewExpression(ParserInInfo inInfo, ref ParserOutInfo outInfo, bool isStackAlloc)
         {
             TokenLocation beg = null;
             bool isUnsafeNew = false;
 
-            beg ??= Consume(TokenType.KwNew, ErrMsg("keyword 'new'", "at beginning of type instancing expression")).Location;
+            if (!isStackAlloc)
+                beg ??= Consume(TokenType.KwNew, ErrMsg("keyword 'new'", "at beginning of type instancing expression")).Location;
+            else
+                beg ??= Consume(TokenType.KwStackAlloc, ErrMsg("keyword 'stackalloc'", "at beginning of array instancing expression")).Location;
             SkipNewlines();
 
             // new expr could be unsafe
@@ -28,7 +31,7 @@ namespace HapetFrontend.Parsing
             var saved = inInfo.AllowArrayExpression;
             var savedMessage = inInfo.Message;
             inInfo.AllowArrayExpression = false;
-            inInfo.Message = ErrMsg("expression", "after keyword 'new'");
+            inInfo.Message = isStackAlloc ? ErrMsg("expression", "after keyword 'stackalloc'") : ErrMsg("expression", "after keyword 'new'");
             var type = ParseAtomicExpression(inInfo, ref outInfo);
             inInfo.AllowArrayExpression = saved;
             inInfo.Message = savedMessage;
@@ -41,7 +44,7 @@ namespace HapetFrontend.Parsing
                     ReportMessage(type.Location, [], ErrorCode.Get(CTEN.TypeNameNotExpr));
                     return ParseEmptyExpression();
                 }
-                return ParseArrayExpr(inInfo, ref outInfo, expr, beg, isUnsafeNew);
+                return ParseArrayExpr(inInfo, ref outInfo, expr, beg, isUnsafeNew, isStackAlloc);
             }
             else if (CheckToken(TokenType.OpenParen)) // probably class instance creation
             {
