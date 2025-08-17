@@ -1035,9 +1035,19 @@ namespace HapetPostPrepare
             {
                 PostPrepareExprInference(sz, inInfo, ref outInfo);
             }
-            // TODO: you can check if the size is available at compile time and create the array on stack
 
             PostPrepareExprInference(arrayExpr.TypeName, inInfo, ref outInfo);
+
+            // checks if stackalloc
+            if (arrayExpr.IsStackAlloc)
+            {
+                // only 1d alloc is allowed
+                if (arrayExpr.SizeExprs.Count != 1)
+                    _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, arrayExpr.TypeName, [], ErrorCode.Get(CTEN.StackAllocOnly1DArray));
+                // only structs are allowed
+                if (arrayExpr.TypeName.OutType is not StructType)
+                    _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, arrayExpr.TypeName, [], ErrorCode.Get(CTEN.StackAllocOnlyStructs));
+            }
 
             // create an expecting elements type to be
             HapetType expectingElementType = arrayExpr.TypeName.OutType;

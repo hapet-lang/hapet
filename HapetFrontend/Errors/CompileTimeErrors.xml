@@ -836,6 +836,14 @@
         <Number>3062</Number>
         <Text>Case with the label '{0}' could not be found</Text>
     </Item>
+    <Item>
+        <Number>3063</Number>
+        <Text>Only 1d array could be allocated using 'stackalloc'</Text>
+    </Item>
+    <Item>
+        <Number>3064</Number>
+        <Text>Only struct types could be used in 'stackalloc'</Text>
+    </Item>
 
     <!--Compiler errors-->
     <Item>
