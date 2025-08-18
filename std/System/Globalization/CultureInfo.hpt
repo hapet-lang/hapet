@@ -1,0 +1,72 @@
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
+public partial class CultureInfo
+{
+    // This has a de-DE, de-DE_phoneb or fj-FJ style name
+    internal string _name;
+    private bool _isReadOnly;
+    internal CultureData _cultureData;
+
+    private CultureInfo(CultureData cultureData, bool isReadOnly = false)
+    {
+        //Debug.Assert(cultureData != null);
+        _cultureData = cultureData;
+        _name = cultureData.CultureName;
+        _isReadOnly = isReadOnly;
+    }
+
+    private static CultureInfo InitializeUserDefaultCulture()
+    {
+        _userDefaultCulture = _invariantCultureInfo;
+        return _userDefaultCulture;
+    }
+
+    // The Invariant culture;
+    private static readonly CultureInfo _invariantCultureInfo = new CultureInfo(CultureData.Invariant, isReadOnly: true);
+    /// <summary>
+    /// This instance provides methods, for example for casing and sorting,
+    /// that are independent of the system and current user settings.  It
+    /// should be used only by processes such as some system services that
+    /// require such invariant results (eg. file systems).  In general,
+    /// the results are not linguistically correct and do not match any
+    /// culture info.
+    /// </summary>
+    public static CultureInfo InvariantCulture
+    {
+        get
+        {
+            //Debug.Assert(_invariantCultureInfo != null, "[CultureInfo.InvariantCulture] _invariantCultureInfo is null");
+            return _invariantCultureInfo;
+        }
+    }
+
+    private static CultureInfo _defaultThreadCurrentCulture;
+    private static CultureInfo _currentThreadCulture;
+    private static CultureInfo _userDefaultCulture;
+    /// <summary>
+    /// This instance provides methods based on the current user settings.
+    /// These settings are volatile and may change over the lifetime of the
+    /// thread.
+    /// </summary>
+    /// <remarks>
+    /// We use the following order to return CurrentCulture and CurrentUICulture
+    ///      o   Use WinRT to return the current user profile language
+    ///      o   use current thread culture if the user already set one using CurrentCulture/CurrentUICulture
+    ///      o   use thread culture if the user already set one using DefaultThreadCurrentCulture
+    ///          or DefaultThreadCurrentUICulture
+    ///      o   Use NLS default user culture
+    ///      o   Use NLS default system culture
+    ///      o   Use Invariant culture
+    /// </remarks>
+    public static CultureInfo CurrentCulture
+    {
+        get
+        {
+            return _currentThreadCulture ??
+                _defaultThreadCurrentCulture ??
+                _userDefaultCulture ??
+                InitializeUserDefaultCulture();
+        }
+    }
+}

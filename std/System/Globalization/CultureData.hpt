@@ -1,0 +1,27 @@
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
+internal sealed partial class CultureData
+{
+    private static CultureData CreateCultureWithInvariantData()
+    {
+        // Make a new culturedata
+        CultureData invariant = new CultureData();
+        return invariant;
+    }
+
+    internal static CultureData _invariant;
+    /// <summary>
+    /// Build our invariant information
+    /// We need an invariant instance, which we build hard-coded
+    /// </summary>
+    internal static CultureData Invariant
+    {
+        get
+        {
+            if (_invariant == null)
+                _invariant = CreateCultureWithInvariantData();
+            return _invariant;
+        }
+    }
+}
