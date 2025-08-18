@@ -49,9 +49,7 @@ public struct String : IComparable, IComparable<string>
             buf[globI] = s2.Buffer[i];
             globI++;
         }
-        string s = new string();
-        s.Length = s1.Length + s2.Length;
-        s.Buffer = buf;
+        string s = new string(buf, 0, s1.Length + s2.Length);
         return s;
     } 
 }
