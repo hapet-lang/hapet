@@ -152,6 +152,9 @@ namespace HapetPostPrepare
                 case AstWhileStmt whileStmt:
                     AntiParseWhileStmt(whileStmt, sb, offset);
                     break;
+                case AstDoWhileStmt doWhileStmt:
+                    AntiParseDoWhileStmt(doWhileStmt, sb, offset);
+                    break;
                 case AstIfStmt ifStmt:
                     AntiParseIfStmt(ifStmt, sb, offset);
                     break;
@@ -172,6 +175,18 @@ namespace HapetPostPrepare
                     break;
                 case AstBaseCtorStmt baseStmt:
                     AntiParseBaseCtorStmt(baseStmt, sb, offset);
+                    break;
+                case AstThrowStmt throwStmt:
+                    AntiParseThrowStmt(throwStmt, sb, offset);
+                    break;
+                case AstTryCatchStmt tryCatchStmt:
+                    AntiParseTryCatchStmt(tryCatchStmt, sb, offset);
+                    break;
+                case AstCatchStmt catchStmt:
+                    AntiParseCatchStmt(catchStmt, sb, offset);
+                    break;
+                case AstGotoStmt gotoStmt:
+                    AntiParseGotoStmt(gotoStmt, sb, offset);
                     break;
 
                 case AstUsingStmt usingStmt:
@@ -448,6 +463,15 @@ namespace HapetPostPrepare
             AntiParseExpr(whileStmt.Body, sb, offset);
         }
 
+        public void AntiParseDoWhileStmt(AstDoWhileStmt whileStmt, StringBuilder sb, string offset)
+        {
+            sb.Append("do \n");
+            AntiParseExpr(whileStmt.Body, sb, offset);
+            sb.Append("while (");
+            AntiParseExpr(whileStmt.Condition, sb, offset);
+            sb.Append(")\n");
+        }
+
         public void AntiParseIfStmt(AstIfStmt ifStmt, StringBuilder sb, string offset)
         {
             sb.Append("if (");
@@ -483,15 +507,22 @@ namespace HapetPostPrepare
         {
             if (caseStmt.IsDefaultCase)
             {
-                sb.Append("default \n");
+                sb.Append("default ");
             }
             else
             {
                 sb.Append("case (");
                 AntiParseExpr(caseStmt.Pattern, sb, offset);
-                sb.Append(")\n");
+                sb.Append(") ");
             }
-            
+
+            if (caseStmt.LabelForGoto != null)
+            {
+                sb.Append($"${caseStmt.LabelForGoto}");
+            }
+
+            sb.Append('\n');
+
             if (!caseStmt.IsFallingCase)
             {
                 AntiParseExpr(caseStmt.Body, sb, offset);
@@ -546,6 +577,40 @@ namespace HapetPostPrepare
                     sb.Append(", ");
             }
             sb.Append(')');
+        }
+
+        public void AntiParseThrowStmt(AstThrowStmt throwStmt, StringBuilder sb, string offset)
+        {
+            sb.Append("throw ");
+            AntiParseExpr(throwStmt.ThrowExpression, sb, offset);
+        }
+
+        public void AntiParseTryCatchStmt(AstTryCatchStmt tryCatchStmt, StringBuilder sb, string offset)
+        {
+            sb.Append("try \n");
+            AntiParseExpr(tryCatchStmt.TryBlock, sb, offset);
+            for (int i = 0; i < tryCatchStmt.CatchBlocks.Count; ++i)
+            {
+                AntiParseExpr(tryCatchStmt.CatchBlocks[i], sb, offset);
+            }
+            if (tryCatchStmt.FinallyBlock != null)
+            {
+                sb.Append("finally \n");
+                AntiParseExpr(tryCatchStmt.FinallyBlock, sb, offset);
+            }
+        }
+
+        public void AntiParseCatchStmt(AstCatchStmt catchStmt, StringBuilder sb, string offset)
+        {
+            sb.Append("catch (");
+            AntiParseExpr(catchStmt.CatchParam, sb, offset);
+            sb.Append(")\n");
+            AntiParseExpr(catchStmt.CatchBlock, sb, offset);
+        }
+
+        public void AntiParseGotoStmt(AstGotoStmt gotoStmt, StringBuilder sb, string offset)
+        {
+            sb.Append($"goto {gotoStmt.GotoLabel};");
         }
 
         public void AntiParseUsingStmt(AstUsingStmt usingStmt, StringBuilder sb, string offset)
