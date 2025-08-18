@@ -9,8 +9,9 @@ public abstract class Exception
 
     public virtual string StackTrace => "";
 
-    public Exception()
+    public Exception() { }
+    public Exception(string message)
     {
-        
+        _message = message;
     }
 }
