@@ -41,9 +41,9 @@ namespace HapetBackend.Llvm
                 case AstVarDecl varDecl: GenerateVarDeclCode(varDecl); return null;
 
                 case AstBlockExpr blockExpr: return GenerateBlockExprCode(blockExpr);
-                case AstUnaryIncDecExpr unExpr: return GenerateUnaryIncDecExprCode(unExpr);
-                case AstUnaryExpr unExpr2: return GenerateUnaryExprCode(unExpr2);
-                case AstBinaryExpr binExpr: return GenerateBinaryExprCode(binExpr);
+                case AstUnaryIncDecExpr unExpr: return GenerateUnaryIncDecExprCode(unExpr, getPtr);
+                case AstUnaryExpr unExpr2: return GenerateUnaryExprCode(unExpr2, getPtr);
+                case AstBinaryExpr binExpr: return GenerateBinaryExprCode(binExpr, getPtr);
                 case AstPointerExpr pointerExpr: return GeneratePointerExprCode(pointerExpr, getPtr);
                 case AstAddressOfExpr addrExpr: return GenerateAddressOfExprCode(addrExpr);
                 case AstIdExpr idExpr: return GenerateIdExpr(idExpr, getPtr);
@@ -104,8 +104,9 @@ namespace HapetBackend.Llvm
             return result;
         }
 
-        private LLVMValueRef GenerateUnaryExprCode(AstUnaryExpr unExpr)
+        private LLVMValueRef GenerateUnaryExprCode(AstUnaryExpr unExpr, bool getPtr = false)
         {
+            LLVMValueRef toReturn = default;
             if (unExpr.ActualOperator is BuiltInUnaryOperator builtInOp)
             {
                 var expr = (unExpr.SubExpr as AstExpression);
@@ -116,7 +117,7 @@ namespace HapetBackend.Llvm
 
                 var uo = GetUnOp(builtInOp);
                 var val = uo(_builder, value, "unOp");
-                return val;
+                toReturn = val;
             }
             else if (unExpr.ActualOperator is UserDefinedUnaryOperator userDef)
             {
@@ -129,39 +130,50 @@ namespace HapetBackend.Llvm
                 var fncType = _typeMap[userDef.Function];
                 var fncValue = _valueMap[userDef.Function.Declaration.Symbol];
 
-                return _builder.BuildCall2(fncType, fncValue, new LLVMValueRef[] { value }, "unOp");
+                toReturn = _builder.BuildCall2(fncType, fncValue, new LLVMValueRef[] { value }, "unOp");
+            }
+            if (toReturn != default)
+            {
+                if (getPtr)
+                {
+                    LLVMValueRef varPtr = CreateLocalVariable(unExpr.OutType, "unRetHolder");
+                    _builder.BuildStore(toReturn, varPtr);
+                    return varPtr;
+                }
+                return toReturn;
             }
             _messageHandler.ReportMessage(_currentSourceFile.Text, unExpr, [unExpr.ToString()], ErrorCode.Get(CTEN.StmtNotImplemented));
             return default;
         }
 
-        private LLVMValueRef GenerateUnaryIncDecExprCode(AstUnaryIncDecExpr unExpr)
+        private LLVMValueRef GenerateUnaryIncDecExprCode(AstUnaryIncDecExpr unExpr, bool getPtr = false)
         {
+            LLVMValueRef toReturn = default;
             if (unExpr.ActualOperator is BuiltInUnaryOperator builtInOp)
             {
+                LLVMValueRef toAssign;
                 var expr = (unExpr.SubExpr as AstExpression);
-
-                LLVMValueRef val;
-                if (unExpr.IsPrefix)
+                var valuePtr = GenerateExpressionCode(expr, true);
+                var value = _builder.BuildLoad2(HapetTypeToLLVMType(expr.OutType), valuePtr, "loadedDec");
+                if (expr.OutType is PointerType ptrT)
                 {
-                    MakeOperation();
-                    val = GenerateExpressionCode(expr);
+                    // special case for ptr type with GEP magics
+                    int valToGep = unExpr.Operator == "++" ? 1 : -1;
+                    toAssign = _builder.BuildGEP2(HapetTypeToLLVMType(ptrT.TargetType), value, [LLVMValueRef.CreateConstInt(_context.Int32Type, (uint)valToGep)]);
                 }
                 else
                 {
-                    val = GenerateExpressionCode(expr);
-                    MakeOperation();
-                }
-                return val;
-
-                void MakeOperation()
-                {
-                    var value = GenerateExpressionCode(expr);
                     var bo = SearchBinOp(unExpr.Operator == "++" ? "+" : "-", expr.OutType, HapetType.CurrentTypeContext.GetIntType(4, true));
-                    var toAssign = bo(_builder, value, LLVMValueRef.CreateConstInt(_context.Int32Type, 1), "unOp");
-                    var valuePtr = GenerateExpressionCode(expr, true);
-                    AssignToVar(valuePtr, toAssign);
+                    toAssign = bo(_builder, value, LLVMValueRef.CreateConstInt(_context.Int32Type, 1), "unOp");
                 }
+                AssignToVar(valuePtr, toAssign);
+
+                LLVMValueRef val;
+                if (unExpr.IsPrefix)
+                    val = toAssign;
+                else
+                    val = value;
+                toReturn = val;
             }
             else if (unExpr.ActualOperator is UserDefinedUnaryOperator userDef)
             {
@@ -178,7 +190,7 @@ namespace HapetBackend.Llvm
                     val = GenerateExpressionCode(expr);
                     MakeOperation();
                 }
-                return val;
+                toReturn = val;
 
                 void MakeOperation()
                 {
@@ -188,12 +200,23 @@ namespace HapetBackend.Llvm
                     _builder.BuildCall2(fncType, fncValue, new LLVMValueRef[] { value });
                 }
             }
+            if (toReturn != default)
+            {
+                if (getPtr)
+                {
+                    LLVMValueRef varPtr = CreateLocalVariable(unExpr.OutType, "decRetHolder");
+                    _builder.BuildStore(toReturn, varPtr);
+                    return varPtr;
+                }
+                return toReturn;
+            }
             _messageHandler.ReportMessage(_currentSourceFile.Text, unExpr, [unExpr.ToString()], ErrorCode.Get(CTEN.StmtNotImplemented));
             return default;
         }
 
-        private LLVMValueRef GenerateBinaryExprCode(AstBinaryExpr binExpr)
+        private LLVMValueRef GenerateBinaryExprCode(AstBinaryExpr binExpr, bool getPtr = false)
         {
+            LLVMValueRef toReturn = default;
             if (binExpr.ActualOperator is BuiltInBinaryOperator builtInOp)
             {
                 // CRINGE :) special cases for as/is/in
@@ -220,7 +243,8 @@ namespace HapetBackend.Llvm
                                 else
                                 {
                                     // when smth like 'valueTyped as ICringeCock'
-                                    return CreateCast(_builder, left, leftExpr.OutType, rightType);
+                                    toReturn = CreateCast(_builder, left, leftExpr.OutType, rightType);
+                                    break;
                                 }
 
                                 // you would ask - wtf is anyIsInterface?
@@ -250,14 +274,17 @@ namespace HapetBackend.Llvm
                                         var downcasterFunc = _valueMap[downcasterSymbol];
                                         LLVMTypeRef funcType = _typeMap[downcasterSymbol.Decl.Type.OutType];
                                         var canBeDowncasted = _builder.BuildCall2(funcType, downcasterFunc, new LLVMValueRef[] { left, ptrToCastTypeInfo }, "canBeDowncasted");
-                                        return _builder.BuildSelect(canBeDowncasted, casted, castTypeNull, "castResult");
+                                        toReturn = _builder.BuildSelect(canBeDowncasted, casted, castTypeNull, "castResult");
+                                        break;
                                     }
                                 }
                                 else
                                 {
                                     // just bitcast when upcast shite
-                                    return _builder.BuildBitCast(left, HapetTypeToLLVMType(rightExpr.OutType), "castedAs");
+                                    toReturn = _builder.BuildBitCast(left, HapetTypeToLLVMType(rightExpr.OutType), "castedAs");
+                                    break;
                                 }
+                                break;
                             }
                             else
                             {
@@ -278,7 +305,8 @@ namespace HapetBackend.Llvm
                                 bool isDownCast = rightType.IsInheritedFrom(leftType);
                                 if (isDownCast)
                                 {
-                                    return CreateStructCastFromObject(left, rightType, false);
+                                    toReturn = CreateStructCastFromObject(left, rightType, false);
+                                    break;
                                 }
                             }
                             _messageHandler.ReportMessage(_currentSourceFile.Text, binExpr, [HapetType.AsString(leftExpr.OutType), HapetType.AsString(rightExpr.OutType)], ErrorCode.Get(CTEN.TypeCouldNotBeConverted));
@@ -294,7 +322,8 @@ namespace HapetBackend.Llvm
 
                             var rightExpr = (binExpr.Right as AstExpression);
 
-                            return CheckIsCouldBeCasted(left, leftExpr.OutType, rightExpr.OutType, binExpr.IsNot, binExpr.Location);
+                            toReturn = CheckIsCouldBeCasted(left, leftExpr.OutType, rightExpr.OutType, binExpr.IsNot, binExpr.Location);
+                            break;
                         }
                     default:
                         {
@@ -307,7 +336,10 @@ namespace HapetBackend.Llvm
                             {
                                 // different structs are not the same
                                 if ((leftExpr.OutType as StructType).Declaration != (rightExpr.OutType as StructType).Declaration)
-                                    return GenerateExpressionCode(new AstBoolExpr(binExpr.Operator == "!="));
+                                {
+                                    toReturn = GenerateExpressionCode(new AstBoolExpr(binExpr.Operator == "!="));
+                                    break;
+                                }
 
                                 // special keys for struct comparisons
                                 var left = GenerateExpressionCode(leftExpr, true); // we need ptrs
@@ -330,7 +362,8 @@ namespace HapetBackend.Llvm
                                 // need to compare to 0 that they are equal
                                 var fCmp = GetICompare(binExpr.Operator == "!=" ? LLVMIntPredicate.LLVMIntNE : LLVMIntPredicate.LLVMIntEQ);
                                 var val = fCmp(_builder, compared, LLVMValueRef.CreateConstInt(HapetTypeToLLVMType(HapetType.CurrentTypeContext.BoolTypeInstance), (ulong)0), "binOp");
-                                return val;
+                                toReturn = val;
+                                break;
                             }
                             else
                             {
@@ -345,8 +378,9 @@ namespace HapetBackend.Llvm
 
                                 var bo = GetBinOp(builtInOp);
                                 var val = bo(_builder, left, right, "binOp");
-                                return val;
-                            } 
+                                toReturn = val;
+                                break;
+                            }
                         }
                 }
             }
@@ -366,7 +400,18 @@ namespace HapetBackend.Llvm
                 var fncType = _typeMap[userDef.Function];
                 var fncValue = _valueMap[userDef.Function.Declaration.Symbol];
 
-                return _builder.BuildCall2(fncType, fncValue, new LLVMValueRef[] { left, right }, "binOp");
+                toReturn = _builder.BuildCall2(fncType, fncValue, new LLVMValueRef[] { left, right }, "binOp");
+            }
+
+            if (toReturn != default)
+            {
+                if (getPtr)
+                {
+                    LLVMValueRef varPtr = CreateLocalVariable(binExpr.OutType, "binRetHolder");
+                    _builder.BuildStore(toReturn, varPtr);
+                    return varPtr;
+                }
+                return toReturn;
             }
             _messageHandler.ReportMessage(_currentSourceFile.Text, binExpr, [binExpr.ToString()], ErrorCode.Get(CTEN.StmtNotImplemented));
             return default;
