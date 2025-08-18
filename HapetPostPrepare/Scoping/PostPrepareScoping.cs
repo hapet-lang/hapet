@@ -338,19 +338,6 @@ namespace HapetPostPrepare
                 PostPrepareExprScoping(a);
             }
 
-            // base ctor call scoping
-            if (funcDecl.BaseCtorCall != null)
-            {
-                SetScopeAndParent(funcDecl.BaseCtorCall, funcDecl);
-                PostPrepareExprScoping(funcDecl.BaseCtorCall);
-            }
-            // this ctor call scoping
-            if (funcDecl.ThisCtorCall != null)
-            {
-                SetScopeAndParent(funcDecl.ThisCtorCall, funcDecl);
-                PostPrepareExprScoping(funcDecl.ThisCtorCall);
-            }
-
             Scope blockScope;
             if (funcDecl.Body != null)
             {
@@ -394,6 +381,19 @@ namespace HapetPostPrepare
             // return type is the same
             SetScopeAndParent(funcDecl.Returns, funcDecl, blockScope);
             PostPrepareExprScoping(funcDecl.Returns);
+
+            // base ctor call scoping
+            if (funcDecl.BaseCtorCall != null)
+            {
+                SetScopeAndParent(funcDecl.BaseCtorCall, funcDecl, blockScope);
+                PostPrepareExprScoping(funcDecl.BaseCtorCall);
+            }
+            // this ctor call scoping
+            if (funcDecl.ThisCtorCall != null)
+            {
+                SetScopeAndParent(funcDecl.ThisCtorCall, funcDecl, blockScope);
+                PostPrepareExprScoping(funcDecl.ThisCtorCall);
+            }
 
             _currentParentStack.RemoveParent();
         }
