@@ -80,9 +80,7 @@ public class UTF8Encoding : Encoding
         // clear real chars
         Marshal.Free((void*)realChars.Buffer);
 
-        string a = new string();
-        a.Buffer = (char*)outChars.Buffer;
-        a.Length = outChars.Length;
+        string a = new string((char*)outChars.Buffer, 0, outChars.Length);
         return a;
     }
 

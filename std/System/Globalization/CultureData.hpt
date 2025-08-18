@@ -3,6 +3,9 @@
 
 internal sealed partial class CultureData
 {
+    private string _sRealName = null; // Name you passed in (ie: en-US, en, or de-DE_phoneb). Initialized by helper called during initialization.
+    private string _sName; // locale name (ie: en-us, NO sort info, but could be neutral)
+
     private static CultureData CreateCultureWithInvariantData()
     {
         // Make a new culturedata
@@ -22,6 +25,21 @@ internal sealed partial class CultureData
             if (_invariant == null)
                 _invariant = CreateCultureWithInvariantData();
             return _invariant;
+        }
+    }
+
+    /// <summary>
+    /// The real name used to construct the locale (ie: de-DE_phoneb)
+    /// </summary>
+    internal string CultureName
+    {
+        get
+        {
+            //Debug.Assert(_sRealName != null, "[CultureData.CultureName] Expected _sRealName to be populated by already");
+            // since windows doesn't know about zh-CHS and zh-CHT,
+            // we leave sRealName == zh-Hanx but we still need to
+            // pretend that it was zh-CHX.
+            return (_sName == "zh-CHS" || _sName == "zh-CHT") ? _sName : _sRealName;
         }
     }
 }

@@ -12,6 +12,17 @@ public struct String : IComparable, IComparable<string>
     [SuppressStackTrace]
     internal char* Buffer { get; set; }
 
+    public String(char[] value, int startIndex, int length) 
+        : this(value.Buffer, startIndex, length)
+    {
+    }
+
+    public String(char* value, int startIndex, int length) 
+    {
+        Buffer = value + startIndex;
+        Length = length;
+    }
+
     public int CompareTo(object other)
     {
         // TODO:
