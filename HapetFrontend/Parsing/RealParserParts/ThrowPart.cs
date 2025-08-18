@@ -23,7 +23,7 @@ namespace HapetFrontend.Parsing
             // here is the check for AstEmptyStmt because ParseExpression
             // will already generate an exception for this and return AstEmptyStmt
             // so there is no need to generate exception twice :)
-            if ((expr is not AstExpression && expr is not AstEmptyStmt) || (expr is AstExpression expr2 && expr2 is not AstNewExpr newExpr))
+            if ((expr is not AstExpression && expr is not AstEmptyStmt))
             {
                 ReportMessage(expr.Location, [], ErrorCode.Get(CTEN.NewExprExpectedAfterThrow));
                 return ParseEmptyExpression();

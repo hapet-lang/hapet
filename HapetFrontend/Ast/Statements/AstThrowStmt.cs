@@ -7,11 +7,11 @@ namespace HapetFrontend.Ast.Statements
         /// <summary>
         /// Throw expression (the expression after 'throw' word)
         /// </summary>
-        public AstNewExpr ThrowExpression { get; set; }
+        public AstExpression ThrowExpression { get; set; }
 
         public override string AAAName => nameof(AstThrowStmt);
 
-        public AstThrowStmt(AstNewExpr expr, ILocation location = null) : base(location)
+        public AstThrowStmt(AstExpression expr, ILocation location = null) : base(location)
         {
             ThrowExpression = expr;
         }
@@ -19,7 +19,7 @@ namespace HapetFrontend.Ast.Statements
         public override AstStatement GetDeepCopy()
         {
             var copy = new AstThrowStmt(
-                ThrowExpression?.GetDeepCopy() as AstNewExpr,
+                ThrowExpression?.GetDeepCopy() as AstExpression,
                 Location)
             {
                 Scope = Scope,

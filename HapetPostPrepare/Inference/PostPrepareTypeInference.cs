@@ -1492,6 +1492,7 @@ namespace HapetPostPrepare
         private void PostPrepareThrowStmtInference(AstThrowStmt throwStmt, InInfo inInfo, ref OutInfo outInfo)
         {
             PostPrepareExprInference(throwStmt.ThrowExpression, inInfo, ref outInfo);
+            // TODO: check that out type is derived from System.Exception
         }
 
         private void PostPrepareTryCatchStmtInference(AstTryCatchStmt stmt, InInfo inInfo, ref OutInfo outInfo)
