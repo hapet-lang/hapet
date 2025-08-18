@@ -31,10 +31,12 @@ namespace HapetFrontend.Parsing
         private AstStatement ParseNullCoalescingExpression(ParserInInfo inInfo, ref ParserOutInfo outInfo)
         {
             var expr = ParseTernaryExpression(inInfo, ref outInfo);
+            SkipNewlines();
             // check for 'anime ?? cringe;'
-            if (CheckToken(TokenType.DoubleQuestion))
+            while (CheckToken(TokenType.DoubleQuestion))
             {
                 NextToken();
+                SkipNewlines();
 
                 // getting the right part
                 var exprSecond = ParseTernaryExpression(inInfo, ref outInfo);
@@ -45,6 +47,7 @@ namespace HapetFrontend.Parsing
                 var ternOp = new AstTernaryExpr(nullComparison, exprSecond as AstExpression, 
                     expr as AstExpression, new Location(expr.Beginning, exprSecond.Ending));
                 expr = ternOp;
+                SkipNewlines();
             }
             return expr;
         }
