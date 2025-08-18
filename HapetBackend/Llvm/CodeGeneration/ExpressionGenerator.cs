@@ -1771,12 +1771,14 @@ namespace HapetBackend.Llvm
 
             DeclSymbol ctorSymbol;
             List<AstExpression> casts;
+            AstArgumentExpr thisArgument;
             if (!baseStmt.IsThisCtorCall)
             {
                 string onlyName = baseStmt.BaseType.Declaration.Name.Name.GetClassNameWithoutNamespace();
                 var ctorName = $"{onlyName}_ctor";
                 List<AstArgumentExpr> argsWithClassParam = new List<AstArgumentExpr>(baseStmt.Arguments);
-                argsWithClassParam.Insert(0, new AstArgumentExpr(baseStmt.ThisArgument));
+                thisArgument = new AstArgumentExpr(baseStmt.ThisArgument);
+                argsWithClassParam.Insert(0, thisArgument);
                 ctorSymbol = _postPreparer.GetFuncFromCandidates(new AstIdExpr(ctorName), argsWithClassParam, baseStmt.BaseType.Declaration, true, out casts);
             }
             else
@@ -1784,7 +1786,11 @@ namespace HapetBackend.Llvm
                 string onlyName = _currentFunction.ContainingParent.Name.Name.GetClassNameWithoutNamespace();
                 var ctorName = $"{onlyName}_ctor";
                 List<AstArgumentExpr> argsWithClassParam = new List<AstArgumentExpr>(baseStmt.Arguments);
-                argsWithClassParam.Insert(0, new AstArgumentExpr(baseStmt.ThisArgument));
+                thisArgument = new AstArgumentExpr(baseStmt.ThisArgument)
+                {
+                    ArgumentModificator = baseStmt.ThisArgument.OutType is StructType ? ParameterModificator.Ref : ParameterModificator.None,
+                };
+                argsWithClassParam.Insert(0, thisArgument);
                 ctorSymbol = _postPreparer.GetFuncFromCandidates(new AstIdExpr(ctorName), argsWithClassParam, _currentFunction.ContainingParent, true, out casts);
             }
 
@@ -1800,7 +1806,7 @@ namespace HapetBackend.Llvm
 
             // args shite
             List<LLVMValueRef> args = new List<LLVMValueRef>();
-            args.Add(GenerateExpressionCode(baseStmt.ThisArgument));
+            args.Add(GenerateExpressionCode(thisArgument));
             foreach (var a in baseStmt.Arguments)
             {
                 args.Add(GenerateExpressionCode(a));
