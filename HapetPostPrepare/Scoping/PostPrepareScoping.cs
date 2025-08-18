@@ -344,6 +344,12 @@ namespace HapetPostPrepare
                 SetScopeAndParent(funcDecl.BaseCtorCall, funcDecl);
                 PostPrepareExprScoping(funcDecl.BaseCtorCall);
             }
+            // this ctor call scoping
+            if (funcDecl.ThisCtorCall != null)
+            {
+                SetScopeAndParent(funcDecl.ThisCtorCall, funcDecl);
+                PostPrepareExprScoping(funcDecl.ThisCtorCall);
+            }
 
             Scope blockScope;
             if (funcDecl.Body != null)
