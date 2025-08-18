@@ -123,6 +123,10 @@ namespace HapetPostPrepare
                 // add kw private if there is no one
                 else
                 {
+                    // 1 - is access special key type!!!
+                    if (!SpecialKeysHelper.HasSpecialKeyType(decl, 1, out int _))
+                        SpecialKeysHelper.AddSpecialKeyToDecl(decl, Lexer.CreateToken(TokenType.KwPrivate, decl.Location.Beginning),
+                            _compiler.MessageHandler, _currentSourceFile);
                     foreach (var f in decls)
                     {
                         // 1 - is access special key type!!!

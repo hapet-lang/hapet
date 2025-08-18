@@ -134,6 +134,10 @@ namespace HapetPostPrepare
             {
                 d.ContainingParent = alreadyDeclared;
                 d.Scope = alreadyDeclared.SubScope;
+                PostPrepareDeclScoping(d);
+                // change parent of nested
+                if (d.IsNestedDecl)
+                    d.ParentDecl = alreadyDeclared;
             }
 
             // handle ini
