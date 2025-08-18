@@ -18,6 +18,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
+using System;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 
@@ -404,16 +405,6 @@ public sealed partial unsafe class StringBuffer
     }
 
     /// <summary>
-    /// Appends the specified value as a string to the current buffer.
-    /// </summary>
-    /// <param name="value">The value to append.</param>
-    /// <param name="format">A format specifier indicating how to convert <paramref name="value"/> to a string.</param>
-    public void Append(decimal value, StringView format)
-    {
-        Numeric.FormatDecimal(this, (uint*)&value, format, culture);
-    }
-
-    /// <summary>
     /// Appends the string returned by processing a composite format string, which contains zero or more format items, to this instance.
     /// Each format item is replaced by the string representation of a single argument.
     /// </summary>
@@ -613,8 +604,6 @@ public sealed partial unsafe class StringBuffer
             Append(*(float*)Unsafe.AsPointer(ref value), format);
         else if (typeof(T) == typeof(double))
             Append(*(double*)Unsafe.AsPointer(ref value), format);
-        else if (typeof(T) == typeof(decimal))
-            Append(*(decimal*)Unsafe.AsPointer(ref value), format);
         else if (typeof(T) == typeof(bool))
             Append(*(bool*)Unsafe.AsPointer(ref value));
         else if (typeof(T) == typeof(char))
