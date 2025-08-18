@@ -22,6 +22,10 @@ namespace HapetCompiler.Resolvers
             if (!projectSettings.IsReferencedCompilation)
                 compiler.MessageHandler.ReportMessage([$"{Funcad.GetPrettyTimeString(compiler.CompilationStopwatch.Elapsed)} Resolving project references..."], null, ReportType.Info);
             ResolveProjectReferences();
+
+            if (compiler.MessageHandler.HasErrors)
+                return; // references errors
+
             if (!projectSettings.IsReferencedCompilation)
                 compiler.MessageHandler.ReportMessage([$"{Funcad.GetPrettyTimeString(compiler.CompilationStopwatch.Elapsed)} Resolving references..."], null, ReportType.Info);
             ResolveReferences();

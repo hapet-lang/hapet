@@ -608,7 +608,7 @@ namespace HapetFrontend.Parsing
 
                         // it is a default case
                         SkipNewlines();
-                        if (CheckTokens(TokenType.OpenBrace, TokenType.DollarIdentifier))
+                        if (inInfo.ExpectDefaultCase)
                         {
                             return ParseCaseStatement(inInfo, ref outInfo, true, token.Location);
                         }

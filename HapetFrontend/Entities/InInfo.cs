@@ -68,6 +68,11 @@ namespace HapetFrontend.Entities
         public bool CurrentlyParsingDirective { get; set; }
 
         /// <summary>
+        /// 'true' is expecting 'default' as a case
+        /// </summary>
+        public bool ExpectDefaultCase { get; set; }
+
+        /// <summary>
         /// This shite is used for func decl
         /// </summary>
         public AstUnknownDecl CurrentUdecl { get; set; }

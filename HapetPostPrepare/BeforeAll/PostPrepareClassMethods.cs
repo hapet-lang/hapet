@@ -42,9 +42,13 @@ namespace HapetPostPrepare
         private void PostPrepareStructMethodsInternal__(AstDeclaration decl, bool forImported = false)
         {
             // check that all decls in the class are also static
+            // except nested classes and structs
             if (decl is AstClassDecl && decl.SpecialKeys.Contains(TokenType.KwStatic))
             {
-                var foundNonStatic = decl.GetDeclarations().FirstOrDefault(dd => !dd.SpecialKeys.Contains(TokenType.KwStatic) && !dd.SpecialKeys.Contains(TokenType.KwConst));
+                var foundNonStatic = decl.GetDeclarations().FirstOrDefault(dd => 
+                    !dd.SpecialKeys.Contains(TokenType.KwStatic) && 
+                    !dd.SpecialKeys.Contains(TokenType.KwConst) && 
+                    dd is not AstClassDecl && dd is not AstStructDecl);
                 if (foundNonStatic != null)
                     _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, foundNonStatic.Name, [], ErrorCode.Get(CTEN.ClassStaticMemStatic));
             }

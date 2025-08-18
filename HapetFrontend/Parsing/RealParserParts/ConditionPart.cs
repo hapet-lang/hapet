@@ -76,9 +76,12 @@ namespace HapetFrontend.Parsing
             if (CheckToken(TokenType.OpenBrace))
             {
                 var savedSkip = inInfo.SkipDefaultSemicolonChecks; // skip checks at the top level for 'default'
+                var savedDefault = inInfo.ExpectDefaultCase; // skip checks at the top level for 'default'
                 inInfo.SkipDefaultSemicolonChecks = true; // skip checks at the top level for 'default'
+                inInfo.ExpectDefaultCase = true; 
                 var theBlock = ParseBlockExpression(inInfo, ref outInfo);
                 inInfo.SkipDefaultSemicolonChecks = savedSkip;
+                inInfo.ExpectDefaultCase = savedDefault;
 
                 List<AstCaseStmt> cases = theBlock.Statements.Select(x => x as AstCaseStmt).ToList();
                 return new AstSwitchStmt(condition, cases, new Location(beg.Location, end.Location));
@@ -106,6 +109,10 @@ namespace HapetFrontend.Parsing
             string gotoLabel = null;
             bool isDefault = fromDefault;
             bool isFalling = false;
+
+            // do not expect default case for now
+            var savedDefault = inInfo.ExpectDefaultCase;
+            inInfo.ExpectDefaultCase = false;
 
             TokenLocation beg;
             TokenLocation end;
@@ -159,6 +166,8 @@ namespace HapetFrontend.Parsing
                 // parsing the block
                 body = GetLoopOrCondBlock(inInfo, ref outInfo);
             }
+
+            inInfo.ExpectDefaultCase = savedDefault;
 
             var cs = new AstCaseStmt(pattern, body, new Location(beg, end));
             cs.LabelForGoto = gotoLabel;
