@@ -52,4 +52,16 @@ public struct String : IComparable, IComparable<string>
         string s = new string(buf, 0, s1.Length + s2.Length);
         return s;
     } 
+
+    public static bool operator ==(string s1, string s2)
+    {
+        if (s1.Length != s2.Length)
+            return false;
+        return Marshal.Memcmp(s1.Buffer, s2.Buffer, (uintptr)s1.Length) == 0;
+    }
+
+    public static bool operator !=(string s1, string s2)
+    {
+        return !(s1 == s2);
+    }
 }
