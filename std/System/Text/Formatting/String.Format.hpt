@@ -19,6 +19,7 @@
 // THE SOFTWARE.
 
 using System;
+using System.Globalization;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 
@@ -110,81 +111,11 @@ public sealed partial unsafe class StringBuffer
     }
 
     /// <summary>
-    /// Sets a custom formatter to use when converting instances of a given type to a string.
-    /// </summary>
-    /// <typeparam name="T">The type for which to set the formatter.</typeparam>
-    /// <param name="formatter">A delegate that will be called to format instances of the specified type.</param>
-    public static void SetCustomFormatter<T>(Action<StringBuffer, T, StringView> formatter)
-    {
-        ValueHelper<T>.Formatter = formatter;
-    }
-
-    /// <summary>
     /// Clears the buffer.
     /// </summary>
     public void Clear()
     {
         currentCount = 0;
-    }
-
-    /// <summary>
-    /// Copies the contents of the buffer to the given array.
-    /// </summary>
-    /// <param name="sourceIndex">The index within the buffer to begin copying.</param>
-    /// <param name="destination">The destination array.</param>
-    /// <param name="destinationIndex">The index within the destination array to which to begin copying.</param>
-    /// <param name="count">The number of characters to copy.</param>
-    public void CopyTo(int sourceIndex, char[] destination, int destinationIndex, int count)
-    {
-        if (destination == null)
-            throw new ArgumentNullException(nameof(destination));
-        if (destinationIndex + count > destination.Length || destinationIndex < 0)
-            throw new ArgumentOutOfRangeException(nameof(destinationIndex));
-
-        char* destPtr = destination.Buffer + destinationIndex;
-        CopyTo(destPtr, sourceIndex, count);
-    }
-
-    /// <summary>
-    /// Copies the contents of the buffer to the given array.
-    /// </summary>
-    /// <param name="dest">A pointer to the destination array.</param>
-    /// <param name="sourceIndex">The index within the buffer to begin copying.</param>
-    /// <param name="count">The number of characters to copy.</param>
-    public void CopyTo(char* dest, int sourceIndex, int count)
-    {
-        if (count < 0)
-            throw new ArgumentOutOfRangeException(nameof(count));
-        if (sourceIndex + count > currentCount || sourceIndex < 0)
-            throw new ArgumentOutOfRangeException(nameof(sourceIndex));
-
-        var src = buffer.Buffer + sourceIndex;
-        for (int i = 0; i < count; i++)
-        {
-            *dest = *src;
-            dest++;
-            src++;
-        }
-    }
-
-    /// <summary>
-    /// Copies the contents of the buffer to the given byte array.
-    /// </summary>
-    /// <param name="dest">A pointer to the destination byte array.</param>
-    /// <param name="sourceIndex">The index within the buffer to begin copying.</param>
-    /// <param name="count">The number of characters to copy.</param>
-    /// <param name="encoding">The encoding to use to convert characters to bytes.</param>
-    /// <returns>The number of bytes written to the destination.</returns>
-    public int CopyTo(byte* dest, int sourceIndex, int count, Encoding encoding)
-    {
-        if (count < 0)
-            throw new ArgumentOutOfRangeException(nameof(count));
-        if (sourceIndex + count > currentCount || sourceIndex < 0)
-            throw new ArgumentOutOfRangeException(nameof(sourceIndex));
-        if (encoding == null)
-            throw new ArgumentNullException(nameof(encoding));
-
-        return encoding.GetBytes(buffer.Buffer, count, dest, count);
     }
 
     /// <summary>
@@ -430,8 +361,7 @@ public sealed partial unsafe class StringBuffer
         while (segmentsLeft);
     }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    void CheckCapacity(int count)
+    inline void CheckCapacity(int count)
     {
         if (currentCount + count > buffer.Length)
             Array.Resize(ref buffer, buffer.Length * 2);
@@ -579,8 +509,7 @@ public sealed partial unsafe class StringBuffer
         return true;
     }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    internal void AppendGeneric<T>(T value, StringView format)
+    internal inline void AppendGeneric<T>(T value, StringView format)
     {
         // this looks gross, but T is known at JIT-time so this call tree
         // gets compiled down to a direct call with no branching
@@ -613,9 +542,8 @@ public sealed partial unsafe class StringBuffer
         else
         {
             // first, check to see if it's a value type implementing IStringFormattable
-            var formatter = ValueHelper<T>.Formatter;
-            if (formatter != null)
-                formatter(this, value, format);
+            if (value is IStringFormattable stringFormattable)
+                stringFormattable.Format(this, format);
             else
             {
                 // We could handle this case by calling ToString() on the object and paying the
@@ -647,8 +575,7 @@ public sealed partial unsafe class StringBuffer
         return value;
     }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    static char SkipWhitespace(ref char* currRef, char* end)
+    static inline char SkipWhitespace(ref char* currRef, char* end)
     {
         char* curr = currRef;
         while (curr < end && *curr == ' ') curr++;
@@ -688,7 +615,7 @@ public sealed partial unsafe class StringBuffer
             CachedInstance = buffer;
     }
 
-    [ThreadStatic]
+    //[ThreadStatic]
     static StringBuffer CachedInstance;
 
     static readonly CachedCulture CachedInvariantCulture = new CachedCulture(CultureInfo.InvariantCulture);
@@ -702,36 +629,6 @@ public sealed partial unsafe class StringBuffer
 
     const string TrueLiteral = "True";
     const string FalseLiteral = "False";
-
-    // The point of this class is to allow us to generate a direct call to a known
-    // method on an unknown, unconstrained generic value type. Normally this would
-    // be impossible; you'd have to cast the generic argument and introduce boxing.
-    // Instead we pay a one-time startup cost to create a delegate that will forward
-    // the parameter to the appropriate method in a strongly typed fashion.
-    static class ValueHelper<T>
-    {
-        public static Action<StringBuffer, T, StringView> Formatter = Prepare();
-
-        static Action<StringBuffer, T, StringView> Prepare()
-        {
-            // we only use this class for value types that also implement IStringFormattable
-            var type = typeof(T);
-            if (!typeof(IStringFormattable).GetTypeInfo().IsAssignableFrom(type.GetTypeInfo()))
-                return null;
-
-            var result = typeof(ValueHelper<T>)
-                .GetTypeInfo()
-                .GetDeclaredMethod("Assign")
-                .MakeGenericMethod(type)
-                .Invoke(null, null);
-            return (Action<StringBuffer, T, StringView>)result;
-        }
-
-        public static Action<StringBuffer, U, StringView> Assign<U>() where U : IStringFormattable
-        {
-            return (f, u, v) => u.Format(f, v);
-        }
-    }
 }
 
 // TODO: clean this up
@@ -1205,8 +1102,7 @@ static partial unsafe class Numeric
             NumberToCustomFormatString(formatter, ref number, specifier, culture);
     }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static void FormatDouble(StringBuffer formatter, double value, StringView specifier, CachedCulture culture)
+    public static inline void FormatDouble(StringBuffer formatter, double value, StringView specifier, CachedCulture culture)
     {
         int digits;
         int precision = DoublePrecision;
@@ -1253,8 +1149,7 @@ static partial unsafe class Numeric
             NumberToCustomFormatString(formatter, ref number, specifier, culture);
     }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static void FormatDecimal(StringBuffer formatter, uint* value, StringView specifier, CachedCulture culture)
+    public static inline void FormatDecimal(StringBuffer formatter, uint* value, StringView specifier, CachedCulture culture)
     {
         int digits;
         var fmt = ParseFormatSpecifier(specifier, out digits);
@@ -2511,8 +2406,7 @@ unsafe struct Arg1<T0> : IArgSet
         this.t0 = t0;
     }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void Format(StringBuffer buffer, int index, StringView format)
+    public inline void Format(StringBuffer buffer, int index, StringView format)
     {
         switch (index)
         {
@@ -2534,8 +2428,7 @@ unsafe struct Arg2<T0, T1> : IArgSet
         this.t1 = t1;
     }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void Format(StringBuffer buffer, int index, StringView format)
+    public inline void Format(StringBuffer buffer, int index, StringView format)
     {
         switch (index)
         {
@@ -2560,8 +2453,7 @@ unsafe struct Arg3<T0, T1, T2> : IArgSet
         this.t2 = t2;
     }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void Format(StringBuffer buffer, int index, StringView format)
+    public inline void Format(StringBuffer buffer, int index, StringView format)
     {
         switch (index)
         {
@@ -2589,8 +2481,7 @@ unsafe struct Arg4<T0, T1, T2, T3> : IArgSet
         this.t3 = t3;
     }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void Format(StringBuffer buffer, int index, StringView format)
+    public inline void Format(StringBuffer buffer, int index, StringView format)
     {
         switch (index)
         {
@@ -2621,8 +2512,7 @@ unsafe struct Arg5<T0, T1, T2, T3, T4> : IArgSet
         this.t4 = t4;
     }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void Format(StringBuffer buffer, int index, StringView format)
+    public inline void Format(StringBuffer buffer, int index, StringView format)
     {
         switch (index)
         {
@@ -2656,8 +2546,7 @@ unsafe struct Arg6<T0, T1, T2, T3, T4, T5> : IArgSet
         this.t5 = t5;
     }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void Format(StringBuffer buffer, int index, StringView format)
+    public inline void Format(StringBuffer buffer, int index, StringView format)
     {
         switch (index)
         {
@@ -2694,8 +2583,7 @@ unsafe struct Arg7<T0, T1, T2, T3, T4, T5, T6> : IArgSet
         this.t6 = t6;
     }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void Format(StringBuffer buffer, int index, StringView format)
+    public inline void Format(StringBuffer buffer, int index, StringView format)
     {
         switch (index)
         {
@@ -2735,8 +2623,7 @@ unsafe struct Arg8<T0, T1, T2, T3, T4, T5, T6, T7> : IArgSet
         this.t7 = t7;
     }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void Format(StringBuffer buffer, int index, StringView format)
+    public inline void Format(StringBuffer buffer, int index, StringView format)
     {
         switch (index)
         {
