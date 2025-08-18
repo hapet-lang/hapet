@@ -56,7 +56,7 @@ public interface IStringFormattable
 /// <summary>
 /// A low-allocation version of the built-in <see cref="StringBuilder"/> type.
 /// </summary>
-public unsafe sealed partial class StringBuffer
+public sealed partial unsafe class StringBuffer
 {
     CachedCulture culture;
     char[] buffer;
@@ -979,7 +979,7 @@ partial class Numeric
 // Also see: https://github.com/dotnet/coreclr/blob/02084af832c2900cf6eac2a168c41f261409be97/src/mscorlib/src/System/Number.cs
 // Standard numeric format string reference: https://msdn.microsoft.com/en-us/library/dwhawy9k%28v=vs.110%29.aspx
 
-unsafe static partial class Numeric
+static partial unsafe class Numeric
 {
     public static void FormatSByte(StringBuffer formatter, sbyte value, StringView specifier, CachedCulture culture)
     {
@@ -2527,7 +2527,7 @@ unsafe struct Arg1<T0> : IArgSet
     {
         switch (index)
         {
-            case 0: buffer.AppendGeneric(t0, format); break;
+            case (0) buffer.AppendGeneric(t0, format);
         }
     }
 }
@@ -2550,8 +2550,8 @@ unsafe struct Arg2<T0, T1> : IArgSet
     {
         switch (index)
         {
-            case 0: buffer.AppendGeneric(t0, format); break;
-            case 1: buffer.AppendGeneric(t1, format); break;
+            case (0) buffer.AppendGeneric(t0, format); 
+            case (1) buffer.AppendGeneric(t1, format); 
         }
     }
 }
@@ -2576,9 +2576,9 @@ unsafe struct Arg3<T0, T1, T2> : IArgSet
     {
         switch (index)
         {
-            case 0: buffer.AppendGeneric(t0, format); break;
-            case 1: buffer.AppendGeneric(t1, format); break;
-            case 2: buffer.AppendGeneric(t2, format); break;
+            case (0) buffer.AppendGeneric(t0, format);
+            case (1) buffer.AppendGeneric(t1, format);
+            case (2) buffer.AppendGeneric(t2, format);
         }
     }
 }
@@ -2605,10 +2605,10 @@ unsafe struct Arg4<T0, T1, T2, T3> : IArgSet
     {
         switch (index)
         {
-            case 0: buffer.AppendGeneric(t0, format); break;
-            case 1: buffer.AppendGeneric(t1, format); break;
-            case 2: buffer.AppendGeneric(t2, format); break;
-            case 3: buffer.AppendGeneric(t3, format); break;
+            case (0) buffer.AppendGeneric(t0, format);
+            case (1) buffer.AppendGeneric(t1, format);
+            case (2) buffer.AppendGeneric(t2, format);
+            case (3) buffer.AppendGeneric(t3, format);
         }
     }
 }
@@ -2637,11 +2637,11 @@ unsafe struct Arg5<T0, T1, T2, T3, T4> : IArgSet
     {
         switch (index)
         {
-            case 0: buffer.AppendGeneric(t0, format); break;
-            case 1: buffer.AppendGeneric(t1, format); break;
-            case 2: buffer.AppendGeneric(t2, format); break;
-            case 3: buffer.AppendGeneric(t3, format); break;
-            case 4: buffer.AppendGeneric(t4, format); break;
+            case (0) buffer.AppendGeneric(t0, format);
+            case (1) buffer.AppendGeneric(t1, format);
+            case (2) buffer.AppendGeneric(t2, format);
+            case (3) buffer.AppendGeneric(t3, format);
+            case (4) buffer.AppendGeneric(t4, format);
         }
     }
 }
@@ -2672,12 +2672,12 @@ unsafe struct Arg6<T0, T1, T2, T3, T4, T5> : IArgSet
     {
         switch (index)
         {
-            case 0: buffer.AppendGeneric(t0, format); break;
-            case 1: buffer.AppendGeneric(t1, format); break;
-            case 2: buffer.AppendGeneric(t2, format); break;
-            case 3: buffer.AppendGeneric(t3, format); break;
-            case 4: buffer.AppendGeneric(t4, format); break;
-            case 5: buffer.AppendGeneric(t5, format); break;
+            case (0) buffer.AppendGeneric(t0, format);
+            case (1) buffer.AppendGeneric(t1, format);
+            case (2) buffer.AppendGeneric(t2, format);
+            case (3) buffer.AppendGeneric(t3, format);
+            case (4) buffer.AppendGeneric(t4, format);
+            case (5) buffer.AppendGeneric(t5, format);
         }
     }
 }
@@ -2710,13 +2710,13 @@ unsafe struct Arg7<T0, T1, T2, T3, T4, T5, T6> : IArgSet
     {
         switch (index)
         {
-            case 0: buffer.AppendGeneric(t0, format); break;
-            case 1: buffer.AppendGeneric(t1, format); break;
-            case 2: buffer.AppendGeneric(t2, format); break;
-            case 3: buffer.AppendGeneric(t3, format); break;
-            case 4: buffer.AppendGeneric(t4, format); break;
-            case 5: buffer.AppendGeneric(t5, format); break;
-            case 6: buffer.AppendGeneric(t6, format); break;
+            case (0) buffer.AppendGeneric(t0, format);
+            case (1) buffer.AppendGeneric(t1, format);
+            case (2) buffer.AppendGeneric(t2, format);
+            case (3) buffer.AppendGeneric(t3, format);
+            case (4) buffer.AppendGeneric(t4, format);
+            case (5) buffer.AppendGeneric(t5, format);
+            case (6) buffer.AppendGeneric(t6, format);
         }
     }
 }
@@ -2751,14 +2751,14 @@ unsafe struct Arg8<T0, T1, T2, T3, T4, T5, T6, T7> : IArgSet
     {
         switch (index)
         {
-            case 0: buffer.AppendGeneric(t0, format); break;
-            case 1: buffer.AppendGeneric(t1, format); break;
-            case 2: buffer.AppendGeneric(t2, format); break;
-            case 3: buffer.AppendGeneric(t3, format); break;
-            case 4: buffer.AppendGeneric(t4, format); break;
-            case 5: buffer.AppendGeneric(t5, format); break;
-            case 6: buffer.AppendGeneric(t6, format); break;
-            case 7: buffer.AppendGeneric(t7, format); break;
+            case (0) buffer.AppendGeneric(t0, format);
+            case (1) buffer.AppendGeneric(t1, format);
+            case (2) buffer.AppendGeneric(t2, format);
+            case (3) buffer.AppendGeneric(t3, format);
+            case (4) buffer.AppendGeneric(t4, format);
+            case (5) buffer.AppendGeneric(t5, format);
+            case (6) buffer.AppendGeneric(t6, format);
+            case (7) buffer.AppendGeneric(t7, format);
         }
     }
 }
