@@ -7,7 +7,8 @@ namespace HapetFrontend.Types
     public class TypeContext
     {
         public int PointerSize { get; set; }
-        public StructType VaListType { get; private set; } = new StructType(null);
+        public StructType VaListTypeInstance { get; private set; } = new StructType(null);
+        public StructType TypeTypeInstance { get; private set; } = new StructType(null);
         public ClassType ObjectTypeInstance { get; private set; } = new ClassType(null);
         public VoidType VoidTypeInstance { get; private set; } = new VoidType(null);
         public PointerType PtrToVoidType { get; private set; }

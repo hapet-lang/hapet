@@ -20,8 +20,13 @@ namespace HapetPostPrepare
             }
             else if (typeName.Name == "System.Runtime.InteropServices.VaList")
             {
-                decl.Type.OutType = HapetType.CurrentTypeContext.VaListType;
-                HapetType.CurrentTypeContext.VaListType.Declaration = decl as AstStructDecl;
+                decl.Type.OutType = HapetType.CurrentTypeContext.VaListTypeInstance;
+                HapetType.CurrentTypeContext.VaListTypeInstance.Declaration = decl as AstStructDecl;
+            }
+            else if (typeName.Name == "System.Type")
+            {
+                decl.Type.OutType = HapetType.CurrentTypeContext.TypeTypeInstance;
+                HapetType.CurrentTypeContext.TypeTypeInstance.Declaration = decl as AstStructDecl;
             }
             else if (typeName.Name == "System.Delegate")
             {

@@ -881,13 +881,14 @@ namespace HapetPostPrepare
                     accessingFromAnObject = false;
                 }
 
-
                 if (nestExpr.LeftPart.OutType is ClassType classTT)
                     leftSideDecl = classTT.Declaration;
                 else if (nestExpr.LeftPart.OutType is StructType structt)
                     leftSideDecl = structt.Declaration;
                 else if (nestExpr.LeftPart.OutType is EnumType enumT)
                     leftSideDecl = enumT.Declaration;
+                else if (nestExpr.LeftPart.OutType is GenericType genT)
+                    leftSideDecl = genT.Declaration;
 
                 if (leftSideDecl == null)
                 {
@@ -1221,9 +1222,15 @@ namespace HapetPostPrepare
             {
                 expr.OutType = HapetType.CurrentTypeContext.StringTypeInstance;
             }
+            else if (expr.ExprType == TokenType.KwTypeof)
+            {
+                // typeof handle here
+                expr.OutType = HapetType.CurrentTypeContext.TypeTypeInstance;
+            }
             else
             {
-                // TODO: typeof handle here
+                // TODO: compiler error here
+                Debug.Assert(false);
             }
         }
 
