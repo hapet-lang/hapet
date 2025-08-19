@@ -496,31 +496,6 @@ namespace HapetFrontend.Types
             hashCode = hashCode * -1521134295 + EqualityComparer<HapetType>.Default.GetHashCode(TargetType);
             return hashCode;
         }
-
-        /// <summary>
-        /// Returns 'true' is the types are the same AND 'true'
-        /// when trying to assing smth like 'string[]' to pure
-        /// 'Array' type
-        /// </summary>
-        /// <param name="curr"></param>
-        /// <param name="req"></param>
-        /// <returns></returns>
-        public static bool IsCouldBeCastedIncludingArray(HapetType curr, HapetType req)
-        {
-            if (curr is ArrayType && req is StructType stT && stT.Declaration.Name.Name == "System.Array")
-            {
-                return true;
-            }
-            else if (curr is PointerType pt1 && req is PointerType pt2)
-            {
-                return IsCouldBeCastedIncludingArray(pt1.TargetType, pt2.TargetType);
-            }
-            else if (curr is ArrayType ar1 && req is ArrayType ar2)
-            {
-                return IsCouldBeCastedIncludingArray(ar1.TargetType, ar2.TargetType);
-            }
-            return curr == req;
-        }
     }
 
     public class CharType : StructType
