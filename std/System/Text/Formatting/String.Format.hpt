@@ -406,7 +406,10 @@ public sealed partial unsafe class StringBuffer
         else
             index = ParseNum(ref curr, end, MaxArgs);
         if (index >= args.Count)
-            throw new FormatException(string.Format(SR.ArgIndexOutOfRange, index));
+        {
+            //TODO:
+            //throw new FormatException(string.Format(SR.ArgIndexOutOfRange, index));
+        }
 
         // check for a spacing specifier
         c = SkipWhitespace(ref curr, end);
@@ -514,31 +517,31 @@ public sealed partial unsafe class StringBuffer
         // this looks gross, but T is known at JIT-time so this call tree
         // gets compiled down to a direct call with no branching
         if (typeof(T) == typeof(sbyte))
-            Append(*(sbyte*)Unsafe.AsPointer(ref value), format);
+            Append(*(sbyte*)(&value), format);
         else if (typeof(T) == typeof(byte))
-            Append(*(byte*)Unsafe.AsPointer(ref value), format);
+            Append(*(byte*)(&value), format);
         else if (typeof(T) == typeof(short))
-            Append(*(short*)Unsafe.AsPointer(ref value), format);
+            Append(*(short*)(&value), format);
         else if (typeof(T) == typeof(ushort))
-            Append(*(ushort*)Unsafe.AsPointer(ref value), format);
+            Append(*(ushort*)(&value), format);
         else if (typeof(T) == typeof(int))
-            Append(*(int*)Unsafe.AsPointer(ref value), format);
+            Append(*(int*)(&value), format);
         else if (typeof(T) == typeof(uint))
-            Append(*(uint*)Unsafe.AsPointer(ref value), format);
+            Append(*(uint*)(&value), format);
         else if (typeof(T) == typeof(long))
-            Append(*(long*)Unsafe.AsPointer(ref value), format);
+            Append(*(long*)(&value), format);
         else if (typeof(T) == typeof(ulong))
-            Append(*(ulong*)Unsafe.AsPointer(ref value), format);
+            Append(*(ulong*)(&value), format);
         else if (typeof(T) == typeof(float))
-            Append(*(float*)Unsafe.AsPointer(ref value), format);
+            Append(*(float*)(&value), format);
         else if (typeof(T) == typeof(double))
-            Append(*(double*)Unsafe.AsPointer(ref value), format);
+            Append(*(double*)(&value), format);
         else if (typeof(T) == typeof(bool))
-            Append(*(bool*)Unsafe.AsPointer(ref value));
+            Append(*(bool*)(&value));
         else if (typeof(T) == typeof(char))
-            Append(*(char*)Unsafe.AsPointer(ref value), format);
+            Append((ushort)(*(char*)(&value)), format);
         else if (typeof(T) == typeof(string))
-            Append(Unsafe.As<string>(value));
+            Append(*(string*)(&value));
         else
         {
             // first, check to see if it's a value type implementing IStringFormattable
@@ -549,7 +552,8 @@ public sealed partial unsafe class StringBuffer
                 // We could handle this case by calling ToString() on the object and paying the
                 // allocation, but presumably if the user is using us instead of the built-in
                 // formatting utilities they would rather be notified of this case, so we'll throw.
-                throw new InvalidOperationException(string.Format(SR.TypeNotFormattable, typeof(T)));
+                //TODO:
+                //throw new InvalidOperationException(string.Format(SR.TypeNotFormattable, typeof(T)));
             }
         }
     }
