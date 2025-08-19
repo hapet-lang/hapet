@@ -1,0 +1,11 @@
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+// Some modifications were made for hapet-lang compatibility.
+
+public static class Math
+{
+    public static int Min(int val1, int val2)
+    {
+        return (val1 <= val2) ? val1 : val2;
+    }
+}
