@@ -83,6 +83,18 @@ namespace HapetFrontend.Parsing
                         // the 'get' block
                         getBody = ParseBlockExpression(inInfo, ref outInfo);
                     }
+                    else if (CheckToken(TokenType.Arrow))
+                    {
+                        // get => ...
+                        NextToken();
+                        // getting only one stmt if there are no braces
+                        var onlyExpr = ParseExpression(inInfo, ref outInfo);
+                        onlyExpr = new AstReturnStmt(onlyExpr as AstExpression, onlyExpr.Location);
+                        var body = new AstBlockExpr(new List<AstStatement>() { onlyExpr }, onlyExpr);
+                        // try eat semicolon or error
+                        CheckSemicolonAfterStmt(onlyExpr);
+                        getBody = body;
+                    }
                     else
                     {
                         ReportMessage(PeekToken().Location, [], ErrorCode.Get(CTEN.UnexpectedTokenAfterGet));
@@ -108,6 +120,17 @@ namespace HapetFrontend.Parsing
                     {
                         // the 'set' block
                         setBody = ParseBlockExpression(inInfo, ref outInfo);
+                    }
+                    else if (CheckToken(TokenType.Arrow))
+                    {
+                        // set => ...
+                        NextToken();
+                        // getting only one stmt if there are no braces
+                        var onlyStmt = ParseStatement(inInfo, ref outInfo);
+                        var body = new AstBlockExpr(new List<AstStatement>() { onlyStmt }, onlyStmt);
+                        // try eat semicolon or error
+                        CheckSemicolonAfterStmt(onlyStmt);
+                        setBody = body;
                     }
                     else
                     {
