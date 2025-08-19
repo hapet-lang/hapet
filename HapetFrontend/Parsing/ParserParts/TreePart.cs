@@ -58,14 +58,17 @@ namespace HapetFrontend.Parsing
         private AstStatement ParseTernaryExpression(ParserInInfo inInfo, ref ParserOutInfo outInfo)
         {
             var expr = ParseOrExpression(inInfo, ref outInfo);
+            SkipNewlines();
 
             if (CheckToken(TokenType.QuestionMark))
             {
                 NextToken();
-
+                SkipNewlines();
                 // ternary shite probably
                 var trueExpr = ParseExpression(inInfo, ref outInfo);
+                SkipNewlines();
                 Consume(TokenType.Colon, ErrMsg(":", "in ternary expression"));
+                SkipNewlines();
                 var falseExpr = ParseExpression(inInfo, ref outInfo);
                 return new AstTernaryExpr(expr as AstExpression, trueExpr as AstExpression, falseExpr as AstExpression,
                     new Location(expr.Beginning, falseExpr.Ending));
