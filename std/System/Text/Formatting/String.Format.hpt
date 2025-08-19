@@ -355,8 +355,8 @@ public sealed partial unsafe class StringBuffer
         do
         {
             CheckCapacity((int)(end - curr));
-            char* bufferPtr = buffer + currentCount;
-            segmentsLeft = AppendSegment(ref curr, end, bufferPtr, ref prevArgIndex, ref args);
+            char* bufferPtr = buffer.Buffer + currentCount;
+            segmentsLeft = AppendSegment<T>(ref curr, end, bufferPtr, ref prevArgIndex, ref args);
         }
         while (segmentsLeft);
     }
@@ -364,7 +364,7 @@ public sealed partial unsafe class StringBuffer
     inline void CheckCapacity(int count)
     {
         if (currentCount + count > buffer.Length)
-            Array.Resize(ref buffer, buffer.Length * 2);
+            Array.Resize<char>(ref buffer, buffer.Length * 2);
     }
 
     bool AppendSegment<T>(ref char* currRef, char* end, char* dest, ref int prevArgIndex, ref T args) where T : IArgSet

@@ -116,6 +116,9 @@ namespace HapetFrontend.Scoping
             DefineUnaryOperator(new BuiltInUnaryOperator("++", ptrToVoid, ptrToVoid));
             DefineUnaryOperator(new BuiltInUnaryOperator("--", ptrToVoid, ptrToVoid));
 
+            DefineBinaryOperator(new BuiltInBinaryOperator("-", HapetType.CurrentTypeContext.PtrDiffTypeInstance, ptrToVoid, ptrToVoid));
+            DefineBinaryOperator(new BuiltInBinaryOperator("+", HapetType.CurrentTypeContext.PtrDiffTypeInstance, ptrToVoid, ptrToVoid));
+
             DefineBinaryOperator(new BuiltInBinaryOperator("==", boolT, ptrToVoid, ptrToVoid));
             DefineBinaryOperator(new BuiltInBinaryOperator("==", boolT, NullType.LiteralType, GenericType.LiteralType));
             DefineBinaryOperator(new BuiltInBinaryOperator("==", boolT, GenericType.LiteralType, NullType.LiteralType));
