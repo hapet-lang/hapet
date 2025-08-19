@@ -342,12 +342,22 @@ namespace HapetLastPrepare
         private void CheckUsedDeclsUnaryExpr(AstUnaryExpr expr)
         {
             CheckUsedDeclsExpr(expr.SubExpr);
+
+            if (expr.ActualOperator is UserDefinedUnaryOperator userDef)
+            {
+                CheckUsedDeclsDecl(userDef.Function.Declaration);
+            }
         }
 
         private void CheckUsedDeclsBinaryExpr(AstBinaryExpr expr)
         {
             CheckUsedDeclsExpr(expr.Left);
             CheckUsedDeclsExpr(expr.Right);
+
+            if (expr.ActualOperator is UserDefinedBinaryOperator userDef)
+            {
+                CheckUsedDeclsDecl(userDef.Function.Declaration);
+            }
         }
 
         private void CheckUsedDeclsPointerExpr(AstPointerExpr expr)
