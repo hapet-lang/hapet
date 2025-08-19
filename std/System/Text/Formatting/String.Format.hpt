@@ -23,6 +23,8 @@ using System.Globalization;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 
+/*
+
 /// <summary>
 /// Specifies an interface for types that act as a set of formatting arguments.
 /// </summary>
@@ -593,7 +595,8 @@ public sealed partial unsafe class StringBuffer
 
     static void ThrowError()
     {
-        throw new FormatException(SR.InvalidFormatString);
+        // TODO:
+        //throw new FormatException(SR.InvalidFormatString);
     }
 
     static StringBuffer Acquire(int capacity)
@@ -2642,3 +2645,5 @@ unsafe struct Arg8<T0, T1, T2, T3, T4, T5, T6, T7> : IArgSet
         }
     }
 }
+
+*/

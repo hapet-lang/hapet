@@ -2,12 +2,15 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // Some modifications were made for hapet-lang compatibility.
 
-public partial class CultureInfo
+using System;
+
+public partial class CultureInfo : IFormatProvider
 {
     // This has a de-DE, de-DE_phoneb or fj-FJ style name
     internal string _name;
     private bool _isReadOnly;
     internal CultureData _cultureData;
+    internal NumberFormatInfo _numInfo;
 
     private CultureInfo(CultureData cultureData, bool isReadOnly = false)
     {
@@ -69,5 +72,53 @@ public partial class CultureInfo
                 _userDefaultCulture ??
                 InitializeUserDefaultCulture();
         }
+    }
+
+    public virtual NumberFormatInfo NumberFormat
+    {
+        get
+        {
+            if (_numInfo == null)
+            {
+                NumberFormatInfo temp = new NumberFormatInfo(_cultureData);
+                temp._isReadOnly = _isReadOnly;
+                _numInfo = temp;
+            }
+            return _numInfo;
+        }
+        set
+        {
+            // TODO:
+            // ArgumentNullException.ThrowIfNull(value);
+
+            VerifyWritable();
+            _numInfo = value;
+        }
+    }
+
+    private void VerifyWritable()
+    {
+        if (_isReadOnly)
+        {
+            // TODO:
+            // throw new InvalidOperationException(SR.InvalidOperation_ReadOnly);
+        }
+    }
+
+    public virtual object GetFormat(Type formatType)
+    {
+        if (formatType == typeof(NumberFormatInfo))
+        {
+            return NumberFormat;
+        }
+        // TODO:
+        /*
+        if (formatType == typeof(DateTimeFormatInfo))
+        {
+            return DateTimeFormat;
+        }
+        */
+
+        return null;
     }
 }
