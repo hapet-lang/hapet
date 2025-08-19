@@ -1,0 +1,25 @@
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+// Some modifications were made for hapet-lang compatibility.
+
+using System.Runtime;
+
+[DeclarationUsed]
+[SuppressStaticCtorCall]
+public struct Type
+{
+    [DeclarationUsed]
+    private TypeInfoUnsafe* _typeInfo;
+    [DeclarationUsed]
+    private VirtualTableUnsafe* _vTable;
+
+    public static bool operator ==(Type t1, Type t2)
+    {
+        return t1._typeInfo == t2._typeInfo && t1._vTable == t2._vTable;
+    }
+
+    public static bool operator !=(Type t1, Type t2)
+    {
+        return !(t1 == t2);
+    }
+}

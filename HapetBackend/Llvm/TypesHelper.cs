@@ -746,13 +746,7 @@ namespace HapetBackend.Llvm
             //         ↓   "VirtualTableStruct"
             //  "TypeInfoStruct"
 
-            // allocating memory for the data in array
-            var allocated = GetMalloc(HapetType.CurrentTypeContext.PointerSize, 2, "allocForTypeInfo");
-            var ptrToType = _builder.BuildGEP2(LLVMTypeRef.CreatePointer(GetTypeInfoType(), 0), allocated, new LLVMValueRef[] { LLVMValueRef.CreateConstInt(LLVMTypeRef.Int32, 0) }, $"elementPtr{0}");
-            _builder.BuildStore(_typeInfoDictionary[type], ptrToType);
-            var ptrToVtable = _builder.BuildGEP2(LLVMTypeRef.CreatePointer(GetVirtualTableType(), 0), allocated, new LLVMValueRef[] { LLVMValueRef.CreateConstInt(LLVMTypeRef.Int32, 1) }, $"elementPtr{1}");
-            _builder.BuildStore(_virtualTableDictionary[type], ptrToVtable);
-
+            var allocated = _typeDictionary[type];
             // save the array into first field
             var typeConverter = _currentFunction.Scope.GetSymbolInNamespace("System.Runtime.Conversion", new AstIdExpr("TypeConverter"));
             DeclSymbol setterSymbol;

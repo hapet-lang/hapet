@@ -20,8 +20,7 @@ namespace HapetBackend.Llvm
     {
         private readonly List<(ISymbol, AstExpression)> _initializersMapList = new List<(ISymbol, AstExpression)>();
 
-        private (LLVMTypeRef, LLVMValueRef) _typeInfoInitializer;
-        private (LLVMTypeRef, LLVMValueRef) _vTableInitializer;
+        private (LLVMTypeRef, LLVMValueRef) _typeInitializer;
 
         /// <summary>
         /// Inits some dicts and other shite with metadata types :)
@@ -34,9 +33,7 @@ namespace HapetBackend.Llvm
             GenerateMetadataShiteAfterAll();
             GenerateMetadataShiteFieldInitializers();
 
-            // create typeinfo and vtable initers
-            _typeInfoInitializer = CreateTypeInfoInitializer();
-            _vTableInitializer = CreateVTableInitializer();
+            _typeInitializer = CreateTypeInitializer();
         }
         
         private void GenerateMetadataShiteTypes()
@@ -230,8 +227,7 @@ namespace HapetBackend.Llvm
                 // reg type info if non static
                 if (!cls.SpecialKeys.Contains(TokenType.KwStatic))
                 {
-                    GenerateTypeInfoConst(cls.Type.OutType);
-                    GenerateVirtualTableConst(cls.Type.OutType);
+                    GenerateTypeConstGlobal(cls.Type.OutType);
                 }
             }
             foreach (var str in _postPreparer.AllStructsMetadata)
@@ -244,8 +240,7 @@ namespace HapetBackend.Llvm
                 // reg type info if non static
                 if (!str.SpecialKeys.Contains(TokenType.KwStatic))
                 {
-                    GenerateTypeInfoConst(str.Type.OutType);
-                    GenerateVirtualTableConst(str.Type.OutType);
+                    GenerateTypeConstGlobal(str.Type.OutType);
                 }
             }
         }

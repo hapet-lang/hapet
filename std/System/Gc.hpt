@@ -131,8 +131,6 @@ public static class Gc
             if (_mallocList[i].IsClassInstance)
             {
                 _mallocList[i].Dtor.Invoke(_mallocList[i].Obj);
-                // free typeInfo holder
-                TypeConverter.FreeTypeInfo(_mallocList[i].Obj);
             }
             // free
             Marshal.Free(_mallocList[i].Obj);

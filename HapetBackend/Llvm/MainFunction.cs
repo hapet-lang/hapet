@@ -109,8 +109,7 @@ namespace HapetBackend.Llvm
             // some special calls before main code begins
             {
                 // need to initialize typeinfos and vtables before any code
-                _builder.BuildCall2(_typeInfoInitializer.Item1, _typeInfoInitializer.Item2, []);
-                _builder.BuildCall2(_vTableInitializer.Item1, _vTableInitializer.Item2, []);
+                _builder.BuildCall2(_typeInitializer.Item1, _typeInitializer.Item2, []);
 
                 // need to call at first stors 
                 // of System.Gc
