@@ -61,13 +61,13 @@ namespace HapetLastPrepare
             }
             else if (decl is AstPropertyDecl propDecl)
             {
-                if (propDecl.GetBlock != null)
+                if (propDecl.GetFunction != null)
                 {
-                    CheckUsedDeclsBlockExpr(propDecl.GetBlock);
+                    CheckUsedDeclsDecl(propDecl.GetFunction);
                 }
-                if (propDecl.SetBlock != null)
+                if (propDecl.SetFunction != null)
                 {
-                    CheckUsedDeclsBlockExpr(propDecl.SetBlock);
+                    CheckUsedDeclsDecl(propDecl.SetFunction);
                 }
 
                 if (propDecl is AstIndexerDecl indDecl)
@@ -407,6 +407,13 @@ namespace HapetLastPrepare
             }
 
             CheckUsedDeclsExpr(expr.FuncName);
+
+            // if it is a property function call
+            // then set the orig property to be used
+            if (expr.FuncName.OutType is FunctionType fnc && fnc.Declaration.IsPropertyFunction)
+            {
+                CheckUsedDeclsDecl(fnc.Declaration.NormalParent as AstPropertyDecl);
+            }
 
             foreach (var a in expr.Arguments)
             {
