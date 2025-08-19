@@ -424,7 +424,7 @@ namespace HapetBackend.Llvm
             if (dllImportAttr.Arguments.Count > 2 && dllImportAttr.Arguments[2].OutValue is bool b)
                 isSupp = b;
 
-            HapetType vaListType = HapetType.CurrentTypeContext.VaListType;
+            HapetType vaListType = HapetType.CurrentTypeContext.VaListTypeInstance;
             HapetType ptrToVaListType = PointerType.GetPointerType(vaListType);
             LLVMTypeRef funcType;
             LLVMValueRef funcValue;

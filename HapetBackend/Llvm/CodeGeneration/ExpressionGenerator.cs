@@ -1251,7 +1251,7 @@ namespace HapetBackend.Llvm
                 case TokenType.KwNameof:
                     return HapetValueToLLVMValue(HapetType.CurrentTypeContext.StringTypeInstance, expr.TargetType.TryFlatten(null, null));
                 case TokenType.KwTypeof:
-                    return default; // TODO:
+                    return _builder.BuildLoad2(GetTypeType(), _typeDictionary[expr.TargetType.OutType], "typeLoaded");
             }
             throw new InvalidDataException();
         }
