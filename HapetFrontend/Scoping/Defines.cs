@@ -118,6 +118,10 @@ namespace HapetFrontend.Scoping
 
             DefineBinaryOperator(new BuiltInBinaryOperator("-", HapetType.CurrentTypeContext.PtrDiffTypeInstance, ptrToVoid, ptrToVoid));
             DefineBinaryOperator(new BuiltInBinaryOperator("+", HapetType.CurrentTypeContext.PtrDiffTypeInstance, ptrToVoid, ptrToVoid));
+            DefineBinaryOperator(new BuiltInBinaryOperator("<", boolT, ptrToVoid, ptrToVoid));
+            DefineBinaryOperator(new BuiltInBinaryOperator("<=", boolT, ptrToVoid, ptrToVoid));
+            DefineBinaryOperator(new BuiltInBinaryOperator(">", boolT, ptrToVoid, ptrToVoid));
+            DefineBinaryOperator(new BuiltInBinaryOperator(">=", boolT, ptrToVoid, ptrToVoid));
 
             DefineBinaryOperator(new BuiltInBinaryOperator("==", boolT, ptrToVoid, ptrToVoid));
             DefineBinaryOperator(new BuiltInBinaryOperator("==", boolT, NullType.LiteralType, GenericType.LiteralType));

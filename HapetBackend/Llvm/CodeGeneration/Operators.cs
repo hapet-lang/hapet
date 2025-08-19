@@ -235,7 +235,9 @@ namespace HapetBackend.Llvm
                     // getting add func for the new types
                     var binOp = SearchBinOp(op.Name, HapetType.CurrentTypeContext.IntPtrTypeInstance, HapetType.CurrentTypeContext.IntPtrTypeInstance);
                     var res = binOp(builder, leftV, rightV, oper);
-                    return CreateCast(builder, res, HapetType.CurrentTypeContext.IntPtrTypeInstance, op.ResultType);
+                    if (op.ResultType is not BoolType)
+                        return CreateCast(builder, res, HapetType.CurrentTypeContext.IntPtrTypeInstance, op.ResultType);
+                    return res;
                 };
             }
         }
