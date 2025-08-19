@@ -151,28 +151,65 @@ namespace HapetBackend.Llvm
             LLVMValueRef toReturn = default;
             if (unExpr.ActualOperator is BuiltInUnaryOperator builtInOp)
             {
-                LLVMValueRef toAssign;
+                LLVMValueRef toAssignBefore;
+                LLVMValueRef toAssignAfter;
                 var expr = (unExpr.SubExpr as AstExpression);
-                var valuePtr = GenerateExpressionCode(expr, true);
-                var value = _builder.BuildLoad2(HapetTypeToLLVMType(expr.OutType), valuePtr, "loadedDec");
+                bool isPropa = expr is AstNestedExpr nst && nst.RightPart is AstCallExpr cp && cp.FuncName.OutType is FunctionType fnc && fnc.Declaration.IsPropertyFunction;
+
+                LLVMValueRef valuePtr = default;
+                AstCallExpr copiedCall = null;
+                // check for property function call
+                if (isPropa)
+                {
+                    // this is a special case for property function call
+                    // calling get func
+                    toAssignBefore = GenerateExpressionCode(expr);
+
+                    var callProp = (expr as AstNestedExpr).RightPart as AstCallExpr;
+                    var getFunc = callProp.FuncName.OutType as FunctionType;
+                    // making copy of call for set function
+                    copiedCall = callProp.GetDeepCopy() as AstCallExpr;
+                    var setFunc = (getFunc.Declaration.NormalParent as AstPropertyDecl).SetFunction;
+                    copiedCall.FuncName.OutType = setFunc.Type.OutType;
+                    copiedCall.FuncName.FindSymbol = setFunc.Symbol;
+                    copiedCall.OutType = HapetType.CurrentTypeContext.VoidTypeInstance;
+                }
+                else
+                {
+                    valuePtr = GenerateExpressionCode(expr, true);
+                    toAssignBefore = _builder.BuildLoad2(HapetTypeToLLVMType(expr.OutType), valuePtr, "loadedDec");
+                }
+
+                // making ++/--
                 if (expr.OutType is PointerType ptrT)
                 {
                     // special case for ptr type with GEP magics
                     int valToGep = unExpr.Operator == "++" ? 1 : -1;
-                    toAssign = _builder.BuildGEP2(HapetTypeToLLVMType(ptrT.TargetType), value, [LLVMValueRef.CreateConstInt(_context.Int32Type, (uint)valToGep)]);
+                    toAssignAfter = _builder.BuildGEP2(HapetTypeToLLVMType(ptrT.TargetType), toAssignBefore, [LLVMValueRef.CreateConstInt(_context.Int32Type, (uint)valToGep)]);
                 }
                 else
                 {
-                    var bo = SearchBinOp(unExpr.Operator == "++" ? "+" : "-", expr.OutType, HapetType.CurrentTypeContext.GetIntType(4, true));
-                    toAssign = bo(_builder, value, LLVMValueRef.CreateConstInt(_context.Int32Type, 1), "unOp");
+                    // if it is just a numbers - just add
+                    var tpToAdd = expr.OutType;
+                    var bo = SearchBinOp(unExpr.Operator == "++" ? "+" : "-", expr.OutType, tpToAdd);
+                    toAssignAfter = bo(_builder, toAssignBefore, LLVMValueRef.CreateConstInt(HapetTypeToLLVMType(tpToAdd), 1), "unOp");
                 }
-                AssignToVar(valuePtr, toAssign);
+
+                // assigning
+                if (isPropa)
+                {
+                    GenerateCallExpr(copiedCall, false, [toAssignAfter]);
+                }
+                else
+                {
+                    AssignToVar(valuePtr, toAssignAfter);
+                }
 
                 LLVMValueRef val;
                 if (unExpr.IsPrefix)
-                    val = toAssign;
+                    val = toAssignAfter;
                 else
-                    val = value;
+                    val = toAssignBefore;
                 toReturn = val;
             }
             else if (unExpr.ActualOperator is UserDefinedUnaryOperator userDef)
@@ -674,7 +711,7 @@ namespace HapetBackend.Llvm
             return v;
         }
 
-        private unsafe LLVMValueRef GenerateCallExpr(AstCallExpr expr, bool getPtr = false)
+        private unsafe LLVMValueRef GenerateCallExpr(AstCallExpr expr, bool getPtr = false, List<LLVMValueRef> additionalArgs = null)
         {
             // the func is needed to handle virtual shite
             LLVMValueRef CreateCall(LLVMBuilderRef builder, LLVMTypeRef funcType, FunctionType hapetType, LLVMValueRef func, List<LLVMValueRef> args, bool isBaseCall, string name = "")
@@ -741,12 +778,24 @@ namespace HapetBackend.Llvm
                     else
                         args.Add(GenerateExpressionCode(expr.TypeOrObjectName));
                 }
-                // skip the first object param
-                var parsToSearch = expr.StaticCall ? fncType.Declaration.Parameters : fncType.Declaration.Parameters.Skip(1).ToList();
-                List <AstArgumentExpr> normalArgs = _postPreparer.GenerateNormalArguments(parsToSearch, expr.Arguments, expr);
-                foreach (var a in normalArgs)
+
+                // this is a super kostyl to handle 
+                // anime.Buffer++
+                // so sometimes we don't want to gen normal args
+                // we just want to add our own
+                if (additionalArgs == null)
                 {
-                    args.Add(GenerateExpressionCode(a));
+                    // skip the first object param
+                    var parsToSearch = expr.StaticCall ? fncType.Declaration.Parameters : fncType.Declaration.Parameters.Skip(1).ToList();
+                    List<AstArgumentExpr> normalArgs = _postPreparer.GenerateNormalArguments(parsToSearch, expr.Arguments, expr);
+                    foreach (var a in normalArgs)
+                    {
+                        args.Add(GenerateExpressionCode(a));
+                    }
+                }
+                else
+                {
+                    args.AddRange(additionalArgs);
                 }
 
                 // is that smth like 'base.Anime()' call
