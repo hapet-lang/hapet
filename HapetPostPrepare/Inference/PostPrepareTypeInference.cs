@@ -545,6 +545,12 @@ namespace HapetPostPrepare
                 unExpr.ActualOperator = operators[0];
                 unExpr.OutType = unExpr.ActualOperator.ResultType;
 
+                if (unExpr.OutType is PointerType ptrT)
+                {
+                    // WARN: probably should work :)
+                    unExpr.OutType = unExpr.SubExpr.OutType;
+                }
+
                 // if the value could be evaluated at the compile time
                 if ((unExpr.SubExpr as AstExpression).OutValue != null && 
                     unExpr.ActualOperator.CanExecute)
