@@ -426,6 +426,19 @@ namespace HapetFrontend.Parsing
                 }
                 return un;
             }
+            else if (next.Type == TokenType.Tilda)
+            {
+                NextToken();
+                SkipNewlines();
+                var sub = ParseUnaryExpression(inInfo, ref outInfo);
+                var un = new AstUnaryExpr("~", sub as AstExpression, new Location(next.Location, sub.Ending));
+                // error if it is not an expr
+                if (sub is not AstExpression)
+                {
+                    ReportMessage(sub, [], ErrorCode.Get(CTEN.TildaUnexpectedExpr));
+                }
+                return un;
+            }
 
             return ParsePostUnaryExpression(inInfo, ref outInfo);
         }
@@ -771,23 +784,6 @@ namespace HapetFrontend.Parsing
                         }
 
                         return id;
-                    }
-
-                case TokenType.Tilda:
-                    {
-                        NextToken();
-
-                        var expr = ParseExpression(inInfo, ref outInfo);
-                        if (expr is AstIdExpr idExpr)
-                        {
-                            idExpr.Suffix = "~";
-                        }
-                        else
-                        {
-                            // TODO: not only idents are allowed: ~(3 + 4)
-                            ReportMessage(PeekToken().Location, [], ErrorCode.Get(CTEN.TildaUnexpectedExpr));
-                        }
-                        return expr;
                     }
 
                 case TokenType.StringLiteral:

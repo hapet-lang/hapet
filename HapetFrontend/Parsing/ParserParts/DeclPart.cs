@@ -17,6 +17,15 @@ namespace HapetFrontend.Parsing
             // keep parsing while attributes are there :)
             while (true)
             {
+                SkipNewlines();
+                // special handle for destructor
+                bool tildaOnTopLevel = false;
+                if (CheckToken(TokenType.Tilda))
+                {
+                    tildaOnTopLevel = true;
+                    NextToken();
+                }
+
                 var saved2 = inInfo.Message;
                 var saved3 = inInfo.AllowMultiplyExpression;
                 
@@ -30,6 +39,10 @@ namespace HapetFrontend.Parsing
                 {
                     decl.Attributes.AddRange(_foundAttributes);
                     _foundAttributes.Clear();
+
+                    // handle dtor
+                    if (decl is AstFuncDecl fnc && tildaOnTopLevel && fnc.ClassFunctionType == Enums.ClassFunctionType.Ctor)
+                        fnc.ClassFunctionType = Enums.ClassFunctionType.Dtor;
 
                     // expect semicolon on every field decl!!!
                     if (decl is AstVarDecl && decl is not AstPropertyDecl)

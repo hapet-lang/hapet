@@ -194,10 +194,10 @@ namespace HapetFrontend.Parsing
                     func.Name = fncName.GetCopy();
                     func.Returns = new AstNestedExpr(new AstIdExpr("void"), null);
                     // check that it is a static ctor
-                    if (fncName.Suffix != "~" && udecl.SpecialKeys.Contains(TokenType.KwStatic))
+                    if (udecl.SpecialKeys.Contains(TokenType.KwStatic))
                         func.ClassFunctionType = Enums.ClassFunctionType.StaticCtor;
                     else
-                        func.ClassFunctionType = fncName.Suffix != "~" ? Enums.ClassFunctionType.Ctor : Enums.ClassFunctionType.Dtor;
+                        func.ClassFunctionType = Enums.ClassFunctionType.Ctor;
                 }
                 else
                 {

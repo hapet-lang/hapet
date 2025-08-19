@@ -65,6 +65,8 @@ namespace HapetFrontend.Scoping
                 {
                     DefineUnaryOperator("++", type, type, a => ((NumberData)a + 1));
                     DefineUnaryOperator("--", type, type, a => ((NumberData)a - 1));
+
+                    DefineUnaryOperator("~", type, type, a => (~(NumberData)a));
                 }
 
                 foreach (var secondType in numTypes)
