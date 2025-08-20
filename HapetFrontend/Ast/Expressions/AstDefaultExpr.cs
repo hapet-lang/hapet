@@ -57,6 +57,9 @@ namespace HapetFrontend.Ast.Expressions
                 case GenericType gt:
                     outExpr = new AstDefaultGenericExpr(gt, orig);
                     break;
+                case EnumType en:
+                    outExpr = new AstNumberExpr(NumberData.FromInt(0), null, en.Declaration.InheritedType.OutType, orig);
+                    break;
                 default:
                     messageHandler.ReportMessage(orig.SourceFile.Text, orig, [HapetType.AsString(tp)], ErrorCode.Get(CTEN.NoDefaultValueForType));
                     outExpr = null;

@@ -335,6 +335,7 @@ namespace HapetBackend.Llvm
 
                         return LLVMValueRef.CreateConstNamedStruct(tp, [stringSizeValueRef, stringGlobArray]);
                     }
+                case EnumType i: return LLVM.ConstInt(HapetTypeToLLVMType(type), ((NumberData)v).ToULong(), ((i.Declaration.InheritedType.OutType as IntType).Signed) ? 1 : 0);
             }
             return new LLVMValueRef();
         }
