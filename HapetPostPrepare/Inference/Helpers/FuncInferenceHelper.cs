@@ -257,7 +257,10 @@ namespace HapetPostPrepare
                 if (theArg != null)
                     continue;
 
-                normalArgs[i] = new AstArgumentExpr(currPar.DefaultValue);
+                var castedArg = new AstCastExpr(currPar.Type.GetDeepCopy() as AstExpression, currPar.DefaultValue);
+                castedArg.SetDataFromStmt(currPar.DefaultValue, true);
+                castedArg.OutType = currPar.Type.OutType;
+                normalArgs[i] = new AstArgumentExpr(castedArg);
             }
 
             // we need to create an empty array for 'params' if there was no args
