@@ -324,27 +324,14 @@ namespace HapetBackend.Llvm
                         // creating global static array
                         var charT = HapetType.CurrentTypeContext.CharTypeInstance;
                         var elements = theString.ToCharArray().Select(c => HapetValueToLLVMValue(charT, c)).ToArray();
-                        var stringGlobArray = _module.AddGlobal(LLVMTypeRef.CreateArray(HapetTypeToLLVMType(charT), (uint)theString.Length), "constString");
-                        stringGlobArray.Initializer = LLVMValueRef.CreateConstArray(HapetTypeToLLVMType(charT), elements);
+                        var stringGlobArray = LLVMValueRef.CreateConstArray(HapetTypeToLLVMType(charT), elements);
 
                         var stringType = HapetType.CurrentTypeContext.StringTypeInstance;
-
-                        // creating string variable
-                        var theStringItself = CreateLocalVariable(stringType, "theString");
-
                         // it would work only with const string assignment. if you want smth like this to work
                         // if they are trying to store a char* in string
                         var tp = HapetTypeToLLVMType(stringType);
-                        // the 1 is because StringType struct has buf field as it's 1 param
-                        var buf = _builder.BuildStructGEP2(tp, theStringItself, 1, "strBuf");
-                        _builder.BuildStore(stringGlobArray, buf);
-                        /// setting the string size.
-                        var len = _builder.BuildStructGEP2(tp, theStringItself, 0, "strLen");
-                        _builder.BuildStore(stringSizeValueRef, len);
 
-                        // loading the string struct
-                        var theStringItselfLoaded = _builder.BuildLoad2(HapetTypeToLLVMType(stringType), theStringItself, "theStringLoaded");
-                        return theStringItselfLoaded;
+                        return LLVMValueRef.CreateConstNamedStruct(tp, [stringSizeValueRef, stringGlobArray]);
                     }
             }
             return new LLVMValueRef();
