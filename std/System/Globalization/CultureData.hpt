@@ -43,4 +43,9 @@ internal sealed partial class CultureData
             return (_sName == "zh-CHS" || _sName == "zh-CHT") ? _sName : _sRealName;
         }
     }
+
+    internal void GetNFIValues(NumberFormatInfo nfi)
+    {
+        // TODO: 
+    }
 }

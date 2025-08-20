@@ -108,6 +108,23 @@ public sealed class NumberFormatInfo : IFormatProvider
         }
     }
 
+    private void InitializeInvariantAndNegativeSignFlags()
+    {
+        _hasInvariantNumberSigns = _positiveSign == "+" && _negativeSign == "-";
+
+        // The list of the Minus characters are picked up from the CLDR parse lenient data.
+        // e.g. https://github.com/unicode-org/cldr/blob/feb602b06bd18ba7333464bd648b68292e8aa54d/common/main/sw.xml#L1001
+
+        bool tmp = _negativeSign[0] == '\u2012' || // Figure Dash
+                   _negativeSign[0] == '\u207B' || // Superscript Minus
+                   _negativeSign[0] == '\u208B' || // Subscript Minus
+                   _negativeSign[0] == '\u2212' || // Minus Sign
+                   _negativeSign[0] == '\u2796' || // Heavy Minus Sign
+                   _negativeSign[0] == '\uFE63' || // Small Hyphen-Minus
+                   _negativeSign[0] == '\uFF0D';   // Fullwidth Hyphen-Minus
+        _allowHyphenDuringParsing = _negativeSign.Length == 1 && tmp;
+    }
+
     private void VerifyWritable()
     {
         if (_isReadOnly)
@@ -165,7 +182,8 @@ public sealed class NumberFormatInfo : IFormatProvider
         {
             if (value < 0 || value > 99)
             {
-                ThrowHelper.ThrowArgumentOutOfRange_Range(nameof(value), value, 0, 99);
+                // TODO:
+                //ThrowHelper.ThrowArgumentOutOfRange_Range(nameof(value), value, 0, 99);
             }
 
             VerifyWritable();
@@ -203,11 +221,13 @@ public sealed class NumberFormatInfo : IFormatProvider
                     return;
                 }
 
-                throw new ArgumentException(SR.Argument_InvalidGroupSize, propName);
+                // TODO:
+                //throw new ArgumentException(SR.Argument_InvalidGroupSize, propName);
             }
             else if (groupSize[i] > 9)
             {
-                throw new ArgumentException(SR.Argument_InvalidGroupSize, propName);
+                // TODO:
+                // throw new ArgumentException(SR.Argument_InvalidGroupSize, propName);
             }
         }
     }
@@ -217,7 +237,7 @@ public sealed class NumberFormatInfo : IFormatProvider
         get => (int[])_currencyGroupSizes.Clone();
         set
         {
-            ArgumentNullException.ThrowIfNull(value);
+            ArgumentNullException.ThrowIfNull(value, nameof(value));
 
             VerifyWritable();
 
@@ -232,7 +252,7 @@ public sealed class NumberFormatInfo : IFormatProvider
         get => (int[])_numberGroupSizes.Clone();
         set
         {
-            ArgumentNullException.ThrowIfNull(value);
+            ArgumentNullException.ThrowIfNull(value, nameof(value));
 
             VerifyWritable();
 
@@ -247,7 +267,7 @@ public sealed class NumberFormatInfo : IFormatProvider
         get => (int[])_percentGroupSizes.Clone();
         set
         {
-            ArgumentNullException.ThrowIfNull(value);
+            ArgumentNullException.ThrowIfNull(value, nameof(value));
 
             VerifyWritable();
             int[] inputSizes = (int[])value.Clone();
@@ -262,7 +282,7 @@ public sealed class NumberFormatInfo : IFormatProvider
         set
         {
             VerifyWritable();
-            ArgumentNullException.ThrowIfNull(value);
+            ArgumentNullException.ThrowIfNull(value, nameof(value));
             _currencyGroupSeparator = value;
             _currencyGroupSeparatorUtf8 = null;
         }
@@ -273,7 +293,7 @@ public sealed class NumberFormatInfo : IFormatProvider
         get => _currencySymbol;
         set
         {
-            ArgumentNullException.ThrowIfNull(value);
+            ArgumentNullException.ThrowIfNull(value, nameof(value));
 
             VerifyWritable();
             _currencySymbol = value;
@@ -317,7 +337,7 @@ public sealed class NumberFormatInfo : IFormatProvider
         get => _nanSymbol;
         set
         {
-            ArgumentNullException.ThrowIfNull(value);
+            ArgumentNullException.ThrowIfNull(value, nameof(value));
 
             VerifyWritable();
             _nanSymbol = value;
@@ -332,7 +352,8 @@ public sealed class NumberFormatInfo : IFormatProvider
         {
             if (value < 0 || value > 16)
             {
-                ThrowHelper.ThrowArgumentOutOfRange_Range(nameof(value), value, 0, 16);
+                // TODO:
+                //ThrowHelper.ThrowArgumentOutOfRange_Range(nameof(value), value, 0, 16);
             }
 
             VerifyWritable();
@@ -348,7 +369,8 @@ public sealed class NumberFormatInfo : IFormatProvider
             // NOTENOTE: the range of value should correspond to negNumberFormats[] in vm\COMNumber.cpp.
             if (value < 0 || value > 4)
             {
-                ThrowHelper.ThrowArgumentOutOfRange_Range(nameof(value), value, 0, 4);
+                // TODO:
+                //ThrowHelper.ThrowArgumentOutOfRange_Range(nameof(value), value, 0, 4);
             }
 
             VerifyWritable();
@@ -364,7 +386,8 @@ public sealed class NumberFormatInfo : IFormatProvider
             // NOTENOTE: the range of value should correspond to posPercentFormats[] in vm\COMNumber.cpp.
             if (value < 0 || value > 3)
             {
-                ThrowHelper.ThrowArgumentOutOfRange_Range(nameof(value), value, 0, 3);
+                // TODO:
+                //ThrowHelper.ThrowArgumentOutOfRange_Range(nameof(value), value, 0, 3);
             }
 
             VerifyWritable();
@@ -380,7 +403,8 @@ public sealed class NumberFormatInfo : IFormatProvider
             // NOTENOTE: the range of value should correspond to posPercentFormats[] in vm\COMNumber.cpp.
             if (value < 0 || value > 11)
             {
-                ThrowHelper.ThrowArgumentOutOfRange_Range(nameof(value), value, 0, 11);
+                // TODO:
+                //ThrowHelper.ThrowArgumentOutOfRange_Range(nameof(value), value, 0, 11);
             }
 
             VerifyWritable();
@@ -393,7 +417,7 @@ public sealed class NumberFormatInfo : IFormatProvider
         get => _negativeInfinitySymbol;
         set
         {
-            ArgumentNullException.ThrowIfNull(value);
+            ArgumentNullException.ThrowIfNull(value, nameof(value));
 
             VerifyWritable();
             _negativeInfinitySymbol = value;
@@ -406,7 +430,7 @@ public sealed class NumberFormatInfo : IFormatProvider
         get => _negativeSign;
         set
         {
-            ArgumentNullException.ThrowIfNull(value);
+            ArgumentNullException.ThrowIfNull(value, nameof(value));
 
             VerifyWritable();
             _negativeSign = value;

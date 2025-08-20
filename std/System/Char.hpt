@@ -30,4 +30,18 @@ public struct Char : IComparable, IComparable<char>
     {
         return _value - value;
     }
+
+    public static bool IsWhiteSpace(char c)
+    {
+        /*
+        if (IsLatin1(c))
+        {
+            return IsWhiteSpaceLatin1(c);
+        }
+
+        return CharUnicodeInfo.GetIsWhiteSpace(c);
+        */
+        // TODO: make normal, not cringe
+        return c == ' ' || c == '\t' || c == '\n';
+    }
 }

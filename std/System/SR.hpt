@@ -1,0 +1,17 @@
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+// Some modifications were made for hapet-lang compatibility.
+
+public static class SR
+{
+    // arguments
+    public const string Argument_EmptyString = "The value cannot be an empty string.";
+    public const string Argument_EmptyOrWhiteSpaceString = "The value cannot be an empty string or composed entirely of whitespace.";
+
+    // formatting
+    public const string Formatting_InvalidGroupSizes = "Invalid group sizes in NumberFormatInfo.";
+    public const string Formatting_UnknownFormatSpecifier = "Unknown format specifier '{0}'.";
+    public const string Formatting_ArgIndexOutOfRange = "No format argument exists for index '{0}'.";
+    public const string Formatting_TypeNotFormattable = "Type '{0}' is not a built-in type, does not implement IStringFormattable, and no custom formatter was found for it.";
+    public const string Formatting_InvalidFormatString = "Invalid format string.";
+}
