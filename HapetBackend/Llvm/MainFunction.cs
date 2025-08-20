@@ -108,8 +108,8 @@ namespace HapetBackend.Llvm
             LLVMTypeRef funcType;
             // some special calls before main code begins
             {
-                // need to initialize typeinfos and vtables before any code
-                _builder.BuildCall2(_typeInitializer.Item1, _typeInitializer.Item2, []);
+                // need to initialize module before any code
+                _builder.BuildCall2(_moduleInitializer.Item1, _moduleInitializer.Item2, []);
 
                 // need to call at first stors 
                 // of System.Gc

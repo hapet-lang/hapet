@@ -73,48 +73,21 @@ namespace HapetBackend.Llvm
         private readonly List<(HapetType type, string typeName, ClassType parent)> _typeInfosToInit = new List<(HapetType, string, ClassType)>();
         private (LLVMTypeRef, LLVMValueRef) CreateTypeInfoInitializer()
         {
-            // to check if it was inited only once
-            var globStatic = _module.AddGlobal(HapetTypeToLLVMType(HapetType.CurrentTypeContext.BoolTypeInstance), 
-                $"is_{_compiler.CurrentProjectSettings.ProjectName}_typeinfo_initer_called");
-            globStatic.Linkage = LLVMLinkage.LLVMExternalLinkage;
-            globStatic.Initializer = LLVMValueRef.CreateConstInt(HapetTypeToLLVMType(HapetType.CurrentTypeContext.BoolTypeInstance), 0);
-
             // create a func to init all the type infos
             var ltype = LLVMTypeRef.CreateFunction(HapetTypeToLLVMType(HapetType.CurrentTypeContext.VoidTypeInstance), [], false);
             var lfunc = _module.AddFunction($"{_compiler.CurrentProjectSettings.ProjectName}_typeinfo_initer", ltype);
             lfunc.Linkage = LLVMLinkage.LLVMExternalLinkage;
-            lfunc.DLLStorageClass = LLVMDLLStorageClass.LLVMDLLExportStorageClass;
 
             // make check that is already inited
             var entry = lfunc.AppendBasicBlockInContext(_context, "entry");
-            var notInited = lfunc.AppendBasicBlockInContext(_context, "not.inited");
-            var end = lfunc.AppendBasicBlockInContext(_context, "end");
 
             _builder.PositionAtEnd(entry);
-            var loadedVar = _builder.BuildLoad2(HapetTypeToLLVMType(HapetType.CurrentTypeContext.BoolTypeInstance), globStatic, "isInited");
-            _builder.BuildCondBr(loadedVar, end, notInited);
-
-            _builder.PositionAtEnd(notInited);
-            _builder.BuildStore(LLVMValueRef.CreateConstInt(HapetTypeToLLVMType(HapetType.CurrentTypeContext.BoolTypeInstance), 1), globStatic);
-
-            // need to call all dependent initers
-            foreach (var d in _compiler.CurrentProjectData.AllReferencedProjectNames)
-            {
-                string funcName = $"{d}_typeinfo_initer";
-                LLVMValueRef lfuncDep = _module.AddFunction(funcName, ltype);
-                lfuncDep.Linkage = LLVMLinkage.LLVMExternalLinkage;
-                lfuncDep.DLLStorageClass = LLVMDLLStorageClass.LLVMDLLImportStorageClass;
-                _builder.BuildCall2(ltype, lfuncDep, []);
-            }
 
             // make all inites here
             foreach (var tp in _typeInfosToInit)
             {
                 GenerateInitializerForTypeInfo(tp.type, tp.typeName, tp.parent);
             }
-            _builder.BuildBr(end);
-
-            _builder.PositionAtEnd(end);
             _builder.BuildRetVoid();
 
             return (ltype, lfunc);

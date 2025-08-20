@@ -20,7 +20,7 @@ namespace HapetBackend.Llvm
     {
         private readonly List<(ISymbol, AstExpression)> _initializersMapList = new List<(ISymbol, AstExpression)>();
 
-        private (LLVMTypeRef, LLVMValueRef) _typeInitializer;
+        private (LLVMTypeRef, LLVMValueRef) _moduleInitializer;
 
         /// <summary>
         /// Inits some dicts and other shite with metadata types :)
@@ -33,7 +33,7 @@ namespace HapetBackend.Llvm
             GenerateMetadataShiteAfterAll();
             GenerateMetadataShiteFieldInitializers();
 
-            _typeInitializer = CreateTypeInitializer();
+            _moduleInitializer = CreateModuleInitializer();
         }
         
         private void GenerateMetadataShiteTypes()
@@ -257,24 +257,14 @@ namespace HapetBackend.Llvm
                 var field = _valueMap[ini.Item1];
                 var decl = (ini.Item1 as DeclSymbol).Decl;
 
-                // special check for const
-                if (decl.SpecialKeys.Contains(TokenType.KwConst))
-                {
-                    field.Initializer = HapetValueToLLVMValue(decl.Type.OutType, ini.Item2.OutValue);
-                    continue;
-                }
-                // for static
+                // WARN: do not set value from Initializer - it would be set inside stor
+                // set default value to it
+                var defExpr = AstDefaultExpr.GetDefaultValueForType(decl.Type.OutType, null, _compiler.MessageHandler);
+                // special initializer for empty struct
+                if (defExpr is not AstEmptyStructExpr)
+                    field.Initializer = GenerateExpressionCode(defExpr);
                 else
-                {
-                    // WARN: do not set value from Initializer - it would be set inside stor
-                    // set default value to it
-                    var defExpr = AstDefaultExpr.GetDefaultValueForType(decl.Type.OutType, null, _compiler.MessageHandler);
-                    // special initializer for empty struct
-                    if (defExpr is not AstEmptyStructExpr)
-                        field.Initializer = GenerateExpressionCode(defExpr);
-                    else
-                        field.Initializer = LLVMValueRef.CreateConstNull(HapetTypeToLLVMType(decl.Type.OutType));
-                }
+                    field.Initializer = LLVMValueRef.CreateConstNull(HapetTypeToLLVMType(decl.Type.OutType));
             }
         }
     }
