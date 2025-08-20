@@ -163,6 +163,11 @@ namespace HapetFrontend.Scoping
             // just struct equal checking
             DefineBinaryOperator(new BuiltInBinaryOperator("==", boolT, StructType.LiteralType, StructType.LiteralType));
             DefineBinaryOperator(new BuiltInBinaryOperator("!=", boolT, StructType.LiteralType, StructType.LiteralType));
+
+            // enums shite
+            DefineUnaryOperator(new BuiltInUnaryOperator("~", EnumType.LiteralType, EnumType.LiteralType, a => (~(NumberData)a)));
+            DefineBinaryOperator(new BuiltInBinaryOperator("|", EnumType.LiteralType, EnumType.LiteralType, EnumType.LiteralType, (a, b) => ((NumberData)a | (NumberData)b)));
+            DefineBinaryOperator(new BuiltInBinaryOperator("&", EnumType.LiteralType, EnumType.LiteralType, EnumType.LiteralType, (a, b) => ((NumberData)a & (NumberData)b)));
         }
     }
 }

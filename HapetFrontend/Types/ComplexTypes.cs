@@ -127,6 +127,8 @@ namespace HapetFrontend.Types
         [JsonIgnore]
         public AstEnumDecl Declaration { get; set; }
 
+        public static EnumType LiteralType { get; } = new EnumType(null);
+
         public override string TypeName => "enum";
 
         public override AstExpression GetAst(AstExpression iniExpr = null)
@@ -146,7 +148,7 @@ namespace HapetFrontend.Types
 
         public override string ToString()
         {
-            return $"{Declaration.Name.Name}";
+            return $"{(Declaration != null ? Declaration.Name.Name : "null")}";
         }
 
         public override int Match(HapetType concrete)

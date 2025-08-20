@@ -86,6 +86,7 @@ namespace HapetFrontend.Parsing
 
                 // getting decl parts
                 AstExpression ini = null;
+                AstNestedExpr type = new AstNestedExpr(enumName.GetDeepCopy() as AstIdExpr, null, enumName.Location);
                 var id = ParseIdentifierExpression(inInfo, allowDots: false);
                 TokenLocation fieldEnd = id.Ending;
                 if (CheckToken(TokenType.Equal))
@@ -94,15 +95,17 @@ namespace HapetFrontend.Parsing
                     var initStmt = ParseExpression(inInfo, ref outInfo);
                     if (initStmt is not AstExpression)
                         ReportMessage(initStmt.Location, [], ErrorCode.Get(CTEN.EnumFieldIniNotExpr));
-                    ini = initStmt as AstExpression;
+                    ini = new AstCastExpr(type, initStmt as AstExpression, initStmt.Location);
                     fieldEnd = ini.Ending;
                 }
                 // the declaration
                 // here could be a different number type!!!
-                AstVarDecl decl = new AstVarDecl(enumType, id.RightPart as AstIdExpr, ini, "", new Location(id.Beginning, fieldEnd));
+                AstVarDecl decl = new AstVarDecl(type, id.RightPart as AstIdExpr, ini, "", new Location(id.Beginning, fieldEnd));
 
                 declarations.Add(decl);
                 decl.ContainingParent = enumDecl;
+                // all enum fields are const
+                decl.SpecialKeys.Add(Lexer.CreateToken(TokenType.KwConst, decl.Location.Beginning));
 
                 next = PeekToken();
                 if (next.Type == TokenType.NewLine)

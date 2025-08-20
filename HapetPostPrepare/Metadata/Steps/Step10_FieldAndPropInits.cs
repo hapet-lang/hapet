@@ -60,11 +60,17 @@ namespace HapetPostPrepare
                 foreach (var decl in enm.Declarations)
                 {
                     // field 
+                    inInfo.AllowSpecialKeys = true; // KwConst
                     PostPrepareVarInference(decl, inInfo, ref outInfo);
+                    inInfo.AllowSpecialKeys = false;
                     // this shite is to generate values for enum fields
                     if (decl.Initializer == null)
                     {
-                        decl.Initializer = PostPrepareExpressionWithType(decl.Type.OutType, new AstNumberExpr(NumberData.FromInt(currentValue)));
+                        var ini = new AstCastExpr(decl.Type.GetDeepCopy() as AstExpression, new AstNumberExpr(NumberData.FromInt(currentValue)), decl.Type.Location);
+                        ini.SetDataFromStmt(decl.Type);
+                        PostPrepareExprInference(ini, inInfo, ref outInfo);
+
+                        decl.Initializer = PostPrepareExpressionWithType(decl.Type.OutType, ini);
                         // warn if the value already exists in enum
                         if (allValues.Contains(currentValue))
                         {

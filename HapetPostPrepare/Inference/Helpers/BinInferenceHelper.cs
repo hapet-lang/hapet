@@ -110,8 +110,7 @@ namespace HapetPostPrepare
                     binExpr.Right = PostPrepareExpressionWithType(binExpr.Left.OutType, binExpr.Right);
                 else
                     binExpr.Left = PostPrepareExpressionWithType(binExpr.Right.OutType, binExpr.Left);
-            }
-
+            }            
         }
     }
 }

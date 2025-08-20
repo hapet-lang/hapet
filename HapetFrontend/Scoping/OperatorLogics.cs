@@ -169,9 +169,9 @@ namespace HapetFrontend.Scoping
                 if (op.LhsType == lhs && op.RhsType == rhs)
                     scores.Add((0, op));
                 else if (op.LhsType == lhs || op.RhsType == rhs)
-                    scores.Add((1, op));
-                else if (op.LhsType.IsExactly(lhs) && op.RhsType.IsExactly(rhs))
                     scores.Add((2, op));
+                else if (op.LhsType.IsExactly(lhs) && op.RhsType.IsExactly(rhs))
+                    scores.Add((1, op));
                 else if (op.LhsType.IsExactly(lhs) || op.RhsType.IsExactly(rhs))
                     scores.Add((3, op));
                 else
@@ -333,6 +333,8 @@ namespace HapetFrontend.Scoping
                 return HapetType.CurrentTypeContext.PtrToVoidType;
             else if (type is GenericType)
                 return GenericType.LiteralType;
+            else if (type is EnumType)
+                return EnumType.LiteralType;
             else if (type is ClassType)
                 return ClassType.LiteralType;
             else if (type.IsExactly<StructType>())

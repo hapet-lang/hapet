@@ -545,10 +545,19 @@ namespace HapetPostPrepare
                 unExpr.ActualOperator = operators[0];
                 unExpr.OutType = unExpr.ActualOperator.ResultType;
 
+                // this is done to make proper pointer type as out
+                // probably non of unary operators would
+                // change the pointer somehow (deref is handled in another way)
                 if (unExpr.OutType is PointerType ptrT)
                 {
                     // WARN: probably should work :)
                     unExpr.OutType = unExpr.SubExpr.OutType;
+                }
+
+                // special checks for enums
+                if (unExpr.SubExpr.OutType is EnumType enm1 && (unExpr.Operator == "~"))
+                {
+                    unExpr.OutType = enm1;
                 }
 
                 // if the value could be evaluated at the compile time
@@ -656,6 +665,18 @@ namespace HapetPostPrepare
                                     // also change the outType of binExpr
                                     binExpr.OutType = ptrT2;
                                 }
+                            }
+
+                            // special checks for enums
+                            if (binExpr.Right.OutType is EnumType enm1 &&
+                                binExpr.Left.OutType is EnumType enm2 &&
+                                (binExpr.Operator == "|" || binExpr.Operator == "&"))
+                            {
+                                if (enm1 != enm2)
+                                {
+                                    // TODO: error - has to be the same
+                                }
+                                binExpr.OutType = enm1;
                             }
 
                             // make some casts inside
@@ -823,7 +844,7 @@ namespace HapetPostPrepare
                 castExpr.OutType = castExpr.SubExpression.OutType;
             }
 
-            castExpr.OutValue = castExpr.SubExpression.OutValue; // WARN: is it ok just to pass the value?
+            castExpr.OutValue = castExpr.SubExpression.OutValue; // WARN: is it ok just to pass the value? - no. should be constcasted like from int to double TODO:
         }
 
         private void PostPrepareNestedExprInference(AstNestedExpr nestExpr, InInfo inInfo, ref OutInfo outInfo)
