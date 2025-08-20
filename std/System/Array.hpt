@@ -87,7 +87,7 @@ public static class Array
 }
 
 [SuppressStaticCtorCall]
-public struct Array<T> : IList<T>
+public struct Array<T> : IList<T>, ICloneable
 {
     [SuppressStackTrace]
     public int Length { get; internal set; }
@@ -95,6 +95,16 @@ public struct Array<T> : IList<T>
     internal T* Buffer { get; set; }
 
     public int Count { get { return Length; } }
+
+    internal Array() 
+    {
+    }
+
+    public Array(T* value, int startIndex, int length) 
+    {
+        Buffer = value + startIndex;
+        Length = length;
+    }
 
     public T this[int index] 
     {
@@ -211,6 +221,12 @@ public struct Array<T> : IList<T>
     public object SyncRoot { get { return this; } }
 
     public bool IsFixedSize { get { return true; } }
+
+    public object Clone()
+    {
+        // TODO:
+        return new T[Length];
+    }
 }
 
 [SuppressStaticCtorCall]

@@ -84,10 +84,17 @@ public class UTF8Encoding : Encoding
         return a;
     }
 
+    public static byte[] GetBytes(string str)
+    {
+        int len = 0;
+        byte* ptr = GetBytesUnsafe(str, out len);
+        return new Array<byte>(ptr, 0, len);
+    }
+
     // https://codereview.stackexchange.com/questions/244060/the-conversion-from-utf-16-to-utf-8
     // original: https://www.onlinegdb.com/r1TVL6w6L
     [SuppressStackTrace]
-    public static byte* GetBytesUnsafe(string str)
+    public static byte* GetBytesUnsafe(string str, out int outSize)
     {
         int utf8CharsAmount = GetAmountOfUtf8Bytes(str);
         byte* bytes = (byte*)Marshal.Malloc((utf8CharsAmount + 1) * sizeof(byte));
@@ -136,6 +143,7 @@ public class UTF8Encoding : Encoding
             }
         }
         bytes[utf8CharsAmount] = 0;
+        outSize = utf8CharsAmount;
         return (byte*)bytes;
     }
     

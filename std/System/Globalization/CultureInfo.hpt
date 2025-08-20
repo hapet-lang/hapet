@@ -11,6 +11,7 @@ public partial class CultureInfo : IFormatProvider
     private bool _isReadOnly;
     internal CultureData _cultureData;
     internal NumberFormatInfo _numInfo;
+    internal bool _isInherited;
 
     private CultureInfo(CultureData cultureData, bool isReadOnly = false)
     {

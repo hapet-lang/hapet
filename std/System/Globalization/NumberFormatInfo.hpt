@@ -3,6 +3,7 @@
 // Some modifications were made for hapet-lang compatibility.
 
 using System;
+using System.Text;
 
 /// <remarks>
 /// Property             Default Description
@@ -106,6 +107,16 @@ public sealed class NumberFormatInfo : IFormatProvider
 
             InitializeInvariantAndNegativeSignFlags();
         }
+    }
+
+    private static void VerifyNativeDigits(string[] nativeDig, string propertyName)
+    { 
+        // TODO:
+    }
+
+    private static void VerifyDigitSubstitution(DigitShapes digitSub, string propertyName)
+    {
+        // TODO:
     }
 
     private void InitializeInvariantAndNegativeSignFlags()
@@ -305,7 +316,7 @@ public sealed class NumberFormatInfo : IFormatProvider
     {
         get
         {
-            _currencySymbolUtf8 ??= Encoding.UTF8.GetBytes(_currencySymbol);
+            _currencySymbolUtf8 ??= UTF8Encoding.GetBytes(_currencySymbol);
             return _currencySymbolUtf8;
         }
     }
@@ -446,7 +457,8 @@ public sealed class NumberFormatInfo : IFormatProvider
         {
             if (value < 0 || value > 99)
             {
-                ThrowHelper.ThrowArgumentOutOfRange_Range(nameof(value), value, 0, 99);
+                //TODO:
+                //ThrowHelper.ThrowArgumentOutOfRange_Range(nameof(value), value, 0, 99);
             }
 
             VerifyWritable();
@@ -485,7 +497,8 @@ public sealed class NumberFormatInfo : IFormatProvider
         {
             if (value < 0 || value > 3)
             {
-                ThrowHelper.ThrowArgumentOutOfRange_Range(nameof(value), value, 0, 3);
+                // TODO:
+                //ThrowHelper.ThrowArgumentOutOfRange_Range(nameof(value), value, 0, 3);
             }
 
             VerifyWritable();
@@ -527,7 +540,8 @@ public sealed class NumberFormatInfo : IFormatProvider
         {
             if (value < 0 || value > 99)
             {
-                ThrowHelper.ThrowArgumentOutOfRange_Range(nameof(value), value, 0, 99);
+                // TODO:
+                //ThrowHelper.ThrowArgumentOutOfRange_Range(nameof(value), value, 0, 99);
             }
 
             VerifyWritable();
@@ -620,7 +634,9 @@ public sealed class NumberFormatInfo : IFormatProvider
             return nfi;
         }
 
-        NumberFormatInfo info = (NumberFormatInfo)(nfi.MemberwiseClone());
+        // TODO:
+        //NumberFormatInfo info = (NumberFormatInfo)(nfi.MemberwiseClone());
+        NumberFormatInfo info = new NumberFormatInfo();
         info._isReadOnly = true;
         return info;
     }
