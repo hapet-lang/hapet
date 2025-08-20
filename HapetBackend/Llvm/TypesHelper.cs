@@ -11,6 +11,7 @@ using HapetFrontend.Scoping;
 using HapetFrontend.Types;
 using LLVMSharp.Interop;
 using System.Diagnostics;
+using System.Drawing;
 
 namespace HapetBackend.Llvm
 {
@@ -216,6 +217,7 @@ namespace HapetBackend.Llvm
 
                 case EnumType e:
                     {
+                        e.SetSizeAndAlignment(e.Declaration.InheritedType.OutType.GetSize(), e.Declaration.InheritedType.OutType.GetAlignment());
                         return _context.GetIntType(((uint)e.Declaration.InheritedType.OutType.GetSize()) * 8);
                     }
 
