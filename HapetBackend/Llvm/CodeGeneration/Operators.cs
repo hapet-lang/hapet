@@ -267,6 +267,12 @@ namespace HapetBackend.Llvm
                             else theFunc = null;
                             break;
                         }
+                    case "~":
+                        {
+                            /// just skip. Handled in <see cref="GenerateUnaryExprCode"/>
+                            theFunc = null;
+                            break;
+                        }
                     case "--":
                     case "++":
                         {

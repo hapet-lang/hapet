@@ -104,7 +104,7 @@ namespace HapetBackend.Llvm
             return result;
         }
 
-        private LLVMValueRef GenerateUnaryExprCode(AstUnaryExpr unExpr, bool getPtr = false)
+        private unsafe LLVMValueRef GenerateUnaryExprCode(AstUnaryExpr unExpr, bool getPtr = false)
         {
             LLVMValueRef toReturn = default;
             if (unExpr.ActualOperator is BuiltInUnaryOperator builtInOp)
@@ -115,9 +115,21 @@ namespace HapetBackend.Llvm
                 if (value == default)
                     return default;
 
-                var uo = GetUnOp(builtInOp);
-                var val = uo(_builder, value, "unOp");
-                toReturn = val;
+                // special case for tilda generation
+                // because it requires me to know the size of 
+                // type that is going to be tilded
+                if (unExpr.Operator == "~")
+                {
+                    using var marshaledName = new MarshaledString("tilded".AsSpan());
+                    var mask = LLVMValueRef.CreateConstInt(HapetTypeToLLVMType(unExpr.OutType), unchecked((ulong)-1));
+                    var val = LLVM.BuildXor(_builder, value, mask, marshaledName);
+                }
+                else
+                {
+                    var uo = GetUnOp(builtInOp);
+                    var val = uo(_builder, value, "unOp");
+                    toReturn = val;
+                }
             }
             else if (unExpr.ActualOperator is UserDefinedUnaryOperator userDef)
             {
