@@ -117,8 +117,12 @@ namespace HapetPostPrepare
                                 needBreakForLoop = true;
                                 break;
                             }
-                            // just add a stmt to current block
-                            builder.CurrentBlock.BlockStatements.Add(s);
+                            // do not add nested func declarations 
+                            if (s is not AstFuncDecl)
+                            {
+                                // just add a stmt to current block
+                                builder.CurrentBlock.BlockStatements.Add(s);
+                            }
                             break;
                         }
                 }
