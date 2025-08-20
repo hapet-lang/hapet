@@ -141,6 +141,10 @@ namespace HapetPostPrepare
             {
                 CreateDelegateDecl(delDecl, sb, additionalOffset, false);
             }
+            else if (decl is AstEnumDecl enmDecl)
+            {
+                CreateEnumDecl(enmDecl, sb, additionalOffset);
+            }
         }
 
         private void CreateClassOrStructDecl(AstDeclaration decl, StringBuilder sb, string additionalOffset)
@@ -258,6 +262,49 @@ namespace HapetPostPrepare
             // TODO: generic constraiins 
 
             sb.Append(";\n");
+        }
+
+        private void CreateEnumDecl(AstEnumDecl decl, StringBuilder sb, string additionalOffset)
+        {
+           AstNestedExpr inheritedFrom = decl.InheritedType;
+            sb.Append("enum ");
+            sb.Append($"{GetNameFromAst(decl.Name, _compiler.MessageHandler).GetClassNameWithoutNamespace()} ");
+
+            sb.Append(": ");
+            AntiParseExpr(inheritedFrom, sb, additionalOffset);
+
+            List<AstVarDecl> decls = decl.Declarations;
+            sb.Append($"\n{additionalOffset}{{\n");
+
+            foreach (var d in decls)
+            {
+                if (d.SpecialKeys.Contains(TokenType.KwUnreflected))
+                    continue;
+
+                // doc string
+                CreateDocString(d.Documentation, sb, additionalOffset + _fourSpaces);
+
+                // serialize attributes
+                foreach (var attr in d.Attributes)
+                {
+                    sb.Append(additionalOffset + _fourSpaces);
+                    AntiParseExpr(attr, sb, additionalOffset + _fourSpaces);
+                }
+
+                sb.Append(additionalOffset + _fourSpaces);
+                AntiParseExpr(d.Name, sb, additionalOffset + _fourSpaces);
+                if (d.Initializer != null)
+                {
+                    sb.Append(" = ");
+                    AntiParseExpr(d.Initializer, sb, additionalOffset + _fourSpaces);
+                }
+                sb.Append(",\n");
+            }
+
+            sb.Append($"{additionalOffset}}}\n");
+            // looks better :)
+            if (!decl.IsNestedDecl)
+                sb.Append('\n');
         }
 
         private void CreateFuncDecl(AstFuncDecl decl, StringBuilder sb, string additionalOffset, bool isParentGeneric)
