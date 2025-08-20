@@ -58,15 +58,15 @@ namespace HapetFrontend.Scoping
                 // byte a = 5;
                 // int b = -a;
                 // the result type has to be at least sbyte or even short
-                DefineUnaryOperator("-", type, type, a => ((NumberData)a).Negate());
+                DefineUnaryOperator("-", type, type, a => (NumberData.FromObject(a)).Negate());
 
                 // define this shite for ints
                 if (type is not FloatType)
                 {
-                    DefineUnaryOperator("++", type, type, a => ((NumberData)a + 1));
-                    DefineUnaryOperator("--", type, type, a => ((NumberData)a - 1));
+                    DefineUnaryOperator("++", type, type, a => (NumberData.FromObject(a) + 1));
+                    DefineUnaryOperator("--", type, type, a => (NumberData.FromObject(a) - 1));
 
-                    DefineUnaryOperator("~", type, type, a => (~(NumberData)a));
+                    DefineUnaryOperator("~", type, type, a => (~NumberData.FromObject(a)));
                 }
 
                 foreach (var secondType in numTypes)
@@ -74,32 +74,32 @@ namespace HapetFrontend.Scoping
                     // calc out type of these shite
                     HapetType outType = HapetType.GetPreferredTypeOf(type, secondType, out bool _);
 
-                    DefineBinaryOperator(new BuiltInBinaryOperator("+", outType, type, secondType, (a, b) => (NumberData)a + (NumberData)b));
-                    DefineBinaryOperator(new BuiltInBinaryOperator("-", outType, type, secondType, (a, b) => (NumberData)a - (NumberData)b));
-                    DefineBinaryOperator(new BuiltInBinaryOperator("*", outType, type, secondType, (a, b) => (NumberData)a * (NumberData)b));
-                    DefineBinaryOperator(new BuiltInBinaryOperator("/", outType, type, secondType, (a, b) => (NumberData)a / (NumberData)b));
-                    DefineBinaryOperator(new BuiltInBinaryOperator("%", outType, type, secondType, (a, b) => (NumberData)a % (NumberData)b));
+                    DefineBinaryOperator(new BuiltInBinaryOperator("+", outType, type, secondType, (a, b) => NumberData.FromObject(a) + NumberData.FromObject(b)));
+                    DefineBinaryOperator(new BuiltInBinaryOperator("-", outType, type, secondType, (a, b) => NumberData.FromObject(a) - NumberData.FromObject(b)));
+                    DefineBinaryOperator(new BuiltInBinaryOperator("*", outType, type, secondType, (a, b) => NumberData.FromObject(a) * NumberData.FromObject(b)));
+                    DefineBinaryOperator(new BuiltInBinaryOperator("/", outType, type, secondType, (a, b) => NumberData.FromObject(a) / NumberData.FromObject(b)));
+                    DefineBinaryOperator(new BuiltInBinaryOperator("%", outType, type, secondType, (a, b) => NumberData.FromObject(a) % NumberData.FromObject(b)));
 
                     // these are already defined in structs
-                    DefineBinaryOperator(new BuiltInBinaryOperator("==", boolT, type, secondType, (a, b) => (NumberData)a == (NumberData)b));
-                    DefineBinaryOperator(new BuiltInBinaryOperator("!=", boolT, type, secondType, (a, b) => (NumberData)a != (NumberData)b));
+                    DefineBinaryOperator(new BuiltInBinaryOperator("==", boolT, type, secondType, (a, b) => NumberData.FromObject(a) == NumberData.FromObject(b)));
+                    DefineBinaryOperator(new BuiltInBinaryOperator("!=", boolT, type, secondType, (a, b) => NumberData.FromObject(a) != NumberData.FromObject(b)));
 
-                    DefineBinaryOperator(new BuiltInBinaryOperator("<", boolT, type, secondType, (a, b) => (NumberData)a < (NumberData)b));
-                    DefineBinaryOperator(new BuiltInBinaryOperator("<=", boolT, type, secondType, (a, b) => (NumberData)a <= (NumberData)b));
-                    DefineBinaryOperator(new BuiltInBinaryOperator(">", boolT, type, secondType, (a, b) => (NumberData)a > (NumberData)b));
-                    DefineBinaryOperator(new BuiltInBinaryOperator(">=", boolT, type, secondType, (a, b) => (NumberData)a >= (NumberData)b));
+                    DefineBinaryOperator(new BuiltInBinaryOperator("<", boolT, type, secondType, (a, b) => NumberData.FromObject(a) < NumberData.FromObject(b)));
+                    DefineBinaryOperator(new BuiltInBinaryOperator("<=", boolT, type, secondType, (a, b) => NumberData.FromObject(a) <= NumberData.FromObject(b)));
+                    DefineBinaryOperator(new BuiltInBinaryOperator(">", boolT, type, secondType, (a, b) => NumberData.FromObject(a) > NumberData.FromObject(b)));
+                    DefineBinaryOperator(new BuiltInBinaryOperator(">=", boolT, type, secondType, (a, b) => NumberData.FromObject(a) >= NumberData.FromObject(b)));
 
                     if ((type is IntType && secondType is IntType) ||
                         (type is IntType && secondType is CharType) ||
                         (type is CharType && secondType is IntType) ||
                         (type is CharType && secondType is CharType))
                     {
-                        DefineBinaryOperator(new BuiltInBinaryOperator("&", outType, type, secondType, (a, b) => (NumberData)a & (NumberData)b));
-                        DefineBinaryOperator(new BuiltInBinaryOperator("|", outType, type, secondType, (a, b) => (NumberData)a | (NumberData)b));
+                        DefineBinaryOperator(new BuiltInBinaryOperator("&", outType, type, secondType, (a, b) => NumberData.FromObject(a) & NumberData.FromObject(b)));
+                        DefineBinaryOperator(new BuiltInBinaryOperator("|", outType, type, secondType, (a, b) => NumberData.FromObject(a) | NumberData.FromObject(b)));
                         // there is no need to set output as the biggest type because the second param is only additional param
-                        DefineBinaryOperator(new BuiltInBinaryOperator(">>", type, type, secondType, (a, b) => (NumberData)a >> (NumberData)b));
-                        DefineBinaryOperator(new BuiltInBinaryOperator("<<", type, type, secondType, (a, b) => (NumberData)a << (NumberData)b));
-                        DefineBinaryOperator(new BuiltInBinaryOperator("^", type, type, secondType, (a, b) => (NumberData)a ^ (NumberData)b));
+                        DefineBinaryOperator(new BuiltInBinaryOperator(">>", type, type, secondType, (a, b) => NumberData.FromObject(a) >> NumberData.FromObject(b)));
+                        DefineBinaryOperator(new BuiltInBinaryOperator("<<", type, type, secondType, (a, b) => NumberData.FromObject(a) << NumberData.FromObject(b)));
+                        DefineBinaryOperator(new BuiltInBinaryOperator("^", type, type, secondType, (a, b) => NumberData.FromObject(a) ^ NumberData.FromObject(b)));
                     }
                 }
             }
@@ -171,9 +171,9 @@ namespace HapetFrontend.Scoping
             DefineBinaryOperator(new BuiltInBinaryOperator("!=", boolT, StructType.LiteralType, StructType.LiteralType));
 
             // enums shite
-            DefineUnaryOperator(new BuiltInUnaryOperator("~", EnumType.LiteralType, EnumType.LiteralType, a => (~(NumberData)a)));
-            DefineBinaryOperator(new BuiltInBinaryOperator("|", EnumType.LiteralType, EnumType.LiteralType, EnumType.LiteralType, (a, b) => ((NumberData)a | (NumberData)b)));
-            DefineBinaryOperator(new BuiltInBinaryOperator("&", EnumType.LiteralType, EnumType.LiteralType, EnumType.LiteralType, (a, b) => ((NumberData)a & (NumberData)b)));
+            DefineUnaryOperator(new BuiltInUnaryOperator("~", EnumType.LiteralType, EnumType.LiteralType, a => (~NumberData.FromObject(a))));
+            DefineBinaryOperator(new BuiltInBinaryOperator("|", EnumType.LiteralType, EnumType.LiteralType, EnumType.LiteralType, (a, b) => (NumberData.FromObject(a) | NumberData.FromObject(b))));
+            DefineBinaryOperator(new BuiltInBinaryOperator("&", EnumType.LiteralType, EnumType.LiteralType, EnumType.LiteralType, (a, b) => (NumberData.FromObject(a) & NumberData.FromObject(b))));
         }
     }
 }

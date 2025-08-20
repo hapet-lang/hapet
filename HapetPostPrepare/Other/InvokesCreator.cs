@@ -58,7 +58,7 @@ namespace HapetPostPrepare
                 new AstNestedExpr(new AstIdExpr("Count"), new AstNestedExpr(new AstIdExpr("_delegates"), new AstNestedExpr(new AstIdExpr("this"), null))));
             body.Statements.Add(count);
 
-            var first = new AstVarDecl(new AstNestedExpr(new AstIdExpr("int"), null), new AstIdExpr("i"), new AstNumberExpr(0));
+            var first = new AstVarDecl(new AstNestedExpr(new AstIdExpr("int"), null), new AstIdExpr("i"), new AstNumberExpr(NumberData.FromObject(0)));
             var second = new AstBinaryExpr("<", new AstNestedExpr(new AstIdExpr("i"), null), new AstNestedExpr(new AstIdExpr("count"), null));
             var third = new AstUnaryIncDecExpr("++", new AstNestedExpr(new AstIdExpr("i"), null)) { IsPrefix = true };
 

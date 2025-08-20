@@ -20,7 +20,7 @@ namespace HapetPostPrepare
                 // byte[] a2 = new byte[b] {1, b, 2, 4}; - would error in C#
                 _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, arrayExpr, [], ErrorCode.Get(CTEN.ArrayVarSizeAndVals));
             }
-            else if (arrayExpr.Elements.Count > 0 && currentSizeExpr.OutValue is NumberData numData && numData != arrayExpr.Elements.Count)
+            else if (arrayExpr.Elements.Count > 0 && currentSizeExpr.OutValue is NumberData numData && numData.IntValue != arrayExpr.Elements.Count)
             {
                 //  byte[] a2 = new byte[3] {1, 1, 2, 4}; - would error in C#
                 _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, arrayExpr,

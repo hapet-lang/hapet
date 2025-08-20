@@ -1,4 +1,5 @@
 ﻿using HapetFrontend.Enums;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Numerics;
@@ -180,10 +181,20 @@ namespace HapetFrontend.Types
             return this == other;
         }
 
-        public static implicit operator NumberData(BigInteger bi) => FromInt(bi);
-        public static implicit operator NumberData(int i) => FromInt(new BigInteger(i));
-        public static implicit operator NumberData(long l) => FromInt(new BigInteger(l));
-        public static implicit operator NumberData(double d) => FromDouble(d);
+        public static NumberData FromObject(object value)
+        {
+            switch (value)
+            {
+                case NumberData nd: return nd;
+                case BigInteger bi: return FromInt(bi);
+                case char c: return FromInt(new BigInteger((ushort)c));
+                case int i: return FromInt(new BigInteger(i));
+                case long l: return FromInt(new BigInteger(l));
+                case double d: return FromDouble(d);
+            }
+            Debug.Assert(false, "Unexpected type for NumberData");
+            return default;
+        }
 
         public static bool operator ==(NumberData a, NumberData b)
         {
@@ -207,6 +218,9 @@ namespace HapetFrontend.Types
         public static NumberData operator <<(NumberData a, NumberData b) => (a.Type == NumberType.Int && b.Type == NumberType.Int) ? FromInt(a.IntValue << (int)b.IntValue) : FromDouble(0);
         public static NumberData operator ^(NumberData a, NumberData b) => (a.Type == NumberType.Int && b.Type == NumberType.Int) ? FromInt(a.IntValue ^ (int)b.IntValue) : FromDouble(0);
         public static NumberData operator ~(NumberData a) => (a.Type == NumberType.Int) ? FromInt(~a.IntValue) : FromDouble(0);
+
+        public static NumberData operator +(NumberData a, int b) => (a.Type == NumberType.Int) ? FromInt(a.IntValue + b) : FromDouble(a.ToDouble() + b);
+        public static NumberData operator -(NumberData a, int b) => (a.Type == NumberType.Int) ? FromInt(a.IntValue - b) : FromDouble(a.ToDouble() - b);
 
 
         public bool IsInRangeOfType(HapetType hptType)
