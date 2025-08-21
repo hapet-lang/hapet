@@ -60,9 +60,7 @@ namespace HapetFrontend.Ast.Expressions
             // skip nested func decls
             var skippedNested = (stmts as IEnumerable<AstStatement>).Reverse().SkipWhile(x => x is AstFuncDecl);
             var first = skippedNested.FirstOrDefault();
-            if (first is AstReturnStmt)
-                return true;
-            if (first is AstThrowStmt)
+            if (first is AstReturnStmt || first is AstThrowStmt || first is AstGotoStmt)
                 return true;
             if (!returnAndThrowOnly && first is AstBreakContStmt)
                 return true;
