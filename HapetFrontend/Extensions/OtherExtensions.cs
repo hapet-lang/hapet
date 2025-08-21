@@ -49,6 +49,10 @@ namespace HapetFrontend.Extensions
                 if (casts[i] is AstArgumentExpr argE)
                     val = argE.Expr;
 
+                // skip the cast if it is generic
+                if (val is AstCastExpr cst && cst.TypeExpr.OutType is GenericType)
+                    continue;
+
                 args[i].Expr = val;
                 args[i].OutType = casts[i].OutType;
             }
