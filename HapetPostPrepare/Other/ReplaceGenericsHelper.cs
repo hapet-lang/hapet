@@ -338,6 +338,9 @@ namespace HapetPostPrepare
                 case AstWhileStmt whileStmt:
                     ReplaceAllGenericTypesInWhileStmt(whileStmt);
                     break;
+                case AstDoWhileStmt doWhileStmt:
+                    ReplaceAllGenericTypesInDoWhileStmt(doWhileStmt);
+                    break;
                 case AstIfStmt ifStmt:
                     ReplaceAllGenericTypesInIfStmt(ifStmt);
                     break;
@@ -358,6 +361,20 @@ namespace HapetPostPrepare
                     break;
                 case AstBaseCtorStmt baseStmt:
                     ReplaceAllGenericTypesInBaseStmt(baseStmt);
+                    break;
+                case AstConstrainStmt constrainStmt:
+                    ReplaceAllGenericTypesInConstainStmt(constrainStmt);
+                    break;
+                case AstThrowStmt throwStmt:
+                    ReplaceAllGenericTypesInThrowStmt(throwStmt);
+                    break;
+                case AstTryCatchStmt tryCatchStmt:
+                    ReplaceAllGenericTypesInTryCatchStmt(tryCatchStmt);
+                    break;
+                case AstCatchStmt сatchStmt:
+                    ReplaceAllGenericTypesInCatchStmt(сatchStmt);
+                    break;
+                case AstGotoStmt:
                     break;
 
                 // skip literals
@@ -618,6 +635,16 @@ namespace HapetPostPrepare
             }
         }
 
+        private void ReplaceAllGenericTypesInDoWhileStmt(AstDoWhileStmt doWhileStmt)
+        {
+            ReplaceAllGenericTypesInExpr(doWhileStmt.Body);
+
+            if (doWhileStmt.Condition != null)
+            {
+                ReplaceAllGenericTypesInExpr(doWhileStmt.Condition);
+            }
+        }
+
         private void ReplaceAllGenericTypesInIfStmt(AstIfStmt ifStmt)
         {
             ReplaceAllGenericTypesInExpr(ifStmt.BodyTrue);
@@ -682,6 +709,36 @@ namespace HapetPostPrepare
             {
                 ReplaceAllGenericTypesInExpr(baseCtor.Arguments[i]);
             }
+        }
+
+        private void ReplaceAllGenericTypesInConstainStmt(AstConstrainStmt stmt)
+        {
+            if (stmt.Expr != null)
+                ReplaceAllGenericTypesInExpr(stmt.Expr);
+            foreach (var a in stmt.AdditionalExprs)
+                ReplaceAllGenericTypesInExpr(a);
+        }
+
+        private void ReplaceAllGenericTypesInThrowStmt(AstThrowStmt stmt)
+        {
+            if (stmt.ThrowExpression != null)
+                ReplaceAllGenericTypesInExpr(stmt.ThrowExpression);
+        }
+
+        private void ReplaceAllGenericTypesInTryCatchStmt(AstTryCatchStmt stmt)
+        {
+            ReplaceAllGenericTypesInExpr(stmt.TryBlock);
+            if (stmt.FinallyBlock != null)
+                ReplaceAllGenericTypesInExpr(stmt.FinallyBlock);
+            foreach (var a in stmt.CatchBlocks)
+                ReplaceAllGenericTypesInExpr(a);
+        }
+
+        private void ReplaceAllGenericTypesInCatchStmt(AstCatchStmt stmt)
+        {
+            ReplaceAllGenericTypesInExpr(stmt.CatchBlock);
+            if (stmt.CatchParam != null)
+                ReplaceAllGenericTypesInParam(stmt.CatchParam);
         }
 
         private bool IsGenericEntry(AstStatement expr, out AstNestedExpr value)

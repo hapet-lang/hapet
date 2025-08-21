@@ -36,7 +36,7 @@ namespace HapetFrontend.Ast.Statements
                 ConstrainType,
                 Location)
             {
-                AdditionalExprs = AdditionalExprs = AdditionalExprs.Select(x => x.GetDeepCopy() as AstNestedExpr).ToList(),
+                AdditionalExprs = AdditionalExprs.Select(x => x.GetDeepCopy() as AstNestedExpr).ToList(),
                 Scope = Scope,
                 SourceFile = SourceFile,
             };
