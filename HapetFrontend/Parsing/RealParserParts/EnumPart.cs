@@ -24,6 +24,7 @@ namespace HapetFrontend.Parsing
             {
                 // better error location
                 ReportMessage(PeekToken().Location, [], ErrorCode.Get(CTEN.NoEnumNameAfterEnumWord));
+                return new AstEnumDecl(new AstIdExpr("unknown"), declarations, "", beg);
             }
             else
             {
