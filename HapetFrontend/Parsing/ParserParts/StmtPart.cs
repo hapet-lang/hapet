@@ -92,7 +92,7 @@ namespace HapetFrontend.Parsing
                         // https://github.com/hapet-lang/hapet/blob/c15ae05721d3f91fe86a25658ef099d4e84f117f/HapetFrontend/Parsing/RealParserParts/SpecialKeysPart.cs#L62-L69
                         if ((stmt is AstIdExpr) ||
                             (stmt is AstNestedExpr nestExpr && (nestExpr.RightPart is AstIdExpr || nestExpr.RightPart is AstArrayAccessExpr)) ||
-                            (stmt is AstPointerExpr ptrExpr && ptrExpr.IsDereference))
+                            (stmt is AstNestedExpr nestExpr3 && nestExpr3.RightPart is AstPointerExpr ptrExpr && ptrExpr.IsDereference))
                         {
                             stmt = new AstUnknownDecl(stmt is AstNestedExpr nst ? nst : new AstNestedExpr(stmt as AstExpression, null, stmt), null, stmt);
                         }

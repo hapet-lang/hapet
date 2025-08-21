@@ -354,6 +354,7 @@ namespace HapetFrontend.Parsing
 
         private AstStatement ParseUnaryExpression(ParserInInfo inInfo, ref ParserOutInfo outInfo)
         {
+            AstExpression toReturn = null;
             var next = PeekToken();
             if (next.Type == TokenType.Ampersand)
             {
@@ -366,7 +367,7 @@ namespace HapetFrontend.Parsing
                     ReportMessage(sub, ["&"], ErrorCode.Get(CTEN.ExprExpectedInUnExpr));
                     return sub;
                 }
-                return new AstAddressOfExpr(expr, new Location(next.Location, sub.Ending));
+                toReturn = new AstAddressOfExpr(expr, new Location(next.Location, sub.Ending));
             }
             else if (next.Type == TokenType.Asterisk)
             {
@@ -378,7 +379,7 @@ namespace HapetFrontend.Parsing
                     ReportMessage(sub, ["*"], ErrorCode.Get(CTEN.ExprExpectedInUnExpr));
                     return sub;
                 }
-                return new AstPointerExpr(expr, true, new Location(next.Location, sub.Ending));
+                toReturn = new AstPointerExpr(expr, true, new Location(next.Location, sub.Ending));
             }
             else if (next.Type == TokenType.Minus || next.Type == TokenType.Plus)
             {
@@ -397,7 +398,7 @@ namespace HapetFrontend.Parsing
                 {
                     ReportMessage(sub, [un.Operator], ErrorCode.Get(CTEN.ExprExpectedInUnExpr));
                 }
-                return un;
+                toReturn = un;
             }
             else if (next.Type == TokenType.Bang)
             {
@@ -410,7 +411,7 @@ namespace HapetFrontend.Parsing
                 {
                     ReportMessage(sub, [un.Operator], ErrorCode.Get(CTEN.ExprExpectedInUnExpr));
                 }
-                return un;
+                toReturn = un;
             }
             else if (next.Type == TokenType.PlusPlus || next.Type == TokenType.MinusMinus)
             {
@@ -424,7 +425,7 @@ namespace HapetFrontend.Parsing
                 {
                     ReportMessage(sub, [], ErrorCode.Get(CTEN.CommonIdentifierExpected));
                 }
-                return un;
+                toReturn = un;
             }
             else if (next.Type == TokenType.Tilda)
             {
@@ -437,8 +438,12 @@ namespace HapetFrontend.Parsing
                 {
                     ReportMessage(sub, [], ErrorCode.Get(CTEN.TildaUnexpectedExpr));
                 }
-                return un;
+                toReturn = un;
             }
+
+            // it should be wrapped into nested
+            if (toReturn != null)
+                return new AstNestedExpr(toReturn, null, toReturn.Location);
 
             return ParsePostUnaryExpression(inInfo, ref outInfo);
         }
