@@ -96,17 +96,19 @@ namespace HapetFrontend.Scoping
             Scope toSearch = null;
             switch (lhs)
             {
-                case StructType st: toSearch = st.Declaration.SubScope; break;
-                case ClassType ct: toSearch = ct.Declaration.SubScope; break;
-                case PointerType pt when pt.TargetType is ClassType ct: toSearch = ct.Declaration.SubScope; break;
+                case NullType: toSearch = null; break;
+                case StructType st: toSearch = st.Declaration?.SubScope; break;
+                case ClassType ct: toSearch = ct.Declaration?.SubScope; break;
+                case PointerType pt when pt.TargetType is ClassType ct: toSearch = ct.Declaration?.SubScope; break;
             }
             if (toSearch != null)
                 GetBinaryOperatorsInternal(toSearch, name, lhs, rhs, result, ref level);
             switch (rhs)
             {
-                case StructType st: toSearch = st.Declaration.SubScope; break;
-                case ClassType ct: toSearch = ct.Declaration.SubScope; break;
-                case PointerType pt when pt.TargetType is ClassType ct: toSearch = ct.Declaration.SubScope; break;
+                case NullType: toSearch = null; break;
+                case StructType st: toSearch = st.Declaration?.SubScope; break;
+                case ClassType ct: toSearch = ct.Declaration?.SubScope; break;
+                case PointerType pt when pt.TargetType is ClassType ct: toSearch = ct.Declaration?.SubScope; break;
             }
             if (toSearch != null)
                 GetBinaryOperatorsInternal(toSearch, name, lhs, rhs, result, ref level);
@@ -226,9 +228,10 @@ namespace HapetFrontend.Scoping
             Scope toSearch = null;
             switch (sub)
             {
-                case StructType st: toSearch = st.Declaration.SubScope; break;
-                case ClassType ct: toSearch = ct.Declaration.SubScope; break;
-                case PointerType pt when pt.TargetType is ClassType ct: toSearch = ct.Declaration.SubScope; break;
+                case NullType: toSearch = null; break;
+                case StructType st: toSearch = st.Declaration?.SubScope; break;
+                case ClassType ct: toSearch = ct.Declaration?.SubScope; break;
+                case PointerType pt when pt.TargetType is ClassType ct: toSearch = ct.Declaration?.SubScope; break;
             }
             if (toSearch != null)
                 GetUnaryOperatorsInternal(toSearch, name, sub, result, ref level);

@@ -44,10 +44,6 @@ namespace HapetPostPrepare
                 binExpr.Right.OutType is not IntType && binExpr.Right.OutType is not FloatType && binExpr.Right.OutType is not CharType)
                 return;
 
-            // just skip these. no need to do anything with them
-            if (binExpr.Operator == "<<" || binExpr.Operator == ">>")
-                return;
-
             // check if someone has a value
             // some shite is done to do smth like:
             // we have: where someVar is uint type

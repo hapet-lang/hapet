@@ -478,6 +478,13 @@ namespace HapetBackend.Llvm
                 {
                     return builder.BuildPtrToInt(val, HapetTypeToLLVMType(outType));
                 }
+                else if (outType is IntType || outType is CharType || outType is FloatType)
+                {
+                    // need at first to cast to to intptr
+                    val = builder.BuildPtrToInt(val, HapetTypeToLLVMType(HapetType.CurrentTypeContext.IntPtrTypeInstance));
+                    inType = HapetType.CurrentTypeContext.IntPtrTypeInstance;
+                    // and then it will be normally handled futher
+                }
                 else if (ptrT.TargetType is ClassType classType && outType is StructType structType2)
                 {
                     // check inheritance
@@ -488,24 +495,16 @@ namespace HapetBackend.Llvm
                     }
                 }
             }
-            if (inType is IntPtrType)
+
+            if (inType is IntPtrType || inType is PtrDiffType)
             {
                 if (outType is PointerType)
                 {
                     return builder.BuildIntToPtr(val, HapetTypeToLLVMType(outType));
                 }
-                else if (outType is IntType)
+                else if (outType is IntType || outType is CharType || outType is FloatType)
                 {
-                    if (inType.GetSize() > outType.GetSize())
-                    {
-                        return builder.BuildTruncOrBitCast(val, HapetTypeToLLVMType(outType));
-                    }
-                    else if (inType.GetSize() < outType.GetSize())
-                    {
-                        return builder.BuildZExtOrBitCast(val, HapetTypeToLLVMType(outType));
-                    }
-                    // if the same size just return it
-                    return val;
+                    // DO NOT DELETE IT. IT IS REQUIRED FOR NORMAL CASTS TO INT
                 }
                 else if (outType is StructType structType2)
                 {
@@ -531,6 +530,13 @@ namespace HapetBackend.Llvm
                     var buffer = _builder.BuildGEP2(HapetTypeToLLVMType(stringType), v, new LLVMValueRef[] { LLVMValueRef.CreateConstInt(_context.Int32Type, 1) }, "strBuffer");
                     _builder.BuildStore(nullTarget, buffer);
                     return _builder.BuildLoad2(HapetTypeToLLVMType(stringType), v); // return loaded
+                }
+                else if (outType is IntType || outType is CharType || outType is FloatType)
+                {
+                    // need at first to cast to to intptr
+                    val = builder.BuildPtrToInt(val, HapetTypeToLLVMType(HapetType.CurrentTypeContext.IntPtrTypeInstance));
+                    inType = HapetType.CurrentTypeContext.IntPtrTypeInstance;
+                    // and then it will be normally handled futher
                 }
             }
 

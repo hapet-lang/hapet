@@ -72,7 +72,7 @@ namespace HapetBackend.Llvm
                             // checking if the result type of the OP is float - then use FAdd
                             if (op.ResultType is FloatType) theFunc = LlvmExtensions.BuildFAdd;
                             // special logics for ptrs
-                            else if (op.ResultType is PointerType) theFunc = GetCringeFuncForPtrs(op);
+                            else if (op.LhsType is PointerType || op.RhsType is PointerType) theFunc = GetCringeFuncForPtrs(op);
                             else theFunc = LlvmExtensions.BuildAdd;
                             break;
                         }
@@ -81,7 +81,7 @@ namespace HapetBackend.Llvm
                             // checking if the result type of the OP is float - then use FSub
                             if (op.ResultType is FloatType) theFunc = LlvmExtensions.BuildFSub;
                             // special logics for ptrs
-                            else if (op.ResultType is PointerType) theFunc = GetCringeFuncForPtrs(op);
+                            else if (op.LhsType is PointerType || op.RhsType is PointerType) theFunc = GetCringeFuncForPtrs(op);
                             else theFunc = LlvmExtensions.BuildSub;
                             break;
                         }
@@ -147,9 +147,10 @@ namespace HapetBackend.Llvm
                     case "==":
                         {
                             // checking if the result type of the OP is float
-                            if (op.RhsType is FloatType) theFunc = GetFCompare(LLVMRealPredicate.LLVMRealOEQ);
+                            if (op.RhsType is FloatType || op.LhsType is FloatType) theFunc = GetFCompare(LLVMRealPredicate.LLVMRealOEQ);
                             // special logics for ptrs
-                            else if (op.RhsType is PointerType) theFunc = GetCringeFuncForPtrs(op);
+                            else if (op.RhsType is PointerType || op.LhsType is PointerType || op.RhsType is NullType || op.LhsType is NullType) 
+                                theFunc = GetCringeFuncForPtrs(op);
                             // special logics for ints
                             else theFunc = GetICompare(LLVMIntPredicate.LLVMIntEQ);
                             // TODO: special keys for strings and arrays
@@ -158,9 +159,10 @@ namespace HapetBackend.Llvm
                     case "!=":
                         {
                             // checking if the result type of the OP is float
-                            if (op.RhsType is FloatType) theFunc = GetFCompare(LLVMRealPredicate.LLVMRealONE);
+                            if (op.RhsType is FloatType || op.LhsType is FloatType) theFunc = GetFCompare(LLVMRealPredicate.LLVMRealONE);
                             // special logics for ptrs
-                            else if (op.RhsType is PointerType) theFunc = GetCringeFuncForPtrs(op);
+                            else if (op.RhsType is PointerType || op.LhsType is PointerType || op.RhsType is NullType || op.LhsType is NullType) 
+                                theFunc = GetCringeFuncForPtrs(op);
                             // special logics for ints
                             else theFunc = GetICompare(LLVMIntPredicate.LLVMIntNE);
                             // TODO: special keys for strings and arrays
@@ -169,7 +171,7 @@ namespace HapetBackend.Llvm
                     case "<":
                         {
                             // checking if the result type of the OP is float
-                            if (op.RhsType is FloatType) theFunc = GetFCompare(LLVMRealPredicate.LLVMRealOLT);
+                            if (op.RhsType is FloatType || op.LhsType is FloatType) theFunc = GetFCompare(LLVMRealPredicate.LLVMRealOLT);
                             else if (op.RhsType is IntType intType && intType.Signed) theFunc = GetICompare(LLVMIntPredicate.LLVMIntSLT);
                             else theFunc = GetICompare(LLVMIntPredicate.LLVMIntULT); // here is also char type, so it is ok
                             break;
@@ -177,7 +179,7 @@ namespace HapetBackend.Llvm
                     case "<=":
                         {
                             // checking if the result type of the OP is float
-                            if (op.RhsType is FloatType) theFunc = GetFCompare(LLVMRealPredicate.LLVMRealOLE);
+                            if (op.RhsType is FloatType || op.LhsType is FloatType) theFunc = GetFCompare(LLVMRealPredicate.LLVMRealOLE);
                             else if (op.RhsType is IntType intType && intType.Signed) theFunc = GetICompare(LLVMIntPredicate.LLVMIntSLE);
                             else theFunc = GetICompare(LLVMIntPredicate.LLVMIntULE); // here is also char type, so it is ok
                             break;
@@ -185,7 +187,7 @@ namespace HapetBackend.Llvm
                     case ">":
                         {
                             // checking if the result type of the OP is float
-                            if (op.RhsType is FloatType) theFunc = GetFCompare(LLVMRealPredicate.LLVMRealOGT);
+                            if (op.RhsType is FloatType || op.LhsType is FloatType) theFunc = GetFCompare(LLVMRealPredicate.LLVMRealOGT);
                             else if (op.RhsType is IntType intType && intType.Signed) theFunc = GetICompare(LLVMIntPredicate.LLVMIntSGT);
                             else theFunc = GetICompare(LLVMIntPredicate.LLVMIntUGT); // here is also char type, so it is ok
                             break;
@@ -193,7 +195,7 @@ namespace HapetBackend.Llvm
                     case ">=":
                         {
                             // checking if the result type of the OP is float
-                            if (op.RhsType is FloatType) theFunc = GetFCompare(LLVMRealPredicate.LLVMRealOGE);
+                            if (op.RhsType is FloatType || op.LhsType is FloatType) theFunc = GetFCompare(LLVMRealPredicate.LLVMRealOGE);
                             else if (op.RhsType is IntType intType && intType.Signed) theFunc = GetICompare(LLVMIntPredicate.LLVMIntSGE);
                             else theFunc = GetICompare(LLVMIntPredicate.LLVMIntUGE); // here is also char type, so it is ok
                             break;
@@ -229,14 +231,18 @@ namespace HapetBackend.Llvm
             {
                 return (LLVMBuilderRef builder, LLVMValueRef left, LLVMValueRef right, string oper) =>
                 {
-                    var leftV = CreateCast(builder, left, op.LhsType, HapetType.CurrentTypeContext.IntPtrTypeInstance);
-                    var rightV = CreateCast(builder, right, op.RhsType, HapetType.CurrentTypeContext.IntPtrTypeInstance);
+                    HapetType leftT = op.LhsType is ClassType ? PointerType.GetPointerType(op.LhsType) : op.LhsType;
+                    HapetType rightT = op.RhsType is ClassType ? PointerType.GetPointerType(op.RhsType) : op.RhsType;
+                    HapetType outT = op.ResultType is ClassType ? PointerType.GetPointerType(op.ResultType) : op.ResultType;
+
+                    var leftV = CreateCast(builder, left, leftT, HapetType.CurrentTypeContext.IntPtrTypeInstance);
+                    var rightV = CreateCast(builder, right, rightT, HapetType.CurrentTypeContext.IntPtrTypeInstance);
 
                     // getting add func for the new types
                     var binOp = SearchBinOp(op.Name, HapetType.CurrentTypeContext.IntPtrTypeInstance, HapetType.CurrentTypeContext.IntPtrTypeInstance);
                     var res = binOp(builder, leftV, rightV, oper);
-                    if (op.ResultType is not BoolType)
-                        return CreateCast(builder, res, HapetType.CurrentTypeContext.IntPtrTypeInstance, op.ResultType);
+                    if (outT is not BoolType)
+                        return CreateCast(builder, res, HapetType.CurrentTypeContext.IntPtrTypeInstance, outT);
                     return res;
                 };
             }

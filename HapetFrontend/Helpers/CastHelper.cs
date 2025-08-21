@@ -154,6 +154,18 @@ namespace HapetFrontend
                             break;
                         }
 
+                        // allow to cast all small floats to bigger floats
+                        // float b = 3;
+                        // double a = b;
+                        if (targetType.GetSize() > currentType.GetSize() &&
+                            targetType is FloatType && currentType is FloatType)
+                        {
+                            if (castResult != null)
+                                castResult.CouldBeCasted = true;
+                            outExpr = cst;
+                            break;
+                        }
+
                         // if outValue is null:
                         // there is no way to implicitly cast non-compiletime values
                         if (currentExpr.OutValue == null)
