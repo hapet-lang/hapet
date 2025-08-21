@@ -444,7 +444,7 @@ namespace HapetBackend.Llvm
             return result;
         }
 
-        private LLVMValueRef CreateCast(LLVMBuilderRef builder, LLVMValueRef val, HapetType inType, HapetType outType)
+        private unsafe LLVMValueRef CreateCast(LLVMBuilderRef builder, LLVMValueRef val, HapetType inType, HapetType outType)
         {
             // special case
             if (inType == outType)
@@ -608,6 +608,12 @@ namespace HapetBackend.Llvm
                 if (outType is PointerType pt && pt.TargetType is ClassType clsT && 
                     (clsT.Declaration.Name.Name == "System.Object" || clsT.Declaration.Name.Name == "System.ValueType" || clsT.Declaration.IsInterface))
                 {
+                    // check if inherited. if not - return null*
+                    if (clsT.Declaration.IsInterface && !structType.IsInheritedFrom(clsT, true))
+                    {
+                        return LLVM.ConstPointerNull(_context.Int8Type);
+                    }
+
                     // cast from struct instance to object
                     var boxedTypeData = GetBoxedType(inType);
                     int structSize = boxedTypeData.Item3;
