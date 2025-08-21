@@ -178,7 +178,8 @@ namespace HapetPostPrepare
                 }
             }
 
-            // TODO: generic constraiins 
+            // generic constraiins 
+            CreateGenericConstrains(decl, sb, additionalOffset);
 
             bool hasParentParentGenerics = decl.IsNestedDecl && decl.ParentDecl.HasGenericTypes;
 
@@ -259,7 +260,8 @@ namespace HapetPostPrepare
             }
             sb.Append(')');
 
-            // TODO: generic constraiins 
+            // generic constraiins 
+            CreateGenericConstrains(decl, sb, additionalOffset);
 
             sb.Append(";\n");
         }
@@ -342,7 +344,8 @@ namespace HapetPostPrepare
             }
             sb.Append(')');
 
-            // TODO: generic constraiins 
+            // generic constraiins 
+            CreateGenericConstrains(decl, sb, additionalOffset);
 
             // if the func is generic && not abstract && not stor - serialize
             // if parent is generic && func not abstract && not stor - serialize
@@ -392,7 +395,8 @@ namespace HapetPostPrepare
                 AntiParseExpr(decl.Name, sb, additionalOffset);
             }
 
-            // TODO: generic constraiins 
+            // generic constraiins 
+            CreateGenericConstrains(decl, sb, additionalOffset);
 
             if (decl.HasGet && decl.GetBlock != null && (decl.HasGenericTypes || 
                 (isParentGeneric && !decl.SpecialKeys.Contains(TokenType.KwStatic))))
@@ -478,6 +482,42 @@ namespace HapetPostPrepare
                     if (!string.IsNullOrWhiteSpace(sp))
                         sb.Append($"{additionalOffset}/// {sp}\n");
                 }
+        }
+
+        private void CreateGenericConstrains(AstDeclaration decl, StringBuilder sb, string additionalOffset)
+        {
+            foreach (var c in decl.GenericConstrains)
+            {
+                sb.Append('\n');
+                sb.Append($"{additionalOffset + _fourSpaces}where {c.Key.Name}: ");
+                for (int i = 0; i < c.Value.Count; ++i)
+                {
+                    var cc = c.Value[i];
+                    switch (cc.ConstrainType)
+                    {
+                        case GenericConstrainType.CustomType: AntiParseExpr(cc.Expr, sb, string.Empty); break;
+                        case GenericConstrainType.ClassType: sb.Append($"class"); break;
+                        case GenericConstrainType.EnumType: sb.Append($"enum"); break;
+                        case GenericConstrainType.StructType: sb.Append($"struct"); break;
+                        case GenericConstrainType.DelegateType: sb.Append($"delegate"); break;
+                        case GenericConstrainType.NewType: 
+                            sb.Append($"new(");
+                            for (int j = 0; j < cc.AdditionalExprs.Count; ++j)
+                            {
+                                AntiParseExpr(cc.AdditionalExprs[j], sb, string.Empty);
+                                // there are more types
+                                if (j + 1 != cc.AdditionalExprs.Count)
+                                    sb.Append($", ");
+                            }
+                            sb.Append(')');
+                            break;
+                    }
+
+                    // there are more constrains
+                    if (i + 1 != c.Value.Count)
+                        sb.Append($", ");
+                }
+            }
         }
 
         /// <summary>
