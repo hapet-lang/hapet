@@ -88,6 +88,7 @@ namespace HapetFrontend.Scoping
         {
             var smbl = new DeclSymbol(name, decl);
             decl.Symbol = smbl;
+            decl.Name.FindSymbol = smbl;
             return DefineSymbol(smbl);
         }
 
