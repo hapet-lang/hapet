@@ -29,7 +29,7 @@ namespace HapetFrontend.Parsing
                 return ParseEmptyExpression();
             }
 
-            return new AstThrowStmt(expr as AstNewExpr, new Location(beg));
+            return new AstThrowStmt(expr as AstExpression, new Location(beg));
         }
     }
 }
