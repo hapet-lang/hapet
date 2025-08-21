@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // Some modifications were made for hapet-lang compatibility.
 
+using System.Text.Formatting;
 using System.Runtime.InteropServices;
 
 [SuppressStaticCtorCall]
@@ -65,7 +66,7 @@ public struct String : IComparable, IComparable<string>
         return !(s1 == s2);
     }
 
-     public static bool IsNullOrEmpty(string value)
+    public static bool IsNullOrEmpty(string value)
     {
         return value == null || value.Length == 0;
     }
@@ -81,4 +82,44 @@ public struct String : IComparable, IComparable<string>
 
         return true;
     }
+
+    public static inline string Format<T0>(string format, T0 arg0)
+    {
+        return StringBuffer.Format<T0>(format, arg0);
+    } 
+
+    public static inline string Format<T0, T1>(string format, T0 arg0, T1 arg1)
+    {
+        return StringBuffer.Format<T0, T1>(format, arg0, arg1);
+    } 
+
+    public static inline string Format<T0, T1, T2>(string format, T0 arg0, T1 arg1, T2 arg2)
+    {
+        return StringBuffer.Format<T0, T1, T2>(format, arg0, arg1, arg2);
+    } 
+
+    public static inline string Format<T0, T1, T2, T3>(string format, T0 arg0, T1 arg1, T2 arg2, T3 arg3)
+    {
+        return StringBuffer.Format<T0, T1, T2, T3>(format, arg0, arg1, arg2, arg3);
+    } 
+
+    public static inline string Format<T0, T1, T2, T3, T4>(string format, T0 arg0, T1 arg1, T2 arg2, T3 arg3, T4 arg4)
+    {
+        return StringBuffer.Format<T0, T1, T2, T3, T4>(format, arg0, arg1, arg2, arg3, arg4);
+    } 
+
+    public static inline string Format<T0, T1, T2, T3, T4, T5>(string format, T0 arg0, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5)
+    {
+        return StringBuffer.Format<T0, T1, T2, T3, T4, T5>(format, arg0, arg1, arg2, arg3, arg4, arg5);
+    } 
+
+    public static inline string Format<T0, T1, T2, T3, T4, T5, T6>(string format, T0 arg0, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6)
+    {
+        return StringBuffer.Format<T0, T1, T2, T3, T4, T5, T6>(format, arg0, arg1, arg2, arg3, arg4, arg5, arg6);
+    } 
+
+    public static inline string Format<T0, T1, T2, T3, T4, T5, T6, T7>(string format, T0 arg0, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6, T7 arg7)
+    {
+        return StringBuffer.Format<T0, T1, T2, T3, T4, T5, T6, T7>(format, arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7);
+    } 
 }

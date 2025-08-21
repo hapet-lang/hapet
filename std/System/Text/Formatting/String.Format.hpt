@@ -1160,7 +1160,7 @@ static partial unsafe class Numeric
         var fmt = ParseFormatSpecifier(specifier, out digits);
 
         var number = new Number();
-        var buffer = stackalloc char[MaxNumberDigits + 1];
+        var buffer = (stackalloc char[MaxNumberDigits + 1]).Buffer;
         number.Digits = buffer;
         DecimalToNumber(value, ref number);
         if (fmt != 0)
@@ -1231,7 +1231,7 @@ static partial unsafe class Numeric
 
                 RoundNumber(ref number, maxDigits);
 
-                var buffer = stackalloc char[bufferSize];
+                var buffer = (stackalloc char[bufferSize]).Buffer;
                 var ptr = buffer;
                 if (number.Sign > 0)
                     AppendString(&ptr, cultureData.NegativeSign);
@@ -1255,7 +1255,7 @@ static partial unsafe class Numeric
                 var bufferSize = cultureData.GetBufferSize(ref maxDigits, number.Scale);
                 RoundNumber(ref number, number.Scale + maxDigits);
 
-                var buffer = stackalloc char[bufferSize];
+                var buffer = (stackalloc char[bufferSize]).Buffer;
                 var ptr = FormatPercent(
                     buffer,
                     ref number,
@@ -1284,7 +1284,7 @@ static partial unsafe class Numeric
                 }
 
                 var bufferSize = maxDigits + culture.DecimalBufferSize;
-                var buffer = stackalloc char[bufferSize];
+                var buffer = (stackalloc char[bufferSize]).Buffer;
                 var ptr = buffer;
 
                 // round for G formatting only if a precision is given
@@ -1311,7 +1311,7 @@ static partial unsafe class Numeric
                 formatter.Append(buffer, (int)(ptr - buffer));
             }
             default
-                throw new FormatException(string.Format(SR.Formatting_UnknownFormatSpecifier, format));
+                throw new FormatException(string.Format<char>(SR.Formatting_UnknownFormatSpecifier, format));
         }
     }
 
@@ -1330,8 +1330,7 @@ static partial unsafe class Numeric
                     AppendString(&buffer, currencySymbol);
                 default
                 {
-                    *buffer = c; 
-                    buffer++;
+                    *buffer++ = c; 
                 }
             }
         }
@@ -1352,8 +1351,7 @@ static partial unsafe class Numeric
                     AppendString(&buffer, data.NegativeSign);
                 default
                 {
-                    *buffer = c;
-                    buffer++;
+                    *buffer++ = c;
                 }
             }
         }
@@ -1376,8 +1374,7 @@ static partial unsafe class Numeric
                     AppendString(&buffer, percentSymbol); 
                 default
                 {
-                    *buffer = c;
-                    buffer++;
+                    *buffer++ = c;
                 }
             }
         }
@@ -1460,7 +1457,7 @@ static partial unsafe class Numeric
         else if (positiveSign != null)
             AppendString(&buffer, positiveSign);
 
-        var digits = stackalloc char[11];
+        var digits = (stackalloc char[11]).Buffer;
         var ptr = Int32ToDecChars(digits + 10, (uint)value, minDigits);
         var len = (int)(digits + 10 - ptr);
         while (--len >= 0)
@@ -1587,7 +1584,7 @@ static partial unsafe class Numeric
         }
 
         var buffer = (stackalloc char[bufferLength]).Buffer;
-        var p = Int32ToDecChars(buffer + bufferLength, value >= 0 ? (uint)value : (uint)-value, digits);
+        var p = Int32ToDecChars(buffer + bufferLength, value >= 0 ? (uint)value : (uint)(-value), digits);
         if (value < 0)
         {
             // add the negative sign
@@ -1695,16 +1692,14 @@ static partial unsafe class Numeric
     {
         while (value != 0)
         {
-            --p;
-            *p = (char)(value % 10 + '0');
+            *--p = (char)((int)value % 10 + '0');
             value /= 10;
             digits--;
         }
 
         while (--digits >= 0)
         {
-            --p;
-            *p = '0';
+            *--p = '0';
         }
         return p;
     }
@@ -1714,8 +1709,7 @@ static partial unsafe class Numeric
         while (--digits >= 0 || value != 0)
         {
             var digit = value & 0xF;
-            --p;
-            *p = (char)(digit + (digit < 10 ? '0' : hexBase));
+            *--p = (char)(digit + (digit < 10 ? '0' : hexBase));
             value = value >> 4;
         }
         return p;
@@ -1730,23 +1724,19 @@ static partial unsafe class Numeric
         }
 
         char* curr = specifier.Data;
-        char first = *curr;
-        curr++;
+        char first = *curr++;
         if ((first >= 'A' && first <= 'Z') || (first >= 'a' && first <= 'z'))
         {
             int n = -1;
-            char c = *curr;
-            curr++;
+            char c = *curr++;
             if (c >= '0' && c <= '9')
             {
                 n = c - '0';
-                c = *curr;
-                curr++;
+                c = *curr++;
                 while (c >= '0' && c <= '9')
                 {
                     n = n * 10 + c - '0';
-                    c = *curr;
-                    curr++;
+                    c = *curr++;
                     if (n >= 10)
                         break;
                 }
@@ -1781,11 +1771,7 @@ static partial unsafe class Numeric
 
         var dest = number.Digits;
         while (--len >= 0)
-        {
-            *dest = *ptr;
-            dest++;
-            ptr++;
-        }
+            *dest++ = *ptr++;
         *dest = '\0';
     }
 
@@ -1801,11 +1787,7 @@ static partial unsafe class Numeric
 
         var dest = number.Digits;
         while (--len >= 0)
-        {
-            *dest = *ptr;
-            dest++;
-            ptr++;
-        }
+            *dest++ = *ptr++;
         *dest = '\0';
     }
 
@@ -1832,11 +1814,7 @@ static partial unsafe class Numeric
 
         var dest = number.Digits;
         while (--len >= 0)
-        {
-            *dest = *ptr;
-            dest++;
-            ptr++;
-        }
+            *dest++ = *ptr++;
         *dest = '\0';
     }
 
@@ -1857,11 +1835,7 @@ static partial unsafe class Numeric
 
         var dest = number.Digits;
         while (--len >= 0)
-        {
-            *dest = *ptr;
-            dest++;
-            ptr++;
-        }
+            *dest++ = *ptr++;
         *dest = '\0';
     }
 
@@ -1902,16 +1876,11 @@ static partial unsafe class Numeric
                 while (intPart != 0)
                 {
                     reducedInt = ModF(intPart / 10, out intPart);
-                    --p;
-                    *p = (char)((int)((reducedInt + 0.03) * 10) + '0');
+                    *--p = (char)((int)((reducedInt + 0.03) * 10) + '0');
                     shift++;
                 }
                 while (p < end)
-                {
-                    *digits = *p;
-                    digits++;
-                    ptr++;
-                }
+                    *digits++ = *p++;
             }
             else if (fracPart > 0)
             {
@@ -1931,8 +1900,7 @@ static partial unsafe class Numeric
             {
                 fracPart *= 10;
                 fracPart = ModF(fracPart, out reducedInt);
-                *digits = (char)((int)reducedInt + '0');
-                digits++;
+                *digits++ = (char)((int)reducedInt + '0');
             }
 
             // round the result if necessary
@@ -1943,8 +1911,7 @@ static partial unsafe class Numeric
                 *p = '0';
                 if (p > number.Digits)
                 {
-                    --p;
-                    *p = *p + 1;
+                    ++*--p;
                 }
                 else
                 {
@@ -1995,11 +1962,7 @@ static partial unsafe class Numeric
 
         var dest = number.Digits;
         while (--len >= 0)
-        {
-            *dest = *p;
-            dest++;
-            p++;
-        }
+            *dest++ = *p++;
         *dest = '\0';
     }
 
@@ -2050,10 +2013,8 @@ static partial unsafe class Numeric
     static int StrLen(char* str)
     {
         int count = 0;
-        while ((*str)++ != 0)
-        {
+        while (*str++ != 0)
             count++;
-        }
 
         return count;
     }
