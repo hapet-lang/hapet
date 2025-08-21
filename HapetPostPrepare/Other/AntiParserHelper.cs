@@ -467,9 +467,9 @@ namespace HapetPostPrepare
         {
             sb.Append("do \n");
             AntiParseExpr(whileStmt.Body, sb, offset);
-            sb.Append("while (");
+            sb.Append($"{offset}while (");
             AntiParseExpr(whileStmt.Condition, sb, offset);
-            sb.Append(")\n");
+            sb.Append(")");
         }
 
         public void AntiParseIfStmt(AstIfStmt ifStmt, StringBuilder sb, string offset)
