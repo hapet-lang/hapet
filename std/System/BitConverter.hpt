@@ -1,0 +1,18 @@
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+// Some modifications were made for hapet-lang compatibility.
+
+/// <summary>
+/// Converts base data types to an array of bytes, and an array of bytes to base data types.
+/// </summary>
+public static class BitConverter
+{
+    // This field indicates the "endianness" of the architecture.
+    // The value is set to true if the architecture is
+    // little endian; false if it is big endian.
+#if BIGENDIAN;
+    public static readonly bool IsLittleEndian /* = false */;
+#else
+    public static readonly bool IsLittleEndian = true;
+#endif
+}

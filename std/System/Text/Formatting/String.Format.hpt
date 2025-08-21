@@ -649,6 +649,8 @@ public unsafe struct StringView
         get { return Length == 0; }
     }
 
+    public StringView() { }
+
     public StringView(char* data, int length)
     {
         Data = data;
@@ -1709,7 +1711,7 @@ static partial unsafe class Numeric
         while (--digits >= 0 || value != 0)
         {
             var digit = value & 0xF;
-            *--p = (char)(digit + (digit < 10 ? '0' : hexBase));
+            *--p = (char)((int)digit + (digit < 10 ? '0' : hexBase));
             value = value >> 4;
         }
         return p;
@@ -2034,7 +2036,7 @@ static partial unsafe class Numeric
 
     static void ExplodeDouble(double value, out uint sign, out uint exp, out uint mantHi, out uint mantLo)
     {
-        var bits = *(ulong*)&value;
+        var bits = *(ulong*)(&value);
         if (BitConverter.IsLittleEndian)
         {
             mantLo = (uint)(bits & 0xFFFFFFFF);         // bits 0 - 31
@@ -2067,12 +2069,6 @@ static partial unsafe class Numeric
         public int Scale;
         public int Sign;
         public char* Digits;
-
-        // useful for debugging
-        public override string ToString()
-        {
-            return new string(Digits);
-        }
     }
 
     const int MaxNumberDigits = 50;
@@ -2102,7 +2098,7 @@ partial class StringBuffer
     public void AppendFormat<T0>(string format, T0 arg0)
     {
         var args = new Arg1<T0>(arg0);
-        AppendArgSet(format, ref args);
+        AppendArgSet<IArgSet>(format, ref args);
     }
 
     /// <summary>
@@ -2128,7 +2124,7 @@ partial class StringBuffer
     public void AppendFormat<T0, T1>(string format, T0 arg0, T1 arg1)
     {
         var args = new Arg2<T0, T1>(arg0, arg1);
-        AppendArgSet(format, ref args);
+        AppendArgSet<IArgSet>(format, ref args);
     }
 
     /// <summary>
@@ -2156,7 +2152,7 @@ partial class StringBuffer
     public void AppendFormat<T0, T1, T2>(string format, T0 arg0, T1 arg1, T2 arg2)
     {
         var args = new Arg3<T0, T1, T2>(arg0, arg1, arg2);
-        AppendArgSet(format, ref args);
+        AppendArgSet<IArgSet>(format, ref args);
     }
 
     /// <summary>
@@ -2186,7 +2182,7 @@ partial class StringBuffer
     public void AppendFormat<T0, T1, T2, T3>(string format, T0 arg0, T1 arg1, T2 arg2, T3 arg3)
     {
         var args = new Arg4<T0, T1, T2, T3>(arg0, arg1, arg2, arg3);
-        AppendArgSet(format, ref args);
+        AppendArgSet<IArgSet>(format, ref args);
     }
 
     /// <summary>
@@ -2218,7 +2214,7 @@ partial class StringBuffer
     public void AppendFormat<T0, T1, T2, T3, T4>(string format, T0 arg0, T1 arg1, T2 arg2, T3 arg3, T4 arg4)
     {
         var args = new Arg5<T0, T1, T2, T3, T4>(arg0, arg1, arg2, arg3, arg4);
-        AppendArgSet(format, ref args);
+        AppendArgSet<IArgSet>(format, ref args);
     }
 
     /// <summary>
@@ -2252,7 +2248,7 @@ partial class StringBuffer
     public void AppendFormat<T0, T1, T2, T3, T4, T5>(string format, T0 arg0, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5)
     {
         var args = new Arg6<T0, T1, T2, T3, T4, T5>(arg0, arg1, arg2, arg3, arg4, arg5);
-        AppendArgSet(format, ref args);
+        AppendArgSet<IArgSet>(format, ref args);
     }
 
     /// <summary>
@@ -2288,7 +2284,7 @@ partial class StringBuffer
     public void AppendFormat<T0, T1, T2, T3, T4, T5, T6>(string format, T0 arg0, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6)
     {
         var args = new Arg7<T0, T1, T2, T3, T4, T5, T6>(arg0, arg1, arg2, arg3, arg4, arg5, arg6);
-        AppendArgSet(format, ref args);
+        AppendArgSet<IArgSet>(format, ref args);
     }
 
     /// <summary>
@@ -2326,7 +2322,7 @@ partial class StringBuffer
     public void AppendFormat<T0, T1, T2, T3, T4, T5, T6, T7>(string format, T0 arg0, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6, T7 arg7)
     {
         var args = new Arg8<T0, T1, T2, T3, T4, T5, T6, T7>(arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7);
-        AppendArgSet(format, ref args);
+        AppendArgSet<IArgSet>(format, ref args);
     }
 
     /// <summary>
