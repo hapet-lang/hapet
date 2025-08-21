@@ -160,15 +160,6 @@ namespace HapetFrontend.Parsing
                 // add if does not exist
                 if (!genericConstrains.ContainsKey(g))
                     genericConstrains.Add(g, new List<AstConstrainStmt>());
-
-                // manually adding the constrain
-                genericConstrains[g].Add(new AstConstrainStmt(
-                    new AstNestedExpr(new AstIdExpr("System.Object", g.Location), null, g.Location),
-                    GenericConstrainType.CustomType,
-                    g.Location)
-                {
-                    AdditionalExprs = new List<AstNestedExpr>(),
-                });
             }
 
             return genericConstrains;

@@ -80,26 +80,8 @@ namespace HapetBackend.Llvm
         {
             foreach (var cls in _postPreparer.AllClassesMetadata)
             {
-                if (IsTypeShouldBeSkipped(cls) || GenericsHelper.ShouldTheDeclBeSkippedFromCodeGen(cls))
-                {
-                    // getting all STATIC/CONST fields except props
-                    foreach (var decl in cls.Declarations.Where(x => x is AstVarDecl && x is not AstPropertyDecl).Select(x => x as AstVarDecl))
-                    {
-                        // need to make a ptr to a class
-                        var varType = decl.Type.OutType;
-
-                        // check for const/static fields
-                        if (decl.SpecialKeys.Contains(TokenType.KwStatic) || decl.SpecialKeys.Contains(TokenType.KwConst))
-                        {
-                            CreateStaticField(decl, cls, cls.IsImported);
-                        }
-                    }
-                    continue;
-                }
-
                 _currentSourceFile = cls.SourceFile;
-
-                // getting all field except props
+                // getting all static/const field except props
                 foreach (var decl in cls.Declarations.Where(x => x is AstVarDecl && x is not AstPropertyDecl).Select(x => x as AstVarDecl))
                 {
                     // need to make a ptr to a class
@@ -109,7 +91,7 @@ namespace HapetBackend.Llvm
                     if (decl.SpecialKeys.Contains(TokenType.KwStatic) || decl.SpecialKeys.Contains(TokenType.KwConst))
                     {
                         // skip non-pure generic types
-                        if (cls.IsImplOfGeneric)
+                        if (cls.IsImplOfGeneric || (cls.IsNestedDecl && cls.ParentDecl.IsImplOfGeneric))
                             continue;
 
                         CreateStaticField(decl, cls, cls.IsImported);
@@ -122,33 +104,15 @@ namespace HapetBackend.Llvm
             }
             foreach (var str in _postPreparer.AllStructsMetadata)
             {
-                if (IsTypeShouldBeSkipped(str) || GenericsHelper.ShouldTheDeclBeSkippedFromCodeGen(str))
-                {
-                    // getting all STATIC/CONST fields except props
-                    foreach (var decl in str.Declarations.Where(x => x is AstVarDecl && x is not AstPropertyDecl).Select(x => x as AstVarDecl))
-                    {
-                        // need to make a ptr to a class
-                        var varType = decl.Type.OutType;
-
-                        // check for const/static fields
-                        if (decl.SpecialKeys.Contains(TokenType.KwStatic) || decl.SpecialKeys.Contains(TokenType.KwConst))
-                        {
-                            CreateStaticField(decl, str, str.IsImported);
-                        }
-                    }
-                    continue;
-                }
-
                 _currentSourceFile = str.SourceFile;
-
-                // getting all field except props
+                // getting all static/const field except props
                 foreach (var decl in str.Declarations.Where(x => x is AstVarDecl && x is not AstPropertyDecl).Select(x => x as AstVarDecl))
                 {
                     // check for const/static fields
                     if (decl.SpecialKeys.Contains(TokenType.KwStatic) || decl.SpecialKeys.Contains(TokenType.KwConst))
                     {
                         // skip non-pure generic types
-                        if (str.IsImplOfGeneric)
+                        if (str.IsImplOfGeneric || (str.IsNestedDecl && str.ParentDecl.IsImplOfGeneric))
                             continue;
 
                         CreateStaticField(decl, str, str.IsImported);

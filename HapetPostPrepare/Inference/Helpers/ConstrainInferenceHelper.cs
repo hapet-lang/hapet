@@ -1,4 +1,5 @@
-﻿using System.Runtime;
+﻿using System.Data;
+using System.Runtime;
 using HapetFrontend.Ast;
 using HapetFrontend.Ast.Declarations;
 using HapetFrontend.Ast.Expressions;
@@ -88,6 +89,24 @@ namespace HapetPostPrepare
                 // if all true and amount of constrains are the same - it is the same generic type
                 if (collisions.All(x => x) && collisions.Count == constrains.Count && constrains.Count == existingConstrains.Count)
                     return k; // just return the constrain
+            }
+
+            // manually adding the constrain of System.Object if required
+            if (constrains.FirstOrDefault(x => x.ConstrainType == GenericConstrainType.CustomType && 
+                x.Expr.OutType is ClassType clsTT && 
+                clsTT.Declaration.Name.Name == "System.Object") == null)
+            {
+                var specialC = new AstConstrainStmt(
+                new AstNestedExpr(new AstIdExpr("System.Object", containingParent.Location), null, containingParent.Location),
+                GenericConstrainType.CustomType,
+                containingParent.Location)
+                {
+                    AdditionalExprs = new List<AstNestedExpr>(),
+                };
+                constrains.Add(specialC);
+                SetScopeAndParent(specialC, containingParent);
+                PostPrepareConstrainScoping(specialC);
+                PostPrepareExprInference(specialC.Expr, inInfo, ref outInfo);
             }
 
             // check that constrains are ok

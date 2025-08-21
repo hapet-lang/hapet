@@ -80,7 +80,7 @@ namespace HapetPostPrepare
                     continue;
 
                 // skip generic implemented types
-                if (decl.IsImplOfGeneric)
+                if (decl.IsImplOfGeneric || (decl.IsNestedDecl && decl.ParentDecl.IsImplOfGeneric))
                     continue;
 
                 // check that the class has suppress stor call attr
@@ -93,8 +93,9 @@ namespace HapetPostPrepare
                 AstBlockExpr blockWhereToCall;
                 if (decl.IsNestedDecl)
                 {
-                    var candidate = GetFuncFromCandidates(new AstIdExpr($"{decl.ParentDecl.Name.Name.GetClassNameWithoutNamespace()}_stor"), 
-                        [], decl.ParentDecl, false, out var _);
+                    var pureParent = decl.ParentDecl.IsImplOfGeneric ? decl.ParentDecl.OriginalGenericDecl : decl.ParentDecl;
+                    var candidate = GetFuncFromCandidates(new AstIdExpr($"{pureParent.Name.Name.GetClassNameWithoutNamespace()}_stor"), 
+                        [], pureParent, false, out var _);
                     if (candidate == null)
                     {
                         // error here 
