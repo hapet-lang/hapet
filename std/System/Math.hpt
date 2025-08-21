@@ -2,10 +2,18 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // Some modifications were made for hapet-lang compatibility.
 
+using System.Runtime.InteropServices;
+
 public static class Math
 {
     public static int Min(int val1, int val2)
     {
         return (val1 <= val2) ? val1 : val2;
+    }
+
+    public static double Truncate(double d)
+    {
+        Marshal.ModF(d, &d);
+        return d;
     }
 }

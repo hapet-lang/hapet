@@ -26,4 +26,7 @@ public static class Marshal
     [DeclarationUsed]
     [DllImport("", "memcmp")]
     public static extern inline int Memcmp(void* memptr1, void* memptr2, uintptr num);
+
+    [DllImport("", "modf")]
+    public static extern inline double ModF(double num, double* i);
 }

@@ -14,4 +14,5 @@ public static class SR
     public const string Formatting_ArgIndexOutOfRange = "No format argument exists for index '{0}'.";
     public const string Formatting_TypeNotFormattable = "Type '{0}' is not a built-in type, does not implement IStringFormattable, and no custom formatter was found for it.";
     public const string Formatting_InvalidFormatString = "Invalid format string.";
+    public const string Formatting_FormatException = "One of the identified items was in an invalid format.";
 }
