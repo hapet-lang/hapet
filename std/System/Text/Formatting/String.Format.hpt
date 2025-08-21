@@ -2109,7 +2109,7 @@ partial class StringBuffer
     public static string Format<T0>(string format, T0 arg0)
     {
         var buffer = Acquire(format.Length + 8);
-        buffer.AppendFormat(format, arg0);
+        buffer.AppendFormat<T0>(format, arg0);
         var result = buffer.ToString();
         Release(buffer);
         return result;
@@ -2136,7 +2136,7 @@ partial class StringBuffer
     public static string Format<T0, T1>(string format, T0 arg0, T1 arg1)
     {
         var buffer = Acquire(format.Length + 16);
-        buffer.AppendFormat(format, arg0, arg1);
+        buffer.AppendFormat<T0, T1>(format, arg0, arg1);
         var result = buffer.ToString();
         Release(buffer);
         return result;
@@ -2165,7 +2165,7 @@ partial class StringBuffer
     public static string Format<T0, T1, T2>(string format, T0 arg0, T1 arg1, T2 arg2)
     {
         var buffer = Acquire(format.Length + 24);
-        buffer.AppendFormat(format, arg0, arg1, arg2);
+        buffer.AppendFormat<T0, T1, T2>(format, arg0, arg1, arg2);
         var result = buffer.ToString();
         Release(buffer);
         return result;
@@ -2196,7 +2196,7 @@ partial class StringBuffer
     public static string Format<T0, T1, T2, T3>(string format, T0 arg0, T1 arg1, T2 arg2, T3 arg3)
     {
         var buffer = Acquire(format.Length + 32);
-        buffer.AppendFormat(format, arg0, arg1, arg2, arg3);
+        buffer.AppendFormat<T0, T1, T2, T3>(format, arg0, arg1, arg2, arg3);
         var result = buffer.ToString();
         Release(buffer);
         return result;
@@ -2229,7 +2229,7 @@ partial class StringBuffer
     public static string Format<T0, T1, T2, T3, T4>(string format, T0 arg0, T1 arg1, T2 arg2, T3 arg3, T4 arg4)
     {
         var buffer = Acquire(format.Length + 40);
-        buffer.AppendFormat(format, arg0, arg1, arg2, arg3, arg4);
+        buffer.AppendFormat<T0, T1, T2, T3, T4>(format, arg0, arg1, arg2, arg3, arg4);
         var result = buffer.ToString();
         Release(buffer);
         return result;
@@ -2264,7 +2264,7 @@ partial class StringBuffer
     public static string Format<T0, T1, T2, T3, T4, T5>(string format, T0 arg0, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5)
     {
         var buffer = Acquire(format.Length + 48);
-        buffer.AppendFormat(format, arg0, arg1, arg2, arg3, arg4, arg5);
+        buffer.AppendFormat<T0, T1, T2, T3, T4, T5>(format, arg0, arg1, arg2, arg3, arg4, arg5);
         var result = buffer.ToString();
         Release(buffer);
         return result;
@@ -2301,7 +2301,7 @@ partial class StringBuffer
     public static string Format<T0, T1, T2, T3, T4, T5, T6>(string format, T0 arg0, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6)
     {
         var buffer = Acquire(format.Length + 56);
-        buffer.AppendFormat(format, arg0, arg1, arg2, arg3, arg4, arg5, arg6);
+        buffer.AppendFormat<T0, T1, T2, T3, T4, T5, T6>(format, arg0, arg1, arg2, arg3, arg4, arg5, arg6);
         var result = buffer.ToString();
         Release(buffer);
         return result;
@@ -2340,7 +2340,7 @@ partial class StringBuffer
     public static string Format<T0, T1, T2, T3, T4, T5, T6, T7>(string format, T0 arg0, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6, T7 arg7)
     {
         var buffer = Acquire(format.Length + 64);
-        buffer.AppendFormat(format, arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7);
+        buffer.AppendFormat<T0, T1, T2, T3, T4, T5, T6, T7>(format, arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7);
         var result = buffer.ToString();
         Release(buffer);
         return result;
@@ -2362,7 +2362,7 @@ unsafe struct Arg1<T0> : IArgSet
     {
         switch (index)
         {
-            case (0) buffer.AppendGeneric(t0, format);
+            case (0) buffer.AppendGeneric<T0>(t0, format);
         }
     }
 }
@@ -2384,8 +2384,8 @@ unsafe struct Arg2<T0, T1> : IArgSet
     {
         switch (index)
         {
-            case (0) buffer.AppendGeneric(t0, format); 
-            case (1) buffer.AppendGeneric(t1, format); 
+            case (0) buffer.AppendGeneric<T0>(t0, format); 
+            case (1) buffer.AppendGeneric<T1>(t1, format); 
         }
     }
 }
@@ -2409,9 +2409,9 @@ unsafe struct Arg3<T0, T1, T2> : IArgSet
     {
         switch (index)
         {
-            case (0) buffer.AppendGeneric(t0, format);
-            case (1) buffer.AppendGeneric(t1, format);
-            case (2) buffer.AppendGeneric(t2, format);
+            case (0) buffer.AppendGeneric<T0>(t0, format);
+            case (1) buffer.AppendGeneric<T1>(t1, format);
+            case (2) buffer.AppendGeneric<T2>(t2, format);
         }
     }
 }
@@ -2437,10 +2437,10 @@ unsafe struct Arg4<T0, T1, T2, T3> : IArgSet
     {
         switch (index)
         {
-            case (0) buffer.AppendGeneric(t0, format);
-            case (1) buffer.AppendGeneric(t1, format);
-            case (2) buffer.AppendGeneric(t2, format);
-            case (3) buffer.AppendGeneric(t3, format);
+            case (0) buffer.AppendGeneric<T0>(t0, format);
+            case (1) buffer.AppendGeneric<T1>(t1, format);
+            case (2) buffer.AppendGeneric<T2>(t2, format);
+            case (3) buffer.AppendGeneric<T3>(t3, format);
         }
     }
 }
@@ -2468,11 +2468,11 @@ unsafe struct Arg5<T0, T1, T2, T3, T4> : IArgSet
     {
         switch (index)
         {
-            case (0) buffer.AppendGeneric(t0, format);
-            case (1) buffer.AppendGeneric(t1, format);
-            case (2) buffer.AppendGeneric(t2, format);
-            case (3) buffer.AppendGeneric(t3, format);
-            case (4) buffer.AppendGeneric(t4, format);
+            case (0) buffer.AppendGeneric<T0>(t0, format);
+            case (1) buffer.AppendGeneric<T1>(t1, format);
+            case (2) buffer.AppendGeneric<T2>(t2, format);
+            case (3) buffer.AppendGeneric<T3>(t3, format);
+            case (4) buffer.AppendGeneric<T4>(t4, format);
         }
     }
 }
@@ -2502,12 +2502,12 @@ unsafe struct Arg6<T0, T1, T2, T3, T4, T5> : IArgSet
     {
         switch (index)
         {
-            case (0) buffer.AppendGeneric(t0, format);
-            case (1) buffer.AppendGeneric(t1, format);
-            case (2) buffer.AppendGeneric(t2, format);
-            case (3) buffer.AppendGeneric(t3, format);
-            case (4) buffer.AppendGeneric(t4, format);
-            case (5) buffer.AppendGeneric(t5, format);
+            case (0) buffer.AppendGeneric<T0>(t0, format);
+            case (1) buffer.AppendGeneric<T1>(t1, format);
+            case (2) buffer.AppendGeneric<T2>(t2, format);
+            case (3) buffer.AppendGeneric<T3>(t3, format);
+            case (4) buffer.AppendGeneric<T4>(t4, format);
+            case (5) buffer.AppendGeneric<T5>(t5, format);
         }
     }
 }
@@ -2539,13 +2539,13 @@ unsafe struct Arg7<T0, T1, T2, T3, T4, T5, T6> : IArgSet
     {
         switch (index)
         {
-            case (0) buffer.AppendGeneric(t0, format);
-            case (1) buffer.AppendGeneric(t1, format);
-            case (2) buffer.AppendGeneric(t2, format);
-            case (3) buffer.AppendGeneric(t3, format);
-            case (4) buffer.AppendGeneric(t4, format);
-            case (5) buffer.AppendGeneric(t5, format);
-            case (6) buffer.AppendGeneric(t6, format);
+            case (0) buffer.AppendGeneric<T0>(t0, format);
+            case (1) buffer.AppendGeneric<T1>(t1, format);
+            case (2) buffer.AppendGeneric<T2>(t2, format);
+            case (3) buffer.AppendGeneric<T3>(t3, format);
+            case (4) buffer.AppendGeneric<T4>(t4, format);
+            case (5) buffer.AppendGeneric<T5>(t5, format);
+            case (6) buffer.AppendGeneric<T6>(t6, format);
         }
     }
 }
@@ -2579,14 +2579,14 @@ unsafe struct Arg8<T0, T1, T2, T3, T4, T5, T6, T7> : IArgSet
     {
         switch (index)
         {
-            case (0) buffer.AppendGeneric(t0, format);
-            case (1) buffer.AppendGeneric(t1, format);
-            case (2) buffer.AppendGeneric(t2, format);
-            case (3) buffer.AppendGeneric(t3, format);
-            case (4) buffer.AppendGeneric(t4, format);
-            case (5) buffer.AppendGeneric(t5, format);
-            case (6) buffer.AppendGeneric(t6, format);
-            case (7) buffer.AppendGeneric(t7, format);
+            case (0) buffer.AppendGeneric<T0>(t0, format);
+            case (1) buffer.AppendGeneric<T1>(t1, format);
+            case (2) buffer.AppendGeneric<T2>(t2, format);
+            case (3) buffer.AppendGeneric<T3>(t3, format);
+            case (4) buffer.AppendGeneric<T4>(t4, format);
+            case (5) buffer.AppendGeneric<T5>(t5, format);
+            case (6) buffer.AppendGeneric<T6>(t6, format);
+            case (7) buffer.AppendGeneric<T7>(t7, format);
         }
     }
 }
