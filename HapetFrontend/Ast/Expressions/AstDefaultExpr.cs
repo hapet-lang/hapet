@@ -59,6 +59,12 @@ namespace HapetFrontend.Ast.Expressions
                     break;
                 case EnumType en:
                     outExpr = new AstNumberExpr(NumberData.FromInt(0), null, en.Declaration.InheritedType.OutType, orig);
+                    outExpr.SetDataFromStmt(orig);
+                    var tpp = new AstNestedExpr(en.Declaration.Name.GetDeepCopy() as AstIdExpr, null, orig);
+                    outExpr = new AstCastExpr(tpp, outExpr, orig);
+                    outExpr.SetDataFromStmt(orig, true);
+                    tpp.SetDataFromStmt(orig, true);
+                    outExpr.OutType = en.Declaration.Type.OutType;
                     break;
                 default:
                     messageHandler.ReportMessage(orig.SourceFile.Text, orig, [HapetType.AsString(tp)], ErrorCode.Get(CTEN.NoDefaultValueForType));
