@@ -33,6 +33,27 @@ namespace HapetFrontend.Ast.Declarations
             return $"index:{GenericsHelper.GetNameFromAst(Name, null)}";
         }
 
+        public override AstDeclaration GetOnlyDeclareCopy()
+        {
+            var copy = new AstIndexerDecl(
+                Type.GetDeepCopy() as AstNestedExpr,
+                Name.GetDeepCopy() as AstIdExpr,
+                Documentation, Location)
+            {
+                IndexerParameter = IndexerParameter.GetDeepCopy() as AstParamDecl,
+                HasGet = HasGet,
+                HasSet = HasSet,
+                IsImported = IsImported,
+                HasGenericTypes = HasGenericTypes,
+                Scope = Scope,
+                SourceFile = SourceFile,
+                SubScope = SubScope,
+            };
+            copy.Attributes.AddRange(Attributes);
+            copy.SpecialKeys.AddRange(SpecialKeys);
+            return copy;
+        }
+
         public override AstStatement GetDeepCopy()
         {
             var copy = new AstIndexerDecl(

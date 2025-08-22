@@ -1158,11 +1158,7 @@ namespace HapetPostPrepare
             }
 
             HapetType outType = null;
-            if (arrayAccExpr.ObjectName.OutType is ArrayType arrayType)
-                outType = arrayType.TargetType;
-            else if (arrayAccExpr.ObjectName.OutType is StringType)
-                outType = HapetType.CurrentTypeContext.CharTypeInstance; // TODO: mb non default could be here? idk :)
-            else if (arrayAccExpr.ObjectName.OutType is PointerType ptrType)
+            if (arrayAccExpr.ObjectName.OutType is PointerType ptrType)
                 outType = ptrType.TargetType;
             else
             {

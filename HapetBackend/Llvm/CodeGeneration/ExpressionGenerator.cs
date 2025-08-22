@@ -1160,15 +1160,7 @@ namespace HapetBackend.Llvm
             // the buffer to be indexed
             LLVMValueRef buffer = default;
 
-            // special case for string for now
-            if (expr.ObjectName.OutType is StringType)
-            {
-                // getting arrayBuf from struct and pointer to it
-                LLVMValueRef ptrToArray = GenerateExpressionCode(expr.ObjectName, true);
-                var ptrToBuffer = _builder.BuildStructGEP2(HapetTypeToLLVMType(expr.ObjectName.OutType), ptrToArray, 1, "arrayBuf");
-                buffer = _builder.BuildLoad2(HapetTypeToLLVMType(expr.OutType).GetPointerTo(), ptrToBuffer);
-            }
-            else if (expr.ObjectName.OutType is PointerType)
+            if (expr.ObjectName.OutType is PointerType)
             {
                 // getting pointer to the var
                 LLVMValueRef ptrToPtr = GenerateExpressionCode(expr.ObjectName, true);

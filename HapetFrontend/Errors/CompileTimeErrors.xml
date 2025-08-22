@@ -606,7 +606,7 @@
     </Item>
     <Item>
         <Number>3029</Number>
-        <Text>Array/String type expected to be indexed</Text>
+        <Text>Type with indexer implementation or a pointer type expected to be indexed</Text>
     </Item>
     <Item>
         <Number>302A</Number>

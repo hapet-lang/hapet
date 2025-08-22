@@ -24,6 +24,19 @@ public struct String : IComparable, IComparable<string>
         Length = length;
     }
 
+    [SuppressStackTrace]
+    public char this[int index] 
+    {
+        get 
+        {
+            return Buffer[index];
+        }
+        set
+        {
+            Buffer[index] = value;
+        }
+    }
+
     public int CompareTo(object other)
     {
         // TODO:
