@@ -129,6 +129,9 @@ namespace HapetPostPrepare
                             _compiler.MessageHandler, _currentSourceFile);
                     foreach (var f in decls)
                     {
+                        // skip static ctors
+                        if (f is AstFuncDecl fnccc && fnccc.ClassFunctionType == ClassFunctionType.StaticCtor)
+                            continue;
                         // 1 - is access special key type!!!
                         if (!SpecialKeysHelper.HasSpecialKeyType(f, 1, out int _))
                             SpecialKeysHelper.AddSpecialKeyToDecl(f, Lexer.CreateToken(TokenType.KwPrivate, f.Location.Beginning),

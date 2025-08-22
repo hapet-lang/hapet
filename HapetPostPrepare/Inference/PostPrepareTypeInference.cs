@@ -1611,15 +1611,14 @@ namespace HapetPostPrepare
             // could be accessed from everyone
             if (accessee.SpecialKeys.Contains(TokenType.KwPublic))
                 return true;
-
             // built in also could be accessed from everywhere
             if (accessee is AstBuiltInTypeDecl)
                 return true;
-
             if (accessee.Scope.IsParentOf(accessor.Scope))
-            {
                 return true;
-            }
+            // allow call of stor from everywhere. there is no way user can call it but we have to be allowed
+            if (accessee is AstFuncDecl fnc && fnc.ClassFunctionType == ClassFunctionType.StaticCtor)
+                return true;
 
             // TODO: check protected
             // TODO: check private protected
