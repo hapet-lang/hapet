@@ -99,8 +99,10 @@ public sealed class NumberFormatInfo : IFormatProvider
 
     internal NumberFormatInfo(CultureData cultureData)
     {
+        Console.Dbg(53);
         if (cultureData != null)
         {
+            Console.Dbg(49);
             // We directly use fields here since these data is coming from data table or Win32, so we
             // don't need to verify their values (except for invalid parsing situations).
             cultureData.GetNFIValues(this);
@@ -121,6 +123,7 @@ public sealed class NumberFormatInfo : IFormatProvider
 
     private void InitializeInvariantAndNegativeSignFlags()
     {
+        Console.Dbg(48);
         _hasInvariantNumberSigns = _positiveSign == "+" && _negativeSign == "-";
 
         // The list of the Minus characters are picked up from the CLDR parse lenient data.

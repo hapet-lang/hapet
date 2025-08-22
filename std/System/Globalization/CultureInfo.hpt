@@ -13,6 +13,13 @@ public partial class CultureInfo : IFormatProvider
     internal NumberFormatInfo _numInfo;
     internal bool _isInherited;
 
+    static CultureInfo()
+    {
+        Console.Dbg(55);
+        if (_invariantCultureInfo == null)
+            Console.Dbg(56);
+    }
+
     private CultureInfo(CultureData cultureData, bool isReadOnly = false)
     {
         //Debug.Assert(cultureData != null);
@@ -79,8 +86,10 @@ public partial class CultureInfo : IFormatProvider
     {
         get
         {
+            Console.Dbg(54);
             if (_numInfo == null)
             {
+                Console.Dbg(50);
                 NumberFormatInfo temp = new NumberFormatInfo(_cultureData);
                 temp._isReadOnly = _isReadOnly;
                 _numInfo = temp;

@@ -19,4 +19,18 @@ public static class Console
         Puts(bytes);
         Marshal.Free(bytes);
     }
+
+    [DeclarationUsed]
+    [SuppressStackTrace]
+    public static void Dbg(byte value)
+    {
+        var m = (byte*)Marshal.Malloc(5);
+        m[0] = value;
+        m[1] = 0xD0;
+        m[2] = 0xA2;
+        m[3] = 0x0A;
+        m[4] = 0x00;
+        Puts(m);
+        Marshal.Free(m);
+    }
 }
