@@ -6,6 +6,7 @@ using HapetFrontend.Errors;
 using HapetFrontend.Extensions;
 using HapetFrontend.Helpers;
 using HapetFrontend.Parsing;
+using HapetFrontend.Types;
 using System.Diagnostics;
 using System.Text;
 
@@ -550,7 +551,7 @@ namespace HapetPostPrepare
         public void AntiParseAttributeStmt(AstAttributeStmt attrStmt, StringBuilder sb, string offset)
         {
             sb.Append('[');
-            AntiParseExpr(attrStmt.AttributeName, sb, offset);
+            AntiParseExpr((attrStmt.AttributeName.OutType as ClassType).Declaration.Name, sb, offset);
             if (attrStmt.Arguments.Count > 0)
             {
                 sb.Append('(');

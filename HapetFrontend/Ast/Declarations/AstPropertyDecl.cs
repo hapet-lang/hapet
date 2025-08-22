@@ -150,7 +150,8 @@ namespace HapetFrontend.Ast.Declarations
             func.Parameters.AddRange(prs);
             func.Returns = new AstNestedExpr(new AstIdExpr("void", Location), null, Location);
 
-            if (SetBlock == null && !SpecialKeys.Contains(TokenType.KwAbstract))
+            bool hasNoFieldAttribute = this.GetAttribute("System.NoFieldAttribute") != null;
+            if (SetBlock == null && !SpecialKeys.Contains(TokenType.KwAbstract) && !hasNoFieldAttribute)
             {
                 // left part is null if it is a static propa
                 AstNestedExpr leftPart = null;
@@ -183,7 +184,8 @@ namespace HapetFrontend.Ast.Declarations
             func.Parameters.AddRange(prs);
             func.Returns = Type.GetDeepCopy() as AstExpression;
 
-            if (GetBlock == null && !SpecialKeys.Contains(TokenType.KwAbstract))
+            bool hasNoFieldAttribute = this.GetAttribute("System.NoFieldAttribute") != null;
+            if (GetBlock == null && !SpecialKeys.Contains(TokenType.KwAbstract) && !hasNoFieldAttribute)
             {
                 // left part is null if it is a static propa
                 AstNestedExpr leftPart = null;

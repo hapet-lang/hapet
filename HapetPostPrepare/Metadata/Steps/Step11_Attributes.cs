@@ -49,6 +49,15 @@ namespace HapetPostPrepare
             }
             else if (stmt is AstStructDecl str)
             {
+                // infer fields and props attibutes
+                foreach (var decl in str.Declarations.Where(x => x is AstVarDecl).Select(x => x as AstVarDecl))
+                {
+                    // inferencing attrs
+                    foreach (var a in decl.Attributes)
+                    {
+                        PostPrepareAttributeStmtInference(a, inInfo, ref outInfo);
+                    }
+                }
                 // inferencing attrs
                 foreach (var a in str.Attributes)
                 {

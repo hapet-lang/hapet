@@ -1,0 +1,10 @@
+// Licensed to the hapet-lang under one or more agreements.
+// The hapet-lang licenses this file to you under the MIT license.
+
+[SuppressStaticCtorCall]
+public class NoFieldAttribute : Attribute
+{
+    public NoFieldAttribute()
+    {
+    }
+}

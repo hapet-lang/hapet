@@ -426,7 +426,7 @@ namespace HapetPostPrepare
                     (isParentGeneric && !decl.SpecialKeys.Contains(TokenType.KwStatic))))
                     sb.Append($"{additionalOffset}}}");
                 else
-                    sb.Append("}");
+                    sb.Append('}');
             }
 
             if (decl.Initializer != null)
@@ -437,7 +437,7 @@ namespace HapetPostPrepare
             }
             else
             {
-                sb.Append("\n");
+                sb.Append('\n');
             }
         }
 

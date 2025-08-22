@@ -4,6 +4,7 @@ using HapetFrontend.Errors;
 using HapetFrontend.Extensions;
 using HapetFrontend.Helpers;
 using HapetFrontend.Parsing;
+using HapetFrontend.Types;
 using System.Collections.Generic;
 
 namespace HapetLastPrepare
@@ -57,7 +58,8 @@ namespace HapetLastPrepare
 
             AstPropertyDecl orig = prop.OriginalGenericDecl as AstPropertyDecl;
 
-            if (prop.GetBlock == null && prop.SetBlock == null)
+            bool hasNoFieldAttribute = prop.GetAttribute("System.NoFieldAttribute") != null;
+            if (prop.GetBlock == null && prop.SetBlock == null && !hasNoFieldAttribute)
             {
                 // need to create a field :(
                 AstVarDecl propField = prop.GetField(parent, isParentStruct);
