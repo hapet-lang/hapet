@@ -28,9 +28,8 @@ namespace HapetBackend.Llvm
                 (realExpr is AstStringExpr || realExpr is AstNumberExpr || 
                 realExpr is AstBoolExpr || realExpr is AstCharExpr))
             {
-                var result = HapetValueToLLVMValue(realExpr.OutType, realExpr.OutValue);
-                if (result.Handle.ToInt64() != 0)
-                    return result;
+                var result = HapetValueToLLVMValue(realExpr.OutType, realExpr.OutValue, getPtr);
+                return result;
             }
 
             switch (expr)
@@ -56,7 +55,7 @@ namespace HapetBackend.Llvm
                 case AstArrayAccessExpr arrayAccessExpr: return GenerateArrayAccessExprCode(arrayAccessExpr, getPtr);
                 case AstTernaryExpr ternaryExpr: return GenerateTernaryExprCode(ternaryExpr);
                 case AstCheckedExpr checkedExpr: return GenerateCheckedExprCode(checkedExpr);
-                case AstSATOfExpr satExpr: return GenerateSATExprCode(satExpr);
+                case AstSATOfExpr satExpr: return GenerateSATExprCode(satExpr, getPtr);
                 case AstEmptyStructExpr emptyStructExpr: return GenerateEmptyStructExprCode(emptyStructExpr);
                 case AstLambdaExpr lambdaExpr: return GenerateLambdaExprCode(lambdaExpr);
 
@@ -1252,18 +1251,19 @@ namespace HapetBackend.Llvm
             return GenerateExpressionCode(expr.SubExpression);
         }
 
-        private unsafe LLVMValueRef GenerateSATExprCode(AstSATOfExpr expr)
+        private unsafe LLVMValueRef GenerateSATExprCode(AstSATOfExpr expr, bool getPtr = false)
         {
             switch (expr.ExprType)
             {
                 case TokenType.KwSizeof:
-                    return LLVMValueRef.CreateConstInt(_context.Int32Type, (ulong)expr.TargetType.OutType.GetSize());
+                    return HapetValueToLLVMValue(HapetType.CurrentTypeContext.GetIntType(4, true), expr.TargetType.OutType.GetSize(), getPtr);
                 case TokenType.KwAlignof:
-                    return LLVMValueRef.CreateConstInt(_context.Int32Type, (ulong)expr.TargetType.OutType.GetAlignment());
+                    return HapetValueToLLVMValue(HapetType.CurrentTypeContext.GetIntType(4, true), expr.TargetType.OutType.GetAlignment(), getPtr);
                 case TokenType.KwNameof:
-                    return HapetValueToLLVMValue(HapetType.CurrentTypeContext.StringTypeInstance, expr.TargetType.TryFlatten(null, null));
+                    return HapetValueToLLVMValue(HapetType.CurrentTypeContext.StringTypeInstance, expr.TargetType.TryFlatten(null, null), getPtr);
                 case TokenType.KwTypeof:
-                    return _builder.BuildLoad2(GetTypeType(), _typeDictionary[expr.TargetType.OutType], "typeLoaded");
+                    if (getPtr) return _typeDictionary[expr.TargetType.OutType];
+                    else return _builder.BuildLoad2(GetTypeType(), _typeDictionary[expr.TargetType.OutType], "typeLoaded");
             }
             throw new InvalidDataException();
         }

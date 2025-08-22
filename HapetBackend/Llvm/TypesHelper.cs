@@ -303,20 +303,28 @@ namespace HapetBackend.Llvm
             return _boxedStructTypes[typeToSearch];
         }
 
-        private unsafe LLVMValueRef HapetValueToLLVMValue(HapetType type, object v)
+        private unsafe LLVMValueRef HapetValueToLLVMValue(HapetType type, object v, bool getPtr = false)
         {
             // ??? TOOD: why there is such check?
             if (type == IntType.LiteralType || type == FloatType.LiteralType)
                 throw new ArgumentException("Literal types are not allowed for conversion");
 
+            LLVMValueRef value = default;
             switch (type)
             {
-                case BoolType _: return LLVM.ConstInt(HapetTypeToLLVMType(type), (bool)v ? 1ul : 0ul, 0);
+                case BoolType _:
+                    value = LLVM.ConstInt(HapetTypeToLLVMType(type), (bool)v ? 1ul : 0ul, 0);
+                    break;
                 case CharType _:
                     char val = v is NumberData data ? (char)(int)(data.IntValue) : (char)v;
-                    return LLVM.ConstInt(HapetTypeToLLVMType(type), val, 0);
-                case IntType i: return LLVM.ConstInt(HapetTypeToLLVMType(type), ((NumberData)v).ToULong(), i.Signed ? 1 : 0);
-                case FloatType: return LLVM.ConstReal(HapetTypeToLLVMType(type), ((NumberData)v).ToDouble());
+                    value = LLVM.ConstInt(HapetTypeToLLVMType(type), val, 0);
+                    break;
+                case IntType i:
+                    value = LLVM.ConstInt(HapetTypeToLLVMType(type), (NumberData.FromObject(v)).ToULong(), i.Signed ? 1 : 0);
+                    break;
+                case FloatType: 
+                    value = LLVM.ConstReal(HapetTypeToLLVMType(type), (NumberData.FromObject(v)).ToDouble());
+                    break;
                 case StringType:
                     {
                         // this code creates a new string struct so its content could be easily copied to another string var
@@ -326,17 +334,36 @@ namespace HapetBackend.Llvm
                         // creating global static array
                         var charT = HapetType.CurrentTypeContext.CharTypeInstance;
                         var elements = theString.ToCharArray().Select(c => HapetValueToLLVMValue(charT, c)).ToArray();
-                        var stringGlobArray = LLVMValueRef.CreateConstArray(HapetTypeToLLVMType(charT), elements);
+                        var stringGlobArray = _module.AddGlobal(LLVMTypeRef.CreateArray(HapetTypeToLLVMType(charT), (uint)theString.Length), "constString");
+                        stringGlobArray.IsGlobalConstant = true;
+                        stringGlobArray.Initializer = LLVMValueRef.CreateConstArray(HapetTypeToLLVMType(charT), elements);
+                        //var stringGlobArray = LLVMValueRef.CreateConstArray(HapetTypeToLLVMType(charT), elements);
 
                         var stringType = HapetType.CurrentTypeContext.StringTypeInstance;
                         // it would work only with const string assignment. if you want smth like this to work
                         // if they are trying to store a char* in string
                         var tp = HapetTypeToLLVMType(stringType);
 
-                        return LLVMValueRef.CreateConstNamedStruct(tp, [stringSizeValueRef, stringGlobArray]);
+                        value = LLVMValueRef.CreateConstNamedStruct(tp, [stringSizeValueRef, stringGlobArray]);
+                        break;
                     }
-                case EnumType i: return LLVM.ConstInt(HapetTypeToLLVMType(type), ((NumberData)v).ToULong(), ((i.Declaration.InheritedType.OutType as IntType).Signed) ? 1 : 0);
+                case EnumType i:
+                    value = LLVM.ConstInt(HapetTypeToLLVMType(type), ((NumberData)v).ToULong(), ((i.Declaration.InheritedType.OutType as IntType).Signed) ? 1 : 0);
+                    break;
             }
+
+            // if get the value as a ptr - need to create a var and return ptr to it
+            if (value != default)
+            {
+                if (getPtr)
+                {
+                    LLVMValueRef varPtr = CreateLocalVariable(type, "literalHolder");
+                    _builder.BuildStore(value, varPtr);
+                    return varPtr;
+                }
+                return value;
+            }
+
             return new LLVMValueRef();
         }
 

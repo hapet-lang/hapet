@@ -188,8 +188,15 @@ namespace HapetFrontend.Types
                 case NumberData nd: return nd;
                 case BigInteger bi: return FromInt(bi);
                 case char c: return FromInt(new BigInteger((ushort)c));
+                case sbyte c: return FromInt(new BigInteger(c));
+                case byte c: return FromInt(new BigInteger(c));
+                case short i: return FromInt(new BigInteger(i));
+                case ushort i: return FromInt(new BigInteger(i));
                 case int i: return FromInt(new BigInteger(i));
+                case uint i: return FromInt(new BigInteger(i));
                 case long l: return FromInt(new BigInteger(l));
+                case ulong l: return FromInt(new BigInteger(l));
+                case float d: return FromDouble(d);
                 case double d: return FromDouble(d);
             }
             Debug.Assert(false, "Unexpected type for NumberData");
