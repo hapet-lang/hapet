@@ -3,6 +3,7 @@
 // Some modifications were made for hapet-lang compatibility.
 
 using System;
+using System.Runtime;
 
 public partial class CultureInfo : IFormatProvider
 {
@@ -16,8 +17,13 @@ public partial class CultureInfo : IFormatProvider
     static CultureInfo()
     {
         Console.Dbg(55);
-        if (_invariantCultureInfo == null)
-            Console.Dbg(56);
+        //var a = _invariantCultureInfo.NumberFormat;
+        var obj = (void*)_invariantCultureInfo;
+        void* negativeOffseted = (void*)((ulong*)obj - 1);
+
+        VirtualTableUnsafe** fullInfo = ((VirtualTableUnsafe***)negativeOffseted)[0];
+        VirtualTableUnsafe* vtablePtr = fullInfo[1];
+        VirtualTableUnsafe vtable = *vtablePtr;
     }
 
     private CultureInfo(CultureData cultureData, bool isReadOnly = false)
