@@ -3,6 +3,8 @@ using HapetFrontend.Ast.Declarations;
 using HapetFrontend.Ast.Statements;
 using HapetFrontend.Entities;
 using HapetFrontend.Errors;
+using HapetFrontend.Extensions;
+using System;
 
 namespace HapetFrontend.Parsing
 {
@@ -94,6 +96,16 @@ namespace HapetFrontend.Parsing
                     // add previously found attributes into the declaration
                     decl.Attributes.AddRange(foundAttributesTopLevel);
                     foundAttributesTopLevel.Clear();
+
+                    // handle for stor/ctor
+                    if (decl is AstFuncDecl fnc && fnc.ClassFunctionType == Enums.ClassFunctionType.Special)
+                    {
+                        // check that it is a static ctor
+                        if (fnc.SpecialKeys.Contains(TokenType.KwStatic)) 
+                            fnc.ClassFunctionType = Enums.ClassFunctionType.StaticCtor;
+                        else 
+                            fnc.ClassFunctionType = Enums.ClassFunctionType.Ctor;
+                    }
                 }
             }
 

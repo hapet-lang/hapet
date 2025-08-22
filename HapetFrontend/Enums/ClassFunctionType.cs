@@ -2,6 +2,7 @@
 {
     public enum ClassFunctionType
     {
+        Special = -1, // only handled in parsing
         Default = 0,
         Initializer = 1,
         Ctor = 2,

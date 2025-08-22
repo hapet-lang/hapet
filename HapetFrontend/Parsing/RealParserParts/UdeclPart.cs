@@ -186,6 +186,8 @@ namespace HapetFrontend.Parsing
                 bool isVoidType = udecl.Name == null || (udecl.Type is AstNestedExpr nst2 && nst2.RightPart is AstIdExpr idE && idE.Name == "void");
 
                 var func = ParseFuncDeclaration(inInfo, ref outInfo, null, null, isVoidType);
+                func.Attributes.AddRange(attrs);
+                func.SpecialKeys.AddRange(udecl.SpecialKeys);
                 if (udecl.Name == null)
                 {
                     var fncName = (udecl.Type as AstNestedExpr).UnrollToRightPart<AstIdExpr>();
@@ -193,11 +195,9 @@ namespace HapetFrontend.Parsing
                     // it is ctor/dtor
                     func.Name = fncName.GetCopy();
                     func.Returns = new AstNestedExpr(new AstIdExpr("void"), null);
-                    // check that it is a static ctor
-                    if (udecl.SpecialKeys.Contains(TokenType.KwStatic))
-                        func.ClassFunctionType = Enums.ClassFunctionType.StaticCtor;
-                    else
-                        func.ClassFunctionType = Enums.ClassFunctionType.Ctor;
+                    // it is a stor/dtor/ctor
+                    // set in MainPart
+                    func.ClassFunctionType = Enums.ClassFunctionType.Special;
                 }
                 else
                 {
@@ -205,8 +205,6 @@ namespace HapetFrontend.Parsing
                     func.Name = udecl.Name;
                     func.Returns = udecl.Type;
                 }
-                func.Attributes.AddRange(attrs);
-                func.SpecialKeys.AddRange(udecl.SpecialKeys);
                 OnExit();
                 return func;
             }
