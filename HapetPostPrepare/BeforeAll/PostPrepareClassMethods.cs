@@ -339,12 +339,12 @@ namespace HapetPostPrepare
             // set 'true' to the var
             /// make sure that this shite is the same as in <see cref="RenameFromGenericToRealType"/>
             var varAssign = new AstAssignStmt(new AstNestedExpr(new AstIdExpr(theVarName, comLoc), null, comLoc), new AstBoolExpr(true, comLoc), comLoc);
-            iniBlock.Statements.Add(varAssign); // should be the last statement
+            iniBlock.Statements.Insert(0, varAssign); // should be the first statement
             AstIfStmt checkForInited = new AstIfStmt(new AstUnaryExpr("!", new AstIdExpr(theVarName, comLoc), comLoc), iniBlock, null, comLoc);
 
             if (ctors.Count == 0)
             {
-                // there is no dtor. need to create one
+                // there is no stor. need to create one
                 List<AstStatement> storBlockStatements = new List<AstStatement>();
                 storBlockStatements.Add(checkForInited);
 
@@ -377,7 +377,7 @@ namespace HapetPostPrepare
                     _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, ctorFunc.Name, [], ErrorCode.Get(CTWN.StaticCtorKwsIgnored), null, HapetFrontend.Entities.ReportType.Warning);
 
                 // move all user code under 'if' stmt
-                checkForInited.BodyTrue.Statements.InsertRange(0, ctorFunc.Body.Statements);
+                checkForInited.BodyTrue.Statements.AddRange(ctorFunc.Body.Statements);
                 ctorFunc.Body.Statements.Clear();
 
                 // add check into user defined stor

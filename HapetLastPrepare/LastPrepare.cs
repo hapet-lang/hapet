@@ -32,6 +32,7 @@ namespace HapetLastPrepare
                 return 0;
 
             CheckUsedDecls();
+            AddDependentStorCalls();
 
             ReplaceAllClasses();
             if (_compiler.MessageHandler.HasErrors)

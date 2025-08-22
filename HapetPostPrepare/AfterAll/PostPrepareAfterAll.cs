@@ -75,18 +75,7 @@ namespace HapetPostPrepare
                 // setting current source file
                 _currentSourceFile = decl.SourceFile;
 
-                // skip interfaces
-                if (decl is AstClassDecl clsDecl && clsDecl.IsInterface)
-                    continue;
-
-                // skip generic implemented types
-                if (decl.IsImplOfGeneric || (decl.IsNestedDecl && decl.ParentDecl.IsImplOfGeneric))
-                    continue;
-
-                // check that the class has suppress stor call attr
-                // and skip the class without calling it's stor
-                var suppressAttr = decl.GetAttribute("System.SuppressStaticCtorCallAttribute");
-                if (suppressAttr != null)
+                if (IsDeclShouldBeSkippedFromStorManipulations(decl))
                     continue;
 
                 // we put stor call of nested decl into its parent decl stor
@@ -191,6 +180,30 @@ namespace HapetPostPrepare
                     continue;
                 iniDecl.Decl.Attributes.Add(suppressAttr);
             }
+        }
+
+        public bool IsDeclShouldBeSkippedFromStorManipulations(AstDeclaration decl)
+        {
+            // WARN: decl should be class or struct
+
+            if (decl == null)
+                return true;
+
+            // skip interfaces
+            if (decl is AstClassDecl clsDecl && clsDecl.IsInterface)
+                return true;
+
+            // skip generic implemented types
+            if (decl.IsImplOfGeneric || (decl.IsNestedDecl && decl.ParentDecl.IsImplOfGeneric))
+                return true;
+
+            // check that the class has suppress stor call attr
+            // and skip the class without calling it's stor
+            var suppressAttr = decl.GetAttribute("System.SuppressStaticCtorCallAttribute");
+            if (suppressAttr != null)
+                return true;
+
+            return false;
         }
     }
 }

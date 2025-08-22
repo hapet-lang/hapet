@@ -356,7 +356,7 @@ namespace HapetPostPrepare
                 PostPrepareExprInference(paramDecl.DefaultValue, inInfo, ref outInfo);
         }
 
-        private void PostPrepareExprInference(AstStatement expr, InInfo inInfo, ref OutInfo outInfo)
+        public void PostPrepareExprInference(AstStatement expr, InInfo inInfo, ref OutInfo outInfo)
         {
             switch (expr)
             {

@@ -141,8 +141,10 @@ namespace HapetLastPrepare
                         d.SpecialKeys.Contains(TokenType.KwAbstract) ||
                         d.SpecialKeys.Contains(TokenType.KwOverride))
                     {
-                        d.IsDeclarationUsedOnlyDeclare = true;
-                        usedDecls?.Add(decl);
+                        if (usedDecls != null)
+                            usedDecls.Add(decl);
+                        else
+                            d.IsDeclarationUsedOnlyDeclare = true;
                     }
                 }
             }
