@@ -51,7 +51,7 @@ namespace HapetBackend.Llvm
             // need to initialize typeinfos and vtables before any code
             _builder.BuildCall2(typeInitializer.Item1, typeInitializer.Item2, []);
             // need to initialize consts
-            _builder.BuildCall2(typeInitializer.Item1, typeInitializer.Item2, []);
+            _builder.BuildCall2(constsInitializer.Item1, constsInitializer.Item2, []);
 
             _builder.BuildBr(end);
             _builder.PositionAtEnd(end);
