@@ -81,8 +81,10 @@ namespace HapetBackend.Llvm
 
             // make check that is already inited
             var entry = lfunc.AppendBasicBlockInContext(_context, "entry");
-
             _builder.PositionAtEnd(entry);
+
+            _builder.BuildCall2(tpInfoIniter.Item1, tpInfoIniter.Item2, []);
+            _builder.BuildCall2(vTableIniter.Item1, vTableIniter.Item2, []);
 
             // make all inites here
             foreach (var tp in _typeToInit)

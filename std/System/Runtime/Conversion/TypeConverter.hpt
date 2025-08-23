@@ -11,18 +11,15 @@ public static class TypeConverter
         if ((uintptr)obj == (uintptr)0)
             return false;
 
-        void* negativeOffseted = (void*)((ulong*)obj - 1);
-
-        TypeInfoUnsafe** fullInfo = *((TypeInfoUnsafe***)negativeOffseted);
-        TypeInfoUnsafe* typeInfo = *((TypeInfoUnsafe**)fullInfo);
+        Type* negativeOffseted = GetTypeInfo(obj);
+        TypeInfoUnsafe* typeInfo = (*negativeOffseted)._typeInfo;
         TypeInfoUnsafe* currTypeInfo = typeInfo;
 
         while ((uintptr)currTypeInfo != (uintptr)0)
         {
             if ((uintptr)currTypeInfo == (uintptr)type)
                 return true;
-            TypeInfoUnsafe a = *((TypeInfoUnsafe*)currTypeInfo);
-            currTypeInfo = (TypeInfoUnsafe*)a.Parent;
+            currTypeInfo = (*currTypeInfo).Parent;
         }
         return false;
     }
@@ -33,36 +30,32 @@ public static class TypeConverter
         if ((uintptr)obj == (uintptr)0)
             return false;
 
-        void* negativeOffseted = (void*)((ulong*)obj - 1);
-
-        TypeInfoUnsafe** fullInfo = *((TypeInfoUnsafe***)negativeOffseted);
-        TypeInfoUnsafe* typeInfo = *((TypeInfoUnsafe**)fullInfo);
+        Type* negativeOffseted = GetTypeInfo(obj);
+        TypeInfoUnsafe* typeInfo = (*negativeOffseted)._typeInfo;
         TypeInfoUnsafe* currTypeInfo = typeInfo;
 
         while ((uintptr)currTypeInfo != (uintptr)0)
         {
-            if (TypeImplementsInterface(currTypeInfo, type, true))
+            if (TypeImplementsInterface(*currTypeInfo, type, true))
                 return true;
-            TypeInfoUnsafe a = *((TypeInfoUnsafe*)currTypeInfo);
-            currTypeInfo = (TypeInfoUnsafe*)a.Parent;
+            currTypeInfo = (*currTypeInfo).Parent;
         }
         return false;
     }
 
     [DeclarationUsed]
-    private static bool TypeImplementsInterface(TypeInfoUnsafe* type, TypeInfoUnsafe* searchType, bool checkInh)
+    private static bool TypeImplementsInterface(TypeInfoUnsafe type, TypeInfoUnsafe* searchType, bool checkInh)
     {
-        TypeInfoUnsafe a = *((TypeInfoUnsafe*)type);
-        int count = a.InterfaceCount;
+        int count = type.InterfaceCount;
         for (int i = 0; i < count; i += 1)
         {
-            TypeInfoUnsafe* currIntf = a.Interfaces[i];
+            TypeInfoUnsafe* currIntf = type.Interfaces[i];
             // if they are equal
             if ((uintptr)currIntf == (uintptr)searchType)
                 return true;
 
             // check interface inheritance
-            if (TypeImplementsInterface(currIntf, searchType, true))
+            if (TypeImplementsInterface(*currIntf, searchType, true))
                 return true;
         }
         return false;
@@ -75,11 +68,8 @@ public static class TypeConverter
         if ((uintptr)obj == (uintptr)0)
             return 0;
 
-        void* negativeOffseted = (void*)((ulong*)obj - 1);
-
-        TypeInfoUnsafe** fullInfo = *((TypeInfoUnsafe***)negativeOffseted);
-        TypeInfoUnsafe* typeInfoPtr = *((TypeInfoUnsafe**)fullInfo);
-        TypeInfoUnsafe typeInfo = *((TypeInfoUnsafe*)typeInfoPtr);
+        Type* negativeOffseted = GetTypeInfo(obj);
+        TypeInfoUnsafe typeInfo = *((*negativeOffseted)._typeInfo);
 
         int offset = 0;
         for (int i = 0; i < typeInfo.InterfaceCount; i += 1)
@@ -101,5 +91,13 @@ public static class TypeConverter
     {
         ulong* negativeP = (ulong*)obj - 1;
         *negativeP = (ulong)(uintptr)typeInfo;
+    }
+
+    [DeclarationUsed]
+    [SuppressStackTrace]
+    public static Type* GetTypeInfo(void* obj)
+    {
+        ulong* negativeP = (ulong*)obj - 1;
+        return (Type*)negativeP;
     }
 }

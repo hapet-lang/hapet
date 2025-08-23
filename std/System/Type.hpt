@@ -9,9 +9,9 @@ using System.Runtime;
 public struct Type
 {
     [DeclarationUsed]
-    private TypeInfoUnsafe* _typeInfo;
+    internal TypeInfoUnsafe* _typeInfo;
     [DeclarationUsed]
-    private VirtualTableUnsafe* _vTable;
+    internal VirtualTableUnsafe* _vTable;
 
     public static bool operator ==(Type t1, Type t2)
     {

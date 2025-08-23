@@ -10,11 +10,8 @@ public static class VtableHelper
         if ((uintptr)obj == (uintptr)0)
             return null;
 
-        void* negativeOffseted = (void*)((ulong*)obj - 1);
-
-        VirtualTableUnsafe** fullInfo = ((VirtualTableUnsafe***)negativeOffseted)[0];
-        VirtualTableUnsafe* vtablePtr = fullInfo[1];
-        VirtualTableUnsafe vtable = *vtablePtr;
+        Type* negativeOffseted = TypeConverter.GetTypeInfo(obj);
+        VirtualTableUnsafe vtable = *((*negativeOffseted)._vTable);
 
         return vtable.VirtualMethods[index];
     }
@@ -25,11 +22,8 @@ public static class VtableHelper
         if ((uintptr)obj == (uintptr)0)
             return null;
 
-        void* negativeOffseted = (void*)((ulong*)obj - 1);
-
-        VirtualTableUnsafe** fullInfo = ((VirtualTableUnsafe***)negativeOffseted)[0];
-        VirtualTableUnsafe* vtablePtr = fullInfo[1];
-        VirtualTableUnsafe vtable = *vtablePtr;
+        Type* negativeOffseted = TypeConverter.GetTypeInfo(obj);
+        VirtualTableUnsafe vtable = *((*negativeOffseted)._vTable);
 
         int offset = 0;
         for (int i = 0; i < vtable.InterfaceCount; i += 1)
