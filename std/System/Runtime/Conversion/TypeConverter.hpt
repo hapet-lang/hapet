@@ -98,6 +98,6 @@ public static class TypeConverter
     public static Type* GetTypeInfo(void* obj)
     {
         ulong* negativeP = (ulong*)obj - 1;
-        return (Type*)negativeP;
+        return *((Type**)negativeP);
     }
 }
