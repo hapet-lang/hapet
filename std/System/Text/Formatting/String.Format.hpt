@@ -717,7 +717,6 @@ sealed class CachedCulture
     public CachedCulture(CultureInfo culture)
     {
         Culture = culture;
-        Console.Dbg(52);
         var info = culture.NumberFormat;
         CurrencyData = new NumberFormatData(
             info.CurrencyDecimalDigits,

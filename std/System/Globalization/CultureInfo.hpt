@@ -14,18 +14,6 @@ public partial class CultureInfo : IFormatProvider
     internal NumberFormatInfo _numInfo;
     internal bool _isInherited;
 
-    static CultureInfo()
-    {
-        Console.Dbg(55);
-        //var a = _invariantCultureInfo.NumberFormat;
-        var obj = (void*)_invariantCultureInfo;
-        void* negativeOffseted = (void*)((ulong*)obj - 1);
-
-        VirtualTableUnsafe** fullInfo = ((VirtualTableUnsafe***)negativeOffseted)[0];
-        VirtualTableUnsafe* vtablePtr = fullInfo[1];
-        VirtualTableUnsafe vtable = *vtablePtr;
-    }
-
     private CultureInfo(CultureData cultureData, bool isReadOnly = false)
     {
         //Debug.Assert(cultureData != null);
@@ -92,10 +80,8 @@ public partial class CultureInfo : IFormatProvider
     {
         get
         {
-            Console.Dbg(54);
             if (_numInfo == null)
             {
-                Console.Dbg(50);
                 NumberFormatInfo temp = new NumberFormatInfo(_cultureData);
                 temp._isReadOnly = _isReadOnly;
                 _numInfo = temp;
