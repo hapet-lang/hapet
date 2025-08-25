@@ -98,6 +98,8 @@ namespace HapetPostPrepare
                             var defaultCase = switchStmt.Cases.FirstOrDefault(x => x.IsDefaultCase);
                             if (defaultCase != null)
                             {
+                                builder.AppendBasicBlock(defaultBB);
+                                CheckThatThereIsEnoughReturnsInBlock(defaultCase.Body, builder);
                                 // if not return stmt - go br end
                                 if (!(AstBlockExpr.IsBlockHasItsOwnBr(defaultCase.Body, true) || builder.CurrentBlock.PreviousBlocks.Count == 0))
                                     builder.BuildBr(endBB);
@@ -107,6 +109,7 @@ namespace HapetPostPrepare
                                 // if no default case - go br end
                                 builder.BuildBr(endBB);
                             }
+                            builder.AppendBasicBlock(endBB);
                             break;
                         }
                     default:
