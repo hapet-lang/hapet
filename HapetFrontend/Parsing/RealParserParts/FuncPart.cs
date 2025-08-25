@@ -5,6 +5,7 @@ using HapetFrontend.Ast.Statements;
 using HapetFrontend.Entities;
 using HapetFrontend.Errors;
 using HapetFrontend.Helpers;
+using System.Diagnostics;
 
 namespace HapetFrontend.Parsing
 {
@@ -95,7 +96,11 @@ namespace HapetFrontend.Parsing
 
             // if not void type - add return
             if (!isReturnVoid)
-                onlyStmt = new AstReturnStmt(onlyStmt as AstExpression, onlyStmt.Location);
+            {
+                var retStmt = onlyStmt as AstExpression;
+                Debug.Assert(retStmt != null);
+                onlyStmt = new AstReturnStmt(retStmt, onlyStmt.Location);
+            }
 
             var body = new AstBlockExpr(new List<AstStatement>() { onlyStmt }, onlyStmt);
 

@@ -168,7 +168,7 @@ namespace HapetFrontend.Parsing
                 }
             }
             // variable declaration without initializer
-            else if (CheckToken(TokenType.Semicolon))
+            else if (CheckToken(TokenType.Semicolon) && udecl.Name != null)
             {
                 // do not get the next token
                 var varDecl = new AstVarDecl(udecl.Type, udecl.Name, null, udecl.Documentation, new Location(udecl.Beginning, end));
@@ -244,6 +244,11 @@ namespace HapetFrontend.Parsing
                     OnExit();
                     return result;
                 }
+            }
+            else if (udecl.Name == null)
+            {
+                // just return it further
+                return udecl.Type;
             }
 
             ReportMessage(PeekToken().Location, [], ErrorCode.Get(CTEN.PureUnexpectedToken)); // better error message?
