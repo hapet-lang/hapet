@@ -5,7 +5,7 @@
 using System;
 
 [SuppressStaticCtorCall]
-public struct Byte : IComparable, IComparable<byte>
+public struct Byte : IComparable, IComparable<byte>, IFormattable
 {
     private byte _value;
 
@@ -30,4 +30,7 @@ public struct Byte : IComparable, IComparable<byte>
     {
         return _value - value;
     }
+
+    public override string ToString() => System.Text.Formatting.Number.Format(this, "");
+    public string ToString(string format) => System.Text.Formatting.Number.Format(this, format);
 }
