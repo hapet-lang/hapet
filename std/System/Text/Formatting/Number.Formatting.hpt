@@ -94,6 +94,24 @@ public static class Number
         return FormatDouble(value, specifier, cc);
     } 
 
+    public static inline string Format(ptrdiff value, string specifier, CultureInfo culture = null)
+    {
+        CachedCulture cc = culture == null ? CachedInvariantCulture : new CachedCulture(culture);
+        if (sizeof(ptrdiff) == 8)
+            return FormatInt64((long)value, specifier, cc);
+        else
+            return FormatInt32((int)value, specifier, cc);
+    } 
+
+    public static inline string Format(uintptr value, string specifier, CultureInfo culture = null)
+    {
+        CachedCulture cc = culture == null ? CachedInvariantCulture : new CachedCulture(culture);
+        if (sizeof(uintptr) == 8)
+            return FormatUInt64((ulong)value, specifier, cc);
+        else
+            return FormatUInt32((uint)value, specifier, cc);
+    } 
+
     static char* FormatNumber(char* buffer, ref NumberStruct number, int maxDigits, string format, NumberFormatData data)
     {
         for (int i = 0; i < format.Length; i++)
@@ -1122,13 +1140,14 @@ public static class Number
                 return GetStringFromBufferCopy(buffer, (int)(ptr - buffer));
             }
             default
-                throw new FormatException(string.Format<char>(SR.Formatting_UnknownFormatSpecifier, format));
+                throw new FormatException(string.Format(SR.Formatting_UnknownFormatSpecifier, format));
         }
     }
 
     // this file contains the custom numeric formatting routines split out from the Numeric.cs file
-    static void NumberToCustomFormatString(ref NumberStruct number, string specifier, CachedCulture culture)
+    static string NumberToCustomFormatString(ref NumberStruct number, string specifier, CachedCulture culture)
     {
+        return "";
     }
 
     static string GetStringFromBufferCopy(char* p, int size)
