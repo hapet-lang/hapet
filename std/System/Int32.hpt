@@ -3,7 +3,7 @@
 // Some modifications were made for hapet-lang compatibility.
 
 [SuppressStaticCtorCall]
-public struct Int32 : IComparable, IComparable<int>
+public struct Int32 : IComparable, IComparable<int>, IFormattable
 {
     private int _value;
 
@@ -33,4 +33,7 @@ public struct Int32 : IComparable, IComparable<int>
         if (_value > value) return 1;
         return 0;
     }
+
+    public override string ToString() => System.Text.Formatting.Number.Format(this, "");
+    public string ToString(string format) => System.Text.Formatting.Number.Format(this, format);
 }

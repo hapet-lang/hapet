@@ -2,7 +2,7 @@
 // The hapet-lang licenses this file to you under the MIT license.
 
 [SuppressStaticCtorCall]
-public struct UIntPtr : IComparable, IComparable<uintptr>
+public struct UIntPtr : IComparable, IComparable<uintptr>, IFormattable
 {
     private uintptr _value;
 
@@ -29,4 +29,7 @@ public struct UIntPtr : IComparable, IComparable<uintptr>
         if (_value > value) return 1;
         return 0;
     }
+
+    public override string ToString() => System.Text.Formatting.Number.Format(this, "");
+    public string ToString(string format) => System.Text.Formatting.Number.Format(this, format);
 }

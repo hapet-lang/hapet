@@ -5,7 +5,7 @@
 using System;
 
 [SuppressStaticCtorCall]
-public struct Char : IComparable, IComparable<char>
+public struct Char : IComparable, IComparable<char>, IFormattable
 {
     private char _value;
 
@@ -30,6 +30,9 @@ public struct Char : IComparable, IComparable<char>
     {
         return _value - value;
     }
+
+    public override string ToString() => string.CreateFromChar(this);
+    public string ToString(string format) => string.CreateFromChar(this);
 
     public static bool IsWhiteSpace(char c)
     {

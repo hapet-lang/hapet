@@ -3,7 +3,7 @@
 // Some modifications were made for hapet-lang compatibility.
 
 [SuppressStaticCtorCall]
-public struct Int16 : IComparable, IComparable<short>
+public struct Int16 : IComparable, IComparable<short>, IFormattable
 {
     private short _value;
 
@@ -29,4 +29,7 @@ public struct Int16 : IComparable, IComparable<short>
     {
         return _value - value;
     }
+
+    public override string ToString() => System.Text.Formatting.Number.Format(this, "");
+    public string ToString(string format) => System.Text.Formatting.Number.Format(this, format);
 }

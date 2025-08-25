@@ -6,7 +6,7 @@ using System.Text.Formatting;
 using System.Runtime.InteropServices;
 
 [SuppressStaticCtorCall]
-public struct String : IComparable, IComparable<string>
+public struct String : IComparable, IComparable<string>, IFormattable
 {
     [SuppressStackTrace]
     public int Length { get; internal set; }
@@ -48,6 +48,9 @@ public struct String : IComparable, IComparable<string>
         // TODO:
         return 0;
     }
+
+    public override string ToString() => this;
+    public string ToString(string format) => this;
 
     public static string operator +(string s1, string s2)
     {
@@ -94,6 +97,13 @@ public struct String : IComparable, IComparable<string>
         }
 
         return true;
+    }
+
+    public static string CreateFromChar(char c)
+    {
+        char* cM = (char*)Gc.Malloc(1 * sizeof(char));
+        *cM = c;
+        return new string(cM, 0, 1);
     }
 
     public static inline string Format(string format, params object[] args)

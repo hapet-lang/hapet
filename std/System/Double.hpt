@@ -5,7 +5,7 @@
 using System;
 
 [SuppressStaticCtorCall]
-public struct Double : IComparable, IComparable<double>
+public struct Double : IComparable, IComparable<double>, IFormattable
 {
     private double _value;
 
@@ -56,6 +56,9 @@ public struct Double : IComparable, IComparable<double>
         // Debug.Assert(IsNaN(value));
         return 1;
     }
+
+    public override string ToString() => System.Text.Formatting.Number.Format(this, "");
+    public string ToString(string format) => System.Text.Formatting.Number.Format(this, format);
 
     public static inline bool IsNaN(double d)
     {

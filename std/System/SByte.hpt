@@ -3,7 +3,7 @@
 // Some modifications were made for hapet-lang compatibility.
 
 [SuppressStaticCtorCall]
-public struct SByte : IComparable, IComparable<sbyte>
+public struct SByte : IComparable, IComparable<sbyte>, IFormattable
 {
     private sbyte _value;
 
@@ -28,4 +28,7 @@ public struct SByte : IComparable, IComparable<sbyte>
     {
         return _value - value;
     }
+
+    public override string ToString() => System.Text.Formatting.Number.Format(this, "");
+    public string ToString(string format) => System.Text.Formatting.Number.Format(this, format);
 }

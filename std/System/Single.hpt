@@ -3,7 +3,7 @@
 // Some modifications were made for hapet-lang compatibility.
 
 [SuppressStaticCtorCall]
-public struct Single : IComparable, IComparable<float>
+public struct Single : IComparable, IComparable<float>, IFormattable
 {
     private float _value;
 
@@ -54,6 +54,9 @@ public struct Single : IComparable, IComparable<float>
         // Debug.Assert(IsNaN(value));
         return 1;
     }
+
+    public override string ToString() => System.Text.Formatting.Number.Format(this, "");
+    public string ToString(string format) => System.Text.Formatting.Number.Format(this, format);
 
     public static inline bool IsNaN(float d)
     {
