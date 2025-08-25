@@ -216,6 +216,8 @@ namespace HapetPostPrepare
                         new Location(exprs.First().Beginning, exprs.Last().Ending)
                     )
                     {
+                        // gett type and then array of it is done because params could be not
+                        // only ArrayType but some IEnumerable
                         OutType = GetArrayType(GetSubTypeOfParamsParam(currPar, true), currPar.Type),
                         Scope = currArg.Scope
                     };
@@ -271,12 +273,15 @@ namespace HapetPostPrepare
                 if (normalArgs[indexx] == null)
                 {
                     var arrCreate = new AstArrayCreateExpr(
-                        GetPreparedAst(paramsParam.Type.OutType, paramsParam),
+                        GetSubTypeOfParamsParam(paramsParam, true).GetDeepCopy() as AstExpression,
                         new List<AstExpression>() { new AstNumberExpr(NumberData.FromInt(0)) },
                         new List<AstExpression>(),
                         new Location(caller.Beginning, caller.Ending)
                     )
                     {
+                        // gett type and then array of it is done because params could be not
+                        // only ArrayType but some IEnumerable
+                        OutType = GetArrayType(GetSubTypeOfParamsParam(paramsParam, true), paramsParam.Type),
                         Scope = caller.Scope
                     };
                     normalArgs[indexx] = new AstArgumentExpr(arrCreate);
