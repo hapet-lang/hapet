@@ -1,0 +1,1416 @@
+// Licensed to the hapet-lang under one or more agreements.
+// The hapet-lang licenses this file to you under the MIT license.
+
+using System;
+using System.Globalization;
+using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
+
+public static class Number
+{
+    struct NumberStruct
+    {
+        public int Precision;
+        public int Scale;
+        public int Sign;
+        public char* Digits;
+    }
+
+    const int MaxNumberDigits = 50;
+    const int MaxFloatingDigits = 352;
+    const int Int32Precision = 10;
+    const int UInt32Precision = 10;
+    const int Int64Precision = 19;
+    const int UInt64Precision = 20;
+    const int FloatPrecision = 7;
+    const int DoublePrecision = 15;
+    const int DecimalPrecision = 29;
+    const int ScaleNaN = unchecked((int)0x80000000);
+    const int ScaleInf = 0x7FFFFFFF;
+    const int OneBillion = 1000000000;
+
+    public static inline string Format(bool value)
+    {
+        return value ? "True" : "False";
+    } 
+
+    public static inline string Format(sbyte value, string specifier, CultureInfo culture = null)
+    {
+        CachedCulture cc = culture == null ? CachedInvariantCulture : new CachedCulture(culture);
+        return FormatSByte(value, specifier, cc);
+    } 
+
+    public static inline string Format(byte value, string specifier, CultureInfo culture = null)
+    {
+        CachedCulture cc = culture == null ? CachedInvariantCulture : new CachedCulture(culture);
+        return FormatUInt32(value, specifier, cc);
+    } 
+
+    public static inline string Format(short value, string specifier, CultureInfo culture = null)
+    {
+        CachedCulture cc = culture == null ? CachedInvariantCulture : new CachedCulture(culture);
+        return FormatInt16(value, specifier, cc);
+    } 
+
+    public static inline string Format(ushort value, string specifier, CultureInfo culture = null)
+    {
+        CachedCulture cc = culture == null ? CachedInvariantCulture : new CachedCulture(culture);
+        return FormatUInt32(value, specifier, cc);
+    } 
+
+    public static inline string Format(int value, string specifier, CultureInfo culture = null)
+    {
+        CachedCulture cc = culture == null ? CachedInvariantCulture : new CachedCulture(culture);
+        return FormatInt32(value, specifier, cc);
+    } 
+
+    public static inline string Format(uint value, string specifier, CultureInfo culture = null)
+    {
+        CachedCulture cc = culture == null ? CachedInvariantCulture : new CachedCulture(culture);
+        return FormatUInt32(value, specifier, cc);
+    } 
+
+    public static inline string Format(long value, string specifier, CultureInfo culture = null)
+    {
+        CachedCulture cc = culture == null ? CachedInvariantCulture : new CachedCulture(culture);
+        return FormatInt64(value, specifier, cc);
+    } 
+
+    public static inline string Format(ulong value, string specifier, CultureInfo culture = null)
+    {
+        CachedCulture cc = culture == null ? CachedInvariantCulture : new CachedCulture(culture);
+        return FormatUInt64(value, specifier, cc);
+    } 
+
+    public static inline string Format(float value, string specifier, CultureInfo culture = null)
+    {
+        CachedCulture cc = culture == null ? CachedInvariantCulture : new CachedCulture(culture);
+        return FormatSingle(value, specifier, cc);
+    } 
+
+    public static inline string Format(double value, string specifier, CultureInfo culture = null)
+    {
+        CachedCulture cc = culture == null ? CachedInvariantCulture : new CachedCulture(culture);
+        return FormatDouble(value, specifier, cc);
+    } 
+
+    static char* FormatNumber(char* buffer, ref NumberStruct number, int maxDigits, string format, NumberFormatData data)
+    {
+        for (int i = 0; i < format.Length; i++)
+        {
+            char c = format[i];
+            switch (c)
+            {
+                case ('#') 
+                    buffer = FormatFixed(buffer, ref number, maxDigits, data);
+                case ('-') 
+                    AppendString(&buffer, data.NegativeSign);
+                default
+                {
+                    *buffer++ = c;
+                }
+            }
+        }
+
+        return buffer;
+    }
+
+    static char* FormatScientific(
+        char* buffer, ref NumberStruct number, int maxDigits, char expChar,
+        string decimalSeparator, string positiveSign, string negativeSign)
+    {
+
+        var digits = number.Digits;
+        *buffer++ = *digits != 0 ? *digits++ : '0';
+        if (maxDigits != 1)
+            AppendString(&buffer, decimalSeparator);
+
+        while (--maxDigits > 0)
+            *buffer++ = *digits != 0 ? *digits++ : '0';
+
+        int e = number.Digits[0] == 0 ? 0 : number.Scale - 1;
+        return FormatExponent(buffer, e, expChar, positiveSign, negativeSign, 3);
+    }
+
+    static char* FormatPercent(char* buffer, ref NumberStruct number, int maxDigits, NumberFormatData data, string format, string percentSymbol)
+    {
+        for (int i = 0; i < format.Length; i++)
+        {
+            char c = format[i];
+            switch (c)
+            {
+                case ('#') 
+                    buffer = FormatFixed(buffer, ref number, maxDigits, data);
+                case ('-') 
+                    AppendString(&buffer, data.NegativeSign); 
+                case ('%') 
+                    AppendString(&buffer, percentSymbol); 
+                default
+                {
+                    *buffer++ = c;
+                }
+            }
+        }
+
+        return buffer;
+    }
+
+    static char* FormatGeneral(
+        char* buffer, ref NumberStruct number, int maxDigits, char expChar,
+        string decimalSeparator, string positiveSign, string negativeSign,
+        bool suppressScientific)
+    {
+
+        var digitPos = number.Scale;
+        var scientific = false;
+        if (!suppressScientific)
+        {
+            if (digitPos > maxDigits || digitPos < -3)
+            {
+                digitPos = 1;
+                scientific = true;
+            }
+        }
+
+        var digits = number.Digits;
+        if (digitPos <= 0)
+            *buffer++ = '0';
+        else
+        {
+            do
+            {
+                *buffer++ = *digits != 0 ? *digits++ : '0';
+            } while (--digitPos > 0);
+        }
+
+        if (*digits != 0 || digitPos < 0)
+        {
+            AppendString(&buffer, decimalSeparator);
+            while (digitPos < 0)
+            {
+                *buffer++ = '0';
+                digitPos++;
+            }
+
+            while (*digits != 0)
+                *buffer++ = *digits++;
+        }
+
+        if (scientific)
+            buffer = FormatExponent(buffer, number.Scale - 1, expChar, positiveSign, negativeSign, 2);
+
+        return buffer;
+    }    
+
+    static char* FormatExponent(char* buffer, int value, char expChar, string positiveSign, string negativeSign, int minDigits)
+    {
+        *buffer++ = expChar;
+        if (value < 0)
+        {
+            AppendString(&buffer, negativeSign);
+            value = -value;
+        }
+        else if (positiveSign != null)
+            AppendString(&buffer, positiveSign);
+
+        var digits = (stackalloc char[11]).Buffer;
+        var ptr = Int32ToDecChars(digits + 10, (uint)value, minDigits);
+        var len = (int)(digits + 10 - ptr);
+        while (--len >= 0)
+            *buffer++ = *ptr++;
+
+        return buffer;
+    }
+
+    static string FormatSByte(sbyte value, string specifier, CachedCulture culture)
+    {
+        if (value < 0 && specifier.Length != 0)
+        {
+            // if we're negative and doing a hex format, mask out the bits for the conversion
+            char c = specifier[0];
+            if (c == 'X' || c == 'x')
+            {
+                return FormatUInt32((uint)(value & 0xFF), specifier, culture);
+            }
+        }
+
+        return FormatInt32(value, specifier, culture);
+    }
+
+    static string FormatInt16(short value, string specifier, CachedCulture culture)
+    {
+        if (value < 0 && specifier.Length != 0)
+        {
+            // if we're negative and doing a hex format, mask out the bits for the conversion
+            char c = specifier[0];
+            if (c == 'X' || c == 'x')
+            {
+                return FormatUInt32((uint)(value & 0xFFFF), specifier, culture);
+            }
+        }
+
+        return FormatInt32(value, specifier, culture);
+    }
+
+    static string FormatInt32(int value, string specifier, CachedCulture culture)
+    {
+        int digits;
+        var fmt = ParseFormatSpecifier(specifier, out digits);
+
+        // ANDing with 0xFFDF has the effect of uppercasing the character
+        switch (fmt & 0xFFDF)
+        {
+            case ('G')
+            {
+                if (digits > 0)
+                    goto caseDefault;
+                else
+                    goto caseD;
+            }
+            case ('D') $caseD
+            {
+                return Int32ToDecStr(value, digits, culture.NegativeSign);
+            }
+            case ('X')
+            {
+                // fmt-('X'-'A'+1) gives us the base hex character in either
+                // uppercase or lowercase, depending on the casing of fmt
+                return Int32ToHexStr((uint)value, fmt - ('X' - 'A' + 10), digits);
+            }
+            default $caseDefault
+            {
+                var number = new NumberStruct();
+                var buffer = (stackalloc char[MaxNumberDigits + 1]).Buffer;
+                number.Digits = buffer;
+                Int32ToNumber(value, ref number);
+                if (fmt != 0)
+                    return NumberToString(ref number, fmt, digits, culture);
+                else
+                    return NumberToCustomFormatString(ref number, specifier, culture);
+            }
+        }
+    }
+
+    static string FormatUInt32(uint value, string specifier, CachedCulture culture)
+    {
+        int digits;
+        var fmt = ParseFormatSpecifier(specifier, out digits);
+
+        // ANDing with 0xFFDF has the effect of uppercasing the character
+        switch (fmt & 0xFFDF)
+        {
+            case ('G')
+            {
+                if (digits > 0)
+                    goto caseDefault;
+                else
+                    goto caseD;
+            }
+            case ('D') $caseD
+            {
+                return UInt32ToDecStr(value, digits);
+            }
+            case ('X')
+            {
+                // fmt-('X'-'A'+1) gives us the base hex character in either
+                // uppercase or lowercase, depending on the casing of fmt
+                return Int32ToHexStr(value, fmt - ('X' - 'A' + 10), digits);
+            }
+            default $caseDefault
+            {
+                var number = new NumberStruct();
+                var buffer = (stackalloc char[MaxNumberDigits + 1]).Buffer;
+                number.Digits = buffer;
+                UInt32ToNumber(value, ref number);
+                if (fmt != 0)
+                    return NumberToString(ref number, fmt, digits, culture);
+                else
+                    return NumberToCustomFormatString(ref number, specifier, culture);
+            }
+        }
+    }
+
+    static string FormatInt64(long value, string specifier, CachedCulture culture)
+    {
+        int digits;
+        var fmt = ParseFormatSpecifier(specifier, out digits);
+
+        // ANDing with 0xFFDF has the effect of uppercasing the character
+        switch (fmt & 0xFFDF)
+        {
+            case ('G')
+            {
+                if (digits > 0)
+                    goto caseDefault;
+                else
+                    goto caseD;
+            }
+            case ('D') $caseD
+            {
+                return Int64ToDecStr(value, digits, culture.NegativeSign);
+            }
+            case ('X')
+            {
+                // fmt-('X'-'A'+1) gives us the base hex character in either
+                // uppercase or lowercase, depending on the casing of fmt
+                return Int64ToHexStr((ulong)value, fmt - ('X' - 'A' + 10), digits);
+            }
+            default $caseDefault
+            {
+                var number = new NumberStruct();
+                var buffer = (stackalloc char[MaxNumberDigits + 1]).Buffer;
+                number.Digits = buffer;
+                Int64ToNumber(value, ref number);
+                if (fmt != 0)
+                    return NumberToString(ref number, fmt, digits, culture);
+                else
+                    return NumberToCustomFormatString(ref number, specifier, culture);
+            }
+        }
+    }
+
+    static string FormatUInt64(ulong value, string specifier, CachedCulture culture)
+    {
+        int digits;
+        var fmt = ParseFormatSpecifier(specifier, out digits);
+
+        // ANDing with 0xFFDF has the effect of uppercasing the character
+        switch (fmt & 0xFFDF)
+        {
+            case ('G')
+            {
+                if (digits > 0)
+                    goto caseDefault;
+                else
+                    goto caseD;
+            }
+            case ('D') $caseD
+            {
+                return UInt64ToDecStr(value, digits);
+            }
+            case ('X')
+            {
+                // fmt-('X'-'A'+1) gives us the base hex character in either
+                // uppercase or lowercase, depending on the casing of fmt
+                return Int64ToHexStr(value, fmt - ('X' - 'A' + 10), digits);
+            }
+            default $caseDefault
+            {
+                var number = new NumberStruct();
+                var buffer = (stackalloc char[MaxNumberDigits + 1]).Buffer;
+                number.Digits = buffer;
+                UInt64ToNumber(value, ref number);
+                if (fmt != 0)
+                    return NumberToString(ref number, fmt, digits, culture);
+                else
+                    return NumberToCustomFormatString(ref number, specifier, culture);
+            }
+        }
+    }
+
+    static string FormatSingle(float value, string specifier, CachedCulture culture)
+    {
+        int digits;
+        int precision = FloatPrecision;
+        var fmt = ParseFormatSpecifier(specifier, out digits);
+
+        // ANDing with 0xFFDF has the effect of uppercasing the character
+        switch (fmt & 0xFFDF)
+        {
+            case ('G')
+            {
+                if (digits > 7)
+                    precision = 9;
+            }
+            case ('E')
+            {
+                if (digits > 6)
+                    precision = 9;
+            }
+        }
+
+        var number = new NumberStruct();
+        var buffer = (stackalloc char[MaxFloatingDigits + 1]).Buffer;
+        number.Digits = buffer;
+        DoubleToNumber(value, precision, ref number);
+
+        if (number.Scale == ScaleNaN)
+        {
+            return culture.NaN;
+        }
+
+        if (number.Scale == ScaleInf)
+        {
+            if (number.Sign > 0)
+                return culture.NegativeInfinity;
+            else
+                return culture.PositiveInfinity;
+        }
+
+        if (fmt != 0)
+            return NumberToString(ref number, fmt, digits, culture);
+        else
+            return NumberToCustomFormatString(ref number, specifier, culture);
+    }
+
+    static inline string FormatDouble(double value, string specifier, CachedCulture culture)
+    {
+        int digits;
+        int precision = DoublePrecision;
+        var fmt = ParseFormatSpecifier(specifier, out digits);
+
+        // ANDing with 0xFFDF has the effect of uppercasing the character
+        switch (fmt & 0xFFDF)
+        {
+            case ('G')
+            {
+                if (digits > 15)
+                    precision = 17;
+            }
+            case ('E')
+            {
+                if (digits > 14)
+                    precision = 17;
+            }
+        }
+
+        var number = new NumberStruct();
+        var buffer = (stackalloc char[MaxFloatingDigits + 1]).Buffer;
+        number.Digits = buffer;
+        DoubleToNumber(value, precision, ref number);
+
+        if (number.Scale == ScaleNaN)
+        {
+            return culture.NaN;
+        }
+
+        if (number.Scale == ScaleInf)
+        {
+            if (number.Sign > 0)
+                return culture.NegativeInfinity;
+            else
+                return culture.PositiveInfinity;
+        }
+
+        if (fmt != 0)
+            return NumberToString(ref number, fmt, digits, culture);
+        else
+            return NumberToCustomFormatString(ref number, specifier, culture);
+    }
+    
+    static string Int32ToDecStr(int value, int digits, string negativeSign)
+    {
+        if (digits < 1)
+            digits = 1;
+
+        var maxDigits = digits > 15 ? digits : 15;
+        var bufferLength = maxDigits > 100 ? maxDigits : 100;
+        var negativeLength = 0;
+
+        if (value < 0)
+        {
+            negativeLength = negativeSign.Length;
+            if (negativeLength > bufferLength - maxDigits)
+                bufferLength = negativeLength + maxDigits;
+        }
+
+        var buffer = (stackalloc char[bufferLength]).Buffer;
+        var p = Int32ToDecChars(buffer + bufferLength, value >= 0 ? (uint)value : (uint)(-value), digits);
+        if (value < 0)
+        {
+            // add the negative sign
+            for (int i = negativeLength - 1; i >= 0; i--)
+                *(--p) = negativeSign[i];
+        }
+
+        return GetStringFromBufferCopy(p, (int)(buffer + bufferLength - p));
+    }
+
+    static string UInt32ToDecStr(uint value, int digits)
+    {
+        var buffer = (stackalloc char[100]).Buffer;
+        if (digits < 1)
+            digits = 1;
+
+        var p = Int32ToDecChars(buffer + 100, value, digits);
+        return GetStringFromBufferCopy(p, (int)(buffer + 100 - p));
+    }
+
+    static string Int64ToDecStr(long value, int digits, string negativeSign)
+    {
+        if (digits < 1)
+            digits = 1;
+
+        var sign = (int)High32((ulong)value);
+        var maxDigits = digits > 20 ? digits : 20;
+        var bufferLength = maxDigits > 100 ? maxDigits : 100;
+
+        if (sign < 0)
+        {
+            value = -value;
+            var negativeLength = negativeSign.Length;
+            if (negativeLength > bufferLength - maxDigits)
+                bufferLength = negativeLength + maxDigits;
+        }
+
+        var buffer = (stackalloc char[bufferLength]).Buffer;
+        var p = buffer + bufferLength;
+        var uv = (ulong)value;
+        while (High32(uv) != 0)
+        {
+            p = Int32ToDecChars(p, Int64DivMod(ref uv), 9);
+            digits -= 9;
+        }
+
+        p = Int32ToDecChars(p, Low32(uv), digits);
+        if (sign < 0)
+        {
+            // add the negative sign
+            for (int i = negativeSign.Length - 1; i >= 0; i--)
+                *(--p) = negativeSign[i];
+        }
+
+        return GetStringFromBufferCopy(p, (int)(buffer + bufferLength - p));
+    }
+
+    static string UInt64ToDecStr(ulong value, int digits)
+    {
+        if (digits < 1)
+            digits = 1;
+
+        var buffer = (stackalloc char[100]).Buffer;
+        var p = buffer + 100;
+        while (High32(value) != 0)
+        {
+            p = Int32ToDecChars(p, Int64DivMod(ref value), 9);
+            digits -= 9;
+        }
+
+        p = Int32ToDecChars(p, Low32(value), digits);
+        return GetStringFromBufferCopy(p, (int)(buffer + 100 - p));
+    }
+
+    static char* Int32ToDecChars(char* p, uint value, int digits)
+    {
+        while (value != 0)
+        {
+            *--p = (char)((int)value % 10 + '0');
+            value /= 10;
+            digits--;
+        }
+
+        while (--digits >= 0)
+        {
+            *--p = '0';
+        }
+        return p;
+    }
+
+    static string Int32ToHexStr(uint value, int hexBase, int digits)
+    {
+        var buffer = (stackalloc char[100]).Buffer;
+        if (digits < 1)
+            digits = 1;
+
+        var p = Int32ToHexChars(buffer + 100, value, hexBase, digits);
+        return GetStringFromBufferCopy(p, (int)(buffer + 100 - p));
+    }
+
+    static string Int64ToHexStr(ulong value, int hexBase, int digits)
+    {
+        var buffer = (stackalloc char[100]).Buffer;
+        char* ptr;
+        if (High32(value) != 0)
+        {
+            Int32ToHexChars(buffer + 100, Low32(value), hexBase, 8);
+            ptr = Int32ToHexChars(buffer + 100 - 8, High32(value), hexBase, digits - 8);
+        }
+        else
+        {
+            if (digits < 1)
+                digits = 1;
+            ptr = Int32ToHexChars(buffer + 100, Low32(value), hexBase, digits);
+        }
+
+        return GetStringFromBufferCopy(ptr, (int)(buffer + 100 - ptr));
+    }
+
+    static char* Int32ToHexChars(char* p, uint value, int hexBase, int digits)
+    {
+        while (--digits >= 0 || value != 0)
+        {
+            var digit = value & 0xF;
+            *--p = (char)((int)digit + (digit < 10 ? '0' : hexBase));
+            value = value >> 4;
+        }
+        return p;
+    }
+
+    static void Int32ToNumber(int value, ref NumberStruct number)
+    {
+        number.Precision = Int32Precision;
+        if (value >= 0)
+            number.Sign = 0;
+        else
+        {
+            number.Sign = 1;
+            value = -value;
+        }
+
+        var buffer = (stackalloc char[Int32Precision + 1]).Buffer;
+        var ptr = Int32ToDecChars(buffer + Int32Precision, (uint)value, 0);
+        var len = (int)(buffer + Int32Precision - ptr);
+        number.Scale = len;
+
+        var dest = number.Digits;
+        while (--len >= 0)
+            *dest++ = *ptr++;
+        *dest = '\0';
+    }
+
+    static void UInt32ToNumber(uint value, ref NumberStruct number)
+    {
+        number.Precision = UInt32Precision;
+        number.Sign = 0;
+
+        var buffer = (stackalloc char[UInt32Precision + 1]).Buffer;
+        var ptr = Int32ToDecChars(buffer + UInt32Precision, value, 0);
+        var len = (int)(buffer + UInt32Precision - ptr);
+        number.Scale = len;
+
+        var dest = number.Digits;
+        while (--len >= 0)
+            *dest++ = *ptr++;
+        *dest = '\0';
+    }
+
+    static void Int64ToNumber(long value, ref NumberStruct number)
+    {
+        number.Precision = Int64Precision;
+        if (value >= 0)
+            number.Sign = 0;
+        else
+        {
+            number.Sign = 1;
+            value = -value;
+        }
+
+        var buffer = (stackalloc char[Int64Precision + 1]).Buffer;
+        var ptr = buffer + Int64Precision;
+        var uv = (ulong)value;
+        while (High32(uv) != 0)
+            ptr = Int32ToDecChars(ptr, Int64DivMod(ref uv), 9);
+
+        ptr = Int32ToDecChars(ptr, Low32(uv), 0);
+        var len = (int)(buffer + Int64Precision - ptr);
+        number.Scale = len;
+
+        var dest = number.Digits;
+        while (--len >= 0)
+            *dest++ = *ptr++;
+        *dest = '\0';
+    }
+
+    static void UInt64ToNumber(ulong value, ref NumberStruct number)
+    {
+        number.Precision = UInt64Precision;
+        number.Sign = 0;
+
+        var buffer = (stackalloc char[UInt64Precision + 1]).Buffer;
+        var ptr = buffer + UInt64Precision;
+        while (High32(value) != 0)
+            ptr = Int32ToDecChars(ptr, Int64DivMod(ref value), 9);
+
+        ptr = Int32ToDecChars(ptr, Low32(value), 0);
+
+        var len = (int)(buffer + UInt64Precision - ptr);
+        number.Scale = len;
+
+        var dest = number.Digits;
+        while (--len >= 0)
+            *dest++ = *ptr++;
+        *dest = '\0';
+    }
+
+    static void DoubleToNumber(double value, int precision, ref NumberStruct number)
+    {
+        number.Precision = precision;
+
+        uint sign; uint exp; uint mantHi; uint mantLo;
+        ExplodeDouble(value, out sign, out exp, out mantHi, out mantLo);
+
+        if (exp == 0x7FF)
+        {
+            // special value handling (infinity and NaNs)
+            number.Scale = (mantLo != 0 || mantHi != 0) ? ScaleNaN : ScaleInf;
+            number.Sign = (int)sign;
+            number.Digits[0] = '\0';
+        }
+        else
+        {
+            // convert the digits of the number to characters
+            if (value < 0)
+            {
+                number.Sign = 1;
+                value = -value;
+            }
+
+            var digits = number.Digits;
+            var end = digits + MaxFloatingDigits;
+            var p = end;
+            var shift = 0;
+            double intPart;
+            double reducedInt;
+            var fracPart = ModF(value, out intPart);
+
+            if (intPart != 0)
+            {
+                // format the integer part
+                while (intPart != 0)
+                {
+                    reducedInt = ModF(intPart / 10, out intPart);
+                    *--p = (char)((int)((reducedInt + 0.03) * 10) + '0');
+                    shift++;
+                }
+                while (p < end)
+                    *digits++ = *p++;
+            }
+            else if (fracPart > 0)
+            {
+                // normalize the fractional part
+                reducedInt = fracPart * 10;
+                while (reducedInt < 1)
+                {
+                    fracPart = reducedInt;
+                    shift--;
+                    reducedInt = fracPart * 10;
+                }
+            }
+
+            // concat the fractional part, padding the remainder with zeros
+            p = number.Digits + precision;
+            while (digits <= p && digits < end)
+            {
+                fracPart *= 10;
+                fracPart = ModF(fracPart, out reducedInt);
+                *digits++ = (char)((int)reducedInt + '0');
+            }
+
+            // round the result if necessary
+            digits = p;
+            *p = (char)(*p + 5);
+            while (*p > '9')
+            {
+                *p = '0';
+                if (p > number.Digits)
+                {
+                    ++*--p;
+                }
+                else
+                {
+                    *p = '1';
+                    shift++;
+                }
+            }
+
+            number.Scale = shift;
+            *digits = '\0';
+        }
+    }
+    
+    static char ParseFormatSpecifier(string specifier, out int digits)
+    {
+        if (specifier.Length == 0)
+        {
+            digits = -1;
+            return 'G';
+        }
+
+        char* curr = specifier.Buffer;
+        char first = *curr++;
+        if ((first >= 'A' && first <= 'Z') || (first >= 'a' && first <= 'z'))
+        {
+            int n = -1;
+            char c = *curr++;
+            if (c >= '0' && c <= '9')
+            {
+                n = c - '0';
+                c = *curr++;
+                while (c >= '0' && c <= '9')
+                {
+                    n = n * 10 + c - '0';
+                    c = *curr++;
+                    if (n >= 10)
+                        break;
+                }
+            }
+
+            if (c == 0)
+            {
+                digits = n;
+                return first;
+            }
+        }
+
+        digits = -1;
+        return (char)0;
+    }
+
+    static char* FormatFixed(char* buffer, ref NumberStruct number, int maxDigits, NumberFormatData data)
+    {
+        var groups = data.GroupSizes;
+        var digits = number.Digits;
+        var digitPos = number.Scale;
+        if (digitPos <= 0)
+            *buffer++ = '0';
+        else if (groups != null)
+        {
+            var groupIndex = 0;
+            var groupSizeCount = groups[0];
+            var groupSizeLen = groups.Length;
+            var newBufferSize = digitPos;
+            var groupSeparatorLen = data.GroupSeparator.Length;
+            var groupSize = 0;
+
+            // figure out the size of the result
+            if (groupSizeLen != 0)
+            {
+                while (digitPos > groupSizeCount)
+                {
+                    groupSize = groups[groupIndex];
+                    if (groupSize == 0)
+                        break;
+
+                    newBufferSize += groupSeparatorLen;
+                    if (groupIndex < groupSizeLen - 1)
+                        groupIndex++;
+
+                    groupSizeCount += groups[groupIndex];
+                    if (groupSizeCount < 0 || newBufferSize < 0)
+                        throw new ArgumentOutOfRangeException(SR.Formatting_InvalidGroupSizes);
+                }
+
+                if (groupSizeCount == 0)
+                    groupSize = 0;
+                else
+                    groupSize = groups[0];
+            }
+
+            groupIndex = 0;
+            var digitCount = 0;
+            var digitLength = StrLen(digits);
+            var digitStart = digitPos < digitLength ? digitPos : digitLength;
+            var ptr = buffer + newBufferSize - 1;
+
+            for (int i = digitPos - 1; i >= 0; i--)
+            {
+                *(ptr--) = i < digitStart ? digits[i] : '0';
+
+                // check if we need to add a group separator
+                if (groupSize > 0)
+                {
+                    digitCount++;
+                    if (digitCount == groupSize && i != 0)
+                    {
+                        for (int j = groupSeparatorLen - 1; j >= 0; j--)
+                            *(ptr--) = data.GroupSeparator[j];
+
+                        if (groupIndex < groupSizeLen - 1)
+                        {
+                            groupIndex++;
+                            groupSize = groups[groupIndex];
+                        }
+                        digitCount = 0;
+                    }
+                }
+            }
+
+            buffer += newBufferSize;
+            digits += digitStart;
+        }
+        else
+        {
+            do
+            {
+                *buffer++ = *digits != 0 ? *digits++ : '0';
+            }
+            while (--digitPos > 0);
+        }
+
+        if (maxDigits > 0)
+        {
+            AppendString(&buffer, data.DecimalSeparator);
+            while (digitPos < 0 && maxDigits > 0)
+            {
+                *buffer++ = '0';
+                digitPos++;
+                maxDigits--;
+            }
+
+            while (maxDigits > 0)
+            {
+                *buffer++ = *digits != 0 ? *digits++ : '0';
+                maxDigits--;
+            }
+        }
+
+        return buffer;
+    }
+
+    static char* FormatCurrency(char* buffer, ref NumberStruct number, int maxDigits, NumberFormatData data, string currencyFormat, string currencySymbol)
+    {
+        for (int i = 0; i < currencyFormat.Length; i++)
+        {
+            char c = currencyFormat[i];
+            switch (c)
+            {
+                case ('#')
+                    buffer = FormatFixed(buffer, ref number, maxDigits, data);
+                case ('-') 
+                    AppendString(&buffer, data.NegativeSign);
+                case ('$') 
+                    AppendString(&buffer, currencySymbol);
+                default
+                {
+                    *buffer++ = c; 
+                }
+            }
+        }
+
+        return buffer;
+    }
+
+    static string NumberToString(ref NumberStruct number, char format, int maxDigits, CachedCulture culture, bool isDecimal = false)
+    {
+        // ANDing with 0xFFDF has the effect of uppercasing the character
+        switch (format & 0xFFDF)
+        {
+            case ('C')
+            {
+                var cultureData = culture.CurrencyData;
+                var bufferSize = cultureData.GetBufferSize(ref maxDigits, number.Scale);
+                RoundNumber(ref number, number.Scale + maxDigits);
+
+                var buffer = (stackalloc char[bufferSize]).Buffer;
+                var ptr = FormatCurrency(
+                    buffer,
+                    ref number,
+                    maxDigits,
+                    cultureData,
+                    number.Sign > 0 ? culture.CurrencyNegativePattern : culture.CurrencyPositivePattern,
+                    culture.CurrencySymbol
+                );
+
+                return GetStringFromBufferCopy(buffer, (int)(ptr - buffer));
+            }
+            case ('F')
+            {
+                var cultureData = culture.FixedData;
+                var bufferSize = cultureData.GetBufferSize(ref maxDigits, number.Scale);
+                RoundNumber(ref number, number.Scale + maxDigits);
+
+                var buffer = (stackalloc char[bufferSize]).Buffer;
+                var ptr = buffer;
+                if (number.Sign > 0)
+                    AppendString(&ptr, cultureData.NegativeSign);
+
+                ptr = FormatFixed(ptr, ref number, maxDigits, cultureData);
+                return GetStringFromBufferCopy(buffer, (int)(ptr - buffer));
+            }
+            case ('N')
+            {
+                var cultureData = culture.NumberData;
+                var bufferSize = cultureData.GetBufferSize(ref maxDigits, number.Scale);
+                RoundNumber(ref number, number.Scale + maxDigits);
+
+                var buffer = (stackalloc char[bufferSize]).Buffer;
+                var ptr = FormatNumber(
+                    buffer,
+                    ref number,
+                    maxDigits,
+                    number.Sign > 0 ? culture.NumberNegativePattern : culture.NumberPositivePattern,
+                    cultureData
+                );
+
+                return GetStringFromBufferCopy(buffer, (int)(ptr - buffer));
+            }
+            case ('E')
+            {
+                var cultureData = culture.ScientificData;
+                var bufferSize = cultureData.GetBufferSize(ref maxDigits, number.Scale);
+                maxDigits++;
+
+                RoundNumber(ref number, maxDigits);
+
+                var buffer = (stackalloc char[bufferSize]).Buffer;
+                var ptr = buffer;
+                if (number.Sign > 0)
+                    AppendString(&ptr, cultureData.NegativeSign);
+
+                ptr = FormatScientific(
+                    ptr,
+                    ref number,
+                    maxDigits,
+                    format, // TODO: fix casing
+                    cultureData.DecimalSeparator,
+                    culture.PositiveSign,
+                    culture.NegativeSign
+                );
+
+                return GetStringFromBufferCopy(buffer, (int)(ptr - buffer));
+            }
+            case ('P')
+            {
+                number.Scale += 2;
+                var cultureData = culture.PercentData;
+                var bufferSize = cultureData.GetBufferSize(ref maxDigits, number.Scale);
+                RoundNumber(ref number, number.Scale + maxDigits);
+
+                var buffer = (stackalloc char[bufferSize]).Buffer;
+                var ptr = FormatPercent(
+                    buffer,
+                    ref number,
+                    maxDigits,
+                    cultureData,
+                    number.Sign > 0 ? culture.PercentNegativePattern : culture.PercentPositivePattern,
+                    culture.PercentSymbol
+                );
+
+                return GetStringFromBufferCopy(buffer, (int)(ptr - buffer));
+            }
+            case ('G')
+            {
+                var enableRounding = true;
+                if (maxDigits < 1)
+                {
+                    if (isDecimal && maxDigits == -1)
+                    {
+                        // if we're formatting a decimal, default to 29 digits precision
+                        // only for G formatting without a precision specifier
+                        maxDigits = DecimalPrecision;
+                        enableRounding = false;
+                    }
+                    else
+                        maxDigits = number.Precision;
+                }
+
+                var bufferSize = maxDigits + culture.DecimalBufferSize;
+                var buffer = (stackalloc char[bufferSize]).Buffer;
+                var ptr = buffer;
+
+                // round for G formatting only if a precision is given
+                // we need to handle the minus zero case also
+                if (enableRounding)
+                    RoundNumber(ref number, maxDigits);
+                else if (isDecimal && number.Digits[0] == 0)
+                    number.Sign = 0;
+
+                if (number.Sign > 0)
+                    AppendString(&ptr, culture.NegativeSign);
+
+                ptr = FormatGeneral(
+                    ptr,
+                    ref number,
+                    maxDigits,
+                    (char)(format - ('G' - 'E')),
+                    culture.NumberData.DecimalSeparator,
+                    culture.PositiveSign,
+                    culture.NegativeSign,
+                    !enableRounding
+                );
+
+                return GetStringFromBufferCopy(buffer, (int)(ptr - buffer));
+            }
+            default
+                throw new FormatException(string.Format<char>(SR.Formatting_UnknownFormatSpecifier, format));
+        }
+    }
+
+    // this file contains the custom numeric formatting routines split out from the Numeric.cs file
+    static void NumberToCustomFormatString(ref NumberStruct number, string specifier, CachedCulture culture)
+    {
+    }
+
+    static string GetStringFromBufferCopy(char* p, int size)
+    {
+        char* buf = (char*)Gc.Malloc(size * sizeof(char));
+        for (int i = 0; i < size; i++)
+            *buf++ = *p++;
+        return new string(buf, 0, size);
+    }
+
+    static void AppendString(char** buffer, string value)
+    {
+        char* pinnedString = value.Buffer;
+        var length = value.Length;
+        for (var src = pinnedString; src < pinnedString + length; )
+        {
+            **buffer = *src;
+            (*buffer)++;
+            src++;
+        }
+    }
+
+    static void RoundNumber(ref NumberStruct number, int pos)
+    {
+        var digits = number.Digits;
+        int i = 0;
+        while (i < pos && digits[i] != 0) i++;
+        if (i == pos && digits[i] >= '5')
+        {
+            while (i > 0 && digits[i - 1] == '9') i--;
+            if (i > 0)
+                digits[i - 1]++;
+            else
+            {
+                number.Scale++;
+                digits[0] = '1';
+                i = 1;
+            }
+        }
+        else
+        {
+            while (i > 0 && digits[i - 1] == '0')
+                i--;
+        }
+
+        if (i == 0)
+        {
+            number.Scale = 0;
+            number.Sign = 0;
+        }
+
+        digits[i] = '\0';
+    }
+
+    static int StrLen(char* str)
+    {
+        int count = 0;
+        while (*str++ != 0)
+            count++;
+
+        return count;
+    }
+
+    static uint Int64DivMod(ref ulong value)
+    {
+        var rem = (uint)(value % 1000000000);
+        value /= 1000000000;
+        return rem;
+    }
+
+    static double ModF(double value, out double intPart)
+    {
+        intPart = Math.Truncate(value);
+        return value - intPart;
+    }
+
+    static void ExplodeDouble(double value, out uint sign, out uint exp, out uint mantHi, out uint mantLo)
+    {
+        var bits = *(ulong*)(&value);
+        if (BitConverter.IsLittleEndian)
+        {
+            mantLo = (uint)(bits & 0xFFFFFFFF);         // bits 0 - 31
+            mantHi = (uint)((bits >> 32) & 0xFFFFF);    // bits 32 - 51
+            exp = (uint)((bits >> 52) & 0x7FF);         // bits 52 - 62
+            sign = (uint)((bits >> 63) & 0x1);          // bit 63
+        }
+        else
+        {
+            sign = (uint)(bits & 0x1);                  // bit 0
+            exp = (uint)((bits >> 1) & 0x7FF);          // bits 1 - 11
+            mantHi = (uint)((bits >> 12) & 0xFFFFF);    // bits 12 - 31
+            mantLo = (uint)(bits >> 32);                // bits 32 - 63
+        }
+    }
+
+    static uint Low32(ulong value)
+    {
+        return (uint)value;
+    }
+
+    static uint High32(ulong value)
+    {
+        return (uint)((value & 0xFFFFFFFF00000000) >> 32);
+    }
+
+    static readonly CachedCulture CachedInvariantCulture = new CachedCulture(CultureInfo.InvariantCulture);
+    static readonly CachedCulture CachedCurrentCulture = new CachedCulture(CultureInfo.CurrentCulture);
+}
+
+// caches formatting information from culture data
+// some of the accessors on NumberFormatInfo allocate copies of their data
+sealed class CachedCulture
+{
+    public readonly CultureInfo Culture;
+
+    public readonly NumberFormatData CurrencyData;
+    public readonly NumberFormatData FixedData;
+    public readonly NumberFormatData NumberData;
+    public readonly NumberFormatData ScientificData;
+    public readonly NumberFormatData PercentData;
+
+    public readonly string CurrencyNegativePattern;
+    public readonly string CurrencyPositivePattern;
+    public readonly string CurrencySymbol;
+
+    public readonly string NumberNegativePattern;
+    public readonly string NumberPositivePattern;
+
+    public readonly string PercentNegativePattern;
+    public readonly string PercentPositivePattern;
+    public readonly string PercentSymbol;
+
+    public readonly string NegativeSign;
+    public readonly string PositiveSign;
+
+    public readonly string NaN;
+    public readonly string PositiveInfinity;
+    public readonly string NegativeInfinity;
+
+    public readonly int DecimalBufferSize;
+
+    public CachedCulture(CultureInfo culture)
+    {
+        Culture = culture;
+        var info = culture.NumberFormat;
+        CurrencyData = new NumberFormatData(
+            info.CurrencyDecimalDigits,
+            info.NegativeSign,
+            info.CurrencyDecimalSeparator,
+            info.CurrencyGroupSeparator,
+            info.CurrencyGroupSizes,
+            info.CurrencySymbol.Length
+        );
+
+        FixedData = new NumberFormatData(
+            info.NumberDecimalDigits,
+            info.NegativeSign,
+            info.NumberDecimalSeparator,
+            null,
+            null,
+            0
+        );
+
+        NumberData = new NumberFormatData(
+            info.NumberDecimalDigits,
+            info.NegativeSign,
+            info.NumberDecimalSeparator,
+            info.NumberGroupSeparator,
+            info.NumberGroupSizes,
+            0
+        );
+
+        ScientificData = new NumberFormatData(
+            6,
+            info.NegativeSign,
+            info.NumberDecimalSeparator,
+            null,
+            null,
+            info.NegativeSign.Length + info.PositiveSign.Length * 2 // for number and exponent
+        );
+
+        PercentData = new NumberFormatData(
+            info.PercentDecimalDigits,
+            info.NegativeSign,
+            info.PercentDecimalSeparator,
+            info.PercentGroupSeparator,
+            info.PercentGroupSizes,
+            info.PercentSymbol.Length
+        );
+
+        CurrencyNegativePattern = NegativeCurrencyFormats[info.CurrencyNegativePattern];
+        CurrencyPositivePattern = PositiveCurrencyFormats[info.CurrencyPositivePattern];
+        CurrencySymbol = info.CurrencySymbol;
+        NumberNegativePattern = NegativeNumberFormats[info.NumberNegativePattern];
+        NumberPositivePattern = PositiveNumberFormat;
+        PercentNegativePattern = NegativePercentFormats[info.PercentNegativePattern];
+        PercentPositivePattern = PositivePercentFormats[info.PercentPositivePattern];
+        PercentSymbol = info.PercentSymbol;
+        NegativeSign = info.NegativeSign;
+        PositiveSign = info.PositiveSign;
+        NaN = info.NaNSymbol;
+        PositiveInfinity = info.PositiveInfinitySymbol;
+        NegativeInfinity = info.NegativeInfinitySymbol;
+        DecimalBufferSize =
+            NumberFormatData.MinBufferSize +
+            info.NumberDecimalSeparator.Length +
+            (NegativeSign.Length + PositiveSign.Length) * 2;
+    }
+
+    static readonly string[] PositiveCurrencyFormats = new string[] {
+        "$#", "#$", "$ #", "# $"
+    };
+
+    static readonly string[] NegativeCurrencyFormats = new string[] {
+        "($#)", "-$#", "$-#", "$#-",
+        "(#$)", "-#$", "#-$", "#$-",
+        "-# $", "-$ #", "# $-", "$ #-",
+        "$ -#", "#- $", "($ #)", "(# $)"
+    };
+
+    static readonly string[] PositivePercentFormats = new string[] {
+        "# %", "#%", "%#", "% #"
+    };
+
+    static readonly string[] NegativePercentFormats = new string[] {
+        "-# %", "-#%", "-%#",
+        "%-#", "%#-",
+        "#-%", "#%-",
+        "-% #", "# %-", "% #-",
+        "% -#", "#- %"
+    };
+
+    static readonly string[] NegativeNumberFormats = new string[] {
+        "(#)", "-#", "- #", "#-", "# -",
+    };
+
+    static readonly string PositiveNumberFormat = "#";
+}
+
+// contains format information for a specific kind of format string
+// e.g. (fixed, number, currency)
+sealed class NumberFormatData
+{
+    readonly int bufferLength;
+    readonly int perDigitLength;
+
+    public readonly int DecimalDigits;
+    public readonly string NegativeSign;
+    public readonly string DecimalSeparator;
+    public readonly string GroupSeparator;
+    public readonly int[] GroupSizes;
+
+    public NumberFormatData(int decimalDigits, string negativeSign, string decimalSeparator, string groupSeparator, int[] groupSizes, int extra)
+    {
+        DecimalDigits = decimalDigits;
+        NegativeSign = negativeSign;
+        DecimalSeparator = decimalSeparator;
+        GroupSeparator = groupSeparator;
+        GroupSizes = groupSizes;
+
+        bufferLength = MinBufferSize;
+        bufferLength += NegativeSign.Length;
+        bufferLength += DecimalSeparator.Length;
+        bufferLength += extra;
+
+        if (GroupSeparator != null)
+            perDigitLength = GroupSeparator.Length;
+    }
+
+    public int GetBufferSize(ref int maxDigits, int scale)
+    {
+        if (maxDigits < 0)
+            maxDigits = DecimalDigits;
+
+        var digitCount = scale >= 0 ? scale + maxDigits : 0;
+        long len = bufferLength;
+
+        // calculate buffer size
+        len += digitCount;
+        len += perDigitLength * digitCount;
+        return checked((int)len);
+    }
+
+    internal const int MinBufferSize = 105;
+}
