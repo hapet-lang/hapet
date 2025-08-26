@@ -521,7 +521,7 @@ public static class Number
         if (digits < 1)
             digits = 1;
 
-        var maxDigits = digits > 15 ? digits : 15;
+        var maxDigits = 15;
         var bufferLength = maxDigits > 100 ? maxDigits : 100;
         var negativeLength = 0;
 
@@ -540,18 +540,20 @@ public static class Number
             for (int i = negativeLength - 1; i >= 0; i--)
                 *(--p) = negativeSign[i];
         }
-
         return GetStringFromBufferCopy(p, (int)(buffer + bufferLength - p));
     }
 
     static string UInt32ToDecStr(uint value, int digits)
     {
-        var buffer = (stackalloc char[100]).Buffer;
         if (digits < 1)
             digits = 1;
 
-        var p = Int32ToDecChars(buffer + 100, value, digits);
-        return GetStringFromBufferCopy(p, (int)(buffer + 100 - p));
+        var maxDigits = 15;
+        var bufferLength = maxDigits > 100 ? maxDigits : 100;
+
+        var buffer = (stackalloc char[bufferLength]).Buffer;
+        var p = Int32ToDecChars(buffer + bufferLength, value, digits);
+        return GetStringFromBufferCopy(p, (int)(buffer + bufferLength - p));
     }
 
     static string Int64ToDecStr(long value, int digits, string negativeSign)
@@ -560,7 +562,7 @@ public static class Number
             digits = 1;
 
         var sign = (int)High32((ulong)value);
-        var maxDigits = digits > 20 ? digits : 20;
+        var maxDigits = 20;
         var bufferLength = maxDigits > 100 ? maxDigits : 100;
 
         if (sign < 0)
@@ -587,7 +589,6 @@ public static class Number
             for (int i = negativeSign.Length - 1; i >= 0; i--)
                 *(--p) = negativeSign[i];
         }
-
         return GetStringFromBufferCopy(p, (int)(buffer + bufferLength - p));
     }
 
@@ -596,8 +597,11 @@ public static class Number
         if (digits < 1)
             digits = 1;
 
-        var buffer = (stackalloc char[100]).Buffer;
-        var p = buffer + 100;
+        var maxDigits = 20;
+        var bufferLength = maxDigits > 100 ? maxDigits : 100;
+
+        var buffer = (stackalloc char[bufferLength]).Buffer;
+        var p = buffer + bufferLength;
         while (High32(value) != 0)
         {
             p = Int32ToDecChars(p, Int64DivMod(ref value), 9);
@@ -605,14 +609,15 @@ public static class Number
         }
 
         p = Int32ToDecChars(p, Low32(value), digits);
-        return GetStringFromBufferCopy(p, (int)(buffer + 100 - p));
+        return GetStringFromBufferCopy(p, (int)(buffer + bufferLength - p));
     }
 
     static char* Int32ToDecChars(char* p, uint value, int digits)
     {
         while (value != 0)
         {
-            *--p = (char)((int)value % 10 + '0');
+            char c = (char)((int)value % 10 + '0');
+            *--p = c;
             value /= 10;
             digits--;
         }
@@ -1155,7 +1160,7 @@ public static class Number
         char* buf = (char*)Gc.Malloc(size * sizeof(char));
         for (int i = 0; i < size; i++)
             *buf++ = *p++;
-        return new string(buf, 0, size);
+        return new string(buf - size, 0, size);
     }
 
     static void AppendString(char** buffer, string value)
