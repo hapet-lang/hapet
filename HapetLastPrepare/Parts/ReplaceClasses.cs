@@ -343,7 +343,7 @@ namespace HapetLastPrepare
 
             if (expr.OutType is ClassType)
             {
-                expr.OutType = PointerType.GetPointerType(expr.OutType);
+                expr.OutType = PointerType.GetPointerType(expr.OutType, true);
             }
         }
 
@@ -356,12 +356,12 @@ namespace HapetLastPrepare
             if (expr.Operator == "as" || expr.Operator == "is")
             {
                 if (expr.Right.OutType is ClassType)
-                    expr.Right.OutType = PointerType.GetPointerType(expr.Right.OutType);
+                    expr.Right.OutType = PointerType.GetPointerType(expr.Right.OutType, true);
             }
 
             if (expr.OutType is ClassType)
             {
-                expr.OutType = PointerType.GetPointerType(expr.OutType);
+                expr.OutType = PointerType.GetPointerType(expr.OutType, true);
             }
         }
 
@@ -379,7 +379,7 @@ namespace HapetLastPrepare
         {
             if (expr.OutType is ClassType)
             {
-                expr.OutType = PointerType.GetPointerType(expr.OutType);
+                expr.OutType = PointerType.GetPointerType(expr.OutType, true);
             }
 
             foreach (var a in expr.Arguments)
@@ -417,12 +417,12 @@ namespace HapetLastPrepare
         {
             if (expr.TypeOrObjectName?.OutType is ClassType && !expr.StaticCall)
             {
-                expr.TypeOrObjectName.OutType = PointerType.GetPointerType(expr.TypeOrObjectName.OutType);
+                expr.TypeOrObjectName.OutType = PointerType.GetPointerType(expr.TypeOrObjectName.OutType, true);
             }
 
             if (expr.OutType is ClassType)
             {
-                expr.OutType = PointerType.GetPointerType(expr.OutType);
+                expr.OutType = PointerType.GetPointerType(expr.OutType, true);
             }
 
             if (expr.TypeOrObjectName != null)
@@ -440,7 +440,7 @@ namespace HapetLastPrepare
         {
             if (expr.OutType is ClassType)
             {
-                expr.OutType = PointerType.GetPointerType(expr.OutType);
+                expr.OutType = PointerType.GetPointerType(expr.OutType, true);
             }
 
             LPRACExpr(expr.SubExpression);
@@ -493,7 +493,7 @@ namespace HapetLastPrepare
 
             if (expr.OutType is ClassType)
             {
-                expr.OutType = PointerType.GetPointerType(expr.OutType);
+                expr.OutType = PointerType.GetPointerType(expr.OutType, true);
             }
         }
 
@@ -505,7 +505,7 @@ namespace HapetLastPrepare
 
             if (expr.OutType is ClassType)
             {
-                expr.OutType = PointerType.GetPointerType(expr.OutType);
+                expr.OutType = PointerType.GetPointerType(expr.OutType, true);
             }
         }
 
@@ -515,7 +515,7 @@ namespace HapetLastPrepare
 
             if (expr.OutType is ClassType)
             {
-                expr.OutType = PointerType.GetPointerType(expr.OutType);
+                expr.OutType = PointerType.GetPointerType(expr.OutType, true);
             }
         }
 
@@ -552,7 +552,7 @@ namespace HapetLastPrepare
 
             if (stmt.Value?.OutType is ClassType)
             {
-                stmt.Value.OutType = PointerType.GetPointerType(stmt.Value.OutType);
+                stmt.Value.OutType = PointerType.GetPointerType(stmt.Value.OutType, true);
             }
         }
 
@@ -594,7 +594,7 @@ namespace HapetLastPrepare
 
             if (stmt.SubExpression?.OutType is ClassType)
             {
-                stmt.SubExpression.OutType = PointerType.GetPointerType(stmt.SubExpression.OutType);
+                stmt.SubExpression.OutType = PointerType.GetPointerType(stmt.SubExpression.OutType, true);
             }
 
             foreach (var c in stmt.Cases)
@@ -609,7 +609,7 @@ namespace HapetLastPrepare
 
             if (stmt.Pattern?.OutType is ClassType)
             {
-                stmt.Pattern.OutType = PointerType.GetPointerType(stmt.Pattern.OutType);
+                stmt.Pattern.OutType = PointerType.GetPointerType(stmt.Pattern.OutType, true);
             }
 
             LPRACExpr(stmt.Body);
@@ -621,7 +621,7 @@ namespace HapetLastPrepare
 
             if (stmt.ReturnExpression?.OutType is ClassType)
             {
-                stmt.ReturnExpression.OutType = PointerType.GetPointerType(stmt.ReturnExpression.OutType);
+                stmt.ReturnExpression.OutType = PointerType.GetPointerType(stmt.ReturnExpression.OutType, true);
             }
         }
 
@@ -634,7 +634,7 @@ namespace HapetLastPrepare
         {
             if (stmt.ThisArgument.OutType is ClassType)
             {
-                stmt.ThisArgument.OutType = PointerType.GetPointerType(stmt.ThisArgument.OutType);
+                stmt.ThisArgument.OutType = PointerType.GetPointerType(stmt.ThisArgument.OutType, true);
             }
 
             foreach (var a in stmt.Arguments)
@@ -654,7 +654,7 @@ namespace HapetLastPrepare
 
             if (stmt.ThrowExpression?.OutType is ClassType)
             {
-                stmt.ThrowExpression.OutType = PointerType.GetPointerType(stmt.ThrowExpression.OutType);
+                stmt.ThrowExpression.OutType = PointerType.GetPointerType(stmt.ThrowExpression.OutType, true);
             }
         }
 
@@ -678,7 +678,7 @@ namespace HapetLastPrepare
             // the return type is actually a pointer to the class
             var astPtr = new AstPointerExpr(expr, false, expr.Location);
             astPtr.SetDataFromStmt(expr);
-            astPtr.OutType = PointerType.GetPointerType(astPtr.SubExpression.OutType);
+            astPtr.OutType = PointerType.GetPointerType(astPtr.SubExpression.OutType, true);
             var nst = new AstNestedExpr(astPtr, null, expr.Location);
             nst.SetDataFromStmt(expr);
             nst.OutType = astPtr.OutType;

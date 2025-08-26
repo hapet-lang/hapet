@@ -501,7 +501,8 @@ namespace HapetBackend.Llvm
 
             if (inType is PointerType ptrT)
             {
-                if (outType is IntPtrType)
+                // convert to intptr only if the value is not created by compiler
+                if (outType is IntPtrType && !ptrT.CreatedByCompiler)
                 {
                     return builder.BuildPtrToInt(val, HapetTypeToLLVMType(outType));
                 }
@@ -525,7 +526,8 @@ namespace HapetBackend.Llvm
 
             if (inType is IntPtrType || inType is PtrDiffType)
             {
-                if (outType is PointerType)
+                // convert to ptr only if the value is not created by compiler
+                if (outType is PointerType pp && !pp.CreatedByCompiler) 
                 {
                     return builder.BuildIntToPtr(val, HapetTypeToLLVMType(outType));
                 }

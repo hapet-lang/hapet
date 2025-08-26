@@ -283,7 +283,7 @@ namespace HapetFrontend.Types
     {
         public static int PointerAlignment => CurrentTypeContext.PointerSize;
 
-        private static Dictionary<HapetType, PointerType> _types = new Dictionary<HapetType, PointerType>();
+        private static Dictionary<(HapetType, bool), PointerType> _types = new Dictionary<(HapetType, bool), PointerType>();
 
         public override string TypeName => "ptr";
 
@@ -305,19 +305,24 @@ namespace HapetFrontend.Types
 
         public HapetType TargetType { get; set; }
 
-        public static PointerType GetPointerType(HapetType targetType)
+        /// <summary>
+        /// 'true' if created on some of steps (probably class replacer in LP)
+        /// </summary>
+        public bool CreatedByCompiler { get; set; }
+
+        public static PointerType GetPointerType(HapetType targetType, bool createdByCompiler = false)
         {
             if (targetType == null)
                 return null;
 
-            if (_types.ContainsKey((targetType)))
+            if (_types.ContainsKey((targetType, createdByCompiler)))
             {
-                return _types[(targetType)];
+                return _types[(targetType, createdByCompiler)];
             }
 
-            var type = new PointerType(targetType);
+            var type = new PointerType(targetType) { CreatedByCompiler = createdByCompiler };
 
-            _types[(targetType)] = type;
+            _types[(targetType, createdByCompiler)] = type;
             return type;
         }
 
