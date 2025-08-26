@@ -3,6 +3,7 @@
 // Some modifications were made for hapet-lang compatibility.
 
 using System.Runtime;
+using System.Text;
 
 [DeclarationUsed]
 [SuppressStaticCtorCall]
@@ -12,6 +13,16 @@ public struct Type
     internal TypeInfoUnsafe* _typeInfo;
     [DeclarationUsed]
     internal VirtualTableUnsafe* _vTable;
+
+    /// Returns full name of the type
+    public string FullName 
+    {
+        get 
+        {
+            byte* unsafeName = (*_typeInfo).Name;
+            return UTF8Encoding.GetString(unsafeName);
+        }
+    }
 
     public static bool operator ==(Type t1, Type t2)
     {

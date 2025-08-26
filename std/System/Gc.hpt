@@ -19,6 +19,7 @@ public static class Gc
         _mainRoot = mainRoot;
     }
 
+    private static GcList<ObjectHeader> _tmpList = new unsafe GcList<ObjectHeader>();
     private static GcList<ObjectHeader> _mallocList = new unsafe GcList<ObjectHeader>();
     [DeclarationUsed]
     [SuppressStackTrace]
@@ -32,24 +33,22 @@ public static class Gc
         objectHeader.IsMarked = false;
         objectHeader.Size = size;
         objectHeader.Obj = mem;
-        _mallocList.Add(objectHeader);
+        _tmpList.Add(objectHeader);
         return mem;
     }
 
     [DeclarationUsed]
     [SuppressStackTrace]
-    public static void* NewClassInstance(int size, TypeInfoUnsafe* typeInfo)
+    public static void* NewClassInstance(int size, Type* type)
     {
-        // getting dtor delegate
-        var del = (*typeInfo).DtorDelegate;
         // mallocing
         var mem = Malloc(size);
         // getting the last one that we allocated and 
         // set that it is a class instance
-        var tmpOh = _mallocList[_mallocList.Count - 1];
+        var tmpOh = _tmpList[_tmpList.Count - 1];
         tmpOh.IsClassInstance = true;
-        tmpOh.Dtor = del;
-        _mallocList[_mallocList.Count - 1] = tmpOh;
+        tmpOh.InstanceType = type;
+        _tmpList[_tmpList.Count - 1] = tmpOh;
         return mem;
     }
 
@@ -57,6 +56,11 @@ public static class Gc
     [SuppressStackTrace]
     public static void Collect()
     {
+        // add from tmp list to malloc list
+        for (int i = 0; i < _tmpList.Count; ++i)
+            _mallocList.Add(_tmpList[i]);
+        _tmpList.Clear();
+
         Mark();
         Sweep();
     }
@@ -130,7 +134,15 @@ public static class Gc
             // call dtor if class instance
             if (_mallocList[i].IsClassInstance)
             {
-                _mallocList[i].Dtor.Invoke(_mallocList[i].Obj);
+                Type type = *_mallocList[i].InstanceType;
+#if DEBUG_GC;
+                
+                //Console.WriteLine(string.Format("Calling dtor on {0}", type.FullName));
+                Console.WriteLine(string.Format("Calling dtor on {0}", (uintptr)(*type._typeInfo).Name));
+#endif
+                // getting dtor delegate
+                DtorDelegate del = (*type._typeInfo).DtorDelegate;
+                del.Invoke(_mallocList[i].Obj);
             }
             // free
             Marshal.Free(_mallocList[i].Obj);
@@ -153,7 +165,7 @@ private struct ObjectHeader
     internal int Size;
     internal void* Obj;
     internal bool IsClassInstance;
-    internal DtorDelegate Dtor;
+    internal Type* InstanceType;
 
     [SuppressStackTrace]
     internal ObjectHeader()
@@ -219,6 +231,13 @@ private class GcList<T>
             Marshal.Memcpy(dstP, srcP, (uintptr)((_size - index) * sizeof(T)));
         }
         _items[_size] = default(T);
+    }
+
+    [SuppressStackTrace]
+    public inline void Clear()
+    {
+        Marshal.Memset(_items, 0, (uintptr)(_size * sizeof(T)));  // Clear the elements so that the gc can reclaim the references.
+        _size = 0;
     }
 
     [SuppressStackTrace]

@@ -296,22 +296,8 @@ public class List<T> : IList<T>
     // Clears the contents of List.
     public inline void Clear()
     {
-        /*
-        _version++;
-        if (RuntimeHelpers.IsReferenceOrContainsReferences<T>())
-        {
-            int size = _size;
-            _size = 0;
-            if (size > 0)
-            {
-                Array.Clear(_items, 0, size); // Clear the elements so that the gc can reclaim the references.
-            }
-        }
-        else
-        {
-            _size = 0;
-        }
-        */
+        Array.Clear<T>(_items, 0, (uintptr)_size); // Clear the elements so that the gc can reclaim the references.
+        _size = 0;
     }
 
     // Contains returns true if the specified element is in the List.

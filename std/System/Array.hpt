@@ -84,6 +84,11 @@ public static class Array
         //TODO:
         //Debug.Assert(array != null);
     }
+
+    public static void Clear<T>(T[] array, int index, int length)
+    {
+        Marshal.Memset(array.Buffer + index, 0, length * sizeof(T));
+    }
 }
 
 [SuppressStaticCtorCall]
