@@ -521,10 +521,11 @@ namespace HapetLastPrepare
 
         private void LPRACSATExpr(AstSATOfExpr expr)
         {
-            //if (expr.TargetType.OutType is ClassType)
-            //{
-            //    expr.TargetType = GetPointerType(expr.TargetType);
-            //}
+            if (expr.TargetType.OutType is ClassType && 
+                (expr.ExprType == HapetFrontend.Parsing.TokenType.KwSizeof || expr.ExprType == HapetFrontend.Parsing.TokenType.KwAlignof))
+            {
+                expr.TargetType = GetPointerType(expr.TargetType);
+            }
         }
 
         private void LPRACLambdaExpr(AstLambdaExpr expr)

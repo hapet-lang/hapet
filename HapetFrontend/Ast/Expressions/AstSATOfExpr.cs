@@ -27,7 +27,7 @@ namespace HapetFrontend.Ast.Expressions
 
         public override AstStatement GetDeepCopy()
         {
-            var copy = new AstSATOfExpr(TargetType, ExprType, Location)
+            var copy = new AstSATOfExpr(TargetType.GetDeepCopy() as AstNestedExpr, ExprType, Location)
             {
                 IsCompileTimeValue = IsCompileTimeValue,
                 OutType = OutType,
