@@ -413,6 +413,26 @@ namespace HapetBackend.Llvm
                                 toReturn = val;
                                 break;
                             }
+                            // make special case for ptr diffs
+                            else if (binExpr.Operator == "-" && leftExpr.OutType is PointerType ptrL && rightExpr.OutType is PointerType)
+                            {
+                                var left = GenerateExpressionCode(leftExpr);
+                                // return if the value was not properly generated
+                                if (left == default)
+                                    return default;
+                                var right = GenerateExpressionCode(rightExpr);
+                                // return if the value was not properly generated
+                                if (right == default)
+                                    return default;
+
+                                var leftV = CreateCast(_builder, left, leftExpr.OutType, HapetType.CurrentTypeContext.IntPtrTypeInstance);
+                                var rightV = CreateCast(_builder, right, rightExpr.OutType, HapetType.CurrentTypeContext.IntPtrTypeInstance);
+
+                                var res = _builder.BuildSub(leftV, rightV, "ptrDiff");
+                                res = _builder.BuildUDiv(res, LLVMValueRef.CreateConstInt(HapetTypeToLLVMType(HapetType.CurrentTypeContext.IntPtrTypeInstance), (uint)ptrL.TargetType.GetSize()));
+                                toReturn = CreateCast(_builder, res, HapetType.CurrentTypeContext.IntPtrTypeInstance, binExpr.OutType);
+                                break;
+                            }
                             else
                             {
                                 var left = GenerateExpressionCode(leftExpr);
