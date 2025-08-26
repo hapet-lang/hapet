@@ -5,6 +5,7 @@
 using System.Text.Formatting;
 using System.Runtime.InteropServices;
 
+[DeclarationUsed]
 [SuppressStaticCtorCall]
 public struct String : IComparable, IComparable<string>, IFormattable
 {

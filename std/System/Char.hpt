@@ -4,6 +4,7 @@
 
 using System;
 
+[DeclarationUsed]
 [SuppressStaticCtorCall]
 public struct Char : IComparable, IComparable<char>, IFormattable
 {

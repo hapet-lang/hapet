@@ -4,6 +4,7 @@
 
 using System;
 
+[DeclarationUsed]
 [SuppressStaticCtorCall]
 public struct Boolean : IComparable, IComparable<bool>, IFormattable
 {
