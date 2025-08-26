@@ -653,7 +653,7 @@ namespace HapetBackend.Llvm
                     var boxedTypeData = GetBoxedType(inType);
                     int structSize = boxedTypeData.Item3;
                     // allocating memory for struct
-                    var v = GetNewClassInstance(structSize, _typeInfoDictionary[structType]);
+                    var v = GetNewClassInstance(structSize, _typeDictionary[structType]);
                     // making offset
                     // WARN: always 8 offset is here
                     var normalOffset = LLVMValueRef.CreateConstInt(_context.Int32Type, (ulong)1);
@@ -881,14 +881,14 @@ namespace HapetBackend.Llvm
         #endregion
 
         #region Mallocs
-        private LLVMValueRef GetNewClassInstance(int typeSize, LLVMValueRef typeInfoPtr, string allocName = "allocated")
+        private LLVMValueRef GetNewClassInstance(int typeSize, LLVMValueRef typePtr, string allocName = "allocated")
         {
             var marshalDecl = _currentFunction.Scope.GetSymbolInNamespace("System", new AstIdExpr("Gc"));
             var mallocSymbol = (marshalDecl.Decl as AstClassDecl).SubScope.GetSymbol(new AstIdExpr("NewClassInstance")) as DeclSymbol;
             var mallocFunc = _valueMap[mallocSymbol];
             LLVMTypeRef funcType = _typeMap[mallocSymbol.Decl.Type.OutType];
             var tp = LLVMValueRef.CreateConstInt(HapetTypeToLLVMType(HapetType.CurrentTypeContext.GetIntType(4, true)), (ulong)typeSize);
-            return _builder.BuildCall2(funcType, mallocFunc, new LLVMValueRef[] { tp, typeInfoPtr }, allocName);
+            return _builder.BuildCall2(funcType, mallocFunc, new LLVMValueRef[] { tp, typePtr }, allocName);
         }
         private LLVMValueRef GetSafeMalloc(int typeSize, LLVMValueRef amount, string allocName = "allocated")
         {

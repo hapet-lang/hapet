@@ -690,7 +690,7 @@ namespace HapetBackend.Llvm
                 if (expr.IsUnsafeNew)
                     v = GetMalloc(structSize, 1);
                 else
-                    v = GetNewClassInstance(structSize, _typeInfoDictionary[classType]);
+                    v = GetNewClassInstance(structSize, _typeDictionary[classType]);
                 // making offset
                 // WARN: always 8 offset is here
                 var normalOffset = LLVMValueRef.CreateConstInt(_context.Int32Type, (ulong)1);
