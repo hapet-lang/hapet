@@ -1147,6 +1147,7 @@ namespace HapetPostPrepare
                 {
                     arrayAccExpr.OutType = indDecl.Type.OutType;
                     arrayAccExpr.IndexerDecl = indDecl;
+                    arrayAccExpr.ParameterExpr = PostPrepareVarValueAssign(arrayAccExpr.ParameterExpr, indDecl.IndexerParameter.Type.OutType, inInfo, ref outInfo);
                     return; // everything is ok :)
                 }
             }

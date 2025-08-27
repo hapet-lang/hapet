@@ -524,6 +524,12 @@ namespace HapetBackend.Llvm
                 }
             }
 
+            // if enum - make inType as its parent
+            if (inType is EnumType enm2)
+            {
+                inType = enm2.Declaration.InheritedType.OutType as IntType;
+            }
+
             if (inType is IntPtrType || inType is PtrDiffType)
             {
                 // convert to ptr only if the value is not created by compiler
@@ -572,6 +578,12 @@ namespace HapetBackend.Llvm
 
             if (inType is IntType intType && intType.Signed)
             {
+                // if enum - make outType as its parent
+                if (outType is EnumType enm)
+                {
+                    outType = enm.Declaration.InheritedType.OutType as IntType;
+                }
+
                 if (outType is FloatType floatType)
                 {
                     return builder.BuildSIToFP(val, HapetTypeToLLVMType(floatType));
@@ -594,6 +606,12 @@ namespace HapetBackend.Llvm
             }
             else if ((inType is IntType intType2 && !intType2.Signed) || inType is CharType)
             {
+                // if enum - make outType as its parent
+                if (outType is EnumType enm)
+                {
+                    outType = enm.Declaration.InheritedType.OutType as IntType;
+                }
+
                 if (outType is FloatType floatType)
                 {
                     return builder.BuildUIToFP(val, HapetTypeToLLVMType(floatType));

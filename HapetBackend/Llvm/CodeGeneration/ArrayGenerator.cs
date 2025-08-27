@@ -17,7 +17,7 @@ namespace HapetBackend.Llvm
         {
             ArrayType arrType = expr.OutType as ArrayType;
             AstExpression currentSizeExpr = expr.SizeExprs.Last();
-            LLVMValueRef currentArraySizeValueRef = GenerateExpressionCode(currentSizeExpr);
+            LLVMValueRef currentArraySizeValueRef = CreateCast(_builder, GenerateExpressionCode(currentSizeExpr), currentSizeExpr.OutType, HapetType.CurrentTypeContext.GetIntType(4, true));
             LLVMTypeRef arrayTypeRef = HapetTypeToLLVMType(arrType);
             
             // checking how much to malloc
