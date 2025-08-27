@@ -509,7 +509,7 @@ namespace HapetPostPrepare
                 };
 
                 // we need to add ref to struct first param
-                if (funcDecl.ContainingParent is AstStructDecl)
+                if (funcDecl.ContainingParent is AstStructDecl || funcDecl.ContainingParent is AstDelegateDecl)
                     thisParam.ParameterModificator = ParameterModificator.Ref;
 
                 // adding the param as the func first param

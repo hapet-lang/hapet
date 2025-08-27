@@ -10,6 +10,7 @@ using HapetFrontend.Parsing;
 using HapetFrontend.Scoping;
 using HapetFrontend.Types;
 using LLVMSharp.Interop;
+using System.Data;
 using System.Diagnostics;
 using System.Drawing;
 
@@ -219,6 +220,24 @@ namespace HapetBackend.Llvm
                     {
                         e.SetSizeAndAlignment(e.Declaration.InheritedType.OutType.GetSize(), e.Declaration.InheritedType.OutType.GetAlignment());
                         return _context.GetIntType(((uint)e.Declaration.InheritedType.OutType.GetSize()) * 8);
+                    }
+
+                case DelegateType d:
+                    {
+                        var delD = GetDelegateAnonType(d);
+                        var fieldDeclarations = HapetType.CurrentTypeContext.DelegateTypeInstance.Declaration.GetAllRawFields();
+                        var (offsets, sssize, memTypes, algn) = CalcStructData(fieldDeclarations, 0, false);
+
+                        _typeMap[d] = delD;
+                        // saving the offsets so we can access struct elements easily in the future
+                        _structOffsets[d] = offsets;
+
+                        // getting size and align
+                        d.SetSizeAndAlignment(sssize, algn);
+
+                        // create a boxed type
+                        AddBoxedType(d, 0);
+                        return delD;
                     }
 
                 case StructType s:

@@ -224,7 +224,6 @@ namespace HapetPostPrepare
             }
 
             nestFuncName.RightPart = newName;
-            PostPrepareIdentifierInference(nestFuncName.RightPart as AstIdExpr, inInfo, ref outInfo);
 
             // setting parameters
             if (nestFuncName.RightPart.OutType is FunctionType ft)

@@ -230,7 +230,7 @@ namespace HapetPostPrepare
             }
             else if (callExpr.TypeOrObjectName.OutType is ClassType clsTp)
             {
-                AstDeclaration declToSearchLocal = clsTp is DelegateType delT ? delT.TargetDeclaration : clsTp.Declaration;
+                AstDeclaration declToSearchLocal = clsTp.Declaration;
 
                 // this check is done to handle static-call
                 if (callExpr.TypeOrObjectName.TryGetDeclSymbol(true) is DeclSymbol dds2 && dds2.Decl is AstClassDecl)
@@ -328,9 +328,11 @@ namespace HapetPostPrepare
             }
             else if (callExpr.TypeOrObjectName.OutType is StructType structType)
             {
+                AstDeclaration declToSearchLocal = structType is DelegateType delT ? delT.TargetDeclaration : structType.Declaration;
+
                 // if we are calling like 'A.Anime()' where 'A' is a struct
 
-                var smbl2 = GetFuncFromCandidates(funcName, callExpr.Arguments, structType.Declaration, false, out var casts);
+                var smbl2 = GetFuncFromCandidates(funcName, callExpr.Arguments, declToSearchLocal, false, out var casts);
                 smbl2 = OnFoundSymbol(smbl2, callExpr.FuncName);
                 // check if the decl exists. if not - it could be non static method call
                 if (smbl2 is DeclSymbol ds && ds.Decl is AstFuncDecl funcDecl)
@@ -338,7 +340,7 @@ namespace HapetPostPrepare
                     if (!CheckIfCouldBeAccessed(callExpr, funcDecl))
                         _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, callExpr.FuncName, [], ErrorCode.Get(CTEN.FuncCouldNotBeAccessed));
                     callExpr.Arguments.ReplaceWithCasts(casts);
-                    declToSearch = structType.Declaration;
+                    declToSearch = declToSearchLocal;
                     foundSymbol = ds;
                     return;
                 }
@@ -349,7 +351,7 @@ namespace HapetPostPrepare
                     OutType = callExpr.TypeOrObjectName.OutType,
                     ArgumentModificator = HapetFrontend.Enums.ParameterModificator.Ref,
                 });
-                smbl2 = GetFuncFromCandidates(funcName, argsWithStructParam, structType.Declaration, true, out casts);
+                smbl2 = GetFuncFromCandidates(funcName, argsWithStructParam, declToSearchLocal, true, out casts);
                 smbl2 = OnFoundSymbol(smbl2, callExpr.FuncName);
 
                 var declSymbolOfLeft = callExpr.TypeOrObjectName.TryGetDeclSymbol();
@@ -368,7 +370,7 @@ namespace HapetPostPrepare
                     if (!CheckIfCouldBeAccessed(callExpr, funcDecl2) && !funcDecl2.IsPropertyFunction)
                         _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, callExpr.FuncName, [], ErrorCode.Get(CTEN.FuncCouldNotBeAccessed));
                     callExpr.Arguments.ReplaceWithCasts(casts.Skip(1).ToList());
-                    declToSearch = structType.Declaration;
+                    declToSearch = declToSearchLocal;
                     foundSymbol = ds2;
                     return;
                 }

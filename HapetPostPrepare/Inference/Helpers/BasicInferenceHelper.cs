@@ -31,7 +31,7 @@ namespace HapetPostPrepare
             else if (typeName.Name == "System.Delegate")
             {
                 decl.Type.OutType = HapetType.CurrentTypeContext.DelegateTypeInstance;
-                HapetType.CurrentTypeContext.DelegateTypeInstance.Declaration = decl as AstClassDecl;
+                HapetType.CurrentTypeContext.DelegateTypeInstance.Declaration = decl as AstStructDecl;
             }
             else if (typeName.Name == "System.String")
             {

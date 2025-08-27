@@ -199,7 +199,7 @@ namespace HapetFrontend.Types
         }
     }
 
-    public class DelegateType : ClassType
+    public class DelegateType : StructType
     {
         public override string TypeName => "delegate";
 

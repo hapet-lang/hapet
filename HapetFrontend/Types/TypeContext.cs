@@ -17,7 +17,7 @@ namespace HapetFrontend.Types
         public StringType StringTypeInstance { get; private set; } = new StringType(null);
         public IntPtrType IntPtrTypeInstance { get; private set; } = new IntPtrType(null);
         public PtrDiffType PtrDiffTypeInstance { get; private set; } = new PtrDiffType(null);
-        public ClassType DelegateTypeInstance { get; private set; } = new ClassType(null);
+        public StructType DelegateTypeInstance { get; private set; } = new StructType(null);
         public Dictionary<HapetType, ArrayType> ArrayTypeInstances { get; private set; } = new Dictionary<HapetType, ArrayType>();
         public ArrayType GetArrayType(HapetType targetType)
         {

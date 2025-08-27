@@ -84,6 +84,7 @@ namespace HapetFrontend.Ast.Expressions
                 OutType = this.OutType,
                 OutValue = this.OutValue,
                 SourceFile = this.SourceFile,
+                FindSymbol = this.FindSymbol,
                 TupleNameList = TupleNameList,
             };
             return newId;

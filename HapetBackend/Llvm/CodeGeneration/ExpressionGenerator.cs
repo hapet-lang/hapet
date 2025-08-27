@@ -868,16 +868,14 @@ namespace HapetBackend.Llvm
                 // args shite
                 List<LLVMValueRef> args = new List<LLVMValueRef>();
                 // skip the first object param
-                var parsToSearch = expr.StaticCall ? delType.TargetDeclaration.Parameters : delType.TargetDeclaration.Parameters.Skip(1).ToList();
+                var parsToSearch = delType.TargetDeclaration.Parameters;
                 List<AstArgumentExpr> normalArgs = _postPreparer.GenerateNormalArguments(parsToSearch, expr.Arguments, expr);
                 foreach (var a in normalArgs)
                 {
                     args.Add(GenerateExpressionCode(a));
                 }
 
-                var loadedDelegatePtr = _builder.BuildLoad2(delegateType.GetPointerTo(), hapetDelegate, $"delegateLoadedPtr");
-                var loadedDelegate = _builder.BuildLoad2(delegateType, loadedDelegatePtr, $"delegateLoaded");
-
+                var loadedDelegate = _builder.BuildLoad2(delegateType, hapetDelegate, $"delegateLoaded");
                 var theRealFuncExtracted = _builder.BuildExtractValue(loadedDelegate, 0, "funcExtracted");
                 var ptrToObject = _builder.BuildExtractValue(loadedDelegate, 1, "ptrToObject");
 
