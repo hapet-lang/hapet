@@ -3,6 +3,7 @@ using HapetFrontend.Ast.Declarations;
 using HapetFrontend.Ast.Expressions;
 using HapetFrontend.Errors;
 using HapetFrontend.Extensions;
+using HapetFrontend.Helpers;
 using HapetFrontend.Parsing;
 using HapetFrontend.Scoping;
 using HapetFrontend.Types;
@@ -81,7 +82,7 @@ namespace HapetPostPrepare
                     inInfo.MuteErrors = savedMute;
 
                 // do not allow static fields/props with gen types
-                if (HasAnyGenericTypes([decl.Type]))
+                if (GenericsHelper.HasAnyGenericTypes(decl.Type))
                 {
                     var c1 = decl.SpecialKeys.Contains(TokenType.KwStatic);
                     var c2 = decl.IsExactly<AstVarDecl>() || 

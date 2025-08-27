@@ -14,6 +14,7 @@ using HapetFrontend.Types;
 using HapetFrontend.Entities;
 using HapetFrontend.Enums;
 using HapetFrontend.Errors;
+using System.Diagnostics;
 
 namespace HapetPostPrepare
 {
@@ -65,7 +66,7 @@ namespace HapetPostPrepare
             realDecl.OriginalGenericDecl = decl;
             realDecl.Name = realName;
             // no need to reset HasGenericTypes when using generic shite from another generic
-            realDecl.HasGenericTypes = HasAnyGenericTypes(genericTypes.Select(x => x as AstExpression).ToList());
+            realDecl.HasGenericTypes = GenericsHelper.HasAnyGenericTypes(genericTypes.Select(x => x as AstExpression).ToList());
 
             // getting pure generics from original generic decl
             var pureGenerics = GenericsHelper.GetGenericsFromName(decl.Name as AstIdGenericExpr, _compiler.MessageHandler);
@@ -91,33 +92,6 @@ namespace HapetPostPrepare
             _currentParentStack = savedParentStack;
 
             return realDecl;
-        }
-
-        /// <summary>
-        /// Super cool search for generic type existance
-        /// </summary>
-        /// <param name="genericReals"></param>
-        /// <returns></returns>
-        private bool HasAnyGenericTypes(List<AstExpression> genericReals)
-        {
-            foreach (var g in genericReals)
-            {
-                if (g.OutType is GenericType)
-                    return true;
-
-                if (g is AstNestedExpr nst && nst.RightPart is AstIdGenericExpr genId)
-                {
-                    if (HasAnyGenericTypes(genId.GenericRealTypes))
-                        return true;
-                }
-                
-                if (g is AstIdGenericExpr genId2)
-                {
-                    if (HasAnyGenericTypes(genId2.GenericRealTypes))
-                        return true;
-                }
-            }
-            return false;
         }
 
         private readonly Stack<(AstDeclaration, List<AstExpression>)> _currentlyCheckingDeclarations = new Stack<(AstDeclaration, List<AstExpression>)>();

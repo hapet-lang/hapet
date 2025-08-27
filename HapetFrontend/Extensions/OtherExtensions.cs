@@ -6,6 +6,7 @@ using HapetFrontend.Types;
 using System.Text;
 using HapetFrontend.Entities;
 using HapetFrontend.Errors;
+using HapetFrontend.Helpers;
 
 namespace HapetFrontend.Extensions
 {
@@ -50,7 +51,7 @@ namespace HapetFrontend.Extensions
                     val = argE.Expr;
 
                 // skip the cast if it is generic
-                if (val is AstCastExpr cst && cst.TypeExpr.OutType is GenericType)
+                if (val is AstCastExpr cst && GenericsHelper.HasAnyGenericTypes(cst.TypeExpr))
                     continue;
 
                 args[i].Expr = val;

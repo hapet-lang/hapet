@@ -10,6 +10,7 @@ using HapetFrontend.Entities;
 using HapetFrontend.Errors;
 using HapetFrontend.Parsing;
 using HapetFrontend.Enums;
+using System.Diagnostics;
 
 namespace HapetFrontend.Helpers
 {
@@ -256,6 +257,54 @@ namespace HapetFrontend.Helpers
                 }
             }
             return funcName;
+        }
+
+        /// <summary>
+        /// Super cool search for generic type existance
+        /// </summary>
+        /// <param name="genericReals"></param>
+        /// <returns></returns>
+        public static bool HasAnyGenericTypes(List<AstExpression> genericReals)
+        {
+            foreach (var g in genericReals)
+            {
+                if (g.OutType is GenericType)
+                    return true;
+                if (HasAnyGenericTypes(g))
+                    return true;
+            }
+            return false;
+        }
+
+        public static bool HasAnyGenericTypes(AstExpression expr)
+        {
+            if (HasAnyGenericTypes(expr.OutType))
+                return true;
+            else if (expr is AstIdGenericExpr genId)
+                return HasAnyGenericTypes(genId.GenericRealTypes);
+            else if (expr is AstNestedExpr nst && nst.RightPart is AstIdGenericExpr genId2)
+                return HasAnyGenericTypes(genId2.GenericRealTypes);
+            else if (expr is AstNestedExpr nst2 && nst2.RightPart is AstArrayExpr arr)
+                return HasAnyGenericTypes(arr.SubExpression);
+            else if (expr is AstNestedExpr nst3 && nst3.RightPart is AstPointerExpr ptr)
+                return HasAnyGenericTypes(ptr.SubExpression);
+            else if (expr is AstNestedExpr nst4 && nst4.RightPart is AstIdExpr idE)
+                return HasAnyGenericTypes(idE);
+            else if (expr is AstIdExpr || expr is AstEmptyExpr)
+                return false; // just return false because OutType is checked above
+            Debug.Assert(false, "Unexcepted expr type to check");
+            return false;
+        }
+
+        public static bool HasAnyGenericTypes(HapetType type)
+        {
+            if (type is GenericType)
+                return true;
+            else if (type is PointerType ptr)
+                return HasAnyGenericTypes(ptr.TargetType);
+            else if (type is ArrayType arr)
+                return HasAnyGenericTypes(arr.TargetType);
+            return false;
         }
     }
 }

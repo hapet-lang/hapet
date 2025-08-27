@@ -451,7 +451,7 @@ namespace HapetPostPrepare
                 var realName = genId.GetCopy(typed.Decl.Name.Name);
                 // create a new shite with real types
                 var realDecl = GetRealTypeFromGeneric(typed.Decl, genId.GenericRealTypes.GetNestedList(_compiler.MessageHandler),
-                    realName, HasAnyGenericTypes(genId.GenericRealTypes));
+                    realName, GenericsHelper.HasAnyGenericTypes(genId.GenericRealTypes));
                 return realDecl.Symbol as DeclSymbol;
             }
         }
