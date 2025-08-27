@@ -17,6 +17,7 @@ public static class Console
         int sz = 0;
         byte* bytes = UTF8Encoding.GetBytesUnsafe(text, out sz);
         Puts(bytes);
+        Marshal.FlushStdout();
         Marshal.Free(bytes);
     }
 

@@ -29,4 +29,18 @@ public static class Marshal
 
     [DllImport("", "modf")]
     public static extern inline double ModF(double num, double* i);
+
+    [DeclarationUsed]
+    [DllImport("", "fflush")]
+    public static extern inline int Fflush(void* stream);
+
+    [DllImport("", "__acrt_iob_func")]
+    private static extern inline void* AcrtIobFunc(uint ix);
+
+    [SuppressStackTrace]
+    public static inline void FlushStdout()
+    {
+        // TODO: is it crossplatform?
+        Fflush(AcrtIobFunc(1));
+    }
 }
