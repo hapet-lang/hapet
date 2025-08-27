@@ -136,9 +136,8 @@ public static class Gc
             {
                 Type type = *_mallocList[i].InstanceType;
 #if DEBUG_GC;
-                
-                //Console.WriteLine(string.Format("Calling dtor on {0}", type.FullName));
-                Console.WriteLine(string.Format("Calling dtor on {0}", (uintptr)(*type._typeInfo).Name));
+                Console.WriteLine(string.Format("Calling dtor on {0}", type.FullName));
+                //Console.WriteLine(string.Format("Calling dtor on {0:X}", (uintptr)(*type._typeInfo).Name));
 #endif
                 // getting dtor delegate
                 DtorDelegate del = (*type._typeInfo).DtorDelegate;

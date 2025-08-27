@@ -211,7 +211,12 @@ public sealed partial unsafe class StringBuffer
     inline void CheckCapacity(int count)
     {
         if (currentCount + count > buffer.Length)
-            Array.Resize<char>(ref buffer, buffer.Length * 2);
+        {
+            int newSize = buffer.Length * 2;
+            // could be not enough so do it in loop
+            while (newSize <= currentCount + count) newSize = newSize * 2; 
+            Array.Resize<char>(ref buffer, newSize);
+        }
     }
 
     bool AppendSegment(ref char* currRef, char* end, char* dest, ref int prevArgIndex, object[] args) 
