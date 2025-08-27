@@ -14,10 +14,17 @@ public static class Gc
     private static void* _mainRoot = null;
     [DeclarationUsed]
     [SuppressStackTrace]
-    public static void SetMainRoot(void* mainRoot)
-    {
-        _mainRoot = mainRoot;
-    }
+    public static void SetMainRoot(void* mainRoot) => _mainRoot = mainRoot;
+
+    private static GcList<uintptr> _constRoots = new unsafe GcList<uintptr>();
+    [DeclarationUsed]
+    [SuppressStackTrace]
+    public static void AddConstRoot(void* root) => _constRoots.Add(root);
+
+    private static GcList<uintptr> _staticRoots = new unsafe GcList<uintptr>();
+    [DeclarationUsed]
+    [SuppressStackTrace]
+    public static void AddStaticRoot(void* root) => _staticRoots.Add(root);
 
     private static GcList<ObjectHeader> _tmpList = new unsafe GcList<ObjectHeader>();
     private static GcList<ObjectHeader> _mallocList = new unsafe GcList<ObjectHeader>();
