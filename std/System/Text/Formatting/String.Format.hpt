@@ -265,7 +265,7 @@ public sealed partial unsafe class StringBuffer
 
         // check for a spacing specifier
         c = SkipWhitespace(ref curr, end);
-        var width = 0;
+        int width = 0;
         var leftJustify = false;
         var oldCount = currentCount;
         if (c == ',')

@@ -248,7 +248,7 @@ public static class Number
             char c = specifier[0];
             if (c == 'X' || c == 'x')
             {
-                return FormatUInt32((uint)(value & 0xFF), specifier, culture);
+                return FormatUInt32((uint)((byte)value & 0xFF), specifier, culture);
             }
         }
 
@@ -263,7 +263,7 @@ public static class Number
             char c = specifier[0];
             if (c == 'X' || c == 'x')
             {
-                return FormatUInt32((uint)(value & 0xFFFF), specifier, culture);
+                return FormatUInt32((uint)((ushort)value & 0xFFFF), specifier, culture);
             }
         }
 
@@ -521,9 +521,9 @@ public static class Number
         if (digits < 1)
             digits = 1;
 
-        var maxDigits = 15;
-        var bufferLength = maxDigits > 100 ? maxDigits : 100;
-        var negativeLength = 0;
+        int maxDigits = 15;
+        int bufferLength = maxDigits > 100 ? maxDigits : 100;
+        int negativeLength = 0;
 
         if (value < 0)
         {
@@ -548,8 +548,8 @@ public static class Number
         if (digits < 1)
             digits = 1;
 
-        var maxDigits = 15;
-        var bufferLength = maxDigits > 100 ? maxDigits : 100;
+        int maxDigits = 15;
+        int bufferLength = maxDigits > 100 ? maxDigits : 100;
 
         var buffer = (stackalloc char[bufferLength]).Buffer;
         var p = Int32ToDecChars(buffer + bufferLength, value, digits);
@@ -561,9 +561,9 @@ public static class Number
         if (digits < 1)
             digits = 1;
 
-        var sign = (int)High32((ulong)value);
-        var maxDigits = 20;
-        var bufferLength = maxDigits > 100 ? maxDigits : 100;
+        int sign = (int)High32((ulong)value);
+        int maxDigits = 20;
+        int bufferLength = maxDigits > 100 ? maxDigits : 100;
 
         if (sign < 0)
         {
@@ -597,8 +597,8 @@ public static class Number
         if (digits < 1)
             digits = 1;
 
-        var maxDigits = 20;
-        var bufferLength = maxDigits > 100 ? maxDigits : 100;
+        int maxDigits = 20;
+        int bufferLength = maxDigits > 100 ? maxDigits : 100;
 
         var buffer = (stackalloc char[bufferLength]).Buffer;
         var p = buffer + bufferLength;
@@ -617,6 +617,7 @@ public static class Number
         while (value != 0)
         {
             char c = (char)((int)value % 10 + '0');
+            Console.Dbg((byte)c);
             *--p = c;
             value /= 10;
             digits--;
@@ -888,12 +889,12 @@ public static class Number
             *buffer++ = '0';
         else if (groups != null)
         {
-            var groupIndex = 0;
+            int groupIndex = 0;
             var groupSizeCount = groups[0];
             var groupSizeLen = groups.Length;
             var newBufferSize = digitPos;
             var groupSeparatorLen = data.GroupSeparator.Length;
-            var groupSize = 0;
+            int groupSize = 0;
 
             // figure out the size of the result
             if (groupSizeLen != 0)
@@ -920,7 +921,7 @@ public static class Number
             }
 
             groupIndex = 0;
-            var digitCount = 0;
+            int digitCount = 0;
             var digitLength = StrLen(digits);
             var digitStart = digitPos < digitLength ? digitPos : digitLength;
             var ptr = buffer + newBufferSize - 1;

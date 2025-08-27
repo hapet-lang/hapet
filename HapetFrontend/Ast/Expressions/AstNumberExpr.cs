@@ -21,11 +21,45 @@ namespace HapetFrontend.Ast.Expressions
             {
                 if (data.Type == Enums.NumberType.Float)
                 {
-                    OutType = FloatType.DefaultType;
+                    OutType = HapetType.CurrentTypeContext.GetFloatType(8); // default is double
                 }
                 else
                 {
-                    OutType = IntType.DefaultType;
+                    // check if signed
+                    if (data.IntValue < 0)
+                    {
+                        if (data.IntValue >= sbyte.MinValue)
+                            OutType = HapetType.CurrentTypeContext.GetIntType(1, true);
+                        else if (data.IntValue >= short.MinValue)
+                            OutType = HapetType.CurrentTypeContext.GetIntType(2, true);
+                        else if (data.IntValue >= int.MinValue)
+                            OutType = HapetType.CurrentTypeContext.GetIntType(4, true);
+                        else if (data.IntValue >= long.MinValue)
+                            OutType = HapetType.CurrentTypeContext.GetIntType(8, true);
+                        else
+                            Debug.Assert(false, "Too big int");
+                    }
+                    else
+                    {
+                        if (data.IntValue <= sbyte.MaxValue)
+                            OutType = HapetType.CurrentTypeContext.GetIntType(1, true);
+                        else if (data.IntValue <= byte.MaxValue)
+                            OutType = HapetType.CurrentTypeContext.GetIntType(1, false);
+                        else if (data.IntValue <= short.MaxValue)
+                            OutType = HapetType.CurrentTypeContext.GetIntType(2, true);
+                        else if (data.IntValue <= ushort.MaxValue)
+                            OutType = HapetType.CurrentTypeContext.GetIntType(2, false);
+                        else if (data.IntValue <= int.MaxValue)
+                            OutType = HapetType.CurrentTypeContext.GetIntType(4, true);
+                        else if (data.IntValue <= uint.MaxValue)
+                            OutType = HapetType.CurrentTypeContext.GetIntType(4, false);
+                        else if (data.IntValue <= long.MaxValue)
+                            OutType = HapetType.CurrentTypeContext.GetIntType(8, true);
+                        else if (data.IntValue <= ulong.MaxValue)
+                            OutType = HapetType.CurrentTypeContext.GetIntType(8, false);
+                        else
+                            Debug.Assert(false, "Too big int");
+                    }
                 }
             }
             else
