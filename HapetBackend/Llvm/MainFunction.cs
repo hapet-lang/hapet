@@ -111,6 +111,15 @@ namespace HapetBackend.Llvm
                 // need to initialize module before any code
                 _builder.BuildCall2(_moduleInitializer.Item1, _moduleInitializer.Item2, []);
 
+                // set main root here
+                var result = _builder.BuildAlloca(HapetTypeToLLVMType(HapetType.CurrentTypeContext.IntPtrTypeInstance), "mainRoot");
+                result.SetAlignment((uint)HapetType.CurrentTypeContext.IntPtrTypeInstance.GetSize());
+                parentDecl = _compiler.MainFunction.Scope.GetSymbolInNamespace("System", new AstIdExpr("Gc"));
+                funcDecl = (parentDecl.Decl as AstClassDecl).SubScope.GetSymbol(new AstIdExpr("SetMainRoot")) as DeclSymbol;
+                funcValue = _valueMap[funcDecl];
+                funcType = _typeMap[funcDecl.Decl.Type.OutType];
+                _builder.BuildCall2(funcType, funcValue, [result]);
+
                 // need to call at first stors 
                 // of System.Gc
                 parentDecl = _compiler.MainFunction.Scope.GetSymbolInNamespace("System", new AstIdExpr("Gc"));
