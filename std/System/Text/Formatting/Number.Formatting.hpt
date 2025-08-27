@@ -617,7 +617,6 @@ public static class Number
         while (value != 0)
         {
             char c = (char)((int)value % 10 + '0');
-            Console.Dbg((byte)c);
             *--p = c;
             value /= 10;
             digits--;
