@@ -7,6 +7,7 @@ using System;
 using System.Runtime;
 using System.Runtime.Conversion;
 using System.Runtime.InteropServices;
+using System.Text.Formatting;
 
 [DeclarationUsed]
 public static class Gc
@@ -34,15 +35,15 @@ public static class Gc
     [SuppressStackTrace]
     public static void* Malloc(int size)
     {
-#if DEBUG_GC;
-        Console.WriteLine("Malloc");
-#endif
         void* mem = Marshal.Malloc(size);
         ObjectHeader objectHeader = new ObjectHeader();
         objectHeader.IsMarked = false;
         objectHeader.Size = size;
         objectHeader.Obj = mem;
         _tmpList.Add(objectHeader);
+#if DEBUG_GC;
+        PrintMalloc((uintptr)mem);
+#endif
         return mem;
     }
 
@@ -87,11 +88,29 @@ public static class Gc
         {
             MarkPointer((void*)i);
         }
+
+        // go over roots
+        for (int i = 0; i < _globalRoots.Count; ++i)
+        {
+            GcRoot root = _globalRoots[i];
+            // skip global values which contain
+            // data less than size of ptr
+            if (root.Size < sizeof(uintptr))
+                continue;
+            
+            // go over data in the value of global
+            for (uintptr j = (uintptr)root.Root; j < ((uintptr)root.Root + (uintptr)root.Size); j += step)
+            {
+                MarkPointer((void*)j);
+            }
+        }
     }
 
     [SuppressStackTrace]
     private static void MarkPointer(void* ptr)
     {
+        if (ptr == null)
+            return;
         // derefing the ptr and gettings its ptrsize value
         uintptr deref = (uintptr)(*((uintptr*)ptr));
         for (int i = 0; i < _mallocList.Count; ++i)
@@ -102,7 +121,7 @@ public static class Gc
                 continue;
 
 #if DEBUG_GC;
-            Console.WriteLine("Marking");
+            Console.WriteLine(string.Format("Marking {0}", obj));
 #endif
 
             // mark it
@@ -114,8 +133,7 @@ public static class Gc
             uintptr step = (uintptr)sizeof(uintptr);
             for (uintptr j = obj; j < obj + (uintptr)_mallocList[i].Size; j += step)
             {
-                uintptr deref2 = (uintptr)(*((uintptr*)j));
-                MarkPointer((void*)deref2);
+                MarkPointer((void*)j);
             }
         }
     }
@@ -137,7 +155,7 @@ public static class Gc
             }
 
 #if DEBUG_GC;
-            Console.WriteLine("Clearing");
+            Console.WriteLine(string.Format("Clear   {0}", (uintptr)_mallocList[i].Obj));
 #endif
 
             // call dtor if class instance
@@ -161,6 +179,35 @@ public static class Gc
         {
             _mallocList.RemoveAt(toDelete[i]);
         }
+    }
+
+    // helpers
+
+    [SuppressStackTrace]
+    private static void PrintMalloc(uintptr ptr)
+    {
+        byte* chars = (byte*)Marshal.Malloc(30 * sizeof(byte));
+        int i = 0;
+        chars[i++] = 'M'; chars[i++] = 'a'; chars[i++] = 'l'; chars[i++] = 'l'; chars[i++] = 'o'; chars[i++] = 'c'; chars[i++] = ' '; chars[i++] = ' ';
+        int size = 0;
+        byte* numP = UintptrToChars(ptr, out size);
+        for (int j = 0; j < size; ++j)
+            chars[i++] = numP[j];
+        chars[i++] = '\0';
+        Console.Puts(chars);
+        Marshal.Free(chars);
+    }
+
+    [SuppressStackTrace]
+    private static byte* UintptrToChars(uintptr ptr, out int size)
+    {
+        int digits = 1;
+        ulong value = ptr;
+        int bufferLength = 20;
+        var buffer = (stackalloc byte[bufferLength]).Buffer;
+        var p = Number.UInt64ToDecBytes(buffer + bufferLength, value, digits);
+        size = (int)(buffer + bufferLength - p);
+        return p;
     }
 }
 
