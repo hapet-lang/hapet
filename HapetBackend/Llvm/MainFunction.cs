@@ -111,11 +111,6 @@ namespace HapetBackend.Llvm
                 // need to initialize module before any code
                 _builder.BuildCall2(_moduleInitializer.Item1, _moduleInitializer.Item2, []);
 
-                // set main root here
-                var result = _builder.BuildAlloca(HapetTypeToLLVMType(HapetType.CurrentTypeContext.IntPtrTypeInstance), "mainRoot");
-                result.SetAlignment((uint)HapetType.CurrentTypeContext.IntPtrTypeInstance.GetSize());
-                CallSetMainRoot(result);
-
                 // need to call at first stors 
                 // of System.Gc
                 parentDecl = _compiler.MainFunction.Scope.GetSymbolInNamespace("System", new AstIdExpr("Gc"));
@@ -123,6 +118,10 @@ namespace HapetBackend.Llvm
                 funcValue = _valueMap[funcDecl];
                 funcType = _typeMap[funcDecl.Decl.Type.OutType];
                 _builder.BuildCall2(funcType, funcValue, []);
+                // set main root here
+                var result = _builder.BuildAlloca(HapetTypeToLLVMType(HapetType.CurrentTypeContext.IntPtrTypeInstance), "mainRoot");
+                result.SetAlignment((uint)HapetType.CurrentTypeContext.IntPtrTypeInstance.GetSize());
+                CallSetMainRoot(result);
                 // of System.StackTrace
                 parentDecl = _compiler.MainFunction.Scope.GetSymbolInNamespace("System", new AstIdExpr("StackTrace"));
                 funcDecl = (parentDecl.Decl as AstClassDecl).SubScope.GetSymbol(new AstIdExpr("StackTrace_stor")) as DeclSymbol;
