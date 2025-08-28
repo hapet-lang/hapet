@@ -21,6 +21,7 @@ namespace HapetBackend.Llvm
         private readonly List<(ISymbol, AstExpression)> _initializersMapList = new List<(ISymbol, AstExpression)>();
 
         private (LLVMTypeRef, LLVMValueRef) _moduleInitializer;
+        private (LLVMTypeRef, LLVMValueRef) _gcRootsSetter;
 
         /// <summary>
         /// Inits some dicts and other shite with metadata types :)
@@ -34,6 +35,7 @@ namespace HapetBackend.Llvm
             GenerateMetadataShiteFieldInitializers();
 
             _moduleInitializer = CreateModuleInitializer();
+            _gcRootsSetter = CreateGcRootsSetter();
         }
         
         private void GenerateMetadataShiteTypes()

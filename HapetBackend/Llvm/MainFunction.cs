@@ -114,11 +114,7 @@ namespace HapetBackend.Llvm
                 // set main root here
                 var result = _builder.BuildAlloca(HapetTypeToLLVMType(HapetType.CurrentTypeContext.IntPtrTypeInstance), "mainRoot");
                 result.SetAlignment((uint)HapetType.CurrentTypeContext.IntPtrTypeInstance.GetSize());
-                parentDecl = _compiler.MainFunction.Scope.GetSymbolInNamespace("System", new AstIdExpr("Gc"));
-                funcDecl = (parentDecl.Decl as AstClassDecl).SubScope.GetSymbol(new AstIdExpr("SetMainRoot")) as DeclSymbol;
-                funcValue = _valueMap[funcDecl];
-                funcType = _typeMap[funcDecl.Decl.Type.OutType];
-                _builder.BuildCall2(funcType, funcValue, [result]);
+                CallSetMainRoot(result);
 
                 // need to call at first stors 
                 // of System.Gc
@@ -180,6 +176,9 @@ namespace HapetBackend.Llvm
                     LLVM.AppendExistingBasicBlock(lfunc, bbTry);
                     _builder.PositionAtEnd(bbTry);
                 }
+
+                // need to set gc roots before any GC code
+                _builder.BuildCall2(_gcRootsSetter.Item1, _gcRootsSetter.Item2, []);
 
                 // need to call stors caller
                 GenerateFuncCode(_compiler.StorsCallerFunction, null, true);

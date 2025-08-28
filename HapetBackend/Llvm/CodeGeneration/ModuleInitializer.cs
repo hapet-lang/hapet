@@ -1,8 +1,11 @@
-﻿using HapetFrontend.Extensions;
+﻿using HapetFrontend.Ast.Declarations;
+using HapetFrontend.Ast.Expressions;
+using HapetFrontend.Extensions;
 using HapetFrontend.Parsing;
 using HapetFrontend.Scoping;
 using HapetFrontend.Types;
 using LLVMSharp.Interop;
+using System.Xml.Linq;
 
 namespace HapetBackend.Llvm
 {
@@ -82,6 +85,58 @@ namespace HapetBackend.Llvm
                     continue;
                 _builder.BuildStore(HapetValueToLLVMValue(decl.Type.OutType, ini.Item2.OutValue), field);
             }
+            _builder.BuildRetVoid();
+
+            return (ltype, lfunc);
+        }
+
+        public (LLVMTypeRef, LLVMValueRef) CreateGcRootsSetter()
+        {
+            // to check if it was inited only once
+            var globStatic = _module.AddGlobal(HapetTypeToLLVMType(HapetType.CurrentTypeContext.BoolTypeInstance),
+                $"is_{_compiler.CurrentProjectSettings.ProjectName}_gc_roots_setter_called");
+            globStatic.Linkage = LLVMLinkage.LLVMExternalLinkage;
+            globStatic.Initializer = LLVMValueRef.CreateConstInt(HapetTypeToLLVMType(HapetType.CurrentTypeContext.BoolTypeInstance), 0);
+
+            // create a func to init all the type infos
+            var ltype = LLVMTypeRef.CreateFunction(HapetTypeToLLVMType(HapetType.CurrentTypeContext.VoidTypeInstance), [], false);
+            var lfunc = _module.AddFunction($"{_compiler.CurrentProjectSettings.ProjectName}_gc_roots_setter", ltype);
+            lfunc.Linkage = LLVMLinkage.LLVMExternalLinkage;
+            lfunc.DLLStorageClass = LLVMDLLStorageClass.LLVMDLLExportStorageClass;
+
+            // make check that is already inited
+            var entry = lfunc.AppendBasicBlockInContext(_context, "entry");
+            var notInited = lfunc.AppendBasicBlockInContext(_context, "not.inited");
+            var end = lfunc.AppendBasicBlockInContext(_context, "end");
+
+            _builder.PositionAtEnd(entry);
+            var loadedVar = _builder.BuildLoad2(HapetTypeToLLVMType(HapetType.CurrentTypeContext.BoolTypeInstance), globStatic, "isInited");
+            _builder.BuildCondBr(loadedVar, end, notInited);
+
+            _builder.PositionAtEnd(notInited);
+            _builder.BuildStore(LLVMValueRef.CreateConstInt(HapetTypeToLLVMType(HapetType.CurrentTypeContext.BoolTypeInstance), 1), globStatic);
+
+            // need to call all dependent initers
+            foreach (var d in _compiler.CurrentProjectData.AllReferencedProjectNames)
+            {
+                string funcName = $"{d}_gc_roots_setter";
+                LLVMValueRef lfuncDep = _module.AddFunction(funcName, ltype);
+                lfuncDep.Linkage = LLVMLinkage.LLVMExternalLinkage;
+                lfuncDep.DLLStorageClass = LLVMDLLStorageClass.LLVMDLLImportStorageClass;
+                _builder.BuildCall2(ltype, lfuncDep, []);
+            }
+
+            foreach (var ini in _initializersMapList)
+            {
+                var field = _valueMap[ini.Item1];
+                var decl = (ini.Item1 as DeclSymbol).Decl;
+
+                // add the field into gc root list
+                CallAddGlobalRoot(field, decl.Type.OutType.GetSize(), !decl.SpecialKeys.Contains(TokenType.KwConst));
+            }
+
+            _builder.BuildBr(end);
+            _builder.PositionAtEnd(end);
             _builder.BuildRetVoid();
 
             return (ltype, lfunc);

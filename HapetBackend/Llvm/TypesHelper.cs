@@ -972,6 +972,31 @@ namespace HapetBackend.Llvm
         }
         #endregion
 
+        #region Gc roots
+        private void CallSetMainRoot(LLVMValueRef root)
+        {
+            var parentDecl = _compiler.MainFunction.Scope.GetSymbolInNamespace("System", new AstIdExpr("Gc"));
+            var funcDecl = (parentDecl.Decl as AstClassDecl).SubScope.GetSymbol(new AstIdExpr("SetMainRoot")) as DeclSymbol;
+            var funcValue = _valueMap[funcDecl];
+            var funcType = _typeMap[funcDecl.Decl.Type.OutType];
+            _builder.BuildCall2(funcType, funcValue, [root]);
+        }
+
+        private void CallAddGlobalRoot(LLVMValueRef root, int typeSize, bool isStatic)
+        {
+            var parentDecl = _currentFunction.Scope.GetSymbolInNamespace("System", new AstIdExpr("Gc"));
+            var funcDecl = (parentDecl.Decl as AstClassDecl).SubScope.GetSymbol(new AstIdExpr("AddGlobalRoot")) as DeclSymbol;
+            var funcValue = _valueMap[funcDecl];
+            var funcType = _typeMap[funcDecl.Decl.Type.OutType];
+            _builder.BuildCall2(funcType, funcValue, 
+                [
+                    root,
+                    LLVMValueRef.CreateConstInt(HapetTypeToLLVMType(HapetType.CurrentTypeContext.GetIntType(4, true)), (ulong)typeSize),
+                    LLVMValueRef.CreateConstInt(HapetTypeToLLVMType(HapetType.CurrentTypeContext.BoolTypeInstance), (ulong)(isStatic ? 1 : 0))
+                ]);
+        }
+        #endregion
+
         #region Memcmp
         private LLVMValueRef GetMemcmp(LLVMValueRef ptr1, LLVMValueRef ptr2, LLVMValueRef num, string name = "compared")
         {
