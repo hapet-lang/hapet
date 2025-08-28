@@ -58,6 +58,8 @@ public static class Gc
         var tmpOh = _tmpList[_tmpList.Count - 1];
         tmpOh.IsClassInstance = true;
         tmpOh.InstanceType = type;
+        tmpOh.Obj = GetOffseted(tmpOh.Obj);
+        tmpOh.Size = tmpOh.Size - 8;
         _tmpList[_tmpList.Count - 1] = tmpOh;
         return mem;
     }
@@ -168,9 +170,14 @@ public static class Gc
                 // getting dtor delegate
                 DtorDelegate del = (*type._typeInfo).DtorDelegate;
                 del.Invoke(_mallocList[i].Obj);
+                // free without offset
+                Marshal.Free(GetNonOffseted(_mallocList[i].Obj));
             }
-            // free
-            Marshal.Free(_mallocList[i].Obj);
+            else
+            {
+                // just free
+                Marshal.Free(_mallocList[i].Obj);
+            }
             toDelete.Add(i);
         }
 
@@ -182,6 +189,20 @@ public static class Gc
     }
 
     // helpers
+
+    [SuppressStackTrace]
+    private static void* GetOffseted(void* obj)
+    {
+        ulong* offseted = (ulong*)obj + 1;
+        return offseted;
+    }
+
+    [SuppressStackTrace]
+    private static void* GetNonOffseted(void* obj)
+    {
+        ulong* offseted = (ulong*)obj - 1;
+        return offseted;
+    }
 
     [SuppressStackTrace]
     private static void PrintMalloc(uintptr ptr)
