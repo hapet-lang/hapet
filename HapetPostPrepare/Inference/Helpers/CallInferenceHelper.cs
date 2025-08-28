@@ -359,7 +359,7 @@ namespace HapetPostPrepare
                 {
                     // error because user tries to access non static method from a struct name
                     // it should be AstVarDecl at least
-                    if (declSymbolOfLeft.Decl is AstStructDecl)
+                    if (declSymbolOfLeft != null && declSymbolOfLeft.Decl is AstStructDecl)
                     {
                         _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, callExpr.FuncName, [], ErrorCode.Get(CTEN.NonStaticFuncFromStatic));
                         declToSearch = null;
