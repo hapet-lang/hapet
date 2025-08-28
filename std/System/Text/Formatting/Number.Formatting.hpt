@@ -232,7 +232,7 @@ public static class Number
             AppendString(&buffer, positiveSign);
 
         var digits = (stackalloc char[11]).Buffer;
-        var ptr = Int32ToDecChars(digits + 10, (uint)value, minDigits);
+        var ptr = UInt32ToDecChars(digits + 10, (uint)value, minDigits);
         var len = (int)(digits + 10 - ptr);
         while (--len >= 0)
             *buffer++ = *ptr++;
@@ -248,7 +248,7 @@ public static class Number
             char c = specifier[0];
             if (c == 'X' || c == 'x')
             {
-                return FormatUInt32((uint)((byte)value & 0xFF), specifier, culture);
+                return FormatUInt32((uint)(value & 0xFF), specifier, culture);
             }
         }
 
@@ -263,7 +263,7 @@ public static class Number
             char c = specifier[0];
             if (c == 'X' || c == 'x')
             {
-                return FormatUInt32((uint)((ushort)value & 0xFFFF), specifier, culture);
+                return FormatUInt32((uint)(value & 0xFFFF), specifier, culture);
             }
         }
 
@@ -533,7 +533,7 @@ public static class Number
         }
 
         var buffer = (stackalloc char[bufferLength]).Buffer;
-        var p = Int32ToDecChars(buffer + bufferLength, value >= 0 ? (uint)value : (uint)(-value), digits);
+        var p = UInt32ToDecChars(buffer + bufferLength, value >= 0 ? (uint)value : (uint)(-value), digits);
         if (value < 0)
         {
             // add the negative sign
@@ -552,7 +552,7 @@ public static class Number
         int bufferLength = maxDigits > 100 ? maxDigits : 100;
 
         var buffer = (stackalloc char[bufferLength]).Buffer;
-        var p = Int32ToDecChars(buffer + bufferLength, value, digits);
+        var p = UInt32ToDecChars(buffer + bufferLength, value, digits);
         return GetStringFromBufferCopy(p, (int)(buffer + bufferLength - p));
     }
 
@@ -574,15 +574,7 @@ public static class Number
         }
 
         var buffer = (stackalloc char[bufferLength]).Buffer;
-        var p = buffer + bufferLength;
-        var uv = (ulong)value;
-        while (High32(uv) != 0)
-        {
-            p = Int32ToDecChars(p, Int64DivMod(ref uv), 9);
-            digits -= 9;
-        }
-
-        p = Int32ToDecChars(p, Low32(uv), digits);
+        var p = UInt64ToDecChars(buffer + bufferLength, (ulong)value, digits);
         if (sign < 0)
         {
             // add the negative sign
@@ -601,22 +593,52 @@ public static class Number
         int bufferLength = maxDigits > 100 ? maxDigits : 100;
 
         var buffer = (stackalloc char[bufferLength]).Buffer;
-        var p = buffer + bufferLength;
-        while (High32(value) != 0)
-        {
-            p = Int32ToDecChars(p, Int64DivMod(ref value), 9);
-            digits -= 9;
-        }
-
-        p = Int32ToDecChars(p, Low32(value), digits);
+        var p = UInt64ToDecChars(buffer + bufferLength, value, digits);
         return GetStringFromBufferCopy(p, (int)(buffer + bufferLength - p));
     }
 
-    static char* Int32ToDecChars(char* p, uint value, int digits)
+    [SuppressStackTrace]
+    internal static char* UInt32ToDecChars(char* p, uint value, int digits)
     {
         while (value != 0)
         {
-            char c = (char)((int)value % 10 + '0');
+            char c = (char)(value % 10 + '0');
+            *--p = c;
+            value /= 10;
+            digits--;
+        }
+
+        while (--digits >= 0)
+        {
+            *--p = '0';
+        }
+        return p;
+    }
+
+    [SuppressStackTrace]
+    internal static char* UInt64ToDecChars(char* p, ulong value, int digits)
+    {
+        while (value != 0)
+        {
+            char c = (char)(value % 10 + '0');
+            *--p = c;
+            value /= 10;
+            digits--;
+        }
+
+        while (--digits >= 0)
+        {
+            *--p = '0';
+        }
+        return p;
+    }
+
+    [SuppressStackTrace]
+    internal static byte* UInt64ToDecBytes(byte* p, ulong value, int digits)
+    {
+        while (value != 0)
+        {
+            byte c = (byte)(value % 10 + '0');
             *--p = c;
             value /= 10;
             digits--;
@@ -681,7 +703,7 @@ public static class Number
         }
 
         var buffer = (stackalloc char[Int32Precision + 1]).Buffer;
-        var ptr = Int32ToDecChars(buffer + Int32Precision, (uint)value, 0);
+        var ptr = UInt32ToDecChars(buffer + Int32Precision, (uint)value, 0);
         var len = (int)(buffer + Int32Precision - ptr);
         number.Scale = len;
 
@@ -697,7 +719,7 @@ public static class Number
         number.Sign = 0;
 
         var buffer = (stackalloc char[UInt32Precision + 1]).Buffer;
-        var ptr = Int32ToDecChars(buffer + UInt32Precision, value, 0);
+        var ptr = UInt32ToDecChars(buffer + UInt32Precision, value, 0);
         var len = (int)(buffer + UInt32Precision - ptr);
         number.Scale = len;
 
@@ -719,12 +741,7 @@ public static class Number
         }
 
         var buffer = (stackalloc char[Int64Precision + 1]).Buffer;
-        var ptr = buffer + Int64Precision;
-        var uv = (ulong)value;
-        while (High32(uv) != 0)
-            ptr = Int32ToDecChars(ptr, Int64DivMod(ref uv), 9);
-
-        ptr = Int32ToDecChars(ptr, Low32(uv), 0);
+        var ptr = UInt64ToDecChars(buffer + Int64Precision, (ulong)value, 0);
         var len = (int)(buffer + Int64Precision - ptr);
         number.Scale = len;
 
@@ -740,12 +757,7 @@ public static class Number
         number.Sign = 0;
 
         var buffer = (stackalloc char[UInt64Precision + 1]).Buffer;
-        var ptr = buffer + UInt64Precision;
-        while (High32(value) != 0)
-            ptr = Int32ToDecChars(ptr, Int64DivMod(ref value), 9);
-
-        ptr = Int32ToDecChars(ptr, Low32(value), 0);
-
+        var ptr = UInt64ToDecChars(buffer + UInt64Precision, value, 0);
         var len = (int)(buffer + UInt64Precision - ptr);
         number.Scale = len;
 
@@ -1216,7 +1228,8 @@ public static class Number
         return count;
     }
 
-    static uint Int64DivMod(ref ulong value)
+    [SuppressStackTrace]
+    internal static uint Int64DivMod(ref ulong value)
     {
         var rem = (uint)(value % 1000000000);
         value /= 1000000000;
@@ -1248,12 +1261,14 @@ public static class Number
         }
     }
 
-    static uint Low32(ulong value)
+    [SuppressStackTrace]
+    internal static uint Low32(ulong value)
     {
         return (uint)value;
     }
 
-    static uint High32(ulong value)
+    [SuppressStackTrace]
+    internal static uint High32(ulong value)
     {
         return (uint)((value & 0xFFFFFFFF00000000) >> 32);
     }
