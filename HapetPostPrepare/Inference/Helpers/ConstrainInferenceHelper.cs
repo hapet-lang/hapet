@@ -26,6 +26,11 @@ namespace HapetPostPrepare
         internal AstGenericDecl GetGenericDeclaration(List<AstConstrainStmt> constrains, AstIdExpr currGeneric, 
             AstDeclaration containingParent, InInfo inInfo, ref OutInfo outInfo)
         {
+            // 'true' if there are constrains like:
+            // where T: ICringe<U>
+            // these constrains could not be cached normally
+            var hasAnyGenericConstrains = constrains.Any(x => x.ConstrainType == GenericConstrainType.CustomType && (x.Expr.UnrollToRightPart<AstIdExpr>() is AstIdGenericExpr));
+
             // handle constrains
             foreach (var constrain in constrains)
             {
