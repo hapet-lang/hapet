@@ -32,6 +32,9 @@ namespace HapetFrontend.Parsing
                 ReportMessage(PeekToken().Location, [], ErrorCode.Get(CTEN.IfStmtCondExpected));
             var end = Consume(TokenType.CloseParen, ErrMsg("')'", "after the condition"));
 
+            var savedAddBefore = outInfo.StatementsToAddBefore;
+            outInfo.StatementsToAddBefore = new List<Ast.Declarations.AstVarDecl>();
+
             bodyTrue = GetLoopOrCondBlock(inInfo, ref outInfo);
 
             SkipNewlines();
@@ -44,6 +47,8 @@ namespace HapetFrontend.Parsing
 
                 bodyFalse = GetLoopOrCondBlock(inInfo, ref outInfo);
             }
+
+            outInfo.StatementsToAddBefore = savedAddBefore;
 
             return new AstIfStmt(condition, bodyTrue, bodyFalse, new Location(beg.Location, end.Location));
         }
