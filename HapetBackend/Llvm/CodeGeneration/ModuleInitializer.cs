@@ -131,6 +131,13 @@ namespace HapetBackend.Llvm
                 var field = _valueMap[ini.Item1];
                 var decl = (ini.Item1 as DeclSymbol).Decl;
 
+                // skip roots that suppress gc collect
+                if (decl.GetAttribute("System.SuppressGcCollectAttribute") != null)
+                    continue;
+                // skip stor fields
+                if (decl is AstVarDecl vd && vd.IsStaticCtorField)
+                    continue;
+
                 // add the field into gc root list
                 CallAddGlobalRoot(field, decl.Type.OutType.GetSize(), !decl.SpecialKeys.Contains(TokenType.KwConst));
             }

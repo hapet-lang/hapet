@@ -1,9 +1,9 @@
 // Licensed to the hapet-lang under one or more agreements.
 // The hapet-lang licenses this file to you under the MIT license.
 
-// Custom attribute to indicate that 
-// StackTrace for the func won't be handled
+// Suppresses Gc marking and sweepend over the memory
+// that is marked with the attribute
 [SuppressStaticCtorCall]
-public class SuppressStackTraceAttribute : Attribute
+public class SuppressGcCollectAttribute : Attribute
 {
 }
