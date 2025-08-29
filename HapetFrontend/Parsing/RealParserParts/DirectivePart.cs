@@ -151,7 +151,7 @@ namespace HapetFrontend.Parsing
 
         internal List<AstStatement> HandleIfDirective(AstDirectiveStmt ifDir, ProgramFile file, ParserInInfo inInfo, ref ParserOutInfo outInfo)
         {
-            List<AstStatement> toReturn = null;
+            List<AstStatement> toReturn = new List<AstStatement>();
             var currentDir = ifDir;
             while (currentDir.DirectiveType != DirectiveType.EndIf)
             {
