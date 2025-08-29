@@ -28,8 +28,7 @@ public struct Double : IComparable, IComparable<double>, IFormattable
         }
         if (value is not double)
         {
-            // TODO:
-            // throw new ArgumentException(SR.Arg_MustBeDouble);
+            throw new ArgumentException(SR.Arg_MustBeDouble);
         }
         return CompareTo((double)value);
     }

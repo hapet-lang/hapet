@@ -17,5 +17,19 @@ public static class SR
     public const string Formatting_FormatException = "One of the identified items was in an invalid format.";
 
     // comparison
+    public const string Arg_MustBeChar = "Object must be of type Char.";
     public const string Arg_MustBeString = "Object must be of type String.";
+    public const string Arg_MustBeFloat = "Object must be of type Float.";
+    public const string Arg_MustBeDouble = "Object must be of type Double.";
+    public const string Arg_MustBeBool = "Object must be of type Bool.";
+    public const string Arg_MustBeSByte = "Object must be of type SByte.";
+    public const string Arg_MustBeInt16 = "Object must be of type Int16 (short).";
+    public const string Arg_MustBeInt32 = "Object must be of type Int32 (int).";
+    public const string Arg_MustBeInt64 = "Object must be of type Int64 (long).";
+    public const string Arg_MustBeByte = "Object must be of type Byte.";
+    public const string Arg_MustBeUInt16 = "Object must be of type UInt16 (ushort).";
+    public const string Arg_MustBeUInt32 = "Object must be of type UInt32 (uint).";
+    public const string Arg_MustBeUInt64 = "Object must be of type UInt64 (ulong).";
+    public const string Arg_MustBePtrDiff = "Object must be of type PtrDiff.";
+    public const string Arg_MustBeUIntPtr = "Object must be of type UIntPtr.";
 }

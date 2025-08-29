@@ -26,8 +26,7 @@ public struct Single : IComparable, IComparable<float>, IFormattable
         }
         if (value is not float)
         {
-            // TODO:
-            // throw new ArgumentException(SR.Arg_MustBeFloat);
+            throw new ArgumentException(SR.Arg_MustBeFloat);
         }
         return CompareTo((float)value);
     }

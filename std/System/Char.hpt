@@ -21,8 +21,7 @@ public struct Char : IComparable, IComparable<char>, IFormattable
         }
         if (value is not char)
         {
-            // TODO:
-            // throw new ArgumentException(SR.Arg_MustBeByte);
+            throw new ArgumentException(SR.Arg_MustBeChar);
         }
         return _value - (((char)value)._value);
     }

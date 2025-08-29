@@ -19,8 +19,7 @@ public struct SByte : IComparable, IComparable<sbyte>, IFormattable
         }
         if (value is not sbyte)
         {
-            // TODO:
-            // throw new ArgumentException(SR.Arg_MustBeSByte);
+            throw new ArgumentException(SR.Arg_MustBeSByte);
         }
         return _value - (((sbyte)value)._value);
     }

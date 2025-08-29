@@ -21,9 +21,7 @@ public struct UInt16 : IComparable, IComparable<ushort>, IFormattable
         {
             return (int)_value - (int)(((ushort)value)._value);
         }
-        // TODO:
-        // throw new ArgumentException(SR.Arg_MustBeUInt16);
-        return 0;
+        throw new ArgumentException(SR.Arg_MustBeUInt16);
     }
 
     public int CompareTo(ushort value)

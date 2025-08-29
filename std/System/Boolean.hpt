@@ -18,8 +18,7 @@ public struct Boolean : IComparable, IComparable<bool>, IFormattable
         }
         if (value is not bool)
         {
-            // TODO:
-            // throw new ArgumentException(SR.Arg_MustBeByte);
+            throw new ArgumentException(SR.Arg_MustBeBool);
         }
         if (_value == ((bool)value)._value)
         {

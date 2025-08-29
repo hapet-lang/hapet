@@ -21,8 +21,7 @@ public struct Byte : IComparable, IComparable<byte>, IFormattable
         }
         if (value is not byte)
         {
-            // TODO:
-            // throw new ArgumentException(SR.Arg_MustBeByte);
+            throw new ArgumentException(SR.Arg_MustBeByte);
         }
         return _value - (((byte)value)._value);
     }
