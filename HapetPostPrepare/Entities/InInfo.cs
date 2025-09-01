@@ -9,6 +9,8 @@ namespace HapetPostPrepare.Entities
         public bool FromCallExpr { get; set; }
         public bool MuteErrors { get; set; }
 
+        public bool SkipGenericConstrainsCheckWhenInstancing { get; set; }
+
         /// <summary>
         /// Currently inferencing nested/lambda
         /// </summary>

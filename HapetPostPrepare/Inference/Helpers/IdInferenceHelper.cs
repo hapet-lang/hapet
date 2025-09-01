@@ -308,7 +308,7 @@ namespace HapetPostPrepare
         {
             if (!CheckIfCouldBeAccessed(idExpr, typed.Decl) && !inInfo.FromCallExpr && !inInfo.MuteErrors)
                 _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, idExpr, [], ErrorCode.Get(CTEN.DeclCouldNotBeAccessed));
-            typed = CheckForGenericType(typed, idExpr);
+            typed = CheckForGenericType(typed, idExpr, inInfo);
             if (!string.IsNullOrWhiteSpace(name))
             {
                 idExpr.Name = name;
@@ -392,21 +392,20 @@ namespace HapetPostPrepare
             }
         }
 
-        private DeclSymbol CheckForGenericType(DeclSymbol decl, AstIdExpr idExpr)
+        private DeclSymbol CheckForGenericType(DeclSymbol decl, AstIdExpr idExpr, InInfo inInfo)
         {
             if (idExpr is not AstIdGenericExpr genId)
                 return decl;
 
             var theDecl = decl.Decl;
-            var realDecl = CreateRealTypeFromGeneric(theDecl, genId, out var realName);
+            var realDecl = CreateRealTypeFromGeneric(theDecl, genId, out var realName, inInfo);
 
             DeclSymbol realDclDecl = theDecl.Scope.GetSymbol(realDecl.Name) as DeclSymbol;
             return realDclDecl;
         }
 
-        public AstDeclaration CreateRealTypeFromGeneric(AstDeclaration genDecl, AstIdGenericExpr realId, out AstIdGenericExpr realName)
+        public AstDeclaration CreateRealTypeFromGeneric(AstDeclaration genDecl, AstIdGenericExpr realId, out AstIdGenericExpr realName, InInfo inInfo)
         {
-            InInfo inInfo = InInfo.Default;
             OutInfo outInfo = OutInfo.Default;
 
             if (!genDecl.HasGenericTypes)
@@ -449,9 +448,10 @@ namespace HapetPostPrepare
                     return realDclDecl.Decl;
             }
 
-            // check for constrains. if something goes wrong - it will error inside the function
-            if (!CheckIfTheTypesAreAllowedForConstrains(genDecl, realId.GenericRealTypes))
-                return genDecl;
+            if (!inInfo.SkipGenericConstrainsCheckWhenInstancing)
+                // check for constrains. if something goes wrong - it will error inside the function
+                if (!CheckIfTheTypesAreAllowedForConstrains(genDecl, realId.GenericRealTypes))
+                    return genDecl;
 
             // create a new shite with real types
             var realDecl = GetRealTypeFromGeneric(genDecl, realId.GenericRealTypes.GetNestedList(_compiler.MessageHandler), 

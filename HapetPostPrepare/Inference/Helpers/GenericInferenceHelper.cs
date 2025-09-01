@@ -245,6 +245,9 @@ namespace HapetPostPrepare
             if (type == null)
                 return false;
 
+            // if generic type - get original
+            from = from.GetDeclaration().IsImplOfGeneric ? from.GetDeclaration().OriginalGenericDecl.Type.OutType : from;
+
             InInfo inInfo = InInfo.Default;
             OutInfo outInfo = OutInfo.Default;
 
@@ -255,7 +258,10 @@ namespace HapetPostPrepare
                 if (expr.OutType == null)
                     PostPrepareExprInference(expr, inInfo, ref outInfo);
 
-                var outT = expr.OutType as ClassType;
+                // if generic type - get original
+                var exprType = expr.OutType.GetDeclaration().IsImplOfGeneric ? expr.OutType.GetDeclaration().OriginalGenericDecl.Type.OutType : expr.OutType;
+
+                var outT = exprType as ClassType;
                 if (outT == from || IsInheritedFromWithInference(outT.Declaration, from))
                     return true;
             }

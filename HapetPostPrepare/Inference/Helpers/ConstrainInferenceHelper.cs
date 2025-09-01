@@ -26,21 +26,8 @@ namespace HapetPostPrepare
         internal AstGenericDecl GetGenericDeclaration(List<AstConstrainStmt> constrains, AstIdExpr currGeneric, 
             AstDeclaration containingParent, InInfo inInfo, ref OutInfo outInfo)
         {
-            // 'true' if there are constrains like:
-            // where T: ICringe<U>
-            // these constrains could not be cached normally
-            var hasAnyGenericConstrains = constrains.Any(x => x.ConstrainType == GenericConstrainType.CustomType && (x.Expr.UnrollToRightPart<AstIdExpr>() is AstIdGenericExpr));
-
-            // handle constrains
-            foreach (var constrain in constrains)
-            {
-                // just inferencing 
-                if (constrain.ConstrainType == GenericConstrainType.CustomType)
-                    PostPrepareExprInference(constrain.Expr, inInfo, ref outInfo);
-                else if (constrain.ConstrainType == GenericConstrainType.NewType)
-                    foreach (var t in constrain.AdditionalExprs)
-                        PostPrepareExprInference(t, inInfo, ref outInfo);
-            }
+            PrepareNonGenericConstrains(constrains, inInfo, ref outInfo);
+            PrepareGenericConstrains(constrains, inInfo, ref outInfo);
 
             // need to search for the same constrain
             foreach (var k in _allGenericTypes.Keys)
@@ -96,37 +83,12 @@ namespace HapetPostPrepare
                     return k; // just return the constrain
             }
 
-            // manually adding the constrain of System.Object if required
-            if (constrains.FirstOrDefault(x => x.ConstrainType == GenericConstrainType.CustomType && 
-                x.Expr.OutType is ClassType clsTT && 
-                clsTT.Declaration.Name.Name == "System.Object") == null)
-            {
-                var specialC = new AstConstrainStmt(
-                new AstNestedExpr(new AstIdExpr("System.Object", containingParent.Location), null, containingParent.Location),
-                GenericConstrainType.CustomType,
-                containingParent.Location)
-                {
-                    AdditionalExprs = new List<AstNestedExpr>(),
-                };
-                constrains.Add(specialC);
-                SetScopeAndParent(specialC, containingParent);
-                PostPrepareConstrainScoping(specialC);
-                PostPrepareExprInference(specialC.Expr, inInfo, ref outInfo);
-            }
-
+            AddObjectClassConstainIfNeeded(constrains, containingParent, inInfo, ref outInfo, true);
             // check that constrains are ok
             CheckIfConstrainsAreOk(constrains);
 
             // here - if not found the same in existing
-            // creating the declaration
-            var genericDecl = new AstGenericDecl(currGeneric, location: currGeneric.Location)
-            {
-                Constrains = constrains,
-                ParentDecl = containingParent.IsImplOfGeneric ? containingParent.OriginalGenericDecl : containingParent,
-                IsNestedDecl = true, // for what? but let it be :)
-                SubScope = new Scope($"{currGeneric.Name}_scope", containingParent.Scope),
-                SourceFile = containingParent.SourceFile,
-            };
+            var genericDecl = CreateGenericDeclaration(constrains, currGeneric, containingParent);
 
             // post prepare
             PostPrepareGenericDeclConstrains(genericDecl, inInfo, ref outInfo);
@@ -136,6 +98,67 @@ namespace HapetPostPrepare
             // cache it
             _allGenericTypes.Add(genericDecl, constrains);
 
+            return genericDecl;
+        }
+
+        private void PrepareNonGenericConstrains(List<AstConstrainStmt> constrains, InInfo inInfo, ref OutInfo outInfo)
+        {
+            // handle constrains
+            foreach (var constrain in constrains)
+            {
+                // just inferencing 
+                if (constrain.ConstrainType == GenericConstrainType.CustomType && constrain.Expr.UnrollToRightPart<AstIdExpr>() is not AstIdGenericExpr)
+                    PostPrepareExprInference(constrain.Expr, inInfo, ref outInfo);
+                else if (constrain.ConstrainType == GenericConstrainType.NewType)
+                    foreach (var t in constrain.AdditionalExprs)
+                        PostPrepareExprInference(t, inInfo, ref outInfo);
+            }
+        }
+
+        private void PrepareGenericConstrains(List<AstConstrainStmt> constrains, InInfo inInfo, ref OutInfo outInfo)
+        {
+            // handle constrains
+            foreach (var constrain in constrains)
+            {
+                // just inferencing 
+                if (constrain.ConstrainType == GenericConstrainType.CustomType && constrain.Expr.UnrollToRightPart<AstIdExpr>() is AstIdGenericExpr)
+                    PostPrepareExprInference(constrain.Expr, inInfo, ref outInfo);
+            }
+        }
+
+        private void AddObjectClassConstainIfNeeded(List<AstConstrainStmt> constrains, AstDeclaration containingParent, InInfo inInfo, ref OutInfo outInfo, bool infer = false)
+        {
+            // manually adding the constrain of System.Object if required
+            if (constrains.FirstOrDefault(x => x.ConstrainType == GenericConstrainType.CustomType &&
+                x.Expr.OutType is ClassType clsTT &&
+                clsTT.Declaration.Name.Name == "System.Object") == null)
+            {
+                var specialC = new AstConstrainStmt(
+                new AstNestedExpr(new AstIdExpr("System.Object", containingParent.Location), null, containingParent.Location),
+                GenericConstrainType.CustomType,
+                containingParent.Location)
+                {
+                    AdditionalExprs = new List<AstNestedExpr>(),
+                };
+                constrains.Insert(0, specialC);
+                SetScopeAndParent(specialC, containingParent);
+                PostPrepareConstrainScoping(specialC);
+                if (infer)
+                    PostPrepareExprInference(specialC.Expr, inInfo, ref outInfo);
+            }
+        }
+
+        private AstGenericDecl CreateGenericDeclaration(List<AstConstrainStmt> constrains, AstIdExpr currGeneric, AstDeclaration containingParent)
+        {
+            // creating the declaration
+            var genericDecl = new AstGenericDecl(currGeneric, location: currGeneric.Location)
+            {
+                Constrains = constrains,
+                ParentDecl = containingParent.IsImplOfGeneric ? containingParent.OriginalGenericDecl : containingParent,
+                IsNestedDecl = true, // for what? but let it be :)
+                SubScope = new Scope($"{currGeneric.Name}_scope", containingParent.Scope),
+                SourceFile = containingParent.SourceFile,
+            };
             return genericDecl;
         }
 

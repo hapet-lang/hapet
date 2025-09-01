@@ -95,6 +95,17 @@ namespace HapetPostPrepare.Other
             return _parentStack.Last() as AstDeclaration;
         }
 
+        public void AppendCurrentGenericIdMapping(string name, GenericType type)
+        {
+            _currentGenericIdMappings.Add((name, type));
+        }
+
+        public void RemoveCurrentGenericIdMapping(string name)
+        {
+            var theElement = _currentGenericIdMappings.LastOrDefault(x => x.Value.Item1 == name);
+            _currentGenericIdMappings.Remove(theElement);
+        }
+
         private void AddParentGenerics(AstDeclaration parent)
         {
             // check if parent is generic decl itself

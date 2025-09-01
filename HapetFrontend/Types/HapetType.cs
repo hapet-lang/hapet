@@ -94,6 +94,17 @@ namespace HapetFrontend.Types
             return this.GetType() == type.GetType();
         }
 
+        public AstDeclaration GetDeclaration()
+        {
+            if (this is ClassType clsT)
+                return clsT.Declaration;
+            else if (this is StructType strT)
+                return strT.Declaration;
+            else if (this is GenericType gT)
+                return gT.Declaration;
+            return null;
+        }
+
         /// <summary>
         /// Returns the preferred type of two other types
         /// Usually used for Numeric types and for Binary expressions
