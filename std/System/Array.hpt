@@ -31,6 +31,12 @@ public static class Array
 
     public static int IndexOf<T>(T[] array, T value, int startIndex, int count)
     {
+        if (array == null)
+            throw new ArgumentNullException(nameof(array));
+        if (startIndex < 0 || startIndex > array.Length)
+            throw new ArgumentOutOfRangeException(nameof(startIndex), SR.ArgumentOutOfRange_IndexMustBeLessOrEqual);
+        if (count < 0 || count > array.Length - startIndex)
+            throw new ArgumentOutOfRangeException(nameof(count), SR.ArgumentOutOfRange_Count);
         return 0;
     }
 
@@ -214,8 +220,7 @@ public struct Array<T> : IList<T>, ICloneable
 
     public object Clone()
     {
-        // TODO:
-        return new T[Length];
+        return MemberwiseClone();
     }
 }
 
@@ -233,9 +238,7 @@ internal sealed class ArrayEnumerator<T> : IEnumerator<T>, ICloneable
 
     public object Clone()
     {
-        // TODO:
-        // return MemberwiseClone();
-        return null;
+        return MemberwiseClone();
     }
 
     public bool MoveNext()
