@@ -113,8 +113,12 @@ namespace HapetBackend.Llvm
             LLVMValueRef interfacesCountRef = LLVMValueRef.CreateConstInt(_context.Int8Type, (ulong)interfacesCount);
             LLVMValueRef dtorDelegate = CreateDtorDelegateInstance(type);
 
+            // get pure class size not a ptr to it
+            int rawSize = (type is PointerType pp && pp.CreatedByCompiler ? pp.TargetType : type).GetSize();
+            LLVMValueRef rawSizeValue = LLVMValueRef.CreateConstInt(_context.Int32Type, (ulong)rawSize);
+
             _builder.BuildStore(LLVMValueRef.CreateConstNamedStruct(typeInfoType,
-                new LLVMValueRef[] { typeName, parentRef, interfaces, interfaceOffsets, interfacesCountRef, dtorDelegate }), globConst);
+                [typeName, parentRef, interfaces, interfaceOffsets, interfacesCountRef, dtorDelegate, rawSizeValue]), globConst);
         }
 
         private LLVMTypeRef _typeInfoType;

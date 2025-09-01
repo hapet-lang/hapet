@@ -13,4 +13,5 @@ public struct TypeInfoUnsafe
     public int** InterfaceOffsets;
     public byte InterfaceCount;
     public DtorDelegate DtorDelegate;
+    public int RawSize;
 }
