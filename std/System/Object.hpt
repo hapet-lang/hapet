@@ -2,6 +2,9 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // Some modifications were made for hapet-lang compatibility.
 
+using System.Runtime.Conversion;
+using System.Runtime.InteropServices;
+
 [DeclarationUsed]
 [SuppressStackTrace] // applied to _ini
 [SuppressStaticCtorCall]
@@ -11,9 +14,9 @@ public class Object
     public Object() { }
 
     [DeclarationUsed]
-    public void GetType()
+    public Type GetType()
     {
-        // TODO:
+        return *TypeConverter.GetTypeInfo((void*)this);
     }
 
     [DeclarationUsed]
@@ -53,5 +56,23 @@ public class Object
     {
         // TODO: 
         return 0;
+    }
+
+    // Returns a new object instance that is a memberwise copy of this
+    // object.  This is always a shallow copy of the instance. The method is protected
+    // so that other object may only call this method on themselves.  It is intended to
+    // support the ICloneable interface.
+    // TODO: here was protected internal 
+    protected unsafe object MemberwiseClone()
+    {
+        Type t = GetType();
+        int sizeToMalloc = t.RawSize + sizeof(long); // for typeinfo
+        void* newInstance = Gc.NewClassInstance(sizeToMalloc, TypeConverter.GetTypeInfo((void*)this));
+
+        // work with offseted
+        void* newOffseted = Gc.GetOffseted(newInstance);
+        Marshal.Memcpy(newOffseted, (void*)this, (uintptr)t.RawSize);
+
+        return (object)newOffseted;
     }
 }

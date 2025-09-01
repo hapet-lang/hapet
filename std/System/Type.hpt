@@ -24,6 +24,9 @@ public struct Type
         }
     }
 
+    /// Returns raw size of the type
+    public int RawSize => (*_typeInfo).RawSize;
+
     public static bool operator ==(Type t1, Type t2)
     {
         return t1._typeInfo == t2._typeInfo && t1._vTable == t2._vTable;

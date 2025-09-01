@@ -63,7 +63,7 @@ public static class Gc
         tmpOh.IsClassInstance = true;
         tmpOh.InstanceType = type;
         tmpOh.Obj = GetOffseted(tmpOh.Obj);
-        tmpOh.Size = tmpOh.Size - 8;
+        tmpOh.Size = tmpOh.Size - sizeof(long);
         _tmpList[_tmpList.Count - 1] = tmpOh;
         return mem;
     }
@@ -205,14 +205,14 @@ public static class Gc
     }
 
     [SuppressStackTrace]
-    private static void* GetOffseted(void* obj)
+    internal static void* GetOffseted(void* obj)
     {
         ulong* offseted = (ulong*)obj + 1;
         return offseted;
     }
 
     [SuppressStackTrace]
-    private static void* GetNonOffseted(void* obj)
+    internal static void* GetNonOffseted(void* obj)
     {
         ulong* offseted = (ulong*)obj - 1;
         return offseted;
