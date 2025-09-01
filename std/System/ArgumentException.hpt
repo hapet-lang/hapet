@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // Some modifications were made for hapet-lang compatibility.
 
+[SuppressStaticCtorCall]
 public class ArgumentException : SystemException
 {
     private readonly string _paramName;
@@ -48,6 +49,7 @@ public class ArgumentException : SystemException
     }
 }
 
+[SuppressStaticCtorCall]
 public class ArgumentOutOfRangeException : ArgumentException
 {
     private readonly object _actualValue;
@@ -61,6 +63,7 @@ public class ArgumentOutOfRangeException : ArgumentException
     }
 }
 
+[SuppressStaticCtorCall]
 public class ArgumentNullException : ArgumentException
 {
     public ArgumentNullException() : this("") { }

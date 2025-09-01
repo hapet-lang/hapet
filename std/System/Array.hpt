@@ -58,8 +58,7 @@ public static class Array
     {
         if (newSize < 0)
         {
-            //TODO:
-            //ThrowHelper.ThrowArgumentOutOfRangeException(ExceptionArgument.newSize, ExceptionResource.ArgumentOutOfRange_NeedNonNegNum);
+            throw new ArgumentOutOfRangeException(nameof(newSize), SR.ArgumentOutOfRange_NeedNonNegNum, newSize);
         }
 
         T[] larray = array; // local copy
@@ -127,18 +126,16 @@ public struct Array<T> : IList<T>, ICloneable
     {
         if (index < 0)
         {
-            // TODO: 
-            // ThrowHelper.ThrowIndexArgumentOutOfRange_NeedNonNegNumException();
+            throw new ArgumentOutOfRangeException(nameof(index), SR.ArgumentOutOfRange_NeedNonNegNum, index);
         }
 
         if (count < 0)
         {
-            // TODO: 
-            // ThrowHelper.ThrowArgumentOutOfRangeException(ExceptionArgument.count, ExceptionResource.ArgumentOutOfRange_NeedNonNegNum);
+            throw new ArgumentOutOfRangeException(nameof(count), SR.ArgumentOutOfRange_NeedNonNegNum, count);
         }
 
         T[] newArr = new T[count];
-        // Array.Copy(this, index, newArr, 0, count);
+        Array.Copy<T, T>(this, index, newArr, 0, count);
         return newArr;
     }
 
@@ -149,7 +146,7 @@ public struct Array<T> : IList<T>, ICloneable
 
     public void CopyTo(T[] array, int index)
     {
-        // Array.Copy(this, index, array, 0, Length);
+        Array.Copy<T, T>(this, index, array, 0, Length);
     }
 
     public IEnumerator<T> GetEnumerator()
@@ -159,66 +156,54 @@ public struct Array<T> : IList<T>, ICloneable
 
     public int IndexOf(T item)
     {
-       //  return Array.IndexOf(this, item, 0, Length);
-       return 0;
+        return Array.IndexOf<T>(this, item, 0, Length);
     }
 
     public int LastIndexOf(T item)
     {
-        // return Array.LastIndexOf(this, item, 0, Length);
-        return 0;
+        return Array.LastIndexOf<T>(this, item, 0, Length);
     }
 
     public bool IsReadOnly { get { return false; } }
 
     public void IList<T>.Add(T value)
     {
-        // TODO:
-        // ThrowHelper.ThrowNotSupportedException(ExceptionResource.NotSupported_ReadOnlyCollection);
+        throw new NotSupportedException(SR.NotSupported_ReadOnlyCollection);
     }
 
     public void IList<T>.AddRange(IEnumerable<T> collection)
     {
-        // TODO:
-        // ThrowHelper.ThrowNotSupportedException(ExceptionResource.NotSupported_ReadOnlyCollection);
+        throw new NotSupportedException(SR.NotSupported_ReadOnlyCollection);
     }
 
     public void IList<T>.Clear()
     {
-        // TODO:
-        // ThrowHelper.ThrowNotSupportedException(ExceptionResource.NotSupported_ReadOnlyCollection);
+        throw new NotSupportedException(SR.NotSupported_ReadOnlyCollection);
     }
 
     public void IList<T>.Insert(int index, T value)
     {
-        // TODO:
-        // ThrowHelper.ThrowNotSupportedException(ExceptionResource.NotSupported_ReadOnlyCollection);
+        throw new NotSupportedException(SR.NotSupported_ReadOnlyCollection);
     }
 
     public void IList<T>.InsertRange(int index, IEnumerable<T> collection)
     {
-        // TODO:
-        // ThrowHelper.ThrowNotSupportedException(ExceptionResource.NotSupported_ReadOnlyCollection);
+        throw new NotSupportedException(SR.NotSupported_ReadOnlyCollection);
     }
 
     public bool IList<T>.Remove(T value)
     {
-        // TODO:
-        // ThrowHelper.ThrowNotSupportedException(ExceptionResource.NotSupported_ReadOnlyCollection);
-        return false;
+        throw new NotSupportedException(SR.NotSupported_ReadOnlyCollection);
     }
 
     public void IList<T>.RemoveAt(int index)
     {
-        // TODO:
-        // ThrowHelper.ThrowNotSupportedException(ExceptionResource.NotSupported_ReadOnlyCollection);
+        throw new NotSupportedException(SR.NotSupported_ReadOnlyCollection);
     }
 
     public int IList<T>.RemoveAll(Predicate<T> match)
     {
-        // TODO:
-        // ThrowHelper.ThrowNotSupportedException(ExceptionResource.NotSupported_ReadOnlyCollection);
-        return 0;
+        throw new NotSupportedException(SR.NotSupported_ReadOnlyCollection);
     }
 
     public bool IsSynchronized { get { return false; } }
@@ -285,13 +270,11 @@ internal sealed class ArrayEnumerator<T> : IEnumerator<T>, ICloneable
             {
                 if (index < 0)
                 {
-                    // TODO:
-                    // ThrowHelper.ThrowInvalidOperationException_InvalidOperation_EnumNotStarted();
+                    throw new NotSupportedException(SR.InvalidOperation_EnumNotStarted);
                 }
                 else
                 {
-                    // TODO:
-                    // ThrowHelper.ThrowInvalidOperationException_InvalidOperation_EnumEnded();
+                    throw new NotSupportedException(SR.InvalidOperation_EnumEnded);
                 }
             }
 

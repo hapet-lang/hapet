@@ -7,6 +7,8 @@ public static class SR
     // arguments
     public const string Argument_EmptyString = "The value cannot be an empty string.";
     public const string Argument_EmptyOrWhiteSpaceString = "The value cannot be an empty string or composed entirely of whitespace.";
+    public const string Argument_ImplementIComparable = "At least one object must implement IComparable.";
+    public const string ArgumentOutOfRange_NeedNonNegNum = "Non-negative number required.";
 
     // formatting
     public const string Formatting_InvalidGroupSizes = "Invalid group sizes in NumberFormatInfo.";
@@ -32,4 +34,11 @@ public static class SR
     public const string Arg_MustBeUInt64 = "Object must be of type UInt64 (ulong).";
     public const string Arg_MustBePtrDiff = "Object must be of type PtrDiff.";
     public const string Arg_MustBeUIntPtr = "Object must be of type UIntPtr.";
+
+    // not
+    public const string NotSupported_ReadOnlyCollection = "Collection is read-only.";
+
+    // invalid
+    public const string InvalidOperation_EnumNotStarted = "Enumeration has not started. Call MoveNext.";
+    public const string InvalidOperation_EnumEnded = "Enumeration already finished.";
 }

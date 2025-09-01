@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // Some modifications were made for hapet-lang compatibility.
 
+[SuppressStaticCtorCall]
 public abstract class Exception
 {
     protected string _message;
