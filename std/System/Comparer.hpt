@@ -15,7 +15,7 @@ public class Comparer : IComparer
         return new Comparer();
     }
 
-    public static Comparer<T> Default<T>()
+    public static Comparer<T> Default<T>() where T : IComparable<T>
     {
         return new Comparer<T>();
     }
