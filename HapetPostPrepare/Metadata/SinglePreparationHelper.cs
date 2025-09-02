@@ -23,8 +23,8 @@ namespace HapetPostPrepare
             var cachedSourceFile = _currentSourceFile;
             _currentSourceFile = stmt.SourceFile;
 
-            if (stmt is AstDeclaration dcl)
-                _currentParentStack.AddParent(dcl);
+            bool isDecl = stmt is AstDeclaration;
+            if (isDecl) _currentParentStack.AddParent(stmt);
 
             // go all over the steps down
             if (_currentPreparationStep >= PreparationStep.Types && !skipFirstStep)
@@ -34,6 +34,8 @@ namespace HapetPostPrepare
             if (_currentPreparationStep >= PreparationStep.Generics)
             {
                 PostPrepareMetadataGenerics(stmt);
+                if (isDecl) _currentParentStack.RemoveParent(); // required to update generics
+                if (isDecl) _currentParentStack.AddParent(stmt);
             }
             if (_currentPreparationStep >= PreparationStep.Inheritance)
             {
@@ -123,8 +125,7 @@ namespace HapetPostPrepare
             }
 
             _currentSourceFile = cachedSourceFile;
-            if (stmt is AstDeclaration)
-                _currentParentStack.RemoveParent();
+            if (isDecl) _currentParentStack.RemoveParent();
         }
     }
 }
