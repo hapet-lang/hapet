@@ -20,7 +20,7 @@ namespace HapetFrontend.Ast.Expressions
             var copy = new AstDefaultExpr(Location)
             {
                 IsCompileTimeValue = IsCompileTimeValue,
-                TypeForDefault = TypeForDefault,
+                TypeForDefault = TypeForDefault?.GetDeepCopy() as AstExpression,
                 OutType = OutType,
                 OutValue = OutValue,
                 Scope = Scope,

@@ -1178,8 +1178,8 @@ namespace HapetPostPrepare
                 _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, expr.Condition, [], ErrorCode.Get(CTEN.ExprIsNotBool));
             }
 
-            PostPrepareExprInference(expr.TrueExpr, inInfo, ref outInfo);
-            PostPrepareExprInference(expr.FalseExpr, inInfo, ref outInfo);
+            expr.TrueExpr = PostPrepareVarValueAssign(expr.TrueExpr, null, inInfo, ref outInfo);
+            expr.FalseExpr = PostPrepareVarValueAssign(expr.FalseExpr, null, inInfo, ref outInfo);
 
             // this could be when 'a?.FuncTest();' is made
             if (expr.TrueExpr.OutType is VoidType || expr.FalseExpr.OutType is VoidType)
@@ -1585,10 +1585,12 @@ namespace HapetPostPrepare
 
         private AstExpression PostPrepareVarValueAssign(AstExpression value, HapetType targetType, InInfo inInfo, ref OutInfo outInfo, bool inferValue = true)
         {
-            if (value is AstDefaultExpr)
+            if (value is AstDefaultExpr defExpr)
             {
+                if (defExpr.TypeForDefault != null)
+                    PostPrepareExprInference(defExpr.TypeForDefault, inInfo, ref outInfo);
                 // get the default value for the type (no need to infer)
-                var defaultOfDefault = AstDefaultExpr.GetDefaultValueForType(targetType, value, _compiler.MessageHandler);
+                var defaultOfDefault = AstDefaultExpr.GetDefaultValueForType(targetType ?? defExpr.TypeForDefault.OutType, value, _compiler.MessageHandler);
                 if (defaultOfDefault == null)
                 {
                     _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, value, [], ErrorCode.Get(CTEN.DefaultValueNotFound));

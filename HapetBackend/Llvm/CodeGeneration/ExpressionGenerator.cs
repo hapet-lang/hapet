@@ -46,7 +46,7 @@ namespace HapetBackend.Llvm
                 case AstPointerExpr pointerExpr: return GeneratePointerExprCode(pointerExpr, getPtr);
                 case AstAddressOfExpr addrExpr: return GenerateAddressOfExprCode(addrExpr);
                 case AstIdExpr idExpr: return GenerateIdExpr(idExpr, getPtr);
-                case AstNewExpr newExpr: return GenerateNewExpr(newExpr);
+                case AstNewExpr newExpr: return GenerateNewExpr(newExpr, getPtr);
                 case AstCallExpr callExpr: return GenerateCallExpr(callExpr, getPtr);
                 case AstArgumentExpr argExpr: return GenerateArgumentExpr(argExpr);
                 case AstCastExpr castExpr: return GenerateCastExpr(castExpr, getPtr);
@@ -514,7 +514,7 @@ namespace HapetBackend.Llvm
                 // you would ask - wtf is anyIsInterface? - read upper 
 
                 bool anyIsInterface = rightType.Declaration.IsInterface || leftType.Declaration.IsInterface;
-                bool isUpcast = leftType.IsInheritedFrom(rightType);
+                bool isUpcast = leftType.IsInheritedFrom(rightType) || (leftType == rightType);
                 // check upcast
                 if (!isUpcast || anyIsInterface)
                 {
@@ -675,7 +675,7 @@ namespace HapetBackend.Llvm
             }
         }
 
-        private unsafe LLVMValueRef GenerateNewExpr(AstNewExpr expr)
+        private unsafe LLVMValueRef GenerateNewExpr(AstNewExpr expr, bool getPtr = false)
         {
             LLVMValueRef v = default;
             if (expr.OutType is PointerType pt && pt.TargetType is ClassType classType)
@@ -714,6 +714,12 @@ namespace HapetBackend.Llvm
                 LLVMTypeRef ctorType = _typeMap[ctorSymbol.Decl.Type.OutType];
                 _builder.BuildCall2(ctorType, ctorFunc, args.ToArray());  // calling ctor
 
+                if (getPtr)
+                {
+                    LLVMValueRef varPtr = CreateLocalVariable(expr.OutType, "newRetHolder");
+                    _builder.BuildStore(v, varPtr);
+                    return varPtr;
+                }
                 return v;
             }
             else if (expr.OutType is StructType structType)
@@ -736,6 +742,8 @@ namespace HapetBackend.Llvm
                 LLVMTypeRef ctorType = _typeMap[ctorSymbol.Decl.Type.OutType];
                 _builder.BuildCall2(ctorType, ctorFunc, args.ToArray());  // calling ctor
 
+                if (getPtr)
+                    return v;
                 return _builder.BuildLoad2(HapetTypeToLLVMType(structType), v, "ctoredLoaded");
             }
 

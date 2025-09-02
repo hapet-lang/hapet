@@ -462,6 +462,12 @@ namespace HapetBackend.Llvm
                 padding = 1;
                 biggestAlignment = HapetType.CurrentTypeContext.PointerSize;
             }
+            else if (withTypeInfo && decls.Count == 0)
+            {
+                padding = 0;
+                // special case to handle empty classes
+                biggestAlignment = HapetType.CurrentTypeContext.PointerSize;
+            }
             else
             {
                 padding = 0;

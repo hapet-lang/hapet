@@ -175,10 +175,15 @@ namespace HapetBackend.Llvm
                     var currCatch = catches[i];
                     LLVM.AppendExistingBasicBlock(_lastFunctionValueRef, currCatch);
                     _builder.PositionAtEnd(currCatch);
-                    // creating exception variable to handle cought exception
-                    var excVar = CreateLocalVariable(currRealCatch.CatchParam.Type.OutType, currRealCatch.CatchParam.Name.Name);
-                    AssignToVar(excVar, currException);
-                    _valueMap[currRealCatch.CatchParam.Symbol] = excVar;
+
+                    if (currRealCatch.CatchParam.Name != null)
+                    {
+                        // creating exception variable to handle cought exception
+                        var excVar = CreateLocalVariable(currRealCatch.CatchParam.Type.OutType, currRealCatch.CatchParam.Name.Name);
+                        AssignToVar(excVar, currException);
+                        _valueMap[currRealCatch.CatchParam.Symbol] = excVar;
+                    }
+                    
                     // generate the catch block itself
                     GenerateExpressionCode(currRealCatch.CatchBlock);
 
