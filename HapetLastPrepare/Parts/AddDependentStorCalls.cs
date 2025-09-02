@@ -41,7 +41,11 @@ namespace HapetLastPrepare
                     var call = new AstCallExpr(new AstNestedExpr(d.Name.GetCopy(), null), new AstIdExpr(funcName));
                     _postPreparer.SetScopeAndParent(call, blockWhereToCall, blockWhereToCall.SubScope);
                     _postPreparer.PostPrepareExprScoping(call);
+                    // allow stor calls from here
+                    var saved = inInfo.AllowAccessToEveryShite;
+                    inInfo.AllowAccessToEveryShite = true;
                     _postPreparer.PostPrepareExprInference(call, inInfo, ref outInfo);
+                    inInfo.AllowAccessToEveryShite = saved;
                     storCalls.Add(call);
                 }
 

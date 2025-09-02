@@ -306,7 +306,7 @@ namespace HapetPostPrepare
 
         public void IdentifierOnFoundSymbol(AstIdExpr idExpr, DeclSymbol typed, string name, InInfo inInfo, ref OutInfo outInfo2)
         {
-            if (!CheckIfCouldBeAccessed(idExpr, typed.Decl) && !inInfo.FromCallExpr && !inInfo.MuteErrors)
+            if (!CheckIfCouldBeAccessed(idExpr, typed.Decl, inInfo) && !inInfo.FromCallExpr && !inInfo.MuteErrors)
                 _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, idExpr, [], ErrorCode.Get(CTEN.DeclCouldNotBeAccessed));
             typed = CheckForGenericType(typed, idExpr, inInfo);
             if (!string.IsNullOrWhiteSpace(name))

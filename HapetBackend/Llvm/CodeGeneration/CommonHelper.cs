@@ -17,6 +17,7 @@ namespace HapetBackend.Llvm
             if (func.ClassFunctionType == ClassFunctionType.StaticCtor &&
                 (func.ContainingParent.Name.Name == "System.StackTrace" ||
                 func.ContainingParent.Name.Name == "System.Gc" ||
+                func.ContainingParent.Name.Name == "System.GcList" ||
                 func.ContainingParent.Name.Name == "System.Runtime.InteropServices.ExceptionHelper"))
                 return false;
 

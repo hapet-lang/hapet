@@ -248,6 +248,7 @@ public static class Gc
 
 public delegate void DtorDelegate(void* obj);
 [SuppressStackTrace]
+[SuppressStaticCtorCall]
 private struct ObjectHeader
 {
     internal bool IsMarked;
@@ -263,6 +264,7 @@ private struct ObjectHeader
 }
 
 [SuppressStackTrace]
+[SuppressStaticCtorCall]
 private struct GcRoot
 {
     internal void* Root;

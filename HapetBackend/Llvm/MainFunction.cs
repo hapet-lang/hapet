@@ -112,28 +112,7 @@ namespace HapetBackend.Llvm
                 _builder.BuildCall2(_moduleInitializer.Item1, _moduleInitializer.Item2, []);
 
                 // need to call at first stors 
-                // of System.Gc
-                parentDecl = _compiler.MainFunction.Scope.GetSymbolInNamespace("System", new AstIdExpr("Gc"));
-                funcDecl = (parentDecl.Decl as AstClassDecl).SubScope.GetSymbol(new AstIdExpr("Gc_stor")) as DeclSymbol;
-                funcValue = _valueMap[funcDecl];
-                funcType = _typeMap[funcDecl.Decl.Type.OutType];
-                _builder.BuildCall2(funcType, funcValue, []);
-                // set main root here
-                var result = _builder.BuildAlloca(HapetTypeToLLVMType(HapetType.CurrentTypeContext.IntPtrTypeInstance), "mainRoot");
-                result.SetAlignment((uint)HapetType.CurrentTypeContext.IntPtrTypeInstance.GetSize());
-                CallSetMainRoot(result);
-                // of System.StackTrace
-                parentDecl = _compiler.MainFunction.Scope.GetSymbolInNamespace("System", new AstIdExpr("StackTrace"));
-                funcDecl = (parentDecl.Decl as AstClassDecl).SubScope.GetSymbol(new AstIdExpr("StackTrace_stor")) as DeclSymbol;
-                funcValue = _valueMap[funcDecl];
-                funcType = _typeMap[funcDecl.Decl.Type.OutType];
-                _builder.BuildCall2(funcType, funcValue, []);
-                // of System.Runtime.InteropServices.ExceptionHelper
-                parentDecl = _compiler.MainFunction.Scope.GetSymbolInNamespace("System.Runtime.InteropServices", new AstIdExpr("ExceptionHelper"));
-                funcDecl = (parentDecl.Decl as AstClassDecl).SubScope.GetSymbol(new AstIdExpr("ExceptionHelper_stor")) as DeclSymbol;
-                funcValue = _valueMap[funcDecl];
-                funcType = _typeMap[funcDecl.Decl.Type.OutType];
-                _builder.BuildCall2(funcType, funcValue, []);
+                BuildCallsOfFirstStors();
 
                 // making global try-catch
                 // only try and catch here
@@ -204,6 +183,43 @@ namespace HapetBackend.Llvm
                 var exitCode = _builder.BuildCall2(funcType, funcValue, parsss, "exitCode");
                 _builder.BuildRet(exitCode);
             }
+        }
+
+        private void BuildCallsOfFirstStors()
+        {
+            DeclSymbol parentDecl;
+            DeclSymbol funcDecl;
+            LLVMValueRef funcValue;
+            LLVMTypeRef funcType;
+
+            // of System.GcList
+            parentDecl = _compiler.MainFunction.Scope.GetSymbolInNamespace("System", new AstIdGenericExpr("GcList", [new AstEmptyExpr()]), handleGenerics: true);
+            funcDecl = (parentDecl.Decl as AstClassDecl).SubScope.GetSymbol(new AstIdExpr("GcList_stor")) as DeclSymbol;
+            funcValue = _valueMap[funcDecl];
+            funcType = _typeMap[funcDecl.Decl.Type.OutType]; 
+            _builder.BuildCall2(funcType, funcValue, []);
+            // of System.Gc
+            parentDecl = _compiler.MainFunction.Scope.GetSymbolInNamespace("System", new AstIdExpr("Gc"));
+            funcDecl = (parentDecl.Decl as AstClassDecl).SubScope.GetSymbol(new AstIdExpr("Gc_stor")) as DeclSymbol;
+            funcValue = _valueMap[funcDecl];
+            funcType = _typeMap[funcDecl.Decl.Type.OutType];
+            _builder.BuildCall2(funcType, funcValue, []);
+            // set main root here
+            var result = _builder.BuildAlloca(HapetTypeToLLVMType(HapetType.CurrentTypeContext.IntPtrTypeInstance), "mainRoot");
+            result.SetAlignment((uint)HapetType.CurrentTypeContext.IntPtrTypeInstance.GetSize());
+            CallSetMainRoot(result);
+            // of System.StackTrace
+            parentDecl = _compiler.MainFunction.Scope.GetSymbolInNamespace("System", new AstIdExpr("StackTrace"));
+            funcDecl = (parentDecl.Decl as AstClassDecl).SubScope.GetSymbol(new AstIdExpr("StackTrace_stor")) as DeclSymbol;
+            funcValue = _valueMap[funcDecl];
+            funcType = _typeMap[funcDecl.Decl.Type.OutType];
+            _builder.BuildCall2(funcType, funcValue, []);
+            // of System.Runtime.InteropServices.ExceptionHelper
+            parentDecl = _compiler.MainFunction.Scope.GetSymbolInNamespace("System.Runtime.InteropServices", new AstIdExpr("ExceptionHelper"));
+            funcDecl = (parentDecl.Decl as AstClassDecl).SubScope.GetSymbol(new AstIdExpr("ExceptionHelper_stor")) as DeclSymbol;
+            funcValue = _valueMap[funcDecl];
+            funcType = _typeMap[funcDecl.Decl.Type.OutType];
+            _builder.BuildCall2(funcType, funcValue, []);
         }
     }
 }

@@ -1609,8 +1609,10 @@ namespace HapetPostPrepare
             return value;
         }
 
-        private bool CheckIfCouldBeAccessed(AstStatement accessor, AstDeclaration accessee)
+        private bool CheckIfCouldBeAccessed(AstStatement accessor, AstDeclaration accessee, InInfo inInfo)
         {
+            if (inInfo.AllowAccessToEveryShite)
+                return true;
             // could be accessed from everyone
             if (accessee.SpecialKeys.Contains(TokenType.KwPublic))
                 return true;

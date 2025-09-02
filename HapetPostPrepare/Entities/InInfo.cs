@@ -10,6 +10,10 @@ namespace HapetPostPrepare.Entities
         public bool MuteErrors { get; set; }
 
         public bool SkipGenericConstrainsCheckWhenInstancing { get; set; }
+        /// <summary>
+        /// 'true' if access should not be checked
+        /// </summary>
+        public bool AllowAccessToEveryShite { get; set; }
 
         /// <summary>
         /// Currently inferencing nested/lambda

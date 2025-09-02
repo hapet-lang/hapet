@@ -166,7 +166,7 @@ namespace HapetPostPrepare
                 smbl2 = OnFoundSymbol(smbl2, callExpr.FuncName);
                 if (smbl2 is DeclSymbol ds && ds.Decl is AstFuncDecl funcDecl)
                 {
-                    if (!CheckIfCouldBeAccessed(callExpr, funcDecl))
+                    if (!CheckIfCouldBeAccessed(callExpr, funcDecl, inInfo))
                         _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, callExpr.FuncName, [], ErrorCode.Get(CTEN.FuncCouldNotBeAccessed));
                     callExpr.Arguments.ReplaceWithCasts(casts);
                     declToSearch = currentParent;
@@ -199,7 +199,7 @@ namespace HapetPostPrepare
                     smbl2 = OnFoundSymbol(smbl2, callExpr.FuncName);
                     if (smbl2 is DeclSymbol ds2 && ds2.Decl is AstFuncDecl funcDecl2)
                     {
-                        if (!CheckIfCouldBeAccessed(callExpr, funcDecl2))
+                        if (!CheckIfCouldBeAccessed(callExpr, funcDecl2, inInfo))
                             _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, callExpr.FuncName, [], ErrorCode.Get(CTEN.FuncCouldNotBeAccessed));
                         callExpr.Arguments.ReplaceWithCasts(casts2.Skip(1).ToList()); // skip because the first param is an object
                         declToSearch = currentParent;
@@ -242,7 +242,7 @@ namespace HapetPostPrepare
                     // check if the decl exists. if not - it could be non static method call from a class name
                     if (smbl2 is DeclSymbol ds && ds.Decl is AstFuncDecl funcDecl)
                     {
-                        if (!CheckIfCouldBeAccessed(callExpr, funcDecl))
+                        if (!CheckIfCouldBeAccessed(callExpr, funcDecl, inInfo))
                             _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, callExpr.FuncName, [], ErrorCode.Get(CTEN.FuncCouldNotBeAccessed));
                         callExpr.Arguments.ReplaceWithCasts(casts);
                         declToSearch = declToSearchLocal;
@@ -278,7 +278,7 @@ namespace HapetPostPrepare
                     // check if the decl exists. if not - it could be static method call from an object
                     if (smbl2 is DeclSymbol ds && ds.Decl is AstFuncDecl funcDecl)
                     {
-                        if (!CheckIfCouldBeAccessed(callExpr, funcDecl))
+                        if (!CheckIfCouldBeAccessed(callExpr, funcDecl, inInfo))
                             _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, callExpr.FuncName, [], ErrorCode.Get(CTEN.FuncCouldNotBeAccessed));
                         callExpr.Arguments.ReplaceWithCasts(casts.Skip(1).ToList()); // skip because the first param is an object
                         declToSearch = declToSearchLocal;
@@ -296,7 +296,7 @@ namespace HapetPostPrepare
                     smbl2 = OnFoundSymbol(smbl2, callExpr.FuncName);
                     if (smbl2 is DeclSymbol ds2 && ds2.Decl is AstFuncDecl funcDecl2)
                     {
-                        if (!CheckIfCouldBeAccessed(callExpr, funcDecl2))
+                        if (!CheckIfCouldBeAccessed(callExpr, funcDecl2, inInfo))
                             _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, callExpr.FuncName, [], ErrorCode.Get(CTEN.FuncCouldNotBeAccessed));
                         callExpr.Arguments.ReplaceWithCasts(casts2);
                         declToSearch = declToSearchLocal;
@@ -315,7 +315,7 @@ namespace HapetPostPrepare
                     smbl2 = OnFoundSymbol(smbl2, callExpr.FuncName);
                     if (smbl2 is DeclSymbol ds3 && ds3.Decl is AstFuncDecl funcDecl3)
                     {
-                        if (!CheckIfCouldBeAccessed(callExpr, funcDecl3))
+                        if (!CheckIfCouldBeAccessed(callExpr, funcDecl3, inInfo))
                             _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, callExpr.FuncName, [], ErrorCode.Get(CTEN.FuncCouldNotBeAccessed));
                         declToSearch = declToSearchLocal;
                         foundSymbol = ds3;
@@ -337,7 +337,7 @@ namespace HapetPostPrepare
                 // check if the decl exists. if not - it could be non static method call
                 if (smbl2 is DeclSymbol ds && ds.Decl is AstFuncDecl funcDecl)
                 {
-                    if (!CheckIfCouldBeAccessed(callExpr, funcDecl))
+                    if (!CheckIfCouldBeAccessed(callExpr, funcDecl, inInfo))
                         _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, callExpr.FuncName, [], ErrorCode.Get(CTEN.FuncCouldNotBeAccessed));
                     callExpr.Arguments.ReplaceWithCasts(casts);
                     declToSearch = declToSearchLocal;
@@ -367,7 +367,7 @@ namespace HapetPostPrepare
                         return;
                     }
 
-                    if (!CheckIfCouldBeAccessed(callExpr, funcDecl2) && !funcDecl2.IsPropertyFunction)
+                    if (!CheckIfCouldBeAccessed(callExpr, funcDecl2, inInfo) && !funcDecl2.IsPropertyFunction)
                         _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, callExpr.FuncName, [], ErrorCode.Get(CTEN.FuncCouldNotBeAccessed));
                     callExpr.Arguments.ReplaceWithCasts(casts.Skip(1).ToList());
                     declToSearch = declToSearchLocal;
@@ -386,7 +386,7 @@ namespace HapetPostPrepare
                 // check if the decl exists. if not - it could be non static method call
                 if (smbl2 is DeclSymbol ds && ds.Decl is AstFuncDecl funcDecl)
                 {
-                    if (!CheckIfCouldBeAccessed(callExpr, funcDecl))
+                    if (!CheckIfCouldBeAccessed(callExpr, funcDecl, inInfo))
                         _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, callExpr.FuncName, [], ErrorCode.Get(CTEN.FuncCouldNotBeAccessed));
                     callExpr.Arguments.ReplaceWithCasts(casts);
                     declToSearch = genericType.Declaration;
@@ -417,7 +417,7 @@ namespace HapetPostPrepare
                         return;
                     }
 
-                    if (!CheckIfCouldBeAccessed(callExpr, funcDecl2) && !funcDecl2.IsPropertyFunction)
+                    if (!CheckIfCouldBeAccessed(callExpr, funcDecl2, inInfo) && !funcDecl2.IsPropertyFunction)
                         _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, callExpr.FuncName, [], ErrorCode.Get(CTEN.FuncCouldNotBeAccessed));
                     callExpr.Arguments.ReplaceWithCasts(casts.Skip(1).ToList());
                     declToSearch = genericType.Declaration;
