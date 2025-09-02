@@ -216,6 +216,8 @@ namespace HapetPostPrepare
                     stmt is not AstSwitchStmt &&
                     stmt is not AstForStmt && 
                     stmt is not AstWhileStmt &&
+                    stmt is not AstTryCatchStmt &&
+                    stmt is not AstCatchStmt &&
                     stmt is not AstAttributeStmt)
                     sb.Append(";\n");
             }
@@ -355,6 +357,12 @@ namespace HapetPostPrepare
         public void AntiParseDefaultExpr(AstDefaultExpr defaultExpr, StringBuilder sb, string offset)
         {
             sb.Append("default");
+            if (defaultExpr.TypeForDefault != null)
+            {
+                sb.Append('(');
+                AntiParseExpr(defaultExpr.TypeForDefault, sb, offset);
+                sb.Append(')');
+            }
         }
 
         public void AntiParseArrayExpr(AstArrayExpr arrExpr, StringBuilder sb, string offset)
@@ -603,7 +611,7 @@ namespace HapetPostPrepare
 
         public void AntiParseCatchStmt(AstCatchStmt catchStmt, StringBuilder sb, string offset)
         {
-            sb.Append("catch (");
+            sb.Append($"{offset}catch (");
             AntiParseExpr(catchStmt.CatchParam.Type, sb, offset);
             if (catchStmt.CatchParam.Name != null)
             {
