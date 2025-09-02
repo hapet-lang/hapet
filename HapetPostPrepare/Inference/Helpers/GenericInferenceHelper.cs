@@ -82,6 +82,19 @@ namespace HapetPostPrepare
 
             // just a pp
             PostPrepareDeclScoping(realDecl);
+
+            // cringe kostyl if nested
+            if (realDecl.IsNestedDecl)
+            {
+                if (realDecl is AstClassDecl classDecl)
+                    AllClassesMetadata.Add(classDecl);
+                else if (realDecl is AstStructDecl structDecl)
+                    AllStructsMetadata.Add(structDecl);
+                else if (realDecl is AstEnumDecl enumDecl)
+                    AllEnumsMetadata.Add(enumDecl);
+                else if (realDecl is AstDelegateDecl delegateDecl)
+                    AllDelegatesMetadata.Add(delegateDecl);
+            }
             // pp up to the current metadata step
             PostPrepareStatementUpToCurrentStep(realDecl);
 

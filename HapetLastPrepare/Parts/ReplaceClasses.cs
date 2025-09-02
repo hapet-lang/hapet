@@ -9,6 +9,7 @@ using System;
 using HapetFrontend.Scoping;
 using HapetFrontend.Helpers;
 using System.Collections.Generic;
+using HapetFrontend.Parsing;
 
 namespace HapetLastPrepare
 {
@@ -81,9 +82,10 @@ namespace HapetLastPrepare
         {
             foreach (var d in decl.Declarations)
             {
-                if (d is AstFuncDecl)
+                if (d is AstFuncDecl || d.IsNestedDecl)
                 {
                     // skip funcs - they are prepared in another loop
+                    // skip nested - they are prepared by themselves
                     continue;
                 }
                 else
@@ -97,9 +99,10 @@ namespace HapetLastPrepare
         {
             foreach (var d in decl.Declarations)
             {
-                if (d is AstFuncDecl)
+                if (d is AstFuncDecl || d.IsNestedDecl)
                 {
                     // skip funcs - they are prepared in another loop
+                    // skip nested - they are prepared by themselves
                     continue;
                 }
                 else
