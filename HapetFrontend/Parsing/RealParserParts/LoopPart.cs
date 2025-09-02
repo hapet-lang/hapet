@@ -138,6 +138,17 @@ namespace HapetFrontend.Parsing
 
                 // try eat semicolon or error
                 CheckSemicolonAfterStmt(onlyStmt);
+
+                if (outInfo.StatementsToAddBefore.Count > 0)
+                {
+                    body.Statements.InsertRange(0, outInfo.StatementsToAddBefore);
+                    outInfo.StatementsToAddBefore.Clear();
+                }
+                if (outInfo.StatementsToAddAfter.Count > 0)
+                {
+                    body.Statements.AddRange(outInfo.StatementsToAddAfter);
+                    outInfo.StatementsToAddAfter.Clear();
+                }
             }
             return body;
         }

@@ -42,8 +42,6 @@ namespace HapetFrontend.Parsing
             var end = Consume(TokenType.CloseBrace, ErrMsg("}", "at end of block expression")).Location;
 
             return new AstBlockExpr(statements, new Location(beg, end));
-
-            
         }
 
         /// <summary>
