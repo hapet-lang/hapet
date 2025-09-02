@@ -27,7 +27,7 @@ namespace HapetFrontend.Ast.Declarations
         {
             var copy = new AstParamDecl(
                 Type.GetDeepCopy() as AstNestedExpr, 
-                Name.GetDeepCopy() as AstIdExpr,
+                Name?.GetDeepCopy() as AstIdExpr,
                 DefaultValue?.GetDeepCopy() as AstExpression,
                 Documentation, Location)
             {

@@ -34,7 +34,7 @@ namespace HapetFrontend.Ast.Statements
             var copy = new AstTryCatchStmt(
                 TryBlock.GetDeepCopy() as AstBlockExpr,
                 CatchBlocks.Select(x => x.GetDeepCopy() as AstCatchStmt).ToList(),
-                FinallyBlock.GetDeepCopy() as AstBlockExpr,
+                FinallyBlock?.GetDeepCopy() as AstBlockExpr,
                 Location)
             {
                 Scope = Scope,
