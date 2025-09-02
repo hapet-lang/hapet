@@ -1670,6 +1670,13 @@ namespace HapetPostPrepare
                 }
             }
 
+            if (accessee.SpecialKeys.Contains(TokenType.KwProtected))
+            {
+                var accParent = accessee.ContainingParent;
+                var currParent = _currentParentStack.GetNearestParentClassOrStruct();
+                return currParent.Type.OutType.IsInheritedFrom(accParent.Type.OutType as ClassType);
+            }
+
             // could be a usual variable/param
             if (accessee is AstParamDecl ||
                 (accessee is AstVarDecl vd2 && vd2.ContainingParent == null))
