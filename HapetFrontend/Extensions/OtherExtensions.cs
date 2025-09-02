@@ -82,6 +82,12 @@ namespace HapetFrontend.Extensions
             return args;
         }
 
+        /// <summary>
+        /// WARN!!! Use only for codegen
+        /// </summary>
+        /// <param name="pars"></param>
+        /// <param name="containingClass"></param>
+        /// <returns></returns>
         public static string GetParamsString(this List<AstParamDecl> pars, HapetType containingClass = null)
         {
             // WARN: ':' is used so linker would work :)))
@@ -91,7 +97,7 @@ namespace HapetFrontend.Extensions
             // class is passed as a first parameter
             if (containingClass != null)
             {
-                sb.Append(HapetType.AsString(containingClass));
+                sb.Append(GetName(containingClass));
                 if (pars.Count > 0)
                     sb.Append(':');
             }
@@ -107,7 +113,7 @@ namespace HapetFrontend.Extensions
                         sb.Append("out_");
                     else if (p.ParameterModificator == Enums.ParameterModificator.Params)
                         sb.Append("params_");
-                    sb.Append(p.Type.OutType == null ? "" : HapetType.AsString(p.Type.OutType));
+                    sb.Append(p.Type.OutType == null ? "" : GetName(p.Type.OutType));
                 }
                 else
                     sb.Append("arglist");
@@ -117,6 +123,21 @@ namespace HapetFrontend.Extensions
             }
             sb.Append(')');
             return sb.ToString();
+
+            static string GetName(HapetType t)
+            {
+                if (t is ClassType clsT)
+                    return GenericsHelper.GetCodegenGenericName(clsT.Declaration.Name, null);
+                else if (t is StructType strT)
+                    return GenericsHelper.GetCodegenGenericName(strT.Declaration.Name, null);
+                else if (t is DelegateType delT)
+                    return GenericsHelper.GetCodegenGenericName(delT.Declaration.Name, null);
+                else if (t is EnumType enmT)
+                    return GenericsHelper.GetCodegenGenericName(enmT.Declaration.Name, null);
+                else if (t is PointerType ptrT)
+                    return $"{GetName(ptrT.TargetType)}*";
+                return HapetType.AsString(t);
+            }
         }
 
         public static List<AstVarDecl> GetStructFields(this List<AstDeclaration> delcs)
