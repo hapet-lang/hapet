@@ -2,46 +2,49 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // Some modifications were made for hapet-lang compatibility.
 
-public static class SR
+internal static class SR
 {
     // arguments
-    public const string Argument_EmptyString = "The value cannot be an empty string.";
-    public const string Argument_EmptyOrWhiteSpaceString = "The value cannot be an empty string or composed entirely of whitespace.";
-    public const string Argument_ImplementIComparable = "At least one object must implement IComparable.";
-    public const string ArgumentOutOfRange_NeedNonNegNum = "Non-negative number required.";
-    public const string ArgumentOutOfRange_IndexMustBeLessOrEqual = "Index was out of range. Must be non-negative and less than or equal to the size of the collection.";
-    public const string ArgumentOutOfRange_Count = "Count must be positive and count must refer to a location within the string/array/collection.";
-    public const string Argument_InvalidOffLen = "Offset and length were out of bounds for the array or count is greater than the number of elements from index to the end of the source collection.";
+    internal const string Argument_EmptyString = "The value cannot be an empty string.";
+    internal const string Argument_EmptyOrWhiteSpaceString = "The value cannot be an empty string or composed entirely of whitespace.";
+    internal const string Argument_ImplementIComparable = "At least one object must implement IComparable.";
+    internal const string ArgumentOutOfRange_NeedNonNegNum = "Non-negative number required.";
+    internal const string ArgumentOutOfRange_IndexMustBeLessOrEqual = "Index was out of range. Must be non-negative and less than or equal to the size of the collection.";
+    internal const string ArgumentOutOfRange_Count = "Count must be positive and count must refer to a location within the string/array/collection.";
+    internal const string Argument_InvalidOffLen = "Offset and length were out of bounds for the array or count is greater than the number of elements from index to the end of the source collection.";
 
     // formatting
-    public const string Formatting_InvalidGroupSizes = "Invalid group sizes in NumberFormatInfo.";
-    public const string Formatting_UnknownFormatSpecifier = "Unknown format specifier '{0}'.";
-    public const string Formatting_ArgIndexOutOfRange = "No format argument exists for index '{0}'.";
-    public const string Formatting_TypeNotFormattable = "Type '{0}' is not a built-in type, does not implement IStringFormattable, and no custom formatter was found for it.";
-    public const string Formatting_InvalidFormatString = "Invalid format string.";
-    public const string Formatting_FormatException = "One of the identified items was in an invalid format.";
+    internal const string Formatting_InvalidGroupSizes = "Invalid group sizes in NumberFormatInfo.";
+    internal const string Formatting_UnknownFormatSpecifier = "Unknown format specifier '{0}'.";
+    internal const string Formatting_ArgIndexOutOfRange = "No format argument exists for index '{0}'.";
+    internal const string Formatting_TypeNotFormattable = "Type '{0}' is not a built-in type, does not implement IStringFormattable, and no custom formatter was found for it.";
+    internal const string Formatting_InvalidFormatString = "Invalid format string.";
+    internal const string Formatting_FormatException = "One of the identified items was in an invalid format.";
 
     // comparison
-    public const string Arg_MustBeChar = "Object must be of type Char.";
-    public const string Arg_MustBeString = "Object must be of type String.";
-    public const string Arg_MustBeFloat = "Object must be of type Float.";
-    public const string Arg_MustBeDouble = "Object must be of type Double.";
-    public const string Arg_MustBeBool = "Object must be of type Bool.";
-    public const string Arg_MustBeSByte = "Object must be of type SByte.";
-    public const string Arg_MustBeInt16 = "Object must be of type Int16 (short).";
-    public const string Arg_MustBeInt32 = "Object must be of type Int32 (int).";
-    public const string Arg_MustBeInt64 = "Object must be of type Int64 (long).";
-    public const string Arg_MustBeByte = "Object must be of type Byte.";
-    public const string Arg_MustBeUInt16 = "Object must be of type UInt16 (ushort).";
-    public const string Arg_MustBeUInt32 = "Object must be of type UInt32 (uint).";
-    public const string Arg_MustBeUInt64 = "Object must be of type UInt64 (ulong).";
-    public const string Arg_MustBePtrDiff = "Object must be of type PtrDiff.";
-    public const string Arg_MustBeUIntPtr = "Object must be of type UIntPtr.";
+    internal const string Arg_MustBeChar = "Object must be of type Char.";
+    internal const string Arg_MustBeString = "Object must be of type String.";
+    internal const string Arg_MustBeFloat = "Object must be of type Float.";
+    internal const string Arg_MustBeDouble = "Object must be of type Double.";
+    internal const string Arg_MustBeBool = "Object must be of type Bool.";
+    internal const string Arg_MustBeSByte = "Object must be of type SByte.";
+    internal const string Arg_MustBeInt16 = "Object must be of type Int16 (short).";
+    internal const string Arg_MustBeInt32 = "Object must be of type Int32 (int).";
+    internal const string Arg_MustBeInt64 = "Object must be of type Int64 (long).";
+    internal const string Arg_MustBeByte = "Object must be of type Byte.";
+    internal const string Arg_MustBeUInt16 = "Object must be of type UInt16 (ushort).";
+    internal const string Arg_MustBeUInt32 = "Object must be of type UInt32 (uint).";
+    internal const string Arg_MustBeUInt64 = "Object must be of type UInt64 (ulong).";
+    internal const string Arg_MustBePtrDiff = "Object must be of type PtrDiff.";
+    internal const string Arg_MustBeUIntPtr = "Object must be of type UIntPtr.";
+
+    internal const string Arg_BogusIComparer = "Unable to sort because the IComparer.Compare() method returns inconsistent results. Either a value does not compare equal to itself, or one value repeatedly compared to another value yields different results.";
 
     // not
-    public const string NotSupported_ReadOnlyCollection = "Collection is read-only.";
+    internal const string NotSupported_ReadOnlyCollection = "Collection is read-only.";
 
     // invalid
-    public const string InvalidOperation_EnumNotStarted = "Enumeration has not started. Call MoveNext.";
-    public const string InvalidOperation_EnumEnded = "Enumeration already finished.";
+    internal const string InvalidOperation_EnumNotStarted = "Enumeration has not started. Call MoveNext.";
+    internal const string InvalidOperation_EnumEnded = "Enumeration already finished.";
+    internal const string InvalidOperation_IComparerFailed = "Failed to compare two elements in the array.";
 }

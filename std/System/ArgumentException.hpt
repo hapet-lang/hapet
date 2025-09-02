@@ -64,6 +64,15 @@ public class ArgumentOutOfRangeException : ArgumentException
 }
 
 [SuppressStaticCtorCall]
+public class IndexOutOfRangeException  : ArgumentOutOfRangeException
+{
+    public IndexOutOfRangeException () : this("") { }
+    public IndexOutOfRangeException (string paramName) : this(paramName, "") { }
+    public IndexOutOfRangeException (string paramName, string message) : this(paramName, message, null) { }
+    public IndexOutOfRangeException (string paramName, string message, object actualValue) : base(paramName, message, actualValue) { }
+}
+
+[SuppressStaticCtorCall]
 public class ArgumentNullException : ArgumentException
 {
     public ArgumentNullException() : this("") { }

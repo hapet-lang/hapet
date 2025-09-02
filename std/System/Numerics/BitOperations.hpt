@@ -13,4 +13,20 @@ public static class BitOperations
     {
         return (value << (uint)offset) | (value >> (uint)(32 - offset));
     }
+
+    /// Returns the integer (floor) log of the specified value, base 2.
+    /// Note that by convention, input value 0 returns 0 since log(0) is undefined.
+    public static int Log2(uint value)
+    {
+        if (value == 0)
+            return 0;
+        int targetlevel = 0;
+        value = value >> 1;
+        while (value != 0) 
+        {
+            ++targetlevel;
+            value = value >> 1;
+        }
+        return targetlevel;
+    }
 }
