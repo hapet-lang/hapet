@@ -11,6 +11,7 @@ public static class SR
     public const string ArgumentOutOfRange_NeedNonNegNum = "Non-negative number required.";
     public const string ArgumentOutOfRange_IndexMustBeLessOrEqual = "Index was out of range. Must be non-negative and less than or equal to the size of the collection.";
     public const string ArgumentOutOfRange_Count = "Count must be positive and count must refer to a location within the string/array/collection.";
+    public const string Argument_InvalidOffLen = "Offset and length were out of bounds for the array or count is greater than the number of elements from index to the end of the source collection.";
 
     // formatting
     public const string Formatting_InvalidGroupSizes = "Invalid group sizes in NumberFormatInfo.";
