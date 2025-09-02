@@ -150,7 +150,7 @@ namespace HapetBackend.Llvm
                     if (currCatchIndex + 1 != stmt.CatchBlocks.Count)
                     {
                         // getting the next dispatch
-                        var nextDispatch = catches[currCatchIndex];
+                        var nextDispatch = disps[currCatchIndex];
                         // if 0 - go dispatch again, if 1 - go catch
                         _builder.BuildCondBr(canBeCasted, nextCatch, nextDispatch);
 
