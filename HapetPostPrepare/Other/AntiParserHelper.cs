@@ -604,7 +604,12 @@ namespace HapetPostPrepare
         public void AntiParseCatchStmt(AstCatchStmt catchStmt, StringBuilder sb, string offset)
         {
             sb.Append("catch (");
-            AntiParseExpr(catchStmt.CatchParam, sb, offset);
+            AntiParseExpr(catchStmt.CatchParam.Type, sb, offset);
+            if (catchStmt.CatchParam.Name != null)
+            {
+                sb.Append(' ');
+                AntiParseExpr(catchStmt.CatchParam.Name, sb, offset);
+            }
             sb.Append(")\n");
             AntiParseExpr(catchStmt.CatchBlock, sb, offset);
         }
