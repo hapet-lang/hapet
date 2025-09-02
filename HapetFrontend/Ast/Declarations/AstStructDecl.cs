@@ -1,6 +1,7 @@
 ﻿using HapetFrontend.Ast.Expressions;
 using HapetFrontend.Ast.Statements;
 using HapetFrontend.Entities;
+using HapetFrontend.Helpers;
 using HapetFrontend.Parsing;
 using HapetFrontend.Scoping;
 using HapetFrontend.Types;
@@ -110,7 +111,7 @@ namespace HapetFrontend.Ast.Declarations
 
         public override string ToString()
         {
-            return $"{Name}";
+            return GenericsHelper.GetNameFromAst(Name, null);
         }
     }
 }

@@ -39,7 +39,7 @@ namespace HapetFrontend.Types
 
         public override string ToString()
         {
-            return $"{(Declaration != null ? Declaration.Name.Name : "null")}";
+            return $"{(Declaration != null ? Declaration.ToString() : "null")}";
         }
 
         public override int Match(HapetType concrete)
@@ -85,7 +85,7 @@ namespace HapetFrontend.Types
 
         public override string ToString()
         {
-            return $"{Declaration.Name}";
+            return $"{(Declaration != null ? Declaration.ToString() : "null")}";
         }
 
         public int GetIndexOfMember(string member)
