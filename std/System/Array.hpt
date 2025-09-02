@@ -102,6 +102,7 @@ public static class Array
             throw new ArgumentOutOfRangeException(nameof(length), SR.Argument_InvalidOffLen, length);
 
         comparer ??= Comparer.Default<T>();
+        (new SorterGenericArray<T, object>(array, null, comparer)).Sort(index, length);
     }
 
     public static void Sort<T>(T[] array, Comparison<T> comparison)
