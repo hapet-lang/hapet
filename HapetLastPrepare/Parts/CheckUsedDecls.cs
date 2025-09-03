@@ -412,14 +412,56 @@ namespace HapetLastPrepare
 
             if (expr.FindSymbol == null)
                 return;
-            CheckUsedDeclsDecl((expr.FindSymbol as DeclSymbol).Decl, usedDecls);
+
+            var decl = (expr.FindSymbol as DeclSymbol).Decl;
+            if (decl.IsImplOfGeneric || (decl.ContainingParent?.IsImplOfGeneric ?? false))
+            {
+                CheckUsedDeclsDecl(decl, usedDecls);
+            }
+            else
+            {
+                // add to list if required
+                if (usedDecls != null)
+                {
+                    if (usedDecls.Contains(decl))
+                        return;
+                    usedDecls.Add(decl);
+                }
+                else
+                {
+                    if (decl.IsDeclarationUsed)
+                        return;
+                    decl.IsDeclarationUsed = true;
+                }
+            }
         }
 
         private void CheckUsedDeclsIdExpr(AstIdExpr expr, List<AstDeclaration> usedDecls = null)
         {
             if (expr.FindSymbol == null)
                 return;
-            CheckUsedDeclsDecl((expr.FindSymbol as DeclSymbol).Decl, usedDecls);
+
+            var decl = (expr.FindSymbol as DeclSymbol).Decl;
+            if (decl.IsImplOfGeneric || (decl.ContainingParent?.IsImplOfGeneric ?? false))
+            {
+                CheckUsedDeclsDecl(decl, usedDecls);
+            }
+            else
+            {
+                // add to list if required
+                if (usedDecls != null)
+                {
+                    if (usedDecls.Contains(decl))
+                        return;
+                    usedDecls.Add(decl);
+                }
+                else
+                {
+                    if (decl.IsDeclarationUsed)
+                        return;
+                    decl.IsDeclarationUsed = true;
+                }
+            }
         }
 
         private void CheckUsedDeclsCallExpr(AstCallExpr expr, List<AstDeclaration> usedDecls = null)
