@@ -26,14 +26,26 @@ namespace HapetPostPrepare
 
             // special case for 
             // structInstance == null
+            // except Array and String structs
             // this could be possible because of generics generation
             if ((binExpr.Operator == "==" || binExpr.Operator == "!=") &&
                 (binExpr.Left.OutType is StructType && binExpr.Right.OutType is NullType ||
                 binExpr.Left.OutType is NullType && binExpr.Right.OutType is StructType))
             {
-                // just make one expr to be 'true' and another one 'false'
-                binExpr.Right = new AstBoolExpr(true, binExpr);
-                binExpr.Left = new AstBoolExpr(false, binExpr);
+                if ((binExpr.Left.OutType is not ArrayType && binExpr.Left.OutType is not StringType) &&
+                    (binExpr.Right.OutType is not ArrayType && binExpr.Right.OutType is not StringType))
+                {
+                    // just make one expr to be 'true' and another one 'false'
+                    binExpr.Right = new AstBoolExpr(true, binExpr);
+                    binExpr.Left = new AstBoolExpr(false, binExpr);
+                }
+                else
+                {
+                    if (binExpr.Right.OutType is NullType)
+                        binExpr.Right = PostPrepareExpressionWithType(binExpr.Left.OutType, binExpr.Right);
+                    else
+                        binExpr.Left = PostPrepareExpressionWithType(binExpr.Right.OutType, binExpr.Left);
+                }
                 var operators = binExpr.Scope.GetBinaryOperators(binExpr.Operator, binExpr.Left.OutType, binExpr.Right.OutType);
                 binExpr.ActualOperator = operators[0];
                 return;

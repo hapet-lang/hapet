@@ -578,7 +578,7 @@ namespace HapetBackend.Llvm
                 {
                     var nullTarget = LLVMValueRef.CreateConstPointerNull(HapetTypeToLLVMType(PointerType.GetPointerType(arrayType.TargetType)));
                     var v = _builder.BuildAlloca(HapetTypeToLLVMType(arrayType), $"nulled_array");
-                    var buffer = _builder.BuildGEP2(HapetTypeToLLVMType(arrayType), v, new LLVMValueRef[] { LLVMValueRef.CreateConstInt(_context.Int32Type, 1) }, "arrBuffer");
+                    var buffer = _builder.BuildStructGEP2(HapetTypeToLLVMType(arrayType), v, 1, "arrBuffer");
                     _builder.BuildStore(nullTarget, buffer);
                     return _builder.BuildLoad2(HapetTypeToLLVMType(arrayType), v); // return loaded
                 }
@@ -587,7 +587,7 @@ namespace HapetBackend.Llvm
                 {
                     var nullTarget = LLVMValueRef.CreateConstPointerNull(HapetTypeToLLVMType(PointerType.GetPointerType(HapetType.CurrentTypeContext.CharTypeInstance)));
                     var v = _builder.BuildAlloca(HapetTypeToLLVMType(stringType), $"nulled_string");
-                    var buffer = _builder.BuildGEP2(HapetTypeToLLVMType(stringType), v, new LLVMValueRef[] { LLVMValueRef.CreateConstInt(_context.Int32Type, 1) }, "strBuffer");
+                    var buffer = _builder.BuildStructGEP2(HapetTypeToLLVMType(stringType), v, 1, "strBuffer");
                     _builder.BuildStore(nullTarget, buffer);
                     return _builder.BuildLoad2(HapetTypeToLLVMType(stringType), v); // return loaded
                 }
