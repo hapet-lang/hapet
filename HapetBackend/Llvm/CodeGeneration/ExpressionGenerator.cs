@@ -753,10 +753,20 @@ namespace HapetBackend.Llvm
         private unsafe LLVMValueRef GenerateCallExpr(AstCallExpr expr, bool getPtr = false, List<LLVMValueRef> additionalArgs = null)
         {
             // the func is needed to handle virtual shite
-            LLVMValueRef CreateCall(LLVMBuilderRef builder, LLVMTypeRef funcType, FunctionType hapetType, LLVMValueRef func, List<LLVMValueRef> args, bool isBaseCall, string name = "")
+            LLVMValueRef CreateCall(LLVMBuilderRef builder, LLVMTypeRef funcType, FunctionType hapetType, LLVMValueRef func, List<LLVMValueRef> args, bool isBaseCall, HapetType objectType, string name = "")
             {
+                // when calling funcs of struct - call directly
+                // except functions of ValueType and Object
                 if (hapetType.Declaration.ContainingParent is not AstClassDecl clsDecl)
+                {
                     return builder.BuildCall2(funcType, func, args.ToArray(), name);
+                }
+                if (objectType is StructType strT)
+                {
+                    // need to box this shite 
+                    var structLoaded = _builder.BuildLoad2(HapetTypeToLLVMType(strT), args[0], "strLoaded");
+                    args[0] = CreateCast(_builder, structLoaded, strT, PointerType.GetPointerType(clsDecl.Type.OutType));
+                }
 
                 // for base func call - just call base func :)
                 if (isBaseCall)
@@ -807,6 +817,7 @@ namespace HapetBackend.Llvm
                 if (expr.OutType is not VoidType)
                     varPtr = CreateLocalVariable(expr.OutType, "funcRetHolder");
 
+                HapetType objectType = null;
                 // args shite
                 List<LLVMValueRef> args = new List<LLVMValueRef>();
                 if (!expr.StaticCall)
@@ -816,6 +827,7 @@ namespace HapetBackend.Llvm
                         args.Add(GenerateExpressionCode(expr.TypeOrObjectName, true));
                     else
                         args.Add(GenerateExpressionCode(expr.TypeOrObjectName));
+                    objectType = expr.TypeOrObjectName.OutType;
                 }
 
                 // this is a super kostyl to handle 
@@ -850,7 +862,7 @@ namespace HapetBackend.Llvm
                 if (expr.OutType is not VoidType)
                 {
                     // save the value
-                    LLVMValueRef ret = CreateCall(_builder, funcType, fncType, hapetFunc, args, isBaseCall, $"funcReturnValue");
+                    LLVMValueRef ret = CreateCall(_builder, funcType, fncType, hapetFunc, args, isBaseCall, objectType, $"funcReturnValue");
                     _builder.BuildStore(ret, varPtr);
 
                     if (getPtr)
@@ -862,7 +874,7 @@ namespace HapetBackend.Llvm
                     return _builder.BuildLoad2(HapetTypeToLLVMType(retType), varPtr, "holderLoaded");
                 }
 
-                return CreateCall(_builder, funcType, fncType, hapetFunc, args, isBaseCall);
+                return CreateCall(_builder, funcType, fncType, hapetFunc, args, isBaseCall, objectType);
             }
             else if (expr.FuncName.OutType is DelegateType delType)
             {

@@ -65,14 +65,10 @@ public class Object
     // TODO: here was protected internal 
     protected unsafe object MemberwiseClone()
     {
-        Console.Dbg(48);
-        void* aa = TypeConverter.GetTypeInfo((void*)this);
-        Console.Dbg((byte)48 + (byte)(uintptr)aa);
         Type t = GetType();
         int sizeToMalloc = t.RawSize + sizeof(long); // for typeinfo
         void* newInstance = Gc.NewClassInstance(sizeToMalloc, TypeConverter.GetTypeInfo((void*)this));
 
-        Console.Dbg(49);
         // work with offseted
         void* newOffseted = Gc.GetOffseted(newInstance);
         Marshal.Memcpy(newOffseted, (void*)this, (uintptr)t.RawSize);
