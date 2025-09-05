@@ -19,7 +19,7 @@ namespace HapetLastPrepare
                     continue;
 
                 List<AstDeclaration> depDecls = new List<AstDeclaration>();
-                CheckUsedDeclsDecl(f, depDecls);
+                CheckUsedDeclsDecl(f, depDecls, true);
 
                 // where to call
                 var blockWhereToCall = (f.Body.Statements[0] as AstIfStmt).BodyTrue;
