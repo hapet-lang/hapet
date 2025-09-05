@@ -559,9 +559,11 @@ namespace HapetBackend.Llvm
                 // valueType is ISome
 
                 var leftValueType = objType as StructType;
-                if (requiredType is PointerType pt3 && pt3.TargetType is ClassType)
+                if (requiredType is PointerType pt3 && pt3.TargetType is ClassType target)
                 {
-                    // just false
+                    // just false if not inherited
+                    if (leftValueType.IsInheritedFrom(target))
+                        return GenerateExpressionCode(new AstBoolExpr(!isNot)); // true
                     return GenerateExpressionCode(new AstBoolExpr(isNot));
                 }
                 else if (requiredType == leftValueType)
