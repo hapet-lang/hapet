@@ -8,6 +8,7 @@ using System.Runtime.InteropServices;
 
 public static class Number
 {
+    [SuppressStaticCtorCall]
     struct NumberStruct
     {
         public int Precision;
