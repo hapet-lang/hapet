@@ -291,7 +291,7 @@ namespace HapetBackend.Llvm
                                 else
                                 {
                                     // when smth like 'valueTyped as ICringeCock'
-                                    toReturn = CreateCast(_builder, left, leftExpr.OutType, rightType);
+                                    toReturn = CreateCast(_builder, left, leftExpr.OutType, pt1);
                                     break;
                                 }
 
@@ -309,8 +309,8 @@ namespace HapetBackend.Llvm
                                     if (isDownCast || anyIsInterface)
                                     {
                                         var ptrToCastTypeInfo = _typeInfoDictionary[rightType];
-                                        var castTypeNull = LLVMValueRef.CreateConstPointerNull(HapetTypeToLLVMType(PointerType.GetPointerType(rightType)));
-                                        var casted = _builder.BuildBitCast(left, HapetTypeToLLVMType(PointerType.GetPointerType(rightType)), "castedAs");
+                                        var castTypeNull = LLVMValueRef.CreateConstPointerNull(HapetTypeToLLVMType(pt1));
+                                        var casted = _builder.BuildBitCast(left, HapetTypeToLLVMType(pt1), "castedAs");
 
                                         // WARN: hard cock
                                         var typeConverter = _currentFunction.Scope.GetSymbolInNamespace("System.Runtime.Conversion", new AstIdExpr("TypeConverter"));
