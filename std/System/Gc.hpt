@@ -173,7 +173,7 @@ public static class Gc
                 Console.WriteLine(string.Format("Calling dtor on {0}", type.FullName));
 #endif
                 // getting dtor delegate
-                DtorDelegate del = (*type._typeInfo).DtorDelegate;
+                DtorDelegate del = (*type._typeInfo)._dtorDelegate;
                 del.Invoke(_mallocList[i].Obj);
                 // free without offset
                 Marshal.Free(GetNonOffseted(_mallocList[i].Obj));

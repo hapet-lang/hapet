@@ -5,13 +5,10 @@ using System;
 
 [DeclarationUsed]
 [SuppressStaticCtorCall]
-public struct TypeInfoUnsafe
+internal struct TypeInfoUnsafe
 {
-    public byte* Name;
-    public TypeInfoUnsafe* Parent;
-    public TypeInfoUnsafe** Interfaces;
-    public int** InterfaceOffsets;
-    public byte InterfaceCount;
-    public DtorDelegate DtorDelegate;
-    public int RawSize;
+    internal byte* _name;
+    internal int** _interfaceOffsets;
+    internal DtorDelegate _dtorDelegate;
+    internal int _rawSize;
 }

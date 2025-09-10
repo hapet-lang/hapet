@@ -13,23 +13,31 @@ public struct Type
     internal TypeInfoUnsafe* _typeInfo;
     [DeclarationUsed]
     internal VirtualTableUnsafe* _vTable;
+    [DeclarationUsed]
+    internal int _hashCode;
+    [DeclarationUsed]
+    internal Type* _parent;
+    [DeclarationUsed]
+    internal Type** _interfaces;
+    [DeclarationUsed]
+    internal byte _interfaceCount;
 
     /// Returns full name of the type
     public string FullName 
     {
         get 
         {
-            byte* unsafeName = (*_typeInfo).Name;
+            byte* unsafeName = (*_typeInfo)._name;
             return UTF8Encoding.GetString(unsafeName);
         }
     }
 
     /// Returns raw size of the type
-    public int RawSize => (*_typeInfo).RawSize;
+    public int RawSize => (*_typeInfo)._rawSize;
 
     public static bool operator ==(Type t1, Type t2)
     {
-        return t1._typeInfo == t2._typeInfo && t1._vTable == t2._vTable;
+        return t1._hashCode == t2._hashCode;
     }
 
     public static bool operator !=(Type t1, Type t2)

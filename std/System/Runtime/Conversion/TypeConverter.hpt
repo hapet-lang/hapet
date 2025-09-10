@@ -9,52 +9,50 @@ using System.Runtime.InteropServices;
 public static class TypeConverter
 {
     [DeclarationUsed]
-    public static bool CanBeDowncasted(void* obj, TypeInfoUnsafe* type)
+    public static bool CanBeDowncasted(void* obj, Type type)
     {
         if ((uintptr)obj == (uintptr)0)
             return false;
 
-        Type* negativeOffseted = GetTypeInfo(obj);
-        TypeInfoUnsafe* typeInfo = (*negativeOffseted)._typeInfo;
-        TypeInfoUnsafe* currTypeInfo = typeInfo;
+        Type* objType = GetTypeInfo(obj);
+        Type* currType = objType;
 
-        while ((uintptr)currTypeInfo != (uintptr)0)
+        while ((uintptr)currType != (uintptr)0)
         {
-            if ((uintptr)currTypeInfo == (uintptr)type)
+            if ((*currType) == type)
                 return true;
-            currTypeInfo = (*currTypeInfo).Parent;
+            currType = (*currType)._parent;
         }
         return false;
     }
 
     [DeclarationUsed]
-    public static bool CanBeDowncastedInterface(void* obj, TypeInfoUnsafe* type)
+    public static bool CanBeDowncastedInterface(void* obj, Type type)
     {
         if ((uintptr)obj == (uintptr)0)
             return false;
 
-        Type* negativeOffseted = GetTypeInfo(obj);
-        TypeInfoUnsafe* typeInfo = (*negativeOffseted)._typeInfo;
-        TypeInfoUnsafe* currTypeInfo = typeInfo;
+        Type* objType = GetTypeInfo(obj);
+        Type* currType = objType;
 
-        while ((uintptr)currTypeInfo != (uintptr)0)
+        while ((uintptr)currType != (uintptr)0)
         {
-            if (TypeImplementsInterface(*currTypeInfo, type, true))
+            if (TypeImplementsInterface(*currType, type, true))
                 return true;
-            currTypeInfo = (*currTypeInfo).Parent;
+            currType = (*currType)._parent;
         }
         return false;
     }
 
     [DeclarationUsed]
-    private static bool TypeImplementsInterface(TypeInfoUnsafe type, TypeInfoUnsafe* searchType, bool checkInh)
+    private static bool TypeImplementsInterface(Type type, Type searchType, bool checkInh)
     {
-        int count = type.InterfaceCount;
+        int count = type._interfaceCount;
         for (int i = 0; i < count; i += 1)
         {
-            TypeInfoUnsafe* currIntf = type.Interfaces[i];
+            Type* currIntf = type._interfaces[i];
             // if they are equal
-            if ((uintptr)currIntf == (uintptr)searchType)
+            if ((*currIntf) == searchType)
                 return true;
 
             // check interface inheritance
@@ -65,22 +63,22 @@ public static class TypeConverter
     }
 
     [DeclarationUsed]
-    public static int GetInterfaceOffset(void* obj, TypeInfoUnsafe* interfaceType, int fieldIndex)
+    public static int GetInterfaceOffset(void* obj, Type interfaceType, int fieldIndex)
     {
         // TODO: throw exception
         if ((uintptr)obj == (uintptr)0)
             return 0;
 
-        Type* negativeOffseted = GetTypeInfo(obj);
-        TypeInfoUnsafe typeInfo = *((*negativeOffseted)._typeInfo);
+        Type objType = *GetTypeInfo(obj);
+        TypeInfoUnsafe typeInfo = *(objType._typeInfo);
 
         int offset = 0;
-        for (int i = 0; i < typeInfo.InterfaceCount; i += 1)
+        for (int i = 0; i < objType._interfaceCount; i += 1)
         {
-            TypeInfoUnsafe* currIntf = typeInfo.Interfaces[i];
-            if ((uintptr)currIntf == (uintptr)interfaceType)
+            Type* currIntf = objType._interfaces[i];
+            if ((*currIntf) == interfaceType)
             {
-                var offsets = typeInfo.InterfaceOffsets[i];
+                var offsets = typeInfo._interfaceOffsets[i];
                 offset = offsets[fieldIndex];
                 break;
             }

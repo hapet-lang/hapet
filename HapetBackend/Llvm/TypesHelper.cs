@@ -722,7 +722,7 @@ namespace HapetBackend.Llvm
         {
             // cast from object instance to struct
 
-            var ptrToCastTypeInfo = _typeInfoDictionary[structType];
+            var castTypeInfo = _builder.BuildLoad2(GetTypeType(), _typeDictionary[structType], "typeLoaded");
 
             // WARN: hard cock
             var typeConverter = _currentFunction.Scope.GetSymbolInNamespace("System.Runtime.Conversion", new AstIdExpr("TypeConverter"));
@@ -730,7 +730,7 @@ namespace HapetBackend.Llvm
             downcasterSymbol = (typeConverter.Decl as AstClassDecl).SubScope.GetSymbol(new AstIdExpr("CanBeDowncasted")) as DeclSymbol;
             var downcasterFunc = _valueMap[downcasterSymbol];
             LLVMTypeRef funcType = _typeMap[downcasterSymbol.Decl.Type.OutType];
-            var canBeDowncasted = _builder.BuildCall2(funcType, downcasterFunc, new LLVMValueRef[] { val, ptrToCastTypeInfo }, "canBeDowncasted");
+            var canBeDowncasted = _builder.BuildCall2(funcType, downcasterFunc, new LLVMValueRef[] { val, castTypeInfo }, "canBeDowncasted");
 
             // creating other blocks
             var bbTrue = _lastFunctionValueRef.AppendBasicBlockInContext(_context, $"cast.true");

@@ -16,29 +16,29 @@ public static class VtableHelper
         Type* negativeOffseted = TypeConverter.GetTypeInfo(obj);
         VirtualTableUnsafe vtable = *((*negativeOffseted)._vTable);
 
-        return vtable.VirtualMethods[index];
+        return vtable._virtualMethods[index];
     }
 
     [DeclarationUsed]
-    public static void* GetInterfaceMethodByIndex(void* obj, VirtualTableUnsafe* interfaceVtable, int methodIndex)
+    public static void* GetInterfaceMethodByIndex(void* obj, Type interfaceType, int methodIndex)
     {
         if ((uintptr)obj == (uintptr)0)
             return null;
 
-        Type* negativeOffseted = TypeConverter.GetTypeInfo(obj);
-        VirtualTableUnsafe vtable = *((*negativeOffseted)._vTable);
+        Type objType = *TypeConverter.GetTypeInfo(obj);
+        VirtualTableUnsafe vtable = *(objType._vTable);
 
         int offset = 0;
-        for (int i = 0; i < vtable.InterfaceCount; i += 1)
+        for (int i = 0; i < objType._interfaceCount; i += 1)
         {
-            VirtualTableUnsafe* currIntf = vtable.Interfaces[i];
-            if ((uintptr)currIntf == (uintptr)interfaceVtable)
+            Type* currIntf = objType._interfaces[i];
+            if ((*currIntf) == interfaceType)
             {
-                var offsets = vtable.InterfaceOffsets[i];
+                var offsets = vtable._interfaceOffsets[i];
                 offset = offsets[methodIndex];
                 break;
             }
         }
-        return vtable.VirtualMethods[offset];
+        return vtable._virtualMethods[offset];
     }
 }

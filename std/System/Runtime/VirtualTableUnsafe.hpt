@@ -5,12 +5,9 @@ using System;
 
 [DeclarationUsed]
 [SuppressStaticCtorCall]
-public struct VirtualTableUnsafe
+internal struct VirtualTableUnsafe
 {
-    public VirtualTableUnsafe* Parent;
-    public void** VirtualMethods; // ptr to malloc of ptrs to funcs
-    public int VirtualMethodsCount;
-    public VirtualTableUnsafe** Interfaces;
-    public int** InterfaceOffsets;
-    public byte InterfaceCount;
+    internal void** _virtualMethods; // ptr to malloc of ptrs to funcs
+    internal int _virtualMethodsCount;
+    internal int** _interfaceOffsets;
 }

@@ -308,7 +308,7 @@ namespace HapetBackend.Llvm
                                     bool isDownCast = rightType.IsInheritedFrom(leftType);
                                     if (isDownCast || anyIsInterface)
                                     {
-                                        var ptrToCastTypeInfo = _typeInfoDictionary[rightType];
+                                        var castTypeInfo = _builder.BuildLoad2(GetTypeType(), _typeDictionary[rightType], "typeLoaded");
                                         var castTypeNull = LLVMValueRef.CreateConstPointerNull(HapetTypeToLLVMType(pt1));
                                         var casted = _builder.BuildBitCast(left, HapetTypeToLLVMType(pt1), "castedAs");
 
@@ -321,7 +321,7 @@ namespace HapetBackend.Llvm
                                             downcasterSymbol = (typeConverter.Decl as AstClassDecl).SubScope.GetSymbol(new AstIdExpr("CanBeDowncasted")) as DeclSymbol;
                                         var downcasterFunc = _valueMap[downcasterSymbol];
                                         LLVMTypeRef funcType = _typeMap[downcasterSymbol.Decl.Type.OutType];
-                                        var canBeDowncasted = _builder.BuildCall2(funcType, downcasterFunc, new LLVMValueRef[] { left, ptrToCastTypeInfo }, "canBeDowncasted");
+                                        var canBeDowncasted = _builder.BuildCall2(funcType, downcasterFunc, new LLVMValueRef[] { left, castTypeInfo }, "canBeDowncasted");
                                         toReturn = _builder.BuildSelect(canBeDowncasted, casted, castTypeNull, "castResult");
                                         break;
                                     }
@@ -499,7 +499,7 @@ namespace HapetBackend.Llvm
                     /// WARN: almost the same as in <see cref="CreateCast"/>
                     // check cast from object instance to struct
 
-                    var ptrToCastTypeInfo = _typeInfoDictionary[requiredType];
+                    var castTypeInfo = _builder.BuildLoad2(GetTypeType(), _typeDictionary[requiredType], "typeLoaded");
 
                     // WARN: hard cock
                     var typeConverter = _currentFunction.Scope.GetSymbolInNamespace("System.Runtime.Conversion", new AstIdExpr("TypeConverter"));
@@ -507,7 +507,7 @@ namespace HapetBackend.Llvm
                     downcasterSymbol = (typeConverter.Decl as AstClassDecl).SubScope.GetSymbol(new AstIdExpr("CanBeDowncasted")) as DeclSymbol;
                     var downcasterFunc = _valueMap[downcasterSymbol];
                     LLVMTypeRef funcType = _typeMap[downcasterSymbol.Decl.Type.OutType];
-                    var canBeDowncasted = _builder.BuildCall2(funcType, downcasterFunc, new LLVMValueRef[] { obj, ptrToCastTypeInfo }, "canBeDowncasted");
+                    var canBeDowncasted = _builder.BuildCall2(funcType, downcasterFunc, new LLVMValueRef[] { obj, castTypeInfo }, "canBeDowncasted");
                     return canBeDowncasted;
                 }
 
@@ -522,7 +522,7 @@ namespace HapetBackend.Llvm
                     bool isDownCast = rightType.IsInheritedFrom(leftType);
                     if (isDownCast || anyIsInterface)
                     {
-                        var ptrToCastTypeInfo = _typeInfoDictionary[rightType];
+                        var castTypeInfo = _builder.BuildLoad2(GetTypeType(), _typeDictionary[rightType], "typeLoaded");
 
                         // WARN: hard cock
                         var typeConverter = _currentFunction.Scope.GetSymbolInNamespace("System.Runtime.Conversion", new AstIdExpr("TypeConverter"));
@@ -533,7 +533,7 @@ namespace HapetBackend.Llvm
                             downcasterSymbol = (typeConverter.Decl as AstClassDecl).SubScope.GetSymbol(new AstIdExpr("CanBeDowncasted")) as DeclSymbol;
                         var downcasterFunc = _valueMap[downcasterSymbol];
                         LLVMTypeRef funcType = _typeMap[downcasterSymbol.Decl.Type.OutType];
-                        var canBeDowncasted = _builder.BuildCall2(funcType, downcasterFunc, new LLVMValueRef[] { obj, ptrToCastTypeInfo }, "canBeDowncasted");
+                        var canBeDowncasted = _builder.BuildCall2(funcType, downcasterFunc, new LLVMValueRef[] { obj, castTypeInfo }, "canBeDowncasted");
 
                         // if 'is not' cringe - negate
                         if (isNot)
@@ -785,8 +785,8 @@ namespace HapetBackend.Llvm
                         var methSymbol = (helper.Decl as AstClassDecl).SubScope.GetSymbol(new AstIdExpr("GetInterfaceMethodByIndex")) as DeclSymbol;
                         var methFunc = _valueMap[methSymbol];
                         LLVMTypeRef methType = _typeMap[methSymbol.Decl.Type.OutType];
-                        var vtableInfo = _virtualTableDictionary[clsDecl.Type.OutType as ClassType];
-                        var funcToCall = _builder.BuildCall2(methType, methFunc, new LLVMValueRef[] { args[0], vtableInfo, LLVMValueRef.CreateConstInt(_context.Int32Type, (ulong)index) }, "funcToCall");
+                        var castTypeInfo = _builder.BuildLoad2(GetTypeType(), _typeDictionary[clsDecl.Type.OutType], "typeLoaded");
+                        var funcToCall = _builder.BuildCall2(methType, methFunc, new LLVMValueRef[] { args[0], castTypeInfo, LLVMValueRef.CreateConstInt(_context.Int32Type, (ulong)index) }, "funcToCall");
                         return builder.BuildCall2(funcType, funcToCall, args.ToArray(), name);
                     }
                     else
@@ -1114,14 +1114,14 @@ namespace HapetBackend.Llvm
                         // another way of accessing elements when using interfaces
                         if (leftPartType is ClassType clsT && clsT.Declaration.IsInterface)
                         {
-                            var ptrToTypeInfo = _typeInfoDictionary[clsT];
+                            var castTypeInfo = _builder.BuildLoad2(GetTypeType(), _typeDictionary[clsT], "typeLoaded");
                             var elementIndexValueRef = LLVMValueRef.CreateConstInt(_context.Int32Type, (ulong)elementIndex);
                             // WARN: hard cock
                             var typeConverter = _currentFunction.Scope.GetSymbolInNamespace("System.Runtime.Conversion", new AstIdExpr("TypeConverter"));
                             var offseterSymbol = (typeConverter.Decl as AstClassDecl).SubScope.GetSymbol(new AstIdExpr("System.Runtime.Conversion.TypeConverter::GetInterfaceOffset(void*:System.Runtime.TypeInfoUnsafe*:int)")) as DeclSymbol;
                             var offseterFunc = _valueMap[offseterSymbol];
                             LLVMTypeRef funcType = _typeMap[offseterSymbol.Decl.Type.OutType];
-                            var offset = _builder.BuildCall2(funcType, offseterFunc, new LLVMValueRef[] { leftPart, ptrToTypeInfo, elementIndexValueRef }, "interfaceOffset");
+                            var offset = _builder.BuildCall2(funcType, offseterFunc, new LLVMValueRef[] { leftPart, castTypeInfo, elementIndexValueRef }, "interfaceOffset");
 
                             // get ptr by offset
                             ret = _builder.BuildGEP2(_context.Int8Type, leftPart, new LLVMValueRef[] { offset }, idExpr.Name);
