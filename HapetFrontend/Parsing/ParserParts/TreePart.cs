@@ -463,8 +463,12 @@ namespace HapetFrontend.Parsing
                 {
                     case TokenType.OpenParen:
                         {
+                            var savedPrev = inInfo.PreviousNestedForNullCheck;
+                            inInfo.PreviousNestedForNullCheck = null;
                             // TODO: not only nested should be allowed. tuples, lamdas and other shite
                             var args = ParseArgumentList(inInfo, ref outInfo, out var _, out var end);
+                            inInfo.PreviousNestedForNullCheck = savedPrev;
+
                             if (expr is not AstNestedExpr nestExpr)
                             {
                                 ReportMessage(expr.Location, [], ErrorCode.Get(CTEN.CallTargetExprExpected));
