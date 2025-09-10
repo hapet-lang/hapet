@@ -7,7 +7,6 @@ using System;
 [SuppressStaticCtorCall]
 internal struct TypeInfoUnsafe
 {
-    internal byte* _name;
     internal int** _interfaceOffsets;
     internal DtorDelegate _dtorDelegate;
     internal int _rawSize;

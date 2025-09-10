@@ -26,21 +26,24 @@ namespace HapetBackend.Llvm
 
         private readonly Dictionary<HapetType, LLVMValueRef> _typeDictionary = new Dictionary<HapetType, LLVMValueRef>();
 
-        private unsafe LLVMValueRef GenerateTypeConst(HapetType type)
+        private unsafe LLVMValueRef GenerateTypeConst(HapetType type, bool initialize = false)
         {
             if (_typeDictionary.TryGetValue(type, out LLVMValueRef value))
                 return value;
 
+            HapetType parent;
             AstDeclaration decl;
             string typeNameString;
             if (type is ClassType clsType)
             {
                 decl = clsType.Declaration;
+                parent = clsType.Declaration.InheritedFrom.FirstOrDefault(x => x.OutType is ClassType clss && !clss.Declaration.IsInterface)?.OutType as ClassType;
                 typeNameString = GenericsHelper.GetCodegenGenericName(clsType.Declaration.Name, _messageHandler);
             }
             else if (type is StructType strType)
             {
                 decl = strType.Declaration;
+                parent = strType.Declaration.InheritedFrom.FirstOrDefault(x => x.OutType is ClassType clss && !clss.Declaration.IsInterface)?.OutType as ClassType;
                 typeNameString = GenericsHelper.GetCodegenGenericName(strType.Declaration.Name, _messageHandler);
             }
             else
@@ -64,14 +67,17 @@ namespace HapetBackend.Llvm
                 globConst.DLLStorageClass = LLVMDLLStorageClass.LLVMDLLExportStorageClass;
                 globConst.Initializer = LLVMValueRef.CreateConstNull(typeInfoType);
 
-                _typeToInit.Add((type, typeNameString));
+                if (!initialize)
+                    _typeToInit.Add((type, typeNameString, parent));
+                else
+                    GenerateInitializerForType(type, typeNameString, parent);
             }
             _typeDictionary.Add(type, globConst);
 
             return globConst;
         }
 
-        private readonly List<(HapetType type, string typeName)> _typeToInit = new List<(HapetType, string)>();
+        private readonly List<(HapetType type, string name, HapetType parent)> _typeToInit = new List<(HapetType, string, HapetType)>();
         private (LLVMTypeRef, LLVMValueRef) CreateTypeInitializer((LLVMTypeRef, LLVMValueRef) tpInfoIniter, (LLVMTypeRef, LLVMValueRef) vTableIniter)
         {
             // create a func to init all the type infos
@@ -89,7 +95,7 @@ namespace HapetBackend.Llvm
             // make all inites here
             foreach (var tp in _typeToInit)
             {
-                GenerateInitializerForType(tp.type, tp.typeName);
+                GenerateInitializerForType(tp.type, tp.name, tp.parent);
             }
             _builder.BuildRetVoid();
 
@@ -108,14 +114,69 @@ namespace HapetBackend.Llvm
             return _typeType;
         }
 
-        private void GenerateInitializerForType(HapetType type, string _)
+        private void GenerateInitializerForType(HapetType type, string typeNameString, HapetType parent)
         {
             var typeType = GetTypeType();
             var globConst = _typeDictionary[type];
 
+            // name param
+            LLVMValueRef typeName = _module.AddGlobal(LLVMTypeRef.CreateArray(_context.Int8Type, (uint)(typeNameString.Length + 1)), $"TypeInfoName::{typeNameString}");
+            typeName.Initializer = _context.GetConstString(typeNameString, false);
+            typeName.IsGlobalConstant = true;
+
+            // parent param
+            var ptrT = LLVMTypeRef.CreatePointer(typeType, 0);
+            var nullPtr = LLVMValueRef.CreateConstPointerNull(ptrT);
+            LLVMValueRef parentRef = parent == null ? nullPtr : GenerateTypeConst(parent, true);
+
+            // interfaces
+            var interfaces = GetTypeInterfacesArray(type, out int interfacesCount);
+            LLVMValueRef interfacesCountRef = LLVMValueRef.CreateConstInt(_context.Int8Type, (ulong)interfacesCount);
+
             var constValue = LLVMValueRef.CreateConstNamedStruct(typeType,
-                new LLVMValueRef[] { _typeInfoDictionary[type], _virtualTableDictionary[type] });
+                new LLVMValueRef[] { _typeInfoDictionary[type], _virtualTableDictionary[type], typeName, 00, parentRef, interfaces, interfacesCountRef });
             _builder.BuildStore(constValue, globConst);
+        }
+
+        private LLVMValueRef GetTypeInterfacesArray(HapetType type, out int amount)
+        {
+            LLVMTypeRef arrayElementType = LLVMTypeRef.CreatePointer(GetTypeType(), 0);
+            var interfaces = GetAllInterfaces(type, true);
+            if (interfaces.Count == 0)
+            {
+                amount = 0;
+                var ptrT = LLVMTypeRef.CreatePointer(arrayElementType, 0);
+                var nullPtr = LLVMValueRef.CreateConstPointerNull(ptrT);
+                return nullPtr;
+            }
+
+            string typeNameString;
+            if (type is ClassType clsType)
+                typeNameString = GenericsHelper.GetCodegenGenericName(clsType.Declaration.Name, _messageHandler);
+            else if (type is StructType strType)
+                typeNameString = GenericsHelper.GetCodegenGenericName(strType.Declaration.Name, _messageHandler);
+            else
+            {
+                // compiler error - could not generate type info 
+                _messageHandler.ReportMessage(_currentSourceFile.Text, null, [HapetType.AsString(type)], ErrorCode.Get(CTEN.CouldNotGenerateTypeInfo));
+                amount = 0;
+                return default;
+            }
+
+            LLVMTypeRef interfacesArrayType = LLVMTypeRef.CreateArray(arrayElementType, (uint)(interfaces.Count));
+            LLVMValueRef interfacesArray = _module.AddGlobal(interfacesArrayType, $"TypeInterfacesArray::{typeNameString}");
+            
+            List<LLVMValueRef> intPtrs = new List<LLVMValueRef>(interfaces.Count);
+            foreach (var intf in interfaces)
+            {
+                intPtrs.Add(GenerateTypeConst(intf, true));
+            }
+
+            interfacesArray.Initializer = LLVMValueRef.CreateConstNull(interfacesArrayType);
+            _builder.BuildStore(LLVMValueRef.CreateConstArray(arrayElementType, intPtrs.ToArray()), interfacesArray);
+
+            amount = interfaces.Count;
+            return interfacesArray;
         }
     }
 }
