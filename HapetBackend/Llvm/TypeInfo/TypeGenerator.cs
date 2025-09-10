@@ -124,6 +124,10 @@ namespace HapetBackend.Llvm
             typeName.Initializer = _context.GetConstString(typeNameString, false);
             typeName.IsGlobalConstant = true;
 
+            // hash code
+            int hash = typeNameString.GetHashCode();
+            LLVMValueRef hashtRef = LLVMValueRef.CreateConstInt(_context.Int32Type, (ulong)hash);
+
             // parent param
             var ptrT = LLVMTypeRef.CreatePointer(typeType, 0);
             var nullPtr = LLVMValueRef.CreateConstPointerNull(ptrT);
@@ -134,7 +138,7 @@ namespace HapetBackend.Llvm
             LLVMValueRef interfacesCountRef = LLVMValueRef.CreateConstInt(_context.Int8Type, (ulong)interfacesCount);
 
             var constValue = LLVMValueRef.CreateConstNamedStruct(typeType,
-                new LLVMValueRef[] { _typeInfoDictionary[type], _virtualTableDictionary[type], typeName, 00, parentRef, interfaces, interfacesCountRef });
+                new LLVMValueRef[] { _typeInfoDictionary[type], _virtualTableDictionary[type], typeName, hashtRef, parentRef, interfaces, interfacesCountRef });
             _builder.BuildStore(constValue, globConst);
         }
 
