@@ -11,7 +11,9 @@ namespace HapetFrontend.Parsing
         Token PeekToken();
         Token NextToken();
 
-        void UpdateLookAheadLocation();
+        void UpdateLookAheadLocation((TokenLocation, Token)? data = null);
+        void SaveLookAheadLocation();
+        void RestoreLookAheadLocation();
         Token NextLookAhead(bool skipWhitespaces);
         Token PeekLookAhead(bool skipWhitespaces);
         void SkipLine();
@@ -167,13 +169,27 @@ namespace HapetFrontend.Parsing
             return ReadToken(_lookAheadLocation);
         }
 
-        public void UpdateLookAheadLocation()
+        public void UpdateLookAheadLocation((TokenLocation, Token)? data = null)
         {
-            _lookAheadLocation.Index = _location.Index;
-            _lookAheadLocation.Line = _location.Line;
-            _lookAheadLocation.LineStartIndex = _location.LineStartIndex;
-            _lookAheadLocation.End = _location.End;
-            _peekLookAhead = _peek;
+            data ??= (_location, _peek);
+
+            _lookAheadLocation.Index = data.Value.Item1.Index;
+            _lookAheadLocation.Line = data.Value.Item1.Line;
+            _lookAheadLocation.LineStartIndex = data.Value.Item1.LineStartIndex;
+            _lookAheadLocation.End = data.Value.Item1.End;
+            _peekLookAhead = data.Value.Item2;
+        }
+
+        private readonly Stack<(TokenLocation, Token)> _lookAheadLocations = new Stack<(TokenLocation, Token)>();
+        public void SaveLookAheadLocation()
+        {
+            _lookAheadLocations.Push((_lookAheadLocation.Clone(), _peekLookAhead));
+        }
+
+        public void RestoreLookAheadLocation()
+        {
+            var data = _lookAheadLocations.Pop();
+            UpdateLookAheadLocation(data);
         }
 
         public static Token CreateToken(TokenType type, TokenLocation location)

@@ -286,7 +286,10 @@ namespace HapetFrontend.Parsing
 
             // need to lookahead for =>
             bool isLambda;
-            UpdateLookAheadLocation();
+            // should be done only once
+            if (!inInfo.IsLookAheadParsing)
+                UpdateLookAheadLocation();
+            SaveLookAheadLocation();
             var saved = inInfo.IsLookAheadParsing;
             inInfo.IsLookAheadParsing = true;
             int tmpParenCounter = 1;
@@ -300,6 +303,7 @@ namespace HapetFrontend.Parsing
                     tmpParenCounter--;
             }
             isLambda = NextToken(inInfo).Type == TokenType.Arrow;
+            RestoreLookAheadLocation();
             inInfo.IsLookAheadParsing = saved;
 
             if (isLambda)

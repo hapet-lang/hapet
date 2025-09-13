@@ -318,9 +318,12 @@ namespace HapetFrontend.Parsing
                 // cringe handle >>
                 // https://github.com/dotnet/roslyn/blob/62646c22f6bd7b213e7e15dbc0dfadfe47a1e30f/src/Compilers/CSharp/Portable/Parser/Lexer.cs#L4118-L4122
                 // https://github.com/dotnet/roslyn/blob/62646c22f6bd7b213e7e15dbc0dfadfe47a1e30f/src/Compilers/CSharp/Portable/Parser/LanguageParser.cs#L11067-L11073
-                var saved = inInfo.IsLookAheadParsing;
+                var savedLookAhead = inInfo.IsLookAheadParsing;
                 inInfo.IsLookAheadParsing = true;
-                UpdateLookAheadLocation();
+                // should be done only once
+                if (!savedLookAhead)
+                    UpdateLookAheadLocation();
+                SaveLookAheadLocation();
                 var t1 = PeekToken(inInfo);
                 NextToken(inInfo);
                 var t2 = PeekToken(inInfo);
@@ -329,7 +332,8 @@ namespace HapetFrontend.Parsing
                     next.Type = TokenType.GreaterGreater;
                     next.Location.End = t2.Location.End;
                 }
-                inInfo.IsLookAheadParsing = saved;
+                RestoreLookAheadLocation();
+                inInfo.IsLookAheadParsing = savedLookAhead;
 
                 var op = tokenMapping(next.Type);
                 if (op == null)
@@ -596,13 +600,19 @@ namespace HapetFrontend.Parsing
                     case TokenType.QuestionMark:
                         {
                             // need to check further with look ahead
-                            var saved = inInfo.IsLookAheadParsing;
+                            var savedLookAhead = inInfo.IsLookAheadParsing;
                             inInfo.IsLookAheadParsing = true;
-                            UpdateLookAheadLocation();
+                            // should be done only once
+                            if (!savedLookAhead)
+                                UpdateLookAheadLocation();
+                            SaveLookAheadLocation();
                             NextToken(inInfo);
+                            bool reseted = false;
                             if (CheckToken(inInfo, TokenType.Period))
                             {
-                                inInfo.IsLookAheadParsing = saved;
+                                reseted = true;
+                                RestoreLookAheadLocation();
+                                inInfo.IsLookAheadParsing = savedLookAhead;
 
                                 // null check access: 'var a = Anime?.Pivo;'
                                 NextToken(inInfo); // skip ?
@@ -623,7 +633,9 @@ namespace HapetFrontend.Parsing
                                 inInfo.PreviousNestedForNullCheck = savedPrev;
                                 expr = ternOp;
                             }
-                            inInfo.IsLookAheadParsing = saved;
+                            if (!reseted)
+                                RestoreLookAheadLocation();
+                            inInfo.IsLookAheadParsing = savedLookAhead;
 
                             // or just return expr if non .?
                             return expr;
@@ -754,6 +766,10 @@ namespace HapetFrontend.Parsing
 
                 case TokenType.Identifier:
                     {
+                        // should be done only once
+                        if (!inInfo.IsLookAheadParsing)
+                            UpdateLookAheadLocation();
+                        SaveLookAheadLocation();
                         // need to check for => after the id - if it there - it is a lambda
                         var saved = inInfo.IsLookAheadParsing;
                         inInfo.IsLookAheadParsing = true;
@@ -761,9 +777,11 @@ namespace HapetFrontend.Parsing
                         if (CheckToken(inInfo, TokenType.Arrow))
                         {
                             inInfo.IsLookAheadParsing = saved;
+                            RestoreLookAheadLocation();
                             return ParseLambdaDecl(inInfo, ref outInfo);
                         }
                         inInfo.IsLookAheadParsing = saved;
+                        RestoreLookAheadLocation();
 
                         var id = ParseIdentifierExpression(inInfo, iniNested: inInfo.PreviousNestedForNullCheck);
 
@@ -772,19 +790,28 @@ namespace HapetFrontend.Parsing
                         {
                             var saved2 = inInfo.IsLookAheadParsing;
                             inInfo.IsLookAheadParsing = true;
-                            UpdateLookAheadLocation();
+                            // should be done only once
+                            if (!saved2)
+                                UpdateLookAheadLocation();
+                            SaveLookAheadLocation();
                             NextToken(inInfo);
-                            bool isNullable = false;
+
+                            bool isNullable;
                             var next = PeekToken(inInfo);
                             // if '(SomeType?)' casting
                             if (next.Type == TokenType.CloseParen)
                                 isNullable = true;
+                            // skip 'SomeShite?.'
+                            else if (next.Type == TokenType.Period)
+                                isNullable = false;
                             // check if no : after
                             else
                             {
-                                // TODO:
+                                var __ = ParseExpression(inInfo, ref outInfo);
+                                isNullable = !CheckToken(inInfo, TokenType.Colon);
                             }
                             inInfo.IsLookAheadParsing = saved2;
+                            RestoreLookAheadLocation();
 
                             // if it is nullable
                             if (isNullable)

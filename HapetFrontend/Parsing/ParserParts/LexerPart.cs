@@ -57,6 +57,20 @@ namespace HapetFrontend.Parsing
 
         [SkipInStackFrame]
         [DebuggerStepThrough]
+        public void SaveLookAheadLocation()
+        {
+            _lexer.SaveLookAheadLocation();
+        }
+
+        [SkipInStackFrame]
+        [DebuggerStepThrough]
+        public void RestoreLookAheadLocation()
+        {
+            _lexer.RestoreLookAheadLocation();
+        }
+
+        [SkipInStackFrame]
+        [DebuggerStepThrough]
         public Token NextToken(ParserInInfo inInfo)
         {
             if (inInfo.IsLookAheadParsing)

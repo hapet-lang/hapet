@@ -23,8 +23,6 @@ namespace HapetFrontend.Parsing
             bool allowDots = true, bool allowGenerics = true, AstNestedExpr iniNested = null, bool expectIdent = false,
             bool allowTupled = false)
         {
-            // lookahead cringe
-            UpdateLookAheadLocation();
             var ident = ParseIdentifierExpressionInternal(inInfo, identType, allowDots, allowGenerics, iniNested, expectIdent);
 
             // handling cringe like 'var a, b, c = ...'
@@ -129,7 +127,7 @@ namespace HapetFrontend.Parsing
         {
             if (!inInfo.IsLookAheadParsing)
                 UpdateLookAheadLocation();
-
+            SaveLookAheadLocation();
             var savedLookAhead = inInfo.IsLookAheadParsing;
             inInfo.IsLookAheadParsing = true;
             // check for generic call
@@ -202,24 +200,18 @@ namespace HapetFrontend.Parsing
                 // if really generic shite
                 if (isGeneric)
                 {
-                    AstIdGenericExpr genId;
-                    // and not only lookahead - parse normally
-                    if (!savedLookAhead)
-                    {
-                        var savedAgain = inInfo.IsLookAheadParsing;
-                        inInfo.IsLookAheadParsing = false;
-                        // creating the generic ast id
-                        HandleGeneric(inInfo, idExpr, out genId);
-                        inInfo.IsLookAheadParsing = savedAgain;
-                    }
-                    else
-                        genId = aheadGenId;
-
+                    RestoreLookAheadLocation();
                     inInfo.IsLookAheadParsing = savedLookAhead;
+
+                    // parse normally
+                    // creating the generic ast id
+                    HandleGeneric(inInfo, idExpr, out AstIdGenericExpr genId);
+
                     gener = genId;
                     return true;
                 }
             }
+            RestoreLookAheadLocation();
             inInfo.IsLookAheadParsing = savedLookAhead;
 
             gener = null;
@@ -264,14 +256,17 @@ namespace HapetFrontend.Parsing
         private bool IsThatPointerWithLookAhead(ParserInInfo inInfo, bool isMultiplyAllowed)
         {
             // lookahead cringe
-            UpdateLookAheadLocation();
-
+            // should be done only once
+            if (!inInfo.IsLookAheadParsing)
+                UpdateLookAheadLocation();
+            SaveLookAheadLocation();
             var savedLookAhead = inInfo.IsLookAheadParsing;
             inInfo.IsLookAheadParsing = true;
 
             // if it is not an asterisk - of course there is no pointer
             if (!CheckToken(inInfo, TokenType.Asterisk))
             {
+                RestoreLookAheadLocation();
                 inInfo.IsLookAheadParsing = savedLookAhead;
                 return false;
             }
@@ -326,6 +321,7 @@ namespace HapetFrontend.Parsing
                 // when Anime * (..)
                 // when Anime * 'other exprs'
             }
+            RestoreLookAheadLocation();
             inInfo.IsLookAheadParsing = savedLookAhead;
             return isPointer;
         }
