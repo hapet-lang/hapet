@@ -4,7 +4,7 @@ using HapetFrontend.Parsing;
 
 namespace HapetFrontend.Entities
 {
-    internal class ParserInInfo
+    public class ParserInInfo
     {
         public bool AllowArrayExpression { get; set; }
         /// <summary>
@@ -71,6 +71,11 @@ namespace HapetFrontend.Entities
         /// 'true' is expecting 'default' as a case
         /// </summary>
         public bool ExpectDefaultCase { get; set; }
+
+        /// <summary>
+        /// 'true' if currently parsing with look ahead feature
+        /// </summary>
+        public bool IsLookAheadParsing { get; set; }
 
         /// <summary>
         /// This shite is used for func decl

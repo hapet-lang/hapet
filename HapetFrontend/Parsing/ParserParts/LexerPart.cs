@@ -1,4 +1,5 @@
 ﻿using HapetFrontend.Ast;
+using HapetFrontend.Entities;
 using HapetFrontend.Errors;
 using HapetFrontend.Helpers;
 using System.Diagnostics;
@@ -23,7 +24,7 @@ namespace HapetFrontend.Parsing
 
         [SkipInStackFrame]
         [DebuggerStepThrough]
-        public void SkipNewlines()
+        public void SkipNewlines(ParserInInfo inInfo)
         {
             while (true)
             {
@@ -34,32 +35,12 @@ namespace HapetFrontend.Parsing
                     case TokenType.EOF:
                         return;
                     case TokenType.DocComment:
-                        this.AppendDocString(tok.Data as string);
-                        NextToken();
+                        if (!inInfo.IsLookAheadParsing)
+                            AppendDocString(tok.Data as string);
+                        NextToken(inInfo);
                         break;
                     case TokenType.NewLine:
-                        NextToken();
-                        break;
-                    default:
-                        return;
-                }
-            }
-        }
-
-        [SkipInStackFrame]
-        [DebuggerStepThrough]
-        public void SkipNewlinesAhead(bool skipWhitespaces = true)
-        {
-            while (true)
-            {
-                var tok = _lexer.PeekLookAhead(skipWhitespaces);
-
-                switch (tok.Type)
-                {
-                    case TokenType.EOF:
-                        return;
-                    case TokenType.NewLine:
-                        NextLookAhead(skipWhitespaces);
+                        NextToken(inInfo);
                         break;
                     default:
                         return;
@@ -76,8 +57,11 @@ namespace HapetFrontend.Parsing
 
         [SkipInStackFrame]
         [DebuggerStepThrough]
-        public Token NextToken()
+        public Token NextToken(ParserInInfo inInfo)
         {
+            if (inInfo.IsLookAheadParsing)
+                return _lexer.NextLookAhead(true);
+
             _currentToken = _lexer.NextToken();
             if (_currentToken.Type != TokenType.NewLine)
                 _lastNonWhitespace = _currentToken;
@@ -86,24 +70,16 @@ namespace HapetFrontend.Parsing
 
         [SkipInStackFrame]
         [DebuggerStepThrough]
-        public Token NextLookAhead(bool skipWhitespaces = true)
+        public bool Expect(ParserInInfo inInfo, TokenType type, MessageResolver customErrorMessage, bool skipNewLine = false)
         {
-            var token = _lexer.NextLookAhead(skipWhitespaces);
-            return token;
-        }
-
-        [SkipInStackFrame]
-        [DebuggerStepThrough]
-        public bool Expect(TokenType type, MessageResolver customErrorMessage, bool skipNewLine = false)
-        {
-            var tok = PeekToken();
+            var tok = PeekToken(inInfo);
             while (skipNewLine && tok.Type == TokenType.NewLine)
             {
-                NextToken();
-                tok = PeekToken();
+                NextToken(inInfo);
+                tok = PeekToken(inInfo);
             }
 
-            if (tok.Type != type)
+            if ((tok.Type != type) && !inInfo.IsLookAheadParsing)
             {
                 customErrorMessage ??= new MessageResolver() 
                 { 
@@ -114,59 +90,52 @@ namespace HapetFrontend.Parsing
                 return false;
             }
 
-            NextToken();
+            NextToken(inInfo);
             return true;
         }
 
         [SkipInStackFrame]
         [DebuggerStepThrough]
-        public Token Consume(TokenType type, MessageResolver customMessage, bool skipNewLine = false)
+        public Token Consume(ParserInInfo inInfo, TokenType type, MessageResolver customMessage, bool skipNewLine = false)
         {
-            if (!Expect(type, customMessage, skipNewLine))
-                NextToken();
+            if (!Expect(inInfo, type, customMessage, skipNewLine))
+                NextToken(inInfo);
             return CurrentToken;
         }
 
         [SkipInStackFrame]
         [DebuggerStepThrough]
-        public Token ConsumeUntil(TokenType type, MessageResolver customMessage, bool skipNewLine = false)
+        public Token ConsumeUntil(ParserInInfo inInfo, TokenType type, MessageResolver customMessage, bool skipNewLine = false)
         {
-            var tok = PeekToken();
+            var tok = PeekToken(inInfo);
             while (tok.Type != type)
             {
-                if (!skipNewLine || tok.Type != TokenType.NewLine)
+                if ((!skipNewLine || tok.Type != TokenType.NewLine) && !inInfo.IsLookAheadParsing)
                     ReportMessage(tok.Location, customMessage == null ? [] : customMessage.MessageArgs, customMessage?.XmlMessage);
 
-                NextToken();
-                tok = PeekToken();
+                NextToken(inInfo);
+                tok = PeekToken(inInfo);
 
                 if (tok.Type == TokenType.EOF)
                     break;
             }
 
-            if (!Expect(type, customMessage))
-                NextToken();
+            if (!Expect(inInfo, type, customMessage))
+                NextToken(inInfo);
             return CurrentToken;
         }
 
         [DebuggerStepThrough]
-        public bool CheckToken(TokenType type)
+        public bool CheckToken(ParserInInfo inInfo, TokenType type)
         {
-            var next = PeekToken();
+            var next = PeekToken(inInfo);
             return next.Type == type;
         }
 
         [DebuggerStepThrough]
-        public bool CheckLookAhead(TokenType type, bool skipWhitespaces = true)
+        public bool CheckTokens(ParserInInfo inInfo, params TokenType[] types)
         {
-            var next = _lexer.PeekLookAhead(skipWhitespaces);
-            return next.Type == type;
-        }
-
-        [DebuggerStepThrough]
-        public bool CheckTokens(params TokenType[] types)
-        {
-            var next = PeekToken();
+            var next = PeekToken(inInfo);
             foreach (var (t, i) in types.Select((t, i) => (t, i)))
             {
                 if (next.Type == t)
@@ -178,26 +147,22 @@ namespace HapetFrontend.Parsing
         }
 
         [DebuggerStepThrough]
-        public Token PeekToken()
+        public Token PeekToken(ParserInInfo inInfo)
         {
+            if (inInfo.IsLookAheadParsing)
+                return _lexer.PeekLookAhead(true);
             return _lexer.PeekToken();
         }
 
-        [DebuggerStepThrough]
-        public Token PeekLookAhead(bool skipWhitespaces = true)
-        {
-            return _lexer.PeekLookAhead(skipWhitespaces);
-        }
-
-        private void RecoverStatement()
+        private void RecoverStatement(ParserInInfo inInfo)
         {
             while (true)
             {
-                var next = PeekToken();
+                var next = PeekToken(inInfo);
                 switch (next.Type)
                 {
                     case TokenType.NewLine:
-                        NextToken();
+                        NextToken(inInfo);
                         return;
 
                     case TokenType.CloseBrace:
@@ -207,7 +172,7 @@ namespace HapetFrontend.Parsing
                         return;
 
                     default:
-                        NextToken();
+                        NextToken(inInfo);
                         break;
                 }
             }

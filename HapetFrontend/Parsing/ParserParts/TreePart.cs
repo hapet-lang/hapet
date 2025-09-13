@@ -31,12 +31,12 @@ namespace HapetFrontend.Parsing
         private AstStatement ParseNullCoalescingExpression(ParserInInfo inInfo, ref ParserOutInfo outInfo)
         {
             var expr = ParseTernaryExpression(inInfo, ref outInfo);
-            SkipNewlines();
+            SkipNewlines(inInfo);
             // check for 'anime ?? cringe;'
-            while (CheckToken(TokenType.DoubleQuestion))
+            while (CheckToken(inInfo, TokenType.DoubleQuestion))
             {
-                NextToken();
-                SkipNewlines();
+                NextToken(inInfo);
+                SkipNewlines(inInfo);
 
                 // getting the right part
                 var exprSecond = ParseTernaryExpression(inInfo, ref outInfo);
@@ -47,7 +47,7 @@ namespace HapetFrontend.Parsing
                 var ternOp = new AstTernaryExpr(nullComparison, exprSecond as AstExpression, 
                     expr as AstExpression, new Location(expr.Beginning, exprSecond.Ending));
                 expr = ternOp;
-                SkipNewlines();
+                SkipNewlines(inInfo);
             }
             return expr;
         }
@@ -58,17 +58,17 @@ namespace HapetFrontend.Parsing
         private AstStatement ParseTernaryExpression(ParserInInfo inInfo, ref ParserOutInfo outInfo)
         {
             var expr = ParseOrExpression(inInfo, ref outInfo);
-            SkipNewlines();
+            SkipNewlines(inInfo);
 
-            if (CheckToken(TokenType.QuestionMark))
+            if (CheckToken(inInfo, TokenType.QuestionMark))
             {
-                NextToken();
-                SkipNewlines();
+                NextToken(inInfo);
+                SkipNewlines(inInfo);
                 // ternary shite probably
                 var trueExpr = ParseExpression(inInfo, ref outInfo);
-                SkipNewlines();
-                Consume(TokenType.Colon, ErrMsg(":", "in ternary expression"));
-                SkipNewlines();
+                SkipNewlines(inInfo);
+                Consume(inInfo, TokenType.Colon, ErrMsg(":", "in ternary expression"));
+                SkipNewlines(inInfo);
                 var falseExpr = ParseExpression(inInfo, ref outInfo);
                 return new AstTernaryExpr(expr as AstExpression, trueExpr as AstExpression, falseExpr as AstExpression,
                     new Location(expr.Beginning, falseExpr.Ending));
@@ -102,16 +102,16 @@ namespace HapetFrontend.Parsing
             var lhs = ParseAsExpression(inInfo, ref outInfo);
             AstStatement rhs;
 
-            while (CheckToken(TokenType.KwIs))
+            while (CheckToken(inInfo, TokenType.KwIs))
             {
-                var _ = NextToken();
-                SkipNewlines();
+                var _ = NextToken(inInfo);
+                SkipNewlines(inInfo);
 
                 // handle 'is not' cringe
                 bool isNot = false;
-                if (PeekToken().Data is string str && str == "not")
+                if (PeekToken(inInfo).Data is string str && str == "not")
                 {
-                    NextToken();
+                    NextToken(inInfo);
                     isNot = true;
                 }
 
@@ -148,7 +148,9 @@ namespace HapetFrontend.Parsing
                         idExpr.GetDeepCopy() as AstIdExpr,
                         asExpr.GetDeepCopy() as AstExpression,
                         "", binExpr);
-                    outInfo.StatementsToAddBefore.Add(varDecl);
+                    // add when not look ahead
+                    if (!inInfo.IsLookAheadParsing)
+                        outInfo.StatementsToAddBefore.Add(varDecl);
                 }
 
                 // error if it is not an expr
@@ -172,10 +174,10 @@ namespace HapetFrontend.Parsing
             var lhs = ParseInExpression(inInfo, ref outInfo);
             AstStatement rhs;
 
-            while (CheckToken(TokenType.KwAs))
+            while (CheckToken(inInfo, TokenType.KwAs))
             {
-                var _ = NextToken();
-                SkipNewlines();
+                var _ = NextToken(inInfo);
+                SkipNewlines(inInfo);
 
                 // we want to prefer generics
                 var saved1 = inInfo.PreferGenericShite;
@@ -206,10 +208,10 @@ namespace HapetFrontend.Parsing
             var lhs = ParseComparisonExpression(inInfo, ref outInfo);
             AstStatement rhs;
 
-            while (CheckToken(TokenType.KwIn))
+            while (CheckToken(inInfo, TokenType.KwIn))
             {
-                var _ = NextToken();
-                SkipNewlines();
+                var _ = NextToken(inInfo);
+                SkipNewlines(inInfo);
                 rhs = ParseComparisonExpression(inInfo, ref outInfo);
                 var binExpr = new AstBinaryExpr("in", lhs as AstExpression, rhs as AstExpression, new Location(lhs.Beginning, rhs.Ending));
 
@@ -310,21 +312,24 @@ namespace HapetFrontend.Parsing
 
             while (true)
             {
-                SkipNewlines();
-                var next = PeekToken();
+                SkipNewlines(inInfo);
+                var next = PeekToken(inInfo);
 
                 // cringe handle >>
                 // https://github.com/dotnet/roslyn/blob/62646c22f6bd7b213e7e15dbc0dfadfe47a1e30f/src/Compilers/CSharp/Portable/Parser/Lexer.cs#L4118-L4122
                 // https://github.com/dotnet/roslyn/blob/62646c22f6bd7b213e7e15dbc0dfadfe47a1e30f/src/Compilers/CSharp/Portable/Parser/LanguageParser.cs#L11067-L11073
+                var saved = inInfo.IsLookAheadParsing;
+                inInfo.IsLookAheadParsing = true;
                 UpdateLookAheadLocation();
-                var t1 = PeekLookAhead();
-                NextLookAhead();
-                var t2 = PeekLookAhead();
+                var t1 = PeekToken(inInfo);
+                NextToken(inInfo);
+                var t2 = PeekToken(inInfo);
                 if (t1.Type == TokenType.Greater && t2.Type == TokenType.Greater)
                 {
                     next.Type = TokenType.GreaterGreater;
                     next.Location.End = t2.Location.End;
                 }
+                inInfo.IsLookAheadParsing = saved;
 
                 var op = tokenMapping(next.Type);
                 if (op == null)
@@ -334,10 +339,10 @@ namespace HapetFrontend.Parsing
 
                 // make one more token eat because of pseudo >>
                 if (next.Type == TokenType.GreaterGreater)
-                    NextToken();
+                    NextToken(inInfo);
 
-                NextToken();
-                SkipNewlines();
+                NextToken(inInfo);
+                SkipNewlines(inInfo);
                 rhs = sub(inInfo, ref outInfo);
                 var binExpr = new AstBinaryExpr(op, lhs as AstExpression, rhs as AstExpression, new Location(lhs.Beginning, rhs.Ending));
 
@@ -355,11 +360,11 @@ namespace HapetFrontend.Parsing
         private AstStatement ParseUnaryExpression(ParserInInfo inInfo, ref ParserOutInfo outInfo)
         {
             AstExpression toReturn = null;
-            var next = PeekToken();
+            var next = PeekToken(inInfo);
             if (next.Type == TokenType.Ampersand)
             {
-                NextToken();
-                SkipNewlines();
+                NextToken(inInfo);
+                SkipNewlines(inInfo);
 
                 var sub = ParseUnaryExpression(inInfo, ref outInfo);
                 if (sub is not AstExpression expr)
@@ -371,8 +376,8 @@ namespace HapetFrontend.Parsing
             }
             else if (next.Type == TokenType.Asterisk)
             {
-                NextToken();
-                SkipNewlines();
+                NextToken(inInfo);
+                SkipNewlines(inInfo);
                 var sub = ParseUnaryExpression(inInfo, ref outInfo);
                 if (sub is not AstExpression expr)
                 {
@@ -383,8 +388,8 @@ namespace HapetFrontend.Parsing
             }
             else if (next.Type == TokenType.Minus || next.Type == TokenType.Plus)
             {
-                NextToken();
-                SkipNewlines();
+                NextToken(inInfo);
+                SkipNewlines(inInfo);
                 var sub = ParseUnaryExpression(inInfo, ref outInfo);
                 string op = "";
                 switch (next.Type)
@@ -402,8 +407,8 @@ namespace HapetFrontend.Parsing
             }
             else if (next.Type == TokenType.Bang)
             {
-                NextToken();
-                SkipNewlines();
+                NextToken(inInfo);
+                SkipNewlines(inInfo);
                 var sub = ParseUnaryExpression(inInfo, ref outInfo);
                 var un = new AstUnaryExpr("!", sub as AstExpression, new Location(next.Location, sub.Ending));
                 // error if it is not an expr
@@ -415,8 +420,8 @@ namespace HapetFrontend.Parsing
             }
             else if (next.Type == TokenType.PlusPlus || next.Type == TokenType.MinusMinus)
             {
-                NextToken();
-                SkipNewlines();
+                NextToken(inInfo);
+                SkipNewlines(inInfo);
                 var sub = ParseUnaryExpression(inInfo, ref outInfo);
                 var op = next.Type == TokenType.PlusPlus ? "++" : "--";
                 var un = new AstUnaryIncDecExpr(op, sub as AstExpression, new Location(next.Location, sub.Ending)) { IsPrefix = true };
@@ -429,8 +434,8 @@ namespace HapetFrontend.Parsing
             }
             else if (next.Type == TokenType.Tilda)
             {
-                NextToken();
-                SkipNewlines();
+                NextToken(inInfo);
+                SkipNewlines(inInfo);
                 var sub = ParseUnaryExpression(inInfo, ref outInfo);
                 var un = new AstUnaryExpr("~", sub as AstExpression, new Location(next.Location, sub.Ending));
                 // error if it is not an expr
@@ -451,7 +456,7 @@ namespace HapetFrontend.Parsing
         private AstStatement ParsePostUnaryExpression(ParserInInfo inInfo, ref ParserOutInfo outInfo)
         {
             var expr = ParseAtomicExpression(inInfo, ref outInfo);
-            SkipNewlines();
+            SkipNewlines(inInfo);
 
             // just move forward the udecl :)
             if (expr is AstUnknownDecl)
@@ -459,7 +464,7 @@ namespace HapetFrontend.Parsing
 
             while (true)
             {
-                switch (PeekToken().Type)
+                switch (PeekToken(inInfo).Type)
                 {
                     case TokenType.OpenParen:
                         {
@@ -480,8 +485,8 @@ namespace HapetFrontend.Parsing
                                 return expr;
                             }
 
-                            SkipNewlines();
-                            bool dotsAfter = CheckToken(TokenType.Period);
+                            SkipNewlines(inInfo);
+                            bool dotsAfter = CheckToken(inInfo, TokenType.Period);
 
                             var callExpr = new AstCallExpr(nestExpr.LeftPart, idExpr.GetCopy(), args, new Location(expr.Beginning, end));
                             expr = new AstNestedExpr(callExpr, null, callExpr);
@@ -492,8 +497,8 @@ namespace HapetFrontend.Parsing
                             // and need to check the rest shite
                             if (dotsAfter)
                             {
-                                NextToken();
-                                SkipNewlines();
+                                NextToken(inInfo);
+                                SkipNewlines(inInfo);
                                 // here we are getting the rest 'dwd.Lmao'
                                 expr = ParseIdentifierExpression(inInfo, iniNested: expr as AstNestedExpr);
                                 // so after this the upper loop will check if there is a OpenParent and so on
@@ -504,34 +509,34 @@ namespace HapetFrontend.Parsing
 
                     case TokenType.OpenBracket:
                         {
-                            NextToken();
-                            SkipNewlines();
+                            NextToken(inInfo);
+                            SkipNewlines(inInfo);
 
                             var args = new List<AstStatement>();
                             while (true)
                             {
-                                var next = PeekToken();
+                                var next = PeekToken(inInfo);
                                 if (next.Type == TokenType.CloseBracket || next.Type == TokenType.EOF)
                                     break;
 
                                 args.Add(ParseExpression(inInfo, ref outInfo));
-                                SkipNewlines();
+                                SkipNewlines(inInfo);
 
-                                next = PeekToken();
+                                next = PeekToken(inInfo);
                                 if (next.Type == TokenType.Comma)
                                 {
-                                    NextToken();
-                                    SkipNewlines();
+                                    NextToken(inInfo);
+                                    SkipNewlines(inInfo);
                                 }
                                 else if (next.Type == TokenType.CloseBracket)
                                     break;
                                 else
                                 {
-                                    NextToken();
+                                    NextToken(inInfo);
                                     ReportMessage(next.Location, [], ErrorCode.Get(CTEN.ArrayAccUnexpectedToken));
                                 }
                             }
-                            var end = Consume(TokenType.CloseBracket, ErrMsg("]", "at end of [..] operator")).Location;
+                            var end = Consume(inInfo, TokenType.CloseBracket, ErrMsg("]", "at end of [..] operator")).Location;
                             if (args.Count == 0)
                             {
                                 ReportMessage(end, [], ErrorCode.Get(CTEN.ArrayAccNoArgs));
@@ -545,15 +550,15 @@ namespace HapetFrontend.Parsing
                             var arrAcc = new AstArrayAccessExpr(expr as AstExpression, args[0] as AstExpression, new Location(expr.Beginning, end));
                             expr = new AstNestedExpr(arrAcc, null, arrAcc);
 
-                            SkipNewlines();
+                            SkipNewlines(inInfo);
                             // check for dots after this!!! there could be a.arr[i].Length
                             // for better understand imagine we have 'a.arr[i].Length;'
                             // and this is the first entry. So we already parsed here 'a.arr[i]' 
                             // and need to check the rest shite
-                            if (CheckToken(TokenType.Period))
+                            if (CheckToken(inInfo, TokenType.Period))
                             {
-                                NextToken();
-                                SkipNewlines();
+                                NextToken(inInfo);
+                                SkipNewlines(inInfo);
                                 // here we are getting the rest '.Length'
                                 expr = ParseIdentifierExpression(inInfo, iniNested: expr as AstNestedExpr);
                                 // so after this the upper loop will check if there is a OpenParent and so on
@@ -565,8 +570,8 @@ namespace HapetFrontend.Parsing
                     case TokenType.PlusPlus:
                     case TokenType.MinusMinus:
                         {
-                            var tkn = NextToken();
-                            SkipNewlines();
+                            var tkn = NextToken(inInfo);
+                            SkipNewlines(inInfo);
                             var op = tkn.Type == TokenType.PlusPlus ? "++" : "--";
                             var un = new AstUnaryIncDecExpr(op, expr as AstExpression, new Location(expr.Beginning, tkn.Location)) { IsPrefix = false };
                             // error if it is not a nested!!!
@@ -581,8 +586,8 @@ namespace HapetFrontend.Parsing
                         {
                             // cringe when smth like
                             // ... (pivo as Sperm).CoolCringe().WWW ...
-                            var tkn = NextToken();
-                            SkipNewlines();
+                            var tkn = NextToken(inInfo);
+                            SkipNewlines(inInfo);
                             var tmpExpr = new AstNestedExpr(expr as AstExpression, null, expr);
                             expr = ParseIdentifierExpression(inInfo, iniNested: tmpExpr);
                         }
@@ -591,13 +596,17 @@ namespace HapetFrontend.Parsing
                     case TokenType.QuestionMark:
                         {
                             // need to check further with look ahead
+                            var saved = inInfo.IsLookAheadParsing;
+                            inInfo.IsLookAheadParsing = true;
                             UpdateLookAheadLocation();
-                            NextLookAhead();
-                            if (CheckLookAhead(TokenType.Period))
+                            NextToken(inInfo);
+                            if (CheckToken(inInfo, TokenType.Period))
                             {
+                                inInfo.IsLookAheadParsing = saved;
+
                                 // null check access: 'var a = Anime?.Pivo;'
-                                NextToken(); // skip ?
-                                NextToken(); // skip .
+                                NextToken(inInfo); // skip ?
+                                NextToken(inInfo); // skip .
 
                                 var savedPrev = inInfo.PreviousNestedForNullCheck;
 
@@ -614,6 +623,7 @@ namespace HapetFrontend.Parsing
                                 inInfo.PreviousNestedForNullCheck = savedPrev;
                                 expr = ternOp;
                             }
+                            inInfo.IsLookAheadParsing = saved;
 
                             // or just return expr if non .?
                             return expr;
@@ -627,15 +637,15 @@ namespace HapetFrontend.Parsing
 
         private AstStatement ParseAtomicExpression(ParserInInfo inInfo, ref ParserOutInfo outInfo)
         {
-            var token = PeekToken();
+            var token = PeekToken(inInfo);
             switch (token.Type)
             {
                 case TokenType.KwDefault:
                     {
-                        NextToken();
+                        NextToken(inInfo);
 
                         // it is a default case
-                        SkipNewlines();
+                        SkipNewlines(inInfo);
                         if (inInfo.ExpectDefaultCase)
                         {
                             return ParseCaseStatement(inInfo, ref outInfo, true, token.Location);
@@ -643,14 +653,14 @@ namespace HapetFrontend.Parsing
 
                         // only type is expected
                         AstExpression typeExpr = null;
-                        if (CheckToken(TokenType.OpenParen))
+                        if (CheckToken(inInfo, TokenType.OpenParen))
                         {
-                            NextToken();
+                            NextToken(inInfo);
                             var saved = inInfo.AllowMultiplyExpression;
                             inInfo.AllowMultiplyExpression = false;
                             typeExpr = ParseAtomicExpression(inInfo, ref outInfo) as AstExpression;
                             inInfo.AllowMultiplyExpression = saved;
-                            Consume(TokenType.CloseParen, ErrMsg(")", "after default' type arg"));
+                            Consume(inInfo, TokenType.CloseParen, ErrMsg(")", "after default' type arg"));
                         }
 
                         // it is just a 'default' word
@@ -660,16 +670,16 @@ namespace HapetFrontend.Parsing
                 case TokenType.KwChecked:
                 case TokenType.KwUnchecked:
                     {
-                        NextToken();
+                        NextToken(inInfo);
 
-                        if (CheckToken(TokenType.OpenParen))
+                        if (CheckToken(inInfo, TokenType.OpenParen))
                         {
-                            NextToken();
+                            NextToken(inInfo);
                             var saved = inInfo.AllowMultiplyExpression;
                             inInfo.AllowMultiplyExpression = true;
                             var subExpr = ParseExpression(inInfo, ref outInfo) as AstExpression;
                             inInfo.AllowMultiplyExpression = saved;
-                            Consume(TokenType.CloseParen, ErrMsg(")", "after checked/unchecked expression"));
+                            Consume(inInfo, TokenType.CloseParen, ErrMsg(")", "after checked/unchecked expression"));
 
                             return new AstCheckedExpr(subExpr, new Location(token.Location)) { IsChecked = (token.Type == TokenType.KwChecked) };
                         }
@@ -686,9 +696,9 @@ namespace HapetFrontend.Parsing
                 case TokenType.KwAlignof:
                 case TokenType.KwNameof:
                     {
-                        NextToken();
+                        NextToken(inInfo);
 
-                        Consume(TokenType.OpenParen, ErrMsg("(", "after sizeof/alignof/typeof expression"));
+                        Consume(inInfo, TokenType.OpenParen, ErrMsg("(", "after sizeof/alignof/typeof expression"));
 
                         var saved = inInfo.AllowMultiplyExpression;
                         var saved1 = inInfo.PreferGenericShite;
@@ -698,7 +708,7 @@ namespace HapetFrontend.Parsing
                         inInfo.AllowMultiplyExpression = saved;
                         inInfo.PreferGenericShite = saved1;
 
-                        Consume(TokenType.CloseParen, ErrMsg(")", "after sizeof/alignof/typeof expression"));
+                        Consume(inInfo, TokenType.CloseParen, ErrMsg(")", "after sizeof/alignof/typeof expression"));
 
                         var nst = subExpr as AstNestedExpr;
                         Debug.Assert(nst != null);
@@ -706,7 +716,7 @@ namespace HapetFrontend.Parsing
                     }
 
                 case TokenType.KwNull:
-                    NextToken();
+                    NextToken(inInfo);
                     return new AstNullExpr(null, new Location(token.Location));
 
                 case TokenType.KwNew:
@@ -722,14 +732,14 @@ namespace HapetFrontend.Parsing
                         // {
                         //     base.Anime();
                         // }
-                        NextToken();
-                        Consume(TokenType.Period, ErrMsg(".", "after 'base' word"));
+                        NextToken(inInfo);
+                        Consume(inInfo, TokenType.Period, ErrMsg(".", "after 'base' word"));
                         return ParseIdentifierExpression(inInfo, iniNested: new AstNestedExpr(new AstIdExpr("base", CurrentToken.Location), null, CurrentToken.Location));
                     }
 
                 case TokenType.KwEvent:
                     {
-                        NextToken();
+                        NextToken(inInfo);
                         var udecl = ParseAtomicExpression(inInfo, ref outInfo);
                         if (udecl is AstUnknownDecl u)
                             u.IsEvent = true;
@@ -739,27 +749,33 @@ namespace HapetFrontend.Parsing
                 case TokenType.KwImplicit:
                 case TokenType.KwExplicit:
                     {
-                        return ParseOperatorOverride(inInfo, ref outInfo, new AstUnknownDecl(null, null, PeekToken().Location));
+                        return ParseOperatorOverride(inInfo, ref outInfo, new AstUnknownDecl(null, null, PeekToken(inInfo).Location));
                     }
 
                 case TokenType.Identifier:
                     {
                         // need to check for => after the id - if it there - it is a lambda
-                        var idLookAhead = ParseIdentifierExpression(inInfo, lookAhead: true, allowDots: false, allowGenerics: false, expectIdent: true);
-                        if (CheckLookAhead(TokenType.Arrow))
+                        var saved = inInfo.IsLookAheadParsing;
+                        inInfo.IsLookAheadParsing = true;
+                        var _ = ParseIdentifierExpression(inInfo, lookAhead: true, allowDots: false, allowGenerics: false, expectIdent: true);
+                        if (CheckToken(inInfo, TokenType.Arrow))
                         {
+                            inInfo.IsLookAheadParsing = saved;
                             return ParseLambdaDecl(inInfo, ref outInfo);
                         }
+                        inInfo.IsLookAheadParsing = saved;
 
                         var id = ParseIdentifierExpression(inInfo, iniNested: inInfo.PreviousNestedForNullCheck);
 
                         // if there is a ? need to check that it is not ternary or other shite
-                        if (CheckToken(TokenType.QuestionMark))
+                        if (CheckToken(inInfo, TokenType.QuestionMark))
                         {
+                            var saved2 = inInfo.IsLookAheadParsing;
+                            inInfo.IsLookAheadParsing = true;
                             UpdateLookAheadLocation();
-                            NextLookAhead();
+                            NextToken(inInfo);
                             bool isNullable = false;
-                            var next = NextLookAhead();
+                            var next = PeekToken(inInfo);
                             // if '(SomeType?)' casting
                             if (next.Type == TokenType.CloseParen)
                                 isNullable = true;
@@ -768,19 +784,20 @@ namespace HapetFrontend.Parsing
                             {
                                 // TODO:
                             }
+                            inInfo.IsLookAheadParsing = saved2;
 
                             // if it is nullable
                             if (isNullable)
                             {
-                                var q = NextToken();
+                                var q = NextToken(inInfo);
                                 id = new AstNestedExpr(new AstNullableExpr(id, q.Location), null, id.Location);
                             }
                         }
 
                         // if it is a pointer or array type
-                        while (CheckToken(TokenType.Asterisk) || CheckToken(TokenType.ArrayDef))
+                        while (CheckToken(inInfo, TokenType.Asterisk) || CheckToken(inInfo, TokenType.ArrayDef))
                         {
-                            if (CheckToken(TokenType.ArrayDef))
+                            if (CheckToken(inInfo, TokenType.ArrayDef))
                             {
                                 // it is not allowed usually from ParseArrayExpr
                                 if (!inInfo.AllowArrayExpression)
@@ -799,11 +816,11 @@ namespace HapetFrontend.Parsing
                                 var ptrExpr = new AstPointerExpr(id, false, new Location(id.RightPart.Beginning, CurrentToken.Location.Ending));
                                 id = new AstNestedExpr(ptrExpr, null, ptrExpr);
                             }
-                            NextToken();
+                            NextToken(inInfo);
                         }
 
                         // the second identifier for UnknownDecl
-                        if (CheckToken(TokenType.Identifier))
+                        if (CheckToken(inInfo, TokenType.Identifier))
                         {
                             // allowDots is true because of explicit interface impls
                             // allowGenerics because of Anime<T>.Func explicit impls
@@ -820,23 +837,23 @@ namespace HapetFrontend.Parsing
                     }
 
                 case TokenType.StringLiteral:
-                    NextToken();
+                    NextToken(inInfo);
                     return new AstStringExpr((string)token.Data, token.Suffix, new Location(token.Location));
 
                 case TokenType.CharLiteral:
-                    NextToken();
+                    NextToken(inInfo);
                     return new AstCharExpr((string)token.Data, new Location(token.Location));
 
                 case TokenType.NumberLiteral:
-                    NextToken();
+                    NextToken(inInfo);
                     return new AstNumberExpr((NumberData)token.Data, token.Suffix, null, new Location(token.Location));
 
                 case TokenType.KwTrue:
-                    NextToken();
+                    NextToken(inInfo);
                     return new AstBoolExpr(true, new Location(token.Location));
 
                 case TokenType.KwFalse:
-                    NextToken();
+                    NextToken(inInfo);
                     return new AstBoolExpr(false, new Location(token.Location));
 
                 case TokenType.OpenParen:
@@ -848,7 +865,7 @@ namespace HapetFrontend.Parsing
                     else if (inInfo.Message == null)
                         inInfo.Message = new MessageResolver() { MessageArgs = [token.Type.ToString(), token.Data.ToString()], XmlMessage = ErrorCode.Get(CTEN.CommonFailToParse) };
                     ReportMessage(token.Location, inInfo.Message.MessageArgs, inInfo.Message.XmlMessage);
-                    NextToken(); // skip the token :)
+                    NextToken(inInfo); // skip the token :)
                     return ParseEmptyExpression();
             }
         }
