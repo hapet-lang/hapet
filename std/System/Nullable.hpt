@@ -1,0 +1,55 @@
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+// Some modifications were made for hapet-lang compatibility.
+
+using System.Collections.Generic;
+using System.Runtime.CompilerServices;
+using System.Runtime.Versioning;
+
+// Because we have special type system support that says a boxed Nullable<T>
+// can be used where a boxed T is used, Nullable<T> can not implement any interfaces
+// at all (since T may not).
+//
+// Do NOT add any interfaces to Nullable!
+
+public partial struct Nullable<T> where T : struct
+{
+    private readonly bool _hasValue;
+    internal T _value;
+
+    public Nullable(T value)
+    {
+        _value = value;
+        _hasValue = true;
+    }
+
+    public readonly bool HasValue => _hasValue;
+
+    public readonly T Value
+    {
+        get
+        {
+            if (!_hasValue)
+            {
+                ThrowHelper.ThrowInvalidOperationException_InvalidOperation_NoValue();
+            }
+            return _value;
+        }
+    }
+
+    public readonly T GetValueOrDefault() => _value;
+
+    public readonly T GetValueOrDefault(T defaultValue) =>
+        _hasValue ? _value : defaultValue;
+
+    public override bool Equals(object other)
+    {
+        if (!_hasValue) return other == null;
+        if (other == null) return false;
+        return _value.Equals(other);
+    }
+
+    public override int GetHashCode() => _hasValue ? _value.GetHashCode() : 0;
+
+    public override string ToString() => _hasValue ? _value.ToString() : "";
+}
