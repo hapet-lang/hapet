@@ -212,7 +212,9 @@ namespace HapetPostPrepare
                     func1.Name = func1.Name.GetCopy();
 
                 // we should make all the decls abstract
-                SpecialKeysHelper.ReplaceSpecialKeysByTypes(copied, new List<Token>() { Lexer.CreateToken(TokenType.KwAbstract, copied.Location.Beginning) });
+                // do not use SpecialKeysHelper because we need to keep 'static abstract' funcs
+                if (!copied.SpecialKeys.Contains(TokenType.KwAbstract))
+                    copied.SpecialKeys.Add(Lexer.CreateToken(TokenType.KwAbstract, copied.Location.Beginning));
 
                 // we need to change first param in non static funcs
                 if (copied is AstFuncDecl func && !func.SpecialKeys.Contains(TokenType.KwStatic))
