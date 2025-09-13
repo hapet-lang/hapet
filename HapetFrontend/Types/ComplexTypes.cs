@@ -253,4 +253,32 @@ namespace HapetFrontend.Types
                 return $"(void:_lambda)";
         }
     }
+
+    public class NullableType : StructType
+    {
+        public override string TypeName => "nullable";
+
+        public AstStructDecl TargetDeclaration { get; set; }
+
+        public override AstExpression GetAst(AstExpression iniExpr = null)
+        {
+            return new AstNestedExpr(Declaration.Name.GetCopy(), null)
+            {
+                Scope = iniExpr?.Scope,
+                SourceFile = iniExpr?.SourceFile,
+                Location = iniExpr?.Location,
+            };
+        }
+
+        public NullableType(AstStructDecl targetDecl)
+            : base(null)
+        {
+            TargetDeclaration = targetDecl;
+        }
+
+        public override string ToString()
+        {
+            return $"{Declaration.Name.Name}";
+        }
+    }
 }

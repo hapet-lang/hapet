@@ -753,6 +753,30 @@ namespace HapetFrontend.Parsing
 
                         var id = ParseIdentifierExpression(inInfo, iniNested: inInfo.PreviousNestedForNullCheck);
 
+                        // if there is a ? need to check that it is not ternary or other shite
+                        if (CheckToken(TokenType.QuestionMark))
+                        {
+                            UpdateLookAheadLocation();
+                            NextLookAhead();
+                            bool isNullable = false;
+                            var next = NextLookAhead();
+                            // if '(SomeType?)' casting
+                            if (next.Type == TokenType.CloseParen)
+                                isNullable = true;
+                            // check if no : after
+                            else
+                            {
+                                // TODO:
+                            }
+
+                            // if it is nullable
+                            if (isNullable)
+                            {
+                                var q = NextToken();
+                                id = new AstNestedExpr(new AstNullableExpr(id, q.Location), null, id.Location);
+                            }
+                        }
+
                         // if it is a pointer or array type
                         while (CheckToken(TokenType.Asterisk) || CheckToken(TokenType.ArrayDef))
                         {
