@@ -17,13 +17,13 @@ namespace HapetFrontend.Parsing
             // keep parsing while attributes are there :)
             while (true)
             {
-                SkipNewlines();
+                SkipNewlines(inInfo);
                 // special handle for destructor
                 bool tildaOnTopLevel = false;
-                if (CheckToken(TokenType.Tilda))
+                if (CheckToken(inInfo, TokenType.Tilda))
                 {
                     tildaOnTopLevel = true;
-                    NextToken();
+                    NextToken(inInfo);
                 }
 
                 var saved2 = inInfo.Message;
@@ -47,7 +47,7 @@ namespace HapetFrontend.Parsing
                     // expect semicolon on every field decl!!!
                     if (decl is AstVarDecl && decl is not AstPropertyDecl)
                     {
-                        Consume(TokenType.Semicolon, ErrMsg(";", "at the end of the statement"));
+                        Consume(inInfo, TokenType.Semicolon, ErrMsg(";", "at the end of the statement"));
                     }
                     return decl;
                 }
@@ -57,12 +57,12 @@ namespace HapetFrontend.Parsing
                     // keep parsing 
                     continue;
                 }
-                else if (expr == null && PeekToken().Type == TokenType.EOF)
+                else if (expr == null && PeekToken(inInfo).Type == TokenType.EOF)
                 {
                     return null;
                 }
 
-                var a = PeekToken();
+                var a = PeekToken(inInfo);
                 ReportMessage(a.Location, [], ErrorCode.Get(CTEN.ExpectedEqualOrNewline));
                 return new AstVarDecl(expr as AstNestedExpr, null, null, "", expr)
                 {

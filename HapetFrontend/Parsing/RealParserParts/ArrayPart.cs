@@ -14,33 +14,33 @@ namespace HapetFrontend.Parsing
             // when values are presented
             List<AstExpression> sizeExprs = new List<AstExpression>();
 
-            TokenLocation sizesBeg = PeekToken().Location;
-            TokenLocation sizesEnd = PeekToken().Location;
+            TokenLocation sizesBeg = PeekToken(inInfo).Location;
+            TokenLocation sizesEnd = PeekToken(inInfo).Location;
 
-            while (CheckToken(TokenType.OpenBracket) || CheckToken(TokenType.ArrayDef))
+            while (CheckToken(inInfo, TokenType.OpenBracket) || CheckToken(inInfo, TokenType.ArrayDef))
             {
                 // if there is a size expr 
-                if (CheckToken(TokenType.OpenBracket))
+                if (CheckToken(inInfo, TokenType.OpenBracket))
                 {
-                    Consume(TokenType.OpenBracket, ErrMsg("[", "at the beggining of array expr"));
-                    if (!CheckToken(TokenType.CloseBracket))
+                    Consume(inInfo, TokenType.OpenBracket, ErrMsg("[", "at the beggining of array expr"));
+                    if (!CheckToken(inInfo, TokenType.CloseBracket))
                     {
                         var arraySize = ParseExpression(inInfo, ref outInfo);
                         if (arraySize is not AstExpression expr)
                         {
                             // error here. it has to be an expr
                             ReportMessage(arraySize.Location, [], ErrorCode.Get(CTEN.ArraySizeNotExpr));
-                            return ParseEmptyExpression();
+                            return ParseEmptyExpression(inInfo);
                         }
 
                         sizeExprs.Add(expr);
                     }
-                    Consume(TokenType.CloseBracket, ErrMsg("]", "at the end of array expr"));
+                    Consume(inInfo, TokenType.CloseBracket, ErrMsg("]", "at the end of array expr"));
                 }
                 else
                 {
                     // if there is no size expr
-                    Consume(TokenType.ArrayDef, ErrMsg("[]", "at the end of array expr"));
+                    Consume(inInfo, TokenType.ArrayDef, ErrMsg("[]", "at the end of array expr"));
                     sizeExprs.Add(null);
                 }
 
@@ -53,10 +53,10 @@ namespace HapetFrontend.Parsing
                 ReportMessage(type.Location, [], ErrorCode.Get(CTEN.ArraySizeNotSpecified));
             }
 
-            SkipNewlines();
+            SkipNewlines(inInfo);
 
             // defined elements
-            if (CheckToken(TokenType.OpenBrace))
+            if (CheckToken(inInfo, TokenType.OpenBrace))
             {
                 // allow only the last size to be null!!! because in other way it is very hard to prepare
                 bool allExceptTheLastAreNotNull = sizeExprs.SkipLast(1).All(x => x != null);
@@ -99,13 +99,13 @@ namespace HapetFrontend.Parsing
 
         private List<AstExpression> ParseArrayElementsExpression(ParserInInfo inInfo, ref ParserOutInfo outInfo)
         {
-            var token = NextToken();
+            var token = NextToken(inInfo);
             var values = new List<AstExpression>();
 
             while (true)
             {
-                SkipNewlines();
-                var next = PeekToken();
+                SkipNewlines(inInfo);
+                var next = PeekToken(inInfo);
 
                 if (next.Type == TokenType.CloseBrace || next.Type == TokenType.EOF)
                     break;
@@ -119,11 +119,11 @@ namespace HapetFrontend.Parsing
                 }
                 values.Add(exprexpr);
 
-                next = PeekToken();
+                next = PeekToken(inInfo);
 
                 if (next.Type == TokenType.NewLine || next.Type == TokenType.Comma)
                 {
-                    NextToken();
+                    NextToken(inInfo);
                 }
                 else if (next.Type == TokenType.CloseBrace)
                 {
@@ -132,11 +132,11 @@ namespace HapetFrontend.Parsing
                 else
                 {
                     ReportMessage(next.Location, [], ErrorCode.Get(CTEN.ArrayElementsUnexpectedToken));
-                    NextToken();
+                    NextToken(inInfo);
                 }
             }
 
-            Consume(TokenType.CloseBrace, ErrMsg("}", "at end of array expression"));
+            Consume(inInfo, TokenType.CloseBrace, ErrMsg("}", "at end of array expression"));
             return values;
         }
     }

@@ -1,14 +1,17 @@
-﻿namespace HapetFrontend.Parsing
+﻿using System.Runtime;
+using HapetFrontend.Entities;
+
+namespace HapetFrontend.Parsing
 {
     public partial class Parser
     {
-        private List<Token> ParseSpecialKeys()
+        private List<Token> ParseSpecialKeys(ParserInInfo inInfo)
         {
             bool running = true;
             List<Token> keys = new List<Token>();
             while (running)
             {
-                var tkn = PeekToken();
+                var tkn = PeekToken(inInfo);
                 switch (tkn.Type) 
                 {
                     // custom shite
@@ -36,7 +39,7 @@
                     case TokenType.KwSealed:
                     case TokenType.KwUnsafe:
                         keys.Add(tkn);
-                        NextToken();
+                        NextToken(inInfo);
                         break;
                     default:
                         running = false;

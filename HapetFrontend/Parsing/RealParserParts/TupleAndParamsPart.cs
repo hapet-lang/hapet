@@ -20,16 +20,16 @@ namespace HapetFrontend.Parsing
             ParameterModificator argModificator = ParameterModificator.None;
 
             // check for 'ref'
-            if (CheckToken(TokenType.KwRef))
+            if (CheckToken(inInfo, TokenType.KwRef))
             {
                 argModificator = ParameterModificator.Ref;
-                NextToken();
+                NextToken(inInfo);
             }
             // check for 'out'
-            else if (CheckToken(TokenType.KwOut))
+            else if (CheckToken(inInfo, TokenType.KwOut))
             {
                 argModificator = ParameterModificator.Out;
-                NextToken();
+                NextToken(inInfo);
             }
 
             // allow multiply in args
@@ -40,7 +40,7 @@ namespace HapetFrontend.Parsing
             beg = e.Beginning;
 
             // if next token is : then e is the name of the parameter
-            if (CheckToken(TokenType.Colon))
+            if (CheckToken(inInfo, TokenType.Colon))
             {
                 if (e is AstNestedExpr nest && nest.RightPart is AstIdExpr i)
                 {
@@ -51,8 +51,8 @@ namespace HapetFrontend.Parsing
                     ReportMessage(e, [], ErrorCode.Get(CTEN.ArgumentNameNotIdent));
                 }
 
-                Consume(TokenType.Colon, ErrMsg(":", "after name in argument"));
-                SkipNewlines();
+                Consume(inInfo, TokenType.Colon, ErrMsg(":", "after name in argument"));
+                SkipNewlines(inInfo);
 
                 expr = ParseExpression(inInfo, ref outInfo) as AstExpression;
             }
@@ -71,36 +71,36 @@ namespace HapetFrontend.Parsing
 
         private List<AstArgumentExpr> ParseArgumentList(ParserInInfo inInfo, ref ParserOutInfo outInfo, out TokenLocation beg, out TokenLocation end)
         {
-            beg = Consume(TokenType.OpenParen, ErrMsg("(", "at beginning of argument list")).Location;
+            beg = Consume(inInfo, TokenType.OpenParen, ErrMsg("(", "at beginning of argument list")).Location;
 
-            SkipNewlines();
+            SkipNewlines(inInfo);
             var args = new List<AstArgumentExpr>();
             while (true)
             {
-                var next = PeekToken();
+                var next = PeekToken(inInfo);
                 if (next.Type == TokenType.CloseParen || next.Type == TokenType.EOF)
                     break;
                 args.Add(ParseArgument(inInfo, ref outInfo));
 
-                next = PeekToken();
+                next = PeekToken(inInfo);
                 if (next.Type == TokenType.NewLine)
                 {
-                    NextToken();
+                    NextToken(inInfo);
                 }
                 else if (next.Type == TokenType.Comma)
                 {
-                    NextToken();
-                    SkipNewlines();
+                    NextToken(inInfo);
+                    SkipNewlines(inInfo);
                 }
                 else if (next.Type == TokenType.CloseParen)
                     break;
                 else
                 {
-                    NextToken();
+                    NextToken(inInfo);
                     ReportMessage(next.Location, [], ErrorCode.Get(CTEN.FailedToParseArguments));
                 }
             }
-            end = Consume(TokenType.CloseParen, ErrMsg(")", "at end of argument list")).Location;
+            end = Consume(inInfo, TokenType.CloseParen, ErrMsg(")", "at end of argument list")).Location;
 
             return args;
         }
@@ -115,31 +115,31 @@ namespace HapetFrontend.Parsing
             TokenLocation beg = null, end = null;
 
             // check for 'arglist'
-            if (CheckToken(TokenType.KwArglist))
+            if (CheckToken(inInfo, TokenType.KwArglist))
             {
                 parModificator = ParameterModificator.Arglist;
-                var loc = NextToken().Location;
+                var loc = NextToken(inInfo).Location;
                 beg = loc.Beginning;
                 end = loc.Ending;
                 return GetParam(); // just return it
             }
             // check for 'params'
-            else if (CheckToken(TokenType.KwParams))
+            else if (CheckToken(inInfo, TokenType.KwParams))
             {
                 parModificator = ParameterModificator.Params;
-                NextToken();
+                NextToken(inInfo);
             }
             // check for 'ref'
-            else if (CheckToken(TokenType.KwRef))
+            else if (CheckToken(inInfo, TokenType.KwRef))
             {
                 parModificator = ParameterModificator.Ref;
-                NextToken();
+                NextToken(inInfo);
             }
             // check for 'out'
-            else if (CheckToken(TokenType.KwOut))
+            else if (CheckToken(inInfo, TokenType.KwOut))
             {
                 parModificator = ParameterModificator.Out;
-                NextToken();
+                NextToken(inInfo);
             }
 
             // do not allow multiply here!!! read in desc - why!!!
@@ -149,7 +149,7 @@ namespace HapetFrontend.Parsing
             inInfo.AllowMultiplyExpression = savedAllowMul;
 
             beg = e.Beginning;
-            SkipNewlines();
+            SkipNewlines(inInfo);
 
             if (e is AstUnknownDecl udecl)
             {
@@ -159,9 +159,9 @@ namespace HapetFrontend.Parsing
             else
             {
                 // if next token is ident then e is the type of the parameter
-                if (CheckToken(TokenType.Identifier))
+                if (CheckToken(inInfo, TokenType.Identifier))
                 {
-                    SkipNewlines();
+                    SkipNewlines(inInfo);
 
                     var probName = ParseExpression(inInfo, ref outInfo);
                     if (probName is not AstIdExpr)
@@ -186,11 +186,11 @@ namespace HapetFrontend.Parsing
             if (allowDefaultValue)
             {
                 // optional default value
-                SkipNewlines();
-                if (CheckToken(TokenType.Equal))
+                SkipNewlines(inInfo);
+                if (CheckToken(inInfo, TokenType.Equal))
                 {
-                    NextToken();
-                    SkipNewlines();
+                    NextToken(inInfo);
+                    SkipNewlines(inInfo);
                     var probDefVal = ParseExpression(inInfo, ref outInfo);
                     if (probDefVal is not AstExpression)
                     {
@@ -215,36 +215,36 @@ namespace HapetFrontend.Parsing
         {
             var parameters = new List<AstParamDecl>();
 
-            beg = Consume(open, ErrMsg("(/[", "at beginning of parameter list")).Location;
-            SkipNewlines();
+            beg = Consume(inInfo, open, ErrMsg("(/[", "at beginning of parameter list")).Location;
+            SkipNewlines(inInfo);
 
             while (true)
             {
-                var next = PeekToken();
+                var next = PeekToken(inInfo);
                 if (next.Type == close || next.Type == TokenType.EOF)
                     break;
 
                 var a = ParseParameter(inInfo, ref outInfo, allowDefaultValue);
                 parameters.Add(a);
 
-                SkipNewlines();
-                next = PeekToken();
+                SkipNewlines(inInfo);
+                next = PeekToken(inInfo);
                 if (next.Type == TokenType.Comma)
                 {
-                    NextToken();
-                    SkipNewlines();
+                    NextToken(inInfo);
+                    SkipNewlines(inInfo);
                 }
                 else if (next.Type == close)
                     break;
                 else
                 {
-                    NextToken();
-                    SkipNewlines();
+                    NextToken(inInfo);
+                    SkipNewlines(inInfo);
                     ReportMessage(next.Location, [next.ToString()], ErrorCode.Get(CTEN.FailedToParseParameters));
                 }
             }
 
-            end = Consume(close, ErrMsg(")/]", "at end of parameter list")).Location;
+            end = Consume(inInfo, close, ErrMsg(")/]", "at end of parameter list")).Location;
 
             return parameters;
         }
@@ -287,17 +287,21 @@ namespace HapetFrontend.Parsing
             // need to lookahead for =>
             bool isLambda;
             UpdateLookAheadLocation();
+            var saved = inInfo.IsLookAheadParsing;
+            inInfo.IsLookAheadParsing = true;
             int tmpParenCounter = 1;
-            NextLookAhead();
+            NextToken(inInfo);
             while (tmpParenCounter != 0)
             {
-                var curr = NextLookAhead();
+                var curr = NextToken(inInfo);
                 if (curr.Type == TokenType.OpenParen)
                     tmpParenCounter++;
                 else if (curr.Type == TokenType.CloseParen)
                     tmpParenCounter--;
             }
-            isLambda = NextLookAhead().Type == TokenType.Arrow;
+            isLambda = NextToken(inInfo).Type == TokenType.Arrow;
+            inInfo.IsLookAheadParsing = saved;
+
             if (isLambda)
                 return ParseLambdaDecl(inInfo, ref outInfo);
 
@@ -356,7 +360,7 @@ namespace HapetFrontend.Parsing
 
             AstExpression HandleOneElement(AstExpression element, TokenLocation beg, TokenLocation end, ref ParserOutInfo outInfo)
             {
-                var next = PeekToken();
+                var next = PeekToken(inInfo);
                 // WARN: could be better checks?
                 var castNextToken = new TokenType[] 
                 { 
@@ -402,7 +406,7 @@ namespace HapetFrontend.Parsing
         {
             TokenLocation beg = null;
             List<AstParamDecl> paramss = new List<AstParamDecl>();
-            if (CheckToken(TokenType.OpenParen))
+            if (CheckToken(inInfo, TokenType.OpenParen))
             {
                 paramss.AddRange(ParseParameterList(inInfo, ref outInfo, TokenType.OpenParen, TokenType.CloseParen, out beg, out var _, true));
             }
@@ -428,12 +432,12 @@ namespace HapetFrontend.Parsing
                 par.Type = null;
             }
 
-            SkipNewlines();
-            Consume(TokenType.Arrow, ErrMsg("=>", "before lambda block"));
-            SkipNewlines();
+            SkipNewlines(inInfo);
+            Consume(inInfo, TokenType.Arrow, ErrMsg("=>", "before lambda block"));
+            SkipNewlines(inInfo);
 
             AstBlockExpr body;
-            if (CheckToken(TokenType.OpenBrace))
+            if (CheckToken(inInfo, TokenType.OpenBrace))
             {
                 body = ParseBlockExpression(inInfo, ref outInfo);
             }

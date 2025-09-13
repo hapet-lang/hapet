@@ -14,7 +14,7 @@ namespace HapetFrontend.Parsing
         private AstBlockExpr ParseBlockExpression(ParserInInfo inInfo, ref ParserOutInfo outInfo)
         {
             var statements = new List<AstStatement>();
-            var beg = Consume(TokenType.OpenBrace, ErrMsg("{", "at beginning of block expression")).Location;
+            var beg = Consume(inInfo, TokenType.OpenBrace, ErrMsg("{", "at beginning of block expression")).Location;
 
             // get info and reset this cringe - only top level skips
             var skipDefaultSemicolonChecks = inInfo.SkipDefaultSemicolonChecks;
@@ -25,10 +25,10 @@ namespace HapetFrontend.Parsing
             string foundBrStatement = string.Empty;
             bool afterBrStatementReported = false;
 
-            SkipNewlines();
+            SkipNewlines(inInfo);
             while (true)
             {
-                var next = PeekToken();
+                var next = PeekToken(inInfo);
                 if (next.Type == TokenType.CloseBrace || next.Type == TokenType.EOF)
                     break;
 
@@ -36,10 +36,10 @@ namespace HapetFrontend.Parsing
                 if (shouldStop)
                     break;
 
-                SkipNewlines();
+                SkipNewlines(inInfo);
             }
 
-            var end = Consume(TokenType.CloseBrace, ErrMsg("}", "at end of block expression")).Location;
+            var end = Consume(inInfo, TokenType.CloseBrace, ErrMsg("}", "at end of block expression")).Location;
 
             return new AstBlockExpr(statements, new Location(beg, end));
         }
@@ -58,7 +58,7 @@ namespace HapetFrontend.Parsing
             shouldStop = false;
 
             // get current special keys - useful for nested funcs :)
-            var specialKeys = ParseSpecialKeys();
+            var specialKeys = ParseSpecialKeys(inInfo);
             var statements = new List<AstStatement>();
 
             // do not allow nested funcs in nested shite. only in current!!!
@@ -123,7 +123,7 @@ namespace HapetFrontend.Parsing
 
                     if (checkSemicolons)
                         // try eat semicolon or error
-                        CheckSemicolonAfterStmt(s, skipDefaultSemicolonChecks);
+                        CheckSemicolonAfterStmt(inInfo, s, skipDefaultSemicolonChecks);
 
                     // save the statment name to warn if there is something after it
                     switch (s)
@@ -162,7 +162,7 @@ namespace HapetFrontend.Parsing
                         }
                     }
 
-                    var next = PeekToken();
+                    var next = PeekToken(inInfo);
                     if (next.Type == TokenType.CloseBrace || next.Type == TokenType.EOF)
                         return true;
                 }

@@ -18,13 +18,13 @@ namespace HapetFrontend.Parsing
             var generics = new List<AstIdExpr>();
             AstIdExpr structName = null;
 
-            beg = Consume(TokenType.KwStruct, ErrMsg("keyword 'struct'", "at beginning of struct type")).Location;
+            beg = Consume(inInfo, TokenType.KwStruct, ErrMsg("keyword 'struct'", "at beginning of struct type")).Location;
 
             // struct name
-            if (!CheckToken(TokenType.Identifier))
+            if (!CheckToken(inInfo, TokenType.Identifier))
             {
                 // better error location
-                ReportMessage(PeekToken().Location, [], ErrorCode.Get(CTEN.StructDeclExpectedAfterKey));
+                ReportMessage(PeekToken(inInfo).Location, [], ErrorCode.Get(CTEN.StructDeclExpectedAfterKey));
             }
             else
             {
@@ -44,22 +44,22 @@ namespace HapetFrontend.Parsing
                 generics = GenericsHelper.GetGenericsFromName(genExpr, _messageHandler);
             }
 
-            SkipNewlines();
+            SkipNewlines(inInfo);
 
             // checking for inheritance
-            if (CheckToken(TokenType.Colon))
+            if (CheckToken(inInfo, TokenType.Colon))
             {
-                Consume(TokenType.Colon, ErrMsg(":", "before inherited types"));
-                SkipNewlines();
+                Consume(inInfo, TokenType.Colon, ErrMsg(":", "before inherited types"));
+                SkipNewlines(inInfo);
 
-                while (CheckToken(TokenType.Identifier))
+                while (CheckToken(inInfo, TokenType.Identifier))
                 {
                     var ident = ParseIdentifierExpression(inInfo, allowGenerics: true);
                     inherited.Add(ident);
                     // if there is something else
-                    if (CheckToken(TokenType.Comma))
+                    if (CheckToken(inInfo, TokenType.Comma))
                     {
-                        Consume(TokenType.Comma, ErrMsg(",", "before the next inherited type"));
+                        Consume(inInfo, TokenType.Comma, ErrMsg(",", "before the next inherited type"));
                         continue;
                     }
 
@@ -67,7 +67,7 @@ namespace HapetFrontend.Parsing
                     break;
                 }
             }
-            SkipNewlines();
+            SkipNewlines(inInfo);
 
             // parsing constrains
             var genericConstrains = ParseGenericConstrains(generics);
@@ -75,13 +75,13 @@ namespace HapetFrontend.Parsing
             // the decl (declared here because it would be used)
             var structDecl = new AstStructDecl(structName, declarations, "", null);
 
-            ConsumeUntil(TokenType.OpenBrace, ErrMsg("{", "at beginning of struct body"), true);
+            ConsumeUntil(inInfo, TokenType.OpenBrace, ErrMsg("{", "at beginning of struct body"), true);
 
             Token next;
-            SkipNewlines();
+            SkipNewlines(inInfo);
             while (true)
             {
-                next = PeekToken();
+                next = PeekToken(inInfo);
                 if (next.Type == TokenType.CloseBrace || next.Type == TokenType.EOF)
                     break;
 
@@ -93,7 +93,7 @@ namespace HapetFrontend.Parsing
                     break;
             }
 
-            end = Consume(TokenType.CloseBrace, ErrMsg("}", "at end of struct declaration")).Location;
+            end = Consume(inInfo, TokenType.CloseBrace, ErrMsg("}", "at end of struct declaration")).Location;
 
             structDecl.Location = new Location(beg, end);
             structDecl.InheritedFrom = inherited;
@@ -143,10 +143,10 @@ namespace HapetFrontend.Parsing
                 declarations.Add(realDecl);
                 realDecl.ContainingParent = structDecl;
 
-                next = PeekToken();
+                next = PeekToken(inInfo);
                 if (next.Type == TokenType.NewLine)
                 {
-                    SkipNewlines();
+                    SkipNewlines(inInfo);
                 }
                 else if (next.Type == TokenType.CloseBrace || next.Type == TokenType.EOF)
                 {
@@ -155,8 +155,8 @@ namespace HapetFrontend.Parsing
                 else if (realDecl is AstVarDecl && next.Type == TokenType.Semicolon)
                 {
                     // it is just a ';' at the end of class field
-                    NextToken();
-                    SkipNewlines();
+                    NextToken(inInfo);
+                    SkipNewlines(inInfo);
                 }
                 return false;
             }

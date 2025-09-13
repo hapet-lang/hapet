@@ -22,19 +22,19 @@ namespace HapetFrontend.Parsing
             while (keepParsing)
             {
                 // skip unneeded
-                SkipNewlines();
+                SkipNewlines(inInfo);
 
                 // getting doc string
                 var docString = GetCurrentDocString();
 
                 // skip unneeded
-                SkipNewlines();
+                SkipNewlines(inInfo);
 
                 // get current special keys
-                List<Token> specialKeys = ParseSpecialKeys();
+                List<Token> specialKeys = ParseSpecialKeys(inInfo);
                 bool semicolonRequired = false;
 
-                var tkn = PeekToken();
+                var tkn = PeekToken(inInfo);
                 switch (tkn.Type)
                 {
                     case TokenType.KwClass:
@@ -58,11 +58,11 @@ namespace HapetFrontend.Parsing
                         toReturn = ParseAttributeStatement(inInfo, ref outInfo);
                         break;
                     case TokenType.KwUsing:
-                        toReturn = ParseUsingStatement();
+                        toReturn = ParseUsingStatement(inInfo);
                         semicolonRequired = true;
                         break;
                     case TokenType.KwNamespace:
-                        toReturn = ParseNamespaceStatement();
+                        toReturn = ParseNamespaceStatement(inInfo);
                         semicolonRequired = true;
                         break;
                     default:
@@ -72,10 +72,10 @@ namespace HapetFrontend.Parsing
 
                 // consume semicolon after some top level statements
                 if (semicolonRequired)
-                    Consume(TokenType.Semicolon, ErrMsg(";", "at the end of the statement"));
+                    Consume(inInfo, TokenType.Semicolon, ErrMsg(";", "at the end of the statement"));
 
                 // skip unneeded
-                SkipNewlines();
+                SkipNewlines(inInfo);
 
                 // we found an attr - add it to list and use it when find a decl
                 if (toReturn is AstAttributeStmt attr)

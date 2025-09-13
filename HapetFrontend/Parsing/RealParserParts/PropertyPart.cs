@@ -39,18 +39,18 @@ namespace HapetFrontend.Parsing
             List<Token> getSpecialKeys = new List<Token>();
             List<Token> setSpecialKeys = new List<Token>();
 
-            if (CheckToken(TokenType.Arrow))
+            if (CheckToken(inInfo, TokenType.Arrow))
             {
                 // => property
 
-                NextToken();
+                NextToken(inInfo);
                 // getting only one stmt if there are no braces
                 var onlyExpr = ParseExpression(inInfo, ref outInfo);
                 onlyExpr = new AstReturnStmt(onlyExpr as AstExpression, onlyExpr.Location);
                 var body = new AstBlockExpr(new List<AstStatement>() { onlyExpr }, onlyExpr);
 
                 // try eat semicolon or error
-                CheckSemicolonAfterStmt(onlyExpr);
+                CheckSemicolonAfterStmt(inInfo, onlyExpr);
                 getBody = body;
                 hasGet = true;
             }
@@ -58,102 +58,102 @@ namespace HapetFrontend.Parsing
             {
                 // { get; set; } property
 
-                Consume(TokenType.OpenBrace, ErrMsg("symbol '{'", "at beginning of property declaration"));
-                SkipNewlines();
+                Consume(inInfo, TokenType.OpenBrace, ErrMsg("symbol '{'", "at beginning of property declaration"));
+                SkipNewlines(inInfo);
 
                 // special keys of 'get'
-                getSpecialKeys = ParseSpecialKeys();
-                SkipNewlines();
+                getSpecialKeys = ParseSpecialKeys(inInfo);
+                SkipNewlines(inInfo);
 
                 // if it has 'get'
-                if (CheckToken(TokenType.KwGet))
+                if (CheckToken(inInfo, TokenType.KwGet))
                 {
-                    Consume(TokenType.KwGet, ErrMsg("keyword 'get'", "..."));
-                    SkipNewlines();
+                    Consume(inInfo, TokenType.KwGet, ErrMsg("keyword 'get'", "..."));
+                    SkipNewlines(inInfo);
                     hasGet = true;
 
                     // check what is going next
-                    if (CheckToken(TokenType.Semicolon))
+                    if (CheckToken(inInfo, TokenType.Semicolon))
                     {
                         // no body here
-                        Consume(TokenType.Semicolon, ErrMsg("symbol ';'", "after 'get'"));
+                        Consume(inInfo, TokenType.Semicolon, ErrMsg("symbol ';'", "after 'get'"));
                     }
-                    else if (CheckToken(TokenType.OpenBrace))
+                    else if (CheckToken(inInfo, TokenType.OpenBrace))
                     {
                         // the 'get' block
                         getBody = ParseBlockExpression(inInfo, ref outInfo);
                     }
-                    else if (CheckToken(TokenType.Arrow))
+                    else if (CheckToken(inInfo, TokenType.Arrow))
                     {
                         // get => ...
-                        NextToken();
+                        NextToken(inInfo);
                         // getting only one stmt if there are no braces
                         var onlyExpr = ParseExpression(inInfo, ref outInfo);
                         onlyExpr = new AstReturnStmt(onlyExpr as AstExpression, onlyExpr.Location);
                         var body = new AstBlockExpr(new List<AstStatement>() { onlyExpr }, onlyExpr);
                         // try eat semicolon or error
-                        CheckSemicolonAfterStmt(onlyExpr);
+                        CheckSemicolonAfterStmt(inInfo, onlyExpr);
                         getBody = body;
                     }
                     else
                     {
-                        ReportMessage(PeekToken().Location, [], ErrorCode.Get(CTEN.UnexpectedTokenAfterGet));
+                        ReportMessage(PeekToken(inInfo).Location, [], ErrorCode.Get(CTEN.UnexpectedTokenAfterGet));
                     }
-                    SkipNewlines();
+                    SkipNewlines(inInfo);
                 }
                 // special keys of 'set'
-                setSpecialKeys = ParseSpecialKeys();
-                SkipNewlines();
-                if (CheckToken(TokenType.KwSet))
+                setSpecialKeys = ParseSpecialKeys(inInfo);
+                SkipNewlines(inInfo);
+                if (CheckToken(inInfo, TokenType.KwSet))
                 {
-                    Consume(TokenType.KwSet, ErrMsg("keyword 'set'", "..."));
-                    SkipNewlines();
+                    Consume(inInfo, TokenType.KwSet, ErrMsg("keyword 'set'", "..."));
+                    SkipNewlines(inInfo);
                     hasSet = true;
 
                     // check what is going next
-                    if (CheckToken(TokenType.Semicolon))
+                    if (CheckToken(inInfo, TokenType.Semicolon))
                     {
                         // no body here
-                        Consume(TokenType.Semicolon, ErrMsg("symbol ';'", "after 'set'"));
+                        Consume(inInfo, TokenType.Semicolon, ErrMsg("symbol ';'", "after 'set'"));
                     }
-                    else if (CheckToken(TokenType.OpenBrace))
+                    else if (CheckToken(inInfo, TokenType.OpenBrace))
                     {
                         // the 'set' block
                         setBody = ParseBlockExpression(inInfo, ref outInfo);
                     }
-                    else if (CheckToken(TokenType.Arrow))
+                    else if (CheckToken(inInfo, TokenType.Arrow))
                     {
                         // set => ...
-                        NextToken();
+                        NextToken(inInfo);
                         // getting only one stmt if there are no braces
                         var onlyStmt = ParseStatement(inInfo, ref outInfo);
                         var body = new AstBlockExpr(new List<AstStatement>() { onlyStmt }, onlyStmt);
                         // try eat semicolon or error
-                        CheckSemicolonAfterStmt(onlyStmt);
+                        CheckSemicolonAfterStmt(inInfo, onlyStmt);
                         setBody = body;
                     }
                     else
                     {
-                        ReportMessage(PeekToken().Location, [], ErrorCode.Get(CTEN.UnexpectedTokenAfterSet));
+                        ReportMessage(PeekToken(inInfo).Location, [], ErrorCode.Get(CTEN.UnexpectedTokenAfterSet));
                     }
-                    SkipNewlines();
+                    SkipNewlines(inInfo);
 
                     // check if 'get' goes after 'set' and error
-                    if (CheckToken(TokenType.KwGet))
+                    if (CheckToken(inInfo, TokenType.KwGet))
                     {
-                        ReportMessage(PeekToken().Location, [], ErrorCode.Get(CTEN.GetNotBeforeSet));
+                        ReportMessage(PeekToken(inInfo).Location, [], ErrorCode.Get(CTEN.GetNotBeforeSet));
                     }
                 }
                 // end of propa
-                end = Consume(TokenType.CloseBrace, ErrMsg("symbol '}'", "at end of property declaration")).Location;
+                end = Consume(inInfo, TokenType.CloseBrace, ErrMsg("symbol '}'", "at end of property declaration")).Location;
             }
 
-            SkipNewlines();
+            SkipNewlines(inInfo);
 
             // property initializer
-            if (CheckToken(TokenType.Equal))
+            if (CheckToken(inInfo, TokenType.Equal))
             {
-                NextToken();
+                NextToken(inInfo);
                 initializer = ParseExpression(inInfo, ref outInfo);
 
                 if (initializer is not AstExpression)

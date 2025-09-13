@@ -30,10 +30,10 @@ namespace HapetFrontend.Parsing
             bool isVoidType = returns is AstNestedExpr nst && nst.RightPart is AstIdExpr idE && idE.Name == "void";
 
             // cast override
-            if ((CheckToken(TokenType.KwImplicit) || CheckToken(TokenType.KwExplicit)))
+            if ((CheckToken(inInfo, TokenType.KwImplicit) || CheckToken(inInfo, TokenType.KwExplicit)))
             {
                 // just check
-                var imex = NextToken();
+                var imex = NextToken(inInfo);
                 if (imex.Type == TokenType.KwImplicit)
                     overloadType = OverloadType.ImplicitCast;
                 else
@@ -42,7 +42,7 @@ namespace HapetFrontend.Parsing
                 // always 'cast' name to be able to store the operator in Scope 
                 op = "cast";
 
-                Consume(TokenType.KwOperator, ErrMsg("'operator'", "after implicit/explicit cast overloading"));
+                Consume(inInfo, TokenType.KwOperator, ErrMsg("'operator'", "after implicit/explicit cast overloading"));
 
                 // getting cast result type
                 var saved1 = inInfo.AllowMultiplyExpression;
@@ -61,12 +61,12 @@ namespace HapetFrontend.Parsing
                     ReportMessage(returns, [], ErrorCode.Get(CTEN.TooManyParamsAfterOvOp));
             }
             // this is an operator override
-            else if (CheckToken(TokenType.KwOperator))
+            else if (CheckToken(inInfo, TokenType.KwOperator))
             {
                 // skip 'operator' word
-                NextToken();
+                NextToken(inInfo);
 
-                var opToken = NextToken();
+                var opToken = NextToken(inInfo);
                 switch (opToken.Type)
                 {
                     case TokenType.Plus: op = "+"; break;
@@ -100,9 +100,9 @@ namespace HapetFrontend.Parsing
                 // cringe handle >>
                 // https://github.com/dotnet/roslyn/blob/62646c22f6bd7b213e7e15dbc0dfadfe47a1e30f/src/Compilers/CSharp/Portable/Parser/Lexer.cs#L4118-L4122
                 // https://github.com/dotnet/roslyn/blob/62646c22f6bd7b213e7e15dbc0dfadfe47a1e30f/src/Compilers/CSharp/Portable/Parser/LanguageParser.cs#L11067-L11073
-                if (op == ">" && PeekToken().Type == TokenType.Greater)
+                if (op == ">" && PeekToken(inInfo).Type == TokenType.Greater)
                 {
-                    NextToken();
+                    NextToken(inInfo);
                     op = ">>";
                 }
 

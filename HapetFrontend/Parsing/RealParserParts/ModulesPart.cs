@@ -9,39 +9,43 @@ namespace HapetFrontend.Parsing
 {
     public partial class Parser
     {
-        private AstStatement ParseUsingStatement()
+        private AstStatement ParseUsingStatement(ParserInInfo inInfo)
         {
             TokenLocation beg = null;
 
-            beg ??= Consume(TokenType.KwUsing, ErrMsg("keyword 'using'", "at beginning of 'using' statement")).Location;
-            SkipNewlines();
+            beg ??= Consume(inInfo, TokenType.KwUsing, ErrMsg("keyword 'using'", "at beginning of 'using' statement")).Location;
+            SkipNewlines(inInfo);
 
-            var inInfo = new ParserInInfo() { Message = ErrMsg("expression", "after keyword 'using'") };
+            var savedM = inInfo.Message;
+            inInfo.Message = ErrMsg("expression", "after keyword 'using'");
             var expr = ParseIdentifierExpression(inInfo);
+            inInfo.Message = savedM;
 
             if (expr is not AstNestedExpr)
             {
                 ReportMessage(expr.Location, [], ErrorCode.Get(CTEN.NoNamespaceAfterUsing));
-                return ParseEmptyExpression();
+                return ParseEmptyExpression(inInfo);
             }
 
             return new AstUsingStmt(expr, new Location(beg));
         }
 
-        private AstStatement ParseNamespaceStatement()
+        private AstStatement ParseNamespaceStatement(ParserInInfo inInfo)
         {
             TokenLocation beg = null;
 
-            beg ??= Consume(TokenType.KwNamespace, ErrMsg("keyword 'namespace'", "at beginning of 'namespace' statement")).Location;
-            SkipNewlines();
+            beg ??= Consume(inInfo, TokenType.KwNamespace, ErrMsg("keyword 'namespace'", "at beginning of 'namespace' statement")).Location;
+            SkipNewlines(inInfo);
 
-            var inInfo = new ParserInInfo() { Message = ErrMsg("expression", "after keyword 'namespace'") };
+            var savedM = inInfo.Message;
+            inInfo.Message = ErrMsg("expression", "after keyword 'namespace'");
             var expr = ParseIdentifierExpression(inInfo);
+            inInfo.Message = savedM;
 
             if (expr is not AstNestedExpr)
             {
                 ReportMessage(expr.Location, [], ErrorCode.Get(CTEN.NoNamespaceAfterNamespace));
-                return ParseEmptyExpression();
+                return ParseEmptyExpression(inInfo);
             }
 
             return new AstNamespaceStmt(expr, new Location(beg));

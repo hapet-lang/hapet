@@ -6,15 +6,16 @@ using HapetFrontend.Entities;
 using HapetFrontend.Errors;
 using HapetFrontend.Extensions;
 using System.Reflection;
+using System.Runtime;
 using System.Xml.Linq;
 
 namespace HapetFrontend.Parsing
 {
     public partial class Parser
     {
-        public AstStatement ParseEmptyExpression()
+        public AstStatement ParseEmptyExpression(ParserInInfo inInfo)
         {
-            var loc = GetWhitespaceLocation();
+            var loc = GetWhitespaceLocation(inInfo);
             return new AstEmptyStmt(new Location(loc.beg, loc.end));
         }
 

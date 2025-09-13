@@ -12,8 +12,8 @@ namespace HapetFrontend.Parsing
         {
             TokenLocation beg = null;
 
-            beg = Consume(TokenType.KwGoto, ErrMsg("keyword 'goto'", "at beginning of 'goto' statement")).Location;
-            SkipNewlines();
+            beg = Consume(inInfo, TokenType.KwGoto, ErrMsg("keyword 'goto'", "at beginning of 'goto' statement")).Location;
+            SkipNewlines(inInfo);
 
             var expr = ParseExpression(inInfo, ref outInfo);
             if (!(expr is AstNestedExpr nst && nst.RightPart is AstIdExpr idExpr))

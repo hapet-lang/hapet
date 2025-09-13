@@ -17,13 +17,13 @@ namespace HapetFrontend.Parsing
 
             AstNestedExpr enumType = new AstNestedExpr(new AstIdExpr("int"), null, null);
 
-            beg = Consume(TokenType.KwEnum, ErrMsg("keyword 'enum'", "at beginning of enum type")).Location;
+            beg = Consume(inInfo, TokenType.KwEnum, ErrMsg("keyword 'enum'", "at beginning of enum type")).Location;
 
             // enum name
-            if (!CheckToken(TokenType.Identifier))
+            if (!CheckToken(inInfo, TokenType.Identifier))
             {
                 // better error location
-                ReportMessage(PeekToken().Location, [], ErrorCode.Get(CTEN.NoEnumNameAfterEnumWord));
+                ReportMessage(PeekToken(inInfo).Location, [], ErrorCode.Get(CTEN.NoEnumNameAfterEnumWord));
                 return new AstEnumDecl(new AstIdExpr("unknown"), declarations, "", beg);
             }
             else
@@ -37,19 +37,19 @@ namespace HapetFrontend.Parsing
                 enumName = idExpr;
             }
             // checking for inheritance
-            if (CheckToken(TokenType.Colon))
+            if (CheckToken(inInfo, TokenType.Colon))
             {
-                Consume(TokenType.Colon, ErrMsg(":", "before inherited type"));
-                SkipNewlines();
+                Consume(inInfo, TokenType.Colon, ErrMsg(":", "before inherited type"));
+                SkipNewlines(inInfo);
 
-                while (CheckToken(TokenType.Identifier))
+                while (CheckToken(inInfo, TokenType.Identifier))
                 {
                     var ident = ParseIdentifierExpression(inInfo);
                     inherited.Add(ident);
                     // if there is something else
-                    if (CheckToken(TokenType.Comma))
+                    if (CheckToken(inInfo, TokenType.Comma))
                     {
-                        Consume(TokenType.Comma, ErrMsg(",", "before the next inherited type"));
+                        Consume(inInfo, TokenType.Comma, ErrMsg(",", "before the next inherited type"));
                         continue;
                     }
 
@@ -57,7 +57,7 @@ namespace HapetFrontend.Parsing
                     break;
                 }
             }
-            SkipNewlines();
+            SkipNewlines(inInfo);
 
             // error if there are more than 1 inherited type
             if (inherited.Count > 1)
@@ -68,19 +68,19 @@ namespace HapetFrontend.Parsing
             // creating decl here to use it further
             var enumDecl = new AstEnumDecl(enumName, declarations, "");
 
-            ConsumeUntil(TokenType.OpenBrace, ErrMsg("{", "at beginning of enum body"), true);
+            ConsumeUntil(inInfo, TokenType.OpenBrace, ErrMsg("{", "at beginning of enum body"), true);
 
-            SkipNewlines();
+            SkipNewlines(inInfo);
             while (true)
             {
-                var next = PeekToken();
+                var next = PeekToken(inInfo);
                 if (next.Type == TokenType.CloseBrace || next.Type == TokenType.EOF)
                     break;
 
                 // all enum fields are just identifiers
-                if (!CheckToken(TokenType.Identifier))
+                if (!CheckToken(inInfo, TokenType.Identifier))
                 {
-                    NextToken();
+                    NextToken(inInfo);
                     ReportMessage(CurrentToken.Location, [], ErrorCode.Get(CTEN.CommonIdentifierExpected));
                     continue;
                 }
@@ -90,9 +90,9 @@ namespace HapetFrontend.Parsing
                 AstNestedExpr type = new AstNestedExpr(enumName.GetDeepCopy() as AstIdExpr, null, enumName.Location);
                 var id = ParseIdentifierExpression(inInfo, allowDots: false);
                 TokenLocation fieldEnd = id.Ending;
-                if (CheckToken(TokenType.Equal))
+                if (CheckToken(inInfo, TokenType.Equal))
                 {
-                    NextToken();
+                    NextToken(inInfo);
                     var initStmt = ParseExpression(inInfo, ref outInfo);
                     if (initStmt is not AstExpression)
                         ReportMessage(initStmt.Location, [], ErrorCode.Get(CTEN.EnumFieldIniNotExpr));
@@ -108,10 +108,10 @@ namespace HapetFrontend.Parsing
                 // all enum fields are const
                 decl.SpecialKeys.Add(Lexer.CreateToken(TokenType.KwConst, decl.Location.Beginning));
 
-                next = PeekToken();
+                next = PeekToken(inInfo);
                 if (next.Type == TokenType.NewLine)
                 {
-                    SkipNewlines();
+                    SkipNewlines(inInfo);
                 }
                 else if (next.Type == TokenType.CloseBrace || next.Type == TokenType.EOF)
                 {
@@ -120,12 +120,12 @@ namespace HapetFrontend.Parsing
                 else if (decl != null && next.Type == TokenType.Comma)
                 {
                     // it is just a ',' at the end of enum field
-                    NextToken();
-                    SkipNewlines();
+                    NextToken(inInfo);
+                    SkipNewlines(inInfo);
                 }
             }
 
-            end = Consume(TokenType.CloseBrace, ErrMsg("}", "at end of enum declaration")).Location;
+            end = Consume(inInfo, TokenType.CloseBrace, ErrMsg("}", "at end of enum declaration")).Location;
 
             enumDecl.Location = new Location(beg, end);
             enumDecl.InheritedType = enumType;

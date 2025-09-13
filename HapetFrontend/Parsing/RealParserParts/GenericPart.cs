@@ -16,18 +16,18 @@ namespace HapetFrontend.Parsing
             var inInfo = new Entities.ParserInInfo();
             var genericConstrains = new Dictionary<AstIdExpr, List<AstConstrainStmt>>();
 
-            var tst = PeekToken();
+            var tst = PeekToken(inInfo);
 
             // checking for generic constrains
             // https://learn.microsoft.com/en-us/dotnet/csharp/programming-guide/generics/constraints-on-type-parameters
-            while (CheckToken(TokenType.KwWhere))
+            while (CheckToken(inInfo, TokenType.KwWhere))
             {
-                Consume(TokenType.KwWhere, ErrMsg("where", "before generic constrains"));
+                Consume(inInfo, TokenType.KwWhere, ErrMsg("where", "before generic constrains"));
 
                 // generic type name has to be here
-                if (!CheckToken(TokenType.Identifier))
+                if (!CheckToken(inInfo, TokenType.Identifier))
                 {
-                    ReportMessage(PeekToken().Location, [], ErrorCode.Get(CTEN.GenericTypeNameExpected));
+                    ReportMessage(PeekToken(inInfo).Location, [], ErrorCode.Get(CTEN.GenericTypeNameExpected));
                     continue;
                 }
                 // has to be identifier (nested is also not allowed!!!)
@@ -48,22 +48,22 @@ namespace HapetFrontend.Parsing
                 nameIdentExpr = nameTmp;
 
                 // get the colon before constain types
-                var tmp = Consume(TokenType.Colon, ErrMsg(":", "before generic constrain types"));
+                var tmp = Consume(inInfo, TokenType.Colon, ErrMsg(":", "before generic constrain types"));
                 if (tmp == null)
                     continue;
 
-                SkipNewlines();
+                SkipNewlines(inInfo);
 
                 List<AstConstrainStmt> constrains = new List<AstConstrainStmt>();
-                while (!CheckTokens(TokenType.OpenBrace, TokenType.KwWhere))
+                while (!CheckTokens(inInfo, TokenType.OpenBrace, TokenType.KwWhere))
                 {
-                    SkipNewlines();
+                    SkipNewlines(inInfo);
 
                     AstNestedExpr ident = null;
                     List<AstNestedExpr> additionalExprs = new List<AstNestedExpr>();
                     GenericConstrainType constrainType = GenericConstrainType.None;
 
-                    var tkn = PeekToken();
+                    var tkn = PeekToken(inInfo);
                     switch (tkn.Type)
                     {
                         case TokenType.Identifier:
@@ -74,50 +74,50 @@ namespace HapetFrontend.Parsing
                             }
                         case TokenType.KwStruct:
                             {
-                                NextToken();
+                                NextToken(inInfo);
                                 ident = new AstNestedExpr(new AstIdExpr("struct", tkn.Location), null, tkn.Location);
                                 constrainType = GenericConstrainType.StructType;
                                 break;
                             }
                         case TokenType.KwClass:
                             {
-                                NextToken();
+                                NextToken(inInfo);
                                 ident = new AstNestedExpr(new AstIdExpr("class", tkn.Location), null, tkn.Location);
                                 constrainType = GenericConstrainType.ClassType;
                                 break;
                             }
                         case TokenType.KwDelegate:
                             {
-                                NextToken();
+                                NextToken(inInfo);
                                 ident = new AstNestedExpr(new AstIdExpr("delegate", tkn.Location), null, tkn.Location);
                                 constrainType = GenericConstrainType.DelegateType;
                                 break;
                             }
                         case TokenType.KwEnum:
                             {
-                                NextToken();
+                                NextToken(inInfo);
                                 ident = new AstNestedExpr(new AstIdExpr("enum", tkn.Location), null, tkn.Location);
                                 constrainType = GenericConstrainType.EnumType;
                                 break;
                             }
                         case TokenType.KwNew:
                             {
-                                NextToken();
+                                NextToken(inInfo);
                                 ident = new AstNestedExpr(new AstIdExpr("new", tkn.Location), null, tkn.Location);
                                 constrainType = GenericConstrainType.NewType;
 
-                                Consume(TokenType.OpenParen, ErrMsg("(", "after 'new' keyword"));
-                                while (CheckToken(TokenType.Identifier))
+                                Consume(inInfo, TokenType.OpenParen, ErrMsg("(", "after 'new' keyword"));
+                                while (CheckToken(inInfo, TokenType.Identifier))
                                 {
                                     var id = ParseIdentifierExpression(inInfo);
                                     additionalExprs.Add(id);
 
-                                    if (CheckToken(TokenType.Comma))
-                                        NextToken();
-                                    else if (CheckToken(TokenType.CloseParen))
+                                    if (CheckToken(inInfo, TokenType.Comma))
+                                        NextToken(inInfo);
+                                    else if (CheckToken(inInfo, TokenType.CloseParen))
                                         break;
                                 }
-                                Consume(TokenType.CloseParen, ErrMsg(")", "after 'new' keyword"));
+                                Consume(inInfo, TokenType.CloseParen, ErrMsg(")", "after 'new' keyword"));
                                 break;
                             }
                         default:
@@ -138,9 +138,9 @@ namespace HapetFrontend.Parsing
                     }
                     
                     // if there is something else
-                    if (CheckToken(TokenType.Comma))
+                    if (CheckToken(inInfo, TokenType.Comma))
                     {
-                        Consume(TokenType.Comma, ErrMsg(",", "before the next constrain"));
+                        Consume(inInfo, TokenType.Comma, ErrMsg(",", "before the next constrain"));
                         continue;
                     }
 
@@ -151,7 +151,7 @@ namespace HapetFrontend.Parsing
                 // add it
                 genericConstrains.Add(nameIdentExpr, constrains);
 
-                SkipNewlines();
+                SkipNewlines(inInfo);
             }
 
             // we need to manually add 'object' constrain

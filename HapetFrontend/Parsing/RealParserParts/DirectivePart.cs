@@ -14,7 +14,7 @@ namespace HapetFrontend.Parsing
     {
         private AstStatement ParseDirectiveStatement(ParserInInfo inInfo, ref ParserOutInfo outInfo)
         {
-            var tkn = Consume(TokenType.SharpIdentifier, ErrMsg("char '#'", "at beginning of directive"));
+            var tkn = Consume(inInfo, TokenType.SharpIdentifier, ErrMsg("char '#'", "at beginning of directive"));
             DirectiveType type = DirectiveType.None;
 
             switch ((string)tkn.Data)
@@ -51,7 +51,7 @@ namespace HapetFrontend.Parsing
                             ReportMessage(expr.Location, [], ErrorCode.Get(CTEN.CommonStringExpected));
                         }
                         toReturn = new AstDirectiveStmt(null, type, new Location(tkn.Location, expr.Location.Ending)) { Value = expr };
-                        Consume(TokenType.Semicolon, ErrMsg(";", "at the end of the statement"));
+                        Consume(inInfo, TokenType.Semicolon, ErrMsg(";", "at the end of the statement"));
                         break;
                     }
                 case DirectiveType.MetadataMeta:
@@ -67,7 +67,7 @@ namespace HapetFrontend.Parsing
                     {
                         var expr = ParseExpression(inInfo, ref outInfo) as AstExpression;
                         toReturn = new AstDirectiveStmt(null, type, new Location(tkn.Location, expr.Location.Ending)) { Value = expr };
-                        Consume(TokenType.Semicolon, ErrMsg(";", "at the end of the statement"));
+                        Consume(inInfo, TokenType.Semicolon, ErrMsg(";", "at the end of the statement"));
                         break;
                     }
                 case DirectiveType.Define:
@@ -82,7 +82,7 @@ namespace HapetFrontend.Parsing
                             break;
                         }
 
-                        var nxt = PeekToken();
+                        var nxt = PeekToken(inInfo);
                         TokenType[] allowed = new TokenType[] 
                         {
                             TokenType.Identifier,
@@ -98,7 +98,7 @@ namespace HapetFrontend.Parsing
                         }
 
                         toReturn = new AstDirectiveStmt(idExpr, type, new Location(tkn.Location, expr.Location.Ending)) { Value = value };
-                        Consume(TokenType.Semicolon, ErrMsg(";", "at the end of the statement"));
+                        Consume(inInfo, TokenType.Semicolon, ErrMsg(";", "at the end of the statement"));
                         break;
                     }
             }
@@ -182,7 +182,7 @@ namespace HapetFrontend.Parsing
             List<AstStatement> GetUpToNextDirective(ParserInInfo inInfo, ref ParserOutInfo outInfo)
             {
                 List<AstStatement> toAdd = new List<AstStatement>();
-                SkipNewlines();
+                SkipNewlines(inInfo);
                 while (_lexer.PeekToken().Type != TokenType.SharpIdentifier)
                 {
                     if (inInfo.HandleDirectiveInBlock)
@@ -196,14 +196,14 @@ namespace HapetFrontend.Parsing
                     {
                         toAdd.Add(ParseTopLevel(inInfo, ref outInfo));
                     }
-                    SkipNewlines();
+                    SkipNewlines(inInfo);
                 }
                 return toAdd;
             }
 
             void SkipUpToNextDirective()
             {
-                SkipNewlines();
+                SkipNewlines(inInfo);
                 while (_lexer.PeekToken().Type != TokenType.SharpIdentifier)
                 {
                     _lexer.SkipLine();

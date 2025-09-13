@@ -14,16 +14,16 @@ namespace HapetFrontend.Parsing
             bool isUnsafeNew = false;
 
             if (!isStackAlloc)
-                beg ??= Consume(TokenType.KwNew, ErrMsg("keyword 'new'", "at beginning of type instancing expression")).Location;
+                beg ??= Consume(inInfo, TokenType.KwNew, ErrMsg("keyword 'new'", "at beginning of type instancing expression")).Location;
             else
-                beg ??= Consume(TokenType.KwStackAlloc, ErrMsg("keyword 'stackalloc'", "at beginning of array instancing expression")).Location;
-            SkipNewlines();
+                beg ??= Consume(inInfo, TokenType.KwStackAlloc, ErrMsg("keyword 'stackalloc'", "at beginning of array instancing expression")).Location;
+            SkipNewlines(inInfo);
 
             // new expr could be unsafe
-            if (CheckToken(TokenType.KwUnsafe))
+            if (CheckToken(inInfo, TokenType.KwUnsafe))
             {
-                NextToken();
-                SkipNewlines();
+                NextToken(inInfo);
+                SkipNewlines(inInfo);
                 isUnsafeNew = true;
             }
 
@@ -37,29 +37,29 @@ namespace HapetFrontend.Parsing
             inInfo.Message = savedMessage;
 
             // TokenType.ArrayDef is for array creation with ini values
-            if (CheckToken(TokenType.OpenBracket) || CheckToken(TokenType.ArrayDef)) // array creation
+            if (CheckToken(inInfo, TokenType.OpenBracket) || CheckToken(inInfo, TokenType.ArrayDef)) // array creation
             {
                 if (type is not AstExpression expr)
                 {
                     ReportMessage(type.Location, [], ErrorCode.Get(CTEN.TypeNameNotExpr));
-                    return ParseEmptyExpression();
+                    return ParseEmptyExpression(inInfo);
                 }
                 return ParseArrayExpr(inInfo, ref outInfo, expr, beg, isUnsafeNew, isStackAlloc);
             }
-            else if (CheckToken(TokenType.OpenParen)) // probably class instance creation
+            else if (CheckToken(inInfo, TokenType.OpenParen)) // probably class instance creation
             {
                 if (type is not AstNestedExpr nestExpr)
                 {
                     ReportMessage(type.Location, [], ErrorCode.Get(CTEN.TypeNameUnexpected));
-                    return ParseEmptyExpression();
+                    return ParseEmptyExpression(inInfo);
                 }
                 var args = ParseArgumentList(inInfo, ref outInfo, out var _, out var end);
                 return new AstNewExpr(nestExpr, args, new Location(beg, end)) { IsUnsafeNew = isUnsafeNew };
             }
 
             // error here that unexpected token .. after typeName
-            ReportMessage(PeekToken().Location, [], ErrorCode.Get(CTEN.TypeNameUnexpectedAfter));
-            return ParseEmptyExpression();
+            ReportMessage(PeekToken(inInfo).Location, [], ErrorCode.Get(CTEN.TypeNameUnexpectedAfter));
+            return ParseEmptyExpression(inInfo);
         }
     }
 }

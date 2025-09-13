@@ -17,20 +17,20 @@ namespace HapetFrontend.Parsing
             AstStatement third = null;
             AstBlockExpr body;
 
-            var beg = Consume(TokenType.KwFor, ErrMsg("keyword 'for'", "at beginning of 'for' loop"));
+            var beg = Consume(inInfo, TokenType.KwFor, ErrMsg("keyword 'for'", "at beginning of 'for' loop"));
 
             // parse arguments
-            Consume(TokenType.OpenParen, ErrMsg("'('", "at the begining of 'for' loop statement"));
+            Consume(inInfo, TokenType.OpenParen, ErrMsg("'('", "at the begining of 'for' loop statement"));
 
             // if there is a first param
-            if (!CheckToken(TokenType.Semicolon))
+            if (!CheckToken(inInfo, TokenType.Semicolon))
             {
                 first = ParseStatement(inInfo, ref outInfo);
             }
-            Consume(TokenType.Semicolon, ErrMsg("';'", "after the first argument"));
+            Consume(inInfo, TokenType.Semicolon, ErrMsg("';'", "after the first argument"));
 
             // if there is a second param
-            if (!CheckToken(TokenType.Semicolon))
+            if (!CheckToken(inInfo, TokenType.Semicolon))
             {
                 var expr = ParseExpression(inInfo, ref outInfo);
 
@@ -38,14 +38,14 @@ namespace HapetFrontend.Parsing
                     ReportMessage(expr, [], ErrorCode.Get(CTEN.ForLoopSecondNotExpr));
                 second = expr as AstExpression;
             }
-            Consume(TokenType.Semicolon, ErrMsg("';'", "after the second argument"));
+            Consume(inInfo, TokenType.Semicolon, ErrMsg("';'", "after the second argument"));
 
             // if there is a third param
-            if (!CheckToken(TokenType.CloseParen))
+            if (!CheckToken(inInfo, TokenType.CloseParen))
             {
                 third = ParseStatement(inInfo, ref outInfo);
             }
-            var end = Consume(TokenType.CloseParen, ErrMsg("')'", "after the third argument"));
+            var end = Consume(inInfo, TokenType.CloseParen, ErrMsg("')'", "after the third argument"));
 
             body = GetLoopOrCondBlock(inInfo, ref outInfo);
 
@@ -57,13 +57,13 @@ namespace HapetFrontend.Parsing
             AstExpression condition = null;
             AstBlockExpr body;
 
-            var beg = Consume(TokenType.KwWhile, ErrMsg("keyword 'while'", "at beginning of 'while' loop"));
+            var beg = Consume(inInfo, TokenType.KwWhile, ErrMsg("keyword 'while'", "at beginning of 'while' loop"));
 
             // parse arguments
-            Consume(TokenType.OpenParen, ErrMsg("'('", "at the begining of 'while' loop statement"));
+            Consume(inInfo, TokenType.OpenParen, ErrMsg("'('", "at the begining of 'while' loop statement"));
 
             // if there is a condition param
-            if (!CheckToken(TokenType.CloseParen))
+            if (!CheckToken(inInfo, TokenType.CloseParen))
             {
                 var expr = ParseExpression(inInfo, ref outInfo);
 
@@ -72,8 +72,8 @@ namespace HapetFrontend.Parsing
                 condition = expr as AstExpression;
             }
             else
-                ReportMessage(PeekToken().Location, [], ErrorCode.Get(CTEN.WhileLoopNoCondition));
-            var end = Consume(TokenType.CloseParen, ErrMsg("')'", "after the condition"));
+                ReportMessage(PeekToken(inInfo).Location, [], ErrorCode.Get(CTEN.WhileLoopNoCondition));
+            var end = Consume(inInfo, TokenType.CloseParen, ErrMsg("')'", "after the condition"));
 
             body = GetLoopOrCondBlock(inInfo, ref outInfo);
 
@@ -85,19 +85,19 @@ namespace HapetFrontend.Parsing
             AstExpression condition = null;
             AstBlockExpr body;
 
-            var beg = Consume(TokenType.KwDo, ErrMsg("keyword 'do'", "at beginning of 'do-while' loop"));
+            var beg = Consume(inInfo, TokenType.KwDo, ErrMsg("keyword 'do'", "at beginning of 'do-while' loop"));
 
             // parse its body
             body = GetLoopOrCondBlock(inInfo, ref outInfo);
 
-            SkipNewlines();
-            Consume(TokenType.KwWhile, ErrMsg("keyword 'while'", "at the end of 'do-while' loop"));
+            SkipNewlines(inInfo);
+            Consume(inInfo, TokenType.KwWhile, ErrMsg("keyword 'while'", "at the end of 'do-while' loop"));
 
             // parse arguments
-            Consume(TokenType.OpenParen, ErrMsg("'('", "at the begining of 'while' keyword"));
+            Consume(inInfo, TokenType.OpenParen, ErrMsg("'('", "at the begining of 'while' keyword"));
 
             // if there is a condition param
-            if (!CheckToken(TokenType.CloseParen))
+            if (!CheckToken(inInfo, TokenType.CloseParen))
             {
                 var expr = ParseExpression(inInfo, ref outInfo);
 
@@ -106,29 +106,29 @@ namespace HapetFrontend.Parsing
                 condition = expr as AstExpression;
             }
             else
-                ReportMessage(PeekToken().Location, [], ErrorCode.Get(CTEN.WhileLoopNoCondition));
-            var end = Consume(TokenType.CloseParen, ErrMsg("')'", "after the condition"));
+                ReportMessage(PeekToken(inInfo).Location, [], ErrorCode.Get(CTEN.WhileLoopNoCondition));
+            var end = Consume(inInfo, TokenType.CloseParen, ErrMsg("')'", "after the condition"));
 
             return new AstDoWhileStmt(condition, body, new Location(beg.Location, end.Location));
         }
 
         private AstBlockExpr GetLoopOrCondBlock(ParserInInfo inInfo, ref ParserOutInfo outInfo)
         {
-            SkipNewlines();
+            SkipNewlines(inInfo);
 
             AstBlockExpr body;
             // parsing the block
-            if (CheckToken(TokenType.OpenBrace))
+            if (CheckToken(inInfo, TokenType.OpenBrace))
             {
                 body = ParseBlockExpression(inInfo, ref outInfo);
             }
-            else if (CheckToken(TokenType.Semicolon))
+            else if (CheckToken(inInfo, TokenType.Semicolon))
             {
                 // check if there is not only a '{' but could be a ';'
                 // because exprs like 'while (false) ;' should also be handled
                 // if there is no '{' just create an empty block
-                NextToken();
-                body = new AstBlockExpr(new List<AstStatement>(), PeekToken().Location);
+                NextToken(inInfo);
+                body = new AstBlockExpr(new List<AstStatement>(), PeekToken(inInfo).Location);
             }
             else
             {
@@ -137,7 +137,7 @@ namespace HapetFrontend.Parsing
                 body = new AstBlockExpr(new List<AstStatement>() { onlyStmt }, onlyStmt);
 
                 // try eat semicolon or error
-                CheckSemicolonAfterStmt(onlyStmt);
+                CheckSemicolonAfterStmt(inInfo, onlyStmt);
 
                 if (outInfo.StatementsToAddBefore.Count > 0)
                 {

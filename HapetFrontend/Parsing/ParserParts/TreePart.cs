@@ -540,7 +540,7 @@ namespace HapetFrontend.Parsing
                             if (args.Count == 0)
                             {
                                 ReportMessage(end, [], ErrorCode.Get(CTEN.ArrayAccNoArgs));
-                                args.Add(ParseEmptyExpression());
+                                args.Add(ParseEmptyExpression(inInfo));
                             }
                             else if (args.Count > 1)
                             {
@@ -757,7 +757,7 @@ namespace HapetFrontend.Parsing
                         // need to check for => after the id - if it there - it is a lambda
                         var saved = inInfo.IsLookAheadParsing;
                         inInfo.IsLookAheadParsing = true;
-                        var _ = ParseIdentifierExpression(inInfo, lookAhead: true, allowDots: false, allowGenerics: false, expectIdent: true);
+                        var _ = ParseIdentifierExpression(inInfo, allowDots: false, allowGenerics: false, expectIdent: true);
                         if (CheckToken(inInfo, TokenType.Arrow))
                         {
                             inInfo.IsLookAheadParsing = saved;
@@ -866,7 +866,7 @@ namespace HapetFrontend.Parsing
                         inInfo.Message = new MessageResolver() { MessageArgs = [token.Type.ToString(), token.Data.ToString()], XmlMessage = ErrorCode.Get(CTEN.CommonFailToParse) };
                     ReportMessage(token.Location, inInfo.Message.MessageArgs, inInfo.Message.XmlMessage);
                     NextToken(inInfo); // skip the token :)
-                    return ParseEmptyExpression();
+                    return ParseEmptyExpression(inInfo);
             }
         }
     }

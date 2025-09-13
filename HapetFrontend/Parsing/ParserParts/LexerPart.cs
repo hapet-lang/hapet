@@ -9,9 +9,9 @@ namespace HapetFrontend.Parsing
     public partial class Parser
     {
         [DebuggerStepThrough]
-        private (TokenLocation beg, TokenLocation end) GetWhitespaceLocation()
+        private (TokenLocation beg, TokenLocation end) GetWhitespaceLocation(ParserInInfo inInfo)
         {
-            var end = _lexer.PeekToken().Location;
+            var end = PeekToken(inInfo).Location;
             return (new TokenLocation
             {
                 File = end.File,
@@ -28,7 +28,7 @@ namespace HapetFrontend.Parsing
         {
             while (true)
             {
-                var tok = _lexer.PeekToken();
+                var tok = PeekToken(inInfo);
 
                 switch (tok.Type)
                 {

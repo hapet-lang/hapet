@@ -20,21 +20,21 @@ namespace HapetFrontend.Parsing
             bool isInterface = false;
 
             // check if it is an interface decl
-            if (CheckToken(TokenType.KwClass))
+            if (CheckToken(inInfo, TokenType.KwClass))
             {
-                beg = Consume(TokenType.KwClass, ErrMsg("keyword 'class'", "at beginning of class type")).Location;
+                beg = Consume(inInfo, TokenType.KwClass, ErrMsg("keyword 'class'", "at beginning of class type")).Location;
             }
             else
             {
-                beg = Consume(TokenType.KwInterface, ErrMsg("keyword 'interface'", "at beginning of interface type")).Location;
+                beg = Consume(inInfo, TokenType.KwInterface, ErrMsg("keyword 'interface'", "at beginning of interface type")).Location;
                 isInterface = true;
             }
 
             // class name
-            if (!CheckToken(TokenType.Identifier))
+            if (!CheckToken(inInfo, TokenType.Identifier))
             {
                 // better error location
-                ReportMessage(PeekToken().Location, [], ErrorCode.Get(CTEN.ClassNameExpected));
+                ReportMessage(PeekToken(inInfo).Location, [], ErrorCode.Get(CTEN.ClassNameExpected));
             }
             else
             {
@@ -55,19 +55,19 @@ namespace HapetFrontend.Parsing
             }
 
             // checking for inheritance
-            if (CheckToken(TokenType.Colon))
+            if (CheckToken(inInfo, TokenType.Colon))
             {
-                Consume(TokenType.Colon, ErrMsg(":", "before inherited types"));
-                SkipNewlines();
+                Consume(inInfo, TokenType.Colon, ErrMsg(":", "before inherited types"));
+                SkipNewlines(inInfo);
 
-                while (CheckToken(TokenType.Identifier))
+                while (CheckToken(inInfo, TokenType.Identifier))
                 {
                     var ident = ParseIdentifierExpression(inInfo, allowGenerics: true);
                     inherited.Add(ident);
                     // if there is something else
-                    if (CheckToken(TokenType.Comma))
+                    if (CheckToken(inInfo, TokenType.Comma))
                     {
-                        Consume(TokenType.Comma, ErrMsg(",", "before the next inherited type"));
+                        Consume(inInfo, TokenType.Comma, ErrMsg(",", "before the next inherited type"));
                         continue;
                     }
 
@@ -75,7 +75,7 @@ namespace HapetFrontend.Parsing
                     break;
                 }
             }
-            SkipNewlines();
+            SkipNewlines(inInfo);
 
             // parsing constrains
             var genericConstrains = ParseGenericConstrains(generics);
@@ -83,13 +83,13 @@ namespace HapetFrontend.Parsing
             // the decl (declared here because it would be used)
             var classDecl = new AstClassDecl(className, declarations, "", null);
 
-            ConsumeUntil(TokenType.OpenBrace, ErrMsg("{", "at beginning of class body"), true);
+            ConsumeUntil(inInfo, TokenType.OpenBrace, ErrMsg("{", "at beginning of class body"), true);
 
             Token next;
-            SkipNewlines();
+            SkipNewlines(inInfo);
             while (true)
             {
-                next = PeekToken();
+                next = PeekToken(inInfo);
                 if (next.Type == TokenType.CloseBrace || next.Type == TokenType.EOF)
                     break;
 
@@ -100,7 +100,7 @@ namespace HapetFrontend.Parsing
                 if (HandleStatement(decl, inInfo, ref outInfo))
                     break;
             }
-            end = Consume(TokenType.CloseBrace, ErrMsg("}", "at end of declaration")).Location;
+            end = Consume(inInfo, TokenType.CloseBrace, ErrMsg("}", "at end of declaration")).Location;
 
             if (isInterface)
             {
@@ -149,10 +149,10 @@ namespace HapetFrontend.Parsing
                 declarations.Add(realDecl);
                 realDecl.ContainingParent = classDecl;
 
-                next = PeekToken();
+                next = PeekToken(inInfo);
                 if (next.Type == TokenType.NewLine)
                 {
-                    SkipNewlines();
+                    SkipNewlines(inInfo);
                 }
                 else if (next.Type == TokenType.CloseBrace || next.Type == TokenType.EOF)
                 {
@@ -161,8 +161,8 @@ namespace HapetFrontend.Parsing
                 else if (decl is AstVarDecl && next.Type == TokenType.Semicolon)
                 {
                     // it is just a ';' at the end of class field
-                    NextToken();
-                    SkipNewlines();
+                    NextToken(inInfo);
+                    SkipNewlines(inInfo);
                 }
                 return false;
             }

@@ -17,7 +17,7 @@ namespace HapetFrontend.Parsing
             {
                 parameters = ParseParameterList(inInfo, ref outInfo, TokenType.OpenParen, TokenType.CloseParen, out var beg, out var end, true);
                 paramsLocation = new Location(beg, end);
-                SkipNewlines();
+                SkipNewlines(inInfo);
             }
 
             AstBlockExpr body = null;
@@ -31,16 +31,16 @@ namespace HapetFrontend.Parsing
                 generics = GenericsHelper.GetGenericsFromName(genExpr, _messageHandler);
             }
 
-            SkipNewlines();
+            SkipNewlines(inInfo);
 
             // check for base ctor call
-            if (CheckToken(TokenType.Colon))
+            if (CheckToken(inInfo, TokenType.Colon))
             {
-                NextToken();
-                SkipNewlines();
-                if (CheckToken(TokenType.KwBase))
+                NextToken(inInfo);
+                SkipNewlines(inInfo);
+                if (CheckToken(inInfo, TokenType.KwBase))
                 {
-                    var bsTkn = Consume(TokenType.KwBase, ErrMsg("'base'", "after ':'"));
+                    var bsTkn = Consume(inInfo, TokenType.KwBase, ErrMsg("'base'", "after ':'"));
                     var args = ParseArgumentList(inInfo, ref outInfo, out var _, out var end);
                     baseCtorCall = new AstBaseCtorStmt(args, new Location(bsTkn.Location, end));
                 }
@@ -61,16 +61,16 @@ namespace HapetFrontend.Parsing
             // parsing constrains
             var genericConstrains = ParseGenericConstrains(generics);
 
-            SkipNewlines();
+            SkipNewlines(inInfo);
 
             var theFunc = new AstFuncDecl(parameters, null, null, null);
 
             // allow nested func decls
             inInfo.AllowNestedFunc = true;
             inInfo.ParentFuncDecl = theFunc;
-            if (CheckToken(TokenType.Semicolon))
-                NextToken(); // do nothing
-            else if (CheckToken(TokenType.Arrow))
+            if (CheckToken(inInfo, TokenType.Semicolon))
+                NextToken(inInfo); // do nothing
+            else if (CheckToken(inInfo, TokenType.Arrow))
                 body = ParseFunctionArrow(inInfo, ref outInfo, isReturnVoid);
             else
                 body = ParseBlockExpression(inInfo, ref outInfo);
@@ -89,7 +89,7 @@ namespace HapetFrontend.Parsing
 
         private AstBlockExpr ParseFunctionArrow(ParserInInfo inInfo, ref ParserOutInfo outInfo, bool isReturnVoid)
         {
-            NextToken();
+            NextToken(inInfo);
 
             // getting only one stmt if there are no braces
             var onlyStmt = ParseStatement(inInfo, ref outInfo);
@@ -105,7 +105,7 @@ namespace HapetFrontend.Parsing
             var body = new AstBlockExpr(new List<AstStatement>() { onlyStmt }, onlyStmt);
 
             // try eat semicolon or error
-            CheckSemicolonAfterStmt(onlyStmt);
+            CheckSemicolonAfterStmt(inInfo, onlyStmt);
             return body;
         }
     }

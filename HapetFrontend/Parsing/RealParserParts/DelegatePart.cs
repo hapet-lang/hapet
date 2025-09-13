@@ -16,13 +16,13 @@ namespace HapetFrontend.Parsing
             AstNestedExpr returnType = null;
             AstIdExpr delegateName = null;
             var generics = new List<AstIdExpr>();
-            var beg = Consume(TokenType.KwDelegate, ErrMsg("keyword 'delegate'", "at beginning of delegate type")).Location;
+            var beg = Consume(inInfo, TokenType.KwDelegate, ErrMsg("keyword 'delegate'", "at beginning of delegate type")).Location;
 
             // return type
-            if (!CheckToken(TokenType.Identifier))
+            if (!CheckToken(inInfo, TokenType.Identifier))
             {
                 // better error location
-                ReportMessage(PeekToken().Location, [], ErrorCode.Get(CTEN.NoReturnTypeInDelegDecl));
+                ReportMessage(PeekToken(inInfo).Location, [], ErrorCode.Get(CTEN.NoReturnTypeInDelegDecl));
             }
             else
             {
@@ -30,10 +30,10 @@ namespace HapetFrontend.Parsing
             }
 
             // class name
-            if (!CheckToken(TokenType.Identifier))
+            if (!CheckToken(inInfo, TokenType.Identifier))
             {
                 // better error location
-                ReportMessage(PeekToken().Location, [], ErrorCode.Get(CTEN.NoDelegNameAfterReturnType));
+                ReportMessage(PeekToken(inInfo).Location, [], ErrorCode.Get(CTEN.NoDelegNameAfterReturnType));
             }
             else
             {
@@ -55,7 +55,7 @@ namespace HapetFrontend.Parsing
 
             TokenLocation end;
             var parameters = ParseParameterList(inInfo, ref outInfo, TokenType.OpenParen, TokenType.CloseParen, out var pbeg, out end, true);
-            SkipNewlines();
+            SkipNewlines(inInfo);
 
             // parsing constrains
             var genericConstrains = ParseGenericConstrains(generics);

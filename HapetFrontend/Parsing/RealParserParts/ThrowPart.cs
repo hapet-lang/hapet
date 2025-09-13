@@ -12,8 +12,8 @@ namespace HapetFrontend.Parsing
         {
             TokenLocation beg = null;
 
-            beg = Consume(TokenType.KwThrow, ErrMsg("keyword 'throw'", "at beginning of 'throw' statement")).Location;
-            SkipNewlines();
+            beg = Consume(inInfo, TokenType.KwThrow, ErrMsg("keyword 'throw'", "at beginning of 'throw' statement")).Location;
+            SkipNewlines(inInfo);
 
             var savedMessage = inInfo.Message;
             inInfo.Message = ErrMsg("'new' expression", "after keyword 'throw'");
@@ -26,7 +26,7 @@ namespace HapetFrontend.Parsing
             if ((expr is not AstExpression && expr is not AstEmptyStmt))
             {
                 ReportMessage(expr.Location, [], ErrorCode.Get(CTEN.NewExprExpectedAfterThrow));
-                return ParseEmptyExpression();
+                return ParseEmptyExpression(inInfo);
             }
 
             return new AstThrowStmt(expr as AstExpression, new Location(beg));

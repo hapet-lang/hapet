@@ -18,14 +18,14 @@ namespace HapetFrontend.Parsing
             AstNestedExpr attrName = null;
             List<AstArgumentExpr> args = new List<AstArgumentExpr>();
 
-            beg = Consume(TokenType.OpenBracket, ErrMsg("token '['", "at beginning of attribute statement")).Location;
-            SkipNewlines();
+            beg = Consume(inInfo, TokenType.OpenBracket, ErrMsg("token '['", "at beginning of attribute statement")).Location;
+            SkipNewlines(inInfo);
 
             // attr name
-            if (!CheckToken(TokenType.Identifier))
+            if (!CheckToken(inInfo, TokenType.Identifier))
             {
                 // better error location
-                ReportMessage(PeekToken().Location, [], ErrorCode.Get(CTEN.AttrNameExpected));
+                ReportMessage(PeekToken(inInfo).Location, [], ErrorCode.Get(CTEN.AttrNameExpected));
             }
             else
             {
@@ -33,12 +33,12 @@ namespace HapetFrontend.Parsing
             }
 
             // parsing attr args
-            if (CheckToken(TokenType.OpenParen))
+            if (CheckToken(inInfo, TokenType.OpenParen))
             {
                 args = ParseArgumentList(inInfo, ref outInfo, out var _, out var _);
             }
 
-            end = Consume(TokenType.CloseBracket, ErrMsg("token ']'", "at the end of attribute statement")).Location;
+            end = Consume(inInfo, TokenType.CloseBracket, ErrMsg("token ']'", "at the end of attribute statement")).Location;
 
             return new AstAttributeStmt(attrName, args, new Location(beg, end));
         }

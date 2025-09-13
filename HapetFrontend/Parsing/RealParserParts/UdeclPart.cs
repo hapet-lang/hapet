@@ -27,7 +27,7 @@ namespace HapetFrontend.Parsing
 
             // this is possible when function return type is fully named tuple
             // like: public static (int a, int b) SomeFunc() ...
-            if (isFullyNamedTuple && CheckToken(TokenType.Identifier) && udecl.Name == null)
+            if (isFullyNamedTuple && CheckToken(inInfo, TokenType.Identifier) && udecl.Name == null)
             {
                 /// WARN: same as in <see cref="ParseAtomicExpression"/>
                 // allowDots is true because of explicit interface impls
@@ -40,9 +40,9 @@ namespace HapetFrontend.Parsing
                 udecl.Name = name.RightPart as AstIdExpr;
             }
 
-            if (CheckToken(TokenType.Equal) && (udecl.Name != null || isFullyNamedTuple))
+            if (CheckToken(inInfo, TokenType.Equal) && (udecl.Name != null || isFullyNamedTuple))
             {
-                NextToken();
+                NextToken(inInfo);
                 initializer = ParseExpression(inInfo, ref outInfo);
                 end = initializer.Ending;
 
@@ -108,10 +108,10 @@ namespace HapetFrontend.Parsing
                 return varDecl;
             }
             // assing to var
-            else if (CheckTokens(TokenType.Equal, TokenType.AddEq, TokenType.SubEq, TokenType.MulEq, 
+            else if (CheckTokens(inInfo, TokenType.Equal, TokenType.AddEq, TokenType.SubEq, TokenType.MulEq, 
                 TokenType.DivEq, TokenType.ModEq, TokenType.HatEq, TokenType.CoalesceEq) && udecl.Name == null)
             {
-                var currT = NextToken();
+                var currT = NextToken(inInfo);
                 var x = currT.Type;
                 string op = null;
                 switch (x)
@@ -124,7 +124,7 @@ namespace HapetFrontend.Parsing
                     case TokenType.HatEq: op = "^"; break;
                     case TokenType.CoalesceEq: op = "??"; break;
                 }
-                SkipNewlines();
+                SkipNewlines(inInfo);
 
                 var saved = inInfo.AllowMultiplyExpression;
                 inInfo.AllowMultiplyExpression = true;
@@ -168,7 +168,7 @@ namespace HapetFrontend.Parsing
                 }
             }
             // variable declaration without initializer
-            else if (CheckToken(TokenType.Semicolon) && udecl.Name != null)
+            else if (CheckToken(inInfo, TokenType.Semicolon) && udecl.Name != null)
             {
                 // do not get the next token
                 var varDecl = new AstVarDecl(udecl.Type, udecl.Name, null, udecl.Documentation, new Location(udecl.Beginning, end));
@@ -181,7 +181,7 @@ namespace HapetFrontend.Parsing
                 return varDecl;
             }
             // func declaration 
-            else if (CheckToken(TokenType.OpenParen))
+            else if (CheckToken(inInfo, TokenType.OpenParen))
             {
                 bool isVoidType = udecl.Name == null || (udecl.Type is AstNestedExpr nst2 && nst2.RightPart is AstIdExpr idE && idE.Name == "void");
 
@@ -209,7 +209,7 @@ namespace HapetFrontend.Parsing
                 return func;
             }
             // properties 
-            else if (CheckToken(TokenType.OpenBrace) || CheckToken(TokenType.Arrow))
+            else if (CheckToken(inInfo, TokenType.OpenBrace) || CheckToken(inInfo, TokenType.Arrow))
             {
                 var prop = PreparePropertyDecl(udecl, udecl.Documentation, inInfo, ref outInfo);
                 prop.Attributes.AddRange(attrs);
@@ -218,14 +218,14 @@ namespace HapetFrontend.Parsing
                 return prop;
             }
             // indexer?
-            else if (CheckToken(TokenType.OpenBracket) && udecl.Name.Name == "this")
+            else if (CheckToken(inInfo, TokenType.OpenBracket) && udecl.Name.Name == "this")
             {
-                Consume(TokenType.OpenBracket, ErrMsg("symbol '['", "at beginning of indexer param declaration"));
+                Consume(inInfo, TokenType.OpenBracket, ErrMsg("symbol '['", "at beginning of indexer param declaration"));
                 var par = ParseParameter(inInfo, ref outInfo, false); // no default value for indexer
-                var a = PeekToken();
-                Consume(TokenType.CloseBracket, ErrMsg("symbol ']'", "at ending of indexer param declaration"));
+                var a = PeekToken(inInfo);
+                Consume(inInfo, TokenType.CloseBracket, ErrMsg("symbol ']'", "at ending of indexer param declaration"));
 
-                SkipNewlines();
+                SkipNewlines(inInfo);
                 udecl.Name = udecl.Name.GetCopy("indexer__");
                 var prop = PreparePropertyDecl(udecl, "", inInfo, ref outInfo) as AstPropertyDecl;
                 var indexer = new AstIndexerDecl(prop);
@@ -234,7 +234,7 @@ namespace HapetFrontend.Parsing
                 return indexer;
             }
             // operator overloads
-            else if (CheckToken(TokenType.KwOperator))
+            else if (CheckToken(inInfo, TokenType.KwOperator))
             {
                 // possible operator override
                 var result = ParseOperatorOverride(inInfo, ref outInfo, udecl);
@@ -251,7 +251,7 @@ namespace HapetFrontend.Parsing
                 return udecl.Type;
             }
 
-            ReportMessage(PeekToken().Location, [], ErrorCode.Get(CTEN.PureUnexpectedToken)); // better error message?
+            ReportMessage(PeekToken(inInfo).Location, [], ErrorCode.Get(CTEN.PureUnexpectedToken)); // better error message?
             OnExit();
             return udecl;
 

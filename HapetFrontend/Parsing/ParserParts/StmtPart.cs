@@ -13,8 +13,8 @@ namespace HapetFrontend.Parsing
         {
             AstStatement toReturn = null;
 
-            SkipNewlines();
-            var token = PeekToken();
+            SkipNewlines(inInfo);
+            var token = PeekToken(inInfo);
             switch (token.Type)
             {
                 case TokenType.EOF:
@@ -58,7 +58,7 @@ namespace HapetFrontend.Parsing
 
                 case TokenType.KwContinue:
                 case TokenType.KwBreak:
-                    NextToken();
+                    NextToken(inInfo);
                     toReturn = new AstBreakContStmt(token.Type == TokenType.KwBreak, new Location(token.Location));
                     break;
 
@@ -85,7 +85,7 @@ namespace HapetFrontend.Parsing
                             stmt = ParseAtomicExpression(inInfo, ref outInfo);
                         else
                             stmt = ParseExpression(inInfo, ref outInfo);
-                        SkipNewlines();
+                        SkipNewlines(inInfo);
                         inInfo.AllowTypedTuple = saved4;
 
                         // change to udecl like it was previously
@@ -104,7 +104,7 @@ namespace HapetFrontend.Parsing
                         // further preparations
                         if (stmt is AstEmptyStmt)
                         {
-                            NextToken();
+                            NextToken(inInfo);
                             toReturn = stmt;
                         }
                         else if (stmt is AstUnknownDecl udecl)
@@ -120,7 +120,7 @@ namespace HapetFrontend.Parsing
             }
 
             // skip unneeded
-            SkipNewlines();
+            SkipNewlines(inInfo);
 
             return toReturn;
         }
