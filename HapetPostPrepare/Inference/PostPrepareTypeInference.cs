@@ -431,6 +431,9 @@ namespace HapetPostPrepare
                 case AstLambdaExpr lambdaExpr:
                     PostPrepareLambdaExprInference(lambdaExpr, inInfo, ref outInfo);
                     break;
+                case AstNullableExpr nullableExpr:
+                    PostPrepareNullableExprInference(nullableExpr, inInfo, ref outInfo);
+                    break;
                 case AstStringExpr stringExpr:
                     stringExpr.OutType = HapetType.CurrentTypeContext.StringTypeInstance;
                     break;
@@ -1260,6 +1263,19 @@ namespace HapetPostPrepare
         {
             // should not be inferenced here !!!
             /// inferenced in <see cref="PostPrepareLambdaWithType"/>
+        }
+
+        private void PostPrepareNullableExprInference(AstNullableExpr expr, InInfo inInfo, ref OutInfo outInfo)
+        {
+            PostPrepareExprInference(expr.SubExpression, inInfo, ref outInfo);
+            if (expr.SubExpression.OutType is not StructType strT)
+            {
+                _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, expr.SubExpression, [], ErrorCode.Get(CTEN.NullableNotStruct));
+                return;
+            }
+            var nullableType = new NullableType(strT.Declaration);
+            nullableType.Declaration = HapetType.CurrentTypeContext.NullableTypeInstance.Declaration;
+            expr.OutType = nullableType;
         }
 
         // statements

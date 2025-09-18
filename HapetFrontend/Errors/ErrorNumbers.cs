@@ -219,6 +219,7 @@
         GotoLabelNotFoundInCases        = 0x3062,
         StackAllocOnly1DArray           = 0x3063,
         StackAllocOnlyStructs           = 0x3064,
+        NullableNotStruct               = 0x3065,
 
         // compiler errors up to 0x6000
         DefaultWasNotInfered            = 0x5001,

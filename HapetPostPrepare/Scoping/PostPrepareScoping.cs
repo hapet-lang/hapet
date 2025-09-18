@@ -542,6 +542,9 @@ namespace HapetPostPrepare
                 case AstLambdaExpr lambdaExpr:
                     PostPrepareLambdaExprScoping(lambdaExpr);
                     break;
+                case AstNullableExpr nullableExpr:
+                    PostPrepareNullableExprScoping(nullableExpr);
+                    break;
 
                 // statements
                 case AstAssignStmt assignStmt:
@@ -842,6 +845,12 @@ namespace HapetPostPrepare
                 SetScopeAndParent(lambdaExpr.Returns, lambdaExpr, blockScope);
                 PostPrepareExprScoping(lambdaExpr.Returns);
             }
+        }
+
+        private void PostPrepareNullableExprScoping(AstNullableExpr expr)
+        {
+            SetScopeAndParent(expr.SubExpression, expr);
+            PostPrepareExprScoping(expr.SubExpression);
         }
 
         // statements

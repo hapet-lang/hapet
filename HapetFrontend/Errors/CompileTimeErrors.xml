@@ -844,6 +844,10 @@
         <Number>3064</Number>
         <Text>Only struct types could be used in 'stackalloc'</Text>
     </Item>
+    <Item>
+      <Number>3065</Number>
+      <Text>Only struct types allowed as nullable</Text>
+    </Item>
 
     <!--Compiler errors-->
     <Item>

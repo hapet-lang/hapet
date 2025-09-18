@@ -28,6 +28,11 @@ namespace HapetPostPrepare
                 decl.Type.OutType = HapetType.CurrentTypeContext.TypeTypeInstance;
                 HapetType.CurrentTypeContext.TypeTypeInstance.Declaration = decl as AstStructDecl;
             }
+            else if (typeName.Name == "System.Nullable")
+            {
+                decl.Type.OutType = HapetType.CurrentTypeContext.NullableTypeInstance;
+                HapetType.CurrentTypeContext.NullableTypeInstance.Declaration = decl as AstStructDecl;
+            }
             else if (typeName.Name == "System.Delegate")
             {
                 decl.Type.OutType = HapetType.CurrentTypeContext.DelegateTypeInstance;
