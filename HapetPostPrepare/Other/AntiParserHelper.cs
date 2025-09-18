@@ -142,6 +142,9 @@ namespace HapetPostPrepare
                 case AstSATOfExpr satExpr:
                     AntiParseSATExpr(satExpr, sb, offset);
                     break;
+                case AstNullableExpr nullableExpr:
+                    AntiParseNullableExpr(nullableExpr, sb, offset);
+                    break;
 
                 // statements
                 case AstAssignStmt assignStmt:
@@ -441,6 +444,12 @@ namespace HapetPostPrepare
             sb.Append('(');
             AntiParseExpr(satExpr.TargetType, sb, offset);
             sb.Append(')');
+        }
+
+        private void AntiParseNullableExpr(AstNullableExpr expr, StringBuilder sb, string offset)
+        {
+            AntiParseExpr(expr.SubExpression, sb, offset);
+            sb.Append('?');
         }
 
         public void AntiParseAssignStmt(AstAssignStmt assignStmt, StringBuilder sb, string offset)

@@ -325,6 +325,9 @@ namespace HapetPostPrepare
                 case AstSATOfExpr satExpr:
                     ReplaceAllGenericTypesInSATExpr(satExpr);
                     break;
+                case AstNullableExpr nullableExpr:
+                    ReplaceAllGenericTypesInNullableExpr(nullableExpr);
+                    break;
                 case AstEmptyExpr:
                     break;
 
@@ -595,6 +598,11 @@ namespace HapetPostPrepare
         private void ReplaceAllGenericTypesInSATExpr(AstSATOfExpr satExpr)
         {
             ReplaceAllGenericTypesInNestedExpr(satExpr.TargetType);
+        }
+
+        private void ReplaceAllGenericTypesInNullableExpr(AstNullableExpr expr)
+        {
+            ReplaceAllGenericTypesInExpr(expr.SubExpression);
         }
 
         // statements
