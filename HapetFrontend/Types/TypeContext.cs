@@ -19,6 +19,18 @@ namespace HapetFrontend.Types
         public IntPtrType IntPtrTypeInstance { get; private set; } = new IntPtrType(null);
         public PtrDiffType PtrDiffTypeInstance { get; private set; } = new PtrDiffType(null);
         public StructType DelegateTypeInstance { get; private set; } = new StructType(null);
+        public Dictionary<HapetType, NullableType> NullableTypeInstances { get; private set; } = new Dictionary<HapetType, NullableType>();
+        public NullableType GetNullableType(HapetType targetType)
+        {
+            var key = targetType;
+            if (NullableTypeInstances.TryGetValue(key, out NullableType value))
+            {
+                return value;
+            }
+            NullableType empty = new NullableType(targetType);
+            NullableTypeInstances[targetType] = empty;
+            return empty;
+        }
         public Dictionary<HapetType, ArrayType> ArrayTypeInstances { get; private set; } = new Dictionary<HapetType, ArrayType>();
         public ArrayType GetArrayType(HapetType targetType)
         {

@@ -1268,13 +1268,12 @@ namespace HapetPostPrepare
         private void PostPrepareNullableExprInference(AstNullableExpr expr, InInfo inInfo, ref OutInfo outInfo)
         {
             PostPrepareExprInference(expr.SubExpression, inInfo, ref outInfo);
-            if (expr.SubExpression.OutType is not StructType strT)
+            if (expr.SubExpression.OutType is not StructType)
             {
                 _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, expr.SubExpression, [], ErrorCode.Get(CTEN.NullableNotStruct));
                 return;
             }
-            var nullableType = new NullableType(strT.Declaration);
-            nullableType.Declaration = HapetType.CurrentTypeContext.NullableTypeInstance.Declaration;
+            var nullableType = GetNullableType(expr.SubExpression, expr);
             expr.OutType = nullableType;
         }
 

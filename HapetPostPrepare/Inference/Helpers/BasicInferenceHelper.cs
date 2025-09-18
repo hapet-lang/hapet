@@ -149,11 +149,24 @@ namespace HapetPostPrepare
 
                 var arrT = HapetType.CurrentTypeContext.GetArrayType(targetType);
                 // set decl if newly created
-                if (arrT.Declaration == null)
-                    arrT.Declaration = structDecl;
+                arrT.Declaration ??= structDecl;
                 idExpr.OutType = arrT;
 
                 decl.Type.OutType = arrT;
+            }
+            // special handle for nullable type
+            else if (decl.Name is AstIdGenericExpr genId2 && genId2.Name == "System.Nullable")
+            {
+                var targetType = genId2.GenericRealTypes[0].OutType;
+                if (targetType == null)
+                    return;
+
+                var nullT = HapetType.CurrentTypeContext.GetNullableType(targetType);
+                // set decl if newly created
+                nullT.Declaration ??= structDecl;
+                idExpr.OutType = nullT;
+
+                decl.Type.OutType = nullT;
             }
             else if (decl.Name.Name == "System.Void")
             {

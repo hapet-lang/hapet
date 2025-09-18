@@ -258,7 +258,7 @@ namespace HapetFrontend.Types
     {
         public override string TypeName => "nullable";
 
-        public AstStructDecl TargetDeclaration { get; set; }
+        public HapetType TargetType { get; set; }
 
         public override AstExpression GetAst(AstExpression iniExpr = null)
         {
@@ -270,10 +270,10 @@ namespace HapetFrontend.Types
             };
         }
 
-        public NullableType(AstStructDecl targetDecl)
+        public NullableType(HapetType targetType)
             : base(null)
         {
-            TargetDeclaration = targetDecl;
+            TargetType = targetType;
         }
 
         public override string ToString()

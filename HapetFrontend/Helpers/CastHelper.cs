@@ -278,7 +278,8 @@ namespace HapetFrontend
                 // usually when 'TestStruct? a = new TestStruct();'
                 case NullableType nt when
                     currentType is StructType strTt &&
-                    nt.TargetDeclaration == strTt.Declaration:
+                    nt.TargetType is StructType strTt2 &&
+                    strTt2 == strTt:
                 // usually when 'object a = genericInstance;'
                 case ClassType cls6 when
                     currentType is GenericType &&

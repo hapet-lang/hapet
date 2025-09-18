@@ -38,19 +38,51 @@ namespace HapetPostPrepare
             var inInfo = InInfo.Default;
             var outInfo = OutInfo.Default;
 
+            var genTypes = __GetGenericTypes(targetType, subExpr);
+
+            var idExpr = new AstIdGenericExpr("System.Array", genTypes, subExpr) 
+            {
+                Scope = subExpr.Scope,
+                SourceFile = subExpr.SourceFile,
+            };
+            PostPrepareIdentifierInference(idExpr, inInfo, ref outInfo);
+            return idExpr.OutType as ArrayType;
+        }
+        #endregion
+
+        #region Nullable handling cringe
+        public NullableType GetNullableType(AstExpression targetType, AstExpression subExpr)
+        {
+            var inInfo = InInfo.Default;
+            var outInfo = OutInfo.Default;
+
+            var genTypes = __GetGenericTypes(targetType, subExpr);
+
+            var idExpr = new AstIdGenericExpr("System.Nullable", genTypes, subExpr)
+            {
+                Scope = subExpr.Scope,
+                SourceFile = subExpr.SourceFile,
+            };
+            PostPrepareIdentifierInference(idExpr, inInfo, ref outInfo);
+            return idExpr.OutType as NullableType;
+        }
+        #endregion
+
+        private List<AstExpression> __GetGenericTypes(AstExpression targetType, AstExpression subExpr)
+        {
             List<AstExpression> genTypes;
             if (targetType.OutType == GenericType.LiteralType)
-                genTypes = new List<AstExpression>() 
-                { 
-                    new AstNestedExpr(new AstIdExpr("T", subExpr) 
-                    { 
-                        Scope = subExpr.Scope,
-                        SourceFile = subExpr.SourceFile,
-                    }, null, subExpr) 
+                genTypes = new List<AstExpression>()
+                {
+                    new AstNestedExpr(new AstIdExpr("T", subExpr)
                     {
                         Scope = subExpr.Scope,
                         SourceFile = subExpr.SourceFile,
-                    } 
+                    }, null, subExpr)
+                    {
+                        Scope = subExpr.Scope,
+                        SourceFile = subExpr.SourceFile,
+                    }
                 };
             else
             {
@@ -69,15 +101,7 @@ namespace HapetPostPrepare
 
                 genTypes = new List<AstExpression>() { nst };
             }
-                
-            var idExpr = new AstIdGenericExpr("System.Array", genTypes, subExpr) 
-            {
-                Scope = subExpr.Scope,
-                SourceFile = subExpr.SourceFile,
-            };
-            PostPrepareIdentifierInference(idExpr, inInfo, ref outInfo);
-            return idExpr.OutType as ArrayType;
+            return genTypes;
         }
-        #endregion
     }
 }
