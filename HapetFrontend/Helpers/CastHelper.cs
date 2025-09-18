@@ -275,6 +275,10 @@ namespace HapetFrontend
                     (cls5.Declaration.Name.Name == "System.Object" ||
                     cls5.Declaration.Name.Name == "System.ValueType" ||
                     cls5.Declaration.IsInterface):
+                // usually when 'TestStruct? a = new TestStruct();'
+                case NullableType nt when
+                    currentType is StructType strTt &&
+                    nt.TargetDeclaration == strTt.Declaration:
                 // usually when 'object a = genericInstance;'
                 case ClassType cls6 when
                     currentType is GenericType &&
