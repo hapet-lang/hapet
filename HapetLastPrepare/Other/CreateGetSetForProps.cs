@@ -13,8 +13,8 @@ namespace HapetLastPrepare
     {
         private void CreateGetSetForProps(AstPropertyDecl propDecl)
         {
-            if (GenericsHelper.ShouldTheDeclBeSkippedFromCodeGen(propDecl.ContainingParent))
-                return;
+            //if (GenericsHelper.ShouldTheDeclBeSkippedFromCodeGen(propDecl.ContainingParent))
+            //    return;
 
             var newDecls = AddPropertyShiteToDecl(propDecl);
             propDecl.ContainingParent.GetDeclarations().AddRange(newDecls);
@@ -55,8 +55,6 @@ namespace HapetLastPrepare
             {
                 isParentStruct = true;
             }
-
-            AstPropertyDecl orig = prop.OriginalGenericDecl as AstPropertyDecl;
 
             bool hasNoFieldAttribute = prop.GetAttribute("System.NoFieldAttribute") != null;
             if (prop.GetBlock == null && prop.SetBlock == null && !hasNoFieldAttribute)
