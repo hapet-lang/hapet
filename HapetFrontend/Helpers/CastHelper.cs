@@ -280,6 +280,9 @@ namespace HapetFrontend
                     currentType is StructType strTt &&
                     nt.TargetType is StructType strTt2 &&
                     strTt2 == strTt:
+                // usually when 'TestStruct? a = null;'
+                case NullableType when
+                    currentType is NullType:
                 // usually when 'object a = genericInstance;'
                 case ClassType cls6 when
                     currentType is GenericType &&

@@ -594,6 +594,17 @@ namespace HapetBackend.Llvm
                     inType = HapetType.CurrentTypeContext.IntPtrTypeInstance;
                     // and then it will be normally handled futher
                 }
+                else if (outType is NullableType nt)
+                {
+                    var tp = HapetTypeToLLVMType(nt);
+                    var secondType = HapetTypeToLLVMType(nt.Declaration.GetAllRawFields()[1].Type.OutType);
+                    var v = _builder.BuildAlloca(tp, $"var_nullable");
+                    var hasVal = _builder.BuildStructGEP2(tp, v, 0);
+                    _builder.BuildStore(LLVMValueRef.CreateConstInt(_context.Int1Type, 0), hasVal);
+                    var valll = _builder.BuildStructGEP2(tp, v, 1);
+                    _builder.BuildStore(LLVMValueRef.CreateConstNull(secondType), valll);
+                    return _builder.BuildLoad2(tp, v, "nullableLoaded");
+                }
             }
 
 
@@ -708,6 +719,16 @@ namespace HapetBackend.Llvm
                     _builder.BuildStore(val, v);
 
                     return v; // return malloced
+                }
+                else if (outType is NullableType nt)
+                {
+                    var tp = HapetTypeToLLVMType(nt);
+                    var v = _builder.BuildAlloca(tp, $"var_nullable");
+                    var hasVal = _builder.BuildStructGEP2(tp, v, 0);
+                    _builder.BuildStore(LLVMValueRef.CreateConstInt(_context.Int1Type, 1), hasVal);
+                    var valll = _builder.BuildStructGEP2(tp, v, 1);
+                    _builder.BuildStore(val, valll);
+                    return _builder.BuildLoad2(tp, v, "nullableLoaded");
                 }
             }
             // ...

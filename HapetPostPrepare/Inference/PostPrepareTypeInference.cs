@@ -1188,6 +1188,7 @@ namespace HapetPostPrepare
                 _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, expr.Condition, [], ErrorCode.Get(CTEN.ExprIsNotBool));
             }
 
+            // this handles defaults
             expr.TrueExpr = PostPrepareVarValueAssign(expr.TrueExpr, null, inInfo, ref outInfo);
             expr.FalseExpr = PostPrepareVarValueAssign(expr.FalseExpr, null, inInfo, ref outInfo);
 
@@ -1219,12 +1220,27 @@ namespace HapetPostPrepare
                 }
                 else
                 {
-                    // error that the types are not connected to each other
-                    _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, expr.Location, 
-                        [HapetType.AsString(expr.TrueExpr.OutType), HapetType.AsString(expr.FalseExpr.OutType)], 
-                        ErrorCode.Get(CTEN.TypeOfTernaryNotDeterminated));
+                    // special case for nullable
+                    if ((expr.TrueExpr.OutType is NullType && expr.FalseExpr.OutType is StructType) ||
+                        (expr.TrueExpr.OutType is StructType && expr.FalseExpr.OutType is NullType))
+                    {
+                        var nullableType = HapetType.CurrentTypeContext.GetNullableType(
+                            expr.TrueExpr.OutType is StructType ? expr.TrueExpr.OutType : expr.FalseExpr.OutType);
+                        expr.OutType = nullableType;
+                    }
+                    else
+                    {
+                        // error that the types are not connected to each other
+                        _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, expr.Location,
+                            [HapetType.AsString(expr.TrueExpr.OutType), HapetType.AsString(expr.FalseExpr.OutType)],
+                            ErrorCode.Get(CTEN.TypeOfTernaryNotDeterminated));
+                    }
                 }
             }
+
+            // this handles casts
+            expr.TrueExpr = PostPrepareVarValueAssign(expr.TrueExpr, expr.OutType, inInfo, ref outInfo);
+            expr.FalseExpr = PostPrepareVarValueAssign(expr.FalseExpr, expr.OutType, inInfo, ref outInfo);
 
             // evaluate at comptime if possible
             if (expr.Condition.OutValue is bool &&
