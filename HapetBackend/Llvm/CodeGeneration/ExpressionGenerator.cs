@@ -58,6 +58,7 @@ namespace HapetBackend.Llvm
                 case AstSATOfExpr satExpr: return GenerateSATExprCode(satExpr, getPtr);
                 case AstEmptyStructExpr emptyStructExpr: return GenerateEmptyStructExprCode(emptyStructExpr);
                 case AstLambdaExpr lambdaExpr: return GenerateLambdaExprCode(lambdaExpr);
+                case AstNullableExpr nullableExpr: return GenerateNullableExprCode(nullableExpr);
 
                 case AstNullExpr nullExpr: return GenerateNullExprCode(nullExpr);
 
@@ -1332,6 +1333,12 @@ namespace HapetBackend.Llvm
         private unsafe LLVMValueRef GenerateNullExprCode(AstNullExpr expr)
         {
             return LLVM.ConstPointerNull(HapetTypeToLLVMType(expr.OutType));
+        }
+
+        private unsafe LLVMValueRef GenerateNullableExprCode(AstNullableExpr expr)
+        {
+            Debug.Assert(false, "Should not be here. It is handled by OutType in VarDecl and ParamDecl generations");
+            return default;
         }
 
         // statements
