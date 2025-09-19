@@ -27,10 +27,6 @@ namespace HapetBackend.Llvm
         /// The value itself (loaded after alloca)
         /// </summary>
         private readonly Dictionary<ISymbol, LLVMValueRef> _valueMap = new Dictionary<ISymbol, LLVMValueRef>();
-        /// <summary>
-        /// Used to store get/set funcs for static fields
-        /// </summary>
-        private readonly Dictionary<ISymbol, (LLVMValueRef, LLVMValueRef)> _staticFieldsValueMap = new Dictionary<ISymbol, (LLVMValueRef, LLVMValueRef)>();
 
         /// <summary>
         /// Struct offsets mapping when StructLayoutAttribute used
