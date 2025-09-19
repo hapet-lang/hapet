@@ -31,7 +31,7 @@ public partial struct Nullable<T> where T : struct
         {
             if (!_hasValue)
             {
-                ThrowHelper.ThrowInvalidOperationException_InvalidOperation_NoValue();
+                throw new InvalidOperationException(SR.InvalidOperation_NoValue);
             }
             return _value;
         }
