@@ -7,14 +7,14 @@ namespace HapetFrontend.Scoping
 {
     public partial class Scope
     {
-        private Dictionary<AstIdExpr, ISymbol> _symbolTable = new Dictionary<AstIdExpr, ISymbol>();
-        private Dictionary<AstIdExpr, ISymbol> _shadowSymbolTable = new Dictionary<AstIdExpr, ISymbol>();
+        private Dictionary<string, Dictionary<AstIdExpr, ISymbol>> _symbolTable = new Dictionary<string, Dictionary<AstIdExpr, ISymbol>>();
+        private Dictionary<string, Dictionary<AstIdExpr, ISymbol>> _shadowSymbolTable = new Dictionary<string, Dictionary<AstIdExpr, ISymbol>>();
         private Dictionary<string, List<INaryOperator>> _naryOperatorTable = new Dictionary<string, List<INaryOperator>>();
         private Dictionary<string, List<IBinaryOperator>> _binaryOperatorTable = new Dictionary<string, List<IBinaryOperator>>();
         private Dictionary<string, List<IUnaryOperator>> _unaryOperatorTable = new Dictionary<string, List<IUnaryOperator>>();
 
-        public ReadOnlyDictionary<AstIdExpr, ISymbol> SymbolTable => new ReadOnlyDictionary<AstIdExpr, ISymbol>(_symbolTable);
-        public ReadOnlyDictionary<AstIdExpr, ISymbol> ShadowSymbolTable => new ReadOnlyDictionary<AstIdExpr, ISymbol>(_shadowSymbolTable);
+        public ReadOnlyDictionary<string, Dictionary<AstIdExpr, ISymbol>> SymbolTable => new ReadOnlyDictionary<string, Dictionary<AstIdExpr, ISymbol>>(_symbolTable);
+        public ReadOnlyDictionary<string, Dictionary<AstIdExpr, ISymbol>> ShadowSymbolTable => new ReadOnlyDictionary<string, Dictionary<AstIdExpr, ISymbol>>(_shadowSymbolTable);
         public ReadOnlyDictionary<string, List<INaryOperator>> NaryOperatorTable => new ReadOnlyDictionary<string, List<INaryOperator>>(_naryOperatorTable);
         public ReadOnlyDictionary<string, List<IBinaryOperator>> BinaryOperatorTable => new ReadOnlyDictionary<string, List<IBinaryOperator>>(_binaryOperatorTable);
         public ReadOnlyDictionary<string, List<IUnaryOperator>> UnaryoperatorTable => new ReadOnlyDictionary<string, List<IUnaryOperator>>(_unaryOperatorTable);

@@ -21,16 +21,20 @@ namespace HapetFrontend.Scoping
             // if it is a shadow decl
             if (symbol is DeclSymbol declS && declS.Decl.SpecialKeys.Contains(TokenType.KwNew))
             {
-                if (_shadowSymbolTable.ContainsKey(name))
+                if (!_shadowSymbolTable.ContainsKey(name.Name))
+                    _shadowSymbolTable[name.Name] = new Dictionary<AstIdExpr, ISymbol>();
+                if (_shadowSymbolTable[name.Name].ContainsKey(name))
                     return false;
-                _shadowSymbolTable[name] = symbol;
+                _shadowSymbolTable[name.Name].Add(name, symbol);
                 return true;
             }
 
-            if (_symbolTable.ContainsKey(name))
+            if (!_symbolTable.ContainsKey(name.Name))
+                _symbolTable[name.Name] = new Dictionary<AstIdExpr, ISymbol>();
+            if (_symbolTable[name.Name].ContainsKey(name))
                 return false;
 
-            _symbolTable[name] = symbol;
+            _symbolTable[name.Name].Add(name, symbol);
             return true;
         }
 
@@ -41,28 +45,16 @@ namespace HapetFrontend.Scoping
             // if it is a shadow decl
             if (symbol is DeclSymbol declS && declS.Decl.SpecialKeys.Contains(TokenType.KwNew))
             {
-                if (_shadowSymbolTable.ContainsKey(name))
+                if (_shadowSymbolTable.TryGetValue(name.Name, out var dictt))
                 {
-                    _shadowSymbolTable.Remove(name);
-                    return true;
-                }
-                var tmp1 = _shadowSymbolTable.Keys.FirstOrDefault(x => x.Name == name.Name);
-                if (tmp1 != null)
-                {
-                    _shadowSymbolTable.Remove(tmp1);
+                    dictt.Remove(name);
                     return true;
                 }
             }
 
-            if (_symbolTable.ContainsKey(name))
+            if (_symbolTable.TryGetValue(name.Name, out var dict))
             {
-                _symbolTable.Remove(name);
-                return true;
-            }
-            var tmp2 = _symbolTable.Keys.FirstOrDefault(x => x.Name == name.Name);
-            if (tmp2 != null)
-            {
-                _symbolTable.Remove(tmp2);
+                dict.Remove(name);
                 return true;
             }
 
@@ -107,110 +99,112 @@ namespace HapetFrontend.Scoping
             // this cringe is used to search a part namespace
             if (searchPartNamespace)
             {
-                foreach (var k in _shadowSymbolTable)
+                if (_shadowSymbolTable.TryGetValue(name.Name, out var nss))
                 {
-                    if (k.Value is NamespaceSymbol && k.Key.Name.StartsWith(name.Name))
-                        return k.Value;
+                    foreach (var k in nss)
+                    {
+                        if (k.Value is NamespaceSymbol) return k.Value;
+                    }
                 }
-                foreach (var k in _symbolTable)
+
+                if (_symbolTable.TryGetValue(name.Name, out var nss2))
                 {
-                    if (k.Value is NamespaceSymbol && k.Key.Name.StartsWith(name.Name))
-                        return k.Value;
+                    foreach (var k in nss2)
+                    {
+                        if (k.Value is NamespaceSymbol) return k.Value;
+                    }
                 }
+                    
                 if (searchParentScope)
                     return Parent?.GetSymbol(name, searchUsedScopes, searchParentScope, searchPartNamespace, handleGenerics);
                 return null;
             }
 
-            // 1 - check for the same AstIdExpr instance
-            if (_shadowSymbolTable.TryGetValue(name, out ISymbol value))
-                return value;
-            if (_symbolTable.TryGetValue(name, out ISymbol value2))
-                return value2;
-
-            // 2 - check for similar AstIdExpr
+            // 1 - check for similar AstIdExpr
             if (name is not AstIdGenericExpr && name is not AstIdTupledExpr)
             {
-                // checker to check that they are the same
-                //var checker = new Func<AstIdExpr, bool>((x) =>
-                //{
-                //    var c1 = x is not AstIdGenericExpr && x is not AstIdTupledExpr;
-                //    var c2 = x.Name == name.Name;
-                //    // additional data shite
-                //    var c3 = x.AdditionalData == null && name.AdditionalData == null;
-                //    if (x.AdditionalData != null && name.AdditionalData != null)
-                //    {
-                //        c3 = x.AdditionalData.OutType == name.AdditionalData.OutType;
-                //    }
-                //    return c1 && c2 && c3;
-                //});
+                if (_shadowSymbolTable.TryGetValue(name.Name, out var smbls))
+                {
+                    var k1 = smbls.Keys.FirstOrDefault(x => x.Name == name.Name && (x is not AstIdGenericExpr && x is not AstIdTupledExpr) &&
+                        ((x.AdditionalData == null && name.AdditionalData == null) ||
+                        ((x.AdditionalData != null && name.AdditionalData != null) &&
+                        x.AdditionalData.OutType == name.AdditionalData.OutType)));
+                    if (k1 != null) return smbls[k1];
+                }
 
-                var k1 = _shadowSymbolTable.Keys.FirstOrDefault(x => x.Name == name.Name && (x is not AstIdGenericExpr && x is not AstIdTupledExpr) && 
-                    ((x.AdditionalData == null && name.AdditionalData == null) || 
-                    ((x.AdditionalData != null && name.AdditionalData != null) && 
-                    x.AdditionalData.OutType == name.AdditionalData.OutType)));
-                if (k1 != null)
-                    return _shadowSymbolTable[k1];
-                var k2 = _symbolTable.Keys.FirstOrDefault(x => x.Name == name.Name && (x is not AstIdGenericExpr && x is not AstIdTupledExpr) &&
-                    ((x.AdditionalData == null && name.AdditionalData == null) ||
-                    ((x.AdditionalData != null && name.AdditionalData != null) &&
-                    x.AdditionalData.OutType == name.AdditionalData.OutType)));
-                if (k2 != null)
-                    return _symbolTable[k2];
+                if (_symbolTable.TryGetValue(name.Name, out var smbls2))
+                {
+                    var k2 = smbls2.Keys.FirstOrDefault(x => x.Name == name.Name && (x is not AstIdGenericExpr && x is not AstIdTupledExpr) &&
+                        ((x.AdditionalData == null && name.AdditionalData == null) ||
+                        ((x.AdditionalData != null && name.AdditionalData != null) &&
+                        x.AdditionalData.OutType == name.AdditionalData.OutType)));
+                    if (k2 != null) return smbls2[k2];
+                }
             }
 
-            // 3 - handle generics search
+            // 2 - handle generics search
             if (handleGenerics && name is AstIdGenericExpr genId)
             {
                 // WARN: if any changes here - also change PP.FuncInferenceHelper.Candidates_Step4_OnlyOneGeneric!!!
 
-                // we need to store original decl 
-                // if we won't find the same decl
-                // we need to return original one
-                DeclSymbol originalGeneric = null;
-                DeclSymbol theSameGeneric = null;
-                foreach (var k in _symbolTable.Keys.Where(x => x.Name == name.Name && x is AstIdGenericExpr))
+                if (_symbolTable.TryGetValue(name.Name, out var smbls))
                 {
-                    var genK = k as AstIdGenericExpr;
-
-                    // if not the same amount of generics
-                    int gAmountSymbol = genK.GenericRealTypes.Count;
-                    int gAmountSearch = genId.GenericRealTypes.Count;
-                    if (gAmountSymbol != gAmountSearch)
-                        continue;
-
-                    // if the same decl
-                    bool allEqual = true;
-                    for (int i = 0; i < gAmountSymbol; ++i)
+                    // we need to store original decl 
+                    // if we won't find the same decl
+                    // we need to return original one
+                    DeclSymbol originalGeneric = null;
+                    DeclSymbol theSameGeneric = null;
+                    foreach (var k in smbls.Keys.Where(x => x.Name == name.Name && x is AstIdGenericExpr))
                     {
-                        if (genK.GenericRealTypes[i].OutType == genId.GenericRealTypes[i].OutType)
+                        var genK = k as AstIdGenericExpr;
+
+                        // if not the same amount of generics
+                        int gAmountSymbol = genK.GenericRealTypes.Count;
+                        int gAmountSearch = genId.GenericRealTypes.Count;
+                        if (gAmountSymbol != gAmountSearch)
                             continue;
-                        allEqual = false;
-                        break;
-                    }
-                    if (allEqual)
-                    {
-                        theSameGeneric = _symbolTable[k] as DeclSymbol;
-                        continue;
+
+                        // if the same decl
+                        bool allEqual = true;
+                        for (int i = 0; i < gAmountSymbol; ++i)
+                        {
+                            if (genK.GenericRealTypes[i].OutType == genId.GenericRealTypes[i].OutType)
+                                continue;
+                            allEqual = false;
+                            break;
+                        }
+                        if (allEqual)
+                        {
+                            theSameGeneric = smbls[k] as DeclSymbol;
+                            continue;
+                        }
+
+                        // if original generic
+                        if (smbls[k] is DeclSymbol ds &&
+                            ds.Decl.HasGenericTypes &&
+                            !ds.Decl.IsImplOfGeneric)
+                        {
+                            originalGeneric = smbls[k] as DeclSymbol;
+                            continue;
+                        }
                     }
 
-                    // if original generic
-                    if (_symbolTable[k] is DeclSymbol ds &&
-                        ds.Decl.HasGenericTypes &&
-                        !ds.Decl.IsImplOfGeneric)
-                    {
-                        originalGeneric = _symbolTable[k] as DeclSymbol;
-                        continue;
-                    }
+                    // try at first to return the same
+                    if (theSameGeneric != null)
+                        return theSameGeneric;
+                    // then try to return original generic
+                    if (originalGeneric != null)
+                        return originalGeneric;
                 }
-
-                // try at first to return the same
-                if (theSameGeneric != null)
-                    return theSameGeneric;
-                // then try to return original generic
-                if (originalGeneric != null)
-                    return originalGeneric;
             }
+
+            // 3 - check for the same AstIdExpr instance
+            if (_shadowSymbolTable.TryGetValue(name.Name, out var smblss))
+                if (smblss.TryGetValue(name, out var sf))
+                    return sf;
+            if (_symbolTable.TryGetValue(name.Name, out var smblss2))
+                if (smblss2.TryGetValue(name, out var sf))
+                    return sf;
 
             // 4 - search in parent
             if (searchParentScope)
@@ -311,15 +305,22 @@ namespace HapetFrontend.Scoping
             IEnumerable<KeyValuePair<AstIdExpr, ISymbol>> GetDecls()
             {
                 // search for the func in the shadow
-                foreach (var k in ShadowSymbolTable.Where(x => x.Value is DeclSymbol ds && (ds.Decl is AstFuncDecl || ds.Decl is AstDelegateDecl)))
+                if (ShadowSymbolTable.TryGetValue(classWithFuncName.Name, out var funcs1))
                 {
-                    yield return k;
+                    foreach (var k in funcs1.Where(x => x.Value is DeclSymbol ds && (ds.Decl is AstFuncDecl || ds.Decl is AstDelegateDecl)))
+                    {
+                        yield return k;
+                    }
                 }
+
                 // search for the func in the scope
-                foreach (var k in SymbolTable.Where(x => x.Value is DeclSymbol ds && (ds.Decl is AstFuncDecl || ds.Decl is AstDelegateDecl)))
+                if (SymbolTable.TryGetValue(classWithFuncName.Name, out var funcs2))
                 {
-                    yield return k;
-                }
+                    foreach (var k in funcs2.Where(x => x.Value is DeclSymbol ds && (ds.Decl is AstFuncDecl || ds.Decl is AstDelegateDecl)))
+                    {
+                        yield return k;
+                    }
+                } 
             }
         }
     }
