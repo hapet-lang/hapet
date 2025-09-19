@@ -1136,18 +1136,25 @@ namespace HapetPostPrepare
             }
             if (typeName != null)
             {
-                var ind = declItself.GetDeclarations().
-                    FirstOrDefault(x => 
-                    {
-                        if (x is not AstIndexerDecl ind)
-                            return false;
-                        var cstResult = new CastResult();
-                        _compiler.TryCastExpr(ind.IndexerParameter.Type.OutType, arrayAccExpr.ParameterExpr, cstResult);
-                        return cstResult.CouldBeCasted;
-                    });
+                // TODO: this cringe should be rewritten
+                // it can find only one but there could be multiple
 
-                if (ind is AstIndexerDecl indDecl)
+                var saved = inInfo.MuteErrors;
+                inInfo.MuteErrors = true;
+                var idExpr = new AstIdExpr("indexer__");
+                idExpr.SetDataFromStmt(arrayAccExpr);
+                PostPrepareIdentifierInference(idExpr, inInfo, ref outInfo, declItself);
+                inInfo.MuteErrors = saved;
+
+                if (idExpr.FindSymbol is DeclSymbol ds && ds.Decl is AstIndexerDecl indDecl)
                 {
+                    var cstResult = new CastResult();
+                    _compiler.TryCastExpr(indDecl.IndexerParameter.Type.OutType, arrayAccExpr.ParameterExpr, cstResult);
+                    if (!cstResult.CouldBeCasted)
+                    {
+                        // TODO: error
+                    }
+
                     arrayAccExpr.OutType = indDecl.Type.OutType;
                     arrayAccExpr.IndexerDecl = indDecl;
                     arrayAccExpr.ParameterExpr = PostPrepareVarValueAssign(arrayAccExpr.ParameterExpr, indDecl.IndexerParameter.Type.OutType, inInfo, ref outInfo);
