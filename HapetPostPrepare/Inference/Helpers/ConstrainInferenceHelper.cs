@@ -257,7 +257,7 @@ namespace HapetPostPrepare
                 // if found duplicate
                 if (found)
                 {
-                    _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, c,
+                    _compiler.MessageHandler.ReportMessage(_currentSourceFile, c,
                         [], ErrorCode.Get(CTEN.DuplicateConstrain));
                 }
                 bucket.Add(c);
@@ -274,7 +274,7 @@ namespace HapetPostPrepare
             {
                 foreach (var c in notNulls)
                 {
-                    _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, c,
+                    _compiler.MessageHandler.ReportMessage(_currentSourceFile, c,
                         [], ErrorCode.Get(CTEN.OnlyOneOnTheConstrains));
                 }
                 allChecks.Add(false);

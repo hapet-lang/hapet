@@ -98,7 +98,7 @@ namespace HapetLastPrepare
             if (prop.SpecialKeys.Contains(TokenType.KwAbstract) &&
                 (prop.GetBlock != null || prop.SetBlock != null))
             {
-                _compiler.MessageHandler.ReportMessage(_postPreparer._currentSourceFile.Text, prop.Name, [], ErrorCode.Get(CTEN.AbsPropertyWithBody));
+                _compiler.MessageHandler.ReportMessage(_postPreparer._currentSourceFile, prop.Name, [], ErrorCode.Get(CTEN.AbsPropertyWithBody));
             }
             return declarationsToAdd;
         }

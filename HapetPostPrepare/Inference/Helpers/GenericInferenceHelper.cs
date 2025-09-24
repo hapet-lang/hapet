@@ -244,7 +244,7 @@ namespace HapetPostPrepare
 
                 if (!allow)
                 {
-                    _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, type,
+                    _compiler.MessageHandler.ReportMessage(_currentSourceFile, type,
                         [constrainErrorName], ErrorCode.Get(CTEN.NotSatisfyConstrain));
                 }
                 allNorm.Add(allow);

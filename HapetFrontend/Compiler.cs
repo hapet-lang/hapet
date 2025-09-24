@@ -14,6 +14,7 @@ using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Diagnostics.Metrics;
 using System.Net;
+using System.Text;
 
 namespace HapetFrontend
 {
@@ -76,10 +77,12 @@ namespace HapetFrontend
             }
         }
 
-        public MetadataMetadataJson HandleExternalMetadata(string metadataText)
+        public MetadataMetadataJson HandleExternalMetadata(string fileName, string metadataText)
         {
+            var metaFile = new ProgramFile(Path.GetFileName(fileName), metadataText);
+            metaFile.FilePath = fileName;
             // just parsing metadata and adding its files into the compiler
-            var files = ParseMetadata(metadataText, out var metadata);
+            var files = ParseMetadata(metaFile, out var metadata);
             foreach (var f in files)
             {
                 AddFile(f, f.Name);
@@ -99,7 +102,7 @@ namespace HapetFrontend
 
         public ProgramFile AddFile(string fileName)
         {
-            if (!CompilerUtils.ValidateFilePath("", fileName, false, MessageHandler, null, out string filePath))
+            if (!CompilerUtils.ValidateFilePath("", fileName, false, out string filePath))
             {
                 return null;
             }
@@ -116,10 +119,10 @@ namespace HapetFrontend
             return file;
         }
 
-        public List<ProgramFile> ParseMetadata(string metadataText, out MetadataMetadataJson metadata)
+        public List<ProgramFile> ParseMetadata(ProgramFile metadataFile, out MetadataMetadataJson metadata)
         {
             metadata = null;
-            var lexer = Lexer.FromString(metadataText, MessageHandler, "metadata");
+            var lexer = Lexer.FromFile(metadataFile, MessageHandler);
 
             if (lexer == null)
                 return null;
@@ -159,7 +162,8 @@ namespace HapetFrontend
                 if (s is AstDirectiveStmt dir && dir.DirectiveType == Enums.DirectiveType.MetadataFile)
                 {
                     // creating a virtual file
-                    currentFile = new ProgramFile((dir.Value as AstStringExpr).StringValue, lexer.Text);
+                    currentFile = new ProgramFile(Path.GetFileName((dir.Value as AstStringExpr).StringValue), lexer.Text);
+                    currentFile.FilePath = (dir.Value as AstStringExpr).StringValue;
                     allFiles.Add(currentFile);
                     // change lexer locations' filename
                     lexer.ChangeFilename(currentFile.Name);
@@ -169,7 +173,7 @@ namespace HapetFrontend
                 // should not happen
                 if (currentFile == null)
                 {
-                    MessageHandler.ReportMessage(lexer.Text, s, [], ErrorCode.Get(CTEN.NullProgramFileInMeta));
+                    MessageHandler.ReportMessage(metadataFile, s, [], ErrorCode.Get(CTEN.NullProgramFileInMeta));
                     break;
                 }
 
@@ -190,10 +194,10 @@ namespace HapetFrontend
                 {
                     var statementsToAdd = parser.HandleDirective(dir3, currentFile, inInfo, ref outInfo);
                     foreach (var ss in statementsToAdd)
-                        HandleStatement(ss, currentFile, lexer);
+                        HandleStatement(ss, currentFile, metadataFile);
                 }
                 else
-                    HandleStatement(s, currentFile, lexer);
+                    HandleStatement(s, currentFile, metadataFile);
             }
 
             return allFiles;
@@ -201,16 +205,23 @@ namespace HapetFrontend
 
         private ProgramFile ParseFile(string fileName)
         {
-            var lexer = Lexer.FromFile(fileName, MessageHandler);
+            if (!File.Exists(fileName))
+            {
+                MessageHandler.ReportMessage([fileName], ErrorCode.Get(CTEN.FileForLexerNotFound));
+                return null;
+            }
+            var text = File.ReadAllText(fileName, Encoding.UTF8)
+                           .Replace("\r\n", "\n", StringComparison.InvariantCulture)
+                           .Replace("\t", "    ", StringComparison.InvariantCulture);
+            var file = new ProgramFile(Path.GetFileName(fileName), text);
+            file.FilePath = fileName;
+            _files[fileName] = file;
 
+            var lexer = Lexer.FromFile(file, MessageHandler);
             if (lexer == null)
                 return null;
 
             var parser = new Parser(lexer, this, MessageHandler);
-
-            var file = new ProgramFile(fileName, lexer.Text);
-            _files[fileName] = file;
-
             // just handlers
             ParserInInfo inInfo = ParserInInfo.Default;
             ParserOutInfo outInfo = ParserOutInfo.Default;
@@ -227,10 +238,10 @@ namespace HapetFrontend
                 {
                     var statementsToAdd = parser.HandleDirective(dir3, file, inInfo, ref outInfo);
                     foreach (var ss in statementsToAdd)
-                        HandleStatement(ss, file, lexer);
+                        HandleStatement(ss, file, file);
                 }
                 else
-                    HandleStatement(s, file, lexer);
+                    HandleStatement(s, file, file);
             }
 
             string normalNamespace = CompilerUtils.GetNamespace(CurrentProjectSettings.ProjectPath, CurrentProjectSettings.RootNamespace, fileName);
@@ -244,7 +255,7 @@ namespace HapetFrontend
             return file;
         }
 
-        private void HandleStatement(AstStatement s, ProgramFile file, ILexer lexer)
+        private void HandleStatement(AstStatement s, ProgramFile file, ProgramFile currentlyParsingFile)
         {
             if (s is AstEnumDecl ||
                 s is AstStructDecl ||
@@ -263,7 +274,7 @@ namespace HapetFrontend
             }
             else if (s != null)
             {
-                MessageHandler.ReportMessage(lexer.Text, s, [], ErrorCode.Get(CTEN.StmtNotAllowedInThis));
+                MessageHandler.ReportMessage(currentlyParsingFile, s, [], ErrorCode.Get(CTEN.StmtNotAllowedInThis));
             }
         }
 

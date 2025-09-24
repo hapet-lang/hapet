@@ -52,7 +52,7 @@ namespace HapetFrontend.Parsing
                 {
                     if (location.Index >= _text.Length)
                     {
-                        _messageHandler.ReportMessage(_text, new Location(location), [], ErrorCode.Get(CTEN.UnexpectedEndOfStringLit));
+                        _messageHandler.ReportMessage(_programFile, new Location(location), [], ErrorCode.Get(CTEN.UnexpectedEndOfStringLit));
                         token.Data = sb.ToString();
                         return;
                     }
@@ -79,7 +79,7 @@ namespace HapetFrontend.Parsing
 
             if (!foundEnd)
             {
-                _messageHandler.ReportMessage(_text, new Location(location), [], ErrorCode.Get(CTEN.UnexpectedEndOfStringLit));
+                _messageHandler.ReportMessage(_programFile, new Location(location), [], ErrorCode.Get(CTEN.UnexpectedEndOfStringLit));
             }
 
             token.Data = sb.ToString();

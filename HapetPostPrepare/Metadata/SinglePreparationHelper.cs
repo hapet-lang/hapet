@@ -15,7 +15,7 @@ namespace HapetPostPrepare
         {
             if (_currentPreparationStep == PreparationStep.None)
             {
-                _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, stmt, [], ErrorCode.Get(CTEN.StmtInvalidPreparation));
+                _compiler.MessageHandler.ReportMessage(_currentSourceFile, stmt, [], ErrorCode.Get(CTEN.StmtInvalidPreparation));
                 return;
             }
 

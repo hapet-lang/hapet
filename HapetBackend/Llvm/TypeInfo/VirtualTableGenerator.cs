@@ -37,7 +37,7 @@ namespace HapetBackend.Llvm
             else
             {
                 // compiler error - could not generate vtable
-                _messageHandler.ReportMessage(_currentSourceFile.Text, null, [HapetType.AsString(type)], ErrorCode.Get(CTEN.CouldNotGenerateVTable));
+                _messageHandler.ReportMessage(_currentSourceFile, null, [HapetType.AsString(type)], ErrorCode.Get(CTEN.CouldNotGenerateVTable));
                 return default;
             }
 
@@ -132,7 +132,7 @@ namespace HapetBackend.Llvm
             else
             {
                 amount = 0; // compiler error
-                _messageHandler.ReportMessage(_currentSourceFile.Text, null, [HapetType.AsString(type)], ErrorCode.Get(CTEN.CouldNotGenerateVTable));
+                _messageHandler.ReportMessage(_currentSourceFile, null, [HapetType.AsString(type)], ErrorCode.Get(CTEN.CouldNotGenerateVTable));
                 return default;
             }
 
@@ -187,7 +187,7 @@ namespace HapetBackend.Llvm
             {
                 // compiler error - could not generate vtable
                 amount = 0;
-                _messageHandler.ReportMessage(_currentSourceFile.Text, null, [HapetType.AsString(type)], ErrorCode.Get(CTEN.CouldNotGenerateVTable));
+                _messageHandler.ReportMessage(_currentSourceFile, null, [HapetType.AsString(type)], ErrorCode.Get(CTEN.CouldNotGenerateVTable));
                 return default;
             }
             LLVMValueRef interfaceOffsetsArray = _module.AddGlobal(LLVMTypeRef.CreateArray(LLVMTypeRef.CreatePointer(_context.Int32Type, 0), (uint)(interfaces.Count)), $"VirtualTableInterfaceOffsetsArray::{typeNameString}");
@@ -219,7 +219,7 @@ namespace HapetBackend.Llvm
                 allClassVirtuals = strType.Declaration.AllVirtualMethods;
             else
             {
-                _messageHandler.ReportMessage(_currentSourceFile.Text, null, [HapetType.AsString(type)], ErrorCode.Get(CTEN.CouldNotGenerateVTable));
+                _messageHandler.ReportMessage(_currentSourceFile, null, [HapetType.AsString(type)], ErrorCode.Get(CTEN.CouldNotGenerateVTable));
                 return new List<(ClassType, int[])>(); // compiler error
             }
 
@@ -237,7 +237,7 @@ namespace HapetBackend.Llvm
                     var m = allClassVirtuals.GetSameByNameAndTypes(iM, out int index);
                     // check m for not null and error if null (compiler error)
                     if (m == null)
-                        _messageHandler.ReportMessage(_currentSourceFile.Text, iM.Name, [], ErrorCode.Get(CTEN.VirtualMethodNotFound));
+                        _messageHandler.ReportMessage(_currentSourceFile, iM.Name, [], ErrorCode.Get(CTEN.VirtualMethodNotFound));
 
                     offsets.Add(index);
 

@@ -88,7 +88,7 @@ namespace HapetPostPrepare
                     var c2 = decl.IsExactly<AstVarDecl>() || 
                         (decl.IsExactly<AstPropertyDecl>() && (decl as AstPropertyDecl).GetBlock == null && (decl as AstPropertyDecl).HasGet);
                     if (c1 && c2)
-                        _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, decl.Type, 
+                        _compiler.MessageHandler.ReportMessage(_currentSourceFile, decl.Type, 
                             [], ErrorCode.Get(CTEN.StaticPolyField));
                 }
 

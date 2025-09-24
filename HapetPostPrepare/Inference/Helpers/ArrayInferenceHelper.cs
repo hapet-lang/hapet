@@ -18,12 +18,12 @@ namespace HapetPostPrepare
             {
                 // expected a const value to be used when creating an array with elements
                 // byte[] a2 = new byte[b] {1, b, 2, 4}; - would error in C#
-                _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, arrayExpr, [], ErrorCode.Get(CTEN.ArrayVarSizeAndVals));
+                _compiler.MessageHandler.ReportMessage(_currentSourceFile, arrayExpr, [], ErrorCode.Get(CTEN.ArrayVarSizeAndVals));
             }
             else if (arrayExpr.Elements.Count > 0 && currentSizeExpr.OutValue is NumberData numData && numData.IntValue != arrayExpr.Elements.Count)
             {
                 //  byte[] a2 = new byte[3] {1, 1, 2, 4}; - would error in C#
-                _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, arrayExpr,
+                _compiler.MessageHandler.ReportMessage(_currentSourceFile, arrayExpr,
                     [numData.ToString(), arrayExpr.Elements.Count.ToString()], ErrorCode.Get(CTEN.ArraySizeAndValsDiffer));
             }
 
@@ -39,7 +39,7 @@ namespace HapetPostPrepare
                         // the elements of ndim array have to be array typed
                         if (element is not AstArrayCreateExpr elementArrayExpr)
                         {
-                            _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, element, [], ErrorCode.Get(CTEN.ArrayTypeAsElement));
+                            _compiler.MessageHandler.ReportMessage(_currentSourceFile, element, [], ErrorCode.Get(CTEN.ArrayTypeAsElement));
                             continue;
                         }
                         // it should be already prepared so just create new array type over it

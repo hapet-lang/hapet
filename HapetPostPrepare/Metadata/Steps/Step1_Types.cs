@@ -22,7 +22,7 @@ namespace HapetPostPrepare
 
             if (stmt is not AstDeclaration decl)
             {
-                _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, stmt, [], ErrorCode.Get(CTEN.StmtExpectedToBeDecl));
+                _compiler.MessageHandler.ReportMessage(_currentSourceFile, stmt, [], ErrorCode.Get(CTEN.StmtExpectedToBeDecl));
                 return;
             }
 
@@ -112,7 +112,7 @@ namespace HapetPostPrepare
                 else
                 {
                     // TODO: different error when nested
-                    _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, decl.Name, [_currentSourceFile.Namespace], ErrorCode.Get(CTEN.NamespaceAlreadyContains));
+                    _compiler.MessageHandler.ReportMessage(_currentSourceFile, decl.Name, [_currentSourceFile.Namespace], ErrorCode.Get(CTEN.NamespaceAlreadyContains));
                 }
             }
             else

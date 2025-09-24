@@ -88,7 +88,7 @@ namespace HapetPostPrepare
                     if (candidate == null)
                     {
                         // error here 
-                        _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, decl, [], ErrorCode.Get(CTEN.ParentStorNotFound));
+                        _compiler.MessageHandler.ReportMessage(_currentSourceFile, decl, [], ErrorCode.Get(CTEN.ParentStorNotFound));
                         continue;
                     }
                     var body = (candidate.Decl as AstFuncDecl).Body;

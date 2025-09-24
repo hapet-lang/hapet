@@ -32,7 +32,7 @@ namespace HapetPostPrepare
                     if (inh.OutType is not ClassType)
                     {
                         // error - cannot inherit from non class types
-                        _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, inh, [HapetType.AsString(cls.Type.OutType), HapetType.AsString(inh.OutType)], ErrorCode.Get(CTEN.CannotDeriveFromStruct));
+                        _compiler.MessageHandler.ReportMessage(_currentSourceFile, inh, [HapetType.AsString(cls.Type.OutType), HapetType.AsString(inh.OutType)], ErrorCode.Get(CTEN.CannotDeriveFromStruct));
                         continue;
                     }
 
@@ -40,7 +40,7 @@ namespace HapetPostPrepare
                     if ((inh.OutType as ClassType).Declaration.SpecialKeys.Contains(TokenType.KwSealed))
                     {
                         // error - cannot inherit from sealed
-                        _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, inh, [], ErrorCode.Get(CTEN.DerivedFromSealed));
+                        _compiler.MessageHandler.ReportMessage(_currentSourceFile, inh, [], ErrorCode.Get(CTEN.DerivedFromSealed));
                     }
                 }
 
@@ -73,7 +73,7 @@ namespace HapetPostPrepare
                         (inh.OutType as ClassType).Declaration.Name.Name != "System.ValueType"))
                     {
                         // error - cannot inherit from non interfaces
-                        _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, inh, [HapetType.AsString(inh.OutType)], ErrorCode.Get(CTEN.NonInterfaceInhInStruct));
+                        _compiler.MessageHandler.ReportMessage(_currentSourceFile, inh, [HapetType.AsString(inh.OutType)], ErrorCode.Get(CTEN.NonInterfaceInhInStruct));
                         continue;
                     }
 
@@ -81,7 +81,7 @@ namespace HapetPostPrepare
                     if ((inh.OutType as ClassType).Declaration.SpecialKeys.Contains(TokenType.KwSealed))
                     {
                         // error - cannot inherit from sealed
-                        _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, inh, [], ErrorCode.Get(CTEN.DerivedFromSealed));
+                        _compiler.MessageHandler.ReportMessage(_currentSourceFile, inh, [], ErrorCode.Get(CTEN.DerivedFromSealed));
                     }
                 }
 
@@ -106,7 +106,7 @@ namespace HapetPostPrepare
                 // only int type inheritance allowed for enums
                 if (enm.InheritedType.OutType is not IntType)
                 {
-                    _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, enm.InheritedType, [], ErrorCode.Get(CTEN.EnumTypeNotInt));
+                    _compiler.MessageHandler.ReportMessage(_currentSourceFile, enm.InheritedType, [], ErrorCode.Get(CTEN.EnumTypeNotInt));
                 }
             }
         }

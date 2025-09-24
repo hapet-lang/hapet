@@ -139,7 +139,7 @@ namespace HapetPostPrepare
                     }
                     else
                     {
-                        _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, funcDecl.Name, [], ErrorCode.Get(CTEN.StmtNotAllowedInThis));
+                        _compiler.MessageHandler.ReportMessage(_currentSourceFile, funcDecl.Name, [], ErrorCode.Get(CTEN.StmtNotAllowedInThis));
                         OnExit();
                         return;
                     }
@@ -301,17 +301,17 @@ namespace HapetPostPrepare
             {
                 if (varDecl.Initializer == null)
                 {
-                    _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, varDecl, [], ErrorCode.Get(CTEN.VarVarNoIniter));
+                    _compiler.MessageHandler.ReportMessage(_currentSourceFile, varDecl, [], ErrorCode.Get(CTEN.VarVarNoIniter));
                     return;
                 }
                 else if (varDecl.Initializer.OutType is VoidType)
                 {
-                    _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, varDecl, [], ErrorCode.Get(CTEN.VarVoidType));
+                    _compiler.MessageHandler.ReportMessage(_currentSourceFile, varDecl, [], ErrorCode.Get(CTEN.VarVoidType));
                     return;
                 }
                 else if (varDecl.Initializer is AstDefaultExpr def2 && def2.TypeForDefault == null)
                 {
-                    _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, varDecl, [], ErrorCode.Get(CTEN.VarDefaultType));
+                    _compiler.MessageHandler.ReportMessage(_currentSourceFile, varDecl, [], ErrorCode.Get(CTEN.VarDefaultType));
                     return;
                 }
                 else
@@ -330,7 +330,7 @@ namespace HapetPostPrepare
             {
                 foreach (var kk in varDecl.SpecialKeys)
                 {
-                    _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, new Location(varDecl.Beginning, varDecl.Name.Ending), [kk.ToString()], ErrorCode.Get(CTEN.VarTokenNotAllowed));
+                    _compiler.MessageHandler.ReportMessage(_currentSourceFile, new Location(varDecl.Beginning, varDecl.Name.Ending), [kk.ToString()], ErrorCode.Get(CTEN.VarTokenNotAllowed));
                 }
             }
 
@@ -340,7 +340,7 @@ namespace HapetPostPrepare
                 // if it is an impl of generic type - no need to error about it 
                 // because probably non-deep copy was created, so do not care
                 if (!(varDecl.ContainingParent.HasGenericTypes && varDecl.ContainingParent.IsImplOfGeneric))
-                    _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, varDecl.Name, [], ErrorCode.Get(CTEN.ConstValueNonComptime));
+                    _compiler.MessageHandler.ReportMessage(_currentSourceFile, varDecl.Name, [], ErrorCode.Get(CTEN.ConstValueNonComptime));
             }
         }
 
@@ -495,7 +495,7 @@ namespace HapetPostPrepare
 
                 default:
                     {
-                        _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, expr, [expr.AAAName], ErrorCode.Get(CTEN.StmtNotImplemented));
+                        _compiler.MessageHandler.ReportMessage(_currentSourceFile, expr, [expr.AAAName], ErrorCode.Get(CTEN.StmtNotImplemented));
                         break;
                     }
             }
@@ -538,13 +538,13 @@ namespace HapetPostPrepare
             var operators = unExpr.Scope.GetUnaryOperators(unExpr.Operator, unExpr.SubExpr.OutType);
             if (operators.Count == 0)
             {
-                _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, unExpr, 
+                _compiler.MessageHandler.ReportMessage(_currentSourceFile, unExpr, 
                     [unExpr.Operator, HapetType.AsString((unExpr.SubExpr as AstExpression).OutType)], ErrorCode.Get(CTEN.UndefOpForType));
             }
             else if (operators.Count > 1)
             {
                 // TODO: tell em where are the operators defined
-                _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, unExpr, 
+                _compiler.MessageHandler.ReportMessage(_currentSourceFile, unExpr, 
                     [unExpr.Operator, HapetType.AsString((unExpr.SubExpr as AstExpression).OutType)], ErrorCode.Get(CTEN.TooManyOpsForType));
             }
             else
@@ -589,7 +589,7 @@ namespace HapetPostPrepare
             var operators = binExpr.Scope.GetBinaryOperators(binExpr.Operator, binExpr.Left.OutType, binExpr.Right.OutType);
             if (operators.Count == 0)
             {
-                _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, binExpr, 
+                _compiler.MessageHandler.ReportMessage(_currentSourceFile, binExpr, 
                     [binExpr.Operator, 
                     HapetType.AsString((binExpr.Left as AstExpression).OutType), 
                     HapetType.AsString((binExpr.Right as AstExpression).OutType)], 
@@ -598,7 +598,7 @@ namespace HapetPostPrepare
             else if (operators.Count > 1)
             {
                 // TODO: tell em where are the operators defined
-                _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, binExpr, 
+                _compiler.MessageHandler.ReportMessage(_currentSourceFile, binExpr, 
                     [binExpr.Operator,
                     HapetType.AsString((binExpr.Left as AstExpression).OutType),
                     HapetType.AsString((binExpr.Right as AstExpression).OutType)], 
@@ -620,7 +620,7 @@ namespace HapetPostPrepare
                         {
                             // make a warning if struct 'as' cast used (that is not generated by 'is' op)
                             if (rightExpr.OutType is StructType && !binExpr.IsFromIsOperator && !_currentSourceFile.IsImported)
-                                _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, rightExpr,
+                                _compiler.MessageHandler.ReportMessage(_currentSourceFile, rightExpr,
                                     [], ErrorCode.Get(CTWN.StructCastWithAs), null, ReportType.Warning);
 
                             binExpr.OutType = rightExpr.OutType;
@@ -644,7 +644,7 @@ namespace HapetPostPrepare
                                 {
                                     // error if bin op with void*
                                     if (ptrT.TargetType is VoidType)
-                                        _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, leftExpr, [binExpr.ActualOperator.Name], ErrorCode.Get(CTEN.OpUsedWithVoidPtr));
+                                        _compiler.MessageHandler.ReportMessage(_currentSourceFile, leftExpr, [binExpr.ActualOperator.Name], ErrorCode.Get(CTEN.OpUsedWithVoidPtr));
                                     var parent = rightExpr.NormalParent;
                                     var mulK = new AstNumberExpr(NumberData.FromObject(ptrT.TargetType.GetSize()), null, null, rightExpr);
                                     SetScopeAndParent(mulK, parent);
@@ -660,7 +660,7 @@ namespace HapetPostPrepare
                                 {
                                     // error if bin op with void*
                                     if (ptrT2.TargetType is VoidType)
-                                        _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, rightExpr, [binExpr.ActualOperator.Name], ErrorCode.Get(CTEN.OpUsedWithVoidPtr));
+                                        _compiler.MessageHandler.ReportMessage(_currentSourceFile, rightExpr, [binExpr.ActualOperator.Name], ErrorCode.Get(CTEN.OpUsedWithVoidPtr));
                                     var parent = leftExpr.NormalParent;
                                     var mulK = new AstNumberExpr(NumberData.FromObject(ptrT2.TargetType.GetSize()), null, null, leftExpr);
                                     SetScopeAndParent(mulK, parent);
@@ -715,7 +715,7 @@ namespace HapetPostPrepare
                 if (rightType == null)
                 {
                     // error here
-                    _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text,
+                    _compiler.MessageHandler.ReportMessage(_currentSourceFile,
                         pointerExpr.SubExpression, [HapetType.AsString(pointerExpr.SubExpression.OutType)],
                         ErrorCode.Get(CTEN.PointerTypeExpected));
                     return;
@@ -762,7 +762,7 @@ namespace HapetPostPrepare
                 (clsType.Declaration.IsInterface || 
                 clsType.Declaration.SpecialKeys.Contains(TokenType.KwAbstract)))
             {
-                _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, newExpr, [], ErrorCode.Get(CTEN.CreateInterfOrAbsCls));
+                _compiler.MessageHandler.ReportMessage(_currentSourceFile, newExpr, [], ErrorCode.Get(CTEN.CreateInterfOrAbsCls));
             }
 
             // searching for ctor
@@ -796,7 +796,7 @@ namespace HapetPostPrepare
                 // error if ctor not found
                 if (ctorSymbol == null)
                 {
-                    _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, newExpr.TypeName, [decl.Name.Name], ErrorCode.Get(CTEN.CtorWithArgTypesNotFound));
+                    _compiler.MessageHandler.ReportMessage(_currentSourceFile, newExpr.TypeName, [decl.Name.Name], ErrorCode.Get(CTEN.CtorWithArgTypesNotFound));
                     return;
                 }
                 newExpr.ConstructorSymbol = ctorSymbol as DeclSymbol;
@@ -920,14 +920,14 @@ namespace HapetPostPrepare
 
                 if (leftSideDecl == null)
                 {
-                    _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, nestExpr.LeftPart, [], ErrorCode.Get(CTEN.ExprNotClassOrStruct));
+                    _compiler.MessageHandler.ReportMessage(_currentSourceFile, nestExpr.LeftPart, [], ErrorCode.Get(CTEN.ExprNotClassOrStruct));
                     return;
                 }
 
                 // here could only be an AstIdExpr because AstCallExpr and AstExpression would be in 'if' block upper
                 if (nestExpr.RightPart is not AstIdExpr idExpr)
                 {
-                    _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, nestExpr.RightPart, [], ErrorCode.Get(CTEN.CommonIdentifierExpected));
+                    _compiler.MessageHandler.ReportMessage(_currentSourceFile, nestExpr.RightPart, [], ErrorCode.Get(CTEN.CommonIdentifierExpected));
                     return;
                 }
 
@@ -961,12 +961,12 @@ namespace HapetPostPrepare
                     // check if the var is a static/const field and user is accessing it from an object
                     if (typed.Decl is AstVarDecl varDecl && (varDecl.SpecialKeys.Contains(TokenType.KwStatic) || varDecl.SpecialKeys.Contains(TokenType.KwConst)) && accessingFromAnObject) // if accessing from an object - give em a warning :)
                     {
-                        _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, idExpr, [], ErrorCode.Get(CTWN.StaticFieldFromObject), null, HapetFrontend.Entities.ReportType.Warning);
+                        _compiler.MessageHandler.ReportMessage(_currentSourceFile, idExpr, [], ErrorCode.Get(CTWN.StaticFieldFromObject), null, HapetFrontend.Entities.ReportType.Warning);
                     }
                 }
                 else
                 {
-                    _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, idExpr, [HapetType.AsString(nestExpr.LeftPart.OutType)], ErrorCode.Get(CTEN.SymbolNotFoundInType));
+                    _compiler.MessageHandler.ReportMessage(_currentSourceFile, idExpr, [HapetType.AsString(nestExpr.LeftPart.OutType)], ErrorCode.Get(CTEN.SymbolNotFoundInType));
                 }
             }
         }
@@ -1040,7 +1040,7 @@ namespace HapetPostPrepare
                     defaultExpr.TypeForDefault = funcRet.GetDeepCopy() as AstExpression;
                 else
                 {
-                    _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, defaultExpr, [], ErrorCode.Get(CTEN.DefaultWasNotInfered));
+                    _compiler.MessageHandler.ReportMessage(_currentSourceFile, defaultExpr, [], ErrorCode.Get(CTEN.DefaultWasNotInfered));
                     return;
                 }                
             }
@@ -1052,7 +1052,7 @@ namespace HapetPostPrepare
         {
             if (defaultExpr.TypeForDefault == null)
             {
-                _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, defaultExpr, [], ErrorCode.Get(CTEN.DefaultWasNotInfered));
+                _compiler.MessageHandler.ReportMessage(_currentSourceFile, defaultExpr, [], ErrorCode.Get(CTEN.DefaultWasNotInfered));
                 return;
             }
             defaultExpr.OutType = defaultExpr.TypeForDefault;
@@ -1078,10 +1078,10 @@ namespace HapetPostPrepare
             {
                 // only 1d alloc is allowed
                 if (arrayExpr.SizeExprs.Count != 1)
-                    _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, arrayExpr.TypeName, [], ErrorCode.Get(CTEN.StackAllocOnly1DArray));
+                    _compiler.MessageHandler.ReportMessage(_currentSourceFile, arrayExpr.TypeName, [], ErrorCode.Get(CTEN.StackAllocOnly1DArray));
                 // only structs are allowed
                 if (arrayExpr.TypeName.OutType is not StructType)
-                    _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, arrayExpr.TypeName, [], ErrorCode.Get(CTEN.StackAllocOnlyStructs));
+                    _compiler.MessageHandler.ReportMessage(_currentSourceFile, arrayExpr.TypeName, [], ErrorCode.Get(CTEN.StackAllocOnlyStructs));
             }
 
             // create an expecting elements type to be
@@ -1165,7 +1165,7 @@ namespace HapetPostPrepare
             if (arrayAccExpr.ParameterExpr.OutType is not IntType)
             {
                 // error here? i cannot access array if it is not an int type
-                _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, arrayAccExpr.ParameterExpr, [], ErrorCode.Get(CTEN.ArrayIndexNotInt));
+                _compiler.MessageHandler.ReportMessage(_currentSourceFile, arrayAccExpr.ParameterExpr, [], ErrorCode.Get(CTEN.ArrayIndexNotInt));
             }
 
             HapetType outType = null;
@@ -1174,7 +1174,7 @@ namespace HapetPostPrepare
             else
             {
                 // error because expected an array 
-                _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, arrayAccExpr.ObjectName, [], ErrorCode.Get(CTEN.NonStringOrArrayIndexed));
+                _compiler.MessageHandler.ReportMessage(_currentSourceFile, arrayAccExpr.ObjectName, [], ErrorCode.Get(CTEN.NonStringOrArrayIndexed));
             }
             arrayAccExpr.OutType = outType;
         }
@@ -1185,7 +1185,7 @@ namespace HapetPostPrepare
             if (expr.Condition.OutType is not BoolType) 
             {
                 // error
-                _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, expr.Condition, [], ErrorCode.Get(CTEN.ExprIsNotBool));
+                _compiler.MessageHandler.ReportMessage(_currentSourceFile, expr.Condition, [], ErrorCode.Get(CTEN.ExprIsNotBool));
             }
 
             // this handles defaults
@@ -1231,7 +1231,7 @@ namespace HapetPostPrepare
                     else
                     {
                         // error that the types are not connected to each other
-                        _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, expr.Location,
+                        _compiler.MessageHandler.ReportMessage(_currentSourceFile, expr.Location,
                             [HapetType.AsString(expr.TrueExpr.OutType), HapetType.AsString(expr.FalseExpr.OutType)],
                             ErrorCode.Get(CTEN.TypeOfTernaryNotDeterminated));
                     }
@@ -1293,7 +1293,7 @@ namespace HapetPostPrepare
             PostPrepareExprInference(expr.SubExpression, inInfo, ref outInfo);
             if (expr.SubExpression.OutType is not StructType)
             {
-                _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, expr.SubExpression, [], ErrorCode.Get(CTEN.NullableNotStruct));
+                _compiler.MessageHandler.ReportMessage(_currentSourceFile, expr.SubExpression, [], ErrorCode.Get(CTEN.NullableNotStruct));
                 return;
             }
             var nullableType = GetNullableType(expr.SubExpression, expr);
@@ -1308,7 +1308,7 @@ namespace HapetPostPrepare
             // cringe error when user tries to assign something directly into enum field
             if (assignStmt.Target.LeftPart != null && assignStmt.Target.LeftPart.OutType is EnumType)
             {
-                _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, assignStmt, [], ErrorCode.Get(CTEN.EnumFieldAssigned));
+                _compiler.MessageHandler.ReportMessage(_currentSourceFile, assignStmt, [], ErrorCode.Get(CTEN.EnumFieldAssigned));
                 return;
             }
             // pp assign value
@@ -1317,7 +1317,7 @@ namespace HapetPostPrepare
                 assignStmt.Value = PostPrepareVarValueAssign(assignStmt.Value, assignStmt.Target.OutType, inInfo, ref outInfo);
             }
             else
-                _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, assignStmt, [], ErrorCode.Get(CTEN.NotExprInAssignment));
+                _compiler.MessageHandler.ReportMessage(_currentSourceFile, assignStmt, [], ErrorCode.Get(CTEN.NotExprInAssignment));
         }
 
         private void PostPrepareForStmtInference(AstForStmt forStmt, InInfo inInfo, ref OutInfo outInfo)
@@ -1331,7 +1331,7 @@ namespace HapetPostPrepare
                 // error if it is not a bool type because it has to be
                 if (forStmt.SecondArgument.OutType is not BoolType)
                 {
-                    _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, forStmt.SecondArgument, [], ErrorCode.Get(CTEN.ExprIsNotBool));
+                    _compiler.MessageHandler.ReportMessage(_currentSourceFile, forStmt.SecondArgument, [], ErrorCode.Get(CTEN.ExprIsNotBool));
                 }
             }
             if (forStmt.ThirdArgument != null)
@@ -1347,7 +1347,7 @@ namespace HapetPostPrepare
             // error if it is not a bool type because it has to be
             if (whileStmt.Condition.OutType is not BoolType)
             {
-                _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, whileStmt.Condition, [], ErrorCode.Get(CTEN.ExprIsNotBool));
+                _compiler.MessageHandler.ReportMessage(_currentSourceFile, whileStmt.Condition, [], ErrorCode.Get(CTEN.ExprIsNotBool));
             }
 
             PostPrepareExprInference(whileStmt.Body, inInfo, ref outInfo);
@@ -1360,7 +1360,7 @@ namespace HapetPostPrepare
             // error if it is not a bool type because it has to be
             if (whileStmt.Condition.OutType is not BoolType)
             {
-                _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, whileStmt.Condition, [], ErrorCode.Get(CTEN.ExprIsNotBool));
+                _compiler.MessageHandler.ReportMessage(_currentSourceFile, whileStmt.Condition, [], ErrorCode.Get(CTEN.ExprIsNotBool));
             }
 
             PostPrepareExprInference(whileStmt.Body, inInfo, ref outInfo);
@@ -1373,7 +1373,7 @@ namespace HapetPostPrepare
             // error if it is not a bool type because it has to be
             if (ifStmt.Condition.OutType is not BoolType)
             {
-                _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, ifStmt.Condition, [], ErrorCode.Get(CTEN.ExprIsNotBool));
+                _compiler.MessageHandler.ReportMessage(_currentSourceFile, ifStmt.Condition, [], ErrorCode.Get(CTEN.ExprIsNotBool));
             }
 
             PostPrepareExprInference(ifStmt.BodyTrue, inInfo, ref outInfo);
@@ -1396,7 +1396,7 @@ namespace HapetPostPrepare
                 if (cc.IsDefaultCase)
                 {
                     if (thereWasADefaultCase)
-                        _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, cc.Pattern, [], ErrorCode.Get(CTEN.MultipleDefaultCases));
+                        _compiler.MessageHandler.ReportMessage(_currentSourceFile, cc.Pattern, [], ErrorCode.Get(CTEN.MultipleDefaultCases));
                     thereWasADefaultCase = true;
                     continue; // do not check for pattern in default expr...
                 }
@@ -1407,7 +1407,7 @@ namespace HapetPostPrepare
                 // check that the value is a const 
                 if (cc.Pattern.OutValue == null)
                 {
-                    _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, cc.Pattern, [], ErrorCode.Get(CTEN.NonConstantCaseValue));
+                    _compiler.MessageHandler.ReportMessage(_currentSourceFile, cc.Pattern, [], ErrorCode.Get(CTEN.NonConstantCaseValue));
                 }
             }
         }
@@ -1445,7 +1445,7 @@ namespace HapetPostPrepare
                 // if user tries to return smth but func ret type is void =^0
                 if (currFuncRet.OutType is VoidType)
                 {
-                    _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, currFuncLoc, [], ErrorCode.Get(CTEN.EmptyReturnExpected));
+                    _compiler.MessageHandler.ReportMessage(_currentSourceFile, currFuncLoc, [], ErrorCode.Get(CTEN.EmptyReturnExpected));
                     return;
                 }
 
@@ -1454,7 +1454,7 @@ namespace HapetPostPrepare
             }
             else if (returnStmt.ReturnExpression == null && currFuncRet.OutType is not VoidType)
             {
-                _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, returnStmt, [HapetType.AsString(currFuncRet.OutType)], ErrorCode.Get(CTEN.EmptyReturnStmt));
+                _compiler.MessageHandler.ReportMessage(_currentSourceFile, returnStmt, [HapetType.AsString(currFuncRet.OutType)], ErrorCode.Get(CTEN.EmptyReturnStmt));
             }
         }
 
@@ -1478,7 +1478,7 @@ namespace HapetPostPrepare
             // check that the attr ast was infered properly
             if (fullTypeAstId.OutType == null)
             {
-                _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, attrStmt.AttributeName, [], ErrorCode.Get(CTEN.AttrNotFound));
+                _compiler.MessageHandler.ReportMessage(_currentSourceFile, attrStmt.AttributeName, [], ErrorCode.Get(CTEN.AttrNotFound));
                 return;
             }
 
@@ -1492,7 +1492,7 @@ namespace HapetPostPrepare
                 clsT.Declaration.Name.Name == "System.Attribute"))
             {
                 // check that the shite is inherited from 'System.Attribute'
-                _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, attrStmt.AttributeName, [], ErrorCode.Get(CTEN.AttrNotInhFromAttr));
+                _compiler.MessageHandler.ReportMessage(_currentSourceFile, attrStmt.AttributeName, [], ErrorCode.Get(CTEN.AttrNotInhFromAttr));
             }
 
             // getting all the fields of attribuute class decl
@@ -1505,7 +1505,7 @@ namespace HapetPostPrepare
             {
                 var beg = attrStmt.Arguments[attrDeclFields.Count].Beginning;
                 var end = attrStmt.Arguments[attrStmt.Arguments.Count - 1].Ending;
-                _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, new Location(beg, end), [attrDeclFields.Count.ToString(), attrStmt.Arguments.Count.ToString()], ErrorCode.Get(CTEN.WrongAttrArgs));
+                _compiler.MessageHandler.ReportMessage(_currentSourceFile, new Location(beg, end), [attrDeclFields.Count.ToString(), attrStmt.Arguments.Count.ToString()], ErrorCode.Get(CTEN.WrongAttrArgs));
             }
 
             for (int i = 0; i < attrDeclFields.Count; ++i)
@@ -1522,7 +1522,7 @@ namespace HapetPostPrepare
                     var a = arg.Expr;
                     // all attr params has to be const values
                     if (a.OutValue == null)
-                        _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, a, [], ErrorCode.Get(CTEN.NonComptimeAttrArg));
+                        _compiler.MessageHandler.ReportMessage(_currentSourceFile, a, [], ErrorCode.Get(CTEN.NonComptimeAttrArg));
 
                     // is going to error if they are different types :)
                     attrStmt.Arguments[i].Expr = PostPrepareExpressionWithType(theAttrField.Type.OutType, a);
@@ -1547,7 +1547,7 @@ namespace HapetPostPrepare
                     if (reqAttr != null)
                     {
                         // there was a required attr and no param for the field - error
-                        _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, attrStmt.Ending, [theAttrField.Name.Name], ErrorCode.Get(CTEN.NonSpecifiedRequired));
+                        _compiler.MessageHandler.ReportMessage(_currentSourceFile, attrStmt.Ending, [theAttrField.Name.Name], ErrorCode.Get(CTEN.NonSpecifiedRequired));
                     }
                 }
             }
@@ -1595,7 +1595,7 @@ namespace HapetPostPrepare
             if (currParent == null)
             {
                 // switch-case not found - error
-                _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, stmt, [], ErrorCode.Get(CTEN.GotoIsNotInSwitchCase));
+                _compiler.MessageHandler.ReportMessage(_currentSourceFile, stmt, [], ErrorCode.Get(CTEN.GotoIsNotInSwitchCase));
                 return;
             }
 
@@ -1614,7 +1614,7 @@ namespace HapetPostPrepare
             if (cs == null)
             {
                 // there is no case with that label - error
-                _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, stmt, [stmt.GotoLabel], ErrorCode.Get(CTEN.GotoLabelNotFoundInCases));
+                _compiler.MessageHandler.ReportMessage(_currentSourceFile, stmt, [stmt.GotoLabel], ErrorCode.Get(CTEN.GotoLabelNotFoundInCases));
                 return;
             }
 
@@ -1631,7 +1631,7 @@ namespace HapetPostPrepare
                 var defaultOfDefault = AstDefaultExpr.GetDefaultValueForType(targetType ?? defExpr.TypeForDefault.OutType, value, _compiler.MessageHandler);
                 if (defaultOfDefault == null)
                 {
-                    _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, value, [], ErrorCode.Get(CTEN.DefaultValueNotFound));
+                    _compiler.MessageHandler.ReportMessage(_currentSourceFile, value, [], ErrorCode.Get(CTEN.DefaultValueNotFound));
                     return value;
                 }
                 value = defaultOfDefault;

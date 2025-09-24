@@ -39,7 +39,7 @@ namespace HapetBackend.Llvm
             else
             {
                 // compiler error - could not generate type info 
-                _messageHandler.ReportMessage(_currentSourceFile.Text, null, [HapetType.AsString(type)], ErrorCode.Get(CTEN.CouldNotGenerateTypeInfo));
+                _messageHandler.ReportMessage(_currentSourceFile, null, [HapetType.AsString(type)], ErrorCode.Get(CTEN.CouldNotGenerateTypeInfo));
                 return default;
             }
 
@@ -188,7 +188,7 @@ namespace HapetBackend.Llvm
             else
             {
                 // compiler error - could not generate type info 
-                _messageHandler.ReportMessage(_currentSourceFile.Text, null, [HapetType.AsString(type)], ErrorCode.Get(CTEN.CouldNotGenerateTypeInfo));
+                _messageHandler.ReportMessage(_currentSourceFile, null, [HapetType.AsString(type)], ErrorCode.Get(CTEN.CouldNotGenerateTypeInfo));
                 amount = 0;
                 return default;
             }
@@ -249,7 +249,7 @@ namespace HapetBackend.Llvm
                 allClassFields = strType.Declaration.GetAllRawFields();
             else
             {
-                _messageHandler.ReportMessage(_currentSourceFile.Text, null, [HapetType.AsString(type)], ErrorCode.Get(CTEN.CouldNotGenerateTypeInfo));
+                _messageHandler.ReportMessage(_currentSourceFile, null, [HapetType.AsString(type)], ErrorCode.Get(CTEN.CouldNotGenerateTypeInfo));
                 return new List<(ClassType, int[])>(); // compiler error
             }
 

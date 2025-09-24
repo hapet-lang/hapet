@@ -199,7 +199,7 @@ namespace HapetPostPrepare
 
                 default:
                     {
-                        _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, expr, [expr.AAAName], ErrorCode.Get(CTEN.StmtNotImplemented));
+                        _compiler.MessageHandler.ReportMessage(_currentSourceFile, expr, [expr.AAAName], ErrorCode.Get(CTEN.StmtNotImplemented));
                         break;
                     }
             }

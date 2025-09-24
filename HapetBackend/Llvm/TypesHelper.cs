@@ -255,12 +255,12 @@ namespace HapetBackend.Llvm
                             // check for 0 and other shite
                             if (tmpPack <= 0)
                             {
-                                _messageHandler.ReportMessage(_currentSourceFile.Text, thePackParam, [], ErrorCode.Get(CTEN.PackLessThanOne));
+                                _messageHandler.ReportMessage(_currentSourceFile, thePackParam, [], ErrorCode.Get(CTEN.PackLessThanOne));
                             }
                             else if (!Funcad.IsPowerOfTwo(tmpPack))
                             {
                                 // if it is not a power of two
-                                _messageHandler.ReportMessage(_currentSourceFile.Text, thePackParam, [], ErrorCode.Get(CTEN.PackNotPowerOfTwo));
+                                _messageHandler.ReportMessage(_currentSourceFile, thePackParam, [], ErrorCode.Get(CTEN.PackNotPowerOfTwo));
                             }
                             else
                             {
@@ -517,7 +517,7 @@ namespace HapetBackend.Llvm
             {
                 // TODO: get normal location somehow or make the error as out param of the func
                 // TODO: MOVE TO PP
-                _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, null, [HapetType.AsString(inType), HapetType.AsString(outType)], ErrorCode.Get(CTEN.AmbiguousCastOverloads));
+                _compiler.MessageHandler.ReportMessage(_currentSourceFile, null, [HapetType.AsString(inType), HapetType.AsString(outType)], ErrorCode.Get(CTEN.AmbiguousCastOverloads));
             }
 
             if (inType is PointerType ptrT)

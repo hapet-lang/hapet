@@ -74,7 +74,7 @@ namespace HapetPostPrepare
                         // warn if the value already exists in enum
                         if (allValues.Contains(currentValue))
                         {
-                            _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, decl, [], ErrorCode.Get(CTWN.EnumHasSameValue), null, ReportType.Warning);
+                            _compiler.MessageHandler.ReportMessage(_currentSourceFile, decl, [], ErrorCode.Get(CTWN.EnumHasSameValue), null, ReportType.Warning);
                         }
                         allValues.Add(currentValue);
                         currentValue++;
@@ -83,19 +83,19 @@ namespace HapetPostPrepare
                     {
                         if (decl.Initializer.OutValue == null)
                         {
-                            _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, decl.Initializer, [], ErrorCode.Get(CTEN.EnumIniNotComptime));
+                            _compiler.MessageHandler.ReportMessage(_currentSourceFile, decl.Initializer, [], ErrorCode.Get(CTEN.EnumIniNotComptime));
                             continue;
                         }
                         else if (decl.Initializer.OutValue is not NumberData)
                         {
-                            _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, decl.Initializer, [], ErrorCode.Get(CTEN.EnumIniNotNumber));
+                            _compiler.MessageHandler.ReportMessage(_currentSourceFile, decl.Initializer, [], ErrorCode.Get(CTEN.EnumIniNotNumber));
                             continue;
                         }
                         var userDefinedValue = (int)((NumberData)decl.Initializer.OutValue).IntValue;
                         // warn if the value already exists in enum
                         if (allValues.Contains(userDefinedValue))
                         {
-                            _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, decl, [], ErrorCode.Get(CTWN.EnumHasSameValue), null, ReportType.Warning);
+                            _compiler.MessageHandler.ReportMessage(_currentSourceFile, decl, [], ErrorCode.Get(CTWN.EnumHasSameValue), null, ReportType.Warning);
                         }
                         allValues.Add(userDefinedValue);
                         currentValue = userDefinedValue + 1; // getting value for the next field

@@ -110,7 +110,7 @@ namespace HapetPostPrepare
                 }
 
                 if (castResult == null)
-                    _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, valueHandler, [], ErrorCode.Get(CTEN.DelegFuncNameExpected));
+                    _compiler.MessageHandler.ReportMessage(_currentSourceFile, valueHandler, [], ErrorCode.Get(CTEN.DelegFuncNameExpected));
                 return valueHandler;
             }
 
@@ -191,7 +191,7 @@ namespace HapetPostPrepare
                         smbl3 = GetFuncFromCandidates(idFuncName, args, cls, true, out var _);
                         // error because user tries to access non static method from a class name
                         if (smbl3 != null && castResult == null)
-                            _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, idFuncName, [], ErrorCode.Get(CTEN.NonStaticFuncFromStatic));
+                            _compiler.MessageHandler.ReportMessage(_currentSourceFile, idFuncName, [], ErrorCode.Get(CTEN.NonStaticFuncFromStatic));
                     }
                     else
                     {
@@ -219,7 +219,7 @@ namespace HapetPostPrepare
             {
                 // error here: the function could not be infered
                 if (castResult == null)
-                    _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, valueHandler, [], ErrorCode.Get(CTEN.FuncNotInfered));
+                    _compiler.MessageHandler.ReportMessage(_currentSourceFile, valueHandler, [], ErrorCode.Get(CTEN.FuncNotInfered));
                 return value;
             }
 
@@ -238,7 +238,7 @@ namespace HapetPostPrepare
                 // warn if accessing from an object
                 if (accessingFromAnObject && isStaticFunc && castResult == null)
                 {
-                    _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, valueHandler, [], ErrorCode.Get(CTWN.StaticFuncFromObject), null, ReportType.Warning);
+                    _compiler.MessageHandler.ReportMessage(_currentSourceFile, valueHandler, [], ErrorCode.Get(CTWN.StaticFuncFromObject), null, ReportType.Warning);
                 }
             }
             else if (nestFuncName.RightPart.OutType is DelegateType dt)
@@ -250,7 +250,7 @@ namespace HapetPostPrepare
             {
                 // error here
                 if (castResult == null)
-                    _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, valueHandler, [], ErrorCode.Get(CTEN.ExprExpectedToBeFunc));
+                    _compiler.MessageHandler.ReportMessage(_currentSourceFile, valueHandler, [], ErrorCode.Get(CTEN.ExprExpectedToBeFunc));
             }
 
             if (castResult != null)
@@ -269,7 +269,7 @@ namespace HapetPostPrepare
             {
                 // error and quit
                 if (castResult == null)
-                    _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, value, 
+                    _compiler.MessageHandler.ReportMessage(_currentSourceFile, value, 
                         [HapetType.AsString(targetType)], ErrorCode.Get(CTEN.LambdaCouldNotBeCastedToDel));
                 return value;
             }

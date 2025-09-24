@@ -137,12 +137,12 @@ namespace HapetFrontend.Parsing
                     }
                 case Enums.DirectiveType.Error:
                     {
-                        _messageHandler.ReportMessage(_lexer.Text, directive, [directive.Value.OutValue as string], ErrorCode.Get(CTEN.UserDefinedError));
+                        _messageHandler.ReportMessage(_lexer.ProgramFile, directive, [directive.Value.OutValue as string], ErrorCode.Get(CTEN.UserDefinedError));
                         break;
                     }
                 case Enums.DirectiveType.Warning:
                     {
-                        _messageHandler.ReportMessage(_lexer.Text, directive, [directive.Value.OutValue as string], ErrorCode.Get(CTWN.UserDefinedWarning), reportType: ReportType.Warning);
+                        _messageHandler.ReportMessage(_lexer.ProgramFile, directive, [directive.Value.OutValue as string], ErrorCode.Get(CTWN.UserDefinedWarning), reportType: ReportType.Warning);
                         break;
                     }
             }

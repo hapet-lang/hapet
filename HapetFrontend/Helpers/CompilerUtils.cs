@@ -45,7 +45,7 @@ namespace HapetFrontend.Helpers
         }
         #endregion
 
-        public static bool ValidateFilePath(string dir, string filePath, bool isRel, IMessageHandler mh, (string file, ILocation loc)? from, out string path)
+        public static bool ValidateFilePath(string dir, string filePath, bool isRel, out string path)
         {
             path = filePath;
 
@@ -56,20 +56,6 @@ namespace HapetFrontend.Helpers
 
             path = Path.GetFullPath(path);
             path = path.PathNormalize();
-
-            if (!File.Exists(path))
-            {
-                if (from != null)
-                {
-                    mh.ReportMessage(from.Value.file, from.Value.loc, [path], ErrorCode.Get(CTEN.FullPathToHapetFileNotFound));
-                }
-                else
-                {
-                    mh.ReportMessage([path], ErrorCode.Get(CTEN.FullPathToHapetFileNotFound));
-                }
-
-                return false;
-            }
 
             return true;
         }

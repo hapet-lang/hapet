@@ -314,7 +314,7 @@ namespace HapetLastPrepare
 
                 default:
                     {
-                        _compiler.MessageHandler.ReportMessage(_postPreparer._currentSourceFile.Text, stmt, [stmt.AAAName], ErrorCode.Get(CTEN.StmtNotImplemented));
+                        _compiler.MessageHandler.ReportMessage(_postPreparer._currentSourceFile, stmt, [stmt.AAAName], ErrorCode.Get(CTEN.StmtNotImplemented));
                         break;
                     }
             }

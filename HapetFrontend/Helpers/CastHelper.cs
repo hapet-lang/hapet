@@ -23,7 +23,7 @@ namespace HapetFrontend
             if (targetType == null)
             {
                 if (castResult == null)
-                    MessageHandler.ReportMessage(sourceFile.Text, currentExpr, [], ErrorCode.Get(CTEN.RequiredTypeNotEvaluated));
+                    MessageHandler.ReportMessage(sourceFile, currentExpr, [], ErrorCode.Get(CTEN.RequiredTypeNotEvaluated));
                 return currentExpr;
             }
 
@@ -31,7 +31,7 @@ namespace HapetFrontend
             if (currentType == null)
             {
                 if (castResult == null)
-                    MessageHandler.ReportMessage(sourceFile.Text, currentExpr, [], ErrorCode.Get(CTEN.ExprTypeNotEvaluated));
+                    MessageHandler.ReportMessage(sourceFile, currentExpr, [], ErrorCode.Get(CTEN.ExprTypeNotEvaluated));
                 return currentExpr;
             }
 
@@ -80,7 +80,7 @@ namespace HapetFrontend
             else if (implicitOps.Count > 1)
             {
                 if (castResult == null)
-                    MessageHandler.ReportMessage(sourceFile.Text, currentExpr, 
+                    MessageHandler.ReportMessage(sourceFile, currentExpr, 
                         [HapetType.AsString(currentType), HapetType.AsString(targetType)], 
                         ErrorCode.Get(CTEN.AmbiguousCastOverloads));
             }
@@ -229,7 +229,7 @@ namespace HapetFrontend
             if (targetType != currentType && outExpr == null)
             {
                 if (castResult == null)
-                    MessageHandler.ReportMessage(sourceFile.Text, currentExpr, [HapetType.AsString(currentType), HapetType.AsString(targetType)],
+                    MessageHandler.ReportMessage(sourceFile, currentExpr, [HapetType.AsString(currentType), HapetType.AsString(targetType)],
                         ErrorCode.Get(CTEN.TypeCouldNotBeImplCasted));
                 outExpr = currentExpr;
             }

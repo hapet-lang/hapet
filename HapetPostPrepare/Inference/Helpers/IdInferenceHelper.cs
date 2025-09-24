@@ -49,7 +49,7 @@ namespace HapetPostPrepare
             if (Step5_IdentifierFuncs(idExpr, inInfo, ref outInfo, declToSearch)) return;
 
             if (!inInfo.MuteErrors && !inInfo.FromCallExpr)
-                _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, idExpr, [], ErrorCode.Get(CTEN.TypeCouldNotBeInfered));
+                _compiler.MessageHandler.ReportMessage(_currentSourceFile, idExpr, [], ErrorCode.Get(CTEN.TypeCouldNotBeInfered));
         }
 
         private bool Step1_IdentifierFullNamespace(AstIdExpr idExpr, InInfo inInfo, ref OutInfo outInfo, AstDeclaration scopeToSearch = null)
@@ -254,7 +254,7 @@ namespace HapetPostPrepare
                     if (nameAndFunc.Length != 2)
                     {
                         // error 
-                        _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, idExpr, [name], ErrorCode.Get(CTEN.OnlyOneDoubleColonInFunc));
+                        _compiler.MessageHandler.ReportMessage(_currentSourceFile, idExpr, [name], ErrorCode.Get(CTEN.OnlyOneDoubleColonInFunc));
                         return false;
                     }
 
@@ -288,7 +288,7 @@ namespace HapetPostPrepare
                     else
                     {
                         // error 
-                        _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, leftPartId,
+                        _compiler.MessageHandler.ReportMessage(_currentSourceFile, leftPartId,
                             [HapetType.AsString(leftPartId.OutType)],
                             ErrorCode.Get(CTEN.FuncCallNotOnType));
                         return false;
@@ -307,7 +307,7 @@ namespace HapetPostPrepare
         public void IdentifierOnFoundSymbol(AstIdExpr idExpr, DeclSymbol typed, string name, InInfo inInfo, ref OutInfo outInfo2)
         {
             if (!CheckIfCouldBeAccessed(idExpr, typed.Decl, inInfo) && !inInfo.FromCallExpr && !inInfo.MuteErrors)
-                _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, idExpr, [], ErrorCode.Get(CTEN.DeclCouldNotBeAccessed));
+                _compiler.MessageHandler.ReportMessage(_currentSourceFile, idExpr, [], ErrorCode.Get(CTEN.DeclCouldNotBeAccessed));
             typed = CheckForGenericType(typed, idExpr, inInfo);
             if (!string.IsNullOrWhiteSpace(name))
             {
@@ -356,13 +356,13 @@ namespace HapetPostPrepare
             // if it is a warning
             if (obs.Arguments.Count == 1 || (obs.Arguments[1].OutValue is bool b && b == false))
             {
-                _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, idExpr,
+                _compiler.MessageHandler.ReportMessage(_currentSourceFile, idExpr,
                     [decl.Name.Name, (string)obs.Arguments[0].OutValue], ErrorCode.Get(CTWN.DeclIsObsolete), 
                     reportType: HapetFrontend.Entities.ReportType.Warning);
             }
             else
             {
-                _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, idExpr, 
+                _compiler.MessageHandler.ReportMessage(_currentSourceFile, idExpr, 
                     [decl.Name.Name, (string)obs.Arguments[0].OutValue], ErrorCode.Get(CTEN.DeclIsObsolete));
             }
         }
@@ -387,7 +387,7 @@ namespace HapetPostPrepare
                 if (gg)
                 {
                     // error - cannot access this shite from static nested/lambda 
-                    _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, idExpr, [idExpr.Name], ErrorCode.Get(CTEN.StaticLambdaToParams));
+                    _compiler.MessageHandler.ReportMessage(_currentSourceFile, idExpr, [idExpr.Name], ErrorCode.Get(CTEN.StaticLambdaToParams));
                 }
             }
         }

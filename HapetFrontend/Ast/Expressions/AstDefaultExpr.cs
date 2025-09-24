@@ -67,7 +67,7 @@ namespace HapetFrontend.Ast.Expressions
                     outExpr.OutType = en.Declaration.Type.OutType;
                     break;
                 default:
-                    messageHandler.ReportMessage(orig.SourceFile.Text, orig, [HapetType.AsString(tp)], ErrorCode.Get(CTEN.NoDefaultValueForType));
+                    messageHandler.ReportMessage(orig.SourceFile, orig, [HapetType.AsString(tp)], ErrorCode.Get(CTEN.NoDefaultValueForType));
                     outExpr = null;
                     break;
             }

@@ -78,7 +78,7 @@ namespace HapetBackend.Llvm
 
                 default:
                     {
-                        _messageHandler.ReportMessage(_currentSourceFile.Text, expr, [expr.AAAName], ErrorCode.Get(CTEN.StmtNotImplemented));
+                        _messageHandler.ReportMessage(_currentSourceFile, expr, [expr.AAAName], ErrorCode.Get(CTEN.StmtNotImplemented));
                         return default;
                     }
             }
@@ -154,7 +154,7 @@ namespace HapetBackend.Llvm
                 }
                 return toReturn;
             }
-            _messageHandler.ReportMessage(_currentSourceFile.Text, unExpr, [unExpr.ToString()], ErrorCode.Get(CTEN.StmtNotImplemented));
+            _messageHandler.ReportMessage(_currentSourceFile, unExpr, [unExpr.ToString()], ErrorCode.Get(CTEN.StmtNotImplemented));
             return default;
         }
 
@@ -259,7 +259,7 @@ namespace HapetBackend.Llvm
                 }
                 return toReturn;
             }
-            _messageHandler.ReportMessage(_currentSourceFile.Text, unExpr, [unExpr.ToString()], ErrorCode.Get(CTEN.StmtNotImplemented));
+            _messageHandler.ReportMessage(_currentSourceFile, unExpr, [unExpr.ToString()], ErrorCode.Get(CTEN.StmtNotImplemented));
             return default;
         }
 
@@ -358,7 +358,7 @@ namespace HapetBackend.Llvm
                                     break;
                                 }
                             }
-                            _messageHandler.ReportMessage(_currentSourceFile.Text, binExpr, [HapetType.AsString(leftExpr.OutType), HapetType.AsString(rightExpr.OutType)], ErrorCode.Get(CTEN.TypeCouldNotBeConverted));
+                            _messageHandler.ReportMessage(_currentSourceFile, binExpr, [HapetType.AsString(leftExpr.OutType), HapetType.AsString(rightExpr.OutType)], ErrorCode.Get(CTEN.TypeCouldNotBeConverted));
                             return default;
                         }
                     case "is":
@@ -482,7 +482,7 @@ namespace HapetBackend.Llvm
                 }
                 return toReturn;
             }
-            _messageHandler.ReportMessage(_currentSourceFile.Text, binExpr, [binExpr.ToString()], ErrorCode.Get(CTEN.StmtNotImplemented));
+            _messageHandler.ReportMessage(_currentSourceFile, binExpr, [binExpr.ToString()], ErrorCode.Get(CTEN.StmtNotImplemented));
             return default;
         }
         
@@ -544,7 +544,7 @@ namespace HapetBackend.Llvm
                     }
                     else
                     {
-                        _messageHandler.ReportMessage(_currentSourceFile.Text, castLocation, [HapetType.AsString(leftType), HapetType.AsString(rightType)], ErrorCode.Get(CTEN.TypeCouldNotBeConverted));
+                        _messageHandler.ReportMessage(_currentSourceFile, castLocation, [HapetType.AsString(leftType), HapetType.AsString(rightType)], ErrorCode.Get(CTEN.TypeCouldNotBeConverted));
                         return default;
                     }
                 }
@@ -595,7 +595,7 @@ namespace HapetBackend.Llvm
                 // idk what to do here :_(
                 // anyway it should not happen...
                 // internal error here
-                _messageHandler.ReportMessage(_currentSourceFile.Text, expr, [], ErrorCode.Get(CTEN.PtrExprCouldNotBeGenerated));
+                _messageHandler.ReportMessage(_currentSourceFile, expr, [], ErrorCode.Get(CTEN.PtrExprCouldNotBeGenerated));
             }
             return default;
         }
@@ -612,7 +612,7 @@ namespace HapetBackend.Llvm
                 return GenerateIdExpr(idExpr, true);
             }
             // internal error here
-            _messageHandler.ReportMessage(_currentSourceFile.Text, addrExpr, [], ErrorCode.Get(CTEN.AddrOfExprCouldNotBeGenerated));
+            _messageHandler.ReportMessage(_currentSourceFile, addrExpr, [], ErrorCode.Get(CTEN.AddrOfExprCouldNotBeGenerated));
             return default;
         }
 
@@ -975,7 +975,7 @@ namespace HapetBackend.Llvm
 
                     return _builder.BuildCall2(funcType, funcValue, []);
                 }
-                _messageHandler.ReportMessage(_currentSourceFile.Text, expr, [HapetType.AsString(expr.FuncName.OutType)], ErrorCode.Get(CTEN.TheTypeIsNotCallable));
+                _messageHandler.ReportMessage(_currentSourceFile, expr, [HapetType.AsString(expr.FuncName.OutType)], ErrorCode.Get(CTEN.TheTypeIsNotCallable));
                 return default;
             }
         }
@@ -1097,7 +1097,7 @@ namespace HapetBackend.Llvm
                         // usually this happens when user tries to access non static/const field from a class/struct name
                         if (leftPart == default)
                         {
-                            _messageHandler.ReportMessage(_currentSourceFile.Text, idExpr, [idExpr.Name], ErrorCode.Get(CTEN.NonStaticFieldAccess));
+                            _messageHandler.ReportMessage(_currentSourceFile, idExpr, [idExpr.Name], ErrorCode.Get(CTEN.NonStaticFieldAccess));
                             return default;
                         }
 
@@ -1146,7 +1146,7 @@ namespace HapetBackend.Llvm
                     }
                 }
             }
-            _messageHandler.ReportMessage(_currentSourceFile.Text, expr, [], ErrorCode.Get(CTEN.NestedCouldNotBeGenerated));
+            _messageHandler.ReportMessage(_currentSourceFile, expr, [], ErrorCode.Get(CTEN.NestedCouldNotBeGenerated));
             return default;
         }
 
@@ -1225,7 +1225,7 @@ namespace HapetBackend.Llvm
                 return retLoaded;
             }
 
-            _messageHandler.ReportMessage(_currentSourceFile.Text, expr, [HapetType.AsString(expr.ObjectName.OutType)], ErrorCode.Get(CTEN.ArrayAccessNotGenerate));
+            _messageHandler.ReportMessage(_currentSourceFile, expr, [HapetType.AsString(expr.ObjectName.OutType)], ErrorCode.Get(CTEN.ArrayAccessNotGenerate));
             return default;
         }
 
@@ -1815,7 +1815,7 @@ namespace HapetBackend.Llvm
             {
                 if (_currentLoopEnd == null)
                 {
-                    _messageHandler.ReportMessage(_currentSourceFile.Text, stmt, [], ErrorCode.Get(CTEN.NoLoopToBreak));
+                    _messageHandler.ReportMessage(_currentSourceFile, stmt, [], ErrorCode.Get(CTEN.NoLoopToBreak));
                     return;
                 }
                 _builder.BuildBr(_currentLoopEnd);
@@ -1824,7 +1824,7 @@ namespace HapetBackend.Llvm
             {
                 if (_currentLoopInc == null)
                 {
-                    _messageHandler.ReportMessage(_currentSourceFile.Text, stmt, [], ErrorCode.Get(CTEN.NoLoopToContinue));
+                    _messageHandler.ReportMessage(_currentSourceFile, stmt, [], ErrorCode.Get(CTEN.NoLoopToContinue));
                     return;
                 }
                 _builder.BuildBr(_currentLoopInc);
@@ -1942,7 +1942,7 @@ namespace HapetBackend.Llvm
             // error if ctor not found
             if (ctorSymbol == null)
             {
-                _messageHandler.ReportMessage(_currentSourceFile.Text, baseStmt, [HapetType.AsString(baseStmt.BaseType)], ErrorCode.Get(CTEN.CtorWithArgTypesNotFound));
+                _messageHandler.ReportMessage(_currentSourceFile, baseStmt, [HapetType.AsString(baseStmt.BaseType)], ErrorCode.Get(CTEN.CtorWithArgTypesNotFound));
                 return;
             }
 

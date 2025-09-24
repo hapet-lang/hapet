@@ -158,7 +158,7 @@ namespace HapetPostPrepare
                                 {
                                     // the method is implemented in parent class and current class
                                     // we need to error
-                                    _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, currF.Name,
+                                    _compiler.MessageHandler.ReportMessage(_currentSourceFile, currF.Name,
                                         [HapetType.AsString(definedInOneOfTheParents.ContainingParent.Type.OutType)], ErrorCode.Get(CTEN.MethodAlreadyDefined));
                                     continue;
                                 }
@@ -174,7 +174,7 @@ namespace HapetPostPrepare
                                 {
                                     if (!inhF.IsPropertyFunction)
                                         // error - the method of the interface was not implemented
-                                        _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, inh,
+                                        _compiler.MessageHandler.ReportMessage(_currentSourceFile, inh,
                                             [HapetType.AsString(decl.Type.OutType),
                                                 inhF.Name.Name], ErrorCode.Get(CTEN.NoMethodImplementation));
                                 }
@@ -249,7 +249,7 @@ namespace HapetPostPrepare
                         continue;
 
                     // error - function shadowing
-                    _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, currM.Name,
+                    _compiler.MessageHandler.ReportMessage(_currentSourceFile, currM.Name,
                         [HapetType.AsString(parentFnc.Type.OutType)], ErrorCode.Get(CTEN.FunctionShadowing));
                 }
                 else if (parentFnc != null && currM.SpecialKeys.Contains(TokenType.KwNew))
@@ -277,7 +277,7 @@ namespace HapetPostPrepare
                             continue;
 
                         // error - implementation of method not found in curr class
-                        _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, decl.Name,
+                        _compiler.MessageHandler.ReportMessage(_currentSourceFile, decl.Name,
                             [m.Name.Name], ErrorCode.Get(CTEN.NoAbsMethodImpl));
                     }
                 }
@@ -411,7 +411,7 @@ namespace HapetPostPrepare
                                 {
                                     // the field is implemented in parent class and current class
                                     // we need to error
-                                    _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, currF,
+                                    _compiler.MessageHandler.ReportMessage(_currentSourceFile, currF,
                                         [HapetType.AsString(definedInOneOfTheParents.ContainingParent.Type.OutType)], ErrorCode.Get(CTEN.FieldAlreadyDefined));
                                     continue;
                                 }
@@ -427,7 +427,7 @@ namespace HapetPostPrepare
                                 {
                                     if (!inhF.IsPropertyField)
                                         // error - the field of the interface was not implemented
-                                        _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, inh,
+                                        _compiler.MessageHandler.ReportMessage(_currentSourceFile, inh,
                                             [HapetType.AsString(decl.Type.OutType), inhF.Name.Name], ErrorCode.Get(CTEN.NoFieldImplementation));
                                 }
                                 else
@@ -492,7 +492,7 @@ namespace HapetPostPrepare
                 if (parentProp != null && !currP.SpecialKeys.Contains(TokenType.KwNew))
                 {
                     // error - property shadowing
-                    _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, currP.Name,
+                    _compiler.MessageHandler.ReportMessage(_currentSourceFile, currP.Name,
                         [$"{parentProp.ContainingParent.Name.Name}::{parentProp.Name.Name}"], ErrorCode.Get(CTEN.PropertyShadowing));
                 }
                 else if (parentProp != null && currP.SpecialKeys.Contains(TokenType.KwNew))
@@ -516,7 +516,7 @@ namespace HapetPostPrepare
                     if (p.SpecialKeys.Contains(TokenType.KwAbstract))
                     {
                         // error - implementation of method not found in curr class
-                        _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, decl.Name,
+                        _compiler.MessageHandler.ReportMessage(_currentSourceFile, decl.Name,
                             [$"{p.ContainingParent.Name.Name}::{p.Name.Name}"], ErrorCode.Get(CTEN.NoAbsPropertyImpl));
                     }
                 }
@@ -668,7 +668,7 @@ namespace HapetPostPrepare
                                 {
                                     // the prop is implemented in parent class and current class
                                     // we need to error
-                                    _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, currF.Name,
+                                    _compiler.MessageHandler.ReportMessage(_currentSourceFile, currF.Name,
                                         [HapetType.AsString(definedInOneOfTheParents.ContainingParent.Type.OutType)], ErrorCode.Get(CTEN.PropaAlreadyDefined));
                                     continue;
                                 }
@@ -683,7 +683,7 @@ namespace HapetPostPrepare
                                 if (currF == null)
                                 {
                                     // error - the prop of the interface was not implemented
-                                    _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, inh,
+                                    _compiler.MessageHandler.ReportMessage(_currentSourceFile, inh,
                                         [HapetType.AsString(decl.Type.OutType), inhF.Name.Name], ErrorCode.Get(CTEN.NoPropaImplementation));
                                 }
                                 else
@@ -748,7 +748,7 @@ namespace HapetPostPrepare
                 if (parentProp != null && !currP.SpecialKeys.Contains(TokenType.KwNew))
                 {
                     // error - property shadowing
-                    _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, currP.Name,
+                    _compiler.MessageHandler.ReportMessage(_currentSourceFile, currP.Name,
                         [$"{parentProp.ContainingParent.Name.Name}::{parentProp.Name.Name}"], ErrorCode.Get(CTEN.PropertyShadowing));
                 }
                 else if (parentProp != null && currP.SpecialKeys.Contains(TokenType.KwNew))
@@ -772,7 +772,7 @@ namespace HapetPostPrepare
                     if (p.SpecialKeys.Contains(TokenType.KwAbstract))
                     {
                         // error - implementation of method not found in curr class
-                        _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, decl.Name,
+                        _compiler.MessageHandler.ReportMessage(_currentSourceFile, decl.Name,
                             [$"{p.ContainingParent.Name.Name}::{p.Name.Name}"], ErrorCode.Get(CTEN.NoAbsPropertyImpl));
                     }
                 }

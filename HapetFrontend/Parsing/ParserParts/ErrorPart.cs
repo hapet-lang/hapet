@@ -13,7 +13,7 @@ namespace HapetFrontend.Parsing
         public void ReportMessage(TokenLocation Location, string[] messageArgs, IXmlMessage xmlMessage, ReportType reportType = ReportType.Error)
         {
             var (callingFunctionName, callingFunctionFile, callLineNumber) = CompilerUtils.GetCallingFunction().GetValueOrDefault(("", "", -1));
-            _messageHandler.ReportMessage(_lexer.Text, new Location(Location), messageArgs, xmlMessage, null, reportType, callingFunctionFile, callingFunctionName, callLineNumber);
+            _messageHandler.ReportMessage(_lexer.ProgramFile, new Location(Location), messageArgs, xmlMessage, null, reportType, callingFunctionFile, callingFunctionName, callLineNumber);
         }
 
         [DebuggerStepThrough]
@@ -21,7 +21,7 @@ namespace HapetFrontend.Parsing
         public void ReportMessage(ILocation Location, string[] messageArgs, IXmlMessage xmlMessage, ReportType reportType = ReportType.Error)
         {
             var (callingFunctionName, callingFunctionFile, callLineNumber) = CompilerUtils.GetCallingFunction().GetValueOrDefault(("", "", -1));
-            _messageHandler.ReportMessage(_lexer.Text, Location, messageArgs, xmlMessage, null, reportType, callingFunctionFile, callingFunctionName, callLineNumber);
+            _messageHandler.ReportMessage(_lexer.ProgramFile, Location, messageArgs, xmlMessage, null, reportType, callingFunctionFile, callingFunctionName, callLineNumber);
         }
 
         [DebuggerStepThrough]

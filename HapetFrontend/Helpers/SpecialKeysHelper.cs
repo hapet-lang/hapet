@@ -98,7 +98,7 @@ namespace HapetFrontend.Helpers
                 var nonDefault = forw.FirstOrDefault(x => x != default);
                 if (nonDefault != default)
                 {
-                    messageHandler.ReportMessage(sourceFile.Text, curr.Location,
+                    messageHandler.ReportMessage(sourceFile, curr.Location,
                         [Lexer.GetKeywordFromToken(curr.Type), Lexer.GetKeywordFromToken(nonDefault)],
                         ErrorCode.Get(CTEN.ShouldGoBeforeSpecialKey));
                     return;
@@ -106,7 +106,7 @@ namespace HapetFrontend.Helpers
 
                 if (check != default)
                 {
-                    messageHandler.ReportMessage(sourceFile.Text, curr.Location,
+                    messageHandler.ReportMessage(sourceFile, curr.Location,
                         [Lexer.GetKeywordFromToken(curr.Type), Lexer.GetKeywordFromToken(check)],
                         ErrorCode.Get(CTEN.AlreadyDefinedSpecialKey));
                     return;
@@ -176,7 +176,7 @@ namespace HapetFrontend.Helpers
                         if (syncKey != default)
                         {
                             if (doError)
-                                messageHandler.ReportMessage(sourceFile.Text, decl.Name,
+                                messageHandler.ReportMessage(sourceFile, decl.Name,
                                     [Lexer.GetKeywordFromToken(specialKey.Type), Lexer.GetKeywordFromToken(syncKey)],
                                     ErrorCode.Get(CTEN.AlreadyDefinedSpecialKey));
                             break;
@@ -190,7 +190,7 @@ namespace HapetFrontend.Helpers
                         if (accessKey != default)
                         {
                             if (doError)
-                                messageHandler.ReportMessage(sourceFile.Text, decl.Name,
+                                messageHandler.ReportMessage(sourceFile, decl.Name,
                                     [Lexer.GetKeywordFromToken(specialKey.Type), Lexer.GetKeywordFromToken(accessKey)],
                                     ErrorCode.Get(CTEN.AlreadyDefinedSpecialKey));
                             break;
@@ -207,7 +207,7 @@ namespace HapetFrontend.Helpers
                         if (instanceKey != default)
                         {
                             if (doError)
-                                messageHandler.ReportMessage(sourceFile.Text, decl.Name,
+                                messageHandler.ReportMessage(sourceFile, decl.Name,
                                     [Lexer.GetKeywordFromToken(specialKey.Type), Lexer.GetKeywordFromToken(instanceKey)],
                                     ErrorCode.Get(CTEN.AlreadyDefinedSpecialKey));
                             break;
@@ -226,7 +226,7 @@ namespace HapetFrontend.Helpers
                         if (mutabilityKey != default)
                         {
                             if (doError)
-                                messageHandler.ReportMessage(sourceFile.Text, decl.Name,
+                                messageHandler.ReportMessage(sourceFile, decl.Name,
                                     [Lexer.GetKeywordFromToken(specialKey.Type), Lexer.GetKeywordFromToken(mutabilityKey)],
                                     ErrorCode.Get(CTEN.AlreadyDefinedSpecialKey));
                             break;
@@ -247,7 +247,7 @@ namespace HapetFrontend.Helpers
                         if (shadowKey != default)
                         {
                             if (doError)
-                                messageHandler.ReportMessage(sourceFile.Text, decl.Name,
+                                messageHandler.ReportMessage(sourceFile, decl.Name,
                                     [Lexer.GetKeywordFromToken(specialKey.Type), Lexer.GetKeywordFromToken(shadowKey)],
                                     ErrorCode.Get(CTEN.AlreadyDefinedSpecialKey));
                             break;
@@ -270,7 +270,7 @@ namespace HapetFrontend.Helpers
                         if (partialKey != default)
                         {
                             if (doError)
-                                messageHandler.ReportMessage(sourceFile.Text, decl.Name,
+                                messageHandler.ReportMessage(sourceFile, decl.Name,
                                     [Lexer.GetKeywordFromToken(specialKey.Type), Lexer.GetKeywordFromToken(partialKey)],
                                     ErrorCode.Get(CTEN.AlreadyDefinedSpecialKey));
                             break;
@@ -295,7 +295,7 @@ namespace HapetFrontend.Helpers
                         if (externKey != default)
                         {
                             if (doError)
-                                messageHandler.ReportMessage(sourceFile.Text, decl.Name,
+                                messageHandler.ReportMessage(sourceFile, decl.Name,
                                     [Lexer.GetKeywordFromToken(specialKey.Type), Lexer.GetKeywordFromToken(externKey)],
                                     ErrorCode.Get(CTEN.AlreadyDefinedSpecialKey));
                             break;
@@ -322,7 +322,7 @@ namespace HapetFrontend.Helpers
                         if (inlineKey != default)
                         {
                             if (doError)
-                                messageHandler.ReportMessage(sourceFile.Text, decl.Name,
+                                messageHandler.ReportMessage(sourceFile, decl.Name,
                                     [Lexer.GetKeywordFromToken(specialKey.Type), Lexer.GetKeywordFromToken(inlineKey)],
                                     ErrorCode.Get(CTEN.AlreadyDefinedSpecialKey));
                             break;
@@ -351,7 +351,7 @@ namespace HapetFrontend.Helpers
                         if (noexceptKey != default)
                         {
                             if (doError)
-                                messageHandler.ReportMessage(sourceFile.Text, decl.Name,
+                                messageHandler.ReportMessage(sourceFile, decl.Name,
                                     [Lexer.GetKeywordFromToken(specialKey.Type), Lexer.GetKeywordFromToken(noexceptKey)],
                                     ErrorCode.Get(CTEN.AlreadyDefinedSpecialKey));
                             break;
@@ -382,7 +382,7 @@ namespace HapetFrontend.Helpers
                         if (unsafeKey != default)
                         {
                             if (doError)
-                                messageHandler.ReportMessage(sourceFile.Text, decl.Name,
+                                messageHandler.ReportMessage(sourceFile, decl.Name,
                                     [Lexer.GetKeywordFromToken(specialKey.Type), Lexer.GetKeywordFromToken(unsafeKey)],
                                     ErrorCode.Get(CTEN.AlreadyDefinedSpecialKey));
                             break;

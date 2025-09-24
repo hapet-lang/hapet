@@ -140,7 +140,7 @@ namespace HapetFrontend.Helpers
                     generics.Add(id);
                 else
                 {
-                    messageHandler.ReportMessage(idExpr.SourceFile.Text, g.Location, [], ErrorCode.Get(CTEN.CommonIdentifierExpected));
+                    messageHandler.ReportMessage(idExpr.SourceFile, g.Location, [], ErrorCode.Get(CTEN.CommonIdentifierExpected));
                     generics.Add(null); // ERROR HERE
                 }
             }

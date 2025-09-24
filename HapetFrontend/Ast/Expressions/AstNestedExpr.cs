@@ -59,7 +59,7 @@ namespace HapetFrontend.Ast.Expressions
             if (RightPart is not AstIdExpr idExpr)
             {
                 if (messageHandler != null)
-                    messageHandler.ReportMessage(file.Text, RightPart, [], ErrorCode.Get(CTEN.CommonIdentifierExpected));
+                    messageHandler.ReportMessage(file, RightPart, [], ErrorCode.Get(CTEN.CommonIdentifierExpected));
                 return string.Empty;
             }
 

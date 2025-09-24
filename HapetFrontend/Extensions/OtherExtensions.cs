@@ -367,7 +367,7 @@ namespace HapetFrontend.Extensions
                 return nest;
             else
             {
-                messageHandler?.ReportMessage(expr.SourceFile.Text, expr, [], ErrorCode.Get(CTEN.CommonIdentifierExpected));
+                messageHandler?.ReportMessage(expr.SourceFile, expr, [], ErrorCode.Get(CTEN.CommonIdentifierExpected));
                 return null;
             }
         }

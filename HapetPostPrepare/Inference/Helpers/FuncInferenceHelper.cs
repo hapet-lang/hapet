@@ -33,7 +33,7 @@ namespace HapetPostPrepare
                 if (candidates.Count > 1)
                 {
                     // error
-                    _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, name, 
+                    _compiler.MessageHandler.ReportMessage(_currentSourceFile, name, 
                         [candidates[0].Name.Name, candidates[1].Name.Name], 
                         ErrorCode.Get(CTEN.AmbiguousFunctionCall));
                 }
@@ -161,7 +161,7 @@ namespace HapetPostPrepare
                 if (declWithScores[1].Item1 == best.Item1)
                 {
                     // ambiguous error here that there are two func and we dk which one to call
-                    _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, name,
+                    _compiler.MessageHandler.ReportMessage(_currentSourceFile, name,
                         [best.Item2.Name.Name, declWithScores[1].Item2.Name.Name],
                         ErrorCode.Get(CTEN.AmbiguousFunctionCall));
                 }
@@ -649,7 +649,7 @@ namespace HapetPostPrepare
 
             if (thereWasExplicitShite && decls.Count == 0)
             {
-                _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, funcName, [funcName.Name], ErrorCode.Get(CTEN.ExplicitMethodCall));
+                _compiler.MessageHandler.ReportMessage(_currentSourceFile, funcName, [funcName.Name], ErrorCode.Get(CTEN.ExplicitMethodCall));
             }
         }
     }

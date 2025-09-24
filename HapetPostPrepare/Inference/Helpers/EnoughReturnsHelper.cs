@@ -36,7 +36,7 @@ namespace HapetPostPrepare
             if (builder.CurrentBlock.PreviousBlocks.Count > 0)
             {
                 // error
-                _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, func.Name, 
+                _compiler.MessageHandler.ReportMessage(_currentSourceFile, func.Name, 
                     [HapetType.AsString(func.Returns.OutType)], ErrorCode.Get(CTEN.NotEnoughReturns));
             } 
         }

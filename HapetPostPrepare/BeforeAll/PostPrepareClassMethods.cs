@@ -50,7 +50,7 @@ namespace HapetPostPrepare
                     !dd.SpecialKeys.Contains(TokenType.KwConst) && 
                     dd is not AstClassDecl && dd is not AstStructDecl);
                 if (foundNonStatic != null)
-                    _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, foundNonStatic.Name, [], ErrorCode.Get(CTEN.ClassStaticMemStatic));
+                    _compiler.MessageHandler.ReportMessage(_currentSourceFile, foundNonStatic.Name, [], ErrorCode.Get(CTEN.ClassStaticMemStatic));
             }
 
             // getting all functions in the class
@@ -60,7 +60,7 @@ namespace HapetPostPrepare
             var propFuncs = allFuncs.Where(x => x.Name.Name.StartsWith($"get_") || x.Name.Name.StartsWith($"set_"));
             foreach (var fnc in propFuncs)
             {
-                _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, fnc.Name, [], ErrorCode.Get(CTEN.ClassFuncGetSetName));
+                _compiler.MessageHandler.ReportMessage(_currentSourceFile, fnc.Name, [], ErrorCode.Get(CTEN.ClassFuncGetSetName));
             }
 
             // getting all props in the class
@@ -76,7 +76,7 @@ namespace HapetPostPrepare
                 {
                     // also check if the prop is really going to gen field
                     if (pp.GetBlock == null && pp.SetBlock == null)
-                        _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, theField, [pp.Name.Name], ErrorCode.Get(CTEN.ClassPropFieldExists));
+                        _compiler.MessageHandler.ReportMessage(_currentSourceFile, theField, [pp.Name.Name], ErrorCode.Get(CTEN.ClassPropFieldExists));
                 }
             }
             PrepareEventFields(allFields);
@@ -95,7 +95,7 @@ namespace HapetPostPrepare
                         allFieldsAndProps[j].Name.AdditionalData == null)
                     {
                         // TODO: show previous field decl
-                        _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, allFieldsAndProps[j], [], ErrorCode.Get(CTEN.ClassPropsFieldsSame));
+                        _compiler.MessageHandler.ReportMessage(_currentSourceFile, allFieldsAndProps[j], [], ErrorCode.Get(CTEN.ClassPropsFieldsSame));
                     }
                 }
             }
@@ -149,7 +149,7 @@ namespace HapetPostPrepare
                                                         x.Name.Name.EndsWith($"::{decl.Name.Name}_dtor")));
                 foreach (var fnc in specialFuncs)
                 {
-                    _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, fnc.Name, [decl.Name.Name], ErrorCode.Get(CTEN.ClassFuncNameNotAllowed));
+                    _compiler.MessageHandler.ReportMessage(_currentSourceFile, fnc.Name, [decl.Name.Name], ErrorCode.Get(CTEN.ClassFuncNameNotAllowed));
                 }
 
                 // static ctor is always generated
@@ -307,7 +307,7 @@ namespace HapetPostPrepare
             }
             else
             {
-                _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, dtors[1], [], ErrorCode.Get(CTEN.ClassDtorOnlyOne));
+                _compiler.MessageHandler.ReportMessage(_currentSourceFile, dtors[1], [], ErrorCode.Get(CTEN.ClassDtorOnlyOne));
             }
         }
 
@@ -377,7 +377,7 @@ namespace HapetPostPrepare
 
                 // stor can only have 'static' kw
                 if (ctorFunc.SpecialKeys.Count > 1)
-                    _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, ctorFunc.Name, [], ErrorCode.Get(CTWN.StaticCtorKwsIgnored), null, HapetFrontend.Entities.ReportType.Warning);
+                    _compiler.MessageHandler.ReportMessage(_currentSourceFile, ctorFunc.Name, [], ErrorCode.Get(CTWN.StaticCtorKwsIgnored), null, HapetFrontend.Entities.ReportType.Warning);
 
                 // move all user code under 'if' stmt
                 checkForInited.BodyTrue.Statements.AddRange(ctorFunc.Body.Statements);
@@ -390,7 +390,7 @@ namespace HapetPostPrepare
             }
             else
             {
-                _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, ctors[1], [], ErrorCode.Get(CTEN.ClassStorOnlyOne));
+                _compiler.MessageHandler.ReportMessage(_currentSourceFile, ctors[1], [], ErrorCode.Get(CTEN.ClassStorOnlyOne));
             }
         }        
 
@@ -405,7 +405,7 @@ namespace HapetPostPrepare
             else
             {
                 // compiler error
-                _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, declB.Name, [declB.AAAName], ErrorCode.Get(CTEN.NoFieldsInNonTypes));
+                _compiler.MessageHandler.ReportMessage(_currentSourceFile, declB.Name, [declB.AAAName], ErrorCode.Get(CTEN.NoFieldsInNonTypes));
                 return null;
             }
 
@@ -525,7 +525,7 @@ namespace HapetPostPrepare
                 funcDecl.Body != null &&
                 !funcDecl.IsPropertyFunction)
             {
-                _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, funcDecl.Name, [], ErrorCode.Get(CTEN.AbsMethodWithBody));
+                _compiler.MessageHandler.ReportMessage(_currentSourceFile, funcDecl.Name, [], ErrorCode.Get(CTEN.AbsMethodWithBody));
             }
         }
 

@@ -8,6 +8,7 @@ namespace HapetFrontend.Parsing
     public interface ILexer
     {
         string Text { get; }
+        ProgramFile ProgramFile { get; }
         Token PeekToken();
         Token NextToken();
 
@@ -23,6 +24,7 @@ namespace HapetFrontend.Parsing
 
     public partial class Lexer : ILexer
     {
+        private ProgramFile _programFile;
         private string _text;
         private TokenLocation _location;
         private TokenLocation _lookAheadLocation;
@@ -34,53 +36,29 @@ namespace HapetFrontend.Parsing
         private Token _peekLookAhead = null;
 
         public string Text => _text;
+        public ProgramFile ProgramFile => _programFile;
         private IMessageHandler _messageHandler;
 
-        public static Lexer FromFile(string fileName, IMessageHandler messageHandler)
+        public static Lexer FromFile(ProgramFile file, IMessageHandler messageHandler)
         {
-            if (!File.Exists(fileName))
-            {
-                messageHandler.ReportMessage([fileName], ErrorCode.Get(CTEN.FileForLexerNotFound));
-                return null;
-            }
             return new Lexer
             {
+                _programFile = file,
                 _messageHandler = messageHandler,
-                _text = File.ReadAllText(fileName, Encoding.UTF8)
-                    .Replace("\r\n", "\n", StringComparison.InvariantCulture)
-                    .Replace("\t", "    ", StringComparison.InvariantCulture),
+                _text = file.Text,
                 _location = new TokenLocation
                 {
-                    File = fileName,
+                    File = file.FilePath,
                     Line = 1,
                     Index = 0,
                     LineStartIndex = 0
                 },
                 _lookAheadLocation = new TokenLocation
                 {
-                    File = fileName,
+                    File = file.FilePath,
                     Line = 1,
                     Index = 0,
                     LineStartIndex = 0
-                },
-            };
-        }
-
-        public static Lexer FromString(string str, IMessageHandler messageHandler, string fileName = "string")
-        {
-            return new Lexer
-            {
-                _messageHandler = messageHandler,
-                _text = str.Replace("\r\n", "\n", StringComparison.InvariantCulture),
-                _location = new TokenLocation
-                {
-                    File = fileName,
-                    Line = 1,
-                },
-                _lookAheadLocation = new TokenLocation
-                {
-                    File = fileName,
-                    Line = 1,
                 },
             };
         }

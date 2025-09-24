@@ -225,7 +225,7 @@ namespace HapetPostPrepare
 
                 default:
                     {
-                        _compiler.MessageHandler.ReportMessage(_currentSourceFile.Text, stmt, [stmt.AAAName], ErrorCode.Get(CTEN.StmtNotImplemented));
+                        _compiler.MessageHandler.ReportMessage(_currentSourceFile, stmt, [stmt.AAAName], ErrorCode.Get(CTEN.StmtNotImplemented));
                         break;
                     }
             }

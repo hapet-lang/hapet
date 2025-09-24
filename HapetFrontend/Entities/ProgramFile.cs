@@ -12,6 +12,11 @@ namespace HapetFrontend.Entities
         public string Name { get; }
 
         /// <summary>
+        /// Full filepath 
+        /// </summary>
+        public string FilePath { get; set; }
+
+        /// <summary>
         /// The full folder name where file is located
         /// </summary>
         public string Namespace { get; set; }

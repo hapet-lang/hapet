@@ -378,7 +378,7 @@ namespace HapetBackend.Llvm
             if (dllImportAttr == null)
             {
                 // TODO: check in PP
-                _messageHandler.ReportMessage(_currentSourceFile.Text, funcDecl, [], ErrorCode.Get(CTEN.ExternFuncNoAttr));
+                _messageHandler.ReportMessage(_currentSourceFile, funcDecl, [], ErrorCode.Get(CTEN.ExternFuncNoAttr));
                 return;
             }
             string dllName = dllImportAttr.Arguments[0].OutValue as string;
@@ -415,7 +415,7 @@ namespace HapetBackend.Llvm
             if (dllImportAttr == null)
             {
                 // TODO: check in PP
-                _messageHandler.ReportMessage(_currentSourceFile.Text, funcDecl, [], ErrorCode.Get(CTEN.ExternFuncNoAttr));
+                _messageHandler.ReportMessage(_currentSourceFile, funcDecl, [], ErrorCode.Get(CTEN.ExternFuncNoAttr));
                 return;
             }
             string dllName = dllImportAttr.Arguments[0].OutValue as string;
