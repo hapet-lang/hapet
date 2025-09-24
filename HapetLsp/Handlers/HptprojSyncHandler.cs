@@ -9,7 +9,7 @@ using OmniSharp.Extensions.LanguageServer.Protocol.Window;
 using System;
 using System.Diagnostics;
 
-namespace HapetLsp
+namespace HapetLsp.Handlers
 {
     public class HptprojSyncHandler : ITextDocumentSyncHandler
     {
