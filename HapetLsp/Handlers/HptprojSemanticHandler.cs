@@ -8,12 +8,24 @@ namespace HapetLsp.Handlers
     {
         protected override SemanticTokensRegistrationOptions CreateRegistrationOptions(SemanticTokensCapability capability, ClientCapabilities clientCapabilities)
         {
-            throw new NotImplementedException();
+            return new SemanticTokensRegistrationOptions
+            {
+                DocumentSelector = new TextDocumentSelector(
+                     new TextDocumentFilter { Pattern = "**/*.hptproj" }
+                ),
+                Legend = new SemanticTokensLegend()
+                {
+                    TokenTypes = new[] { new SemanticTokenType("class") },
+                    TokenModifiers = new[] { new SemanticTokenModifier("static") }
+                },
+                Full = new SemanticTokensCapabilityRequestFull { Delta = false },
+                Range = true
+            };
         }
 
         protected override Task<SemanticTokensDocument> GetSemanticTokensDocument(ITextDocumentIdentifierParams @params, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
+            return Task.FromResult(new SemanticTokensDocument(RegistrationOptions.Legend));
         }
 
         protected override Task Tokenize(SemanticTokensBuilder builder, ITextDocumentIdentifierParams identifier, CancellationToken cancellationToken)
