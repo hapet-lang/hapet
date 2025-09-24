@@ -9,10 +9,8 @@ using OmniSharp.Extensions.LanguageServer.Protocol.Window;
 
 namespace HapetLsp
 {
-    class HptprojSyncHandler : ITextDocumentSyncHandler
+    public class HptprojSyncHandler : ITextDocumentSyncHandler
     {
-        private readonly ILanguageServer _router;
-
         private readonly TextDocumentSelector _documentSelector = new TextDocumentSelector(
             new TextDocumentFilter()
             {
@@ -20,9 +18,8 @@ namespace HapetLsp
             }
         );
 
-        public HptprojSyncHandler(ILanguageServer router)
+        public HptprojSyncHandler()
         {
-            _router = router;
         }        
 
         public TextDocumentAttributes GetTextDocumentAttributes(DocumentUri uri)

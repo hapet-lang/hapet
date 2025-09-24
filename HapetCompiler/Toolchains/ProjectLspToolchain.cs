@@ -5,6 +5,7 @@ using HapetFrontend.Entities;
 using HapetFrontend.Helpers;
 using HapetFrontend.Types;
 using HapetLastPrepare;
+using HapetLsp;
 using HapetPostPrepare;
 using System.Diagnostics;
 
@@ -23,7 +24,7 @@ namespace HapetCompiler.Toolchains
             _cmdArgs = args;
         }
 
-        public int Watch(string projectPath, IMessageHandler messageHandler)
+        async public Task<int> WatchAsync(string projectPath, IMessageHandler messageHandler)
         {
             // save type context
             var cachedTypeContext = HapetType.CurrentTypeContext;
@@ -94,6 +95,12 @@ namespace HapetCompiler.Toolchains
                 OnExit();
                 return (int)CompilerErrors.LastPrepareError; // last prepare errors
             }
+
+            compiler.MessageHandler.ReportMessage([$"{Funcad.GetPrettyTimeString(compiler.CompilationStopwatch.Elapsed)} Starting LSP..."], null, ReportType.Info);
+
+            // starting server
+            LspServer server = new LspServer();
+            await server.StartAsync();
 
             OnExit();
             return (int)CompilerErrors.Ok;

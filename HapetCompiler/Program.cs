@@ -8,7 +8,7 @@ namespace HapetCompiler
 {
     public class Program
     {
-        static int Main(string[] args)
+        static async Task<int> Main(string[] args)
         {
             Console.OutputEncoding = Encoding.UTF8;
             var messageHandler = new ConsoleMessageHandler(0, 0, true);
@@ -63,7 +63,7 @@ namespace HapetCompiler
 
                         // skip the first two args because they are already used
                         ProjectLspToolchain projectToolchain = new ProjectLspToolchain(stopwatch, args.Skip(2).ToArray());
-                        return projectToolchain.Watch(args[1], messageHandler);
+                        return await projectToolchain.WatchAsync(args[1], messageHandler);
                     }
             }
             messageHandler.ReportMessage([args[0]], ErrorCode.Get(CTEN.NotFoundHapetCommand));
