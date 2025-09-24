@@ -47,7 +47,7 @@ namespace HapetCompiler.ProjectConf
                         default:
                             {
                                 var loc = NodeLocationFinder.GetLocationOfNode(_projectFileText, childnode, _projectPathAbsolute);
-                                _messageHandler.ReportMessage(_projectFileText, loc, [childnode.Name], ErrorCode.Get(CTEN.UnexpectedProjectFileTag));
+                                _messageHandler.ReportMessage(_projectFile, loc, [childnode.Name], ErrorCode.Get(CTEN.UnexpectedProjectFileTag));
                                 break;
                             }
                     }

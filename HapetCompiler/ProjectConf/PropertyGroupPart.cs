@@ -95,7 +95,7 @@ namespace HapetCompiler.ProjectConf
                         if (!parsed)
                         {
                             var loc = NodeLocationFinder.GetLocationOfNode(_projectFileText, tuple.Item2, _projectPathAbsolute);
-                            _messageHandler.ReportMessage(_projectFileText, loc, [value], ErrorCode.Get(CTEN.TagNotParsedToInt));
+                            _messageHandler.ReportMessage(_projectFile, loc, [value], ErrorCode.Get(CTEN.TagNotParsedToInt));
                             return (T)(object)0;
                         }
                         return (T)(object)outV;
@@ -108,7 +108,7 @@ namespace HapetCompiler.ProjectConf
                                 return item;
                         }
                         var loc = NodeLocationFinder.GetLocationOfNode(_projectFileText, tuple.Item2, _projectPathAbsolute);
-                        _messageHandler.ReportMessage(_projectFileText, loc, [value, key], ErrorCode.Get(CTEN.ValueInvalidForTag));
+                        _messageHandler.ReportMessage(_projectFile, loc, [value, key], ErrorCode.Get(CTEN.ValueInvalidForTag));
                     }
                 }
                 else

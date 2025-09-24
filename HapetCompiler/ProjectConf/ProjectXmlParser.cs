@@ -3,6 +3,7 @@ using HapetFrontend;
 using HapetFrontend.Entities;
 using HapetFrontend.Errors;
 using System;
+using System.Collections.Generic;
 using System.Xml;
 
 namespace HapetCompiler.ProjectConf
@@ -12,6 +13,7 @@ namespace HapetCompiler.ProjectConf
         private readonly string _projectPath = string.Empty;
         private readonly string _projectPathAbsolute = string.Empty;
         private readonly string _projectFileText = string.Empty;
+        private readonly ProgramFile _projectFile;
         private readonly CompilerSettings _projectSettings;
         private readonly ProjectData _projectData;
         private readonly IMessageHandler _messageHandler;
@@ -19,11 +21,11 @@ namespace HapetCompiler.ProjectConf
         /// <summary>
         /// All <PropertyGroup> tags in .hptproj
         /// </summary>
-        private List<XmlElement> _propertyGroups = new List<XmlElement>();
+        private readonly List<XmlElement> _propertyGroups = new List<XmlElement>();
         /// <summary>
         /// All <ItemGroup> tags in .hptproj
         /// </summary>
-        private List<XmlElement> _itemGroups = new List<XmlElement>();
+        private readonly List<XmlElement> _itemGroups = new List<XmlElement>();
 
         // TODO: this class also should get args from cmd that would have bigger priority over defined in .hptproj file
         public ProjectXmlParser(string projectPath, CompilerSettings projectSettings, ProjectData projectData, IMessageHandler messageHandler)
@@ -31,6 +33,9 @@ namespace HapetCompiler.ProjectConf
             _projectPath = projectPath;
             _projectPathAbsolute = Path.GetFullPath(_projectPath);
             _projectFileText = File.ReadAllText(_projectPath).Replace("\t", "    ", StringComparison.InvariantCulture);
+            _projectFile = new ProgramFile(Path.GetFileName(projectPath), _projectFileText);
+            _projectFile.FilePath = _projectPathAbsolute;
+
             _projectSettings = projectSettings;
             _projectData = projectData;
             _messageHandler = messageHandler;
@@ -71,7 +76,7 @@ namespace HapetCompiler.ProjectConf
                 else
                 {
                     var loc = NodeLocationFinder.GetLocationOfNode(_projectFileText, xnode, _projectPathAbsolute);
-                    _messageHandler.ReportMessage(_projectFileText, loc, [xnode.Name], ErrorCode.Get(CTEN.UnexpectedProjectFileTag));
+                    _messageHandler.ReportMessage(_projectFile, loc, [xnode.Name], ErrorCode.Get(CTEN.UnexpectedProjectFileTag));
                 }
             }
 

@@ -30,12 +30,12 @@ namespace HapetCompiler
             this.DoPrintLocation = printLocation;
         }
 
-        public void ReportMessage(string text, ILocation location, string[] messageArgs, IXmlMessage xmlMessage, List<CompilerMessage> subMessages, ReportType reportType = ReportType.Error, [CallerFilePath] string callingFunctionFile = "", [CallerMemberName] string callingFunctionName = "", [CallerLineNumber] int callLineNumber = 0)
+        public void ReportMessage(ProgramFile file, ILocation location, string[] messageArgs, IXmlMessage xmlMessage, List<CompilerMessage> subMessages, ReportType reportType = ReportType.Error, [CallerFilePath] string callingFunctionFile = "", [CallerMemberName] string callingFunctionName = "", [CallerLineNumber] int callLineNumber = 0)
         {
             ReportMessage(new CompilerMessage
             {
                 XmlMessage = xmlMessage,
-                FileText = text,
+                ProgramFile = file,
                 Location = location,
                 MessageArgs = messageArgs,
                 SubMessages = subMessages,
@@ -72,7 +72,7 @@ namespace HapetCompiler
 
             // do not report warning messages from other assemblies
             if (message.ReportType == ReportType.Warning &&
-                string.IsNullOrWhiteSpace(message.FileText))
+                string.IsNullOrWhiteSpace(message.ProgramFile.Text))
             {
                 return;
             }
@@ -94,7 +94,7 @@ namespace HapetCompiler
                 Log(message.MessageArgs, message.XmlMessage, printColor);
 
                 if (DoPrintLocation)
-                    PrintLocation(message.FileText, message.Location, linesBefore: LinesBeforeError, linesAfter: LinesAfterError, highlightColor: printColor);
+                    PrintLocation(message.ProgramFile.Text, message.Location, linesBefore: LinesBeforeError, linesAfter: LinesAfterError, highlightColor: printColor);
             }
             else
             {
@@ -119,7 +119,7 @@ namespace HapetCompiler
                         Log([$"{d.location.Beginning}: "], null, ConsoleColor.White);
 
                         if (DoPrintLocation)
-                            PrintLocation(message.FileText, d.location, linesBefore: 0, highlightColor: ConsoleColor.Green);
+                            PrintLocation(message.ProgramFile.Text, d.location, linesBefore: 0, highlightColor: ConsoleColor.Green);
                     }
                 }
             }

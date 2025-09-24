@@ -15,12 +15,12 @@ namespace HapetLsp
                 HasErrors = true;
         }
 
-        public void ReportMessage(string text, ILocation location, string[] messageArgs, IXmlMessage xmlMessage, List<CompilerMessage> subMessages = null, ReportType reportType = ReportType.Error, [CallerFilePath] string callingFunctionFile = "", [CallerMemberName] string callingFunctionName = "", [CallerLineNumber] int callLineNumber = 0)
+        public void ReportMessage(ProgramFile file, ILocation location, string[] messageArgs, IXmlMessage xmlMessage, List<CompilerMessage> subMessages = null, ReportType reportType = ReportType.Error, [CallerFilePath] string callingFunctionFile = "", [CallerMemberName] string callingFunctionName = "", [CallerLineNumber] int callLineNumber = 0)
         {
             ReportMessage(new CompilerMessage
             {
                 XmlMessage = xmlMessage,
-                FileText = text,
+                ProgramFile = file,
                 Location = location,
                 MessageArgs = messageArgs,
                 SubMessages = subMessages,

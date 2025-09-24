@@ -12,7 +12,7 @@ namespace HapetFrontend.Entities
     public class CompilerMessage
     {
         public IXmlMessage XmlMessage { get; set; }
-        public string FileText { get; set; }
+        public ProgramFile ProgramFile { get; set; }
         public ILocation Location { get; set; }
         public string[] MessageArgs { get; set; }
         public string File { get; set; }
