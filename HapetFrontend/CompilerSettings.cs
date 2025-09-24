@@ -75,6 +75,11 @@ namespace HapetFrontend
         /// </summary>
         public bool IsReferencedCompilation { get; set; }
 
+        /// <summary>
+        /// 'true' when hapet is running as LSP server
+        /// </summary>
+        public bool IsLspCompilation { get; set; }
+
         #region PropertyGroup
         /// <summary>
         /// The name of the project that is going to be compiled

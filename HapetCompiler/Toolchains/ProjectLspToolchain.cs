@@ -29,19 +29,18 @@ namespace HapetCompiler.Toolchains
             // save type context
             var cachedTypeContext = HapetType.CurrentTypeContext;
 
+            messageHandler.ReportMessage([$"{Funcad.GetPrettyTimeString(_stopwatch.Elapsed)} Initializing LSP..."], null, ReportType.Info);
+
             // setting the type context
             HapetType.CurrentTypeContext = new TypeContext();
             // creating settings instances for the project
             ProjectSettings = new CompilerSettings();
+            // setting that hapet is running as LSP server
+            ProjectSettings.IsLspCompilation = true;
             ProjectData = new ProjectData();
             // parsing project .hptproj file
             var projectParser = new ProjectXmlParser(projectPath, ProjectSettings, ProjectData, messageHandler);
             projectParser.PrepareProjectFile(); // setting compiler settings from project
-            if (messageHandler.HasErrors)
-            {
-                OnExit();
-                return (int)CompilerErrors.ProjectFileParseError; // proj file parsing errors
-            }
 
             // setting pointer size for the whole assembly
             HapetType.CurrentTypeContext.PointerSize = ProjectSettings.TargetPlatformData.PointerSize;
@@ -56,60 +55,23 @@ namespace HapetCompiler.Toolchains
             // references
             ProjectReferencesResolver resolver = new ProjectReferencesResolver();
             resolver.ResolveProjectShite(ProjectData, ProjectSettings, compiler);
-            if (messageHandler.HasErrors)
-            {
-                OnExit();
-                return (int)CompilerErrors.ProjectReferencesError; // references errors
-            }
 
             // gen ast shite
             compiler.GenerateAstTree();
-            if (messageHandler.HasErrors)
-            {
-                OnExit();
-                return (int)CompilerErrors.ParsingError; // parsing errors
-            }
-
             // post prepare
-            int ppResult = postPreparer.StartPreparation();
-            if (ppResult != 0)
-            {
-                OnExit();
-                return ppResult; // post prepare errors
-            }
-            if (messageHandler.HasErrors)
-            {
-                OnExit();
-                return (int)CompilerErrors.PostPrepareError; // post prepare errors
-            }
-
+            int _ = postPreparer.StartPreparation();
             // last prepare
-            int lpResult = lastPreparer.StartPreparation();
-            if (lpResult != 0)
-            {
-                OnExit();
-                return lpResult; // last prepare errors
-            }
-            if (messageHandler.HasErrors)
-            {
-                OnExit();
-                return (int)CompilerErrors.LastPrepareError; // last prepare errors
-            }
+            int __ = lastPreparer.StartPreparation();
 
-            compiler.MessageHandler.ReportMessage([$"{Funcad.GetPrettyTimeString(compiler.CompilationStopwatch.Elapsed)} Starting LSP..."], null, ReportType.Info);
+            messageHandler.ReportMessage([$"{Funcad.GetPrettyTimeString(compiler.CompilationStopwatch.Elapsed)} Starting LSP..."], null, ReportType.Info);
 
             // starting server
             LspServer server = new LspServer();
             await server.StartAsync();
 
-            OnExit();
+            // restore it
+            HapetType.CurrentTypeContext = cachedTypeContext;
             return (int)CompilerErrors.Ok;
-
-            void OnExit()
-            {
-                // restore it
-                HapetType.CurrentTypeContext = cachedTypeContext;
-            }
         }
     }
 }

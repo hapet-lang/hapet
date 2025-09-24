@@ -19,7 +19,7 @@ namespace HapetCompiler.Resolvers
             string outFolder = _projectSettings.OutputDirectory;
             foreach (var r in _projectData.References)
             {
-                if (!_projectSettings.IsReferencedCompilation)
+                if (!_projectSettings.IsReferencedCompilation && !_projectSettings.IsLspCompilation)
                     _compiler.MessageHandler.ReportMessage([$"{Funcad.GetPrettyTimeString(_compiler.CompilationStopwatch.Elapsed)}   Resolving '{r}'..."], null, ReportType.Info);
 
                 // getting the proper data

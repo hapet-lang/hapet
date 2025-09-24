@@ -6,11 +6,15 @@ using OmniSharp.Extensions.LanguageServer.Protocol.Models;
 using OmniSharp.Extensions.LanguageServer.Protocol.Server;
 using OmniSharp.Extensions.LanguageServer.Protocol.Server.Capabilities;
 using OmniSharp.Extensions.LanguageServer.Protocol.Window;
+using System;
+using System.Diagnostics;
 
 namespace HapetLsp
 {
     public class HptprojSyncHandler : ITextDocumentSyncHandler
     {
+        private readonly ILanguageServerFacade _facade;
+
         private readonly TextDocumentSelector _documentSelector = new TextDocumentSelector(
             new TextDocumentFilter()
             {
@@ -18,8 +22,9 @@ namespace HapetLsp
             }
         );
 
-        public HptprojSyncHandler()
+        public HptprojSyncHandler(ILanguageServerFacade facade)
         {
+            _facade = facade;
         }        
 
         public TextDocumentAttributes GetTextDocumentAttributes(DocumentUri uri)
