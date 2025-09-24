@@ -49,6 +49,22 @@ namespace HapetCompiler
                         ProjectRestoreToolchain projectToolchain = new ProjectRestoreToolchain(args.Skip(2).ToArray());
                         return projectToolchain.Restore(args[1], messageHandler);
                     }
+                case "lsp":
+                    {
+                        if (args.Length == 1)
+                        {
+                            messageHandler.ReportMessage(["lsp"], ErrorCode.Get(CTEN.NoHapetProjectPathSpecified));
+                            return (int)CompilerErrors.HapetCommandParamsError;
+                        }
+
+                        // make the stopwatch here
+                        Stopwatch stopwatch = new Stopwatch();
+                        stopwatch.Start();
+
+                        // skip the first two args because they are already used
+                        ProjectLspToolchain projectToolchain = new ProjectLspToolchain(stopwatch, args.Skip(2).ToArray());
+                        return projectToolchain.Watch(args[1], messageHandler);
+                    }
             }
             messageHandler.ReportMessage([args[0]], ErrorCode.Get(CTEN.NotFoundHapetCommand));
             return (int)CompilerErrors.HapetCommandError;
