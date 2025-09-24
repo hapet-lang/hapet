@@ -474,8 +474,6 @@ namespace HapetPostPrepare
         private void ReplaceAllGenericTypesInTupledIdExpr(AstIdTupledExpr tupledExpr)
         {
             throw new NotImplementedException();
-
-            ReplaceAllGenericTypesInIdExpr(tupledExpr);
         }
 
         private void ReplaceAllGenericTypesInIdExpr(AstIdExpr idExpr)
