@@ -48,14 +48,14 @@ namespace HapetFrontend.Parsing
                 _text = file.Text,
                 _location = new TokenLocation
                 {
-                    File = file.FilePath,
+                    File = file.FilePath.AbsolutePath,
                     Line = 1,
                     Index = 0,
                     LineStartIndex = 0
                 },
                 _lookAheadLocation = new TokenLocation
                 {
-                    File = file.FilePath,
+                    File = file.FilePath.AbsolutePath,
                     Line = 1,
                     Index = 0,
                     LineStartIndex = 0

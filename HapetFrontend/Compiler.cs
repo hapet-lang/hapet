@@ -80,7 +80,7 @@ namespace HapetFrontend
         public MetadataMetadataJson HandleExternalMetadata(string fileName, string metadataText)
         {
             var metaFile = new ProgramFile(Path.GetFileName(fileName), metadataText);
-            metaFile.FilePath = fileName;
+            metaFile.FilePath = new Uri(fileName);
             // just parsing metadata and adding its files into the compiler
             var files = ParseMetadata(metaFile, out var metadata);
             foreach (var f in files)
@@ -163,7 +163,7 @@ namespace HapetFrontend
                 {
                     // creating a virtual file
                     currentFile = new ProgramFile(Path.GetFileName((dir.Value as AstStringExpr).StringValue), lexer.Text);
-                    currentFile.FilePath = (dir.Value as AstStringExpr).StringValue;
+                    currentFile.FilePath = new Uri((dir.Value as AstStringExpr).StringValue);
                     allFiles.Add(currentFile);
                     // change lexer locations' filename
                     lexer.ChangeFilename(currentFile.Name);
@@ -214,7 +214,7 @@ namespace HapetFrontend
                            .Replace("\r\n", "\n", StringComparison.InvariantCulture)
                            .Replace("\t", "    ", StringComparison.InvariantCulture);
             var file = new ProgramFile(Path.GetFileName(fileName), text);
-            file.FilePath = fileName;
+            file.FilePath = new Uri(fileName);
             _files[fileName] = file;
 
             var lexer = Lexer.FromFile(file, MessageHandler);

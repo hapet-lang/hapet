@@ -14,7 +14,7 @@ namespace HapetFrontend.Entities
         /// <summary>
         /// Full filepath 
         /// </summary>
-        public string FilePath { get; set; }
+        public Uri FilePath { get; set; }
 
         /// <summary>
         /// The full folder name where file is located

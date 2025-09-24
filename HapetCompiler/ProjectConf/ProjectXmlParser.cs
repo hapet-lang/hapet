@@ -34,7 +34,7 @@ namespace HapetCompiler.ProjectConf
             _projectPathAbsolute = Path.GetFullPath(_projectPath);
             _projectFileText = File.ReadAllText(_projectPath).Replace("\t", "    ", StringComparison.InvariantCulture);
             _projectFile = new ProgramFile(Path.GetFileName(projectPath), _projectFileText);
-            _projectFile.FilePath = _projectPathAbsolute;
+            _projectFile.FilePath = new Uri(_projectPathAbsolute);
 
             _projectSettings = projectSettings;
             _projectData = projectData;
