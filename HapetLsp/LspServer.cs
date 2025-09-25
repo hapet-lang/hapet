@@ -26,8 +26,10 @@ namespace HapetLsp
                         .WithServices(services =>
                         {
                             services.AddTransient<HptprojSyncHandler>();
+                            services.AddTransient<HptprojSemanticHandler>();
                         })
                         .WithHandler<HptprojSyncHandler>()
+                        .WithHandler<HptprojSemanticHandler>()
                         ;
                     });
                     await server.WaitForExit;

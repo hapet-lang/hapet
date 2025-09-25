@@ -1,6 +1,9 @@
-﻿using OmniSharp.Extensions.LanguageServer.Protocol.Client.Capabilities;
+﻿using Microsoft.Language.Xml;
+using OmniSharp.Extensions.LanguageServer.Protocol;
+using OmniSharp.Extensions.LanguageServer.Protocol.Client.Capabilities;
 using OmniSharp.Extensions.LanguageServer.Protocol.Document;
 using OmniSharp.Extensions.LanguageServer.Protocol.Models;
+using System;
 
 namespace HapetLsp.Handlers
 {
@@ -15,7 +18,7 @@ namespace HapetLsp.Handlers
                 ),
                 Legend = new SemanticTokensLegend()
                 {
-                    TokenTypes = new[] { new SemanticTokenType("class") },
+                    TokenTypes = new[] { new SemanticTokenType("tag"), new SemanticTokenType("param") },
                     TokenModifiers = new[] { new SemanticTokenModifier("static") }
                 },
                 Full = new SemanticTokensCapabilityRequestFull { Delta = false },
@@ -28,9 +31,14 @@ namespace HapetLsp.Handlers
             return Task.FromResult(new SemanticTokensDocument(RegistrationOptions.Legend));
         }
 
-        protected override Task Tokenize(SemanticTokensBuilder builder, ITextDocumentIdentifierParams identifier, CancellationToken cancellationToken)
+        async protected override Task Tokenize(
+            SemanticTokensBuilder builder, ITextDocumentIdentifierParams identifier, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
+            var path = DocumentUri.GetFileSystemPath(identifier);
+            var content = await File.ReadAllTextAsync(path, cancellationToken);
+            var syntaxTree = Parser.ParseText(content);
+
+
         }
     }
 }
