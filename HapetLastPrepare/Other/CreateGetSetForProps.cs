@@ -26,7 +26,7 @@ namespace HapetLastPrepare
 
                 // we need to add the funcs to arr
                 if ((propDecl.SpecialKeys.ContainsAny(TokenType.KwAbstract, TokenType.KwVirtual, TokenType.KwOverride) ||
-                    propDecl.ContainingParent.GetAllVirtualProps().Contains(propDecl)) &&
+                    (propDecl.ContainingParent.GetAllVirtualProps()?.Contains(propDecl) ?? false)) &&
                     d is AstFuncDecl fncD)
                 {
                     List<AstFuncDecl> virt = null;

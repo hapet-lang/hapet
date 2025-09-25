@@ -163,7 +163,7 @@ namespace HapetFrontend
                 {
                     // creating a virtual file
                     currentFile = new ProgramFile(Path.GetFileName((dir.Value as AstStringExpr).StringValue), lexer.Text);
-                    currentFile.FilePath = new Uri((dir.Value as AstStringExpr).StringValue);
+                    currentFile.FilePath = new Uri((dir.Value as AstStringExpr).StringValue, UriKind.Relative);
                     allFiles.Add(currentFile);
                     // change lexer locations' filename
                     lexer.ChangeFilename(currentFile.Name);
