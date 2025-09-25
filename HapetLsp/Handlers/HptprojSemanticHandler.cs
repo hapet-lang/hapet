@@ -13,7 +13,7 @@ namespace HapetLsp.Handlers
 {
     public class HptprojSemanticHandler : SemanticTokensHandlerBase
     {
-        private readonly static SemanticTokenType[] _tokenTypes = new[] { new SemanticTokenType("tag"), new SemanticTokenType("param") };
+        private readonly static SemanticTokenType[] _tokenTypes = new[] { new SemanticTokenType("tag"), new SemanticTokenType("param"), new SemanticTokenType("comment") };
         private readonly static SemanticTokenModifier[] _tokenModifiers = new[] { new SemanticTokenModifier("default") };
 
         protected override SemanticTokensRegistrationOptions CreateRegistrationOptions(SemanticTokensCapability capability, ClientCapabilities clientCapabilities)
@@ -73,9 +73,8 @@ namespace HapetLsp.Handlers
             foreach (var line in _currentSplittedFileText)
             {
                 var prevIndexSum = currentIndexSum;
-                currentIndexSum += line.Length + 1;
+                currentIndexSum += line.Length + 1; // + 1 is for \n
                 if (currentIndexSum > index)
-                    // - currentLineNumber is needed to handle \n chars that were removed
                     return (currentLineNumber, index - prevIndexSum);
                 currentLineNumber++;
             }
@@ -83,29 +82,76 @@ namespace HapetLsp.Handlers
             return (currentLineNumber, -1); // should not be here
         }
 
-        private void ColorizeNode(IXmlElement element, SemanticTokensBuilder builder)
+        private (List<int> lines, List<int> offsets, List<int> widths) GetLinesAndOffsetsForComment(int start, int end)
         {
+            if (_currentSplittedFileText == null)
+                return ([0], [0], [0]);
+
+            List<int> lines = new List<int>();
+            List<int> offsets = new List<int>();
+            List<int> widths = new List<int>();
+
+            int currentIndexSum = 0;
+            int currentLineNumber = 0;
+            for (int i = 0; i < _currentSplittedFileText.Length; ++i)
+            {
+                var line = _currentSplittedFileText[i];
+                var prevIndexSum = currentIndexSum;
+                currentIndexSum += line.Length + 1; // + 1 is for \n
+                if (currentIndexSum > start)
+                {
+                    lines.Add(currentLineNumber);
+                    // if there are already elements - offset is 0
+                    int offset = offsets.Count == 0 ? start - prevIndexSum : 0;
+                    offsets.Add(offset);
+                    // check that it is the last comment line
+                    bool lastLine = (i + 1 < _currentSplittedFileText.Length) ||
+                        currentIndexSum + _currentSplittedFileText[i + 1].Length > end;
+                    int width = lastLine ? (end - prevIndexSum) : (line.Length - offset);
+                    widths.Add(width);
+                }
+
+                if (currentIndexSum > end)
+                    break;
+                currentLineNumber++;
+            }
+            return (lines, offsets, widths);
+        }
+
+        private void ColorizeNode(object element, SemanticTokensBuilder builder)
+        {
+            // checks
             if (element is not XmlElementSyntax xmlElement)
             {
+                // colorize comment
+                if (element is XmlCommentSyntax xmlComment)
+                {
+                    var (lines, offsets, widths) = GetLinesAndOffsetsForComment(xmlComment.Span.Start, xmlComment.Span.End);
+                    for (int i = 0; i < lines.Count; i++)
+                    {
+                        _currentSemanticTokens.Add(new SemanticToken(lines[i], offsets[i], widths[i], _tokenTypes[2], _tokenModifiers[0]));
+                    }
+                }
                 // TODO: comments and other
                 return;
             }
 
+            // go over nested tags
             foreach (var c in xmlElement.Content)
             {
-                if (c is XmlElementSyntax cElement)
-                    ColorizeNode(cElement, builder);
+                ColorizeNode(c, builder);
             }
 
+            // coloring start tag
             if (xmlElement.StartTag != null)
             {
                 var (line, offset) = GetLineNumberAndOffsetByIndex(xmlElement.StartTag.SpanStart);
                 _currentSemanticTokens.Add(new SemanticToken(line, offset, xmlElement.StartTag.Width, _tokenTypes[0], _tokenModifiers[0]));
             }
+            // coloring end tag
             if (xmlElement.EndTag != null)
             {
                 var (line, offset) = GetLineNumberAndOffsetByIndex(xmlElement.EndTag.SpanStart);
-                Console.WriteLine($"{line} : {offset}");
                 _currentSemanticTokens.Add(new SemanticToken(line, offset, xmlElement.EndTag.Width, _tokenTypes[0], _tokenModifiers[0]));
             }
         }
