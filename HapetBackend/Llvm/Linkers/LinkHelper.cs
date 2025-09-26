@@ -8,7 +8,7 @@ namespace HapetBackend.Llvm.Linkers
         public static bool GetLibraryPaths(string name, string prjOutFolder, out (string, string) data)
         {
             // TODO: is there .lib file when we are on linux?
-            string fileName = $"{name}.lib";
+            string fileName = $"{name}.mpt";
             string theAssemblyName;
             string pathToLink;
 

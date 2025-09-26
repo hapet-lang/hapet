@@ -26,7 +26,7 @@ namespace HapetCompiler.Toolchains
             _cmdArgs = args;
         }
 
-        public int Build(string projectPath, IMessageHandler messageHandler, bool referenced = false)
+        public int Build(string projectPath, IMessageHandler messageHandler, bool referenced = false, bool makeCodegen = true)
         {
             // save type context
             var cachedTypeContext = HapetType.CurrentTypeContext;
@@ -113,14 +113,18 @@ namespace HapetCompiler.Toolchains
                 return (int)CompilerErrors.LastPrepareError; // last prepare errors
             }
 
-            if (!referenced)
-                messageHandler.ReportMessage([$"{Funcad.GetPrettyTimeString(_stopwatch.Elapsed)} Code generation..."], null, ReportType.Info);
-            // code gen
-            bool codeGenOk = GenerateAndCompileCode(compiler, postPreparer, resolver, messageHandler);
-            if (messageHandler.HasErrors || !codeGenOk)
+            // if codegen required
+            if (makeCodegen)
             {
-                OnExit();
-                return (int)CompilerErrors.CodeGenerationError; // code generation errors
+                if (!referenced)
+                    messageHandler.ReportMessage([$"{Funcad.GetPrettyTimeString(_stopwatch.Elapsed)} Code generation..."], null, ReportType.Info);
+                // code gen
+                bool codeGenOk = GenerateAndCompileCode(compiler, postPreparer, resolver, messageHandler);
+                if (messageHandler.HasErrors || !codeGenOk)
+                {
+                    OnExit();
+                    return (int)CompilerErrors.CodeGenerationError; // code generation errors
+                }
             }
 
             // all is ok :)
