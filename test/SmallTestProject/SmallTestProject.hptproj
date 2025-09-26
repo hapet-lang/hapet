@@ -15,6 +15,5 @@
 	<ItemGroup>
 		<ProjectReference Include="../../std/System/System.hptproj" />
 		<!--<Reference Include="System" />-->
-		<Define Name="Test">TestString</Define>
 	</ItemGroup>
 </Project>
