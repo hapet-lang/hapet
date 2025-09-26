@@ -6,7 +6,7 @@ using HapetFrontend.Errors;
 
 namespace HapetCompiler.ProjectConf
 {
-    internal sealed partial class ProjectXmlParser
+    public partial class ProjectXmlParser
     {
         private void PrepareItemGroups()
         {

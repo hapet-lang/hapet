@@ -7,7 +7,7 @@ using System.Globalization;
 
 namespace HapetCompiler.ProjectConf
 {
-    internal partial class ProjectXmlParser
+    public partial class ProjectXmlParser
     {
         /// <summary>
         /// Data of <PropertyGroup> tag

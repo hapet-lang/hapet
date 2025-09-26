@@ -3,7 +3,7 @@ using System.Reflection;
 
 namespace HapetCompiler.ProjectConf
 {
-    internal partial class ProjectXmlParser
+    public partial class ProjectXmlParser
     {
         private void SetDefaultDefines()
         {
