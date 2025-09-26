@@ -1,22 +1,16 @@
-﻿using HapetCompiler.ProjectConf.Data;
-using HapetFrontend;
+﻿using HapetFrontend;
 using HapetFrontend.Entities;
 using HapetFrontend.Errors;
 using Microsoft.Language.Xml;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Threading;
-using System.Xml;
 
-namespace HapetCompiler.ProjectConf
+namespace HapetFrontend.ProjectParser
 {
     public partial class ProjectXmlParser
     {
         private readonly string _projectPath = string.Empty;
         private readonly string _projectPathAbsolute = string.Empty;
         private readonly string _projectFileText = string.Empty;
-        private readonly string[] _projectFileTextSplitted = null;
+        
         private readonly ProgramFile _projectFile;
         private readonly CompilerSettings _projectSettings;
         private readonly ProjectData _projectData;
@@ -37,8 +31,8 @@ namespace HapetCompiler.ProjectConf
             _projectPath = projectPath;
             _projectPathAbsolute = Path.GetFullPath(_projectPath);
             _projectFileText = File.ReadAllText(_projectPath).Replace("\r\n", "\n");
-            _projectFileTextSplitted = _projectFileText.Split('\n');
             _projectFile = new ProgramFile(Path.GetFileName(projectPath), _projectFileText);
+            _projectFile.TextSplitted = _projectFileText.Split('\n');
             _projectFile.FilePath = new Uri(_projectPathAbsolute);
 
             _projectSettings = projectSettings;
@@ -83,7 +77,7 @@ namespace HapetCompiler.ProjectConf
                     }
                 }
 
-                var loc = NodeLocationFinder.GetLocationOfNode(_projectFileText, xnode, _projectPathAbsolute);
+                var loc = _projectFile.GetLocationFromSpan(xnode.Span.Start, xnode.Span.End);
                 _messageHandler.ReportMessage(_projectFile, loc, [], ErrorCode.Get(CTEN.UnexpectedProjectFileTag));
             }
 

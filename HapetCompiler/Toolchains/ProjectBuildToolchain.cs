@@ -5,12 +5,11 @@ using HapetFrontend.Entities;
 using HapetFrontend;
 using System.Diagnostics;
 using HapetFrontend.Helpers;
-using HapetCompiler.ProjectConf;
-using HapetCompiler.ProjectConf.Data;
 using HapetCompiler.Resolvers;
 using HapetPostPrepare;
 using HapetFrontend.Types;
 using HapetLastPrepare;
+using HapetFrontend.ProjectParser;
 
 namespace HapetCompiler.Toolchains
 {

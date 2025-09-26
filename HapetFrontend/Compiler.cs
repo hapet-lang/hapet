@@ -81,6 +81,7 @@ namespace HapetFrontend
         {
             var metaFile = new ProgramFile(Path.GetFileName(fileName), metadataText);
             metaFile.FilePath = new Uri(fileName);
+            metaFile.TextSplitted = metadataText.Split('\n');
             // just parsing metadata and adding its files into the compiler
             var files = ParseMetadata(metaFile, out var metadata);
             foreach (var f in files)
@@ -162,8 +163,9 @@ namespace HapetFrontend
                 if (s is AstDirectiveStmt dir && dir.DirectiveType == Enums.DirectiveType.MetadataFile)
                 {
                     // creating a virtual file
-                    currentFile = new ProgramFile(Path.GetFileName((dir.Value as AstStringExpr).StringValue), lexer.Text);
+                    currentFile = new ProgramFile(Path.GetFileName((dir.Value as AstStringExpr).StringValue), metadataFile.Text);
                     currentFile.FilePath = new Uri((dir.Value as AstStringExpr).StringValue, UriKind.Relative);
+                    currentFile.TextSplitted = metadataFile.TextSplitted;
                     allFiles.Add(currentFile);
                     // change lexer locations' filename
                     lexer.ChangeFilename(currentFile.Name);
@@ -211,10 +213,10 @@ namespace HapetFrontend
                 return null;
             }
             var text = File.ReadAllText(fileName, Encoding.UTF8)
-                           .Replace("\r\n", "\n", StringComparison.InvariantCulture)
-                           .Replace("\t", "    ", StringComparison.InvariantCulture);
+                           .Replace("\r\n", "\n", StringComparison.InvariantCulture);
             var file = new ProgramFile(Path.GetFileName(fileName), text);
             file.FilePath = new Uri(fileName);
+            file.TextSplitted = text.Split('\n');
             _files[fileName] = file;
 
             var lexer = Lexer.FromFile(file, MessageHandler);

@@ -1,5 +1,4 @@
-﻿using HapetCompiler.ProjectConf.Data;
-using HapetFrontend;
+﻿using HapetFrontend;
 using HapetFrontend.Entities;
 using HapetFrontend.Helpers;
 

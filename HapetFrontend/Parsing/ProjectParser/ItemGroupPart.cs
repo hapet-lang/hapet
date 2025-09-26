@@ -1,10 +1,9 @@
-﻿using HapetCompiler.ProjectConf.Data;
-using LLVMSharp;
-using System.Xml;
+﻿using System.Xml;
 using System.Linq;
 using HapetFrontend.Errors;
+using Microsoft.Language.Xml;
 
-namespace HapetCompiler.ProjectConf
+namespace HapetFrontend.ProjectParser
 {
     public partial class ProjectXmlParser
     {
@@ -15,39 +14,43 @@ namespace HapetCompiler.ProjectConf
             {
                 // TODO: check conditions in project file
                 // go all over the project settings
-                foreach (XmlNode childnode in xnode.ChildNodes)
+                foreach (var childnode in xnode.Content)
                 {
                     // skip comments
-                    if (childnode is XmlComment)
+                    if (childnode is XmlCommentSyntax)
+                        continue;
+
+                    if (childnode is not IXmlElementSyntax xmlElement)
                         continue;
 
                     // TODO: check conditions in project file tags
-                    switch (childnode.Name)
+                    switch (xmlElement.Name)
                     {
                         case "ProjectReference":
                             {
                                 // TODO: checks and errors that the attr exists
-                                string thePathToProject = childnode.Attributes.GetNamedItem("Include").Value;
+                                string thePathToProject = xmlElement.GetAttribute("Include").Value;
                                 _projectData.ProjectReferences.Add(thePathToProject);
                                 break;
                             }
                         case "Reference":
                             {
                                 // TODO: checks and errors that the attr exists
-                                string thePathToDll = childnode.Attributes.GetNamedItem("Include").Value;
+                                string thePathToDll = xmlElement.GetAttribute("Include").Value;
                                 _projectData.References.Add(thePathToDll);
                                 break;
                             }
                         case "Define":
                             {
-                                string name = childnode.Attributes.GetNamedItem("Name").Value;
-                                _projectData.Defines.Add(name, childnode.InnerText);
+                                string name = xmlElement.GetAttribute("Name").Value;
+                                var content = (xmlElement.Content.First() as XmlTextSyntax).Value;
+                                _projectData.Defines.Add(name, content);
                                 break;
                             }
                         default:
                             {
-                                var loc = NodeLocationFinder.GetLocationOfNode(_projectFileText, childnode, _projectPathAbsolute);
-                                _messageHandler.ReportMessage(_projectFile, loc, [childnode.Name], ErrorCode.Get(CTEN.UnexpectedProjectFileTag));
+                                var loc = _projectFile.GetLocationFromSpan(xmlElement.AsElement.Start, xmlElement.AsElement.Start + xmlElement.AsElement.FullWidth);
+                                _messageHandler.ReportMessage(_projectFile, loc, [], ErrorCode.Get(CTEN.UnexpectedProjectFileTag));
                                 break;
                             }
                     }

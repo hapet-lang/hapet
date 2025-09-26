@@ -1,6 +1,7 @@
 ﻿using HapetFrontend.Ast;
 using HapetFrontend.Ast.Statements;
 using HapetFrontend.Scoping;
+using System.Diagnostics;
 
 namespace HapetFrontend.Entities
 {
@@ -27,6 +28,11 @@ namespace HapetFrontend.Entities
         public string Text { get; }
 
         /// <summary>
+        /// Splitted file text
+        /// </summary>
+        public string[] TextSplitted { get; set; }
+
+        /// <summary>
         /// Is the file imported/virtual from another assembly
         /// </summary>
         public bool IsImported { get; set; }
@@ -49,6 +55,83 @@ namespace HapetFrontend.Entities
         public override string ToString()
         {
             return $"ProgramFile: {Name}";
+        }
+
+        public Location GetLocationFromSpan(int start, int end)
+        {
+            var (line, offset) = GetLineNumberAndOffsetByIndex(start);
+            TokenLocation locStart = new TokenLocation()
+            {
+                File = FilePath.AbsolutePath,
+                Line = line,
+                LineStartIndex = start - offset,
+                Index = start,
+                End = start,
+            };
+            (line, offset) = GetLineNumberAndOffsetByIndex(end);
+            TokenLocation locEnd = new TokenLocation()
+            {
+                File = FilePath.AbsolutePath,
+                Line = line,
+                LineStartIndex = end - offset,
+                Index = end,
+                End = end,
+            };
+            return new Location(locStart, locEnd);
+        }
+
+        public (int line, int offset) GetLineNumberAndOffsetByIndex(int index)
+        {
+            if (TextSplitted == null)
+                return (0, 0);
+            int currentIndexSum = 0;
+            int currentLineNumber = 0;
+            foreach (var line in TextSplitted)
+            {
+                var prevIndexSum = currentIndexSum;
+                currentIndexSum += line.Length + 1; // + 1 is for \n
+                if (currentIndexSum > index)
+                    return (currentLineNumber, index - prevIndexSum);
+                currentLineNumber++;
+            }
+            Debug.Assert(false, "Should not be here");
+            return (currentLineNumber, -1); // should not be here
+        }
+
+        public (List<int> lines, List<int> offsets, List<int> widths) GetLinesAndOffsetsForComment(int start, int end)
+        {
+            if (TextSplitted == null)
+                return ([0], [0], [0]);
+
+            List<int> lines = new List<int>();
+            List<int> offsets = new List<int>();
+            List<int> widths = new List<int>();
+
+            int currentIndexSum = 0;
+            int currentLineNumber = 0;
+            for (int i = 0; i < TextSplitted.Length; ++i)
+            {
+                var line = TextSplitted[i];
+                var prevIndexSum = currentIndexSum;
+                currentIndexSum += line.Length + 1; // + 1 is for \n
+                if (currentIndexSum > start)
+                {
+                    lines.Add(currentLineNumber);
+                    // if there are already elements - offset is 0
+                    int offset = offsets.Count == 0 ? start - prevIndexSum : 0;
+                    offsets.Add(offset);
+                    // check that it is the last comment line
+                    bool lastLine = (i + 1 < TextSplitted.Length) ||
+                        currentIndexSum + TextSplitted[i + 1].Length > end;
+                    int width = lastLine ? (end - prevIndexSum) : (line.Length - offset);
+                    widths.Add(width);
+                }
+
+                if (currentIndexSum > end)
+                    break;
+                currentLineNumber++;
+            }
+            return (lines, offsets, widths);
         }
     }
 }

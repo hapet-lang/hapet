@@ -1,7 +1,7 @@
 ﻿using HapetFrontend;
 using System.Reflection;
 
-namespace HapetCompiler.ProjectConf
+namespace HapetFrontend.ProjectParser
 {
     public partial class ProjectXmlParser
     {

@@ -1,18 +1,18 @@
 ﻿using HapetFrontend;
 using System.Xml.Linq;
 using System.Xml;
-using HapetCompiler.ProjectConf.Data;
 using HapetFrontend.Errors;
 using System.Globalization;
+using Microsoft.Language.Xml;
 
-namespace HapetCompiler.ProjectConf
+namespace HapetFrontend.ProjectParser
 {
     public partial class ProjectXmlParser
     {
         /// <summary>
         /// Data of <PropertyGroup> tag
         /// </summary>
-        private Dictionary<string, (string, XmlNode)> _propertyGroupData = new Dictionary<string, (string, XmlNode)>();
+        private readonly Dictionary<string, (string, IXmlElement)> _propertyGroupData = new Dictionary<string, (string, IXmlElement)>();
 
         private void PreparePropertyGroups()
         {
@@ -21,13 +21,16 @@ namespace HapetCompiler.ProjectConf
             {
                 // TODO: check conditions in proj file tag
                 // go all over the project settings
-                foreach (XmlNode childnode in xnode.ChildNodes)
+                foreach (var childnode in xnode.Content)
                 {
                     // skip comments
-                    if (childnode is XmlComment)
+                    if (childnode is XmlCommentSyntax)
                         continue;
                     // TODO: check conditions in proj file tag
-                    _propertyGroupData.Add(childnode.Name, (childnode.FirstChild.Value, childnode));
+                    if (childnode is IXmlElementSyntax xmlElement)
+                    {
+                        _propertyGroupData.Add(xmlElement.Name, ((xmlElement.Content.First() as XmlTextSyntax).Value, xmlElement.AsElement));
+                    }
                 }
             }
             UpdateSettings();
@@ -94,7 +97,7 @@ namespace HapetCompiler.ProjectConf
                         bool parsed = int.TryParse(value, out int outV);
                         if (!parsed)
                         {
-                            var loc = NodeLocationFinder.GetLocationOfNode(_projectFileText, tuple.Item2, _projectPathAbsolute);
+                            var loc = _projectFile.GetLocationFromSpan(tuple.Item2.Start, tuple.Item2.Start + tuple.Item2.FullWidth);
                             _messageHandler.ReportMessage(_projectFile, loc, [value], ErrorCode.Get(CTEN.TagNotParsedToInt));
                             return (T)(object)0;
                         }
@@ -107,7 +110,7 @@ namespace HapetCompiler.ProjectConf
                             if (item.ToString().ToUpperInvariant().Equals(value.Trim().ToUpperInvariant(), StringComparison.Ordinal))
                                 return item;
                         }
-                        var loc = NodeLocationFinder.GetLocationOfNode(_projectFileText, tuple.Item2, _projectPathAbsolute);
+                        var loc = _projectFile.GetLocationFromSpan(tuple.Item2.Start, tuple.Item2.Start + tuple.Item2.FullWidth);
                         _messageHandler.ReportMessage(_projectFile, loc, [value, key], ErrorCode.Get(CTEN.ValueInvalidForTag));
                     }
                 }

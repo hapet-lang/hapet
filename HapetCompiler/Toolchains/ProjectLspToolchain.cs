@@ -1,8 +1,8 @@
-﻿using HapetCompiler.ProjectConf;
-using HapetCompiler.Resolvers;
+﻿using HapetCompiler.Resolvers;
 using HapetFrontend;
 using HapetFrontend.Entities;
 using HapetFrontend.Helpers;
+using HapetFrontend.ProjectParser;
 using HapetFrontend.Types;
 using HapetLastPrepare;
 using HapetLsp;
