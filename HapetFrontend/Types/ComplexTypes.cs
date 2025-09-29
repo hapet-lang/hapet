@@ -148,7 +148,7 @@ namespace HapetFrontend.Types
 
         public override string ToString()
         {
-            return $"{(Declaration != null ? Declaration.Name.Name : "null")}";
+            return $"{(Declaration != null ? Declaration.NameWithNs : "null")}";
         }
 
         public override int Match(HapetType concrete)

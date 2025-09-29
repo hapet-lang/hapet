@@ -15,10 +15,10 @@ namespace HapetBackend.Llvm
         {
             // do not skip these stors
             if (func.ClassFunctionType == ClassFunctionType.StaticCtor &&
-                (func.ContainingParent.Name.Name == "System.StackTrace" ||
-                func.ContainingParent.Name.Name == "System.Gc" ||
-                func.ContainingParent.Name.Name == "System.GcList" ||
-                func.ContainingParent.Name.Name == "System.Runtime.InteropServices.ExceptionHelper"))
+                (func.ContainingParent.NameWithNs == "System.StackTrace" ||
+                func.ContainingParent.NameWithNs == "System.Gc" ||
+                func.ContainingParent.NameWithNs == "System.GcList" ||
+                func.ContainingParent.NameWithNs == "System.Runtime.InteropServices.ExceptionHelper"))
                 return false;
 
             // also we need to skip here stors of generic impls
@@ -52,7 +52,7 @@ namespace HapetBackend.Llvm
             bool isUsed = decl.IsDeclarationUsed || decl.IsDeclarationUsedOnlyDeclare ||
                           _compiler.CurrentProjectSettings.TargetFormat == HapetFrontend.TargetFormat.Library; // all used for library
 
-            var attr = decl.Attributes.FirstOrDefault(x => (x.AttributeName.OutType as ClassType).Declaration.Name.Name == "System.DeclarationUsedAttribute");
+            var attr = decl.Attributes.FirstOrDefault(x => (x.AttributeName.OutType as ClassType).Declaration.NameWithNs == "System.DeclarationUsedAttribute");
             isUsed = isUsed || (attr != null);
 
             return isUsed;

@@ -148,7 +148,7 @@ namespace HapetBackend.Llvm
                 if (!GetNormalDeclIsUsed(decl))
                     return;
 
-                var varName = $"{parent.Name.Name}::{decl.Name.Name}";
+                var varName = $"{parent.NameWithNs}::{decl.Name.Name}";
                 // creating a static field of the decl
                 var globStatic = _module.AddGlobal(HapetTypeToLLVMType(decl.Type.OutType), varName);
                 globStatic.Linkage = LLVMLinkage.LLVMExternalLinkage;

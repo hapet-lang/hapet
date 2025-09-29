@@ -127,13 +127,13 @@ namespace HapetFrontend.Extensions
             static string GetName(HapetType t)
             {
                 if (t is ClassType clsT)
-                    return GenericsHelper.GetCodegenGenericName(clsT.Declaration.Name, null);
+                    return GenericsHelper.GetCodegenGenericName(clsT.Declaration.Name.GetCopy(clsT.Declaration.NameWithNs), null);
                 else if (t is StructType strT)
-                    return GenericsHelper.GetCodegenGenericName(strT.Declaration.Name, null);
+                    return GenericsHelper.GetCodegenGenericName(strT.Declaration.Name.GetCopy(strT.Declaration.NameWithNs), null);
                 else if (t is DelegateType delT)
-                    return GenericsHelper.GetCodegenGenericName(delT.Declaration.Name, null);
+                    return GenericsHelper.GetCodegenGenericName(delT.Declaration.Name.GetCopy(delT.Declaration.NameWithNs), null);
                 else if (t is EnumType enmT)
-                    return GenericsHelper.GetCodegenGenericName(enmT.Declaration.Name, null);
+                    return GenericsHelper.GetCodegenGenericName(enmT.Declaration.Name.GetCopy(enmT.Declaration.NameWithNs), null);
                 else if (t is PointerType ptrT)
                     return $"{GetName(ptrT.TargetType)}*";
                 return HapetType.AsString(t);
@@ -219,16 +219,16 @@ namespace HapetFrontend.Extensions
 
             // additional search for explicit declarations!!!
             // if any of them are like 'Namespace.BaseCls::Intrf.Func(...);'
-            string interfaceSearchName = "";
+            ClassType interfaceSearchType = null;
             if (searchFunc.Name.AdditionalData != null)
-                interfaceSearchName = (searchFunc.Name.AdditionalData.OutType as ClassType).Declaration.Name.Name;
+                interfaceSearchType = searchFunc.Name.AdditionalData.OutType as ClassType;
             for (int i = 0; i < delcs.Count; ++i)
             {
                 var x = delcs[i];
                 string currName = x.Name.Name;
-                string interfaceName = "";
+                ClassType interfaceType = null;
                 if (x.Name.AdditionalData != null)
-                    interfaceName = (x.Name.AdditionalData.OutType as ClassType).Declaration.Name.Name;
+                    interfaceType = x.Name.AdditionalData.OutType as ClassType;
 
                 List<HapetType> typesD = x.Parameters.Select(x => x.Type?.OutType).ToList();
                 if (skipFirst)
@@ -238,10 +238,10 @@ namespace HapetFrontend.Extensions
                 }
 
                 bool areNamesEqual = false;
-                if (string.IsNullOrWhiteSpace(interfaceSearchName) && !string.IsNullOrWhiteSpace(interfaceName))
+                if (interfaceSearchType == null && interfaceType != null)
                 {
-                    string parentSearch = searchFunc.ContainingParent.Name.Name;
-                    if (parentSearch == interfaceName && currName == searchName)
+                    var parentSearch = searchFunc.ContainingParent;
+                    if (parentSearch.Type.OutType is ClassType clsTt && clsTt == interfaceType && currName == searchName)
                         areNamesEqual = true;
                     else
                     {
@@ -255,10 +255,10 @@ namespace HapetFrontend.Extensions
                             areNamesEqual = true;
                     }
                 }
-                else if (!string.IsNullOrWhiteSpace(interfaceSearchName) && string.IsNullOrWhiteSpace(interfaceName))
+                else if (interfaceSearchType != null && interfaceType == null)
                 {
-                    string parentSearch = x.ContainingParent.Name.Name;
-                    if (parentSearch == interfaceSearchName && currName == searchName)
+                    var parentSearch = x.ContainingParent;
+                    if (parentSearch.Type.OutType is ClassType clsTt && clsTt == interfaceSearchType && currName == searchName)
                         areNamesEqual = true;
                 }
                 if (!areNamesEqual)

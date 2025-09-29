@@ -590,10 +590,6 @@ namespace HapetPostPrepare
         // to check all virtual/abstract props including inherited
         private List<AstPropertyDecl> GetDeclarationProps__(AstDeclaration decl)
         {
-            if (decl.Name.Name.Contains("List"))
-            {
-
-            }
             // all virtual/abstract props
             List<AstPropertyDecl> allPropDecls = new List<AstPropertyDecl>();
             List<AstNestedExpr> inheritedFrom;

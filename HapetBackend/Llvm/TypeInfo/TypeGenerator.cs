@@ -38,13 +38,13 @@ namespace HapetBackend.Llvm
             {
                 decl = clsType.Declaration;
                 parent = clsType.Declaration.InheritedFrom.FirstOrDefault(x => x.OutType is ClassType clss && !clss.Declaration.IsInterface)?.OutType as ClassType;
-                typeNameString = GenericsHelper.GetCodegenGenericName(clsType.Declaration.Name, _messageHandler);
+                typeNameString = GenericsHelper.GetCodegenGenericName(clsType.Declaration.Name.GetCopy(clsType.Declaration.NameWithNs), _messageHandler);
             }
             else if (type is StructType strType)
             {
                 decl = strType.Declaration;
                 parent = strType.Declaration.InheritedFrom.FirstOrDefault(x => x.OutType is ClassType clss && !clss.Declaration.IsInterface)?.OutType as ClassType;
-                typeNameString = GenericsHelper.GetCodegenGenericName(strType.Declaration.Name, _messageHandler);
+                typeNameString = GenericsHelper.GetCodegenGenericName(strType.Declaration.Name.GetCopy(strType.Declaration.NameWithNs), _messageHandler);
             }
             else
             {
@@ -156,9 +156,9 @@ namespace HapetBackend.Llvm
 
             string typeNameString;
             if (type is ClassType clsType)
-                typeNameString = GenericsHelper.GetCodegenGenericName(clsType.Declaration.Name, _messageHandler);
+                typeNameString = GenericsHelper.GetCodegenGenericName(clsType.Declaration.Name.GetCopy(clsType.Declaration.NameWithNs), _messageHandler);
             else if (type is StructType strType)
-                typeNameString = GenericsHelper.GetCodegenGenericName(strType.Declaration.Name, _messageHandler);
+                typeNameString = GenericsHelper.GetCodegenGenericName(strType.Declaration.Name.GetCopy(strType.Declaration.NameWithNs), _messageHandler);
             else
             {
                 // compiler error - could not generate type info 

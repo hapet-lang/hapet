@@ -29,12 +29,12 @@ namespace HapetBackend.Llvm
             if (type is ClassType clsType)
             {
                 decl = clsType.Declaration;
-                typeNameString = GenericsHelper.GetCodegenGenericName(clsType.Declaration.Name, _messageHandler);
+                typeNameString = GenericsHelper.GetCodegenGenericName(clsType.Declaration.Name.GetCopy(clsType.Declaration.NameWithNs), _messageHandler);
             }
             else if (type is StructType strType)
             {
                 decl = strType.Declaration;
-                typeNameString = GenericsHelper.GetCodegenGenericName(strType.Declaration.Name, _messageHandler);
+                typeNameString = GenericsHelper.GetCodegenGenericName(strType.Declaration.Name.GetCopy(strType.Declaration.NameWithNs), _messageHandler);
             }
             else
             {
@@ -182,9 +182,9 @@ namespace HapetBackend.Llvm
 
             string typeNameString;
             if (type is ClassType clsType)
-                typeNameString = GenericsHelper.GetCodegenGenericName(clsType.Declaration.Name, _messageHandler);
+                typeNameString = GenericsHelper.GetCodegenGenericName(clsType.Declaration.Name.GetCopy(clsType.Declaration.NameWithNs), _messageHandler);
             else if (type is StructType strType)
-                typeNameString = GenericsHelper.GetCodegenGenericName(strType.Declaration.Name, _messageHandler);
+                typeNameString = GenericsHelper.GetCodegenGenericName(strType.Declaration.Name.GetCopy(strType.Declaration.NameWithNs), _messageHandler);
             else
             {
                 // compiler error - could not generate type info 

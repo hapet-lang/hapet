@@ -489,7 +489,7 @@ namespace HapetPostPrepare
                             // check that original decls are the same
                             var fComp1 = fDecl.IsImplOfGeneric ? fDecl.OriginalGenericDecl : fDecl;
                             var fComp2 = sDecl.IsImplOfGeneric ? sDecl.OriginalGenericDecl : sDecl;
-                            if (fComp1 == fComp2 && kType.Declaration.Name.Name == sType.Declaration.Name.Name)
+                            if (fComp1 == fComp2 && kType.Declaration.NameWithNs == sType.Declaration.NameWithNs)
                             {
                                 continue;
                             }

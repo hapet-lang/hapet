@@ -198,7 +198,7 @@ namespace HapetBackend.Llvm
 
                 // some functions require suppress of defer/stacktrace
                 bool doSuppressStackTrace = funcDecl.Attributes.FirstOrDefault(x =>
-                    (x.AttributeName.OutType as ClassType).Declaration.Name.Name == "System.SuppressStackTraceAttribute") != null;
+                    (x.AttributeName.OutType as ClassType).Declaration.NameWithNs == "System.SuppressStackTraceAttribute") != null;
 
                 // if stacktrace is not suppressed then make "exception-handler" to call defer on exception
                 if (doSuppressStackTrace)

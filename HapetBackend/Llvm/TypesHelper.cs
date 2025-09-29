@@ -198,7 +198,7 @@ namespace HapetBackend.Llvm
                 case ClassType t:
                     {
                         // creating a class
-                        var coolName = GenericsHelper.GetCodegenGenericName(t.Declaration.Name, _messageHandler);
+                        var coolName = GenericsHelper.GetCodegenGenericName(t.Declaration.Name.GetCopy(t.Declaration.NameWithNs), _messageHandler);
                         var name = $"class.{coolName}";
                         var llvmType = _context.CreateNamedStruct(name);
                         _typeMap[t] = llvmType; // need to do this to prevent stackoverflow
@@ -246,7 +246,7 @@ namespace HapetBackend.Llvm
                         // enable packing if there is a proper attribute
                         // getting attribute if it exists
                         var layoutAttr = s.Declaration.Attributes.FirstOrDefault(x => 
-                            (x.AttributeName.OutType as ClassType).Declaration.Name.Name == "System.Runtime.InteropServices.StructLayoutAttribute");
+                            (x.AttributeName.OutType as ClassType).Declaration.NameWithNs == "System.Runtime.InteropServices.StructLayoutAttribute");
                         int packNumber = 0;
                         if (layoutAttr != null)
                         {
@@ -271,7 +271,7 @@ namespace HapetBackend.Llvm
                         }
 
                         // creating the struct
-                        var coolName = GenericsHelper.GetCodegenGenericName(s.Declaration.Name, _messageHandler);
+                        var coolName = GenericsHelper.GetCodegenGenericName(s.Declaration.Name.GetCopy(s.Declaration.NameWithNs), _messageHandler);
                         var name = $"struct.{coolName}";
                         var llvmType = _context.CreateNamedStruct(name);
                         _typeMap[s] = llvmType; // need to do this to prevent stackoverflow
@@ -300,7 +300,7 @@ namespace HapetBackend.Llvm
         private void AddBoxedType(StructType type, int packNumber)
         {
             // create a boxed type
-            var nameBoxed = $"boxed.{type.Declaration.Name.Name}";
+            var nameBoxed = $"boxed.{GenericsHelper.GetCodegenGenericName(type.Declaration.Name.GetCopy(type.Declaration.NameWithNs), _messageHandler)}";
             var llvmTypeBoxed = _context.CreateNamedStruct(nameBoxed);
             var fieldDeclarationsBoxed = type.Declaration.GetAllRawFields();
             var (offsetsBoxed, boxedSize, memTypesBoxed, algn) = CalcStructData(fieldDeclarationsBoxed, packNumber, true);
@@ -691,7 +691,7 @@ namespace HapetBackend.Llvm
             if (inType is StructType structType) 
             {
                 if (outType is PointerType pt && pt.TargetType is ClassType clsT && 
-                    (clsT.Declaration.Name.Name == "System.Object" || clsT.Declaration.Name.Name == "System.ValueType" || clsT.Declaration.IsInterface))
+                    (clsT.Declaration.NameWithNs == "System.Object" || clsT.Declaration.NameWithNs == "System.ValueType" || clsT.Declaration.IsInterface))
                 {
                     // check if inherited. if not - return null*
                     if (clsT.Declaration.IsInterface && !structType.IsInheritedFrom(clsT, true))

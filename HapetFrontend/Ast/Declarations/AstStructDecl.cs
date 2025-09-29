@@ -111,7 +111,7 @@ namespace HapetFrontend.Ast.Declarations
 
         public override string ToString()
         {
-            return GenericsHelper.GetNameFromAst(Name, null);
+            return GenericsHelper.GetNameFromAst(Name.GetCopy(NameWithNs), null);
         }
     }
 }
