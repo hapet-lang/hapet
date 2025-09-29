@@ -568,7 +568,8 @@ namespace HapetPostPrepare
         public void AntiParseAttributeStmt(AstAttributeStmt attrStmt, StringBuilder sb, string offset)
         {
             sb.Append('[');
-            AntiParseExpr((attrStmt.AttributeName.OutType as ClassType).Declaration.Name, sb, offset);
+            var attrDecl = (attrStmt.AttributeName.OutType as ClassType).Declaration;
+            AntiParseExpr(attrDecl.Name.GetCopy(attrDecl.NameWithNs), sb, offset);
             if (attrStmt.Arguments.Count > 0)
             {
                 sb.Append('(');

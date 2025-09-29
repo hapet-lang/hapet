@@ -46,9 +46,9 @@ namespace HapetPostPrepare
 
                 // set System.Object inheritance if there is nothing
                 if ((cls.InheritedFrom.Count <= 0 ||
-                    (cls.InheritedFrom[0].OutType is ClassType &&
-                    (cls.InheritedFrom[0].OutType as ClassType).Declaration.IsInterface)) &&
-                    cls.Name.Name != "System.Object") // skip itself
+                    (cls.InheritedFrom[0].OutType is ClassType clsTT &&
+                    clsTT.Declaration.IsInterface)) &&
+                    cls.NameWithNs != "System.Object") // skip itself
                 {
                     // set it only if there are not inheritances or only interfaces
                     var nst = new AstNestedExpr(new AstIdExpr("System.Object", cls), null, cls);
@@ -68,9 +68,9 @@ namespace HapetPostPrepare
                     if (inh.OutType == null)
                         continue;
 
-                    if (inh.OutType is not ClassType ||
-                        (!(inh.OutType as ClassType).Declaration.IsInterface &&
-                        (inh.OutType as ClassType).Declaration.Name.Name != "System.ValueType"))
+                    if (inh.OutType is not ClassType || (inh.OutType is ClassType clsTTT &&
+                        !clsTTT.Declaration.IsInterface &&
+                        clsTTT.Declaration.NameWithNs != "System.ValueType"))
                     {
                         // error - cannot inherit from non interfaces
                         _compiler.MessageHandler.ReportMessage(_currentSourceFile, inh, [HapetType.AsString(inh.OutType)], ErrorCode.Get(CTEN.NonInterfaceInhInStruct));

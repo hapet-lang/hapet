@@ -213,13 +213,13 @@ namespace HapetFrontend.Scoping
         }
 
         // to get decl in namespace
-        public DeclSymbol GetSymbolInNamespace(string ns, AstIdExpr symbol, bool searchUsedScopes = true, bool searchParentScope = true, bool handleGenerics = false)
+        public DeclSymbol GetSymbolInNamespace(string ns, AstIdExpr symbol, bool searchUsedScopes = true, bool searchParentScope = false, bool handleGenerics = false)
         {
-            NamespaceSymbol nsSymbol = GetSymbol(new AstIdExpr(ns), searchUsedScopes, searchParentScope) as NamespaceSymbol;
+            NamespaceSymbol nsSymbol = GlobalScope.GetSymbol(new AstIdExpr(ns), searchUsedScopes, searchParentScope) as NamespaceSymbol;
             if (nsSymbol == null)
                 return null;
 
-            return nsSymbol.Scope.GetSymbol(symbol.GetCopy($"{ns}.{symbol.Name}"), searchUsedScopes, searchParentScope, handleGenerics: handleGenerics) as DeclSymbol;
+            return nsSymbol.Scope.GetSymbol(symbol.GetCopy($"{symbol.Name}"), searchUsedScopes, searchParentScope, handleGenerics: handleGenerics) as DeclSymbol;
         }
 
         public bool IsStringNamespaceOrPart(string testString, bool searchUsedScopes = true, bool searchParentScope = true)

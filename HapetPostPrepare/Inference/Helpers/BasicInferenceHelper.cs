@@ -8,10 +8,10 @@ namespace HapetPostPrepare
 {
     public partial class PostPrepare
     {
-        public void PostPrepareAliases(AstIdExpr typeName, Scope scope, AstDeclaration decl)
+        public void PostPrepareAliases(AstIdExpr typeName, Scope scope, AstDeclaration decl, string fullName)
         {
             // kostyl to create aliases :)
-            switch (typeName.Name)
+            switch (fullName)
             {
                 case "System.Object":
                     _compiler.GlobalScope.DefineDeclSymbol(typeName.GetCopy("object"), decl);
@@ -106,13 +106,13 @@ namespace HapetPostPrepare
             }
         }
 
-        private void HandleBasicTypes(AstDeclaration decl, AstIdExpr idExpr)
+        private void HandleBasicTypes(AstDeclaration decl, AstIdExpr idExpr, string fullName)
         {
             // all basic types are structs
             if (decl is not AstStructDecl structDecl)
                 return;
 
-            switch (decl.Name.Name)
+            switch (fullName)
             {
                 // special handle for string type
                 case "System.String":

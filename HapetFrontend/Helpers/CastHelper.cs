@@ -272,8 +272,8 @@ namespace HapetFrontend
                 // usually when 'IAnime a = structInstance;'
                 case ClassType cls5 when
                     currentType is StructType &&
-                    (cls5.Declaration.Name.Name == "System.Object" ||
-                    cls5.Declaration.Name.Name == "System.ValueType" ||
+                    (cls5.Declaration.NameWithNs == "System.Object" ||
+                    cls5.Declaration.NameWithNs == "System.ValueType" ||
                     cls5.Declaration.IsInterface):
                 // usually when 'TestStruct? a = new TestStruct();'
                 case NullableType nt when
@@ -286,7 +286,7 @@ namespace HapetFrontend
                 // usually when 'object a = genericInstance;'
                 case ClassType cls6 when
                     currentType is GenericType &&
-                    (cls6.Declaration.Name.Name == "System.Object"):
+                    (cls6.Declaration.NameWithNs == "System.Object"):
                     {
                         if (castResult != null)
                             castResult.CouldBeCasted = true;

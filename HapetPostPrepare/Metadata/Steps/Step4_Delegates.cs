@@ -27,7 +27,7 @@ namespace HapetPostPrepare
                 // not yet created Invokes
                 if (del.Functions.Count == 0)
                 {
-                    var structScope = new Scope($"{del.Name.Name}_scope", del.Scope);
+                    var structScope = new Scope($"{del.Name.Name}_scope", del.Scope) { GlobalScope = _compiler.GlobalScope };
                     del.SubScope = structScope;
 
                     AddInvokeDeclarationToDelegate(del);

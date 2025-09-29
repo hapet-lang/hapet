@@ -101,7 +101,8 @@ namespace HapetPostPrepare
 
                 // creating stor call ast
                 string funcName = $"{decl.Name.Name.GetClassNameWithoutNamespace()}_stor";
-                var call = new AstCallExpr(new AstNestedExpr(decl.Name.GetCopy(), null), new AstIdExpr(funcName));
+                // no need for namespace if the decl is nested
+                var call = new AstCallExpr(new AstNestedExpr(decl.Name.GetCopy(decl.IsNestedDecl ? "" : decl.NameWithNs), null), new AstIdExpr(funcName));
                 SetScopeAndParent(call, blockWhereToCall, blockWhereToCall.SubScope);
                 PostPrepareExprScoping(call);
                 PostPrepareExprInference(call, inInfo, ref outInfo);

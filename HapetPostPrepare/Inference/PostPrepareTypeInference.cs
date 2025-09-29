@@ -935,7 +935,7 @@ namespace HapetPostPrepare
                 if (nestExpr.LeftPart.TryGetDeclSymbol() is DeclSymbol ds2 && 
                     (ds2.Decl is AstVarDecl || ds2.Decl is AstParamDecl) &&
                     ds2.Decl.Type.TupleNameList != null &&
-                    leftSideDecl.Name.Name == "System.ValueTuple")
+                    leftSideDecl.NameWithNs == "System.ValueTuple")
                 {
                     var entry = ds2.Decl.Type.TupleNameList.FirstOrDefault(x => x.Name == idExpr.Name);
                     var entryIndex = ds2.Decl.Type.TupleNameList.IndexOf(entry);
@@ -1489,7 +1489,7 @@ namespace HapetPostPrepare
             if (!(attrStmt.AttributeName.OutType is ClassType ct && 
                 ct.Declaration.InheritedFrom.Count > 0 && 
                 ct.Declaration.InheritedFrom[0].OutType is ClassType clsT && 
-                clsT.Declaration.Name.Name == "System.Attribute"))
+                clsT.Declaration.NameWithNs == "System.Attribute"))
             {
                 // check that the shite is inherited from 'System.Attribute'
                 _compiler.MessageHandler.ReportMessage(_currentSourceFile, attrStmt.AttributeName, [], ErrorCode.Get(CTEN.AttrNotInhFromAttr));
@@ -1542,8 +1542,7 @@ namespace HapetPostPrepare
                     }
 
                     // check if the field is required but there are no more params - error
-                    string reqAttrName = "System.RequiredAttribute";
-                    var reqAttr = theAttrField.Attributes.FirstOrDefault(x => x.AttributeName.TryFlatten(_compiler.MessageHandler, _currentSourceFile) == reqAttrName);
+                    var reqAttr = theAttrField.GetAttribute("System.RequiredAttribute");
                     if (reqAttr != null)
                     {
                         // there was a required attr and no param for the field - error

@@ -4,6 +4,7 @@
     {
         public string Name { get; set; }
         public Scope Parent { get; }
+        public Scope GlobalScope { get; set; }
 
         /// <summary>
         /// So all the scopes would be unique

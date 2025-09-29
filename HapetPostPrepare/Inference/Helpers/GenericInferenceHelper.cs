@@ -77,7 +77,7 @@ namespace HapetPostPrepare
             GenericsHelper.ResetDeclarationNames(realDecl);
 
             // add invoke method to event
-            if (realName.Name == "System.Event")
+            if (decl.NameWithNs == "System.Event")
                 AddInvokeDeclarationToEvent(realDecl as AstClassDecl, implHasGenerics);
 
             // just a pp

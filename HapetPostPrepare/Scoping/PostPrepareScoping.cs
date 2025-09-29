@@ -91,7 +91,7 @@ namespace HapetPostPrepare
         private void PostPrepareClassScoping(AstClassDecl classDecl)
         {
             classDecl.SourceFile = _currentSourceFile;
-            var classScope = new Scope($"{classDecl.Name.Name}_scope", classDecl.Scope);
+            var classScope = new Scope($"{classDecl.Name.Name}_scope", classDecl.Scope) { GlobalScope = _compiler.GlobalScope };
             classDecl.SubScope = classScope; // setting the sub scope
 
             SetScopeAndParent(classDecl.Name, classDecl);
@@ -170,7 +170,7 @@ namespace HapetPostPrepare
         private void PostPrepareStructScoping(AstStructDecl structDecl)
         {
             structDecl.SourceFile = _currentSourceFile;
-            var structScope = new Scope($"{structDecl.Name.Name}_scope", structDecl.Scope);
+            var structScope = new Scope($"{structDecl.Name.Name}_scope", structDecl.Scope) { GlobalScope = _compiler.GlobalScope };
             structDecl.SubScope = structScope;
 
             SetScopeAndParent(structDecl.Name, structDecl);
@@ -229,7 +229,7 @@ namespace HapetPostPrepare
                     {
                         // WARN!!!! do not set the scope the same as delegate scope because its params would be visible in class or smth
                         // creating a Scope in which the params would be
-                        var paramsBlockScope = new Scope($"params_{indDecl.Name.Name}_scope", indDecl.Scope);
+                        var paramsBlockScope = new Scope($"params_{indDecl.Name.Name}_scope", indDecl.Scope) { GlobalScope = _compiler.GlobalScope };
 
                         SetScopeAndParent(indDecl.IndexerParameter, propDecl, paramsBlockScope);
                         PostPrepareParamScoping(indDecl.IndexerParameter);
@@ -253,7 +253,7 @@ namespace HapetPostPrepare
         private void PostPrepareEnumScoping(AstEnumDecl enumDecl)
         {
             enumDecl.SourceFile = _currentSourceFile;
-            var enumScope = new Scope($"{enumDecl.Name.Name}_scope", enumDecl.Scope);
+            var enumScope = new Scope($"{enumDecl.Name.Name}_scope", enumDecl.Scope) { GlobalScope = _compiler.GlobalScope };
             enumDecl.SubScope = enumScope;
 
             SetScopeAndParent(enumDecl.Name, enumDecl);
@@ -287,7 +287,7 @@ namespace HapetPostPrepare
             PostPrepareExprScoping(delegateDecl.Name);
 
             // required for generics at least
-            var delegateScope = new Scope($"{delegateDecl.Name.Name}_scope", delegateDecl.Scope);
+            var delegateScope = new Scope($"{delegateDecl.Name.Name}_scope", delegateDecl.Scope) { GlobalScope = _compiler.GlobalScope };
             delegateDecl.SubScope = delegateScope;
 
             // scoping delegate attrs
@@ -310,7 +310,7 @@ namespace HapetPostPrepare
 
             // WARN!!!! do not set the scope the same as delegate scope because its params would be visible in class or smth
             // creating a Scope in which the params would be
-            var paramsBlockScope = new Scope($"params_{delegateDecl.Name.Name}_scope", delegateDecl.Scope);
+            var paramsBlockScope = new Scope($"params_{delegateDecl.Name.Name}_scope", delegateDecl.Scope) { GlobalScope = _compiler.GlobalScope };
 
             // defining parameters in the delegate scope
             foreach (var p in delegateDecl.Parameters)
@@ -349,7 +349,7 @@ namespace HapetPostPrepare
             {
                 // WARN!!!! do not set the scope the same as func scope because its params would be visible in class or smth
                 // creating a Scope in which the params would be
-                blockScope = new Scope($"params_{funcDecl.Name.Name}_scope", funcDecl.Scope);
+                blockScope = new Scope($"params_{funcDecl.Name.Name}_scope", funcDecl.Scope) { GlobalScope = _compiler.GlobalScope };
             }
             funcDecl.SubScope = blockScope;
 
@@ -617,7 +617,7 @@ namespace HapetPostPrepare
             if (string.IsNullOrWhiteSpace(scopename))
                 scopename = $"block_{_blockCounter++}_scope";
 
-            var blockScope = new Scope(scopename, blockExpr.Scope);
+            var blockScope = new Scope(scopename, blockExpr.Scope) { GlobalScope = _compiler.GlobalScope };
             blockExpr.SubScope = blockScope; // setting the sub scope
 
             foreach (var stmt in blockExpr.Statements)
@@ -827,7 +827,7 @@ namespace HapetPostPrepare
             {
                 // WARN!!!! do not set the scope the same as func scope because its params would be visible in class or smth
                 // creating a Scope in which the params would be
-                blockScope = new Scope($"params_lambda_scope", lambdaExpr.Scope);
+                blockScope = new Scope($"params_lambda_scope", lambdaExpr.Scope) { GlobalScope = _compiler.GlobalScope };
             }
             lambdaExpr.SubScope = blockScope;
 

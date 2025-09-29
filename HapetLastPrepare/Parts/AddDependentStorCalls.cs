@@ -36,9 +36,11 @@ namespace HapetLastPrepare
                     HapetPostPrepare.Entities.InInfo inInfo = HapetPostPrepare.Entities.InInfo.Default;
                     HapetPostPrepare.Entities.OutInfo outInfo = HapetPostPrepare.Entities.OutInfo.Default;
 
+                    _postPreparer._currentSourceFile = d.SourceFile;
                     // creating stor call ast
                     string funcName = $"{d.Name.Name.GetClassNameWithoutNamespace()}_stor";
-                    var call = new AstCallExpr(new AstNestedExpr(d.Name.GetCopy(), null), new AstIdExpr(funcName));
+                    // no need for namespace if the decl is nested
+                    var call = new AstCallExpr(new AstNestedExpr(d.Name.GetCopy(d.IsNestedDecl ? "" : d.NameWithNs), null), new AstIdExpr(funcName));
                     _postPreparer.SetScopeAndParent(call, blockWhereToCall, blockWhereToCall.SubScope);
                     _postPreparer.PostPrepareExprScoping(call);
                     // allow stor calls from here

@@ -62,6 +62,7 @@ namespace HapetFrontend
         public void InitGlobalScope()
         {
             GlobalScope = new Scope("global_scope_of_assembly");
+            GlobalScope.GlobalScope = GlobalScope; // :)
             GlobalScope.DefineBuiltInTypes();
             GlobalScope.DefineBuiltInOperators();
         }
@@ -86,7 +87,7 @@ namespace HapetFrontend
             var files = ParseMetadata(metaFile, out var metadata);
             foreach (var f in files)
             {
-                AddFile(f, f.Name);
+                AddFile(f, f.FilePath.OriginalString);
             }
             return metadata;
         }
@@ -300,7 +301,7 @@ namespace HapetFrontend
             {
                 return scope;
             }
-            _nameSpaces[scopeName] = new Scope(scopeName, GlobalScope);
+            _nameSpaces[scopeName] = new Scope(scopeName, GlobalScope) { GlobalScope = GlobalScope };
             GlobalScope.DefineNamespaceSymbol(ns, _nameSpaces[scopeName]);
             return _nameSpaces[scopeName];
         }

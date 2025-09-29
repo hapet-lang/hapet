@@ -303,26 +303,26 @@ namespace HapetFrontend.Extensions
                 }
 
                 // additional info checks
-                string interfaceSearchName = "";
+                ClassType interfaceSearchType = null;
                 if (decl.Name.AdditionalData != null)
-                    interfaceSearchName = (decl.Name.AdditionalData.OutType as ClassType).Declaration.Name.Name;
+                    interfaceSearchType = decl.Name.AdditionalData.OutType as ClassType;
                 string pureSearchName = decl.Name.Name.GetClassNameWithoutNamespace();
-                string interfaceName = "";
+                ClassType interfaceType = null;
                 if (x.Name.AdditionalData != null)
-                    interfaceName = (x.Name.AdditionalData.OutType as ClassType).Declaration.Name.Name;
+                    interfaceType = x.Name.AdditionalData.OutType as ClassType;
                 string pureName = x.Name.Name.GetClassNameWithoutNamespace();
 
                 bool areNamesEqual = false;
-                if (string.IsNullOrWhiteSpace(interfaceSearchName) && !string.IsNullOrWhiteSpace(interfaceName))
+                if (interfaceSearchType == null && interfaceType != null)
                 {
-                    string parentSearch = decl.ContainingParent.Name.Name;
-                    if (parentSearch == interfaceName && pureName == pureSearchName)
+                    var parentSearch = decl.ContainingParent;
+                    if (parentSearch.Type.OutType is ClassType clsTParent && clsTParent == interfaceType && pureName == pureSearchName)
                         areNamesEqual = true;
                 }
-                else if (!string.IsNullOrWhiteSpace(interfaceSearchName) && string.IsNullOrWhiteSpace(interfaceName))
+                else if (interfaceSearchType != null && interfaceType == null)
                 {
-                    string parentSearch = x.ContainingParent.Name.Name;
-                    if (parentSearch == interfaceSearchName && pureName == pureSearchName)
+                    var parentSearch = x.ContainingParent;
+                    if (parentSearch.Type.OutType is ClassType clsTParent && clsTParent == interfaceSearchType && pureName == pureSearchName)
                         areNamesEqual = true;
                 }
                 if (areNamesEqual && x.Type.OutType == decl.Type.OutType)

@@ -19,6 +19,8 @@ namespace HapetFrontend.Ast
         public AstExpression Type { get; set; }
         public AstIdExpr Name { get; set; }
 
+        public string NameWithNs => $"{SourceFile.Namespace}.{Name.Name}";
+
         public string Documentation { get; set; }
 
         /// <summary>
@@ -247,7 +249,7 @@ namespace HapetFrontend.Ast
                 // could be if an attr was not infered properly
                 if (x.AttributeName.OutType == null)
                     return false;
-                return (x.AttributeName.OutType as ClassType).Declaration.Name.Name == name;
+                return (x.AttributeName.OutType as ClassType).Declaration.NameWithNs == name;
             });
             return attr;
         }

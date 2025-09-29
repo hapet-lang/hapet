@@ -315,7 +315,12 @@ namespace HapetPostPrepare
             }
             idExpr.OutType = typed.Decl.Type.OutType;
 
-            HandleBasicTypes(typed.Decl, idExpr);
+            // handle this if it is not an 'var' id expr
+            if (idExpr.OutType is not VarType)
+            {
+                HandleBasicTypes(typed.Decl, idExpr, typed.Decl.NameWithNs);
+            }
+            
             TryAssignConstValueToExpr(idExpr, typed.Decl, inInfo, ref outInfo2);
             CheckForObsoleteAttr(typed.Decl, idExpr);
             CheckNestedLambdaScopes(typed.Decl, idExpr, inInfo);
@@ -349,7 +354,7 @@ namespace HapetPostPrepare
         {
             if (decl.Attributes.Count == 0)
                 return;
-            var obs = decl.Attributes.FirstOrDefault(x => x.AttributeName.OutType is ClassType clsT && clsT.Declaration.Name.Name == "System.ObsoleteAttribute");
+            var obs = decl.Attributes.FirstOrDefault(x => x.AttributeName.OutType is ClassType clsT && clsT.Declaration.NameWithNs == "System.ObsoleteAttribute");
             if (obs == null)
                 return;
 

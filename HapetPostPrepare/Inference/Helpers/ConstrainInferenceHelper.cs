@@ -131,7 +131,7 @@ namespace HapetPostPrepare
             // manually adding the constrain of System.Object if required
             if (constrains.FirstOrDefault(x => x.ConstrainType == GenericConstrainType.CustomType &&
                 x.Expr.OutType is ClassType clsTT &&
-                clsTT.Declaration.Name.Name == "System.Object") == null)
+                clsTT.Declaration.NameWithNs == "System.Object") == null)
             {
                 var specialC = new AstConstrainStmt(
                 new AstNestedExpr(new AstIdExpr("System.Object", containingParent.Location), null, containingParent.Location),
@@ -156,7 +156,7 @@ namespace HapetPostPrepare
                 Constrains = constrains,
                 ParentDecl = containingParent.IsImplOfGeneric ? containingParent.OriginalGenericDecl : containingParent,
                 IsNestedDecl = true, // for what? but let it be :)
-                SubScope = new Scope($"{currGeneric.Name}_scope", containingParent.Scope),
+                SubScope = new Scope($"{currGeneric.Name}_scope", containingParent.Scope) { GlobalScope = _compiler.GlobalScope },
                 SourceFile = containingParent.SourceFile,
             };
             return genericDecl;

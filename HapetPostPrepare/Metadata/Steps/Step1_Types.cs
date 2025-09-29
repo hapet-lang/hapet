@@ -26,63 +26,34 @@ namespace HapetPostPrepare
                 return;
             }
 
-            string newName;
             if (decl is AstClassDecl classDecl)
             {
-                if (decl.IsNestedDecl)
-                    // we need a pure decl name because it is nested
-                    newName = $"{classDecl.Name.Name}";
-                else
-                {
-                    // creating a new class name with namespace
-                    newName = $"{_currentSourceFile.Namespace}.{classDecl.Name.Name}";
+                if (!decl.IsNestedDecl)
                     AllClassesMetadata.Add(classDecl);
-                }
 
                 if (needSerialize)
                     _serializeClassesMetadata.Add(classDecl);
             }
             else if (decl is AstStructDecl structDecl)
             {
-                if (decl.IsNestedDecl)
-                    // we need a pure decl name because it is nested
-                    newName = $"{structDecl.Name.Name}";
-                else
-                {
-                    // creating a new struct name with namespace
-                    newName = $"{_currentSourceFile.Namespace}.{structDecl.Name.Name}";
+                if (!decl.IsNestedDecl)
                     AllStructsMetadata.Add(structDecl);
-                }
 
                 if (needSerialize)
                     _serializeStructsMetadata.Add(structDecl);
             }
             else if (decl is AstEnumDecl enumDecl)
             {
-                if (decl.IsNestedDecl)
-                    // we need a pure decl name because it is nested
-                    newName = $"{enumDecl.Name.Name}";
-                else
-                {
-                    // creating a new enum name with namespace
-                    newName = $"{_currentSourceFile.Namespace}.{enumDecl.Name.Name}";
+                if (!decl.IsNestedDecl)
                     AllEnumsMetadata.Add(enumDecl);
-                }
 
                 if (needSerialize)
                     _serializeEnumsMetadata.Add(enumDecl);
             }
             else if (decl is AstDelegateDecl delegateDecl)
             {
-                if (decl.IsNestedDecl)
-                    // we need a pure decl name because it is nested
-                    newName = $"{delegateDecl.Name.Name}";
-                else
-                {
-                    // creating a new delegate name with namespace
-                    newName = $"{_currentSourceFile.Namespace}.{delegateDecl.Name.Name}";
+                if (!decl.IsNestedDecl)
                     AllDelegatesMetadata.Add(delegateDecl);
-                }
 
                 if (needSerialize)
                     _serializeDelegatesMetadata.Add(delegateDecl);
@@ -93,8 +64,6 @@ namespace HapetPostPrepare
                 return;
             }
 
-            // TODO: check for partial :)
-            decl.Name = decl.Name.GetCopy(newName);
             // if the decl is not nested - declare it in namespace scope
             Scope scopeToDefine;
             if (decl.IsNestedDecl) scopeToDefine = decl.ParentDecl.SubScope;
@@ -118,7 +87,7 @@ namespace HapetPostPrepare
             else
             {
                 scopeToDefine.DefineDeclSymbol(decl.Name, decl);
-                PostPrepareAliases(decl.Name, scopeToDefine, decl);
+                PostPrepareAliases(decl.Name, scopeToDefine, decl, $"{_currentSourceFile.Namespace}.{decl.Name.Name}");
             }
         }
 
