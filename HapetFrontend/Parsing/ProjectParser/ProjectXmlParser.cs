@@ -15,6 +15,10 @@ namespace HapetFrontend.ProjectParser
         private readonly CompilerSettings _projectSettings;
         private readonly ProjectData _projectData;
         private readonly IMessageHandler _messageHandler;
+        private readonly XmlDocumentSyntax _parsedProjectFile;
+
+        public ProgramFile XmlProgramFile => _projectFile;
+        public XmlDocumentSyntax XmlParsed => _parsedProjectFile;
 
         /// <summary>
         /// All <PropertyGroup> tags in .hptproj
@@ -39,7 +43,7 @@ namespace HapetFrontend.ProjectParser
             _projectData = projectData;
             _messageHandler = messageHandler;
 
-            var projDoc = Parser.ParseText(_projectFileText);
+            _parsedProjectFile = Parser.ParseText(_projectFileText);
             //#pragma warning disable CA1031 // Do not catch general exception types
             //            try
             //            {
@@ -57,7 +61,7 @@ namespace HapetFrontend.ProjectParser
             //                return;
             //            }
 
-            XmlElementSyntax projRoot = projDoc.Root as XmlElementSyntax;
+            XmlElementSyntax projRoot = _parsedProjectFile.Root as XmlElementSyntax;
             foreach (var xnode in projRoot.Content)
             {
                 if (xnode is XmlElementSyntax xmlElement)

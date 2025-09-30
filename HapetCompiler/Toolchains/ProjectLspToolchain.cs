@@ -67,7 +67,7 @@ namespace HapetCompiler.Toolchains
 
             // starting server
             LspServer server = new LspServer();
-            await server.StartAsync();
+            await server.StartAsync(projectParser);
 
             // restore it
             HapetType.CurrentTypeContext = cachedTypeContext;

@@ -98,7 +98,7 @@ namespace HapetFrontend.Entities
             return (currentLineNumber, -1); // should not be here
         }
 
-        public (List<int> lines, List<int> offsets, List<int> widths) GetLinesAndOffsetsForComment(int start, int end)
+        public (List<int> lines, List<int> offsets, List<int> widths) GetLinesAndOffsetsForXmlComment(int start, int end)
         {
             if (TextSplitted == null)
                 return ([0], [0], [0]);

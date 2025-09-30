@@ -1,4 +1,5 @@
-﻿using HapetLsp.Handlers;
+﻿using HapetFrontend.ProjectParser;
+using HapetLsp.Handlers;
 using Microsoft.Extensions.DependencyInjection;
 using OmniSharp.Extensions.LanguageServer.Server;
 using System.Net;
@@ -9,7 +10,7 @@ namespace HapetLsp
     public class LspServer
     {
         public bool ShouldStop { get; set; } = false; // never changed anywhere. need for SonarCloud not to be angry
-        async public Task StartAsync()
+        async public Task StartAsync(ProjectXmlParser projectParser)
         {
             var listener = new TcpListener(IPAddress.Loopback, 5007);
             listener.Start();
@@ -25,6 +26,8 @@ namespace HapetLsp
                         .WithOutput(stream)
                         .WithServices(services =>
                         {
+                            services.AddSingleton(projectParser);
+
                             services.AddTransient<HptprojSyncHandler>();
                             services.AddTransient<HptprojSemanticHandler>();
                         })
