@@ -9,13 +9,13 @@ namespace HapetFrontend.ProjectParser
     {
         private readonly string _projectPath = string.Empty;
         private readonly string _projectPathAbsolute = string.Empty;
-        private readonly string _projectFileText = string.Empty;
+        private string _projectFileText = string.Empty;
         
-        private readonly ProgramFile _projectFile;
+        private ProgramFile _projectFile;
         private readonly CompilerSettings _projectSettings;
         private readonly ProjectData _projectData;
         private readonly IMessageHandler _messageHandler;
-        private readonly XmlDocumentSyntax _parsedProjectFile;
+        private XmlDocumentSyntax _parsedProjectFile;
 
         public ProgramFile XmlProgramFile => _projectFile;
         public XmlDocumentSyntax XmlParsed => _parsedProjectFile;
@@ -34,16 +34,12 @@ namespace HapetFrontend.ProjectParser
         {
             _projectPath = projectPath;
             _projectPathAbsolute = Path.GetFullPath(_projectPath);
-            _projectFileText = File.ReadAllText(_projectPath).Replace("\r\n", "\n");
-            _projectFile = new ProgramFile(Path.GetFileName(projectPath), _projectFileText);
-            _projectFile.TextSplitted = _projectFileText.Split('\n');
-            _projectFile.FilePath = new Uri(_projectPathAbsolute);
+            ParseFile();
 
             _projectSettings = projectSettings;
             _projectData = projectData;
             _messageHandler = messageHandler;
 
-            _parsedProjectFile = Parser.ParseText(_projectFileText);
             //#pragma warning disable CA1031 // Do not catch general exception types
             //            try
             //            {
@@ -87,6 +83,27 @@ namespace HapetFrontend.ProjectParser
 
             // setting the project path into the settings
             _projectSettings.ProjectPath = Path.GetFullPath(_projectPath);
+        }
+
+        public void ParseFile(string text = "")
+        {
+            // reading from file if no text presented
+            if (string.IsNullOrWhiteSpace(text))
+                _projectFileText = File.ReadAllText(_projectPath);
+            else
+                _projectFileText = text;
+            _projectFileText = _projectFileText.Replace("\r\n", "\n");
+
+            // creating new program file if there was no
+            if (_projectFile == null)
+                _projectFile = new ProgramFile(Path.GetFileName(_projectPath), _projectFileText);
+            else
+                _projectFile.Text = _projectFileText;
+
+            _projectFile.TextSplitted = _projectFileText.Split('\n');
+            _projectFile.FilePath = new Uri(_projectPathAbsolute);
+
+            _parsedProjectFile = Parser.ParseText(_projectFileText);
         }
 
         public void PrepareProjectFile()

@@ -25,7 +25,7 @@ namespace HapetFrontend.Entities
         /// <summary>
         /// To grab the text only once and store it here
         /// </summary>
-        public string Text { get; }
+        public string Text { get; set; }
 
         /// <summary>
         /// Splitted file text

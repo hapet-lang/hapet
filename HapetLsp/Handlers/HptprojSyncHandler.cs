@@ -1,4 +1,5 @@
-﻿using MediatR;
+﻿using HapetFrontend.ProjectParser;
+using MediatR;
 using OmniSharp.Extensions.LanguageServer.Protocol;
 using OmniSharp.Extensions.LanguageServer.Protocol.Client.Capabilities;
 using OmniSharp.Extensions.LanguageServer.Protocol.Document;
@@ -14,6 +15,7 @@ namespace HapetLsp.Handlers
     public class HptprojSyncHandler : ITextDocumentSyncHandler
     {
         private readonly ILanguageServerFacade _facade;
+        private readonly ProjectXmlParser _projectXmlParser;
 
         private readonly TextDocumentSelector _documentSelector = new TextDocumentSelector(
             new TextDocumentFilter()
@@ -22,9 +24,10 @@ namespace HapetLsp.Handlers
             }
         );
 
-        public HptprojSyncHandler(ILanguageServerFacade facade)
+        public HptprojSyncHandler(ILanguageServerFacade facade, ProjectXmlParser projectParser)
         {
             _facade = facade;
+            _projectXmlParser = projectParser;
         }        
 
         public TextDocumentAttributes GetTextDocumentAttributes(DocumentUri uri)
@@ -34,30 +37,24 @@ namespace HapetLsp.Handlers
 
         public Task<Unit> Handle(DidChangeTextDocumentParams request, CancellationToken cancellationToken)
         {
-            //var documentPath = request.TextDocument.Uri.ToString();
-            //var text = request.ContentChanges.FirstOrDefault()?.Text;
-
-            //_bufferManager.UpdateBuffer(documentPath, new StringBuffer(text));
-
-            //_router.Window.LogInfo($"Updated buffer for document: {documentPath}\n{text}");
-
+            var text = request.ContentChanges.FirstOrDefault()?.Text;
+            _projectXmlParser.ParseFile(text);
             return Unit.Task;
         }
 
         public Task<Unit> Handle(DidOpenTextDocumentParams request, CancellationToken cancellationToken)
         {
-            //_bufferManager.UpdateBuffer(request.TextDocument.Uri.ToString(), new StringBuffer(request.TextDocument.Text));
             return Unit.Task;
         }
 
         public Task<Unit> Handle(DidCloseTextDocumentParams request, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
+            return Unit.Task;
         }
 
         public Task<Unit> Handle(DidSaveTextDocumentParams request, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
+            return Unit.Task;
         }
 
         TextDocumentChangeRegistrationOptions IRegistration<TextDocumentChangeRegistrationOptions, TextSynchronizationCapability>.GetRegistrationOptions(TextSynchronizationCapability capability, ClientCapabilities clientCapabilities)
@@ -65,7 +62,7 @@ namespace HapetLsp.Handlers
             return new TextDocumentChangeRegistrationOptions()
             {
                 DocumentSelector = _documentSelector,
-                SyncKind = TextDocumentSyncKind.Incremental
+                SyncKind = TextDocumentSyncKind.Full
             };
         }
 
