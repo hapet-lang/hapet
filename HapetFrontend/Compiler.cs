@@ -18,7 +18,7 @@ using System.Text;
 
 namespace HapetFrontend
 {
-    public partial class Compiler : ITextOnLocationProvider
+    public partial class Compiler
     {
         /// <summary>
         /// Path and file
@@ -74,7 +74,7 @@ namespace HapetFrontend
             foreach (var file in allFilesInProjectFolder)
             {
                 if (Path.GetExtension(file.FullName) == ".hpt")
-                    AddFile(file.FullName);
+                    AddFile(Path.GetFullPath(file.FullName));
             }
         }
 
@@ -308,29 +308,13 @@ namespace HapetFrontend
 
         public ProgramFile GetFile(string v)
         {
-            var normalizedPath = Path.GetFullPath(v).PathNormalize();
-            if (!_files.ContainsKey(normalizedPath))
-                return null;
-            return _files[normalizedPath];
+            var tmp = Path.GetFullPath(v);
+            return _files.FirstOrDefault(x => CompilerUtils.PathEquals(x.Key, tmp)).Value;
         }
 
         public ReadOnlyDictionary<string, ProgramFile> GetFiles()
         {
             return new ReadOnlyDictionary<string, ProgramFile>(_files);
-        }
-
-        public string GetText(ILocation location)
-        {
-            if (location is null)
-                throw new ArgumentNullException(nameof(location));
-
-            var normalizedPath = Path.GetFullPath(location.Beginning.File).PathNormalize();
-
-            // files
-            if (_files.TryGetValue(normalizedPath, out var f))
-                return f.Text;
-
-            return null;
         }
     }
 }

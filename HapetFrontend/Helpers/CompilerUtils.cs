@@ -106,5 +106,18 @@ namespace HapetFrontend.Helpers
 
             return $"./{uniquePathNormalized}/{Path.GetFileName(filePath)}";
         }
+
+        /// <summary>
+        /// Determines if the paths are equal.
+        /// </summary>
+        /// <param name="path1">A full path</param>
+        /// <param name="path2">Some other full path</param>
+        /// <returns>True when they both navigate to the same location.</returns>
+        public static bool PathEquals(this string path1, string path2)
+        {
+            var comparison = OperatingSystem.IsWindows() ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal;
+
+            return string.Equals(path1.PathNormalize(), path2.PathNormalize(), comparison);
+        }
     }
 }

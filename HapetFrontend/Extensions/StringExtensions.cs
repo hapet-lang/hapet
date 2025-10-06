@@ -23,7 +23,7 @@ namespace HapetFrontend.Extensions
 
         public static string PathNormalize(this string path)
         {
-            return Path.GetFullPath(new Uri(path).LocalPath)
+            return Path.GetFullPath(path)
                        .TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
         }
 

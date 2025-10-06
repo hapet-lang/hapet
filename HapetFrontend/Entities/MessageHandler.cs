@@ -4,11 +4,6 @@ using System.Runtime.CompilerServices;
 
 namespace HapetFrontend.Entities
 {
-    public interface ITextOnLocationProvider
-    {
-        string GetText(ILocation location);
-    }
-
     public class CompilerMessage
     {
         public IXmlMessage XmlMessage { get; set; }
