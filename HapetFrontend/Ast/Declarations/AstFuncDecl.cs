@@ -58,6 +58,7 @@ namespace HapetFrontend.Ast.Declarations
                 Name.GetDeepCopy() as AstIdExpr,
                 Documentation, Location)
             {
+                IsSyntheticStatement = IsSyntheticStatement,
                 IsPropertyFunction = IsPropertyFunction,
                 BaseCtorCall = BaseCtorCall?.GetDeepCopy() as AstBaseCtorStmt,
                 ThisCtorCall = ThisCtorCall?.GetDeepCopy() as AstBaseCtorStmt,

@@ -23,6 +23,7 @@ namespace HapetFrontend.Ast.Statements
                 NameExpression.GetDeepCopy() as AstNestedExpr,
                 Location)
             {
+                IsSyntheticStatement = IsSyntheticStatement,
                 Scope = Scope,
                 SourceFile = SourceFile,
             };

@@ -5,6 +5,7 @@ using HapetFrontend.Extensions;
 using HapetFrontend.Helpers;
 using HapetFrontend.Parsing;
 using HapetFrontend.Types;
+using System;
 
 namespace HapetFrontend.Ast.Declarations
 {
@@ -77,6 +78,7 @@ namespace HapetFrontend.Ast.Declarations
                 null,
                 Documentation, Location)
             {
+                IsSyntheticStatement = IsSyntheticStatement,
                 HasGet = HasGet,
                 HasSet = HasSet,
                 IsImported = IsImported,
@@ -123,6 +125,7 @@ namespace HapetFrontend.Ast.Declarations
             field.Attributes.AddRange(Attributes);
             field.IsPropertyField = true;
             field.IsImported = IsImported;
+            field.IsSyntheticStatement = true;
 
             // no special keys for struct
             if (!forStruct)
@@ -222,6 +225,7 @@ namespace HapetFrontend.Ast.Declarations
             func.IsPropertyFunction = true;
             func.SourceFile = SourceFile;
             func.IsImported = IsImported;
+            func.IsSyntheticStatement = true;
 
             // add specific special keys
             if (isGet)

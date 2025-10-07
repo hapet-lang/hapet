@@ -36,6 +36,7 @@ namespace HapetFrontend.Ast.Statements
                 ConstrainType,
                 Location)
             {
+                IsSyntheticStatement = IsSyntheticStatement,
                 AdditionalExprs = AdditionalExprs.Select(x => x.GetDeepCopy() as AstNestedExpr).ToList(),
                 Scope = Scope,
                 SourceFile = SourceFile,

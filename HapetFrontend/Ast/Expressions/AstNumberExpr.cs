@@ -52,6 +52,7 @@ namespace HapetFrontend.Ast.Expressions
                 Data, Suffix, OutType,
                 Location)
             {
+                IsSyntheticStatement = IsSyntheticStatement,
                 IsCompileTimeValue = IsCompileTimeValue,
                 OutType = OutType,
                 OutValue = OutValue,

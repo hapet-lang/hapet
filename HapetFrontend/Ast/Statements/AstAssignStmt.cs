@@ -28,6 +28,7 @@ namespace HapetFrontend.Ast.Statements
                 Value.GetDeepCopy() as AstExpression,
                 Location)
             {
+                IsSyntheticStatement = IsSyntheticStatement,
                 Scope = Scope,
                 SourceFile = SourceFile,
             };

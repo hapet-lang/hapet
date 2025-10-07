@@ -32,6 +32,7 @@ namespace HapetFrontend.Ast.Statements
                 ReturnExpression?.GetDeepCopy() as AstExpression,
                 Location)
             {
+                IsSyntheticStatement = IsSyntheticStatement,
                 IsWeakReturn = IsWeakReturn,
                 WeakReturnStatement = WeakReturnStatement?.GetDeepCopy() as AstStatement,
                 Scope = Scope,

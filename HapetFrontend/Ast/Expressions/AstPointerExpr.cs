@@ -33,6 +33,7 @@ namespace HapetFrontend.Ast.Expressions
                 IsDereference,
                 Location)
             {
+                IsSyntheticStatement = IsSyntheticStatement,
                 IsCompileTimeValue = IsCompileTimeValue,
                 OutType = OutType,
                 OutValue = OutValue,

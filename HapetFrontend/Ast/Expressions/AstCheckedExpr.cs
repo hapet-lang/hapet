@@ -31,6 +31,7 @@
                 SubExpression.GetDeepCopy() as AstExpression,
                 Location)
             {
+                IsSyntheticStatement = IsSyntheticStatement,
                 IsCompileTimeValue = IsCompileTimeValue,
                 IsChecked = IsChecked,
                 OutType = OutType,

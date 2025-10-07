@@ -29,6 +29,7 @@ namespace HapetFrontend.Ast.Expressions
         {
             var copy = new AstSATOfExpr(TargetType.GetDeepCopy() as AstNestedExpr, ExprType, Location)
             {
+                IsSyntheticStatement = IsSyntheticStatement,
                 IsCompileTimeValue = IsCompileTimeValue,
                 OutType = OutType,
                 OutValue = OutValue,

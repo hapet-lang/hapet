@@ -69,6 +69,7 @@ namespace HapetFrontend.Ast.Declarations
                 new List<AstDeclaration>(),
                 Documentation, Location)
             {
+                IsSyntheticStatement = IsSyntheticStatement,
                 HasGenericTypes = HasGenericTypes,
                 IsImported = IsImported,
                 IsNestedDecl = IsNestedDecl,

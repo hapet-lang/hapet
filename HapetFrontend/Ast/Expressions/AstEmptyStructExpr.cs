@@ -17,6 +17,7 @@ namespace HapetFrontend.Ast.Expressions
         {
             var copy = new AstEmptyStructExpr(TypeForDefault, Location)
             {
+                IsSyntheticStatement = IsSyntheticStatement,
                 IsCompileTimeValue = IsCompileTimeValue,
                 OutType = OutType,
                 OutValue = OutValue,

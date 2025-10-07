@@ -35,6 +35,7 @@ namespace HapetFrontend.Ast.Statements
                 DirectiveType,
                 Location)
             {
+                IsSyntheticStatement = IsSyntheticStatement,
                 Scope = Scope,
                 Value = Value.GetDeepCopy() as AstExpression,
                 SourceFile = SourceFile,

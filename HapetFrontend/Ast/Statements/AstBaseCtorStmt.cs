@@ -39,6 +39,7 @@ namespace HapetFrontend.Ast.Statements
                 Arguments.Select(x => x.GetDeepCopy() as AstArgumentExpr).ToList(),
                 Location)
             {
+                IsSyntheticStatement = IsSyntheticStatement,
                 BaseType = BaseType,
                 IsThisCtorCall = IsThisCtorCall,
                 ThisArgument = ThisArgument?.GetDeepCopy() as AstIdExpr,

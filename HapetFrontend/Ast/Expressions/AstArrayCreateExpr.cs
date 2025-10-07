@@ -47,6 +47,7 @@ namespace HapetFrontend.Ast.Expressions
                 Elements.Select(x => x.GetDeepCopy() as AstExpression).ToList(),
                 Location)
             {
+                IsSyntheticStatement = IsSyntheticStatement,
                 IsCompileTimeValue = IsCompileTimeValue,
                 OutType = OutType,
                 OutValue = OutValue,
@@ -63,6 +64,7 @@ namespace HapetFrontend.Ast.Expressions
         {
             return new AstArrayCreateExpr(TypeName, new List<AstExpression>(SizeExprs), new List<AstExpression>(Elements), Location)
             {
+                IsSyntheticStatement = IsSyntheticStatement,
                 OutType = OutType,
                 Parent = Parent,
                 Scope = Scope,

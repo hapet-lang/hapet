@@ -40,6 +40,7 @@ namespace HapetFrontend.Ast.Declarations
                 Name.GetDeepCopy() as AstIdExpr,
                 Documentation, Location)
             {
+                IsSyntheticStatement = IsSyntheticStatement,
                 IndexerParameter = IndexerParameter.GetDeepCopy() as AstParamDecl,
                 HasGet = HasGet,
                 HasSet = HasSet,
@@ -61,6 +62,7 @@ namespace HapetFrontend.Ast.Declarations
                 Name.GetDeepCopy() as AstIdExpr,
                 Documentation, Location)
             {
+                IsSyntheticStatement = IsSyntheticStatement,
                 IndexerParameter = IndexerParameter.GetDeepCopy() as AstParamDecl,
                 HasGet = HasGet,
                 HasSet = HasSet,

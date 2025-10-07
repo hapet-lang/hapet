@@ -22,6 +22,7 @@ namespace HapetFrontend.Ast.Expressions
                 BoolValue,
                 Location)
             {
+                IsSyntheticStatement = IsSyntheticStatement,
                 IsCompileTimeValue = IsCompileTimeValue,
                 OutType = OutType,
                 OutValue = OutValue,

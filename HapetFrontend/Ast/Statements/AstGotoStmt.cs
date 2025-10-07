@@ -27,6 +27,7 @@ namespace HapetFrontend.Ast.Statements
                 GotoLabel,
                 Location)
             {
+                IsSyntheticStatement = IsSyntheticStatement,
                 Scope = Scope,
                 SourceFile = SourceFile,
             };

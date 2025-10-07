@@ -12,6 +12,7 @@ namespace HapetFrontend.Ast.Statements
         {
             var copy = new AstEmptyStmt(Location)
             {
+                IsSyntheticStatement = IsSyntheticStatement,
                 Scope = Scope,
                 SourceFile = SourceFile,
             };

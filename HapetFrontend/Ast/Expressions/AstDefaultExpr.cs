@@ -19,6 +19,7 @@ namespace HapetFrontend.Ast.Expressions
         {
             var copy = new AstDefaultExpr(Location)
             {
+                IsSyntheticStatement = IsSyntheticStatement,
                 IsCompileTimeValue = IsCompileTimeValue,
                 TypeForDefault = TypeForDefault?.GetDeepCopy() as AstExpression,
                 OutType = OutType,

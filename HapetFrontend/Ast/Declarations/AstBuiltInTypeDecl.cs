@@ -20,6 +20,7 @@ namespace HapetFrontend.Ast.Declarations
         {
             var copy = new AstBuiltInTypeDecl(Type.OutType, Documentation, Location)
             {
+                IsSyntheticStatement = IsSyntheticStatement,
                 Scope = Scope,
                 SourceFile = SourceFile,
                 SubScope = SubScope,

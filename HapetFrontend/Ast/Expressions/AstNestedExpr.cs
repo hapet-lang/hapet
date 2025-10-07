@@ -38,6 +38,7 @@ namespace HapetFrontend.Ast.Expressions
                 LeftPart?.GetDeepCopy() as AstNestedExpr,
                 Location)
             {
+                IsSyntheticStatement = IsSyntheticStatement,
                 IsCompileTimeValue = IsCompileTimeValue,
                 OutType = OutType,
                 OutValue = OutValue,

@@ -56,6 +56,7 @@ namespace HapetFrontend.Ast.Declarations
                 Returns.GetDeepCopy() as AstExpression,
                 Location)
             {
+                IsSyntheticStatement = IsSyntheticStatement,
                 IsCompileTimeValue = IsCompileTimeValue,
                 OutType = OutType,
                 OutValue = OutValue,

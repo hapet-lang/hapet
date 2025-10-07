@@ -48,6 +48,7 @@ namespace HapetFrontend.Ast.Expressions
                 Arguments.Select(x => x.GetDeepCopy() as AstArgumentExpr).ToList(),
                 Location)
             {
+                IsSyntheticStatement = IsSyntheticStatement,
                 ConstructorSymbol = ConstructorSymbol,
                 IsCompileTimeValue = IsCompileTimeValue,
                 OutType = OutType,

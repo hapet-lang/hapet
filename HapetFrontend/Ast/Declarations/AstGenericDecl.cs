@@ -37,6 +37,7 @@ namespace HapetFrontend.Ast.Declarations
                 Name.GetDeepCopy() as AstIdExpr,
                 Documentation, Location)
             {
+                IsSyntheticStatement = IsSyntheticStatement,
                 Constrains = Constrains?.Select(x => x.GetDeepCopy() as AstConstrainStmt).ToList(),
                 Declarations = Declarations.Select(x => x.GetDeepCopy() as AstDeclaration).ToList(),
                 HasGenericTypes = HasGenericTypes,

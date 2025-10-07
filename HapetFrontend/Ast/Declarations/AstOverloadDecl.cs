@@ -36,6 +36,7 @@ namespace HapetFrontend.Ast.Declarations
                 OverloadType = OverloadType,
                 Operator = Operator,
 
+                IsSyntheticStatement = IsSyntheticStatement,
                 IsPropertyFunction = IsPropertyFunction,
                 BaseCtorCall = BaseCtorCall?.GetDeepCopy() as AstBaseCtorStmt,
                 ThisCtorCall = ThisCtorCall?.GetDeepCopy() as AstBaseCtorStmt,

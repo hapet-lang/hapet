@@ -24,6 +24,7 @@ namespace HapetFrontend.Ast.Expressions
                 RawValue,
                 Location)
             {
+                IsSyntheticStatement = IsSyntheticStatement,
                 IsCompileTimeValue = IsCompileTimeValue,
                 OutType = OutType,
                 OutValue = OutValue,

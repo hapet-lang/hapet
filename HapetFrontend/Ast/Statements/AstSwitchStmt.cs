@@ -29,6 +29,7 @@ namespace HapetFrontend.Ast.Statements
                 Cases.Select(x => x.GetDeepCopy() as AstCaseStmt).ToList(),
                 Location)
             {
+                IsSyntheticStatement = IsSyntheticStatement,
                 Scope = Scope,
                 SourceFile = SourceFile,
             };

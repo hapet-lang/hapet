@@ -53,6 +53,7 @@ namespace HapetFrontend.Ast.Expressions
                 Name,
                 Location)
             {
+                IsSyntheticStatement = IsSyntheticStatement,
                 FindSymbol = FindSymbol,
                 Suffix = Suffix,
                 AdditionalData = AdditionalData?.GetDeepCopy() as AstNestedExpr,
@@ -76,6 +77,7 @@ namespace HapetFrontend.Ast.Expressions
             string newName = string.IsNullOrWhiteSpace(name) ? Name : name;
             var newId = new AstIdExpr(newName, Location)
             {
+                IsSyntheticStatement = IsSyntheticStatement,
                 Suffix = this.Suffix,
                 AdditionalData = this.AdditionalData,
                 Parent = this.Parent,

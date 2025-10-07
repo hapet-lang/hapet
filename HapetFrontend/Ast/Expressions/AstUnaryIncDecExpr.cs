@@ -20,6 +20,7 @@
                 SubExpr.GetDeepCopy() as AstExpression,
                 Location)
             {
+                IsSyntheticStatement = IsSyntheticStatement,
                 ActualOperator = ActualOperator,
                 IsCompileTimeValue = IsCompileTimeValue,
                 IsPrefix = IsPrefix,

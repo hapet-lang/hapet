@@ -33,6 +33,7 @@ namespace HapetFrontend.Ast.Statements
                 Namespace.GetDeepCopy() as AstNestedExpr,
                 Location)
             {
+                IsSyntheticStatement = IsSyntheticStatement,
                 Scope = Scope,
                 SourceFile = SourceFile,
             };

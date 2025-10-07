@@ -26,6 +26,7 @@ namespace HapetFrontend.Ast.Expressions
                 RealNames.Select(x => x.GetDeepCopy() as AstIdExpr).ToList(),
                 Location)
             {
+                IsSyntheticStatement = IsSyntheticStatement,
                 FindSymbol = FindSymbol,
                 Suffix = Suffix,
                 IsCompileTimeValue = IsCompileTimeValue,
@@ -42,6 +43,7 @@ namespace HapetFrontend.Ast.Expressions
         {
             var newId = new AstIdTupledExpr(RealNames, Location)
             {
+                IsSyntheticStatement = IsSyntheticStatement,
                 Suffix = this.Suffix,
                 Parent = this.Parent,
                 Scope = this.Scope,

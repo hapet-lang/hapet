@@ -19,6 +19,7 @@ namespace HapetFrontend.Ast.Expressions
                 (OutType as NullType)?.TargetType,
                 Location)
             {
+                IsSyntheticStatement = IsSyntheticStatement,
                 IsCompileTimeValue = IsCompileTimeValue,
                 OutValue = OutValue,
                 Scope = Scope,

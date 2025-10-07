@@ -36,6 +36,7 @@ namespace HapetFrontend.Ast.Declarations
                 Declarations.Select(x => x.GetDeepCopy() as AstVarDecl).ToList(),
                 Documentation, Location)
             {
+                IsSyntheticStatement = IsSyntheticStatement,
                 InheritedType = InheritedType.GetDeepCopy() as AstNestedExpr,
                 IsNestedDecl = IsNestedDecl,
                 ParentDecl = ParentDecl,

@@ -31,6 +31,7 @@ namespace HapetFrontend.Ast.Statements
                 Body.GetDeepCopy() as AstBlockExpr,
                 Location)
             {
+                IsSyntheticStatement = IsSyntheticStatement,
                 Scope = Scope,
                 SourceFile = SourceFile,
             };

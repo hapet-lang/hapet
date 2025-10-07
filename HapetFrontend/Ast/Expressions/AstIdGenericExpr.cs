@@ -27,6 +27,7 @@ namespace HapetFrontend.Ast.Expressions
                 GenericRealTypes.Select(x => x.GetDeepCopy() as AstExpression).ToList(),
                 Location)
             {
+                IsSyntheticStatement = IsSyntheticStatement,
                 FindSymbol = FindSymbol,
                 Suffix = Suffix,
                 AdditionalData = AdditionalData?.GetDeepCopy() as AstNestedExpr,
@@ -46,6 +47,7 @@ namespace HapetFrontend.Ast.Expressions
 
             var gen = new AstIdGenericExpr(astIdExpr.Name, genericRealTypes, astIdExpr.Location)
             {
+                IsSyntheticStatement = astIdExpr.IsSyntheticStatement,
                 FindSymbol = astIdExpr.FindSymbol,
                 AdditionalData = astIdExpr.AdditionalData,
                 IsCompileTimeValue = astIdExpr.IsCompileTimeValue,
@@ -68,6 +70,7 @@ namespace HapetFrontend.Ast.Expressions
                 GenericRealTypes.Select(x => x.GetDeepCopy() as AstExpression).ToList(), 
                 Location)
             {
+                IsSyntheticStatement = IsSyntheticStatement,
                 Suffix = this.Suffix,
                 AdditionalData = AdditionalData?.GetDeepCopy() as AstNestedExpr,
                 Parent = this.Parent,

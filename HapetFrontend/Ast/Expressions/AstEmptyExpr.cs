@@ -12,6 +12,7 @@
         {
             var copy = new AstEmptyExpr(Location)
             {
+                IsSyntheticStatement = IsSyntheticStatement,
                 IsCompileTimeValue = IsCompileTimeValue,
                 OutType = OutType,
                 OutValue = OutValue,

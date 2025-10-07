@@ -20,6 +20,7 @@ namespace HapetFrontend.Ast.Statements
         {
             var copy = new AstBreakContStmt(IsBreak, Location)
             {
+                IsSyntheticStatement = IsSyntheticStatement,
                 Scope = Scope,
                 SourceFile = SourceFile,
             };

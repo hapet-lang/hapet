@@ -31,6 +31,7 @@ namespace HapetFrontend.Ast.Declarations
                 DefaultValue?.GetDeepCopy() as AstExpression,
                 Documentation, Location)
             {
+                IsSyntheticStatement = IsSyntheticStatement,
                 ParameterModificator = ParameterModificator,
                 Scope = Scope,
                 SourceFile = SourceFile,

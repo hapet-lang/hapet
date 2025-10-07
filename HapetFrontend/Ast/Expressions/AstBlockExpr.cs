@@ -29,6 +29,7 @@ namespace HapetFrontend.Ast.Expressions
                 Statements.Select(x => x.GetDeepCopy() as AstStatement).ToList(),
                 Location)
             {
+                IsSyntheticStatement = IsSyntheticStatement,
                 IsCompileTimeValue = IsCompileTimeValue,
                 OutType = OutType,
                 OutValue = OutValue,

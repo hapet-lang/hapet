@@ -39,6 +39,7 @@ namespace HapetFrontend.Ast.Expressions
                 Right.GetDeepCopy() as AstExpression,
                 Location)
             {
+                IsSyntheticStatement = IsSyntheticStatement,
                 ActualOperator = ActualOperator,
                 IsCompileTimeValue = IsCompileTimeValue,
                 IsNot = IsNot,

@@ -35,6 +35,7 @@ namespace HapetFrontend.Ast.Expressions
                 ParameterExpr.GetDeepCopy() as AstExpression,
                 Location)
             {
+                IsSyntheticStatement = IsSyntheticStatement,
                 IsCompileTimeValue = IsCompileTimeValue,
                 IndexerDecl = IndexerDecl,
                 OutType = OutType,

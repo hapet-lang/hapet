@@ -51,6 +51,7 @@ namespace HapetFrontend.Ast.Declarations
                null,
                Documentation, Location)
             {
+                IsSyntheticStatement = IsSyntheticStatement,
                 IsPropertyField = IsPropertyField,
                 IsImported = IsImported,
                 IsStaticCtorField = IsStaticCtorField,
