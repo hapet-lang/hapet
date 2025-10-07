@@ -130,7 +130,7 @@ namespace HapetPostPrepare
             foreach (var ct in newCtors)
             {
                 // skip synthetic shite
-                if (ct.IsSyntheticDeclaration)
+                if (ct.IsSyntheticStatement)
                     continue;
                 
                 ct.ContainingParent = alreadyDeclared;

@@ -72,6 +72,9 @@ namespace HapetLsp.Colorizers
         {
             foreach (var i in decl.InheritedFrom)
             {
+                // skip synthetic
+                if (i.IsSyntheticStatement)
+                    continue;
                 if (i.OutType is ClassType)
                     AddSemanticToken(i.Location, _tokenTypes[0], _tokenModifiers[0]);
                 else

@@ -211,7 +211,7 @@ namespace HapetPostPrepare
             iniDecl.SpecialKeys.Insert(0, Lexer.CreateToken(TokenType.KwPrivate, decl.Location.Beginning)); // ini is private because it is called inside ctors
             iniDecl.ClassFunctionType = ClassFunctionType.Initializer;
             iniDecl.ContainingParent = decl;
-            iniDecl.IsSyntheticDeclaration = true;
+            iniDecl.IsSyntheticStatement = true;
 
             decl.GetDeclarations().Insert(0, iniDecl);
         }
@@ -246,7 +246,7 @@ namespace HapetPostPrepare
                 ctorDecl.SpecialKeys.Add(Lexer.CreateToken(TokenType.KwPublic, decl.Location.Beginning)); // default ctor is public
                 ctorDecl.ClassFunctionType = ClassFunctionType.Ctor;
                 ctorDecl.ContainingParent = decl;
-                ctorDecl.IsSyntheticDeclaration = true;
+                ctorDecl.IsSyntheticStatement = true;
 
                 decl.GetDeclarations().Insert(1, ctorDecl); // the first one has to be ini func
             }
@@ -296,7 +296,7 @@ namespace HapetPostPrepare
                 dtorDecl.SpecialKeys.Add(Lexer.CreateToken(TokenType.KwPublic, decl.Location.Beginning)); // default dtor is public
                 dtorDecl.ClassFunctionType = ClassFunctionType.Dtor;
                 dtorDecl.ContainingParent = decl;
-                dtorDecl.IsSyntheticDeclaration = true;
+                dtorDecl.IsSyntheticStatement = true;
 
                 decl.GetDeclarations().Add(dtorDecl);
             }
@@ -336,7 +336,7 @@ namespace HapetPostPrepare
             theVar.SpecialKeys.Insert(0, Lexer.CreateToken(TokenType.KwUnreflected, decl.Location.Beginning));
             theVar.ContainingParent = decl;
             theVar.IsStaticCtorField = true;
-            theVar.IsSyntheticDeclaration = true;
+            theVar.IsSyntheticStatement = true;
             decls.Add(theVar);
 
             // set 'true' to the var
@@ -364,10 +364,10 @@ namespace HapetPostPrepare
                 storDecl.SpecialKeys.Add(Lexer.CreateToken(TokenType.KwStatic, decl.Location.Beginning)); // stor is static
                 storDecl.ClassFunctionType = ClassFunctionType.StaticCtor;
                 storDecl.ContainingParent = decl;
-                storDecl.IsSyntheticDeclaration = true;
+                storDecl.IsSyntheticStatement = true;
                 decls.Add(storDecl);
 
-                storDecl.IsSyntheticDeclaration = true;
+                storDecl.IsSyntheticStatement = true;
                 storDecl.Attributes.Add(new AstAttributeStmt(new AstNestedExpr(new AstIdExpr("System.SuppressStackTraceAttribute"), null), [], comLoc));
             }
             else if (ctors.Count == 1)
@@ -435,10 +435,12 @@ namespace HapetPostPrepare
                 {
                     Location = decl.Name.Location,
                     Scope = decl.Name.Scope,
+                    IsSyntheticStatement = true,
                 }, null)
                 {
                     Location = decl.Name.Location,
                     Scope = decl.Name.Scope,
+                    IsSyntheticStatement = true,
                 };
                 var target = new AstNestedExpr(decl.Name.GetCopy(), objectName, decl)
                 {
@@ -497,15 +499,18 @@ namespace HapetPostPrepare
                 {
                     Location = decl.Name.Location,
                     Scope = decl.SubScope,
+                    IsSyntheticStatement = true,
                 };
                 AstParamDecl thisParam = new AstParamDecl(new AstNestedExpr(thisParamType, null)
                 {
                     Location = decl.Name.Location,
                     Scope = decl.SubScope,
+                    IsSyntheticStatement = true,
                 }, paramName)
                 {
                     Location = decl.Name.Location,
                     Scope = decl.SubScope,
+                    IsSyntheticStatement = true,
                 };
 
                 // we need to add ref to struct first param

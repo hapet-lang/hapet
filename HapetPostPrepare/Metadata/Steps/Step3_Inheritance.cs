@@ -51,7 +51,13 @@ namespace HapetPostPrepare
                     cls.NameWithNs != "System.Object") // skip itself
                 {
                     // set it only if there are not inheritances or only interfaces
-                    var nst = new AstNestedExpr(new AstIdExpr("System.Object", cls), null, cls);
+                    var nst = new AstNestedExpr(new AstIdExpr("System.Object", cls)
+                    {
+                        IsSyntheticStatement = true,
+                    }, null, cls)
+                    { 
+                        IsSyntheticStatement = true,
+                    };
                     cls.InheritedFrom.Insert(0, nst);
                     SetScopeAndParent(nst, cls);
                     PostPrepareExprScoping(nst);
@@ -91,7 +97,13 @@ namespace HapetPostPrepare
                     (str.InheritedFrom[0].OutType as ClassType).Declaration.IsInterface)))
                 {
                     // set it only if there are not inheritances or only interfaces
-                    var nst = new AstNestedExpr(new AstIdExpr("System.ValueType", str), null, str);
+                    var nst = new AstNestedExpr(new AstIdExpr("System.ValueType", str)
+                    {
+                        IsSyntheticStatement = true,
+                    }, null, str)
+                    {
+                        IsSyntheticStatement = true,
+                    };
                     str.InheritedFrom.Insert(0, nst);
                     SetScopeAndParent(nst, str);
                     PostPrepareExprScoping(nst);
