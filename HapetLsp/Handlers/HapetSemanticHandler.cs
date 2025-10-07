@@ -22,6 +22,7 @@ namespace HapetLsp.Handlers
             new SemanticTokenType("struct"),
             new SemanticTokenType("func"),
             new SemanticTokenType("var"),
+            new SemanticTokenType("enum"),
         };
         private readonly static SemanticTokenModifier[] _tokenModifiers = new[] 
         { 

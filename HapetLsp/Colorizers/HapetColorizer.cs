@@ -69,8 +69,17 @@ namespace HapetLsp.Colorizers
                 case AstStructDecl strD:
                     ColorizeStructDecl(strD);
                     break;
+                case AstEnumDecl enmD:
+                    ColorizeEnumDecl(enmD);
+                    break;
+                case AstDelegateDecl delD:
+                    ColorizeDelegateDecl(delD);
+                    break;
                 case AstFuncDecl funcD:
                     ColorizeFuncDecl(funcD);
+                    break;
+                case AstPropertyDecl propD:
+                    ColorizePropertyDecl(propD);
                     break;
             }
         }
@@ -117,6 +126,36 @@ namespace HapetLsp.Colorizers
             }
         }
 
+        private void ColorizeEnumDecl(AstEnumDecl decl)
+        {
+            // enum token
+            AddSemanticToken(decl.Location.Beginning, _tokenTypes[2], _tokenModifiers[0]);
+            // enum name
+            AddSemanticToken(decl.Name.Location, _tokenTypes[7], _tokenModifiers[0]);
+
+            foreach (var d in decl.Declarations)
+            {
+                ColorizeDeclaration(d);
+            }
+        }
+
+        private void ColorizeDelegateDecl(AstDelegateDecl decl)
+        {
+            // enum token
+            AddSemanticToken(decl.Location.Beginning, _tokenTypes[2], _tokenModifiers[0]);
+            ColorizeDependingOnType(decl.Returns);
+            // func name
+            AddSemanticToken(decl.Name.Location, _tokenTypes[5], _tokenModifiers[0]);
+
+            // params
+            foreach (var p in decl.Parameters)
+            {
+                if (p.IsSyntheticStatement)
+                    continue;
+                ColorizeParamDecl(p);
+            }
+        }
+
         private void ColorizeFuncDecl(AstFuncDecl decl)
         {
             if (!decl.Returns.IsSyntheticStatement)
@@ -130,6 +169,16 @@ namespace HapetLsp.Colorizers
                 if (p.IsSyntheticStatement)
                     continue;
                 ColorizeParamDecl(p);
+            }
+        }
+
+        private void ColorizePropertyDecl(AstPropertyDecl decl)
+        {
+            ColorizeDependingOnType(decl.Type);
+
+            if (decl is AstIndexerDecl indD)
+            {
+                ColorizeParamDecl(indD.IndexerParameter);
             }
         }
 
