@@ -54,7 +54,7 @@ namespace HapetLsp.Handlers
                 return;
             }
 
-            ColorizeNode(_projectXmlParser.XmlParsed.Root, builder);
+            ColorizeNode(_projectXmlParser.XmlParsed.Root);
 
             _currentSemanticTokens.Sort((a, b) =>
             {
@@ -70,7 +70,7 @@ namespace HapetLsp.Handlers
         }
         private readonly List<SemanticToken> _currentSemanticTokens = new List<SemanticToken>();
 
-        private void ColorizeNode(object element, SemanticTokensBuilder builder)
+        private void ColorizeNode(object element)
         {
             // checks
             if (element is not XmlElementSyntax xmlElement)
@@ -103,7 +103,7 @@ namespace HapetLsp.Handlers
             // go over nested tags
             foreach (var c in xmlElement.Content)
             {
-                ColorizeNode(c, builder);
+                ColorizeNode(c);
             }
 
             // coloring start tag
