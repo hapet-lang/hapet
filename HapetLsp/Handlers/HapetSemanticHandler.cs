@@ -19,6 +19,9 @@ namespace HapetLsp.Handlers
             new SemanticTokenType("using"),
             new SemanticTokenType("special_key"),
             new SemanticTokenType("interface"),
+            new SemanticTokenType("struct"),
+            new SemanticTokenType("func"),
+            new SemanticTokenType("var"),
         };
         private readonly static SemanticTokenModifier[] _tokenModifiers = new[] 
         { 

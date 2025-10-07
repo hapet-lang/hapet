@@ -54,6 +54,10 @@ namespace HapetLsp.Colorizers
 
         private void ColorizeDeclaration(AstDeclaration decl)
         {
+            // skip synthetic
+            if (decl.IsSyntheticStatement)
+                return;
+
             // colorize special keys
             ColorizeSpecialKeys(decl);
 
@@ -61,6 +65,9 @@ namespace HapetLsp.Colorizers
             {
                 case AstClassDecl clsD:
                     ColorizeClassDecl(clsD);
+                    break;
+                case AstStructDecl strD:
+                    ColorizeStructDecl(strD);
                     break;
                 case AstFuncDecl funcD:
                     ColorizeFuncDecl(funcD);
@@ -70,15 +77,38 @@ namespace HapetLsp.Colorizers
 
         private void ColorizeClassDecl(AstClassDecl decl)
         {
+            // class token
+            AddSemanticToken(decl.Location.Beginning, _tokenTypes[2], _tokenModifiers[0]);
+            // class name
+            AddSemanticToken(decl.Name.Location, _tokenTypes[0], _tokenModifiers[0]);
+
             foreach (var i in decl.InheritedFrom)
             {
                 // skip synthetic
                 if (i.IsSyntheticStatement)
                     continue;
-                if (i.OutType is ClassType)
-                    AddSemanticToken(i.Location, _tokenTypes[0], _tokenModifiers[0]);
-                else
-                    AddSemanticToken(i.Location, _tokenTypes[3], _tokenModifiers[0]);
+                ColorizeDependingOnType(i);
+            }
+
+            foreach (var d in decl.Declarations)
+            {
+                ColorizeDeclaration(d);
+            }
+        }
+
+        private void ColorizeStructDecl(AstStructDecl decl)
+        {
+            // struct token
+            AddSemanticToken(decl.Location.Beginning, _tokenTypes[2], _tokenModifiers[0]);
+            // struct name
+            AddSemanticToken(decl.Name.Location, _tokenTypes[4], _tokenModifiers[0]);
+
+            foreach (var i in decl.InheritedFrom)
+            {
+                // skip synthetic
+                if (i.IsSyntheticStatement)
+                    continue;
+                ColorizeDependingOnType(i);
             }
 
             foreach (var d in decl.Declarations)
@@ -89,7 +119,33 @@ namespace HapetLsp.Colorizers
 
         private void ColorizeFuncDecl(AstFuncDecl decl)
         {
+            if (!decl.Returns.IsSyntheticStatement)
+                ColorizeDependingOnType(decl.Returns);
+            // func name
+            AddSemanticToken(decl.Name.Location, _tokenTypes[5], _tokenModifiers[0]);
 
+            // params
+            foreach (var p in decl.Parameters)
+            {
+                if (p.IsSyntheticStatement)
+                    continue;
+                ColorizeParamDecl(p);
+            }
+        }
+
+        private void ColorizeParamDecl(AstParamDecl decl)
+        {
+            ColorizeDependingOnType(decl.Type);
+            // param name
+            AddSemanticToken(decl.Name.Location, _tokenTypes[6], _tokenModifiers[0]);
+        }
+
+        private void ColorizeDependingOnType(AstExpression expr)
+        {
+            if (expr.OutType is ClassType clsTT)
+                AddSemanticToken(expr.Location, clsTT.Declaration.IsInterface ? _tokenTypes[3] : _tokenTypes[0], _tokenModifiers[0]);
+            else
+                AddSemanticToken(expr.Location, _tokenTypes[4], _tokenModifiers[0]);
         }
 
         private void AddSemanticToken(ILocation location, SemanticTokenType type, SemanticTokenModifier modifier)

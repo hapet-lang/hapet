@@ -194,7 +194,13 @@ namespace HapetFrontend.Parsing
 
                     // it is ctor/dtor
                     func.Name = fncName.GetCopy();
-                    func.Returns = new AstNestedExpr(new AstIdExpr("void"), null);
+                    func.Returns = new AstNestedExpr(new AstIdExpr("void")
+                    {
+                        IsSyntheticStatement = true,
+                    }, null)
+                    {
+                        IsSyntheticStatement = true,
+                    };
                     // it is a stor/dtor/ctor
                     // set in MainPart
                     func.ClassFunctionType = Enums.ClassFunctionType.Special;
