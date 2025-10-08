@@ -145,8 +145,8 @@ namespace HapetPostPrepare
                     }
 
                     // if it is public func - it should be visible in the scope in which func's class is
-                    scopeToDefine.DefineDeclSymbol(newName, funcDecl);
                     funcDecl.Name = newName;
+                    scopeToDefine.DefineDeclSymbol(newName, funcDecl);
 
                     // register operator decl
                     if (funcDecl is AstOverloadDecl overDecl2)
@@ -215,6 +215,7 @@ namespace HapetPostPrepare
                     { 
                         Location = funcDecl.BaseCtorCall.Location,
                         Scope = funcDecl.Body.SubScope,
+                        IsSyntheticStatement = true,
                     };
                     SetScopeAndParent(thisArg, funcDecl.Body, funcDecl.Body.SubScope);
                     PostPrepareExprInference(thisArg, inInfo, ref outInfo);
@@ -245,6 +246,7 @@ namespace HapetPostPrepare
                     {
                         Location = funcDecl.ThisCtorCall.Location,
                         Scope = funcDecl.Body.SubScope,
+                        IsSyntheticStatement = true,
                     };
                     SetScopeAndParent(thisArg, funcDecl.Body, funcDecl.Body.SubScope);
                     PostPrepareExprInference(thisArg, inInfo, ref outInfo);
@@ -782,10 +784,12 @@ namespace HapetPostPrepare
                 {
                     OutType = newExpr.OutType,
                     Scope = newExpr.Scope,
+                    IsSyntheticStatement = true,
                 })
                 {
                     OutType = newExpr.OutType,
                     Scope = newExpr.Scope,
+                    IsSyntheticStatement = true,
                 });
 
                 // add ref to first param if struct
@@ -881,9 +885,11 @@ namespace HapetPostPrepare
                     var thisArg = new AstNestedExpr(new AstIdExpr("this", nestExpr)
                     {
                         Location = nestExpr.Location,
+                        IsSyntheticStatement = true,
                     }, null, nestExpr)
                     {
                         Location = nestExpr.Location,
+                        IsSyntheticStatement = true,
                     };
                     SetScopeAndParent(thisArg, nestExpr);
                     PostPrepareExprScoping(thisArg);

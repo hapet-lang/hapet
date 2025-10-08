@@ -1,7 +1,10 @@
-﻿using HapetFrontend.Ast;
+﻿using HapetFrontend;
+using HapetFrontend.Ast;
 using HapetFrontend.Ast.Declarations;
 using HapetFrontend.Ast.Expressions;
+using HapetFrontend.Ast.Statements;
 using HapetFrontend.Entities;
+using HapetFrontend.Errors;
 using HapetFrontend.Scoping;
 using HapetFrontend.Types;
 using HapetLsp.Entities;
@@ -16,12 +19,14 @@ namespace HapetLsp.Colorizers
         private readonly SemanticTokenType[] _tokenTypes;
         private readonly SemanticTokenModifier[] _tokenModifiers;
         private readonly ProgramFile _programFile;
+        private readonly Compiler _compiler;
 
-        public HapetColorizer(ProgramFile file, SemanticTokenType[] tokenTypes, SemanticTokenModifier[] tokenModifiers) 
+        public HapetColorizer(ProgramFile file, Compiler compiler, SemanticTokenType[] tokenTypes, SemanticTokenModifier[] tokenModifiers) 
         {
             _tokenTypes = tokenTypes;
             _tokenModifiers = tokenModifiers;
             _programFile = file;
+            _compiler = compiler;
         }
 
         public void Colorize()
@@ -175,16 +180,25 @@ namespace HapetLsp.Colorizers
                     continue;
                 ColorizeParamDecl(p);
             }
+
+            ColorizeExpr(decl.Body);
         }
 
         private void ColorizeVarDecl(AstVarDecl decl)
         {
             ColorizeExpr(decl.Type);
+            ColorizeExpr(decl.Name);
+
+            if (decl.Initializer != null)
+                ColorizeExpr(decl.Initializer);
         }
 
         private void ColorizePropertyDecl(AstPropertyDecl decl)
         {
             ColorizeExpr(decl.Type);
+
+            if (decl.Initializer != null)
+                ColorizeExpr(decl.Initializer);
 
             if (decl is AstIndexerDecl indD)
             {
@@ -278,6 +292,79 @@ namespace HapetLsp.Colorizers
                 case AstNullableExpr nullableExpr:
                     ColorizeNullableExpr(nullableExpr);
                     break;
+
+                // statements
+                case AstAssignStmt assignStmt:
+                    ColorizeAssignStmt(assignStmt);
+                    break;
+                case AstForStmt forStmt:
+                    ColorizeForStmt(forStmt);
+                    break;
+                case AstWhileStmt whileStmt:
+                    ColorizeWhileStmt(whileStmt);
+                    break;
+                case AstDoWhileStmt doWhileStmt:
+                    ColorizeDoWhileStmt(doWhileStmt);
+                    break;
+                case AstIfStmt ifStmt:
+                    ColorizeIfStmt(ifStmt);
+                    break;
+                case AstSwitchStmt switchStmt:
+                    ColorizeSwitchStmt(switchStmt);
+                    break;
+                case AstCaseStmt caseStmt:
+                    ColorizeCaseStmt(caseStmt);
+                    break;
+                case AstBreakContStmt breakContStmt:
+                    ColorizeBreakContStmt(breakContStmt);
+                    break;
+                case AstReturnStmt returnStmt:
+                    ColorizeReturnStmt(returnStmt);
+                    break;
+                case AstAttributeStmt attrStmt:
+                    ColorizeAttributeStmt(attrStmt);
+                    break;
+                case AstBaseCtorStmt baseStmt:
+                    ColorizeBaseCtorStmt(baseStmt);
+                    break;
+                case AstConstrainStmt constrainStmt:
+                    ColorizeConstrainStmt(constrainStmt);
+                    break;
+                case AstThrowStmt throwStmt:
+                    ColorizeThrowStmt(throwStmt);
+                    break;
+                case AstTryCatchStmt tryCatchStmt:
+                    ColorizeTryCatchStmt(tryCatchStmt);
+                    break;
+                case AstCatchStmt сatchStmt:
+                    ColorizeCatchStmt(сatchStmt);
+                    break;
+                case AstGotoStmt gotoStmt:
+                    ColorizeGotoStmt(gotoStmt);
+                    break;
+
+                // skip literals
+                case AstNumberExpr numberExpr:
+                    AddSemanticToken(numberExpr.Location, _tokenTypes[9], _tokenModifiers[0]);
+                    break;
+                case AstStringExpr stringExpr:
+                    AddSemanticToken(stringExpr.Location, _tokenTypes[10], _tokenModifiers[0]);
+                    break;
+                case AstBoolExpr boolExpr:
+                    AddSemanticToken(boolExpr.Location, _tokenTypes[2], _tokenModifiers[0]);
+                    break;
+                case AstCharExpr charExpr:
+                    AddSemanticToken(charExpr.Location, _tokenTypes[11], _tokenModifiers[0]);
+                    break;
+                case AstNullExpr nullExpr:
+                    AddSemanticToken(nullExpr.Location, _tokenTypes[2], _tokenModifiers[0]);
+                    break;
+
+                default:
+                    {
+                        _compiler.MessageHandler.ReportMessage(_programFile, expr, [expr.AAAName], ErrorCode.Get(CTEN.StmtNotImplemented));
+                        break;
+                    }
             }
         }
 
@@ -380,6 +467,9 @@ namespace HapetLsp.Colorizers
 
         private void ColorizeCallExpr(AstCallExpr expr)
         {
+            if (expr.IsSyntheticStatement)
+                return;
+
             if (expr.TypeOrObjectName != null)
                 ColorizeExpr(expr.TypeOrObjectName);
 
@@ -470,6 +560,167 @@ namespace HapetLsp.Colorizers
         private void ColorizeNullableExpr(AstNullableExpr expr)
         {
             ColorizeExpr(expr.SubExpression);
+        }
+
+
+        private void ColorizeAssignStmt(AstAssignStmt stmt)
+        {
+            ColorizeExpr(stmt.Target);
+            ColorizeExpr(stmt.Value);
+        }
+
+        private void ColorizeForStmt(AstForStmt stmt)
+        {
+            // colorize 'for' word
+            AddSemanticToken(stmt.Location.Beginning, _tokenTypes[8], _tokenModifiers[0]);
+
+            ColorizeExpr(stmt.FirstArgument);
+            ColorizeExpr(stmt.SecondArgument);
+            ColorizeExpr(stmt.ThirdArgument);
+            ColorizeBlockExpr(stmt.Body);
+        }
+
+        private void ColorizeWhileStmt(AstWhileStmt stmt)
+        {
+            // colorize 'while' word
+            AddSemanticToken(stmt.Location.Beginning, _tokenTypes[8], _tokenModifiers[0]);
+
+            ColorizeExpr(stmt.Condition);
+            ColorizeBlockExpr(stmt.Body);
+        }
+
+        private void ColorizeDoWhileStmt(AstDoWhileStmt stmt)
+        {
+            // colorize 'do' word
+            AddSemanticToken(stmt.Location.Beginning, _tokenTypes[8], _tokenModifiers[0]);
+            // colorize 'while' word
+            AddSemanticToken(stmt.WhileTokenLocation, _tokenTypes[8], _tokenModifiers[0]);
+
+            ColorizeExpr(stmt.Condition);
+            ColorizeBlockExpr(stmt.Body);
+        }
+
+        private void ColorizeIfStmt(AstIfStmt stmt)
+        {
+            // colorize 'if' word
+            AddSemanticToken(stmt.Location.Beginning, _tokenTypes[8], _tokenModifiers[0]);
+
+            ColorizeExpr(stmt.Condition);
+            ColorizeBlockExpr(stmt.BodyTrue);
+
+            if (stmt.BodyFalse != null)
+            {
+                // colorize 'else' word
+                AddSemanticToken(stmt.ElseTokenLocation, _tokenTypes[8], _tokenModifiers[0]);
+                ColorizeBlockExpr(stmt.BodyFalse);
+            }
+        }
+
+        private void ColorizeSwitchStmt(AstSwitchStmt stmt)
+        {
+            // colorize 'switch' word
+            AddSemanticToken(stmt.Location.Beginning, _tokenTypes[8], _tokenModifiers[0]);
+
+            ColorizeExpr(stmt.SubExpression);
+
+            foreach (var c in stmt.Cases)
+                ColorizeCaseStmt(c);
+        }
+
+        private void ColorizeCaseStmt(AstCaseStmt stmt)
+        {
+            // colorize 'case' word
+            AddSemanticToken(stmt.Location.Beginning, _tokenTypes[8], _tokenModifiers[0]);
+
+            if (stmt.Pattern != null)
+                ColorizeExpr(stmt.Pattern);
+
+            ColorizeBlockExpr(stmt.Body);
+        }
+
+        private void ColorizeBreakContStmt(AstBreakContStmt stmt)
+        {
+            // colorize 'break/continue' word
+            AddSemanticToken(stmt.Location, _tokenTypes[8], _tokenModifiers[0]);
+        }
+
+        private void ColorizeReturnStmt(AstReturnStmt stmt)
+        {
+            // colorize 'return' word
+            AddSemanticToken(stmt.Location.Beginning, _tokenTypes[8], _tokenModifiers[0]);
+
+            if (stmt.ReturnExpression != null)
+                ColorizeExpr(stmt.ReturnExpression);
+        }
+
+        private void ColorizeAttributeStmt(AstAttributeStmt stmt)
+        {
+            ColorizeExpr(stmt.AttributeName);
+
+            foreach (var a in stmt.Arguments)
+                ColorizeArgumentExpr(a);
+        }
+
+        private void ColorizeBaseCtorStmt(AstBaseCtorStmt stmt)
+        {
+            if (stmt.IsSyntheticStatement)
+                return;
+
+            // colorize 'base' word
+            AddSemanticToken(stmt.Location.Beginning, _tokenTypes[2], _tokenModifiers[0]);
+
+            foreach (var a in stmt.Arguments)
+                ColorizeArgumentExpr(a);
+        }
+
+        private void ColorizeConstrainStmt(AstConstrainStmt stmt)
+        {
+            if (stmt.IsSyntheticStatement)
+                return;
+
+            // TODO:
+        }
+
+        private void ColorizeThrowStmt(AstThrowStmt stmt)
+        {
+            // colorize 'throw' word
+            AddSemanticToken(stmt.Location.Beginning, _tokenTypes[8], _tokenModifiers[0]);
+
+            if (stmt.ThrowExpression != null)
+                ColorizeExpr(stmt.ThrowExpression);
+        }
+
+        private void ColorizeTryCatchStmt(AstTryCatchStmt stmt)
+        {
+            // colorize 'try' word
+            AddSemanticToken(stmt.Location.Beginning, _tokenTypes[8], _tokenModifiers[0]);
+            ColorizeBlockExpr(stmt.TryBlock);
+
+            foreach (var c in stmt.CatchBlocks)
+                ColorizeCatchStmt(c);
+
+            if (stmt.FinallyBlock != null)
+            {
+                // colorize 'finally' word
+                AddSemanticToken(stmt.FinallyTokenLocation, _tokenTypes[8], _tokenModifiers[0]);
+                ColorizeBlockExpr(stmt.FinallyBlock);
+            }
+        }
+
+        private void ColorizeCatchStmt(AstCatchStmt stmt)
+        {
+            // colorize 'catch' word
+            AddSemanticToken(stmt.Location.Beginning, _tokenTypes[8], _tokenModifiers[0]);
+            ColorizeBlockExpr(stmt.CatchBlock);
+
+            if (stmt.CatchParam != null)
+                ColorizeParamDecl(stmt.CatchParam);
+        }
+
+        private void ColorizeGotoStmt(AstGotoStmt stmt)
+        {
+            // colorize 'goto' word
+            AddSemanticToken(stmt.Location.Beginning, _tokenTypes[8], _tokenModifiers[0]);
         }
 
         private void AddSemanticToken(ILocation location, SemanticTokenType type, SemanticTokenModifier modifier)

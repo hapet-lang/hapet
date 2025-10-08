@@ -46,16 +46,20 @@ namespace HapetFrontend.Parsing
                 SkipNewlines(inInfo);
             }
 
+            Token finallyTkn = null;
             // get finally block
             if (CheckToken(inInfo, TokenType.KwFinally))
             {
-                Consume(inInfo, TokenType.KwFinally, ErrMsg("keyword 'finally'", "at beginning of 'finally' statement"));
+                finallyTkn = Consume(inInfo, TokenType.KwFinally, ErrMsg("keyword 'finally'", "at beginning of 'finally' statement"));
                 SkipNewlines(inInfo);
                 finallyBlock = GetLoopOrCondBlock(inInfo, ref outInfo);
                 SkipNewlines(inInfo);
             }
 
-            var tryCatchStmt = new AstTryCatchStmt(tryBlock, catchBlocks, finallyBlock, beg.Location);
+            var tryCatchStmt = new AstTryCatchStmt(tryBlock, catchBlocks, finallyBlock, beg.Location)
+            {
+                FinallyTokenLocation = finallyTkn?.Location,
+            };
             return tryCatchStmt;
         }
     }

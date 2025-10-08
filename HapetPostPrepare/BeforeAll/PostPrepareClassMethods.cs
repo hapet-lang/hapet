@@ -232,7 +232,10 @@ namespace HapetPostPrepare
                 // creating ini func call
                 ctorBlockStatements.Add(new AstCallExpr(
                     new AstNestedExpr(new AstIdExpr("this"), null, comLoc),
-                    new AstIdExpr($"{decl.Name.Name}_ini", comLoc), null, comLoc));
+                    new AstIdExpr($"{decl.Name.Name}_ini", comLoc), null, comLoc)
+                {
+                    IsSyntheticStatement = true,
+                });
                 // the block with call of ini func
                 var ctorBlock = new AstBlockExpr(ctorBlockStatements, comLoc);
 
@@ -242,7 +245,10 @@ namespace HapetPostPrepare
                     ctorBlock,
                     new AstIdExpr($"{decl.Name.Name}_ctor", comLoc),
                     "", comLoc);
-                ctorDecl.BaseCtorCall = new AstBaseCtorStmt(location: ctorDecl.Name);
+                ctorDecl.BaseCtorCall = new AstBaseCtorStmt(location: ctorDecl.Name)
+                {
+                    IsSyntheticStatement = true,
+                };
                 ctorDecl.SpecialKeys.Add(Lexer.CreateToken(TokenType.KwPublic, decl.Location.Beginning)); // default ctor is public
                 ctorDecl.ClassFunctionType = ClassFunctionType.Ctor;
                 ctorDecl.ContainingParent = decl;
@@ -259,11 +265,17 @@ namespace HapetPostPrepare
                     /// make sure that this shite is the same as in <see cref="RenameFromGenericToRealType"/>
                     ct.Body.Statements.Insert(0, new AstCallExpr(
                         new AstNestedExpr(new AstIdExpr("this"), null, comLoc),
-                        new AstIdExpr($"{decl.Name.Name}_ini", comLoc), null, comLoc));
+                        new AstIdExpr($"{decl.Name.Name}_ini", comLoc), null, comLoc)
+                    {
+                        IsSyntheticStatement = true,
+                    });
 
                     // if the base ctor call is empty - create one with no params
                     if (ct.BaseCtorCall == null)
-                        ct.BaseCtorCall = new AstBaseCtorStmt(location: ct.Name);
+                        ct.BaseCtorCall = new AstBaseCtorStmt(location: ct.Name)
+                        {
+                            IsSyntheticStatement = true,
+                        };
                 }
             }
         }

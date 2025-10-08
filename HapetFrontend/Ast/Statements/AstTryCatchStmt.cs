@@ -20,6 +20,11 @@ namespace HapetFrontend.Ast.Statements
         /// </summary>
         public AstBlockExpr FinallyBlock { get; set; }
 
+        /// <summary>
+        /// Used in LSP by colorizer
+        /// </summary>
+        public ILocation FinallyTokenLocation { get; set; }
+
         public override string AAAName => nameof(AstTryCatchStmt);
 
         public AstTryCatchStmt(AstBlockExpr tryBlock, List<AstCatchStmt> catchBlocks, AstBlockExpr finallyBlock, ILocation location = null) : base(location)
@@ -40,6 +45,7 @@ namespace HapetFrontend.Ast.Statements
                 IsSyntheticStatement = IsSyntheticStatement,
                 Scope = Scope,
                 SourceFile = SourceFile,
+                FinallyTokenLocation = FinallyTokenLocation,
             };
             return copy;
         }

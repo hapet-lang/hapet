@@ -16,6 +16,11 @@ namespace HapetFrontend.Ast.Statements
         /// </summary>
         public AstBlockExpr Body { get; set; }
 
+        /// <summary>
+        /// Used for LSP colorizer
+        /// </summary>
+        public ILocation WhileTokenLocation { get; set; }
+
         public override string AAAName => nameof(AstDoWhileStmt);
 
         public AstDoWhileStmt(AstExpression condition, AstBlockExpr body, ILocation location = null) : base(location)
@@ -34,6 +39,7 @@ namespace HapetFrontend.Ast.Statements
                 IsSyntheticStatement = IsSyntheticStatement,
                 Scope = Scope,
                 SourceFile = SourceFile,
+                WhileTokenLocation = WhileTokenLocation,
             };
             return copy;
         }

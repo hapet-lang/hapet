@@ -91,7 +91,7 @@ namespace HapetFrontend.Parsing
             body = GetLoopOrCondBlock(inInfo, ref outInfo);
 
             SkipNewlines(inInfo);
-            Consume(inInfo, TokenType.KwWhile, ErrMsg("keyword 'while'", "at the end of 'do-while' loop"));
+            var whileTkn = Consume(inInfo, TokenType.KwWhile, ErrMsg("keyword 'while'", "at the end of 'do-while' loop"));
 
             // parse arguments
             Consume(inInfo, TokenType.OpenParen, ErrMsg("'('", "at the begining of 'while' keyword"));
@@ -109,7 +109,10 @@ namespace HapetFrontend.Parsing
                 ReportMessage(PeekToken(inInfo).Location, [], ErrorCode.Get(CTEN.WhileLoopNoCondition));
             var end = Consume(inInfo, TokenType.CloseParen, ErrMsg("')'", "after the condition"));
 
-            return new AstDoWhileStmt(condition, body, new Location(beg.Location, end.Location));
+            return new AstDoWhileStmt(condition, body, new Location(beg.Location, end.Location))
+            {
+                WhileTokenLocation = whileTkn.Location,
+            };
         }
 
         private AstBlockExpr GetLoopOrCondBlock(ParserInInfo inInfo, ref ParserOutInfo outInfo)

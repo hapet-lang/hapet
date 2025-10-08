@@ -15,14 +15,18 @@ namespace HapetLsp.Handlers
     {
         private readonly static SemanticTokenType[] _tokenTypes = new[] 
         { 
-            new SemanticTokenType("class"),
-            new SemanticTokenType("using"),
-            new SemanticTokenType("special_key"),
-            new SemanticTokenType("interface"),
-            new SemanticTokenType("struct"),
-            new SemanticTokenType("func"),
-            new SemanticTokenType("var"),
-            new SemanticTokenType("enum"),
+            new SemanticTokenType("class"),         // 0
+            new SemanticTokenType("using"),         // 1
+            new SemanticTokenType("special_key"),   // 2
+            new SemanticTokenType("interface"),     // 3
+            new SemanticTokenType("struct"),        // 4
+            new SemanticTokenType("func"),          // 5
+            new SemanticTokenType("var"),           // 6
+            new SemanticTokenType("enum"),          // 7
+            new SemanticTokenType("purple"),        // 8
+            new SemanticTokenType("number"),        // 9
+            new SemanticTokenType("string"),        // 10
+            new SemanticTokenType("char"),          // 11
         };
         private readonly static SemanticTokenModifier[] _tokenModifiers = new[] 
         { 
@@ -74,7 +78,7 @@ namespace HapetLsp.Handlers
             HapetColorizer colorizer;
             if (!_fileColorizers.TryGetValue(file, out colorizer))
             {
-                colorizer = new HapetColorizer(file, _tokenTypes, _tokenModifiers);
+                colorizer = new HapetColorizer(file, _compiler, _tokenTypes, _tokenModifiers);
                 _fileColorizers[file] = colorizer;
             }
             // colorize

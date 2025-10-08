@@ -21,6 +21,11 @@ namespace HapetFrontend.Ast.Statements
         /// </summary>
         public AstBlockExpr BodyFalse { get; set; }
 
+        /// <summary>
+        /// Used in LSP colorizer
+        /// </summary>
+        public ILocation ElseTokenLocation { get; set; }
+
         public override string AAAName => nameof(AstIfStmt);
 
         public AstIfStmt(AstExpression cond, AstBlockExpr bodyTrue, AstBlockExpr bodyFalse, ILocation location = null) : base(location)
@@ -41,6 +46,7 @@ namespace HapetFrontend.Ast.Statements
                 IsSyntheticStatement = IsSyntheticStatement,
                 Scope = Scope,
                 SourceFile = SourceFile,
+                ElseTokenLocation = ElseTokenLocation,
             };
             return copy;
         }

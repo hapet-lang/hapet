@@ -39,10 +39,11 @@ namespace HapetFrontend.Parsing
 
             SkipNewlines(inInfo);
 
+            Token elseTkn = null;
             // if there is an 'else' block
             if (CheckToken(inInfo, TokenType.KwElse))
             {
-                Consume(inInfo, TokenType.KwElse, ErrMsg("keyword 'else'", "at beginning of 'else' statement"));
+                elseTkn = Consume(inInfo, TokenType.KwElse, ErrMsg("keyword 'else'", "at beginning of 'else' statement"));
                 SkipNewlines(inInfo);
 
                 bodyFalse = GetLoopOrCondBlock(inInfo, ref outInfo);
@@ -50,7 +51,10 @@ namespace HapetFrontend.Parsing
 
             outInfo.StatementsToAddBefore = savedAddBefore;
 
-            return new AstIfStmt(condition, bodyTrue, bodyFalse, new Location(beg.Location, end.Location));
+            return new AstIfStmt(condition, bodyTrue, bodyFalse, new Location(beg.Location, end.Location))
+            {
+                ElseTokenLocation = elseTkn?.Location,
+            };
         }
 
         private AstStatement ParseSwitchStatement(ParserInInfo inInfo, ref ParserOutInfo outInfo)

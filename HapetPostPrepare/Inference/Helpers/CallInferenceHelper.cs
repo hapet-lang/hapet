@@ -177,7 +177,13 @@ namespace HapetPostPrepare
                 // try check accessing from object
                 accessingFromAnObject = true;
                 // we need to create this one because code generator requires the parameter of this shite
-                callExpr.TypeOrObjectName = new AstNestedExpr(new AstIdExpr("this", callExpr), null, callExpr);
+                callExpr.TypeOrObjectName = new AstNestedExpr(new AstIdExpr("this", callExpr)
+                {
+                    IsSyntheticStatement = true,
+                }, null, callExpr)
+                { 
+                    IsSyntheticStatement = true,
+                };
                 SetScopeAndParent(callExpr.TypeOrObjectName, callExpr);
                 PostPrepareExprScoping(callExpr.TypeOrObjectName);
                 var saved1 = inInfo.MuteErrors;
