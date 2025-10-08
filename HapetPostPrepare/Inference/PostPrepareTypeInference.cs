@@ -1489,7 +1489,9 @@ namespace HapetPostPrepare
             }
 
             // if infered normally
-            attrStmt.AttributeName.OutType = fullTypeAstId.OutType;
+            var nstName = new AstNestedExpr(fullTypeAstId, null);
+            nstName.SetDataFromStmt(fullTypeAstId, true);
+            attrStmt.AttributeName = nstName;
 
             // check that this cringe is inherited from attribute cls
             if (!(attrStmt.AttributeName.OutType is ClassType ct && 

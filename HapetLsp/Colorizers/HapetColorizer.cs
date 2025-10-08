@@ -77,6 +77,10 @@ namespace HapetLsp.Colorizers
             // colorize special keys
             ColorizeSpecialKeys(decl);
 
+            // colorize attirbutes
+            foreach (var c in decl.Attributes)
+                ColorizeAttributeStmt(c);
+
             switch (decl)
             {
                 case AstClassDecl clsD:
