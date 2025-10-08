@@ -60,7 +60,8 @@ namespace HapetCompiler.Toolchains
             compiler.GenerateAstTree();
             // post prepare
             int _ = postPreparer.StartPreparation();
-            // last prepare is not required for LSP
+            // full last prepare is not required for LSP
+            int __ = lastPreparer.StartPreparation(true);
 
             messageHandler.ReportMessage([$"{Funcad.GetPrettyTimeString(compiler.CompilationStopwatch.Elapsed)} Starting LSP..."], null, ReportType.Info);
 

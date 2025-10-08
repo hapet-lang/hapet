@@ -218,6 +218,16 @@ namespace HapetLsp.Colorizers
             {
                 ColorizeParamDecl(indD.IndexerParameter);
             }
+
+            if (decl.GetTokenPosition != null)
+                AddSemanticToken(decl.GetTokenPosition, _tokenTypes[2], _tokenModifiers[0]);
+            if (decl.SetTokenPosition != null)
+                AddSemanticToken(decl.SetTokenPosition, _tokenTypes[2], _tokenModifiers[0]);
+
+            if (decl.GetBlock != null)
+                ColorizeBlockExpr(decl.GetBlock);
+            if (decl.SetBlock != null)
+                ColorizeBlockExpr(decl.SetBlock);
         }
 
         private void ColorizeParamDecl(AstParamDecl decl)

@@ -59,6 +59,15 @@ namespace HapetFrontend.Ast.Declarations
         /// </summary>
         public AstFuncDecl SetFunction { get; set; }
 
+        /// <summary>
+        /// Position of 'get' token used for LSP
+        /// </summary>
+        public ILocation GetTokenPosition { get; set; }
+        /// <summary>
+        /// Position of 'set' token used for LSP
+        /// </summary>
+        public ILocation SetTokenPosition { get; set; }
+
         public override string AAAName => nameof(AstPropertyDecl);
 
         public AstPropertyDecl(AstExpression type, AstIdExpr name, AstExpression ini = null, string doc = "", ILocation location = null) : base(type, name, ini, doc, location)
@@ -86,6 +95,8 @@ namespace HapetFrontend.Ast.Declarations
                 Scope = Scope,
                 SourceFile = SourceFile,
                 SubScope = SubScope,
+                GetTokenPosition = GetTokenPosition,
+                SetTokenPosition = SetTokenPosition,
             };
             copy.Attributes.AddRange(Attributes);
             copy.SpecialKeys.AddRange(SpecialKeys);

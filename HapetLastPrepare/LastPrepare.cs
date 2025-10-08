@@ -14,7 +14,7 @@ namespace HapetLastPrepare
             _postPreparer = postPreparer;
         }
 
-        public int StartPreparation()
+        public int StartPreparation(bool forLsp = false)
         {
             // we are checking for errors after each function 
             // because some steps won't work properly without previous
@@ -25,6 +25,10 @@ namespace HapetLastPrepare
 
             CreateRequired();
             if (_compiler.MessageHandler.HasErrors)
+                return 0;
+
+            // return here if LP is only for LSP
+            if (forLsp)
                 return 0;
 
             ReplaceAllProperties();

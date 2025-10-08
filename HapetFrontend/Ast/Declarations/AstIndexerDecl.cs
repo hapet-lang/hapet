@@ -23,6 +23,8 @@ namespace HapetFrontend.Ast.Declarations
             HasSet = prop.HasSet;
             GetBlock = prop.GetBlock;
             SetBlock = prop.SetBlock;
+            GetTokenPosition = prop.GetTokenPosition;
+            SetTokenPosition = prop.SetTokenPosition;
 
             SpecialKeys.AddRange(prop.SpecialKeys);
             Attributes.AddRange(prop.Attributes);
@@ -49,6 +51,8 @@ namespace HapetFrontend.Ast.Declarations
                 Scope = Scope,
                 SourceFile = SourceFile,
                 SubScope = SubScope,
+                GetTokenPosition = GetTokenPosition,
+                SetTokenPosition = SetTokenPosition,
             };
             copy.Attributes.AddRange(Attributes);
             copy.SpecialKeys.AddRange(SpecialKeys);
@@ -71,6 +75,8 @@ namespace HapetFrontend.Ast.Declarations
                 Scope = Scope,
                 SourceFile = SourceFile,
                 SubScope = SubScope,
+                GetTokenPosition = GetTokenPosition,
+                SetTokenPosition = SetTokenPosition,
             };
             copy.Attributes.AddRange(Attributes);
             copy.SpecialKeys.AddRange(SpecialKeys);

@@ -36,6 +36,9 @@ namespace HapetFrontend.Parsing
             TokenLocation beg = udecl.Beginning;
             TokenLocation end = beg;
 
+            Token getTkn = null;
+            Token setTkn = null;
+
             List<Token> getSpecialKeys = new List<Token>();
             List<Token> setSpecialKeys = new List<Token>();
 
@@ -68,7 +71,7 @@ namespace HapetFrontend.Parsing
                 // if it has 'get'
                 if (CheckToken(inInfo, TokenType.KwGet))
                 {
-                    Consume(inInfo, TokenType.KwGet, ErrMsg("keyword 'get'", "..."));
+                    getTkn = Consume(inInfo, TokenType.KwGet, ErrMsg("keyword 'get'", "..."));
                     SkipNewlines(inInfo);
                     hasGet = true;
 
@@ -106,7 +109,7 @@ namespace HapetFrontend.Parsing
                 SkipNewlines(inInfo);
                 if (CheckToken(inInfo, TokenType.KwSet))
                 {
-                    Consume(inInfo, TokenType.KwSet, ErrMsg("keyword 'set'", "..."));
+                    setTkn = Consume(inInfo, TokenType.KwSet, ErrMsg("keyword 'set'", "..."));
                     SkipNewlines(inInfo);
                     hasSet = true;
 
@@ -174,6 +177,8 @@ namespace HapetFrontend.Parsing
             theProperty.SetSpecialKeys.AddRange(setSpecialKeys);
             theProperty.SpecialKeys.AddRange(udecl.SpecialKeys);
             theProperty.IsImported = inInfo.ExternalMetadata;
+            theProperty.GetTokenPosition = getTkn?.Location;
+            theProperty.SetTokenPosition = setTkn?.Location;
 
             // do some checks because they could be done here, not in pp
             if (!hasGet && hasSet && setBody == null)
