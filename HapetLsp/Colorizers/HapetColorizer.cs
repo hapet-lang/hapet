@@ -32,6 +32,7 @@ namespace HapetLsp.Colorizers
         public void Colorize()
         {
             ColorizeUsings(_programFile);
+            ColorizeComments(_programFile);
 
             // making colorize of declarations
             foreach (var d in _programFile.Statements)
@@ -47,6 +48,14 @@ namespace HapetLsp.Colorizers
             foreach (var u in file.Usings)
             {
                 AddSemanticToken(u.Location, _tokenTypes[1], _tokenModifiers[0]);
+            }
+        }
+
+        private void ColorizeComments(ProgramFile file)
+        {
+            foreach (var c in file.CommentLocations)
+            {
+                AddSemanticToken(c, _tokenTypes[12], _tokenModifiers[0]);
             }
         }
 
@@ -181,7 +190,8 @@ namespace HapetLsp.Colorizers
                 ColorizeParamDecl(p);
             }
 
-            ColorizeExpr(decl.Body);
+            if (decl.Body != null)
+                ColorizeExpr(decl.Body);
         }
 
         private void ColorizeVarDecl(AstVarDecl decl)

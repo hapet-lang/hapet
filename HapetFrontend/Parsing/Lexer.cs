@@ -238,11 +238,15 @@ namespace HapetFrontend.Parsing
                                 location.LineStartIndex = location.Index;
                             }
                             token.Data = tokenDataBuilder.ToString();
+                            // append comment location
+                            _programFile.CommentLocations.Add(token.Location);
                         }
                         else if (GetChar(3, location) == '*')
                         {
                             token.Type = TokenType.DocComment;
                             token.Data = ParseMultiLineDocComment(location);
+                            // append comment location
+                            _programFile.CommentLocations.Add(token.Location);
                         }
                         else
                         {

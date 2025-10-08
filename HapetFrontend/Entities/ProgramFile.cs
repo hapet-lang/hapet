@@ -37,6 +37,11 @@ namespace HapetFrontend.Entities
         /// </summary>
         public bool IsImported { get; set; }
 
+        /// <summary>
+        /// Stores all comment locations (used in LSP only probably)
+        /// </summary>
+        public List<ILocation> CommentLocations { get; } = new List<ILocation>();
+
         public Scope NamespaceScope { get; set; }
 
         public List<AstStatement> Statements { get; } = new List<AstStatement>();

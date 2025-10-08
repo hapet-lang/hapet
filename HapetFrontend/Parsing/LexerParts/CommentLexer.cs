@@ -75,16 +75,24 @@ namespace HapetFrontend.Parsing
 
         private void ParseSingleLineComment(TokenLocation location)
         {
+            var commentToken = location.Clone();
+            commentToken.End = location.Index;
             while (location.Index < _text.Length)
             {
                 if (Current(location) == '\n')
+                {
+                    _programFile.CommentLocations.Add(commentToken);
                     break;
+                }
                 location.Index++;
+                commentToken.End++;
             }
         }
 
         private void ParseMultiLineComment(TokenLocation location)
         {
+            var commentToken = location.Clone();
+            commentToken.End = location.Index;
 
             int level = 0;
             while (location.Index < _text.Length)
@@ -92,26 +100,36 @@ namespace HapetFrontend.Parsing
                 char curr = Current(location);
                 char next = Next(location);
                 location.Index++;
+                commentToken.End++;
 
                 if (curr == '/' && next == '*')
                 {
                     location.Index++;
+                    commentToken.End++;
                     level++;
                 }
 
                 else if (curr == '*' && next == '/')
                 {
                     location.Index++;
+                    commentToken.End++;
                     level--;
 
                     if (level == 0)
+                    {
+                        _programFile.CommentLocations.Add(commentToken);
                         break;
+                    }
                 }
 
                 else if (curr == '\n')
                 {
                     location.Line++;
                     location.LineStartIndex = location.Index + 1;
+
+                    _programFile.CommentLocations.Add(commentToken);
+                    commentToken = location.Clone();
+                    commentToken.End = location.Index;
                 }
             }
         }
