@@ -477,9 +477,6 @@ namespace HapetPostPrepare
                 // creating the assign
                 var assign = new AstAssignStmt(target, fieldInitializer, decl);
                 iniBlockStatements.Add(assign);
-
-                // we don't need the initializer anymore
-                decl.Initializer = null;
             }
             // the block with all field inits
             return new AstBlockExpr(iniBlockStatements);
