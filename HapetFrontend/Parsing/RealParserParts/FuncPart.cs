@@ -99,7 +99,10 @@ namespace HapetFrontend.Parsing
             {
                 var retStmt = onlyStmt as AstExpression;
                 Debug.Assert(retStmt != null);
-                onlyStmt = new AstReturnStmt(retStmt, onlyStmt.Location);
+                onlyStmt = new AstReturnStmt(retStmt, onlyStmt.Location)
+                {
+                    IsArrowedReturn = true,
+                };
             }
 
             var body = new AstBlockExpr(new List<AstStatement>() { onlyStmt }, onlyStmt);

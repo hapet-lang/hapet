@@ -19,17 +19,18 @@ namespace HapetFrontend.Parsing
             AstIdExpr name = null;
             ParameterModificator argModificator = ParameterModificator.None;
 
+            Token argTkn = null;
             // check for 'ref'
             if (CheckToken(inInfo, TokenType.KwRef))
             {
                 argModificator = ParameterModificator.Ref;
-                NextToken(inInfo);
+                argTkn = NextToken(inInfo);
             }
             // check for 'out'
             else if (CheckToken(inInfo, TokenType.KwOut))
             {
                 argModificator = ParameterModificator.Out;
-                NextToken(inInfo);
+                argTkn = NextToken(inInfo);
             }
 
             // allow multiply in args
@@ -66,6 +67,7 @@ namespace HapetFrontend.Parsing
             return new AstArgumentExpr(expr, name, new Location(beg, expr.Ending))
             {
                 ArgumentModificator = argModificator,
+                ArgModificatorLocation = argTkn?.Location,
             };
         }
 
@@ -114,11 +116,13 @@ namespace HapetFrontend.Parsing
 
             TokenLocation beg = null, end = null;
 
+            Token paramTkn = null;
             // check for 'arglist'
             if (CheckToken(inInfo, TokenType.KwArglist))
             {
                 parModificator = ParameterModificator.Arglist;
-                var loc = NextToken(inInfo).Location;
+                paramTkn = NextToken(inInfo);
+                var loc = paramTkn.Location;
                 beg = loc.Beginning;
                 end = loc.Ending;
                 return GetParam(); // just return it
@@ -127,19 +131,19 @@ namespace HapetFrontend.Parsing
             else if (CheckToken(inInfo, TokenType.KwParams))
             {
                 parModificator = ParameterModificator.Params;
-                NextToken(inInfo);
+                paramTkn = NextToken(inInfo);
             }
             // check for 'ref'
             else if (CheckToken(inInfo, TokenType.KwRef))
             {
                 parModificator = ParameterModificator.Ref;
-                NextToken(inInfo);
+                paramTkn = NextToken(inInfo);
             }
             // check for 'out'
             else if (CheckToken(inInfo, TokenType.KwOut))
             {
                 parModificator = ParameterModificator.Out;
-                NextToken(inInfo);
+                paramTkn = NextToken(inInfo);
             }
 
             // do not allow multiply here!!! read in desc - why!!!
@@ -207,6 +211,7 @@ namespace HapetFrontend.Parsing
                 return new AstParamDecl(ptype as AstNestedExpr, pname, defaultValue, "", new Location(beg, end))
                 {
                     ParameterModificator = parModificator,
+                    ParamModificatorLocation = paramTkn?.Location,
                 };
             }
         }

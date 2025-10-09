@@ -19,6 +19,11 @@ namespace HapetFrontend.Ast.Statements
         /// </summary>
         public AstStatement WeakReturnStatement { get; set; }
 
+        /// <summary>
+        /// Used in LSP that 'return' word should not be colorized
+        /// </summary>
+        public bool IsArrowedReturn { get; set; }
+
         public override string AAAName => nameof(AstReturnStmt);
 
         public AstReturnStmt(AstExpression expr, ILocation location = null) : base(location)
@@ -37,6 +42,7 @@ namespace HapetFrontend.Ast.Statements
                 WeakReturnStatement = WeakReturnStatement?.GetDeepCopy() as AstStatement,
                 Scope = Scope,
                 SourceFile = SourceFile,
+                IsArrowedReturn = IsArrowedReturn,
             };
             return copy;
         }

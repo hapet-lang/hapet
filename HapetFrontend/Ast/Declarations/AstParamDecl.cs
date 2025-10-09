@@ -15,6 +15,11 @@ namespace HapetFrontend.Ast.Declarations
         /// </summary>
         public ParameterModificator ParameterModificator { get; set; } = ParameterModificator.None;
 
+        /// <summary>
+        /// Used in LSP
+        /// </summary>
+        public ILocation ParamModificatorLocation { get; set; }
+
         public override string AAAName => nameof(AstParamDecl);
 
         public AstParamDecl(AstExpression type, AstIdExpr name, AstExpression defaultValue = null, string doc = "", ILocation location = null) : base(name, doc, location)
@@ -36,6 +41,7 @@ namespace HapetFrontend.Ast.Declarations
                 Scope = Scope,
                 SourceFile = SourceFile,
                 SubScope = SubScope,
+                ParamModificatorLocation = ParamModificatorLocation
             };
             copy.Attributes.AddRange(Attributes);
             copy.SpecialKeys.AddRange(SpecialKeys);

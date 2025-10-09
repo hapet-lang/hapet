@@ -23,7 +23,10 @@ namespace HapetFrontend.Parsing
                 return new AstEmptyStmt();
             }
 
-            return new AstGotoStmt(idExpr.Name, new Location(beg, idExpr.Ending));
+            return new AstGotoStmt(idExpr.Name, new Location(beg, idExpr.Ending))
+            {
+                GotoLabelLocation = expr.Location,
+            };
         }
     }
 }

@@ -70,6 +70,11 @@ namespace HapetFrontend.Ast.Statements
         /// </summary>
         public string LabelForGoto { get; set; }
 
+        /// <summary>
+        /// Used in LSP
+        /// </summary>
+        public ILocation GotoLabelLocation { get; set; }
+
         public AstCaseStmt(AstExpression pattern, AstBlockExpr body, ILocation location = null) : base(location)
         {
             Pattern = pattern;
@@ -88,6 +93,7 @@ namespace HapetFrontend.Ast.Statements
                 IsFallingCase = IsFallingCase,
                 Scope = Scope,
                 SourceFile = SourceFile,
+                GotoLabelLocation = GotoLabelLocation,
             };
             return copy;
         }

@@ -157,11 +157,12 @@ namespace HapetFrontend.Parsing
 
             SkipNewlines(inInfo);
 
+            Token gotoTkn = null;
             // check for goto label
             if (CheckToken(inInfo, TokenType.DollarIdentifier))
             {
-                var lbl = NextToken(inInfo);
-                gotoLabel = lbl.Data as string;
+                gotoTkn = NextToken(inInfo);
+                gotoLabel = gotoTkn.Data as string;
             }
 
             SkipNewlines(inInfo);
@@ -182,6 +183,7 @@ namespace HapetFrontend.Parsing
             cs.LabelForGoto = gotoLabel;
             cs.IsDefaultCase = isDefault;
             cs.IsFallingCase = isFalling;
+            cs.GotoLabelLocation = gotoTkn?.Location;
             return cs;
         }
     }

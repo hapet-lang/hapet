@@ -14,6 +14,11 @@ namespace HapetFrontend.Ast.Statements
         /// </summary>
         public AstCaseStmt CaseToGoInto { get; set; }
 
+        /// <summary>
+        /// Used in LSP
+        /// </summary>
+        public ILocation GotoLabelLocation { get; set; }
+
         public override string AAAName => nameof(AstGotoStmt);
 
         public AstGotoStmt(string label, ILocation location = null) : base(location)
@@ -30,6 +35,7 @@ namespace HapetFrontend.Ast.Statements
                 IsSyntheticStatement = IsSyntheticStatement,
                 Scope = Scope,
                 SourceFile = SourceFile,
+                GotoLabelLocation = GotoLabelLocation,
             };
             return copy;
         }

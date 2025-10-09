@@ -19,6 +19,11 @@ namespace HapetFrontend.Ast.Expressions
         /// </summary>
         public ParameterModificator ArgumentModificator { get; set; } = ParameterModificator.None;
 
+        /// <summary>
+        /// Used in LSP
+        /// </summary>
+        public ILocation ArgModificatorLocation { get; set; }
+
         public override string AAAName => nameof(AstArgumentExpr);
 
         public AstArgumentExpr(AstExpression expr, AstIdExpr name = null, ILocation location = null)
@@ -43,6 +48,7 @@ namespace HapetFrontend.Ast.Expressions
                 Scope = Scope,
                 SourceFile = SourceFile,
                 TupleNameList = TupleNameList,
+                ArgModificatorLocation = ArgModificatorLocation,
             };
             return copy;
         }

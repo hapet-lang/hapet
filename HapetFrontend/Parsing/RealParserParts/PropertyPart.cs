@@ -49,7 +49,10 @@ namespace HapetFrontend.Parsing
                 NextToken(inInfo);
                 // getting only one stmt if there are no braces
                 var onlyExpr = ParseExpression(inInfo, ref outInfo);
-                onlyExpr = new AstReturnStmt(onlyExpr as AstExpression, onlyExpr.Location);
+                onlyExpr = new AstReturnStmt(onlyExpr as AstExpression, onlyExpr.Location)
+                {
+                    IsArrowedReturn = true,
+                };
                 var body = new AstBlockExpr(new List<AstStatement>() { onlyExpr }, onlyExpr);
 
                 // try eat semicolon or error
@@ -92,7 +95,10 @@ namespace HapetFrontend.Parsing
                         NextToken(inInfo);
                         // getting only one stmt if there are no braces
                         var onlyExpr = ParseExpression(inInfo, ref outInfo);
-                        onlyExpr = new AstReturnStmt(onlyExpr as AstExpression, onlyExpr.Location);
+                        onlyExpr = new AstReturnStmt(onlyExpr as AstExpression, onlyExpr.Location)
+                        {
+                            IsArrowedReturn = true,
+                        };
                         var body = new AstBlockExpr(new List<AstStatement>() { onlyExpr }, onlyExpr);
                         // try eat semicolon or error
                         CheckSemicolonAfterStmt(inInfo, onlyExpr);

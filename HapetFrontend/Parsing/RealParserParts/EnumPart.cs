@@ -15,7 +15,13 @@ namespace HapetFrontend.Parsing
             var inherited = new List<AstNestedExpr>();
             AstIdExpr enumName = null;
 
-            AstNestedExpr enumType = new AstNestedExpr(new AstIdExpr("int"), null, null);
+            AstNestedExpr enumType = new AstNestedExpr(new AstIdExpr("int")
+            {
+                IsSyntheticStatement = true,
+            }, null, null)
+            {
+                IsSyntheticStatement = true,
+            };
 
             beg = Consume(inInfo, TokenType.KwEnum, ErrMsg("keyword 'enum'", "at beginning of enum type")).Location;
 
