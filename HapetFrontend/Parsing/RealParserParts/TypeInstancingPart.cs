@@ -19,10 +19,11 @@ namespace HapetFrontend.Parsing
                 beg ??= Consume(inInfo, TokenType.KwStackAlloc, ErrMsg("keyword 'stackalloc'", "at beginning of array instancing expression")).Location;
             SkipNewlines(inInfo);
 
+            Token unsafeTkn = null;
             // new expr could be unsafe
             if (CheckToken(inInfo, TokenType.KwUnsafe))
             {
-                NextToken(inInfo);
+                unsafeTkn = NextToken(inInfo);
                 SkipNewlines(inInfo);
                 isUnsafeNew = true;
             }
@@ -44,7 +45,7 @@ namespace HapetFrontend.Parsing
                     ReportMessage(type.Location, [], ErrorCode.Get(CTEN.TypeNameNotExpr));
                     return ParseEmptyExpression(inInfo);
                 }
-                return ParseArrayExpr(inInfo, ref outInfo, expr, beg, isUnsafeNew, isStackAlloc);
+                return ParseArrayExpr(inInfo, ref outInfo, expr, beg, isUnsafeNew, unsafeTkn?.Location, isStackAlloc);
             }
             else if (CheckToken(inInfo, TokenType.OpenParen)) // probably class instance creation
             {
@@ -54,7 +55,11 @@ namespace HapetFrontend.Parsing
                     return ParseEmptyExpression(inInfo);
                 }
                 var args = ParseArgumentList(inInfo, ref outInfo, out var _, out var end);
-                return new AstNewExpr(nestExpr, args, new Location(beg, end)) { IsUnsafeNew = isUnsafeNew };
+                return new AstNewExpr(nestExpr, args, new Location(beg, end)) 
+                { 
+                    IsUnsafeNew = isUnsafeNew,
+                    UnsafeTokenLocation = unsafeTkn?.Location,
+                };
             }
 
             // error here that unexpected token .. after typeName

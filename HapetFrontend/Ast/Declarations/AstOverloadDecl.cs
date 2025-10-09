@@ -17,6 +17,11 @@ namespace HapetFrontend.Ast.Declarations
         /// </summary>
         public string Operator { get; set; }
 
+        /// <summary>
+        /// Used in LSP
+        /// </summary>
+        public ILocation OperatorTokenLocation { get; set; }
+
         public override string AAAName => nameof(AstOverloadDecl);
 
         public AstOverloadDecl(List<AstParamDecl> parameters, AstExpression returns, AstBlockExpr body, AstIdExpr name, string doc = "", ILocation location = null) 
@@ -45,6 +50,7 @@ namespace HapetFrontend.Ast.Declarations
                 Scope = Scope,
                 SourceFile = SourceFile,
                 SubScope = SubScope,
+                OperatorTokenLocation = OperatorTokenLocation,
             };
             copy.Attributes.AddRange(Attributes);
             copy.SpecialKeys.AddRange(SpecialKeys);

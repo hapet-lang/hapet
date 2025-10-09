@@ -189,6 +189,7 @@ namespace HapetFrontend
                     currentFile.NamespaceScope = nsScope;
                     currentFile.Namespace = normalNamespace;
                     currentFile.IsImported = true;
+                    currentFile.NamespaceTokenLocation = nsStmt.Location.Beginning;
                     continue;
                 }
 
@@ -288,6 +289,7 @@ namespace HapetFrontend
                 if (s is AstNamespaceStmt nsStmt)
                 {
                     ns = nsStmt.NameExpression.TryFlatten(MessageHandler, file);
+                    file.NamespaceTokenLocation = nsStmt.Location.Beginning;
                     file.Statements.Remove(s);
                     return;
                 }

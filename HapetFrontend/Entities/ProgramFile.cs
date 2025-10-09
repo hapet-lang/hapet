@@ -51,6 +51,11 @@ namespace HapetFrontend.Entities
         /// </summary>
         public List<AstDirectiveStmt> Defines { get; private set; } = new List<AstDirectiveStmt>();
 
+        /// <summary>
+        /// Used in LSP
+        /// </summary>
+        public ILocation NamespaceTokenLocation { get; set; }
+
         public ProgramFile(string name, string text)
         {
             this.Name = name;

@@ -32,6 +32,11 @@ namespace HapetFrontend.Ast.Expressions
         /// </summary>
         public bool IsUnsafeNew { get; set; }
 
+        /// <summary>
+        /// Used in LSP
+        /// </summary>
+        public ILocation UnsafeTokenLocation { get; set; }
+
         public override string AAAName => nameof(AstNewExpr);
 
         public AstNewExpr(AstNestedExpr typeName, List<AstArgumentExpr> arguments = null, ILocation location = null)
@@ -57,6 +62,7 @@ namespace HapetFrontend.Ast.Expressions
                 Scope = Scope,
                 SourceFile = SourceFile,
                 TupleNameList = TupleNameList,
+                UnsafeTokenLocation = UnsafeTokenLocation,
             };
             return copy;
         }

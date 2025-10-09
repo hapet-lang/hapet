@@ -29,12 +29,13 @@ namespace HapetFrontend.Parsing
             AstExpression returns = udecl.Name ?? udecl.Type;
             bool isVoidType = returns is AstNestedExpr nst && nst.RightPart is AstIdExpr idE && idE.Name == "void";
 
+            Token operatorTkn = null;
             // cast override
             if ((CheckToken(inInfo, TokenType.KwImplicit) || CheckToken(inInfo, TokenType.KwExplicit)))
             {
                 // just check
-                var imex = NextToken(inInfo);
-                if (imex.Type == TokenType.KwImplicit)
+                operatorTkn = NextToken(inInfo);
+                if (operatorTkn.Type == TokenType.KwImplicit)
                     overloadType = OverloadType.ImplicitCast;
                 else
                     overloadType = OverloadType.ExplicitCast;
@@ -64,7 +65,7 @@ namespace HapetFrontend.Parsing
             else if (CheckToken(inInfo, TokenType.KwOperator))
             {
                 // skip 'operator' word
-                NextToken(inInfo);
+                operatorTkn = NextToken(inInfo);
 
                 var opToken = NextToken(inInfo);
                 switch (opToken.Type)
@@ -132,7 +133,10 @@ namespace HapetFrontend.Parsing
             }
 
             var endLocation = body == null ? possibleEndLocation : body.Ending;
-            var overload = new AstOverloadDecl(paramDecls, returns, body, new AstIdExpr(""), "", new Location(udecl.Beginning, endLocation));
+            var overload = new AstOverloadDecl(paramDecls, returns, body, new AstIdExpr(""), "", new Location(udecl.Beginning, endLocation))
+            {
+                OperatorTokenLocation = operatorTkn?.Location,
+            };
 
             // set up shite
             overload.OverloadType = overloadType;

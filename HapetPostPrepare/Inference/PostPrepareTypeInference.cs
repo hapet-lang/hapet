@@ -648,7 +648,10 @@ namespace HapetPostPrepare
                                     if (ptrT.TargetType is VoidType)
                                         _compiler.MessageHandler.ReportMessage(_currentSourceFile, leftExpr, [binExpr.ActualOperator.Name], ErrorCode.Get(CTEN.OpUsedWithVoidPtr));
                                     var parent = rightExpr.NormalParent;
-                                    var mulK = new AstNumberExpr(NumberData.FromObject(ptrT.TargetType.GetSize()), null, null, rightExpr);
+                                    var mulK = new AstNumberExpr(NumberData.FromObject(ptrT.TargetType.GetSize()), null, null, rightExpr)
+                                    {
+                                        IsSyntheticStatement = true,
+                                    };
                                     SetScopeAndParent(mulK, parent);
                                     rightExpr = new AstBinaryExpr("*", rightExpr, mulK, rightExpr);
                                     SetScopeAndParent(rightExpr, parent);
@@ -664,7 +667,10 @@ namespace HapetPostPrepare
                                     if (ptrT2.TargetType is VoidType)
                                         _compiler.MessageHandler.ReportMessage(_currentSourceFile, rightExpr, [binExpr.ActualOperator.Name], ErrorCode.Get(CTEN.OpUsedWithVoidPtr));
                                     var parent = leftExpr.NormalParent;
-                                    var mulK = new AstNumberExpr(NumberData.FromObject(ptrT2.TargetType.GetSize()), null, null, leftExpr);
+                                    var mulK = new AstNumberExpr(NumberData.FromObject(ptrT2.TargetType.GetSize()), null, null, leftExpr)
+                                    {
+                                        IsSyntheticStatement = true,
+                                    };
                                     SetScopeAndParent(mulK, parent);
                                     leftExpr = new AstBinaryExpr("*", leftExpr, mulK, leftExpr);
                                     SetScopeAndParent(leftExpr, parent);

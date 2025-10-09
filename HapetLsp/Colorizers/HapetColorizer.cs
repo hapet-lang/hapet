@@ -33,6 +33,9 @@ namespace HapetLsp.Colorizers
         {
             ColorizeUsings(_programFile);
             ColorizeComments(_programFile);
+            // namespace
+            if (_programFile.NamespaceTokenLocation != null)
+                AddSemanticToken(_programFile.NamespaceTokenLocation, _tokenTypes[2], _tokenModifiers[0]);
 
             // making colorize of declarations
             foreach (var d in _programFile.Statements)
@@ -188,7 +191,12 @@ namespace HapetLsp.Colorizers
             if (!decl.Returns.IsSyntheticStatement)
                 ColorizeExpr(decl.Returns);
             // func name
-            ColorizeExpr(decl.Name);
+            if (!string.IsNullOrWhiteSpace(decl.Name.Name))
+                ColorizeExpr(decl.Name);
+
+            // for operator/implicit/explicit colorizing
+            if (decl is AstOverloadDecl overD)
+                AddSemanticToken(overD.OperatorTokenLocation, _tokenTypes[2], _tokenModifiers[0]);
 
             // params
             foreach (var p in decl.Parameters)
@@ -249,7 +257,8 @@ namespace HapetLsp.Colorizers
 
             ColorizeExpr(decl.Type);
             // param name
-            AddSemanticToken(decl.Name.Location, _tokenTypes[6], _tokenModifiers[0]);
+            if (decl.Name != null)
+                AddSemanticToken(decl.Name.Location, _tokenTypes[6], _tokenModifiers[0]);
 
             if (decl.DefaultValue != null)
                 ColorizeExpr(decl.DefaultValue);
@@ -438,9 +447,11 @@ namespace HapetLsp.Colorizers
 
             // special cases for 'as', 'is', 'in'
             if (expr.Operator == "is" ||  expr.Operator == "as" || expr.Operator == "in")
-            {
                 AddSemanticToken(expr.OperatorTokenLocation, _tokenTypes[2], _tokenModifiers[0]);
-            }
+
+            // if there is 'not'
+            if (expr.NotTokenLocation != null)
+                AddSemanticToken(expr.NotTokenLocation, _tokenTypes[2], _tokenModifiers[0]);
         }
 
         private void ColorizePointerExpr(AstPointerExpr expr)
@@ -457,6 +468,11 @@ namespace HapetLsp.Colorizers
         {
             // colorize 'new' word
             AddSemanticToken(expr.Location.Beginning, _tokenTypes[2], _tokenModifiers[0]);
+
+            // colorize 'unsafe' word
+            if (expr.IsUnsafeNew)
+                AddSemanticToken(expr.UnsafeTokenLocation, _tokenTypes[2], _tokenModifiers[0]);
+
             // colorize type
             ColorizeExpr(expr.TypeName);
 
@@ -493,8 +509,8 @@ namespace HapetLsp.Colorizers
             if (expr.FindSymbol is not DeclSymbol declSymbol)
                 return;
 
-            // special case for 'this' and 'indexer__'
-            if (expr.Name == "this" || expr.Name == "indexer__")
+            // special case for 'this' and 'indexer__' and 'base'
+            if (expr.Name == "this" || expr.Name == "indexer__" || expr.Name == "base")
             {
                 AddSemanticToken(expr.Location, _tokenTypes[2], _tokenModifiers[0]);
                 return;
@@ -558,7 +574,8 @@ namespace HapetLsp.Colorizers
         private void ColorizeCastExpr(AstCastExpr expr)
         {
             ColorizeExpr(expr.TypeExpr);
-            ColorizeExpr(expr.SubExpression);
+            if (!expr.SubExpression.IsSyntheticStatement)
+                ColorizeExpr(expr.SubExpression);
         }
 
         private void ColorizeNestedExpr(AstNestedExpr expr)
@@ -597,6 +614,10 @@ namespace HapetLsp.Colorizers
         {
             // colorize 'new' word
             AddSemanticToken(expr.Location.Beginning, _tokenTypes[2], _tokenModifiers[0]);
+
+            // colorize 'unsafe' word
+            if (expr.IsUnsafeNew)
+                AddSemanticToken(expr.UnsafeTokenLocation, _tokenTypes[2], _tokenModifiers[0]);
 
             ColorizeExpr(expr.TypeName);
             foreach (var s in expr.SizeExprs)
@@ -736,7 +757,9 @@ namespace HapetLsp.Colorizers
                 AddSemanticToken(stmt.GotoLabelLocation, _tokenTypes[6], _tokenModifiers[0]);
             }
 
-            ColorizeBlockExpr(stmt.Body);
+            // could be null when fall through
+            if (stmt.Body != null)
+                ColorizeBlockExpr(stmt.Body);
         }
 
         private void ColorizeBreakContStmt(AstBreakContStmt stmt)

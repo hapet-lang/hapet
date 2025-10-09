@@ -30,6 +30,11 @@ namespace HapetFrontend.Ast.Expressions
         /// </summary>
         public bool IsStackAlloc { get; set; }
 
+        /// <summary>
+        /// Used in LSP
+        /// </summary>
+        public ILocation UnsafeTokenLocation { get; set; }
+
         public override string AAAName => nameof(AstArrayCreateExpr);
 
         public AstArrayCreateExpr(AstExpression type, List<AstExpression> sizeExprs, List<AstExpression> elements, ILocation location = null) : base(location)
@@ -56,6 +61,7 @@ namespace HapetFrontend.Ast.Expressions
                 Scope = Scope,
                 SourceFile = SourceFile,
                 TupleNameList = TupleNameList,
+                UnsafeTokenLocation = UnsafeTokenLocation
             };
             return copy;
         }
@@ -72,7 +78,8 @@ namespace HapetFrontend.Ast.Expressions
                 OutValue = OutValue,
                 IsUnsafeNew = IsUnsafeNew,
                 IsStackAlloc = IsStackAlloc,
-                IsCompileTimeValue = IsCompileTimeValue
+                IsCompileTimeValue = IsCompileTimeValue,
+                UnsafeTokenLocation = UnsafeTokenLocation,
             };
         }
     }

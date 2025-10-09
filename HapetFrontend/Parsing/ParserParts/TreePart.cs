@@ -115,9 +115,10 @@ namespace HapetFrontend.Parsing
 
                 // handle 'is not' cringe
                 bool isNot = false;
+                Token isNotTkn = null;
                 if (PeekToken(inInfo).Data is string str && str == "not")
                 {
-                    NextToken(inInfo);
+                    isNotTkn = NextToken(inInfo);
                     isNot = true;
                 }
 
@@ -138,6 +139,7 @@ namespace HapetFrontend.Parsing
                 {
                     IsNot = isNot,
                     OperatorTokenLocation = isTkn?.Location,
+                    NotTokenLocation = isNotTkn?.Location,
                 };
 
                 // handling additional shite
@@ -642,8 +644,14 @@ namespace HapetFrontend.Parsing
                                 inInfo.PreviousNestedForNullCheck = iniNest.GetDeepCopy() as AstNestedExpr;
 
                                 // creating null comparison
-                                var nulll = new AstNullExpr(null, expr);
-                                var nullComparison = new AstBinaryExpr("==", inInfo.PreviousNestedForNullCheck, nulll, expr);
+                                var nulll = new AstNullExpr(null, expr)
+                                {
+                                    IsSyntheticStatement = true,
+                                };
+                                var nullComparison = new AstBinaryExpr("==", inInfo.PreviousNestedForNullCheck, nulll, expr)
+                                {
+                                    IsSyntheticStatement = true,
+                                };
                                 var normalPart = ParsePostUnaryExpression(inInfo, ref outInfo) as AstExpression;
                                 var ternOp = new AstTernaryExpr(nullComparison, nulll, normalPart, expr);
 
