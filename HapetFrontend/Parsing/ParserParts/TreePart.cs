@@ -42,8 +42,14 @@ namespace HapetFrontend.Parsing
                 var exprSecond = ParseTernaryExpression(inInfo, ref outInfo);
 
                 // creating null comparison
-                var nulll = new AstNullExpr(null, expr);
-                var nullComparison = new AstBinaryExpr("==", expr as AstExpression, nulll, expr);
+                var nulll = new AstNullExpr(null, expr)
+                { 
+                    IsSyntheticStatement = true,
+                };
+                var nullComparison = new AstBinaryExpr("==", expr as AstExpression, nulll, expr)
+                {
+                    IsSyntheticStatement = true,
+                };
                 var ternOp = new AstTernaryExpr(nullComparison, exprSecond as AstExpression, 
                     expr as AstExpression, new Location(expr.Beginning, exprSecond.Ending));
                 expr = ternOp;

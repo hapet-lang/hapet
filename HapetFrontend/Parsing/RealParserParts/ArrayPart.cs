@@ -73,7 +73,10 @@ namespace HapetFrontend.Parsing
 
                 // count parsed elements and set the size if the sizeExpr was null
                 if (sizeExprs.Last() == null)
-                    sizeExprs[sizeExprs.Count - 1] = new AstNumberExpr(NumberData.FromInt(elements.Count));
+                    sizeExprs[sizeExprs.Count - 1] = new AstNumberExpr(NumberData.FromInt(elements.Count)) 
+                    {
+                        IsSyntheticStatement = true,
+                    };
 
                 return new AstArrayCreateExpr(type, sizeExprs, elements, new Location(beg, CurrentToken.Location.Ending)) 
                 {

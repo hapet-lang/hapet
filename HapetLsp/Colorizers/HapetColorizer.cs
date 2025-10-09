@@ -156,6 +156,10 @@ namespace HapetLsp.Colorizers
             // enum name
             ColorizeExpr(decl.Name);
 
+            // skip synthetic
+            if (!decl.InheritedType.IsSyntheticStatement)
+                ColorizeExpr(decl.InheritedType);
+
             foreach (var d in decl.Declarations)
             {
                 ColorizeDeclaration(d);
@@ -398,6 +402,11 @@ namespace HapetLsp.Colorizers
         {
             foreach (var s in expr.Statements)
             {
+                if (s is AstFuncDecl fncD)
+                {
+                    ColorizeDeclaration(fncD);
+                    continue;
+                }
                 ColorizeExpr(s);
             }
         }
@@ -409,8 +418,10 @@ namespace HapetLsp.Colorizers
 
         private void ColorizeBinaryExpr(AstBinaryExpr expr)
         {
-            ColorizeExpr(expr.Left);
-            ColorizeExpr(expr.Right);
+            if (!expr.Left.IsSyntheticStatement)
+                ColorizeExpr(expr.Left);
+            if (!expr.Right.IsSyntheticStatement)
+                ColorizeExpr(expr.Right);
 
             // special cases for 'as', 'is', 'in'
             if (expr.Operator == "is" ||  expr.Operator == "as" || expr.Operator == "in")
@@ -570,7 +581,11 @@ namespace HapetLsp.Colorizers
 
             ColorizeExpr(expr.TypeName);
             foreach (var s in expr.SizeExprs)
+            {
+                if (s.IsSyntheticStatement)
+                    continue;
                 ColorizeExpr(s);
+            }
             foreach (var e in expr.Elements)
                 ColorizeExpr(e);
         }
@@ -583,9 +598,12 @@ namespace HapetLsp.Colorizers
 
         private void ColorizeTernaryExpr(AstTernaryExpr expr)
         {
-            ColorizeExpr(expr.Condition);
-            ColorizeExpr(expr.TrueExpr);
-            ColorizeExpr(expr.FalseExpr);
+            if (!expr.Condition.IsSyntheticStatement)
+                ColorizeExpr(expr.Condition);
+            if (!expr.TrueExpr.IsSyntheticStatement)
+                ColorizeExpr(expr.TrueExpr);
+            if (!expr.FalseExpr.IsSyntheticStatement)
+                ColorizeExpr(expr.FalseExpr);
         }
 
         private void ColorizeCheckedExpr(AstCheckedExpr expr)
