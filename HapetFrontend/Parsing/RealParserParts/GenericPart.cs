@@ -11,10 +11,11 @@ namespace HapetFrontend.Parsing
 {
     public partial class Parser
     {
-        private Dictionary<AstIdExpr, List<AstConstrainStmt>> ParseGenericConstrains(List<AstIdExpr> generics)
+        private Dictionary<AstIdExpr, List<AstConstrainStmt>> ParseGenericConstrains(List<AstIdExpr> generics, out List<(ILocation, ILocation)> locations)
         {
             var inInfo = new Entities.ParserInInfo();
             var genericConstrains = new Dictionary<AstIdExpr, List<AstConstrainStmt>>();
+            locations = new List<(ILocation, ILocation)>();
 
             var tst = PeekToken(inInfo);
 
@@ -22,7 +23,7 @@ namespace HapetFrontend.Parsing
             // https://learn.microsoft.com/en-us/dotnet/csharp/programming-guide/generics/constraints-on-type-parameters
             while (CheckToken(inInfo, TokenType.KwWhere))
             {
-                Consume(inInfo, TokenType.KwWhere, ErrMsg("where", "before generic constrains"));
+                var whereTkn = Consume(inInfo, TokenType.KwWhere, ErrMsg("where", "before generic constrains"));
 
                 // generic type name has to be here
                 if (!CheckToken(inInfo, TokenType.Identifier))
@@ -37,6 +38,10 @@ namespace HapetFrontend.Parsing
                     ReportMessage(typeNameExpr, [], ErrorCode.Get(CTEN.CommonIdentifierExpected));
                     continue;
                 }
+
+                // add it to locations
+                locations.Add((whereTkn.Location, typeNameExpr.Location));
+
                 // check if the generic type even exists
                 var nameTmp = generics.FirstOrDefault(x => x.Name == nameIdentExpr.Name);
                 if (nameTmp == null)

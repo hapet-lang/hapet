@@ -58,7 +58,7 @@ namespace HapetFrontend.Parsing
             SkipNewlines(inInfo);
 
             // parsing constrains
-            var genericConstrains = ParseGenericConstrains(generics);
+            var genericConstrains = ParseGenericConstrains(generics, out var constrainLocations);
 
             // TODO: probably needed when allowing delegates for non-static funcs
             //// all delegates have ptr to a class object as their first param
@@ -69,7 +69,8 @@ namespace HapetFrontend.Parsing
                 IsImported = inInfo.ExternalMetadata,
                 HasGenericTypes = generics.Count > 0,
                 GenericConstrains = genericConstrains,
-        };
+                GenericConstrainLocations = constrainLocations,
+            };
         }
     }
 }

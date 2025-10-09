@@ -41,7 +41,8 @@ namespace HapetFrontend.Ast.Declarations
                 Scope = Scope,
                 SourceFile = SourceFile,
                 SubScope = SubScope,
-                ParamModificatorLocation = ParamModificatorLocation
+                ParamModificatorLocation = ParamModificatorLocation,
+                GenericConstrainLocations = GenericConstrainLocations,
             };
             copy.Attributes.AddRange(Attributes);
             copy.SpecialKeys.AddRange(SpecialKeys);

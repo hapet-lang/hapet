@@ -78,7 +78,7 @@ namespace HapetFrontend.Parsing
             SkipNewlines(inInfo);
 
             // parsing constrains
-            var genericConstrains = ParseGenericConstrains(generics);
+            var genericConstrains = ParseGenericConstrains(generics, out var constrainLocations);
 
             // the decl (declared here because it would be used)
             var classDecl = new AstClassDecl(className, declarations, "", null);
@@ -115,6 +115,7 @@ namespace HapetFrontend.Parsing
             classDecl.IsInterface = isInterface;
             classDecl.HasGenericTypes = generics.Count > 0;
             classDecl.GenericConstrains = genericConstrains;
+            classDecl.GenericConstrainLocations = constrainLocations;
             classDecl.IsImported = inInfo.ExternalMetadata;
             return classDecl;
 

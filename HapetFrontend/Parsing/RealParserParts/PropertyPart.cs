@@ -30,7 +30,7 @@ namespace HapetFrontend.Parsing
             }
 
             // parsing constrains
-            var genericConstrains = ParseGenericConstrains(generics);
+            var genericConstrains = ParseGenericConstrains(generics, out var constrainLocations);
 
             // getting beginning of the propa
             TokenLocation beg = udecl.Beginning;
@@ -179,6 +179,7 @@ namespace HapetFrontend.Parsing
             theProperty.SetBlock = setBody;
             theProperty.HasGenericTypes = generics.Count > 0;
             theProperty.GenericConstrains = genericConstrains;
+            theProperty.GenericConstrainLocations = constrainLocations;
             theProperty.GetSpecialKeys.AddRange(getSpecialKeys);
             theProperty.SetSpecialKeys.AddRange(setSpecialKeys);
             theProperty.SpecialKeys.AddRange(udecl.SpecialKeys);

@@ -97,6 +97,7 @@ namespace HapetFrontend.Ast.Declarations
                 SubScope = SubScope,
                 GetTokenPosition = GetTokenPosition,
                 SetTokenPosition = SetTokenPosition,
+                GenericConstrainLocations = GenericConstrainLocations,
             };
             copy.Attributes.AddRange(Attributes);
             copy.SpecialKeys.AddRange(SpecialKeys);

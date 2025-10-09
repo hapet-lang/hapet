@@ -70,7 +70,7 @@ namespace HapetFrontend.Parsing
             SkipNewlines(inInfo);
 
             // parsing constrains
-            var genericConstrains = ParseGenericConstrains(generics);
+            var genericConstrains = ParseGenericConstrains(generics, out var constrainLocations);
 
             // the decl (declared here because it would be used)
             var structDecl = new AstStructDecl(structName, declarations, "", null);
@@ -99,6 +99,7 @@ namespace HapetFrontend.Parsing
             structDecl.InheritedFrom = inherited;
             structDecl.HasGenericTypes = generics.Count > 0;
             structDecl.GenericConstrains = genericConstrains;
+            structDecl.GenericConstrainLocations = constrainLocations;
             structDecl.IsImported = inInfo.ExternalMetadata;
             return structDecl;
 

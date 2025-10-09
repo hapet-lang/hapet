@@ -61,6 +61,11 @@ namespace HapetFrontend.Ast
         public Dictionary<AstIdExpr, List<AstConstrainStmt>> GenericConstrains { get; set; } = new Dictionary<AstIdExpr, List<AstConstrainStmt>>();
 
         /// <summary>
+        /// Used in LSP
+        /// </summary>
+        public List<(ILocation, ILocation)> GenericConstrainLocations { get; set; }
+
+        /// <summary>
         /// Contains the original generic decl from which the current one is created 
         /// also if the current one is <see cref="IsImplOfGeneric"/>
         /// </summary>

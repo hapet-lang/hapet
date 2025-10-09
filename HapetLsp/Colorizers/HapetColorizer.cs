@@ -71,6 +71,23 @@ namespace HapetLsp.Colorizers
             }
         }
 
+        private void ColorizeConstrains(AstDeclaration decl)
+        {
+            foreach (var c in decl.GenericConstrains)
+            {
+                foreach (var cc in c.Value)
+                {
+                    ColorizeConstrainStmt(cc);
+                }
+            }
+            if (decl.GenericConstrainLocations != null)
+                foreach (var c in decl.GenericConstrainLocations)
+                {
+                    AddSemanticToken(c.Item1, _tokenTypes[8], _tokenModifiers[0]);
+                    AddSemanticToken(c.Item2, _tokenTypes[4], _tokenModifiers[0]);
+                }
+        }
+
         private void ColorizeDeclaration(AstDeclaration decl)
         {
             // skip synthetic
@@ -129,6 +146,8 @@ namespace HapetLsp.Colorizers
             {
                 ColorizeDeclaration(d);
             }
+
+            ColorizeConstrains(decl);
         }
 
         private void ColorizeStructDecl(AstStructDecl decl)
@@ -150,6 +169,8 @@ namespace HapetLsp.Colorizers
             {
                 ColorizeDeclaration(d);
             }
+
+            ColorizeConstrains(decl);
         }
 
         private void ColorizeEnumDecl(AstEnumDecl decl)
@@ -167,6 +188,8 @@ namespace HapetLsp.Colorizers
             {
                 ColorizeDeclaration(d);
             }
+
+            ColorizeConstrains(decl);
         }
 
         private void ColorizeDelegateDecl(AstDelegateDecl decl)
@@ -184,6 +207,8 @@ namespace HapetLsp.Colorizers
                     continue;
                 ColorizeParamDecl(p);
             }
+
+            ColorizeConstrains(decl);
         }
 
         private void ColorizeFuncDecl(AstFuncDecl decl)
@@ -208,6 +233,8 @@ namespace HapetLsp.Colorizers
 
             if (decl.Body != null)
                 ColorizeExpr(decl.Body);
+
+            ColorizeConstrains(decl);
         }
 
         private void ColorizeVarDecl(AstVarDecl decl)
@@ -241,6 +268,8 @@ namespace HapetLsp.Colorizers
                 ColorizeBlockExpr(decl.GetBlock);
             if (decl.SetBlock != null)
                 ColorizeBlockExpr(decl.SetBlock);
+
+            ColorizeConstrains(decl);
         }
 
         private void ColorizeParamDecl(AstParamDecl decl)
@@ -806,7 +835,16 @@ namespace HapetLsp.Colorizers
             if (stmt.IsSyntheticStatement)
                 return;
 
-            // TODO:
+            if (stmt.ConstrainType == HapetFrontend.Enums.GenericConstrainType.CustomType)
+            {
+                ColorizeExpr(stmt.Expr);
+            }
+            else 
+            {
+                AddSemanticToken(stmt.Location.Beginning, _tokenTypes[2], _tokenModifiers[0]);
+                foreach (var p in stmt.AdditionalExprs)
+                    ColorizeExpr(p);
+            }
         }
 
         private void ColorizeThrowStmt(AstThrowStmt stmt)

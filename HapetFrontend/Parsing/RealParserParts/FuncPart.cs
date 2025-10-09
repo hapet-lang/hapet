@@ -59,7 +59,7 @@ namespace HapetFrontend.Parsing
             }
 
             // parsing constrains
-            var genericConstrains = ParseGenericConstrains(generics);
+            var genericConstrains = ParseGenericConstrains(generics, out var constrainLocations);
 
             SkipNewlines(inInfo);
 
@@ -83,6 +83,7 @@ namespace HapetFrontend.Parsing
             theFunc.ThisCtorCall = thisCtorCall;
             theFunc.HasGenericTypes = generics.Count > 0;
             theFunc.GenericConstrains = genericConstrains;
+            theFunc.GenericConstrainLocations = constrainLocations;
             theFunc.IsImported = inInfo.ExternalMetadata;
             return theFunc;
         }

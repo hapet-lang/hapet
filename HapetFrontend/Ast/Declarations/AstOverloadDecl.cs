@@ -51,6 +51,7 @@ namespace HapetFrontend.Ast.Declarations
                 SourceFile = SourceFile,
                 SubScope = SubScope,
                 OperatorTokenLocation = OperatorTokenLocation,
+                GenericConstrainLocations = GenericConstrainLocations,
             };
             copy.Attributes.AddRange(Attributes);
             copy.SpecialKeys.AddRange(SpecialKeys);

@@ -58,6 +58,7 @@ namespace HapetFrontend.Ast.Declarations
                 Scope = Scope,
                 SourceFile = SourceFile,
                 SubScope = SubScope,
+                GenericConstrainLocations = GenericConstrainLocations,
             };
             copy.Attributes.AddRange(Attributes);
             copy.SpecialKeys.AddRange(SpecialKeys);
@@ -79,7 +80,8 @@ namespace HapetFrontend.Ast.Declarations
                 Scope = decl.SubScope,
                 IsStaticCtorField = IsStaticCtorField,
                 SourceFile = decl.SourceFile,
-                ContainingParent = decl
+                ContainingParent = decl,
+                GenericConstrainLocations = GenericConstrainLocations,
             };
             varDecl.Attributes.AddRange(Attributes);
             varDecl.SpecialKeys.AddRange(SpecialKeys);
