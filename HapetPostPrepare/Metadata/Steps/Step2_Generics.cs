@@ -12,6 +12,7 @@ using HapetPostPrepare.Entities;
 using System.Data;
 using System.Diagnostics;
 using System.Security.AccessControl;
+using System.Security.Principal;
 
 namespace HapetPostPrepare
 {
@@ -48,6 +49,8 @@ namespace HapetPostPrepare
 
                 originalGeneric.OutType = genericDecl.Type.OutType;
                 currGeneric.OutType = originalGeneric.OutType;
+                // cringe kostyl
+                currGeneric.FindSymbol = new DeclSymbol(genericDecl.Name, genericDecl);
 
                 // append to parent stack
                 _currentParentStack.AppendCurrentGenericIdMapping(currGeneric.Name, genericDecl.Type.OutType as GenericType);
@@ -67,6 +70,8 @@ namespace HapetPostPrepare
 
                 originalGeneric.OutType = genericDecl.Type.OutType;
                 currGeneric.OutType = originalGeneric.OutType;
+                // cringe kostyl
+                currGeneric.FindSymbol = new DeclSymbol(genericDecl.Name, genericDecl);
 
                 // append to parent stack
                 _currentParentStack.AppendCurrentGenericIdMapping(currGeneric.Name, genericDecl.Type.OutType as GenericType);
