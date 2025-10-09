@@ -13,6 +13,7 @@ using HapetFrontend.Types;
 using HapetPostPrepare;
 using LLVMSharp.Interop;
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text;
 using System.Xml.Linq;
@@ -413,6 +414,16 @@ namespace HapetBackend.Llvm
                                 var val = fCmp(_builder, compared, LLVMValueRef.CreateConstInt(HapetTypeToLLVMType(HapetType.CurrentTypeContext.BoolTypeInstance), (ulong)0), "binOp");
                                 toReturn = val;
                                 break;
+                            }
+                            // special cringe case to compare structs with nulls
+                            else if ((leftExpr.OutType is StructType && rightExpr.OutType is NullType 
+                                || leftExpr.OutType is NullType && rightExpr.OutType is StructType)
+                                && (binExpr.Operator == "==" || binExpr.Operator == "!=") &&
+                                (binExpr.Left.OutType is not ArrayType && binExpr.Left.OutType is not StringType) &&
+                                (binExpr.Right.OutType is not ArrayType && binExpr.Right.OutType is not StringType))
+                            {
+                                // just true when !=
+                                return GenerateExpressionCode(new AstBoolExpr(binExpr.Operator == "!="));
                             }
                             // make special case for ptr diffs
                             else if (binExpr.Operator == "-" && leftExpr.OutType is PointerType ptrL && rightExpr.OutType is PointerType)

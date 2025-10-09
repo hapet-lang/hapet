@@ -36,8 +36,7 @@ namespace HapetPostPrepare
                     (binExpr.Right.OutType is not ArrayType && binExpr.Right.OutType is not StringType))
                 {
                     // just make one expr to be 'true' and another one 'false'
-                    binExpr.Right = new AstBoolExpr(true, binExpr);
-                    binExpr.Left = new AstBoolExpr(false, binExpr);
+                    // this is done in CodeGen now
                 }
                 else
                 {
