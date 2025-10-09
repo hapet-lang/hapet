@@ -129,7 +129,8 @@ namespace HapetFrontend.Parsing
 
                     _programFile.CommentLocations.Add(commentToken);
                     commentToken = location.Clone();
-                    commentToken.End = location.Index;
+                    commentToken.Index++;
+                    commentToken.End = location.Index + 1;
                 }
             }
         }

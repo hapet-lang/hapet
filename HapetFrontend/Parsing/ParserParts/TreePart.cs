@@ -104,7 +104,7 @@ namespace HapetFrontend.Parsing
 
             while (CheckToken(inInfo, TokenType.KwIs))
             {
-                var _ = NextToken(inInfo);
+                var isTkn = NextToken(inInfo);
                 SkipNewlines(inInfo);
 
                 // handle 'is not' cringe
@@ -131,6 +131,7 @@ namespace HapetFrontend.Parsing
                 var binExpr = new AstBinaryExpr("is", lhs as AstExpression, rhs as AstExpression, new Location(lhs.Beginning, rhs.Ending))
                 {
                     IsNot = isNot,
+                    OperatorTokenLocation = isTkn?.Location,
                 };
 
                 // handling additional shite
@@ -139,6 +140,7 @@ namespace HapetFrontend.Parsing
                     AstBinaryExpr asExpr = binExpr.GetDeepCopy() as AstBinaryExpr;
                     asExpr.Operator = "as";
                     asExpr.IsFromIsOperator = true;
+                    asExpr.IsSyntheticStatement = true;
 
                     // creating deep copies of its elements
                     // because we don't want to change 
@@ -147,7 +149,10 @@ namespace HapetFrontend.Parsing
                         binExpr.Right.GetDeepCopy() as AstExpression,
                         idExpr.GetDeepCopy() as AstIdExpr,
                         asExpr.GetDeepCopy() as AstExpression,
-                        "", binExpr);
+                        "", binExpr)
+                    {
+                        IsSyntheticStatement = true,
+                    };
                     // add when not look ahead
                     if (!inInfo.IsLookAheadParsing)
                         outInfo.StatementsToAddBefore.Add(varDecl);
@@ -176,7 +181,7 @@ namespace HapetFrontend.Parsing
 
             while (CheckToken(inInfo, TokenType.KwAs))
             {
-                var _ = NextToken(inInfo);
+                var asTkn = NextToken(inInfo);
                 SkipNewlines(inInfo);
 
                 // we want to prefer generics
@@ -185,7 +190,10 @@ namespace HapetFrontend.Parsing
                 rhs = ParseInExpression(inInfo, ref outInfo);
                 inInfo.PreferGenericShite = saved1;
 
-                var binExpr = new AstBinaryExpr("as", lhs as AstExpression, rhs as AstExpression, new Location(lhs.Beginning, rhs.Ending));
+                var binExpr = new AstBinaryExpr("as", lhs as AstExpression, rhs as AstExpression, new Location(lhs.Beginning, rhs.Ending))
+                {
+                    OperatorTokenLocation = asTkn?.Location,
+                };
 
                 // error if it is not an expr
                 if (lhs is not AstExpression)
@@ -210,10 +218,13 @@ namespace HapetFrontend.Parsing
 
             while (CheckToken(inInfo, TokenType.KwIn))
             {
-                var _ = NextToken(inInfo);
+                var inTkn = NextToken(inInfo);
                 SkipNewlines(inInfo);
                 rhs = ParseComparisonExpression(inInfo, ref outInfo);
-                var binExpr = new AstBinaryExpr("in", lhs as AstExpression, rhs as AstExpression, new Location(lhs.Beginning, rhs.Ending));
+                var binExpr = new AstBinaryExpr("in", lhs as AstExpression, rhs as AstExpression, new Location(lhs.Beginning, rhs.Ending))
+                {
+                    OperatorTokenLocation = inTkn?.Location,
+                };
 
                 // error if it is not an expr
                 if (lhs is not AstExpression)

@@ -411,6 +411,12 @@ namespace HapetLsp.Colorizers
         {
             ColorizeExpr(expr.Left);
             ColorizeExpr(expr.Right);
+
+            // special cases for 'as', 'is', 'in'
+            if (expr.Operator == "is" ||  expr.Operator == "as" || expr.Operator == "in")
+            {
+                AddSemanticToken(expr.OperatorTokenLocation, _tokenTypes[2], _tokenModifiers[0]);
+            }
         }
 
         private void ColorizePointerExpr(AstPointerExpr expr)

@@ -22,6 +22,11 @@ namespace HapetFrontend.Ast.Expressions
 
         public IBinaryOperator ActualOperator { get; set; }
 
+        /// <summary>
+        /// Used in LSP
+        /// </summary>
+        public ILocation OperatorTokenLocation { get; set; }
+
         public override string AAAName => nameof(AstBinaryExpr);
 
         public AstBinaryExpr(string op, AstExpression lhs, AstExpression rhs, ILocation location = null) : base(location)
@@ -49,6 +54,7 @@ namespace HapetFrontend.Ast.Expressions
                 Scope = Scope,
                 SourceFile = SourceFile,
                 TupleNameList = TupleNameList,
+                OperatorTokenLocation = OperatorTokenLocation,
             };
             return copy;
         }
