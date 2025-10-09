@@ -210,6 +210,7 @@ namespace HapetLsp.Colorizers
         private void ColorizePropertyDecl(AstPropertyDecl decl)
         {
             ColorizeExpr(decl.Type);
+            ColorizeExpr(decl.Name);
 
             if (decl.Initializer != null)
                 ColorizeExpr(decl.Initializer);
@@ -286,7 +287,8 @@ namespace HapetLsp.Colorizers
                 case AstDefaultExpr defaultExpr:
                     ColorizeDefaultExpr(defaultExpr);
                     break;
-                case AstDefaultGenericExpr _: // no need to scope anything
+                case AstDefaultGenericExpr defaultExpr:
+                    ColorizeDefaultGenericExpr(defaultExpr);
                     break;
                 case AstEmptyStructExpr _: // no need
                     break;
@@ -455,7 +457,20 @@ namespace HapetLsp.Colorizers
             if (expr.FindSymbol is not DeclSymbol declSymbol)
                 return;
 
-            if (declSymbol.Decl is AstParamDecl parD)
+            // special case for 'this' and 'indexer__'
+            if (expr.Name == "this" || expr.Name == "indexer__")
+            {
+                AddSemanticToken(expr.Location, _tokenTypes[2], _tokenModifiers[0]);
+                return;
+            }
+
+            // colorize additional data
+            if (expr.AdditionalData != null)
+            {
+                ColorizeExpr(expr.AdditionalData.RightPart);
+            }
+
+            if (declSymbol.Decl is AstParamDecl)
             {
                 // param name
                 AddSemanticToken(expr.Location, _tokenTypes[6], _tokenModifiers[0]);
@@ -526,6 +541,15 @@ namespace HapetLsp.Colorizers
             AddSemanticToken(expr.Location.Beginning, _tokenTypes[2], _tokenModifiers[0]);
             if (expr.TypeForDefault != null)
                 ColorizeExpr(expr.TypeForDefault);
+        }
+
+        private void ColorizeDefaultGenericExpr(AstDefaultGenericExpr expr)
+        {
+            // skip synthetic
+            if (expr.IsSyntheticStatement)
+                return;
+            // colorize 'default' word
+            AddSemanticToken(expr.Location.Beginning, _tokenTypes[2], _tokenModifiers[0]);
         }
 
         private void ColorizeArrayExpr(AstArrayExpr expr)
@@ -679,6 +703,9 @@ namespace HapetLsp.Colorizers
 
         private void ColorizeAttributeStmt(AstAttributeStmt stmt)
         {
+            if (stmt.IsSyntheticStatement)
+                return;
+
             ColorizeExpr(stmt.AttributeName);
 
             foreach (var a in stmt.Arguments)

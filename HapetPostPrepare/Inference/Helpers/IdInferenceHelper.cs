@@ -23,6 +23,8 @@ namespace HapetPostPrepare
             if (genericEntity.HasValue)
             {
                 idExpr.OutType = genericEntity.Value.Item2;
+                // cringe kostyl
+                idExpr.FindSymbol = new DeclSymbol(genericEntity.Value.Item2.Declaration.Name, genericEntity.Value.Item2.Declaration);
                 return;
             }
 

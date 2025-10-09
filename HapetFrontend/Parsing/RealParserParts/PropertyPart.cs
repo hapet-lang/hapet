@@ -213,7 +213,10 @@ namespace HapetFrontend.Parsing
             {
                 theProperty.Attributes.Add(new AstAttributeStmt(
                     new AstNestedExpr(new AstIdExpr("System.NoFieldAttribute", theProperty.Location), null, theProperty.Location), 
-                    new List<AstArgumentExpr>(), theProperty.Location));
+                    new List<AstArgumentExpr>(), theProperty.Location)
+                {
+                    IsSyntheticStatement = true,
+                });
             }
 
             return theProperty;
