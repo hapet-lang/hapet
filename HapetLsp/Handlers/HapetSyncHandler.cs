@@ -43,11 +43,11 @@ namespace HapetLsp.Handlers
 
             // get delta text
             var text = contentChange.Text;
-            if (string.IsNullOrWhiteSpace(text))
+            if (text == string.Empty)
             {
                 // delete 
             }
-            else if (!string.IsNullOrWhiteSpace(text) && contentChange.RangeLength > 0)
+            else if (text != string.Empty && contentChange.RangeLength > 0)
             {
                 // change
             }
