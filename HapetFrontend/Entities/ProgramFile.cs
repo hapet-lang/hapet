@@ -56,6 +56,16 @@ namespace HapetFrontend.Entities
         /// </summary>
         public ILocation NamespaceTokenLocation { get; set; }
 
+        /// <summary>
+        /// Used in LSP
+        /// </summary>
+        public List<ILocation> NotCompiledLocations { get; } = new List<ILocation>();
+
+        /// <summary>
+        /// Used in LSP
+        /// </summary>
+        public List<ILocation> DirectiveNameLocations { get; } = new List<ILocation>();
+
         public ProgramFile(string name, string text)
         {
             this.Name = name;

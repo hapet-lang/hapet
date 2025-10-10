@@ -15,6 +15,7 @@ namespace HapetFrontend.Parsing
         private AstStatement ParseDirectiveStatement(ParserInInfo inInfo, ref ParserOutInfo outInfo)
         {
             var tkn = Consume(inInfo, TokenType.SharpIdentifier, ErrMsg("char '#'", "at beginning of directive"));
+            CurrentSourceFile.DirectiveNameLocations.Add(tkn.Location);
             DirectiveType type = DirectiveType.None;
 
             switch ((string)tkn.Data)
@@ -206,7 +207,8 @@ namespace HapetFrontend.Parsing
                 SkipNewlines(inInfo);
                 while (_lexer.PeekToken().Type != TokenType.SharpIdentifier)
                 {
-                    _lexer.SkipLine();
+                    var lineLocation = _lexer.SkipLine();
+                    CurrentSourceFile.NotCompiledLocations.Add(lineLocation);
                 }
             }
 

@@ -17,7 +17,7 @@ namespace HapetFrontend.Parsing
         void RestoreLookAheadLocation();
         Token NextLookAhead(bool skipWhitespaces);
         Token PeekLookAhead(bool skipWhitespaces);
-        void SkipLine();
+        ILocation SkipLine();
 
         void ChangeFilename(string filename);
     }
@@ -73,8 +73,10 @@ namespace HapetFrontend.Parsing
             _lookAheadLocation.File = filename;
         }
 
-        public void SkipLine()
+        public ILocation SkipLine()
         {
+            TokenLocation lineLocation = _location.Clone();
+            lineLocation.End = lineLocation.Index;
             while (_location.Index < _text.Length)
             {
                 Token t = PeekToken();
@@ -83,8 +85,11 @@ namespace HapetFrontend.Parsing
                     NextToken();
                     break;
                 }
-                NextToken();
+                var tkn = NextToken();
+                lineLocation.End = tkn.Location.End;
             }
+            lineLocation.Index = lineLocation.LineStartIndex;
+            return lineLocation;
         }
 
         public Token PeekToken()

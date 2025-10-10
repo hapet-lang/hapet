@@ -28,6 +28,8 @@ namespace HapetLsp.Handlers
             new SemanticTokenType("string"),        // 10
             new SemanticTokenType("char"),          // 11
             new SemanticTokenType("comment"),       // 12
+            new SemanticTokenType("not_compiled"),  // 13
+            new SemanticTokenType("directive"),     // 14
         };
         private readonly static SemanticTokenModifier[] _tokenModifiers = new[] 
         { 

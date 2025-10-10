@@ -33,6 +33,8 @@ namespace HapetLsp.Colorizers
         {
             ColorizeUsings(_programFile);
             ColorizeComments(_programFile);
+            ColorizeNotCompiled(_programFile);
+            ColorizeDirectives(_programFile);
             // namespace
             if (_programFile.NamespaceTokenLocation != null)
                 AddSemanticToken(_programFile.NamespaceTokenLocation, _tokenTypes[2], _tokenModifiers[0]);
@@ -49,17 +51,25 @@ namespace HapetLsp.Colorizers
         private void ColorizeUsings(ProgramFile file)
         {
             foreach (var u in file.Usings)
-            {
                 AddSemanticToken(u.Location, _tokenTypes[1], _tokenModifiers[0]);
-            }
         }
 
         private void ColorizeComments(ProgramFile file)
         {
             foreach (var c in file.CommentLocations)
-            {
                 AddSemanticToken(c, _tokenTypes[12], _tokenModifiers[0]);
-            }
+        }
+
+        private void ColorizeNotCompiled(ProgramFile file)
+        {
+            foreach (var c in file.NotCompiledLocations)
+                AddSemanticToken(c, _tokenTypes[13], _tokenModifiers[0]);
+        }
+
+        private void ColorizeDirectives(ProgramFile file)
+        {
+            foreach (var c in file.DirectiveNameLocations)
+                AddSemanticToken(c, _tokenTypes[14], _tokenModifiers[0]);
         }
 
         private void ColorizeSpecialKeys(AstDeclaration decl)
