@@ -341,7 +341,8 @@ namespace HapetFrontend.Parsing
                 s is not AstClassDecl &&
                 s is not AstStructDecl &&
                 s is not AstEnumDecl &&
-                s is not AstDirectiveStmt)
+                s is not AstDirectiveStmt &&
+                s is not AstEmptyStmt) // special case for EmptyStmt
             {
                 // if skip default checks
                 if (skipDefault && s is AstDefaultExpr)
@@ -350,8 +351,14 @@ namespace HapetFrontend.Parsing
                 if (!CheckToken(inInfo, TokenType.Semicolon))
                 {
                     // here u can set breakpoint to catch error
+                    ReportMessage(CurrentToken.Location, [";", "at the end of the statement"], ErrorCode.Get(CTEN.CommonExpectedToken));
+                    RecoverStatement(inInfo);
                 }
-                Consume(inInfo, TokenType.Semicolon, ErrMsg(";", "at the end of the statement"));
+                else
+                {
+                    // eat it
+                    NextToken(inInfo);
+                }
             }
         }
     }

@@ -134,8 +134,13 @@ namespace HapetFrontend.Parsing
                     {
                         // set => ...
                         NextToken(inInfo);
+
+                        var saved = inInfo.AllowOneWordStatement;
+                        inInfo.AllowOneWordStatement = true;
                         // getting only one stmt if there are no braces
                         var onlyStmt = ParseStatement(inInfo, ref outInfo);
+                        inInfo.AllowOneWordStatement = saved;
+
                         var body = new AstBlockExpr(new List<AstStatement>() { onlyStmt }, onlyStmt);
                         // try eat semicolon or error
                         CheckSemicolonAfterStmt(inInfo, onlyStmt);

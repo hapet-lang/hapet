@@ -259,6 +259,11 @@ namespace HapetFrontend.Parsing
             }
             else if (udecl.Name == null)
             {
+                if (!inInfo.AllowOneWordStatement)
+                {
+                    // error
+                    ReportMessage(udecl.Type?.Location, [], ErrorCode.Get(CTEN.PureUnexpectedToken));
+                }
                 // just return it further
                 return udecl.Type;
             }

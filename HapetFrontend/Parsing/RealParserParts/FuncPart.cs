@@ -92,8 +92,11 @@ namespace HapetFrontend.Parsing
         {
             NextToken(inInfo);
 
+            var saved = inInfo.AllowOneWordStatement;
+            inInfo.AllowOneWordStatement = true;
             // getting only one stmt if there are no braces
             var onlyStmt = ParseStatement(inInfo, ref outInfo);
+            inInfo.AllowOneWordStatement = saved;
 
             // if not void type - add return
             if (!isReturnVoid)

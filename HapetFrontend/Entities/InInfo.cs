@@ -81,6 +81,12 @@ namespace HapetFrontend.Entities
         /// This shite is used for func decl
         /// </summary>
         public AstUnknownDecl CurrentUdecl { get; set; }
+
+        /// <summary>
+        /// 'true' if one-word stmt allowed in udecl preparation. Usually allowed only in 
+        /// arrowed functions and shite like this.
+        /// </summary>
+        public bool AllowOneWordStatement { get; set; }
         public MessageResolver Message { get; set; }
 
         public static ParserInInfo Default => new ParserInInfo()
