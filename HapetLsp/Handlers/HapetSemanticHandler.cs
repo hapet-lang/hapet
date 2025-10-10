@@ -7,6 +7,7 @@ using OmniSharp.Extensions.LanguageServer.Protocol;
 using OmniSharp.Extensions.LanguageServer.Protocol.Client.Capabilities;
 using OmniSharp.Extensions.LanguageServer.Protocol.Document;
 using OmniSharp.Extensions.LanguageServer.Protocol.Models;
+using System.Collections.ObjectModel;
 using System.Xml.Linq;
 
 namespace HapetLsp.Handlers
@@ -38,7 +39,7 @@ namespace HapetLsp.Handlers
         };
 
         private readonly Compiler _compiler;
-        private readonly Dictionary<ProgramFile, HapetColorizer> _fileColorizers = new Dictionary<ProgramFile, HapetColorizer>();
+        internal Dictionary<ProgramFile, HapetColorizer> FileColorizers { get; } = new Dictionary<ProgramFile, HapetColorizer>();
 
         public HapetSemanticHandler(Compiler compiler)
         {
@@ -77,13 +78,21 @@ namespace HapetLsp.Handlers
             if (file == null)
                 return;
 
-            // add colorizer if not exists
-            HapetColorizer colorizer;
-            if (!_fileColorizers.TryGetValue(file, out colorizer))
+            var colorizer = CreateColorizer(file);
+            foreach (var t in colorizer.CurrentSemanticTokens)
             {
-                colorizer = new HapetColorizer(file, _compiler, _tokenTypes, _tokenModifiers);
-                _fileColorizers[file] = colorizer;
+                builder.Push(t.Line, t.Offset, t.Width, t.TokenType, t.TokenModifier);
             }
+        }
+
+        internal HapetColorizer CreateColorizer(ProgramFile file)
+        {
+            if (FileColorizers.TryGetValue(file, out var colorizer))
+                return colorizer;
+
+            // add colorizer if not exists
+            colorizer = new HapetColorizer(file, _compiler, _tokenTypes, _tokenModifiers);
+            FileColorizers[file] = colorizer;
             // colorize
             colorizer.Colorize();
 
@@ -94,11 +103,7 @@ namespace HapetLsp.Handlers
                 if (lineCompare != 0) return lineCompare;
                 return a.Offset.CompareTo(b.Offset);
             });
-            foreach (var t in colorizer.CurrentSemanticTokens)
-            {
-                builder.Push(t.Line, t.Offset, t.Width, t.TokenType, t.TokenModifier);
-            }
-            colorizer.CurrentSemanticTokens.Clear();
+            return colorizer;
         }
     }
 }

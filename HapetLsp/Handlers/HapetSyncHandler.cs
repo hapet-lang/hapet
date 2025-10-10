@@ -14,6 +14,7 @@ namespace HapetLsp.Handlers
     {
         private readonly ILanguageServerFacade _facade;
         private readonly Compiler _compiler;
+        private readonly HapetSemanticHandler _semanticHandler;
 
         private readonly TextDocumentSelector _documentSelector = new TextDocumentSelector(
             new TextDocumentFilter()
@@ -22,10 +23,11 @@ namespace HapetLsp.Handlers
             }
         );
 
-        public HapetSyncHandler(ILanguageServerFacade facade, Compiler compiler)
+        public HapetSyncHandler(ILanguageServerFacade facade, Compiler compiler, HapetSemanticHandler semanticHandler)
         {
             _facade = facade;
             _compiler = compiler;
+            _semanticHandler = semanticHandler;
         }
 
         public TextDocumentAttributes GetTextDocumentAttributes(DocumentUri uri)
@@ -39,12 +41,31 @@ namespace HapetLsp.Handlers
             if (contentChange == null)
                 return Unit.Task;
 
+            // get delta text
             var text = contentChange.Text;
+            if (string.IsNullOrWhiteSpace(text))
+            {
+                // delete 
+            }
+            else if (!string.IsNullOrWhiteSpace(text) && contentChange.RangeLength > 0)
+            {
+                // change
+            }
+            else
+            {
+                // add
+            }
             return Unit.Task;
         }
 
         public Task<Unit> Handle(DidOpenTextDocumentParams request, CancellationToken cancellationToken)
         {
+            var path = DocumentUri.GetFileSystemPath(request.TextDocument.Uri);
+            var file = _compiler.GetFile(path);
+            if (file == null)
+                return Unit.Task;
+
+            _semanticHandler.CreateColorizer(file);
             return Unit.Task;
         }
 
