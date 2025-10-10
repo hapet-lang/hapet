@@ -32,10 +32,12 @@ namespace HapetLsp
 
                             services.AddTransient<HptprojSyncHandler>();
                             services.AddTransient<HptprojSemanticHandler>();
+                            services.AddTransient<HapetSyncHandler>();
                             services.AddTransient<HapetSemanticHandler>();
                         })
                         .WithHandler<HptprojSyncHandler>()
                         .WithHandler<HptprojSemanticHandler>()
+                        .WithHandler<HapetSyncHandler>()
                         .WithHandler<HapetSemanticHandler>()
                         ;
                     });

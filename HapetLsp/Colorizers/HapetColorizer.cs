@@ -5,6 +5,7 @@ using HapetFrontend.Ast.Expressions;
 using HapetFrontend.Ast.Statements;
 using HapetFrontend.Entities;
 using HapetFrontend.Errors;
+using HapetFrontend.Helpers;
 using HapetFrontend.Scoping;
 using HapetFrontend.Types;
 using HapetLsp.Entities;
@@ -102,6 +103,9 @@ namespace HapetLsp.Colorizers
         {
             // skip synthetic
             if (decl.IsSyntheticStatement)
+                return;
+            // skip impl of generic
+            if (decl.IsImplOfGeneric)
                 return;
 
             // colorize special keys
