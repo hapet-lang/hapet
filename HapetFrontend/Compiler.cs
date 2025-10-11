@@ -226,6 +226,8 @@ namespace HapetFrontend
                 return null;
 
             var parser = new Parser(lexer, this, MessageHandler);
+            file.FileParser = parser;
+
             // just handlers
             ParserInInfo inInfo = ParserInInfo.Default;
             ParserOutInfo outInfo = ParserOutInfo.Default;

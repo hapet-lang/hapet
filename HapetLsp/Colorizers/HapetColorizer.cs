@@ -15,12 +15,14 @@ namespace HapetLsp.Colorizers
 {
     internal class HapetColorizer
     {
-        public List<SemanticToken> CurrentSemanticTokens { get; } = new List<SemanticToken>();
+        public List<(SemanticToken, AstStatement)> CurrentSemanticTokens { get; } = new List<(SemanticToken, AstStatement)>();
 
         private readonly SemanticTokenType[] _tokenTypes;
         private readonly SemanticTokenModifier[] _tokenModifiers;
         private readonly ProgramFile _programFile;
         private readonly Compiler _compiler;
+
+        public ProgramFile File => _programFile;
 
         public HapetColorizer(ProgramFile file, Compiler compiler, SemanticTokenType[] tokenTypes, SemanticTokenModifier[] tokenModifiers) 
         {
@@ -38,7 +40,7 @@ namespace HapetLsp.Colorizers
             ColorizeDirectives(_programFile);
             // namespace
             if (_programFile.NamespaceTokenLocation != null)
-                AddSemanticToken(_programFile.NamespaceTokenLocation, _tokenTypes[2], _tokenModifiers[0]);
+                AddSemanticToken(null, _programFile.NamespaceTokenLocation, _tokenTypes[2], _tokenModifiers[0]);
 
             // making colorize of declarations
             foreach (var d in _programFile.Statements)
@@ -52,25 +54,25 @@ namespace HapetLsp.Colorizers
         private void ColorizeUsings(ProgramFile file)
         {
             foreach (var u in file.Usings)
-                AddSemanticToken(u.Location, _tokenTypes[1], _tokenModifiers[0]);
+                AddSemanticToken(u, u.Location, _tokenTypes[1], _tokenModifiers[0]);
         }
 
         private void ColorizeComments(ProgramFile file)
         {
             foreach (var c in file.CommentLocations)
-                AddSemanticToken(c, _tokenTypes[12], _tokenModifiers[0]);
+                AddSemanticToken(null, c, _tokenTypes[12], _tokenModifiers[0]);
         }
 
         private void ColorizeNotCompiled(ProgramFile file)
         {
             foreach (var c in file.NotCompiledLocations)
-                AddSemanticToken(c, _tokenTypes[13], _tokenModifiers[0]);
+                AddSemanticToken(null, c, _tokenTypes[13], _tokenModifiers[0]);
         }
 
         private void ColorizeDirectives(ProgramFile file)
         {
             foreach (var c in file.DirectiveNameLocations)
-                AddSemanticToken(c, _tokenTypes[14], _tokenModifiers[0]);
+                AddSemanticToken(null, c, _tokenTypes[14], _tokenModifiers[0]);
         }
 
         private void ColorizeSpecialKeys(AstDeclaration decl)
@@ -78,7 +80,7 @@ namespace HapetLsp.Colorizers
             // colorize special keys
             foreach (var k in decl.SpecialKeys)
             {
-                AddSemanticToken(k.Location, _tokenTypes[2], _tokenModifiers[0]);
+                AddSemanticToken(decl, k.Location, _tokenTypes[2], _tokenModifiers[0]);
             }
         }
 
@@ -94,8 +96,8 @@ namespace HapetLsp.Colorizers
             if (decl.GenericConstrainLocations != null)
                 foreach (var c in decl.GenericConstrainLocations)
                 {
-                    AddSemanticToken(c.Item1, _tokenTypes[8], _tokenModifiers[0]);
-                    AddSemanticToken(c.Item2, _tokenTypes[4], _tokenModifiers[0]);
+                    AddSemanticToken(null, c.Item1, _tokenTypes[8], _tokenModifiers[0]);
+                    AddSemanticToken(null, c.Item2, _tokenTypes[4], _tokenModifiers[0]);
                 }
         }
 
@@ -144,7 +146,7 @@ namespace HapetLsp.Colorizers
         private void ColorizeClassDecl(AstClassDecl decl)
         {
             // class token
-            AddSemanticToken(decl.Location.Beginning, _tokenTypes[2], _tokenModifiers[0]);
+            AddSemanticToken(decl, decl.Location.Beginning, _tokenTypes[2], _tokenModifiers[0]);
             // class name
             ColorizeExpr(decl.Name);
 
@@ -167,7 +169,7 @@ namespace HapetLsp.Colorizers
         private void ColorizeStructDecl(AstStructDecl decl)
         {
             // struct token
-            AddSemanticToken(decl.Location.Beginning, _tokenTypes[2], _tokenModifiers[0]);
+            AddSemanticToken(decl, decl.Location.Beginning, _tokenTypes[2], _tokenModifiers[0]);
             // struct name
             ColorizeExpr(decl.Name);
 
@@ -190,7 +192,7 @@ namespace HapetLsp.Colorizers
         private void ColorizeEnumDecl(AstEnumDecl decl)
         {
             // enum token
-            AddSemanticToken(decl.Location.Beginning, _tokenTypes[2], _tokenModifiers[0]);
+            AddSemanticToken(decl, decl.Location.Beginning, _tokenTypes[2], _tokenModifiers[0]);
             // enum name
             ColorizeExpr(decl.Name);
 
@@ -209,7 +211,7 @@ namespace HapetLsp.Colorizers
         private void ColorizeDelegateDecl(AstDelegateDecl decl)
         {
             // enum token
-            AddSemanticToken(decl.Location.Beginning, _tokenTypes[2], _tokenModifiers[0]);
+            AddSemanticToken(decl, decl.Location.Beginning, _tokenTypes[2], _tokenModifiers[0]);
             ColorizeExpr(decl.Returns);
             // func name
             ColorizeExpr(decl.Name);
@@ -235,7 +237,7 @@ namespace HapetLsp.Colorizers
 
             // for operator/implicit/explicit colorizing
             if (decl is AstOverloadDecl overD)
-                AddSemanticToken(overD.OperatorTokenLocation, _tokenTypes[2], _tokenModifiers[0]);
+                AddSemanticToken(decl, overD.OperatorTokenLocation, _tokenTypes[2], _tokenModifiers[0]);
 
             // params
             foreach (var p in decl.Parameters)
@@ -274,9 +276,9 @@ namespace HapetLsp.Colorizers
             }
 
             if (decl.GetTokenPosition != null)
-                AddSemanticToken(decl.GetTokenPosition, _tokenTypes[2], _tokenModifiers[0]);
+                AddSemanticToken(decl, decl.GetTokenPosition, _tokenTypes[2], _tokenModifiers[0]);
             if (decl.SetTokenPosition != null)
-                AddSemanticToken(decl.SetTokenPosition, _tokenTypes[2], _tokenModifiers[0]);
+                AddSemanticToken(decl, decl.SetTokenPosition, _tokenTypes[2], _tokenModifiers[0]);
 
             if (decl.GetBlock != null)
                 ColorizeBlockExpr(decl.GetBlock);
@@ -291,7 +293,7 @@ namespace HapetLsp.Colorizers
             // colorize param modificator
             if (decl.ParamModificatorLocation != null)
             {
-                AddSemanticToken(decl.ParamModificatorLocation, _tokenTypes[2], _tokenModifiers[0]);
+                AddSemanticToken(decl, decl.ParamModificatorLocation, _tokenTypes[2], _tokenModifiers[0]);
             }
 
             // special case for arglist
@@ -301,7 +303,7 @@ namespace HapetLsp.Colorizers
             ColorizeExpr(decl.Type);
             // param name
             if (decl.Name != null)
-                AddSemanticToken(decl.Name.Location, _tokenTypes[6], _tokenModifiers[0]);
+                AddSemanticToken(decl, decl.Name.Location, _tokenTypes[6], _tokenModifiers[0]);
 
             if (decl.DefaultValue != null)
                 ColorizeExpr(decl.DefaultValue);
@@ -440,19 +442,19 @@ namespace HapetLsp.Colorizers
 
                 // skip literals
                 case AstNumberExpr numberExpr:
-                    AddSemanticToken(numberExpr.Location, _tokenTypes[9], _tokenModifiers[0]);
+                    AddSemanticToken(numberExpr, numberExpr.Location, _tokenTypes[9], _tokenModifiers[0]);
                     break;
                 case AstStringExpr stringExpr:
-                    AddSemanticToken(stringExpr.Location, _tokenTypes[10], _tokenModifiers[0]);
+                    AddSemanticToken(stringExpr, stringExpr.Location, _tokenTypes[10], _tokenModifiers[0]);
                     break;
                 case AstBoolExpr boolExpr:
-                    AddSemanticToken(boolExpr.Location, _tokenTypes[2], _tokenModifiers[0]);
+                    AddSemanticToken(boolExpr, boolExpr.Location, _tokenTypes[2], _tokenModifiers[0]);
                     break;
                 case AstCharExpr charExpr:
-                    AddSemanticToken(charExpr.Location, _tokenTypes[11], _tokenModifiers[0]);
+                    AddSemanticToken(charExpr, charExpr.Location, _tokenTypes[11], _tokenModifiers[0]);
                     break;
                 case AstNullExpr nullExpr:
-                    AddSemanticToken(nullExpr.Location, _tokenTypes[2], _tokenModifiers[0]);
+                    AddSemanticToken(nullExpr, nullExpr.Location, _tokenTypes[2], _tokenModifiers[0]);
                     break;
 
                 default:
@@ -490,11 +492,11 @@ namespace HapetLsp.Colorizers
 
             // special cases for 'as', 'is', 'in'
             if (expr.Operator == "is" ||  expr.Operator == "as" || expr.Operator == "in")
-                AddSemanticToken(expr.OperatorTokenLocation, _tokenTypes[2], _tokenModifiers[0]);
+                AddSemanticToken(expr, expr.OperatorTokenLocation, _tokenTypes[2], _tokenModifiers[0]);
 
             // if there is 'not'
             if (expr.NotTokenLocation != null)
-                AddSemanticToken(expr.NotTokenLocation, _tokenTypes[2], _tokenModifiers[0]);
+                AddSemanticToken(expr, expr.NotTokenLocation, _tokenTypes[2], _tokenModifiers[0]);
         }
 
         private void ColorizePointerExpr(AstPointerExpr expr)
@@ -510,11 +512,11 @@ namespace HapetLsp.Colorizers
         private void ColorizeNewExpr(AstNewExpr expr)
         {
             // colorize 'new' word
-            AddSemanticToken(expr.Location.Beginning, _tokenTypes[2], _tokenModifiers[0]);
+            AddSemanticToken(expr, expr.Location.Beginning, _tokenTypes[2], _tokenModifiers[0]);
 
             // colorize 'unsafe' word
             if (expr.IsUnsafeNew)
-                AddSemanticToken(expr.UnsafeTokenLocation, _tokenTypes[2], _tokenModifiers[0]);
+                AddSemanticToken(expr, expr.UnsafeTokenLocation, _tokenTypes[2], _tokenModifiers[0]);
 
             // colorize type
             ColorizeExpr(expr.TypeName);
@@ -529,7 +531,7 @@ namespace HapetLsp.Colorizers
             // colorize arg modificator
             if (expr.ArgModificatorLocation != null)
             {
-                AddSemanticToken(expr.ArgModificatorLocation, _tokenTypes[2], _tokenModifiers[0]);
+                AddSemanticToken(expr, expr.ArgModificatorLocation, _tokenTypes[2], _tokenModifiers[0]);
             }
 
             ColorizeExpr(expr.Expr);
@@ -555,7 +557,7 @@ namespace HapetLsp.Colorizers
             // special case for 'this' and 'indexer__' and 'base'
             if (expr.Name == "this" || expr.Name == "indexer__" || expr.Name == "base")
             {
-                AddSemanticToken(expr.Location, _tokenTypes[2], _tokenModifiers[0]);
+                AddSemanticToken(expr, expr.Location, _tokenTypes[2], _tokenModifiers[0]);
                 return;
             }
 
@@ -568,7 +570,7 @@ namespace HapetLsp.Colorizers
             if (declSymbol.Decl is AstParamDecl)
             {
                 // param name
-                AddSemanticToken(expr.Location, _tokenTypes[6], _tokenModifiers[0]);
+                AddSemanticToken(expr, expr.Location, _tokenTypes[6], _tokenModifiers[0]);
             }
             else if (declSymbol.Decl is AstVarDecl vD)
             {
@@ -580,22 +582,22 @@ namespace HapetLsp.Colorizers
                         // no need to colorize props and fields
                         break;
                     default:
-                        AddSemanticToken(expr.Location, _tokenTypes[6], _tokenModifiers[0]);
+                        AddSemanticToken(expr, expr.Location, _tokenTypes[6], _tokenModifiers[0]);
                         break;
                 }
             }
             else if (declSymbol.Decl is AstFuncDecl)
             {
                 // func name colorizing
-                AddSemanticToken(expr.Location, _tokenTypes[5], _tokenModifiers[0]);
+                AddSemanticToken(expr, expr.Location, _tokenTypes[5], _tokenModifiers[0]);
             }
             else
             {
                 // static/decl colorizing
                 if (expr.OutType is ClassType clsTT)
-                    AddSemanticToken(expr.Location, clsTT.Declaration.IsInterface ? _tokenTypes[3] : _tokenTypes[0], _tokenModifiers[0]);
+                    AddSemanticToken(expr, expr.Location, clsTT.Declaration.IsInterface ? _tokenTypes[3] : _tokenTypes[0], _tokenModifiers[0]);
                 else
-                    AddSemanticToken(expr.Location, _tokenTypes[4], _tokenModifiers[0]);
+                    AddSemanticToken(expr, expr.Location, _tokenTypes[4], _tokenModifiers[0]);
             }
         }
 
@@ -634,7 +636,7 @@ namespace HapetLsp.Colorizers
             if (expr.IsSyntheticStatement)
                 return;
             // colorize 'default' word
-            AddSemanticToken(expr.Location.Beginning, _tokenTypes[2], _tokenModifiers[0]);
+            AddSemanticToken(expr, expr.Location.Beginning, _tokenTypes[2], _tokenModifiers[0]);
             if (expr.TypeForDefault != null)
                 ColorizeExpr(expr.TypeForDefault);
         }
@@ -645,7 +647,7 @@ namespace HapetLsp.Colorizers
             if (expr.IsSyntheticStatement)
                 return;
             // colorize 'default' word
-            AddSemanticToken(expr.Location.Beginning, _tokenTypes[2], _tokenModifiers[0]);
+            AddSemanticToken(expr, expr.Location.Beginning, _tokenTypes[2], _tokenModifiers[0]);
         }
 
         private void ColorizeArrayExpr(AstArrayExpr expr)
@@ -656,11 +658,11 @@ namespace HapetLsp.Colorizers
         private void ColorizeArrayCreateExpr(AstArrayCreateExpr expr)
         {
             // colorize 'new' word
-            AddSemanticToken(expr.Location.Beginning, _tokenTypes[2], _tokenModifiers[0]);
+            AddSemanticToken(expr, expr.Location.Beginning, _tokenTypes[2], _tokenModifiers[0]);
 
             // colorize 'unsafe' word
             if (expr.IsUnsafeNew)
-                AddSemanticToken(expr.UnsafeTokenLocation, _tokenTypes[2], _tokenModifiers[0]);
+                AddSemanticToken(expr, expr.UnsafeTokenLocation, _tokenTypes[2], _tokenModifiers[0]);
 
             ColorizeExpr(expr.TypeName);
             foreach (var s in expr.SizeExprs)
@@ -692,7 +694,7 @@ namespace HapetLsp.Colorizers
         private void ColorizeCheckedExpr(AstCheckedExpr expr)
         {
             // colorize 'checked' word
-            AddSemanticToken(expr.Location.Beginning, _tokenTypes[2], _tokenModifiers[0]);
+            AddSemanticToken(expr, expr.Location.Beginning, _tokenTypes[2], _tokenModifiers[0]);
 
             ColorizeExpr(expr.SubExpression);
         }
@@ -700,7 +702,7 @@ namespace HapetLsp.Colorizers
         private void ColorizeSATExpr(AstSATOfExpr expr)
         {
             // colorize 'sat' word
-            AddSemanticToken(expr.Location.Beginning, _tokenTypes[2], _tokenModifiers[0]);
+            AddSemanticToken(expr, expr.Location.Beginning, _tokenTypes[2], _tokenModifiers[0]);
 
             ColorizeExpr(expr.TargetType);
         }
@@ -727,7 +729,7 @@ namespace HapetLsp.Colorizers
         private void ColorizeForStmt(AstForStmt stmt)
         {
             // colorize 'for' word
-            AddSemanticToken(stmt.Location.Beginning, _tokenTypes[8], _tokenModifiers[0]);
+            AddSemanticToken(stmt, stmt.Location.Beginning, _tokenTypes[8], _tokenModifiers[0]);
 
             if (stmt.FirstArgument != null)
                 ColorizeExpr(stmt.FirstArgument);
@@ -741,7 +743,7 @@ namespace HapetLsp.Colorizers
         private void ColorizeWhileStmt(AstWhileStmt stmt)
         {
             // colorize 'while' word
-            AddSemanticToken(stmt.Location.Beginning, _tokenTypes[8], _tokenModifiers[0]);
+            AddSemanticToken(stmt, stmt.Location.Beginning, _tokenTypes[8], _tokenModifiers[0]);
 
             ColorizeExpr(stmt.Condition);
             ColorizeBlockExpr(stmt.Body);
@@ -750,9 +752,9 @@ namespace HapetLsp.Colorizers
         private void ColorizeDoWhileStmt(AstDoWhileStmt stmt)
         {
             // colorize 'do' word
-            AddSemanticToken(stmt.Location.Beginning, _tokenTypes[8], _tokenModifiers[0]);
+            AddSemanticToken(stmt, stmt.Location.Beginning, _tokenTypes[8], _tokenModifiers[0]);
             // colorize 'while' word
-            AddSemanticToken(stmt.WhileTokenLocation, _tokenTypes[8], _tokenModifiers[0]);
+            AddSemanticToken(stmt, stmt.WhileTokenLocation, _tokenTypes[8], _tokenModifiers[0]);
 
             ColorizeExpr(stmt.Condition);
             ColorizeBlockExpr(stmt.Body);
@@ -761,7 +763,7 @@ namespace HapetLsp.Colorizers
         private void ColorizeIfStmt(AstIfStmt stmt)
         {
             // colorize 'if' word
-            AddSemanticToken(stmt.Location.Beginning, _tokenTypes[8], _tokenModifiers[0]);
+            AddSemanticToken(stmt, stmt.Location.Beginning, _tokenTypes[8], _tokenModifiers[0]);
 
             ColorizeExpr(stmt.Condition);
             ColorizeBlockExpr(stmt.BodyTrue);
@@ -769,7 +771,7 @@ namespace HapetLsp.Colorizers
             if (stmt.BodyFalse != null)
             {
                 // colorize 'else' word
-                AddSemanticToken(stmt.ElseTokenLocation, _tokenTypes[8], _tokenModifiers[0]);
+                AddSemanticToken(stmt, stmt.ElseTokenLocation, _tokenTypes[8], _tokenModifiers[0]);
                 ColorizeBlockExpr(stmt.BodyFalse);
             }
         }
@@ -777,7 +779,7 @@ namespace HapetLsp.Colorizers
         private void ColorizeSwitchStmt(AstSwitchStmt stmt)
         {
             // colorize 'switch' word
-            AddSemanticToken(stmt.Location.Beginning, _tokenTypes[8], _tokenModifiers[0]);
+            AddSemanticToken(stmt, stmt.Location.Beginning, _tokenTypes[8], _tokenModifiers[0]);
 
             ColorizeExpr(stmt.SubExpression);
 
@@ -788,7 +790,7 @@ namespace HapetLsp.Colorizers
         private void ColorizeCaseStmt(AstCaseStmt stmt)
         {
             // colorize 'case' word
-            AddSemanticToken(stmt.Location.Beginning, _tokenTypes[8], _tokenModifiers[0]);
+            AddSemanticToken(stmt, stmt.Location.Beginning, _tokenTypes[8], _tokenModifiers[0]);
 
             if (stmt.Pattern != null)
                 ColorizeExpr(stmt.Pattern);
@@ -797,7 +799,7 @@ namespace HapetLsp.Colorizers
             if (stmt.GotoLabelLocation != null)
             {
                 // colorize goto label
-                AddSemanticToken(stmt.GotoLabelLocation, _tokenTypes[6], _tokenModifiers[0]);
+                AddSemanticToken(stmt, stmt.GotoLabelLocation, _tokenTypes[6], _tokenModifiers[0]);
             }
 
             // could be null when fall through
@@ -808,14 +810,14 @@ namespace HapetLsp.Colorizers
         private void ColorizeBreakContStmt(AstBreakContStmt stmt)
         {
             // colorize 'break/continue' word
-            AddSemanticToken(stmt.Location, _tokenTypes[8], _tokenModifiers[0]);
+            AddSemanticToken(stmt, stmt.Location, _tokenTypes[8], _tokenModifiers[0]);
         }
 
         private void ColorizeReturnStmt(AstReturnStmt stmt)
         {
             // colorize 'return' word
             if (!stmt.IsArrowedReturn)
-                AddSemanticToken(stmt.Location.Beginning, _tokenTypes[8], _tokenModifiers[0]);
+                AddSemanticToken(stmt, stmt.Location.Beginning, _tokenTypes[8], _tokenModifiers[0]);
 
             if (stmt.ReturnExpression != null)
                 ColorizeExpr(stmt.ReturnExpression);
@@ -838,7 +840,7 @@ namespace HapetLsp.Colorizers
                 return;
 
             // colorize 'base' word
-            AddSemanticToken(stmt.Location.Beginning, _tokenTypes[2], _tokenModifiers[0]);
+            AddSemanticToken(stmt, stmt.Location.Beginning, _tokenTypes[2], _tokenModifiers[0]);
 
             foreach (var a in stmt.Arguments)
                 ColorizeArgumentExpr(a);
@@ -855,7 +857,7 @@ namespace HapetLsp.Colorizers
             }
             else 
             {
-                AddSemanticToken(stmt.Location.Beginning, _tokenTypes[2], _tokenModifiers[0]);
+                AddSemanticToken(stmt, stmt.Location.Beginning, _tokenTypes[2], _tokenModifiers[0]);
                 foreach (var p in stmt.AdditionalExprs)
                     ColorizeExpr(p);
             }
@@ -864,7 +866,7 @@ namespace HapetLsp.Colorizers
         private void ColorizeThrowStmt(AstThrowStmt stmt)
         {
             // colorize 'throw' word
-            AddSemanticToken(stmt.Location.Beginning, _tokenTypes[8], _tokenModifiers[0]);
+            AddSemanticToken(stmt, stmt.Location.Beginning, _tokenTypes[8], _tokenModifiers[0]);
 
             if (stmt.ThrowExpression != null)
                 ColorizeExpr(stmt.ThrowExpression);
@@ -873,7 +875,7 @@ namespace HapetLsp.Colorizers
         private void ColorizeTryCatchStmt(AstTryCatchStmt stmt)
         {
             // colorize 'try' word
-            AddSemanticToken(stmt.Location.Beginning, _tokenTypes[8], _tokenModifiers[0]);
+            AddSemanticToken(stmt, stmt.Location.Beginning, _tokenTypes[8], _tokenModifiers[0]);
             ColorizeBlockExpr(stmt.TryBlock);
 
             foreach (var c in stmt.CatchBlocks)
@@ -882,7 +884,7 @@ namespace HapetLsp.Colorizers
             if (stmt.FinallyBlock != null)
             {
                 // colorize 'finally' word
-                AddSemanticToken(stmt.FinallyTokenLocation, _tokenTypes[8], _tokenModifiers[0]);
+                AddSemanticToken(stmt, stmt.FinallyTokenLocation, _tokenTypes[8], _tokenModifiers[0]);
                 ColorizeBlockExpr(stmt.FinallyBlock);
             }
         }
@@ -890,7 +892,7 @@ namespace HapetLsp.Colorizers
         private void ColorizeCatchStmt(AstCatchStmt stmt)
         {
             // colorize 'catch' word
-            AddSemanticToken(stmt.Location.Beginning, _tokenTypes[8], _tokenModifiers[0]);
+            AddSemanticToken(stmt, stmt.Location.Beginning, _tokenTypes[8], _tokenModifiers[0]);
             ColorizeBlockExpr(stmt.CatchBlock);
 
             if (stmt.CatchParam != null)
@@ -900,16 +902,16 @@ namespace HapetLsp.Colorizers
         private void ColorizeGotoStmt(AstGotoStmt stmt)
         {
             // colorize 'goto' word
-            AddSemanticToken(stmt.Location.Beginning, _tokenTypes[8], _tokenModifiers[0]);
+            AddSemanticToken(stmt, stmt.Location.Beginning, _tokenTypes[8], _tokenModifiers[0]);
 
             // colorize goto label
-            AddSemanticToken(stmt.GotoLabelLocation, _tokenTypes[6], _tokenModifiers[0]);
+            AddSemanticToken(stmt, stmt.GotoLabelLocation, _tokenTypes[6], _tokenModifiers[0]);
         }
 
-        private void AddSemanticToken(ILocation location, SemanticTokenType type, SemanticTokenModifier modifier)
+        private void AddSemanticToken(AstStatement stmt, ILocation location, SemanticTokenType type, SemanticTokenModifier modifier)
         {
-            CurrentSemanticTokens.Add(new SemanticToken(location.Beginning.Line - 1, location.Beginning.Column - 1,
-                    location.Ending.End - location.Beginning.Index, type, modifier));
+            CurrentSemanticTokens.Add((new SemanticToken(location.Beginning.Line - 1, location.Beginning.Column - 1,
+                    location.Ending.End - location.Beginning.Index, type, modifier), stmt));
         }
     }
 }

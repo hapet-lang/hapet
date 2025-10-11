@@ -11,6 +11,7 @@ namespace HapetFrontend.Parsing
         ProgramFile ProgramFile { get; }
         Token PeekToken();
         Token NextToken();
+        void SetLocation(TokenLocation newLocation);
 
         void UpdateLookAheadLocation((TokenLocation, Token)? data = null);
         void SaveLookAheadLocation();
@@ -71,6 +72,13 @@ namespace HapetFrontend.Parsing
         {
             _location.File = filename;
             _lookAheadLocation.File = filename;
+        }
+
+        public void SetLocation(TokenLocation newLocation)
+        {
+            _location.Index = newLocation.Index;
+            _location.Line = newLocation.Line;
+            _location.LineStartIndex = newLocation.LineStartIndex;
         }
 
         public ILocation SkipLine()

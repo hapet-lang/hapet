@@ -79,7 +79,7 @@ namespace HapetLsp.Handlers
                 return;
 
             var colorizer = CreateColorizer(file);
-            foreach (var t in colorizer.CurrentSemanticTokens)
+            foreach (var (t, _) in colorizer.CurrentSemanticTokens)
             {
                 builder.Push(t.Line, t.Offset, t.Width, t.TokenType, t.TokenModifier);
             }
@@ -99,9 +99,9 @@ namespace HapetLsp.Handlers
             // sort and add to builder
             colorizer.CurrentSemanticTokens.Sort((a, b) =>
             {
-                var lineCompare = a.Line.CompareTo(b.Line);
+                var lineCompare = a.Item1.Line.CompareTo(b.Item1.Line);
                 if (lineCompare != 0) return lineCompare;
-                return a.Offset.CompareTo(b.Offset);
+                return a.Item1.Offset.CompareTo(b.Item1.Offset);
             });
             return colorizer;
         }

@@ -37,6 +37,11 @@ namespace HapetLsp.Handlers
 
         public Task<Unit> Handle(DidChangeTextDocumentParams request, CancellationToken cancellationToken)
         {
+            var path = DocumentUri.GetFileSystemPath(request.TextDocument.Uri);
+            var file = _compiler.GetFile(path);
+            if (file == null)
+                return Unit.Task;
+
             var contentChange = request.ContentChanges.FirstOrDefault();
             if (contentChange == null)
                 return Unit.Task;
@@ -54,6 +59,7 @@ namespace HapetLsp.Handlers
             else
             {
                 // add
+
             }
             return Unit.Task;
         }

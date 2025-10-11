@@ -84,6 +84,13 @@ namespace HapetFrontend.Parsing
 
         [SkipInStackFrame]
         [DebuggerStepThrough]
+        public void SetLocation(TokenLocation newLocation)
+        {
+            _lexer.SetLocation(newLocation);
+        }
+
+        [SkipInStackFrame]
+        [DebuggerStepThrough]
         public bool Expect(ParserInInfo inInfo, TokenType type, MessageResolver customErrorMessage, bool skipNewLine = false)
         {
             var tok = PeekToken(inInfo);

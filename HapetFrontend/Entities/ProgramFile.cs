@@ -1,5 +1,6 @@
 ﻿using HapetFrontend.Ast;
 using HapetFrontend.Ast.Statements;
+using HapetFrontend.Parsing;
 using HapetFrontend.Scoping;
 using System.Diagnostics;
 using System.Text;
@@ -37,6 +38,11 @@ namespace HapetFrontend.Entities
         /// Is the file imported/virtual from another assembly
         /// </summary>
         public bool IsImported { get; set; }
+
+        /// <summary>
+        /// A parser of the file
+        /// </summary>
+        public Parser FileParser { get; set; }
 
         /// <summary>
         /// Stores all comment locations (used in LSP only probably)
