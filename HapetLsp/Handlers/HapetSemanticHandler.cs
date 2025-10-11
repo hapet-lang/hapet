@@ -12,7 +12,7 @@ using System.Xml.Linq;
 
 namespace HapetLsp.Handlers
 {
-    public class HapetSemanticHandler : SemanticTokensHandlerBase
+    public partial class HapetSemanticHandler : SemanticTokensHandlerBase
     {
         private readonly static SemanticTokenType[] _tokenTypes = new[] 
         { 

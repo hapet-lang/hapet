@@ -72,7 +72,7 @@ namespace HapetCompiler
 
             // do not report warning messages from other assemblies
             if (message.ReportType == ReportType.Warning &&
-                string.IsNullOrWhiteSpace(message.ProgramFile.Text))
+                message.ProgramFile.Text?.Length == 0)
             {
                 return;
             }
@@ -135,12 +135,12 @@ namespace HapetCompiler
             }
         }
 
-        private static void PrintLocation(string text, ILocation location, bool underline = true, int linesBefore = 2, int linesAfter = 0, ConsoleColor highlightColor = ConsoleColor.Red, ConsoleColor textColor = ConsoleColor.DarkGreen)
+        private static void PrintLocation(StringBuilder text, ILocation location, bool underline = true, int linesBefore = 2, int linesAfter = 0, ConsoleColor highlightColor = ConsoleColor.Red, ConsoleColor textColor = ConsoleColor.DarkGreen)
         {
             TokenLocation beginning = location.Beginning;
             TokenLocation end = location.Ending;
 
-            if (string.IsNullOrWhiteSpace(text) || beginning == null || end == null)
+            if (text?.Length == 0 || beginning == null || end == null)
                 return;
 
             int index = beginning.Index;
@@ -160,7 +160,7 @@ namespace HapetCompiler
                 {
                     var prevLineEnd = startIndex - 1;
                     var prevLineStart = GetLineStartIndex(text, prevLineEnd);
-                    previousLines.Add(text.Substring(prevLineStart, prevLineEnd - prevLineStart));
+                    previousLines.Add(text.ToString(prevLineStart, prevLineEnd - prevLineStart));
 
                     startIndex = prevLineStart;
                 }
@@ -183,9 +183,9 @@ namespace HapetCompiler
 
                 for (var line = 0; line < linesSpread; ++line)
                 {
-                    var part1 = text.Substring(ls, i - ls);
-                    var part2 = text.Substring(i, ei - i);
-                    var part3 = text.Substring(ei, le - ei);
+                    var part1 = text.ToString(ls, i - ls);
+                    var part2 = text.ToString(i, ei - i);
+                    var part3 = text.ToString(ei, le - ei);
 
                     LogInline(string.Format(CultureInfo.InvariantCulture, $"{{0,{lineNumberWidth}}}> ", line + firstLine), ConsoleColor.White);
 
@@ -221,7 +221,7 @@ namespace HapetCompiler
                     lineEnd = GetLineEndIndex(text, lineBegin);
                     if (lineEnd >= text.Length)
                         break;
-                    var str = text.Substring(lineBegin, lineEnd - lineBegin);
+                    var str = text.ToString(lineBegin, lineEnd - lineBegin);
                     LogInline(string.Format(CultureInfo.InvariantCulture, $"{{0,{lineNumberWidth}}}> ", line), ConsoleColor.White);
                     Log([str], null, textColor);
                     lineBegin = lineEnd + 1;
@@ -244,7 +244,7 @@ namespace HapetCompiler
             }
         }
 
-        private static int CountLines(string text, int start, int end)
+        private static int CountLines(StringBuilder text, int start, int end)
         {
             int lines = 1;
             for (; start < end && start < text.Length; start++)
@@ -256,7 +256,7 @@ namespace HapetCompiler
             return lines;
         }
 
-        private static int GetLineEndIndex(string text, int currentIndex)
+        private static int GetLineEndIndex(StringBuilder text, int currentIndex)
         {
             for (; currentIndex < text.Length; currentIndex++)
             {
@@ -267,7 +267,7 @@ namespace HapetCompiler
             return currentIndex;
         }
 
-        private static int GetLineStartIndex(string text, int currentIndex)
+        private static int GetLineStartIndex(StringBuilder text, int currentIndex)
         {
             if (currentIndex >= text.Length)
                 currentIndex = text.Length - 1;

@@ -2,6 +2,7 @@
 using HapetFrontend.Ast.Statements;
 using HapetFrontend.Scoping;
 using System.Diagnostics;
+using System.Text;
 
 namespace HapetFrontend.Entities
 {
@@ -25,7 +26,7 @@ namespace HapetFrontend.Entities
         /// <summary>
         /// To grab the text only once and store it here
         /// </summary>
-        public string Text { get; set; }
+        public StringBuilder Text { get; set; }
 
         /// <summary>
         /// Splitted file text
@@ -66,7 +67,7 @@ namespace HapetFrontend.Entities
         /// </summary>
         public List<ILocation> DirectiveNameLocations { get; } = new List<ILocation>();
 
-        public ProgramFile(string name, string text)
+        public ProgramFile(string name, StringBuilder text)
         {
             this.Name = name;
             this.Text = text;

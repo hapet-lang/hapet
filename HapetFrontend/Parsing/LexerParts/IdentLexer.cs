@@ -29,7 +29,7 @@ namespace HapetFrontend.Parsing
                 location.Index++;
             }
 
-            token.Data = _text.Substring(start, location.Index - start);
+            token.Data = _text.ToString(start, location.Index - start);
         }
 
         private void ParseStringLiteral(TokenLocation location, ref Token token, char end)

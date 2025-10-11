@@ -188,7 +188,7 @@ namespace HapetFrontend.Parsing
             if (endIndex >= _text.Length)
                 endIndex = _text.Length - 1;
 
-            return string.Join("\n", _text.Substring(startIndex, endIndex - startIndex)
+            return string.Join("\n", _text.ToString(startIndex, endIndex - startIndex)
                 .Split("\n")
                 .Select(part =>
                 {

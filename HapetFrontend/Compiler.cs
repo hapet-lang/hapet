@@ -80,7 +80,7 @@ namespace HapetFrontend
 
         public MetadataMetadataJson HandleExternalMetadata(string fileName, string metadataText)
         {
-            var metaFile = new ProgramFile(Path.GetFileName(fileName), metadataText);
+            var metaFile = new ProgramFile(Path.GetFileName(fileName), new StringBuilder(metadataText));
             metaFile.FilePath = new Uri(fileName);
             metaFile.TextSplitted = metadataText.Split('\n');
             // just parsing metadata and adding its files into the compiler
@@ -155,7 +155,7 @@ namespace HapetFrontend
                         lexer.SkipLine();
                     var end = parser.ParseTopLevel(inInfo, ref outInfo);
 
-                    var metaText = lexer.Text.Substring(s.Location.Ending.End, end.Location.Beginning.Index - s.Location.Ending.End);
+                    var metaText = lexer.Text.ToString(s.Location.Ending.End, end.Location.Beginning.Index - s.Location.Ending.End);
                     metadata = JsonConvert.DeserializeObject<MetadataMetadataJson>(metaText); // why do we need it
                     continue; // no need to add this shite
                 }
@@ -216,7 +216,7 @@ namespace HapetFrontend
             }
             var text = File.ReadAllText(fileName, Encoding.UTF8)
                            .Replace("\r\n", "\n", StringComparison.InvariantCulture);
-            var file = new ProgramFile(Path.GetFileName(fileName), text);
+            var file = new ProgramFile(Path.GetFileName(fileName), new StringBuilder(text));
             file.FilePath = new Uri(fileName);
             file.TextSplitted = text.Split('\n');
             _files[fileName] = file;

@@ -7,7 +7,7 @@ namespace HapetFrontend.Parsing
 {
     public interface ILexer
     {
-        string Text { get; }
+        StringBuilder Text { get; }
         ProgramFile ProgramFile { get; }
         Token PeekToken();
         Token NextToken();
@@ -25,7 +25,7 @@ namespace HapetFrontend.Parsing
     public partial class Lexer : ILexer
     {
         private ProgramFile _programFile;
-        private string _text;
+        private StringBuilder _text;
         private TokenLocation _location;
         private TokenLocation _lookAheadLocation;
 
@@ -35,7 +35,7 @@ namespace HapetFrontend.Parsing
         private Token _peek = null;
         private Token _peekLookAhead = null;
 
-        public string Text => _text;
+        public StringBuilder Text => _text;
         public ProgramFile ProgramFile => _programFile;
         private IMessageHandler _messageHandler;
 

@@ -96,9 +96,9 @@ namespace HapetFrontend.ProjectParser
 
             // creating new program file if there was no
             if (_projectFile == null)
-                _projectFile = new ProgramFile(Path.GetFileName(_projectPath), _projectFileText);
+                _projectFile = new ProgramFile(Path.GetFileName(_projectPath), new System.Text.StringBuilder(_projectFileText));
             else
-                _projectFile.Text = _projectFileText;
+                _projectFile.Text = new System.Text.StringBuilder(_projectFileText);
 
             _projectFile.TextSplitted = _projectFileText.Split('\n');
             _projectFile.FilePath = new Uri(_projectPathAbsolute);
