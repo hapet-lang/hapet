@@ -18,49 +18,45 @@ namespace HapetPostPrepare
             AllPostPrepareMetadataTypeInheritedPropsDecls();
         }
 
+        public void PostPrepareInheritedShiteOnDecl(AstDeclaration decl)
+        {
+            PostPrepareMetadataInheritedFunctions(decl);
+            PostPrepareMetadataTypeInheritedFieldDecls(decl);
+            PostPrepareMetadataTypeInheritedPropsDecls(decl);
+        }
+
         #region Methods
         private void AllPostPrepareMetadataInheritedFunctions()
         {
             foreach (var cls in AllClassesMetadata.ToList())
             {
-                if (GenericsHelper.ShouldTheDeclBeSkippedFromCodeGen(cls))
-                {
-                    cls.AllVirtualMethods = new List<AstFuncDecl>();
-                    continue;
-                }
-
-                _currentSourceFile = cls.SourceFile;
-                if (cls.IsNestedDecl)
-                    _currentParentStack.AddParent(cls.ParentDecl);
-                _currentParentStack.AddParent(cls);
                 PostPrepareMetadataInheritedFunctions(cls);
-                _currentParentStack.RemoveParent();
-                if (cls.IsNestedDecl)
-                    _currentParentStack.RemoveParent();
             }
             foreach (var str in AllStructsMetadata.ToList())
             {
-                if (GenericsHelper.ShouldTheDeclBeSkippedFromCodeGen(str))
-                {
-                    str.AllVirtualMethods = new List<AstFuncDecl>();
-                    continue;
-                }
-
-                _currentSourceFile = str.SourceFile;
-                if (str.IsNestedDecl)
-                    _currentParentStack.AddParent(str.ParentDecl);
-                _currentParentStack.AddParent(str);
                 PostPrepareMetadataInheritedFunctions(str);
-                _currentParentStack.RemoveParent();
-                if (str.IsNestedDecl)
-                    _currentParentStack.RemoveParent();
             }
         }
 
-        private void PostPrepareMetadataInheritedFunctions(AstStatement stmt)
+        public void PostPrepareMetadataInheritedFunctions(AstDeclaration decl)
         {
-            if (stmt is AstDeclaration decl)
-                GetPreparedVirtualMethodsOnce(decl);
+            if (GenericsHelper.ShouldTheDeclBeSkippedFromCodeGen(decl))
+            {
+                if (decl is AstClassDecl cls)
+                    cls.AllVirtualMethods = new List<AstFuncDecl>();
+                else if (decl is AstStructDecl str)
+                    str.AllVirtualMethods = new List<AstFuncDecl>();
+                return;
+            }
+
+            _currentSourceFile = decl.SourceFile;
+            if (decl.IsNestedDecl)
+                _currentParentStack.AddParent(decl.ParentDecl);
+            _currentParentStack.AddParent(decl);
+            GetPreparedVirtualMethodsOnce(decl);
+            _currentParentStack.RemoveParent();
+            if (decl.IsNestedDecl)
+                _currentParentStack.RemoveParent();
         }
 
         // to get all virtual methods including inherited
@@ -303,38 +299,28 @@ namespace HapetPostPrepare
             // resolve all inherited fields of classes
             foreach (var cls in classes)
             {
-                if (GenericsHelper.ShouldTheDeclBeSkippedFromCodeGen(cls))
-                    continue;
-
-                _currentSourceFile = cls.SourceFile;
-                if (cls.IsNestedDecl)
-                    _currentParentStack.AddParent(cls.ParentDecl);
-                _currentParentStack.AddParent(cls);
                 PostPrepareMetadataTypeInheritedFieldDecls(cls);
-                _currentParentStack.RemoveParent();
-                if (cls.IsNestedDecl)
-                    _currentParentStack.RemoveParent();
             }
             foreach (var str in structures)
             {
-                if (GenericsHelper.ShouldTheDeclBeSkippedFromCodeGen(str))
-                    continue;
-
-                _currentSourceFile = str.SourceFile;
-                if (str.IsNestedDecl)
-                    _currentParentStack.AddParent(str.ParentDecl);
-                _currentParentStack.AddParent(str);
                 PostPrepareMetadataTypeInheritedFieldDecls(str);
-                _currentParentStack.RemoveParent();
-                if (str.IsNestedDecl)
-                    _currentParentStack.RemoveParent();
             }
         }
 
-        private void PostPrepareMetadataTypeInheritedFieldDecls(AstStatement stmt)
+        public void PostPrepareMetadataTypeInheritedFieldDecls(AstDeclaration decl)
         {
+            if (GenericsHelper.ShouldTheDeclBeSkippedFromCodeGen(decl))
+                return;
+
+            _currentSourceFile = decl.SourceFile;
+            if (decl.IsNestedDecl)
+                _currentParentStack.AddParent(decl.ParentDecl);
+            _currentParentStack.AddParent(decl);
             // this is needed just to check that all virtual/abstract fields are implemented
-            GetDeclarationFields__(stmt as AstDeclaration);
+            GetDeclarationFields__(decl);
+            _currentParentStack.RemoveParent();
+            if (decl.IsNestedDecl)
+                _currentParentStack.RemoveParent();
         }
 
         // to check all virtual/abstract fields including inherited
@@ -542,49 +528,41 @@ namespace HapetPostPrepare
             // resolve all inherited props of classes
             foreach (var cls in classes)
             {
-                if (GenericsHelper.ShouldTheDeclBeSkippedFromCodeGen(cls))
-                {
-                    cls.AllVirtualProps = new List<AstPropertyDecl>();
-                    continue;
-                }
-
-                _currentSourceFile = cls.SourceFile;
-                if (cls.IsNestedDecl)
-                    _currentParentStack.AddParent(cls.ParentDecl);
-                _currentParentStack.AddParent(cls);
                 PostPrepareMetadataTypeInheritedPropsDecls(cls);
-                _currentParentStack.RemoveParent();
-                if (cls.IsNestedDecl)
-                    _currentParentStack.RemoveParent();
             }
             foreach (var str in structures)
             {
-                if (GenericsHelper.ShouldTheDeclBeSkippedFromCodeGen(str))
-                {
-                    str.AllVirtualProps = new List<AstPropertyDecl>();
-                    continue;
-                }
-
-                _currentSourceFile = str.SourceFile;
-                if (str.IsNestedDecl)
-                    _currentParentStack.AddParent(str.ParentDecl);
-                _currentParentStack.AddParent(str);
                 PostPrepareMetadataTypeInheritedPropsDecls(str);
-                _currentParentStack.RemoveParent();
-                if (str.IsNestedDecl)
-                    _currentParentStack.RemoveParent();
             }
         }
 
         // TODO: remove the step - it is the same as step 8
-        private void PostPrepareMetadataTypeInheritedPropsDecls(AstStatement stmt)
+        public void PostPrepareMetadataTypeInheritedPropsDecls(AstDeclaration decl)
         {
+            if (GenericsHelper.ShouldTheDeclBeSkippedFromCodeGen(decl))
+            {
+                if (decl is AstClassDecl cls2)
+                    cls2.AllVirtualProps = new List<AstPropertyDecl>();
+                else if (decl is AstStructDecl str2)
+                    str2.AllVirtualProps = new List<AstPropertyDecl>();
+                return;
+            }
+
+            _currentSourceFile = decl.SourceFile;
+            if (decl.IsNestedDecl)
+                _currentParentStack.AddParent(decl.ParentDecl);
+            _currentParentStack.AddParent(decl);
+
             // this is needed just to check that all virtual/abstract props are implemented
-            var virtProps = GetDeclarationProps__(stmt as AstDeclaration);
-            if (stmt is AstClassDecl cls)
+            var virtProps = GetDeclarationProps__(decl);
+            if (decl is AstClassDecl cls)
                 cls.AllVirtualProps = virtProps;
-            else if (stmt is AstStructDecl str)
+            else if (decl is AstStructDecl str)
                 str.AllVirtualProps = virtProps;
+
+            _currentParentStack.RemoveParent();
+            if (decl.IsNestedDecl)
+                _currentParentStack.RemoveParent();
         }
 
         // to check all virtual/abstract props including inherited

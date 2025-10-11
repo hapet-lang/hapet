@@ -230,7 +230,7 @@ namespace HapetFrontend.Parsing
                 return prop;
             }
             // indexer?
-            else if (CheckToken(inInfo, TokenType.OpenBracket) && udecl.Name.Name == "this")
+            else if (CheckToken(inInfo, TokenType.OpenBracket) && udecl.Name != null && udecl.Name.Name == "this")
             {
                 Consume(inInfo, TokenType.OpenBracket, ErrMsg("symbol '['", "at beginning of indexer param declaration"));
                 var par = ParseParameter(inInfo, ref outInfo, false); // no default value for indexer

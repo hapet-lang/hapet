@@ -1,6 +1,7 @@
 ﻿using HapetFrontend;
 using HapetFrontend.Ast;
 using HapetFrontend.Ast.Declarations;
+using HapetFrontend.Entities;
 using HapetFrontend.Helpers;
 using HapetPostPrepare.Entities;
 using System;
@@ -60,15 +61,20 @@ namespace HapetPostPrepare
         {
             _currentPreparationStep = PreparationStep.Types;
 
-            foreach (var (path, file) in _compiler.GetFiles())
+            foreach (var (_, file) in _compiler.GetFiles())
             {
-                _currentSourceFile = file;
-                foreach (var stmt in file.Statements)
-                {
-                    // do not serialize imported shite
-                    var needSerialize = (!(stmt as AstDeclaration)?.IsImported ?? false);
-                    PostPrepareMetadataTypes(stmt, needSerialize);
-                }
+                AllPostPrepareMetadataTypesInFile(file);
+            }
+        }
+
+        public void AllPostPrepareMetadataTypesInFile(ProgramFile file)
+        {
+            _currentSourceFile = file;
+            foreach (var stmt in file.Statements)
+            {
+                // do not serialize imported shite
+                var needSerialize = (!(stmt as AstDeclaration)?.IsImported ?? false);
+                PostPrepareMetadataTypes(stmt, needSerialize);
             }
         }
 

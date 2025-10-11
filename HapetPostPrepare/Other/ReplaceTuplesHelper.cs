@@ -13,14 +13,19 @@ namespace HapetPostPrepare
         // make (int, string) -> ValueTuple<int, string> and so on
         public void ReplaceAllTuplesInDecls()
         {
-            foreach (var (path, file) in _compiler.GetFiles())
+            foreach (var (_, file) in _compiler.GetFiles())
             {
-                _currentSourceFile = file;
+                ReplaceAllTuplesInFile(file);
+            }
+        }
 
-                foreach (var stmt in file.Statements)
-                {
-                    ReplaceAllTuplesInDecl(stmt as AstDeclaration);
-                }
+        public void ReplaceAllTuplesInFile(ProgramFile file)
+        {
+            _currentSourceFile = file;
+
+            foreach (var stmt in file.Statements)
+            {
+                ReplaceAllTuplesInDecl(stmt as AstDeclaration);
             }
         }
 

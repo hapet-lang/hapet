@@ -227,14 +227,20 @@ namespace HapetFrontend
 
             var parser = new Parser(lexer, this, MessageHandler);
             file.FileParser = parser;
+            parser.CurrentSourceFile = file;
 
+            MakeParseOfFile(parser, file, fileName);
+
+            return file;
+        }
+
+        public void MakeParseOfFile(Parser parser, ProgramFile file, string fileName)
+        {
             // just handlers
             ParserInInfo inInfo = ParserInInfo.Default;
             ParserOutInfo outInfo = ParserOutInfo.Default;
             while (true)
             {
-                parser.CurrentSourceFile = file;
-
                 var s = parser.ParseTopLevel(inInfo, ref outInfo);
                 if (s == null)
                     break;
@@ -257,8 +263,6 @@ namespace HapetFrontend
             var nsScope = GetNamespaceScope(normalNamespace);
             file.NamespaceScope = nsScope;
             file.Namespace = normalNamespace;
-
-            return file;
         }
 
         private void HandleStatement(AstStatement s, ProgramFile file, ProgramFile currentlyParsingFile)

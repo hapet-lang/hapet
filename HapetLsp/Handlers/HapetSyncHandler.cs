@@ -1,5 +1,7 @@
 ﻿using HapetFrontend;
 using HapetFrontend.ProjectParser;
+using HapetLastPrepare;
+using HapetPostPrepare;
 using MediatR;
 using OmniSharp.Extensions.LanguageServer.Protocol;
 using OmniSharp.Extensions.LanguageServer.Protocol.Client.Capabilities;
@@ -10,11 +12,13 @@ using OmniSharp.Extensions.LanguageServer.Protocol.Server.Capabilities;
 
 namespace HapetLsp.Handlers
 {
-    public class HapetSyncHandler : ITextDocumentSyncHandler
+    public partial class HapetSyncHandler : ITextDocumentSyncHandler
     {
         private readonly ILanguageServerFacade _facade;
         private readonly Compiler _compiler;
         private readonly HapetSemanticHandler _semanticHandler;
+        private readonly PostPrepare _postPrepare;
+        private readonly LastPrepare _lastPrepare;
 
         private readonly TextDocumentSelector _documentSelector = new TextDocumentSelector(
             new TextDocumentFilter()
@@ -23,11 +27,13 @@ namespace HapetLsp.Handlers
             }
         );
 
-        public HapetSyncHandler(ILanguageServerFacade facade, Compiler compiler, HapetSemanticHandler semanticHandler)
+        public HapetSyncHandler(ILanguageServerFacade facade, Compiler compiler, HapetSemanticHandler semanticHandler, PostPrepare pp, LastPrepare lp)
         {
             _facade = facade;
             _compiler = compiler;
             _semanticHandler = semanticHandler;
+            _postPrepare = pp;
+            _lastPrepare = lp;
         }
 
         public TextDocumentAttributes GetTextDocumentAttributes(DocumentUri uri)
@@ -41,6 +47,7 @@ namespace HapetLsp.Handlers
             var file = _compiler.GetFile(path);
             if (file == null)
                 return Unit.Task;
+            var colorizer = _semanticHandler.CreateColorizer(file);
 
             var contentChange = request.ContentChanges.FirstOrDefault();
             if (contentChange == null)
@@ -59,7 +66,7 @@ namespace HapetLsp.Handlers
             else
             {
                 // add
-
+                ReparseLocationOnAdd(colorizer, text, contentChange.Range);
             }
             return Unit.Task;
         }

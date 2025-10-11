@@ -18,14 +18,18 @@ namespace HapetPostPrepare
         /// names of some funcs/vars has to be the same as in <see cref="RenameFromGenericToRealType"/>
         private void PostPrepareClassMethods()
         {
-            foreach (var (path, file) in _compiler.GetFiles())
+            foreach (var (_, file) in _compiler.GetFiles())
             {
-                _currentSourceFile = file;
+                PostPrepareClassMethodsInFile(file);
+            }
+        }
 
-                foreach (var stmt in file.Statements)
-                {
-                    PostPrepareDeclMethodsInternal(stmt as AstDeclaration, file);
-                }
+        public void PostPrepareClassMethodsInFile(ProgramFile file)
+        {
+            _currentSourceFile = file;
+            foreach (var stmt in file.Statements)
+            {
+                PostPrepareDeclMethodsInternal(stmt as AstDeclaration, file);
             }
         }
 

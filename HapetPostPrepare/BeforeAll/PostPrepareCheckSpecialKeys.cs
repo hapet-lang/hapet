@@ -1,5 +1,6 @@
 ﻿using HapetFrontend.Ast;
 using HapetFrontend.Ast.Declarations;
+using HapetFrontend.Entities;
 using HapetFrontend.Extensions;
 using HapetFrontend.Helpers;
 using HapetFrontend.Parsing;
@@ -10,15 +11,20 @@ namespace HapetPostPrepare
     {
         private void PostPrepareSpecialKeys()
         {
-            foreach (var (path, file) in _compiler.GetFiles())
+            foreach (var (_, file) in _compiler.GetFiles())
             {
-                _currentSourceFile = file;
-                foreach (var stmt in file.Statements)
-                {
-                    if (stmt is not AstDeclaration decl)
-                        continue;
-                    PostPrepareDeclSpecialKeys(decl);
-                }
+                PostPrepareFileSpecialKeys(file);
+            }
+        }
+
+        public void PostPrepareFileSpecialKeys(ProgramFile file)
+        {
+            _currentSourceFile = file;
+            foreach (var stmt in file.Statements)
+            {
+                if (stmt is not AstDeclaration decl)
+                    continue;
+                PostPrepareDeclSpecialKeys(decl);
             }
         }
 

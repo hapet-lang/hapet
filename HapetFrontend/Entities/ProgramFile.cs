@@ -2,6 +2,7 @@
 using HapetFrontend.Ast.Statements;
 using HapetFrontend.Parsing;
 using HapetFrontend.Scoping;
+using System;
 using System.Diagnostics;
 using System.Text;
 
@@ -159,6 +160,32 @@ namespace HapetFrontend.Entities
                 currentLineNumber++;
             }
             return (lines, offsets, widths);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="line">From 0</param>
+        /// <param name="offset">From 0</param>
+        /// <returns></returns>
+        public int GetIndexFromLineAndOffset(int line, int offset)
+        {
+            if (TextSplitted == null)
+                return 0;
+
+            int currentIndexSum = 0;
+            int currentLineNumber = 0;
+            foreach (var ln in TextSplitted)
+            {
+                if (currentLineNumber == line)
+                {
+                    currentIndexSum += offset;
+                    break;
+                }
+                currentIndexSum += ln.Length + 1; // for \n
+                currentLineNumber++;
+            }
+            return currentIndexSum;
         }
     }
 }

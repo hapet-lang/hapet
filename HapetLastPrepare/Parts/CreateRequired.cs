@@ -20,7 +20,7 @@ namespace HapetLastPrepare
             }
         }
 
-        private void CreateRequiredInDecl(AstDeclaration decl)
+        public void CreateRequiredInDecl(AstDeclaration decl)
         {
             List<AstDeclaration> decls;
             if (decl is AstClassDecl clsDecl)

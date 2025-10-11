@@ -1,8 +1,10 @@
 ﻿using HapetFrontend;
 using HapetFrontend.Entities;
 using HapetFrontend.ProjectParser;
+using HapetLastPrepare;
 using HapetLsp.Colorizers;
 using HapetLsp.Entities;
+using HapetPostPrepare;
 using OmniSharp.Extensions.LanguageServer.Protocol;
 using OmniSharp.Extensions.LanguageServer.Protocol.Client.Capabilities;
 using OmniSharp.Extensions.LanguageServer.Protocol.Document;
@@ -12,7 +14,7 @@ using System.Xml.Linq;
 
 namespace HapetLsp.Handlers
 {
-    public partial class HapetSemanticHandler : SemanticTokensHandlerBase
+    public class HapetSemanticHandler : SemanticTokensHandlerBase
     {
         private readonly static SemanticTokenType[] _tokenTypes = new[] 
         { 
@@ -39,11 +41,15 @@ namespace HapetLsp.Handlers
         };
 
         private readonly Compiler _compiler;
+        private readonly PostPrepare _postPrepare;
+        private readonly LastPrepare _lastPrepare;
         internal Dictionary<ProgramFile, HapetColorizer> FileColorizers { get; } = new Dictionary<ProgramFile, HapetColorizer>();
 
-        public HapetSemanticHandler(Compiler compiler)
+        public HapetSemanticHandler(Compiler compiler, PostPrepare pp, LastPrepare lp)
         {
             _compiler = compiler;
+            _postPrepare = pp;
+            _lastPrepare = lp;
         }
 
         protected override SemanticTokensRegistrationOptions CreateRegistrationOptions(SemanticTokensCapability capability, ClientCapabilities clientCapabilities)

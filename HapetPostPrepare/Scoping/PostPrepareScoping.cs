@@ -15,18 +15,23 @@ namespace HapetPostPrepare
     {
         private void PostPrepareScoping()
         {
-            foreach (var (path, file) in _compiler.GetFiles())
+            foreach (var (_, file) in _compiler.GetFiles())
             {
-                _currentSourceFile = file;
-                foreach (var stmt in file.Statements)
-                {
-                    stmt.Scope = file.NamespaceScope;
+                PostPrepareFileScoping(file);
+            }
+        }
 
-                    if (stmt is not AstDeclaration decl)
-                        continue;
+        public void PostPrepareFileScoping(ProgramFile file)
+        {
+            _currentSourceFile = file;
+            foreach (var stmt in file.Statements)
+            {
+                stmt.Scope = file.NamespaceScope;
 
-                    PostPrepareDeclScoping(decl);
-                }
+                if (stmt is not AstDeclaration decl)
+                    continue;
+
+                PostPrepareDeclScoping(decl);
             }
         }
 
