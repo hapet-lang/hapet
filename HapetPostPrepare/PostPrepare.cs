@@ -32,7 +32,7 @@ namespace HapetPostPrepare
             _compiler = compiler;
         }
 
-        public int StartPreparation()
+        public int StartPreparation(bool createMetadataFile = true)
         {
             _currentParentStack = ParentStackManager.Create(_compiler.MessageHandler);
 
@@ -55,7 +55,7 @@ namespace HapetPostPrepare
                 return 0;
 
             // generate metadata file
-            int result = PostPrepareMetadata();
+            int result = PostPrepareMetadata(createMetadataFile);
             if (result != 0)
                 return result;
 

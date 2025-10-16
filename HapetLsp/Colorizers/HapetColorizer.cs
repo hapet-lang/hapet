@@ -32,6 +32,16 @@ namespace HapetLsp.Colorizers
             _compiler = compiler;
         }
 
+        public void SortTokens()
+        {
+            CurrentSemanticTokens.Sort((a, b) =>
+            {
+                var lineCompare = a.Item1.Line.CompareTo(b.Item1.Line);
+                if (lineCompare != 0) return lineCompare;
+                return a.Item1.Offset.CompareTo(b.Item1.Offset);
+            });
+        }
+
         public void Colorize()
         {
             ColorizeUsings(_programFile);

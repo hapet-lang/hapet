@@ -84,9 +84,16 @@ namespace HapetFrontend.Parsing
 
         [SkipInStackFrame]
         [DebuggerStepThrough]
-        public void SetLocation(TokenLocation newLocation)
+        public void SetLocation(TokenLocation newLocation, bool resetCurrentToken = false)
         {
             _lexer.SetLocation(newLocation);
+            if (resetCurrentToken)
+            {
+                _lexer.UpdateFileText(CurrentSourceFile);
+                _lexer.ResetTokens();
+                _currentToken = null;
+                _lastNonWhitespace = null;
+            }
         }
 
         [SkipInStackFrame]

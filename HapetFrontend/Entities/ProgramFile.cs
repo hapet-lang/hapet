@@ -74,10 +74,14 @@ namespace HapetFrontend.Entities
         /// </summary>
         public List<ILocation> DirectiveNameLocations { get; } = new List<ILocation>();
 
+        private Guid Guid { get; set; } // just for debug
+
         public ProgramFile(string name, StringBuilder text)
         {
             this.Name = name;
             this.Text = text;
+
+            Guid = Guid.NewGuid();
         }
 
         public override string ToString()

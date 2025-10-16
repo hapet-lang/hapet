@@ -27,7 +27,7 @@ namespace HapetPostPrepare
 
         private PreparationStep _currentPreparationStep { get; set; } = PreparationStep.None;
 
-        private int PostPrepareMetadata()
+        private int PostPrepareMetadata(bool createMetadataFile = true)
         {
             AllPostPrepareMetadataTypes();
             AllPostPrepareMetadataGenerics();
@@ -47,7 +47,8 @@ namespace HapetPostPrepare
             }
 
             // creating the file
-            GenerateMetadataFile();
+            if (createMetadataFile)
+                GenerateMetadataFile();
 
             // WARN: removing all properties after saving to file
             // removing them only now because we need them to be presented in metadata

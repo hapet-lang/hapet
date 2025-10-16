@@ -43,7 +43,7 @@ namespace HapetLsp.Handlers
         private readonly Compiler _compiler;
         private readonly PostPrepare _postPrepare;
         private readonly LastPrepare _lastPrepare;
-        internal Dictionary<ProgramFile, HapetColorizer> FileColorizers { get; } = new Dictionary<ProgramFile, HapetColorizer>();
+        internal static Dictionary<ProgramFile, HapetColorizer> FileColorizers { get; } = new Dictionary<ProgramFile, HapetColorizer>();
 
         public HapetSemanticHandler(Compiler compiler, PostPrepare pp, LastPrepare lp)
         {
@@ -84,31 +84,25 @@ namespace HapetLsp.Handlers
             if (file == null)
                 return;
 
-            var colorizer = CreateColorizer(file);
+            var colorizer = CreateColorizer(file, _compiler);
             foreach (var (t, _) in colorizer.CurrentSemanticTokens)
             {
                 builder.Push(t.Line, t.Offset, t.Width, t.TokenType, t.TokenModifier);
             }
         }
 
-        internal HapetColorizer CreateColorizer(ProgramFile file)
+        internal static HapetColorizer CreateColorizer(ProgramFile file, Compiler compiler)
         {
             if (FileColorizers.TryGetValue(file, out var colorizer))
                 return colorizer;
 
             // add colorizer if not exists
-            colorizer = new HapetColorizer(file, _compiler, _tokenTypes, _tokenModifiers);
+            colorizer = new HapetColorizer(file, compiler, _tokenTypes, _tokenModifiers);
             FileColorizers[file] = colorizer;
             // colorize
             colorizer.Colorize();
-
             // sort and add to builder
-            colorizer.CurrentSemanticTokens.Sort((a, b) =>
-            {
-                var lineCompare = a.Item1.Line.CompareTo(b.Item1.Line);
-                if (lineCompare != 0) return lineCompare;
-                return a.Item1.Offset.CompareTo(b.Item1.Offset);
-            });
+            colorizer.SortTokens();
             return colorizer;
         }
     }

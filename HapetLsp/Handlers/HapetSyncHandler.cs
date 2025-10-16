@@ -16,7 +16,6 @@ namespace HapetLsp.Handlers
     {
         private readonly ILanguageServerFacade _facade;
         private readonly Compiler _compiler;
-        private readonly HapetSemanticHandler _semanticHandler;
         private readonly PostPrepare _postPrepare;
         private readonly LastPrepare _lastPrepare;
 
@@ -27,11 +26,10 @@ namespace HapetLsp.Handlers
             }
         );
 
-        public HapetSyncHandler(ILanguageServerFacade facade, Compiler compiler, HapetSemanticHandler semanticHandler, PostPrepare pp, LastPrepare lp)
+        public HapetSyncHandler(ILanguageServerFacade facade, Compiler compiler, PostPrepare pp, LastPrepare lp)
         {
             _facade = facade;
             _compiler = compiler;
-            _semanticHandler = semanticHandler;
             _postPrepare = pp;
             _lastPrepare = lp;
         }
@@ -47,16 +45,16 @@ namespace HapetLsp.Handlers
             var file = _compiler.GetFile(path);
             if (file == null)
                 return Unit.Task;
-            var colorizer = _semanticHandler.CreateColorizer(file);
+            var colorizer = HapetSemanticHandler.CreateColorizer(file, _compiler);
 
             var contentChange = request.ContentChanges.FirstOrDefault();
             if (contentChange == null)
                 return Unit.Task;
 
             // get delta text
-            var text = contentChange.Text;
+            var text = contentChange.Text.Replace("\r\n", "\n", StringComparison.InvariantCulture);
             if (text == string.Empty)
-            {
+           {
                 // delete 
             }
             else if (text != string.Empty && contentChange.RangeLength > 0)
@@ -78,7 +76,7 @@ namespace HapetLsp.Handlers
             if (file == null)
                 return Unit.Task;
 
-            _semanticHandler.CreateColorizer(file);
+            HapetSemanticHandler.CreateColorizer(file, _compiler);
             return Unit.Task;
         }
 

@@ -1,4 +1,5 @@
 ﻿using HapetFrontend.Ast;
+using HapetFrontend.Ast.Declarations;
 using HapetFrontend.Ast.Expressions;
 using HapetFrontend.Entities;
 using HapetLsp.Colorizers;
@@ -19,19 +20,27 @@ namespace HapetLsp.Handlers
                     break;
                 // if parent is null - reparse whole file
                 case null:
-                    // clear all decls from namespace
+                    // clear all decls from namespace and lists
                     foreach (var s in colorizer.File.Statements)
                     {
                         if (s is not AstDeclaration decl)
                             continue;
                         colorizer.File.NamespaceScope.RemoveDeclSymbol(decl.Name, decl);
+                        RemoveDeclFromLists(decl);
                     }
-                    // TODO: clear from PP lists
+                    colorizer.File.Statements.Clear();
+                    colorizer.File.CommentLocations.Clear();
+                    colorizer.File.Defines.Clear();
+                    colorizer.File.DirectiveNameLocations.Clear();
+                    colorizer.File.NotCompiledLocations.Clear();
+                    colorizer.File.Usings.Clear();
 
                     var index = colorizer.File.GetIndexFromLineAndOffset(range.Start.Line, range.Start.Character);
                     colorizer.File.Text.Insert(index, newText);
                     // TODO: do not split again but try to use existed
                     colorizer.File.TextSplitted = colorizer.File.Text.ToString().Split('\n');
+
+                    var tst = colorizer.File.Text.ToString();
 
                     // reparse
                     colorizer.File.FileParser.SetLocation(new TokenLocation()
@@ -40,10 +49,18 @@ namespace HapetLsp.Handlers
                         End = 0,
                         File = colorizer.File.FilePath.AbsolutePath,
                         LineStartIndex = 0,
-                        Line = 0,
-                    });
+                        Line = 1,
+                    }, resetCurrentToken: true);
                     _compiler.MakeParseOfFile(colorizer.File.FileParser, colorizer.File, colorizer.File.FilePath.AbsolutePath);
+                    // pp
                     PostPrepareFile(colorizer.File);
+
+                    // clear all color tokens
+                    colorizer.CurrentSemanticTokens.Clear();
+                    // colorize
+                    colorizer.Colorize();
+                    // sort and add to builder
+                    colorizer.SortTokens();
 
                     break;
             }
@@ -116,6 +133,18 @@ namespace HapetLsp.Handlers
                 if (s is not AstDeclaration decl)
                     continue;
                 _lastPrepare.CreateRequiredInDecl(decl);
+            }
+        }
+
+        private void RemoveDeclFromLists(AstDeclaration decl)
+        {
+            switch (decl)
+            {
+                case AstClassDecl cls: _postPrepare.AllClassesMetadata.Remove(cls); break;
+                case AstStructDecl str: _postPrepare.AllStructsMetadata.Remove(str); break;
+                case AstDelegateDecl del: _postPrepare.AllDelegatesMetadata.Remove(del); break;
+                case AstEnumDecl enm: _postPrepare.AllEnumsMetadata.Remove(enm); break;
+                case AstFuncDecl fnc: _postPrepare.AllFunctionsMetadata.Remove(fnc); break;
             }
         }
     }
