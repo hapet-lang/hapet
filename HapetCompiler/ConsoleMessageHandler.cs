@@ -140,7 +140,7 @@ namespace HapetCompiler
             TokenLocation beginning = location.Beginning;
             TokenLocation end = location.Ending;
 
-            if (text?.Length == 0 || beginning == null || end == null)
+            if (text == null || text.Length == 0 || beginning == null || end == null)
                 return;
 
             int index = beginning.Index;
