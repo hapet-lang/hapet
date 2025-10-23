@@ -8,7 +8,19 @@ namespace HapetLsp.Handlers
 {
     public partial class HapetSyncHandler
     {
-        internal void ReparseLocationOnAdd(HapetColorizer colorizer, string newText, OmniSharp.Extensions.LanguageServer.Protocol.Models.Range range)
+        internal void OnAddText(HapetColorizer colorizer, string newText, OmniSharp.Extensions.LanguageServer.Protocol.Models.Range range)
+        {
+            var index = colorizer.File.GetIndexFromLineAndOffset(range.Start.Line, range.Start.Character);
+            colorizer.File.Text.Insert(index, newText);
+        }
+
+        internal void OnRemoveText(HapetColorizer colorizer, int rangeLength, OmniSharp.Extensions.LanguageServer.Protocol.Models.Range range)
+        {
+            var index = colorizer.File.GetIndexFromLineAndOffset(range.Start.Line, range.Start.Character);
+            colorizer.File.Text.Remove(index, rangeLength);
+        }
+
+        internal void ReparseLocationOnAdd(HapetColorizer colorizer, OmniSharp.Extensions.LanguageServer.Protocol.Models.Range range)
         {
             int line = range.Start.Line + 1;
             var parentStmt = GetParentToReparse(colorizer, line);
@@ -16,10 +28,11 @@ namespace HapetLsp.Handlers
             // different parents
             switch (parentStmt)
             {
-                case AstBlockExpr block:
-                    break;
+                //case AstBlockExpr block:
+                //    break;
                 // if parent is null - reparse whole file
                 case null:
+                default:
                     // clear all decls from namespace and lists
                     foreach (var s in colorizer.File.Statements)
                     {
@@ -35,8 +48,6 @@ namespace HapetLsp.Handlers
                     colorizer.File.NotCompiledLocations.Clear();
                     colorizer.File.Usings.Clear();
 
-                    var index = colorizer.File.GetIndexFromLineAndOffset(range.Start.Line, range.Start.Character);
-                    colorizer.File.Text.Insert(index, newText);
                     // TODO: do not split again but try to use existed
                     colorizer.File.TextSplitted = colorizer.File.Text.ToString().Split('\n');
 

@@ -31,7 +31,7 @@ namespace HapetCompiler.Resolvers
                 }
 
                 var fullPathToTheFile = $"{data.Item1}/{data.Item2}.mpt";
-                var metaText = File.ReadAllText(fullPathToTheFile).Replace("\r\n", "\n");
+                var metaText = File.ReadAllText(fullPathToTheFile);
                 var metadata = _compiler.HandleExternalMetadata(fullPathToTheFile, metaText);
 
                 PathsToLinkWith.Add(data.Item1);

@@ -214,8 +214,7 @@ namespace HapetFrontend
                 MessageHandler.ReportMessage([fileName], ErrorCode.Get(CTEN.FileForLexerNotFound));
                 return null;
             }
-            var text = File.ReadAllText(fileName, Encoding.UTF8)
-                           .Replace("\r\n", "\n", StringComparison.InvariantCulture);
+            var text = File.ReadAllText(fileName, Encoding.UTF8);
             var file = new ProgramFile(Path.GetFileName(fileName), new StringBuilder(text));
             file.FilePath = new Uri(fileName);
             file.TextSplitted = text.Split('\n');

@@ -1,4 +1,6 @@
 ﻿using HapetFrontend;
+using HapetFrontend.Entities;
+using HapetFrontend.Helpers;
 using HapetFrontend.ProjectParser;
 using HapetLastPrepare;
 using HapetPostPrepare;
@@ -52,20 +54,27 @@ namespace HapetLsp.Handlers
                 return Unit.Task;
 
             // get delta text
-            var text = contentChange.Text.Replace("\r\n", "\n", StringComparison.InvariantCulture);
+            var text = contentChange.Text;
             if (text == string.Empty)
-           {
+            {
                 // delete 
+                OnRemoveText(colorizer, contentChange.RangeLength, contentChange.Range);
+                ReparseLocationOnAdd(colorizer, contentChange.Range);
             }
             else if (text != string.Empty && contentChange.RangeLength > 0)
             {
                 // change
+                OnRemoveText(colorizer, contentChange.RangeLength, contentChange.Range);
+                OnAddText(colorizer, text, contentChange.Range);
+                ReparseLocationOnAdd(colorizer, contentChange.Range);
             }
             else
             {
                 // add
-                ReparseLocationOnAdd(colorizer, text, contentChange.Range);
+                OnAddText(colorizer, text, contentChange.Range);
+                ReparseLocationOnAdd(colorizer, contentChange.Range);
             }
+            _compiler.MessageHandler.ReportMessage([$"Reparsed"], null, ReportType.Info);
             return Unit.Task;
         }
 
