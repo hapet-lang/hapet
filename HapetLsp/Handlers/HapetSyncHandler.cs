@@ -49,31 +49,29 @@ namespace HapetLsp.Handlers
                 return Unit.Task;
             var colorizer = HapetSemanticHandler.CreateColorizer(file, _compiler);
 
-            var contentChange = request.ContentChanges.FirstOrDefault();
-            if (contentChange == null)
-                return Unit.Task;
+            foreach (var change in request.ContentChanges)
+            {
+                // get delta text
+                var text = change.Text;
+                if (text == string.Empty)
+                {
+                    // delete 
+                    OnRemoveText(colorizer, change.RangeLength, change.Range);
+                }
+                else if (text != string.Empty && change.RangeLength > 0)
+                {
+                    // change
+                    OnRemoveText(colorizer, change.RangeLength, change.Range);
+                    OnAddText(colorizer, text, change.Range);
+                }
+                else
+                {
+                    // add
+                    OnAddText(colorizer, text, change.Range);
+                }
+            }
+            Reparse(colorizer);
 
-            // get delta text
-            var text = contentChange.Text;
-            if (text == string.Empty)
-            {
-                // delete 
-                OnRemoveText(colorizer, contentChange.RangeLength, contentChange.Range);
-                ReparseLocationOnAdd(colorizer, contentChange.Range);
-            }
-            else if (text != string.Empty && contentChange.RangeLength > 0)
-            {
-                // change
-                OnRemoveText(colorizer, contentChange.RangeLength, contentChange.Range);
-                OnAddText(colorizer, text, contentChange.Range);
-                ReparseLocationOnAdd(colorizer, contentChange.Range);
-            }
-            else
-            {
-                // add
-                OnAddText(colorizer, text, contentChange.Range);
-                ReparseLocationOnAdd(colorizer, contentChange.Range);
-            }
             _compiler.MessageHandler.ReportMessage([$"Reparsed"], null, ReportType.Info);
             return Unit.Task;
         }

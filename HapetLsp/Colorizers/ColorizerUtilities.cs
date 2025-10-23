@@ -12,18 +12,26 @@ namespace HapetLsp.Handlers
         {
             var index = colorizer.File.GetIndexFromLineAndOffset(range.Start.Line, range.Start.Character);
             colorizer.File.Text.Insert(index, newText);
+
+            // TODO: do not split again but try to use existed
+            colorizer.File.TextSplitted = colorizer.File.Text.ToString().Split('\n');
+            var tst = colorizer.File.Text.ToString();
         }
 
         internal void OnRemoveText(HapetColorizer colorizer, int rangeLength, OmniSharp.Extensions.LanguageServer.Protocol.Models.Range range)
         {
             var index = colorizer.File.GetIndexFromLineAndOffset(range.Start.Line, range.Start.Character);
             colorizer.File.Text.Remove(index, rangeLength);
+
+            // TODO: do not split again but try to use existed
+            colorizer.File.TextSplitted = colorizer.File.Text.ToString().Split('\n');
+            var tst = colorizer.File.Text.ToString();
         }
 
-        internal void ReparseLocationOnAdd(HapetColorizer colorizer, OmniSharp.Extensions.LanguageServer.Protocol.Models.Range range)
+        internal void Reparse(HapetColorizer colorizer)
         {
-            int line = range.Start.Line + 1;
-            var parentStmt = GetParentToReparse(colorizer, line);
+            //int line = range.Start.Line + 1;
+            AstStatement parentStmt = null;//GetParentToReparse(colorizer, line);
 
             // different parents
             switch (parentStmt)
@@ -47,11 +55,6 @@ namespace HapetLsp.Handlers
                     colorizer.File.DirectiveNameLocations.Clear();
                     colorizer.File.NotCompiledLocations.Clear();
                     colorizer.File.Usings.Clear();
-
-                    // TODO: do not split again but try to use existed
-                    colorizer.File.TextSplitted = colorizer.File.Text.ToString().Split('\n');
-
-                    var tst = colorizer.File.Text.ToString();
 
                     // reparse
                     colorizer.File.FileParser.SetLocation(new TokenLocation()
