@@ -64,7 +64,7 @@ namespace HapetFrontend.Parsing
 
             inInfo.AllowMultiplyExpression = savedAllowMul;
 
-            return new AstArgumentExpr(expr, name, new Location(beg, expr.Ending))
+            return new AstArgumentExpr(expr, name, new Location(beg, expr?.Ending ?? beg))
             {
                 ArgumentModificator = argModificator,
                 ArgModificatorLocation = argTkn?.Location,

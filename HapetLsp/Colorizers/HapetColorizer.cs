@@ -544,7 +544,11 @@ namespace HapetLsp.Colorizers
                 AddSemanticToken(expr, expr.ArgModificatorLocation, _tokenTypes[2], _tokenModifiers[0]);
             }
 
-            ColorizeExpr(expr.Expr);
+            // could be null on wrong parsing
+            if (expr.Expr != null)
+            {
+                ColorizeExpr(expr.Expr);
+            }
         }
 
         private void ColorizeIdGenericExpr(AstIdGenericExpr expr)

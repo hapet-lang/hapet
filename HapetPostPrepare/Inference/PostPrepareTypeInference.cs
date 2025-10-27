@@ -818,7 +818,9 @@ namespace HapetPostPrepare
 
         private void PostPrepareArgumentExprInference(AstArgumentExpr argumentExpr, InInfo inInfo, ref OutInfo outInfo)
         {
-            PostPrepareExprInference(argumentExpr.Expr, inInfo, ref outInfo);
+            // could be null on wrong parsing
+            if (argumentExpr.Expr != null)
+                PostPrepareExprInference(argumentExpr.Expr, inInfo, ref outInfo);
 
             if (argumentExpr.Name != null)
             {
@@ -827,9 +829,9 @@ namespace HapetPostPrepare
             }
 
             // the argument type is the same as its expr type
-            argumentExpr.OutType = argumentExpr.Expr.OutType;
+            argumentExpr.OutType = argumentExpr.Expr?.OutType;
             // if the value could be evaluated at the compile time
-            if (argumentExpr.Expr.OutValue != null)
+            if (argumentExpr.Expr?.OutValue != null)
             {
                 argumentExpr.OutValue = argumentExpr.Expr.OutValue;
             }

@@ -32,8 +32,8 @@ namespace HapetPostPrepare
             }
             else if (stmt is AstClassDecl cls)
             {
-                // infer fields and props attibutes
-                foreach (var decl in cls.Declarations.Where(x => x is AstVarDecl).Select(x => x as AstVarDecl))
+                // infer child attibutes
+                foreach (var decl in cls.Declarations)
                 {
                     // inferencing attrs
                     foreach (var a in decl.Attributes)
@@ -49,8 +49,8 @@ namespace HapetPostPrepare
             }
             else if (stmt is AstStructDecl str)
             {
-                // infer fields and props attibutes
-                foreach (var decl in str.Declarations.Where(x => x is AstVarDecl).Select(x => x as AstVarDecl))
+                // infer child attibutes
+                foreach (var decl in str.Declarations)
                 {
                     // inferencing attrs
                     foreach (var a in decl.Attributes)

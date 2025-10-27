@@ -690,8 +690,11 @@ namespace HapetPostPrepare
 
         private void PostPrepareArgumentExprScoping(AstArgumentExpr argumentExpr)
         {
-            SetScopeAndParent(argumentExpr.Expr, argumentExpr);
-            PostPrepareExprScoping(argumentExpr.Expr);
+            if (argumentExpr.Expr != null)
+            {
+                SetScopeAndParent(argumentExpr.Expr, argumentExpr);
+                PostPrepareExprScoping(argumentExpr.Expr);
+            }
             if (argumentExpr.Name != null)
             {
                 SetScopeAndParent(argumentExpr.Name, argumentExpr);

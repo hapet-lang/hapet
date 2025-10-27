@@ -769,9 +769,9 @@ namespace HapetFrontend.Parsing
                         // {
                         //     base.Anime();
                         // }
-                        NextToken(inInfo);
+                        var baseTkn = NextToken(inInfo);
                         Consume(inInfo, TokenType.Period, ErrMsg(".", "after 'base' word"));
-                        return ParseIdentifierExpression(inInfo, iniNested: new AstNestedExpr(new AstIdExpr("base", CurrentToken.Location), null, CurrentToken.Location));
+                        return ParseIdentifierExpression(inInfo, iniNested: new AstNestedExpr(new AstIdExpr("base", baseTkn.Location), null, baseTkn.Location));
                     }
 
                 case TokenType.KwEvent:
