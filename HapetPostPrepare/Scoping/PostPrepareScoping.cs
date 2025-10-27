@@ -412,7 +412,8 @@ namespace HapetPostPrepare
         {
             if (varDecl.Name != null)
                 SetScopeAndParent(varDecl.Name, varDecl);
-            SetScopeAndParent(varDecl.Type, varDecl);
+            if (varDecl.Type != null)
+                SetScopeAndParent(varDecl.Type, varDecl);
 
             // scoping var attrs
             foreach (var a in varDecl.Attributes)
@@ -423,7 +424,8 @@ namespace HapetPostPrepare
 
             if (varDecl.Name != null)
                 PostPrepareExprScoping(varDecl.Name);
-            PostPrepareExprScoping(varDecl.Type);
+            if (varDecl.Type != null)
+                PostPrepareExprScoping(varDecl.Type);
 
             if (varDecl.Initializer != null)
             {

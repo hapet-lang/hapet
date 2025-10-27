@@ -154,11 +154,29 @@ namespace HapetLsp.Handlers
         {
             switch (decl)
             {
-                case AstClassDecl cls: _postPrepare.AllClassesMetadata.Remove(cls); break;
-                case AstStructDecl str: _postPrepare.AllStructsMetadata.Remove(str); break;
+                case AstClassDecl cls: 
+                    _postPrepare.AllClassesMetadata.Remove(cls);
+                    foreach (var d in cls.Declarations)
+                        RemoveDeclFromLists(d);
+                    break;
+                case AstStructDecl str: 
+                    _postPrepare.AllStructsMetadata.Remove(str);
+                    foreach (var d in str.Declarations)
+                        RemoveDeclFromLists(d);
+                    break;
                 case AstDelegateDecl del: _postPrepare.AllDelegatesMetadata.Remove(del); break;
-                case AstEnumDecl enm: _postPrepare.AllEnumsMetadata.Remove(enm); break;
-                case AstFuncDecl fnc: _postPrepare.AllFunctionsMetadata.Remove(fnc); break;
+                case AstEnumDecl enm: 
+                    _postPrepare.AllEnumsMetadata.Remove(enm);
+                    foreach (var d in enm.Declarations)
+                        RemoveDeclFromLists(d);
+                    break;
+                case AstFuncDecl fnc: 
+                    _postPrepare.AllFunctionsMetadata.Remove(fnc);
+                    if (fnc.Body == null)
+                        break;
+                    foreach (var d in fnc.Body.Statements.Where(x => x is AstFuncDecl))
+                        RemoveDeclFromLists(d as AstDeclaration);
+                    break;
             }
         }
     }

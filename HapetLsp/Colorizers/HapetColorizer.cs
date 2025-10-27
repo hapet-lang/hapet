@@ -265,8 +265,10 @@ namespace HapetLsp.Colorizers
 
         private void ColorizeVarDecl(AstVarDecl decl)
         {
-            ColorizeExpr(decl.Type);
-            ColorizeExpr(decl.Name);
+            if (decl.Type != null)
+                ColorizeExpr(decl.Type);
+            if (decl.Name != null)
+                ColorizeExpr(decl.Name);
 
             if (decl.Initializer != null)
                 ColorizeExpr(decl.Initializer);

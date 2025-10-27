@@ -72,6 +72,10 @@ namespace HapetPostPrepare
                 if (decl is AstIndexerDecl indexer)
                     PostPrepareParamInference(indexer.IndexerParameter, inInfo, ref outInfo);
 
+                // return if no type
+                if (decl.Type == null)
+                    return;
+
                 // mute all inference errors for var type of property. 
                 // if has to be errored somewhere else
                 var savedMute = inInfo.MuteErrors;
@@ -93,11 +97,12 @@ namespace HapetPostPrepare
                 }
 
                 // inferencing additional data
-                if (decl.Name.AdditionalData != null)
+                if (decl.Name?.AdditionalData != null)
                     PostPrepareExprInference(decl.Name.AdditionalData, inInfo, ref outInfo);
 
                 // define in scope
-                parentSubScope.DefineDeclSymbol(decl.Name.GetCopy(), decl);
+                if (decl.Name != null)
+                    parentSubScope.DefineDeclSymbol(decl.Name.GetCopy(), decl);
             }
         }
     }

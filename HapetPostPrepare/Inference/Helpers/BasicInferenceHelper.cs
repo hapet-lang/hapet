@@ -14,6 +14,7 @@ namespace HapetPostPrepare
             switch (fullName)
             {
                 case "System.Object":
+                    RemoveExisting("object");
                     _compiler.GlobalScope.DefineDeclSymbol(typeName.GetCopy("object"), decl);
                     decl.Type.OutType = HapetType.CurrentTypeContext.ObjectTypeInstance;
                     HapetType.CurrentTypeContext.ObjectTypeInstance.Declaration = decl as AstClassDecl;
@@ -35,74 +36,97 @@ namespace HapetPostPrepare
                     HapetType.CurrentTypeContext.DelegateTypeInstance.Declaration = decl as AstStructDecl;
                     break;
                 case "System.String":
+                    RemoveExisting("string");
                     _compiler.GlobalScope.DefineDeclSymbol(typeName.GetCopy("string"), decl);
                     decl.Type.OutType = HapetType.CurrentTypeContext.StringTypeInstance;
                     break;
                 case "System.Void":
+                    RemoveExisting("void");
                     _compiler.GlobalScope.DefineDeclSymbol(typeName.GetCopy("void"), decl);
                     decl.Type.OutType = HapetType.CurrentTypeContext.VoidTypeInstance;
                     break;
                 case "System.Boolean":
+                    RemoveExisting("bool");
                     _compiler.GlobalScope.DefineDeclSymbol(typeName.GetCopy("bool"), decl);
                     decl.Type.OutType = HapetType.CurrentTypeContext.BoolTypeInstance;
                     break;
                 // numeric types
                 case "System.Byte":
+                    RemoveExisting("byte");
                     _compiler.GlobalScope.DefineDeclSymbol(typeName.GetCopy("byte"), decl);
                     decl.Type.OutType = HapetType.CurrentTypeContext.GetIntType(1, false);
                     break;
                 case "System.SByte":
+                    RemoveExisting("sbyte");
                     _compiler.GlobalScope.DefineDeclSymbol(typeName.GetCopy("sbyte"), decl);
                     decl.Type.OutType = HapetType.CurrentTypeContext.GetIntType(1, true);
                     break;
                 case "System.UInt16":
+                    RemoveExisting("ushort");
                     _compiler.GlobalScope.DefineDeclSymbol(typeName.GetCopy("ushort"), decl);
                     decl.Type.OutType = HapetType.CurrentTypeContext.GetIntType(2, false);
                     break;
                 case "System.Int16":
+                    RemoveExisting("short");
                     _compiler.GlobalScope.DefineDeclSymbol(typeName.GetCopy("short"), decl);
                     decl.Type.OutType = HapetType.CurrentTypeContext.GetIntType(2, true);
                     break;
                 case "System.UInt32":
+                    RemoveExisting("uint");
                     _compiler.GlobalScope.DefineDeclSymbol(typeName.GetCopy("uint"), decl);
                     decl.Type.OutType = HapetType.CurrentTypeContext.GetIntType(4, false);
                     break;
                 case "System.Int32":
+                    RemoveExisting("int");
                     _compiler.GlobalScope.DefineDeclSymbol(typeName.GetCopy("int"), decl);
                     decl.Type.OutType = HapetType.CurrentTypeContext.GetIntType(4, true);
                     break;
                 case "System.UInt64":
+                    RemoveExisting("ulong");
                     _compiler.GlobalScope.DefineDeclSymbol(typeName.GetCopy("ulong"), decl);
                     decl.Type.OutType = HapetType.CurrentTypeContext.GetIntType(8, false);
                     break;
                 case "System.Int64":
+                    RemoveExisting("long");
                     _compiler.GlobalScope.DefineDeclSymbol(typeName.GetCopy("long"), decl);
                     decl.Type.OutType = HapetType.CurrentTypeContext.GetIntType(8, true);
                     break;
                 case "System.UIntPtr":
+                    RemoveExisting("uintptr");
                     _compiler.GlobalScope.DefineDeclSymbol(typeName.GetCopy("uintptr"), decl);
                     decl.Type.OutType = HapetType.CurrentTypeContext.IntPtrTypeInstance;
                     // also set size and alignment
                     HapetType.CurrentTypeContext.IntPtrTypeInstance.SetSizeAndAlignment(HapetType.CurrentTypeContext.PointerSize, HapetType.CurrentTypeContext.PointerSize);
                     break;
                 case "System.PtrDiff":
+                    RemoveExisting("ptrdiff");
                     _compiler.GlobalScope.DefineDeclSymbol(typeName.GetCopy("ptrdiff"), decl);
                     decl.Type.OutType = HapetType.CurrentTypeContext.PtrDiffTypeInstance;
                     // also set size and alignment
                     HapetType.CurrentTypeContext.PtrDiffTypeInstance.SetSizeAndAlignment(HapetType.CurrentTypeContext.PointerSize, HapetType.CurrentTypeContext.PointerSize);
                     break;
                 case "System.Char":
+                    RemoveExisting("char");
                     _compiler.GlobalScope.DefineDeclSymbol(typeName.GetCopy("char"), decl);
                     decl.Type.OutType = HapetType.CurrentTypeContext.CharTypeInstance;
                     break;
                 case "System.Double":
+                    RemoveExisting("double");
                     _compiler.GlobalScope.DefineDeclSymbol(typeName.GetCopy("double"), decl);
                     decl.Type.OutType = HapetType.CurrentTypeContext.GetFloatType(8);
                     break;
                 case "System.Single":
+                    RemoveExisting("float");
                     _compiler.GlobalScope.DefineDeclSymbol(typeName.GetCopy("float"), decl);
                     decl.Type.OutType = HapetType.CurrentTypeContext.GetFloatType(4);
                     break;
+            }
+
+            void RemoveExisting(string name)
+            {
+                var copiedName = typeName.GetCopy(name);
+                if (_compiler.GlobalScope.TryGetSymbol(copiedName, out var existing))
+                    _compiler.GlobalScope.RemoveDeclSymbol((existing as DeclSymbol).Name, (existing as DeclSymbol).Decl);
             }
         }
 

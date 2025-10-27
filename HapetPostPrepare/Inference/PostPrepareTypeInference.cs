@@ -283,6 +283,10 @@ namespace HapetPostPrepare
 
         private void PostPrepareVarInference(AstVarDecl varDecl, InInfo inInfo, ref OutInfo outInfo)
         {
+            // return if there is no type - error in parsing
+            if (varDecl.Type == null)
+                return;
+
             // mute all inference errors for var type of property. 
             // if has to be errored somewhere else
             var savedMute = inInfo.MuteErrors;
