@@ -291,6 +291,13 @@ namespace HapetFrontend.Extensions
 
         public static AstDeclaration GetSameDeclByTypeAndNamePure(this List<AstDeclaration> decls, AstDeclaration decl, out int index)
         {
+            // there are probably errors before
+            if (decl.Name == null)
+            {
+                index = -1;
+                return null;
+            }
+
             for (int i = 0; i < decls.Count; ++i)
             {
                 var x = decls[i];

@@ -1,6 +1,7 @@
 ﻿using HapetCompiler.Toolchains;
 using HapetFrontend;
 using HapetFrontend.Errors;
+using HapetLsp;
 using System.Diagnostics;
 using System.Text;
 
@@ -63,7 +64,8 @@ namespace HapetCompiler
 
                         // skip the first two args because they are already used
                         ProjectLspToolchain projectToolchain = new ProjectLspToolchain(stopwatch, args.Skip(2).ToArray());
-                        return await projectToolchain.WatchAsync(args[1], messageHandler);
+                        LspMessageHandler lspMessageHandler = new LspMessageHandler();
+                        return await projectToolchain.WatchAsync(args[1], lspMessageHandler);
                     }
             }
             messageHandler.ReportMessage([args[0]], ErrorCode.Get(CTEN.NotFoundHapetCommand));

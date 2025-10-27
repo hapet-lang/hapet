@@ -56,6 +56,9 @@ namespace HapetLsp.Handlers
                     colorizer.File.NotCompiledLocations.Clear();
                     colorizer.File.Usings.Clear();
 
+                    // clear diagnostic messages of file
+                    (_compiler.MessageHandler as LspMessageHandler).RemoveDiagnosticMessagesOfFile(colorizer.File);
+
                     // reparse
                     colorizer.File.FileParser.SetLocation(new TokenLocation()
                     {

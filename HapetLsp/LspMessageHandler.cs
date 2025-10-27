@@ -1,6 +1,7 @@
 ﻿using HapetFrontend.Ast;
 using HapetFrontend.Entities;
 using HapetFrontend.Errors;
+using HapetFrontend.Helpers;
 using OmniSharp.Extensions.LanguageServer.Protocol.Models;
 using System.Globalization;
 using System.Runtime.CompilerServices;
@@ -42,16 +43,21 @@ namespace HapetLsp
             _messages.Add(message);
         }
 
-        public IEnumerable<Diagnostic> GetDiagnosticMessages(Uri filePath)
+        public void RemoveDiagnosticMessagesOfFile(ProgramFile file)
+        {
+            _messages.RemoveAll(x => x.ProgramFile == file);
+        }
+
+        public IEnumerable<Diagnostic> GetDiagnosticMessages(string filePath)
         {
             foreach (var m in _messages) 
             {
-                if (m.ProgramFile.FilePath.AbsolutePath == filePath.AbsolutePath)
+                if (CompilerUtils.PathEquals(m.ProgramFile.FilePath.AbsolutePath, filePath))
                     yield return GetDiagnosticMessage(m);
             }
         }
 
-        public Diagnostic GetDiagnosticMessage(CompilerMessage message)
+        private static Diagnostic GetDiagnosticMessage(CompilerMessage message)
         {
             string stringMessage = $"[{message.XmlMessage.GetName()}] {string.Format(CultureInfo.InvariantCulture, message.XmlMessage.Text, message.MessageArgs)}";
             DiagnosticSeverity severity = message.ReportType switch
@@ -61,12 +67,10 @@ namespace HapetLsp
                 ReportType.Error => DiagnosticSeverity.Error,
                 _ => DiagnosticSeverity.Error,
             };
+            var (lb, ob) = message.ProgramFile.GetLineNumberAndOffsetByIndex(message.Location.Beginning.Index);
+            var (le, oe) = message.ProgramFile.GetLineNumberAndOffsetByIndex(message.Location.Ending.End);
             OmniSharp.Extensions.LanguageServer.Protocol.Models.Range range = 
-                new OmniSharp.Extensions.LanguageServer.Protocol.Models.Range(
-                    message.Location.Beginning.Line, 
-                    message.Location.Beginning.Index, 
-                    message.Location.Ending.Line, 
-                    message.Location.Ending.Index);
+                new OmniSharp.Extensions.LanguageServer.Protocol.Models.Range(lb, ob, le, oe);
             return new Diagnostic()
             {
                 Message = stringMessage,

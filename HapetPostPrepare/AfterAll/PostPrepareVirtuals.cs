@@ -414,7 +414,7 @@ namespace HapetPostPrepare
                                     if (!inhF.IsPropertyField)
                                         // error - the field of the interface was not implemented
                                         _compiler.MessageHandler.ReportMessage(_currentSourceFile, inh,
-                                            [HapetType.AsString(decl.Type.OutType), inhF.Name.Name], ErrorCode.Get(CTEN.NoFieldImplementation));
+                                            [HapetType.AsString(decl.Type.OutType), inhF.Name?.Name], ErrorCode.Get(CTEN.NoFieldImplementation));
                                 }
                                 else
                                 {

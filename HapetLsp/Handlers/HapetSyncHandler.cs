@@ -73,6 +73,13 @@ namespace HapetLsp.Handlers
             Reparse(colorizer);
 
             _compiler.MessageHandler.ReportMessage([$"Reparsed"], null, ReportType.Info);
+
+            _facade.TextDocument.PublishDiagnostics(new PublishDiagnosticsParams
+            {
+                Uri = request.TextDocument.Uri,
+                Diagnostics = Container.From((_compiler.MessageHandler as LspMessageHandler).GetDiagnosticMessages(path))
+            });
+
             return Unit.Task;
         }
 
@@ -83,7 +90,18 @@ namespace HapetLsp.Handlers
             if (file == null)
                 return Unit.Task;
 
-            HapetSemanticHandler.CreateColorizer(file, _compiler);
+            var colorizer = HapetSemanticHandler.CreateColorizer(file, _compiler);
+
+            Reparse(colorizer);
+
+            _compiler.MessageHandler.ReportMessage([$"Reparsed"], null, ReportType.Info);
+
+            _facade.TextDocument.PublishDiagnostics(new PublishDiagnosticsParams
+            {
+                Uri = request.TextDocument.Uri,
+                Diagnostics = Container.From((_compiler.MessageHandler as LspMessageHandler).GetDiagnosticMessages(path))
+            });
+
             return Unit.Task;
         }
 
