@@ -75,7 +75,7 @@ namespace HapetPostPrepare
                 }
 
                 // PostPrepareMetadataTypes(decl, false);
-                PostPrepareStatementUpToCurrentStep(decl, true);
+                PostPrepareStatementUpToCurrentStep(true, decl);
             }
         }
     }

@@ -96,7 +96,7 @@ namespace HapetPostPrepare
                     AllDelegatesMetadata.Add(delegateDecl);
             }
             // pp up to the current metadata step
-            PostPrepareStatementUpToCurrentStep(realDecl);
+            PostPrepareStatementUpToCurrentStep(false, realDecl);
 
             // no need to remove anything from the current parent stack - it would be cleared
 

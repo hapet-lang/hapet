@@ -1,14 +1,17 @@
-﻿using HapetFrontend.Ast;
+﻿using HapetFrontend;
+using HapetFrontend.Ast;
 using HapetFrontend.Ast.Declarations;
 using HapetFrontend.Ast.Expressions;
 using HapetFrontend.Entities;
+using HapetLastPrepare;
 using HapetLsp.Colorizers;
+using HapetPostPrepare;
 
 namespace HapetLsp.Handlers
 {
     public partial class HapetSyncHandler
     {
-        internal void OnAddText(HapetColorizer colorizer, string newText, OmniSharp.Extensions.LanguageServer.Protocol.Models.Range range)
+        internal static void OnAddText(HapetColorizer colorizer, string newText, OmniSharp.Extensions.LanguageServer.Protocol.Models.Range range)
         {
             var index = colorizer.File.GetIndexFromLineAndOffset(range.Start.Line, range.Start.Character);
             colorizer.File.Text.Insert(index, newText);
@@ -18,7 +21,7 @@ namespace HapetLsp.Handlers
             var tst = colorizer.File.Text.ToString();
         }
 
-        internal void OnRemoveText(HapetColorizer colorizer, int rangeLength, OmniSharp.Extensions.LanguageServer.Protocol.Models.Range range)
+        internal static void OnRemoveText(HapetColorizer colorizer, int rangeLength, OmniSharp.Extensions.LanguageServer.Protocol.Models.Range range)
         {
             var index = colorizer.File.GetIndexFromLineAndOffset(range.Start.Line, range.Start.Character);
             colorizer.File.Text.Remove(index, rangeLength);
@@ -28,7 +31,7 @@ namespace HapetLsp.Handlers
             var tst = colorizer.File.Text.ToString();
         }
 
-        internal void Reparse(HapetColorizer colorizer)
+        internal static void Reparse(HapetColorizer colorizer, Compiler compiler, PostPrepare postPrepare, LastPrepare lastPrepare)
         {
             //int line = range.Start.Line + 1;
             AstStatement parentStmt = null;//GetParentToReparse(colorizer, line);
@@ -47,7 +50,7 @@ namespace HapetLsp.Handlers
                         if (s is not AstDeclaration decl)
                             continue;
                         colorizer.File.NamespaceScope.RemoveDeclSymbol(decl.Name, decl);
-                        RemoveDeclFromLists(decl);
+                        RemoveDeclFromLists(decl, postPrepare);
                     }
                     colorizer.File.Statements.Clear();
                     colorizer.File.CommentLocations.Clear();
@@ -57,7 +60,7 @@ namespace HapetLsp.Handlers
                     colorizer.File.Usings.Clear();
 
                     // clear diagnostic messages of file
-                    (_compiler.MessageHandler as LspMessageHandler).RemoveDiagnosticMessagesOfFile(colorizer.File);
+                    (compiler.MessageHandler as LspMessageHandler).RemoveDiagnosticMessagesOfFile(colorizer.File);
 
                     // reparse
                     colorizer.File.FileParser.SetLocation(new TokenLocation()
@@ -68,9 +71,9 @@ namespace HapetLsp.Handlers
                         LineStartIndex = 0,
                         Line = 1,
                     }, resetCurrentToken: true);
-                    _compiler.MakeParseOfFile(colorizer.File.FileParser, colorizer.File, colorizer.File.FilePath.AbsolutePath);
+                    compiler.MakeParseOfFile(colorizer.File.FileParser, colorizer.File, colorizer.File.FilePath.AbsolutePath);
                     // pp
-                    PostPrepareFile(colorizer.File);
+                    PostPrepareFile(colorizer.File, postPrepare, lastPrepare);
 
                     // clear all color tokens
                     colorizer.CurrentSemanticTokens.Clear();
@@ -124,23 +127,22 @@ namespace HapetLsp.Handlers
             }
         }
 
-        private void PostPrepareFile(ProgramFile file)
+        private static void PostPrepareFile(ProgramFile file, PostPrepare postPrepare, LastPrepare lastPrepare)
         {
-            _postPrepare.ReplaceAllTuplesInFile(file);
+            postPrepare.ReplaceAllTuplesInFile(file);
 
-            _postPrepare.PostPrepareFileSpecialKeys(file);
-            _postPrepare.PostPrepareClassMethodsInFile(file);
-            _postPrepare.PostPrepareFileScoping(file);
+            postPrepare.PostPrepareFileSpecialKeys(file);
+            postPrepare.PostPrepareClassMethodsInFile(file);
+            postPrepare.PostPrepareFileScoping(file);
 
-            _postPrepare.AllPostPrepareMetadataTypesInFile(file);
-            foreach (var s in file.Statements)
-                _postPrepare.PostPrepareStatementUpToCurrentStep(s, true);
+            postPrepare.AllPostPrepareMetadataTypesInFile(file);
+            postPrepare.PostPrepareStatementUpToCurrentStep(true, file.Statements.ToArray());
 
             foreach (var s in file.Statements)
             {
                 if (s is not AstDeclaration decl)
                     continue;
-                _postPrepare.PostPrepareInheritedShiteOnDecl(decl);
+                postPrepare.PostPrepareInheritedShiteOnDecl(decl);
             }
 
             // TODO: main func search?
@@ -149,36 +151,36 @@ namespace HapetLsp.Handlers
             {
                 if (s is not AstDeclaration decl)
                     continue;
-                _lastPrepare.CreateRequiredInDecl(decl);
+                lastPrepare.CreateRequiredInDecl(decl);
             }
         }
 
-        private void RemoveDeclFromLists(AstDeclaration decl)
+        private static void RemoveDeclFromLists(AstDeclaration decl, PostPrepare postPrepare)
         {
             switch (decl)
             {
-                case AstClassDecl cls: 
-                    _postPrepare.AllClassesMetadata.Remove(cls);
+                case AstClassDecl cls:
+                    postPrepare.AllClassesMetadata.Remove(cls);
                     foreach (var d in cls.Declarations)
-                        RemoveDeclFromLists(d);
+                        RemoveDeclFromLists(d, postPrepare);
                     break;
-                case AstStructDecl str: 
-                    _postPrepare.AllStructsMetadata.Remove(str);
+                case AstStructDecl str:
+                    postPrepare.AllStructsMetadata.Remove(str);
                     foreach (var d in str.Declarations)
-                        RemoveDeclFromLists(d);
+                        RemoveDeclFromLists(d, postPrepare);
                     break;
-                case AstDelegateDecl del: _postPrepare.AllDelegatesMetadata.Remove(del); break;
-                case AstEnumDecl enm: 
-                    _postPrepare.AllEnumsMetadata.Remove(enm);
+                case AstDelegateDecl del: postPrepare.AllDelegatesMetadata.Remove(del); break;
+                case AstEnumDecl enm:
+                    postPrepare.AllEnumsMetadata.Remove(enm);
                     foreach (var d in enm.Declarations)
-                        RemoveDeclFromLists(d);
+                        RemoveDeclFromLists(d, postPrepare);
                     break;
-                case AstFuncDecl fnc: 
-                    _postPrepare.AllFunctionsMetadata.Remove(fnc);
+                case AstFuncDecl fnc:
+                    postPrepare.AllFunctionsMetadata.Remove(fnc);
                     if (fnc.Body == null)
                         break;
                     foreach (var d in fnc.Body.Statements.Where(x => x is AstFuncDecl))
-                        RemoveDeclFromLists(d as AstDeclaration);
+                        RemoveDeclFromLists(d as AstDeclaration, postPrepare);
                     break;
             }
         }

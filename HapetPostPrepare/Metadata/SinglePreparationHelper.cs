@@ -1,131 +1,203 @@
 ﻿using HapetFrontend.Ast;
 using HapetFrontend.Ast.Declarations;
+using HapetFrontend.Entities;
 using HapetFrontend.Errors;
 using HapetFrontend.Scoping;
 using HapetFrontend.Types;
 using HapetPostPrepare.Entities;
 using System;
+using System.Collections.Generic;
 using System.Runtime;
 
 namespace HapetPostPrepare
 {
     public partial class PostPrepare
     {
-        public void PostPrepareStatementUpToCurrentStep(AstStatement stmt, bool skipFirstStep = false)
+        public void PostPrepareStatementUpToCurrentStep(bool skipFirstStep, params AstStatement[] stmts)
         {
+            if (stmts.Length == 0)
+                return;
+
             if (_currentPreparationStep == PreparationStep.None)
             {
-                _compiler.MessageHandler.ReportMessage(_currentSourceFile, stmt, [], ErrorCode.Get(CTEN.StmtInvalidPreparation));
+                _compiler.MessageHandler.ReportMessage(_currentSourceFile, stmts[0], [], ErrorCode.Get(CTEN.StmtInvalidPreparation));
                 return;
             }
 
-            // setting up anime shite
-            var cachedSourceFile = _currentSourceFile;
-            _currentSourceFile = stmt.SourceFile;
-
-            bool isDecl = stmt is AstDeclaration;
-            if (isDecl) _currentParentStack.AddParent(stmt);
+            // to cache source file
+            ProgramFile cachedSourceFile;
 
             // go all over the steps down
             if (_currentPreparationStep >= PreparationStep.Types && !skipFirstStep)
             {
-                PostPrepareMetadataTypes(stmt, false);
+                foreach (var stmt in stmts)
+                {
+                    First(stmt);
+                    PostPrepareMetadataTypes(stmt, false);
+                    Last(stmt);
+                }
             }
             if (_currentPreparationStep >= PreparationStep.Generics)
             {
-                PostPrepareMetadataGenerics(stmt);
-                if (isDecl) _currentParentStack.RemoveParent(); // required to update generics
-                if (isDecl) _currentParentStack.AddParent(stmt);
+                foreach (var stmt in stmts)
+                {
+                    First(stmt);
+                    PostPrepareMetadataGenerics(stmt);
+                    bool isDecl = stmt is AstDeclaration;
+                    if (isDecl) _currentParentStack.RemoveParent(); // required to update generics
+                    if (isDecl) _currentParentStack.AddParent(stmt);
+                    Last(stmt);
+                }
+                    
             }
             if (_currentPreparationStep >= PreparationStep.Inheritance)
             {
-                PostPrepareMetadataInheritance(stmt);
+                foreach (var stmt in stmts)
+                {
+                    First(stmt);
+                    PostPrepareMetadataInheritance(stmt);
+                    Last(stmt);
+                }
             }
             if (_currentPreparationStep >= PreparationStep.Delegates)
             {
-                PostPrepareMetadataDelegates(stmt);
+                foreach (var stmt in stmts)
+                {
+                    First(stmt);
+                    PostPrepareMetadataDelegates(stmt);
+                    Last(stmt);
+                }
             }
             if (_currentPreparationStep >= PreparationStep.NestedTypes)
             {
-                PostPrepareMetadataNestedTypes(stmt);
+                foreach (var stmt in stmts)
+                {
+                    First(stmt);
+                    PostPrepareMetadataNestedTypes(stmt);
+                    Last(stmt);
+                }
             }
             if (_currentPreparationStep >= PreparationStep.Functions)
             {
-                PostPrepareMetadataFunctions(stmt);
+                foreach (var stmt in stmts)
+                {
+                    First(stmt);
+                    PostPrepareMetadataFunctions(stmt);
+                    Last(stmt);
+                }
             }
             if (_currentPreparationStep >= PreparationStep.FieldAndPropDecls)
             {
-                PostPrepareMetadataTypeFieldDecls(stmt);
+                foreach (var stmt in stmts)
+                {
+                    First(stmt);
+                    PostPrepareMetadataTypeFieldDecls(stmt);
+                    Last(stmt);
+                }
             }
             if (_currentPreparationStep >= PreparationStep.NestedTypesInside)
             {
-                PostPrepareMetadataNestedTypesInside(stmt);
+                foreach (var stmt in stmts)
+                {
+                    First(stmt);
+                    PostPrepareMetadataNestedTypesInside(stmt);
+                    Last(stmt);
+                }
             }
             if (_currentPreparationStep >= PreparationStep.FieldAndPropInits)
             {
-                PostPrepareMetadataTypeFieldInits(stmt);
+                foreach (var stmt in stmts)
+                {
+                    First(stmt);
+                    PostPrepareMetadataTypeFieldInits(stmt);
+                    Last(stmt);
+                }
             }
             if (_currentPreparationStep >= PreparationStep.Attributes)
             {
-                PostPrepareMetadataAttributes(stmt);
+                foreach (var stmt in stmts)
+                {
+                    First(stmt);
+                    PostPrepareMetadataAttributes(stmt);
+                    Last(stmt);
+                }
             }
 
             if (_currentPreparationStep >= PreparationStep.Inferencing)
             {
-                // just handlers
-                InInfo inInfo = InInfo.Default;
-                OutInfo outInfo = OutInfo.Default;
+                foreach (var stmt in stmts)
+                {
+                    First(stmt);
+                    // just handlers
+                    InInfo inInfo = InInfo.Default;
+                    OutInfo outInfo = OutInfo.Default;
 
-                // we need to inference it manually
-                if (stmt is AstClassDecl cls)
-                {
-                    foreach (var decl in cls.Declarations.Where(x => x is AstFuncDecl).Select(x => x as AstFuncDecl).ToList())
+                    // we need to inference it manually
+                    if (stmt is AstClassDecl cls)
                     {
-                        PostPrepareFunctionInference(decl, inInfo, ref outInfo);
+                        foreach (var decl in cls.Declarations.Where(x => x is AstFuncDecl).Select(x => x as AstFuncDecl).ToList())
+                        {
+                            PostPrepareFunctionInference(decl, inInfo, ref outInfo);
+                        }
+                        foreach (var decl in cls.Declarations.Where(x => x is AstDelegateDecl).Select(x => x as AstDelegateDecl).ToList())
+                        {
+                            PostPrepareDelegateInference(decl, inInfo, ref outInfo);
+                        }
                     }
-                    foreach (var decl in cls.Declarations.Where(x => x is AstDelegateDecl).Select(x => x as AstDelegateDecl).ToList())
+                    else if (stmt is AstStructDecl str)
                     {
-                        PostPrepareDelegateInference(decl, inInfo, ref outInfo);
+                        foreach (var decl in str.Declarations.Where(x => x is AstFuncDecl).Select(x => x as AstFuncDecl).ToList())
+                        {
+                            PostPrepareFunctionInference(decl, inInfo, ref outInfo);
+                        }
+                        foreach (var decl in str.Declarations.Where(x => x is AstDelegateDecl).Select(x => x as AstDelegateDecl).ToList())
+                        {
+                            PostPrepareDelegateInference(decl, inInfo, ref outInfo);
+                        }
                     }
-                }
-                else if (stmt is AstStructDecl str)
-                {
-                    foreach (var decl in str.Declarations.Where(x => x is AstFuncDecl).Select(x => x as AstFuncDecl).ToList())
+                    else if (stmt is AstGenericDecl gen)
                     {
-                        PostPrepareFunctionInference(decl, inInfo, ref outInfo);
+                        foreach (var decl in gen.Declarations.Where(x => x is AstFuncDecl).Select(x => x as AstFuncDecl).ToList())
+                        {
+                            PostPrepareFunctionInference(decl, inInfo, ref outInfo);
+                        }
+                        foreach (var decl in gen.Declarations.Where(x => x is AstDelegateDecl).Select(x => x as AstDelegateDecl).ToList())
+                        {
+                            PostPrepareDelegateInference(decl, inInfo, ref outInfo);
+                        }
                     }
-                    foreach (var decl in str.Declarations.Where(x => x is AstDelegateDecl).Select(x => x as AstDelegateDecl).ToList())
+                    else if (stmt is AstDelegateDecl delegateDecl)
                     {
-                        PostPrepareDelegateInference(decl, inInfo, ref outInfo);
+                        PostPrepareDelegateInference(delegateDecl, inInfo, ref outInfo);
+                        foreach (var decl in delegateDecl.Functions)
+                        {
+                            PostPrepareFunctionInference(decl, inInfo, ref outInfo);
+                        }
                     }
-                }
-                else if (stmt is AstGenericDecl gen)
-                {
-                    foreach (var decl in gen.Declarations.Where(x => x is AstFuncDecl).Select(x => x as AstFuncDecl).ToList())
+                    else if (stmt is AstFuncDecl funcDecl)
                     {
-                        PostPrepareFunctionInference(decl, inInfo, ref outInfo);
+                        PostPrepareFunctionInference(funcDecl, inInfo, ref outInfo);
                     }
-                    foreach (var decl in gen.Declarations.Where(x => x is AstDelegateDecl).Select(x => x as AstDelegateDecl).ToList())
-                    {
-                        PostPrepareDelegateInference(decl, inInfo, ref outInfo);
-                    }
-                }
-                else if (stmt is AstDelegateDecl delegateDecl)
-                {
-                    PostPrepareDelegateInference(delegateDecl, inInfo, ref outInfo);
-                    foreach (var decl in delegateDecl.Functions)
-                    {
-                        PostPrepareFunctionInference(decl, inInfo, ref outInfo);
-                    }
-                }
-                else if (stmt is AstFuncDecl funcDecl)
-                {
-                    PostPrepareFunctionInference(funcDecl, inInfo, ref outInfo);
-                }
+
+                    Last(stmt);
+                } 
             }
 
-            _currentSourceFile = cachedSourceFile;
-            if (isDecl) _currentParentStack.RemoveParent();
+            void First(AstStatement stmt)
+            {
+                // setting up anime shite
+                cachedSourceFile = _currentSourceFile;
+                _currentSourceFile = stmt.SourceFile;
+                bool isDecl = stmt is AstDeclaration;
+                if (isDecl) _currentParentStack.AddParent(stmt);
+            }
+
+            void Last(AstStatement stmt)
+            {
+                _currentSourceFile = cachedSourceFile;
+                bool isDecl = stmt is AstDeclaration;
+                if (isDecl) _currentParentStack.RemoveParent();
+            }
         }
     }
 }

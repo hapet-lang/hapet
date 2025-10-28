@@ -9,6 +9,7 @@ using OmniSharp.Extensions.LanguageServer.Protocol;
 using OmniSharp.Extensions.LanguageServer.Protocol.Client.Capabilities;
 using OmniSharp.Extensions.LanguageServer.Protocol.Document;
 using OmniSharp.Extensions.LanguageServer.Protocol.Models;
+using OmniSharp.Extensions.LanguageServer.Protocol.Server;
 using System.Collections.ObjectModel;
 using System.Xml.Linq;
 
@@ -40,13 +41,15 @@ namespace HapetLsp.Handlers
             new SemanticTokenModifier("declaration"),
         };
 
+        private readonly ILanguageServerFacade _facade;
         private readonly Compiler _compiler;
         private readonly PostPrepare _postPrepare;
         private readonly LastPrepare _lastPrepare;
         internal static Dictionary<ProgramFile, HapetColorizer> FileColorizers { get; } = new Dictionary<ProgramFile, HapetColorizer>();
 
-        public HapetSemanticHandler(Compiler compiler, PostPrepare pp, LastPrepare lp)
+        public HapetSemanticHandler(ILanguageServerFacade facade, Compiler compiler, PostPrepare pp, LastPrepare lp)
         {
+            _facade = facade;
             _compiler = compiler;
             _postPrepare = pp;
             _lastPrepare = lp;
@@ -85,10 +88,16 @@ namespace HapetLsp.Handlers
                 return;
 
             var colorizer = CreateColorizer(file, _compiler);
+            HapetSyncHandler.Reparse(colorizer, _compiler, _postPrepare, _lastPrepare);
             foreach (var (t, _) in colorizer.CurrentSemanticTokens)
             {
                 builder.Push(t.Line, t.Offset, t.Width, t.TokenType, t.TokenModifier);
             }
+            _facade.TextDocument.PublishDiagnostics(new PublishDiagnosticsParams
+            {
+                Uri = path,
+                Diagnostics = Container.From((_compiler.MessageHandler as LspMessageHandler).GetDiagnosticMessages(path))
+            });
         }
 
         internal static HapetColorizer CreateColorizer(ProgramFile file, Compiler compiler)

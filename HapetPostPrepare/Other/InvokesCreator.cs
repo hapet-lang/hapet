@@ -35,7 +35,7 @@ namespace HapetPostPrepare
             FuncPrepareAfterAll(func, del);
             SetScopeAndParent(func, del, del.SubScope);
             PostPrepareFunctionScoping(func);
-            PostPrepareStatementUpToCurrentStep(func);
+            PostPrepareStatementUpToCurrentStep(false, func);
         }
 
         private void AddInvokeDeclarationToEvent(AstClassDecl cls, bool declareOnly)

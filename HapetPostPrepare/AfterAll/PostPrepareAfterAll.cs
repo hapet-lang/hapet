@@ -141,7 +141,7 @@ namespace HapetPostPrepare
 
             SetScopeAndParent(storDecl, null, _compiler.GlobalScope);
             PostPrepareDeclScoping(storDecl);
-            PostPrepareStatementUpToCurrentStep(storDecl);
+            PostPrepareStatementUpToCurrentStep(false, storDecl);
 
             return storDecl;
         }

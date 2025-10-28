@@ -75,7 +75,7 @@ namespace HapetPostPrepare
                 // check if there is already a field named like 'field_Prop'
                 // error in this situation because we probably going to generate the field
                 // also check if the prop is really going to gen field
-                var theField = allFields.FirstOrDefault(x => x.Name.Name == $"field_{pp.Name.Name}");
+                var theField = allFields.FirstOrDefault(x => x.Name?.Name == $"field_{pp.Name.Name}");
                 if (theField != null)
                 {
                     // also check if the prop is really going to gen field
