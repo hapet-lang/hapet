@@ -48,7 +48,11 @@ namespace HapetPostPrepare
             {
                 es.TypeForDefault = neededType as StructType;
                 return expr;
-            }    
+            }
+
+            // probably error on parsing step
+            if (expr == null)
+                return null;
 
             // assigning lambda is made different
             if (expr.OutType is LambdaType && expr is AstLambdaExpr lmbd)

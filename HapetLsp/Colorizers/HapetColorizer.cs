@@ -497,6 +497,10 @@ namespace HapetLsp.Colorizers
 
         private void ColorizeBinaryExpr(AstBinaryExpr expr)
         {
+            // wrong parsing
+            if (expr.Left == null || expr.Right == null)
+                return;
+
             if (!expr.Left.IsSyntheticStatement)
                 ColorizeExpr(expr.Left);
             if (!expr.Right.IsSyntheticStatement)

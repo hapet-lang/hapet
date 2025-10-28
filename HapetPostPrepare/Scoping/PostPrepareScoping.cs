@@ -660,11 +660,15 @@ namespace HapetPostPrepare
         private void PostPrepareBinaryExprScoping(AstBinaryExpr binExpr)
         {
             // these scopes are probably the same for the bin expr parts
-            SetScopeAndParent(binExpr.Left, binExpr);
-            SetScopeAndParent(binExpr.Right, binExpr);
-            
-            PostPrepareExprScoping(binExpr.Left);
-            PostPrepareExprScoping(binExpr.Right);
+            if (binExpr.Left != null)
+                SetScopeAndParent(binExpr.Left, binExpr);
+            if (binExpr.Right != null)
+                SetScopeAndParent(binExpr.Right, binExpr);
+
+            if (binExpr.Left != null)
+                PostPrepareExprScoping(binExpr.Left);
+            if (binExpr.Right != null)
+                PostPrepareExprScoping(binExpr.Right);
         }
 
         private void PostPreparePointerExprScoping(AstPointerExpr pointerExpr)
@@ -1027,6 +1031,8 @@ namespace HapetPostPrepare
 
         private void PostPrepareThrowScoping(AstThrowStmt throwStmt)
         {
+            if (throwStmt.ThrowExpression == null)
+                return;
             SetScopeAndParent(throwStmt.ThrowExpression, throwStmt);
             PostPrepareExprScoping(throwStmt.ThrowExpression);
         }

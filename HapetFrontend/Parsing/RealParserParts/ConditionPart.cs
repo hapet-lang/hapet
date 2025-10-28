@@ -16,8 +16,12 @@ namespace HapetFrontend.Parsing
 
             var beg = Consume(inInfo, TokenType.KwIf, ErrMsg("keyword 'if'", "at beginning of 'if' statement"));
 
+            SkipNewlines(inInfo);
+
             // parse arguments
             Consume(inInfo, TokenType.OpenParen, ErrMsg("'('", "at the begining of 'if' statement"));
+
+            SkipNewlines(inInfo);
 
             // if there is a condition param
             if (!CheckToken(inInfo, TokenType.CloseParen))
@@ -30,6 +34,8 @@ namespace HapetFrontend.Parsing
             }
             else
                 ReportMessage(PeekToken(inInfo).Location, [], ErrorCode.Get(CTEN.IfStmtCondExpected));
+
+            SkipNewlines(inInfo);
             var end = Consume(inInfo, TokenType.CloseParen, ErrMsg("')'", "after the condition"));
 
             var savedAddBefore = outInfo.StatementsToAddBefore;
@@ -63,8 +69,12 @@ namespace HapetFrontend.Parsing
 
             var beg = Consume(inInfo, TokenType.KwSwitch, ErrMsg("keyword 'switch'", "at beginning of 'switch' statement"));
 
+            SkipNewlines(inInfo);
+
             // parse arguments
             Consume(inInfo, TokenType.OpenParen, ErrMsg("'('", "at the begining of 'switch' statement"));
+
+            SkipNewlines(inInfo);
 
             // if there is a condition param
             if (!CheckToken(inInfo, TokenType.CloseParen))
@@ -77,6 +87,8 @@ namespace HapetFrontend.Parsing
             }
             else
                 ReportMessage(PeekToken(inInfo).Location, [], ErrorCode.Get(CTEN.SwitchStmtCondExpected));
+
+            SkipNewlines(inInfo);
             var end = Consume(inInfo, TokenType.CloseParen, ErrMsg("')'", "after the condition"));
 
             SkipNewlines(inInfo);
@@ -131,6 +143,7 @@ namespace HapetFrontend.Parsing
                 beg = defaultBegin;
             else
                 beg = Consume(inInfo, TokenType.KwCase, ErrMsg("keyword 'case'", "at beginning of 'case' statement")).Location;
+            SkipNewlines(inInfo);
 
             // by default :)
             end = beg;
@@ -140,6 +153,8 @@ namespace HapetFrontend.Parsing
             {
                 // parse arguments
                 Consume(inInfo, TokenType.OpenParen, ErrMsg("'('", "at the begining of 'case' statement"));
+
+                SkipNewlines(inInfo);
 
                 // if there is a condition param
                 if (!CheckToken(inInfo, TokenType.CloseParen))
@@ -152,6 +167,8 @@ namespace HapetFrontend.Parsing
                 }
                 else
                     ReportMessage(PeekToken(inInfo).Location, [], ErrorCode.Get(CTEN.CaseParamExpected));
+
+                SkipNewlines(inInfo);
                 end = Consume(inInfo, TokenType.CloseParen, ErrMsg("')'", "after the pattern")).Location;
             }
 

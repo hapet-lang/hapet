@@ -89,9 +89,15 @@ namespace HapetPostPrepare
             var allFieldsAndProps = decl.GetDeclarations().Where(x => x is AstVarDecl).Select(x => x as AstVarDecl).ToList();
             for (int i = 0; i < allFieldsAndProps.Count; ++i)
             {
+                // not properly parsed
+                if (allFieldsAndProps[i].Name == null)
+                    continue;
                 for (int j = i; j < allFieldsAndProps.Count; ++j)
                 {
                     if (j == i)
+                        continue;
+                    // not properly parsed
+                    if (allFieldsAndProps[j].Name == null)
                         continue;
                     // if have the same names and NOT explicits
                     if (allFieldsAndProps[i].Name.Name == allFieldsAndProps[j].Name.Name &&
@@ -430,6 +436,9 @@ namespace HapetPostPrepare
             {
                 // check if the var itself is a propa - skip them
                 if (decl is AstPropertyDecl propD)
+                    continue;
+                // not properly parsed
+                if (decl.Name == null)
                     continue;
 
                 // for static we need to get only static fields/props

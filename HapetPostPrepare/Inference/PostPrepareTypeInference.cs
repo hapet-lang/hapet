@@ -584,6 +584,10 @@ namespace HapetPostPrepare
 
         private void PostPrepareBinaryExprInference(AstBinaryExpr binExpr, InInfo inInfo, ref OutInfo outInfo)
         {
+            // wrong parsing
+            if (binExpr.Left == null || binExpr.Right == null)
+                return;
+
             // resolve the actual operator in the current scope
             PostPrepareExprInference(binExpr.Left as AstExpression, inInfo, ref outInfo);
             PostPrepareExprInference(binExpr.Right as AstExpression, inInfo, ref outInfo);
@@ -1583,6 +1587,9 @@ namespace HapetPostPrepare
 
         private void PostPrepareThrowStmtInference(AstThrowStmt throwStmt, InInfo inInfo, ref OutInfo outInfo)
         {
+            // not parsed properly
+            if (throwStmt.ThrowExpression == null)
+                return;
             PostPrepareExprInference(throwStmt.ThrowExpression, inInfo, ref outInfo);
             // TODO: check that out type is derived from System.Exception
         }

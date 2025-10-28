@@ -101,7 +101,7 @@ namespace HapetPostPrepare
                         }
                     }
 
-                    if (argExpr.OutType == parType.OutType)
+                    if (argExpr?.OutType == parType.OutType)
                     {
                         score += 0;
                         casts.Add(argExpr);
@@ -356,6 +356,9 @@ namespace HapetPostPrepare
             // get only inherited parents - that has implementations
             foreach (var inh in declToSearch.GetInheritedTypes())
             {
+                // skip not properly inferred
+                if (inh.OutType == null)
+                    continue;
                 // WARN: we go all over the inherited types because
                 // we could be searching currently in interface scope
                 // and so we need to check all inherited interfaces
