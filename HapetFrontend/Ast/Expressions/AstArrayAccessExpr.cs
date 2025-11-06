@@ -31,8 +31,8 @@ namespace HapetFrontend.Ast.Expressions
         public override AstStatement GetDeepCopy()
         {
             var copy = new AstArrayAccessExpr(
-                ObjectName.GetDeepCopy() as AstExpression,
-                ParameterExpr.GetDeepCopy() as AstExpression,
+                ObjectName?.GetDeepCopy() as AstExpression,
+                ParameterExpr?.GetDeepCopy() as AstExpression,
                 Location)
             {
                 IsSyntheticStatement = IsSyntheticStatement,

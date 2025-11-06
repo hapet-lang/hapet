@@ -1131,6 +1131,10 @@ namespace HapetPostPrepare
 
         private void PostPrepareArrayAccessExprInference(AstArrayAccessExpr arrayAccExpr, InInfo inInfo, ref OutInfo outInfo)
         {
+            // there were problems before
+            if (arrayAccExpr.ParameterExpr == null || arrayAccExpr.ObjectName == null)
+                return;
+
             PostPrepareExprInference(arrayAccExpr.ParameterExpr, inInfo, ref outInfo);
             PostPrepareExprInference(arrayAccExpr.ObjectName, inInfo, ref outInfo);
 
@@ -1520,9 +1524,13 @@ namespace HapetPostPrepare
             }
 
             // getting all the fields of attribuute class decl
-            var attrDeclFields = (attrStmt.AttributeName.OutType as ClassType).Declaration.Declarations.
+            var attrDeclFields = (attrStmt.AttributeName.OutType as ClassType)?.Declaration.Declarations.
                 Where(x => x is AstVarDecl vd && !vd.SpecialKeys.Contains(TokenType.KwStatic)).
                 Select(x => x as AstVarDecl).ToList();
+
+            // there were problems before
+            if (attrDeclFields == null)
+                return;
 
             // check that not too much params
             if (attrStmt.Arguments.Count > attrDeclFields.Count)

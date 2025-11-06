@@ -439,9 +439,8 @@ namespace HapetPostPrepare
                 PostPrepareExprScoping(varDecl.Initializer);
             }
             // define it in the scope if it is not yet
-            if (!doNotDefine)
+            if (!doNotDefine && varDecl.Name != null)
             {
-                Debug.Assert(varDecl.Name != null);
                 varDecl.Scope.DefineDeclSymbol(varDecl.Name, varDecl);
             }
         }
@@ -806,8 +805,11 @@ namespace HapetPostPrepare
 
         private void PostPrepareArrayAccessExprScoping(AstArrayAccessExpr arrayAccExpr)
         {
-            SetScopeAndParent(arrayAccExpr.ParameterExpr, arrayAccExpr);
-            PostPrepareExprScoping(arrayAccExpr.ParameterExpr);
+            if (arrayAccExpr.ParameterExpr != null)
+            {
+                SetScopeAndParent(arrayAccExpr.ParameterExpr, arrayAccExpr);
+                PostPrepareExprScoping(arrayAccExpr.ParameterExpr);
+            }
             SetScopeAndParent(arrayAccExpr.ObjectName, arrayAccExpr);
             PostPrepareExprScoping(arrayAccExpr.ObjectName);
         }

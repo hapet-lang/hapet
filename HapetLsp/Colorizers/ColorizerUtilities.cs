@@ -3,6 +3,7 @@ using HapetFrontend.Ast;
 using HapetFrontend.Ast.Declarations;
 using HapetFrontend.Ast.Expressions;
 using HapetFrontend.Entities;
+using HapetFrontend.Types;
 using HapetLastPrepare;
 using HapetLsp.Colorizers;
 using HapetPostPrepare;
@@ -32,6 +33,9 @@ namespace HapetLsp.Handlers
 
         internal static void ReparseWholeProject(HapetColorizer colorizer, Compiler compiler, PostPrepare postPrepare, LastPrepare lastPrepare)
         {
+            HapetType.CurrentTypeContext.ArrayTypeInstances.Clear();
+            HapetType.CurrentTypeContext.NullableTypeInstances.Clear();
+
             foreach (var (_, file) in compiler.GetFiles())
             {
                 foreach (var g in postPrepare.AllGenericsMetadata.ToList())
@@ -39,6 +43,20 @@ namespace HapetLsp.Handlers
                     if (g.SourceFile == file)
                     {
                         RemoveDeclFromLists(g, postPrepare);
+                    }
+                }
+                foreach (var (k, v) in HapetType.CurrentTypeContext.ArrayTypeInstances.ToList())
+                {
+                    if (k.GetDeclaration().SourceFile == file)
+                    {
+                        HapetType.CurrentTypeContext.ArrayTypeInstances.Remove(k);
+                    }
+                }
+                foreach (var (k, v) in HapetType.CurrentTypeContext.NullableTypeInstances.ToList())
+                {
+                    if (k.GetDeclaration().SourceFile == file)
+                    {
+                        HapetType.CurrentTypeContext.NullableTypeInstances.Remove(k);
                     }
                 }
 
@@ -49,6 +67,12 @@ namespace HapetLsp.Handlers
                         continue;
                     file.NamespaceScope.RemoveDeclSymbol(decl.Name, decl);
                     RemoveDeclFromLists(decl, postPrepare);
+
+                    // also remove impls from scope
+                    foreach (var im in decl.GenericImplementations)
+                    {
+                        file.NamespaceScope.RemoveDeclSymbol(im.Name, im);
+                    }
                 }
                 file.Statements.Clear();
                 file.CommentLocations.Clear();

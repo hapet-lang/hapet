@@ -697,8 +697,10 @@ namespace HapetLsp.Colorizers
 
         private void ColorizeArrayAccessExpr(AstArrayAccessExpr expr)
         {
-            ColorizeExpr(expr.ObjectName);
-            ColorizeExpr(expr.ParameterExpr);
+            if (expr.ObjectName != null)
+                ColorizeExpr(expr.ObjectName);
+            if (expr.ParameterExpr != null)
+                ColorizeExpr(expr.ParameterExpr);
         }
 
         private void ColorizeTernaryExpr(AstTernaryExpr expr)

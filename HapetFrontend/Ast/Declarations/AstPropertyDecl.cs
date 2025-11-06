@@ -82,8 +82,8 @@ namespace HapetFrontend.Ast.Declarations
         public override AstDeclaration GetOnlyDeclareCopy()
         {
             var copy = new AstPropertyDecl(
-                Type.GetDeepCopy() as AstNestedExpr,
-                Name.GetDeepCopy() as AstIdExpr,
+                Type?.GetDeepCopy() as AstNestedExpr,
+                Name?.GetDeepCopy() as AstIdExpr,
                 null,
                 Documentation, Location)
             {

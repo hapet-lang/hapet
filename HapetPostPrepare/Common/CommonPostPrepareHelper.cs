@@ -40,7 +40,7 @@ namespace HapetPostPrepare
 
             var genTypes = __GetGenericTypes(targetType, subExpr);
 
-            var idExpr = new AstIdGenericExpr("System.Array", genTypes, subExpr) 
+            var idExpr = new AstIdGenericExpr("Array", genTypes, subExpr) 
             {
                 Scope = subExpr.Scope,
                 SourceFile = subExpr.SourceFile,
@@ -58,7 +58,7 @@ namespace HapetPostPrepare
 
             var genTypes = __GetGenericTypes(targetType, subExpr);
 
-            var idExpr = new AstIdGenericExpr("System.Nullable", genTypes, subExpr)
+            var idExpr = new AstIdGenericExpr("Nullable", genTypes, subExpr)
             {
                 Scope = subExpr.Scope,
                 SourceFile = subExpr.SourceFile,
