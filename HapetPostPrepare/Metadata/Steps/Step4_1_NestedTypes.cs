@@ -16,6 +16,8 @@ namespace HapetPostPrepare
             {
                 foreach (var decl in cls.Declarations.Where(x => x is not AstFuncDecl && x is not AstVarDecl).ToList())
                 {
+                    if (decl == null)
+                        continue;
                     PPNested(decl);
                 }
             }
@@ -23,6 +25,8 @@ namespace HapetPostPrepare
             {
                 foreach (var decl in str.Declarations.Where(x => x is not AstFuncDecl && x is not AstVarDecl).ToList())
                 {
+                    if (decl == null)
+                        continue;
                     PPNested(decl);
                 }
             }
@@ -44,6 +48,8 @@ namespace HapetPostPrepare
             {
                 foreach (var decl in cls.Declarations.Where(x => x is not AstFuncDecl && x is not AstVarDecl).ToList())
                 {
+                    if (decl == null)
+                        continue;
                     PPNested(decl);
                 }
             }
@@ -51,6 +57,8 @@ namespace HapetPostPrepare
             {
                 foreach (var decl in str.Declarations.Where(x => x is not AstFuncDecl && x is not AstVarDecl).ToList())
                 {
+                    if (decl == null)
+                        continue;
                     PPNested(decl);
                 }
             }

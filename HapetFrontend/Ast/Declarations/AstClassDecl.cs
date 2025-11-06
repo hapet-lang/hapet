@@ -111,7 +111,7 @@ namespace HapetFrontend.Ast.Declarations
                 else if (decl is AstFuncDecl fD)
                     fD.ContainingParent = copy;
 
-                if (decl.IsNestedDecl)
+                if (decl?.IsNestedDecl ?? false)
                     decl.ParentDecl = copy;
             }
 

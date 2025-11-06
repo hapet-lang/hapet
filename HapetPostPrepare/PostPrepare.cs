@@ -32,7 +32,7 @@ namespace HapetPostPrepare
             _compiler = compiler;
         }
 
-        public int StartPreparation(bool createMetadataFile = true)
+        public int StartPreparation(bool createMetadataFile = true, bool forLsp = false)
         {
             _currentParentStack = ParentStackManager.Create(_compiler.MessageHandler);
 
@@ -70,6 +70,11 @@ namespace HapetPostPrepare
             SearchForMainFunction();
             if (_compiler.MessageHandler.HasErrors)
                 return 0;
+
+            // return here if LSP is running
+            if (forLsp)
+                return 0;
+
             CallAllStaticCtors();
 
             MakeOtherShite();

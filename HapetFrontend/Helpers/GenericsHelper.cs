@@ -25,29 +25,31 @@ namespace HapetFrontend.Helpers
         {
             if (decl is AstClassDecl || decl is AstStructDecl)
             {
-                decl.Name = decl.Name.GetCopy(GetResetedName(decl));
+                decl.Name = decl.Name?.GetCopy(GetResetedName(decl));
                 var decls = decl is AstClassDecl ? (decl as AstClassDecl).Declarations : (decl as AstStructDecl).Declarations;
                 foreach (var dec in decls)
                 {
-                    dec.Name = dec.Name.GetCopy(GetResetedName(dec));
+                    if (dec == null)
+                        continue;
+                    dec.Name = dec.Name?.GetCopy(GetResetedName(dec));
                 }
             }
             else if (decl is AstFuncDecl || decl is AstDelegateDecl)
             {
-                decl.Name = decl.Name.GetCopy(GetResetedName(decl));
+                decl.Name = decl.Name?.GetCopy(GetResetedName(decl));
             }
 
             static string GetResetedName(AstDeclaration d)
             {
                 if (d is AstClassDecl || d is AstStructDecl || d is AstDelegateDecl)
                 {
-                    return d.Name.Name.GetClassNameWithoutNamespace();
+                    return d.Name?.Name.GetClassNameWithoutNamespace();
                 }
                 else if (d is AstFuncDecl f)
                 {
-                    return f.Name.Name;
+                    return f.Name?.Name;
                 }
-                return d.Name.Name;
+                return d.Name?.Name;
             }
         }
 

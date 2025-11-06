@@ -270,7 +270,13 @@ namespace HapetFrontend.Parsing
 
             ReportMessage(PeekToken(inInfo).Location, [], ErrorCode.Get(CTEN.PureUnexpectedToken)); // better error message?
             OnExit();
-            return udecl;
+            return new AstEmptyDecl(new AstIdExpr("udecl")
+            {
+                Location = udecl.Location,
+            })
+            {
+                Location = udecl.Location,
+            };
 
             void OnExit()
             {

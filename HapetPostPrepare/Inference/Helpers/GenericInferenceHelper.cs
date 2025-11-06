@@ -68,6 +68,9 @@ namespace HapetPostPrepare
             // no need to reset HasGenericTypes when using generic shite from another generic
             realDecl.HasGenericTypes = GenericsHelper.HasAnyGenericTypes(genericTypes.Select(x => x as AstExpression).ToList());
 
+            // add to generic impls list
+            decl.GenericImplementations.Add(realDecl);
+
             // getting pure generics from original generic decl
             var pureGenerics = GenericsHelper.GetGenericsFromName(decl.Name as AstIdGenericExpr, _compiler.MessageHandler);
             // replaces all T with normal types like int
@@ -135,6 +138,9 @@ namespace HapetPostPrepare
 
         private bool CheckIfAllowedForConstrains(List<AstConstrainStmt> constrains, AstExpression type)
         {
+            if (type.OutType == null) 
+                return false;
+
             var allNorm = new List<bool>();
             foreach (var c in constrains)
             {

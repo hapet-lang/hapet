@@ -194,6 +194,9 @@ namespace HapetPostPrepare
             // we need to copy all the class decls to our genericDecl
             foreach (var d in theClass.Declarations)
             {
+                if (d == null)
+                    continue;
+
                 // do not copy ini/ctor/stor/dtor funcs
                 if (d is AstFuncDecl funcDecl && (
                     funcDecl.ClassFunctionType == ClassFunctionType.Initializer ||

@@ -8,6 +8,7 @@ using HapetFrontend.Parsing;
 using HapetFrontend.Scoping;
 using HapetFrontend.Types;
 using Newtonsoft.Json;
+using System.Diagnostics;
 
 namespace HapetFrontend.Ast
 {
@@ -70,6 +71,10 @@ namespace HapetFrontend.Ast
         /// also if the current one is <see cref="IsImplOfGeneric"/>
         /// </summary>
         public AstDeclaration OriginalGenericDecl { get; set; }
+        /// <summary>
+        /// List of all generic implementations 
+        /// </summary>
+        public List<AstDeclaration> GenericImplementations { get; } = new List<AstDeclaration>();
 
         /// <summary>
         /// 'true' if the decl is nested decl
@@ -110,7 +115,7 @@ namespace HapetFrontend.Ast
 
         public virtual AstDeclaration GetOnlyDeclareCopy()
         {
-            throw new NotImplementedException();
+            return null;
         }
 
         /// <summary>

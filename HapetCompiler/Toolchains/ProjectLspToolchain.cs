@@ -59,7 +59,7 @@ namespace HapetCompiler.Toolchains
             // gen ast shite
             compiler.GenerateAstTree();
             // post prepare without meta file
-            int _ = postPreparer.StartPreparation(false);
+            int _ = postPreparer.StartPreparation(false, forLsp: true);
             // full last prepare is not required for LSP
             int __ = lastPreparer.StartPreparation(true);
 

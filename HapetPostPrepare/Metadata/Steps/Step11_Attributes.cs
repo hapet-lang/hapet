@@ -35,6 +35,8 @@ namespace HapetPostPrepare
                 // infer child attibutes
                 foreach (var decl in cls.Declarations)
                 {
+                    if (decl == null)
+                        continue;
                     // inferencing attrs
                     foreach (var a in decl.Attributes)
                     {
@@ -52,6 +54,8 @@ namespace HapetPostPrepare
                 // infer child attibutes
                 foreach (var decl in str.Declarations)
                 {
+                    if (decl == null)
+                        continue;
                     // inferencing attrs
                     foreach (var a in decl.Attributes)
                     {

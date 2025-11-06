@@ -129,6 +129,9 @@ namespace HapetPostPrepare
 
             foreach (var decl in classDecl.Declarations)
             {
+                if (decl == null)
+                    continue;
+
                 SetScopeAndParent(decl, classDecl, classScope);
 
                 if (decl is AstFuncDecl funcDecl)
@@ -208,6 +211,9 @@ namespace HapetPostPrepare
 
             foreach (var decl in structDecl.Declarations)
             {
+                if (decl == null)
+                    continue;
+
                 SetScopeAndParent(decl, structDecl, structScope);
 
                 if (decl is AstFuncDecl funcDecl)

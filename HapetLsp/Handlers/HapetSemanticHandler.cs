@@ -88,16 +88,21 @@ namespace HapetLsp.Handlers
                 return;
 
             var colorizer = CreateColorizer(file, _compiler);
-            HapetSyncHandler.Reparse(colorizer, _compiler, _postPrepare, _lastPrepare);
+            //HapetSyncHandler.Reparse(colorizer, _compiler, _postPrepare, _lastPrepare);
+            HapetSyncHandler.ReparseWholeProject(colorizer, _compiler, _postPrepare, _lastPrepare);
             foreach (var (t, _) in colorizer.CurrentSemanticTokens)
             {
                 builder.Push(t.Line, t.Offset, t.Width, t.TokenType, t.TokenModifier);
             }
-            _facade.TextDocument.PublishDiagnostics(new PublishDiagnosticsParams
+
+            foreach (var (_, filee) in _compiler.GetFiles())
             {
-                Uri = path,
-                Diagnostics = Container.From((_compiler.MessageHandler as LspMessageHandler).GetDiagnosticMessages(path))
-            });
+                _facade.TextDocument.PublishDiagnostics(new PublishDiagnosticsParams
+                {
+                    Uri = filee.FilePath,
+                    Diagnostics = Container.From((_compiler.MessageHandler as LspMessageHandler).GetDiagnosticMessages(filee.FilePath.AbsolutePath))
+                });
+            }
         }
 
         internal static HapetColorizer CreateColorizer(ProgramFile file, Compiler compiler)
