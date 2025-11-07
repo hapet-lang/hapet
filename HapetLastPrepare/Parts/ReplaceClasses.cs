@@ -565,6 +565,7 @@ namespace HapetLastPrepare
             LPRACExpr(stmt.FirstArgument);
             LPRACExpr(stmt.SecondArgument);
             LPRACExpr(stmt.ThirdArgument);
+            LPRACExpr(stmt.ForeachArgument);
 
             LPRACBlockExpr(stmt.Body);
         }

@@ -614,6 +614,7 @@ namespace HapetLastPrepare
             CheckUsedDeclsExpr(stmt.FirstArgument, usedDecls, goDeep);
             CheckUsedDeclsExpr(stmt.SecondArgument, usedDecls, goDeep);
             CheckUsedDeclsExpr(stmt.ThirdArgument, usedDecls, goDeep);
+            CheckUsedDeclsExpr(stmt.ForeachArgument, usedDecls, goDeep);
 
             CheckUsedDeclsBlockExpr(stmt.Body, usedDecls, goDeep);
         }
