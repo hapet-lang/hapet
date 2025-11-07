@@ -88,7 +88,6 @@ namespace HapetLsp.Handlers
                 return;
 
             var colorizer = CreateColorizer(file, _compiler);
-            //HapetSyncHandler.Reparse(colorizer, _compiler, _postPrepare, _lastPrepare);
             HapetSyncHandler.ReparseWholeProject(colorizer, _compiler, _postPrepare, _lastPrepare);
             foreach (var (t, _) in colorizer.CurrentSemanticTokens)
             {
