@@ -876,6 +876,10 @@ namespace HapetPostPrepare
 
         private void PostPrepareNestedExprInference(AstNestedExpr nestExpr, InInfo inInfo, ref OutInfo outInfo)
         {
+            // null on wrong parsing
+            if (nestExpr.RightPart == null)
+                return;
+
             // the var is used to check when static/const field is accessed from an object
             bool accessingFromAnObject = false;
 

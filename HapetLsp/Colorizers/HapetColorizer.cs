@@ -649,7 +649,9 @@ namespace HapetLsp.Colorizers
         {
             if (expr.LeftPart != null)
                 ColorizeExpr(expr.LeftPart);
-            ColorizeExpr(expr.RightPart);
+            // could be null on wrong parsing
+            if (expr.RightPart != null)
+                ColorizeExpr(expr.RightPart);
         }
 
         private void ColorizeDefaultExpr(AstDefaultExpr expr)

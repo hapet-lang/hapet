@@ -16,6 +16,8 @@ namespace HapetFrontend.ProjectParser
 
         private void PreparePropertyGroups()
         {
+            _propertyGroupData.Clear();
+
             // go all over the prop groups
             foreach (var xnode in _propertyGroups)
             {

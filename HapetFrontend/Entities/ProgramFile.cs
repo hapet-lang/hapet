@@ -13,7 +13,7 @@ namespace HapetFrontend.Entities
         /// <summary>
         /// Filename without path parts
         /// </summary>
-        public string Name { get; }
+        public string Name { get; set; }
 
         /// <summary>
         /// Full filepath 
@@ -44,6 +44,11 @@ namespace HapetFrontend.Entities
         /// A parser of the file
         /// </summary>
         public Parser FileParser { get; set; }
+
+        /// <summary>
+        /// Original file of metadata 
+        /// </summary>
+        public ProgramFile OriginalFile { get; set; }
 
         /// <summary>
         /// Stores all comment locations (used in LSP only probably)

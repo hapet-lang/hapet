@@ -132,7 +132,7 @@ namespace HapetFrontend
             var parser = new Parser(lexer, this, MessageHandler);
 
             List<ProgramFile> allFiles = new List<ProgramFile>();
-            ProgramFile currentFile = null;
+            ProgramFile currentFile = metadataFile;
 
             // just handlers
             ParserInInfo inInfo = ParserInInfo.Default;
@@ -164,9 +164,13 @@ namespace HapetFrontend
                 if (s is AstDirectiveStmt dir && dir.DirectiveType == Enums.DirectiveType.MetadataFile)
                 {
                     // creating a virtual file
-                    currentFile = new ProgramFile(Path.GetFileName((dir.Value as AstStringExpr).StringValue), metadataFile.Text);
-                    currentFile.FilePath = new Uri((dir.Value as AstStringExpr).StringValue, UriKind.Relative);
+                    var path = new Uri((dir.Value as AstStringExpr).StringValue, UriKind.Relative);
+                    currentFile = AddFile(new ProgramFile(null, null), path.OriginalString);
+                    currentFile.Text = metadataFile.Text;
+                    currentFile.Name = Path.GetFileName((dir.Value as AstStringExpr).StringValue);
+                    currentFile.OriginalFile = metadataFile;
                     currentFile.TextSplitted = metadataFile.TextSplitted;
+                    currentFile.FilePath = path;
                     allFiles.Add(currentFile);
                     // change lexer locations' filename
                     lexer.ChangeFilename(currentFile.Name);

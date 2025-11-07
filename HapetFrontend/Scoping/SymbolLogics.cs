@@ -90,6 +90,12 @@ namespace HapetFrontend.Scoping
             return RemoveLocalSymbol(new DeclSymbol(name, decl));
         }
 
+        public void ClearAllSymbols()
+        {
+            _symbolTable.Clear();
+            _shadowSymbolTable.Clear();
+        }
+
         public bool TryGetSymbol(AstIdExpr name, out ISymbol smbl,
             bool searchUsedScopes = true,
             bool searchParentScope = true,

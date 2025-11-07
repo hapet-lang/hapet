@@ -9,6 +9,10 @@ namespace HapetFrontend.ProjectParser
     {
         private void PrepareItemGroups()
         {
+            _projectData.ProjectReferences.Clear();
+            _projectData.References.Clear();
+            _projectData.Defines.Clear();
+
             // go all over the item groups
             foreach (var xnode in _itemGroups)
             {

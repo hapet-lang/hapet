@@ -8,6 +8,7 @@ using HapetLastPrepare;
 using HapetLsp.Colorizers;
 using HapetPostPrepare;
 using System;
+using System.Diagnostics;
 
 namespace HapetLsp.Handlers
 {
@@ -31,49 +32,49 @@ namespace HapetLsp.Handlers
             colorizer.File.TextSplitted = colorizer.File.Text.ToString().Split('\n');
         }
 
-        internal static void ReparseWholeProject(HapetColorizer colorizer, Compiler compiler, PostPrepare postPrepare, LastPrepare lastPrepare)
+        internal static void ReparseWholeProject(HapetColorizer colorizer, Compiler compiler, PostPrepare postPrepare, LastPrepare lastPrepare, Action projectResolver)
         {
+            Stopwatch stopwatch = new Stopwatch();
+            stopwatch.Start();
+
             HapetType.CurrentTypeContext.ArrayTypeInstances.Clear();
             HapetType.CurrentTypeContext.NullableTypeInstances.Clear();
 
+            postPrepare.AllClassesMetadata.Clear();
+            postPrepare.AllStructsMetadata.Clear();
+            postPrepare.AllEnumsMetadata.Clear();
+            postPrepare.AllFunctionsMetadata.Clear();
+            postPrepare.AllDelegatesMetadata.Clear();
+            postPrepare.AllGenericsMetadata.Clear();
+
+            // clear imported
             foreach (var (_, file) in compiler.GetFiles())
             {
-                foreach (var g in postPrepare.AllGenericsMetadata.ToList())
-                {
-                    if (g.SourceFile == file)
-                    {
-                        RemoveDeclFromLists(g, postPrepare);
-                    }
-                }
-                foreach (var (k, v) in HapetType.CurrentTypeContext.ArrayTypeInstances.ToList())
-                {
-                    if (k.GetDeclaration().SourceFile == file)
-                    {
-                        HapetType.CurrentTypeContext.ArrayTypeInstances.Remove(k);
-                    }
-                }
-                foreach (var (k, v) in HapetType.CurrentTypeContext.NullableTypeInstances.ToList())
-                {
-                    if (k.GetDeclaration().SourceFile == file)
-                    {
-                        HapetType.CurrentTypeContext.NullableTypeInstances.Remove(k);
-                    }
-                }
+                if (!file.IsImported)
+                    continue;
 
                 // clear all decls from namespace and lists
-                foreach (var s in file.Statements)
-                {
-                    if (s is not AstDeclaration decl)
-                        continue;
-                    file.NamespaceScope.RemoveDeclSymbol(decl.Name, decl);
-                    RemoveDeclFromLists(decl, postPrepare);
+                file.NamespaceScope.ClearAllSymbols();
+                file.Statements.Clear();
+                file.CommentLocations.Clear();
+                file.Defines.Clear();
+                file.DirectiveNameLocations.Clear();
+                file.NotCompiledLocations.Clear();
+                file.Usings.Clear();
 
-                    // also remove impls from scope
-                    foreach (var im in decl.GenericImplementations)
-                    {
-                        file.NamespaceScope.RemoveDeclSymbol(im.Name, im);
-                    }
-                }
+                // clear diagnostic messages of file
+                (compiler.MessageHandler as LspMessageHandler).RemoveDiagnosticMessagesOfFile(file);
+            }
+
+            // resolve project data
+            projectResolver?.Invoke();
+
+            foreach (var (_, file) in compiler.GetFiles())
+            {
+                if (file.IsImported)
+                    continue;
+                // clear all decls from namespace and lists
+                file.NamespaceScope.ClearAllSymbols();
                 file.Statements.Clear();
                 file.CommentLocations.Clear();
                 file.Defines.Clear();
@@ -89,7 +90,7 @@ namespace HapetLsp.Handlers
                 {
                     Index = 0,
                     End = 0,
-                    File = file.FilePath.AbsolutePath,
+                    File = file.IsImported ? file.OriginalFile.FilePath.AbsolutePath : file.FilePath.AbsolutePath,
                     LineStartIndex = 0,
                     Line = 1,
                 }, resetCurrentToken: true);
@@ -108,56 +109,8 @@ namespace HapetLsp.Handlers
             // sort and add to builder
             colorizer.SortTokens();
 
-            Console.WriteLine("asd");
-        }
-
-        private static void RemoveDeclFromLists(AstDeclaration decl, PostPrepare postPrepare)
-        {
-            switch (decl)
-            {
-                case AstClassDecl cls:
-                    postPrepare.AllClassesMetadata.Remove(cls);
-                    foreach (var d in cls.GenericImplementations)
-                        RemoveDeclFromLists(d, postPrepare);
-                    foreach (var d in cls.Declarations)
-                        RemoveDeclFromLists(d, postPrepare);
-                    break;
-                case AstStructDecl str:
-                    postPrepare.AllStructsMetadata.Remove(str);
-                    foreach (var d in str.GenericImplementations)
-                        RemoveDeclFromLists(d, postPrepare);
-                    foreach (var d in str.Declarations)
-                        RemoveDeclFromLists(d, postPrepare);
-                    break;
-                case AstGenericDecl gen:
-                    postPrepare.AllGenericsMetadata.Remove(gen);
-                    foreach (var d in gen.Declarations)
-                        RemoveDeclFromLists(d, postPrepare);
-                    break;
-                case AstDelegateDecl del: 
-                    postPrepare.AllDelegatesMetadata.Remove(del);
-                    foreach (var d in del.GenericImplementations)
-                        RemoveDeclFromLists(d, postPrepare);
-                    foreach (var d in del.Functions)
-                        RemoveDeclFromLists(d, postPrepare);
-                    break;
-                case AstEnumDecl enm:
-                    postPrepare.AllEnumsMetadata.Remove(enm);
-                    foreach (var d in enm.GenericImplementations)
-                        RemoveDeclFromLists(d, postPrepare);
-                    foreach (var d in enm.Declarations)
-                        RemoveDeclFromLists(d, postPrepare);
-                    break;
-                case AstFuncDecl fnc:
-                    postPrepare.AllFunctionsMetadata.Remove(fnc);
-                    foreach (var d in fnc.GenericImplementations)
-                        RemoveDeclFromLists(d, postPrepare);
-                    if (fnc.Body == null)
-                        break;
-                    foreach (var d in fnc.Body.Statements.Where(x => x is AstFuncDecl))
-                        RemoveDeclFromLists(d as AstDeclaration, postPrepare);
-                    break;
-            }
+            Console.WriteLine($"Time: {stopwatch.Elapsed.TotalSeconds}");
+            stopwatch.Stop();
         }
     }
 }

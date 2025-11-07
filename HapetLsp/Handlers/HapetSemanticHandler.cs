@@ -45,14 +45,16 @@ namespace HapetLsp.Handlers
         private readonly Compiler _compiler;
         private readonly PostPrepare _postPrepare;
         private readonly LastPrepare _lastPrepare;
+        private readonly Action _projectResolver;
         internal static Dictionary<ProgramFile, HapetColorizer> FileColorizers { get; } = new Dictionary<ProgramFile, HapetColorizer>();
 
-        public HapetSemanticHandler(ILanguageServerFacade facade, Compiler compiler, PostPrepare pp, LastPrepare lp)
+        public HapetSemanticHandler(ILanguageServerFacade facade, Compiler compiler, PostPrepare pp, LastPrepare lp, Action projectResolver)
         {
             _facade = facade;
             _compiler = compiler;
             _postPrepare = pp;
             _lastPrepare = lp;
+            _projectResolver = projectResolver;
         }
 
         protected override SemanticTokensRegistrationOptions CreateRegistrationOptions(SemanticTokensCapability capability, ClientCapabilities clientCapabilities)
@@ -88,7 +90,7 @@ namespace HapetLsp.Handlers
                 return;
 
             var colorizer = CreateColorizer(file, _compiler);
-            HapetSyncHandler.ReparseWholeProject(colorizer, _compiler, _postPrepare, _lastPrepare);
+            HapetSyncHandler.ReparseWholeProject(colorizer, _compiler, _postPrepare, _lastPrepare, _projectResolver);
             foreach (var (t, _) in colorizer.CurrentSemanticTokens)
             {
                 builder.Push(t.Line, t.Offset, t.Width, t.TokenType, t.TokenModifier);
@@ -96,10 +98,11 @@ namespace HapetLsp.Handlers
 
             foreach (var (_, filee) in _compiler.GetFiles())
             {
+                var file2 = filee.OriginalFile != null ? filee.OriginalFile : filee;
                 _facade.TextDocument.PublishDiagnostics(new PublishDiagnosticsParams
                 {
-                    Uri = filee.FilePath,
-                    Diagnostics = Container.From((_compiler.MessageHandler as LspMessageHandler).GetDiagnosticMessages(filee.FilePath.AbsolutePath))
+                    Uri = file2.FilePath,
+                    Diagnostics = Container.From((_compiler.MessageHandler as LspMessageHandler).GetDiagnosticMessages(file2.FilePath.AbsolutePath))
                 });
             }
         }

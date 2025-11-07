@@ -40,46 +40,7 @@ namespace HapetFrontend.ProjectParser
             _projectData = projectData;
             _messageHandler = messageHandler;
 
-            //#pragma warning disable CA1031 // Do not catch general exception types
-            //            try
-            //            {
-            //                projDoc.Load(_projectPath);
-            //            }
-            //            catch (Exception e)
-            //            {
-            //                _messageHandler.ReportMessage([_projectPathAbsolute, e.Message], ErrorCode.Get(CTEN.ProjectFileException));
-            //                return;
-            //            }
-            //#pragma warning restore CA1031 // Do not catch general exception types
-            //            if (projDoc.DocumentElement == null)
-            //            {
-            //                _messageHandler.ReportMessage([_projectPathAbsolute], ErrorCode.Get(CTEN.ProjectFileCouldNotBeParsed));
-            //                return;
-            //            }
-
-            XmlElementSyntax projRoot = _parsedProjectFile.Root as XmlElementSyntax;
-            foreach (var xnode in projRoot.Content)
-            {
-                if (xnode is XmlElementSyntax xmlElement)
-                {
-                    // check that the tag is PropertyGroup
-                    if (xmlElement.Name == "PropertyGroup")
-                    {
-                        // just add it and prepare in another file
-                        _propertyGroups.Add(xmlElement);
-                        continue;
-                    }
-                    else if (xmlElement.Name == "ItemGroup")
-                    {
-                        // just add it and prepare in another file
-                        _itemGroups.Add(xmlElement);
-                        continue;
-                    }
-                }
-
-                var loc = _projectFile.GetLocationFromSpan(xnode.Span.Start, xnode.Span.End);
-                _messageHandler.ReportMessage(_projectFile, loc, [], ErrorCode.Get(CTEN.UnexpectedProjectFileTag));
-            }
+            PrepareFile();
 
             // setting the project path into the settings
             _projectSettings.ProjectPath = Path.GetFullPath(_projectPath);
@@ -104,6 +65,36 @@ namespace HapetFrontend.ProjectParser
             _projectFile.FilePath = new Uri(_projectPathAbsolute);
 
             _parsedProjectFile = Parser.ParseText(_projectFileText);
+        }
+
+        public void PrepareFile()
+        {
+            _propertyGroups.Clear();
+            _itemGroups.Clear();
+
+            XmlElementSyntax projRoot = _parsedProjectFile.Root as XmlElementSyntax;
+            foreach (var xnode in projRoot.Content)
+            {
+                if (xnode is XmlElementSyntax xmlElement)
+                {
+                    // check that the tag is PropertyGroup
+                    if (xmlElement.Name == "PropertyGroup")
+                    {
+                        // just add it and prepare in another file
+                        _propertyGroups.Add(xmlElement);
+                        continue;
+                    }
+                    else if (xmlElement.Name == "ItemGroup")
+                    {
+                        // just add it and prepare in another file
+                        _itemGroups.Add(xmlElement);
+                        continue;
+                    }
+                }
+
+                var loc = _projectFile.GetLocationFromSpan(xnode.Span.Start, xnode.Span.End);
+                _messageHandler.ReportMessage(_projectFile, loc, [], ErrorCode.Get(CTEN.UnexpectedProjectFileTag));
+            }
         }
 
         public void PrepareProjectFile()

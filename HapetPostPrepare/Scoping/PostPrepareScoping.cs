@@ -763,8 +763,12 @@ namespace HapetPostPrepare
 
         private void PostPrepareNestedExprScoping(AstNestedExpr nestExpr)
         {
-            SetScopeAndParent(nestExpr.RightPart, nestExpr);
-            PostPrepareExprScoping(nestExpr.RightPart);
+            // could be null on wrong parsing
+            if (nestExpr.RightPart != null)
+            {
+                SetScopeAndParent(nestExpr.RightPart, nestExpr);
+                PostPrepareExprScoping(nestExpr.RightPart);
+            }
             if (nestExpr.LeftPart != null)
             {
                 SetScopeAndParent(nestExpr.LeftPart, nestExpr);

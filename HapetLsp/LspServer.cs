@@ -13,7 +13,7 @@ namespace HapetLsp
     public class LspServer
     {
         public bool ShouldStop { get; set; } = false; // never changed anywhere. need for SonarCloud not to be angry
-        async public Task StartAsync(ProjectXmlParser projectParser, Compiler compiler, PostPrepare pp, LastPrepare lp)
+        async public Task StartAsync(ProjectXmlParser projectParser, Compiler compiler, PostPrepare pp, LastPrepare lp, Action projectResolver)
         {
             var listener = new TcpListener(IPAddress.Loopback, 5007);
             listener.Start();
@@ -33,6 +33,7 @@ namespace HapetLsp
                             services.AddSingleton(compiler);
                             services.AddSingleton(pp);
                             services.AddSingleton(lp);
+                            services.AddSingleton(projectResolver);
 
                             services.AddTransient<HptprojSyncHandler>();
                             services.AddTransient<HptprojSemanticHandler>();

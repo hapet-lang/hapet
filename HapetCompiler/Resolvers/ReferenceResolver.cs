@@ -16,6 +16,10 @@ namespace HapetCompiler.Resolvers
 
         private void ResolveReferences()
         {
+            _projectData.AllReferencedProjectNames.Clear();
+            LibrariesToLinkWith.Clear();
+            PathsToLinkWith.Clear();
+
             string outFolder = _projectSettings.OutputDirectory;
             foreach (var r in _projectData.References)
             {

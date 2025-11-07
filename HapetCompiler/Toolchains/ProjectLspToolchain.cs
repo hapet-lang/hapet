@@ -67,11 +67,24 @@ namespace HapetCompiler.Toolchains
 
             // starting server
             LspServer server = new LspServer();
-            await server.StartAsync(projectParser, compiler, postPreparer, lastPreparer);
+            await server.StartAsync(projectParser, compiler, postPreparer, lastPreparer, MakeResolveAgain);
 
             // restore it
             HapetType.CurrentTypeContext = cachedTypeContext;
             return (int)CompilerErrors.Ok;
+
+            void MakeResolveAgain()
+            {
+                projectParser.ParseFile();
+                projectParser.PrepareFile();
+                projectParser.PrepareProjectFile();
+
+                // setting pointer size for the whole assembly
+                HapetType.CurrentTypeContext.PointerSize = ProjectSettings.TargetPlatformData.PointerSize;
+                HapetType.CurrentTypeContext.Init();
+
+                resolver.ResolveProjectShite(ProjectData, ProjectSettings, compiler);
+            }
         }
     }
 }
