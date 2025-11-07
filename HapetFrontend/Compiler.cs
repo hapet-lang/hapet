@@ -327,5 +327,20 @@ namespace HapetFrontend
         {
             return new ReadOnlyDictionary<string, ProgramFile>(_files);
         }
+
+        /// <summary>
+        /// Removes files that do not exist anymore
+        /// </summary>
+        public void ActualizeFiles()
+        {
+            foreach (var (k, v) in _files.ToList())
+            {
+                if (v.IsImported)
+                    continue;
+
+                if (!File.Exists(k))
+                    _files.Remove(k);
+            }
+        }
     }
 }

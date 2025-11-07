@@ -11,6 +11,7 @@ using OmniSharp.Extensions.LanguageServer.Protocol.Document;
 using OmniSharp.Extensions.LanguageServer.Protocol.Models;
 using OmniSharp.Extensions.LanguageServer.Protocol.Server;
 using System.Collections.ObjectModel;
+using System.Text;
 using System.Xml.Linq;
 
 namespace HapetLsp.Handlers
@@ -86,8 +87,7 @@ namespace HapetLsp.Handlers
 
             var path = DocumentUri.GetFileSystemPath(identifier);
             var file = _compiler.GetFile(path);
-            if (file == null)
-                return;
+            file ??= _compiler.AddFile(path);
 
             var colorizer = CreateColorizer(file, _compiler);
             HapetSyncHandler.ReparseWholeProject(colorizer, _compiler, _postPrepare, _lastPrepare, _projectResolver);

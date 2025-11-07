@@ -47,6 +47,9 @@ namespace HapetLsp.Handlers
             postPrepare.AllDelegatesMetadata.Clear();
             postPrepare.AllGenericsMetadata.Clear();
 
+            // actualize files
+            compiler.ActualizeFiles();
+
             // clear imported
             foreach (var (_, file) in compiler.GetFiles())
             {
