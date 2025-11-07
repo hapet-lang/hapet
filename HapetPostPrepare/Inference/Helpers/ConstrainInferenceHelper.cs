@@ -139,6 +139,7 @@ namespace HapetPostPrepare
                 containingParent.Location)
                 {
                     AdditionalExprs = new List<AstNestedExpr>(),
+                    IsSyntheticStatement = true,
                 };
                 constrains.Insert(0, specialC);
                 SetScopeAndParent(specialC, containingParent);

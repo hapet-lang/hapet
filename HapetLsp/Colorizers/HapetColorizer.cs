@@ -100,6 +100,8 @@ namespace HapetLsp.Colorizers
             {
                 foreach (var cc in c.Value)
                 {
+                    if (cc.IsSyntheticStatement)
+                        continue;
                     ColorizeConstrainStmt(cc);
                 }
             }

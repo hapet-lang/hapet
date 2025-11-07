@@ -159,7 +159,7 @@ namespace HapetFrontend.Parsing
                 SkipNewlines(inInfo);
             }
 
-            // we need to manually add 'object' constrain
+            // we need to create an empty list of constrains if there are no user-defined
             foreach (var g in generics)
             {
                 // add if does not exist
