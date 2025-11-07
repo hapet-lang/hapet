@@ -205,6 +205,9 @@ namespace HapetPostPrepare
             // skip if it is an interface
             if (decl is AstClassDecl clsDecl && clsDecl.IsInterface)
                 return;
+            // skip wrong parsing 
+            if (decl.Name == null)
+                return;
 
             // location for all the things
             var comLoc = decl.Name.Location;
@@ -230,6 +233,9 @@ namespace HapetPostPrepare
         {
             // skip if it is an interface
             if (decl is AstClassDecl clsDecl && clsDecl.IsInterface)
+                return;
+            // skip wrong parsing 
+            if (decl.Name == null)
                 return;
 
             // location for all the things
@@ -295,6 +301,9 @@ namespace HapetPostPrepare
             // skip if it is an interface
             if (decl is AstClassDecl clsDecl && clsDecl.IsInterface)
                 return;
+            // skip wrong parsing 
+            if (decl.Name == null)
+                return;
 
             // location for all the things
             var comLoc = decl.Name.Location;
@@ -337,6 +346,9 @@ namespace HapetPostPrepare
         {
             // skip interfaces
             if (decl is AstClassDecl clsDecl && clsDecl.IsInterface)
+                return;
+            // skip wrong parsing 
+            if (decl.Name == null)
                 return;
 
             // location for all the things
