@@ -184,7 +184,7 @@ namespace HapetFrontend.Parsing
         [DebuggerHidden]
         private AstStatement ParseAsExpression(ParserInInfo inInfo, ref ParserOutInfo outInfo)
         {
-            var lhs = ParseInExpression(inInfo, ref outInfo);
+            var lhs = ParseComparisonExpression(inInfo, ref outInfo);
             AstStatement rhs;
 
             while (CheckToken(inInfo, TokenType.KwAs))
@@ -195,43 +195,12 @@ namespace HapetFrontend.Parsing
                 // we want to prefer generics
                 var saved1 = inInfo.PreferGenericShite;
                 inInfo.PreferGenericShite = true;
-                rhs = ParseInExpression(inInfo, ref outInfo);
+                rhs = ParseComparisonExpression(inInfo, ref outInfo);
                 inInfo.PreferGenericShite = saved1;
 
                 var binExpr = new AstBinaryExpr("as", lhs as AstExpression, rhs as AstExpression, new Location(lhs.Beginning, rhs.Ending))
                 {
                     OperatorTokenLocation = asTkn?.Location,
-                };
-
-                // error if it is not an expr
-                if (lhs is not AstExpression)
-                    ReportMessage(lhs, [binExpr.Operator], ErrorCode.Get(CTEN.ExprsExpectedInBinExpr));
-                // error if it is not an expr
-                if (rhs is not AstExpression)
-                    ReportMessage(rhs, [binExpr.Operator], ErrorCode.Get(CTEN.ExprsExpectedInBinExprR));
-
-                // set to return it
-                lhs = binExpr;
-            }
-            return lhs;
-        }
-
-        [DebuggerStepThrough]
-        [StackTraceHidden]
-        [DebuggerHidden]
-        private AstStatement ParseInExpression(ParserInInfo inInfo, ref ParserOutInfo outInfo)
-        {
-            var lhs = ParseComparisonExpression(inInfo, ref outInfo);
-            AstStatement rhs;
-
-            while (CheckToken(inInfo, TokenType.KwIn))
-            {
-                var inTkn = NextToken(inInfo);
-                SkipNewlines(inInfo);
-                rhs = ParseComparisonExpression(inInfo, ref outInfo);
-                var binExpr = new AstBinaryExpr("in", lhs as AstExpression, rhs as AstExpression, new Location(lhs.Beginning, rhs.Ending))
-                {
-                    OperatorTokenLocation = inTkn?.Location,
                 };
 
                 // error if it is not an expr

@@ -27,6 +27,16 @@ namespace HapetFrontend.Ast.Statements
         /// </summary>
         public AstBlockExpr Body { get; set; }
 
+        /// <summary>
+        /// 'true' if the for is actually a foreach
+        /// </summary>
+        public bool IsForeach { get; set; }
+
+        /// <summary>
+        /// Argument to loop over
+        /// </summary>
+        public AstExpression ForeachArgument { get; set; }
+
         public override string AAAName => nameof(AstForStmt);
 
         public AstForStmt(AstStatement first, AstExpression second, AstStatement third, AstBlockExpr body, ILocation location = null) : base(location)
@@ -46,6 +56,8 @@ namespace HapetFrontend.Ast.Statements
                 Body.GetDeepCopy() as AstBlockExpr,
                 Location)
             {
+                ForeachArgument = ForeachArgument?.GetDeepCopy() as AstExpression,
+                IsForeach = IsForeach,
                 IsSyntheticStatement = IsSyntheticStatement,
                 Scope = Scope,
                 SourceFile = SourceFile,

@@ -16,6 +16,8 @@ namespace HapetFrontend.Parsing
             AstExpression second = null;
             AstStatement third = null;
             AstBlockExpr body;
+            bool isForeach = false;
+            AstExpression foreachArgument = null;
 
             var beg = Consume(inInfo, TokenType.KwFor, ErrMsg("keyword 'for'", "at beginning of 'for' loop"));
 
@@ -27,29 +29,45 @@ namespace HapetFrontend.Parsing
             {
                 first = ParseStatement(inInfo, ref outInfo);
             }
-            Consume(inInfo, TokenType.Semicolon, ErrMsg("';'", "after the first argument"));
 
-            // if there is a second param
-            if (!CheckToken(inInfo, TokenType.Semicolon))
+            // check if it is a foreach
+            if (CheckToken(inInfo, TokenType.KwIn))
             {
-                var expr = ParseExpression(inInfo, ref outInfo);
-
-                if (expr is not AstExpression)
-                    ReportMessage(expr, [], ErrorCode.Get(CTEN.ForLoopSecondNotExpr));
-                second = expr as AstExpression;
+                NextToken(inInfo); // TODO: save location for LSP
+                isForeach = true;
+                foreachArgument = ParseExpression(inInfo, ref outInfo) as AstExpression;
             }
-            Consume(inInfo, TokenType.Semicolon, ErrMsg("';'", "after the second argument"));
-
-            // if there is a third param
-            if (!CheckToken(inInfo, TokenType.CloseParen))
+            else
             {
-                third = ParseStatement(inInfo, ref outInfo);
+                Consume(inInfo, TokenType.Semicolon, ErrMsg("';'", "after the first argument"));
+
+                // if there is a second param
+                if (!CheckToken(inInfo, TokenType.Semicolon))
+                {
+                    var expr = ParseExpression(inInfo, ref outInfo);
+
+                    if (expr is not AstExpression)
+                        ReportMessage(expr, [], ErrorCode.Get(CTEN.ForLoopSecondNotExpr));
+                    second = expr as AstExpression;
+                }
+                Consume(inInfo, TokenType.Semicolon, ErrMsg("';'", "after the second argument"));
+
+                // if there is a third param
+                if (!CheckToken(inInfo, TokenType.CloseParen))
+                {
+                    third = ParseStatement(inInfo, ref outInfo);
+                }
             }
+                
             var end = Consume(inInfo, TokenType.CloseParen, ErrMsg("')'", "after the third argument"));
 
             body = GetLoopOrCondBlock(inInfo, ref outInfo);
 
-            return new AstForStmt(first, second, third, body, new Location(beg.Location, end.Location));
+            return new AstForStmt(first, second, third, body, new Location(beg.Location, end.Location))
+            {
+                IsForeach = isForeach,
+                ForeachArgument = foreachArgument,
+            };
         }
 
         private AstWhileStmt ParseWhileStatement(ParserInInfo inInfo, ref ParserOutInfo outInfo)

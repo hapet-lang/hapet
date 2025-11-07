@@ -173,8 +173,8 @@ namespace HapetFrontend.Parsing
                     ReportMessage(udecl.Type.Location, [], ErrorCode.Get(CTEN.CommonIdentifierExpected));
                 }
             }
-            // variable declaration without initializer
-            else if (CheckToken(inInfo, TokenType.Semicolon) && udecl.Name != null)
+            // variable declaration without initializer OR variable of foreach
+            else if ((CheckToken(inInfo, TokenType.Semicolon) && udecl.Name != null) || CheckToken(inInfo, TokenType.KwIn))
             {
                 // do not get the next token
                 var varDecl = new AstVarDecl(udecl.Type, udecl.Name, null, udecl.Documentation, new Location(udecl.Beginning, end));
