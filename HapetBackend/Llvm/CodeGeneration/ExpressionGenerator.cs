@@ -1389,6 +1389,12 @@ namespace HapetBackend.Llvm
             var prevForEnd = _currentLoopEnd;
             var prevLoop = _currentLoop;
 
+            // create enumerator holder
+            if (stmt.IsForeach)
+            {
+                GenerateExpressionCode(stmt.ForeachGetEnumeratorVar);
+            }
+
             if (stmt.FirstArgument != null)
                 GenerateExpressionCode(stmt.FirstArgument);
 
@@ -1408,16 +1414,25 @@ namespace HapetBackend.Llvm
 
             // condition
             _builder.PositionAtEnd(bbCond);
-            if (stmt.SecondArgument != null)
+            if (stmt.IsForeach)
             {
-                // building the condition
-                var cmp = GenerateExpressionCode(stmt.SecondArgument);
+                var cmp = GenerateExpressionCode(stmt.ForeachMoveNextCall);
+                GenerateExpressionCode(stmt.ForeachCurrentAssign);
                 _builder.BuildCondBr(cmp, bbBody, bbEnd);
             }
             else
             {
-                // if the second param is null - just move to the body block
-                _builder.BuildBr(bbBody);
+                if (stmt.SecondArgument != null)
+                {
+                    // building the condition
+                    var cmp = GenerateExpressionCode(stmt.SecondArgument);
+                    _builder.BuildCondBr(cmp, bbBody, bbEnd);
+                }
+                else
+                {
+                    // if the second param is null - just move to the body block
+                    _builder.BuildBr(bbBody);
+                }
             }
 
             // body
@@ -1441,6 +1456,7 @@ namespace HapetBackend.Llvm
 
             // inc
             _builder.PositionAtEnd(bbInc);
+            // ATTENTION: nothing to generate when foreach
             if (stmt.ThirdArgument != null)
             {
                 // generating inc code

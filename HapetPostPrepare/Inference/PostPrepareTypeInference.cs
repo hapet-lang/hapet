@@ -1358,10 +1358,51 @@ namespace HapetPostPrepare
                 PostPrepareExprInference(varDecl.Type, inInfo, ref outInfo);
                 // TODO: check for VarType and infer properly
 
-                PostPrepareExprInference(forStmt.ForeachArgument, inInfo, ref outInfo);
+                var arg = forStmt.ForeachArgument;
+                PostPrepareExprInference(arg, inInfo, ref outInfo);
                 // TODO: check that inherited from IEnumerable
                 //forStmt.ForeachArgument.OutType.IsInheritedFrom();
                 // TODO: check that the first arg has the required type 
+
+                var getEnumeratorId = new AstIdExpr("GetEnumerator");
+                getEnumeratorId.SetDataFromStmt(arg);
+                var getEnumeratorObject = new AstNestedExpr(arg.GetDeepCopy() as AstExpression, null);
+                getEnumeratorObject.SetDataFromStmt(arg);
+                var getEnumeratorCall = new AstCallExpr(getEnumeratorObject, getEnumeratorId);
+                getEnumeratorCall.SetDataFromStmt(arg);
+                var getEnumeratorVarVar = new AstIdExpr("var");
+                getEnumeratorVarVar.SetDataFromStmt(arg);
+                var getEnumeratorVar = new AstVarDecl(getEnumeratorVarVar, new AstIdExpr("__enumeratorHolder"), getEnumeratorCall);
+                getEnumeratorVar.SetDataFromStmt(arg);
+                PostPrepareExprInference(getEnumeratorVar, inInfo, ref outInfo);
+                getEnumeratorVar.Scope.DefineDeclSymbol(getEnumeratorVar.Name, getEnumeratorVar);
+
+                var moveNextId = new AstIdExpr("MoveNext");
+                moveNextId.SetDataFromStmt(arg);
+                var moveNextObjectId = new AstIdExpr("__enumeratorHolder");
+                moveNextObjectId.SetDataFromStmt(arg);
+                var moveNextObject = new AstNestedExpr(moveNextObjectId, null);
+                moveNextObject.SetDataFromStmt(arg);
+                var moveNextCall = new AstCallExpr(moveNextObject, moveNextId);
+                PostPrepareExprInference(moveNextCall, inInfo, ref outInfo);
+
+                var currentId = new AstIdExpr("Current");
+                currentId.SetDataFromStmt(arg);
+                var currentObjectId = new AstIdExpr("__enumeratorHolder");
+                currentObjectId.SetDataFromStmt(arg);
+                var currentObject = new AstNestedExpr(currentObjectId, null);
+                currentObject.SetDataFromStmt(arg);
+                var currentNested = new AstNestedExpr(currentId, currentObject);
+                currentNested.SetDataFromStmt(arg);
+                var assignName = new AstNestedExpr(varDecl.Name.GetDeepCopy() as AstIdExpr, null);
+                assignName.SetDataFromStmt(varDecl);
+                var currentAssign = new AstAssignStmt(assignName, currentNested);
+                currentAssign.SetDataFromStmt(varDecl);
+                PostPrepareExprInference(currentAssign, inInfo, ref outInfo);
+
+                forStmt.ForeachGetEnumeratorVar = getEnumeratorVar;
+                forStmt.ForeachMoveNextCall = moveNextCall;
+                forStmt.ForeachCurrentAssign = currentAssign;
             }
             else
             {

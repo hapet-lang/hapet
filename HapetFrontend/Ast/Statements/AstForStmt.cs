@@ -37,6 +37,12 @@ namespace HapetFrontend.Ast.Statements
         /// </summary>
         public AstExpression ForeachArgument { get; set; }
 
+        #region foreach helper props
+        public AstVarDecl ForeachGetEnumeratorVar { get; set; }
+        public AstCallExpr ForeachMoveNextCall { get; set; }
+        public AstAssignStmt ForeachCurrentAssign { get; set; }
+        #endregion
+
         public override string AAAName => nameof(AstForStmt);
 
         public AstForStmt(AstStatement first, AstExpression second, AstStatement third, AstBlockExpr body, ILocation location = null) : base(location)

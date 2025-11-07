@@ -623,6 +623,11 @@ namespace HapetLastPrepare
             LPRAPExpr(stmt.SecondArgument, ref outInfo);
             LPRAPExpr(stmt.ThirdArgument, ref outInfo);
 
+            LPRAPExpr(stmt.ForeachArgument, ref outInfo);
+            LPRAPExpr(stmt.ForeachGetEnumeratorVar, ref outInfo);
+            LPRAPExpr(stmt.ForeachMoveNextCall, ref outInfo);
+            LPRAPExpr(stmt.ForeachCurrentAssign, ref outInfo);
+
             LPRAPBlockExpr(stmt.Body, ref outInfo);
         }
 
