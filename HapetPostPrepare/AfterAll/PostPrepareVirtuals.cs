@@ -40,15 +40,6 @@ namespace HapetPostPrepare
 
         public void PostPrepareMetadataInheritedFunctions(AstDeclaration decl)
         {
-            if (GenericsHelper.ShouldTheDeclBeSkippedFromCodeGen(decl))
-            {
-                if (decl is AstClassDecl cls)
-                    cls.AllVirtualMethods = new List<AstFuncDecl>();
-                else if (decl is AstStructDecl str)
-                    str.AllVirtualMethods = new List<AstFuncDecl>();
-                return;
-            }
-
             _currentSourceFile = decl.SourceFile;
             if (decl.IsNestedDecl)
                 _currentParentStack.AddParent(decl.ParentDecl);
@@ -153,9 +144,10 @@ namespace HapetPostPrepare
                                 else if (currF != null && !currF.SpecialKeys.Contains(TokenType.KwNew))
                                 {
                                     // the method is implemented in parent class and current class
-                                    // we need to error
-                                    _compiler.MessageHandler.ReportMessage(_currentSourceFile, currF.Name,
-                                        [HapetType.AsString(definedInOneOfTheParents.ContainingParent.Type.OutType)], ErrorCode.Get(CTEN.MethodAlreadyDefined));
+                                    // we need to error if not impl of generic
+                                    if (!decl.IsImplOfGeneric)
+                                        _compiler.MessageHandler.ReportMessage(_currentSourceFile, currF.Name,
+                                            [HapetType.AsString(definedInOneOfTheParents.ContainingParent.Type.OutType)], ErrorCode.Get(CTEN.MethodAlreadyDefined));
                                     continue;
                                 }
                                 // else - everything is ok probably
@@ -170,9 +162,10 @@ namespace HapetPostPrepare
                                 {
                                     if (!inhF.IsPropertyFunction)
                                         // error - the method of the interface was not implemented
-                                        _compiler.MessageHandler.ReportMessage(_currentSourceFile, inh,
-                                            [HapetType.AsString(decl.Type.OutType),
-                                                inhF.Name.Name], ErrorCode.Get(CTEN.NoMethodImplementation));
+                                        if (!decl.IsImplOfGeneric)
+                                            _compiler.MessageHandler.ReportMessage(_currentSourceFile, inh,
+                                                [HapetType.AsString(decl.Type.OutType),
+                                                    inhF.Name.Name], ErrorCode.Get(CTEN.NoMethodImplementation));
                                 }
                                 else
                                 {
@@ -245,8 +238,9 @@ namespace HapetPostPrepare
                         continue;
 
                     // error - function shadowing
-                    _compiler.MessageHandler.ReportMessage(_currentSourceFile, currM.Name,
-                        [HapetType.AsString(parentFnc.Type.OutType)], ErrorCode.Get(CTEN.FunctionShadowing));
+                    if (!decl.IsImplOfGeneric)
+                        _compiler.MessageHandler.ReportMessage(_currentSourceFile, currM.Name,
+                            [HapetType.AsString(parentFnc.Type.OutType)], ErrorCode.Get(CTEN.FunctionShadowing));
                 }
                 else if (parentFnc != null && currM.SpecialKeys.Contains(TokenType.KwNew))
                 {
@@ -273,8 +267,9 @@ namespace HapetPostPrepare
                             continue;
 
                         // error - implementation of method not found in curr class
-                        _compiler.MessageHandler.ReportMessage(_currentSourceFile, decl.Name,
-                            [m.Name.Name], ErrorCode.Get(CTEN.NoAbsMethodImpl));
+                        if (!decl.IsImplOfGeneric)
+                            _compiler.MessageHandler.ReportMessage(_currentSourceFile, decl.Name,
+                                [m.Name.Name], ErrorCode.Get(CTEN.NoAbsMethodImpl));
                     }
                 }
             }
@@ -309,9 +304,6 @@ namespace HapetPostPrepare
 
         public void PostPrepareMetadataTypeInheritedFieldDecls(AstDeclaration decl)
         {
-            if (GenericsHelper.ShouldTheDeclBeSkippedFromCodeGen(decl))
-                return;
-
             _currentSourceFile = decl.SourceFile;
             if (decl.IsNestedDecl)
                 _currentParentStack.AddParent(decl.ParentDecl);
@@ -396,9 +388,10 @@ namespace HapetPostPrepare
                                 if (currF != null && !currF.SpecialKeys.Contains(TokenType.KwNew))
                                 {
                                     // the field is implemented in parent class and current class
-                                    // we need to error
-                                    _compiler.MessageHandler.ReportMessage(_currentSourceFile, currF,
-                                        [HapetType.AsString(definedInOneOfTheParents.ContainingParent.Type.OutType)], ErrorCode.Get(CTEN.FieldAlreadyDefined));
+                                    // we need to error if not impl of generic
+                                    if (!decl.IsImplOfGeneric)
+                                        _compiler.MessageHandler.ReportMessage(_currentSourceFile, currF,
+                                            [HapetType.AsString(definedInOneOfTheParents.ContainingParent.Type.OutType)], ErrorCode.Get(CTEN.FieldAlreadyDefined));
                                     continue;
                                 }
                                 // else - everything is ok probably
@@ -413,8 +406,9 @@ namespace HapetPostPrepare
                                 {
                                     if (!inhF.IsPropertyField)
                                         // error - the field of the interface was not implemented
-                                        _compiler.MessageHandler.ReportMessage(_currentSourceFile, inh,
-                                            [HapetType.AsString(decl.Type.OutType), inhF.Name?.Name], ErrorCode.Get(CTEN.NoFieldImplementation));
+                                        if (!decl.IsImplOfGeneric)
+                                            _compiler.MessageHandler.ReportMessage(_currentSourceFile, inh,
+                                                [HapetType.AsString(decl.Type.OutType), inhF.Name?.Name], ErrorCode.Get(CTEN.NoFieldImplementation));
                                 }
                                 else
                                 {
@@ -478,8 +472,9 @@ namespace HapetPostPrepare
                 if (parentProp != null && !currP.SpecialKeys.Contains(TokenType.KwNew))
                 {
                     // error - property shadowing
-                    _compiler.MessageHandler.ReportMessage(_currentSourceFile, currP.Name,
-                        [$"{parentProp.ContainingParent.Name.Name}::{parentProp.Name.Name}"], ErrorCode.Get(CTEN.PropertyShadowing));
+                    if (!decl.IsImplOfGeneric)
+                        _compiler.MessageHandler.ReportMessage(_currentSourceFile, currP.Name,
+                            [$"{parentProp.ContainingParent.Name.Name}::{parentProp.Name.Name}"], ErrorCode.Get(CTEN.PropertyShadowing));
                 }
                 else if (parentProp != null && currP.SpecialKeys.Contains(TokenType.KwNew))
                 {
@@ -502,8 +497,9 @@ namespace HapetPostPrepare
                     if (p.SpecialKeys.Contains(TokenType.KwAbstract))
                     {
                         // error - implementation of method not found in curr class
-                        _compiler.MessageHandler.ReportMessage(_currentSourceFile, decl.Name,
-                            [$"{p.ContainingParent.Name.Name}::{p.Name.Name}"], ErrorCode.Get(CTEN.NoAbsPropertyImpl));
+                        if (!decl.IsImplOfGeneric)
+                            _compiler.MessageHandler.ReportMessage(_currentSourceFile, decl.Name,
+                                [$"{p.ContainingParent.Name.Name}::{p.Name.Name}"], ErrorCode.Get(CTEN.NoAbsPropertyImpl));
                     }
                 }
             }
@@ -539,15 +535,6 @@ namespace HapetPostPrepare
         // TODO: remove the step - it is the same as step 8
         public void PostPrepareMetadataTypeInheritedPropsDecls(AstDeclaration decl)
         {
-            if (GenericsHelper.ShouldTheDeclBeSkippedFromCodeGen(decl))
-            {
-                if (decl is AstClassDecl cls2)
-                    cls2.AllVirtualProps = new List<AstPropertyDecl>();
-                else if (decl is AstStructDecl str2)
-                    str2.AllVirtualProps = new List<AstPropertyDecl>();
-                return;
-            }
-
             _currentSourceFile = decl.SourceFile;
             if (decl.IsNestedDecl)
                 _currentParentStack.AddParent(decl.ParentDecl);
@@ -641,9 +628,10 @@ namespace HapetPostPrepare
                                 else if (currF != null && !currF.SpecialKeys.Contains(TokenType.KwNew))
                                 {
                                     // the prop is implemented in parent class and current class
-                                    // we need to error
-                                    _compiler.MessageHandler.ReportMessage(_currentSourceFile, currF.Name,
-                                        [HapetType.AsString(definedInOneOfTheParents.ContainingParent.Type.OutType)], ErrorCode.Get(CTEN.PropaAlreadyDefined));
+                                    // we need to error if not impl of generic
+                                    if (!decl.IsImplOfGeneric)
+                                        _compiler.MessageHandler.ReportMessage(_currentSourceFile, currF.Name,
+                                            [HapetType.AsString(definedInOneOfTheParents.ContainingParent.Type.OutType)], ErrorCode.Get(CTEN.PropaAlreadyDefined));
                                     continue;
                                 }
                                 // else - everything is ok probably
@@ -657,8 +645,9 @@ namespace HapetPostPrepare
                                 if (currF == null)
                                 {
                                     // error - the prop of the interface was not implemented
-                                    _compiler.MessageHandler.ReportMessage(_currentSourceFile, inh,
-                                        [HapetType.AsString(decl.Type.OutType), inhF.Name.Name], ErrorCode.Get(CTEN.NoPropaImplementation));
+                                    if (!decl.IsImplOfGeneric)
+                                        _compiler.MessageHandler.ReportMessage(_currentSourceFile, inh,
+                                            [HapetType.AsString(decl.Type.OutType), inhF.Name.Name], ErrorCode.Get(CTEN.NoPropaImplementation));
                                 }
                                 else
                                 {
@@ -722,8 +711,9 @@ namespace HapetPostPrepare
                 if (parentProp != null && !currP.SpecialKeys.Contains(TokenType.KwNew))
                 {
                     // error - property shadowing
-                    _compiler.MessageHandler.ReportMessage(_currentSourceFile, currP.Name,
-                        [$"{parentProp.ContainingParent.Name.Name}::{parentProp.Name.Name}"], ErrorCode.Get(CTEN.PropertyShadowing));
+                    if (!decl.IsImplOfGeneric)
+                        _compiler.MessageHandler.ReportMessage(_currentSourceFile, currP.Name,
+                            [$"{parentProp.ContainingParent.Name.Name}::{parentProp.Name.Name}"], ErrorCode.Get(CTEN.PropertyShadowing));
                 }
                 else if (parentProp != null && currP.SpecialKeys.Contains(TokenType.KwNew))
                 {
@@ -746,8 +736,9 @@ namespace HapetPostPrepare
                     if (p.SpecialKeys.Contains(TokenType.KwAbstract))
                     {
                         // error - implementation of method not found in curr class
-                        _compiler.MessageHandler.ReportMessage(_currentSourceFile, decl.Name,
-                            [$"{p.ContainingParent.Name.Name}::{p.Name.Name}"], ErrorCode.Get(CTEN.NoAbsPropertyImpl));
+                        if (!decl.IsImplOfGeneric)
+                            _compiler.MessageHandler.ReportMessage(_currentSourceFile, decl.Name,
+                                [$"{p.ContainingParent.Name.Name}::{p.Name.Name}"], ErrorCode.Get(CTEN.NoAbsPropertyImpl));
                     }
                 }
             }
