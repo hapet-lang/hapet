@@ -411,6 +411,7 @@ namespace HapetPostPrepare
             ReplaceAllTuplesInStmt(expr.SecondArgument);
             ReplaceAllTuplesInStmt(expr.ThirdArgument);
             ReplaceAllTuplesInStmt(expr.Body);
+            ReplaceAllTuplesInStmt(expr.ForeachArgument);
         }
 
         private void ReplaceAllTuplesInWhile(AstWhileStmt expr)

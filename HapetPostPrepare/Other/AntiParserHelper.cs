@@ -463,10 +463,19 @@ namespace HapetPostPrepare
         {
             sb.Append("for (");
             AntiParseExpr(forStmt.FirstArgument, sb, offset);
-            sb.Append("; ");
-            AntiParseExpr(forStmt.SecondArgument, sb, offset);
-            sb.Append("; ");
-            AntiParseExpr(forStmt.ThirdArgument, sb, offset);
+            if (forStmt.IsForeach)
+            {
+                sb.Append(" in ");
+                AntiParseExpr(forStmt.ForeachArgument, sb, offset);
+            }
+            else
+            {
+                sb.Append("; ");
+                AntiParseExpr(forStmt.SecondArgument, sb, offset);
+                sb.Append("; ");
+                AntiParseExpr(forStmt.ThirdArgument, sb, offset);
+            }
+                
             sb.Append(")\n");
 
             AntiParseExpr(forStmt.Body, sb, offset);

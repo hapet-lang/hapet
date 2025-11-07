@@ -629,6 +629,10 @@ namespace HapetPostPrepare
             {
                 ReplaceAllGenericTypesInExpr(forStmt.ThirdArgument);
             }
+            if (forStmt.ForeachArgument != null)
+            {
+                ReplaceAllGenericTypesInExpr(forStmt.ForeachArgument);
+            }
         }
 
         private void ReplaceAllGenericTypesInWhileStmt(AstWhileStmt whileStmt)

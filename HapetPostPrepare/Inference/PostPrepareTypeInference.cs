@@ -1352,20 +1352,34 @@ namespace HapetPostPrepare
 
         private void PostPrepareForStmtInference(AstForStmt forStmt, InInfo inInfo, ref OutInfo outInfo)
         {
-            if (forStmt.FirstArgument != null)
-                PostPrepareExprInference(forStmt.FirstArgument, inInfo, ref outInfo);
-            if (forStmt.SecondArgument != null)
+            if (forStmt.IsForeach)
             {
-                PostPrepareExprInference(forStmt.SecondArgument, inInfo, ref outInfo);
+                var varDecl = forStmt.FirstArgument as AstVarDecl;
+                PostPrepareExprInference(varDecl.Type, inInfo, ref outInfo);
+                // TODO: check for VarType and infer properly
 
-                // error if it is not a bool type because it has to be
-                if (forStmt.SecondArgument.OutType is not BoolType)
-                {
-                    _compiler.MessageHandler.ReportMessage(_currentSourceFile, forStmt.SecondArgument, [], ErrorCode.Get(CTEN.ExprIsNotBool));
-                }
+                PostPrepareExprInference(forStmt.ForeachArgument, inInfo, ref outInfo);
+                // TODO: check that inherited from IEnumerable
+                //forStmt.ForeachArgument.OutType.IsInheritedFrom();
+                // TODO: check that the first arg has the required type 
             }
-            if (forStmt.ThirdArgument != null)
-                PostPrepareExprInference(forStmt.ThirdArgument, inInfo, ref outInfo);
+            else
+            {
+                if (forStmt.FirstArgument != null)
+                    PostPrepareExprInference(forStmt.FirstArgument, inInfo, ref outInfo);
+                if (forStmt.SecondArgument != null)
+                {
+                    PostPrepareExprInference(forStmt.SecondArgument, inInfo, ref outInfo);
+
+                    // error if it is not a bool type because it has to be
+                    if (forStmt.SecondArgument.OutType is not BoolType)
+                    {
+                        _compiler.MessageHandler.ReportMessage(_currentSourceFile, forStmt.SecondArgument, [], ErrorCode.Get(CTEN.ExprIsNotBool));
+                    }
+                }
+                if (forStmt.ThirdArgument != null)
+                    PostPrepareExprInference(forStmt.ThirdArgument, inInfo, ref outInfo);
+            }            
 
             PostPrepareExprInference(forStmt.Body, inInfo, ref outInfo);
         }

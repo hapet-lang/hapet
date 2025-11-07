@@ -914,6 +914,11 @@ namespace HapetPostPrepare
                 SetScopeAndParent(forStmt.ThirdArgument, forStmt, forScope);
                 PostPrepareExprScoping(forStmt.ThirdArgument);
             }
+            if (forStmt.ForeachArgument != null)
+            {
+                SetScopeAndParent(forStmt.ForeachArgument, forStmt, forScope);
+                PostPrepareExprScoping(forStmt.ForeachArgument);
+            }
         }
 
         private static ulong _whileCounter = 0;
