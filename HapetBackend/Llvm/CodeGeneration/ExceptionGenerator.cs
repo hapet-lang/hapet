@@ -370,5 +370,14 @@ namespace HapetBackend.Llvm
             var methType = _typeMap[methSymbol.Decl.Type.OutType];
             _builder.BuildCall2(methType, methFunc, new LLVMValueRef[] { });
         }
+
+        private void GenerateNullReferenceException(string message)
+        {
+            var cls = _currentFunction.Scope.GetSymbolInNamespace("System", new AstIdExpr("NullReferenceException"));
+            var methSymbol = (cls.Decl as AstClassDecl).SubScope.GetSymbol(new AstIdExpr("Throw")) as DeclSymbol;
+            var methFunc = _valueMap[methSymbol];
+            var methType = _typeMap[methSymbol.Decl.Type.OutType];
+            _builder.BuildCall2(methType, methFunc, new LLVMValueRef[] { HapetValueToLLVMValue(HapetType.CurrentTypeContext.StringTypeInstance, message) });
+        }
     }
 }

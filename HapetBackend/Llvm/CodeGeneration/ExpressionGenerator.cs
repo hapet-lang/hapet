@@ -840,7 +840,11 @@ namespace HapetBackend.Llvm
                     if (expr.TypeOrObjectName.OutType is StructType)
                         args.Add(GenerateExpressionCode(expr.TypeOrObjectName, true));
                     else
-                        args.Add(GenerateExpressionCode(expr.TypeOrObjectName));
+                    {
+                        var objExpr = GenerateExpressionCode(expr.TypeOrObjectName);
+                        args.Add(objExpr);
+                        GenerateNullReferenceCheck(objExpr, expr.TypeOrObjectName);
+                    }
                     objectType = expr.TypeOrObjectName.OutType;
                 }
 
@@ -1045,6 +1049,8 @@ namespace HapetBackend.Llvm
                     leftPartDecl = classT.Declaration;
                     leftPartDeclarations = classT.Declaration.Declarations.Where(x => x is AstVarDecl).ToList();
                     leftPartType = classT;
+
+                    GenerateNullReferenceCheck(leftPart, expr.LeftPart);
                 }
                 else if (expr.LeftPart.OutType is StructType structT)
                 {
@@ -1994,6 +2000,33 @@ namespace HapetBackend.Llvm
         {
             var bb = _caseBlockDictionary[stmt.CaseToGoInto];
             _builder.BuildBr(bb);
+        }
+
+        private unsafe void GenerateNullReferenceCheck(LLVMValueRef ptrToObject, AstExpression nullCheckedExpr)
+        {
+            // getting nulled expr as string
+            StringBuilder sb = new StringBuilder();
+            _postPreparer.AntiParseExpr(nullCheckedExpr, sb, "");
+            string name = sb.ToString();
+
+            // creating other blocks
+            var bbTrue = _lastFunctionValueRef.AppendBasicBlockInContext(_context, $"nre.null");
+            var bbFalse = _lastFunctionValueRef.AppendBasicBlockInContext(_context, $"nre.notnull");
+
+            var nullPtrT = PointerType.GetPointerType(HapetType.CurrentTypeContext.GetIntType(1, false));
+            var nullPtr = LLVM.ConstPointerNull(HapetTypeToLLVMType(HapetType.CurrentTypeContext.GetIntType(1, false)));
+            var leftV = CreateCast(_builder, nullPtr, nullPtrT, HapetType.CurrentTypeContext.IntPtrTypeInstance);
+            var rightV = CreateCast(_builder, ptrToObject, nullPtrT, HapetType.CurrentTypeContext.IntPtrTypeInstance);
+            var binOp = SearchBinOp("==", HapetType.CurrentTypeContext.IntPtrTypeInstance, HapetType.CurrentTypeContext.IntPtrTypeInstance);
+            var res = binOp(_builder, leftV, rightV, "cmpResult");
+            _builder.BuildCondBr(res, bbTrue, bbFalse);
+
+            // if obj is null
+            _builder.PositionAtEnd(bbTrue);
+            GenerateNullReferenceException(name);
+            _builder.BuildUnreachable();
+
+            _builder.PositionAtEnd(bbFalse);
         }
     }
 }

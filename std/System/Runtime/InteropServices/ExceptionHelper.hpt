@@ -163,6 +163,6 @@ private static class ExceptionHelper
         {
             stackTrace += "\n    at " + _currentExceptionStackTrace[i];
         }
-        return string.Format("Unhandled {0} thrown {1}", exceptionName, stackTrace);
+        return string.Format("Unhandled {0} ({1}) thrown {2}", exceptionName, _currentException.Message, stackTrace);
     }
 }

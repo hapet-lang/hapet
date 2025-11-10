@@ -10,4 +10,11 @@ public class NullReferenceException : SystemException
 {
     public NullReferenceException() { }
     public NullReferenceException(string message) : base(message) { }
+
+    [DeclarationUsed]
+    [SuppressStackTrace]
+    public static void Throw(string instanceName)
+    {
+        throw new NullReferenceException(string.Format("'{0}' was null", instanceName));
+    }
 }
