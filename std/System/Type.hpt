@@ -25,6 +25,7 @@ public struct Type
     internal byte _interfaceCount;
 
     /// Returns full name of the type
+    [DeclarationUsed]
     public string FullName 
     {
         get 

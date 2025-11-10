@@ -1130,7 +1130,7 @@ namespace HapetBackend.Llvm
                             var elementIndexValueRef = LLVMValueRef.CreateConstInt(_context.Int32Type, (ulong)elementIndex);
                             // WARN: hard cock
                             var typeConverter = _currentFunction.Scope.GetSymbolInNamespace("System.Runtime.Conversion", new AstIdExpr("TypeConverter"));
-                            var offseterSymbol = (typeConverter.Decl as AstClassDecl).SubScope.GetSymbol(new AstIdExpr("System.Runtime.Conversion.TypeConverter::GetInterfaceOffset(void*:System.Runtime.TypeInfoUnsafe*:int)")) as DeclSymbol;
+                            var offseterSymbol = (typeConverter.Decl as AstClassDecl).SubScope.GetSymbol(new AstIdExpr("GetInterfaceOffset")) as DeclSymbol;
                             var offseterFunc = _valueMap[offseterSymbol];
                             LLVMTypeRef funcType = _typeMap[offseterSymbol.Decl.Type.OutType];
                             var offset = _builder.BuildCall2(funcType, offseterFunc, new LLVMValueRef[] { leftPart, castTypeInfo, elementIndexValueRef }, "interfaceOffset");
