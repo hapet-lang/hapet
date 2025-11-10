@@ -1417,7 +1417,6 @@ namespace HapetBackend.Llvm
             if (stmt.IsForeach)
             {
                 var cmp = GenerateExpressionCode(stmt.ForeachMoveNextCall);
-                GenerateExpressionCode(stmt.ForeachCurrentAssign);
                 _builder.BuildCondBr(cmp, bbBody, bbEnd);
             }
             else
@@ -1437,6 +1436,8 @@ namespace HapetBackend.Llvm
 
             // body
             _builder.PositionAtEnd(bbBody);
+            if (stmt.IsForeach)
+                GenerateExpressionCode(stmt.ForeachCurrentAssign);
             if (stmt.Body != null)
             {
                 // generating body code
