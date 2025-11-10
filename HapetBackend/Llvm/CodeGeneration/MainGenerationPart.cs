@@ -267,6 +267,19 @@ namespace HapetBackend.Llvm
                         // set up defer shite
                         // making cool name
                         string funcName = _postPreparer.GetFuncNameAsOriginal(funcDecl); // TODO: also add namespace, class and params
+                        if (funcDecl.IsNestedDecl)
+                        {
+                            string parentFuncName = _postPreparer.GetFuncNameAsOriginal(funcDecl.ParentDecl as AstFuncDecl);
+                            string containingParent = _postPreparer.GetNameFromAst(funcDecl.ParentDecl.ContainingParent.Name, _compiler.MessageHandler);
+                            string nameSpace = funcDecl.ParentDecl.ContainingParent.SourceFile.Namespace;
+                            funcName = $"{nameSpace}.{containingParent}.{parentFuncName}.{funcName}";
+                        }
+                        else
+                        {
+                            string containingParent = _postPreparer.GetNameFromAst(funcDecl.ContainingParent.Name, _compiler.MessageHandler);
+                            string nameSpace = funcDecl.ContainingParent.SourceFile.Namespace;
+                            funcName = $"{nameSpace}.{containingParent}.{funcName}";
+                        }
                         PushStackTrace(funcName);
                     }
 

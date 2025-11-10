@@ -525,7 +525,7 @@ namespace HapetPostPrepare
         /// </summary>
         /// <param name="idExpr"></param>
         /// <returns></returns>
-        private string GetNameFromAst(AstIdExpr idExpr, IMessageHandler messageHandler)
+        public string GetNameFromAst(AstIdExpr idExpr, IMessageHandler messageHandler)
         {
             if (idExpr is not AstIdGenericExpr genId)
                 return idExpr.Name;
