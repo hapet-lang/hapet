@@ -146,27 +146,16 @@ namespace HapetBackend.Llvm
                     _builder.PositionAtEnd(bbCatch);
                     // getting exception
                     parentDecl = _compiler.MainFunction.Scope.GetSymbolInNamespace("System.Runtime.InteropServices", new AstIdExpr("ExceptionHelper"));
-                    funcDecl = (parentDecl.Decl as AstClassDecl).SubScope.GetSymbol(new AstIdExpr("GetException")) as DeclSymbol;
+                    funcDecl = (parentDecl.Decl as AstClassDecl).SubScope.GetSymbol(new AstIdExpr("GetExceptionMessage")) as DeclSymbol;
                     funcValue = _valueMap[funcDecl];
                     funcType = _typeMap[funcDecl.Decl.Type.OutType];
-                    var exception = _builder.BuildCall2(funcType, funcValue, []);
-                    parentDecl = _compiler.MainFunction.Scope.GetSymbolInNamespace("System.Runtime.Conversion", new AstIdExpr("TypeConverter"));
-                    funcDecl = (parentDecl.Decl as AstClassDecl).SubScope.GetSymbol(new AstIdExpr("GetTypeInfo")) as DeclSymbol;
-                    funcValue = _valueMap[funcDecl];
-                    funcType = _typeMap[funcDecl.Decl.Type.OutType];
-                    var exceptionTypeInfoPtr = _builder.BuildCall2(funcType, funcValue, [exception]);
-                    //var exceptionTypeInfo = _builder.BuildLoad2(GetTypeType(), exceptionTypeInfoPtr);
-                    parentDecl = _compiler.MainFunction.Scope.GetSymbolInNamespace("System", new AstIdExpr("Type"));
-                    funcDecl = (parentDecl.Decl as AstStructDecl).SubScope.GetSymbol(new AstIdExpr("get_FullName")) as DeclSymbol;
-                    funcValue = _valueMap[funcDecl];
-                    funcType = _typeMap[funcDecl.Decl.Type.OutType];
-                    var exceptionFullName = _builder.BuildCall2(funcType, funcValue, [exceptionTypeInfoPtr]);
+                    var exceptionMessage = _builder.BuildCall2(funcType, funcValue, []);
                     // TODO: get exception and print stacktrace
                     parentDecl = _compiler.MainFunction.Scope.GetSymbolInNamespace("System", new AstIdExpr("Console"));
                     funcDecl = (parentDecl.Decl as AstClassDecl).SubScope.GetSymbol(new AstIdExpr("WriteLine")) as DeclSymbol;
                     funcValue = _valueMap[funcDecl];
                     funcType = _typeMap[funcDecl.Decl.Type.OutType];
-                    _builder.BuildCall2(funcType, funcValue, [exceptionFullName]);
+                    _builder.BuildCall2(funcType, funcValue, [exceptionMessage]);
                     _builder.BuildRet(LLVMValueRef.CreateConstInt(returnType, 1));
                     #endregion
 

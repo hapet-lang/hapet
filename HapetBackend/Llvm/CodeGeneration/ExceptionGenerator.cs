@@ -32,6 +32,16 @@ namespace HapetBackend.Llvm
                 methFunc = _valueMap[methSymbol];
                 methType = _typeMap[methSymbol.Decl.Type.OutType];
                 _builder.BuildCall2(methType, methFunc, new LLVMValueRef[] { exc });
+
+                var stackTraceClass = _currentFunction.Scope.GetSymbolInNamespace("System", new AstIdExpr("StackTrace"));
+                methSymbol = (stackTraceClass.Decl as AstClassDecl).SubScope.GetSymbol(new AstIdExpr("CopyStackTrace")) as DeclSymbol;
+                methFunc = _valueMap[methSymbol];
+                methType = _typeMap[methSymbol.Decl.Type.OutType];
+                var copiedStackTrace = _builder.BuildCall2(methType, methFunc, new LLVMValueRef[] { });
+                methSymbol = (helper.Decl as AstClassDecl).SubScope.GetSymbol(new AstIdExpr("SetExceptionStackTrace")) as DeclSymbol;
+                methFunc = _valueMap[methSymbol];
+                methType = _typeMap[methSymbol.Decl.Type.OutType];
+                _builder.BuildCall2(methType, methFunc, new LLVMValueRef[] { copiedStackTrace });
             }
 
             // getting last jmpbuf

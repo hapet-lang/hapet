@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Runtime.Conversion;
 
 #if TARGET_ARCH == "x86";
 [DeclarationUsed]
@@ -100,6 +101,7 @@ private static class ExceptionHelper
 
     private static LightList<uintptr> _jmpBufs = new LightList<uintptr>();
     private static Exception _currentException;
+    private static string[] _currentExceptionStackTrace;
 
     [DeclarationUsed]
     [SuppressStackTrace]
@@ -134,5 +136,33 @@ private static class ExceptionHelper
     private static Exception GetException()
     {
         return _currentException;
+    }
+
+    [DeclarationUsed]
+    [SuppressStackTrace]
+    private static void SetExceptionStackTrace(string[] st)
+    {
+        _currentExceptionStackTrace = st;
+    }
+
+    [DeclarationUsed]
+    [SuppressStackTrace]
+    private static string[] GetExceptionStackTrace()
+    {
+        return _currentExceptionStackTrace;
+    }
+
+    [DeclarationUsed]
+    [SuppressStackTrace]
+    private static string GetExceptionMessage()
+    {
+        string exceptionName = (*TypeConverter.GetTypeInfo((void*)_currentException)).FullName;
+        // TODO: replace with string.Join
+        string stackTrace = "";
+        for (int i = 0; i < _currentExceptionStackTrace.Length; i++)
+        {
+            stackTrace += "\n    at " + _currentExceptionStackTrace[i];
+        }
+        return string.Format("Unhandled {0} thrown {1}", exceptionName, stackTrace);
     }
 }

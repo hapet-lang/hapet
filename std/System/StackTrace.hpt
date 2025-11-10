@@ -30,6 +30,21 @@ public static class StackTrace
     {
         return _stackTrace[_stackTrace.Count - 1];
     }
+
+    [DeclarationUsed]
+    [SuppressStackTrace]
+    public static string[] CopyStackTrace()
+    {
+        var len = _stackTrace.Count;
+        var copy = new string[len];
+        var copyBuffer = copy.Buffer;
+        for (int i = 0; i < len; i++)
+        {
+            *copyBuffer = _stackTrace[i];
+            copyBuffer = (string*)(((byte*)copyBuffer) + sizeof(string));
+        }
+        return copy;
+    }
 }
 
 [DeclarationUsed]
