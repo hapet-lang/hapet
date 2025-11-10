@@ -149,7 +149,7 @@ namespace HapetFrontend.Extensions
                 x is not AstPropertyDecl).Select(x => x as AstVarDecl).ToList();
         }
 
-        public static AstFuncDecl GetSameByNameAndTypes(this List<AstFuncDecl> delcs, AstFuncDecl searchFunc, out int index, bool skipFirst = true)
+        public static AstFuncDecl GetSameByNameAndTypes(this List<AstFuncDecl> delcs, AstFuncDecl searchFunc, out int index, bool callFromObject = true)
         {
             index = -1;
             AstFuncDecl bestMatch = null;
@@ -157,7 +157,7 @@ namespace HapetFrontend.Extensions
             List<HapetType> types = null;
 
             types = searchFunc.Parameters.Select(x => x.Type?.OutType).ToList();
-            if (skipFirst)
+            if (callFromObject)
             {
                 // remove the first param
                 types = types.Skip(1).ToList();
@@ -187,7 +187,7 @@ namespace HapetFrontend.Extensions
                         continue;
 
                     List<HapetType> typesD = x.Parameters.Select(x => x.Type?.OutType).ToList();
-                    if (skipFirst)
+                    if (callFromObject)
                     {
                         // remove the first param
                         typesD = typesD.Skip(1).ToList();
@@ -212,6 +212,11 @@ namespace HapetFrontend.Extensions
                     if (!areTypesTheSame)
                         continue;
 
+                    // check for static/non-static
+                    if ((callFromObject && x.SpecialKeys.Contains(TokenType.KwStatic)) || 
+                        (!callFromObject && !x.SpecialKeys.Contains(TokenType.KwStatic)))
+                        continue;
+
                     index = i;
                     bestMatch = x;
                 }
@@ -231,7 +236,7 @@ namespace HapetFrontend.Extensions
                     interfaceType = x.Name.AdditionalData.OutType as ClassType;
 
                 List<HapetType> typesD = x.Parameters.Select(x => x.Type?.OutType).ToList();
-                if (skipFirst)
+                if (callFromObject)
                 {
                     // remove the first param
                     typesD = typesD.Skip(1).ToList();
@@ -281,6 +286,11 @@ namespace HapetFrontend.Extensions
                         }
                     }
                 if (!areTypesTheSame)
+                    continue;
+
+                // check for static/non-static
+                if ((callFromObject && x.SpecialKeys.Contains(TokenType.KwStatic)) ||
+                    (!callFromObject && !x.SpecialKeys.Contains(TokenType.KwStatic)))
                     continue;
 
                 index = i;
