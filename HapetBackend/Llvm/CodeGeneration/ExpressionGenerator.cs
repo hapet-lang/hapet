@@ -302,7 +302,8 @@ namespace HapetBackend.Llvm
                                 // https://habr.com/ru/articles/882888/
                                 // this shite has no compile time errors in c#...
                                 bool anyIsInterface = rightType.Declaration.IsInterface || leftType.Declaration.IsInterface;
-                                bool isUpcast = leftType.IsInheritedFrom(rightType);
+                                // if upcast or the same - then just bitcast
+                                bool isUpcast = leftType.IsInheritedFrom(rightType) || leftType == rightType;
                                 // check upcast
                                 if (!isUpcast || anyIsInterface)
                                 {
