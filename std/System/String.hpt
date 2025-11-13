@@ -4,10 +4,12 @@
 
 using System.Text.Formatting;
 using System.Runtime.InteropServices;
+using System.Collections.Generic;
+using System.Collections;
 
 [DeclarationUsed]
 [SuppressStaticCtorCall]
-public struct String : IComparable, IComparable<string>, IFormattable
+public struct String : IComparable, IComparable<string>, IFormattable, IEnumerable<char>
 {
     [SuppressStackTrace]
     public int Length { get; internal set; }
@@ -36,6 +38,11 @@ public struct String : IComparable, IComparable<string>, IFormattable
         {
             Buffer[index] = value;
         }
+    }
+
+    public IEnumerator<char> GetEnumerator()
+    {
+        return Length == 0 ? (IEnumerator<char>)EmptyEnumerator.Get<char>() : (IEnumerator<char>)(new StringEnumerator(this));
     }
 
     public int CompareTo(object value)
@@ -137,5 +144,78 @@ public struct String : IComparable, IComparable<string>, IFormattable
     public static inline string Format(string format, params object[] args)
     {
         return StringBuffer.Format(format, args);
+    }
+}
+
+[SuppressStaticCtorCall]
+internal sealed class StringEnumerator : IEnumerator<char>, ICloneable
+{
+    private string _str;
+    private int _index;
+
+    internal StringEnumerator(string str)
+    {
+        _str = str;
+        _index = -1;
+    }
+
+    public object Clone()
+    {
+        return MemberwiseClone();
+    }
+
+    public bool MoveNext()
+    {
+        int index = _index + 1;
+        int length = _str.Length;
+        if ((int)index >= length)
+        {
+            _index = (int)length;
+            return false;
+        }
+        _index = index;
+        return true;
+    }
+
+    public object IEnumerator.Current
+    {
+        get 
+        {
+            return Current;
+        }
+    }
+
+    public char Current
+    {
+        get
+        {
+            int index = _index;
+            string str = _str;
+
+            if ((int)index >= str.Length)
+            {
+                if (index < 0)
+                {
+                    throw new NotSupportedException(SR.InvalidOperation_EnumNotStarted);
+                }
+                else
+                {
+                    throw new NotSupportedException(SR.InvalidOperation_EnumEnded);
+                }
+            }
+
+            return str[index];
+        }
+    }
+
+    public void Reset()
+    {
+        _index = -1;
+    }
+
+    public void Dispose()
+    {
+        Reset();
+        _str = default;
     }
 }
