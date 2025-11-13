@@ -3,6 +3,7 @@ using HapetFrontend.Helpers;
 using HapetFrontend.Extensions;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Text.Json;
 
 namespace HapetBackend.Llvm.Linkers.Windows
 {
@@ -16,7 +17,7 @@ namespace HapetBackend.Llvm.Linkers.Windows
             public string installationName { get; set; }
             public string installationPath { get; set; }
             public string installationVersion { get; set; }
-            public string isPrerelease { get; set; }
+            public bool isPrerelease { get; set; }
             public string displayName { get; set; }
             public string description { get; set; }
             public string enginePath { get; set; }
@@ -41,7 +42,7 @@ namespace HapetBackend.Llvm.Linkers.Windows
                     });
                 p.WaitForExit();
 
-                var versions = Newtonsoft.Json.JsonConvert.DeserializeObject<VsWhere[]>(sb.ToString());
+                var versions = JsonSerializer.Deserialize<VsWhere[]>(sb.ToString());
 
                 if (versions == null || versions.Length == 0)
                     return (-1, null);

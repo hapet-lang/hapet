@@ -16,7 +16,6 @@
 
     <ItemGroup>
         <PackageReference Include="LLVMSharp" Version="20.1.2" />
-        <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
     </ItemGroup>
     
 </Project>

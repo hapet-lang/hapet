@@ -1,8 +1,6 @@
 ﻿using HapetFrontend.Ast;
 using HapetFrontend.Ast.Declarations;
 using HapetFrontend.Ast.Expressions;
-using Newtonsoft.Json;
-using System.Xml.Linq;
 
 namespace HapetFrontend.Types
 {

@@ -1,6 +1,4 @@
-﻿using Newtonsoft.Json.Linq;
-
-namespace HapetFrontend.Parsing
+﻿namespace HapetFrontend.Parsing
 {
     public partial class Lexer
     {

@@ -6,9 +6,6 @@ using HapetFrontend.Helpers;
 using HapetFrontend.Parsing;
 using HapetFrontend.Scoping;
 using HapetFrontend.Types;
-using Newtonsoft.Json;
-using System.Text;
-using System.Xml.Linq;
 
 namespace HapetFrontend.Ast.Declarations
 {
@@ -20,7 +17,6 @@ namespace HapetFrontend.Ast.Declarations
         public List<AstParamDecl> Parameters { get; set; }
         public AstExpression Returns { get; set; }
 
-        [JsonIgnore]
         public AstBlockExpr Body { get; set; }
 
         /// <summary>

@@ -8,8 +8,8 @@ using HapetFrontend.Extensions;
 using HapetFrontend.Helpers;
 using HapetFrontend.Parsing;
 using HapetPostPrepare.Entities;
-using Newtonsoft.Json;
 using System.Text;
+using System.Text.Json;
 
 namespace HapetPostPrepare
 {
@@ -83,7 +83,11 @@ namespace HapetPostPrepare
                 Version = _compiler.CurrentProjectSettings.ProjectVersion,
                 Dependencies = _compiler.CurrentProjectData.References.ToArray(),
             };
-            var metadataMetadataText = JsonConvert.SerializeObject(metadataMetadataJson, Formatting.Indented);
+            var options = new JsonSerializerOptions(JsonSerializerOptions.Default)
+            {
+                WriteIndented = true,
+            };
+            var metadataMetadataText = JsonSerializer.Serialize<MetadataMetadataJson>(metadataMetadataJson, options);
             sb.AppendLine("#meta");
             sb.AppendLine(metadataMetadataText);
             sb.AppendLine("#endmeta");

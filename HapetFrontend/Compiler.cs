@@ -8,13 +8,13 @@ using HapetFrontend.Extensions;
 using HapetFrontend.Helpers;
 using HapetFrontend.Parsing;
 using HapetFrontend.Scoping;
-using Newtonsoft.Json;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Diagnostics.Metrics;
 using System.Net;
 using System.Text;
+using System.Text.Json;
 
 namespace HapetFrontend
 {
@@ -156,7 +156,7 @@ namespace HapetFrontend
                     var end = parser.ParseTopLevel(inInfo, ref outInfo);
 
                     var metaText = lexer.Text.ToString(s.Location.Ending.End, end.Location.Beginning.Index - s.Location.Ending.End);
-                    metadata = JsonConvert.DeserializeObject<MetadataMetadataJson>(metaText); // why do we need it
+                    metadata = JsonSerializer.Deserialize<MetadataMetadataJson>(metaText); // why do we need it
                     continue; // no need to add this shite
                 }
 

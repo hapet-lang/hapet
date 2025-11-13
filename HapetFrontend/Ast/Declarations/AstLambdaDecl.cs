@@ -4,8 +4,6 @@ using HapetFrontend.Enums;
 using HapetFrontend.Parsing;
 using HapetFrontend.Scoping;
 using HapetFrontend.Types;
-using Newtonsoft.Json;
-using System.Xml.Linq;
 
 namespace HapetFrontend.Ast.Declarations
 {
@@ -23,7 +21,6 @@ namespace HapetFrontend.Ast.Declarations
         /// <summary>
         /// Getting symbol of itself
         /// </summary>
-        [JsonIgnore]
         public ISymbol Symbol { get; set; }
 
         /// <summary>
@@ -32,7 +29,6 @@ namespace HapetFrontend.Ast.Declarations
         /// </summary>
         public Scope SubScope { get; set; }
 
-        [JsonIgnore]
         public LambdaType FunctionType => OutType as LambdaType;
 
         public override string AAAName => nameof(AstLambdaExpr);

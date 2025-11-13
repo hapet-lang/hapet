@@ -7,8 +7,6 @@ using HapetFrontend.Helpers;
 using HapetPostPrepare;
 using LLVMSharp;
 using LLVMSharp.Interop;
-using Newtonsoft.Json;
-using System.Diagnostics;
 
 namespace HapetBackend.Llvm
 {

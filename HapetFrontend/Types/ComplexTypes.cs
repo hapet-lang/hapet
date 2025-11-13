@@ -4,17 +4,11 @@ using HapetFrontend.Ast.Expressions;
 using HapetFrontend.Extensions;
 using HapetFrontend.Helpers;
 using HapetFrontend.Parsing;
-using HapetFrontend.Scoping;
-using Microsoft.VisualBasic.FileIO;
-using Newtonsoft.Json;
-using System.Drawing;
-using System.Reflection;
 
 namespace HapetFrontend.Types
 {
     public class ClassType : HapetType
     {
-        [JsonIgnore]
         public AstClassDecl Declaration { get; set; }
 
         public override string TypeName => "class";
@@ -55,7 +49,6 @@ namespace HapetFrontend.Types
 
     public class StructType : HapetType
     {
-        [JsonIgnore]
         public AstStructDecl Declaration { get; set; }
 
         public static StructType LiteralType { get; } = new StructType(null);
@@ -124,7 +117,6 @@ namespace HapetFrontend.Types
 
     public class EnumType : HapetType
     {
-        [JsonIgnore]
         public AstEnumDecl Declaration { get; set; }
 
         public static EnumType LiteralType { get; } = new EnumType(null);
@@ -164,7 +156,6 @@ namespace HapetFrontend.Types
 
     public class FunctionType : HapetType
     {
-        [JsonIgnore]
         public AstFuncDecl Declaration { get; set; }
 
         public override string TypeName => "func";
@@ -229,7 +220,6 @@ namespace HapetFrontend.Types
 
     public class LambdaType : HapetType
     {
-        [JsonIgnore]
         public AstLambdaExpr Declaration { get; set; }
 
         public override string TypeName => "lambda";

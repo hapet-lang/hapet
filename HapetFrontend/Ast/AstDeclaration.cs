@@ -7,7 +7,6 @@ using HapetFrontend.Extensions;
 using HapetFrontend.Parsing;
 using HapetFrontend.Scoping;
 using HapetFrontend.Types;
-using Newtonsoft.Json;
 using System.Diagnostics;
 
 namespace HapetFrontend.Ast
@@ -42,7 +41,6 @@ namespace HapetFrontend.Ast
         /// <summary>
         /// The class/struct/interface/other_shite that contains the decl
         /// </summary>
-        [JsonIgnore]
         public AstDeclaration ContainingParent { get; set; }
 
         /// <summary>
@@ -97,7 +95,6 @@ namespace HapetFrontend.Ast
         /// <summary>
         /// Getting symbol of itself
         /// </summary>
-        [JsonIgnore]
         public ISymbol Symbol { get; set; }
 
         /// <summary>

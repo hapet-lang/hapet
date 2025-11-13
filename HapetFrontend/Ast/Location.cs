@@ -1,25 +1,19 @@
-﻿using Newtonsoft.Json;
-
-namespace HapetFrontend.Ast
+﻿namespace HapetFrontend.Ast
 {
     /// <summary>
     /// Atomic location used to locale tokens
     /// </summary>
     public class TokenLocation : ILocation
     {
-        [JsonIgnore]
         public string File { get; set; }
         public int Line { get; set; }
         public int Index { get; set; }
         public int End { get; set; }
         public int LineStartIndex { get; set; }
 
-        [JsonIgnore]
         public TokenLocation Beginning => this;
-        [JsonIgnore]
         public TokenLocation Ending => this;
 
-        [JsonIgnore]
         public int Column => Index - LineStartIndex + 1;
 
         public TokenLocation()
