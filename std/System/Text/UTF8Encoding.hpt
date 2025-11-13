@@ -100,48 +100,68 @@ public class UTF8Encoding : Encoding
         for (int i = 0; i < str.Length; i += 1)
         {
             ushort currentChar = (ushort)str[i];
-            uint codepoint = 0x0;
-
-            //-------(1) UTF-16 to codepoint -------
-            if (currentChar >= 0xD800 && currentChar <= 0xDBFF)
-                if (i + 1 < str.Length && (ushort)str[i + 1] >= 0xDC00 && (ushort)str[i + 1] <= 0xDFFF)
-                {
-                    ushort hi = (ushort)(currentChar - 0xD800);
-                    ushort lo = (ushort)(str[i + 1] - 0xDC00);
-                    codepoint = (uint)((hi << (ushort)10) | lo) + (uint)0x10000;
-                    i++;
-                }
-                else
-                    codepoint = 0xFFFD;
-            else if (currentChar >= 0xDC00 && currentChar <= 0xDFFF)
-                codepoint = 0xFFFD;
-            else
-                codepoint = currentChar;
-
-            //-------(2) Codepoint to UTF-8 -------
-            if (codepoint <= (uint)0x007F) {
-                bytes[currentUtf8Element] = (byte)codepoint;
-                currentUtf8Element += 1;
-            } else if (codepoint <= (uint)0x07FF) {
-                bytes[currentUtf8Element] = (byte)(((codepoint >> 6) & (uint)0x1F) | (uint)0xC0);
-			    bytes[currentUtf8Element + 1] = (byte)((codepoint & (uint)0x3F) | (uint)0x80);
-                currentUtf8Element += 2;
-            } else if (codepoint <= (uint)0xFFFF) {
-                bytes[currentUtf8Element] = (byte)(((codepoint >> 12) & (uint)0x0F) | (uint)0xE0);
-                bytes[currentUtf8Element + 1] = (byte)(((codepoint >> 6) & (uint)0x3F) | (uint)0x80);
-                bytes[currentUtf8Element + 2] = (byte)(((codepoint) & (uint)0x3F) | (uint)0x80);
-                currentUtf8Element += 3;
-            } else if (codepoint <= (uint)0x10FFFF) {
-                bytes[currentUtf8Element] = (byte)(((codepoint >> 18) & (uint)0x07) | (uint)0xF0);
-                bytes[currentUtf8Element + 1] = (byte)(((codepoint >> 12) & (uint)0x3F) | (uint)0x80);
-                bytes[currentUtf8Element + 2] = (byte)(((codepoint >> 6) & (uint)0x3F) | (uint)0x80);
-                bytes[currentUtf8Element + 3] = (byte)(((codepoint) & (uint)0x3F) | (uint)0x80);
-                currentUtf8Element += 4;
-            }
+            HandleChar(currentChar, str, bytes, ref currentUtf8Element, ref i);
         }
         bytes[utf8CharsAmount] = 0;
         outSize = utf8CharsAmount;
         return (byte*)bytes;
+    }
+
+    [SuppressStackTrace]
+    public static byte* GetBytesUnsafe(char c, out int outSize)
+    {
+        int utf8CharsAmount = GetAmountOfUtf8Bytes(c);
+        byte* bytes = (byte*)Marshal.Malloc((utf8CharsAmount + 1) * sizeof(byte));
+
+        int currentUtf8Element = 0;
+        int unused = 0;
+        HandleChar((ushort)c, null, bytes, ref currentUtf8Element, ref unused);
+        bytes[utf8CharsAmount] = 0;
+        outSize = utf8CharsAmount;
+        return (byte*)bytes;
+    }
+
+    [SuppressStackTrace]
+    private static void HandleChar(ushort currentChar, string wholeString, byte* bytes, ref int currentUtf8Element, ref int i)
+    {
+        uint codepoint = 0x0;
+
+        //-------(1) UTF-16 to codepoint -------
+        if (currentChar >= 0xD800 && currentChar <= 0xDBFF)
+            if (wholeString != null && i + 1 < wholeString.Length && (ushort)wholeString[i + 1] >= 0xDC00 && (ushort)wholeString[i + 1] <= 0xDFFF)
+            {
+                ushort hi = (ushort)(currentChar - 0xD800);
+                ushort lo = (ushort)(wholeString[i + 1] - 0xDC00);
+                codepoint = (uint)((hi << (ushort)10) | lo) + (uint)0x10000;
+                i++;
+            }
+            else
+                codepoint = 0xFFFD;
+        else if (currentChar >= 0xDC00 && currentChar <= 0xDFFF)
+            codepoint = 0xFFFD;
+        else
+            codepoint = currentChar;
+
+        //-------(2) Codepoint to UTF-8 -------
+        if (codepoint <= (uint)0x007F) {
+            bytes[currentUtf8Element] = (byte)codepoint;
+            currentUtf8Element += 1;
+        } else if (codepoint <= (uint)0x07FF) {
+            bytes[currentUtf8Element] = (byte)(((codepoint >> 6) & (uint)0x1F) | (uint)0xC0);
+            bytes[currentUtf8Element + 1] = (byte)((codepoint & (uint)0x3F) | (uint)0x80);
+            currentUtf8Element += 2;
+        } else if (codepoint <= (uint)0xFFFF) {
+            bytes[currentUtf8Element] = (byte)(((codepoint >> 12) & (uint)0x0F) | (uint)0xE0);
+            bytes[currentUtf8Element + 1] = (byte)(((codepoint >> 6) & (uint)0x3F) | (uint)0x80);
+            bytes[currentUtf8Element + 2] = (byte)(((codepoint) & (uint)0x3F) | (uint)0x80);
+            currentUtf8Element += 3;
+        } else if (codepoint <= (uint)0x10FFFF) {
+            bytes[currentUtf8Element] = (byte)(((codepoint >> 18) & (uint)0x07) | (uint)0xF0);
+            bytes[currentUtf8Element + 1] = (byte)(((codepoint >> 12) & (uint)0x3F) | (uint)0x80);
+            bytes[currentUtf8Element + 2] = (byte)(((codepoint >> 6) & (uint)0x3F) | (uint)0x80);
+            bytes[currentUtf8Element + 3] = (byte)(((codepoint) & (uint)0x3F) | (uint)0x80);
+            currentUtf8Element += 4;
+        }
     }
     
     // original: https://www.onlinegdb.com/r1TVL6w6L
@@ -152,35 +172,49 @@ public class UTF8Encoding : Encoding
         for (int i = 0; i < str.Length; i += 1)
         {
             ushort currentChar = (ushort)str[i];
-            uint codepoint = 0x0;
-
-            //-------(1) UTF-16 to codepoint -------
-            if (currentChar >= 0xD800 && currentChar <= 0xDBFF)
-                if (i + 1 < str.Length && (ushort)str[i + 1] >= 0xDC00 && (ushort)str[i + 1] <= 0xDFFF)
-                {
-                    ushort hi = (ushort)(currentChar - 0xD800);
-                    ushort lo = (ushort)(str[i + 1] - 0xDC00);
-                    codepoint = (uint)((hi << (ushort)10) | lo) + (uint)0x10000;
-                    i++;
-                }
-                else
-                    codepoint = 0xFFFD;
-            else if (currentChar >= 0xDC00 && currentChar <= 0xDFFF)
-                codepoint = 0xFFFD;
-            else
-                codepoint = currentChar;
-
-            //-------(2) Codepoint to UTF-8 -------
-            if (codepoint <= (uint)0x007F) {
-                amount += 1;
-            } else if (codepoint <= (uint)0x07FF) {
-                amount += 2;
-            } else if (codepoint <= (uint)0xFFFF) {
-                amount += 3;
-            } else if (codepoint <= (uint)0x10FFFF) {
-                amount += 4;
-            }
+            GetAmountOfUtf8BytesInternal(currentChar, str, ref amount, ref i);
         }
         return amount;
+    }
+
+    [SuppressStackTrace]
+    private static int GetAmountOfUtf8Bytes(char c)
+    {
+        int amount = 0;
+        int unused = 0;
+        GetAmountOfUtf8BytesInternal((ushort)c, null, ref amount, ref unused);
+        return amount;
+    }
+
+    [SuppressStackTrace]
+    private static void GetAmountOfUtf8BytesInternal(ushort currentChar, string wholeString, ref int amount, ref int i)
+    {
+        uint codepoint = 0x0;
+        //-------(1) UTF-16 to codepoint -------
+        if (currentChar >= 0xD800 && currentChar <= 0xDBFF)
+            if (wholeString != null && i + 1 < wholeString.Length && (ushort)wholeString[i + 1] >= 0xDC00 && (ushort)wholeString[i + 1] <= 0xDFFF)
+            {
+                ushort hi = (ushort)(currentChar - 0xD800);
+                ushort lo = (ushort)(wholeString[i + 1] - 0xDC00);
+                codepoint = (uint)((hi << (ushort)10) | lo) + (uint)0x10000;
+                i++;
+            }
+            else
+                codepoint = 0xFFFD;
+        else if (currentChar >= 0xDC00 && currentChar <= 0xDFFF)
+            codepoint = 0xFFFD;
+        else
+            codepoint = currentChar;
+
+        //-------(2) Codepoint to UTF-8 -------
+        if (codepoint <= (uint)0x007F) {
+            amount += 1;
+        } else if (codepoint <= (uint)0x07FF) {
+            amount += 2;
+        } else if (codepoint <= (uint)0xFFFF) {
+            amount += 3;
+        } else if (codepoint <= (uint)0x10FFFF) {
+            amount += 4;
+        }
     }
 }
