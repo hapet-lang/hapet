@@ -219,21 +219,6 @@ public static class Gc
     }
 
     [SuppressStackTrace]
-    private static void PrintMalloc(uintptr ptr)
-    {
-        byte* chars = (byte*)Marshal.Malloc(30 * sizeof(byte));
-        int i = 0;
-        chars[i++] = 'M'; chars[i++] = 'a'; chars[i++] = 'l'; chars[i++] = 'l'; chars[i++] = 'o'; chars[i++] = 'c'; chars[i++] = ' '; chars[i++] = ' ';
-        int size = 0;
-        byte* numP = UintptrToChars(ptr, out size);
-        for (int j = 0; j < size; ++j)
-            chars[i++] = numP[j];
-        chars[i++] = '\0';
-        Console.Puts(chars);
-        Marshal.Free(chars);
-    }
-
-    [SuppressStackTrace]
     private static byte* UintptrToChars(uintptr ptr, out int size)
     {
         int digits = 1;
