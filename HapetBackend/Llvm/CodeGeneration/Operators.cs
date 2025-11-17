@@ -33,7 +33,7 @@ namespace HapetBackend.Llvm
             return builtInUnOperators[op];
         }
 
-        private Func<LLVMBuilderRef, LLVMValueRef, string, LLVMValueRef> SearchBinOp(string name, HapetType type)
+        private Func<LLVMBuilderRef, LLVMValueRef, string, LLVMValueRef> SearchUnOp(string name, HapetType type)
         {
             var ops = _compiler.GlobalScope.GetUnaryOperators(name, type);
             return GetUnOp(ops[0] as BuiltInUnaryOperator); // WARN: there has to be at least one op - PostPrepare has to handle it

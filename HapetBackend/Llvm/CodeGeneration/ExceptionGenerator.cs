@@ -75,6 +75,9 @@ namespace HapetBackend.Llvm
             LLVMTypeRef methType;
             helper = _currentFunction.Scope.GetSymbolInNamespace("System.Runtime.InteropServices", new AstIdExpr("ExceptionHelper"));
 
+            // this var will contain 1 if the jmpBuf is already popped in dispatch block
+            LLVMValueRef isJmpBufferPopped = CreateLocalVariable(HapetType.CurrentTypeContext.BoolTypeInstance, "isJmpBufferPopped");
+
             // this variable will contain 'ptr' if finally has to go back using 'indirectbr'
             LLVMValueRef needGoBack = CreateLocalVariable(HapetType.CurrentTypeContext.PtrToVoidType, "needGoBack");
             var nullValue = LLVMValueRef.CreateConstPointerNull(HapetTypeToLLVMType(HapetType.CurrentTypeContext.PtrToVoidType));
@@ -128,6 +131,7 @@ namespace HapetBackend.Llvm
             LLVM.AppendExistingBasicBlock(_lastFunctionValueRef, bbDispatch);
             _builder.PositionAtEnd(bbDispatch);
             PopJmpBuf();
+            _builder.BuildStore(HapetValueToLLVMValue(HapetType.CurrentTypeContext.BoolTypeInstance, true), isJmpBufferPopped);
             // if there are no breaks - just go to finally
             if (stmt.CatchBlocks.Count == 0)
             {
@@ -233,6 +237,17 @@ namespace HapetBackend.Llvm
             // fourth - finally
             LLVM.AppendExistingBasicBlock(_lastFunctionValueRef, bbFinally);
             _builder.PositionAtEnd(bbFinally);
+
+            // pop jmp buf if not popped
+            var bbNeedToPop = _lastFunctionValueRef.AppendBasicBlockInContext(_context, $"pop.buffer");
+            var bbPopped = _lastFunctionValueRef.AppendBasicBlockInContext(_context, $"finally.continue");
+            var isJmpBufferPoppedLoaded = _builder.BuildLoad2(HapetTypeToLLVMType(HapetType.CurrentTypeContext.BoolTypeInstance), isJmpBufferPopped, "isJmpBufferPoppedLoaded");
+            _builder.BuildCondBr(isJmpBufferPoppedLoaded, bbPopped, bbNeedToPop); // if 0 - pop, if 1 - continue
+            _builder.PositionAtEnd(bbNeedToPop);
+            PopJmpBuf();
+            _builder.BuildBr(bbPopped);
+            _builder.PositionAtEnd(bbPopped);
+
             // if user defined block exists - generate statements from it
             if (stmt.FinallyBlock != null)
             {
