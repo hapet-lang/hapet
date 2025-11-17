@@ -127,6 +127,7 @@ namespace HapetBackend.Llvm
             // second - dispatch and catch blocks
             LLVM.AppendExistingBasicBlock(_lastFunctionValueRef, bbDispatch);
             _builder.PositionAtEnd(bbDispatch);
+            PopJmpBuf();
             // if there are no breaks - just go to finally
             if (stmt.CatchBlocks.Count == 0)
             {
@@ -232,7 +233,6 @@ namespace HapetBackend.Llvm
             // fourth - finally
             LLVM.AppendExistingBasicBlock(_lastFunctionValueRef, bbFinally);
             _builder.PositionAtEnd(bbFinally);
-            PopJmpBuf();
             // if user defined block exists - generate statements from it
             if (stmt.FinallyBlock != null)
             {
