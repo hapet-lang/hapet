@@ -882,9 +882,9 @@ namespace HapetFrontend.Parsing
 
                 default:
                     if (inInfo.Message != null && inInfo.Message.MessageArgs == null)
-                        inInfo.Message.MessageArgs = [token.ToString()];
+                        inInfo.Message.MessageArgs = [Lexer.GetKeywordFromToken(token.Type)];
                     else if (inInfo.Message == null)
-                        inInfo.Message = new MessageResolver() { MessageArgs = [token.Type.ToString(), token.Data?.ToString()], XmlMessage = ErrorCode.Get(CTEN.CommonFailToParse) };
+                        inInfo.Message = new MessageResolver() { MessageArgs = [Lexer.GetKeywordFromToken(token.Type), token.Data?.ToString()], XmlMessage = ErrorCode.Get(CTEN.CommonFailToParse) };
                     ReportMessage(token.Location, inInfo.Message.MessageArgs, inInfo.Message.XmlMessage);
                     NextToken(inInfo); // skip the token :)
                     return ParseEmptyExpression(inInfo);

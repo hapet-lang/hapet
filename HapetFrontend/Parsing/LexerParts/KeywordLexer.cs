@@ -191,6 +191,115 @@
                 case TokenType.KwImplicit: return "implicit";
                 // for overriding operators
                 case TokenType.KwOperator: return "operator";
+
+                // simple tokens
+                case TokenType.DollarIdentifier:
+                    return "$";
+                case TokenType.SharpIdentifier:
+                    return "#";
+                case TokenType.AtSignIdentifier:
+                    return "@";
+
+                case TokenType.Tilda:
+                    return "~";
+                case TokenType.Semicolon:
+                    return ";";
+                case TokenType.Colon:
+                    return ":";
+                case TokenType.Comma:
+                    return ",";
+                case TokenType.Period:
+                    return ".";
+                case TokenType.PeriodPeriod:
+                    return "..";
+                case TokenType.Equal:
+                    return "=";
+                case TokenType.Ampersand:
+                    return "&";
+                case TokenType.Hat:
+                    return "^";
+                case TokenType.Bang:
+                    return "!";
+                case TokenType.QuestionMark:
+                    return "?";
+                case TokenType.DoubleQuestion:
+                    return "??";
+                case TokenType.VerticalSlash:
+                    return "|";
+
+                case TokenType.Plus:
+                    return "+";
+                case TokenType.Minus:
+                    return "-";
+                case TokenType.Asterisk:
+                    return "*";
+                case TokenType.ForwardSlash:
+                    return "/";
+                case TokenType.Percent:
+                    return "%";
+
+                case TokenType.PlusPlus:
+                    return "++";
+                case TokenType.MinusMinus:
+                    return "--";
+
+                case TokenType.LessLess:
+                    return "<<";
+                case TokenType.GreaterGreater:
+                    return ">>";
+
+                case TokenType.AddEq:
+                    return "+=";
+                case TokenType.SubEq:
+                    return "-=";
+                case TokenType.MulEq:
+                    return "*=";
+                case TokenType.DivEq:
+                    return "/=";
+                case TokenType.ModEq:
+                    return "%=";
+                case TokenType.HatEq:
+                    return "^=";
+                case TokenType.CoalesceEq:
+                    return "??=";
+
+                case TokenType.Less:
+                    return "<";
+                case TokenType.LessEqual:
+                    return "<=";
+                case TokenType.Greater:
+                    return ">";
+                case TokenType.GreaterEqual:
+                    return ">=";
+                case TokenType.DoubleEqual:
+                    return "==";
+                case TokenType.NotEqual:
+                    return "!=";
+
+                case TokenType.LogicalOr:
+                    return "||";
+                case TokenType.LogicalAnd:
+                    return "&&";
+
+                case TokenType.Arrow:
+                    return "=>";
+
+                case TokenType.OpenParen:
+                    return "(";
+                case TokenType.CloseParen:
+                    return ")";
+                case TokenType.OpenBrace:
+                    return "{";
+                case TokenType.CloseBrace:
+                    return "}";
+                case TokenType.OpenBracket:
+                    return "[";
+                case TokenType.CloseBracket:
+                    return "]";
+
+                case TokenType.ArrayDef:
+                    return "[]";
+
                 default: return "!unexpected!";
             }
         }
