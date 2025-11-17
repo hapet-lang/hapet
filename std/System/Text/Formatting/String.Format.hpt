@@ -259,8 +259,7 @@ public sealed partial unsafe class StringBuffer
             index = ParseNum(ref curr, end, MaxArgs);
         if (index >= args.Length)
         {
-            //TODO:
-            //throw new FormatException(string.Format(SR.Formatting_ArgIndexOutOfRange, index));
+            throw new FormatException(string.Format(SR.Formatting_ArgIndexOutOfRange, index));
         }
 
         // check for a spacing specifier
@@ -409,24 +408,11 @@ public sealed partial unsafe class StringBuffer
 
     static void ThrowError()
     {
-        // TODO:
-        //throw new FormatException(SR.Formatting_InvalidFormatString);
+        throw new FormatException(SR.Formatting_InvalidFormatString);
     }
 
     static StringBuffer Acquire(int capacity)
     {
-        if (capacity <= MaxCachedSize)
-        {
-            var buffer = CachedInstance;
-            if (buffer != null)
-            {
-                CachedInstance = null;
-                buffer.Clear();
-                buffer.CheckCapacity(capacity);
-                return buffer;
-            }
-        }
-
         return new StringBuffer(capacity);
     }
 
