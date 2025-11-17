@@ -788,6 +788,7 @@ namespace HapetFrontend.Parsing
                                 UpdateLookAheadLocation();
                             SaveLookAheadLocation();
                             NextToken(inInfo);
+                            SkipNewlines(inInfo);
 
                             bool isNullable;
                             var next = PeekToken(inInfo);
