@@ -1,0 +1,200 @@
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+// Some modifications were made for hapet-lang compatibility.
+
+using System.IO;
+using System.Text;
+using System.Runtime.InteropServices;
+
+#if TARGET_PLATFORM == "win-x64" || TARGET_PLATFORM == "win-x86";
+[SuppressStaticCtorCall]
+internal static class ConsolePal
+{
+    [DllImport("", "fputs")]
+    private static extern inline int FPuts(byte* data, void* stream);
+    [DllImport("", "__acrt_iob_func")]
+    private static extern inline void* Acrt(uint ix);
+    [DllImport("", "GetStdHandle")]
+    private static extern inline int* GetStdHandle(int nHandle);
+    [DllImport("", "SetConsoleTextAttribute")]
+    private static extern inline int SetConsoleTextAttribute(int* hConsoleOutput, short wAttributes);
+
+    // For ResetColor
+    private static bool _haveReadDefaultColors;
+    private static byte _defaultColors;
+
+    [SuppressStackTrace]
+    private static int* OutputHandle => GetStdHandle(-11);
+    [SuppressStackTrace]
+    private static int* InvalidHandleValue => (int*)(-1);
+
+    [SuppressStackTrace]
+    public static ConsoleColor ForegroundColor
+    {
+        get
+        {
+            bool succeeded;
+            CONSOLE_SCREEN_BUFFER_INFO csbi = GetBufferInfo(false, out succeeded);
+
+            // For code that may be used from Windows app w/ no console
+            return succeeded ?
+                ColorAttributeToConsoleColor((Kernel32Color)csbi.wAttributes & Kernel32Color.ForegroundMask) :
+                ConsoleColor.Gray;
+        }
+        set
+        {
+            Kernel32Color c = ConsoleColorToColorAttribute(value, false);
+
+            bool succeeded;
+            CONSOLE_SCREEN_BUFFER_INFO csbi = GetBufferInfo(false, out succeeded);
+            // For code that may be used from Windows app w/ no console
+            if (!succeeded)
+                return;
+
+            // TODO:
+            //Debug.Assert(_haveReadDefaultColors, "Setting the foreground color before we've read the default foreground color!");
+
+            short attrs = csbi.wAttributes;
+            attrs &= ~((short)Kernel32Color.ForegroundMask);
+            // C#'s bitwise-or sign-extends to 32 bits.
+            attrs = (short)(((uint)(ushort)attrs) | ((uint)(ushort)c));
+            // Ignore errors here - there are some scenarios for running code that wants
+            // to print in colors to the console in a Windows application.
+            SetConsoleTextAttribute(OutputHandle, attrs);
+        }
+    }
+
+    [DeclarationUsed]
+    [SuppressStackTrace]
+    public static void WriteLine(string text)
+    {
+        int sz = 0;
+        byte* bytes = UTF8Encoding.GetBytesUnsafe(text + "\n", out sz);
+        FPuts(bytes, Acrt(1));
+        Marshal.FlushStdout();
+        Marshal.Free(bytes);
+    }
+
+    [DeclarationUsed]
+    [SuppressStackTrace]
+    public static void Write(char c)
+    {
+        int sz = 0;
+        byte* bytes = UTF8Encoding.GetBytesUnsafe(c, out sz);
+        FPuts(bytes, Acrt(1));
+        Marshal.FlushStdout();
+        Marshal.Free(bytes);
+    }
+
+    private static Kernel32Color ConsoleColorToColorAttribute(ConsoleColor color, bool isBackground)
+    {
+        if ((((int)color) & ~0xf) != 0)
+            throw new ArgumentException(SR.Arg_InvalidConsoleColor);
+
+        Kernel32Color c = (Kernel32Color)color;
+
+        // Make these background colors instead of foreground
+        if (isBackground)
+            c = (Kernel32Color)((int)c << 4);
+        return c;
+    }
+
+    private static ConsoleColor ColorAttributeToConsoleColor(Kernel32Color c)
+    {
+        // Turn background colors into foreground colors.
+        if ((int)(c & Kernel32Color.BackgroundMask) != 0)
+        {
+            c = (Kernel32Color)(((int)c) >> 4);
+        }
+        return (ConsoleColor)c;
+    }
+
+    // For apps that don't have a console (like Windows apps), they might
+    // run other code that includes color console output.  Allow a mechanism
+    // where that code won't throw an exception for simple errors.
+    private static CONSOLE_SCREEN_BUFFER_INFO GetBufferInfo(bool throwOnNoConsole, out bool succeeded)
+    {
+        succeeded = false;
+
+        int* outputHandle = OutputHandle;
+        if (outputHandle == InvalidHandleValue)
+        {
+            if (throwOnNoConsole)
+            {
+                throw new IOException(SR.IO_NoConsole);
+            }
+            return default;
+        }
+
+        // Note that if stdout is redirected to a file, the console handle may be a file.
+        // First try stdout; if this fails, try stderr and then stdin.
+        CONSOLE_SCREEN_BUFFER_INFO csbi;
+        // TODO:
+        /*
+        if (!Interop.Kernel32.GetConsoleScreenBufferInfo(outputHandle, out csbi) &&
+            !Interop.Kernel32.GetConsoleScreenBufferInfo(ErrorHandle, out csbi) &&
+            !Interop.Kernel32.GetConsoleScreenBufferInfo(InputHandle, out csbi))
+        {
+            int errorCode = Marshal.GetLastPInvokeError();
+            if (errorCode == Interop.Errors.ERROR_INVALID_HANDLE && !throwOnNoConsole)
+                return default;
+            throw Win32Marshal.GetExceptionForWin32Error(errorCode);
+        }
+        */
+
+        if (!_haveReadDefaultColors)
+        {
+            // Fetch the default foreground and background color for the ResetColor method.
+            // TODO:
+            //Debug.Assert((int)Interop.Kernel32.Color.ColorMask == 0xff, "Make sure one byte is large enough to store a Console color value!");
+            //_defaultColors = (byte)(csbi.wAttributes & (short)Interop.Kernel32.Color.ColorMask);
+            //_haveReadDefaultColors = true; // also used by ResetColor to know when GetBufferInfo has been called successfully
+        }
+
+        succeeded = true;
+        return csbi;
+    }
+}
+
+internal enum Kernel32Color : short
+{
+    Black = 0,
+    ForegroundBlue = 0x1,
+    ForegroundGreen = 0x2,
+    ForegroundRed = 0x4,
+    ForegroundYellow = 0x6,
+    ForegroundIntensity = 0x8,
+    BackgroundBlue = 0x10,
+    BackgroundGreen = 0x20,
+    BackgroundRed = 0x40,
+    BackgroundYellow = 0x60,
+    BackgroundIntensity = 0x80,
+
+    ForegroundMask = 0xf,
+    BackgroundMask = 0xf0,
+    ColorMask = 0xff
+}
+
+internal struct CONSOLE_SCREEN_BUFFER_INFO
+{
+    internal COORD dwSize;
+    internal COORD dwCursorPosition;
+    internal short wAttributes;
+    internal SMALL_RECT srWindow;
+    internal COORD dwMaximumWindowSize;
+}
+
+internal partial struct COORD
+{
+    internal short X;
+    internal short Y;
+}
+
+internal partial struct SMALL_RECT
+{
+    internal short Left;
+    internal short Top;
+    internal short Right;
+    internal short Bottom;
+}
+#endif

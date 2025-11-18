@@ -7,49 +7,51 @@ using System.Runtime.InteropServices;
 [SuppressStaticCtorCall]
 public static class Console
 {
-    [DllImport("", "puts")]
-    private static extern inline int Puts(byte* data);
-    
-#if TARGET_PLATFORM == "win-x64" || TARGET_PLATFORM == "win-x86";
-    [DllImport("", "fputs")]
-    private static extern inline int FPuts(byte* data, void* stream);
-    [DllImport("", "__acrt_iob_func")]
-    private static extern inline void* Acrt(uint ix);
-#endif
+    [SuppressStackTrace]
+    public static ConsoleColor ForegroundColor
+    {
+        get
+        {
+            return ConsolePal.ForegroundColor; 
+        }
+        set
+        {
+            ConsolePal.ForegroundColor = value; 
+        }
+    }
 
     [DeclarationUsed]
     [SuppressStackTrace]
     public static void WriteLine(string text)
     {
-        int sz = 0;
-        byte* bytes = UTF8Encoding.GetBytesUnsafe(text + "\n", out sz);
-        FPuts(bytes, Acrt(1));
-        Marshal.FlushStdout();
-        Marshal.Free(bytes);
+        ConsolePal.WriteLine(text);
     }
 
     [DeclarationUsed]
     [SuppressStackTrace]
     public static void Write(char c)
     {
-        int sz = 0;
-        byte* bytes = UTF8Encoding.GetBytesUnsafe(c, out sz);
-        FPuts(bytes, Acrt(1));
-        Marshal.FlushStdout();
-        Marshal.Free(bytes);
+        ConsolePal.Write(c);
     }
+}
 
-    [DeclarationUsed]
-    [SuppressStackTrace]
-    public static void Dbg(byte value)
-    {
-        var m = (byte*)Marshal.Malloc(5);
-        m[0] = value;
-        m[1] = 0xD0;
-        m[2] = 0xA2;
-        m[3] = 0x0A;
-        m[4] = 0x00;
-        Puts(m);
-        Marshal.Free(m);
-    }
+/// This enumeration represents the colors that can be used for console text foreground and background colors.
+public enum ConsoleColor
+{
+    Black = 0,
+    DarkBlue = 1,
+    DarkGreen = 2,
+    DarkCyan = 3,
+    DarkRed = 4,
+    DarkMagenta = 5,
+    DarkYellow = 6,
+    Gray = 7,
+    DarkGray = 8,
+    Blue = 9,
+    Green = 10,
+    Cyan = 11,
+    Red = 12,
+    Magenta = 13,
+    Yellow = 14,
+    White = 15
 }
