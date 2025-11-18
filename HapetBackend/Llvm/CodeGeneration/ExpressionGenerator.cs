@@ -124,6 +124,7 @@ namespace HapetBackend.Llvm
                     using var marshaledName = new MarshaledString("tilded".AsSpan());
                     var mask = LLVMValueRef.CreateConstInt(HapetTypeToLLVMType(unExpr.OutType), unchecked((ulong)-1));
                     var val = LLVM.BuildXor(_builder, value, mask, marshaledName);
+                    toReturn = val;
                 }
                 else
                 {
