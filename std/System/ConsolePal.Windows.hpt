@@ -18,6 +18,8 @@ internal static class ConsolePal
     private static extern inline int* GetStdHandle(int nHandle);
     [DllImport("", "SetConsoleTextAttribute")]
     private static extern inline int SetConsoleTextAttribute(int* hConsoleOutput, short wAttributes);
+    [DllImport("", "GetConsoleScreenBufferInfo")]
+    private static extern inline bool GetConsoleScreenBufferInfo(int* hConsoleOutput, CONSOLE_SCREEN_BUFFER_INFO* lpConsoleScreenBufferInfo);
 
     // For ResetColor
     private static bool _haveReadDefaultColors;
@@ -62,6 +64,25 @@ internal static class ConsolePal
             // to print in colors to the console in a Windows application.
             SetConsoleTextAttribute(OutputHandle, attrs);
         }
+    }
+
+    [SuppressStackTrace]
+    public static void ResetColor()
+    {
+        if (!_haveReadDefaultColors) // avoid the costs of GetBufferInfo if we already know we checked it
+        {
+            bool succeeded;
+            GetBufferInfo(false, out succeeded);
+            if (!succeeded)
+                return; // For code that may be used from Windows app w/ no console
+
+            // TODO:
+            //Debug.Assert(_haveReadDefaultColors, "Resetting color before we've read the default foreground color!");
+        }
+
+        // Ignore errors here - there are some scenarios for running code that wants
+        // to print in colors to the console in a Windows application.
+        SetConsoleTextAttribute(OutputHandle, (short)(ushort)_defaultColors);
     }
 
     [DeclarationUsed]
@@ -129,26 +150,25 @@ internal static class ConsolePal
         // Note that if stdout is redirected to a file, the console handle may be a file.
         // First try stdout; if this fails, try stderr and then stdin.
         CONSOLE_SCREEN_BUFFER_INFO csbi;
-        // TODO:
-        /*
-        if (!Interop.Kernel32.GetConsoleScreenBufferInfo(outputHandle, out csbi) &&
-            !Interop.Kernel32.GetConsoleScreenBufferInfo(ErrorHandle, out csbi) &&
-            !Interop.Kernel32.GetConsoleScreenBufferInfo(InputHandle, out csbi))
+        if (!GetConsoleScreenBufferInfo(outputHandle, &csbi))
         {
+            // TODO:
+            /*
             int errorCode = Marshal.GetLastPInvokeError();
             if (errorCode == Interop.Errors.ERROR_INVALID_HANDLE && !throwOnNoConsole)
                 return default;
             throw Win32Marshal.GetExceptionForWin32Error(errorCode);
+            */
+            throw new IOException("Unable to get console buffer info.");
         }
-        */
 
         if (!_haveReadDefaultColors)
         {
             // Fetch the default foreground and background color for the ResetColor method.
             // TODO:
             //Debug.Assert((int)Interop.Kernel32.Color.ColorMask == 0xff, "Make sure one byte is large enough to store a Console color value!");
-            //_defaultColors = (byte)(csbi.wAttributes & (short)Interop.Kernel32.Color.ColorMask);
-            //_haveReadDefaultColors = true; // also used by ResetColor to know when GetBufferInfo has been called successfully
+            _defaultColors = (byte)(csbi.wAttributes & (short)Kernel32Color.ColorMask);
+            _haveReadDefaultColors = true; // also used by ResetColor to know when GetBufferInfo has been called successfully
         }
 
         succeeded = true;

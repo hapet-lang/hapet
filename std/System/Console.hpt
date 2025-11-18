@@ -20,6 +20,12 @@ public static class Console
         }
     }
 
+    [SuppressStackTrace]
+    public static void ResetColor()
+    {
+        ConsolePal.ResetColor();
+    }
+
     [DeclarationUsed]
     [SuppressStackTrace]
     public static void WriteLine(string text)
