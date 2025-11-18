@@ -109,7 +109,7 @@ namespace HapetFrontend.Parsing
             }
             // assing to var
             else if (CheckTokens(inInfo, TokenType.Equal, TokenType.AddEq, TokenType.SubEq, TokenType.MulEq, 
-                TokenType.DivEq, TokenType.ModEq, TokenType.HatEq, TokenType.CoalesceEq) && udecl.Name == null)
+                TokenType.DivEq, TokenType.ModEq, TokenType.HatEq, TokenType.AmpEq, TokenType.PipeEq, TokenType.CoalesceEq) && udecl.Name == null)
             {
                 var currT = NextToken(inInfo);
                 var x = currT.Type;
@@ -122,6 +122,8 @@ namespace HapetFrontend.Parsing
                     case TokenType.DivEq: op = "/"; break;
                     case TokenType.ModEq: op = "%"; break;
                     case TokenType.HatEq: op = "^"; break;
+                    case TokenType.AmpEq: op = "&"; break;
+                    case TokenType.PipeEq: op = "|"; break;
                     case TokenType.CoalesceEq: op = "??"; break;
                 }
                 SkipNewlines(inInfo);

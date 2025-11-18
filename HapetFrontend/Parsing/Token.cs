@@ -69,6 +69,8 @@ namespace HapetFrontend.Parsing
         DivEq,           // /=
         ModEq,           // %=
         HatEq,           // ^=
+        AmpEq,           // &=
+        PipeEq,          // |=
         CoalesceEq,      // ??=
 
         Less,            // <

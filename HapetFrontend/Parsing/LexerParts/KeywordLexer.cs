@@ -260,6 +260,10 @@
                     return "%=";
                 case TokenType.HatEq:
                     return "^=";
+                case TokenType.AmpEq:
+                    return "&=";
+                case TokenType.PipeEq:
+                    return "|=";
                 case TokenType.CoalesceEq:
                     return "??=";
 

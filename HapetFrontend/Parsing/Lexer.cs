@@ -237,6 +237,8 @@ namespace HapetFrontend.Parsing
                 case '/' when Next(location) == '=': SimpleToken(location, ref token, TokenType.DivEq, 2); break;
                 case '%' when Next(location) == '=': SimpleToken(location, ref token, TokenType.ModEq, 2); break;
                 case '^' when Next(location) == '=': SimpleToken(location, ref token, TokenType.HatEq, 2); break;
+                case '&' when Next(location) == '=': SimpleToken(location, ref token, TokenType.AmpEq, 2); break;
+                case '|' when Next(location) == '=': SimpleToken(location, ref token, TokenType.PipeEq, 2); break;
                 case '?' when Next(location) == '?' && GetChar(2, location) == '=': SimpleToken(location, ref token, TokenType.CoalesceEq, 3); break; // cringe :)
                 case '.' when Next(location) == '.': SimpleToken(location, ref token, TokenType.PeriodPeriod, 2); break;
                 case '&' when Next(location) == '&': SimpleToken(location, ref token, TokenType.LogicalAnd, 2); break;
