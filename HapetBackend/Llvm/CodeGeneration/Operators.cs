@@ -111,14 +111,16 @@ namespace HapetBackend.Llvm
                     case "&":
                         {
                             // checking if the result type of the OP is float - set null
-                            if (op.ResultType is IntType || op.ResultType is CharType) theFunc = LlvmExtensions.BuildAnd;
+                            if (op.ResultType is IntType || op.ResultType is CharType || op.ResultType is EnumType) 
+                                theFunc = LlvmExtensions.BuildAnd;
                             else theFunc = null;
                             break;
                         }
                     case "|":
                         {
                             // checking if the result type of the OP is float - set null
-                            if (op.ResultType is IntType || op.ResultType is CharType) theFunc = LlvmExtensions.BuildOr;
+                            if (op.ResultType is IntType || op.ResultType is CharType || op.ResultType is EnumType) 
+                                theFunc = LlvmExtensions.BuildOr;
                             else theFunc = null;
                             break;
                         }
