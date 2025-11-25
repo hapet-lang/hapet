@@ -9,6 +9,7 @@ namespace HapetFrontend.Parsing
     {
         StringBuilder Text { get; }
         ProgramFile ProgramFile { get; }
+        TokenLocation CurrentTokenLocation { get; }
         Token PeekToken();
         Token NextToken();
 
@@ -41,6 +42,7 @@ namespace HapetFrontend.Parsing
 
         public StringBuilder Text => _text;
         public ProgramFile ProgramFile => _programFile;
+        public TokenLocation CurrentTokenLocation => _location;
         private IMessageHandler _messageHandler;
 
         public static Lexer FromFile(ProgramFile file, IMessageHandler messageHandler)

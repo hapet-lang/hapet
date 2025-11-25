@@ -436,6 +436,19 @@ namespace HapetFrontend.Parsing
                 }
                 toReturn = un;
             }
+            // string interpolation probably
+            else if (next.Type == TokenType.DollarIdentifier)
+            {
+                NextToken(inInfo);
+                SkipNewlines(inInfo);
+                var sub = ParseUnaryExpression(inInfo, ref outInfo);
+                // error if it is not an expr
+                if (sub is not AstStringExpr)
+                {
+                    ReportMessage(sub, [], ErrorCode.Get(CTEN.StringLiteralExpectedInInterp));
+                }
+                toReturn = PrepareStringInterpolation(sub as AstStringExpr, inInfo, ref outInfo);
+            }
 
             // it should be wrapped into nested
             if (toReturn != null)

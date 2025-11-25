@@ -117,6 +117,7 @@
         UserDefinedError                = 0x205B,
         NonStaticNestedLambda           = 0x205C, // would be obsolete
         NewExprExpectedAfterThrow       = 0x205D,
+        StringLiteralExpectedInInterp   = 0x205E,
 
         // post preparer errors up to 0x5000
         EnumCouldNotBeAssigned          = 0x3001,
