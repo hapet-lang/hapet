@@ -43,8 +43,18 @@ namespace HapetFrontend.Parsing
             if (CheckToken(inInfo, TokenType.Equal) && (udecl.Name != null || isFullyNamedTuple))
             {
                 NextToken(inInfo);
+
+                // special check for 'static' kw for lambdas
+                Token staticKwForLambda = null;
+                if (CheckToken(inInfo, TokenType.KwStatic))
+                    staticKwForLambda = NextToken(inInfo);
+
                 initializer = ParseExpression(inInfo, ref outInfo);
                 end = initializer.Ending;
+
+                // check if the initer is lambda - try apply static kw
+                if (initializer is AstLambdaExpr lambdaExpr && staticKwForLambda != null)
+                    lambdaExpr.SpecialKeys.Add(staticKwForLambda);
 
                 if (initializer is not AstExpression)
                 {

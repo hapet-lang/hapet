@@ -319,6 +319,23 @@ namespace HapetPostPrepare
                     _compiler.MessageHandler.ReportMessage(_currentSourceFile, varDecl, [], ErrorCode.Get(CTEN.VarDefaultType));
                     return;
                 }
+                else if (varDecl.Initializer.OutType is LambdaType)
+                {
+                    // searcch for default type - System.Action
+                    var nst = new AstNestedExpr(new AstIdExpr("System.Action", varDecl.Type)
+                    {
+                        IsSyntheticStatement = true,
+                    }, null, varDecl.Type)
+                    {
+                        IsSyntheticStatement = true,
+                    };
+                    nst.SetDataFromStmt(varDecl.Type);
+                    nst.RightPart.SetDataFromStmt(varDecl.Type);
+                    PostPrepareExprInference(nst, inInfo, ref outInfo);
+
+                    varDecl.Type.OutType = nst.OutType;
+                    varDecl.Type.TupleNameList = varDecl.Initializer.TupleNameList;
+                }
                 else
                 {
                     varDecl.Type.OutType = varDecl.Initializer.OutType;
