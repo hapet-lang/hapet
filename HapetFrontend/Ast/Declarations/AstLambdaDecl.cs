@@ -62,6 +62,22 @@ namespace HapetFrontend.Ast.Declarations
             return copy;
         }
 
+        public AstFuncDecl CreateFuncDecl(string name)
+        {
+            var fnc = new AstFuncDecl(
+                Parameters.Select(x => x.GetDeepCopy() as AstParamDecl).ToList(),
+                Returns.GetDeepCopy() as AstExpression,
+                Body.GetDeepCopy() as AstBlockExpr,
+                new AstIdExpr(name, Location),
+                location: Location)
+            {
+                IsSyntheticStatement = true,
+                Scope = Scope,
+                SourceFile = SourceFile,
+            };
+            return fnc;
+        }
+
         /// <summary>
         /// Returns string with return type and args types but without name of func
         /// USED FOR FUNC and LAMBDA

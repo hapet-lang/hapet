@@ -93,6 +93,18 @@ namespace HapetFrontend.Ast
             }
             return null;
         }
+
+        public bool IsParentOf(AstStatement stmt)
+        {
+            var curr = stmt;
+            while (curr != null)
+            {
+                if (curr == this)
+                    return true;
+                curr = curr.NormalParent;
+            }
+            return false;
+        }
         #endregion
     }
 }
