@@ -52,5 +52,13 @@ namespace HapetFrontend.Ast.Expressions
             };
             return copy;
         }
+
+        public override void ReplaceChild(AstStatement oldChild, AstStatement newChild)
+        {
+            if (Expr == oldChild)
+                Expr = newChild as AstExpression;
+            else if (Name == oldChild)
+                Name = newChild as AstIdExpr;
+        }
     }
 }

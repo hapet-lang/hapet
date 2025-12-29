@@ -28,5 +28,10 @@ namespace HapetFrontend.Ast.Expressions
             };
             return copy;
         }
+
+        public override void ReplaceChild(AstStatement oldChild, AstStatement newChild)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

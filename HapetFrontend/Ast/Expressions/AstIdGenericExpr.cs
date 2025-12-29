@@ -41,6 +41,17 @@ namespace HapetFrontend.Ast.Expressions
             return copy;
         }
 
+        public override void ReplaceChild(AstStatement oldChild, AstStatement newChild)
+        {
+            if (AdditionalData == oldChild)
+                AdditionalData = newChild as AstNestedExpr;
+            else if (GenericRealTypes.Contains(oldChild))
+            {
+                int index = GenericRealTypes.IndexOf(oldChild as AstExpression);
+                GenericRealTypes[index] = newChild as AstExpression;
+            }
+        }
+
         public static AstIdGenericExpr FromAstIdExpr(AstIdExpr astIdExpr, List<AstExpression> genericRealTypes = null)
         {
             genericRealTypes ??= new List<AstExpression>();

@@ -1,6 +1,7 @@
 ﻿using HapetFrontend.Ast.Declarations;
 using HapetFrontend.Scoping;
 using System.Diagnostics;
+using System.Xml.Linq;
 
 namespace HapetFrontend.Ast.Expressions
 {
@@ -63,6 +64,14 @@ namespace HapetFrontend.Ast.Expressions
                 NotTokenLocation = NotTokenLocation,
             };
             return copy;
+        }
+
+        public override void ReplaceChild(AstStatement oldChild, AstStatement newChild)
+        {
+            if (Left == oldChild)
+                Left = newChild as AstExpression;
+            else if (Right == oldChild)
+                Right = newChild as AstExpression;
         }
     }
 }

@@ -1,6 +1,7 @@
 ﻿using HapetFrontend.Ast.Declarations;
 using HapetFrontend.Ast.Statements;
 using HapetFrontend.Scoping;
+using System.Xml.Linq;
 
 namespace HapetFrontend.Ast.Expressions
 {
@@ -39,6 +40,15 @@ namespace HapetFrontend.Ast.Expressions
                 TupleNameList = TupleNameList,
             };
             return copy;
+        }
+
+        public override void ReplaceChild(AstStatement oldChild, AstStatement newChild)
+        {
+            if (Statements.Contains(oldChild))
+            {
+                int index = Statements.IndexOf(oldChild as AstStatement);
+                Statements[index] = newChild as AstStatement;
+            }
         }
 
         // helpers

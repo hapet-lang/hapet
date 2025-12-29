@@ -39,6 +39,17 @@ namespace HapetFrontend.Ast.Expressions
             return copy;
         }
 
+        public override void ReplaceChild(AstStatement oldChild, AstStatement newChild)
+        {
+            if (AdditionalData == oldChild)
+                AdditionalData = newChild as AstNestedExpr;
+            else if (RealNames.Contains(oldChild))
+            {
+                int index = RealNames.IndexOf(oldChild as AstIdExpr);
+                RealNames[index] = newChild as AstIdExpr;
+            }
+        }
+
         public override AstIdTupledExpr GetCopy(string name = "")
         {
             var newId = new AstIdTupledExpr(RealNames, Location)

@@ -1,4 +1,6 @@
-﻿namespace HapetFrontend.Ast.Expressions
+﻿using System.Xml.Linq;
+
+namespace HapetFrontend.Ast.Expressions
 {
     public class AstTupleExpr : AstExpression
     {
@@ -23,6 +25,20 @@
         public override AstStatement GetDeepCopy()
         {
              throw new NotImplementedException("Tuple deep copy not implemented");
+        }
+
+        public override void ReplaceChild(AstStatement oldChild, AstStatement newChild)
+        {
+            if (Names.Contains(oldChild))
+            {
+                int index = Names.IndexOf(oldChild as AstIdExpr);
+                Names[index] = newChild as AstIdExpr;
+            }
+            else if (Elements.Contains(oldChild))
+            {
+                int index = Elements.IndexOf(oldChild as AstExpression);
+                Elements[index] = newChild as AstExpression;
+            }
         }
     }
 }

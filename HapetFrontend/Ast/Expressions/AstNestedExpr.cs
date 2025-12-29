@@ -3,6 +3,7 @@ using HapetFrontend.Entities;
 using HapetFrontend.Errors;
 using HapetFrontend.Helpers;
 using HapetFrontend.Parsing;
+using System.Xml.Linq;
 
 namespace HapetFrontend.Ast.Expressions
 {
@@ -47,6 +48,14 @@ namespace HapetFrontend.Ast.Expressions
                 TupleNameList = TupleNameList,
             };
             return copy;
+        }
+
+        public override void ReplaceChild(AstStatement oldChild, AstStatement newChild)
+        {
+            if (RightPart == oldChild)
+                RightPart = newChild as AstExpression;
+            else if (LeftPart == oldChild)
+                LeftPart = newChild as AstNestedExpr;
         }
 
         /// <summary>

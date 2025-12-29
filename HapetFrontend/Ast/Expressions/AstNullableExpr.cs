@@ -1,4 +1,6 @@
-﻿namespace HapetFrontend.Ast.Expressions
+﻿using System.Xml.Linq;
+
+namespace HapetFrontend.Ast.Expressions
 {
     public class AstNullableExpr : AstExpression
     {
@@ -30,6 +32,12 @@
                 TupleNameList = TupleNameList,
             };
             return copy;
+        }
+
+        public override void ReplaceChild(AstStatement oldChild, AstStatement newChild)
+        {
+            if (SubExpression == oldChild)
+                SubExpression = newChild as AstExpression;
         }
     }
 }

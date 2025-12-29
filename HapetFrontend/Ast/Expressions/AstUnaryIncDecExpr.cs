@@ -32,5 +32,11 @@
             };
             return copy;
         }
+
+        public override void ReplaceChild(AstStatement oldChild, AstStatement newChild)
+        {
+            if (SubExpr == oldChild)
+                SubExpr = newChild as AstExpression;
+        }
     }
 }

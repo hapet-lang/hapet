@@ -1,6 +1,7 @@
 ﻿using HapetFrontend.Ast.Declarations;
 using HapetFrontend.Scoping;
 using System.Text;
+using System.Xml.Linq;
 
 namespace HapetFrontend.Ast.Expressions
 {
@@ -65,6 +66,17 @@ namespace HapetFrontend.Ast.Expressions
                 UnsafeTokenLocation = UnsafeTokenLocation,
             };
             return copy;
+        }
+
+        public override void ReplaceChild(AstStatement oldChild, AstStatement newChild)
+        {
+            if (TypeName == oldChild)
+                TypeName = newChild as AstNestedExpr;
+            else if (Arguments.Contains(oldChild))
+            {
+                int index = Arguments.IndexOf(oldChild as AstArgumentExpr);
+                Arguments[index] = newChild as AstArgumentExpr;
+            }
         }
     }
 }
