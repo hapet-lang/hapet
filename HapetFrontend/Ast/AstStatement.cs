@@ -55,6 +55,7 @@ namespace HapetFrontend.Ast
         }
 
         public abstract AstStatement GetDeepCopy();
+        public abstract void ReplaceChild(AstStatement oldChild, AstStatement newChild);
 
         public bool IsExactly<T>() where T : class
         {

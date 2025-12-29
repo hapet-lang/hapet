@@ -50,5 +50,20 @@ namespace HapetFrontend.Ast.Declarations
             copy.SpecialKeys.AddRange(SpecialKeys);
             return copy;
         }
+
+        public override void ReplaceChild(AstStatement oldChild, AstStatement newChild)
+        {
+            if (Type == oldChild)
+                Type = newChild as AstExpression;
+            else if (Name == oldChild)
+                Name = newChild as AstIdExpr;
+            else if (InheritedType == oldChild)
+                InheritedType = newChild as AstNestedExpr;
+            else if (Declarations.Contains(oldChild))
+            {
+                int index = Declarations.IndexOf(oldChild as AstVarDecl);
+                Declarations[index] = newChild as AstVarDecl;
+            }
+        }
     }
 }

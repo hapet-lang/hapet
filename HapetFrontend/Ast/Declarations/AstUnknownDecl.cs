@@ -31,5 +31,10 @@ namespace HapetFrontend.Ast.Declarations
         {
             throw new NotImplementedException($"{nameof(GetDeepCopy)} should not be called over {nameof(AstUnknownDecl)}");
         }
+
+        public override void ReplaceChild(AstStatement oldChild, AstStatement newChild)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

@@ -121,6 +121,18 @@ namespace HapetFrontend.Ast.Declarations
             return copy;
         }
 
+        public override void ReplaceChild(AstStatement oldChild, AstStatement newChild)
+        {
+            if (Type == oldChild)
+                Type = newChild as AstExpression;
+            else if (Name == oldChild)
+                Name = newChild as AstIdExpr;
+            else if (GetBlock == oldChild)
+                GetBlock = newChild as AstBlockExpr;
+            else if (SetBlock == oldChild)
+                SetBlock = newChild as AstBlockExpr;
+        }
+
         #region Separating props into field and funcs
         public AstVarDecl GetField(AstDeclaration containingParent, bool forStruct)
         {

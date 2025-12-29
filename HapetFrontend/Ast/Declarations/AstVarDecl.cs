@@ -85,5 +85,15 @@ namespace HapetFrontend.Ast.Declarations
             varDecl.IsPropertyField = IsPropertyField;
             return varDecl;
         }
+
+        public override void ReplaceChild(AstStatement oldChild, AstStatement newChild)
+        {
+            if (Type == oldChild)
+                Type = newChild as AstExpression;
+            else if (Name == oldChild)
+                Name = newChild as AstIdExpr;
+            else if (Initializer == oldChild)
+                Initializer = newChild as AstExpression;
+        }
     }
 }

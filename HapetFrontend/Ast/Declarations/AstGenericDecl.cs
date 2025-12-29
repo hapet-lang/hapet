@@ -62,6 +62,29 @@ namespace HapetFrontend.Ast.Declarations
             return copy;
         }
 
+        public override void ReplaceChild(AstStatement oldChild, AstStatement newChild)
+        {
+            if (Type == oldChild)
+                Type = newChild as AstExpression;
+            else if (Name == oldChild)
+                Name = newChild as AstIdExpr;
+            else if (Declarations.Contains(oldChild))
+            {
+                int index = Declarations.IndexOf(oldChild as AstDeclaration);
+                Declarations[index] = newChild as AstDeclaration;
+            }
+            else if (InheritedFrom.Contains(oldChild))
+            {
+                int index = InheritedFrom.IndexOf(oldChild as AstNestedExpr);
+                InheritedFrom[index] = newChild as AstNestedExpr;
+            }
+            else if (Constrains.Contains(oldChild))
+            {
+                int index = Constrains.IndexOf(oldChild as AstConstrainStmt);
+                Constrains[index] = newChild as AstConstrainStmt;
+            }
+        }
+
         public override string ToString()
         {
             return GenericsHelper.GetNameFromAst(Name, null);

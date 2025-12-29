@@ -99,6 +99,23 @@ namespace HapetFrontend.Ast.Declarations
             return copy;
         }
 
+        public override void ReplaceChild(AstStatement oldChild, AstStatement newChild)
+        {
+            if (Type == oldChild)
+                Type = newChild as AstExpression;
+            else if (Name == oldChild)
+                Name = newChild as AstIdExpr;
+            else if (Returns == oldChild)
+                Returns = newChild as AstExpression;
+            else if (Body == oldChild)
+                Body = newChild as AstBlockExpr;
+            else if (Parameters.Contains(oldChild))
+            {
+                int index = Parameters.IndexOf(oldChild as AstParamDecl);
+                Parameters[index] = newChild as AstParamDecl;
+            }
+        }
+
         public override string ToString()
         {
             return $"func:{Name}";

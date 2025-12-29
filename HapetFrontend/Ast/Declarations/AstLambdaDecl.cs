@@ -4,6 +4,7 @@ using HapetFrontend.Enums;
 using HapetFrontend.Parsing;
 using HapetFrontend.Scoping;
 using HapetFrontend.Types;
+using System.Xml.Linq;
 
 namespace HapetFrontend.Ast.Declarations
 {
@@ -60,6 +61,19 @@ namespace HapetFrontend.Ast.Declarations
                 SourceFile = SourceFile,
             };
             return copy;
+        }
+
+        public override void ReplaceChild(AstStatement oldChild, AstStatement newChild)
+        {
+            if (Returns == oldChild)
+                Returns = newChild as AstExpression;
+            else if (Body == oldChild)
+                Body = newChild as AstBlockExpr;
+            else if (Parameters.Contains(oldChild))
+            {
+                int index = Parameters.IndexOf(oldChild as AstParamDecl);
+                Parameters[index] = newChild as AstParamDecl;
+            }
         }
 
         public AstFuncDecl CreateFuncDecl(string name)
