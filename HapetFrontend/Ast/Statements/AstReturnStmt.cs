@@ -1,4 +1,5 @@
 ﻿using HapetFrontend.Ast.Expressions;
+using System.Xml.Linq;
 
 namespace HapetFrontend.Ast.Statements
 {
@@ -45,6 +46,14 @@ namespace HapetFrontend.Ast.Statements
                 IsArrowedReturn = IsArrowedReturn,
             };
             return copy;
+        }
+
+        public override void ReplaceChild(AstStatement oldChild, AstStatement newChild)
+        {
+            if (ReturnExpression == oldChild)
+                ReturnExpression = newChild as AstExpression;
+            else if (WeakReturnStatement == oldChild)
+                WeakReturnStatement = newChild as AstStatement;
         }
     }
 }

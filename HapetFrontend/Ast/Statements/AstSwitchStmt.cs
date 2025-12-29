@@ -1,4 +1,5 @@
 ﻿using HapetFrontend.Ast.Expressions;
+using System.Xml.Linq;
 
 namespace HapetFrontend.Ast.Statements
 {
@@ -34,6 +35,17 @@ namespace HapetFrontend.Ast.Statements
                 SourceFile = SourceFile,
             };
             return copy;
+        }
+
+        public override void ReplaceChild(AstStatement oldChild, AstStatement newChild)
+        {
+            if (SubExpression == oldChild)
+                SubExpression = newChild as AstExpression;
+            else if (Cases.Contains(oldChild))
+            {
+                int index = Cases.IndexOf(oldChild as AstCaseStmt);
+                Cases[index] = newChild as AstCaseStmt;
+            }
         }
     }
 
@@ -96,6 +108,14 @@ namespace HapetFrontend.Ast.Statements
                 GotoLabelLocation = GotoLabelLocation,
             };
             return copy;
+        }
+
+        public override void ReplaceChild(AstStatement oldChild, AstStatement newChild)
+        {
+            if (Pattern == oldChild)
+                Pattern = newChild as AstExpression;
+            else if (Body == oldChild)
+                Body = newChild as AstBlockExpr;
         }
     }
 }

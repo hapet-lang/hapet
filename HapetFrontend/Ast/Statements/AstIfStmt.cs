@@ -1,5 +1,6 @@
 ﻿using HapetFrontend.Ast.Expressions;
 using HapetFrontend.Types;
+using System.Xml.Linq;
 
 namespace HapetFrontend.Ast.Statements
 {
@@ -49,6 +50,16 @@ namespace HapetFrontend.Ast.Statements
                 ElseTokenLocation = ElseTokenLocation,
             };
             return copy;
+        }
+
+        public override void ReplaceChild(AstStatement oldChild, AstStatement newChild)
+        {
+            if (Condition == oldChild)
+                Condition = newChild as AstExpression;
+            else if (BodyTrue == oldChild)
+                BodyTrue = newChild as AstBlockExpr;
+            else if (BodyFalse == oldChild)
+                BodyFalse = newChild as AstBlockExpr;
         }
     }
 }

@@ -1,5 +1,6 @@
 ﻿using HapetFrontend.Ast.Expressions;
 using HapetFrontend.Types;
+using System.Xml.Linq;
 
 namespace HapetFrontend.Ast.Statements
 {
@@ -47,6 +48,17 @@ namespace HapetFrontend.Ast.Statements
                 SourceFile = SourceFile,
             };
             return copy;
+        }
+
+        public override void ReplaceChild(AstStatement oldChild, AstStatement newChild)
+        {
+            if (ThisArgument == oldChild)
+                ThisArgument = newChild as AstIdExpr;
+            else if (Arguments.Contains(oldChild))
+            {
+                int index = Arguments.IndexOf(oldChild as AstArgumentExpr);
+                Arguments[index] = newChild as AstArgumentExpr;
+            }
         }
     }
 }

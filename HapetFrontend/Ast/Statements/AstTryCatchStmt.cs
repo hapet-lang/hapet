@@ -1,5 +1,6 @@
 ﻿using HapetFrontend.Ast.Declarations;
 using HapetFrontend.Ast.Expressions;
+using System.Xml.Linq;
 
 namespace HapetFrontend.Ast.Statements
 {
@@ -49,6 +50,19 @@ namespace HapetFrontend.Ast.Statements
             };
             return copy;
         }
+
+        public override void ReplaceChild(AstStatement oldChild, AstStatement newChild)
+        {
+            if (TryBlock == oldChild)
+                TryBlock = newChild as AstBlockExpr;
+            else if (FinallyBlock == oldChild)
+                FinallyBlock = newChild as AstBlockExpr;
+            else if (CatchBlocks.Contains(oldChild))
+            {
+                int index = CatchBlocks.IndexOf(oldChild as AstCatchStmt);
+                CatchBlocks[index] = newChild as AstCatchStmt;
+            }
+        }
     }
 
     public class AstCatchStmt : AstStatement
@@ -83,6 +97,14 @@ namespace HapetFrontend.Ast.Statements
                 SourceFile = SourceFile,
             };
             return copy;
+        }
+
+        public override void ReplaceChild(AstStatement oldChild, AstStatement newChild)
+        {
+            if (CatchBlock == oldChild)
+                CatchBlock = newChild as AstBlockExpr;
+            else if (CatchParam == oldChild)
+                CatchParam = newChild as AstParamDecl;
         }
     }
 }

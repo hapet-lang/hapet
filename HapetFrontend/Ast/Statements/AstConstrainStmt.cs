@@ -1,6 +1,7 @@
-﻿using System.Diagnostics;
-using HapetFrontend.Ast.Expressions;
+﻿using HapetFrontend.Ast.Expressions;
 using HapetFrontend.Enums;
+using System.Diagnostics;
+using System.Xml.Linq;
 
 namespace HapetFrontend.Ast.Statements
 {
@@ -42,6 +43,17 @@ namespace HapetFrontend.Ast.Statements
                 SourceFile = SourceFile,
             };
             return copy;
+        }
+
+        public override void ReplaceChild(AstStatement oldChild, AstStatement newChild)
+        {
+            if (Expr == oldChild)
+                Expr = newChild as AstNestedExpr;
+            else if (AdditionalExprs.Contains(oldChild))
+            {
+                int index = AdditionalExprs.IndexOf(oldChild as AstNestedExpr);
+                AdditionalExprs[index] = newChild as AstNestedExpr;
+            }
         }
     }
 }

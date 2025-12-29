@@ -1,4 +1,5 @@
 ﻿using HapetFrontend.Ast.Expressions;
+using System.Xml.Linq;
 
 namespace HapetFrontend.Ast.Statements
 {
@@ -28,6 +29,12 @@ namespace HapetFrontend.Ast.Statements
                 SourceFile = SourceFile,
             };
             return copy;
+        }
+
+        public override void ReplaceChild(AstStatement oldChild, AstStatement newChild)
+        {
+            if (NameExpression == oldChild)
+                NameExpression = newChild as AstNestedExpr;
         }
     }
 }
