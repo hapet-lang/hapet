@@ -42,12 +42,18 @@ namespace HapetLastPrepare
                 List<AstDeclaration> usedDecls = new List<AstDeclaration>();
                 List<AstFuncDecl> functionsToGenerate = new List<AstFuncDecl>();
 
+                // variable that will hold instance of synthetic class
+                AstNestedExpr variableName = new AstNestedExpr(new AstIdExpr("__syntheticVar", parentFunc.Location), null, parentFunc.Location);
+
                 int currentLambda = 0;
                 foreach (var d in decls)
                 {
                     if (d is AstFuncDecl funcDecl)
                     {
                         functionsToGenerate.Add(funcDecl.GetDeepCopy() as AstFuncDecl);
+
+                        // remove from parent
+                        parentFunc.Body.Statements.Remove(funcDecl);
                     }
                     else if (d is AstLambdaExpr lambdaExpr)
                     {
@@ -64,6 +70,11 @@ namespace HapetLastPrepare
                         }
                         // create a function to add to a new class
                         functionsToGenerate.Add(lambdaExpr.CreateFuncDecl($"Lambda{currentLambda}"));
+
+                        // replace it with function from synthetic class
+                        AstNestedExpr funcAccess = new AstNestedExpr(new AstIdExpr($"Lambda{currentLambda}", lambdaExpr.Location), 
+                            variableName.GetDeepCopy() as AstNestedExpr, lambdaExpr.Location);
+                        lambdaExpr.NormalParent.ReplaceChild(lambdaExpr, funcAccess);
                     }
                     currentLambda++;
                 }
