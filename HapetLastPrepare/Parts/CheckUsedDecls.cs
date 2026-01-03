@@ -28,6 +28,10 @@ namespace HapetLastPrepare
             foreach (var decl in unique)
             {
                 var stor = decl.GetDeclarations().FirstOrDefault(x => x is AstFuncDecl fnc && fnc.ClassFunctionType == ClassFunctionType.StaticCtor);
+                // there could be no stor in sythetic classes
+                if (stor == null)
+                    continue;
+
                 CheckUsedDeclsDecl(stor, null, true);
                 var stor_var = decl.GetDeclarations().FirstOrDefault(x => x is AstVarDecl vd && vd.IsStaticCtorField);
                 CheckUsedDeclsDecl(stor_var);

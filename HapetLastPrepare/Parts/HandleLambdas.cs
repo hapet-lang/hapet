@@ -1,6 +1,7 @@
 ﻿using HapetFrontend.Ast;
 using HapetFrontend.Ast.Declarations;
 using HapetFrontend.Ast.Expressions;
+using HapetFrontend.Ast.Statements;
 using HapetFrontend.Extensions;
 using HapetFrontend.Helpers;
 using HapetFrontend.Parsing;
@@ -69,7 +70,10 @@ namespace HapetLastPrepare
                             }
                         }
                         // create a function to add to a new class
-                        functionsToGenerate.Add(lambdaExpr.CreateFuncDecl($"Lambda{currentLambda}"));
+                        var newFunc = lambdaExpr.CreateFuncDecl($"Lambda{currentLambda}");
+                        functionsToGenerate.Add(newFunc);
+                        // replace var usages inside the func
+                        ReplaceVarUsagesInBody(newFunc.Body, depDecls, parentFunc.ContainingParent.Type.OutType);
 
                         // replace it with function from synthetic class
                         AstNestedExpr funcAccess = new AstNestedExpr(new AstIdExpr($"Lambda{currentLambda}", lambdaExpr.Location), 
@@ -79,12 +83,37 @@ namespace HapetLastPrepare
                     currentLambda++;
                 }
 
+                // distinct and make 'this' param to be var
+                usedDecls = usedDecls.Distinct().ToList();
+                // search for 'this' param
+                var thisParam = usedDecls.FirstOrDefault(x => x.Type.OutType == parentFunc.ContainingParent.Type.OutType && x.Name.Name == "this");
+                if (thisParam != null && thisParam is AstParamDecl)
+                {
+                    usedDecls.Add(new AstVarDecl(
+                        thisParam.Type.GetDeepCopy() as AstExpression, 
+                        new AstIdExpr("__thisParam", location: thisParam.Location), 
+                        location: thisParam.Location
+                        ));
+                    usedDecls.Remove(thisParam);
+                }
+
                 // creating a new class
                 List<AstDeclaration> classDecls = new List<AstDeclaration>();
                 classDecls.AddRange(usedDecls.Select(x => x.GetDeepCopy() as AstDeclaration));
                 classDecls.AddRange(functionsToGenerate);
-                AstClassDecl sytheticClass = new AstClassDecl(new AstIdExpr($"__SyntheticClass{currentSyntheticClass}", parentFunc.Location), 
-                    classDecls, location: parentFunc.Location);
+                AstClassDecl sytheticClass = new AstClassDecl(new AstIdExpr($"__SyntheticClass{currentSyntheticClass}", parentFunc.Location),
+                    classDecls, location: parentFunc.Location)
+                {
+                    IsSyntheticStatement = true,
+                };
+
+                // suppress stor attr
+                sytheticClass.Attributes.Add(new AstAttributeStmt(
+                    new AstNestedExpr(new AstIdExpr("System.SuppressStaticCtorCallAttribute", sytheticClass.Location), null, sytheticClass.Location),
+                    new List<AstArgumentExpr>(), sytheticClass.Location)
+                {
+                    IsSyntheticStatement = true,
+                });
 
                 // prepare new class
                 _postPreparer.SetScopeAndParent(sytheticClass, parentFunc.ContainingParent);
