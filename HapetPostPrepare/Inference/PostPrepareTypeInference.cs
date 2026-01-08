@@ -76,7 +76,7 @@ namespace HapetPostPrepare
                 _currentParentStack.RemoveParent();
         }
 
-        private void PostPrepareFunctionInference(AstFuncDecl funcDecl, InInfo inInfo, ref OutInfo outInfo)
+        public void PostPrepareFunctionInference(AstFuncDecl funcDecl, InInfo inInfo, ref OutInfo outInfo)
         {
             /// WARN: attributes are inferrenced in <see cref="PostPrepareMetadataAttributes"/>
 
@@ -319,8 +319,10 @@ namespace HapetPostPrepare
                     _compiler.MessageHandler.ReportMessage(_currentSourceFile, varDecl, [], ErrorCode.Get(CTEN.VarDefaultType));
                     return;
                 }
-                else if (varDecl.Initializer.OutType is LambdaType)
+                else if (varDecl.Initializer.OutType is LambdaType || varDecl.Initializer.OutType is FunctionType)
                 {
+                    // TODO: search better with lambda/func params checking
+
                     // searcch for default type - System.Action
                     var nst = new AstNestedExpr(new AstIdExpr("System.Action", varDecl.Type)
                     {
@@ -986,6 +988,10 @@ namespace HapetPostPrepare
 
                 var saved = inInfo.MuteErrors;
                 inInfo.MuteErrors = true;
+                if (idExpr.Name == "__syntheticVar")
+                {
+
+                }
                 // searching for the symbol in the class/struct
                 PostPrepareIdentifierInference(idExpr, inInfo, ref outInfo, leftSideDecl);
                 inInfo.MuteErrors = saved;

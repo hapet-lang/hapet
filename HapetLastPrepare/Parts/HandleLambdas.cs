@@ -134,6 +134,7 @@ namespace HapetLastPrepare
                 _postPreparer.PostPrepareDeclScoping(sytheticClass);
                 // pp up to the current metadata step
                 _postPreparer.PostPrepareStatementUpToCurrentStep(false, sytheticClass);
+                _postPreparer.PostPrepareInheritedShiteOnDecl(sytheticClass);
 
                 // create instance of the synthetic class in parent func
                 AstNewExpr instanceCreation = new AstNewExpr(
@@ -165,16 +166,18 @@ namespace HapetLastPrepare
                 // add inits to parent func block
                 parentFunc.Body.Statements.InsertRange(1, paramInitializations);
 
-                // replace local var decls
-                ReplaceVarDeclsInParent(parentFunc.Body, usedDecls, variableName);
                 // replace local var usages
                 ReplaceVarUsagesInParent(parentFunc.Body, usedDecls, variableName);
-
+                // replace local var decls
+                ReplaceVarDeclsInParent(parentFunc.Body, usedDecls, variableName);
 
                 // reinference parent func body
                 _postPreparer.PostPrepareFunctionScoping(parentFunc);
                 // pp up to the current metadata step
-                _postPreparer.PostPrepareBlockInference(parentFunc.Body, inInfo, ref outInfo);
+                var saved = inInfo.ForMetadata;
+                inInfo.ForMetadata = false;
+                _postPreparer.PostPrepareFunctionInference(parentFunc, inInfo, ref outInfo);
+                inInfo.ForMetadata = saved;
 
 
                 currentSyntheticClass++;
