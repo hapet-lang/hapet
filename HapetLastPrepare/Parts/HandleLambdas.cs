@@ -5,6 +5,7 @@ using HapetFrontend.Ast.Statements;
 using HapetFrontend.Extensions;
 using HapetFrontend.Helpers;
 using HapetFrontend.Parsing;
+using HapetPostPrepare.Entities;
 
 namespace HapetLastPrepare
 {
@@ -13,6 +14,9 @@ namespace HapetLastPrepare
         private void HandleLambdas()
         {
             // TODO: handle here non-static nested/lambdas
+
+            InInfo inInfo = InInfo.Default;
+            OutInfo outInfo = OutInfo.Default;
 
             // at first - sort them by parent funcs
             Dictionary<AstFuncDecl, List<AstStatement>> sorted = new Dictionary<AstFuncDecl, List<AstStatement>>();
@@ -44,7 +48,8 @@ namespace HapetLastPrepare
                 List<AstFuncDecl> functionsToGenerate = new List<AstFuncDecl>();
 
                 // variable that will hold instance of synthetic class
-                AstNestedExpr variableName = new AstNestedExpr(new AstIdExpr("__syntheticVar", parentFunc.Location), null, parentFunc.Location);
+                AstIdExpr variableName = new AstIdExpr("__syntheticVar", parentFunc.Location);
+                AstNestedExpr variableNameNested = (variableName.GetDeepCopy() as AstIdExpr).WrapToNested();
 
                 int currentLambda = 0;
                 foreach (var d in decls)
@@ -52,6 +57,8 @@ namespace HapetLastPrepare
                     if (d is AstFuncDecl funcDecl)
                     {
                         functionsToGenerate.Add(funcDecl.GetDeepCopy() as AstFuncDecl);
+
+                        // TODO: replace usages in parent func
 
                         // remove from parent
                         parentFunc.Body.Statements.Remove(funcDecl);
@@ -76,30 +83,36 @@ namespace HapetLastPrepare
                         ReplaceVarUsagesInBody(newFunc.Body, depDecls, parentFunc.ContainingParent.Type.OutType);
 
                         // replace it with function from synthetic class
-                        AstNestedExpr funcAccess = new AstNestedExpr(new AstIdExpr($"Lambda{currentLambda}", lambdaExpr.Location), 
-                            variableName.GetDeepCopy() as AstNestedExpr, lambdaExpr.Location);
+                        AstNestedExpr funcAccess = new AstNestedExpr(new AstIdExpr($"Lambda{currentLambda}", lambdaExpr.Location),
+                            variableNameNested.GetDeepCopy() as AstNestedExpr, lambdaExpr.Location);
                         lambdaExpr.NormalParent.ReplaceChild(lambdaExpr, funcAccess);
                     }
                     currentLambda++;
                 }
 
-                // distinct and make 'this' param to be var
+                // distinct and 
                 usedDecls = usedDecls.Distinct().ToList();
-                // search for 'this' param
-                var thisParam = usedDecls.FirstOrDefault(x => x.Type.OutType == parentFunc.ContainingParent.Type.OutType && x.Name.Name == "this");
-                if (thisParam != null && thisParam is AstParamDecl)
+                List<AstDeclaration> declsToAddToSynthetic = new List<AstDeclaration>(usedDecls);
+                // replace all params with field decls
+                foreach (var d in declsToAddToSynthetic.Where(x => x is AstParamDecl).ToList())
                 {
-                    usedDecls.Add(new AstVarDecl(
-                        thisParam.Type.GetDeepCopy() as AstExpression, 
-                        new AstIdExpr("__thisParam", location: thisParam.Location), 
-                        location: thisParam.Location
+                    string varName = d.Name.Name;
+
+                    // make 'this' param to be var
+                    if (d.Type.OutType == parentFunc.ContainingParent.Type.OutType && d.Name.Name == "this")
+                        varName = "__thisParam";
+
+                    declsToAddToSynthetic.Add(new AstVarDecl(
+                        d.Type.GetDeepCopy() as AstExpression,
+                        new AstIdExpr(varName, location: d.Name.Location),
+                        location: d.Location
                         ));
-                    usedDecls.Remove(thisParam);
+                    declsToAddToSynthetic.Remove(d);
                 }
 
                 // creating a new class
                 List<AstDeclaration> classDecls = new List<AstDeclaration>();
-                classDecls.AddRange(usedDecls.Select(x => x.GetDeepCopy() as AstDeclaration));
+                classDecls.AddRange(declsToAddToSynthetic.Select(x => x.GetDeepCopy() as AstDeclaration));
                 classDecls.AddRange(functionsToGenerate);
                 AstClassDecl sytheticClass = new AstClassDecl(new AstIdExpr($"__SyntheticClass{currentSyntheticClass}", parentFunc.Location),
                     classDecls, location: parentFunc.Location)
@@ -116,10 +129,53 @@ namespace HapetLastPrepare
                 });
 
                 // prepare new class
+                _postPreparer.PostPrepareDeclMethodsInternal(sytheticClass, parentFunc.ContainingParent.SourceFile);
                 _postPreparer.SetScopeAndParent(sytheticClass, parentFunc.ContainingParent);
                 _postPreparer.PostPrepareDeclScoping(sytheticClass);
                 // pp up to the current metadata step
                 _postPreparer.PostPrepareStatementUpToCurrentStep(false, sytheticClass);
+
+                // create instance of the synthetic class in parent func
+                AstNewExpr instanceCreation = new AstNewExpr(
+                    (sytheticClass.Name.GetDeepCopy() as AstIdExpr).WrapToNested(), 
+                    location: sytheticClass.Location);
+                AstVarDecl syntheticVar = new AstVarDecl(
+                    (sytheticClass.Name.GetDeepCopy() as AstIdExpr).WrapToNested(),
+                    variableName.GetDeepCopy() as AstIdExpr,
+                    ini: instanceCreation,
+                    location: sytheticClass.Location);
+                // add the var to parent func block
+                parentFunc.Body.Statements.Insert(0, syntheticVar);
+
+                // generate statements to wrap params usages
+                List<AstStatement> paramInitializations = new List<AstStatement>();
+                foreach (var d in usedDecls.Where(x => x is AstParamDecl))
+                {
+                    string targetFieldName = d.Name.Name;
+
+                    // add 'this' init if used
+                    if (d.Type.OutType == parentFunc.ContainingParent.Type.OutType && d.Name.Name == "this")
+                        targetFieldName = "__thisParam";
+
+                    AstNestedExpr assignTarget = (variableName.GetDeepCopy() as AstIdExpr).WrapToNested();
+                    assignTarget = new AstNestedExpr(new AstIdExpr(targetFieldName, location: assignTarget.Location), assignTarget, assignTarget.Location);
+                    AstNestedExpr assignValue = new AstNestedExpr(d.Name.GetDeepCopy() as AstIdExpr, null, assignTarget.Location);
+                    paramInitializations.Add(new AstAssignStmt(assignTarget, assignValue, location: assignTarget.Location));
+                }
+                // add inits to parent func block
+                parentFunc.Body.Statements.InsertRange(1, paramInitializations);
+
+                // replace local var decls
+                ReplaceVarDeclsInParent(parentFunc.Body, usedDecls, variableName);
+                // replace local var usages
+                ReplaceVarUsagesInParent(parentFunc.Body, usedDecls, variableName);
+
+
+                // reinference parent func body
+                _postPreparer.PostPrepareFunctionScoping(parentFunc);
+                // pp up to the current metadata step
+                _postPreparer.PostPrepareBlockInference(parentFunc.Body, inInfo, ref outInfo);
+
 
                 currentSyntheticClass++;
             }

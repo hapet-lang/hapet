@@ -99,5 +99,10 @@ namespace HapetFrontend.Ast.Expressions
         {
             return this;
         }
+
+        public AstNestedExpr WrapToNested()
+        {
+            return new AstNestedExpr(this, null, this.Location);
+        }
     }
 }

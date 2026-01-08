@@ -33,7 +33,7 @@ namespace HapetPostPrepare
             }
         }
 
-        private void PostPrepareDeclMethodsInternal(AstDeclaration decl, ProgramFile file)
+        public void PostPrepareDeclMethodsInternal(AstDeclaration decl, ProgramFile file)
         {
             if (decl is not AstClassDecl && decl is not AstStructDecl)
                 return;

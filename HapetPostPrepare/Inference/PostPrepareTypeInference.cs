@@ -523,7 +523,7 @@ namespace HapetPostPrepare
             }
         }
 
-        private void PostPrepareBlockInference(AstBlockExpr blockExpr, InInfo inInfo, ref OutInfo outInfo)
+        public void PostPrepareBlockInference(AstBlockExpr blockExpr, InInfo inInfo, ref OutInfo outInfo)
         {
             var prevBlock = _currentBlock;
             _currentBlock = blockExpr;

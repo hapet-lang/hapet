@@ -334,7 +334,7 @@ namespace HapetPostPrepare
             PostPrepareExprScoping(delegateDecl.Returns);
         }
 
-        private void PostPrepareFunctionScoping(AstFuncDecl funcDecl)
+        public void PostPrepareFunctionScoping(AstFuncDecl funcDecl)
         {
             _currentParentStack.AddParent(funcDecl);
 

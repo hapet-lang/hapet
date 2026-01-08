@@ -6,17 +6,58 @@ using HapetFrontend.Errors;
 using HapetFrontend.Types;
 using HapetFrontend.Parsing;
 using HapetFrontend.Extensions;
+using HapetFrontend.Scoping;
 
 namespace HapetLastPrepare
 {
+    public enum LambdaReplacerState
+    {
+        /// <summary>
+        /// Replaces local var usages in lambdas and nested
+        /// </summary>
+        ReplaceVarUsagesInLambda = 0, 
+        /// <summary>
+        /// Replaces var decls in parent func with synthetic instance fields usages
+        /// </summary>
+        ReplaceVarDeclsInParent = 1,
+        /// <summary>
+        /// Replaces var usages in parent func with synthetic instance fields
+        /// </summary>
+        ReplaceVarUsagesInParent = 2,
+    }
+
     public partial class LastPrepare
     {
+        private LambdaReplacerState _currentReplacerState = LambdaReplacerState.ReplaceVarUsagesInLambda;
+
         private HapetType _currentReplacingParentThisType;
         private List<AstDeclaration> _currentReplacingDeclsToCheck;
 
+        private AstIdExpr _syntheticInstanceVarName;
+
         private void ReplaceVarUsagesInBody(AstBlockExpr body, List<AstDeclaration> declsToCheck, HapetType currentReplacingParentThisType)
         {
+            _currentReplacerState = LambdaReplacerState.ReplaceVarUsagesInLambda;
+
             _currentReplacingParentThisType = currentReplacingParentThisType;
+            _currentReplacingDeclsToCheck = declsToCheck;
+            ReplaceAllInBlockExpr(body);
+        }
+
+        private void ReplaceVarDeclsInParent(AstBlockExpr body, List<AstDeclaration> declsToCheck, AstIdExpr syntheticInstanceVarName)
+        {
+            _currentReplacerState = LambdaReplacerState.ReplaceVarDeclsInParent;
+
+            _syntheticInstanceVarName = syntheticInstanceVarName;
+            _currentReplacingDeclsToCheck = declsToCheck;
+            ReplaceAllInBlockExpr(body);
+        }
+
+        private void ReplaceVarUsagesInParent(AstBlockExpr body, List<AstDeclaration> declsToCheck, AstIdExpr syntheticInstanceVarName)
+        {
+            _currentReplacerState = LambdaReplacerState.ReplaceVarUsagesInParent;
+
+            _syntheticInstanceVarName = syntheticInstanceVarName;
             _currentReplacingDeclsToCheck = declsToCheck;
             ReplaceAllInBlockExpr(body);
         }
@@ -30,7 +71,7 @@ namespace HapetLastPrepare
             }
 
             if (IsNeededToBeReplaced(varDecl.Type, out var val))
-                varDecl.Type = val;
+                varDecl.Type = val as AstExpression;
             else
                 ReplaceAllInExpr(varDecl.Type);
 
@@ -51,7 +92,7 @@ namespace HapetLastPrepare
             }
 
             if (IsNeededToBeReplaced(paramDecl.Type, out var val))
-                paramDecl.Type = val;
+                paramDecl.Type = val as AstExpression;
             else
                 ReplaceAllInExpr(paramDecl.Type);
 
@@ -210,12 +251,16 @@ namespace HapetLastPrepare
 
         private void ReplaceAllInBlockExpr(AstBlockExpr blockExpr)
         {
-            foreach (var stmt in blockExpr.Statements)
+            for (int i = 0; i < blockExpr.Statements.Count; ++i)
             {
+                var stmt = blockExpr.Statements[i];
                 if (stmt == null)
                     continue;
 
-                ReplaceAllInExpr(stmt);
+                if (IsNeededToBeReplaced(stmt, out var val))
+                    blockExpr.Statements[i] = val;
+                else
+                    ReplaceAllInExpr(stmt);
             }
         }
 
@@ -233,7 +278,7 @@ namespace HapetLastPrepare
         private void ReplaceAllInPointerExpr(AstPointerExpr pointerExpr)
         {
             if (IsNeededToBeReplaced(pointerExpr.SubExpression, out var val) && !pointerExpr.IsDereference)
-                pointerExpr.SubExpression = val;
+                pointerExpr.SubExpression = val as AstExpression;
             else
                 ReplaceAllInExpr(pointerExpr.SubExpression);
         }
@@ -246,7 +291,7 @@ namespace HapetLastPrepare
         private void ReplaceAllInNewExpr(AstNewExpr newExpr)
         {
             if (IsNeededToBeReplaced(newExpr.TypeName, out var val))
-                newExpr.TypeName = val;
+                newExpr.TypeName = val as AstNestedExpr;
             else
                 ReplaceAllInExpr(newExpr.TypeName);
 
@@ -259,7 +304,7 @@ namespace HapetLastPrepare
         private void ReplaceAllInArgumentExpr(AstArgumentExpr argumentExpr)
         {
             if (IsNeededToBeReplaced(argumentExpr.Expr, out var val))
-                argumentExpr.Expr = val;
+                argumentExpr.Expr = val as AstExpression;
             else
                 ReplaceAllInExpr(argumentExpr.Expr);
 
@@ -275,7 +320,7 @@ namespace HapetLastPrepare
             {
                 var currGt = genExpr.GenericRealTypes[i];
                 if (IsNeededToBeReplaced(currGt, out var val))
-                    genExpr.GenericRealTypes[i] = val;
+                    genExpr.GenericRealTypes[i] = val as AstExpression;
                 else
                     ReplaceAllInExpr(genExpr.GenericRealTypes[i]);
             }
@@ -294,7 +339,7 @@ namespace HapetLastPrepare
                 return;
 
             if (IsNeededToBeReplaced(idExpr.AdditionalData, out var val))
-                idExpr.AdditionalData = val;
+                idExpr.AdditionalData = val as AstNestedExpr;
             else
                 ReplaceAllInExpr(idExpr.AdditionalData);
         }
@@ -303,7 +348,7 @@ namespace HapetLastPrepare
         {
             // usually when in the same class
             if (callExpr.TypeOrObjectName != null && IsNeededToBeReplaced(callExpr.TypeOrObjectName, out var val))
-                callExpr.TypeOrObjectName = val;
+                callExpr.TypeOrObjectName = val as AstExpression;
             else
                 ReplaceAllInExpr(callExpr.TypeOrObjectName);
 
@@ -326,19 +371,19 @@ namespace HapetLastPrepare
             }
 
             if (IsNeededToBeReplaced(castExpr.TypeExpr, out var val))
-                castExpr.TypeExpr = val;
+                castExpr.TypeExpr = val as AstExpression;
             else
                 ReplaceAllInExpr(castExpr.TypeExpr);
         }
 
         private void ReplaceAllInNestedExpr(AstNestedExpr nestExpr)
         {
-            if (IsNeededToBeReplaced(nestExpr.RightPart, out var val))
+            if (IsNeededToBeReplaced(nestExpr.RightPart, out var val) && val is AstNestedExpr nstVal)
             {
                 // we need to make replaces more carefully
                 var savedLeft = nestExpr.LeftPart;
-                nestExpr.RightPart = val.RightPart;
-                nestExpr.LeftPart = val.LeftPart?.GetDeepCopy() as AstNestedExpr;
+                nestExpr.RightPart = nstVal.RightPart;
+                nestExpr.LeftPart = nstVal.LeftPart?.GetDeepCopy() as AstNestedExpr;
                 nestExpr.LeftPart?.AddToTheEnd(savedLeft);
             }
             else
@@ -347,7 +392,7 @@ namespace HapetLastPrepare
             if (nestExpr.LeftPart != null)
             {
                 if (IsNeededToBeReplaced(nestExpr.LeftPart, out var val2))
-                    nestExpr.LeftPart = val2;
+                    nestExpr.LeftPart = val2 as AstNestedExpr;
                 else
                     ReplaceAllInExpr(nestExpr.LeftPart);
             }
@@ -356,7 +401,7 @@ namespace HapetLastPrepare
         private void ReplaceAllInDefaultExpr(AstDefaultExpr defaultExpr)
         {
             if (IsNeededToBeReplaced(defaultExpr.TypeForDefault, out var val))
-                defaultExpr.TypeForDefault = val;
+                defaultExpr.TypeForDefault = val as AstExpression;
             else
                 ReplaceAllInExpr(defaultExpr.TypeForDefault);
         }
@@ -364,7 +409,7 @@ namespace HapetLastPrepare
         private void ReplaceAllInArrayExpr(AstArrayExpr arrayExpr)
         {
             if (IsNeededToBeReplaced(arrayExpr.SubExpression, out var val))
-                arrayExpr.SubExpression = val;
+                arrayExpr.SubExpression = val as AstExpression;
             else
                 ReplaceAllInExpr(arrayExpr.SubExpression);
         }
@@ -377,7 +422,7 @@ namespace HapetLastPrepare
             }
 
             if (IsNeededToBeReplaced(arrayExpr.TypeName, out var val))
-                arrayExpr.TypeName = val;
+                arrayExpr.TypeName = val as AstExpression;
             else
                 ReplaceAllInExpr(arrayExpr.TypeName);
 
@@ -494,7 +539,7 @@ namespace HapetLastPrepare
             if (!caseStmt.IsDefaultCase)
             {
                 if (IsNeededToBeReplaced(caseStmt.Pattern, out var val))
-                    caseStmt.Pattern = val;
+                    caseStmt.Pattern = val as AstExpression;
                 else
                     ReplaceAllInExpr(caseStmt.Pattern);
             }
@@ -510,7 +555,7 @@ namespace HapetLastPrepare
             if (returnStmt.ReturnExpression != null)
             {
                 if (IsNeededToBeReplaced(returnStmt.ReturnExpression, out var val))
-                    returnStmt.ReturnExpression = val;
+                    returnStmt.ReturnExpression = val as AstExpression;
                 else
                     ReplaceAllInExpr(returnStmt.ReturnExpression);
             }
@@ -563,64 +608,74 @@ namespace HapetLastPrepare
                 ReplaceAllInParam(stmt.CatchParam);
         }
 
-        private bool IsNeededToBeReplaced(AstStatement expr, out AstNestedExpr value)
+        private bool IsNeededToBeReplaced(AstStatement expr, out AstStatement value)
         {
-            // generic types are like that :)
-            //if (expr is AstNestedExpr nestExpr &&
-            //    nestExpr.LeftPart != null &&
-            //    nestExpr.LeftPart.RightPart is AstIdExpr leftId &&
-            //    leftId.Name == "this" &&
-            //    nestExpr.RightPart is AstIdExpr idExpr)
-            //{
-            //    // if found the generic entry - replace it
-            //    if (_currentGenericToRealMappings.TryGetValue(idExpr.Name, out var val))
-            //    {
-            //        value = val;
-            //        return true;
-            //    }
-            //}
-
-            // replace 'this' to '__thisParam'
-            if (expr is AstIdExpr idExpr3 && idExpr3.Name == "this" && idExpr3.OutType == _currentReplacingParentThisType)
+            // if state 0
+            if (_currentReplacerState == LambdaReplacerState.ReplaceVarUsagesInLambda)
             {
-                idExpr3.Name = "__thisParam";
-                // no need to return it, just replace the string
-                value = null;
-                return false;
-            }
-
-            // need to create nested for static fields/props like 'var1' to 'SomeClass.var1'
-            foreach (var v in _currentReplacingDeclsToCheck)
-            {
-                if (v is not AstVarDecl currVar || !currVar.SpecialKeys.Contains(TokenType.KwStatic))
-                    continue;
-
-                // if the is expr is the var - return nested
-                if (expr is AstIdExpr idE && idE.FindSymbol == currVar.Symbol && currVar.ContainingParent.Type.OutType == _currentReplacingParentThisType)
+                // replace 'this' to '__thisParam'
+                if (expr is AstIdExpr idExpr3 && idExpr3.Name == "this" && idExpr3.OutType == _currentReplacingParentThisType)
                 {
-                    value = new AstNestedExpr(idE, new AstNestedExpr(currVar.ContainingParent.Name.GetDeepCopy() as AstIdExpr, null, expr.Location), expr.Location);
-                    return true;
+                    idExpr3.Name = "__thisParam";
+                    // no need to return it, just replace the string
+                    value = null;
+                    return false;
+                }
+
+                // need to create nested for static fields/props like 'var1' to 'SomeClass.var1'
+                foreach (var v in _currentReplacingDeclsToCheck)
+                {
+                    if (v is not AstVarDecl currVar || !currVar.SpecialKeys.Contains(TokenType.KwStatic))
+                        continue;
+
+                    // if the is expr is the var - return nested
+                    if (expr is AstIdExpr idE && idE.FindSymbol == currVar.Symbol && currVar.ContainingParent.Type.OutType == _currentReplacingParentThisType)
+                    {
+                        value = new AstNestedExpr(idE, new AstNestedExpr(currVar.ContainingParent.Name.GetDeepCopy() as AstIdExpr, null, expr.Location), expr.Location);
+                        return true;
+                    }
                 }
             }
+            // if state 1
+            else if (_currentReplacerState == LambdaReplacerState.ReplaceVarDeclsInParent && expr is AstVarDecl varDecl)
+            {
+                // search for the var in used decls
+                foreach (var searchV in _currentReplacingDeclsToCheck)
+                {
+                    if (varDecl == searchV)
+                    {
+                        if (varDecl.Initializer == null)
+                        {
+                            value = new AstEmptyStmt(varDecl.Location);
+                        }
+                        else
+                        {
+                            // set initializer to the instance field
+                            var assignTarget = (_syntheticInstanceVarName.GetDeepCopy() as AstIdExpr).WrapToNested();
+                            assignTarget = new AstNestedExpr(varDecl.Name.GetDeepCopy() as AstIdExpr, assignTarget, location: assignTarget.Location);
+                            value = new AstAssignStmt(assignTarget, varDecl.Initializer.GetDeepCopy() as AstExpression, location: varDecl.Location);
+                        }
+                        return true;
+                    }
+                }
+            }
+            // if state 2
+            else if (_currentReplacerState == LambdaReplacerState.ReplaceVarUsagesInParent && expr is AstIdExpr idExpr)
+            {
+                // search for the var in used decls
+                foreach (var searchV in _currentReplacingDeclsToCheck)
+                {
+                    // skip 'this' param replacement
+                    if (searchV is AstParamDecl paramD && paramD.Name.Name == "this")
+                        continue;
 
-            //// we also need to replace all generic defaults
-            //if (expr is AstDefaultGenericExpr defG)
-            //{
-            //    // getting the name of default
-            //    var defaultName = defG.TypeForDefault.Declaration.Name.Name;
-
-            //    // if found the generic entry - replace it
-            //    if (_currentGenericToRealMappings.TryGetValue(defaultName, out var val))
-            //    {
-            //        // getting default for the new type
-            //        value = new AstNestedExpr(AstDefaultExpr.GetDefaultValueForType(val.OutType, defG, _compiler.MessageHandler), null, defG.Location)
-            //        {
-            //            Scope = defG.Scope,
-            //            SourceFile = defG.SourceFile,
-            //        };
-            //        return true;
-            //    }
-            //}
+                    if (idExpr.FindSymbol is DeclSymbol ds && ds.Decl == searchV)
+                    {
+                        value = new AstNestedExpr(idExpr, (_syntheticInstanceVarName.GetDeepCopy() as AstIdExpr).WrapToNested(), expr.Location);
+                        return true;
+                    }
+                }
+            }
 
             value = null;
             return false;

@@ -43,6 +43,8 @@ namespace HapetFrontend.Ast.Expressions
         public AstNewExpr(AstNestedExpr typeName, List<AstArgumentExpr> arguments = null, ILocation location = null)
             : base(location)
         {
+            arguments ??= new List<AstArgumentExpr>();
+
             this.TypeName = typeName;
             this.Arguments = arguments;
         }
