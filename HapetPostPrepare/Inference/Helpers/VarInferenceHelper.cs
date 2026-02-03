@@ -127,13 +127,8 @@ namespace HapetPostPrepare
 
             /// WARN!!! almost the same as in <see cref="PostPrepareCallExprInference"/>
             AstIdExpr newName = null;
-            if (idFuncName.FindSymbol != null)
-            {
-                // check if it was already infered somewhere
-                newName = idFuncName.GetCopy();
-            }
             // renaming func call name from 'Anime' to 'Anime(int, float)' WITH OBJECT AS FIRST PARAM
-            else if (nestFuncName.LeftPart == null)
+            if (nestFuncName.LeftPart == null)
             {
                 // at first we need to search for the symbol in local scope - it could be a var with delegate type
                 var smbl2 = idFuncName.Scope.GetSymbol(idFuncName, handleGenerics: true);
@@ -234,8 +229,6 @@ namespace HapetPostPrepare
             {
                 // call expr type is the same as func return type
                 value.OutType = ft;
-                // no need anymore
-                nestFuncName.LeftPart = null;
 
                 // checking if it is a static func
                 bool isStaticFunc = ft.Declaration.SpecialKeys.Contains(TokenType.KwStatic);

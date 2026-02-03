@@ -910,23 +910,23 @@ namespace HapetBackend.Llvm
             return delegateIrType;
         }
 
-        private unsafe LLVMValueRef CreateDelegateFromFunction(FunctionType func, DeclSymbol declSymbol, LLVMValueRef ptrToObject)
+        private unsafe LLVMValueRef CreateDelegateFromFunction(FunctionType func, DeclSymbol declSymbol, LLVMValueRef ptrToObject, bool getPtr = false)
         {
             // this whole shite is done to create anon delegate of the specified function
             LLVMTypeRef delegateIrType = GetDelegateAnonType(func);
             LLVMValueRef ptrToFunc = _valueMap[declSymbol]; // mb ptr to?
-            return CreateDelegateInstanceInternal(delegateIrType, ptrToFunc, ptrToObject);
+            return CreateDelegateInstanceInternal(delegateIrType, ptrToFunc, ptrToObject, getPtr);
         }
 
-        private unsafe LLVMValueRef CreateDelegateFromLambda(LambdaType lambda, LLVMValueRef ptrToObject)
+        private unsafe LLVMValueRef CreateDelegateFromLambda(LambdaType lambda, LLVMValueRef ptrToObject, bool getPtr = false)
         {
             // this whole shite is done to create anon delegate of the specified lambda
             LLVMTypeRef delegateIrType = GetDelegateAnonType(lambda);
             LLVMValueRef lfunc = _valueMap[lambda.Declaration.Symbol];
-            return CreateDelegateInstanceInternal(delegateIrType, lfunc, ptrToObject);
+            return CreateDelegateInstanceInternal(delegateIrType, lfunc, ptrToObject, getPtr);
         }
 
-        private unsafe LLVMValueRef CreateDelegateInstanceInternal(LLVMTypeRef delegateIrType, LLVMValueRef ptrToFunc, LLVMValueRef ptrToObject)
+        private unsafe LLVMValueRef CreateDelegateInstanceInternal(LLVMTypeRef delegateIrType, LLVMValueRef ptrToFunc, LLVMValueRef ptrToObject, bool getPtr)
         {
             var allocatedDelegate = _builder.BuildAlloca(delegateIrType, "anonAllocated");
             // the 1 is because delegate struct has object field as it's 1 param
@@ -936,7 +936,16 @@ namespace HapetBackend.Llvm
             var funcPtrr = _builder.BuildStructGEP2(delegateIrType, allocatedDelegate, 0, "funcPtr");
             _builder.BuildStore(ptrToFunc, funcPtrr);
 
-            return allocatedDelegate;
+            var loaded = _builder.BuildLoad2(delegateIrType, allocatedDelegate, "loadedDelegate");
+
+            if (getPtr)
+            {
+                LLVMValueRef varPtr = CreateLocalVariable(delegateIrType, HapetType.CurrentTypeContext.PointerSize, "binRetHolder");
+                _builder.BuildStore(loaded, varPtr);
+                return varPtr;
+            }
+
+            return loaded;
         }
         #endregion
 
@@ -994,6 +1003,17 @@ namespace HapetBackend.Llvm
             return _builder.BuildCall2(funcType, mallocFunc, new LLVMValueRef[] { sizeToMalloc }, allocName);
         }
         #endregion
+
+        private void CreateDebugConsoleWrite(string data)
+        {
+            // WARN: hard cock
+            var marshalDecl = _currentFunction.Scope.GetSymbolInNamespace("System", new AstIdExpr("Console"));
+            var mallocSymbol = (marshalDecl.Decl as AstClassDecl).SubScope.GetSymbol(new AstIdExpr("WriteLine")) as DeclSymbol;
+            var mallocFunc = _valueMap[mallocSymbol];
+            LLVMTypeRef funcType = _typeMap[mallocSymbol.Decl.Type.OutType];
+            var sizeToMalloc = HapetValueToLLVMValue(HapetType.CurrentTypeContext.StringTypeInstance, data);
+            _builder.BuildCall2(funcType, mallocFunc, new LLVMValueRef[] { sizeToMalloc });
+        }
 
         #region Gc roots
         private void CallSetMainRoot(LLVMValueRef root)

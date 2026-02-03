@@ -667,7 +667,7 @@ namespace HapetBackend.Llvm
             {
                 // by default it is a nullptr
                 LLVMValueRef ptrToObject = LLVM.ConstPointerNull(HapetTypeToLLVMType(HapetType.CurrentTypeContext.GetIntType(1, false)));
-                return CreateDelegateFromFunction(fncType, declSymbol, ptrToObject);
+                return CreateDelegateFromFunction(fncType, declSymbol, ptrToObject, getPtr);
             }
             else
             {
@@ -1110,7 +1110,7 @@ namespace HapetBackend.Llvm
                                 ptrToObject = LLVM.ConstPointerNull(HapetTypeToLLVMType(HapetType.CurrentTypeContext.GetIntType(1, false)));
                             else
                                 ptrToObject = leftPart;
-                            return CreateDelegateFromFunction(fncT, idExpr.FindSymbol as DeclSymbol, ptrToObject);
+                            return CreateDelegateFromFunction(fncT, idExpr.FindSymbol as DeclSymbol, ptrToObject, getPtr);
                         }
 
                         // usually this happens when user tries to access non static/const field from a class/struct name
@@ -1345,8 +1345,10 @@ namespace HapetBackend.Llvm
         private unsafe LLVMValueRef GenerateLambdaExprCode(AstLambdaExpr expr)
         {
             // by default it is a nullptr
-            LLVMValueRef ptrToObject = LLVM.ConstPointerNull(HapetTypeToLLVMType(HapetType.CurrentTypeContext.GetIntType(1, false)));
-            return CreateDelegateFromLambda(expr.OutType as LambdaType, ptrToObject);
+            //LLVMValueRef ptrToObject = LLVM.ConstPointerNull(HapetTypeToLLVMType(HapetType.CurrentTypeContext.GetIntType(1, false)));
+            //return CreateDelegateFromLambda(expr.OutType as LambdaType, ptrToObject);
+            // TODO: is it called ???
+            return default;
         }
 
         private unsafe LLVMValueRef GenerateNullExprCode(AstNullExpr expr)
