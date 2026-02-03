@@ -119,6 +119,9 @@ namespace HapetLastPrepare
                 {
                     IsSyntheticStatement = true,
                 };
+                // set containing parent
+                foreach (var decl in classDecls)
+                    decl.ContainingParent = sytheticClass;
 
                 // suppress stor attr
                 sytheticClass.Attributes.Add(new AstAttributeStmt(

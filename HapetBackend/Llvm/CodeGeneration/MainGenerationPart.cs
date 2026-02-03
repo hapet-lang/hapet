@@ -44,8 +44,11 @@ namespace HapetBackend.Llvm
 
             foreach (var l in _compiler.LambdasAndNested) 
             {
-                if (l is not AstLambdaExpr lambda)
+                // skip non lambdas and skip lambdas that are non static
+                // because static lambdas are only generated here
+                if (l is not AstLambdaExpr lambda || !lambda.SpecialKeys.Contains(TokenType.KwStatic))
                     continue;
+                _currentSourceFile = lambda.SourceFile;
                 GenerateLambdaExprCodeMain(lambda);
             }
             foreach (var (funcDecl, funcType) in funcs)
