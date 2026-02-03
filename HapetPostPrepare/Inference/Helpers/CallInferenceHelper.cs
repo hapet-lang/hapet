@@ -119,6 +119,8 @@ namespace HapetPostPrepare
             }
             else if (callExpr.FuncName.OutType is DelegateType dt)
             {
+                // TODO: check that arguments are correct type
+
                 // call expr type is the same as func return type
                 callExpr.OutType = dt.TargetDeclaration.Returns.OutType;
                 callExpr.TupleNameList = dt.TargetDeclaration.Returns.TupleNameList;
