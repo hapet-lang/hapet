@@ -24,6 +24,10 @@ namespace HapetLastPrepare
         /// Replaces var usages in parent func with synthetic instance fields
         /// </summary>
         ReplaceVarUsagesInParent = 2,
+        /// <summary>
+        /// Replaces nested func usages in parent func with synthetic instance funcs
+        /// </summary>
+        ReplaceNestedUsagesInParent = 3,
     }
 
     public partial class LastPrepare
@@ -59,6 +63,15 @@ namespace HapetLastPrepare
 
             _syntheticInstanceVarName = syntheticInstanceVarName;
             _currentReplacingDeclsToCheck = declsToCheck;
+            ReplaceAllInBlockExpr(body);
+        }
+
+        private void ReplaceNestedUsagesInParent(AstBlockExpr body, AstDeclaration declToCheck, AstIdExpr syntheticInstanceVarName)
+        {
+            _currentReplacerState = LambdaReplacerState.ReplaceNestedUsagesInParent;
+
+            _syntheticInstanceVarName = syntheticInstanceVarName;
+            _currentReplacingDeclsToCheck = [declToCheck];
             ReplaceAllInBlockExpr(body);
         }
 
@@ -255,6 +268,9 @@ namespace HapetLastPrepare
             {
                 var stmt = blockExpr.Statements[i];
                 if (stmt == null)
+                    continue;
+                // just skip them. they will be deleted
+                if (stmt is AstFuncDecl)
                     continue;
 
                 if (IsNeededToBeReplaced(stmt, out var val))
@@ -672,6 +688,28 @@ namespace HapetLastPrepare
                     if (idExpr.FindSymbol is DeclSymbol ds && ds.Decl == searchV)
                     {
                         value = new AstNestedExpr(idExpr, (_syntheticInstanceVarName.GetDeepCopy() as AstIdExpr).WrapToNested(), expr.Location);
+                        return true;
+                    }
+                }
+            }
+            // if state 3
+            else if (_currentReplacerState == LambdaReplacerState.ReplaceNestedUsagesInParent)
+            {
+                // search for the func in used decls
+                foreach (var searchV in _currentReplacingDeclsToCheck)
+                {
+                    if (expr is AstIdExpr idExpr2 && idExpr2.FindSymbol is DeclSymbol ds && ds.Decl == searchV)
+                    {
+                        value = new AstNestedExpr(idExpr2, (_syntheticInstanceVarName.GetDeepCopy() as AstIdExpr).WrapToNested(), expr.Location);
+                        return true;
+                    }
+                    else if (expr is AstNestedExpr nst && nst.LeftPart == null && nst.RightPart is AstCallExpr call && call.FuncName.FindSymbol is DeclSymbol ds2 && ds2.Decl == searchV)
+                    {
+                        if (call.TypeOrObjectName == null)
+                        {
+                            call.TypeOrObjectName = new AstNestedExpr((_syntheticInstanceVarName.GetDeepCopy() as AstIdExpr).WrapToNested(), null, expr.Location);
+                        }
+                        value = nst;
                         return true;
                     }
                 }

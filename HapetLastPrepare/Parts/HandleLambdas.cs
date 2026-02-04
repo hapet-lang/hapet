@@ -69,11 +69,13 @@ namespace HapetLastPrepare
                         }
 
                         var newFunc = funcDecl.GetDeepCopy() as AstFuncDecl;
+                        SpecialKeysHelper.ReplaceSpecialKeysByTypes(newFunc, [Lexer.CreateToken(TokenType.KwPublic, newFunc.Location.Beginning)]);
                         functionsToGenerate.Add(newFunc);
                         // replace var usages inside the func
                         ReplaceVarUsagesInBody(newFunc.Body, depDecls, parentFunc.ContainingParent.Type.OutType);
-                         
-                        // TODO: replace usages in parent func
+
+                        // replace usages in parent func
+                        ReplaceNestedUsagesInParent(parentFunc.Body, funcDecl, variableName);
 
                         // remove from parent
                         parentFunc.Body.Statements.Remove(funcDecl);
@@ -93,6 +95,7 @@ namespace HapetLastPrepare
                         }
                         // create a function to add to a new class
                         var newFunc = lambdaExpr.CreateFuncDecl($"Lambda{currentLambda}");
+                        SpecialKeysHelper.ReplaceSpecialKeysByTypes(newFunc, [Lexer.CreateToken(TokenType.KwPublic, newFunc.Location.Beginning)]);
                         functionsToGenerate.Add(newFunc);
                         // replace var usages inside the func
                         ReplaceVarUsagesInBody(newFunc.Body, depDecls, parentFunc.ContainingParent.Type.OutType);

@@ -988,10 +988,6 @@ namespace HapetPostPrepare
 
                 var saved = inInfo.MuteErrors;
                 inInfo.MuteErrors = true;
-                if (idExpr.Name == "__syntheticVar")
-                {
-
-                }
                 // searching for the symbol in the class/struct
                 PostPrepareIdentifierInference(idExpr, inInfo, ref outInfo, leftSideDecl);
                 inInfo.MuteErrors = saved;
