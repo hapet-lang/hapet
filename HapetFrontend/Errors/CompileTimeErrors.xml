@@ -849,8 +849,28 @@
         <Text>Only struct types could be used in 'stackalloc'</Text>
     </Item>
     <Item>
-      <Number>3065</Number>
-      <Text>Only struct types allowed as nullable</Text>
+        <Number>3065</Number>
+        <Text>Only struct types allowed as nullable</Text>
+    </Item>
+    <Item>
+        <Number>3066</Number>
+        <Text>Parameter for the specified argument not found</Text>
+    </Item>
+    <Item>
+        <Number>3067</Number>
+        <Text>Parameter and argument modificators have to be the same</Text>
+    </Item>
+    <Item>
+        <Number>3068</Number>
+        <Text>Argument could not be casted to {0} type</Text>
+    </Item>
+    <Item>
+        <Number>3069</Number>
+        <Text>None of the overloads of the "{0}" method accept {1} arguments</Text>
+    </Item>
+    <Item>
+        <Number>306A</Number>
+        <Text>Not correct amount of arguments are passed to delegate call</Text>
     </Item>
 
     <!--Compiler errors-->

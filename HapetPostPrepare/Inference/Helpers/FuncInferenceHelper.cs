@@ -1,21 +1,28 @@
-﻿using HapetFrontend.Ast.Declarations;
-using HapetFrontend.Ast;
+﻿using HapetFrontend.Ast;
+using HapetFrontend.Ast.Declarations;
+using HapetFrontend.Ast.Expressions;
 using HapetFrontend.Entities;
-using HapetFrontend.Scoping;
-using HapetFrontend.Types;
+using HapetFrontend.Enums;
+using HapetFrontend.Errors;
 using HapetFrontend.Extensions;
 using HapetFrontend.Helpers;
-using HapetFrontend.Errors;
-using HapetFrontend.Ast.Expressions;
 using HapetFrontend.Parsing;
-using HapetFrontend.Enums;
-using System.Reflection.Metadata;
-using System;
+using HapetFrontend.Scoping;
+using HapetFrontend.Types;
 
 namespace HapetPostPrepare
 {
     public partial class PostPrepare
     {
+        public DeclSymbol Tier2FuntionCandidate { get; set; } = null;
+        public DeclSymbol Tier3FuntionCandidate { get; set; } = null;
+
+        private void ClearTierNFunctions()
+        {
+            Tier2FuntionCandidate = null;
+            Tier3FuntionCandidate = null;
+        }
+
         public DeclSymbol GetFuncFromCandidates(AstIdExpr name, List<AstArgumentExpr> args, 
             AstDeclaration declToSearch, bool callFromObject, out List<AstExpression> castsToBeDone)
         {
@@ -46,102 +53,8 @@ namespace HapetPostPrepare
             // filter the candidates
             foreach (var cand in candidates)
             {
-                // if set to non-null - should be checked in every frame of arg check :)
-                AstParamDecl paramsParamDecl = null;
-
                 var funcDecl = cand.Decl as AstFuncDecl;
-                int score = 0;
-                List<AstExpression> casts = new List<AstExpression>();
-                for (int i = 0; i < args.Count; ++i)
-                {
-                    var arg = args[i];
-                    var argExpr = arg.Expr;
-
-                    var par = paramsParamDecl ?? GetParameterByIndexOrName(funcDecl.Parameters, arg, i, out var _);
-                    // break loop if there is no param with specified name
-                    if (par == null)
-                        break;
-                    
-                    var parType = par.Type;
-
-                    // cringe to handle 'arglist' kw
-                    if (par.ParameterModificator == ParameterModificator.Arglist)
-                    {
-                        paramsParamDecl = par;
-                        score += 4;
-                        casts.Add(argExpr);
-                        continue;
-                    }
-                    // cringe to handle 'params' kw
-                    else if (par.ParameterModificator == ParameterModificator.Params)
-                    {
-                        paramsParamDecl = par;
-                        parType = GetSubTypeOfParamsParam(par);
-                    }
-
-                    // if parameter or argument has ref/out another one also has to have it
-                    if (arg.ArgumentModificator == ParameterModificator.Ref ||
-                        arg.ArgumentModificator == ParameterModificator.Out ||
-                        par.ParameterModificator == ParameterModificator.Ref ||
-                        par.ParameterModificator == ParameterModificator.Out)
-                    {
-                        // this is a special case when calling a function on a struct
-                        // that has not been overrided. so the first arg has 'ref' 
-                        // modifier and the func's first parameter is just a class
-                        // we need to allow it via cast
-                        bool allow = (i == 0) && callFromObject &&
-                            (arg.ArgumentModificator == ParameterModificator.Ref) && parType.OutType is ClassType;
-
-                        // they has to be the same
-                        if (arg.ArgumentModificator != par.ParameterModificator && !allow)
-                        {
-                            score = int.MaxValue;
-                            casts.Add(null);
-                            break;
-                        }
-                    }
-
-                    if (argExpr?.OutType == parType.OutType)
-                    {
-                        score += 0;
-                        casts.Add(argExpr);
-                        continue;
-                    }
-                    // if putting 'null' as an arg
-                    else if (argExpr is AstNullExpr && parType.OutType is PointerType)
-                    {
-                        score += 0;
-                        casts.Add(argExpr);
-                        continue;
-                    }
-                    CastResult castResult = new CastResult();
-                    var cst = PostPrepareExpressionWithType(parType.OutType, argExpr, castResult);
-                    if (castResult.CouldBeCasted)
-                    {
-                        score += 1;
-                        casts.Add(cst);
-                        continue;
-                    }
-                    else if (castResult.CouldBeNarrowed)
-                    {
-                        score += 3;
-                        casts.Add(argExpr);
-                        continue;
-                    }
-                    // check if it is a generic parameter 
-                    // WARN: better generic check? like T[] or T* ?
-                    else if (parType.OutType is GenericType)
-                    {
-                        score += 2;
-                        casts.Add(argExpr);
-                        continue;
-                    }
-
-                    // if nothing - set max val and break
-                    score = int.MaxValue;
-                    casts.Add(null);
-                    break;
-                }
+                var (score, casts) = CheckArgumentCorrectness(args, funcDecl.Parameters, callFromObject);
 
                 // add the candidate
                 declWithScores.Add((score, cand, casts));
@@ -169,10 +82,128 @@ namespace HapetPostPrepare
 
             // if the decl has MaxInt score - cringe
             if (declWithScores[0].Item1 == int.MaxValue)
+            {
+                Tier2FuntionCandidate = declWithScores[0].Item2;
                 return null;
+            }
 
             castsToBeDone = declWithScores[0].Item3;
             return declWithScores[0].Item2;
+        }
+
+        private (int, List<AstExpression>) CheckArgumentCorrectness(
+            List<AstArgumentExpr> args, List<AstParamDecl> pars, bool callFromObject, bool doError = false)
+        {
+            // if set to non-null - should be checked in every frame of arg check :)
+            AstParamDecl paramsParamDecl = null;
+            int score = 0;
+            List<AstExpression> casts = new List<AstExpression>();
+
+            for (int i = 0; i < args.Count; ++i)
+            {
+                var arg = args[i];
+                var argExpr = arg.Expr;
+
+                var par = paramsParamDecl ?? GetParameterByIndexOrName(pars, arg, i, out var _);
+                // break loop if there is no param with specified name
+                if (par == null)
+                {
+                    if (doError)
+                        _compiler.MessageHandler.ReportMessage(_currentSourceFile, arg, [],
+                            ErrorCode.Get(CTEN.ProblemWithArgumentAmount));
+                    break;
+                }
+
+                var parType = par.Type;
+
+                // cringe to handle 'arglist' kw
+                if (par.ParameterModificator == ParameterModificator.Arglist)
+                {
+                    paramsParamDecl = par;
+                    score += 4;
+                    casts.Add(argExpr);
+                    continue;
+                }
+                // cringe to handle 'params' kw
+                else if (par.ParameterModificator == ParameterModificator.Params)
+                {
+                    paramsParamDecl = par;
+                    parType = GetSubTypeOfParamsParam(par);
+                }
+
+                // if parameter or argument has ref/out another one also has to have it
+                if (arg.ArgumentModificator == ParameterModificator.Ref ||
+                    arg.ArgumentModificator == ParameterModificator.Out ||
+                    par.ParameterModificator == ParameterModificator.Ref ||
+                    par.ParameterModificator == ParameterModificator.Out)
+                {
+                    // this is a special case when calling a function on a struct
+                    // that has not been overrided. so the first arg has 'ref' 
+                    // modifier and the func's first parameter is just a class
+                    // we need to allow it via cast
+                    bool allow = (i == 0) && callFromObject &&
+                        (arg.ArgumentModificator == ParameterModificator.Ref) && parType.OutType is ClassType;
+
+                    // they has to be the same
+                    if (arg.ArgumentModificator != par.ParameterModificator && !allow)
+                    {
+                        score = int.MaxValue;
+                        casts.Add(null);
+
+                        if (doError)
+                            _compiler.MessageHandler.ReportMessage(_currentSourceFile, arg.ArgModificatorLocation, [],
+                                ErrorCode.Get(CTEN.ArgAndParamModifiersDiff));
+                        break;
+                    }
+                }
+
+                if (argExpr?.OutType == parType.OutType)
+                {
+                    score += 0;
+                    casts.Add(argExpr);
+                    continue;
+                }
+                // if putting 'null' as an arg
+                else if (argExpr is AstNullExpr && parType.OutType is PointerType)
+                {
+                    score += 0;
+                    casts.Add(argExpr);
+                    continue;
+                }
+                CastResult castResult = new CastResult();
+                var cst = PostPrepareExpressionWithType(parType.OutType, argExpr, castResult);
+                if (castResult.CouldBeCasted)
+                {
+                    score += 1;
+                    casts.Add(cst);
+                    continue;
+                }
+                else if (castResult.CouldBeNarrowed)
+                {
+                    score += 3;
+                    casts.Add(argExpr);
+                    continue;
+                }
+                // check if it is a generic parameter 
+                // WARN: better generic check? like T[] or T* ?
+                else if (parType.OutType is GenericType)
+                {
+                    score += 2;
+                    casts.Add(argExpr);
+                    continue;
+                }
+
+                if (doError)
+                    _compiler.MessageHandler.ReportMessage(_currentSourceFile, arg, 
+                        [HapetType.AsString(parType.OutType)],
+                        ErrorCode.Get(CTEN.ArgumentCouldNotBeCasted));
+
+                // if nothing - set max val and break
+                score = int.MaxValue;
+                casts.Add(null);
+                break;
+            }
+            return (score, casts);
         }
 
         public static AstParamDecl GetParameterByIndexOrName(List<AstParamDecl> pars, AstArgumentExpr arg, int fallbackIndex, out int realIndex)
@@ -331,12 +362,16 @@ namespace HapetPostPrepare
             return null;
         }
 
-        private static List<DeclSymbol> GetAllCandidates(AstIdExpr name, AstDeclaration declToSearch, 
+        private List<DeclSymbol> GetAllCandidates(AstIdExpr name, AstDeclaration declToSearch, 
             List<AstArgumentExpr> args, bool callFromObject)
         {
             List<DeclSymbol> candidates = new List<DeclSymbol>();
 
             candidates.AddRange(Candidates_Step1_InheritedAndCurrent(name, declToSearch, callFromObject));  // step 1
+            // set here tier 3 candidate
+            if (candidates.Count > 0)
+                Tier3FuntionCandidate = candidates[0];
+
             //candidates.AddRange(Candidates_Step2_CurrentScopeAndParents(name, callExpr, callFromObject));   // step 2
             var argsAmount = args == null ? -1 : args.Count;
             candidates = Candidates_Step3_MinAmountParams(candidates, argsAmount).ToList();                 // step 3

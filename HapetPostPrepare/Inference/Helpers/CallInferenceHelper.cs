@@ -119,7 +119,19 @@ namespace HapetPostPrepare
             }
             else if (callExpr.FuncName.OutType is DelegateType dt)
             {
-                // TODO: check that arguments are correct type
+                // check that arguments are correct type
+                if (callExpr.Arguments.Count != dt.TargetDeclaration.Parameters.Count)
+                {
+                    // here when not the same amount of args
+                    _compiler.MessageHandler.ReportMessage(_currentSourceFile, callExpr.FuncName,
+                        [callExpr.FuncName.Name, callExpr.Arguments.Count.ToString()],
+                            ErrorCode.Get(CTEN.ArgumentAmountIsNotCorrectDel));
+                }
+                else
+                {
+                    // here to check that arg could be correctly casted
+                    var (_, _) = CheckArgumentCorrectness(callExpr.Arguments, dt.TargetDeclaration.Parameters, false, true);
+                }
 
                 // call expr type is the same as func return type
                 callExpr.OutType = dt.TargetDeclaration.Returns.OutType;
@@ -138,6 +150,8 @@ namespace HapetPostPrepare
         private void SearchForFunctionByCall(AstCallExpr callExpr, AstIdExpr funcName, InInfo inInfo, ref OutInfo outInfo, 
             ref bool accessingFromAnObject, out AstDeclaration declToSearch, out DeclSymbol foundSymbol)
         {
+            ClearTierNFunctions();
+
             // renaming func call name from 'Anime' to 'Anime(int, float)' WITH OBJECT AS FIRST PARAM
             if (callExpr.TypeOrObjectName == null)
             {
@@ -330,6 +344,18 @@ namespace HapetPostPrepare
                         return;
                     }
 
+                    // check for possible function and error somewhere inside
+                    if (CheckForTierNFunction(out DeclSymbol tierSymbol))
+                    {
+                        var tierFunc = tierSymbol.Decl as AstFuncDecl;
+                        tierSymbol = OnFoundSymbol(tierSymbol, callExpr.FuncName);
+                        if (!CheckIfCouldBeAccessed(callExpr, tierFunc, inInfo))
+                            _compiler.MessageHandler.ReportMessage(_currentSourceFile, callExpr.FuncName, [], ErrorCode.Get(CTEN.FuncCouldNotBeAccessed));
+                        declToSearch = declToSearchLocal;
+                        foundSymbol = tierSymbol;
+                        return;
+                    }
+
                     _compiler.MessageHandler.ReportMessage(_currentSourceFile, callExpr.FuncName, [], ErrorCode.Get(CTEN.FuncWithNameNotFound));
                 }
                     
@@ -463,6 +489,31 @@ namespace HapetPostPrepare
                 var realDecl = GetRealTypeFromGeneric(typed.Decl, genId.GenericRealTypes.GetNestedList(_compiler.MessageHandler),
                     realName, GenericsHelper.HasAnyGenericTypes(genId.GenericRealTypes));
                 return realDecl.Symbol as DeclSymbol;
+            }
+
+            bool CheckForTierNFunction(out DeclSymbol tierNFunc)
+            {
+                if (Tier2FuntionCandidate != null)
+                {
+                    // here when args could not be casted
+                    var tierFunc = Tier2FuntionCandidate.Decl as AstFuncDecl;
+                    // skip first param if the func is non static
+                    var pars = tierFunc.SpecialKeys.Contains(TokenType.KwStatic) ? tierFunc.Parameters : tierFunc.Parameters.Skip(1).ToList();
+                    var (_, _) = CheckArgumentCorrectness(callExpr.Arguments, pars, false, true);
+                    tierNFunc = Tier2FuntionCandidate;
+                    return true;
+                }
+                else if (Tier3FuntionCandidate != null)
+                {
+                    // here when not the same amount of args
+                    _compiler.MessageHandler.ReportMessage(_currentSourceFile, callExpr.FuncName, 
+                        [callExpr.FuncName.Name, callExpr.Arguments.Count.ToString()],
+                            ErrorCode.Get(CTEN.ArgumentAmountIsNotCorrect));
+                    tierNFunc = Tier3FuntionCandidate;
+                    return true;
+                }
+                tierNFunc = null;
+                return false;
             }
         }
     }

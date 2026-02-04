@@ -222,6 +222,11 @@
         StackAllocOnly1DArray           = 0x3063,
         StackAllocOnlyStructs           = 0x3064,
         NullableNotStruct               = 0x3065,
+        ProblemWithArgumentAmount       = 0x3066,
+        ArgAndParamModifiersDiff        = 0x3067,
+        ArgumentCouldNotBeCasted        = 0x3068,
+        ArgumentAmountIsNotCorrect      = 0x3069,
+        ArgumentAmountIsNotCorrectDel   = 0x306A,
 
         // compiler errors up to 0x6000
         DefaultWasNotInfered            = 0x5001,
