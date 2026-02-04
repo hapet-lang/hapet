@@ -248,6 +248,18 @@ namespace HapetPostPrepare
                     return;
                 }
 
+                // check for possible function and error somewhere inside
+                if (CheckForTierNFunction(out DeclSymbol tierSymbol))
+                {
+                    var tierFunc = tierSymbol.Decl as AstFuncDecl;
+                    tierSymbol = OnFoundSymbol(tierSymbol, callExpr.FuncName);
+                    if (!CheckIfCouldBeAccessed(callExpr, tierFunc, inInfo))
+                        _compiler.MessageHandler.ReportMessage(_currentSourceFile, callExpr.FuncName, [], ErrorCode.Get(CTEN.FuncCouldNotBeAccessed));
+                    declToSearch = currentParent;
+                    foundSymbol = tierSymbol;
+                    return;
+                }
+
                 _compiler.MessageHandler.ReportMessage(_currentSourceFile, callExpr.FuncName, [], ErrorCode.Get(CTEN.FuncWithNameNotFound));
             }
             else if (callExpr.TypeOrObjectName.OutType is ClassType clsTp)
@@ -276,11 +288,29 @@ namespace HapetPostPrepare
                     argsWithClassParam.Insert(0, new AstArgumentExpr(callExpr.TypeOrObjectName) { OutType = callExpr.TypeOrObjectName.OutType });
                     smbl2 = GetFuncFromCandidates(funcName, argsWithClassParam, declToSearchLocal, true, out var _);
                     smbl2 = OnFoundSymbol(smbl2, callExpr.FuncName);
-                    // error because user tries to access non static method from a class name
-                    if (smbl2 != null)
+                    if (smbl2 is DeclSymbol ds3 && ds3.Decl is AstFuncDecl funcDecl3)
+                    {
+                        // error because user tries to access non static method from a class name
                         _compiler.MessageHandler.ReportMessage(_currentSourceFile, callExpr.FuncName, [], ErrorCode.Get(CTEN.NonStaticFuncFromStatic));
-                    else
-                        _compiler.MessageHandler.ReportMessage(_currentSourceFile, callExpr.FuncName, [], ErrorCode.Get(CTEN.FuncWithNameNotFound));
+
+                        if (!CheckIfCouldBeAccessed(callExpr, funcDecl3, inInfo))
+                            _compiler.MessageHandler.ReportMessage(_currentSourceFile, callExpr.FuncName, [], ErrorCode.Get(CTEN.FuncCouldNotBeAccessed));
+                        declToSearch = declToSearchLocal;
+                        foundSymbol = ds3;
+                        return;
+                    }
+
+                    // check for possible function and error somewhere inside
+                    if (CheckForTierNFunction(out DeclSymbol tierSymbol))
+                    {
+                        var tierFunc = tierSymbol.Decl as AstFuncDecl;
+                        tierSymbol = OnFoundSymbol(tierSymbol, callExpr.FuncName);
+                        if (!CheckIfCouldBeAccessed(callExpr, tierFunc, inInfo))
+                            _compiler.MessageHandler.ReportMessage(_currentSourceFile, callExpr.FuncName, [], ErrorCode.Get(CTEN.FuncCouldNotBeAccessed));
+                        declToSearch = declToSearchLocal;
+                        foundSymbol = tierSymbol;
+                        return;
+                    }
 
                     declToSearch = null;
                     foundSymbol = null;
@@ -396,9 +426,6 @@ namespace HapetPostPrepare
                     if (declSymbolOfLeft != null && declSymbolOfLeft.Decl is AstStructDecl)
                     {
                         _compiler.MessageHandler.ReportMessage(_currentSourceFile, callExpr.FuncName, [], ErrorCode.Get(CTEN.NonStaticFuncFromStatic));
-                        declToSearch = null;
-                        foundSymbol = null;
-                        return;
                     }
 
                     if (!CheckIfCouldBeAccessed(callExpr, funcDecl2, inInfo) && !funcDecl2.IsPropertyFunction)
@@ -406,6 +433,18 @@ namespace HapetPostPrepare
                     callExpr.Arguments.ReplaceWithCasts(casts.Skip(1).ToList());
                     declToSearch = declToSearchLocal;
                     foundSymbol = ds2;
+                    return;
+                }
+
+                // check for possible function and error somewhere inside
+                if (CheckForTierNFunction(out DeclSymbol tierSymbol))
+                {
+                    var tierFunc = tierSymbol.Decl as AstFuncDecl;
+                    tierSymbol = OnFoundSymbol(tierSymbol, callExpr.FuncName);
+                    if (!CheckIfCouldBeAccessed(callExpr, tierFunc, inInfo))
+                        _compiler.MessageHandler.ReportMessage(_currentSourceFile, callExpr.FuncName, [], ErrorCode.Get(CTEN.FuncCouldNotBeAccessed));
+                    declToSearch = declToSearchLocal;
+                    foundSymbol = tierSymbol;
                     return;
                 }
 
@@ -446,9 +485,6 @@ namespace HapetPostPrepare
                     if (declSymbolOfLeft.Decl is AstGenericDecl)
                     {
                         _compiler.MessageHandler.ReportMessage(_currentSourceFile, callExpr.FuncName, [], ErrorCode.Get(CTEN.NonStaticFuncFromStatic));
-                        declToSearch = null;
-                        foundSymbol = null;
-                        return;
                     }
 
                     if (!CheckIfCouldBeAccessed(callExpr, funcDecl2, inInfo) && !funcDecl2.IsPropertyFunction)
@@ -456,6 +492,18 @@ namespace HapetPostPrepare
                     callExpr.Arguments.ReplaceWithCasts(casts.Skip(1).ToList());
                     declToSearch = genericType.Declaration;
                     foundSymbol = ds2;
+                    return;
+                }
+
+                // check for possible function and error somewhere inside
+                if (CheckForTierNFunction(out DeclSymbol tierSymbol))
+                {
+                    var tierFunc = tierSymbol.Decl as AstFuncDecl;
+                    tierSymbol = OnFoundSymbol(tierSymbol, callExpr.FuncName);
+                    if (!CheckIfCouldBeAccessed(callExpr, tierFunc, inInfo))
+                        _compiler.MessageHandler.ReportMessage(_currentSourceFile, callExpr.FuncName, [], ErrorCode.Get(CTEN.FuncCouldNotBeAccessed));
+                    declToSearch = genericType.Declaration;
+                    foundSymbol = tierSymbol;
                     return;
                 }
 
