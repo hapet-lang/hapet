@@ -354,10 +354,12 @@ namespace HapetPostPrepare
             // if the func is generic && not abstract && not stor - serialize
             // if parent is generic && func not abstract && not stor - serialize
             // if func is not extern - serialize
-            if ((decl.HasGenericTypes || isParentGeneric) && 
-                !decl.SpecialKeys.Contains(TokenType.KwAbstract) &&
-                decl.ClassFunctionType != ClassFunctionType.StaticCtor &&
-                !decl.SpecialKeys.Contains(TokenType.KwExtern))
+            // OR - generating after lp file
+            bool needToGenerateBody = ((decl.HasGenericTypes || isParentGeneric) &&
+                                        !decl.SpecialKeys.Contains(TokenType.KwAbstract) &&
+                                        decl.ClassFunctionType != ClassFunctionType.StaticCtor &&
+                                        !decl.SpecialKeys.Contains(TokenType.KwExtern));
+            if (needToGenerateBody || _generatingAfterLpFile)
             {
                 sb.Append('\n');
 
@@ -402,8 +404,9 @@ namespace HapetPostPrepare
             // generic constraiins 
             CreateGenericConstrains(decl, sb, additionalOffset);
 
-            if (decl.HasGet && decl.GetBlock != null && (decl.HasGenericTypes || 
-                (isParentGeneric && !decl.SpecialKeys.Contains(TokenType.KwStatic))))
+            bool needToGenerateBody = (decl.HasGenericTypes || (isParentGeneric && !decl.SpecialKeys.Contains(TokenType.KwStatic)));
+
+            if (decl.HasGet && decl.GetBlock != null && (needToGenerateBody || _generatingAfterLpFile))
             {
                 sb.Append($" \n{additionalOffset}{{ \n{additionalOffset + _fourSpaces}get \n");
                 AntiParseExpr(decl.GetBlock, sb, additionalOffset + _fourSpaces);
@@ -411,8 +414,7 @@ namespace HapetPostPrepare
             else if (decl.HasGet)
                 sb.Append(" { get; ");
 
-            if (decl.HasSet && decl.SetBlock != null && (decl.HasGenericTypes || 
-                (isParentGeneric && !decl.SpecialKeys.Contains(TokenType.KwStatic))))
+            if (decl.HasSet && decl.SetBlock != null && (needToGenerateBody || _generatingAfterLpFile))
             {
                 // pohuy :)
                 if (sb[^1] != '\n')
