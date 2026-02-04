@@ -56,8 +56,23 @@ namespace HapetLastPrepare
                 {
                     if (d is AstFuncDecl funcDecl)
                     {
-                        functionsToGenerate.Add(funcDecl.GetDeepCopy() as AstFuncDecl);
+                        // search all used decls
+                        List<AstDeclaration> depDecls = new List<AstDeclaration>();
+                        CheckUsedDeclsBlockExpr(funcDecl.Body, depDecls, false);
+                        foreach (var decl in depDecls.Where(x => x is AstVarDecl || x is AstParamDecl))
+                        {
+                            // if the var is in func and NOT in nested
+                            if (!funcDecl.IsParentOf(decl) && parentFunc.IsParentOf(decl))
+                            {
+                                usedDecls.Add(decl);
+                            }
+                        }
 
+                        var newFunc = funcDecl.GetDeepCopy() as AstFuncDecl;
+                        functionsToGenerate.Add(newFunc);
+                        // replace var usages inside the func
+                        ReplaceVarUsagesInBody(newFunc.Body, depDecls, parentFunc.ContainingParent.Type.OutType);
+                         
                         // TODO: replace usages in parent func
 
                         // remove from parent

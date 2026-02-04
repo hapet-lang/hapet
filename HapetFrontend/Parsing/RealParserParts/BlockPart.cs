@@ -153,13 +153,6 @@ namespace HapetFrontend.Parsing
                             specialKeys = null;
                         }
                         _compiler.LambdasAndNested.Add(nestedFunc);
-
-                        // for now only static allowed
-                        if (!nestedFunc.SpecialKeys.Contains(TokenType.KwStatic))
-                        {
-                            // error here that is not expected
-                            ReportMessage(nestedFunc.Name, [], ErrorCode.Get(CTEN.NonStaticNestedLambda));
-                        }
                     }
 
                     var next = PeekToken(inInfo);

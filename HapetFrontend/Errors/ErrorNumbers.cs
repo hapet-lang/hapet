@@ -115,7 +115,8 @@
         UnexpectedDirective             = 0x2059,
         UnexpectedGenericConstrain      = 0x205A,
         UserDefinedError                = 0x205B,
-        NonStaticNestedLambda           = 0x205C, // would be obsolete
+        [Obsolete]
+        NonStaticNestedLambda           = 0x205C,
         NewExprExpectedAfterThrow       = 0x205D,
         StringLiteralExpectedInInterp   = 0x205E,
 
