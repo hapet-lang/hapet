@@ -622,8 +622,21 @@ namespace HapetBackend.Llvm
                 }
                 else if (outType is IntType || outType is CharType)
                 {
-                    if (inType.GetSize() > outType.GetSize())
+                    if (inType.GetSize() >= outType.GetSize())
                     {
+                        // if in checked context - need runtime checks
+                        if (_isInCheckedContext)
+                        {
+                            var minMax = GetMinMaxOfType(outType);
+
+                            // min <= val <= max
+                            var cmp1 = GetICompare(LLVMIntPredicate.LLVMIntSLE);
+                            var cmpRes1 = cmp1(_builder, val, CreateCast(_builder, minMax.Item2, outType, inType), "cmp1");
+                            var cmp2 = GetICompare(LLVMIntPredicate.LLVMIntSGE);
+                            var cmpRes2 = cmp2(_builder, val, CreateCast(_builder, minMax.Item1, outType, inType), "cmp2");
+                            var cmpAll = LlvmExtensions.BuildNot(_builder, LlvmExtensions.BuildAnd(_builder, cmpRes1, cmpRes2, "cmpAll"), "neg");
+                            BuildOverflowCheckBlocks(cmpAll);
+                        }
                         return builder.BuildTruncOrBitCast(val, HapetTypeToLLVMType(outType));
                     }
                     else if (inType.GetSize() < outType.GetSize())
@@ -650,8 +663,21 @@ namespace HapetBackend.Llvm
                 }
                 else if (outType is IntType || outType is CharType)
                 {
-                    if (inType.GetSize() > outType.GetSize())
+                    if (inType.GetSize() >= outType.GetSize())
                     {
+                        // if in checked context - need runtime checks
+                        if (_isInCheckedContext)
+                        {
+                            var minMax = GetMinMaxOfType(outType);
+
+                            // min <= val <= max
+                            var cmp1 = GetICompare(LLVMIntPredicate.LLVMIntSLE);
+                            var cmpRes1 = cmp1(_builder, val, CreateCast(_builder, minMax.Item2, outType, inType), "cmp1");
+                            var cmp2 = GetICompare(LLVMIntPredicate.LLVMIntSGE);
+                            var cmpRes2 = cmp2(_builder, val, CreateCast(_builder, minMax.Item1, outType, inType), "cmp2");
+                            var cmpAll = LlvmExtensions.BuildNot(_builder, LlvmExtensions.BuildAnd(_builder, cmpRes1, cmpRes2, "cmpAll"), "neg");
+                            BuildOverflowCheckBlocks(cmpAll);
+                        }
                         return builder.BuildTruncOrBitCast(val, HapetTypeToLLVMType(outType));
                     }
                     else if (inType.GetSize() < outType.GetSize())
@@ -665,6 +691,25 @@ namespace HapetBackend.Llvm
             }
             else if (inType is FloatType)
             {
+                // special case to check overflow
+                if (outType is IntType intType0)
+                {
+                    // TODO: check for nan and inf
+                    // if in checked context - need runtime checks
+                    if (_isInCheckedContext)
+                    {
+                        var minMax = GetMinMaxOfType(outType);
+
+                        // min <= val <= max
+                        var cmp1 = GetFCompare(LLVMRealPredicate.LLVMRealOLE);
+                        var cmpRes1 = cmp1(_builder, val, CreateCast(_builder, minMax.Item2, outType, inType), "cmp1");
+                        var cmp2 = GetFCompare(LLVMRealPredicate.LLVMRealOGE);
+                        var cmpRes2 = cmp2(_builder, val, CreateCast(_builder, minMax.Item1, outType, inType), "cmp2");
+                        var cmpAll = LlvmExtensions.BuildNot(_builder, LlvmExtensions.BuildAnd(_builder, cmpRes1, cmpRes2, "cmpAll"), "neg");
+                        BuildOverflowCheckBlocks(cmpAll);
+                    }
+                }
+
                 if (outType is IntType intType1 && intType1.Signed)
                 {
                     return builder.BuildFPToSI(val, HapetTypeToLLVMType(intType1));

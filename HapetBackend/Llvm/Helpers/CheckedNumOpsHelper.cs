@@ -97,20 +97,59 @@ namespace HapetBackend.Llvm
             var opResult = _builder.BuildExtractValue(binOpResult, 0, "res");
             var isOverflow = _builder.BuildExtractValue(binOpResult, 1, "isOverflow");
 
+            BuildOverflowCheckBlocks(isOverflow);
+
+            result = opResult;
+            return true;
+        }
+
+        private void BuildOverflowCheckBlocks(LLVMValueRef checkValue)
+        {
             // creating OF check blocks
             var bbOverflow = _lastFunctionValueRef.AppendBasicBlockInContext(_context, $"overflow");
             var bbEnd = _lastFunctionValueRef.AppendBasicBlockInContext(_context, $"overflow.end");
 
-            _builder.BuildCondBr(isOverflow, bbOverflow, bbEnd);
+            _builder.BuildCondBr(checkValue, bbOverflow, bbEnd);
             // if overflow
             _builder.PositionAtEnd(bbOverflow);
             GenerateOverflowException();
             _builder.BuildUnreachable();
 
             _builder.PositionAtEnd(bbEnd);
+        }
 
-            result = opResult;
-            return true;
+        private (LLVMValueRef, LLVMValueRef) GetMinMaxOfType(HapetType type)
+        {
+            switch (type)
+            {
+                case CharType:
+                    return (HapetValueToLLVMValue(HapetType.CurrentTypeContext.GetIntType(2, false), 0), 
+                        HapetValueToLLVMValue(HapetType.CurrentTypeContext.GetIntType(2, false), ushort.MaxValue));
+                case FloatType ft:
+                    return ft.GetSize() switch
+                    {
+                        4 => (HapetValueToLLVMValue(HapetType.CurrentTypeContext.GetFloatType(4), float.MinValue),
+                            HapetValueToLLVMValue(HapetType.CurrentTypeContext.GetFloatType(4), float.MaxValue)),
+                        8 => (HapetValueToLLVMValue(HapetType.CurrentTypeContext.GetFloatType(8), double.MinValue),
+                            HapetValueToLLVMValue(HapetType.CurrentTypeContext.GetFloatType(8), double.MaxValue)),
+                        _ => throw new NotImplementedException()
+                    };
+                case IntType it:
+                    return it.GetSize() switch
+                    {
+                        1 => (HapetValueToLLVMValue(HapetType.CurrentTypeContext.GetIntType(1, it.Signed), it.Signed ? sbyte.MinValue : byte.MinValue),
+                            HapetValueToLLVMValue(HapetType.CurrentTypeContext.GetIntType(1, it.Signed), it.Signed ? sbyte.MaxValue : byte.MaxValue)),
+                        2 => (HapetValueToLLVMValue(HapetType.CurrentTypeContext.GetIntType(2, it.Signed), it.Signed ? short.MinValue : ushort.MinValue),
+                            HapetValueToLLVMValue(HapetType.CurrentTypeContext.GetIntType(2, it.Signed), it.Signed ? short.MaxValue : ushort.MaxValue)),
+                        4 => (HapetValueToLLVMValue(HapetType.CurrentTypeContext.GetIntType(4, it.Signed), it.Signed ? int.MinValue : uint.MinValue),
+                            HapetValueToLLVMValue(HapetType.CurrentTypeContext.GetIntType(4, it.Signed), it.Signed ? int.MaxValue : uint.MaxValue)),
+                        8 => (HapetValueToLLVMValue(HapetType.CurrentTypeContext.GetIntType(8, it.Signed), it.Signed ? long.MinValue : ulong.MinValue),
+                            HapetValueToLLVMValue(HapetType.CurrentTypeContext.GetIntType(8, it.Signed), it.Signed ? long.MaxValue : ulong.MaxValue)),
+                        _ => throw new NotImplementedException()
+                    };
+                default:
+                    throw new NotImplementedException();
+            }
         }
     }
 }
