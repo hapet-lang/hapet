@@ -458,6 +458,13 @@ namespace HapetBackend.Llvm
                                 if (right == default)
                                     return default;
 
+                                // check if it is numeric operation in checked context
+                                if (HandleBinOpInCheckedContext(builtInOp, left, right, out LLVMValueRef checkedResult))
+                                {
+                                    toReturn = checkedResult;
+                                    break;
+                                }
+
                                 var bo = GetBinOp(builtInOp);
                                 var val = bo(_builder, left, right, "binOp");
                                 toReturn = val;
@@ -1297,10 +1304,13 @@ namespace HapetBackend.Llvm
             return default;
         }
 
+        private bool _isInCheckedContext = false;
         private unsafe LLVMValueRef GenerateCheckedExprCode(AstCheckedExpr expr)
         {
-            // TODO: 
-            return GenerateExpressionCode(expr.SubExpression);
+            if (expr.IsChecked) _isInCheckedContext = true;
+            var result = GenerateExpressionCode(expr.SubExpression);
+            if (expr.IsChecked) _isInCheckedContext = false;
+            return result;
         }
 
         private unsafe LLVMValueRef GenerateSATExprCode(AstSATOfExpr expr, bool getPtr = false)

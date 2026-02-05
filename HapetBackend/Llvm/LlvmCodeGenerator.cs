@@ -68,6 +68,8 @@ namespace HapetBackend.Llvm
 
             // init built in operators for llvm
             InitOperators();
+            // declare overflow function checkers
+            AddCheckedNumericOps();
 
             // InitTypeInfoLLVMTypes(); // TODO: it is reflection
             GenerateMetadataShite();
