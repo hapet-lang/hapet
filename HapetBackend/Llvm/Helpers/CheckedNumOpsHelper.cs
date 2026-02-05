@@ -59,32 +59,18 @@ namespace HapetBackend.Llvm
 
         private (LLVMTypeRef, LLVMValueRef, LLVMTypeRef) GetCheckedFunction(string op, int size, bool signed)
         {
-            switch (op)
+            int pls = op switch
             {
-                case "+":
-                    switch (size)
-                    {
-                        case 2: return _checkedNumericIntrinsics[signed ? 0 : 9];
-                        case 4: return _checkedNumericIntrinsics[signed ? 1 : 10];
-                        case 8: return _checkedNumericIntrinsics[signed ? 2 : 11];
-                    }
-                    break;
-                case "-":
-                    switch (size)
-                    {
-                        case 2: return _checkedNumericIntrinsics[signed ? 3 : 12];
-                        case 4: return _checkedNumericIntrinsics[signed ? 4 : 13];
-                        case 8: return _checkedNumericIntrinsics[signed ? 5 : 14];
-                    }
-                    break;
-                case "*":
-                    switch (size)
-                    {
-                        case 2: return _checkedNumericIntrinsics[signed ? 6 : 15];
-                        case 4: return _checkedNumericIntrinsics[signed ? 7 : 16];
-                        case 8: return _checkedNumericIntrinsics[signed ? 8 : 17];
-                    }
-                    break;
+                "+" => 0,
+                "-" => 3,
+                "*" => 6,
+                _ => 0
+            };
+            switch (size)
+            {
+                case 2: return _checkedNumericIntrinsics[signed ? 0 + pls : 9 + pls];
+                case 4: return _checkedNumericIntrinsics[signed ? 1 + pls : 10 + pls];
+                case 8: return _checkedNumericIntrinsics[signed ? 2 + pls : 11 + pls];
             }
             throw new NotImplementedException($"Checked function for {op}, sized {size} and signed {signed} does not exist");
         }
