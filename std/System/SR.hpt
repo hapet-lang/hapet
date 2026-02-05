@@ -39,8 +39,8 @@ internal static class SR
     internal const string Arg_MustBeUIntPtr = "Object must be of type UIntPtr.";
 
     internal const string Arg_BogusIComparer = "Unable to sort because the IComparer.Compare() method returns inconsistent results. Either a value does not compare equal to itself, or one value repeatedly compared to another value yields different results.";
-    
     internal const string Arg_InvalidConsoleColor = "The ConsoleColor enum value was not defined on that enum. Please use a defined color from the enum.";
+    internal const string Arg_OverflowException = "Arithmetic operation resulted in an overflow.";
 
     // not
     internal const string NotSupported_ReadOnlyCollection = "Collection is read-only.";

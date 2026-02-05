@@ -1,13 +1,15 @@
-﻿using HapetFrontend.Scoping;
+﻿using HapetFrontend.Ast.Statements;
+using HapetFrontend.Scoping;
 using HapetFrontend.Types;
 using LLVMSharp.Interop;
 using System;
+using System.Xml.Linq;
 
 namespace HapetBackend.Llvm
 {
     public partial class LlvmCodeGenerator
     {
-        private List<(LLVMTypeRef funcType, LLVMValueRef funcValue, LLVMTypeRef returnType)> _checkedNumericIntrinsics = 
+        private List<(LLVMTypeRef funcType, LLVMValueRef funcValue, LLVMTypeRef returnType)> _checkedNumericIntrinsics =
             new List<(LLVMTypeRef, LLVMValueRef, LLVMTypeRef)>();
 
         private void AddCheckedNumericOps()
@@ -57,7 +59,7 @@ namespace HapetBackend.Llvm
             return (funcType, lfunc, returnType);
         }
 
-        private (LLVMTypeRef, LLVMValueRef, LLVMTypeRef) GetCheckedFunction(string op, int size, bool signed)
+        private (LLVMTypeRef funcType, LLVMValueRef funcValue, LLVMTypeRef returnType) GetCheckedFunction(string op, int size, bool signed)
         {
             int pls = op switch
             {
@@ -79,16 +81,36 @@ namespace HapetBackend.Llvm
         {
             // no need to do shite when not in checked context and type are different
             bool skip = !_isInCheckedContext || builtInOp.LhsType != builtInOp.RhsType;
+            // skip not int types
+            skip = skip || builtInOp.LhsType is not IntType || builtInOp.RhsType is not IntType;
+            // skip non arithmetic ops
+            skip = skip || (builtInOp.Name != "+" && builtInOp.Name != "-" && builtInOp.Name != "*");
             if (skip)
             {
                 result = default;
                 return false;
             }
+            var intType = builtInOp.LhsType as IntType;
+            var fncData = GetCheckedFunction(builtInOp.Name, intType.GetSize(), intType.Signed);
+            var binOpResult = _builder.BuildCall2(fncData.funcType, fncData.funcValue, new LLVMValueRef[] { left, right }, "checkedResult");
 
+            var opResult = _builder.BuildExtractValue(binOpResult, 0, "res");
+            var isOverflow = _builder.BuildExtractValue(binOpResult, 1, "isOverflow");
 
+            // creating OF check blocks
+            var bbOverflow = _lastFunctionValueRef.AppendBasicBlockInContext(_context, $"overflow");
+            var bbEnd = _lastFunctionValueRef.AppendBasicBlockInContext(_context, $"overflow.end");
 
-            result = default;
-            return false;
+            _builder.BuildCondBr(isOverflow, bbOverflow, bbEnd);
+            // if overflow
+            _builder.PositionAtEnd(bbOverflow);
+            GenerateOverflowException();
+            _builder.BuildUnreachable();
+
+            _builder.PositionAtEnd(bbEnd);
+
+            result = opResult;
+            return true;
         }
     }
 }

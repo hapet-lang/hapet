@@ -1,0 +1,20 @@
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+// Some modifications were made for hapet-lang compatibility.
+
+/// <summary>
+/// The exception that is thrown when an arithmetic, casting, or conversion operation in a checked context results in an overflow.
+/// </summary>
+[SuppressStaticCtorCall]
+public class OverflowException : ArithmeticException
+{
+    public OverflowException() { }
+    public OverflowException(string message) : base(message) { }
+
+    [DeclarationUsed]
+    [SuppressStackTrace]
+    public static void Throw()
+    {
+        throw new OverflowException(SR.Arg_OverflowException);
+    }
+}
