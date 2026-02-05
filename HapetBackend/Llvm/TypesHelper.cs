@@ -689,18 +689,26 @@ namespace HapetBackend.Llvm
                 }
                 // ...
             }
-            else if (inType is FloatType)
+            else if (inType is FloatType ft)
             {
                 // special case to check overflow
                 if (outType is IntType intType0)
                 {
-                    // TODO: check for nan and inf
+                    // check for nan and inf
                     // if in checked context - need runtime checks
                     if (_isInCheckedContext)
                     {
-                        var minMax = GetMinMaxOfType(outType);
+                        // check nan, -inf, +inf
+                        var nanInf = GetNanInfOfType(ft);
+                        var cmp11 = GetFCompare(LLVMRealPredicate.LLVMRealOEQ);
+                        var cmpRes11 = cmp11(_builder, val, nanInf.Item1, "cmpNan");
+                        var cmpRes22 = cmp11(_builder, val, nanInf.Item2, "cmpInfP");
+                        var cmpRes33 = cmp11(_builder, val, nanInf.Item3, "cmpInfN");
+                        var cmpAll2 = LlvmExtensions.BuildOr(_builder, LlvmExtensions.BuildOr(_builder, cmpRes11, cmpRes22, "cmpAllNan"), cmpRes33, "cmpAllNan2");
+                        BuildOverflowCheckBlocks(cmpAll2);
 
                         // min <= val <= max
+                        var minMax = GetMinMaxOfType(outType);
                         var cmp1 = GetFCompare(LLVMRealPredicate.LLVMRealOLE);
                         var cmpRes1 = cmp1(_builder, val, CreateCast(_builder, minMax.Item2, outType, inType), "cmp1");
                         var cmp2 = GetFCompare(LLVMRealPredicate.LLVMRealOGE);

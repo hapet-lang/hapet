@@ -151,5 +151,19 @@ namespace HapetBackend.Llvm
                     throw new NotImplementedException();
             }
         }
+
+        private (LLVMValueRef, LLVMValueRef, LLVMValueRef) GetNanInfOfType(FloatType type)
+        {
+            return type.GetSize() switch
+            {
+                4 => (HapetValueToLLVMValue(HapetType.CurrentTypeContext.GetFloatType(4), float.NaN),
+                    HapetValueToLLVMValue(HapetType.CurrentTypeContext.GetFloatType(4), float.NegativeInfinity),
+                    HapetValueToLLVMValue(HapetType.CurrentTypeContext.GetFloatType(4), float.PositiveInfinity)),
+                8 => (HapetValueToLLVMValue(HapetType.CurrentTypeContext.GetFloatType(8), double.NaN),
+                    HapetValueToLLVMValue(HapetType.CurrentTypeContext.GetFloatType(8), double.NegativeInfinity),
+                    HapetValueToLLVMValue(HapetType.CurrentTypeContext.GetFloatType(8), double.PositiveInfinity)),
+                _ => throw new NotImplementedException()
+            };
+        }
     }
 }
