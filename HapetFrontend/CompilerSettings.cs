@@ -119,6 +119,10 @@ namespace HapetFrontend
         /// </summary>
         public bool OutputIrFile { get; set; }
         /// <summary>
+        /// If true - after lp file would be outputed to out folder
+        /// </summary>
+        public bool OutputAfterLpFile { get; set; }
+        /// <summary>
         /// The optimization level of the project
         /// </summary>
         public int Optimization { get; set; }

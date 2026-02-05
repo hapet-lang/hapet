@@ -46,6 +46,9 @@ namespace HapetLastPrepare
             if (_compiler.MessageHandler.HasErrors)
                 return 0;
 
+            if (_compiler.CurrentProjectSettings.OutputAfterLpFile)
+                _postPreparer.GenerateAfterLpFile();
+
             return 0;
         }
     }

@@ -61,6 +61,8 @@ namespace HapetFrontend.ProjectParser
             _projectSettings.AllowUnsafeCode = GetValueOrDefault("AllowUnsafeCode", false);
             // setting llvm ir code outputance
             _projectSettings.OutputIrFile = GetValueOrDefault("OutputIrFile", false);
+            // setting after lp code outputance
+            _projectSettings.OutputAfterLpFile = GetValueOrDefault("OutputAfterLpFile", false);
             // setting verbose enablence :)
             _projectSettings.Verbose = GetValueOrDefault("Verbose", false);
             // setting the optimization level

@@ -107,7 +107,7 @@ namespace HapetPostPrepare
             // serialize all decls
             foreach (var decl in decls)
             {
-                if (decl.SpecialKeys.Contains(TokenType.KwUnreflected))
+                if (decl.SpecialKeys.Contains(TokenType.KwUnreflected) && !_generatingAfterLpFile)
                     continue;
 
                 // doc string
@@ -198,13 +198,11 @@ namespace HapetPostPrepare
 
             foreach (var d in decls)
             {
-                if (d.SpecialKeys.Contains(TokenType.KwUnreflected))
-                    continue;
-                // do not serialize prop' funcs
-                if (d is AstFuncDecl func2 && func2.IsPropertyFunction)
-                    continue;
-                // do not serialize prop' fields
-                if (d is AstVarDecl field2 && field2.IsPropertyField)
+                bool skipDecl = d.SpecialKeys.Contains(TokenType.KwUnreflected) || 
+                    (d is AstFuncDecl func2 && func2.IsPropertyFunction) || // do not serialize prop' funcs
+                    (d is AstVarDecl field2 && field2.IsPropertyField); // do not serialize prop' fields
+                // when generating after lp - generate all
+                if (skipDecl && !_generatingAfterLpFile)
                     continue;
 
                 // doc string
@@ -284,7 +282,7 @@ namespace HapetPostPrepare
 
             foreach (var d in decls)
             {
-                if (d.SpecialKeys.Contains(TokenType.KwUnreflected))
+                if (d.SpecialKeys.Contains(TokenType.KwUnreflected) && !_generatingAfterLpFile)
                     continue;
 
                 // doc string

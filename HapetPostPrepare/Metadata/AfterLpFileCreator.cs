@@ -17,6 +17,10 @@ namespace HapetPostPrepare
             _generatingAfterLpFile = true;
             foreach (var srt in _sortedDeclsByFiles)
             {
+                // skip imported
+                if (srt.Key.IsImported)
+                    continue;
+
                 _currentSourceFile = srt.Key;
                 CreateFileDeclarations(srt.Key, srt.Value, globalStringBuilder);
             }
@@ -25,7 +29,7 @@ namespace HapetPostPrepare
             // WARN: take care about the shite that is goin on here
             var outFolderPath = _compiler.CurrentProjectSettings.OutputDirectory;
             var asmName = _compiler.CurrentProjectSettings.AssemblyName;
-            File.WriteAllText($"{outFolderPath}/{asmName}.mpt", globalStringBuilder.ToString());
+            File.WriteAllText($"{outFolderPath}/{asmName}.afterlp.mpt", globalStringBuilder.ToString());
         }
 
         private void SortDeclarationsAfterLp()
