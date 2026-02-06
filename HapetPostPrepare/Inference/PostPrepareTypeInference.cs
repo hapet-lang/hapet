@@ -872,6 +872,10 @@ namespace HapetPostPrepare
                 PostPrepareExprInference(castExpr.TypeExpr, inInfo, ref outInfo);
                 castExpr.OutType = castExpr.TypeExpr.OutType;
 
+                // check compile time overflow when in checked context
+                if (_isInCheckedContext && castExpr.SubExpression.OutValue != null)
+                    CheckComptimeCastInCheckedContext(castExpr.SubExpression.OutValue, castExpr.TypeExpr.OutType, castExpr);
+
                 // check that the cast is possible
                 var castResult = new CastResult();
                 PostPrepareExpressionWithType(castExpr.TypeExpr.OutType, castExpr.SubExpression, castResult);
@@ -1299,10 +1303,15 @@ namespace HapetPostPrepare
             }
         }
 
+        private bool _isInCheckedContext = false;
         private void PostPrepareCheckedExprInference(AstCheckedExpr expr, InInfo inInfo, ref OutInfo outInfo)
         {
-            // TODO: static overflow check? like 'checked(int.MaxValue + 1)' - would error in c# at comp time
+            // static overflow check? like 'checked(int.MaxValue + 1)' - would error in c# at comp time
+            var saved = _isInCheckedContext;
+            _isInCheckedContext = expr.IsChecked;
             PostPrepareExprInference(expr.SubExpression, inInfo, ref outInfo);
+            _isInCheckedContext = saved;
+
             expr.OutType = expr.SubExpression.OutType;
             expr.OutValue = expr.SubExpression.OutValue;
         }

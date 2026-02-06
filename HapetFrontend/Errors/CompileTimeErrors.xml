@@ -872,6 +872,10 @@
         <Number>306A</Number>
         <Text>Not correct amount of arguments are passed to delegate call</Text>
     </Item>
+    <Item>
+        <Number>306B</Number>
+        <Text>Constant value '{0}' cannot be converted to a '{1}' (use 'unchecked' syntax to override)</Text>
+    </Item>
 
     <!--Compiler errors-->
     <Item>

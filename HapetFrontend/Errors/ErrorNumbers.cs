@@ -227,6 +227,7 @@
         ArgumentCouldNotBeCasted        = 0x3068,
         ArgumentAmountIsNotCorrect      = 0x3069,
         ArgumentAmountIsNotCorrectDel   = 0x306A,
+        CheckedCastOverflow             = 0x306B,
 
         // compiler errors up to 0x6000
         DefaultWasNotInfered            = 0x5001,
