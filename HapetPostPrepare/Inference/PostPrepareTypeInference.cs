@@ -728,13 +728,13 @@ namespace HapetPostPrepare
                                 rightExpr.OutValue != null && 
                                 binExpr.ActualOperator.CanExecute)
                             {
+                                CheckComptimeBinaryInCheckedContext(binExpr.ActualOperator, leftExpr.OutValue, rightExpr.OutValue, binExpr);
                                 binExpr.OutValue = binExpr.ActualOperator.Execute(leftExpr.OutValue, rightExpr.OutValue);
                             }
 
                             break;
                         }
                 }
-
             }
         }
 

@@ -1,5 +1,6 @@
 ﻿using HapetFrontend.Ast;
 using HapetFrontend.Errors;
+using HapetFrontend.Scoping;
 using HapetFrontend.Types;
 using System.Numerics;
 
@@ -23,6 +24,41 @@ namespace HapetPostPrepare
             }
         }
 
+        private void CheckComptimeBinaryInCheckedContext(IBinaryOperator binOp, object left, object right, ILocation castLocation)
+        {
+            // skip if not built in and not +/-/*
+            if (binOp is not BuiltInBinaryOperator builtIn || (builtIn.Name != "+" && builtIn.Name != "-" && builtIn.Name != "*"))
+                return;
+            // skip not the same types
+            if (builtIn.LhsType != builtIn.RhsType)
+                return;
+
+            var (isOverflow, resValue) = IsBinOverflow(builtIn, left, right);
+            if (isOverflow)
+            {
+                // error overflow
+                _compiler.MessageHandler.ReportMessage(_currentSourceFile, castLocation,
+                    [resValue.ToString(), HapetType.AsString(builtIn.ResultType)], ErrorCode.Get(CTEN.CheckedCastOverflow));
+            }
+        }
+
+        private (bool, BigInteger) IsBinOverflow(BuiltInBinaryOperator builtIn, object left, object right)
+        {
+            switch (builtIn.Name)
+            {
+                case "+":
+                    var res = NumberData.FromObject(left) + NumberData.FromObject(right);
+                    return (!CompareMinMaxNanInf(res.IntValue, GetMinMaxOfType(builtIn.ResultType)), res.IntValue);
+                case "-":
+                    var res2 = NumberData.FromObject(left) - NumberData.FromObject(right);
+                    return (!CompareMinMaxNanInf(res2.IntValue, GetMinMaxOfType(builtIn.ResultType)), res2.IntValue);
+                case "*":
+                    var res3 = NumberData.FromObject(left) * NumberData.FromObject(right);
+                    return (!CompareMinMaxNanInf(res3.IntValue, GetMinMaxOfType(builtIn.ResultType)), res3.IntValue);
+            }
+            throw new NotImplementedException();
+        }
+
         private bool CompareMinMaxNanInf(object value, (BigInteger, BigInteger) minMax)
         {
             switch (value)
@@ -42,6 +78,7 @@ namespace HapetPostPrepare
                 case double v:
                     bool notCringe2 = !double.IsNaN(v) && v != double.NegativeInfinity && v != double.PositiveInfinity;
                     return v >= (double)minMax.Item1 && v <= (double)minMax.Item2 && notCringe2;
+                case BigInteger v: return v >= minMax.Item1 && v <= minMax.Item2;
             }
             throw new NotImplementedException();
         }
