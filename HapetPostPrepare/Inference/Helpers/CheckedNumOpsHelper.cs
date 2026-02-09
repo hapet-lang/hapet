@@ -73,10 +73,10 @@ namespace HapetPostPrepare
                 case ulong v: return v >= minMax.Item1 && v <= minMax.Item2;
                 case long v: return v >= minMax.Item1 && v <= minMax.Item2;
                 case float v: 
-                    bool notCringe = !float.IsNaN(v) && v != float.NegativeInfinity && v != float.PositiveInfinity;
+                    bool notCringe = !float.IsNaN(v) && !float.IsNegativeInfinity(v) && !float.IsPositiveInfinity(v);
                     return v >= (float)minMax.Item1 && v <= (float)minMax.Item2 && notCringe;
                 case double v:
-                    bool notCringe2 = !double.IsNaN(v) && v != double.NegativeInfinity && v != double.PositiveInfinity;
+                    bool notCringe2 = !double.IsNaN(v) && !double.IsNegativeInfinity(v) && !double.IsPositiveInfinity(v);
                     return v >= (double)minMax.Item1 && v <= (double)minMax.Item2 && notCringe2;
                 case BigInteger v: return v >= minMax.Item1 && v <= minMax.Item2;
             }
