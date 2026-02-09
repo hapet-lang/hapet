@@ -580,7 +580,10 @@ namespace HapetLastPrepare
 
         private void LPRAPCheckedExpr(AstCheckedExpr expr, ref OutInfo outInfo)
         {
-            LPRAPExpr(expr.SubExpression, ref outInfo);
+            if (expr.IsStatement)
+                LPRAPBlockExpr(expr.Body, ref outInfo);
+            else
+                LPRAPExpr(expr.SubExpression, ref outInfo);
         }
 
         private void LPRAPLambdaExpr(AstLambdaExpr expr, ref OutInfo outInfo)

@@ -514,7 +514,10 @@ namespace HapetLastPrepare
 
         private void LPRACCheckedExpr(AstCheckedExpr expr)
         {
-            LPRACExpr(expr.SubExpression);
+            if (expr.IsStatement)
+                LPRACBlockExpr(expr.Body);
+            else
+                LPRACExpr(expr.SubExpression);
 
             if (expr.OutType is ClassType)
             {

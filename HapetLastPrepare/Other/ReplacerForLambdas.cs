@@ -463,7 +463,10 @@ namespace HapetLastPrepare
 
         private void ReplaceAllInCheckedExpr(AstCheckedExpr checkedExpr)
         {
-            ReplaceAllInExpr(checkedExpr.SubExpression);
+            if (checkedExpr.IsStatement)
+                ReplaceAllInBlockExpr(checkedExpr.Body);
+            else
+                ReplaceAllInExpr(checkedExpr.SubExpression);
         }
 
         private void ReplaceAllInSATExpr(AstSATOfExpr satExpr)

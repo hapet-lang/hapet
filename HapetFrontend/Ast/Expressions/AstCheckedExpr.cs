@@ -14,11 +14,19 @@ namespace HapetFrontend.Ast.Expressions
         /// 'true' if 'checked', 'false' if 'unchecked'
         /// </summary>
         public bool IsChecked { get; set; }
+        /// <summary>
+        /// 'true' when 'checked' is used with block
+        /// </summary>
+        public bool IsStatement { get; set; }
 
         /// <summary>
         /// Sub expr of the 'checked' expr
         /// </summary>
         public AstExpression SubExpression { get; set; }
+        /// <summary>
+        /// Sub block of the 'checked' stmt
+        /// </summary>
+        public AstBlockExpr Body { get; set; }
 
         public override string AAAName => nameof(AstCheckedExpr);
 

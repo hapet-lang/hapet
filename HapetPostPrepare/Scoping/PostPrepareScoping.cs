@@ -829,8 +829,16 @@ namespace HapetPostPrepare
 
         private void PostPrepareCheckedExprScoping(AstCheckedExpr checkedExpr)
         {
-            SetScopeAndParent(checkedExpr.SubExpression, checkedExpr);
-            PostPrepareExprScoping(checkedExpr.SubExpression);
+            if (checkedExpr.IsStatement)
+            {
+                SetScopeAndParent(checkedExpr.Body, checkedExpr);
+                PostPrepareExprScoping(checkedExpr.Body);
+            }
+            else
+            {
+                SetScopeAndParent(checkedExpr.SubExpression, checkedExpr);
+                PostPrepareExprScoping(checkedExpr.SubExpression);
+            }
         }
 
         private void PostPrepareSATExprScoping(AstSATOfExpr satExpr)

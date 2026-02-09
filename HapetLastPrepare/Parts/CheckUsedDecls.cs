@@ -579,7 +579,10 @@ namespace HapetLastPrepare
 
         private void CheckUsedDeclsCheckedExpr(AstCheckedExpr expr, List<AstDeclaration> usedDecls = null, bool goDeep = false)
         {
-            CheckUsedDeclsExpr(expr.SubExpression, usedDecls, goDeep);
+            if (expr.IsStatement)
+                CheckUsedDeclsBlockExpr(expr.Body, usedDecls, goDeep);
+            else
+                CheckUsedDeclsExpr(expr.SubExpression, usedDecls, goDeep);
         }
 
         private void CheckUsedDeclsSATExpr(AstSATOfExpr expr, List<AstDeclaration> usedDecls = null, bool goDeep = false)

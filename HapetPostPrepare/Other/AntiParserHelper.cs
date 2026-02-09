@@ -426,9 +426,17 @@ namespace HapetPostPrepare
                 sb.Append("checked");
             else
                 sb.Append("unchecked");
-            sb.Append('(');
-            AntiParseExpr(checkedExpr.SubExpression, sb, offset);
-            sb.Append(')');
+
+            if (checkedExpr.IsStatement)
+            {
+                AntiParseBlockExpr(checkedExpr.Body, sb, offset);
+            }
+            else
+            {
+                sb.Append('(');
+                AntiParseExpr(checkedExpr.SubExpression, sb, offset);
+                sb.Append(')');
+            }
         }
 
         public void AntiParseSATExpr(AstSATOfExpr satExpr, StringBuilder sb, string offset)

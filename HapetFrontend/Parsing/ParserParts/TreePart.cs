@@ -689,6 +689,7 @@ namespace HapetFrontend.Parsing
                 case TokenType.KwUnchecked:
                     {
                         NextToken(inInfo);
+                        SkipNewlines(inInfo);
 
                         if (CheckToken(inInfo, TokenType.OpenParen))
                         {
@@ -701,12 +702,23 @@ namespace HapetFrontend.Parsing
 
                             return new AstCheckedExpr(subExpr, new Location(token.Location)) { IsChecked = (token.Type == TokenType.KwChecked) };
                         }
-                        else
+                        else if (CheckToken(inInfo, TokenType.OpenBrace))
                         {
-                            // TODO: also allow blocked checked https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/statements/checked-and-unchecked
-                            // TODO: make it as AstCheckedStmt
-                            throw new NotImplementedException();
+                            // also allow blocked checked https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/statements/checked-and-unchecked
+
+                            var saved = inInfo.AllowMultiplyExpression;
+                            inInfo.AllowMultiplyExpression = true;
+                            var block = ParseBlockExpression(inInfo, ref outInfo);
+                            inInfo.AllowMultiplyExpression = saved;
+
+                            return new AstCheckedExpr(null, new Location(token.Location)) 
+                            { 
+                                IsChecked = (token.Type == TokenType.KwChecked),
+                                IsStatement = true,
+                                Body = block
+                            };
                         }
+                        throw new NotImplementedException();
                     }
 
                 case TokenType.KwTypeof:

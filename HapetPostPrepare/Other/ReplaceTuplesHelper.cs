@@ -373,7 +373,10 @@ namespace HapetPostPrepare
 
         private void ReplaceAllTuplesInChecked(AstCheckedExpr expr)
         {
-            ReplaceAllTuplesInStmt(expr.SubExpression);
+            if (expr.IsStatement)
+                ReplaceAllTuplesInStmt(expr.Body);
+            else
+                ReplaceAllTuplesInStmt(expr.SubExpression);
         }
 
         private void ReplaceAllTuplesInSAT(AstSATOfExpr expr)

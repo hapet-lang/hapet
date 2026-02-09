@@ -590,7 +590,10 @@ namespace HapetPostPrepare
 
         private void ReplaceAllGenericTypesInCheckedExpr(AstCheckedExpr checkedExpr) 
         {
-            ReplaceAllGenericTypesInExpr(checkedExpr.SubExpression);
+            if (checkedExpr.IsStatement)
+                ReplaceAllGenericTypesInBlockExpr(checkedExpr.Body);
+            else
+                ReplaceAllGenericTypesInExpr(checkedExpr.SubExpression);
         }
 
         private void ReplaceAllGenericTypesInSATExpr(AstSATOfExpr satExpr)

@@ -341,6 +341,7 @@ namespace HapetFrontend.Parsing
                 s is not AstClassDecl &&
                 s is not AstStructDecl &&
                 s is not AstEnumDecl &&
+                (s is not AstCheckedExpr ch || !ch.IsStatement) &&
                 s is not AstDirectiveStmt &&
                 s is not AstEmptyStmt) // special case for EmptyStmt
             {

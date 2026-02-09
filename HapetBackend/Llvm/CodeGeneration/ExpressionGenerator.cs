@@ -1307,9 +1307,14 @@ namespace HapetBackend.Llvm
         private bool _isInCheckedContext = false;
         private unsafe LLVMValueRef GenerateCheckedExprCode(AstCheckedExpr expr)
         {
+            LLVMValueRef result;
+
             var saved = _isInCheckedContext;
             _isInCheckedContext = expr.IsChecked;
-            var result = GenerateExpressionCode(expr.SubExpression);
+            if (expr.IsStatement)
+                result = GenerateBlockExprCode(expr.Body);
+            else
+                result = GenerateExpressionCode(expr.SubExpression);
             _isInCheckedContext = saved;
             return result;
         }

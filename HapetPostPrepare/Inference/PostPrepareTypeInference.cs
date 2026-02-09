@@ -1309,11 +1309,17 @@ namespace HapetPostPrepare
             // static overflow check? like 'checked(int.MaxValue + 1)' - would error in c# at comp time
             var saved = _isInCheckedContext;
             _isInCheckedContext = expr.IsChecked;
-            PostPrepareExprInference(expr.SubExpression, inInfo, ref outInfo);
+            if (expr.IsStatement)
+                PostPrepareBlockInference(expr.Body, inInfo, ref outInfo);
+            else
+                PostPrepareExprInference(expr.SubExpression, inInfo, ref outInfo);
             _isInCheckedContext = saved;
 
-            expr.OutType = expr.SubExpression.OutType;
-            expr.OutValue = expr.SubExpression.OutValue;
+            if (!expr.IsStatement)
+            {
+                expr.OutType = expr.SubExpression.OutType;
+                expr.OutValue = expr.SubExpression.OutValue;
+            }
         }
 
         private void PostPrepareSATExprInference(AstSATOfExpr expr, InInfo inInfo, ref OutInfo outInfo)
