@@ -68,6 +68,11 @@ namespace HapetFrontend.Entities
         public bool CurrentlyParsingDirective { get; set; }
 
         /// <summary>
+        /// 'true' if expressed switch-case is parsing now
+        /// </summary>
+        public bool CurrentlyParsingExpressedSwitch { get; set; }
+
+        /// <summary>
         /// 'true' is expecting 'default' as a case
         /// </summary>
         public bool ExpectDefaultCase { get; set; }

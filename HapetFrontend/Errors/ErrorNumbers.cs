@@ -119,6 +119,8 @@
         NonStaticNestedLambda           = 0x205C,
         NewExprExpectedAfterThrow       = 0x205D,
         StringLiteralExpectedInInterp   = 0x205E,
+        PatternAsExprExpected           = 0x205F,
+        PatternResultAsExprExpected     = 0x2060,
 
         // post preparer errors up to 0x5000
         EnumCouldNotBeAssigned          = 0x3001,

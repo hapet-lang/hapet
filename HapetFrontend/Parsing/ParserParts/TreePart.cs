@@ -792,7 +792,8 @@ namespace HapetFrontend.Parsing
                         var saved = inInfo.IsLookAheadParsing;
                         inInfo.IsLookAheadParsing = true;
                         var _ = ParseIdentifierExpression(inInfo, allowDots: false, allowGenerics: false, expectIdent: true);
-                        if (CheckToken(inInfo, TokenType.Arrow))
+                        // check if lambda and NOT expressed switch-case
+                        if (CheckToken(inInfo, TokenType.Arrow) && !inInfo.CurrentlyParsingExpressedSwitch)
                         {
                             inInfo.IsLookAheadParsing = saved;
                             RestoreLookAheadLocation();
@@ -877,6 +878,12 @@ namespace HapetFrontend.Parsing
                                 return id;
                             }
                             return new AstUnknownDecl(id, idExpr, new Location(token.Location, name.Location.Ending));
+                        }
+
+                        // check for expressed switch-case
+                        if (CheckToken(inInfo, TokenType.KwSwitch))
+                        {
+                            return ParseSwitchExpression(id, inInfo, ref outInfo);
                         }
 
                         return id;

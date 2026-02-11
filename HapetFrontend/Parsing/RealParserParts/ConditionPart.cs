@@ -203,5 +203,70 @@ namespace HapetFrontend.Parsing
             cs.GotoLabelLocation = gotoTkn?.Location;
             return cs;
         }
+
+        private AstStatement ParseSwitchExpression(AstExpression subExpr, ParserInInfo inInfo, ref ParserOutInfo outInfo)
+        {
+            var beg = subExpr.Location.Beginning;
+            var end = Consume(inInfo, TokenType.KwSwitch, ErrMsg("keyword 'switch'", "at beginning of 'switch' expression"));
+
+            SkipNewlines(inInfo);
+
+            // parsing the block
+            if (CheckToken(inInfo, TokenType.OpenBrace))
+            {
+                List<AstCaseExpr> cases = new List<AstCaseExpr>();
+                var saved = inInfo.CurrentlyParsingExpressedSwitch;
+                inInfo.CurrentlyParsingExpressedSwitch = true;
+
+                Consume(inInfo, TokenType.OpenBrace, ErrMsg("{", "at beginning of block expression"));
+                SkipNewlines(inInfo);
+                while (true)
+                {
+                    var next = PeekToken(inInfo);
+                    if (next.Type == TokenType.CloseBrace || next.Type == TokenType.EOF)
+                        break;
+
+                    var pattern = ParseExpression(inInfo, ref outInfo);
+                    if (pattern is not AstExpression) ReportMessage(pattern, [], ErrorCode.Get(CTEN.PatternAsExprExpected));
+                    SkipNewlines(inInfo);
+                    Consume(inInfo, TokenType.Arrow, ErrMsg("=>", "in pattern expr"));
+                    SkipNewlines(inInfo);
+                    var returnExpr = ParseExpression(inInfo, ref outInfo);
+                    if (returnExpr is not AstExpression) ReportMessage(returnExpr, [], ErrorCode.Get(CTEN.PatternResultAsExprExpected));
+
+                    // expect comma at the end of a pattern
+                    // if not a comma and not a closebr - error
+                    SkipNewlines(inInfo);
+                    if (!CheckToken(inInfo, TokenType.Comma))
+                    {
+                        SkipNewlines(inInfo);
+                        if (!CheckToken(inInfo, TokenType.CloseBrace))
+                        {
+                            ReportMessage(PeekToken(inInfo).Location, [",", "at the end of pattern expr"], ErrorCode.Get(CTEN.CommonExpectedToken));
+                        }
+                    }
+                    else
+                    {
+                        // eat ','
+                        NextToken(inInfo);
+                    }
+                    SkipNewlines(inInfo);
+
+                    // add to list of cases
+                    cases.Add(new AstCaseExpr(pattern as AstExpression, returnExpr as AstExpression, new Location(pattern.Beginning, returnExpr.Ending)));
+                }
+                Consume(inInfo, TokenType.CloseBrace, ErrMsg("}", "at end of block expression"));
+
+                inInfo.CurrentlyParsingExpressedSwitch = saved;
+
+                return new AstSwitchExpr(subExpr, cases, new Location(beg, end.Location));
+            }
+            else
+            {
+                // error here. it has to have braces
+                ReportMessage(new Location(beg, end.Location), [], ErrorCode.Get(CTEN.CasesExpectedAfterSwitch));
+                return ParseEmptyExpression(inInfo);
+            }
+        }
     }
 }

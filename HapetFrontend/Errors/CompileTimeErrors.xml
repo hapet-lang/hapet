@@ -442,6 +442,14 @@
         <Number>205E</Number>
         <Text>String literal expected for interpolation</Text>
     </Item>
+    <Item>
+        <Number>205F</Number>
+        <Text>Pattern expected to be an expression</Text>
+    </Item>
+    <Item>
+        <Number>2060</Number>
+        <Text>Result of pattern expected to be an expression</Text>
+    </Item>
 
 
     <!--Post prepare errors-->
