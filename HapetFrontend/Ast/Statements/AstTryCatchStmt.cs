@@ -77,6 +77,11 @@ namespace HapetFrontend.Ast.Statements
         /// </summary>
         public AstParamDecl CatchParam { get; set; }
 
+        /// <summary>
+        /// 'true' when catch without parameter
+        /// </summary>
+        public bool IsCommonCatch { get; set; }
+
         public override string AAAName => nameof(AstCatchStmt);
 
         public AstCatchStmt(AstBlockExpr catchBlock, AstParamDecl catchParam, ILocation location = null) : base(location)
@@ -94,6 +99,7 @@ namespace HapetFrontend.Ast.Statements
             {
                 IsSyntheticStatement = IsSyntheticStatement,
                 Scope = Scope,
+                IsCommonCatch = IsCommonCatch,
                 SourceFile = SourceFile,
             };
             return copy;

@@ -736,7 +736,8 @@ namespace HapetLastPrepare
         private void LPRAPCatchStmt(AstCatchStmt stmt, ref OutInfo outInfo)
         {
             LPRAPExpr(stmt.CatchBlock, ref outInfo);
-            LPRAPParam(stmt.CatchParam, ref outInfo);
+            if (!stmt.IsCommonCatch)
+                LPRAPParam(stmt.CatchParam, ref outInfo);
         }
 
         private void UpdateCallWithFunc(AstCallExpr call, AstFuncDecl decl)

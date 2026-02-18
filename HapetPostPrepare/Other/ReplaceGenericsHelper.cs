@@ -777,7 +777,7 @@ namespace HapetPostPrepare
         private void ReplaceAllGenericTypesInCatchStmt(AstCatchStmt stmt)
         {
             ReplaceAllGenericTypesInExpr(stmt.CatchBlock);
-            if (stmt.CatchParam != null)
+            if (!stmt.IsCommonCatch)
                 ReplaceAllGenericTypesInParam(stmt.CatchParam);
         }
 

@@ -1755,7 +1755,8 @@ namespace HapetPostPrepare
 
         private void PostPrepareCatchStmtInference(AstCatchStmt stmt, InInfo inInfo, ref OutInfo outInfo)
         {
-            PostPrepareParamInference(stmt.CatchParam, inInfo, ref outInfo);
+            if (!stmt.IsCommonCatch)
+                PostPrepareParamInference(stmt.CatchParam, inInfo, ref outInfo);
             PostPrepareExprInference(stmt.CatchBlock, inInfo, ref outInfo);
         }
 

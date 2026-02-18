@@ -736,7 +736,8 @@ namespace HapetLastPrepare
         private void CheckUsedDeclsCatchStmt(AstCatchStmt stmt, List<AstDeclaration> usedDecls = null, bool goDeep = false)
         {
             CheckUsedDeclsExpr(stmt.CatchBlock, usedDecls, goDeep);
-            CheckUsedDeclsDecl(stmt.CatchParam, usedDecls, goDeep);
+            if (!stmt.IsCommonCatch)
+                CheckUsedDeclsDecl(stmt.CatchParam, usedDecls, goDeep);
         }
 
         private bool HasOrIsGenericDecl(AstDeclaration decl, bool checkParent = true, bool checkNestParent = true)

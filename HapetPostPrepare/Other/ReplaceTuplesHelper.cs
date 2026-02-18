@@ -507,7 +507,8 @@ namespace HapetPostPrepare
         private void ReplaceAllTuplesInCatch(AstCatchStmt stmt)
         {
             ReplaceAllTuplesInStmt(stmt.CatchBlock);
-            ReplaceAllTuplesInDecl(stmt.CatchParam);
+            if (!stmt.IsCommonCatch)
+                ReplaceAllTuplesInDecl(stmt.CatchParam);
         }
     }
 }

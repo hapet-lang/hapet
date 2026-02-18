@@ -661,7 +661,7 @@ namespace HapetLastPrepare
         private void ReplaceAllInCatchStmt(AstCatchStmt stmt)
         {
             ReplaceAllInExpr(stmt.CatchBlock);
-            if (stmt.CatchParam != null)
+            if (!stmt.IsCommonCatch)
                 ReplaceAllInParam(stmt.CatchParam);
         }
 

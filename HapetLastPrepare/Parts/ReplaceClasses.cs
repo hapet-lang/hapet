@@ -730,7 +730,8 @@ namespace HapetLastPrepare
 
         private void LPRACCatchStmt(AstCatchStmt stmt)
         {
-            LPRACParam(stmt.CatchParam);
+            if (!stmt.IsCommonCatch)
+                LPRACParam(stmt.CatchParam);
             LPRACExpr(stmt.CatchBlock);
         }
 

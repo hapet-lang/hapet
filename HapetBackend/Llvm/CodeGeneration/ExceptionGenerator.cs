@@ -155,11 +155,20 @@ namespace HapetBackend.Llvm
 
                     // check if could be casted
                     var excClass = _currentFunction.Scope.GetSymbolInNamespace("System", new AstIdExpr("Exception"));
-                    LLVMValueRef canBeCasted = CheckIsCouldBeCasted(
-                        currException, 
-                        PointerType.GetPointerType(excClass.Decl.Type.OutType), 
-                        stmt.CatchBlocks[currCatchIndex].CatchParam.Type.OutType, false, 
-                        stmt.CatchBlocks[currCatchIndex].CatchParam.Location);
+                    LLVMValueRef canBeCasted;
+                    var currCatch = stmt.CatchBlocks[currCatchIndex];
+                    if (currCatch.IsCommonCatch)
+                    {
+                        canBeCasted = HapetValueToLLVMValue(HapetType.CurrentTypeContext.BoolTypeInstance, true);
+                    }
+                    else
+                    {
+                        canBeCasted = CheckIsCouldBeCasted(
+                            currException,
+                            PointerType.GetPointerType(excClass.Decl.Type.OutType),
+                            currCatch.CatchParam.Type.OutType, false,
+                            currCatch.CatchParam.Location);
+                    }
 
                     // if not last catch - build br to next catch
                     if (currCatchIndex + 1 != stmt.CatchBlocks.Count)
@@ -174,7 +183,7 @@ namespace HapetBackend.Llvm
                         _builder.PositionAtEnd(nextDispatch);
                     }
                     // if last - build br to finally
-                    else 
+                    else
                     {
                         // if 0 - go rethrow, if 1 - go catch
                         _builder.BuildCondBr(canBeCasted, nextCatch, bbRethrow);
@@ -191,7 +200,7 @@ namespace HapetBackend.Llvm
                     LLVM.AppendExistingBasicBlock(_lastFunctionValueRef, currCatch);
                     _builder.PositionAtEnd(currCatch);
 
-                    if (currRealCatch.CatchParam.Name != null)
+                    if (!currRealCatch.IsCommonCatch && currRealCatch.CatchParam.Name != null)
                     {
                         // creating exception variable to handle cought exception
                         var excVar = CreateLocalVariable(currRealCatch.CatchParam.Type.OutType, currRealCatch.CatchParam.Name.Name);
