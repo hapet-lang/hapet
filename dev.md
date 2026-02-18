@@ -1,0 +1,11 @@
+## When adding new AST or changing existing one
+- PostPrepare -> ReplaceTuplesHelper
+- PostPrepare -> PostPrepareScoping
+- PostPrepare -> PostPrepareTypeInference
+- PostPrepare -> ReplaceGenericsHelper
+- PostPrepare -> AntiParserHelper
+- LastPrepare -> ReplaceProperties
+- LastPrepare -> CheckUsedDecls
+- LastPrepare -> ReplaceClasses
+- LastPrepare -> ReplacerForLambdas
+- Backend -> ExpressionGenerator
