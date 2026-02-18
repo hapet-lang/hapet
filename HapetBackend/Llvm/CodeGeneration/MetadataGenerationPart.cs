@@ -225,12 +225,7 @@ namespace HapetBackend.Llvm
 
                 // WARN: do not set value from Initializer - it would be set inside stor
                 // set default value to it
-                var defExpr = AstDefaultExpr.GetDefaultValueForType(decl.Type.OutType, ini.Item2, _compiler.MessageHandler);
-                // special initializer for empty struct
-                if (defExpr is not AstEmptyStructExpr)
-                    field.Initializer = GenerateExpressionCode(defExpr);
-                else
-                    field.Initializer = LLVMValueRef.CreateConstNull(HapetTypeToLLVMType(decl.Type.OutType));
+                field.Initializer = CreateDefaultValueForType(decl.Type.OutType, ini.Item2);
             }
         }
     }

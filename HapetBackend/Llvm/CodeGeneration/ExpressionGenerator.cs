@@ -60,6 +60,7 @@ namespace HapetBackend.Llvm
                 case AstEmptyStructExpr emptyStructExpr: return GenerateEmptyStructExprCode(emptyStructExpr);
                 case AstLambdaExpr lambdaExpr: return GenerateLambdaExprCode(lambdaExpr);
                 case AstNullableExpr nullableExpr: return GenerateNullableExprCode(nullableExpr);
+                case AstSwitchExpr switchExpr: return GenerateSwitchExpr(switchExpr);
 
                 case AstNullExpr nullExpr: return GenerateNullExprCode(nullExpr);
 
@@ -1378,6 +1379,80 @@ namespace HapetBackend.Llvm
             return default;
         }
 
+        private unsafe LLVMValueRef GenerateSwitchExpr(AstSwitchExpr expr)
+        {
+            _switchCounter++;
+
+            // checking if there is a user defined default case
+            bool userDefinedDefaultCase = expr.Cases.Any(x => x.IsDefaultCase);
+
+            var bbDefault = _context.CreateBasicBlock($"switch{_switchCounter}.default");
+            var bbEnd = _context.CreateBasicBlock($"switch{_switchCounter}.end");
+
+            // result holder variable that will be returned from switch expr
+            var resultValueHolder = _builder.BuildAlloca(HapetTypeToLLVMType(expr.OutType), "resultHolder");
+
+            var subExprOfSwitch = GenerateExpressionCode(expr.SubExpression);
+            // this cringe shite is because the default case always exists even if user has not defined it!!!
+            var theSwitchValueRef = _builder.BuildSwitch(subExprOfSwitch, bbDefault, (uint)(userDefinedDefaultCase ? expr.Cases.Count : expr.Cases.Count + 1));
+
+            // counter for the names of the cases
+            int caseCounter = 0;
+            Dictionary<AstCaseExpr, LLVMBasicBlockRef> caseBlockDictionary = new Dictionary<AstCaseExpr, LLVMBasicBlockRef>();
+            foreach (var cc in expr.Cases)
+            {
+                LLVMBasicBlockRef bb;
+                if (cc.IsDefaultCase)
+                    bb = bbDefault;
+                else
+                    bb = _context.CreateBasicBlock($"switch{_switchCounter}.case{caseCounter++}");
+                caseBlockDictionary.Add(cc, bb);
+            }
+
+            // preparing
+            foreach (var cc in expr.Cases)
+            {
+                // creating a block for the case
+                LLVMBasicBlockRef currBb = caseBlockDictionary[cc];
+                LLVM.AppendExistingBasicBlock(_lastFunctionValueRef, currBb);
+                _builder.PositionAtEnd(currBb);
+
+                // generating result value
+                var retValue = GenerateExpressionCode(cc.ReturnExpr);
+                _builder.BuildStore(retValue, resultValueHolder);
+                // setting br into end block from body block
+                _builder.BuildBr(bbEnd);
+
+                // there is no pattern in default case
+                if (!cc.IsDefaultCase)
+                {
+                    // the pattern of the case
+                    var patt = GenerateExpressionCode(cc.Pattern);
+                    // creating the LLVM case 
+                    theSwitchValueRef.AddCase(patt, currBb);
+                }
+            }
+
+            // if user has not been defined its 'default' case
+            if (!userDefinedDefaultCase)
+            {
+                // just braking into end block
+                LLVM.AppendExistingBasicBlock(_lastFunctionValueRef, bbDefault);
+                _builder.PositionAtEnd(bbDefault);
+                // generating default type value
+                var defaultValue = CreateDefaultValueForType(expr.OutType, expr);
+                _builder.BuildStore(defaultValue, resultValueHolder);
+                _builder.BuildBr(bbEnd);
+            }
+
+            // the end block
+            LLVM.AppendExistingBasicBlock(_lastFunctionValueRef, bbEnd);
+            _builder.PositionAtEnd(bbEnd);
+
+            var loaded = _builder.BuildLoad2(HapetTypeToLLVMType(expr.OutType), resultValueHolder, "loadedResult");
+            return loaded;
+        }
+
         // statements
         private void GenerateAssignStmt(AstAssignStmt stmt)
         {
@@ -1779,7 +1854,6 @@ namespace HapetBackend.Llvm
                 _builder.PositionAtEnd(currBb);
 
                 // generating the block
-                // TODO: the return value could be used for returnable switch-case exprs :))
                 var _ = GenerateExpressionCode(cc.Body);
 
                 // check if it has br/ret 

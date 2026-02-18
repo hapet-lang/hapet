@@ -875,6 +875,16 @@ namespace HapetBackend.Llvm
             return LLVMTypeRef.CreateFunction(returnType, paramTypes.ToArray(), false);
         }
 
+        private LLVMValueRef CreateDefaultValueForType(HapetType type, AstExpression origExpr)
+        {
+            var defExpr = AstDefaultExpr.GetDefaultValueForType(type, origExpr, _compiler.MessageHandler);
+            // special initializer for empty struct
+            if (defExpr is not AstEmptyStructExpr)
+                return GenerateExpressionCode(defExpr);
+            else
+                return LLVMValueRef.CreateConstNull(HapetTypeToLLVMType(type));
+        }
+
         private void SetTypeInfo(LLVMValueRef v, HapetType type)
         {
             // create an array of ptrs:
