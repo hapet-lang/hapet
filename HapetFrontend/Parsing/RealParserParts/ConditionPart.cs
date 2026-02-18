@@ -253,7 +253,11 @@ namespace HapetFrontend.Parsing
                     SkipNewlines(inInfo);
 
                     // add to list of cases
-                    cases.Add(new AstCaseExpr(pattern as AstExpression, returnExpr as AstExpression, new Location(pattern.Beginning, returnExpr.Ending)));
+                    cases.Add(new AstCaseExpr(pattern as AstExpression, returnExpr as AstExpression, 
+                        new Location(pattern.Beginning, returnExpr.Ending))
+                    {
+                        IsDefaultCase = pattern is AstNestedExpr nst && nst.RightPart is AstIdExpr idE && idE.Name == "_",
+                    });
                 }
                 Consume(inInfo, TokenType.CloseBrace, ErrMsg("}", "at end of block expression"));
 

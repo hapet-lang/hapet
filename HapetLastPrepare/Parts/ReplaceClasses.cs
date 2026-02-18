@@ -254,6 +254,12 @@ namespace HapetLastPrepare
                 case AstLambdaExpr lambdaExpr:
                     LPRACLambdaExpr(lambdaExpr);
                     break;
+                case AstSwitchExpr switchExpr:
+                    LPRACSwitchExpr(switchExpr);
+                    break;
+                case AstCaseExpr caseExpr:
+                    LPRACCaseExpr(caseExpr);
+                    break;
 
                 // statements
                 case AstAssignStmt assignStmt:
@@ -549,6 +555,49 @@ namespace HapetLastPrepare
             if (expr.Body != null)
             {
                 LPRACBlockExpr(expr.Body);
+            }
+        }
+
+        private void LPRACSwitchExpr(AstSwitchExpr expr)
+        {
+            LPRACExpr(expr.SubExpression);
+
+            if (expr.SubExpression?.OutType is ClassType)
+            {
+                expr.SubExpression.OutType = PointerType.GetPointerType(expr.SubExpression.OutType, true);
+            }
+
+            foreach (var c in expr.Cases)
+            {
+                LPRACExpr(c);
+            }
+
+            if (expr.OutType is ClassType)
+            {
+                expr.OutType = PointerType.GetPointerType(expr.OutType, true);
+            }
+        }
+
+        private void LPRACCaseExpr(AstCaseExpr expr)
+        {
+            if (!expr.IsDefaultCase)
+            {
+                LPRACExpr(expr.Pattern);
+                if (expr.Pattern?.OutType is ClassType)
+                {
+                    expr.Pattern.OutType = PointerType.GetPointerType(expr.Pattern.OutType, true);
+                }
+            }
+
+            LPRACExpr(expr.ReturnExpr);
+            if (expr.ReturnExpr?.OutType is ClassType)
+            {
+                expr.ReturnExpr.OutType = PointerType.GetPointerType(expr.ReturnExpr.OutType, true);
+            }
+
+            if (expr.OutType is ClassType)
+            {
+                expr.OutType = PointerType.GetPointerType(expr.OutType, true);
             }
         }
 

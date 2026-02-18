@@ -556,6 +556,12 @@ namespace HapetPostPrepare
                 case AstNullableExpr nullableExpr:
                     PostPrepareNullableExprScoping(nullableExpr);
                     break;
+                case AstSwitchExpr switchExpr:
+                    PostPrepareSwitchExprScoping(switchExpr);
+                    break;
+                case AstCaseExpr caseExpr:
+                    PostPrepareCaseExprScoping(caseExpr);
+                    break;
 
                 // statements
                 case AstAssignStmt assignStmt:
@@ -884,6 +890,30 @@ namespace HapetPostPrepare
         {
             SetScopeAndParent(expr.SubExpression, expr);
             PostPrepareExprScoping(expr.SubExpression);
+        }
+
+        private void PostPrepareSwitchExprScoping(AstSwitchExpr expr)
+        {
+            SetScopeAndParent(expr.SubExpression, expr);
+            PostPrepareExprScoping(expr.SubExpression);
+
+            foreach (var cc in expr.Cases)
+            {
+                SetScopeAndParent(cc, expr);
+                PostPrepareExprScoping(cc);
+            }
+        }
+
+        private void PostPrepareCaseExprScoping(AstCaseExpr expr)
+        {
+            if (!expr.IsDefaultCase)
+            {
+                SetScopeAndParent(expr.Pattern, expr);
+                PostPrepareExprScoping(expr.Pattern);
+            }
+
+            SetScopeAndParent(expr.ReturnExpr, expr);
+            PostPrepareExprScoping(expr.ReturnExpr);
         }
 
         // statements

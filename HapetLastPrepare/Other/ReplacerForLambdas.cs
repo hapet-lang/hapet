@@ -196,6 +196,12 @@ namespace HapetLastPrepare
                     break;
                 case AstEmptyExpr:
                     break;
+                case AstSwitchExpr switchExpr:
+                    ReplaceAllInSwitchExpr(switchExpr);
+                    break;
+                case AstCaseExpr caseExpr:
+                    ReplaceAllInCaseExpr(caseExpr);
+                    break;
 
                 // statements
                 case AstAssignStmt assignStmt:
@@ -479,6 +485,35 @@ namespace HapetLastPrepare
             ReplaceAllInExpr(expr.SubExpression);
         }
 
+        private void ReplaceAllInSwitchExpr(AstSwitchExpr expr)
+        {
+            if (IsNeededToBeReplaced(expr.SubExpression, out var val))
+                expr.SubExpression = val as AstExpression;
+            else
+                ReplaceAllInExpr(expr.SubExpression);
+
+            foreach (var cc in expr.Cases)
+            {
+                ReplaceAllInExpr(cc);
+            }
+        }
+
+        private void ReplaceAllInCaseExpr(AstCaseExpr expr)
+        {
+            if (!expr.IsDefaultCase)
+            {
+                if (IsNeededToBeReplaced(expr.Pattern, out var val))
+                    expr.Pattern = val as AstExpression;
+                else
+                    ReplaceAllInExpr(expr.Pattern);
+            }
+
+            if (IsNeededToBeReplaced(expr.ReturnExpr, out var val2))
+                expr.ReturnExpr = val2 as AstExpression;
+            else
+                ReplaceAllInExpr(expr.ReturnExpr);
+        }
+
         // statements
         private void ReplaceAllInAssignStmt(AstAssignStmt assignStmt)
         {
@@ -545,7 +580,10 @@ namespace HapetLastPrepare
 
         private void ReplaceAllInSwitchStmt(AstSwitchStmt switchStmt)
         {
-            ReplaceAllInExpr(switchStmt.SubExpression);
+            if (IsNeededToBeReplaced(switchStmt.SubExpression, out var val))
+                switchStmt.SubExpression = val as AstExpression;
+            else
+                ReplaceAllInExpr(switchStmt.SubExpression);
 
             foreach (var cc in switchStmt.Cases)
             {

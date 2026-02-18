@@ -14,7 +14,7 @@ namespace HapetFrontend.Ast.Expressions
         /// </summary>
         public List<AstCaseExpr> Cases { get; set; }
 
-        public override string AAAName => nameof(AstSwitchStmt);
+        public override string AAAName => nameof(AstSwitchExpr);
 
         public AstSwitchExpr(AstExpression sub, List<AstCaseExpr> cases, ILocation location = null) : base(location)
         {
@@ -64,6 +64,8 @@ namespace HapetFrontend.Ast.Expressions
         /// 'true' if the case is default case
         /// </summary>
         public bool IsDefaultCase { get; set; }
+
+        public override string AAAName => nameof(AstCaseExpr);
 
         public AstCaseExpr(AstExpression pattern, AstExpression returnExpr, ILocation location = null) : base(location)
         {

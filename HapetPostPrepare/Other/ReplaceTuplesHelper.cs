@@ -170,6 +170,12 @@ namespace HapetPostPrepare
                 case AstNullableExpr nullableExpr:
                     ReplaceAllTuplesInNullable(nullableExpr);
                     break;
+                case AstSwitchExpr switchExpr:
+                    ReplaceAllTuplesInSwitchExpr(switchExpr);
+                    break;
+                case AstCaseExpr caseExpr:
+                    ReplaceAllTuplesInCaseExpr(caseExpr);
+                    break;
 
                 // statements
                 case AstAssignStmt assignStmt:
@@ -399,6 +405,19 @@ namespace HapetPostPrepare
         private void ReplaceAllTuplesInNullable(AstNullableExpr expr)
         {
             ReplaceAllTuplesInStmt(expr.SubExpression);
+        }
+
+        private void ReplaceAllTuplesInSwitchExpr(AstSwitchExpr expr)
+        {
+            ReplaceAllTuplesInStmt(expr.SubExpression);
+            foreach (var a in expr.Cases)
+                ReplaceAllTuplesInStmt(a);
+        }
+
+        private void ReplaceAllTuplesInCaseExpr(AstCaseExpr expr)
+        {
+            ReplaceAllTuplesInStmt(expr.Pattern);
+            ReplaceAllTuplesInStmt(expr.ReturnExpr);
         }
 
 

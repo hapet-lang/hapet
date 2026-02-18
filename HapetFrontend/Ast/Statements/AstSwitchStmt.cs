@@ -87,6 +87,8 @@ namespace HapetFrontend.Ast.Statements
         /// </summary>
         public ILocation GotoLabelLocation { get; set; }
 
+        public override string AAAName => nameof(AstCaseStmt);
+
         public AstCaseStmt(AstExpression pattern, AstBlockExpr body, ILocation location = null) : base(location)
         {
             Pattern = pattern;

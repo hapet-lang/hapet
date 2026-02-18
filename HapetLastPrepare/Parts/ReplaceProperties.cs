@@ -264,6 +264,12 @@ namespace HapetLastPrepare
                 case AstLambdaExpr exprExpr:
                     LPRAPLambdaExpr(exprExpr, ref outInfo);
                     break;
+                case AstSwitchExpr switchExpr:
+                    LPRAPSwitchExpr(switchExpr, ref outInfo);
+                    break;
+                case AstCaseExpr caseExpr:
+                    LPRAPCaseExpr(caseExpr, ref outInfo);
+                    break;
 
                 // statements
                 case AstAssignStmt assignStmt:
@@ -597,6 +603,22 @@ namespace HapetLastPrepare
             {
                 LPRAPBlockExpr(expr.Body, ref outInfo);
             }
+        }
+
+        private void LPRAPSwitchExpr(AstSwitchExpr expr, ref OutInfo outInfo)
+        {
+            LPRAPExpr(expr.SubExpression, ref outInfo);
+
+            foreach (var c in expr.Cases)
+            {
+                LPRAPExpr(c, ref outInfo);
+            }
+        }
+
+        private void LPRAPCaseExpr(AstCaseExpr expr, ref OutInfo outInfo)
+        {
+            LPRAPExpr(expr.Pattern, ref outInfo);
+            LPRAPExpr(expr.ReturnExpr, ref outInfo);
         }
 
         private void LPRAPAssignStmt(AstAssignStmt stmt, ref OutInfo outInfo)

@@ -314,6 +314,12 @@ namespace HapetLastPrepare
                 case AstNullableExpr nullableExpr:
                     CheckUsedDeclsNullableExpr(nullableExpr, usedDecls, goDeep);
                     break;
+                case AstSwitchExpr switchExpr:
+                    CheckUsedDeclsSwitchExpr(switchExpr, usedDecls, goDeep);
+                    break;
+                case AstCaseExpr caseExpr:
+                    CheckUsedDeclsCaseExpr(caseExpr, usedDecls, goDeep);
+                    break;
 
                 // statements
                 case AstAssignStmt assignStmt:
@@ -608,6 +614,22 @@ namespace HapetLastPrepare
         private void CheckUsedDeclsNullableExpr(AstNullableExpr expr, List<AstDeclaration> usedDecls = null, bool goDeep = false)
         {
             CheckUsedDeclsExpr(expr.SubExpression, usedDecls, goDeep);
+        }
+
+        private void CheckUsedDeclsSwitchExpr(AstSwitchExpr expr, List<AstDeclaration> usedDecls = null, bool goDeep = false)
+        {
+            CheckUsedDeclsExpr(expr.SubExpression, usedDecls, goDeep);
+
+            foreach (var c in expr.Cases)
+            {
+                CheckUsedDeclsExpr(c, usedDecls, goDeep);
+            }
+        }
+
+        private void CheckUsedDeclsCaseExpr(AstCaseExpr expr, List<AstDeclaration> usedDecls = null, bool goDeep = false)
+        {
+            CheckUsedDeclsExpr(expr.Pattern, usedDecls, goDeep);
+            CheckUsedDeclsExpr(expr.ReturnExpr, usedDecls, goDeep);
         }
 
         private void CheckUsedDeclsAssignStmt(AstAssignStmt stmt, List<AstDeclaration> usedDecls = null, bool goDeep = false)

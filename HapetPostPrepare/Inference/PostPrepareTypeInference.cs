@@ -458,6 +458,12 @@ namespace HapetPostPrepare
                 case AstNullableExpr nullableExpr:
                     PostPrepareNullableExprInference(nullableExpr, inInfo, ref outInfo);
                     break;
+                case AstSwitchExpr switchExpr:
+                    PostPrepareSwitchExprInference(switchExpr, inInfo, ref outInfo);
+                    break;
+                case AstCaseExpr caseExpr:
+                    PostPrepareCaseExprInference(caseExpr, inInfo, ref outInfo);
+                    break;
                 case AstStringExpr stringExpr:
                     stringExpr.OutType = HapetType.CurrentTypeContext.StringTypeInstance;
                     break;
@@ -1361,6 +1367,50 @@ namespace HapetPostPrepare
             }
             var nullableType = GetNullableType(expr.SubExpression, expr);
             expr.OutType = nullableType;
+        }
+
+        private void PostPrepareSwitchExprInference(AstSwitchExpr expr, InInfo inInfo, ref OutInfo outInfo)
+        {
+            PostPrepareExprInference(expr.SubExpression, inInfo, ref outInfo);
+
+            // used to check that there are no more than 1 default case
+            bool thereWasADefaultCase = false;
+
+            foreach (var cc in expr.Cases)
+            {
+                PostPrepareCaseExprInference(cc, inInfo, ref outInfo);
+
+                // calc default cases. if there are more than 1 - error
+                if (cc.IsDefaultCase)
+                {
+                    if (thereWasADefaultCase)
+                        _compiler.MessageHandler.ReportMessage(_currentSourceFile, cc.Pattern, [], ErrorCode.Get(CTEN.MultipleDefaultCases));
+                    thereWasADefaultCase = true;
+                    continue; // do not check for pattern in default expr...
+                }
+
+                // trying to implicitly cast cast value into switch sub expr
+                cc.Pattern = PostPrepareExpressionWithType(expr.SubExpression.OutType, cc.Pattern);
+
+                // check that the value is a const 
+                if (cc.Pattern.OutValue == null)
+                {
+                    _compiler.MessageHandler.ReportMessage(_currentSourceFile, cc.Pattern, [], ErrorCode.Get(CTEN.NonConstantCaseValue));
+                }
+            }
+
+            // TODO: check all result types of all cases should be the same
+
+            expr.OutType = expr.Cases.FirstOrDefault()?.OutType;
+        }
+
+        private void PostPrepareCaseExprInference(AstCaseExpr expr, InInfo inInfo, ref OutInfo outInfo)
+        {
+            if (!expr.IsDefaultCase)
+                PostPrepareExprInference(expr.Pattern, inInfo, ref outInfo);
+
+            PostPrepareExprInference(expr.ReturnExpr, inInfo, ref outInfo);
+            expr.OutType = expr.ReturnExpr.OutType;
         }
 
         // statements

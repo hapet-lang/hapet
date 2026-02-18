@@ -3,11 +3,6 @@ using HapetFrontend.Ast.Declarations;
 using HapetFrontend.Ast.Expressions;
 using HapetFrontend.Ast.Statements;
 using HapetFrontend.Errors;
-using HapetFrontend.Extensions;
-using HapetFrontend.Helpers;
-using HapetFrontend.Parsing;
-using HapetFrontend.Types;
-using HapetPostPrepare.Entities;
 
 namespace HapetPostPrepare
 {
@@ -328,6 +323,12 @@ namespace HapetPostPrepare
                 case AstNullableExpr nullableExpr:
                     ReplaceAllGenericTypesInNullableExpr(nullableExpr);
                     break;
+                case AstSwitchExpr switchExpr:
+                    ReplaceAllGenericTypesInSwitchExpr(switchExpr);
+                    break;
+                case AstCaseExpr caseExpr:
+                    ReplaceAllGenericTypesInCaseExpr(caseExpr);
+                    break;
                 case AstEmptyExpr:
                     break;
 
@@ -604,6 +605,32 @@ namespace HapetPostPrepare
         private void ReplaceAllGenericTypesInNullableExpr(AstNullableExpr expr)
         {
             ReplaceAllGenericTypesInExpr(expr.SubExpression);
+        }
+
+        private void ReplaceAllGenericTypesInSwitchExpr(AstSwitchExpr expr)
+        {
+            ReplaceAllGenericTypesInExpr(expr.SubExpression);
+
+            foreach (var cc in expr.Cases)
+            {
+                ReplaceAllGenericTypesInExpr(cc);
+            }
+        }
+
+        private void ReplaceAllGenericTypesInCaseExpr(AstCaseExpr expr)
+        {
+            if (!expr.IsDefaultCase)
+            {
+                if (IsGenericEntry(expr.Pattern, out var val))
+                    expr.Pattern = val;
+                else
+                    ReplaceAllGenericTypesInExpr(expr.Pattern);
+            }
+
+            if (IsGenericEntry(expr.ReturnExpr, out var val2))
+                expr.ReturnExpr = val2;
+            else
+                ReplaceAllGenericTypesInExpr(expr.ReturnExpr);
         }
 
         // statements
