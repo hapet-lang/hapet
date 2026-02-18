@@ -227,6 +227,7 @@ namespace HapetPostPrepare
                     stmt is not AstWhileStmt &&
                     stmt is not AstTryCatchStmt &&
                     stmt is not AstCatchStmt &&
+                    (stmt is not AstCheckedExpr ch || !ch.IsStatement) &&
                     stmt is not AstAttributeStmt)
                     sb.Append(";\n");
             }
@@ -435,6 +436,7 @@ namespace HapetPostPrepare
 
             if (checkedExpr.IsStatement)
             {
+                sb.Append('\n');
                 AntiParseBlockExpr(checkedExpr.Body, sb, offset);
             }
             else
@@ -476,7 +478,7 @@ namespace HapetPostPrepare
                 sb.Append($"{offset + _fourSpaces}");
                 AntiParseExpr(cs, sb, offset + _fourSpaces);
             }
-            sb.Append($"{offset}}};\n");
+            sb.Append($"{offset}}}");
         }
 
         private void AntiParseCaseExpr(AstCaseExpr expr, StringBuilder sb, string offset)
