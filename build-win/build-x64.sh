@@ -37,5 +37,5 @@ chmod +x ../HashComputer/HashComputer.Cli/bin/Release/net8.0/linux-x64/publish/H
 echo "Hashes computed"
 
 # Make .exe file
-makensis -V1 -DVERSION=$buildVersion ./win-data/nsis-setup.nsi
+makensis -V1 -DVERSION=$buildVersion ./nsis-setup-x64.nsi
 echo ".exe created"
