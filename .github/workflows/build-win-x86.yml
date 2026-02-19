@@ -2,3 +2,16 @@ name: Build Windows x86
 
 on:
   workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+      - name: Install nsis
+        run: | 
+          sudo dpkg --add-architecture i386
+          sudo apt-get install -y nsis nsis-doc nsis-pluginapi
