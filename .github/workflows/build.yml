@@ -59,7 +59,7 @@ jobs:
       - name: Read version from version.txt
         id: version
         run: |
-          version=$(cat ./version.txt | tr -d '\n\r')
+          version=$(cat ./build-resources/version.txt | tr -d '\n\r')
           echo "version=$version" >> $GITHUB_OUTPUT
           echo "Version read from version.txt: $version"
       
