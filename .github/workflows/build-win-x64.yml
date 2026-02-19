@@ -14,9 +14,9 @@ jobs:
       - name: Install nsis
         run: | 
           sudo dpkg --add-architecture i386
-          sudo apt-get install -y nsis nsis-doc nsis-pluginapi software-properties-common apt-transport-https
+          sudo apt-get install -y nsis nsis-doc nsis-pluginapi
       - name: Build project and hash computer
         run: | 
           cd build-win
-          chmod a+x ./build.sh
-          ./build.sh
+          chmod a+x ./build-x64.sh
+          ./build-x64.sh
