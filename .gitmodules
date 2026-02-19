@@ -1,0 +1,3 @@
+[submodule "HashComputer"]
+	path = HashComputer
+	url = https://github.com/CrackAndDie/HashComputer
