@@ -20,3 +20,9 @@ jobs:
           cd build-win
           chmod a+x ./build-x64.sh
           ./build-x64.sh
+          ls -la
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: built-files-win-x64
+          path: ./build-win/
