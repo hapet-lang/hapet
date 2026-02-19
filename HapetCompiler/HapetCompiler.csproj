@@ -8,6 +8,7 @@
         <AnalysisMode>AllEnabledByDefault</AnalysisMode>
         <Version>0.0.1</Version>
         <RuntimeIdentifier Condition="'$(RuntimeIdentifier)' == ''">win-x64</RuntimeIdentifier>
+        <AssemblyName>hapet</AssemblyName>
     </PropertyGroup>
 
     <ItemGroup>
