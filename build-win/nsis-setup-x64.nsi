@@ -22,7 +22,7 @@ RequestExecutionLevel admin
 !define UNINSTALL_PATH "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APP_NAME}"
 !define REG_START_MENU "Start Menu Folder"
 
-!addplugindir "./envar/Plugins/x86-unicode/EnVar.dll"
+!addplugindir "./envar/Plugins"
 
 var SM_Folder
 Var AddToPathCheck
