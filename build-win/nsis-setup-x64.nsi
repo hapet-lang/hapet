@@ -11,8 +11,8 @@ RequestExecutionLevel admin
 !define DESCRIPTION "Compiler for hapet programming language"
 !define INSTALLER_NAME "hapet_x64.exe"
 !define MAIN_APP_EXE "hapet.exe"
-!define ICON "../build-resources/logo.ico"
-!define BANNER "../build-resources/banner.bmp"
+!define ICON "..\build-resources\logo.ico"
+!define BANNER "..\build-resources\banner.bmp"
 #!define LICENSE_TXT "[CHANGEME License Text Document]"
 
 !define INSTALL_DIR "$PROGRAMFILES64\${APP_NAME}"
