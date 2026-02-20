@@ -20,6 +20,9 @@ Copy-Item -Path "../HapetCompiler/bin/Release/net8.0/win-x64/publish/*" -Destina
 Write-Host "Copying Stables..."
 Copy-Item -Path "../build-resources/computed_stables.txt" -Destination "./staging_folder/computed_stables.txt" -Force
 
+Write-Host "Copying Linker..."
+Copy-Item -Path "../lld-link.exe" -Destination "./staging_folder/lld-link.exe" -Force
+
 Write-Host "Computing hashes..."
 $hashCompExe = "../HashComputer/HashComputer.Cli/bin/Release/net8.0/win-x64/publish/HashComputer.Cli.exe"
 & $hashCompExe -v $buildVersion -d ./staging_folder -t 8 -m

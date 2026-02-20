@@ -37,6 +37,12 @@ jobs:
           
           echo "C:\Program Files (x86)\NSIS" | Out-File -FilePath $env:GITHUB_PATH -Append
           echo "C:\Program Files (x86)\NSIS\Bin" | Out-File -FilePath $env:GITHUB_PATH -Append
+      - name: Download lld-link
+        shell: pwsh
+        run: |
+          $linkerUrl = "https://github.com/CrackAndDie/lld-linkers/releases/download/win-x64/lld-link.exe"
+          $linkerPath = "lld-link.exe"
+          Invoke-WebRequest -Uri $linkerUrl -OutFile $linkerPath
       - name: Build project and hash computer
         shell: pwsh
         run: | 
