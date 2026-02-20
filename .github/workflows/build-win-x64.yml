@@ -20,7 +20,20 @@ jobs:
           $envarUrl = "https://nsis.sourceforge.io/mediawiki/images/7/7f/EnVar_plugin.zip"
           $zipPath = "$env:TEMP\EnVar-Plugin.zip"
           Invoke-WebRequest -Uri $envarUrl -OutFile $zipPath
-          Expand-Archive -Path $zipPath -DestinationPath "C:\Program Files (x86)\NSIS" -Force
+
+          $tempExtract = "$env:TEMP\envar_extracted"
+          Expand-Archive -Path $zipPath -DestinationPath $tempExtract -Force
+
+          $nsisDir = "C:\Program Files (x86)\NSIS"
+          Copy-Item -Path "$tempExtract\Plugins\x86-unicode\*.dll" -Destination "$nsisDir\Plugins\x86-unicode\" -Force
+          Copy-Item -Path "$tempExtract\Plugins\x86-ansi\*.dll" -Destination "$nsisDir\Plugins\x86-ansi\" -Force
+
+          # 5. Проверка наличия файла (если упадет здесь - значит пути в архиве другие)
+          if (Test-Path "$nsisDir\Plugins\x86-unicode\EnVar.dll") {
+              Write-Host "EnVar.dll successfully installed to NSIS plugins."
+          } else {
+              throw "EnVar.dll not found after extraction!"
+          }
           
           echo "C:\Program Files (x86)\NSIS" | Out-File -FilePath $env:GITHUB_PATH -Append
           echo "C:\Program Files (x86)\NSIS\Bin" | Out-File -FilePath $env:GITHUB_PATH -Append

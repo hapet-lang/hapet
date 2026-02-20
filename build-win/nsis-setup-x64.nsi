@@ -105,7 +105,7 @@ Section "Main Program" SecMain
 SectionEnd
 
 Section "Add to PATH" SecPath
-    EnVar::SetTooltip "Adds the installation directory to the system PATH variable"
+    # EnVar::SetTooltip "Adds the installation directory to the system PATH variable"
     EnVar::AddValue "Path" "$INSTDIR"
     Pop $0 
 SectionEnd
