@@ -56,7 +56,7 @@ InstallDir "${INSTALL_DIR}"
 ######################################################################
 
 !include "MUI2.nsh"
-!include "Sections.nsh
+!include "Sections.nsh"
 
 !define MUI_ABORTWARNING
 !define MUI_UNABORTWARNING
