@@ -33,6 +33,12 @@ namespace HapetFrontend.ProjectParser
         public ProjectXmlParser(string projectPath, CompilerSettings projectSettings, ProjectData projectData, IMessageHandler messageHandler)
         {
             _projectPath = projectPath;
+            if (!File.Exists(_projectPath))
+            {
+                messageHandler.ReportMessage([_projectPath], ErrorCode.Get(CTEN.FullPathToHapetFileNotFound));
+                return;
+            }
+
             _projectPathAbsolute = Path.GetFullPath(_projectPath);
             ParseFile();
 
