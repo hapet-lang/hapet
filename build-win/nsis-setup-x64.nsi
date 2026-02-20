@@ -22,7 +22,10 @@ RequestExecutionLevel admin
 !define UNINSTALL_PATH "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APP_NAME}"
 !define REG_START_MENU "Start Menu Folder"
 
+!addplugindir "./Plugins/x86-unicode/EnVar.dll"
+
 var SM_Folder
+Var AddToPathCheck
 
 ######################################################################
 
@@ -53,6 +56,7 @@ InstallDir "${INSTALL_DIR}"
 ######################################################################
 
 !include "MUI2.nsh"
+!include "Sections.nsh
 
 !define MUI_ABORTWARNING
 !define MUI_UNABORTWARNING
@@ -73,6 +77,8 @@ InstallDir "${INSTALL_DIR}"
 !insertmacro MUI_PAGE_STARTMENU Application $SM_Folder
 !endif
 
+!insertmacro MUI_PAGE_COMPONENTS
+
 !insertmacro MUI_PAGE_INSTFILES
 
 !insertmacro MUI_PAGE_FINISH
@@ -87,7 +93,8 @@ InstallDir "${INSTALL_DIR}"
 
 ######################################################################
 
-Section -MainProgram
+Section "Main Program" SecMain
+	SectionIn RO
 	${INSTALL_TYPE}
 
 	SetOverwrite ifnewer
@@ -98,6 +105,17 @@ Section -MainProgram
 
     ExecWait 'icacls "$INSTDIR" /grant *S-1-1-0:(OI)(CI)F /T'
 SectionEnd
+
+Section "Add to PATH" SecPath
+    EnVar::SetTooltip "Adds the installation directory to the system PATH variable"
+    EnVar::AddValue "Path" "$INSTDIR"
+    Pop $0 
+SectionEnd
+
+!insertmacro MUI_FUNCTION_DESCRIPTION_BEGIN
+    !insertmacro MUI_DESCRIPTION_TEXT ${SecMain} "Core files for Hapet compiler."
+    !insertmacro MUI_DESCRIPTION_TEXT ${SecPath} "Add ${APP_NAME} to your system environment variables (PATH) to use it from CMD/PowerShell."
+!insertmacro MUI_FUNCTION_DESCRIPTION_END
 
 ######################################################################
 
@@ -147,6 +165,9 @@ SectionEnd
 
 Section Uninstall
     ${INSTALL_TYPE}
+
+    EnVar::DeleteValue "Path" "$INSTDIR"
+    Pop $0
 
     RmDir /r "$INSTDIR"
 

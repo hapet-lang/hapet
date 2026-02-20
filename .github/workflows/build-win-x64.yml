@@ -16,6 +16,10 @@ jobs:
         run: | 
           sudo dpkg --add-architecture i386
           sudo apt-get install -y nsis nsis-doc nsis-pluginapi
+
+          curl -L -o envar.zip "https://nsis.sourceforge.io/mediawiki/images/7/7f/EnVar_plugin.zip"
+          unzip -q envar.zip
+          ls -la
       - name: Build project and hash computer
         run: | 
           cd build-win
