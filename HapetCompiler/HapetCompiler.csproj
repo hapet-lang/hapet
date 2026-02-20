@@ -9,6 +9,7 @@
         <Version>0.0.1</Version>
         <RuntimeIdentifier Condition="'$(RuntimeIdentifier)' == ''">win-x64</RuntimeIdentifier>
         <AssemblyName>hapet</AssemblyName>
+        <ApplicationIcon>logo.ico</ApplicationIcon>
     </PropertyGroup>
 
     <ItemGroup>
@@ -27,6 +28,7 @@
         <Content Include="../build-resources/version.txt">
             <CopyToOutputDirectory>Always</CopyToOutputDirectory>
         </Content>
+        <Content Include="logo.ico" />
     </ItemGroup>
 
 </Project>
