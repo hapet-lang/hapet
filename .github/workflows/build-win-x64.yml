@@ -6,29 +6,21 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-24.04
+    runs-on: windows-latest
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
           submodules: recursive
       - name: Install nsis
-        run: | 
-          sudo dpkg --add-architecture i386
-          sudo apt-get install -y nsis nsis-doc nsis-pluginapi
-
-          cd build-win
-          mkdir envar
-          curl -L -o envar.zip "https://nsis.sourceforge.io/mediawiki/images/7/7f/EnVar_plugin.zip"
-          unzip -q envar.zip -d ./envar
-          ls -la
-          ls -la ./envar
-          cd ..
+        uses: repolevedavaj/install-nsis@v1.0.1
+        with:
+          nsis-version: '3.10'
       - name: Build project and hash computer
+        shell: pwsh
         run: | 
           cd build-win
-          chmod a+x ./build-x64.sh
-          ./build-x64.sh
+          ./build-x64.ps1
           ls -la
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
