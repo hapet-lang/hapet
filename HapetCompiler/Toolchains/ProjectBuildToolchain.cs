@@ -1,6 +1,4 @@
-﻿#define PRINT_INTERMEDIATE_TIME
-
-using HapetBackend.Llvm;
+﻿using HapetBackend.Llvm;
 using HapetFrontend.Entities;
 using HapetFrontend;
 using System.Diagnostics;
@@ -31,8 +29,10 @@ namespace HapetCompiler.Toolchains
             // save type context
             var cachedTypeContext = HapetType.CurrentTypeContext;
 
+#if DEBUG
             if (!referenced)
                 messageHandler.ReportMessage([$"{Funcad.GetPrettyTimeString(_stopwatch.Elapsed)} Project preparation..."], null, ReportType.Info);
+#endif
             // setting the type context
             HapetType.CurrentTypeContext = new TypeContext();
             // creating settings instances for the project
@@ -49,7 +49,7 @@ namespace HapetCompiler.Toolchains
                 return (int)CompilerErrors.ProjectFileParseError; // proj file parsing errors
             }
 
-#if DEBUG && PRINT_INTERMEDIATE_TIME
+#if DEBUG
             if (!referenced)
                 messageHandler.ReportMessage([$"{Funcad.GetPrettyTimeString(_stopwatch.Elapsed)} After project file parsing..."], null, ReportType.Info);
 #endif
@@ -73,8 +73,14 @@ namespace HapetCompiler.Toolchains
                 return (int)CompilerErrors.ProjectReferencesError; // references errors
             }
 
+#if DEBUG
             if (!referenced)
                 messageHandler.ReportMessage([$"{Funcad.GetPrettyTimeString(_stopwatch.Elapsed)} Parsing..."], null, ReportType.Info);
+#endif
+#if RELEASE
+            if (!referenced)
+                messageHandler.ReportMessage([$"{Funcad.GetPrettyTimeString(_stopwatch.Elapsed)} Compiling '{Path.GetFileName(projectPath)}'..."], null, ReportType.Info);
+#endif
             // gen ast shite
             compiler.GenerateAstTree();
             if (messageHandler.HasErrors)
@@ -83,8 +89,10 @@ namespace HapetCompiler.Toolchains
                 return (int)CompilerErrors.ParsingError; // parsing errors
             }
 
+#if DEBUG
             if (!referenced)
                 messageHandler.ReportMessage([$"{Funcad.GetPrettyTimeString(_stopwatch.Elapsed)} Post preparation..."], null, ReportType.Info);
+#endif
             // post prepare
             int ppResult = postPreparer.StartPreparation();
             if (ppResult != 0)
@@ -98,8 +106,10 @@ namespace HapetCompiler.Toolchains
                 return (int)CompilerErrors.PostPrepareError; // post prepare errors
             }
 
+#if DEBUG
             if (!referenced)
                 messageHandler.ReportMessage([$"{Funcad.GetPrettyTimeString(_stopwatch.Elapsed)} Last preparation..."], null, ReportType.Info);
+#endif
             // last prepare
             int lpResult = lastPreparer.StartPreparation();
             if (lpResult != 0)
@@ -116,8 +126,10 @@ namespace HapetCompiler.Toolchains
             // if codegen required
             if (makeCodegen)
             {
+#if DEBUG
                 if (!referenced)
                     messageHandler.ReportMessage([$"{Funcad.GetPrettyTimeString(_stopwatch.Elapsed)} Code generation..."], null, ReportType.Info);
+#endif
                 // code gen
                 bool codeGenOk = GenerateAndCompileCode(compiler, postPreparer, resolver, messageHandler);
                 if (messageHandler.HasErrors || !codeGenOk)
@@ -129,7 +141,7 @@ namespace HapetCompiler.Toolchains
 
             // all is ok :)
             if (!referenced)
-                messageHandler.ReportMessage([$"{Funcad.GetPrettyTimeString(_stopwatch.Elapsed)} Done..."], null, ReportType.Info);
+                messageHandler.ReportMessage([$"{Funcad.GetPrettyTimeString(_stopwatch.Elapsed)} Done."], null, ReportType.Info);
 
             OnExit();
             return (int)CompilerErrors.Ok;

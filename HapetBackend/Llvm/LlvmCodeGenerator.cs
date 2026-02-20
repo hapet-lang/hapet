@@ -94,8 +94,10 @@ namespace HapetBackend.Llvm
             if (!string.IsNullOrWhiteSpace(_outDir) && !Directory.Exists(_outDir))
                 Directory.CreateDirectory(_outDir);
 
+#if DEBUG
             if (!_compiler.CurrentProjectSettings.IsReferencedCompilation)
                 messageHandler.ReportMessage([$"{Funcad.GetPrettyTimeString(_compiler.CompilationStopwatch.Elapsed)} Emmiting..."], null, ReportType.Info);
+#endif
 
             // create .ll file
             if (_compiler.CurrentProjectSettings.OutputIrFile)
@@ -136,9 +138,11 @@ namespace HapetBackend.Llvm
             ArgumentNullException.ThrowIfNull(libraries);
             ArgumentNullException.ThrowIfNull(libraryIncludeDirectories);
 
+#if DEBUG
             // no need to print info when it is a referenced build
             if (!_compiler.CurrentProjectSettings.IsReferencedCompilation)
                 messageHandler.ReportMessage([$"{Funcad.GetPrettyTimeString(_compiler.CompilationStopwatch.Elapsed)} Linking..."], null, ReportType.Info);
+#endif
 
             // if there is no out dir - create it
             if (!string.IsNullOrWhiteSpace(_outDir) && !Directory.Exists(_outDir))

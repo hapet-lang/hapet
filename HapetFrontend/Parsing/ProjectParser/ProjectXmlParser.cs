@@ -105,6 +105,10 @@ namespace HapetFrontend.ProjectParser
 
         public void PrepareProjectFile()
         {
+            // just return - it errored somewhere before
+            if (!File.Exists(_projectPath))
+                return;
+
             PreparePropertyGroups();
             PrepareItemGroups();
             SetDefaultDefines();
