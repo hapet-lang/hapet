@@ -17,7 +17,7 @@ jobs:
         run: |
           choco install nsis -y
           
-          $envarUrl = "https://github.com/Gserei/NSIS-EnVar/releases/download/v0.0.5/EnVar-Plugin.zip"
+          $envarUrl = "https://nsis.sourceforge.io/mediawiki/images/7/7f/EnVar_plugin.zip"
           $zipPath = "$env:TEMP\EnVar-Plugin.zip"
           Invoke-WebRequest -Uri $envarUrl -OutFile $zipPath
           Expand-Archive -Path $zipPath -DestinationPath "C:\Program Files (x86)\NSIS" -Force
