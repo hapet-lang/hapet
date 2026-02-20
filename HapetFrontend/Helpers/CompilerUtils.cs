@@ -45,6 +45,8 @@ namespace HapetFrontend.Helpers
         }
         #endregion
 
+        public static string CurrentHapetDirectory => AppContext.BaseDirectory;
+
         public static bool ValidateFilePath(string dir, string filePath, bool isRel, out string path)
         {
             path = filePath;

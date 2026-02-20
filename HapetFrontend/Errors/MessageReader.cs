@@ -1,4 +1,5 @@
 ﻿using HapetFrontend.Entities;
+using HapetFrontend.Helpers;
 using System.Xml;
 
 namespace HapetFrontend.Errors
@@ -64,7 +65,7 @@ namespace HapetFrontend.Errors
 
             _data = new List<T>();
 
-            string fullPath = $"./Errors/{_filePath}";
+            string fullPath = Path.Combine(CompilerUtils.CurrentHapetDirectory, "Errors", _filePath);
             if (!File.Exists(fullPath))
                 return _data;
 

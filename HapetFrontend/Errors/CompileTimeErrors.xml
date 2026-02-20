@@ -54,6 +54,10 @@
         <Number>000C</Number>
         <Text>Referenced project could not be found by path '{0}'</Text>
     </Item>
+    <Item>
+        <Number>000D</Number>
+        <Text>Hapet version file not found</Text>
+    </Item>
 
     <!--Lexer errors-->
     <Item>

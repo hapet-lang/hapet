@@ -18,6 +18,7 @@
         ValueInvalidForTag              = 0x000A,
         AssemblyNotFound                = 0x000B,
         RefProjectNotFound              = 0x000C,
+        NoVersionFileFound              = 0x000D,
 
         // lexer errors up to 0x2000
         FileForLexerNotFound            = 0x1001,

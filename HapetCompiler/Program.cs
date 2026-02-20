@@ -1,8 +1,11 @@
 ﻿using HapetCompiler.Toolchains;
 using HapetFrontend;
+using HapetFrontend.Entities;
 using HapetFrontend.Errors;
+using HapetFrontend.Helpers;
 using HapetLsp;
 using System.Diagnostics;
+using System.Reactive.Concurrency;
 using System.Text;
 
 namespace HapetCompiler
@@ -66,6 +69,20 @@ namespace HapetCompiler
                         ProjectLspToolchain projectToolchain = new ProjectLspToolchain(stopwatch, args.Skip(2).ToArray());
                         LspMessageHandler lspMessageHandler = new LspMessageHandler();
                         return await projectToolchain.WatchAsync(args[1], lspMessageHandler);
+                    }
+                case "-v":
+                case "--version":
+                    {
+                        string versionFilePath = Path.Combine(CompilerUtils.CurrentHapetDirectory, "version.txt");
+                        if (!File.Exists(versionFilePath))
+                        {
+                            messageHandler.ReportMessage([], ErrorCode.Get(CTEN.NoVersionFileFound));
+                            return (int)CompilerErrors.HapetCommandParamsError;
+                        }
+
+                        string version = File.ReadAllText(versionFilePath);
+                        messageHandler.ReportMessage([$"Hapet compiler version: {version}"], null, ReportType.Info);
+                        return 0;
                     }
             }
             messageHandler.ReportMessage([args[0]], ErrorCode.Get(CTEN.NotFoundHapetCommand));

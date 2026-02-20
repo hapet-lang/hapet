@@ -105,7 +105,7 @@ namespace HapetBackend.Llvm.Linkers.Windows
                 messageHandler.ReportMessage([], ErrorCode.Get(CTEN.NoVisualStudioHost));
                 return false;
             }
-            string vsLinkerFile = $"lld-link.exe";
+            string vsLinkerFile = Path.Combine(CompilerUtils.CurrentHapetDirectory, "lld-link.exe");
             if (!File.Exists(vsLinkerFile))
             {
                 messageHandler.ReportMessage([], ErrorCode.Get(CTEN.NoVisualStudioLinker));
