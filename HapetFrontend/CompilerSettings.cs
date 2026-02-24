@@ -29,6 +29,11 @@ namespace HapetFrontend
 
     public class CompilerSettings
     {
+        /// <summary>
+        /// 'true' when user wrote 'hapet run ...'
+        /// </summary>
+        public static bool IsInRunContext { get; set; }
+
         public static readonly PlatformData[] SupportedPlatforms =
         {
             new PlatformData()

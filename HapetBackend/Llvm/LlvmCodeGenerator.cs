@@ -95,7 +95,7 @@ namespace HapetBackend.Llvm
                 Directory.CreateDirectory(_outDir);
 
 #if DEBUG
-            if (!_compiler.CurrentProjectSettings.IsReferencedCompilation)
+            if (!_compiler.CurrentProjectSettings.IsReferencedCompilation && !CompilerSettings.IsInRunContext)
                 messageHandler.ReportMessage([$"{Funcad.GetPrettyTimeString(_compiler.CompilationStopwatch.Elapsed)} Emmiting..."], null, ReportType.Info);
 #endif
 
@@ -140,7 +140,7 @@ namespace HapetBackend.Llvm
 
 #if DEBUG
             // no need to print info when it is a referenced build
-            if (!_compiler.CurrentProjectSettings.IsReferencedCompilation)
+            if (!_compiler.CurrentProjectSettings.IsReferencedCompilation && !CompilerSettings.IsInRunContext)
                 messageHandler.ReportMessage([$"{Funcad.GetPrettyTimeString(_compiler.CompilationStopwatch.Elapsed)} Linking..."], null, ReportType.Info);
 #endif
 

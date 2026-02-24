@@ -18,7 +18,7 @@ namespace HapetCompiler.Resolvers
 
             // TODO: package references
 
-            if (!projectSettings.IsReferencedCompilation && !projectSettings.IsLspCompilation)
+            if (!projectSettings.IsReferencedCompilation && !projectSettings.IsLspCompilation && !CompilerSettings.IsInRunContext)
                 compiler.MessageHandler.ReportMessage([$"{Funcad.GetPrettyTimeString(compiler.CompilationStopwatch.Elapsed)} Resolving project references..."], null, ReportType.Info);
             ResolveProjectReferences();
 
@@ -26,7 +26,7 @@ namespace HapetCompiler.Resolvers
                 return; // references errors
 
 #if DEBUG
-            if (!projectSettings.IsReferencedCompilation && !projectSettings.IsLspCompilation)
+            if (!projectSettings.IsReferencedCompilation && !projectSettings.IsLspCompilation && !CompilerSettings.IsInRunContext)
                 compiler.MessageHandler.ReportMessage([$"{Funcad.GetPrettyTimeString(compiler.CompilationStopwatch.Elapsed)} Resolving references..."], null, ReportType.Info);
 #endif
             ResolveReferences();

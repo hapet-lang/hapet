@@ -42,6 +42,23 @@ namespace HapetCompiler
                         ProjectBuildToolchain projectToolchain = new ProjectBuildToolchain(stopwatch, args.Skip(2).ToArray());
                         return projectToolchain.Build(args[1], messageHandler);
                     }
+                case "run":
+                    {
+                        if (args.Length == 1)
+                        {
+                            // TODO: check current folder for .hptproj existance
+                            messageHandler.ReportMessage(["run"], ErrorCode.Get(CTEN.NoHapetProjectPathSpecified));
+                            return (int)CompilerErrors.HapetCommandParamsError;
+                        }
+
+                        // make the stopwatch here
+                        Stopwatch stopwatch = new Stopwatch();
+                        stopwatch.Start();
+
+                        // skip the first two args because they are already used
+                        ProjectRunToolchain projectToolchain = new ProjectRunToolchain(stopwatch, args.Skip(2).ToArray());
+                        return projectToolchain.Run(args[1], messageHandler);
+                    }
                 case "restore":
                     {
                         if (args.Length == 1)

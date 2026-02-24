@@ -30,7 +30,7 @@ namespace HapetCompiler.Toolchains
             var cachedTypeContext = HapetType.CurrentTypeContext;
 
 #if DEBUG
-            if (!referenced)
+            if (!referenced && !CompilerSettings.IsInRunContext)
                 messageHandler.ReportMessage([$"{Funcad.GetPrettyTimeString(_stopwatch.Elapsed)} Project preparation..."], null, ReportType.Info);
 #endif
             // setting the type context
@@ -50,7 +50,7 @@ namespace HapetCompiler.Toolchains
             }
 
 #if DEBUG
-            if (!referenced)
+            if (!referenced && !CompilerSettings.IsInRunContext)
                 messageHandler.ReportMessage([$"{Funcad.GetPrettyTimeString(_stopwatch.Elapsed)} After project file parsing..."], null, ReportType.Info);
 #endif
 
@@ -74,11 +74,11 @@ namespace HapetCompiler.Toolchains
             }
 
 #if DEBUG
-            if (!referenced)
+            if (!referenced && !CompilerSettings.IsInRunContext)
                 messageHandler.ReportMessage([$"{Funcad.GetPrettyTimeString(_stopwatch.Elapsed)} Parsing..."], null, ReportType.Info);
 #endif
 #if RELEASE
-            if (!referenced)
+            if (!referenced && !CompilerSettings.IsInRunContext)
                 messageHandler.ReportMessage([$"{Funcad.GetPrettyTimeString(_stopwatch.Elapsed)} Compiling '{Path.GetFileName(projectPath)}'..."], null, ReportType.Info);
 #endif
             // gen ast shite
@@ -90,7 +90,7 @@ namespace HapetCompiler.Toolchains
             }
 
 #if DEBUG
-            if (!referenced)
+            if (!referenced && !CompilerSettings.IsInRunContext)
                 messageHandler.ReportMessage([$"{Funcad.GetPrettyTimeString(_stopwatch.Elapsed)} Post preparation..."], null, ReportType.Info);
 #endif
             // post prepare
@@ -107,7 +107,7 @@ namespace HapetCompiler.Toolchains
             }
 
 #if DEBUG
-            if (!referenced)
+            if (!referenced && !CompilerSettings.IsInRunContext)
                 messageHandler.ReportMessage([$"{Funcad.GetPrettyTimeString(_stopwatch.Elapsed)} Last preparation..."], null, ReportType.Info);
 #endif
             // last prepare
@@ -127,7 +127,7 @@ namespace HapetCompiler.Toolchains
             if (makeCodegen)
             {
 #if DEBUG
-                if (!referenced)
+                if (!referenced && !CompilerSettings.IsInRunContext)
                     messageHandler.ReportMessage([$"{Funcad.GetPrettyTimeString(_stopwatch.Elapsed)} Code generation..."], null, ReportType.Info);
 #endif
                 // code gen
@@ -140,7 +140,7 @@ namespace HapetCompiler.Toolchains
             }
 
             // all is ok :)
-            if (!referenced)
+            if (!referenced && !CompilerSettings.IsInRunContext)
                 messageHandler.ReportMessage([$"{Funcad.GetPrettyTimeString(_stopwatch.Elapsed)} Done."], null, ReportType.Info);
 
             OnExit();

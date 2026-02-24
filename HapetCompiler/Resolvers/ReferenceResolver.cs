@@ -1,11 +1,12 @@
-﻿using HapetFrontend.Entities;
+﻿using HapetBackend.Llvm.Linkers;
+using HapetFrontend;
+using HapetFrontend.Entities;
+using HapetFrontend.Errors;
 using HapetFrontend.Helpers;
+using HapetPostPrepare;
 using LLVMSharp;
 using Newtonsoft.Json;
 using System.Reflection;
-using HapetBackend.Llvm.Linkers;
-using HapetFrontend.Errors;
-using HapetPostPrepare;
 
 namespace HapetCompiler.Resolvers
 {
@@ -24,7 +25,7 @@ namespace HapetCompiler.Resolvers
             foreach (var r in _projectData.References)
             {
 #if DEBUG
-                if (!_projectSettings.IsReferencedCompilation && !_projectSettings.IsLspCompilation)
+                if (!_projectSettings.IsReferencedCompilation && !_projectSettings.IsLspCompilation && !CompilerSettings.IsInRunContext)
                     _compiler.MessageHandler.ReportMessage([$"{Funcad.GetPrettyTimeString(_compiler.CompilationStopwatch.Elapsed)}   Resolving '{r}'..."], null, ReportType.Info);
 #endif
                 // getting the proper data

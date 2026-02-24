@@ -14,7 +14,7 @@ namespace HapetCompiler.Resolvers
             string currentProjectFolderPath = Path.GetDirectoryName(currentProjectPath).Replace("\\", "/", StringComparison.InvariantCulture).TrimEnd('/');
             foreach (var r in _projectData.ProjectReferences)
             {
-                if (!_projectSettings.IsReferencedCompilation && !_projectSettings.IsLspCompilation)
+                if (!_projectSettings.IsReferencedCompilation && !_projectSettings.IsLspCompilation && !CompilerSettings.IsInRunContext)
                     _compiler.MessageHandler.ReportMessage([$"{Funcad.GetPrettyTimeString(_compiler.CompilationStopwatch.Elapsed)}   Resolving '{Path.GetFileName(r)}'..."], null, ReportType.Info);
 
                 string projectPathNormalized = r.Replace("\\", "/", StringComparison.InvariantCulture).TrimStart('/');

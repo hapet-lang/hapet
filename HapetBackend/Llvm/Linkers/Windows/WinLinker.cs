@@ -131,7 +131,7 @@ namespace HapetBackend.Llvm.Linkers.Windows
             if (result)
             {
                 // print if it is not a referenced compilation
-                if (!_compiler.CurrentProjectSettings.IsReferencedCompilation)
+                if (!_compiler.CurrentProjectSettings.IsReferencedCompilation && !CompilerSettings.IsInRunContext)
                     messageHandler.ReportMessage([$"\t  Generated {filename}{outFileExtension}"], null, ReportType.Info);
             }
             else
