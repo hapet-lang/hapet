@@ -11,7 +11,11 @@ namespace HapetBackend.Llvm.Linkers.Windows
     {
         private Compiler _compiler;
 
-        public bool Link(Compiler compiler, string targetFile, string objFile, IEnumerable<string> libraryIncludeDirectories, IEnumerable<string> libraries, IMessageHandler messageHandler)
+        public bool Link(Compiler compiler, string targetFile, string objFile, 
+            IEnumerable<string> libraryIncludeDirectories, 
+            IEnumerable<string> libraries, 
+            IMessageHandler messageHandler,
+            out string outFilePath)
         {
             ArgumentNullException.ThrowIfNull(compiler);
             ArgumentNullException.ThrowIfNull(libraryIncludeDirectories);
@@ -85,7 +89,10 @@ namespace HapetBackend.Llvm.Linkers.Windows
 
             // link platform specific shite
             if (!LinkPlatformLibraries(compiler, lldArgs, messageHandler, target))
+            {
+                outFilePath = "";
                 return false;
+            }
 
             foreach (var linc in libraries)
             {
@@ -97,18 +104,21 @@ namespace HapetBackend.Llvm.Linkers.Windows
             if (vsBinFolder == null || !Directory.Exists(vsBinFolder))
             {
                 messageHandler.ReportMessage([], ErrorCode.Get(CTEN.NoVisualStudio));
+                outFilePath = "";
                 return false;
             }
             string vsLinkerFolder = $"{vsBinFolder}\\Host{target}\\{target}";
             if (!Directory.Exists(vsLinkerFolder))
             {
                 messageHandler.ReportMessage([], ErrorCode.Get(CTEN.NoVisualStudioHost));
+                outFilePath = "";
                 return false;
             }
             string vsLinkerFile = Path.Combine(CompilerUtils.CurrentHapetDirectory, "lld-link.exe");
             if (!File.Exists(vsLinkerFile))
             {
                 messageHandler.ReportMessage([], ErrorCode.Get(CTEN.NoVisualStudioLinker));
+                outFilePath = "";
                 return false;
             }
 
@@ -139,6 +149,7 @@ namespace HapetBackend.Llvm.Linkers.Windows
                 messageHandler.ReportMessage([], ErrorCode.Get(CTEN.FailedToLink), ReportType.Error);
             }
 
+            outFilePath = $"{filename}{outFileExtension}";
             return result;
         }
     }

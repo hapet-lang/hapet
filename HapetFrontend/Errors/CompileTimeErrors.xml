@@ -32,7 +32,7 @@
     </Item>
     <Item>
         <Number>0007</Number>
-        <Text>hapet command called {0} is not available</Text>
+        <Text>hapet command called '{0}' is not available</Text>
     </Item>
     <Item>
         <Number>0008</Number>

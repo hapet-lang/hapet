@@ -131,7 +131,11 @@ namespace HapetBackend.Llvm
         }
 
 #pragma warning disable CA1002 // Do not expose generic lists
-        public bool CompileCode(List<string> libraryIncludeDirectories, List<string> libraries, IMessageHandler messageHandler)
+        public bool CompileCode(
+            List<string> libraryIncludeDirectories, 
+            List<string> libraries, 
+            IMessageHandler messageHandler,
+            out string outFilePath)
 #pragma warning restore CA1002 // Do not expose generic lists
         {
             ArgumentNullException.ThrowIfNull(messageHandler);
@@ -172,7 +176,7 @@ namespace HapetBackend.Llvm
             {
                 case TargetPlatform.Win86:
                 case TargetPlatform.Win64:
-                    return (new WinLinker()).Link(_compiler, exeFile, objFile, libraryIncludeDirectories, libraries, messageHandler);
+                    return (new WinLinker()).Link(_compiler, exeFile, objFile, libraryIncludeDirectories, libraries, messageHandler, out outFilePath);
                 case TargetPlatform.Linux86:
                 case TargetPlatform.Linux64:
                 // TODO: ... 

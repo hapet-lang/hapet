@@ -27,7 +27,7 @@ namespace HapetCompiler.Resolvers
                 var toolchain = new ProjectBuildToolchain(_compiler.CompilationStopwatch, []); // TODO: params?
                 // make codegen when not lsp
                 bool codegenRequired = !_projectSettings.IsLspCompilation;
-                toolchain.Build(pathToReferenced, _compiler.MessageHandler, true, codegenRequired);
+                toolchain.Build(pathToReferenced, _compiler.MessageHandler, out string _, true, codegenRequired);
 
                 string referencedProjectOutFolder = toolchain.ProjectSettings.OutputDirectory.Replace("\\", "/", StringComparison.InvariantCulture).TrimStart('/');
                 // copy all the files from the referenced project to current out folder

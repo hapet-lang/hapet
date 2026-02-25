@@ -23,12 +23,12 @@ namespace HapetCompiler.Toolchains
 
             // just use build 
             ProjectBuildToolchain buildToolchain = new ProjectBuildToolchain(_stopwatch, _cmdArgs);
-            var buildResult = buildToolchain.Build(projectPath, messageHandler, false, true);
+            var buildResult = buildToolchain.Build(projectPath, messageHandler, out string outFilePath, false, true);
             // if there was a problem while building the project
             if (buildResult != 0)
                 return buildResult;
 
-            StartProcess("C:\\Scripts\\hapet\\test\\SmallTestProject\\bin\\Debug\\SmallTestProject.exe");
+            StartProcess(outFilePath);
             return 0;
         }
 

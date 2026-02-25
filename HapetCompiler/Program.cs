@@ -40,7 +40,7 @@ namespace HapetCompiler
 
                         // skip the first two args because they are already used
                         ProjectBuildToolchain projectToolchain = new ProjectBuildToolchain(stopwatch, args.Skip(2).ToArray());
-                        return projectToolchain.Build(args[1], messageHandler);
+                        return projectToolchain.Build(args[1], messageHandler, out string _);
                     }
                 case "run":
                     {

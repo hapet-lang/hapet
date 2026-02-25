@@ -24,8 +24,10 @@ namespace HapetCompiler.Toolchains
             _cmdArgs = args;
         }
 
-        public int Build(string projectPath, IMessageHandler messageHandler, bool referenced = false, bool makeCodegen = true)
+        public int Build(string projectPath, IMessageHandler messageHandler, out string outFilePath, bool referenced = false, bool makeCodegen = true)
         {
+            outFilePath = "";
+
             // save type context
             var cachedTypeContext = HapetType.CurrentTypeContext;
 
@@ -131,7 +133,7 @@ namespace HapetCompiler.Toolchains
                     messageHandler.ReportMessage([$"{Funcad.GetPrettyTimeString(_stopwatch.Elapsed)} Code generation..."], null, ReportType.Info);
 #endif
                 // code gen
-                bool codeGenOk = GenerateAndCompileCode(compiler, postPreparer, resolver, messageHandler);
+                bool codeGenOk = GenerateAndCompileCode(compiler, postPreparer, resolver, messageHandler, out outFilePath);
                 if (messageHandler.HasErrors || !codeGenOk)
                 {
                     OnExit();
@@ -153,14 +155,22 @@ namespace HapetCompiler.Toolchains
             }
         }
 
-        private static bool GenerateAndCompileCode(Compiler compiler, PostPrepare postPreparer, ProjectReferencesResolver resolver, IMessageHandler messageHandler)
+        private static bool GenerateAndCompileCode(
+            Compiler compiler, 
+            PostPrepare postPreparer, 
+            ProjectReferencesResolver resolver, 
+            IMessageHandler messageHandler,
+            out string outFilePath)
         {
             var generator = new LlvmCodeGenerator();
             bool success = generator.GenerateCode(compiler, postPreparer, messageHandler);
             if (!success)
+            {
+                outFilePath = "";
                 return false;
+            }
 
-            return generator.CompileCode(resolver.PathsToLinkWith, resolver.LibrariesToLinkWith, messageHandler);
+            return generator.CompileCode(resolver.PathsToLinkWith, resolver.LibrariesToLinkWith, messageHandler, out outFilePath);
         }
     }
 }
