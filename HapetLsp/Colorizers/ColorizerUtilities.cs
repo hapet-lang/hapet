@@ -112,7 +112,7 @@ namespace HapetLsp.Handlers
             // sort and add to builder
             colorizer.SortTokens();
 
-            Console.WriteLine($"Time: {stopwatch.Elapsed.TotalSeconds}");
+            // Console.WriteLine($"Time: {stopwatch.Elapsed.TotalSeconds}");
             stopwatch.Stop();
         }
     }
