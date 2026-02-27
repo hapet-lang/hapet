@@ -51,8 +51,8 @@ jobs:
       - name: Download and start xwin
         shell: pwsh
         run: |
-          $xwinUrl = "https://github.com/Jake-Shadle/xwin/releases/latest/download/xwin-x86_64-pc-windows-msvc.zip"
-          $xwinPath = "xwin.zip"
+          $xwinUrl = "https://github.com/Jake-Shadle/xwin/releases/download/0.8.0/xwin-0.8.0-x86_64-pc-windows-msvc.tar.gz"
+          $xwinPath = "xwin.tar.gz"
           Invoke-WebRequest -Uri $xwinUrl -OutFile $xwinPath
           $xwinDir = "xwin-tool"
           Expand-Archive -Path $xwinPath -DestinationPath $xwinDir -Force
