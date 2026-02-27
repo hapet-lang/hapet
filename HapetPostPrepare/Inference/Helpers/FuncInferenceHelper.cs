@@ -109,7 +109,7 @@ namespace HapetPostPrepare
                 {
                     score = int.MaxValue;
                     casts.Add(null);
-                    continue;
+                    break;
                 }
 
                 var par = paramsParamDecl ?? GetParameterByIndexOrName(pars, arg, i, out var _);
