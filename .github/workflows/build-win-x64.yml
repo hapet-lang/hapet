@@ -28,7 +28,6 @@ jobs:
           Copy-Item -Path "$tempExtract\Plugins\x86-unicode\*.dll" -Destination "$nsisDir\Plugins\x86-unicode\" -Force
           Copy-Item -Path "$tempExtract\Plugins\x86-ansi\*.dll" -Destination "$nsisDir\Plugins\x86-ansi\" -Force
 
-          # 5. Проверка наличия файла (если упадет здесь - значит пути в архиве другие)
           if (Test-Path "$nsisDir\Plugins\x86-unicode\EnVar.dll") {
               Write-Host "EnVar.dll successfully installed to NSIS plugins."
           } else {

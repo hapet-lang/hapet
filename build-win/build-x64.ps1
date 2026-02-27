@@ -23,6 +23,9 @@ Copy-Item -Path "../build-resources/computed_stables.txt" -Destination "./stagin
 Write-Host "Copying Linker..."
 Copy-Item -Path "../lld-link.exe" -Destination "./staging_folder/lld-link.exe" -Force
 
+Write-Host "Copying STD..."
+Copy-Item -Path "../std" -Destination "./staging_folder" -Recurse -Force
+
 Write-Host "Computing hashes..."
 $hashCompExe = "../HashComputer/HashComputer.Cli/bin/Release/net8.0/win-x64/publish/HashComputer.Cli.exe"
 & $hashCompExe -v $buildVersion -d ./staging_folder -t 8 -m
