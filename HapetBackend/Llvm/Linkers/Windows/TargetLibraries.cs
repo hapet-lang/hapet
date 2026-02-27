@@ -1,6 +1,8 @@
 ﻿using HapetFrontend;
 using HapetFrontend.Entities;
 using HapetFrontend.Errors;
+using HapetFrontend.Helpers;
+using System;
 
 namespace HapetBackend.Llvm.Linkers.Windows
 {
@@ -20,6 +22,7 @@ namespace HapetBackend.Llvm.Linkers.Windows
                             case TargetPlatform.Win86:
                             case TargetPlatform.Win64:
                                 {
+#if DEBUG
                                     var winSdk = FindWindowsSdk(target, messageHandler);
                                     if (winSdk == null)
                                     {
@@ -40,37 +43,17 @@ namespace HapetBackend.Llvm.Linkers.Windows
 
                                     lldArgs.Add($@"-libpath:{msvcLibPath}\{target}");
                                     break;
+#else
+                                    string compilerDir = CompilerUtils.CurrentHapetDirectory.Replace("\\", "/").TrimEnd('/');
+                                    lldArgs.Add($@"-libpath:{compilerDir}/libs/win-x64/");
+                                    break;
+#endif
                                 }
-
                         }
 
                         // windows and c libs
-                        //lldArgs.Add("libucrtd.lib");
-                        //lldArgs.Add("libcmtd.lib");
-
-                        //lldArgs.Add("kernel32.lib");
-                        //lldArgs.Add("user32.lib");
-                        //lldArgs.Add("gdi32.lib");
-                        //lldArgs.Add("winspool.lib");
-                        //lldArgs.Add("comdlg32.lib");
-                        //lldArgs.Add("advapi32.lib");
-                        //lldArgs.Add("shell32.lib");
-                        //lldArgs.Add("ole32.lib");
-                        //lldArgs.Add("oleaut32.lib");
-                        //lldArgs.Add("uuid.lib");
-                        //lldArgs.Add("odbc32.lib");
-                        //lldArgs.Add("odbccp32.lib");
-
-                        //lldArgs.Add("legacy_stdio_definitions.lib");
-                        //lldArgs.Add("legacy_stdio_wide_specifiers.lib");
-                        // lldArgs.Add("libclang.lib");
-                        // lldArgs.Add("libvcruntimed.lib");
                         lldArgs.Add("msvcrt.lib");
                         lldArgs.Add("ucrt.lib");
-                        //lldArgs.Add("vcruntime.lib");
-                        //lldArgs.Add("libcmt.lib");
-                        //lldArgs.Add("libcmt.lib");
-                        //lldArgs.Add("shlwapi.lib");
                         break;
                     }
             }

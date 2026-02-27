@@ -42,6 +42,27 @@ jobs:
           $linkerUrl = "https://github.com/CrackAndDie/lld-linkers/releases/download/win-x64/lld-link.exe"
           $linkerPath = "lld-link.exe"
           Invoke-WebRequest -Uri $linkerUrl -OutFile $linkerPath
+      - name: Download VC++ Redistributable (x64)
+        shell: pwsh
+        run: |
+          $redistUrl = "https://aka.ms/vc14/vc_redist.x64.exe"
+          $redistPath = "build-win/vc_redist.x64.exe"
+          Invoke-WebRequest -Uri $redistUrl -OutFile $redistPath
+      - name: Download and start xwin
+        shell: pwsh
+        run: |
+          $xwinUrl = "https://github.com/Jake-Shadle/xwin/releases/latest/download/xwin-x86_64-pc-windows-msvc.zip"
+          $xwinPath = "xwin.zip"
+          Invoke-WebRequest -Uri $xwinUrl -OutFile $xwinPath
+          $xwinDir = "xwin-tool"
+          Expand-Archive -Path $xwinPath -DestinationPath $xwinDir -Force
+          Remove-Item $xwinPath -Force
+
+          $xwinCache = "xwin-cache"
+          $xwinSplat = "$xwinCache/splat"
+          $xwinExe = "$xwinDir/xwin.exe"
+          & $xwinExe splat --accept-license --output "$xwinCache"
+          if ($LASTEXITCODE -ne 0) { throw "xwin splat failed" }
       - name: Build project and hash computer
         shell: pwsh
         run: | 

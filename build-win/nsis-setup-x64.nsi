@@ -55,6 +55,7 @@ InstallDir "${INSTALL_DIR}"
 
 !include "MUI2.nsh"
 !include "Sections.nsh"
+!include "x64.nsh"
 
 !define MUI_ABORTWARNING
 !define MUI_UNABORTWARNING
@@ -94,6 +95,38 @@ InstallDir "${INSTALL_DIR}"
 Section "Main Program" SecMain
 	SectionIn RO
 	${INSTALL_TYPE}
+
+    ${If} ${RunningX64}
+        SetRegView 64
+        ReadRegDword $0 HKLM "SOFTWARE\Microsoft\VisualStudio\14.0\VC\Runtimes\x64" "Installed"
+        ${If} $0 != 1
+            DetailPrint "Visual C++ Redistributable not found. Installing..."
+
+            SetOutPath $TEMP
+            File "vc_redist.x64.exe"
+
+            ; Installing redist quietly
+            ExecWait '"$TEMP\vc_redist.x64.exe" /install /quiet /norestart' $1
+
+            ; Check result
+            ${If} $1 == 0
+                DetailPrint "Visual C++ Redistributable successfully installed."
+            ${ElseIf} $1 == 3010
+                DetailPrint "Visual C++ Redistributable installed. System restart is required."
+            ${Else}
+                MessageBox MB_OK|MB_ICONSTOP "Visual C++ Redistributable could not be installed. Error code: $1"
+            ${EndIf}
+
+            ; Remove from tmp folder
+            Delete "$TEMP\vc_redist.x64.exe"
+        ${Else}
+            DetailPrint "Visual C++ Redistributable already installed."
+        ${EndIf}
+        SetRegView lastused
+    ${Else}
+        MessageBox MB_OK|MB_ICONSTOP "This installer is for 64-bit systems."
+        Abort
+    ${EndIf}
 
 	SetOverwrite ifnewer
 	SetOutPath "$INSTDIR"
