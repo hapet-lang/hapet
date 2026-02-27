@@ -3,10 +3,14 @@ using HapetFrontend.Ast;
 using HapetFrontend.Ast.Declarations;
 using HapetFrontend.Ast.Expressions;
 using HapetFrontend.Entities;
+using HapetFrontend.ProjectParser;
 using HapetFrontend.Types;
 using HapetLastPrepare;
 using HapetLsp.Colorizers;
 using HapetPostPrepare;
+using OmniSharp.Extensions.LanguageServer.Protocol.Document;
+using OmniSharp.Extensions.LanguageServer.Protocol.Models;
+using OmniSharp.Extensions.LanguageServer.Protocol.Server;
 using System;
 using System.Diagnostics;
 
@@ -32,7 +36,7 @@ namespace HapetLsp.Handlers
             colorizer.File.TextSplitted = colorizer.File.Text.ToString().Split('\n');
         }
 
-        internal static void ReparseWholeProject(HapetColorizer colorizer, Compiler compiler, PostPrepare postPrepare, LastPrepare lastPrepare, Action projectResolver)
+        internal static void ReparseWholeProject(Compiler compiler, ProjectXmlParser projectParser, PostPrepare postPrepare, LastPrepare lastPrepare, Action projectResolver)
         {
             Stopwatch stopwatch = new Stopwatch();
             stopwatch.Start();
@@ -70,6 +74,7 @@ namespace HapetLsp.Handlers
             }
 
             // resolve project data
+            (compiler.MessageHandler as LspMessageHandler).RemoveDiagnosticMessagesOfFile(projectParser.XmlProgramFile);
             projectResolver?.Invoke();
 
             foreach (var (_, file) in compiler.GetFiles())
@@ -105,15 +110,24 @@ namespace HapetLsp.Handlers
             // full last prepare is not required for LSP
             int __ = lastPrepare.StartPreparation(true);
 
-            // clear all color tokens
-            colorizer.CurrentSemanticTokens.Clear();
-            // colorize
-            colorizer.Colorize();
-            // sort and add to builder
-            colorizer.SortTokens();
-
             // Console.WriteLine($"Time: {stopwatch.Elapsed.TotalSeconds}");
             stopwatch.Stop();
+        }
+
+        internal static void SendMessages(Compiler compiler, ProjectXmlParser projectParser, ILanguageServerFacade facade)
+        {
+            List<ProgramFile> files = new List<ProgramFile>(compiler.GetFiles().Select(x => x.Value));
+            files.Add(projectParser.XmlProgramFile);
+
+            foreach (var filee in files)
+            {
+                var file2 = filee.OriginalFile != null ? filee.OriginalFile : filee;
+                facade.TextDocument.PublishDiagnostics(new PublishDiagnosticsParams
+                {
+                    Uri = file2.FilePath,
+                    Diagnostics = Container.From((compiler.MessageHandler as LspMessageHandler).GetDiagnosticMessages(file2.FilePath.AbsolutePath))
+                });
+            }
         }
     }
 }

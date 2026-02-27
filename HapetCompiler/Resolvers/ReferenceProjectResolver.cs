@@ -3,6 +3,7 @@ using HapetFrontend;
 using HapetFrontend.Entities;
 using HapetFrontend.Errors;
 using HapetFrontend.Helpers;
+using System.Xml;
 
 namespace HapetCompiler.Resolvers
 {
@@ -15,13 +16,17 @@ namespace HapetCompiler.Resolvers
             foreach (var r in _projectData.ProjectReferences)
             {
                 if (!_projectSettings.IsReferencedCompilation && !_projectSettings.IsLspCompilation && !CompilerSettings.IsInRunContext)
-                    _compiler.MessageHandler.ReportMessage([$"{Funcad.GetPrettyTimeString(_compiler.CompilationStopwatch.Elapsed)}   Resolving '{Path.GetFileName(r)}'..."], null, ReportType.Info);
+                    _compiler.MessageHandler.ReportMessage([$"{Funcad.GetPrettyTimeString(_compiler.CompilationStopwatch.Elapsed)}   Resolving '{Path.GetFileName(r.ReferenceName)}'..."], null, ReportType.Info);
 
-                string projectPathNormalized = r.Replace("\\", "/", StringComparison.InvariantCulture).TrimStart('/');
+                string projectPathNormalized = r.ReferenceName.Replace("\\", "/", StringComparison.InvariantCulture).TrimStart('/');
                 string pathToReferenced = $"{currentProjectFolderPath}/{projectPathNormalized}"; 
                 // error if doesn't exists
                 if (!File.Exists(pathToReferenced))
-                    _compiler.MessageHandler.ReportMessage([projectPathNormalized], ErrorCode.Get(CTEN.RefProjectNotFound));
+                {
+                    var loc = _projectXmlParser.XmlProgramFile.GetLocationFromSpan(r.Node.AsElement.Start, r.Node.AsElement.Start + r.Node.AsElement.FullWidth);
+                    _compiler.MessageHandler.ReportMessage(_projectXmlParser.XmlProgramFile, loc, [projectPathNormalized], ErrorCode.Get(CTEN.RefProjectNotFound));
+                    continue;
+                }
 
                 // building the project
                 var toolchain = new ProjectBuildToolchain(_compiler.CompilationStopwatch, []); // TODO: params?
@@ -34,7 +39,7 @@ namespace HapetCompiler.Resolvers
                 Funcad.CopyFilesRecursively(referencedProjectOutFolder, _projectSettings.OutputDirectory);
 
                 // adding the reference to dll
-                _projectData.References.Add(toolchain.ProjectSettings.AssemblyName);
+                _projectData.References.Add(new Reference(toolchain.ProjectSettings.AssemblyName, r.Node));
             }
         }
     }

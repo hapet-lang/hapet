@@ -34,14 +34,14 @@ namespace HapetFrontend.ProjectParser
                             {
                                 // TODO: checks and errors that the attr exists
                                 string thePathToProject = xmlElement.GetAttribute("Include").Value;
-                                _projectData.ProjectReferences.Add(thePathToProject);
+                                _projectData.ProjectReferences.Add(new Entities.Reference(thePathToProject, xmlElement));
                                 break;
                             }
                         case "Reference":
                             {
                                 // TODO: checks and errors that the attr exists
                                 string thePathToDll = xmlElement.GetAttribute("Include").Value;
-                                _projectData.References.Add(thePathToDll);
+                                _projectData.References.Add(new Entities.Reference(thePathToDll, xmlElement));
                                 break;
                             }
                         case "Define":

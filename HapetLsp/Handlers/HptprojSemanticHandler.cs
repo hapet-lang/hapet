@@ -1,10 +1,15 @@
-﻿using HapetFrontend.ProjectParser;
+﻿using HapetFrontend;
+using HapetFrontend.ProjectParser;
+using HapetLastPrepare;
 using HapetLsp.Entities;
+using HapetPostPrepare;
 using Microsoft.Language.Xml;
 using OmniSharp.Extensions.LanguageServer.Protocol;
 using OmniSharp.Extensions.LanguageServer.Protocol.Client.Capabilities;
 using OmniSharp.Extensions.LanguageServer.Protocol.Document;
 using OmniSharp.Extensions.LanguageServer.Protocol.Models;
+using OmniSharp.Extensions.LanguageServer.Protocol.Server;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace HapetLsp.Handlers
 {
@@ -13,11 +18,21 @@ namespace HapetLsp.Handlers
         private readonly static SemanticTokenType[] _tokenTypes = new[] { new SemanticTokenType("tag"), new SemanticTokenType("param"), new SemanticTokenType("comment"), new SemanticTokenType("bracket") };
         private readonly static SemanticTokenModifier[] _tokenModifiers = new[] { new SemanticTokenModifier("default") };
 
+        private readonly ILanguageServerFacade _facade;
+        private readonly Compiler _compiler;
         private readonly ProjectXmlParser _projectXmlParser;
+        private readonly PostPrepare _postPrepare;
+        private readonly LastPrepare _lastPrepare;
+        private readonly Action _projectResolver;
 
-        public HptprojSemanticHandler(ProjectXmlParser projectParser)
+        public HptprojSemanticHandler(ILanguageServerFacade facade, Compiler compiler, ProjectXmlParser projectParser, PostPrepare pp, LastPrepare lp, Action projectResolver)
         {
             _projectXmlParser = projectParser;
+            _facade = facade;
+            _compiler = compiler;
+            _postPrepare = pp;
+            _lastPrepare = lp;
+            _projectResolver = projectResolver;
         }
 
         protected override SemanticTokensRegistrationOptions CreateRegistrationOptions(SemanticTokensCapability capability, ClientCapabilities clientCapabilities)
@@ -54,6 +69,10 @@ namespace HapetLsp.Handlers
                 return;
             }
 
+            // clear diagnostic messages of file
+            HapetSyncHandler.ReparseWholeProject(_compiler, _projectXmlParser, _postPrepare, _lastPrepare, _projectResolver);
+
+            _currentSemanticTokens.Clear();
             ColorizeNode(_projectXmlParser.XmlParsed.Root);
 
             _currentSemanticTokens.Sort((a, b) =>
@@ -66,7 +85,8 @@ namespace HapetLsp.Handlers
             {
                 builder.Push(t.Line, t.Offset, t.Width, t.TokenType, t.TokenModifier);
             }
-            _currentSemanticTokens.Clear();
+
+            HapetSyncHandler.SendMessages(_compiler, _projectXmlParser, _facade);
         }
         private readonly List<SemanticToken> _currentSemanticTokens = new List<SemanticToken>();
 

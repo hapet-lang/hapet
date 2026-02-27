@@ -45,30 +45,30 @@ namespace HapetPostPrepare
             ReplaceAllTuplesInDecls();
 
             PostPrepareSpecialKeys();
-            if (_compiler.MessageHandler.HasErrors)
+            if (_compiler.MessageHandler.HasErrors && !forLsp)
                 return 0;
             PostPrepareClassMethods();
-            if (_compiler.MessageHandler.HasErrors)
+            if (_compiler.MessageHandler.HasErrors && !forLsp)
                 return 0;
             PostPrepareScoping();
-            if (_compiler.MessageHandler.HasErrors)
+            if (_compiler.MessageHandler.HasErrors && !forLsp)
                 return 0;
 
             // generate metadata file
             int result = PostPrepareMetadata(createMetadataFile);
-            if (result != 0)
+            if (result != 0 && !forLsp)
                 return result;
 
             PostPrepareTypeInference();
-            if (_compiler.MessageHandler.HasErrors)
+            if (_compiler.MessageHandler.HasErrors && !forLsp)
                 return 0;
 
             PostPrepareInheritedShite();
-            if (_compiler.MessageHandler.HasErrors)
+            if (_compiler.MessageHandler.HasErrors && !forLsp)
                 return 0;
 
             SearchForMainFunction();
-            if (_compiler.MessageHandler.HasErrors)
+            if (_compiler.MessageHandler.HasErrors && !forLsp)
                 return 0;
 
             // return here if LSP is running

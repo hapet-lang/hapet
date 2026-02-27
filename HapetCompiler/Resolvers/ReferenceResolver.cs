@@ -29,10 +29,11 @@ namespace HapetCompiler.Resolvers
                     _compiler.MessageHandler.ReportMessage([$"{Funcad.GetPrettyTimeString(_compiler.CompilationStopwatch.Elapsed)}   Resolving '{r}'..."], null, ReportType.Info);
 #endif
                 // getting the proper data
-                bool isOk = LinkHelper.GetLibraryPaths(r, outFolder, out (string, string) data);
+                bool isOk = LinkHelper.GetLibraryPaths(r.ReferenceName, outFolder, out (string, string) data);
                 if (!isOk)
                 {
-                    _compiler.MessageHandler.ReportMessage([r], ErrorCode.Get(CTEN.AssemblyNotFound));
+                    var loc = _projectXmlParser.XmlProgramFile.GetLocationFromSpan(r.Node.AsElement.Start, r.Node.AsElement.Start + r.Node.AsElement.FullWidth);
+                    _compiler.MessageHandler.ReportMessage(_projectXmlParser.XmlProgramFile, loc, [r.ReferenceName], ErrorCode.Get(CTEN.AssemblyNotFound));
                     continue;
                 }
 

@@ -38,7 +38,7 @@ namespace HapetLsp.Handlers
         public Task<Unit> Handle(DidChangeTextDocumentParams request, CancellationToken cancellationToken)
         {
             var text = request.ContentChanges.FirstOrDefault()?.Text;
-            _projectXmlParser.ParseFile(text);
+            _projectXmlParser.SetProjectFileText(text);
             return Unit.Task;
         }
 

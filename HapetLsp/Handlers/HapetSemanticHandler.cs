@@ -44,18 +44,20 @@ namespace HapetLsp.Handlers
 
         private readonly ILanguageServerFacade _facade;
         private readonly Compiler _compiler;
+        private readonly ProjectXmlParser _projectXmlParser;
         private readonly PostPrepare _postPrepare;
         private readonly LastPrepare _lastPrepare;
         private readonly Action _projectResolver;
         internal static Dictionary<ProgramFile, HapetColorizer> FileColorizers { get; } = new Dictionary<ProgramFile, HapetColorizer>();
 
-        public HapetSemanticHandler(ILanguageServerFacade facade, Compiler compiler, PostPrepare pp, LastPrepare lp, Action projectResolver)
+        public HapetSemanticHandler(ILanguageServerFacade facade, Compiler compiler, ProjectXmlParser projectParser, PostPrepare pp, LastPrepare lp, Action projectResolver)
         {
             _facade = facade;
             _compiler = compiler;
             _postPrepare = pp;
             _lastPrepare = lp;
             _projectResolver = projectResolver;
+            _projectXmlParser = projectParser;
         }
 
         protected override SemanticTokensRegistrationOptions CreateRegistrationOptions(SemanticTokensCapability capability, ClientCapabilities clientCapabilities)
@@ -89,22 +91,21 @@ namespace HapetLsp.Handlers
             var file = _compiler.GetFile(path);
             file ??= _compiler.AddFile(path);
 
+            HapetSyncHandler.ReparseWholeProject(_compiler, _projectXmlParser, _postPrepare, _lastPrepare, _projectResolver);
+
             var colorizer = CreateColorizer(file, _compiler);
-            HapetSyncHandler.ReparseWholeProject(colorizer, _compiler, _postPrepare, _lastPrepare, _projectResolver);
+            // clear all color tokens
+            colorizer.CurrentSemanticTokens.Clear();
+            // colorize
+            colorizer.Colorize();
+            // sort and add to builder
+            colorizer.SortTokens();
             foreach (var (t, _) in colorizer.CurrentSemanticTokens)
             {
                 builder.Push(t.Line, t.Offset, t.Width, t.TokenType, t.TokenModifier);
             }
 
-            foreach (var (_, filee) in _compiler.GetFiles())
-            {
-                var file2 = filee.OriginalFile != null ? filee.OriginalFile : filee;
-                _facade.TextDocument.PublishDiagnostics(new PublishDiagnosticsParams
-                {
-                    Uri = file2.FilePath,
-                    Diagnostics = Container.From((_compiler.MessageHandler as LspMessageHandler).GetDiagnosticMessages(file2.FilePath.AbsolutePath))
-                });
-            }
+            HapetSyncHandler.SendMessages(_compiler, _projectXmlParser, _facade);
         }
 
         internal static HapetColorizer CreateColorizer(ProgramFile file, Compiler compiler)

@@ -52,6 +52,15 @@ namespace HapetFrontend.ProjectParser
             _projectSettings.ProjectPath = Path.GetFullPath(_projectPath);
         }
 
+        /// <summary>
+        /// Used only in LSP!!!
+        /// </summary>
+        /// <param name="text"></param>
+        public void SetProjectFileText(string text)
+        {
+            _projectFileText = text.Replace("\r\n", "\n");
+        }
+
         public void ParseFile(string text = "")
         {
             // reading from file if no text presented

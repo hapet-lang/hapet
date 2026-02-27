@@ -54,7 +54,7 @@ namespace HapetCompiler.Toolchains
 
             // references
             ProjectReferencesResolver resolver = new ProjectReferencesResolver();
-            resolver.ResolveProjectShite(ProjectData, ProjectSettings, compiler);
+            resolver.ResolveProjectShite(ProjectData, ProjectSettings, compiler, projectParser);
 
             // gen ast shite
             compiler.GenerateAstTree();
@@ -83,7 +83,7 @@ namespace HapetCompiler.Toolchains
                 HapetType.CurrentTypeContext.PointerSize = ProjectSettings.TargetPlatformData.PointerSize;
                 HapetType.CurrentTypeContext.Init();
 
-                resolver.ResolveProjectShite(ProjectData, ProjectSettings, compiler);
+                resolver.ResolveProjectShite(ProjectData, ProjectSettings, compiler, projectParser);
             }
         }
     }

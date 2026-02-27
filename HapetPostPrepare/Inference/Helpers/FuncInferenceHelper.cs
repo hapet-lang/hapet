@@ -104,6 +104,14 @@ namespace HapetPostPrepare
                 var arg = args[i];
                 var argExpr = arg.Expr;
 
+                // make MaxValue if arg not inferred
+                if (argExpr.OutType == null || argExpr is AstEmptyExpr)
+                {
+                    score = int.MaxValue;
+                    casts.Add(null);
+                    continue;
+                }
+
                 var par = paramsParamDecl ?? GetParameterByIndexOrName(pars, arg, i, out var _);
                 // break loop if there is no param with specified name
                 if (par == null)

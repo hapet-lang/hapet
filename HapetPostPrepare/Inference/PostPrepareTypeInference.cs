@@ -1425,7 +1425,7 @@ namespace HapetPostPrepare
                 return;
             }
             // pp assign value
-            if (assignStmt.Value != null)
+            if (assignStmt.Value != null && assignStmt.Target.OutType != null)
             {
                 assignStmt.Value = PostPrepareVarValueAssign(assignStmt.Value, assignStmt.Target.OutType, inInfo, ref outInfo);
             }

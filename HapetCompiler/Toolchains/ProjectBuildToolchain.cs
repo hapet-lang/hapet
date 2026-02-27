@@ -68,7 +68,7 @@ namespace HapetCompiler.Toolchains
 
             // references
             ProjectReferencesResolver resolver = new ProjectReferencesResolver();
-            resolver.ResolveProjectShite(ProjectData, ProjectSettings, compiler);
+            resolver.ResolveProjectShite(ProjectData, ProjectSettings, compiler, projectParser);
             if (messageHandler.HasErrors)
             {
                 OnExit();

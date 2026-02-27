@@ -81,7 +81,7 @@ namespace HapetPostPrepare
             {
                 Name = _compiler.CurrentProjectSettings.ProjectName,
                 Version = _compiler.CurrentProjectSettings.ProjectVersion,
-                Dependencies = _compiler.CurrentProjectData.References.ToArray(),
+                Dependencies = _compiler.CurrentProjectData.References.Select(x => x.ReferenceName).ToArray(),
             };
             var options = new JsonSerializerOptions(JsonSerializerOptions.Default)
             {

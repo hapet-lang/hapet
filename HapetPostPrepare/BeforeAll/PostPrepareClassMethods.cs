@@ -392,7 +392,7 @@ namespace HapetPostPrepare
                 var storDecl = new AstFuncDecl(new List<AstParamDecl>(),
                 new AstNestedExpr(new AstIdExpr("void", comLoc), null, comLoc),
                 storBlock,
-                new AstIdExpr($"{decl.Name.Name}_stor"),
+                new AstIdExpr($"{decl.Name.Name}_stor", comLoc),
                 "", comLoc);
                 storDecl.SpecialKeys.Add(Lexer.CreateToken(TokenType.KwPublic, decl.Location.Beginning)); // stor is public
                 storDecl.SpecialKeys.Add(Lexer.CreateToken(TokenType.KwStatic, decl.Location.Beginning)); // stor is static
@@ -402,7 +402,7 @@ namespace HapetPostPrepare
                 decls.Add(storDecl);
 
                 storDecl.IsSyntheticStatement = true;
-                storDecl.Attributes.Add(new AstAttributeStmt(new AstNestedExpr(new AstIdExpr("System.SuppressStackTraceAttribute"), null), [], comLoc));
+                storDecl.Attributes.Add(new AstAttributeStmt(new AstNestedExpr(new AstIdExpr("System.SuppressStackTraceAttribute", comLoc), null, comLoc), [], comLoc));
             }
             else if (ctors.Count == 1)
             {
@@ -420,7 +420,7 @@ namespace HapetPostPrepare
                 // add check into user defined stor
                 ctorFunc.Body.Statements.Add(checkForInited);
 
-                ctorFunc.Attributes.Add(new AstAttributeStmt(new AstNestedExpr(new AstIdExpr("System.SuppressStackTraceAttribute"), null), [], ctorFunc.Location));
+                ctorFunc.Attributes.Add(new AstAttributeStmt(new AstNestedExpr(new AstIdExpr("System.SuppressStackTraceAttribute", comLoc), null, comLoc), [], ctorFunc.Location));
             }
             else
             {
