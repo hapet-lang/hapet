@@ -57,7 +57,7 @@ jobs:
           Invoke-WebRequest -Uri $xwinUrl -OutFile $xwinPath
           $xwinDir = "xwin-tool"
           New-Item -ItemType Directory -Force -Path $xwinDir | Out-Null
-          tar -xzf $xwinPath -C $xwinDir
+          tar -xzf $xwinPath -C $xwinDir --strip-components=1
           Remove-Item $xwinPath -Force
           ls $xwinDir
 
