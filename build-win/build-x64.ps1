@@ -29,8 +29,8 @@ Copy-Item -Path "../std" -Destination "./staging_folder" -Recurse -Force
 Write-Host "Copying .libs..."
 $libsDest = "staging_folder/libs/win-x64"
 New-Item -ItemType Directory -Force -Path $libsDest | Out-Null
-Copy-Item -Path "../xwin-tool/.xwin-cache/splat/crt/lib/x86_64/msvcrt.lib" -Destination "$libsDest/" -Force
-Copy-Item -Path "../xwin-tool/.xwin-cache/splat/sdk/lib/ucrt/x86_64/ucrt.lib" -Destination "$libsDest/" -Force
+Copy-Item -Path "../.xwin-cache/splat/crt/lib/x86_64/msvcrt.lib" -Destination "$libsDest/" -Force
+Copy-Item -Path "../.xwin-cache/splat/sdk/lib/ucrt/x86_64/ucrt.lib" -Destination "$libsDest/" -Force
 
 Write-Host "Computing hashes..."
 $hashCompExe = "../HashComputer/HashComputer.Cli/bin/Release/net8.0/win-x64/publish/HashComputer.Cli.exe"
