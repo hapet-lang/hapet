@@ -56,7 +56,8 @@ jobs:
           $xwinPath = "xwin.tar.gz"
           Invoke-WebRequest -Uri $xwinUrl -OutFile $xwinPath
           $xwinDir = "xwin-tool"
-          Expand-Archive -Path $xwinPath -DestinationPath $xwinDir -Force
+          New-Item -ItemType Directory -Force -Path $xwinDir | Out-Null
+          tar -xzf $xwinPath -C $xwinDir
           Remove-Item $xwinPath -Force
 
           $xwinCache = "xwin-cache"
