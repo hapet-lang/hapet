@@ -61,11 +61,13 @@ jobs:
           Remove-Item $xwinPath -Force
           ls $xwinDir
 
-          $xwinCache = "xwin-cache"
+          $xwinCache = "../xwin-cache"
           $xwinSplat = "$xwinCache/splat"
           $xwinExe = "$xwinDir/xwin.exe"
           & $xwinExe --accept-license splat --output "$xwinCache"
           if ($LASTEXITCODE -ne 0) { throw "xwin splat failed" }
+          ls $xwinDir
+          ls
       - name: Build project and hash computer
         shell: pwsh
         run: | 
