@@ -1,6 +1,6 @@
 <Project>
     <PropertyGroup>
-        <ProjectName>System</ProjectName>
+        <ProjectName>System.Linq</ProjectName>
         <AllowUnsafeCode>true</AllowUnsafeCode>
 
         <Optimization>0</Optimization>
