@@ -34,11 +34,21 @@ namespace HapetLsp
             }
             else
             {
-                var input = Console.OpenStandardInput();
-                var output = Console.OpenStandardOutput();
+                try
+                {
+                    var input = Console.OpenStandardInput();
+                    var output = Console.OpenStandardOutput();
 
-                var server = await CreateServer(input, output);
-                await server.WaitForExit;
+                    var server = await CreateServer(input, output);
+                    await server.WaitForExit;
+                }
+                catch (Exception ex)
+                {
+                    await Console.Error.WriteLineAsync("Critical error in hapet lsp:");
+                    await Console.Error.WriteLineAsync(ex.ToString());
+                    await Console.Error.FlushAsync();
+                    Environment.Exit(1);
+                }
             }
 
             async Task<LanguageServer> CreateServer(Stream input, Stream output)
