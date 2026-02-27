@@ -11,8 +11,9 @@ namespace HapetCompiler.Resolvers
     {
         private void ResolveProjectReferences()
         {
-            string currentProjectPath = _projectSettings.ProjectPath;
-            string currentProjectFolderPath = Path.GetDirectoryName(currentProjectPath).Replace("\\", "/", StringComparison.InvariantCulture).TrimEnd('/');
+            string currentProjectFolderPath = Path.GetDirectoryName(_projectSettings.ProjectPath).Replace("\\", "/", StringComparison.InvariantCulture).TrimEnd('/');
+            string currentStdDirectoryPath = Path.Combine(CompilerUtils.CurrentHapetDirectory, "std").Replace("\\", "/", StringComparison.InvariantCulture).TrimEnd('/');
+
             foreach (var r in _projectData.ProjectReferences)
             {
                 if (!_projectSettings.IsReferencedCompilation && !_projectSettings.IsLspCompilation && !CompilerSettings.IsInRunContext)
@@ -23,9 +24,14 @@ namespace HapetCompiler.Resolvers
                 // error if doesn't exists
                 if (!File.Exists(pathToReferenced))
                 {
-                    var loc = _projectXmlParser.XmlProgramFile.GetLocationFromSpan(r.Node.AsElement.Start, r.Node.AsElement.Start + r.Node.AsElement.FullWidth);
-                    _compiler.MessageHandler.ReportMessage(_projectXmlParser.XmlProgramFile, loc, [projectPathNormalized], ErrorCode.Get(CTEN.RefProjectNotFound));
-                    continue;
+                    // if path to project not relative to current project then check it in STD folder
+                    pathToReferenced = $"{currentStdDirectoryPath}/{Path.GetFileNameWithoutExtension(projectPathNormalized)}/{projectPathNormalized}";
+                    if (!File.Exists(pathToReferenced))
+                    {
+                        var loc = _projectXmlParser.XmlProgramFile.GetLocationFromSpan(r.Node.AsElement.Start, r.Node.AsElement.Start + r.Node.AsElement.FullWidth);
+                        _compiler.MessageHandler.ReportMessage(_projectXmlParser.XmlProgramFile, loc, [projectPathNormalized], ErrorCode.Get(CTEN.RefProjectNotFound));
+                        continue;
+                    }
                 }
 
                 // building the project
