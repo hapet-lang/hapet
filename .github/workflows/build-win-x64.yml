@@ -15,6 +15,7 @@ jobs:
       - name: Install NSIS and EnVar Plugin
         shell: pwsh
         run: |
+          choco feature disable -n=showDownloadProgress
           choco install nsis -y
           
           $envarUrl = "https://nsis.sourceforge.io/mediawiki/images/7/7f/EnVar_plugin.zip"
