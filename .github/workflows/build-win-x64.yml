@@ -59,6 +59,7 @@ jobs:
           New-Item -ItemType Directory -Force -Path $xwinDir | Out-Null
           tar -xzf $xwinPath -C $xwinDir
           Remove-Item $xwinPath -Force
+          ls $xwinDir
 
           $xwinCache = "xwin-cache"
           $xwinSplat = "$xwinCache/splat"
