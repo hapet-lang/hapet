@@ -61,10 +61,8 @@ jobs:
           Remove-Item $xwinPath -Force
           ls $xwinDir
 
-          $xwinCache = "../xwin-cache"
-          $xwinSplat = "$xwinCache/splat"
           $xwinExe = "$xwinDir/xwin.exe"
-          & $xwinExe --accept-license splat --output "$xwinCache"
+          & $xwinExe --accept-license splat
           if ($LASTEXITCODE -ne 0) { throw "xwin splat failed" }
           ls $xwinDir
           ls
