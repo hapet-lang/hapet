@@ -1,8 +1,5 @@
 name: Build All Platforms
 
-permissions:
-  contents: write
-
 on:
   workflow_dispatch:
     inputs:
@@ -53,6 +50,8 @@ jobs:
     uses: ./.github/workflows/build-win-x86.yml
     secrets: inherit
   create-release:
+    permissions:
+      contents: write
     needs: [win-x64, win-x86]
     if: always()
     runs-on: ubuntu-latest
