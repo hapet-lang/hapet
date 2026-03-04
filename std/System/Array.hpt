@@ -371,7 +371,7 @@ public struct Array<T> : IList<T>, ICloneable
     [SuppressStackTrace]
     public int Length { get; internal set; }
     [SuppressStackTrace]
-    internal T* Buffer { get; set; }
+    public T* Buffer { get; internal set; }
 
     public int Count { get { return Length; } }
 
