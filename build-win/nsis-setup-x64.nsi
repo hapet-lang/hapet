@@ -22,6 +22,7 @@ RequestExecutionLevel admin
 !define UNINSTALL_PATH "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APP_NAME}"
 !define REG_START_MENU "Start Menu Folder"
 
+Var NeedReboot
 var SM_Folder
 Var AddToPathCheck
 
@@ -113,6 +114,8 @@ Section "Main Program" SecMain
                 DetailPrint "Visual C++ Redistributable successfully installed."
             ${ElseIf} $1 == 3010
                 DetailPrint "Visual C++ Redistributable installed. System restart is required."
+
+                StrCpy $NeedReboot 1
             ${Else}
                 MessageBox MB_OK|MB_ICONSTOP "Visual C++ Redistributable could not be installed. Error code: $1"
             ${EndIf}
@@ -191,6 +194,14 @@ Section -Icons_Reg
     WriteRegStr ${REG_ROOT} "${UNINSTALL_PATH}"  "URLInfoAbout" "${WEB_SITE}"
     !endif
 SectionEnd
+
+Function .onInstSuccess
+    ${If} $NeedReboot == 1
+        MessageBox MB_OK|MB_ICONINFORMATION \
+            "Visual C++ Redistributable requires system reboot.$\n$\n\
+             Please reboot your system before using hapet."
+    ${EndIf}
+FunctionEnd
 
 ######################################################################
 
