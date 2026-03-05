@@ -1447,39 +1447,40 @@ namespace HapetPostPrepare
                 //forStmt.ForeachArgument.OutType.IsInheritedFrom();
                 // TODO: check that the first arg has the required type 
 
-                var getEnumeratorId = new AstIdExpr("GetEnumerator");
+                var getEnumeratorId = new AstIdExpr("GetEnumerator") { IsSyntheticStatement = true };
                 getEnumeratorId.SetDataFromStmt(arg);
-                var getEnumeratorObject = new AstNestedExpr(arg.GetDeepCopy() as AstExpression, null);
+                var getEnumeratorObject = new AstNestedExpr(arg.GetDeepCopy() as AstExpression, null) { IsSyntheticStatement = true };
                 getEnumeratorObject.SetDataFromStmt(arg);
-                var getEnumeratorCall = new AstCallExpr(getEnumeratorObject, getEnumeratorId);
+                var getEnumeratorCall = new AstCallExpr(getEnumeratorObject, getEnumeratorId) { IsSyntheticStatement = true };
                 getEnumeratorCall.SetDataFromStmt(arg);
-                var getEnumeratorVarVar = new AstIdExpr("var");
+                var getEnumeratorVarVar = new AstIdExpr("var") { IsSyntheticStatement = true };
                 getEnumeratorVarVar.SetDataFromStmt(arg);
-                var getEnumeratorVar = new AstVarDecl(getEnumeratorVarVar, new AstIdExpr("__enumeratorHolder"), getEnumeratorCall);
+                var getEnumeratorVar = new AstVarDecl(getEnumeratorVarVar, new AstIdExpr("__enumeratorHolder"), getEnumeratorCall) { IsSyntheticStatement = true };
                 getEnumeratorVar.SetDataFromStmt(arg);
                 PostPrepareExprInference(getEnumeratorVar, inInfo, ref outInfo);
                 getEnumeratorVar.Scope.DefineDeclSymbol(getEnumeratorVar.Name, getEnumeratorVar);
 
-                var moveNextId = new AstIdExpr("MoveNext");
+                var moveNextId = new AstIdExpr("MoveNext") { IsSyntheticStatement = true };
                 moveNextId.SetDataFromStmt(arg);
-                var moveNextObjectId = new AstIdExpr("__enumeratorHolder");
+                var moveNextObjectId = new AstIdExpr("__enumeratorHolder") { IsSyntheticStatement = true };
                 moveNextObjectId.SetDataFromStmt(arg);
-                var moveNextObject = new AstNestedExpr(moveNextObjectId, null);
+                var moveNextObject = new AstNestedExpr(moveNextObjectId, null) { IsSyntheticStatement = true };
                 moveNextObject.SetDataFromStmt(arg);
-                var moveNextCall = new AstCallExpr(moveNextObject, moveNextId);
+                var moveNextCall = new AstCallExpr(moveNextObject, moveNextId) { IsSyntheticStatement = true };
+                moveNextCall.SetDataFromStmt(arg);
                 PostPrepareExprInference(moveNextCall, inInfo, ref outInfo);
 
-                var currentId = new AstIdExpr("Current");
+                var currentId = new AstIdExpr("Current") { IsSyntheticStatement = true };
                 currentId.SetDataFromStmt(arg);
-                var currentObjectId = new AstIdExpr("__enumeratorHolder");
+                var currentObjectId = new AstIdExpr("__enumeratorHolder") { IsSyntheticStatement = true };
                 currentObjectId.SetDataFromStmt(arg);
-                var currentObject = new AstNestedExpr(currentObjectId, null);
+                var currentObject = new AstNestedExpr(currentObjectId, null) { IsSyntheticStatement = true };
                 currentObject.SetDataFromStmt(arg);
-                var currentNested = new AstNestedExpr(currentId, currentObject);
+                var currentNested = new AstNestedExpr(currentId, currentObject) { IsSyntheticStatement = true };
                 currentNested.SetDataFromStmt(arg);
-                var assignName = new AstNestedExpr(varDecl.Name.GetDeepCopy() as AstIdExpr, null);
+                var assignName = new AstNestedExpr(varDecl.Name.GetDeepCopy() as AstIdExpr, null) { IsSyntheticStatement = true };
                 assignName.SetDataFromStmt(varDecl);
-                var currentAssign = new AstAssignStmt(assignName, currentNested);
+                var currentAssign = new AstAssignStmt(assignName, currentNested) { IsSyntheticStatement = true };
                 currentAssign.SetDataFromStmt(varDecl);
                 PostPrepareExprInference(currentAssign, inInfo, ref outInfo);
 
