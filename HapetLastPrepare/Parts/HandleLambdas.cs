@@ -56,6 +56,10 @@ namespace HapetLastPrepare
                 {
                     if (d is AstFuncDecl funcDecl)
                     {
+                        // probably some errors before
+                        if (funcDecl.Body == null)
+                            continue;
+
                         // search all used decls
                         List<AstDeclaration> depDecls = new List<AstDeclaration>();
                         CheckUsedDeclsBlockExpr(funcDecl.Body, depDecls, false);

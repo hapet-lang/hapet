@@ -646,7 +646,8 @@ namespace HapetLsp.Colorizers
 
         private void ColorizeCastExpr(AstCastExpr expr)
         {
-            ColorizeExpr(expr.TypeExpr);
+            if (expr.TypeExpr != null)
+                ColorizeExpr(expr.TypeExpr);
             if (!expr.SubExpression.IsSyntheticStatement)
                 ColorizeExpr(expr.SubExpression);
         }
