@@ -42,6 +42,10 @@ namespace HapetLastPrepare
 
         private List<AstDeclaration> AddPropertyShiteToDecl(AstPropertyDecl prop)
         {
+            // parsed not normally
+            if (prop.Name == null)
+                return new List<AstDeclaration>();
+
             List<AstDeclaration> declarationsToAdd = new List<AstDeclaration>();
             bool isParentInterface = false;
             bool isParentStruct = false;

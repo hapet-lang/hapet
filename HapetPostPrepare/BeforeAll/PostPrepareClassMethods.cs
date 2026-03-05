@@ -54,7 +54,9 @@ namespace HapetPostPrepare
                     !dd.SpecialKeys.Contains(TokenType.KwConst) && 
                     dd is not AstClassDecl && dd is not AstStructDecl);
                 if (foundNonStatic != null)
-                    _compiler.MessageHandler.ReportMessage(_currentSourceFile, foundNonStatic.Name, [], ErrorCode.Get(CTEN.ClassStaticMemStatic));
+                    _compiler.MessageHandler.ReportMessage(_currentSourceFile, 
+                        foundNonStatic.Name == null ? foundNonStatic.Location : foundNonStatic.Name.Location, 
+                        [], ErrorCode.Get(CTEN.ClassStaticMemStatic));
             }
 
             // getting all functions in the class

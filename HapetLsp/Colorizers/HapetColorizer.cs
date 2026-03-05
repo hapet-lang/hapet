@@ -294,6 +294,12 @@ namespace HapetLsp.Colorizers
             if (decl.SetTokenPosition != null)
                 AddSemanticToken(decl, decl.SetTokenPosition, _tokenTypes[2], _tokenModifiers[0]);
 
+            // colorize special keys
+            foreach (var k in decl.GetSpecialKeys)
+                AddSemanticToken(decl, k.Location, _tokenTypes[2], _tokenModifiers[0]);
+            foreach (var k in decl.SetSpecialKeys)
+                AddSemanticToken(decl, k.Location, _tokenTypes[2], _tokenModifiers[0]);
+
             if (decl.GetBlock != null)
                 ColorizeBlockExpr(decl.GetBlock);
             if (decl.SetBlock != null)
