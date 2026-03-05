@@ -1464,6 +1464,14 @@ namespace HapetPostPrepare
                 PostPrepareExprInference(getEnumeratorVar, inInfo, ref outInfo);
                 getEnumeratorVar.Scope.DefineDeclSymbol(getEnumeratorVar.Name, getEnumeratorVar);
 
+                // inference if 'for (var ...)'
+                if (varDecl.Type.OutType is VarType)
+                {
+                    var enumeratorTypeName = getEnumeratorCall.OutType.GetDeclaration().Name as AstIdGenericExpr;
+                    var subTypeOfEnumerator = enumeratorTypeName.GenericRealTypes.FirstOrDefault()?.OutType;
+                    varDecl.Type.OutType = subTypeOfEnumerator;
+                }
+
                 var moveNextId = new AstIdExpr("MoveNext") { IsSyntheticStatement = true };
                 moveNextId.SetDataFromStmt(arg);
                 var moveNextObjectId = new AstIdExpr("__enumeratorHolder") { IsSyntheticStatement = true };
