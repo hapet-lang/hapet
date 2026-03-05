@@ -283,7 +283,7 @@ namespace HapetFrontend.Types
     {
         public static int PointerAlignment => CurrentTypeContext.PointerSize;
 
-        private static Dictionary<(HapetType, bool), PointerType> _types = new Dictionary<(HapetType, bool), PointerType>();
+        public static Dictionary<(HapetType, bool), PointerType> Types { get; private set; } = new Dictionary<(HapetType, bool), PointerType>();
 
         public override string TypeName => "ptr";
 
@@ -315,14 +315,14 @@ namespace HapetFrontend.Types
             if (targetType == null)
                 return null;
 
-            if (_types.ContainsKey((targetType, createdByCompiler)))
+            if (Types.ContainsKey((targetType, createdByCompiler)))
             {
-                return _types[(targetType, createdByCompiler)];
+                return Types[(targetType, createdByCompiler)];
             }
 
             var type = new PointerType(targetType) { CreatedByCompiler = createdByCompiler };
 
-            _types[(targetType, createdByCompiler)] = type;
+            Types[(targetType, createdByCompiler)] = type;
             return type;
         }
 
@@ -372,7 +372,7 @@ namespace HapetFrontend.Types
 
     public class ReferenceType : HapetType
     {
-        private static Dictionary<HapetType, ReferenceType> _types = new Dictionary<HapetType, ReferenceType>();
+        public static Dictionary<HapetType, ReferenceType> Types { get; private set; } = new Dictionary<HapetType, ReferenceType>();
 
         public HapetType TargetType { get; set; }
 
@@ -398,14 +398,14 @@ namespace HapetFrontend.Types
             if (targetType == null)
                 return null;
 
-            if (_types.ContainsKey((targetType)))
+            if (Types.ContainsKey((targetType)))
             {
-                return _types[(targetType)];
+                return Types[(targetType)];
             }
 
             var type = new ReferenceType(targetType);
 
-            _types[(targetType)] = type;
+            Types[(targetType)] = type;
             return type;
         }
 

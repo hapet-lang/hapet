@@ -27,6 +27,25 @@ namespace HapetPostPrepare
 
         private PreparationStep _currentPreparationStep { get; set; } = PreparationStep.None;
 
+        /// <summary>
+        /// Used in LSP
+        /// </summary>
+        public void ClearLists()
+        {
+            _allPureGenericTypes.Clear();
+            _serializeClassesMetadata.Clear();
+            _serializeStructsMetadata.Clear();
+            _serializeEnumsMetadata.Clear();
+            _serializeDelegatesMetadata.Clear();
+            _serializeFunctionsMetadata.Clear();
+            AllClassesMetadata.Clear();
+            AllStructsMetadata.Clear();
+            AllEnumsMetadata.Clear();
+            AllDelegatesMetadata.Clear();
+            AllFunctionsMetadata.Clear();
+            AllGenericsMetadata.Clear();
+        }
+
         private int PostPrepareMetadata(bool createMetadataFile = true)
         {
             AllPostPrepareMetadataTypes();

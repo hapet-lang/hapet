@@ -17,7 +17,7 @@ namespace HapetPostPrepare
 {
     public partial class PostPrepare
     {
-        private readonly Dictionary<AstGenericDecl, List<AstConstrainStmt>> _allGenericTypes = new Dictionary<AstGenericDecl, List<AstConstrainStmt>>();
+        public Dictionary<AstGenericDecl, List<AstConstrainStmt>> AllGenericTypes { get; private set; } = new Dictionary<AstGenericDecl, List<AstConstrainStmt>>();
 
         /// <summary>
         /// Creates or returns existing genericTyped declaration
@@ -30,14 +30,14 @@ namespace HapetPostPrepare
             PrepareGenericConstrains(constrains, inInfo, ref outInfo);
 
             // need to search for the same constrain
-            foreach (var k in _allGenericTypes.Keys)
+            foreach (var k in AllGenericTypes.Keys)
             {
                 // skip not the same names
                 //if (k.Name.Name != currGeneric.Name)
                 //    continue;
 
                 List<bool> collisions = new List<bool>();
-                var existingConstrains = _allGenericTypes[k];
+                var existingConstrains = AllGenericTypes[k];
                 foreach (var exC in existingConstrains)
                 {
                     // if it is a user custom type - need to check that 
@@ -96,7 +96,7 @@ namespace HapetPostPrepare
             AllGenericsMetadata.Add(genericDecl);
 
             // cache it
-            _allGenericTypes.Add(genericDecl, constrains);
+            AllGenericTypes.Add(genericDecl, constrains);
 
             return genericDecl;
         }

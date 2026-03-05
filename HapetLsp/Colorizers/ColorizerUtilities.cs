@@ -43,13 +43,10 @@ namespace HapetLsp.Handlers
 
             HapetType.CurrentTypeContext.ArrayTypeInstances.Clear();
             HapetType.CurrentTypeContext.NullableTypeInstances.Clear();
-
-            postPrepare.AllClassesMetadata.Clear();
-            postPrepare.AllStructsMetadata.Clear();
-            postPrepare.AllEnumsMetadata.Clear();
-            postPrepare.AllFunctionsMetadata.Clear();
-            postPrepare.AllDelegatesMetadata.Clear();
-            postPrepare.AllGenericsMetadata.Clear();
+            postPrepare.AllGenericTypes.Clear();
+            PointerType.Types.Clear();
+            ReferenceType.Types.Clear();
+            postPrepare.ClearLists();
 
             // actualize files
             compiler.ActualizeFiles();
