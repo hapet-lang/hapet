@@ -208,6 +208,11 @@ namespace HapetFrontend.Parsing
                 // the case is 'Prop { get {...} set; }' so we should error
                 ReportMessage(theProperty.Location, [], ErrorCode.Get(CTEN.ExpectedSetBody));
             }
+            else if (!hasGet && !hasSet)
+            {
+                // the case is 'Prop { }' so we should error
+                ReportMessage(theProperty.Location, [], ErrorCode.Get(CTEN.ExpectedAnyGetOrSet));
+            }
 
             // do some checks for generics
             if (theProperty.HasGenericTypes && (!hasGet || getBody == null || (hasSet && setBody == null)))

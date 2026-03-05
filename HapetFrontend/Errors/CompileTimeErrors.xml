@@ -454,6 +454,10 @@
         <Number>2060</Number>
         <Text>Result of pattern expected to be an expression</Text>
     </Item>
+    <Item>
+        <Number>2061</Number>
+        <Text>Property or indexer must have at least one accessor</Text>
+    </Item>
 
 
     <!--Post prepare errors-->
