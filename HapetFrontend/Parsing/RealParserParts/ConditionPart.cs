@@ -206,8 +206,8 @@ namespace HapetFrontend.Parsing
 
         private AstStatement ParseSwitchExpression(AstExpression subExpr, ParserInInfo inInfo, ref ParserOutInfo outInfo)
         {
-            var beg = subExpr.Location.Beginning;
-            var end = Consume(inInfo, TokenType.KwSwitch, ErrMsg("keyword 'switch'", "at beginning of 'switch' expression"));
+            var beg = Consume(inInfo, TokenType.KwSwitch, ErrMsg("keyword 'switch'", "at beginning of 'switch' expression")).Location;
+            var end = beg;
 
             SkipNewlines(inInfo);
 
@@ -263,12 +263,12 @@ namespace HapetFrontend.Parsing
 
                 inInfo.CurrentlyParsingExpressedSwitch = saved;
 
-                return new AstSwitchExpr(subExpr, cases, new Location(beg, end.Location));
+                return new AstSwitchExpr(subExpr, cases, new Location(beg, end));
             }
             else
             {
                 // error here. it has to have braces
-                ReportMessage(new Location(beg, end.Location), [], ErrorCode.Get(CTEN.CasesExpectedAfterSwitch));
+                ReportMessage(new Location(beg, end), [], ErrorCode.Get(CTEN.CasesExpectedAfterSwitch));
                 return ParseEmptyExpression(inInfo);
             }
         }

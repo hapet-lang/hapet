@@ -403,6 +403,12 @@ namespace HapetLsp.Colorizers
                 case AstNullableExpr nullableExpr:
                     ColorizeNullableExpr(nullableExpr);
                     break;
+                case AstSwitchExpr switchExpr:
+                    ColorizeSwitchExpr(switchExpr);
+                    break;
+                case AstCaseExpr caseExpr:
+                    ColorizeCaseExpr(caseExpr);
+                    break;
 
                 // statements
                 case AstAssignStmt assignStmt:
@@ -743,6 +749,27 @@ namespace HapetLsp.Colorizers
         private void ColorizeNullableExpr(AstNullableExpr expr)
         {
             ColorizeExpr(expr.SubExpression);
+        }
+
+        private void ColorizeSwitchExpr(AstSwitchExpr expr)
+        {
+            // colorize 'switch' word
+            AddSemanticToken(expr, expr.Location.Beginning, _tokenTypes[8], _tokenModifiers[0]);
+
+            ColorizeExpr(expr.SubExpression);
+
+            foreach (var c in expr.Cases)
+                ColorizeCaseExpr(c);
+        }
+
+        private void ColorizeCaseExpr(AstCaseExpr expr)
+        {
+            if (expr.Pattern != null)
+                ColorizeExpr(expr.Pattern);
+
+            // could be null ?
+            if (expr.ReturnExpr != null)
+                ColorizeExpr(expr.ReturnExpr);
         }
 
 
