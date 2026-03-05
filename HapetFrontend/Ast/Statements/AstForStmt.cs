@@ -44,6 +44,11 @@ namespace HapetFrontend.Ast.Statements
         public AstAssignStmt ForeachCurrentAssign { get; set; }
         #endregion
 
+        /// <summary>
+        /// Used in LSP
+        /// </summary>
+        public ILocation ForeachInWord { get; set; }
+
         public override string AAAName => nameof(AstForStmt);
 
         public AstForStmt(AstStatement first, AstExpression second, AstStatement third, AstBlockExpr body, ILocation location = null) : base(location)
@@ -65,6 +70,7 @@ namespace HapetFrontend.Ast.Statements
             {
                 ForeachArgument = ForeachArgument?.GetDeepCopy() as AstExpression,
                 IsForeach = IsForeach,
+                ForeachInWord = ForeachInWord,
                 IsSyntheticStatement = IsSyntheticStatement,
                 Scope = Scope,
                 SourceFile = SourceFile,

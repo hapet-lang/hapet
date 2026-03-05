@@ -18,6 +18,7 @@ namespace HapetFrontend.Parsing
             AstBlockExpr body;
             bool isForeach = false;
             AstExpression foreachArgument = null;
+            ILocation foreachInWord = null;
 
             var beg = Consume(inInfo, TokenType.KwFor, ErrMsg("keyword 'for'", "at beginning of 'for' loop"));
 
@@ -33,7 +34,7 @@ namespace HapetFrontend.Parsing
             // check if it is a foreach
             if (CheckToken(inInfo, TokenType.KwIn))
             {
-                NextToken(inInfo); // TODO: save location for LSP
+                foreachInWord = NextToken(inInfo).Location; // TODO: save location for LSP
                 isForeach = true;
                 foreachArgument = ParseExpression(inInfo, ref outInfo) as AstExpression;
             }
@@ -67,6 +68,7 @@ namespace HapetFrontend.Parsing
             {
                 IsForeach = isForeach,
                 ForeachArgument = foreachArgument,
+                ForeachInWord = foreachInWord,
             };
         }
 

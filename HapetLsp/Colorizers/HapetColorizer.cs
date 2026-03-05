@@ -790,6 +790,12 @@ namespace HapetLsp.Colorizers
                 ColorizeExpr(stmt.SecondArgument);
             if (stmt.ThirdArgument != null)
                 ColorizeExpr(stmt.ThirdArgument);
+
+            if (stmt.IsForeach && stmt.ForeachArgument != null)
+                ColorizeExpr(stmt.ForeachArgument);
+            if (stmt.IsForeach && stmt.ForeachInWord != null)
+                AddSemanticToken(stmt, stmt.ForeachInWord, _tokenTypes[2], _tokenModifiers[0]);
+
             ColorizeBlockExpr(stmt.Body);
         }
 
