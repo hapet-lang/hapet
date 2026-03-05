@@ -9,3 +9,4 @@
 - LastPrepare -> ReplaceClasses
 - LastPrepare -> ReplacerForLambdas
 - Backend -> ExpressionGenerator
+- Lsp -> HapetColorizer
