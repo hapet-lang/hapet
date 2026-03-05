@@ -1441,6 +1441,10 @@ namespace HapetPostPrepare
                 PostPrepareExprInference(varDecl.Type, inInfo, ref outInfo);
                 // TODO: check for VarType and infer properly
 
+                // parser errors somewhere before
+                if (forStmt.ForeachArgument == null || varDecl.Name == null)
+                    return;
+
                 var arg = forStmt.ForeachArgument;
                 PostPrepareExprInference(arg, inInfo, ref outInfo);
                 // TODO: check that inherited from IEnumerable

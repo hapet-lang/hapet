@@ -489,6 +489,9 @@ namespace HapetLsp.Colorizers
         {
             foreach (var s in expr.Statements)
             {
+                if (s == null)
+                    continue;
+
                 if (s is AstFuncDecl fncD)
                 {
                     ColorizeDeclaration(fncD);
