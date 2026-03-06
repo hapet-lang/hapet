@@ -87,6 +87,22 @@ namespace HapetCompiler
                         LspMessageHandler lspMessageHandler = new LspMessageHandler();
                         return await projectToolchain.WatchAsync(args[1], lspMessageHandler);
                     }
+                case "new":
+                    {
+                        if (args.Length == 1)
+                        {
+                            messageHandler.ReportMessage(["new"], ErrorCode.Get(CTEN.NoProjectNewTypeSpecified));
+                            return (int)CompilerErrors.HapetCommandParamsError;
+                        }
+
+                        // make the stopwatch here
+                        Stopwatch stopwatch = new Stopwatch();
+                        stopwatch.Start();
+
+                        // skip the first two args because they are already used
+                        ProjectNewToolchain projectToolchain = new ProjectNewToolchain(stopwatch, args.Skip(2).ToArray());
+                        return await projectToolchain.CreateProjectAsync(args[1], messageHandler);
+                    }
                 case "-v":
                 case "--version":
                     {

@@ -19,6 +19,7 @@
         AssemblyNotFound                = 0x000B,
         RefProjectNotFound              = 0x000C,
         NoVersionFileFound              = 0x000D,
+        NoProjectNewTypeSpecified       = 0x000E,
 
         // lexer errors up to 0x2000
         FileForLexerNotFound            = 0x1001,

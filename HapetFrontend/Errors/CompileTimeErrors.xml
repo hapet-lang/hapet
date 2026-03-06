@@ -58,6 +58,10 @@
         <Number>000D</Number>
         <Text>Hapet version file not found</Text>
     </Item>
+    <Item>
+        <Number>000E</Number>
+        <Text>Project template must be specified</Text>
+    </Item>
 
     <!--Lexer errors-->
     <Item>
