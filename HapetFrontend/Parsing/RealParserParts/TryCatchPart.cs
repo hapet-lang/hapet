@@ -69,6 +69,24 @@ namespace HapetFrontend.Parsing
                 SkipNewlines(inInfo);
             }
 
+            // error if there are parametrized catch blocks after IsCommonCatch block
+            bool gotCommonCatch = false;
+            foreach (var catchBlock in catchBlocks)
+            {
+                if (catchBlock.IsCommonCatch && !gotCommonCatch)
+                {
+                    gotCommonCatch = true;
+                    continue;
+                }
+                // if there was already common catch block - error
+                if (gotCommonCatch)
+                    ReportMessage(catchBlock.Location.Beginning, [], ErrorCode.Get(CTEN.CatchAfterCommonCatch));
+            }
+
+            // error if no catch or finally blocks
+            if (catchBlocks.Count == 0 && finallyBlock == null)
+                ReportMessage(beg.Location, [], ErrorCode.Get(CTEN.NoFinallyOrCatchBlockFound));
+
             var tryCatchStmt = new AstTryCatchStmt(tryBlock, catchBlocks, finallyBlock, beg.Location)
             {
                 FinallyTokenLocation = finallyTkn?.Location,

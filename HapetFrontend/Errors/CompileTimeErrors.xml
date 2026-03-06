@@ -458,6 +458,14 @@
         <Number>2061</Number>
         <Text>Property or indexer must have at least one accessor</Text>
     </Item>
+    <Item>
+        <Number>2062</Number>
+        <Text>Catch clauses cannot follow the general catch clause of a 'try' statement</Text>
+    </Item>
+    <Item>
+        <Number>2063</Number>
+        <Text>A 'try' block must be followed by a 'catch' or 'finally' block</Text>
+    </Item>
 
 
     <!--Post prepare errors-->

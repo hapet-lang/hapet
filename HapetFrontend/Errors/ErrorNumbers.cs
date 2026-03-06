@@ -123,6 +123,8 @@
         PatternAsExprExpected           = 0x205F,
         PatternResultAsExprExpected     = 0x2060,
         ExpectedAnyGetOrSet             = 0x2061,
+        CatchAfterCommonCatch           = 0x2062,
+        NoFinallyOrCatchBlockFound      = 0x2063,
 
         // post preparer errors up to 0x5000
         EnumCouldNotBeAssigned          = 0x3001,

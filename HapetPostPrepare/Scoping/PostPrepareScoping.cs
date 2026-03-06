@@ -1114,7 +1114,7 @@ namespace HapetPostPrepare
             SetScopeAndParent(stmt.CatchBlock, stmt);
             var blockScope = PostPrepareBlockScoping(stmt.CatchBlock);
 
-            if (!stmt.IsCommonCatch)
+            if (!stmt.IsCommonCatch && stmt.CatchParam != null)
             {
                 // settings the block scope to the parameters (so they are in the scope of the block)
                 SetScopeAndParent(stmt.CatchParam, stmt, blockScope);
