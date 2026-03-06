@@ -8,6 +8,7 @@ using HapetFrontend.Types;
 using HapetLastPrepare;
 using HapetLsp.Colorizers;
 using HapetPostPrepare;
+using OmniSharp.Extensions.LanguageServer.Protocol.Client.Capabilities;
 using OmniSharp.Extensions.LanguageServer.Protocol.Document;
 using OmniSharp.Extensions.LanguageServer.Protocol.Models;
 using OmniSharp.Extensions.LanguageServer.Protocol.Server;
@@ -18,6 +19,23 @@ namespace HapetLsp.Handlers
 {
     public partial class HapetSyncHandler
     {
+        internal static SemanticTokensRegistrationOptions CreateDefaultRegistrationOptions(string pattern, SemanticTokenType[] types, SemanticTokenModifier[] modifiers)
+        {
+            return new SemanticTokensRegistrationOptions
+            {
+                DocumentSelector = new TextDocumentSelector(
+                     new TextDocumentFilter { Pattern = pattern }
+                ),
+                Legend = new SemanticTokensLegend()
+                {
+                    TokenTypes = types,
+                    TokenModifiers = modifiers
+                },
+                Full = new SemanticTokensCapabilityRequestFull { Delta = false },
+                Range = true
+            };
+        }
+
         internal static void OnAddText(HapetColorizer colorizer, string newText, OmniSharp.Extensions.LanguageServer.Protocol.Models.Range range)
         {
             var index = colorizer.File.GetIndexFromLineAndOffset(range.Start.Line, range.Start.Character);

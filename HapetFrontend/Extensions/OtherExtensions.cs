@@ -1,12 +1,13 @@
-﻿using HapetFrontend.Ast.Declarations;
+﻿using HapetFrontend.Ast;
+using HapetFrontend.Ast.Declarations;
 using HapetFrontend.Ast.Expressions;
-using HapetFrontend.Ast;
-using HapetFrontend.Parsing;
-using HapetFrontend.Types;
-using System.Text;
 using HapetFrontend.Entities;
 using HapetFrontend.Errors;
 using HapetFrontend.Helpers;
+using HapetFrontend.Parsing;
+using HapetFrontend.Types;
+using System;
+using System.Text;
 
 namespace HapetFrontend.Extensions
 {
@@ -194,21 +195,7 @@ namespace HapetFrontend.Extensions
                     }
 
                     // check for parameter types
-                    bool areTypesTheSame = typesD.Count == types.Count;
-                    if (!areTypesTheSame)
-                        continue;
-
-                    if (areTypesTheSame)
-                        for (int j = 0; j < types.Count; ++j)
-                        {
-                            var t1 = types[j];
-                            var t2 = typesD[j];
-                            if (!GenericType.AreTypesTheSameIncludingGenerics(t1, t2))
-                            {
-                                areTypesTheSame = false;
-                                break;
-                            }
-                        }
+                    bool areTypesTheSame = AreTypesTheSame(typesD);
                     if (!areTypesTheSame)
                         continue;
 
@@ -270,21 +257,7 @@ namespace HapetFrontend.Extensions
                     continue;
 
                 // check for parameter types
-                bool areTypesTheSame = typesD.Count == types.Count;
-                if (!areTypesTheSame)
-                    continue;
-
-                if (areTypesTheSame)
-                    for (int j = 0; j < types.Count; ++j)
-                    {
-                        var t1 = types[j];
-                        var t2 = typesD[j];
-                        if (!GenericType.AreTypesTheSameIncludingGenerics(t1, t2))
-                        {
-                            areTypesTheSame = false;
-                            break;
-                        }
-                    }
+                bool areTypesTheSame = AreTypesTheSame(typesD);
                 if (!areTypesTheSame)
                     continue;
 
@@ -297,6 +270,26 @@ namespace HapetFrontend.Extensions
                 bestMatch = x;
             }
             return bestMatch;
+
+            bool AreTypesTheSame(List<HapetType> typesD)
+            {
+                bool areTypesTheSame = typesD.Count == types.Count;
+                if (!areTypesTheSame)
+                    return false;
+
+                if (areTypesTheSame)
+                    for (int j = 0; j < types.Count; ++j)
+                    {
+                        var t1 = types[j];
+                        var t2 = typesD[j];
+                        if (!GenericType.AreTypesTheSameIncludingGenerics(t1, t2))
+                        {
+                            areTypesTheSame = false;
+                            break;
+                        }
+                    }
+                return areTypesTheSame;
+            }
         }
 
         public static AstDeclaration GetSameDeclByTypeAndNamePure(this List<AstDeclaration> decls, AstDeclaration decl, out int index)

@@ -19,6 +19,7 @@ namespace HapetFrontend.ProjectParser
 
         public ProgramFile XmlProgramFile => _projectFile;
         public XmlDocumentSyntax XmlParsed => _parsedProjectFile;
+        public string ProjectFileText => _projectFileText;
 
         /// <summary>
         /// All <PropertyGroup> tags in .hptproj

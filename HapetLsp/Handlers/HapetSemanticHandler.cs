@@ -62,19 +62,7 @@ namespace HapetLsp.Handlers
 
         protected override SemanticTokensRegistrationOptions CreateRegistrationOptions(SemanticTokensCapability capability, ClientCapabilities clientCapabilities)
         {
-            return new SemanticTokensRegistrationOptions
-            {
-                DocumentSelector = new TextDocumentSelector(
-                     new TextDocumentFilter { Pattern = "**/*.hpt" }
-                ),
-                Legend = new SemanticTokensLegend()
-                {
-                    TokenTypes = _tokenTypes,
-                    TokenModifiers = _tokenModifiers
-                },
-                Full = new SemanticTokensCapabilityRequestFull { Delta = false },
-                Range = true
-            };
+            return HapetSyncHandler.CreateDefaultRegistrationOptions("**/*.hpt", _tokenTypes, _tokenModifiers);
         }
 
         protected override Task<SemanticTokensDocument> GetSemanticTokensDocument(ITextDocumentIdentifierParams @params, CancellationToken cancellationToken)

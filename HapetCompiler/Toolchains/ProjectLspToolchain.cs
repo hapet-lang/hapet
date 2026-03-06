@@ -75,7 +75,7 @@ namespace HapetCompiler.Toolchains
 
             void MakeResolveAgain()
             {
-                projectParser.ParseFile();
+                projectParser.ParseFile(projectParser.ProjectFileText);
                 projectParser.PrepareFile();
                 projectParser.PrepareProjectFile();
 

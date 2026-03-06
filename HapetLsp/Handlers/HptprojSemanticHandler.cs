@@ -9,14 +9,22 @@ using OmniSharp.Extensions.LanguageServer.Protocol.Client.Capabilities;
 using OmniSharp.Extensions.LanguageServer.Protocol.Document;
 using OmniSharp.Extensions.LanguageServer.Protocol.Models;
 using OmniSharp.Extensions.LanguageServer.Protocol.Server;
-using static System.Net.Mime.MediaTypeNames;
 
 namespace HapetLsp.Handlers
 {
     public class HptprojSemanticHandler : SemanticTokensHandlerBase
     {
-        private readonly static SemanticTokenType[] _tokenTypes = new[] { new SemanticTokenType("tag"), new SemanticTokenType("param"), new SemanticTokenType("comment"), new SemanticTokenType("bracket") };
-        private readonly static SemanticTokenModifier[] _tokenModifiers = new[] { new SemanticTokenModifier("default") };
+        private readonly static SemanticTokenType[] _tokenTypes = new[] 
+        { 
+            new SemanticTokenType("tag"), 
+            new SemanticTokenType("param"), 
+            new SemanticTokenType("comment"), 
+            new SemanticTokenType("bracket") 
+        };
+        private readonly static SemanticTokenModifier[] _tokenModifiers = new[] 
+        { 
+            new SemanticTokenModifier("default") 
+        };
 
         private readonly ILanguageServerFacade _facade;
         private readonly Compiler _compiler;
@@ -37,19 +45,7 @@ namespace HapetLsp.Handlers
 
         protected override SemanticTokensRegistrationOptions CreateRegistrationOptions(SemanticTokensCapability capability, ClientCapabilities clientCapabilities)
         {
-            return new SemanticTokensRegistrationOptions
-            {
-                DocumentSelector = new TextDocumentSelector(
-                     new TextDocumentFilter { Pattern = "**/*.hptproj" }
-                ),
-                Legend = new SemanticTokensLegend()
-                {
-                    TokenTypes = _tokenTypes,
-                    TokenModifiers = _tokenModifiers
-                },
-                Full = new SemanticTokensCapabilityRequestFull { Delta = false },
-                Range = true
-            };
+            return HapetSyncHandler.CreateDefaultRegistrationOptions("**/*.hptproj", _tokenTypes, _tokenModifiers);
         }
 
         protected override Task<SemanticTokensDocument> GetSemanticTokensDocument(ITextDocumentIdentifierParams @params, CancellationToken cancellationToken)
