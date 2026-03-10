@@ -32,4 +32,10 @@
         <Content Include="logo.ico" />
     </ItemGroup>
 
+    <ItemGroup>
+        <Content Include="ProjectTemplateData/**">
+            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </Content>
+    </ItemGroup>
+
 </Project>
