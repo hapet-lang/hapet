@@ -26,7 +26,7 @@ namespace HapetCompiler.Toolchains
 
         async public Task<int> CreateProjectAsync(string projectType, IMessageHandler messageHandler)
         {
-            if (projectType == "--help")
+            if (projectType == "--help" || projectType == "-h")
             {
                 // print help
                 PrintHelp(messageHandler);

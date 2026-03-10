@@ -117,6 +117,19 @@ namespace HapetCompiler
                         messageHandler.ReportMessage([$"Hapet compiler version: {version}"], null, ReportType.Info);
                         return 0;
                     }
+                case "-h":
+                case "--help":
+                    {
+                        messageHandler.ReportMessage([$"Available commands: "], null, ReportType.Info);
+                        messageHandler.ReportMessage([$"  hapet build <project> <args>\t\tBuilds specified project"], null, ReportType.Info);
+                        messageHandler.ReportMessage([$"  hapet run <project> <args>\t\tBuilds and runs specified project"], null, ReportType.Info);
+                        messageHandler.ReportMessage([$"  hapet restore <project> <args>\tRestores dependencies of specified project"], null, ReportType.Info);
+                        messageHandler.ReportMessage([$"  hapet lsp <project> <args>\t\tStarts LSP server for the project"], null, ReportType.Info);
+                        messageHandler.ReportMessage([$"  hapet -v\t\t\t\tPrints version of hapet compiler"], null, ReportType.Info);
+                        messageHandler.ReportMessage([$"  hapet -h\t\t\t\tPrints help"], null, ReportType.Info);
+                        messageHandler.ReportMessage([$"Run 'hapet <command> --help' for more detailed info about a command."], null, ReportType.Info);
+                        return 0;
+                    }
             }
             messageHandler.ReportMessage([args[0]], ErrorCode.Get(CTEN.NotFoundHapetCommand));
             return (int)CompilerErrors.HapetCommandError;

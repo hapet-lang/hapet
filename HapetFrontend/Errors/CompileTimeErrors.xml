@@ -24,7 +24,7 @@
     </Item>
     <Item>
         <Number>0005</Number>
-        <Text>hapet command must be specified. For example 'hapet build ...'</Text>
+        <Text>hapet command must be specified. Run 'hapet -h' to see available hapet commands</Text>
     </Item>
     <Item>
         <Number>0006</Number>
