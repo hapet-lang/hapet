@@ -1,0 +1,10 @@
+<Project>
+    <PropertyGroup>
+        <ProjectName>{ProjectName}</ProjectName>
+        <TargetFormat>Library</TargetFormat>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="System.hptproj" />
+    </ItemGroup>
+</Project>

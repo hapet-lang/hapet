@@ -2,11 +2,11 @@
 
 namespace HapetCompiler.Toolchains.ProjectTemplates
 {
-    internal class ConsoleProjectTemplate : IProjectTemplate
+    internal class ClassLibProjectTemplate : IProjectTemplate
     {
-        public string DefaultProjectName => "ConsoleProject";
-        public string TemplateDirectoryName => "ConsoleProjectTemplate";
-        public string TemplateProjectFileName => "ConsoleProject.hptproj";
+        public string DefaultProjectName => "LibraryProject";
+        public string TemplateDirectoryName => "ClassLibProjectTemplate";
+        public string TemplateProjectFileName => "ClassLibProject.hptproj";
 
         async public Task<bool> CreateAsync(string projectName, string[] args, IMessageHandler messageHandler)
         {

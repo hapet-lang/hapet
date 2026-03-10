@@ -9,13 +9,14 @@ namespace HapetCompiler.Toolchains
 {
     internal sealed class ProjectNewToolchain
     {
-        private static Dictionary<string, IProjectTemplate> _projectTemplates = new Dictionary<string, IProjectTemplate>()
+        private static readonly Dictionary<string, IProjectTemplate> _projectTemplates = new Dictionary<string, IProjectTemplate>()
         {
             { "console", new ConsoleProjectTemplate() },
+            { "classlib", new ClassLibProjectTemplate() },
         };
 
         private readonly Stopwatch _stopwatch;
-        private readonly string[] _cmdArgs; // TODO: use them for ProjectXmlParser
+        private readonly string[] _cmdArgs;
         public ProjectNewToolchain(Stopwatch stopwatch, string[] args)
         {
             _stopwatch = stopwatch;
@@ -40,7 +41,8 @@ namespace HapetCompiler.Toolchains
             // some shite with naming
             if (!GetProjectName(template, messageHandler, out string projectName))
                 return await Task.FromResult((int)CompilerErrors.HapetCommandError);
-
+            // copy template files
+            CopyTemplateFiles(template, projectName);
             var result = await template.CreateAsync(projectName, _cmdArgs, messageHandler);
             if (result)
                 messageHandler.ReportMessage([$"Project '{projectName}' successfully created"], null, ReportType.Info);
@@ -84,6 +86,29 @@ namespace HapetCompiler.Toolchains
 
             projectName = currentProjectName;
             return true;
+        }
+
+        private void CopyTemplateFiles(IProjectTemplate projectTemplate, string projectName)
+        {
+            // dir where hapet is running
+            string currentDirectory = Directory.GetCurrentDirectory();
+
+            // create dir for the project
+            string projectDirectory = Path.Combine(currentDirectory, projectName);
+            Directory.CreateDirectory(projectDirectory);
+
+            // copy template files
+            string consoleTemplate = Path.Combine(CompilerUtils.CurrentHapetDirectory, "ProjectTemplateData", projectTemplate.TemplateDirectoryName);
+            CompilerUtils.CopyFilesRecursively(consoleTemplate, projectDirectory); 
+
+            // change project name
+            string projectFileName = Path.Combine(projectDirectory, projectTemplate.TemplateProjectFileName);
+            string projectText = File.ReadAllText(projectFileName);
+            File.Delete(projectFileName);
+            projectText = projectText.Replace("{ProjectName}", projectName);
+            // save as new file
+            string newProjectFileName = Path.Combine(projectDirectory, $"{projectName}.hptproj");
+            File.WriteAllText(newProjectFileName, projectText);
         }
     }
 }
