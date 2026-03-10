@@ -1,6 +1,8 @@
-﻿using HapetFrontend;
+﻿using HapetCompiler.Toolchains.ProjectTemplates;
+using HapetFrontend;
 using HapetFrontend.Entities;
 using System.Diagnostics;
+using System.Text;
 
 namespace HapetCompiler.Toolchains
 {
@@ -19,6 +21,14 @@ namespace HapetCompiler.Toolchains
 
         public int Run(string projectPath, IMessageHandler messageHandler)
         {
+            // check for --help
+            if (projectPath == "--help" || projectPath == "-h")
+            {
+                // print help
+                PrintHelp(messageHandler);
+                return 0;
+            }
+
             CompilerSettings.IsInRunContext = true;
 
             // just use build 
@@ -41,6 +51,11 @@ namespace HapetCompiler.Toolchains
 
             // make it run sync
             executableProcess.WaitForExit();
+        }
+
+        private void PrintHelp(IMessageHandler messageHandler)
+        {
+            messageHandler.ReportMessage([$"Usage: \n  hapet run <project> <args> \n"], null, ReportType.Info);
         }
     }
 }

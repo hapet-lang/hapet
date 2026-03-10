@@ -1,13 +1,14 @@
 ﻿using HapetBackend.Llvm;
-using HapetFrontend.Entities;
-using HapetFrontend;
-using System.Diagnostics;
-using HapetFrontend.Helpers;
 using HapetCompiler.Resolvers;
-using HapetPostPrepare;
+using HapetFrontend;
+using HapetFrontend.Entities;
+using HapetFrontend.Helpers;
+using HapetFrontend.ProjectParser;
 using HapetFrontend.Types;
 using HapetLastPrepare;
-using HapetFrontend.ProjectParser;
+using HapetPostPrepare;
+using System.Diagnostics;
+using System.Text;
 
 namespace HapetCompiler.Toolchains
 {
@@ -27,6 +28,14 @@ namespace HapetCompiler.Toolchains
         public int Build(string projectPath, IMessageHandler messageHandler, out string outFilePath, bool referenced = false, bool makeCodegen = true)
         {
             outFilePath = "";
+
+            // check for --help
+            if (projectPath == "--help" || projectPath == "-h")
+            {
+                // print help
+                PrintHelp(messageHandler);
+                return 0;
+            }
 
             // save type context
             var cachedTypeContext = HapetType.CurrentTypeContext;
@@ -171,6 +180,11 @@ namespace HapetCompiler.Toolchains
             }
 
             return generator.CompileCode(resolver.PathsToLinkWith, resolver.LibrariesToLinkWith, messageHandler, out outFilePath);
+        }
+
+        private void PrintHelp(IMessageHandler messageHandler)
+        {
+            messageHandler.ReportMessage([$"Usage: \n  hapet build <project> <args> \n"], null, ReportType.Info);
         }
     }
 }
