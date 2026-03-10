@@ -7,6 +7,7 @@ namespace HapetCompiler.Toolchains.ProjectTemplates
         public string DefaultProjectName => "ConsoleProject";
         public string TemplateDirectoryName => "ConsoleProjectTemplate";
         public string TemplateProjectFileName => "ConsoleProject.hptproj";
+        public string TemplateDescription => "Console project";
 
         async public Task<bool> CreateAsync(string projectName, string[] args, IMessageHandler messageHandler)
         {

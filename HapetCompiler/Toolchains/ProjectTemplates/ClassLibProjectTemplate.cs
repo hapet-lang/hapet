@@ -7,6 +7,7 @@ namespace HapetCompiler.Toolchains.ProjectTemplates
         public string DefaultProjectName => "LibraryProject";
         public string TemplateDirectoryName => "ClassLibProjectTemplate";
         public string TemplateProjectFileName => "ClassLibProject.hptproj";
+        public string TemplateDescription => "Class library project";
 
         async public Task<bool> CreateAsync(string projectName, string[] args, IMessageHandler messageHandler)
         {

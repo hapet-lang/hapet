@@ -4,6 +4,7 @@ using HapetFrontend.Entities;
 using HapetFrontend.Errors;
 using HapetFrontend.Helpers;
 using System.Diagnostics;
+using System.Text;
 
 namespace HapetCompiler.Toolchains
 {
@@ -27,7 +28,8 @@ namespace HapetCompiler.Toolchains
         {
             if (projectType == "--help")
             {
-                // TODO: print help
+                // print help
+                PrintHelp(messageHandler);
                 return await Task.FromResult(0);
             }
 
@@ -63,9 +65,9 @@ namespace HapetCompiler.Toolchains
             }
 
             // check for -n param existance
-            if (_cmdArgs.Contains("-n"))
+            if (_cmdArgs.Contains("-n") || _cmdArgs.Contains("--name"))
             {
-                int index = Array.FindIndex(_cmdArgs, x => x == "-n");
+                int index = Array.FindIndex(_cmdArgs, x => (x == "-n") || (x == "--name"));
                 if (index + 1 >= _cmdArgs.Length)
                 {
                     // name not specified
@@ -109,6 +111,19 @@ namespace HapetCompiler.Toolchains
             // save as new file
             string newProjectFileName = Path.Combine(projectDirectory, $"{projectName}.hptproj");
             File.WriteAllText(newProjectFileName, projectText);
+        }
+
+        private void PrintHelp(IMessageHandler messageHandler)
+        {
+            messageHandler.ReportMessage([$"Usage: \n  hapet new <template> <args> \n"], null, ReportType.Info);
+            StringBuilder temps = new StringBuilder();
+            foreach (var t in _projectTemplates)
+            {
+                temps.Append($"\n  {t.Key}\t\t{t.Value.TemplateDescription}");
+            }
+            messageHandler.ReportMessage([$"Available templates: {temps} \n"], null, ReportType.Info);
+            messageHandler.ReportMessage([$"Parameters: "], null, ReportType.Info);
+            messageHandler.ReportMessage([$"  -n, --name <name> \t\t Output project name. If not specified - default template name is used."], null, ReportType.Info);
         }
     }
 }

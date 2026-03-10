@@ -7,6 +7,7 @@ namespace HapetCompiler.Toolchains.ProjectTemplates
         string DefaultProjectName { get; }
         string TemplateDirectoryName { get; }
         string TemplateProjectFileName { get; }
+        string TemplateDescription { get; }
         Task<bool> CreateAsync(string projectName, string[] args, IMessageHandler messageHandler);
     }
 }
