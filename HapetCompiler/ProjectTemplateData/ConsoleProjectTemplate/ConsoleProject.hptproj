@@ -1,0 +1,10 @@
+<Project>
+    <PropertyGroup>
+        <ProjectName>{ProjectName}</ProjectName>
+        <TargetFormat>Console</TargetFormat>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="System.hptproj" />
+    </ItemGroup>
+</Project>

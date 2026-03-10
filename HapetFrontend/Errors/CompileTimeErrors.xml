@@ -62,6 +62,14 @@
         <Number>000E</Number>
         <Text>Project template must be specified</Text>
     </Item>
+    <Item>
+        <Number>000F</Number>
+        <Text>{0} expected after {1}</Text>
+    </Item>
+    <Item>
+        <Number>0010</Number>
+        <Text>Directory '{0}' already exists</Text>
+    </Item>
 
     <!--Lexer errors-->
     <Item>

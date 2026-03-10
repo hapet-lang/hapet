@@ -1,6 +1,7 @@
 ﻿using HapetCompiler.Toolchains.ProjectTemplates;
 using HapetFrontend;
 using HapetFrontend.Entities;
+using HapetFrontend.Errors;
 using System.Diagnostics;
 
 namespace HapetCompiler.Toolchains
@@ -30,14 +31,56 @@ namespace HapetCompiler.Toolchains
 
             // error if no such template
             if (!_projectTemplates.ContainsKey(projectType))
-            {
                 return await Task.FromResult((int)CompilerErrors.HapetCommandError);
-            }
 
             // calling function for creation in template
             var template = _projectTemplates[projectType];
-            await template.CreateAsync(_cmdArgs, messageHandler);
+
+            // some shite with naming
+            if (!GetProjectName(template, messageHandler, out string projectName))
+                return await Task.FromResult((int)CompilerErrors.HapetCommandError);
+
+            await template.CreateAsync(projectName, _cmdArgs, messageHandler);
             return await Task.FromResult(0);
+        }
+
+        private bool GetProjectName(IProjectTemplate projectTemplate, IMessageHandler messageHandler, out string projectName)
+        {
+            // make default name for project - check for existance
+            string defaultprojectName = projectTemplate.DefaultProjectName;
+            string currentProjectName = defaultprojectName;
+            int currentIteration = 0;
+            string currentDirectory = Directory.GetCurrentDirectory();
+            while (Directory.Exists(Path.Combine(currentDirectory, currentProjectName)))
+            {
+                currentIteration++;
+                currentProjectName = defaultprojectName + currentIteration.ToString();
+            }
+
+            // check for -n param existance
+            if (_cmdArgs.Contains("-n"))
+            {
+                int index = Array.FindIndex(_cmdArgs, x => x == "-n");
+                if (index + 1 >= _cmdArgs.Length)
+                {
+                    // name not specified
+                    messageHandler.ReportMessage(["Project name", "-n"], ErrorCode.Get(CTEN.SomethingExpectedAfter));
+                    projectName = "";
+                    return false;
+                }
+                currentProjectName = _cmdArgs[index + 1];
+            }
+
+            // check if directory already exists - then error
+            if (Directory.Exists(Path.Combine(currentDirectory, currentProjectName)))
+            {
+                messageHandler.ReportMessage([currentProjectName], ErrorCode.Get(CTEN.TemplateProjectDirExists));
+                projectName = "";
+                return false;
+            }
+
+            projectName = currentProjectName;
+            return true;
         }
     }
 }

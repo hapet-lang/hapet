@@ -4,6 +4,7 @@ namespace HapetCompiler.Toolchains.ProjectTemplates
 {
     internal interface IProjectTemplate
     {
-        Task CreateAsync(string[] args, IMessageHandler messageHandler);
+        string DefaultProjectName { get; }
+        Task CreateAsync(string projectName, string[] args, IMessageHandler messageHandler);
     }
 }
