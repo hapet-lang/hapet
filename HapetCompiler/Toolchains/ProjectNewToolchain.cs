@@ -2,6 +2,7 @@
 using HapetFrontend;
 using HapetFrontend.Entities;
 using HapetFrontend.Errors;
+using HapetFrontend.Helpers;
 using System.Diagnostics;
 
 namespace HapetCompiler.Toolchains
@@ -40,7 +41,9 @@ namespace HapetCompiler.Toolchains
             if (!GetProjectName(template, messageHandler, out string projectName))
                 return await Task.FromResult((int)CompilerErrors.HapetCommandError);
 
-            await template.CreateAsync(projectName, _cmdArgs, messageHandler);
+            var result = await template.CreateAsync(projectName, _cmdArgs, messageHandler);
+            if (result)
+                messageHandler.ReportMessage([$"Project '{projectName}' successfully created"], null, ReportType.Info);
             return await Task.FromResult(0);
         }
 
