@@ -1,4 +1,5 @@
 ﻿using HapetCompiler.Resolvers;
+using HapetCompiler.Toolchains.ProjectTemplates;
 using HapetFrontend;
 using HapetFrontend.Entities;
 using HapetFrontend.Helpers;
@@ -8,6 +9,7 @@ using HapetLastPrepare;
 using HapetLsp;
 using HapetPostPrepare;
 using System.Diagnostics;
+using System.Text;
 
 namespace HapetCompiler.Toolchains
 {
@@ -24,8 +26,16 @@ namespace HapetCompiler.Toolchains
             _cmdArgs = args;
         }
 
-        async public Task<int> WatchAsync(string projectPath, IMessageHandler messageHandler)
+        async public Task<int> WatchAsync(string projectPath, IMessageHandler messageHandler, IMessageHandler consoleMessageHandler)
         {
+            // check for --help
+            if (projectPath == "--help" || projectPath == "-h")
+            {
+                // print help
+                PrintHelp(consoleMessageHandler);
+                return 0;
+            }
+
             // save type context
             var cachedTypeContext = HapetType.CurrentTypeContext;
 
@@ -85,6 +95,14 @@ namespace HapetCompiler.Toolchains
 
                 resolver.ResolveProjectShite(ProjectData, ProjectSettings, compiler, projectParser);
             }
+        }
+
+        private void PrintHelp(IMessageHandler messageHandler)
+        {
+            messageHandler.ReportMessage([$"Usage: \n  hapet lsp <project> <args> \n"], null, ReportType.Info);
+            messageHandler.ReportMessage([$"Parameters: "], null, ReportType.Info);
+            messageHandler.ReportMessage([$"  --tcp \t\t With this parameter LSP server starts over TCP on 5007 port."], null, ReportType.Info);
+            messageHandler.ReportMessage([$"\t\t\t By default it starts over stdin/stdout."], null, ReportType.Info);
         }
     }
 }
