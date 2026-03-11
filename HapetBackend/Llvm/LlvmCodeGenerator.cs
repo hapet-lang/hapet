@@ -32,7 +32,7 @@ namespace HapetBackend.Llvm
 
         public unsafe bool GenerateCode(Compiler compiler, PostPrepare postPreparer, IMessageHandler messageHandler)
         {
-            // this list is used to store all [DllImport("...")] shite
+            // this list is used to store all [LibImport("...")] shite
             _libsToBeLinked = new List<string>();
 
             LLVM.InitializeAllTargetMCs();
@@ -157,7 +157,7 @@ namespace HapetBackend.Llvm
             string exeFile = Path.Combine(_outDir, _targetFile);
 
             // merging dependency libraries that were found in code with 
-            // [DllImport(...)] attr
+            // [LibImport(...)] attr
             foreach (var r in _libsToBeLinked)
             {
                 // getting the proper data

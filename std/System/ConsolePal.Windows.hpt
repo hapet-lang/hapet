@@ -10,15 +10,15 @@ using System.Runtime.InteropServices;
 [SuppressStaticCtorCall]
 internal static class ConsolePal
 {
-    [DllImport("", "fputs")]
+    [LibImport("", "fputs")]
     private static extern inline int FPuts(byte* data, void* stream);
-    [DllImport("", "__acrt_iob_func")]
+    [LibImport("", "__acrt_iob_func")]
     private static extern inline void* Acrt(uint ix);
-    [DllImport("", "GetStdHandle")]
+    [LibImport("", "GetStdHandle")]
     private static extern inline int* GetStdHandle(int nHandle);
-    [DllImport("", "SetConsoleTextAttribute")]
+    [LibImport("", "SetConsoleTextAttribute")]
     private static extern inline int SetConsoleTextAttribute(int* hConsoleOutput, short wAttributes);
-    [DllImport("", "GetConsoleScreenBufferInfo")]
+    [LibImport("", "GetConsoleScreenBufferInfo")]
     private static extern inline bool GetConsoleScreenBufferInfo(int* hConsoleOutput, CONSOLE_SCREEN_BUFFER_INFO* lpConsoleScreenBufferInfo);
 
     // For ResetColor

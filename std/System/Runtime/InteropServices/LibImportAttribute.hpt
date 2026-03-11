@@ -1,0 +1,19 @@
+// Licensed to the hapet-lang under one or more agreements.
+// The hapet-lang licenses this file to you under the MIT license.
+
+using System;
+
+[SuppressStaticCtorCall]
+public sealed class LibImportAttribute : Attribute
+{
+    [Required]
+    public string LibName;
+    [Required]
+    public string EntryPoint;
+    // If suppress of low level dllimport required (won't generate dllimport in IR)
+    public bool SuppressDllImportAttribute;
+
+    public LibImportAttribute()
+    {
+    }
+}

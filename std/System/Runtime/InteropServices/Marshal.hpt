@@ -8,33 +8,33 @@ using System;
 public static class Marshal
 {
     [DeclarationUsed]
-    [DllImport("", "malloc")]
+    [LibImport("", "malloc")]
     public static extern inline void* Malloc(int size);
 
     [DeclarationUsed]
-    [DllImport("", "free")]
+    [LibImport("", "free")]
     public static extern inline void Free(void* ptr);
 
     [DeclarationUsed]
-    [DllImport("", "memset")]
+    [LibImport("", "memset")]
     public static extern inline void* Memset(void* memptr, int val, uintptr num);
 
     [DeclarationUsed]
-    [DllImport("", "memcpy")]
+    [LibImport("", "memcpy")]
     public static extern inline void* Memcpy(void* dst, void* src, uintptr count);
 
     [DeclarationUsed]
-    [DllImport("", "memcmp")]
+    [LibImport("", "memcmp")]
     public static extern inline int Memcmp(void* memptr1, void* memptr2, uintptr num);
 
-    [DllImport("", "modf")]
+    [LibImport("", "modf")]
     public static extern inline double ModF(double num, double* i);
 
     [DeclarationUsed]
-    [DllImport("", "fflush")]
+    [LibImport("", "fflush")]
     public static extern inline int Fflush(void* stream);
 
-    [DllImport("", "__acrt_iob_func")]
+    [LibImport("", "__acrt_iob_func")]
     private static extern inline void* AcrtIobFunc(uint ix);
 
     [SuppressStackTrace]

@@ -11,7 +11,7 @@ public sealed class DllImportAttribute : Attribute
     public string DllName;
     [Required]
     public string EntryPoint;
-    // If suppress of low level dllimport required
+    // If suppress of low level dllimport required (won't generate dllimport in IR)
     public bool SuppressDllImportAttribute;
 
     public DllImportAttribute()

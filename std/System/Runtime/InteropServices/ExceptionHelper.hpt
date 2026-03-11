@@ -75,27 +75,27 @@ private static class ExceptionHelper
 {
 #if TARGET_PLATFORM == "win-x64";
     [DeclarationUsed]
-    [DllImport("", "_setjmp", true)]
+    [LibImport("", "_setjmp", true)]
     private static extern inline int SetJmp(void* env, void* p2);
     [DeclarationUsed]
-    [DllImport("", "longjmp", true)]
+    [LibImport("", "longjmp", true)]
     private static extern inline void LongJmp(void* env, int val);
     [DeclarationUsed]
-    [DllImport("", "llvm.frameaddress.p0", true)]
+    [LibImport("", "llvm.frameaddress.p0", true)]
     private static extern inline void* FrameAddress(int immarg);
 #elif TARGET_PLATFORM == "win-x86";
     [DeclarationUsed]
-    [DllImport("", "_setjmp3", true)]
+    [LibImport("", "_setjmp3", true)]
     private static extern inline int SetJmp(void* env, int p2, arglist);
     [DeclarationUsed]
-    [DllImport("", "longjmp", true)]
+    [LibImport("", "longjmp", true)]
     private static extern inline void LongJmp(void* env, int val);
 #else
     [DeclarationUsed]
-    [DllImport("", "setjmp", true)]
+    [LibImport("", "setjmp", true)]
     private static extern inline int SetJmp(void* env);
     [DeclarationUsed]
-    [DllImport("", "longjmp", true)]
+    [LibImport("", "longjmp", true)]
     private static extern inline void LongJmp(void* env, int val);
 #endif
 

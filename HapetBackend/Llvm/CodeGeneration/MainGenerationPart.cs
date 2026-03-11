@@ -391,34 +391,50 @@ namespace HapetBackend.Llvm
             string dllImportAttrFullName = "System.Runtime.InteropServices.DllImportAttribute"; // WARN: hard cock
             var dllImportAttr = funcDecl.GetAttribute(dllImportAttrFullName);
             // many checks are here
+            // TODO: check in PP
             if (dllImportAttr == null)
             {
-                // TODO: check in PP
-                _messageHandler.ReportMessage(_currentSourceFile, funcDecl, [], ErrorCode.Get(CTEN.ExternFuncNoAttr));
-                return;
+                string libImportAttrFullName = "System.Runtime.InteropServices.LibImportAttribute"; // WARN: hard cock
+                var libImportAttr = funcDecl.GetAttribute(libImportAttrFullName);
+                if (libImportAttr == null)
+                {
+                    _messageHandler.ReportMessage(_currentSourceFile, funcDecl, [], ErrorCode.Get(CTEN.ExternFuncNoAttr));
+                    return;
+                }
+                else
+                {
+                    string libName = libImportAttr.Arguments[0].OutValue as string;
+                    string entryPoint = libImportAttr.Arguments[1].OutValue as string;
+                    bool isSupp = false;
+                    if (libImportAttr.Arguments.Count > 2 && libImportAttr.Arguments[2].OutValue is bool b)
+                        isSupp = b;
+
+                    // check if there is a lib to be linked with!
+                    if (!string.IsNullOrWhiteSpace(libName))
+                        _libsToBeLinked.Add(libName);
+
+                    // declaring global func
+                    LLVMValueRef lfunc = _module.GetOrCreateFunction(entryPoint, funcType);
+                    lfunc.Linkage = LLVMLinkage.LLVMExternalLinkage;
+                    // check if suppress dllimport attr
+                    if (!isSupp) lfunc.DLLStorageClass = LLVMDLLStorageClass.LLVMDLLImportStorageClass;
+
+                    // setting parameter names
+                    for (int i = 0; i < funcDecl.Parameters.Count; ++i)
+                    {
+                        var p = funcDecl.Parameters[i];
+                        if (p.Name != null)
+                            lfunc.GetParams()[i].Name = p.Name.Name;
+                    }
+                    // caching the function	
+                    _valueMap[funcDecl.Symbol] = lfunc;
+                    _lastFunctionValueRef = lfunc;
+                }
             }
-            string dllName = dllImportAttr.Arguments[0].OutValue as string;
-            string entryPoint = dllImportAttr.Arguments[1].OutValue as string;
-            bool isSupp = false;
-            if (dllImportAttr.Arguments.Count > 2 && dllImportAttr.Arguments[2].OutValue is bool b)
-                isSupp = b;
-
-            // declaring global func
-            LLVMValueRef lfunc = _module.GetOrCreateFunction(entryPoint, funcType);
-            lfunc.Linkage = LLVMLinkage.LLVMExternalLinkage;
-            // check if suppress dllimport attr
-            if (!isSupp) lfunc.DLLStorageClass = LLVMDLLStorageClass.LLVMDLLImportStorageClass;
-
-            // setting parameter names
-            for (int i = 0; i < funcDecl.Parameters.Count; ++i)
+            else
             {
-                var p = funcDecl.Parameters[i];
-                if (p.Name != null)
-                    lfunc.GetParams()[i].Name = p.Name.Name;
+                // TODO: error that inline could not be used with DllImport, only LibImport
             }
-            // caching the function	
-            _valueMap[funcDecl.Symbol] = lfunc;
-            _lastFunctionValueRef = lfunc;
         }
 
         private void GenerateExternFunctionBody(AstFuncDecl funcDecl)
@@ -430,14 +446,35 @@ namespace HapetBackend.Llvm
             // many checks are here
             if (dllImportAttr == null)
             {
-                // TODO: check in PP
-                _messageHandler.ReportMessage(_currentSourceFile, funcDecl, [], ErrorCode.Get(CTEN.ExternFuncNoAttr));
-                return;
+                string libImportAttrFullName = "System.Runtime.InteropServices.LibImportAttribute"; // WARN: hard cock
+                var libImportAttr = funcDecl.GetAttribute(libImportAttrFullName);
+                if (libImportAttr == null)
+                {
+                    _messageHandler.ReportMessage(_currentSourceFile, funcDecl, [], ErrorCode.Get(CTEN.ExternFuncNoAttr));
+                    return;
+                }
+                else
+                {
+                    GenerateExternLibImportFunctionBody(funcDecl, libImportAttr);
+                }
             }
-            string dllName = dllImportAttr.Arguments[0].OutValue as string;
-            string entryPoint = dllImportAttr.Arguments[1].OutValue as string;
+            else
+            {
+                GenerateExternDllImportFunctionBody(funcDecl, dllImportAttr);
+            }
+        }
+
+        private void GenerateExternDllImportFunctionBody(AstFuncDecl funcDecl, AstAttributeStmt importAttr)
+        {
+            throw new NotImplementedException();
+        }
+
+        private void GenerateExternLibImportFunctionBody(AstFuncDecl funcDecl, AstAttributeStmt importAttr)
+        {
+            string dllName = importAttr.Arguments[0].OutValue as string;
+            string entryPoint = importAttr.Arguments[1].OutValue as string;
             bool isSupp = false;
-            if (dllImportAttr.Arguments.Count > 2 && dllImportAttr.Arguments[2].OutValue is bool b)
+            if (importAttr.Arguments.Count > 2 && importAttr.Arguments[2].OutValue is bool b)
                 isSupp = b;
 
             HapetType vaListType = HapetType.CurrentTypeContext.VaListTypeInstance;
@@ -454,7 +491,7 @@ namespace HapetBackend.Llvm
             // the same type
             /// almost the same as in <see cref="HapetTypeToLLVMType"/>
             var f = funcDecl.Type.OutType as FunctionType;
-            var paramTypes = f.Declaration.Parameters.Select(rt => 
+            var paramTypes = f.Declaration.Parameters.Select(rt =>
                 HapetTypeToLLVMType(rt.ParameterModificator == ParameterModificator.Arglist ? ptrToVaListType : rt.Type.OutType)).ToList();
             var returnType = HapetTypeToLLVMType(f.Declaration.Returns.OutType);
             funcType = LLVMTypeRef.CreateFunction(returnType, paramTypes.ToArray(), false);
@@ -511,7 +548,7 @@ namespace HapetBackend.Llvm
                 var v = _builder.BuildCall2(funcType, funcValue, parameters.ToArray(), $"{entryPoint}Result");
                 TryBuildVaEnd();
                 _builder.BuildRet(v);
-            }            
+            }
 
             void TryBuildVaEnd()
             {
@@ -520,7 +557,7 @@ namespace HapetBackend.Llvm
                     return;
 
                 // va end
-                var endFunc = GetVaStartFunc();
+                var endFunc = GetVaEndFunc();
                 _builder.BuildCall2(endFunc.Item1, endFunc.Item2, new LLVMValueRef[] { apAllocaBitcasted });
             }
         }
