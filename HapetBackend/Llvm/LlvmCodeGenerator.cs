@@ -168,8 +168,7 @@ namespace HapetBackend.Llvm
                     continue;
                 }
                 libraryIncludeDirectories.Add(data.Item1);
-                // TODO: is there .lib file when we are on linux?
-                libraries.Add($"{data.Item2}.lib");
+                libraries.Add($"{data.Item2}");
             }
 
             ILinker linker = null;
