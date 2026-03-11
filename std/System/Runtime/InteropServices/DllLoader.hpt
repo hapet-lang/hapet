@@ -1,0 +1,86 @@
+// Licensed to the hapet-lang under one or more agreements.
+// The hapet-lang licenses this file to you under the MIT license.
+
+using System;
+using System.Text;
+
+private struct LibEntry
+{
+    public string Name;
+    public void* Handle;
+    public LibEntry* Next;
+}
+
+public static class DllLoader
+{
+#if TARGET_PLATFORM == "linux-x64";
+    [LibImport("", "dlopen")]
+    public static extern inline void* Dlopen(byte* filename, int flags);
+    [LibImport("", "dlsym")]
+    public static extern inline void* Dlsym(void* handle, byte* symbol);
+    [LibImport("", "dlclose")]
+    public static extern inline int Dlclose(void* handle);
+#else
+    [LibImport("", "LoadLibraryA")]
+    public static extern inline void* LoadLibraryA(byte* filename);
+    [LibImport("", "GetProcAddress")]
+    public static extern inline void* GetProcAddress(void* handle, byte* symbol);
+    [LibImport("", "FreeLibrary")]
+    public static extern inline int FreeLibrary(void* handle);
+#endif
+
+    private static LibEntry* libList = null;
+
+    public static void* ResolveSymbol(string libName, string symbolName)
+    {
+        void* libHandle = GetLibHandle(libName);
+        if (libHandle == null)
+            throw new DllNotFoundException($"Failed to load library {libName}");
+
+        int symbolNameLen = 0;
+        byte* symbolNameBytes = UTF8Encoding.GetBytesUnsafe(symbolName, out symbolNameLen);
+
+#if TARGET_PLATFORM == "linux-x64";
+        void* p = Dlsym(libHandle, symbolNameBytes);
+#else
+        void* p = GetProcAddress(libHandle, symbolNameBytes);
+#endif
+        if (p == null)
+            throw new DllNotFoundException($"Failed to find symbol {symbolName} in library {libName}");
+
+        return p;
+    }
+
+    private static void* GetLibHandle(string libName)
+    {
+        LibEntry* current = libList;
+        while (current != null)
+        {
+            if ((*current).Name == libName)
+            {
+                return (*current).Handle;
+            }
+            current = (*current).Next;
+        }
+
+        // here if not found
+        int nameLen = 0;
+        byte* libNameBytes = UTF8Encoding.GetBytesUnsafe(libName, out nameLen);
+
+#if TARGET_PLATFORM == "linux-x64";
+        void* h = Dlopen(libNameBytes, 0x00000001 /* RTLD_LAZY */);
+#else
+        void* h = LoadLibraryA(libNameBytes);
+#endif
+        if (h == null)
+            return null;
+
+        LibEntry* newEntry = (LibEntry*)Marshal.Malloc(sizeof(LibEntry));
+        (*newEntry).Name = libName;
+        (*newEntry).Handle = h;
+        (*newEntry).Next = libList;
+        libList = newEntry;
+
+        return h;
+    }
+}

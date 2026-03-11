@@ -42,6 +42,8 @@ internal static class SR
     internal const string Arg_InvalidConsoleColor = "The ConsoleColor enum value was not defined on that enum. Please use a defined color from the enum.";
     internal const string Arg_OverflowException = "Arithmetic operation resulted in an overflow.";
 
+    internal const string Arg_DllNotFoundException = "Dll was not found.";
+
     // not
     internal const string NotSupported_ReadOnlyCollection = "Collection is read-only.";
 
