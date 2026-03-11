@@ -31,6 +31,7 @@ public static class DllLoader
 
     private static LibEntry* libList = null;
 
+    [DeclarationUsed]
     public static void* ResolveSymbol(string libName, string symbolName)
     {
         void* libHandle = GetLibHandle(libName);

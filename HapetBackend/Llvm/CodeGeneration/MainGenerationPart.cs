@@ -200,8 +200,9 @@ namespace HapetBackend.Llvm
                     _lastFunctionReturnHandlerValueRef = CreateLocalVariable(funcDecl.Returns.OutType, "returnHandler");
 
                 // some functions require suppress of defer/stacktrace
-                bool doSuppressStackTrace = funcDecl.Attributes.FirstOrDefault(x =>
-                    (x.AttributeName.OutType as ClassType).Declaration.NameWithNs == "System.SuppressStackTraceAttribute") != null;
+                bool doSuppressStackTrace = funcDecl.GetAttribute("System.SuppressStackTraceAttribute") != null;
+                // suppress when extern
+                doSuppressStackTrace = doSuppressStackTrace || funcDecl.SpecialKeys.Contains(TokenType.KwExtern);
 
                 // if stacktrace is not suppressed then make "exception-handler" to call defer on exception
                 if (doSuppressStackTrace)
@@ -434,6 +435,8 @@ namespace HapetBackend.Llvm
             else
             {
                 // TODO: error that inline could not be used with DllImport, only LibImport
+                // ERROR IN PP!!!
+                throw new NotImplementedException();
             }
         }
 
@@ -466,35 +469,55 @@ namespace HapetBackend.Llvm
 
         private void GenerateExternDllImportFunctionBody(AstFuncDecl funcDecl, AstAttributeStmt importAttr)
         {
-            throw new NotImplementedException();
+            string dllName = importAttr.Arguments[0].OutValue as string;
+            string entryPoint = importAttr.Arguments[1].OutValue as string;
+
+            LLVMValueRef apAllocaBitcasted = default;
+
+            // build dll resolver call
+            var funtionPtr = CallResolveSymbolFunction(
+                HapetValueToLLVMValue(HapetType.CurrentTypeContext.StringTypeInstance, dllName),
+                HapetValueToLLVMValue(HapetType.CurrentTypeContext.StringTypeInstance, entryPoint));
+
+            // making external func type
+            var funcType = GetFunctionTypeForExternalCall(funcDecl);
+
+            // generating list of args for call
+            var argsToCall = GetArgumentsForExternalCall(funcDecl, ref apAllocaBitcasted);
+
+            // if there is smth to return
+            if (funcDecl.Returns.OutType is VoidType)
+            {
+                _builder.BuildCall2(funcType, funtionPtr, argsToCall.ToArray());
+                TryBuildVaEnd(funcDecl, apAllocaBitcasted);
+                _builder.BuildRetVoid();
+            }
+            else
+            {
+                var v = _builder.BuildCall2(funcType, funtionPtr, argsToCall.ToArray(), $"{entryPoint}Result");
+                TryBuildVaEnd(funcDecl, apAllocaBitcasted);
+                _builder.BuildRet(v);
+            }
         }
 
         private void GenerateExternLibImportFunctionBody(AstFuncDecl funcDecl, AstAttributeStmt importAttr)
         {
-            string dllName = importAttr.Arguments[0].OutValue as string;
+            string libName = importAttr.Arguments[0].OutValue as string;
             string entryPoint = importAttr.Arguments[1].OutValue as string;
             bool isSupp = false;
             if (importAttr.Arguments.Count > 2 && importAttr.Arguments[2].OutValue is bool b)
                 isSupp = b;
 
-            HapetType vaListType = HapetType.CurrentTypeContext.VaListTypeInstance;
-            HapetType ptrToVaListType = PointerType.GetPointerType(vaListType);
             LLVMTypeRef funcType;
             LLVMValueRef funcValue;
-            LLVMValueRef apAlloca = default;
             LLVMValueRef apAllocaBitcasted = default;
 
             // check if there is a dll to be linked with!
-            if (!string.IsNullOrWhiteSpace(dllName))
-                _libsToBeLinked.Add(dllName);
+            if (!string.IsNullOrWhiteSpace(libName))
+                _libsToBeLinked.Add(libName);
 
-            // the same type
-            /// almost the same as in <see cref="HapetTypeToLLVMType"/>
-            var f = funcDecl.Type.OutType as FunctionType;
-            var paramTypes = f.Declaration.Parameters.Select(rt =>
-                HapetTypeToLLVMType(rt.ParameterModificator == ParameterModificator.Arglist ? ptrToVaListType : rt.Type.OutType)).ToList();
-            var returnType = HapetTypeToLLVMType(f.Declaration.Returns.OutType);
-            funcType = LLVMTypeRef.CreateFunction(returnType, paramTypes.ToArray(), false);
+            // making external func type
+            funcType = GetFunctionTypeForExternalCall(funcDecl);
 
             // declaring external global func
             funcValue = _module.AddFunction(entryPoint, funcType);
@@ -510,15 +533,52 @@ namespace HapetBackend.Llvm
                     funcValue.GetParams()[i].Name = p.Name.Name;
             }
 
+            // generating list of args for call
+            var argsToCall = GetArgumentsForExternalCall(funcDecl, ref apAllocaBitcasted);
+
+            // if there is smth to return
+            if (funcDecl.Returns.OutType is VoidType)
+            {
+                _builder.BuildCall2(funcType, funcValue, argsToCall.ToArray());
+                TryBuildVaEnd(funcDecl, apAllocaBitcasted);
+                _builder.BuildRetVoid();
+            }
+            else
+            {
+                var v = _builder.BuildCall2(funcType, funcValue, argsToCall.ToArray(), $"{entryPoint}Result");
+                TryBuildVaEnd(funcDecl, apAllocaBitcasted);
+                _builder.BuildRet(v);
+            }
+        }
+
+        private LLVMTypeRef GetFunctionTypeForExternalCall(AstFuncDecl funcDecl)
+        {
+            HapetType vaListType = HapetType.CurrentTypeContext.VaListTypeInstance;
+            HapetType ptrToVaListType = PointerType.GetPointerType(vaListType);
+
+            // the same type
+            /// almost the same as in <see cref="HapetTypeToLLVMType"/>
+            var f = funcDecl.Type.OutType as FunctionType;
+            var paramTypes = f.Declaration.Parameters.Select(rt =>
+                HapetTypeToLLVMType(rt.ParameterModificator == ParameterModificator.Arglist ? ptrToVaListType : rt.Type.OutType)).ToList();
+            var returnType = HapetTypeToLLVMType(f.Declaration.Returns.OutType);
+            return LLVMTypeRef.CreateFunction(returnType, paramTypes.ToArray(), false);
+        }
+
+        private List<LLVMValueRef> GetArgumentsForExternalCall(AstFuncDecl funcDecl, ref LLVMValueRef apAllocaBitcasted)
+        {
+            HapetType vaListType = HapetType.CurrentTypeContext.VaListTypeInstance;
+            HapetType ptrToVaListType = PointerType.GetPointerType(vaListType);
+
             // generating params
-            List<LLVMValueRef> parameters = new List<LLVMValueRef>();
+            List<LLVMValueRef> args = new List<LLVMValueRef>();
             for (int i = 0; i < funcDecl.Parameters.Count; ++i)
             {
                 var p = funcDecl.Parameters[i];
                 if (p.ParameterModificator == ParameterModificator.Arglist)
                 {
                     // need to create va_list and va_start
-                    apAlloca = _builder.BuildAlloca(HapetTypeToLLVMType(vaListType), $"va_list.ap.addr");
+                    var apAlloca = _builder.BuildAlloca(HapetTypeToLLVMType(vaListType), $"va_list.ap.addr");
                     apAllocaBitcasted = _builder.BuildBitCast(apAlloca, _context.Int8Type.GetPointerTo(), "va_list.bitcasted");
 
                     // va start
@@ -526,40 +586,27 @@ namespace HapetBackend.Llvm
                     _builder.BuildCall2(startFunc.Item1, startFunc.Item2, new LLVMValueRef[] { apAllocaBitcasted });
 
                     var loaded = _builder.BuildLoad2(HapetTypeToLLVMType(ptrToVaListType), apAllocaBitcasted, "va_list.ap.loaded");
-                    parameters.Add(loaded);
+                    args.Add(loaded);
                 }
                 else
                 {
                     var vptr = _valueMap[p.Symbol];
                     var loaded = _builder.BuildLoad2(HapetTypeToLLVMType(p.Type.OutType), vptr, p.Name.Name);
-                    parameters.Add(loaded);
+                    args.Add(loaded);
                 }
             }
+            return args;
+        }
 
-            // if there is smth to return
-            if (funcDecl.Returns.OutType is VoidType)
-            {
-                _builder.BuildCall2(funcType, funcValue, parameters.ToArray());
-                TryBuildVaEnd();
-                _builder.BuildRetVoid();
-            }
-            else
-            {
-                var v = _builder.BuildCall2(funcType, funcValue, parameters.ToArray(), $"{entryPoint}Result");
-                TryBuildVaEnd();
-                _builder.BuildRet(v);
-            }
+        private void TryBuildVaEnd(AstFuncDecl funcDecl, LLVMValueRef apAllocaBitcasted)
+        {
+            // check for va
+            if (funcDecl.Parameters.Count == 0 || funcDecl.Parameters.Last().ParameterModificator != ParameterModificator.Arglist)
+                return;
 
-            void TryBuildVaEnd()
-            {
-                // check for va
-                if (funcDecl.Parameters.Count == 0 || funcDecl.Parameters.Last().ParameterModificator != ParameterModificator.Arglist)
-                    return;
-
-                // va end
-                var endFunc = GetVaEndFunc();
-                _builder.BuildCall2(endFunc.Item1, endFunc.Item2, new LLVMValueRef[] { apAllocaBitcasted });
-            }
+            // va end
+            var endFunc = GetVaEndFunc();
+            _builder.BuildCall2(endFunc.Item1, endFunc.Item2, new LLVMValueRef[] { apAllocaBitcasted });
         }
     }
 }

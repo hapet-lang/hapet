@@ -357,12 +357,11 @@ namespace HapetPostPrepare
                                         !decl.SpecialKeys.Contains(TokenType.KwAbstract) &&
                                         decl.ClassFunctionType != ClassFunctionType.StaticCtor &&
                                         !decl.SpecialKeys.Contains(TokenType.KwExtern));
-            if (needToGenerateBody || _generatingAfterLpFile)
+            if ((needToGenerateBody || _generatingAfterLpFile) && decl.Body != null)
             {
                 sb.Append('\n');
 
-                AstFuncDecl theDecl = decl;
-                AntiParseExpr(theDecl.Body, sb, additionalOffset);
+                AntiParseExpr(decl.Body, sb, additionalOffset);
             }
             else
             {

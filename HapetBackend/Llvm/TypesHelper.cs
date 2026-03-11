@@ -1108,7 +1108,7 @@ namespace HapetBackend.Llvm
         {
             // WARN: hard cock
             var marshalDecl = _currentFunction.Scope.GetSymbolInNamespace("System.Runtime.InteropServices", new AstIdExpr("Marshal"));
-            var memcmpSymbol = (marshalDecl.Decl as AstClassDecl).SubScope.GetSymbol(new AstIdExpr("System.Runtime.InteropServices.Marshal::Memcmp(void*:void*:uintptr)")) as DeclSymbol;
+            var memcmpSymbol = (marshalDecl.Decl as AstClassDecl).SubScope.GetSymbol(new AstIdExpr("Memcmp")) as DeclSymbol;
             var memcmpFunc = _valueMap[memcmpSymbol];
             LLVMTypeRef funcType = _typeMap[memcmpSymbol.Decl.Type.OutType];
             return _builder.BuildCall2(funcType, memcmpFunc, new LLVMValueRef[] { ptr1, ptr2, num }, name);
@@ -1150,6 +1150,18 @@ namespace HapetBackend.Llvm
 
             _vaEndFunc = (funcType, funcValue);
             return _vaEndFunc.Value;
+        }
+        #endregion
+
+        #region Dll loader
+        private LLVMValueRef CallResolveSymbolFunction(LLVMValueRef libName, LLVMValueRef symbolName, string name = "funcPtr")
+        {
+            // WARN: hard cock
+            var loaderDecl = _currentFunction.Scope.GetSymbolInNamespace("System.Runtime.InteropServices", new AstIdExpr("DllLoader"));
+            var resolverSymbol = (loaderDecl.Decl as AstClassDecl).SubScope.GetSymbol(new AstIdExpr("ResolveSymbol")) as DeclSymbol;
+            var resolverFunc = _valueMap[resolverSymbol];
+            LLVMTypeRef funcType = _typeMap[resolverSymbol.Decl.Type.OutType];
+            return _builder.BuildCall2(funcType, resolverFunc, new LLVMValueRef[] { libName, symbolName }, name);
         }
         #endregion
     }
