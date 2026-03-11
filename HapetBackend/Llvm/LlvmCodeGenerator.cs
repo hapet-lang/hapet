@@ -172,17 +172,20 @@ namespace HapetBackend.Llvm
                 libraries.Add($"{data.Item2}.lib");
             }
 
+            ILinker linker = null;
             switch (_compiler.CurrentProjectSettings.TargetPlatformData.TargetPlatform)
             {
                 case TargetPlatform.Win86:
                 case TargetPlatform.Win64:
-                    return (new WinLinker()).Link(_compiler, exeFile, objFile, libraryIncludeDirectories, libraries, messageHandler, out outFilePath);
+                    linker = new WinLinker();
+                    break;
                 case TargetPlatform.Linux86:
                 case TargetPlatform.Linux64:
                 // TODO: ... 
                 default:
                     throw new NotImplementedException();
             }
+            return linker.Link(_compiler, exeFile, objFile, libraryIncludeDirectories, libraries.Distinct(), messageHandler, out outFilePath);
         }
     }
 }

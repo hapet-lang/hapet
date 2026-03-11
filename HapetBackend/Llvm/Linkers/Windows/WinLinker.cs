@@ -3,11 +3,10 @@ using HapetFrontend.Entities;
 using HapetFrontend.Errors;
 using HapetFrontend.Helpers;
 using System.Reflection;
-using System.Runtime.InteropServices;
 
 namespace HapetBackend.Llvm.Linkers.Windows
 {
-    public partial class WinLinker
+    public partial class WinLinker : ILinker
     {
         private Compiler _compiler;
 
@@ -35,9 +34,6 @@ namespace HapetBackend.Llvm.Linkers.Windows
                     target = "x64"; break;
             }
 
-            // TODO: get libraries of project
-            libraries = libraries.Distinct();
-
             // creating executable name
             var filename = Path.GetFileNameWithoutExtension(targetFile + ".x");
             var dir = Path.GetDirectoryName(Path.GetFullPath(targetFile));
@@ -59,10 +55,6 @@ namespace HapetBackend.Llvm.Linkers.Windows
             {
                 lldArgs.Add($@"-libpath:{linc}");
             }
-
-            // TODO: uncomment for std lib
-            //lldArgs.Add($@"-libpath:{Environment.CurrentDirectory}\lib"); // hack so it can be used from prj/sln dir
-            //lldArgs.Add($@"-libpath:{exePath}\lib");
 
             // we need to set entry only for console and windowed types
             if (compiler.CurrentProjectSettings.TargetFormat == TargetFormat.Console || compiler.CurrentProjectSettings.TargetFormat == TargetFormat.Windowed)
@@ -99,25 +91,11 @@ namespace HapetBackend.Llvm.Linkers.Windows
                 lldArgs.Add(linc);
             }
 
-            // searching for win linker
-            string vsBinFolder = FindVisualStudioBinaryDirectory();
-            if (vsBinFolder == null || !Directory.Exists(vsBinFolder))
-            {
-                messageHandler.ReportMessage([], ErrorCode.Get(CTEN.NoVisualStudio));
-                outFilePath = "";
-                return false;
-            }
-            string vsLinkerFolder = $"{vsBinFolder}\\Host{target}\\{target}";
-            if (!Directory.Exists(vsLinkerFolder))
-            {
-                messageHandler.ReportMessage([], ErrorCode.Get(CTEN.NoVisualStudioHost));
-                outFilePath = "";
-                return false;
-            }
+            // searching for linker
             string vsLinkerFile = Path.Combine(CompilerUtils.CurrentHapetDirectory, "lld-link.exe");
             if (!File.Exists(vsLinkerFile))
             {
-                messageHandler.ReportMessage([], ErrorCode.Get(CTEN.NoVisualStudioLinker));
+                messageHandler.ReportMessage([], ErrorCode.Get(CTEN.NoLldLinker));
                 outFilePath = "";
                 return false;
             }

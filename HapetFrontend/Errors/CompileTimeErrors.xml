@@ -1058,4 +1058,8 @@
         <Number>8009</Number>
         <Text>Assembly {0} could not be found. Please check extern functions properly</Text>
     </Item>
+    <Item>
+        <Number>800A</Number>
+        <Text>Couldn't find lld linker file</Text>
+    </Item>
 </Items>

@@ -272,15 +272,19 @@
         PackNotPowerOfTwo               = 0x6010,
 
         // linker errors up to 0x9000
-        NoVisualStudio                  = 0x8001, // could be obsolete
-        NoVisualStudioHost              = 0x8002, // could be obsolete
-        NoVisualStudioLinker            = 0x8003, // could be obsolete
+        [Obsolete]
+        NoVisualStudio                  = 0x8001,
+        [Obsolete]
+        NoVisualStudioHost              = 0x8002,
+        [Obsolete]
+        NoVisualStudioLinker            = 0x8003,
         LinkerItselfError               = 0x8004,
         FailedToLink                    = 0x8005,
         NoWindowsSdk                    = 0x8006, // could be obsolete
         NoVisualStudioLib               = 0x8007, // could be obsolete
         RequiredPathNotFoundForLink     = 0x8008, // could be obsolete
         AssemblyToLinkNotFound          = 0x8009,
+        NoLldLinker                     = 0x800A,
     }
 
     // Run Time Error Number
