@@ -21,10 +21,10 @@ namespace HapetBackend.Llvm.Linkers.Windows
             ArgumentNullException.ThrowIfNull(messageHandler);
 
             _compiler = compiler;
-            bool verbose = _compiler.CurrentProjectSettings.Verbose;
+            bool verbose = CompilerSettings.Verbose;
 
             string target = null;
-            switch (compiler.CurrentProjectSettings.TargetPlatformData.TargetPlatform)
+            switch (CompilerSettings.TargetPlatformData.TargetPlatform)
             {
                 case TargetPlatform.Win86:
                 case TargetPlatform.Linux86:
@@ -37,14 +37,14 @@ namespace HapetBackend.Llvm.Linkers.Windows
             // creating executable name
             var filename = Path.GetFileNameWithoutExtension(targetFile + ".x");
             var dir = Path.GetDirectoryName(Path.GetFullPath(targetFile));
-            var outFileExtension = compiler.CurrentProjectSettings.TargetFormat == TargetFormat.Library ?
-                compiler.CurrentProjectSettings.TargetPlatformData.LibraryFileExtension :
-                compiler.CurrentProjectSettings.TargetPlatformData.ExecutableFileExtension;
+            var outFileExtension = compiler.CurrentProjectData.TargetFormat == TargetFormat.Library ?
+                CompilerSettings.TargetPlatformData.LibraryFileExtension :
+                CompilerSettings.TargetPlatformData.ExecutableFileExtension;
 
             filename = Path.Combine(dir, filename);
             var lldArgs = new List<string>();
             lldArgs.Add($"/out:{filename}{outFileExtension}");
-            if (compiler.CurrentProjectSettings.TargetFormat != TargetFormat.Console && compiler.CurrentProjectSettings.TargetFormat != TargetFormat.Windowed)
+            if (compiler.CurrentProjectData.TargetFormat != TargetFormat.Console && compiler.CurrentProjectData.TargetFormat != TargetFormat.Windowed)
                 lldArgs.Add($"/IMPLIB:{filename}.lib");
 
             // current compiler directory
@@ -57,10 +57,10 @@ namespace HapetBackend.Llvm.Linkers.Windows
             }
 
             // we need to set entry only for console and windowed types
-            if (compiler.CurrentProjectSettings.TargetFormat == TargetFormat.Console || compiler.CurrentProjectSettings.TargetFormat == TargetFormat.Windowed)
+            if (compiler.CurrentProjectData.TargetFormat == TargetFormat.Console || compiler.CurrentProjectData.TargetFormat == TargetFormat.Windowed)
             {
                 // other options
-                switch (compiler.CurrentProjectSettings.TargetPlatformData.TargetPlatform)
+                switch (CompilerSettings.TargetPlatformData.TargetPlatform)
                 {
                     case TargetPlatform.Win86:
                     case TargetPlatform.Win64:
@@ -71,7 +71,7 @@ namespace HapetBackend.Llvm.Linkers.Windows
             }
 
             lldArgs.Add($"/machine:{target}");
-            if (compiler.CurrentProjectSettings.TargetFormat == TargetFormat.Console || compiler.CurrentProjectSettings.TargetFormat == TargetFormat.Windowed)
+            if (compiler.CurrentProjectData.TargetFormat == TargetFormat.Console || compiler.CurrentProjectData.TargetFormat == TargetFormat.Windowed)
                 lldArgs.Add($"/subsystem:console"); // WARN: always console because the want 'int main(int argc, char*[] argv)'
             else
                 lldArgs.Add($"/DLL"); // TODO: is it ok for linux and other?
@@ -119,7 +119,7 @@ namespace HapetBackend.Llvm.Linkers.Windows
             if (result)
             {
                 // print if it is not a referenced compilation
-                if (!_compiler.CurrentProjectSettings.IsReferencedCompilation && !CompilerSettings.IsInRunContext)
+                if (!_compiler.CurrentProjectData.IsReferencedCompilation && !CompilerSettings.IsInRunContext)
                     messageHandler.ReportMessage([$"\t  Generated {filename}{outFileExtension}"], null, ReportType.Info);
             }
             else

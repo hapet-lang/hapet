@@ -38,7 +38,7 @@ namespace HapetPostPrepare
             }
 
             // check for main func existance if required
-            if (_compiler.MainFunction == null && (_compiler.CurrentProjectSettings.TargetFormat == TargetFormat.Console || _compiler.CurrentProjectSettings.TargetFormat == TargetFormat.Windowed))
+            if (_compiler.MainFunction == null && (_compiler.CurrentProjectData.TargetFormat == TargetFormat.Console || _compiler.CurrentProjectData.TargetFormat == TargetFormat.Windowed))
             {
                 _compiler.MessageHandler.ReportMessage([], ErrorCode.Get(CTEN.NoMainFunction));
             }
@@ -130,7 +130,7 @@ namespace HapetPostPrepare
             var storDecl = new AstFuncDecl(new List<AstParamDecl>(),
             new AstNestedExpr(new AstIdExpr("void", loc), null, loc),
             storBlock,
-            new AstIdExpr($"{_compiler.CurrentProjectSettings.ProjectName}_stor_caller"),
+            new AstIdExpr($"{_compiler.CurrentProjectData.ProjectName}_stor_caller"),
             "", loc);
             storDecl.SpecialKeys.Add(Lexer.CreateToken(TokenType.KwPublic, loc.Beginning)); // stor is public
             storDecl.SpecialKeys.Add(Lexer.CreateToken(TokenType.KwStatic, loc.Beginning)); // stor is static

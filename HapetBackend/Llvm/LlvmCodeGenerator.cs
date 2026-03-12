@@ -44,14 +44,14 @@ namespace HapetBackend.Llvm
             this._compiler = compiler ?? throw new ArgumentNullException(nameof(compiler));
             this._postPreparer = postPreparer ?? throw new ArgumentNullException(nameof(postPreparer));
             this._messageHandler = messageHandler ?? throw new ArgumentNullException(nameof(messageHandler));
-            this._outDir = _compiler.CurrentProjectSettings.OutputDirectory;
-            this._targetFile = _compiler.CurrentProjectSettings.AssemblyName;
+            this._outDir = _compiler.CurrentProjectData.OutputDirectory;
+            this._targetFile = _compiler.CurrentProjectData.AssemblyName;
 
             // getting the target LLVM triple
-            this._targetTriple = CompilerSettings.GetTargetTriple(_compiler.CurrentProjectSettings.TargetPlatformData);
+            this._targetTriple = CompilerSettings.GetTargetTriple(CompilerSettings.TargetPlatformData);
 
             _context = LLVMContextRef.Create();
-            _module = _context.CreateModuleWithName($"{_compiler.CurrentProjectSettings.ProjectName}-module");
+            _module = _context.CreateModuleWithName($"{_compiler.CurrentProjectData.ProjectName}-module");
             _module.Target = _targetTriple;
 
             var target = LLVMTargetRef.GetTargetFromTriple(_targetTriple);
@@ -76,7 +76,7 @@ namespace HapetBackend.Llvm
             GenerateCode();
 
             // no need to gen main func for library typed project
-            if (_compiler.CurrentProjectSettings.TargetFormat == TargetFormat.Console || _compiler.CurrentProjectSettings.TargetFormat == TargetFormat.Windowed)
+            if (_compiler.CurrentProjectData.TargetFormat == TargetFormat.Console || _compiler.CurrentProjectData.TargetFormat == TargetFormat.Windowed)
             {
                 // generating main call
                 GenerateMainFunction();
@@ -95,12 +95,12 @@ namespace HapetBackend.Llvm
                 Directory.CreateDirectory(_outDir);
 
 #if DEBUG
-            if (!_compiler.CurrentProjectSettings.IsReferencedCompilation && !CompilerSettings.IsInRunContext)
+            if (!_compiler.CurrentProjectData.IsReferencedCompilation && !CompilerSettings.IsInRunContext)
                 messageHandler.ReportMessage([$"{Funcad.GetPrettyTimeString(_compiler.CompilationStopwatch.Elapsed)} Emmiting..."], null, ReportType.Info);
 #endif
 
             // create .ll file
-            if (_compiler.CurrentProjectSettings.OutputIrFile)
+            if (_compiler.CurrentProjectData.OutputIrFile)
             {
                 _module.PrintToFile(Path.Combine(_outDir, _targetFile + ".ll"));
             }
@@ -109,7 +109,7 @@ namespace HapetBackend.Llvm
             if (!_messageHandler.HasErrors)
             {
                 // emit machine code to object file
-                var objFile = Path.Combine(_outDir, $"{_targetFile}{_compiler.CurrentProjectSettings.TargetPlatformData.ObjectFileExtension}");
+                var objFile = Path.Combine(_outDir, $"{_targetFile}{CompilerSettings.TargetPlatformData.ObjectFileExtension}");
                 targetMachine.EmitToFile(_module, objFile, LLVMCodeGenFileType.LLVMObjectFile);
             }
             else
@@ -144,7 +144,7 @@ namespace HapetBackend.Llvm
 
 #if DEBUG
             // no need to print info when it is a referenced build
-            if (!_compiler.CurrentProjectSettings.IsReferencedCompilation && !CompilerSettings.IsInRunContext)
+            if (!_compiler.CurrentProjectData.IsReferencedCompilation && !CompilerSettings.IsInRunContext)
                 messageHandler.ReportMessage([$"{Funcad.GetPrettyTimeString(_compiler.CompilationStopwatch.Elapsed)} Linking..."], null, ReportType.Info);
 #endif
 
@@ -153,7 +153,7 @@ namespace HapetBackend.Llvm
                 Directory.CreateDirectory(_outDir);
 
             // getting paths to the obj/bin files
-            string objFile = Path.Combine(_outDir, _targetFile + _compiler.CurrentProjectSettings.TargetPlatformData.ObjectFileExtension);
+            string objFile = Path.Combine(_outDir, _targetFile + CompilerSettings.TargetPlatformData.ObjectFileExtension);
             string exeFile = Path.Combine(_outDir, _targetFile);
 
             // merging dependency libraries that were found in code with 
@@ -172,7 +172,7 @@ namespace HapetBackend.Llvm
             }
 
             ILinker linker = null;
-            switch (_compiler.CurrentProjectSettings.TargetPlatformData.TargetPlatform)
+            switch (CompilerSettings.TargetPlatformData.TargetPlatform)
             {
                 case TargetPlatform.Win86:
                 case TargetPlatform.Win64:

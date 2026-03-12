@@ -8,6 +8,7 @@ using System.Xml.Linq;
 using System;
 using System.Reflection;
 using System.IO;
+using HapetFrontend;
 
 namespace HapetBackend.Llvm
 {
@@ -306,7 +307,7 @@ namespace HapetBackend.Llvm
             var jmpBufStruct = _currentFunction.Scope.GetSymbolInNamespace("System.Runtime.InteropServices", new AstIdExpr("JmpBuf"));
             LLVMValueRef jmpBuf;
             // for windows x64 target we need to manually align it up to 16
-            if (_compiler.CurrentProjectSettings.TargetPlatformData.TargetPlatform == HapetFrontend.TargetPlatform.Win64)
+            if (CompilerSettings.TargetPlatformData.TargetPlatform == HapetFrontend.TargetPlatform.Win64)
                 jmpBuf = CreateLocalVariable(HapetTypeToLLVMType(jmpBufStruct.Decl.Type.OutType), 16, "jmpbuf");
             else
                 jmpBuf = CreateLocalVariable(jmpBufStruct.Decl.Type.OutType, "jmpbuf");
@@ -330,7 +331,7 @@ namespace HapetBackend.Llvm
             var helper = _currentFunction.Scope.GetSymbolInNamespace("System.Runtime.InteropServices", new AstIdExpr("ExceptionHelper"));
 
             // on Windows x64 platform 'setjmp' function receives 2 parameters and should call FrameAddress
-            if (_compiler.CurrentProjectSettings.TargetPlatformData.TargetPlatform == HapetFrontend.TargetPlatform.Win64)
+            if (CompilerSettings.TargetPlatformData.TargetPlatform == HapetFrontend.TargetPlatform.Win64)
             {
                 // call frameaddress
                 var methSymbol = (helper.Decl as AstClassDecl).SubScope.GetSymbol(new AstIdExpr("FrameAddress")) as DeclSymbol;
@@ -344,7 +345,7 @@ namespace HapetBackend.Llvm
                 setJmpResult = _builder.BuildCall2(methType, methFunc, new LLVMValueRef[] { jmpBuf, addrPtr });
             }
             // on Windows x86 platform 'setjmp' function receives 2 parameters and arglist
-            else if (_compiler.CurrentProjectSettings.TargetPlatformData.TargetPlatform == HapetFrontend.TargetPlatform.Win86)
+            else if (CompilerSettings.TargetPlatformData.TargetPlatform == HapetFrontend.TargetPlatform.Win86)
             {
                 // call setjmp
                 var methSymbol = (helper.Decl as AstClassDecl).SubScope.GetSymbol(new AstIdExpr("SetJmp")) as DeclSymbol;

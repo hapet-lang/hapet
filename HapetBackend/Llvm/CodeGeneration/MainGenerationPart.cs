@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using HapetFrontend;
 using HapetFrontend.Ast;
 using HapetFrontend.Ast.Declarations;
 using HapetFrontend.Ast.Expressions;
@@ -106,7 +107,7 @@ namespace HapetBackend.Llvm
                     lfunc.DLLStorageClass = LLVMDLLStorageClass.LLVMDLLExportStorageClass;
 
                     // for win-x86 callconv is that
-                    if (_compiler.CurrentProjectSettings.TargetPlatformData.TargetPlatform == HapetFrontend.TargetPlatform.Win86)
+                    if (CompilerSettings.TargetPlatformData.TargetPlatform == HapetFrontend.TargetPlatform.Win86)
                     {
                         lfunc.FunctionCallConv = (uint)LLVMCallConv.LLVMCCallConv; // cdecl
                     }

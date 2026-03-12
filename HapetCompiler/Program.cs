@@ -17,6 +17,8 @@ namespace HapetCompiler
             Console.OutputEncoding = Encoding.UTF8;
             var messageHandler = new ConsoleMessageHandler(0, 0, true);
             CompilerSettings.InitCurrentPlatformData();
+            // TODO: set from args!!!
+            CompilerSettings.TargetPlatformData = CompilerSettings.CurrentPlatformData;
 
             if (args.Length == 0)
             {

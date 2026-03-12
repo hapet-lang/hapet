@@ -11,12 +11,12 @@ namespace HapetCompiler.Resolvers
     {
         private void ResolveProjectReferences()
         {
-            string currentProjectFolderPath = Path.GetDirectoryName(_projectSettings.ProjectPath).Replace("\\", "/", StringComparison.InvariantCulture).TrimEnd('/');
+            string currentProjectFolderPath = Path.GetDirectoryName(_projectData.ProjectPath).Replace("\\", "/", StringComparison.InvariantCulture).TrimEnd('/');
             string currentStdDirectoryPath = Path.Combine(CompilerUtils.CurrentHapetDirectory, "std").Replace("\\", "/", StringComparison.InvariantCulture).TrimEnd('/');
 
             foreach (var r in _projectData.ProjectReferences)
             {
-                if (!_projectSettings.IsReferencedCompilation && !_projectSettings.IsLspCompilation && !CompilerSettings.IsInRunContext)
+                if (!_projectData.IsReferencedCompilation && !CompilerSettings.IsInLspContext && !CompilerSettings.IsInRunContext)
                     _compiler.MessageHandler.ReportMessage([$"{Funcad.GetPrettyTimeString(_compiler.CompilationStopwatch.Elapsed)}   Resolving '{Path.GetFileName(r.ReferenceName)}'..."], null, ReportType.Info);
 
                 string projectPathNormalized = r.ReferenceName.Replace("\\", "/", StringComparison.InvariantCulture).TrimStart('/');
@@ -37,15 +37,15 @@ namespace HapetCompiler.Resolvers
                 // building the project
                 var toolchain = new ProjectBuildToolchain(_compiler.CompilationStopwatch, []); // TODO: params?
                 // make codegen when not lsp
-                bool codegenRequired = !_projectSettings.IsLspCompilation;
+                bool codegenRequired = !CompilerSettings.IsInLspContext;
                 toolchain.Build(pathToReferenced, _compiler.MessageHandler, out string _, true, codegenRequired);
 
-                string referencedProjectOutFolder = toolchain.ProjectSettings.OutputDirectory.Replace("\\", "/", StringComparison.InvariantCulture).TrimStart('/');
+                string referencedProjectOutFolder = toolchain.ProjectData.OutputDirectory.Replace("\\", "/", StringComparison.InvariantCulture).TrimStart('/');
                 // copy all the files from the referenced project to current out folder
-                Funcad.CopyFilesRecursively(referencedProjectOutFolder, _projectSettings.OutputDirectory);
+                Funcad.CopyFilesRecursively(referencedProjectOutFolder, _projectData.OutputDirectory);
 
                 // adding the reference to dll
-                _projectData.References.Add(new Reference(toolchain.ProjectSettings.AssemblyName, r.Node));
+                _projectData.References.Add(new Reference(toolchain.ProjectData.AssemblyName, r.Node));
             }
         }
     }

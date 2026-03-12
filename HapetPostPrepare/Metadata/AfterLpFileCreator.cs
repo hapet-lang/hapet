@@ -27,8 +27,8 @@ namespace HapetPostPrepare
             _generatingAfterLpFile = false;
 
             // WARN: take care about the shite that is goin on here
-            var outFolderPath = _compiler.CurrentProjectSettings.OutputDirectory;
-            var asmName = _compiler.CurrentProjectSettings.AssemblyName;
+            var outFolderPath = _compiler.CurrentProjectData.OutputDirectory;
+            var asmName = _compiler.CurrentProjectData.AssemblyName;
             File.WriteAllText($"{outFolderPath}/{asmName}.afterlp.mpt", globalStringBuilder.ToString());
         }
 

@@ -70,7 +70,7 @@ namespace HapetBackend.Llvm
         {
             // create a func to init all the v tables
             var ltype = LLVMTypeRef.CreateFunction(HapetTypeToLLVMType(HapetType.CurrentTypeContext.VoidTypeInstance), [], false);
-            var lfunc = _module.AddFunction($"{_compiler.CurrentProjectSettings.ProjectName}_vtable_initer", ltype);
+            var lfunc = _module.AddFunction($"{_compiler.CurrentProjectData.ProjectName}_vtable_initer", ltype);
             lfunc.Linkage = LLVMLinkage.LLVMExternalLinkage;
 
             // make check that is already inited

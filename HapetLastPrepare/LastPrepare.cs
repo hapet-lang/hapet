@@ -46,7 +46,7 @@ namespace HapetLastPrepare
             if (_compiler.MessageHandler.HasErrors)
                 return 0;
 
-            if (_compiler.CurrentProjectSettings.OutputAfterLpFile)
+            if (_compiler.CurrentProjectData.OutputAfterLpFile)
                 _postPreparer.GenerateAfterLpFile();
 
             return 0;

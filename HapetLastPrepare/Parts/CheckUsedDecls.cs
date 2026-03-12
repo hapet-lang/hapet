@@ -16,7 +16,7 @@ namespace HapetLastPrepare
     {
         public void CheckUsedDecls()
         {
-            if (_compiler.CurrentProjectSettings.TargetFormat == HapetFrontend.TargetFormat.Library)
+            if (_compiler.CurrentProjectData.TargetFormat == HapetFrontend.TargetFormat.Library)
                 return;
 
             CheckUsedDeclsDecl(_compiler.MainFunction, null, true);

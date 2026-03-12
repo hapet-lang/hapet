@@ -11,7 +11,7 @@ namespace HapetBackend.Llvm.Linkers.Windows
         private bool LinkPlatformLibraries(Compiler compiler, List<string> lldArgs, IMessageHandler messageHandler, string target)
         {
             // platform libraries
-            switch (compiler.CurrentProjectSettings.TargetPlatformData.TargetPlatform)
+            switch (CompilerSettings.TargetPlatformData.TargetPlatform)
             {
                 case TargetPlatform.Win86:
                 case TargetPlatform.Win64:

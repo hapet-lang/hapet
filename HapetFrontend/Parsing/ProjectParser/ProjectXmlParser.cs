@@ -12,7 +12,6 @@ namespace HapetFrontend.ProjectParser
         private string _projectFileText = string.Empty;
         
         private ProgramFile _projectFile;
-        private readonly CompilerSettings _projectSettings;
         private readonly ProjectData _projectData;
         private readonly IMessageHandler _messageHandler;
         private XmlDocumentSyntax _parsedProjectFile;
@@ -31,7 +30,7 @@ namespace HapetFrontend.ProjectParser
         private readonly List<XmlElementSyntax> _itemGroups = new List<XmlElementSyntax>();
 
         // TODO: this class also should get args from cmd that would have bigger priority over defined in .hptproj file
-        public ProjectXmlParser(string projectPath, CompilerSettings projectSettings, ProjectData projectData, IMessageHandler messageHandler)
+        public ProjectXmlParser(string projectPath, ProjectData projectData, IMessageHandler messageHandler)
         {
             _projectPath = projectPath;
             if (!File.Exists(_projectPath))
@@ -43,14 +42,13 @@ namespace HapetFrontend.ProjectParser
             _projectPathAbsolute = Path.GetFullPath(_projectPath);
             ParseFile();
 
-            _projectSettings = projectSettings;
             _projectData = projectData;
             _messageHandler = messageHandler;
 
             PrepareFile();
 
             // setting the project path into the settings
-            _projectSettings.ProjectPath = Path.GetFullPath(_projectPath);
+            _projectData.ProjectPath = Path.GetFullPath(_projectPath);
         }
 
         /// <summary>

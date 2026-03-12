@@ -8,7 +8,6 @@ namespace HapetCompiler.Toolchains
 {
     internal sealed class ProjectRunToolchain
     {
-        public CompilerSettings ProjectSettings { get; set; }
         public ProjectData ProjectData { get; set; }
 
         private readonly Stopwatch _stopwatch;

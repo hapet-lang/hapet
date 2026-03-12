@@ -42,38 +42,30 @@ namespace HapetFrontend.ProjectParser
         {
             // setting project name
             string projectFileName = Path.GetFileNameWithoutExtension(_projectPath);
-            _projectSettings.ProjectName = GetValueOrDefault("ProjectName", projectFileName);
+            _projectData.ProjectName = GetValueOrDefault("ProjectName", projectFileName);
             // setting project version
-            _projectSettings.ProjectVersion = GetValueOrDefault("ProjectVersion", "1.0.0");
-            // setting project configuration
-            _projectSettings.ProjectConfiguration = GetValueOrDefault("ProjectConfiguration", "Debug");
+            _projectData.ProjectVersion = GetValueOrDefault("ProjectVersion", "1.0.0");
             // setting project out folder
-            var outDirRelative = GetValueOrDefault("OutputDirectory", $"./bin/{_projectSettings.ProjectConfiguration}");
-            _projectSettings.OutputDirectory = $"{Path.GetDirectoryName(_projectPathAbsolute).Replace("\\", "/", StringComparison.InvariantCulture).TrimEnd('/')}/{outDirRelative.Replace("\\", "/", StringComparison.InvariantCulture).TrimEnd('/')}";
+            var outDirRelative = GetValueOrDefault("OutputDirectory", $"./bin/{(CompilerSettings.IsDebug ? "Debug" : "Release")}");
+            _projectData.OutputDirectory = $"{Path.GetDirectoryName(_projectPathAbsolute).Replace("\\", "/", StringComparison.InvariantCulture).TrimEnd('/')}/{outDirRelative.Replace("\\", "/", StringComparison.InvariantCulture).TrimEnd('/')}";
             // WARN: creating the dir here!!!
-            if (!Directory.Exists(_projectSettings.OutputDirectory)) Directory.CreateDirectory(_projectSettings.OutputDirectory);
+            if (!Directory.Exists(_projectData.OutputDirectory)) Directory.CreateDirectory(_projectData.OutputDirectory);
             // setting the root namespace
-            _projectSettings.RootNamespace = GetValueOrDefault("RootNamespace", _projectSettings.ProjectName);
+            _projectData.RootNamespace = GetValueOrDefault("RootNamespace", _projectData.ProjectName);
             // setting assembly name
-            _projectSettings.AssemblyName = GetValueOrDefault("AssemblyName", _projectSettings.ProjectName);
+            _projectData.AssemblyName = GetValueOrDefault("AssemblyName", _projectData.ProjectName);
 
             // setting unsafe code allowence
-            _projectSettings.AllowUnsafeCode = GetValueOrDefault("AllowUnsafeCode", false);
+            _projectData.AllowUnsafeCode = GetValueOrDefault("AllowUnsafeCode", false);
             // setting llvm ir code outputance
-            _projectSettings.OutputIrFile = GetValueOrDefault("OutputIrFile", false);
+            _projectData.OutputIrFile = GetValueOrDefault("OutputIrFile", false);
             // setting after lp code outputance
-            _projectSettings.OutputAfterLpFile = GetValueOrDefault("OutputAfterLpFile", false);
-            // setting verbose enablence :)
-            _projectSettings.Verbose = GetValueOrDefault("Verbose", false);
+            _projectData.OutputAfterLpFile = GetValueOrDefault("OutputAfterLpFile", false);
             // setting the optimization level
-            _projectSettings.Optimization = GetValueOrDefault("Optimization", 3);
+            _projectData.Optimization = GetValueOrDefault("Optimization", 3);
 
             // setting target format
-            _projectSettings.TargetFormat = GetValueOrDefault("TargetFormat", TargetFormat.Console);
-            // setting platform data
-            string targetPlatform = GetValueOrDefault("TargetPlatform", "");
-            if (string.IsNullOrEmpty(targetPlatform)) _projectSettings.TargetPlatformData = CompilerSettings.CurrentPlatformData;
-            else _projectSettings.TargetPlatformData = CompilerSettings.SupportedPlatforms.FirstOrDefault(x => x.Name == targetPlatform);
+            _projectData.TargetFormat = GetValueOrDefault("TargetFormat", TargetFormat.Console);
 
             // ...
         }

@@ -31,7 +31,6 @@ namespace HapetFrontend
         private readonly Dictionary<string, Scope> _nameSpaces = new Dictionary<string, Scope>();
 
         public IMessageHandler MessageHandler { get; }
-        public CompilerSettings CurrentProjectSettings { get; }
         public ProjectData CurrentProjectData { get; }
         public Stopwatch CompilationStopwatch { get; set; }
 
@@ -52,9 +51,8 @@ namespace HapetFrontend
         /// </summary>
         public List<AstStatement> LambdasAndNested { get; } = new List<AstStatement>();
 
-        public Compiler(CompilerSettings projectSettings, ProjectData projectData, IMessageHandler messageHandler)
+        public Compiler(ProjectData projectData, IMessageHandler messageHandler)
         {
-            CurrentProjectSettings = projectSettings;
             CurrentProjectData = projectData;
             MessageHandler = messageHandler;
         }
@@ -70,7 +68,7 @@ namespace HapetFrontend
         public void GenerateAstTree()
         {
             // getting all files in project folder
-            var allFilesInProjectFolder = (new DirectoryInfo(Path.GetDirectoryName(CurrentProjectSettings.ProjectPath))).EnumerateFiles("*", SearchOption.AllDirectories);
+            var allFilesInProjectFolder = (new DirectoryInfo(Path.GetDirectoryName(CurrentProjectData.ProjectPath))).EnumerateFiles("*", SearchOption.AllDirectories);
             foreach (var file in allFilesInProjectFolder)
             {
                 if (Path.GetExtension(file.FullName) == ".hpt")
@@ -259,7 +257,7 @@ namespace HapetFrontend
                     HandleStatement(s, file, file);
             }
 
-            string normalNamespace = CompilerUtils.GetNamespace(CurrentProjectSettings.ProjectPath, CurrentProjectSettings.RootNamespace, fileName);
+            string normalNamespace = CompilerUtils.GetNamespace(CurrentProjectData.ProjectPath, CurrentProjectData.RootNamespace, fileName);
             GetCustomNamespaceIfDeclared(file, ref normalNamespace); // will change the namespace if declared
 
             // generating namespace scope and doing some shite with it

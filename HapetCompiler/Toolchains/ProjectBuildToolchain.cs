@@ -14,7 +14,6 @@ namespace HapetCompiler.Toolchains
 {
     internal sealed class ProjectBuildToolchain
     {
-        public CompilerSettings ProjectSettings { get; set; }
         public ProjectData ProjectData { get; set; }
 
         private readonly Stopwatch _stopwatch;
@@ -47,12 +46,11 @@ namespace HapetCompiler.Toolchains
             // setting the type context
             HapetType.CurrentTypeContext = new TypeContext();
             // creating settings instances for the project
-            ProjectSettings = new CompilerSettings();
-            // saving that the build is referenced or not
-            ProjectSettings.IsReferencedCompilation = referenced;
             ProjectData = new ProjectData();
+            // saving that the build is referenced or not
+            ProjectData.IsReferencedCompilation = referenced;
             // parsing project .hptproj file
-            var projectParser = new ProjectXmlParser(projectPath, ProjectSettings, ProjectData, messageHandler);
+            var projectParser = new ProjectXmlParser(projectPath, ProjectData, messageHandler);
             projectParser.PrepareProjectFile(); // setting compiler settings from project
             if (messageHandler.HasErrors)
             {
@@ -66,10 +64,10 @@ namespace HapetCompiler.Toolchains
 #endif
 
             // setting pointer size for the whole assembly
-            HapetType.CurrentTypeContext.PointerSize = ProjectSettings.TargetPlatformData.PointerSize;
+            HapetType.CurrentTypeContext.PointerSize = CompilerSettings.TargetPlatformData.PointerSize;
             HapetType.CurrentTypeContext.Init();
             // creating the compiler and preparers
-            var compiler = new Compiler(ProjectSettings, ProjectData, messageHandler);
+            var compiler = new Compiler(ProjectData, messageHandler);
             var postPreparer = new PostPrepare(compiler);
             var lastPreparer = new LastPrepare(compiler, postPreparer);
             compiler.InitGlobalScope();
@@ -77,7 +75,7 @@ namespace HapetCompiler.Toolchains
 
             // references
             ProjectReferencesResolver resolver = new ProjectReferencesResolver();
-            resolver.ResolveProjectShite(ProjectData, ProjectSettings, compiler, projectParser);
+            resolver.ResolveProjectShite(ProjectData, compiler, projectParser);
             if (messageHandler.HasErrors)
             {
                 OnExit();

@@ -14,17 +14,17 @@ namespace HapetFrontend.ProjectParser
             _projectData.Defines.Add("HAPET_VERSION", ver);
 
             // target and current
-            _projectData.Defines.Add("TARGET_PLATFORM", _projectSettings.TargetPlatformData.Name);
+            _projectData.Defines.Add("TARGET_PLATFORM", CompilerSettings.TargetPlatformData.Name);
             _projectData.Defines.Add("CURRENT_PLATFORM", CompilerSettings.CurrentPlatformData.Name);
 
             // debug or release
-            if (_projectSettings.IsDebug)
+            if (CompilerSettings.IsDebug)
                 _projectData.Defines.Add("DEBUG", null);
             else
                 _projectData.Defines.Add("RELEASE", null);
 
             // setting target and current arch
-            SetArch(_projectSettings.TargetPlatformData, "TARGET_");
+            SetArch(CompilerSettings.TargetPlatformData, "TARGET_");
             SetArch(CompilerSettings.CurrentPlatformData, "CURRENT_");
 
             void SetArch(PlatformData data, string additionalString)

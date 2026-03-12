@@ -27,13 +27,8 @@ namespace HapetFrontend
         public string LibraryFileExtension { get; set; }
     }
 
-    public class CompilerSettings
+    public static class CompilerSettings
     {
-        /// <summary>
-        /// 'true' when user wrote 'hapet run ...'
-        /// </summary>
-        public static bool IsInRunContext { get; set; }
-
         public static readonly PlatformData[] SupportedPlatforms =
         {
             new PlatformData()
@@ -69,84 +64,29 @@ namespace HapetFrontend
                 LibraryFileExtension = ".so",
             },
         };
-        /// <summary>
-        /// Path to the project (absolute!) (used usually for calc namespaces)
-        /// </summary>
-        public string ProjectPath { get; set; }
+
 
         /// <summary>
-        /// 'true' when another project is build the current one (project reference). 
-        /// 'false' if it is the main project that user started to compile
+        /// 'true' when user wrote 'hapet run ...'
         /// </summary>
-        public bool IsReferencedCompilation { get; set; }
-
+        public static bool IsInRunContext { get; set; }
         /// <summary>
-        /// 'true' when hapet is running as LSP server
+        /// 'true' when hapet is running as LSP server 'hapet lsp ...'
         /// </summary>
-        public bool IsLspCompilation { get; set; }
-
-        #region PropertyGroup
-        /// <summary>
-        /// The name of the project that is going to be compiled
-        /// </summary>
-        public string ProjectName { get; set; }
-        /// <summary>
-        /// The name of output assembly file. Default is <see cref="ProjectName"/>
-        /// </summary>
-        public string AssemblyName { get; set; }
-        /// <summary>
-        /// The version of the project that is going to be compiled
-        /// </summary>
-        public string ProjectVersion { get; set; }
-        /// <summary>
-        /// The configuration of project. Debug or Release
-        /// </summary>
-        public string ProjectConfiguration { get; set; }
-        /// <summary>
-        /// The absolut path to the output directory
-        /// </summary>
-        public string OutputDirectory { get; set; }
-        /// <summary>
-        /// If true - pointers usage and other shite are allowed
-        /// </summary>
-        public bool AllowUnsafeCode { get; set; }
-        /// <summary>
-        /// The name of the root namespace
-        /// </summary>
-        public string RootNamespace { get; set; }
-
+        public static bool IsInLspContext { get; set; }
         /// <summary>
         /// If true - debug data will be printed
         /// </summary>
-        public bool Verbose { get; set; }
-        /// <summary>
-        /// If true - LLVM IR file would be outputed to out folder
-        /// </summary>
-        public bool OutputIrFile { get; set; }
-        /// <summary>
-        /// If true - after lp file would be outputed to out folder
-        /// </summary>
-        public bool OutputAfterLpFile { get; set; }
-        /// <summary>
-        /// The optimization level of the project
-        /// </summary>
-        public int Optimization { get; set; }
-
+        public static bool Verbose { get; set; } = false;
         /// <summary>
         /// 'true' if Debug conf. 'false' if Release
         /// </summary>
-        public bool IsDebug => ProjectConfiguration == "Debug";
+        public static bool IsDebug { get; set; } = true;
+
         /// <summary>
         /// The platform on which compiled binaries are going to be running
         /// </summary>
-        public PlatformData TargetPlatformData { get; set; }
-        /// <summary>
-        /// The format of output - library, console or windowed
-        /// </summary>
-        public TargetFormat TargetFormat { get; set; }
-        #endregion
-
-
+        public static PlatformData TargetPlatformData { get; set; }
         /// <summary>
         /// The platform on which compiler is running
         /// </summary>

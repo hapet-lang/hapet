@@ -35,8 +35,8 @@ namespace HapetPostPrepare
             }
 
             // WARN: take care about the shite that is goin on here
-            var outFolderPath = _compiler.CurrentProjectSettings.OutputDirectory;
-            var asmName = _compiler.CurrentProjectSettings.AssemblyName;
+            var outFolderPath = _compiler.CurrentProjectData.OutputDirectory;
+            var asmName = _compiler.CurrentProjectData.AssemblyName;
             File.WriteAllText($"{outFolderPath}/{asmName}.mpt", globalStringBuilder.ToString());
         }
 
@@ -79,8 +79,8 @@ namespace HapetPostPrepare
             // #meta block
             var metadataMetadataJson = new MetadataMetadataJson()
             {
-                Name = _compiler.CurrentProjectSettings.ProjectName,
-                Version = _compiler.CurrentProjectSettings.ProjectVersion,
+                Name = _compiler.CurrentProjectData.ProjectName,
+                Version = _compiler.CurrentProjectData.ProjectVersion,
                 Dependencies = _compiler.CurrentProjectData.References.Select(x => x.ReferenceName).ToArray(),
             };
             var options = new JsonSerializerOptions(JsonSerializerOptions.Default)
@@ -95,7 +95,7 @@ namespace HapetPostPrepare
 
         private void CreateFileDeclarations(ProgramFile file, List<AstDeclaration> decls, StringBuilder sb)
         {
-            sb.Append($"#file \"{CompilerUtils.GetFileRelativePath(_compiler.CurrentProjectSettings.ProjectPath, file.FilePath.AbsolutePath)}\";\n");
+            sb.Append($"#file \"{CompilerUtils.GetFileRelativePath(_compiler.CurrentProjectData.ProjectPath, file.FilePath.AbsolutePath)}\";\n");
             sb.Append($"namespace {file.Namespace};\n");
 
             // serialize usings

@@ -24,7 +24,7 @@ namespace HapetBackend.Llvm
             LLVMTypeRef crtMainFuncType = null;
             LLVMValueRef crtMainFunc = null;
 
-            switch (_compiler.CurrentProjectSettings.TargetPlatformData.TargetPlatform)
+            switch (CompilerSettings.TargetPlatformData.TargetPlatform)
             {
                 case TargetPlatform.Win86:
                 case TargetPlatform.Win64:
@@ -57,7 +57,7 @@ namespace HapetBackend.Llvm
 
             // calling conventions
             // https://github.com/llvm/llvm-project/blob/main/llvm/include/llvm/IR/CallingConv.h
-            switch (_compiler.CurrentProjectSettings.TargetPlatformData.TargetPlatform)
+            switch (CompilerSettings.TargetPlatformData.TargetPlatform)
             {
                 case TargetPlatform.Win86:
                     //if (CompilerSettings.TargetRepresentation == TargetRepresentation.Windowed)

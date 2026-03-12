@@ -82,7 +82,7 @@ namespace HapetBackend.Llvm
         {
             // create a func to init all the type infos
             var ltype = LLVMTypeRef.CreateFunction(HapetTypeToLLVMType(HapetType.CurrentTypeContext.VoidTypeInstance), [], false);
-            var lfunc = _module.AddFunction($"{_compiler.CurrentProjectSettings.ProjectName}_type_initer", ltype);
+            var lfunc = _module.AddFunction($"{_compiler.CurrentProjectData.ProjectName}_type_initer", ltype);
             lfunc.Linkage = LLVMLinkage.LLVMExternalLinkage;
 
             // make check that is already inited

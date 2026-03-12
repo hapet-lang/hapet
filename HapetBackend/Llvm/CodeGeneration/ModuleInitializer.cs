@@ -19,13 +19,13 @@ namespace HapetBackend.Llvm
 
             // to check if it was inited only once
             var globStatic = _module.AddGlobal(HapetTypeToLLVMType(HapetType.CurrentTypeContext.BoolTypeInstance),
-                $"is_{_compiler.CurrentProjectSettings.ProjectName}_module_initer_called");
+                $"is_{_compiler.CurrentProjectData.ProjectName}_module_initer_called");
             globStatic.Linkage = LLVMLinkage.LLVMExternalLinkage;
             globStatic.Initializer = LLVMValueRef.CreateConstInt(HapetTypeToLLVMType(HapetType.CurrentTypeContext.BoolTypeInstance), 0);
 
             // create a func to init all the type infos
             var ltype = LLVMTypeRef.CreateFunction(HapetTypeToLLVMType(HapetType.CurrentTypeContext.VoidTypeInstance), [], false);
-            var lfunc = _module.AddFunction($"{_compiler.CurrentProjectSettings.ProjectName}_module_initer", ltype);
+            var lfunc = _module.AddFunction($"{_compiler.CurrentProjectData.ProjectName}_module_initer", ltype);
             lfunc.Linkage = LLVMLinkage.LLVMExternalLinkage;
             lfunc.DLLStorageClass = LLVMDLLStorageClass.LLVMDLLExportStorageClass;
 
@@ -67,7 +67,7 @@ namespace HapetBackend.Llvm
         {
             // create a func to init all the type infos
             var ltype = LLVMTypeRef.CreateFunction(HapetTypeToLLVMType(HapetType.CurrentTypeContext.VoidTypeInstance), [], false);
-            var lfunc = _module.AddFunction($"{_compiler.CurrentProjectSettings.ProjectName}_consts_initer", ltype);
+            var lfunc = _module.AddFunction($"{_compiler.CurrentProjectData.ProjectName}_consts_initer", ltype);
             lfunc.Linkage = LLVMLinkage.LLVMExternalLinkage;
 
             // make check that is already inited
@@ -94,13 +94,13 @@ namespace HapetBackend.Llvm
         {
             // to check if it was inited only once
             var globStatic = _module.AddGlobal(HapetTypeToLLVMType(HapetType.CurrentTypeContext.BoolTypeInstance),
-                $"is_{_compiler.CurrentProjectSettings.ProjectName}_gc_roots_setter_called");
+                $"is_{_compiler.CurrentProjectData.ProjectName}_gc_roots_setter_called");
             globStatic.Linkage = LLVMLinkage.LLVMExternalLinkage;
             globStatic.Initializer = LLVMValueRef.CreateConstInt(HapetTypeToLLVMType(HapetType.CurrentTypeContext.BoolTypeInstance), 0);
 
             // create a func to init all the type infos
             var ltype = LLVMTypeRef.CreateFunction(HapetTypeToLLVMType(HapetType.CurrentTypeContext.VoidTypeInstance), [], false);
-            var lfunc = _module.AddFunction($"{_compiler.CurrentProjectSettings.ProjectName}_gc_roots_setter", ltype);
+            var lfunc = _module.AddFunction($"{_compiler.CurrentProjectData.ProjectName}_gc_roots_setter", ltype);
             lfunc.Linkage = LLVMLinkage.LLVMExternalLinkage;
             lfunc.DLLStorageClass = LLVMDLLStorageClass.LLVMDLLExportStorageClass;
 

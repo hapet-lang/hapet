@@ -21,11 +21,11 @@ namespace HapetCompiler.Resolvers
             LibrariesToLinkWith.Clear();
             PathsToLinkWith.Clear();
 
-            string outFolder = _projectSettings.OutputDirectory;
+            string outFolder = _projectData.OutputDirectory;
             foreach (var r in _projectData.References)
             {
 #if DEBUG
-                if (!_projectSettings.IsReferencedCompilation && !_projectSettings.IsLspCompilation && !CompilerSettings.IsInRunContext)
+                if (!_projectData.IsReferencedCompilation && !CompilerSettings.IsInLspContext && !CompilerSettings.IsInRunContext)
                     _compiler.MessageHandler.ReportMessage([$"{Funcad.GetPrettyTimeString(_compiler.CompilationStopwatch.Elapsed)}   Resolving '{r}'..."], null, ReportType.Info);
 #endif
                 // getting the proper data
