@@ -201,8 +201,6 @@ namespace HapetBackend.Llvm
 
                 // some functions require suppress of defer/stacktrace
                 bool doSuppressStackTrace = funcDecl.GetAttribute("System.SuppressStackTraceAttribute") != null;
-                // suppress when extern
-                doSuppressStackTrace = doSuppressStackTrace || funcDecl.SpecialKeys.Contains(TokenType.KwExtern);
 
                 // if stacktrace is not suppressed then make "exception-handler" to call defer on exception
                 if (doSuppressStackTrace)
@@ -257,6 +255,28 @@ namespace HapetBackend.Llvm
                     _builder.PositionAtEnd(bbBody);
                 }
 
+                // if not suppress defer/stacktrace
+                if (!doSuppressStackTrace)
+                {
+                    // set up defer shite
+                    // making cool name
+                    string funcName = _postPreparer.GetFuncNameAsOriginal(funcDecl); // TODO: also add namespace, class and params
+                    if (funcDecl.IsNestedDecl)
+                    {
+                        string parentFuncName = _postPreparer.GetFuncNameAsOriginal(funcDecl.ParentDecl as AstFuncDecl);
+                        string containingParent = _postPreparer.GetNameFromAst(funcDecl.ParentDecl.ContainingParent.Name, _compiler.MessageHandler);
+                        string nameSpace = funcDecl.ParentDecl.ContainingParent.SourceFile.Namespace;
+                        funcName = $"{nameSpace}.{containingParent}.{parentFuncName}.{funcName}";
+                    }
+                    else
+                    {
+                        string containingParent = _postPreparer.GetNameFromAst(funcDecl.ContainingParent.Name, _compiler.MessageHandler);
+                        string nameSpace = funcDecl.ContainingParent.SourceFile.Namespace;
+                        funcName = $"{nameSpace}.{containingParent}.{funcName}";
+                    }
+                    PushStackTrace(funcName);
+                }
+
                 // different behaviour when extern func
                 if (funcDecl.SpecialKeys.Contains(TokenType.KwExtern))
                 {
@@ -265,28 +285,6 @@ namespace HapetBackend.Llvm
                 }
                 else
                 {
-                    // if not suppress defer/stacktrace
-                    if (!doSuppressStackTrace)
-                    {
-                        // set up defer shite
-                        // making cool name
-                        string funcName = _postPreparer.GetFuncNameAsOriginal(funcDecl); // TODO: also add namespace, class and params
-                        if (funcDecl.IsNestedDecl)
-                        {
-                            string parentFuncName = _postPreparer.GetFuncNameAsOriginal(funcDecl.ParentDecl as AstFuncDecl);
-                            string containingParent = _postPreparer.GetNameFromAst(funcDecl.ParentDecl.ContainingParent.Name, _compiler.MessageHandler);
-                            string nameSpace = funcDecl.ParentDecl.ContainingParent.SourceFile.Namespace;
-                            funcName = $"{nameSpace}.{containingParent}.{parentFuncName}.{funcName}";
-                        }
-                        else
-                        {
-                            string containingParent = _postPreparer.GetNameFromAst(funcDecl.ContainingParent.Name, _compiler.MessageHandler);
-                            string nameSpace = funcDecl.ContainingParent.SourceFile.Namespace;
-                            funcName = $"{nameSpace}.{containingParent}.{funcName}";
-                        }
-                        PushStackTrace(funcName);
-                    }
-
                     // genereting inside stuff of the function
                     GenerateBlockExprCode(funcDecl.Body);
                     // if function return type is void and there is no br/ret and the end - add it
@@ -297,25 +295,25 @@ namespace HapetBackend.Llvm
                         else
                             _builder.BuildUnreachable(); /// it should be safe because of <see cref="PostPrepare.CheckThatThereIsEnoughReturnsInFunc(AstFuncDecl)"/>
                     }
+                }
 
-                    // if not suppress defer/stacktrace
-                    if (!doSuppressStackTrace)
+                // if not suppress defer/stacktrace
+                if (!doSuppressStackTrace)
+                {
+                    // make up defer shite
+                    LLVM.AppendExistingBasicBlock(_lastFunctionValueRef, _lastFunctionDeferBasicBlock);
+                    _builder.PositionAtEnd(_lastFunctionDeferBasicBlock);
                     {
-                        // make up defer shite
-                        LLVM.AppendExistingBasicBlock(_lastFunctionValueRef, _lastFunctionDeferBasicBlock);
-                        _builder.PositionAtEnd(_lastFunctionDeferBasicBlock);
-                        {
-                            // pop stacktrace
-                            PopStackTrace();
-                            // popping current jmpbuf 
-                            PopJmpBuf();
+                        // pop stacktrace
+                        PopStackTrace();
+                        // popping current jmpbuf 
+                        PopJmpBuf();
 
-                            // go back 
-                            var needGoBackLoadedAsPtr = _builder.BuildLoad2(HapetTypeToLLVMType(HapetType.CurrentTypeContext.PtrToVoidType), _lastFunctionDeferBasicBlockGoBack);
-                            var indirectBr = _builder.BuildIndirectBr(needGoBackLoadedAsPtr, (uint)_lastFunctionDeferIndirectBlocks.Count);
-                            foreach (var bl in _lastFunctionDeferIndirectBlocks)
-                                indirectBr.AddDestination(bl);
-                        }
+                        // go back 
+                        var needGoBackLoadedAsPtr = _builder.BuildLoad2(HapetTypeToLLVMType(HapetType.CurrentTypeContext.PtrToVoidType), _lastFunctionDeferBasicBlockGoBack);
+                        var indirectBr = _builder.BuildIndirectBr(needGoBackLoadedAsPtr, (uint)_lastFunctionDeferIndirectBlocks.Count);
+                        foreach (var bl in _lastFunctionDeferIndirectBlocks)
+                            indirectBr.AddDestination(bl);
                     }
                 }
 
