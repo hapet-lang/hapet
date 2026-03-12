@@ -28,7 +28,7 @@
     </Item>
     <Item>
         <Number>0006</Number>
-        <Text>Path to the project file must be specified. For example 'hapet {0} /path/to/project.hptproj'</Text>
+        <Text>Project file could not be found in current directory or there are multiple project files, so path to the project file should be specified. For example 'hapet {0} /path/to/project.hptproj'</Text>
     </Item>
     <Item>
         <Number>0007</Number>

@@ -28,7 +28,7 @@ namespace HapetCompiler
             {
                 case "build":
                     {
-                        if (args.Length == 1)
+                        if (args.Length == 1 && !TrySearchProjectInCurrentContext(ref args))
                         {
                             messageHandler.ReportMessage(["build"], ErrorCode.Get(CTEN.NoHapetProjectPathSpecified));
                             return (int)CompilerErrors.HapetCommandParamsError;
@@ -44,7 +44,7 @@ namespace HapetCompiler
                     }
                 case "run":
                     {
-                        if (args.Length == 1)
+                        if (args.Length == 1 && !TrySearchProjectInCurrentContext(ref args))
                         {
                             // TODO: check current folder for .hptproj existance
                             messageHandler.ReportMessage(["run"], ErrorCode.Get(CTEN.NoHapetProjectPathSpecified));
@@ -61,7 +61,7 @@ namespace HapetCompiler
                     }
                 case "restore":
                     {
-                        if (args.Length == 1)
+                        if (args.Length == 1 && !TrySearchProjectInCurrentContext(ref args))
                         {
                             messageHandler.ReportMessage(["restore"], ErrorCode.Get(CTEN.NoHapetProjectPathSpecified));
                             return (int)CompilerErrors.HapetCommandParamsError;
@@ -72,7 +72,7 @@ namespace HapetCompiler
                     }
                 case "lsp":
                     {
-                        if (args.Length == 1)
+                        if (args.Length == 1 && !TrySearchProjectInCurrentContext(ref args))
                         {
                             messageHandler.ReportMessage(["lsp"], ErrorCode.Get(CTEN.NoHapetProjectPathSpecified));
                             return (int)CompilerErrors.HapetCommandParamsError;
@@ -133,6 +133,30 @@ namespace HapetCompiler
             }
             messageHandler.ReportMessage([args[0]], ErrorCode.Get(CTEN.NotFoundHapetCommand));
             return (int)CompilerErrors.HapetCommandError;
+        }
+
+        /// <summary>
+        /// Used by hapet commands that require project path
+        /// </summary>
+        /// <param name="args">Args that user passed to hapet</param>
+        /// <returns>Found project in current context</returns>
+        private static bool TrySearchProjectInCurrentContext(ref string[] args)
+        {
+            // dir where hapet is running
+            string currentDirectory = Directory.GetCurrentDirectory();
+            var files = Directory.GetFiles(currentDirectory, "*.hptproj", SearchOption.TopDirectoryOnly);
+            if (files.Length == 0 || files.Length > 1)
+                return false;
+
+            // place project path at index 1
+            string[] newArgs = new string[args.Length + 1];
+            newArgs[0] = args[0];
+            newArgs[1] = files[0];
+            Array.Copy(args, 1, newArgs, 2, args.Length - 1);
+
+            // replace with new args
+            args = newArgs;
+            return true;
         }
     }
 }
