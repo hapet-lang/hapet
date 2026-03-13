@@ -39,10 +39,12 @@ namespace HapetCompiler.Toolchains
             if (!linker.CheckLinkerAndLibs(messageHandler)) isOk = false;
 
             // result message
+            messageHandler.ReportMessage([$""], null, ReportType.Info);
+            messageHandler.ReportMessage([$"Check done in {_stopwatch.Elapsed.TotalSeconds:F2} seconds"], null, ReportType.Info);
+
             if (isOk) messageHandler.ReportMessage([$"Result: hapet is OK"], null, ReportType.Info);
             else messageHandler.ReportMessage([$"Result: found some problems with hapet"], null, ReportType.Error);
 
-            messageHandler.ReportMessage([$"Check done in {_stopwatch.Elapsed.TotalSeconds:F2} seconds"], null, ReportType.Info);
 
             return isOk ? 0 : -1;
         }
