@@ -10,6 +10,8 @@ namespace HapetBackend.Llvm.Linkers.Windows
     {
         private Compiler _compiler;
 
+        private const string _linkerName = "lld-link.exe";
+
         public bool Link(Compiler compiler, string targetFile, string objFile, 
             IEnumerable<string> libraryIncludeDirectories, 
             IEnumerable<string> libraries, 
@@ -92,7 +94,7 @@ namespace HapetBackend.Llvm.Linkers.Windows
             }
 
             // searching for linker
-            string vsLinkerFile = Path.Combine(CompilerUtils.CurrentHapetDirectory, "lld-link.exe");
+            string vsLinkerFile = Path.Combine(CompilerUtils.CurrentHapetDirectory, _linkerName);
             if (!File.Exists(vsLinkerFile))
             {
                 messageHandler.ReportMessage([], ErrorCode.Get(CTEN.NoLldLinker));
@@ -128,6 +130,44 @@ namespace HapetBackend.Llvm.Linkers.Windows
             }
 
             outFilePath = $"{filename}{outFileExtension}";
+            return result;
+        }
+
+        public bool CheckLinkerAndLibs(IMessageHandler messageHandler)
+        {
+            bool result = true; // by default ok
+            string compilerDir = CompilerUtils.CurrentHapetDirectory.Replace("\\", "/").TrimEnd('/');
+
+            // check for linker
+            if (File.Exists($"{compilerDir}/{_linkerName}"))
+                messageHandler.ReportMessage([$"Linker: OK"], null, ReportType.Info);
+            else
+            {
+                messageHandler.ReportMessage([$"Linker: {_linkerName} not found"], null, ReportType.Error);
+                result = false;
+            }
+
+            // check for win-x64 libs
+            string win64Libs = $"{compilerDir}/libs/win-x64/";
+            string notFoundWin64 = "";
+            foreach (var l in _winRequiredLibs)
+            {
+                // check that lib exists
+                if (File.Exists($"{win64Libs}{l}"))
+                    continue;
+                // if does not - add to string 
+                if (!string.IsNullOrEmpty(notFoundWin64))
+                    notFoundWin64 += ", ";
+                notFoundWin64 += l;
+            }
+            if (string.IsNullOrEmpty(notFoundWin64))
+                messageHandler.ReportMessage([$"Win-x64 libraries: OK"], null, ReportType.Info);
+            else
+            {
+                messageHandler.ReportMessage([$"Win-x64 libraries: {notFoundWin64} not found"], null, ReportType.Error);
+                result = false;
+            }
+
             return result;
         }
     }
