@@ -32,7 +32,7 @@ public static class Program
 ```
 
 ## Documentation
-Visit [hapet documentation](https://hapetlang.com/docs) to get started with **hapet** programming language.  
+Visit [hapet documentation](https://hapetlang.com/docs/get-started/) to get started with **hapet** programming language.  
 
 ## Licenses
 - This repository is under [MIT license](https://github.com/hapet-lang/hapet/blob/main/LICENSE);
