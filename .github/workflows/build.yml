@@ -81,7 +81,7 @@ jobs:
           
           # win-x64
           if [ -d "./built-files-win-x64" ]; then
-            cp ./built-files-win-x64/hapet_x64.exe ./release_files/hapet_x64.exe
+            cp ./built-files-win-x64/hapet_x64.exe ./release_files/hapet_win_x64.exe
           fi
           
           echo "Final release files:"
