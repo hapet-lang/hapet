@@ -72,6 +72,16 @@ jobs:
           cd build-win
           ./build-x64.ps1
           ls -Force
+      - name: Upload binary files over FTP
+        uses: wlixcc/SFTP-Deploy-Action@v1.2.6
+        with:
+            username: ${{ secrets.FTP_USERNAME }}
+            server: 'hapetlang.com'
+            password: ${{ secrets.FTP_PASSWORD }}
+            local_path: './build-win/staging_folder/*'
+            remote_path: '/home/ftpuser/resources/hapet/win-x64/'
+            sftpArgs: '-o ConnectTimeout=5'
+            delete_remote_files: true
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
