@@ -2,6 +2,7 @@
 using HapetBackend.Llvm.Linkers.Windows;
 using HapetFrontend;
 using HapetFrontend.Entities;
+using HapetFrontend.Errors;
 using System.Diagnostics;
 
 namespace HapetCompiler.Toolchains
@@ -37,6 +38,9 @@ namespace HapetCompiler.Toolchains
             }
             // check for linker and libs
             if (!linker.CheckLinkerAndLibs(messageHandler)) isOk = false;
+
+            // check for error files
+            if (!ErrorCode.Check(messageHandler)) isOk = false;
 
             // result message
             messageHandler.ReportMessage([$""], null, ReportType.Info);

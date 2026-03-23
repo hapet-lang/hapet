@@ -23,6 +23,25 @@ namespace HapetFrontend.Errors
             var errs = XmlMessageReader<XmlCompileTimeWarning>.GetCompileTimeWarnings();
             return errs.First(x => x.RealNumber == (int)num);
         }
+
+        public static bool Check(IMessageHandler messageHandler)
+        {
+            bool compTimeErrorsExists = File.Exists(Path.Combine(CompilerUtils.CurrentHapetDirectory, "Errors", XmlCompileTimeError.Filename));
+            bool runTimeErrorsExists = File.Exists(Path.Combine(CompilerUtils.CurrentHapetDirectory, "Errors", XmlRunTimeError.Filename));
+            bool compTimeWarnsExists = File.Exists(Path.Combine(CompilerUtils.CurrentHapetDirectory, "Errors", XmlCompileTimeWarning.Filename));
+
+            if (!compTimeErrorsExists)
+                messageHandler.ReportMessage([$"Message files: {XmlCompileTimeError.Filename} not found"], null, ReportType.Error);
+            if (!runTimeErrorsExists)
+                messageHandler.ReportMessage([$"Message files: {XmlRunTimeError.Filename} not found"], null, ReportType.Error);
+            if (!compTimeWarnsExists)
+                messageHandler.ReportMessage([$"Message files: {XmlCompileTimeWarning.Filename} not found"], null, ReportType.Error);
+
+            if (compTimeErrorsExists && runTimeErrorsExists && compTimeWarnsExists)
+                messageHandler.ReportMessage([$"Message files: OK"], null, ReportType.Info);
+
+            return compTimeErrorsExists && runTimeErrorsExists && compTimeWarnsExists;
+        }
     }
 
     public class XmlMessageReader<T> where T : IXmlMessage, new() 
