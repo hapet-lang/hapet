@@ -71,6 +71,17 @@ jobs:
         with:
           name: built-files-win-x64
           path: ./built-files-win-x64/
+      - name: Upload win-x64 over FTP
+        if: ${{ github.event.inputs.build_win_x64 == 'true' }}
+        uses: wlixcc/SFTP-Deploy-Action@v1.2.6
+        with:
+            username: ${{ secrets.FTP_USERNAME }}
+            server: 'hapetlang.com'
+            password: ${{ secrets.FTP_PASSWORD }}
+            local_path: './built-files-win-x64/staging_folder/*'
+            remote_path: '/home/ftpuser/resources/hapet/win-x64/'
+            sftpArgs: '-o ConnectTimeout=5'
+            delete_remote_files: true
       
       - name: Prepare release files
         run: |
