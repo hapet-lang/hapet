@@ -71,7 +71,7 @@ namespace HapetCompiler.Toolchains
                 if (index + 1 >= _cmdArgs.Length)
                 {
                     // name not specified
-                    messageHandler.ReportMessage(["Project name", "-n"], ErrorCode.Get(CTEN.SomethingExpectedAfter));
+                    messageHandler.ReportMessage(["Project name", "-n|--name"], ErrorCode.Get(CTEN.SomethingExpectedAfter));
                     projectName = "";
                     return false;
                 }

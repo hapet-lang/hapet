@@ -2,6 +2,7 @@
 using HapetCompiler.Resolvers;
 using HapetFrontend;
 using HapetFrontend.Entities;
+using HapetFrontend.Errors;
 using HapetFrontend.Helpers;
 using HapetFrontend.ProjectParser;
 using HapetFrontend.Types;
@@ -26,6 +27,9 @@ namespace HapetCompiler.Toolchains
 
         public int Build(string projectPath, IMessageHandler messageHandler, out string outFilePath, bool referenced = false, bool makeCodegen = true)
         {
+            // at first - handle cmd args
+            HandleArgs(messageHandler);
+
             outFilePath = "";
 
             // check for --help
@@ -183,6 +187,33 @@ namespace HapetCompiler.Toolchains
         private void PrintHelp(IMessageHandler messageHandler)
         {
             messageHandler.ReportMessage([$"Usage: \n  hapet build <project> <args> \n"], null, ReportType.Info);
+        }
+
+        private void HandleArgs(IMessageHandler messageHandler)
+        {
+            // check for verbose
+            CompilerSettings.Verbose = _cmdArgs.Contains("--verbose");
+            // check for debug
+            CompilerSettings.IsDebug = !_cmdArgs.Contains("--release") || _cmdArgs.Contains("--debug");
+
+            // check for -t param existance
+            if (_cmdArgs.Contains("-t") || _cmdArgs.Contains("--target"))
+            {
+                int index = Array.FindIndex(_cmdArgs, x => (x == "-t") || (x == "--target"));
+                if (index + 1 >= _cmdArgs.Length)
+                {
+                    // name not specified
+                    messageHandler.ReportMessage(["Target platform", "-t|--target"], ErrorCode.Get(CTEN.SomethingExpectedAfter));
+                }
+                else
+                {
+                    // setting target platform
+                    var target = _cmdArgs[index + 1];
+                    CompilerSettings.TargetPlatformData = CompilerSettings.SupportedPlatforms.FirstOrDefault(x => x.Name == target);
+                    if (CompilerSettings.TargetPlatformData == null)
+                        messageHandler.ReportMessage([target], ErrorCode.Get(CTEN.InvalidTargetPlatform));
+                }
+            }
         }
     }
 }

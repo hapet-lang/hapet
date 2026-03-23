@@ -22,6 +22,7 @@
         NoProjectNewTypeSpecified       = 0x000E,
         SomethingExpectedAfter          = 0x000F,
         TemplateProjectDirExists        = 0x0010,
+        InvalidTargetPlatform           = 0x0011,
 
         // lexer errors up to 0x2000
         FileForLexerNotFound            = 0x1001,
