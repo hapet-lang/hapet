@@ -173,6 +173,11 @@ namespace HapetLastPrepare
                 // add the var to parent func block
                 parentFunc.Body.Statements.Insert(0, syntheticVar);
 
+                // replace local var usages
+                ReplaceVarUsagesInParent(parentFunc.Body, usedDecls, variableName);
+                // replace local var decls
+                ReplaceVarDeclsInParent(parentFunc.Body, usedDecls, variableName);
+
                 // generate statements to wrap params usages
                 List<AstStatement> paramInitializations = new List<AstStatement>();
                 foreach (var d in usedDecls.Where(x => x is AstParamDecl))
@@ -190,11 +195,6 @@ namespace HapetLastPrepare
                 }
                 // add inits to parent func block
                 parentFunc.Body.Statements.InsertRange(1, paramInitializations);
-
-                // replace local var usages
-                ReplaceVarUsagesInParent(parentFunc.Body, usedDecls, variableName);
-                // replace local var decls
-                ReplaceVarDeclsInParent(parentFunc.Body, usedDecls, variableName);
 
                 // reinference parent func body
                 _postPreparer.PostPrepareFunctionScoping(parentFunc);
