@@ -6,13 +6,13 @@ using System.Text;
 
 namespace HapetCompiler.Toolchains
 {
-    internal sealed class ProjectRunToolchain
+    internal sealed class HapetRunToolchain
     {
         public ProjectData ProjectData { get; set; }
 
         private readonly Stopwatch _stopwatch;
         private readonly string[] _cmdArgs; // TODO: use them for ProjectXmlParser
-        public ProjectRunToolchain(Stopwatch stopwatch, string[] args)
+        public HapetRunToolchain(Stopwatch stopwatch, string[] args)
         {
             _stopwatch = stopwatch;
             _cmdArgs = args;
@@ -31,7 +31,7 @@ namespace HapetCompiler.Toolchains
             CompilerSettings.IsInRunContext = true;
 
             // just use build 
-            ProjectBuildToolchain buildToolchain = new ProjectBuildToolchain(_stopwatch, _cmdArgs);
+            HapetBuildToolchain buildToolchain = new HapetBuildToolchain(_stopwatch, _cmdArgs);
             var buildResult = buildToolchain.Build(projectPath, messageHandler, out string outFilePath, false, true);
             // if there was a problem while building the project
             if (buildResult != 0)

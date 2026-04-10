@@ -13,13 +13,13 @@ using System.Text;
 
 namespace HapetCompiler.Toolchains
 {
-    internal sealed class ProjectBuildToolchain
+    internal sealed class HapetBuildToolchain
     {
         public ProjectData ProjectData { get; set; }
 
         private readonly Stopwatch _stopwatch;
         private readonly string[] _cmdArgs; // TODO: use them for ProjectXmlParser
-        public ProjectBuildToolchain(Stopwatch stopwatch, string[] args)
+        public HapetBuildToolchain(Stopwatch stopwatch, string[] args)
         {
             _stopwatch = stopwatch;
             _cmdArgs = args;

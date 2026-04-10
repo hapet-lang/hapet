@@ -1,10 +1,10 @@
 ﻿using HapetFrontend.Entities;
 namespace HapetCompiler.Toolchains
 {
-    internal sealed class ProjectRestoreToolchain
+    internal sealed class HapetRestoreToolchain
     {
         private string[] _cmdArgs; // TODO: use them for ProjectXmlParser
-        public ProjectRestoreToolchain(string[] args)
+        public HapetRestoreToolchain(string[] args)
         {
             _cmdArgs = args;
         }

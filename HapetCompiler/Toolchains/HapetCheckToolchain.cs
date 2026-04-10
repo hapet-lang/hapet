@@ -7,10 +7,10 @@ using System.Diagnostics;
 
 namespace HapetCompiler.Toolchains
 {
-    internal sealed class ProjectCheckToolchain
+    internal sealed class HapetCheckToolchain
     {
         private readonly Stopwatch _stopwatch;
-        public ProjectCheckToolchain(Stopwatch stopwatch)
+        public HapetCheckToolchain(Stopwatch stopwatch)
         {
             _stopwatch = stopwatch;
         }

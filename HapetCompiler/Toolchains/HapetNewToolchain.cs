@@ -8,7 +8,7 @@ using System.Text;
 
 namespace HapetCompiler.Toolchains
 {
-    internal sealed class ProjectNewToolchain
+    internal sealed class HapetNewToolchain
     {
         private static readonly Dictionary<string, IProjectTemplate> _projectTemplates = new Dictionary<string, IProjectTemplate>()
         {
@@ -18,7 +18,7 @@ namespace HapetCompiler.Toolchains
 
         private readonly Stopwatch _stopwatch;
         private readonly string[] _cmdArgs;
-        public ProjectNewToolchain(Stopwatch stopwatch, string[] args)
+        public HapetNewToolchain(Stopwatch stopwatch, string[] args)
         {
             _stopwatch = stopwatch;
             _cmdArgs = args;

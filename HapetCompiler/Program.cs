@@ -41,7 +41,7 @@ namespace HapetCompiler
                         stopwatch.Start();
 
                         // skip the first two args because they are already used
-                        ProjectBuildToolchain projectToolchain = new ProjectBuildToolchain(stopwatch, args.Skip(2).ToArray());
+                        HapetBuildToolchain projectToolchain = new HapetBuildToolchain(stopwatch, args.Skip(2).ToArray());
                         return projectToolchain.Build(args[1], messageHandler, out string _);
                     }
                 case "run":
@@ -58,7 +58,7 @@ namespace HapetCompiler
                         stopwatch.Start();
 
                         // skip the first two args because they are already used
-                        ProjectRunToolchain projectToolchain = new ProjectRunToolchain(stopwatch, args.Skip(2).ToArray());
+                        HapetRunToolchain projectToolchain = new HapetRunToolchain(stopwatch, args.Skip(2).ToArray());
                         return projectToolchain.Run(args[1], messageHandler);
                     }
                 case "restore":
@@ -69,7 +69,7 @@ namespace HapetCompiler
                             return (int)CompilerErrors.HapetCommandParamsError;
                         }
                         // skip the first two args because they are already used
-                        ProjectRestoreToolchain projectToolchain = new ProjectRestoreToolchain(args.Skip(2).ToArray());
+                        HapetRestoreToolchain projectToolchain = new HapetRestoreToolchain(args.Skip(2).ToArray());
                         return projectToolchain.Restore(args[1], messageHandler);
                     }
                 case "lsp":
@@ -85,7 +85,7 @@ namespace HapetCompiler
                         stopwatch.Start();
 
                         // skip the first two args because they are already used
-                        ProjectLspToolchain projectToolchain = new ProjectLspToolchain(stopwatch, args.Skip(2).ToArray());
+                        HapetLspToolchain projectToolchain = new HapetLspToolchain(stopwatch, args.Skip(2).ToArray());
                         LspMessageHandler lspMessageHandler = new LspMessageHandler();
                         return await projectToolchain.WatchAsync(args[1], lspMessageHandler, messageHandler);
                     }
@@ -102,7 +102,7 @@ namespace HapetCompiler
                         stopwatch.Start();
 
                         // skip the first two args because they are already used
-                        ProjectNewToolchain projectToolchain = new ProjectNewToolchain(stopwatch, args.Skip(2).ToArray());
+                        HapetNewToolchain projectToolchain = new HapetNewToolchain(stopwatch, args.Skip(2).ToArray());
                         return await projectToolchain.CreateProjectAsync(args[1], messageHandler);
                     }
                 case "check":
@@ -112,7 +112,7 @@ namespace HapetCompiler
                         stopwatch.Start();
 
                         // skip the first two args because they are already used
-                        ProjectCheckToolchain projectToolchain = new ProjectCheckToolchain(stopwatch);
+                        HapetCheckToolchain projectToolchain = new HapetCheckToolchain(stopwatch);
                         return await projectToolchain.CheckAsync(messageHandler);
                     }
                 case "-v":

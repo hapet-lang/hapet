@@ -35,7 +35,7 @@ namespace HapetCompiler.Resolvers
                 }
 
                 // building the project
-                var toolchain = new ProjectBuildToolchain(_compiler.CompilationStopwatch, []); // TODO: params?
+                var toolchain = new HapetBuildToolchain(_compiler.CompilationStopwatch, []); // TODO: params?
                 // make codegen when not lsp
                 bool codegenRequired = !CompilerSettings.IsInLspContext;
                 toolchain.Build(pathToReferenced, _compiler.MessageHandler, out string _, true, codegenRequired);
