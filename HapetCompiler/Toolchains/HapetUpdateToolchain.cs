@@ -23,17 +23,24 @@ namespace HapetCompiler.Toolchains
         async public Task<int> TryUpdateHapetAsync(IMessageHandler messageHandler, CancellationToken cancellationToken)
         {
             using var webSevice = new WebService(messageHandler);
-            if (await IsUpdateAvailableAsync(webSevice, messageHandler))
+            var (isAvailable, newVersion) = await IsUpdateAvailableAsync(webSevice, messageHandler);
+            if (isAvailable)
             {
+                messageHandler.ReportMessage($"Update available. New version of hapet is {newVersion}, starting download...");
                 await DownloadUpdateAsync(webSevice, messageHandler, cancellationToken);
                 UpdateUpdater(messageHandler);
                 RunUpdater(messageHandler);
+
+                messageHandler.ReportMessage($"Hapet updated succesfully in {_stopwatch.Elapsed.TotalSeconds:F2} seconds.");
+                messageHandler.ReportMessage($"Current version of hapet is {newVersion}.");
+                messageHandler.ReportMessage($"Please wait for a few seconds before using hapet again because new binary files are going to copy now.");
                 Environment.Exit(0);
             }
+            messageHandler.ReportMessage($"");
             return 0;
         }
 
-        async private Task<bool> IsUpdateAvailableAsync(WebService webSevice, IMessageHandler messageHandler)
+        async private Task<(bool isAvailable, string version)> IsUpdateAvailableAsync(WebService webSevice, IMessageHandler messageHandler)
         {
             string hapetPath = CompilerUtils.CurrentHapetDirectory;
             string hashFilePath = Path.Combine(hapetPath, CompilerUtils.TMP_COMPUTED_HASH_FILENAME);
@@ -50,7 +57,7 @@ namespace HapetCompiler.Toolchains
                     if (hashes == null)
                     {
                         // if there is no hash file on server - there is nothing to do then
-                        return false;
+                        return (false, "---");
                     }
 
                     // remove tmp hashes
@@ -62,16 +69,16 @@ namespace HapetCompiler.Toolchains
                     if (File.Exists(existedHashFilePath))
                     {
                         existedHashes = JsonSerializer.Deserialize<ComputedHashJson>(File.ReadAllText(existedHashFilePath));
-                        return existedHashes.Version != hashes.Version;
+                        return (existedHashes.Version != hashes.Version, hashes.Version);
                     }
-                    return true;
+                    return (true, hashes.Version);
                 }
                 catch (Exception ex)
                 {
                     messageHandler.ReportMessage($"Error while checking for update: {ex}");
                 }
             }
-            return false;
+            return (false, "--");
         }
 
         async private Task DownloadUpdateAsync(WebService webSevice, IMessageHandler messageHandler, CancellationToken cancellationToken)
@@ -195,7 +202,8 @@ namespace HapetCompiler.Toolchains
                     continue;
                 }
 
-                messageHandler.ReportMessage($"Updating {CompilerUtils.UPDATER_FILE_NAME}... Real path: {item}, Relative: {relat}");
+                if (CompilerSettings.Verbose)
+                    messageHandler.ReportMessage($"Updating {CompilerUtils.UPDATER_FILE_NAME}... Real path: {item}, Relative: {relat}");
 
                 string dst = $"{hapetPath}/{relat}";
                 try
@@ -211,7 +219,8 @@ namespace HapetCompiler.Toolchains
                 }
             }
 
-            messageHandler.ReportMessage($"Done updating {CompilerUtils.UPDATER_FILE_NAME}");
+            if (CompilerSettings.Verbose)
+                messageHandler.ReportMessage($"Done updating {CompilerUtils.UPDATER_FILE_NAME}");
         }
 
         private void RunUpdater(IMessageHandler messageHandler)
@@ -219,30 +228,35 @@ namespace HapetCompiler.Toolchains
             string hapetPath = CompilerUtils.CurrentHapetDirectory;
             string updaterPath = Path.Combine(hapetPath, CompilerUtils.UPDATER_FOLDER_NAME, 
                 $"{CompilerUtils.UPDATER_FILE_NAME}{CompilerSettings.CurrentPlatformData.ExecutableFileExtension}");
-            messageHandler.ReportMessage($"Trying to run updater under the path: {updaterPath}");
+
+            if (CompilerSettings.Verbose)
+                messageHandler.ReportMessage($"Trying to run updater under the path: {updaterPath}");
             if (File.Exists(updaterPath))
             {
+                var process = new Process();
                 if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
                 {
-                    string strCmdText = updaterPath;
-                    var process = new Process();
-                    process.StartInfo.RedirectStandardOutput = false;
+                    process.StartInfo.FileName = updaterPath;
+                    process.StartInfo.Arguments = Environment.ProcessId.ToString();
                     process.StartInfo.Verb = "runas";
-                    process.StartInfo.FileName = strCmdText;
+                    process.StartInfo.UseShellExecute = false;
+                    process.StartInfo.CreateNoWindow = true;
                     process.Start();
-                    messageHandler.ReportMessage($"Windows updater started by path: {updaterPath}");
+
+                    if (CompilerSettings.Verbose)
+                        messageHandler.ReportMessage($"Windows updater started by path: {updaterPath}");
                 }
                 else
                 {
-                    var psi = new ProcessStartInfo
-                    {
-                        FileName = "/bin/bash",
-                        UseShellExecute = false,
-                        RedirectStandardOutput = false,
-                        Arguments = string.Format("-c \"{0}\"", updaterPath)
-                    };
-                    Process.Start(psi);
-                    messageHandler.ReportMessage($"Linux/MacOS updater started by path: {updaterPath}");
+                    // TODO: pass PID as arg for updater
+                    process.StartInfo.FileName = "/bin/bash";
+                    process.StartInfo.Arguments = string.Format("-c \"{0}\"", updaterPath);
+                    process.StartInfo.UseShellExecute = false;
+                    process.StartInfo.CreateNoWindow = true;
+                    process.Start();
+
+                    if (CompilerSettings.Verbose)
+                        messageHandler.ReportMessage($"Linux/MacOS updater started by path: {updaterPath}");
                 }
             }
         }
