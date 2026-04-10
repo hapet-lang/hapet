@@ -1,4 +1,5 @@
-﻿using HapetCompiler.Toolchains;
+﻿using HapetCommon;
+using HapetCompiler.Toolchains;
 using HapetFrontend;
 using HapetFrontend.Entities;
 using HapetFrontend.Errors;
@@ -17,7 +18,7 @@ namespace HapetCompiler.Resolvers
             foreach (var r in _projectData.ProjectReferences)
             {
                 if (!_projectData.IsReferencedCompilation && !CompilerSettings.IsInLspContext && !CompilerSettings.IsInRunContext)
-                    _compiler.MessageHandler.ReportMessage([$"{Funcad.GetPrettyTimeString(_compiler.CompilationStopwatch.Elapsed)}   Resolving '{Path.GetFileName(r.ReferenceName)}'..."], null, ReportType.Info);
+                    _compiler.MessageHandler.ReportMessage($"{CompilerUtils.GetPrettyTimeString(_compiler.CompilationStopwatch.Elapsed)}   Resolving '{Path.GetFileName(r.ReferenceName)}'...");
 
                 string projectPathNormalized = r.ReferenceName.Replace("\\", "/", StringComparison.InvariantCulture).TrimStart('/');
                 string pathToReferenced = $"{currentProjectFolderPath}/{projectPathNormalized}"; 
@@ -42,7 +43,7 @@ namespace HapetCompiler.Resolvers
 
                 string referencedProjectOutFolder = toolchain.ProjectData.OutputDirectory.Replace("\\", "/", StringComparison.InvariantCulture).TrimStart('/');
                 // copy all the files from the referenced project to current out folder
-                Funcad.CopyFilesRecursively(referencedProjectOutFolder, _projectData.OutputDirectory);
+                CompilerUtils.CopyFilesRecursively(referencedProjectOutFolder, _projectData.OutputDirectory);
 
                 // adding the reference to dll
                 _projectData.References.Add(new Reference(toolchain.ProjectData.AssemblyName, r.Node));

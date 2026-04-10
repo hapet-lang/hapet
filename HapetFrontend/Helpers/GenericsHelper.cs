@@ -11,6 +11,7 @@ using HapetFrontend.Errors;
 using HapetFrontend.Parsing;
 using HapetFrontend.Enums;
 using System.Diagnostics;
+using HapetCommon.Extensions;
 
 namespace HapetFrontend.Helpers
 {

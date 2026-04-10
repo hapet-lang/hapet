@@ -1,9 +1,11 @@
-﻿using HapetFrontend;
-using HapetFrontend.Helpers;
+﻿using HapetCommon;
+using HapetCommon.Extensions;
+using HapetFrontend;
 using HapetFrontend.Extensions;
+using HapetFrontend.Helpers;
 using System.Text;
-using System.Text.RegularExpressions;
 using System.Text.Json;
+using System.Text.RegularExpressions;
 
 namespace HapetBackend.Llvm.Linkers.Windows
 {
@@ -35,7 +37,7 @@ namespace HapetBackend.Llvm.Linkers.Windows
             {
                 StringBuilder sb = new StringBuilder();
                 var programFilesX86 = Environment.ExpandEnvironmentVariables("%ProgramFiles(x86)%");
-                var p = Funcad.StartProcess($@"{programFilesX86}\Microsoft Visual Studio\Installer\vswhere.exe", "-nologo -format json", stdout:
+                var p = CompilerUtils.StartProcess($@"{programFilesX86}\Microsoft Visual Studio\Installer\vswhere.exe", "-nologo -format json", stdout:
                     (sender, e) =>
                     {
                         sb.AppendLine(e.Data);

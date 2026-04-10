@@ -1,4 +1,5 @@
 ﻿using HapetBackend.Llvm.Linkers;
+using HapetCommon;
 using HapetFrontend;
 using HapetFrontend.Entities;
 using HapetFrontend.Errors;
@@ -26,7 +27,7 @@ namespace HapetCompiler.Resolvers
             {
 #if DEBUG
                 if (!_projectData.IsReferencedCompilation && !CompilerSettings.IsInLspContext && !CompilerSettings.IsInRunContext)
-                    _compiler.MessageHandler.ReportMessage([$"{Funcad.GetPrettyTimeString(_compiler.CompilationStopwatch.Elapsed)}   Resolving '{r}'..."], null, ReportType.Info);
+                    _compiler.MessageHandler.ReportMessage($"{CompilerUtils.GetPrettyTimeString(_compiler.CompilationStopwatch.Elapsed)}   Resolving '{r}'...");
 #endif
                 // getting the proper data
                 bool isOk = LinkHelper.GetLibraryPaths(r.ReferenceName, outFolder, out (string, string) data);

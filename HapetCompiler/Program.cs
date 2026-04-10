@@ -1,4 +1,5 @@
-﻿using HapetCompiler.Toolchains;
+﻿using HapetCommon;
+using HapetCompiler.Toolchains;
 using HapetFrontend;
 using HapetFrontend.Entities;
 using HapetFrontend.Errors;

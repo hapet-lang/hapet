@@ -5,7 +5,7 @@ using System.Net.Sockets;
 
 namespace HapetCommon.Web
 {
-    public class WebService
+    public class WebService : IDisposable
     {
         private readonly HttpClient _httpClient;
         private readonly ICommonMessageHandler _messageHandler;
@@ -36,6 +36,12 @@ namespace HapetCommon.Web
         public async Task<bool> CheckInternetConnection()
         {
             return (await (new CheckConnectionRequest()).Execute(_messageHandler, _httpClient)).IsExecutedNormally;
+        }
+
+        public void Dispose()
+        {
+            _httpClient.CancelPendingRequests();
+            _httpClient.Dispose();
         }
 
         #region Http handler shite

@@ -1,15 +1,12 @@
-﻿using HapetFrontend.Ast;
-using HapetFrontend.Ast.Declarations;
-using HapetFrontend.Ast.Expressions;
-using HapetFrontend.Entities;
-using HapetFrontend.Errors;
-using HapetFrontend.Extensions;
-using HapetFrontend.Types;
+﻿using HapetCommon.Extensions;
+using System;
+using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Text;
-using System.Xml.Linq;
+using System.Threading.Tasks;
 
-namespace HapetFrontend.Helpers
+namespace HapetCommon
 {
     [AttributeUsage(AttributeTargets.Method, AllowMultiple = false)]
     public class SkipInStackFrameAttribute : Attribute
@@ -136,5 +133,99 @@ namespace HapetFrontend.Helpers
                 File.Copy(newPath, newPath.Replace(sourcePath, targetPath), true);
             }
         }
+
+
+        // ------------------------- FUNCAD ------------------------------
+
+        /// <summary>
+        /// Returns 'true' is the provided number is a power of two (including 0)
+        /// </summary>
+        /// <param name="x">The number to be checked</param>
+        /// <returns>Is it power of two</returns>
+        public static bool IsPowerOfTwo(int x)
+        {
+            return (x & (x - 1)) == 0;
+        }
+
+        /// <summary>
+        /// Prettifies <see cref="TimeSpan"/> into 'MM:SS:MS'
+        /// </summary>
+        /// <param name="ts">The TimeSpan</param>
+        /// <returns>Prettified string</returns>
+        public static string GetPrettyTimeString(TimeSpan ts)
+        {
+            ulong totalMs = (ulong)ts.TotalMilliseconds;
+
+            string showMs = (totalMs % 1000).ToString("D3");
+            string showS = ((totalMs / 1000) % 60).ToString("D2");
+            string showM = ((totalMs / 1000 / 60) % 60).ToString("D2");
+
+            return $"{showM}:{showS}:{showMs}";
+        }
+
+        public static string CreateMD5(string input)
+        {
+            // Use input string to calculate MD5 hash
+            using (System.Security.Cryptography.MD5 md5 = System.Security.Cryptography.MD5.Create())
+            {
+                byte[] inputBytes = System.Text.Encoding.ASCII.GetBytes(input);
+                byte[] hashBytes = md5.ComputeHash(inputBytes);
+
+                return Convert.ToHexString(hashBytes);
+            }
+        }
+
+        #region Process shite
+        public static Process StartProcess(string exe, List<string> argList = null, string workingDirectory = null, DataReceivedEventHandler stdout = null, DataReceivedEventHandler stderr = null)
+        {
+            argList = argList ?? new List<string>();
+            var args = string.Join(" ", argList.Select(a =>
+            {
+                if (a.Contains(" ", StringComparison.InvariantCulture))
+                    return $"\"{a}\"";
+                return a;
+            }));
+            return StartProcess(exe, args, workingDirectory, stdout, stderr);
+        }
+
+        public static Process StartProcess(string exe, string args = null, string workingDirectory = null, DataReceivedEventHandler stdout = null, DataReceivedEventHandler stderr = null, bool useShellExecute = false, bool createNoWindow = true)
+        {
+            // Console.WriteLine($"{exe} {args}");
+
+            var process = new Process();
+            process.StartInfo.FileName = exe;
+            if (workingDirectory != null)
+                process.StartInfo.WorkingDirectory = workingDirectory;
+            if (args != null)
+                process.StartInfo.Arguments = args;
+            process.StartInfo.WindowStyle = ProcessWindowStyle.Normal;
+            process.StartInfo.UseShellExecute = useShellExecute;
+            process.StartInfo.CreateNoWindow = createNoWindow;
+
+            // setting output lang to eng
+            process.StartInfo.EnvironmentVariables["VSLANG"] = "1033";
+
+            if (stdout != null)
+            {
+                process.StartInfo.RedirectStandardOutput = true;
+                process.OutputDataReceived += stdout;
+            }
+
+            if (stderr != null)
+            {
+                process.StartInfo.RedirectStandardError = true;
+                process.ErrorDataReceived += stderr;
+            }
+
+            process.Start();
+
+            if (stdout != null)
+                process.BeginOutputReadLine();
+            if (stderr != null)
+                process.BeginErrorReadLine();
+
+            return process;
+        }
+        #endregion
     }
 }

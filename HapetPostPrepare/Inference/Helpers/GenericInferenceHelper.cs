@@ -15,6 +15,7 @@ using HapetFrontend.Entities;
 using HapetFrontend.Enums;
 using HapetFrontend.Errors;
 using System.Diagnostics;
+using HapetCommon.Extensions;
 
 namespace HapetPostPrepare
 {

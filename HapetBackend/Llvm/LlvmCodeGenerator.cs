@@ -1,5 +1,6 @@
 ﻿using HapetBackend.Llvm.Linkers;
 using HapetBackend.Llvm.Linkers.Windows;
+using HapetCommon;
 using HapetFrontend;
 using HapetFrontend.Entities;
 using HapetFrontend.Errors;
@@ -96,7 +97,7 @@ namespace HapetBackend.Llvm
 
 #if DEBUG
             if (!_compiler.CurrentProjectData.IsReferencedCompilation && !CompilerSettings.IsInRunContext)
-                messageHandler.ReportMessage([$"{Funcad.GetPrettyTimeString(_compiler.CompilationStopwatch.Elapsed)} Emmiting..."], null, ReportType.Info);
+                messageHandler.ReportMessage($"{CompilerUtils.GetPrettyTimeString(_compiler.CompilationStopwatch.Elapsed)} Emmiting...");
 #endif
 
             // create .ll file
@@ -145,7 +146,7 @@ namespace HapetBackend.Llvm
 #if DEBUG
             // no need to print info when it is a referenced build
             if (!_compiler.CurrentProjectData.IsReferencedCompilation && !CompilerSettings.IsInRunContext)
-                messageHandler.ReportMessage([$"{Funcad.GetPrettyTimeString(_compiler.CompilationStopwatch.Elapsed)} Linking..."], null, ReportType.Info);
+                messageHandler.ReportMessage($"{CompilerUtils.GetPrettyTimeString(_compiler.CompilationStopwatch.Elapsed)} Linking...");
 #endif
 
             // if there is no out dir - create it

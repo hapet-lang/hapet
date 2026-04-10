@@ -1,4 +1,5 @@
-﻿using HapetFrontend;
+﻿using HapetCommon;
+using HapetFrontend;
 using HapetFrontend.Entities;
 using HapetFrontend.Helpers;
 using HapetFrontend.ProjectParser;
@@ -20,7 +21,7 @@ namespace HapetCompiler.Resolvers
             // TODO: package references
 
             if (!projectData.IsReferencedCompilation && !CompilerSettings.IsInLspContext && !CompilerSettings.IsInRunContext)
-                compiler.MessageHandler.ReportMessage([$"{Funcad.GetPrettyTimeString(compiler.CompilationStopwatch.Elapsed)} Resolving project references..."], null, ReportType.Info);
+                compiler.MessageHandler.ReportMessage($"{CompilerUtils.GetPrettyTimeString(compiler.CompilationStopwatch.Elapsed)} Resolving project references...");
             ResolveProjectReferences();
 
             // do allow go further when lsp
@@ -29,7 +30,7 @@ namespace HapetCompiler.Resolvers
 
 #if DEBUG
             if (!projectData.IsReferencedCompilation && !CompilerSettings.IsInLspContext && !CompilerSettings.IsInRunContext)
-                compiler.MessageHandler.ReportMessage([$"{Funcad.GetPrettyTimeString(compiler.CompilationStopwatch.Elapsed)} Resolving references..."], null, ReportType.Info);
+                compiler.MessageHandler.ReportMessage($"{CompilerUtils.GetPrettyTimeString(compiler.CompilationStopwatch.Elapsed)} Resolving references...");
 #endif
             ResolveReferences();
         }

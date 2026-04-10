@@ -9,6 +9,7 @@ using HapetFrontend.Scoping;
 using HapetFrontend.Types;
 using HapetPostPrepare.Entities;
 using System;
+using HapetCommon.Extensions;
 
 namespace HapetPostPrepare
 {

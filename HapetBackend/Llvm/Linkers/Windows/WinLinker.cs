@@ -1,4 +1,5 @@
-﻿using HapetFrontend;
+﻿using HapetCommon;
+using HapetFrontend;
 using HapetFrontend.Entities;
 using HapetFrontend.Errors;
 using HapetFrontend.Helpers;
@@ -103,9 +104,9 @@ namespace HapetBackend.Llvm.Linkers.Windows
             }
 
             if (verbose)
-                Console.WriteLine("[LINKER] " + vsLinkerFile + " " + string.Join(" ", lldArgs.Select(a => $"\"{a}\"")));
+                messageHandler.ReportMessage("[LINKER] " + vsLinkerFile + " " + string.Join(" ", lldArgs.Select(a => $"\"{a}\"")));
 
-            var process = Funcad.StartProcess(vsLinkerFile, lldArgs,
+            var process = CompilerUtils.StartProcess(vsLinkerFile, lldArgs,
                             stdout: (s, e) =>
                             {
                                 if (e.Data != null && verbose)

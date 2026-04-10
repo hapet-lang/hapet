@@ -1,4 +1,5 @@
-﻿using HapetFrontend;
+﻿using HapetCommon.Extensions;
+using HapetFrontend;
 using HapetFrontend.Ast;
 using HapetFrontend.Ast.Declarations;
 using HapetFrontend.Ast.Expressions;

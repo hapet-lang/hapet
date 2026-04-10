@@ -13,6 +13,7 @@ using HapetFrontend.Parsing;
 using System.Drawing;
 using System.Runtime;
 using HapetFrontend.Scoping;
+using HapetCommon.Extensions;
 
 namespace HapetPostPrepare
 {

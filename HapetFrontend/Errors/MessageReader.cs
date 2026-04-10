@@ -1,4 +1,5 @@
-﻿using HapetFrontend.Entities;
+﻿using HapetCommon;
+using HapetFrontend.Entities;
 using HapetFrontend.Helpers;
 using System.Xml;
 

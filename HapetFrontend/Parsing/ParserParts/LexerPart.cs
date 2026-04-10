@@ -1,4 +1,5 @@
-﻿using HapetFrontend.Ast;
+﻿using HapetCommon;
+using HapetFrontend.Ast;
 using HapetFrontend.Entities;
 using HapetFrontend.Errors;
 using HapetFrontend.Helpers;

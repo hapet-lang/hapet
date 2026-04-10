@@ -1,7 +1,6 @@
-﻿using HapetFrontend.Ast.Expressions;
-using System.Text.RegularExpressions;
+﻿using System.Text.RegularExpressions;
 
-namespace HapetFrontend.Extensions
+namespace HapetCommon.Extensions
 {
     public static class StringExtensions
     {
@@ -32,7 +31,7 @@ namespace HapetFrontend.Extensions
             ReadOnlySpan<char> span = name;
 
             int idxLastDot = span.LastIndexOf('.');
-            if (idxLastDot >= 0) 
+            if (idxLastDot >= 0)
             {
                 span = span.Slice(idxLastDot + 1);
                 return span.ToString();

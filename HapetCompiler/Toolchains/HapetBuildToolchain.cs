@@ -1,4 +1,5 @@
 ﻿using HapetBackend.Llvm;
+using HapetCommon;
 using HapetCompiler.Resolvers;
 using HapetFrontend;
 using HapetFrontend.Entities;
@@ -45,7 +46,7 @@ namespace HapetCompiler.Toolchains
 
 #if DEBUG
             if (!referenced && !CompilerSettings.IsInRunContext)
-                messageHandler.ReportMessage($"{Funcad.GetPrettyTimeString(_stopwatch.Elapsed)} Project preparation...");
+                messageHandler.ReportMessage($"{CompilerUtils.GetPrettyTimeString(_stopwatch.Elapsed)} Project preparation...");
 #endif
             // setting the type context
             HapetType.CurrentTypeContext = new TypeContext();
@@ -64,7 +65,7 @@ namespace HapetCompiler.Toolchains
 
 #if DEBUG
             if (!referenced && !CompilerSettings.IsInRunContext)
-                messageHandler.ReportMessage($"{Funcad.GetPrettyTimeString(_stopwatch.Elapsed)} After project file parsing...");
+                messageHandler.ReportMessage($"{CompilerUtils.GetPrettyTimeString(_stopwatch.Elapsed)} After project file parsing...");
 #endif
 
             // setting pointer size for the whole assembly
@@ -88,7 +89,7 @@ namespace HapetCompiler.Toolchains
 
 #if DEBUG
             if (!referenced && !CompilerSettings.IsInRunContext)
-                messageHandler.ReportMessage($"{Funcad.GetPrettyTimeString(_stopwatch.Elapsed)} Parsing...");
+                messageHandler.ReportMessage($"{CompilerUtils.GetPrettyTimeString(_stopwatch.Elapsed)} Parsing...");
 #endif
 #if RELEASE
             if (!referenced && !CompilerSettings.IsInRunContext)
@@ -104,7 +105,7 @@ namespace HapetCompiler.Toolchains
 
 #if DEBUG
             if (!referenced && !CompilerSettings.IsInRunContext)
-                messageHandler.ReportMessage($"{Funcad.GetPrettyTimeString(_stopwatch.Elapsed)} Post preparation...");
+                messageHandler.ReportMessage($"{CompilerUtils.GetPrettyTimeString(_stopwatch.Elapsed)} Post preparation...");
 #endif
             // post prepare
             int ppResult = postPreparer.StartPreparation();
@@ -121,7 +122,7 @@ namespace HapetCompiler.Toolchains
 
 #if DEBUG
             if (!referenced && !CompilerSettings.IsInRunContext)
-                messageHandler.ReportMessage($"{Funcad.GetPrettyTimeString(_stopwatch.Elapsed)} Last preparation...");
+                messageHandler.ReportMessage($"{CompilerUtils.GetPrettyTimeString(_stopwatch.Elapsed)} Last preparation...");
 #endif
             // last prepare
             int lpResult = lastPreparer.StartPreparation();
@@ -141,7 +142,7 @@ namespace HapetCompiler.Toolchains
             {
 #if DEBUG
                 if (!referenced && !CompilerSettings.IsInRunContext)
-                    messageHandler.ReportMessage($"{Funcad.GetPrettyTimeString(_stopwatch.Elapsed)} Code generation...");
+                    messageHandler.ReportMessage($"{CompilerUtils.GetPrettyTimeString(_stopwatch.Elapsed)} Code generation...");
 #endif
                 // code gen
                 bool codeGenOk = GenerateAndCompileCode(compiler, postPreparer, resolver, messageHandler, out outFilePath);
@@ -154,7 +155,7 @@ namespace HapetCompiler.Toolchains
 
             // all is ok :)
             if (!referenced && !CompilerSettings.IsInRunContext)
-                messageHandler.ReportMessage($"{Funcad.GetPrettyTimeString(_stopwatch.Elapsed)} Done.");
+                messageHandler.ReportMessage($"{CompilerUtils.GetPrettyTimeString(_stopwatch.Elapsed)} Done.");
 
             OnExit();
             return (int)CompilerErrors.Ok;

@@ -1,4 +1,5 @@
-﻿using HapetFrontend.Ast;
+﻿using HapetCommon;
+using HapetFrontend.Ast;
 using HapetFrontend.Ast.Declarations;
 using HapetFrontend.Ast.Expressions;
 using HapetFrontend.Entities;
@@ -257,7 +258,7 @@ namespace HapetBackend.Llvm
                             {
                                 _messageHandler.ReportMessage(_currentSourceFile, thePackParam, [], ErrorCode.Get(CTEN.PackLessThanOne));
                             }
-                            else if (!Funcad.IsPowerOfTwo(tmpPack))
+                            else if (!CompilerUtils.IsPowerOfTwo(tmpPack))
                             {
                                 // if it is not a power of two
                                 _messageHandler.ReportMessage(_currentSourceFile, thePackParam, [], ErrorCode.Get(CTEN.PackNotPowerOfTwo));

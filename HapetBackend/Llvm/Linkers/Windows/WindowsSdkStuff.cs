@@ -1,4 +1,5 @@
-﻿using HapetFrontend.Entities;
+﻿using HapetCommon.Extensions;
+using HapetFrontend.Entities;
 using HapetFrontend.Errors;
 using HapetFrontend.Extensions;
 using Microsoft.Win32;
