@@ -1,4 +1,6 @@
-﻿namespace HapetCommon.Web.Requests
+﻿using HapetCommon.Messaging;
+
+namespace HapetCommon.Web.Requests
 {
     public abstract class BaseRequest
     {
@@ -8,6 +10,6 @@
         {
         }
 
-        public abstract Task<RequestResult> Execute(HttpClient httpClient);
+        public abstract Task<RequestResult> Execute(ICommonMessageHandler messageHandler, HttpClient httpClient);
     }
 }

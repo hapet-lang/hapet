@@ -1,4 +1,5 @@
-﻿using HapetCommon.Web.Requests;
+﻿using HapetCommon.Messaging;
+using HapetCommon.Web.Requests;
 using System.Net;
 using System.Net.Sockets;
 
@@ -6,13 +7,14 @@ namespace HapetCommon.Web
 {
     public class WebService
     {
-        private readonly object _connectionLock = new object();
         private readonly HttpClient _httpClient;
+        private readonly ICommonMessageHandler _messageHandler;
 
-        public WebService()
+        public WebService(ICommonMessageHandler messageHandler)
         {
             var handler = GetHttpHandler(true);
             _httpClient = new HttpClient(handler);
+            _messageHandler = messageHandler;
         }
 
         public async Task<RequestResult> ExecuteRequestTaskAsync(BaseRequest request, bool force = false)
@@ -24,7 +26,7 @@ namespace HapetCommon.Web
             {
                 return new RequestResult(false, null, HttpStatusCode.GatewayTimeout);
             }
-            RequestResult result = await request.Execute(_httpClient);
+            RequestResult result = await request.Execute(_messageHandler, _httpClient);
 
             if (!result.IsExecutedNormally) { await CheckInternetConnection(); }
 
@@ -33,7 +35,7 @@ namespace HapetCommon.Web
 
         public async Task<bool> CheckInternetConnection()
         {
-            return (await (new CheckConnectionRequest()).Execute(_httpClient)).IsExecutedNormally;
+            return (await (new CheckConnectionRequest()).Execute(_messageHandler, _httpClient)).IsExecutedNormally;
         }
 
         #region Http handler shite
