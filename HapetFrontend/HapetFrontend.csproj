@@ -12,9 +12,9 @@
         <None Remove="Errors\RunTimeErrors.xml" />
     </ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\HapetCommon\HapetCommon.csproj" />
-  </ItemGroup>
+    <ItemGroup>
+      <ProjectReference Include="..\HapetCommon\HapetCommon.csproj" />
+    </ItemGroup>
 
     <ItemGroup>
 		<PackageReference Include="GuiLabs.Language.Xml" Version="1.2.93" />

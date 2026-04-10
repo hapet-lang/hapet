@@ -1,4 +1,6 @@
-﻿using System.Diagnostics;
+﻿using HapetCommon;
+using Microsoft.VisualBasic;
+using System.Diagnostics;
 
 namespace HapetUpdater
 {
@@ -11,13 +13,23 @@ namespace HapetUpdater
                 try
                 {
                     var parentProcess = Process.GetProcessById(parentPid);
-                    parentProcess.WaitForExit();
+                    parentProcess.WaitForExit(5000);
+                    Process[] pname = Process.GetProcessesByName("hapet");
+                    if (pname.Length != 0)
+                        pname.FirstOrDefault()?.WaitForExit(5000);
                 }
                 catch { }
             }
+            // clear log file
+            const string logFile = "updater_log.txt";
+            File.WriteAllText(logFile, "");
 
-            Console.WriteLine("Replacing files...");
-            Console.WriteLine("Done...");
+            var updaterDir = AppContext.BaseDirectory;
+            var tempPath = Path.Combine(updaterDir, "..", CompilerUtils.HAPET_TEMP_UPDATE_FOLDER);
+            var tmpExists = Directory.Exists(tempPath);
+            File.AppendAllText(logFile, $"Updater dir: {updaterDir}\n Tmp dir: {tempPath}\n Exists tmp: {tmpExists}");
+
+
         }
     }
 }

@@ -22,21 +22,26 @@ namespace HapetCompiler.Toolchains
 
         async public Task<int> TryUpdateHapetAsync(IMessageHandler messageHandler, CancellationToken cancellationToken)
         {
+            messageHandler.ReportMessage($"Checking for updates. Consider to close all applications that may block hapet files from updating.");
+
             using var webSevice = new WebService(messageHandler);
             var (isAvailable, newVersion) = await IsUpdateAvailableAsync(webSevice, messageHandler);
             if (isAvailable)
             {
                 messageHandler.ReportMessage($"Update available. New version of hapet is {newVersion}, starting download...");
-                await DownloadUpdateAsync(webSevice, messageHandler, cancellationToken);
-                UpdateUpdater(messageHandler);
+                //await DownloadUpdateAsync(webSevice, messageHandler, cancellationToken);
+                if (cancellationToken.IsCancellationRequested) return -1;
+                //UpdateUpdater(messageHandler);
+                if (cancellationToken.IsCancellationRequested) return -1;
                 RunUpdater(messageHandler);
+                if (cancellationToken.IsCancellationRequested) return -1;
 
                 messageHandler.ReportMessage($"Hapet updated succesfully in {_stopwatch.Elapsed.TotalSeconds:F2} seconds.");
                 messageHandler.ReportMessage($"Current version of hapet is {newVersion}.");
-                messageHandler.ReportMessage($"Please wait for a few seconds before using hapet again because new binary files are going to copy now.");
+                messageHandler.ReportMessage($"Please wait for a few seconds before using hapet again because new binary files are going to be copied now.");
                 Environment.Exit(0);
             }
-            messageHandler.ReportMessage($"");
+            messageHandler.ReportMessage($"The latest version of hapet is already installed.");
             return 0;
         }
 
@@ -72,6 +77,10 @@ namespace HapetCompiler.Toolchains
                         return (existedHashes.Version != hashes.Version, hashes.Version);
                     }
                     return (true, hashes.Version);
+                }
+                catch (TaskCanceledException)
+                {
+                    messageHandler.ReportMessage($"Update canceled");
                 }
                 catch (Exception ex)
                 {
@@ -168,6 +177,10 @@ namespace HapetCompiler.Toolchains
                     // download the hashes normally and replace existing
                     await webSevice.DownloadFile($"{CompilerUtils.HAPET_DOWNLOAD_LINK}/{platformFolderName}/{CompilerUtils.COMPUTED_HASH_FILENAME}", existedHashFilePath, cancellationToken);
                 }
+                catch (TaskCanceledException) 
+                {
+                    messageHandler.ReportMessage($"Update canceled");
+                }
                 catch (Exception ex)
                 {
                     messageHandler.ReportMessage($"Error while downloading hapet: {ex}");
@@ -212,6 +225,10 @@ namespace HapetCompiler.Toolchains
                     if (!Directory.Exists(dr))
                         Directory.CreateDirectory(dr);
                     File.Copy(item, dst, true);
+                }
+                catch (TaskCanceledException)
+                {
+                    messageHandler.ReportMessage($"Update canceled");
                 }
                 catch (Exception e)
                 {

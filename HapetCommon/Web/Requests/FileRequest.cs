@@ -36,6 +36,10 @@ namespace HapetCommon.Web.Requests
 
                 return new RequestResult(true, null, System.Net.HttpStatusCode.OK);
             }
+            catch (TaskCanceledException)
+            {
+                messageHandler.ReportMessage($"Request execution canceled.");
+            }
             catch (Exception ex)
             {
                 messageHandler.ReportMessage($"Exception while downloading file from uri: {_url}, the exception: {ex}");
