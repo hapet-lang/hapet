@@ -116,6 +116,16 @@ namespace HapetCompiler
                         HapetCheckToolchain projectToolchain = new HapetCheckToolchain(stopwatch);
                         return await projectToolchain.CheckAsync(messageHandler);
                     }
+                case "update":
+                    {
+                        // make the stopwatch here
+                        Stopwatch stopwatch = new Stopwatch();
+                        stopwatch.Start();
+
+                        // skip the first two args because they are already used
+                        HapetUpdateToolchain projectToolchain = new HapetUpdateToolchain(stopwatch);
+                        return await projectToolchain.TryUpdateHapetAsync(messageHandler);
+                    }
                 case "-v":
                 case "--version":
                     {
