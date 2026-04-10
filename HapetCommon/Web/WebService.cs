@@ -38,6 +38,16 @@ namespace HapetCommon.Web
             return (await (new CheckConnectionRequest()).Execute(_messageHandler, _httpClient)).IsExecutedNormally;
         }
 
+        public async Task DownloadFile(string downloadLink, string outDir, CancellationToken cancellationToken)
+        {
+            if (File.Exists(outDir))
+                File.Delete(outDir);
+
+            var dowloadResult = await ExecuteRequestTaskAsync(new FileRequest(downloadLink, outDir, null, null, cancellationToken));
+            if (!dowloadResult.IsExecutedNormally)
+                return; // TODO: retries should be added
+        }
+
         public void Dispose()
         {
             _httpClient.CancelPendingRequests();

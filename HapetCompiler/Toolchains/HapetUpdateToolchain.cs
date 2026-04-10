@@ -4,29 +4,31 @@ using HapetCommon.Web.Requests;
 using HapetFrontend;
 using HapetFrontend.Entities;
 using HashComputer.Backend.Entities;
+using HashComputer.Backend.Services;
 using System.Diagnostics;
+using System.Runtime.InteropServices;
 using System.Text.Json;
+using System.Threading;
 
 namespace HapetCompiler.Toolchains
 {
     internal sealed class HapetUpdateToolchain
     {
-        private const string HAPET_DOWNLOAD_LINK = "https://hapetlang.com/resources/hapet";
-        private const string COMPUTED_HASH_FILENAME = "computed_hash.json";
-        private const string TMP_COMPUTED_HASH_FILENAME = "tmp_computed_hash.json";
-
         private readonly Stopwatch _stopwatch;
         public HapetUpdateToolchain(Stopwatch stopwatch)
         {
             _stopwatch = stopwatch;
         }
 
-        async public Task<int> TryUpdateHapetAsync(IMessageHandler messageHandler)
+        async public Task<int> TryUpdateHapetAsync(IMessageHandler messageHandler, CancellationToken cancellationToken)
         {
             using var webSevice = new WebService(messageHandler);
             if (await IsUpdateAvailableAsync(webSevice, messageHandler))
             {
-
+                await DownloadUpdateAsync(webSevice, messageHandler, cancellationToken);
+                UpdateUpdater(messageHandler);
+                RunUpdater(messageHandler);
+                Environment.Exit(0);
             }
             return 0;
         }
@@ -34,12 +36,12 @@ namespace HapetCompiler.Toolchains
         async private Task<bool> IsUpdateAvailableAsync(WebService webSevice, IMessageHandler messageHandler)
         {
             string hapetPath = CompilerUtils.CurrentHapetDirectory;
-            string hashFilePath = Path.Combine(hapetPath, TMP_COMPUTED_HASH_FILENAME);
-            string existedHashFilePath = Path.Combine(hapetPath, COMPUTED_HASH_FILENAME);
+            string hashFilePath = Path.Combine(hapetPath, CompilerUtils.TMP_COMPUTED_HASH_FILENAME);
+            string existedHashFilePath = Path.Combine(hapetPath, CompilerUtils.COMPUTED_HASH_FILENAME);
             string platformFolderName = CompilerSettings.CurrentPlatformData.Name;
 
             // gettings hashes from server
-            var result = await webSevice.ExecuteRequestTaskAsync(new FileRequest($"{HAPET_DOWNLOAD_LINK}/{platformFolderName}/{COMPUTED_HASH_FILENAME}", hashFilePath, null));
+            var result = await webSevice.ExecuteRequestTaskAsync(new FileRequest($"{CompilerUtils.HAPET_DOWNLOAD_LINK}/{platformFolderName}/{CompilerUtils.COMPUTED_HASH_FILENAME}", hashFilePath, null));
             if (result.IsExecutedNormally)
             {
                 try
@@ -70,6 +72,179 @@ namespace HapetCompiler.Toolchains
                 }
             }
             return false;
+        }
+
+        async private Task DownloadUpdateAsync(WebService webSevice, IMessageHandler messageHandler, CancellationToken cancellationToken)
+        {
+            string hapetPath = CompilerUtils.CurrentHapetDirectory;
+            string hashFilePath = Path.Combine(hapetPath, CompilerUtils.TMP_COMPUTED_HASH_FILENAME);
+            string existedHashFilePath = Path.Combine(hapetPath, CompilerUtils.COMPUTED_HASH_FILENAME);
+            string platformFolderName = CompilerSettings.CurrentPlatformData.Name;
+            string tmpHapetDir = Path.Combine(hapetPath, CompilerUtils.HAPET_TEMP_UPDATE_FOLDER);
+
+            // remove everything before updating
+            CompilerUtils.DeleteEverythingUnderDirectory(tmpHapetDir);
+
+            // gettings hashes from server
+            var result = await webSevice.ExecuteRequestTaskAsync(new FileRequest($"{CompilerUtils.HAPET_DOWNLOAD_LINK}/{platformFolderName}/{CompilerUtils.COMPUTED_HASH_FILENAME}", hashFilePath, null));
+            if (result.IsExecutedNormally)
+            {
+                try
+                {
+                    var hashes = JsonSerializer.Deserialize<ComputedHashJson>(File.ReadAllText(hashFilePath));
+                    // there iis nothing to do if server hashes are null
+                    if (hashes == null)
+                    {
+                        return;
+                    }
+
+                    // gettings existed hashes on update to compare them
+                    ComputedHashJson existedHashes = new ComputedHashJson();
+                    // files that has to be force updated
+                    // because of the changed hashes of them on the computer
+                    List<string> forceUpdate = new List<string>();
+                    if (File.Exists(existedHashFilePath))
+                    {
+                        // validating
+                        existedHashes = JsonSerializer.Deserialize<ComputedHashJson>(File.ReadAllText(existedHashFilePath));
+
+                        // if need to check real files 
+                        ComputedHashJson realLocalHash = await (new ComputerService()).ComputeHashPure(new HashComputer.Backend.ComputeParameters()
+                        {
+                            Path = hapetPath,
+                            TaskNumber = 8,
+                        });
+
+                        foreach (var hash in existedHashes.ComputedHashes)
+                        {
+                            // local file was removed - reload it
+                            if (!realLocalHash.ComputedHashes.ContainsKey(hash.Key))
+                            {
+                                forceUpdate.Add(hash.Key);
+                                continue;
+                            }
+
+                            // local file has been changed - reload it
+                            if (realLocalHash.ComputedHashes[hash.Key] != hash.Value)
+                            {
+                                forceUpdate.Add(hash.Key);
+                                continue;
+                            }
+                        }
+                    }
+
+                    // download them file by file
+                    var computedHashes = hashes.ComputedHashes.ToArray();
+                    for (int i = 0; i < computedHashes.Length; ++i)
+                    {
+                        if (cancellationToken.IsCancellationRequested)
+                            return;
+
+                        var pair = computedHashes[i];
+                        // if the hashes are equal - no need to download (except the forceUpdate)
+                        if (existedHashes.ComputedHashes != null &&
+                            existedHashes.ComputedHashes.ContainsKey(pair.Key) &&
+                            existedHashes.ComputedHashes[pair.Key] == pair.Value &&
+                            !forceUpdate.Contains(pair.Key))
+                            continue;
+
+                        // creating subdirectory for the file
+                        var fileDir = Path.GetDirectoryName(pair.Key);
+                        Directory.CreateDirectory($"{tmpHapetDir}/{fileDir}");
+
+                        // download
+                        string fileLink = $"{CompilerUtils.HAPET_DOWNLOAD_LINK}/{platformFolderName}/{pair.Key}";
+                        string fileOutDir = $"{tmpHapetDir}/{pair.Key}";
+                        await webSevice.DownloadFile(fileLink, fileOutDir, cancellationToken);
+                    }
+
+                    // download the hashes normally and replace existing
+                    await webSevice.DownloadFile($"{CompilerUtils.HAPET_DOWNLOAD_LINK}/{platformFolderName}/{CompilerUtils.COMPUTED_HASH_FILENAME}", existedHashFilePath, cancellationToken);
+                }
+                catch (Exception ex)
+                {
+                    messageHandler.ReportMessage($"Error while downloading hapet: {ex}");
+                }
+            }
+
+            // remove tmp hashes
+            if (File.Exists(hashFilePath))
+                File.Delete(hashFilePath);
+        }
+
+        private void UpdateUpdater(IMessageHandler messageHandler)
+        {
+            string hapetPath = CompilerUtils.CurrentHapetDirectory;
+            string tmpHapetDir = Path.Combine(hapetPath, CompilerUtils.HAPET_TEMP_UPDATE_FOLDER);
+
+            if (!Directory.Exists(tmpHapetDir))
+                return;
+
+            hapetPath = hapetPath.TrimEnd('/').TrimEnd('\\');
+            tmpHapetDir = tmpHapetDir.TrimEnd('/').TrimEnd('\\');
+
+            var items = Directory.GetFiles(tmpHapetDir, "*", SearchOption.AllDirectories);
+            int count = items.Length;
+            for (int i = 0; i < count; ++i)
+            {
+                var item = items[i];
+                string relat = Path.GetRelativePath(tmpHapetDir, item).Trim('/').Trim('\\');
+
+                if (!relat.Contains(CompilerUtils.UPDATER_FOLDER_NAME))
+                {
+                    continue;
+                }
+
+                messageHandler.ReportMessage($"Updating {CompilerUtils.UPDATER_FILE_NAME}... Real path: {item}, Relative: {relat}");
+
+                string dst = $"{hapetPath}/{relat}";
+                try
+                {
+                    string dr = Path.GetDirectoryName(dst);
+                    if (!Directory.Exists(dr))
+                        Directory.CreateDirectory(dr);
+                    File.Copy(item, dst, true);
+                }
+                catch (Exception e)
+                {
+                    messageHandler.ReportMessage($"Error while swapping the file: {item}: {e}\n");
+                }
+            }
+
+            messageHandler.ReportMessage($"Done updating {CompilerUtils.UPDATER_FILE_NAME}");
+        }
+
+        private void RunUpdater(IMessageHandler messageHandler)
+        {
+            string hapetPath = CompilerUtils.CurrentHapetDirectory;
+            string updaterPath = Path.Combine(hapetPath, CompilerUtils.UPDATER_FOLDER_NAME, 
+                $"{CompilerUtils.UPDATER_FILE_NAME}{CompilerSettings.CurrentPlatformData.ExecutableFileExtension}");
+            messageHandler.ReportMessage($"Trying to run updater under the path: {updaterPath}");
+            if (File.Exists(updaterPath))
+            {
+                if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                {
+                    string strCmdText = updaterPath;
+                    var process = new Process();
+                    process.StartInfo.RedirectStandardOutput = false;
+                    process.StartInfo.Verb = "runas";
+                    process.StartInfo.FileName = strCmdText;
+                    process.Start();
+                    messageHandler.ReportMessage($"Windows updater started by path: {updaterPath}");
+                }
+                else
+                {
+                    var psi = new ProcessStartInfo
+                    {
+                        FileName = "/bin/bash",
+                        UseShellExecute = false,
+                        RedirectStandardOutput = false,
+                        Arguments = string.Format("-c \"{0}\"", updaterPath)
+                    };
+                    Process.Start(psi);
+                    messageHandler.ReportMessage($"Linux/MacOS updater started by path: {updaterPath}");
+                }
+            }
         }
     }
 }

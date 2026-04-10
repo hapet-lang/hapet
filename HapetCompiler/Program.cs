@@ -6,7 +6,6 @@ using HapetFrontend.Errors;
 using HapetFrontend.Helpers;
 using HapetLsp;
 using System.Diagnostics;
-using System.Reactive.Concurrency;
 using System.Text;
 
 namespace HapetCompiler
@@ -15,6 +14,14 @@ namespace HapetCompiler
     {
         static async Task<int> Main(string[] args)
         {
+            // making cancellation token for async toolchains
+            using var cts = new CancellationTokenSource();
+            Console.CancelKeyPress += (sender, e) =>
+            {
+                cts.Cancel();
+                e.Cancel = true; // Prevents the process from terminating immediately
+            };
+
             Console.OutputEncoding = Encoding.UTF8;
             var messageHandler = new ConsoleMessageHandler(0, 0, true);
             CompilerSettings.InitCurrentPlatformData();
@@ -124,7 +131,7 @@ namespace HapetCompiler
 
                         // skip the first two args because they are already used
                         HapetUpdateToolchain projectToolchain = new HapetUpdateToolchain(stopwatch);
-                        return await projectToolchain.TryUpdateHapetAsync(messageHandler);
+                        return await projectToolchain.TryUpdateHapetAsync(messageHandler, cts.Token);
                     }
                 case "-v":
                 case "--version":
