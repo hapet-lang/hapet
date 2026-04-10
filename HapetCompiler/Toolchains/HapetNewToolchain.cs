@@ -47,7 +47,7 @@ namespace HapetCompiler.Toolchains
             CopyTemplateFiles(template, projectName);
             var result = await template.CreateAsync(projectName, _cmdArgs, messageHandler);
             if (result)
-                messageHandler.ReportMessage([$"Project '{projectName}' successfully created"], null, ReportType.Info);
+                messageHandler.ReportMessage($"Project '{projectName}' successfully created");
             return await Task.FromResult(0);
         }
 
@@ -115,15 +115,15 @@ namespace HapetCompiler.Toolchains
 
         private void PrintHelp(IMessageHandler messageHandler)
         {
-            messageHandler.ReportMessage([$"Usage: \n  hapet new <template> <args> \n"], null, ReportType.Info);
+            messageHandler.ReportMessage($"Usage: \n  hapet new <template> <args> \n");
             StringBuilder temps = new StringBuilder();
             foreach (var t in _projectTemplates)
             {
                 temps.Append($"\n  {t.Key}\t\t{t.Value.TemplateDescription}");
             }
-            messageHandler.ReportMessage([$"Available templates: {temps} \n"], null, ReportType.Info);
-            messageHandler.ReportMessage([$"Parameters: "], null, ReportType.Info);
-            messageHandler.ReportMessage([$"  -n, --name <name> \t\t Output project name. If not specified - default template name is used."], null, ReportType.Info);
+            messageHandler.ReportMessage($"Available templates: {temps} \n");
+            messageHandler.ReportMessage($"Parameters: ");
+            messageHandler.ReportMessage($"  -n, --name <name> \t\t Output project name. If not specified - default template name is used.");
         }
     }
 }

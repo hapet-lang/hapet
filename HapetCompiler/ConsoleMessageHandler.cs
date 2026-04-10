@@ -30,6 +30,11 @@ namespace HapetCompiler
             this.DoPrintLocation = printLocation;
         }
 
+        public void ReportMessage(string message)
+        {
+            ReportMessage([message], null, ReportType.Info);
+        }
+
         public void ReportMessage(ProgramFile file, ILocation location, string[] messageArgs, IXmlMessage xmlMessage, List<CompilerMessage> subMessages, ReportType reportType = ReportType.Error, [CallerFilePath] string callingFunctionFile = "", [CallerMemberName] string callingFunctionName = "", [CallerLineNumber] int callLineNumber = 0)
         {
             ReportMessage(new CompilerMessage

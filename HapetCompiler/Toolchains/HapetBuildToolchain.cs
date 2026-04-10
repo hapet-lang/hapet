@@ -45,7 +45,7 @@ namespace HapetCompiler.Toolchains
 
 #if DEBUG
             if (!referenced && !CompilerSettings.IsInRunContext)
-                messageHandler.ReportMessage([$"{Funcad.GetPrettyTimeString(_stopwatch.Elapsed)} Project preparation..."], null, ReportType.Info);
+                messageHandler.ReportMessage($"{Funcad.GetPrettyTimeString(_stopwatch.Elapsed)} Project preparation...");
 #endif
             // setting the type context
             HapetType.CurrentTypeContext = new TypeContext();
@@ -64,7 +64,7 @@ namespace HapetCompiler.Toolchains
 
 #if DEBUG
             if (!referenced && !CompilerSettings.IsInRunContext)
-                messageHandler.ReportMessage([$"{Funcad.GetPrettyTimeString(_stopwatch.Elapsed)} After project file parsing..."], null, ReportType.Info);
+                messageHandler.ReportMessage($"{Funcad.GetPrettyTimeString(_stopwatch.Elapsed)} After project file parsing...");
 #endif
 
             // setting pointer size for the whole assembly
@@ -88,11 +88,11 @@ namespace HapetCompiler.Toolchains
 
 #if DEBUG
             if (!referenced && !CompilerSettings.IsInRunContext)
-                messageHandler.ReportMessage([$"{Funcad.GetPrettyTimeString(_stopwatch.Elapsed)} Parsing..."], null, ReportType.Info);
+                messageHandler.ReportMessage($"{Funcad.GetPrettyTimeString(_stopwatch.Elapsed)} Parsing...");
 #endif
 #if RELEASE
             if (!referenced && !CompilerSettings.IsInRunContext)
-                messageHandler.ReportMessage([$"{Funcad.GetPrettyTimeString(_stopwatch.Elapsed)} Compiling '{Path.GetFileName(projectPath)}'..."], null, ReportType.Info);
+                messageHandler.ReportMessage($"{Funcad.GetPrettyTimeString(_stopwatch.Elapsed)} Compiling '{Path.GetFileName(projectPath)}'...");
 #endif
             // gen ast shite
             compiler.GenerateAstTree();
@@ -104,7 +104,7 @@ namespace HapetCompiler.Toolchains
 
 #if DEBUG
             if (!referenced && !CompilerSettings.IsInRunContext)
-                messageHandler.ReportMessage([$"{Funcad.GetPrettyTimeString(_stopwatch.Elapsed)} Post preparation..."], null, ReportType.Info);
+                messageHandler.ReportMessage($"{Funcad.GetPrettyTimeString(_stopwatch.Elapsed)} Post preparation...");
 #endif
             // post prepare
             int ppResult = postPreparer.StartPreparation();
@@ -121,7 +121,7 @@ namespace HapetCompiler.Toolchains
 
 #if DEBUG
             if (!referenced && !CompilerSettings.IsInRunContext)
-                messageHandler.ReportMessage([$"{Funcad.GetPrettyTimeString(_stopwatch.Elapsed)} Last preparation..."], null, ReportType.Info);
+                messageHandler.ReportMessage($"{Funcad.GetPrettyTimeString(_stopwatch.Elapsed)} Last preparation...");
 #endif
             // last prepare
             int lpResult = lastPreparer.StartPreparation();
@@ -141,7 +141,7 @@ namespace HapetCompiler.Toolchains
             {
 #if DEBUG
                 if (!referenced && !CompilerSettings.IsInRunContext)
-                    messageHandler.ReportMessage([$"{Funcad.GetPrettyTimeString(_stopwatch.Elapsed)} Code generation..."], null, ReportType.Info);
+                    messageHandler.ReportMessage($"{Funcad.GetPrettyTimeString(_stopwatch.Elapsed)} Code generation...");
 #endif
                 // code gen
                 bool codeGenOk = GenerateAndCompileCode(compiler, postPreparer, resolver, messageHandler, out outFilePath);
@@ -154,7 +154,7 @@ namespace HapetCompiler.Toolchains
 
             // all is ok :)
             if (!referenced && !CompilerSettings.IsInRunContext)
-                messageHandler.ReportMessage([$"{Funcad.GetPrettyTimeString(_stopwatch.Elapsed)} Done."], null, ReportType.Info);
+                messageHandler.ReportMessage($"{Funcad.GetPrettyTimeString(_stopwatch.Elapsed)} Done.");
 
             OnExit();
             return (int)CompilerErrors.Ok;
@@ -186,7 +186,7 @@ namespace HapetCompiler.Toolchains
 
         private void PrintHelp(IMessageHandler messageHandler)
         {
-            messageHandler.ReportMessage([$"Usage: \n  hapet build <project> <args> \n"], null, ReportType.Info);
+            messageHandler.ReportMessage($"Usage: \n  hapet build <project> <args> \n");
         }
 
         private void HandleArgs(IMessageHandler messageHandler)

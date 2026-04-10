@@ -94,10 +94,10 @@ namespace HapetCompiler.Toolchains
 
         private void PrintHelp(IMessageHandler messageHandler)
         {
-            messageHandler.ReportMessage([$"Usage: \n  hapet lsp <project> <args> \n"], null, ReportType.Info);
-            messageHandler.ReportMessage([$"Parameters: "], null, ReportType.Info);
-            messageHandler.ReportMessage([$"  --tcp \t\t With this parameter LSP server starts over TCP on 5007 port."], null, ReportType.Info);
-            messageHandler.ReportMessage([$"\t\t\t By default it starts over stdin/stdout."], null, ReportType.Info);
+            messageHandler.ReportMessage($"Usage: \n  hapet lsp <project> <args> \n");
+            messageHandler.ReportMessage($"Parameters: ");
+            messageHandler.ReportMessage($"  --tcp \t\t With this parameter LSP server starts over TCP on 5007 port.");
+            messageHandler.ReportMessage($"\t\t\t By default it starts over stdin/stdout.");
         }
     }
 }

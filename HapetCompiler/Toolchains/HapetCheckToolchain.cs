@@ -44,9 +44,9 @@ namespace HapetCompiler.Toolchains
 
             // result message
             messageHandler.ReportMessage([$""], null, ReportType.Info);
-            messageHandler.ReportMessage([$"Check done in {_stopwatch.Elapsed.TotalSeconds:F2} seconds"], null, ReportType.Info);
+            messageHandler.ReportMessage($"Check done in {_stopwatch.Elapsed.TotalSeconds:F2} seconds");
 
-            if (isOk) messageHandler.ReportMessage([$"Result: hapet is OK"], null, ReportType.Info);
+            if (isOk) messageHandler.ReportMessage($"Result: hapet is OK");
             else messageHandler.ReportMessage([$"Result: found some problems with hapet"], null, ReportType.Error);
 
 

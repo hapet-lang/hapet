@@ -1,4 +1,5 @@
-﻿using HapetFrontend.Ast;
+﻿using HapetCommon.Messaging;
+using HapetFrontend.Ast;
 using HapetFrontend.Errors;
 using System.Runtime.CompilerServices;
 
@@ -36,7 +37,7 @@ namespace HapetFrontend.Entities
         }
     }
 
-    public interface IMessageHandler
+    public interface IMessageHandler : ICommonMessageHandler
     {
         bool HasErrors { get; set; }
 

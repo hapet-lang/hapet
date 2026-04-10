@@ -54,7 +54,7 @@ namespace HapetCompiler.Toolchains
 
         private void PrintHelp(IMessageHandler messageHandler)
         {
-            messageHandler.ReportMessage([$"Usage: \n  hapet run <project> <args> \n"], null, ReportType.Info);
+            messageHandler.ReportMessage($"Usage: \n  hapet run <project> <args> \n");
         }
     }
 }

@@ -14,6 +14,11 @@ namespace HapetLsp
 
         private readonly List<CompilerMessage> _messages = new List<CompilerMessage>();
 
+        public void ReportMessage(string message)
+        {
+            ReportMessage([message], null, ReportType.Info);
+        }
+
         public void ReportMessage(string[] messageArgs, IXmlMessage xmlMessage, ReportType reportType = ReportType.Error, [CallerFilePath] string callingFunctionFile = "", [CallerMemberName] string callingFunctionName = "", [CallerLineNumber] int callLineNumber = 0)
         {
             if (reportType == ReportType.Error)

@@ -22,6 +22,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HapetLsp", "HapetLsp\HapetL
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HapetUpdater", "HapetUpdater\HapetUpdater.csproj", "{9C670BB5-B786-4E48-B8CF-D32A9FD0C561}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HapetCommon", "HapetCommon\HapetCommon.csproj", "{CEA582E6-3837-4865-88FF-7E2F277FA841}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -56,6 +58,10 @@ Global
 		{9C670BB5-B786-4E48-B8CF-D32A9FD0C561}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9C670BB5-B786-4E48-B8CF-D32A9FD0C561}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{9C670BB5-B786-4E48-B8CF-D32A9FD0C561}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CEA582E6-3837-4865-88FF-7E2F277FA841}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CEA582E6-3837-4865-88FF-7E2F277FA841}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CEA582E6-3837-4865-88FF-7E2F277FA841}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CEA582E6-3837-4865-88FF-7E2F277FA841}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
