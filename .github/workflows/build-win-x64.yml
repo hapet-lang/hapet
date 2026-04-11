@@ -72,8 +72,24 @@ jobs:
           cd build-win
           ./build-x64.ps1
           ls -Force
+      - name: Upload binary files
+        uses: Dylan700/sftp-upload-action@latest
+        with:
+            username: ${{ secrets.FTP_USERNAME }}
+            password: ${{ secrets.FTP_PASSWORD }}
+            server: hapetlang.com
+            uploads: |
+              ./build-win/staging_folder/ => /home/ftpuser/resources/hapet/win-x64/
+            port: 22
+            delete: 'true'
+      - name: Move installer for uploading
+        shell: pwsh
+        run: | 
+          cd build-win
+          New-Item -ItemType Directory -Force -Path "for-upload" | Out-Null
+          Copy-Item -Path "./hapet_x64.exe" -Destination "./for-upload/hapet_x64.exe" -Force
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
           name: built-files-win-x64
-          path: ./build-win/
+          path: ./build-win/for-upload/
