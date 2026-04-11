@@ -93,7 +93,7 @@ namespace HapetCompiler.Toolchains
 #endif
 #if RELEASE
             if (!referenced && !CompilerSettings.IsInRunContext)
-                messageHandler.ReportMessage($"{Funcad.GetPrettyTimeString(_stopwatch.Elapsed)} Compiling '{Path.GetFileName(projectPath)}'...");
+                messageHandler.ReportMessage($"{CompilerUtils.GetPrettyTimeString(_stopwatch.Elapsed)} Compiling '{Path.GetFileName(projectPath)}'...");
 #endif
             // gen ast shite
             compiler.GenerateAstTree();
