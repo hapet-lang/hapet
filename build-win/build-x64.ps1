@@ -7,6 +7,9 @@ if (Test-Path "./staging_folder") {
 Write-Host "Publishing HapetCompiler..."
 dotnet publish ../HapetCompiler/HapetCompiler.csproj --configuration Release --runtime win-x64 --self-contained -f net8.0
 if ($LASTEXITCODE -ne 0) { throw "Failed to publish HapetCompiler" }
+Write-Host "Publishing HapetUpdater..."
+dotnet publish ../HapetUpdater/HapetUpdater.csproj --configuration Release --runtime win-x64 --self-contained -f net8.0
+if ($LASTEXITCODE -ne 0) { throw "Failed to publish HapetUpdater" }
 
 Write-Host "Publishing HashComputer..."
 dotnet publish ../HashComputer/HashComputer.Cli/HashComputer.Cli.csproj --configuration Release --runtime win-x64 --self-contained -f net8.0
@@ -16,6 +19,10 @@ New-Item -ItemType Directory -Force -Path "./staging_folder"
 
 Write-Host "Copying HapetCompiler files..."
 Copy-Item -Path "../HapetCompiler/bin/Release/net8.0/win-x64/publish/*" -Destination "./staging_folder/" -Recurse -Force
+
+Write-Host "Copying HapetUpdater files..."
+New-Item -ItemType Directory -Force -Path "./staging_folder/updater__"
+Copy-Item -Path "../HapetUpdater/bin/Release/net8.0/win-x64/publish/*" -Destination "./staging_folder/updater__/" -Recurse -Force
 
 Write-Host "Copying Stables..."
 Copy-Item -Path "../build-resources/computed_stables.txt" -Destination "./staging_folder/computed_stables.txt" -Force
