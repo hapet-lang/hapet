@@ -29,9 +29,9 @@ namespace HapetCompiler.Toolchains
             if (isAvailable)
             {
                 messageHandler.ReportMessage($"Update available. New version of hapet is {newVersion}, starting download...");
-                //await DownloadUpdateAsync(webSevice, messageHandler, cancellationToken);
+                await DownloadUpdateAsync(webSevice, messageHandler, cancellationToken);
                 if (cancellationToken.IsCancellationRequested) return -1;
-                //UpdateUpdater(messageHandler);
+                UpdateUpdater(messageHandler);
                 if (cancellationToken.IsCancellationRequested) return -1;
                 RunUpdater(messageHandler);
                 if (cancellationToken.IsCancellationRequested) return -1;
