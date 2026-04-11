@@ -210,10 +210,8 @@ namespace HapetCompiler.Toolchains
                 var item = items[i];
                 string relat = Path.GetRelativePath(tmpHapetDir, item).Trim('/').Trim('\\');
 
-                if (!relat.Contains(CompilerUtils.UPDATER_FOLDER_NAME))
-                {
+                if (!relat.Contains(CompilerUtils.UPDATER_FILE_NAME))
                     continue;
-                }
 
                 if (CompilerSettings.Verbose)
                     messageHandler.ReportMessage($"Updating {CompilerUtils.UPDATER_FILE_NAME}... Real path: {item}, Relative: {relat}");
@@ -243,7 +241,7 @@ namespace HapetCompiler.Toolchains
         private void RunUpdater(IMessageHandler messageHandler)
         {
             string hapetPath = CompilerUtils.CurrentHapetDirectory;
-            string updaterPath = Path.Combine(hapetPath, CompilerUtils.UPDATER_FOLDER_NAME, 
+            string updaterPath = Path.Combine(hapetPath, 
                 $"{CompilerUtils.UPDATER_FILE_NAME}{CompilerSettings.CurrentPlatformData.ExecutableFileExtension}");
 
             if (CompilerSettings.Verbose)

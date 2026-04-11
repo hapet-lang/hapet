@@ -1,5 +1,4 @@
-﻿using HapetCommon;
-using Microsoft.VisualBasic;
+﻿using Microsoft.VisualBasic;
 using System.Diagnostics;
 
 namespace HapetUpdater
@@ -7,6 +6,9 @@ namespace HapetUpdater
     internal class Program
     {
         const string _logFile = "updater_log.txt";
+
+        const string HAPET_TEMP_UPDATE_FOLDER = "hapet_temp_update";
+        const string UPDATER_FILE_NAME = "HapetUpdater";
 
         static void Main(string[] args)
         {
@@ -32,11 +34,10 @@ namespace HapetUpdater
             else
                 File.AppendAllText(_logFile, $"No hapet instances running. Ok.\n");
 
-            var updaterDir = AppContext.BaseDirectory;
-            var hapetDir = Path.Combine(updaterDir, "..");
-            var tempPath = Path.Combine(updaterDir, "..", CompilerUtils.HAPET_TEMP_UPDATE_FOLDER);
+            var hapetDir = AppContext.BaseDirectory;
+            var tempPath = Path.Combine(hapetDir, HAPET_TEMP_UPDATE_FOLDER);
             var tmpExists = Directory.Exists(tempPath);
-            File.AppendAllText(_logFile, $"Updater dir: {updaterDir}\nTmp dir: {tempPath}\nExists tmp: {tmpExists}");
+            File.AppendAllText(_logFile, $"Updater dir: {hapetDir}\nTmp dir: {tempPath}\nExists tmp: {tmpExists}");
 
             // if tmp does not exist - nothing to update
             if (!tmpExists)
@@ -65,7 +66,7 @@ namespace HapetUpdater
                 var item = items[i];
                 string relat = Path.GetRelativePath(source, item).Trim('/').Trim('\\');
                 // skip itself
-                if (relat.Contains(CompilerUtils.UPDATER_FOLDER_NAME))
+                if (relat.Contains(UPDATER_FILE_NAME))
                     continue;
 
                 File.AppendAllText(_logFile, $"Real path: {item}, Relative: {relat}\n");
