@@ -30,14 +30,14 @@ namespace HapetUpdater
             // check for hapet running instances
             Process[] hapetProcesses = Process.GetProcessesByName("hapet");
             if (hapetProcesses.Length != 0)
-                File.AppendAllText(_logFile, $"There is multiple hapet instances running! Update may fail!");
+                File.AppendAllText(_logFile, $"There is multiple hapet instances running! Update may fail!\n");
             else
                 File.AppendAllText(_logFile, $"No hapet instances running. Ok.\n");
 
             var hapetDir = AppContext.BaseDirectory;
             var tempPath = Path.Combine(hapetDir, HAPET_TEMP_UPDATE_FOLDER);
             var tmpExists = Directory.Exists(tempPath);
-            File.AppendAllText(_logFile, $"Updater dir: {hapetDir}\nTmp dir: {tempPath}\nExists tmp: {tmpExists}");
+            File.AppendAllText(_logFile, $"Updater dir: {hapetDir}\nTmp dir: {tempPath}\nExists tmp: {tmpExists}\n");
 
             // if tmp does not exist - nothing to update
             if (!tmpExists)

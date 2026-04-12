@@ -18,7 +18,7 @@ namespace HapetCompiler.Toolchains
         public ProjectData ProjectData { get; set; }
 
         private readonly Stopwatch _stopwatch;
-        private readonly string[] _cmdArgs; // TODO: use them for ProjectXmlParser
+        private readonly string[] _cmdArgs;
         public HapetLspToolchain(Stopwatch stopwatch, string[] args)
         {
             _stopwatch = stopwatch;

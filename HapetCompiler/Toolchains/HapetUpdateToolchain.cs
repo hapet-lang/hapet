@@ -15,13 +15,26 @@ namespace HapetCompiler.Toolchains
     internal sealed class HapetUpdateToolchain
     {
         private readonly Stopwatch _stopwatch;
-        public HapetUpdateToolchain(Stopwatch stopwatch)
+        private readonly string[] _cmdArgs;
+        public HapetUpdateToolchain(Stopwatch stopwatch, string[] args)
         {
             _stopwatch = stopwatch;
+            _cmdArgs = args;
         }
 
         async public Task<int> TryUpdateHapetAsync(IMessageHandler messageHandler, CancellationToken cancellationToken)
         {
+            // check for --help
+            if (_cmdArgs.Contains("--help") || _cmdArgs.Contains("-h"))
+            {
+                // print help
+                PrintHelp(messageHandler);
+                return 0;
+            }
+
+            // check for manual update
+            bool isManualUpdate = _cmdArgs.Contains("--manual");
+
             messageHandler.ReportMessage($"Checking for updates. Consider to close all applications that may block hapet files from updating.");
 
             using var webSevice = new WebService(messageHandler);
@@ -33,6 +46,13 @@ namespace HapetCompiler.Toolchains
                 if (cancellationToken.IsCancellationRequested) return -1;
                 UpdateUpdater(messageHandler);
                 if (cancellationToken.IsCancellationRequested) return -1;
+
+                if (isManualUpdate)
+                {
+                    messageHandler.ReportMessage($"Download complete. Run 'hapet-replacer' to replace compiler with new updated files.");
+                    return 0;
+                }
+
                 RunUpdater(messageHandler);
                 if (cancellationToken.IsCancellationRequested) return -1;
 
@@ -45,6 +65,7 @@ namespace HapetCompiler.Toolchains
             return 0;
         }
 
+        #region Updater shite
         async private Task<(bool isAvailable, string version)> IsUpdateAvailableAsync(WebService webSevice, IMessageHandler messageHandler)
         {
             string hapetPath = CompilerUtils.CurrentHapetDirectory;
@@ -274,6 +295,15 @@ namespace HapetCompiler.Toolchains
                         messageHandler.ReportMessage($"Linux/MacOS updater started by path: {updaterPath}");
                 }
             }
+        }
+        #endregion
+
+        private void PrintHelp(IMessageHandler messageHandler)
+        {
+            messageHandler.ReportMessage($"Usage: \n  hapet update <args> \n");
+            messageHandler.ReportMessage($"Parameters: ");
+            messageHandler.ReportMessage($"  --manual \t\t With this parameter files replacer program won't be started after downloading update.");
+            messageHandler.ReportMessage($"\t\t\t You should manually start it by typing 'hapet-replacer'.");
         }
     }
 }

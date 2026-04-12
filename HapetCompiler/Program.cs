@@ -130,7 +130,7 @@ namespace HapetCompiler
                         stopwatch.Start();
 
                         // skip the first two args because they are already used
-                        HapetUpdateToolchain projectToolchain = new HapetUpdateToolchain(stopwatch);
+                        HapetUpdateToolchain projectToolchain = new HapetUpdateToolchain(stopwatch, args.Skip(1).ToArray());
                         return await projectToolchain.TryUpdateHapetAsync(messageHandler, cts.Token);
                     }
                 case "-v":
