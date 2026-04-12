@@ -8,7 +8,7 @@ namespace HapetUpdater
         const string _logFile = "updater_log.txt";
 
         const string HAPET_TEMP_UPDATE_FOLDER = "hapet_temp_update";
-        const string UPDATER_FILE_NAME = "HapetUpdater";
+        const string UPDATER_FILE_NAME = "hapet-replacer";
 
         static void Main(string[] args)
         {

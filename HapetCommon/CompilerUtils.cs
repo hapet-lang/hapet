@@ -48,7 +48,7 @@ namespace HapetCommon
         public const string COMPUTED_HASH_FILENAME = "computed_hash.json";
         public const string TMP_COMPUTED_HASH_FILENAME = "tmp_computed_hash.json";
         public const string HAPET_TEMP_UPDATE_FOLDER = "hapet_temp_update";
-        public const string UPDATER_FILE_NAME = "HapetUpdater";
+        public const string UPDATER_FILE_NAME = "hapet-replacer";
 
         public static bool ValidateFilePath(string dir, string filePath, bool isRel, out string path)
         {
