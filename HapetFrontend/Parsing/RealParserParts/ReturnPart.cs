@@ -21,9 +21,12 @@ namespace HapetFrontend.Parsing
             }
 
             var savedMessage = inInfo.Message;
+            var saved = inInfo.AllowMultiplyExpression;
             inInfo.Message = ErrMsg("expression", "after keyword 'return'");
+            inInfo.AllowMultiplyExpression = true;
             var expr = ParseExpression(inInfo, ref outInfo);
             inInfo.Message = savedMessage;
+            inInfo.AllowMultiplyExpression = saved;
 
             // here is the check for AstEmptyStmt because ParseExpression
             // will already generate an exception for this and return AstEmptyStmt

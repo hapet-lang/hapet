@@ -65,25 +65,32 @@ namespace HapetLsp
 
         private static Diagnostic GetDiagnosticMessage(CompilerMessage message)
         {
-            string stringMessage = $"[{message.XmlMessage.GetName()}] {string.Format(CultureInfo.InvariantCulture, message.XmlMessage.Text, message.MessageArgs)}";
-            DiagnosticSeverity severity = message.ReportType switch
+            try
             {
-                ReportType.Info => DiagnosticSeverity.Information,
-                ReportType.Warning => DiagnosticSeverity.Warning,
-                ReportType.Error => DiagnosticSeverity.Error,
-                _ => DiagnosticSeverity.Error,
-            };
-            var (lb, ob) = message.ProgramFile.GetLineNumberAndOffsetByIndex(message.Location.Beginning.Index);
-            var (le, oe) = message.ProgramFile.GetLineNumberAndOffsetByIndex(message.Location.Ending.End);
-            OmniSharp.Extensions.LanguageServer.Protocol.Models.Range range = 
-                new OmniSharp.Extensions.LanguageServer.Protocol.Models.Range(lb, ob, le, oe);
-            return new Diagnostic()
+                string stringMessage = $"[{message.XmlMessage.GetName()}] {string.Format(CultureInfo.InvariantCulture, message.XmlMessage.Text, message.MessageArgs)}";
+                DiagnosticSeverity severity = message.ReportType switch
+                {
+                    ReportType.Info => DiagnosticSeverity.Information,
+                    ReportType.Warning => DiagnosticSeverity.Warning,
+                    ReportType.Error => DiagnosticSeverity.Error,
+                    _ => DiagnosticSeverity.Error,
+                };
+                var (lb, ob) = message.ProgramFile.GetLineNumberAndOffsetByIndex(message.Location.Beginning.Index);
+                var (le, oe) = message.ProgramFile.GetLineNumberAndOffsetByIndex(message.Location.Ending.End);
+                OmniSharp.Extensions.LanguageServer.Protocol.Models.Range range =
+                    new OmniSharp.Extensions.LanguageServer.Protocol.Models.Range(lb, ob, le, oe);
+                return new Diagnostic()
+                {
+                    Message = stringMessage,
+                    Source = message.ProgramFile.FilePath.AbsolutePath,
+                    Severity = severity,
+                    Range = range
+                };
+            }
+            catch
             {
-                Message = stringMessage,
-                Source = message.ProgramFile.FilePath.AbsolutePath,
-                Severity = severity,
-                Range = range
-            };
+                return null;
+            }
         }
     }
 }

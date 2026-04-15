@@ -38,7 +38,7 @@ namespace HapetFrontend.Parsing
 
                     isComma = CheckToken(inInfo, TokenType.Comma);
                 }
-                var tupled = new AstIdTupledExpr(names, new Location(names.First().Beginning, names.Last().Ending));
+                var tupled = new AstIdTupledExpr(names, new Location(names.First().Beginning, names.Last()?.Ending ?? ident.Ending));
                 ident.RightPart = tupled;
             }
             return ident;

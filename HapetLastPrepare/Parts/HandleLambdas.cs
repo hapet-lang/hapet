@@ -43,6 +43,8 @@ namespace HapetLastPrepare
             int currentSyntheticClass = 0;
             foreach (var (parentFunc, decls) in sorted)
             {
+                _postPreparer._currentSourceFile = parentFunc.SourceFile;
+
                 // search for used outer vars in lambda
                 List<AstDeclaration> usedDecls = new List<AstDeclaration>();
                 List<AstFuncDecl> functionsToGenerate = new List<AstFuncDecl>();

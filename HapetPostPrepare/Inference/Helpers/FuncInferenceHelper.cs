@@ -107,7 +107,7 @@ namespace HapetPostPrepare
                 var argExpr = arg.Expr;
 
                 // make MaxValue if arg not inferred
-                if (argExpr.OutType == null)
+                if (argExpr == null || argExpr.OutType == null)
                 {
                     score = int.MaxValue;
                     casts.Add(null);
