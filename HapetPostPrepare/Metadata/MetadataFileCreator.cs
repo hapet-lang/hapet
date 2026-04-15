@@ -331,6 +331,10 @@ namespace HapetPostPrepare
                 }
                 else
                 {
+                    // wrong parsing - skip parameter
+                    if (par.Name == null)
+                        continue;
+
                     if (par.ParameterModificator == HapetFrontend.Enums.ParameterModificator.Ref)
                         sb.Append("ref ");
                     else if (par.ParameterModificator == HapetFrontend.Enums.ParameterModificator.Out)

@@ -1247,6 +1247,10 @@ namespace HapetPostPrepare
                 _compiler.MessageHandler.ReportMessage(_currentSourceFile, expr.Condition, [], ErrorCode.Get(CTEN.ExprIsNotBool));
             }
 
+            // wrong parsing
+            if (expr.FalseExpr == null)
+                return;
+
             // this handles defaults
             expr.TrueExpr = PostPrepareVarValueAssign(expr.TrueExpr, null, inInfo, ref outInfo);
             expr.FalseExpr = PostPrepareVarValueAssign(expr.FalseExpr, null, inInfo, ref outInfo);

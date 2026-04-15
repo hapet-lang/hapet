@@ -385,7 +385,11 @@ namespace HapetFrontend.Parsing
                     var expr = element;
                     expr.Location = new Location(beg, end);
 
+                    var saved2 = inInfo.AllowMultiplyExpression;
+                    inInfo.AllowMultiplyExpression = true;
                     var sub = ParsePostUnaryExpression(inInfo, ref outInfo);
+                    inInfo.AllowMultiplyExpression = saved2;
+
                     var cst = new AstCastExpr(expr, sub as AstExpression, new Location(beg, sub.Ending));
 
                     // error if it is not an expr

@@ -27,6 +27,8 @@ namespace HapetPostPrepare
             AstDeclaration declToSearch, bool callFromObject, out List<AstExpression> castsToBeDone)
         {
             castsToBeDone = new List<AstExpression>();
+            if (declToSearch == null)
+                return null;
 
             // getting all the candidates
             List<DeclSymbol> candidates = GetAllCandidates(name, declToSearch, args, callFromObject);

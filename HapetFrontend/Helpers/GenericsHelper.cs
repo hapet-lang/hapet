@@ -293,7 +293,9 @@ namespace HapetFrontend.Helpers
                 return HasAnyGenericTypes(ptr.SubExpression);
             else if (expr is AstNestedExpr nst4 && nst4.RightPart is AstIdExpr idE)
                 return HasAnyGenericTypes(idE);
-            else if (expr is AstIdExpr || expr is AstEmptyExpr)
+            else if (expr is AstNestedExpr nst5 && nst5.RightPart is AstNullableExpr nullE)
+                return HasAnyGenericTypes(nullE);
+            else if (expr is AstIdExpr || expr is AstEmptyExpr || expr is AstNullableExpr)
                 return false; // just return false because OutType is checked above
             Debug.Assert(false, "Unexcepted expr type to check");
             return false;
@@ -307,6 +309,8 @@ namespace HapetFrontend.Helpers
                 return HasAnyGenericTypes(ptr.TargetType);
             else if (type is ArrayType arr)
                 return HasAnyGenericTypes(arr.TargetType);
+            else if (type is NullableType nullT)
+                return HasAnyGenericTypes(nullT.TargetType);
             return false;
         }
     }

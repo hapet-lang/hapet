@@ -829,8 +829,12 @@ namespace HapetPostPrepare
             PostPrepareExprScoping(ternaryExpr.Condition);
             SetScopeAndParent(ternaryExpr.TrueExpr, ternaryExpr);
             PostPrepareExprScoping(ternaryExpr.TrueExpr);
-            SetScopeAndParent(ternaryExpr.FalseExpr, ternaryExpr);
-            PostPrepareExprScoping(ternaryExpr.FalseExpr);
+            // not a good parsing btw
+            if (ternaryExpr.FalseExpr != null)
+            {
+                SetScopeAndParent(ternaryExpr.FalseExpr, ternaryExpr);
+                PostPrepareExprScoping(ternaryExpr.FalseExpr);
+            }
         }
 
         private void PostPrepareCheckedExprScoping(AstCheckedExpr checkedExpr)

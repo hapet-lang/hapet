@@ -419,7 +419,7 @@ namespace HapetLastPrepare
 
         private void LPRACIdExpr(AstIdExpr expr)
         {
-            expr.OutType = (expr.FindSymbol as DeclSymbol).Decl.Type.OutType;
+            expr.OutType = (expr.FindSymbol as DeclSymbol)?.Decl.Type.OutType;
         }
 
         private void LPRACCallExpr(AstCallExpr expr)
