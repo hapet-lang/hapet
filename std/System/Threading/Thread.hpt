@@ -1,0 +1,80 @@
+using System;
+
+public partial class Thread
+{
+    private StartHelper _startHelper;
+
+    // State associated with starting new thread
+    private sealed class StartHelper
+    {
+        internal int _maxStackSize;
+        internal object _start;
+        internal object _startArg;
+
+        internal StartHelper(object start)
+        {
+            _start = start;
+        }
+
+        // avoid long-lived stack frame in many threads
+        internal inline void Run()
+        {
+            RunWorker();
+        }
+
+        // avoid long-lived stack frame in many threads
+        private inline void RunWorker()
+        {
+            object start = _start;
+            _start = default; // anime?
+
+            try
+            {
+                if (start is ThreadStart threadStart)
+                {
+                    threadStart();
+                }
+                else
+                {
+                    // TODO: parametrized shite
+                }
+            }
+            catch (Exception ex)
+            {
+                // the handler returned "true" means the exception is now "handled" and we should gracefully exit.
+            }
+        }
+    }
+
+    public Thread(ThreadStart start)
+    {
+        ArgumentNullException.ThrowIfNull(start);
+
+        _startHelper = new StartHelper(start);
+    }
+
+    private void Start()
+    {
+        // RuntimeFeature.ThrowIfMultithreadingIsNotSupported();
+        StartHelper startHelper = _startHelper;
+
+        // In the case of a null startHelper (second call to start on same thread)
+        // StartCore method will take care of the error reporting.
+        if (startHelper != null)
+        {
+            startHelper._startArg = null;
+        }
+
+        StartCore();
+    }
+
+    public bool Join(int millisecondsTimeout)
+    {
+        ArgumentOutOfRangeException.ThrowIfLessThan(millisecondsTimeout, Timeout.Infinite);
+        if ((ThreadState & ThreadState.Unstarted) != 0)
+        {
+            throw new ThreadStateException(SR.ThreadState_NotStarted);
+        }
+        return JoinInternal(millisecondsTimeout);
+    }
+}
