@@ -26,6 +26,7 @@ namespace HapetPostPrepare
         private AstExpression GetPreparedAst(HapetType hpt, AstStatement parent)
         {
             var ast = hpt.GetAst();
+            ast.SetDataFromStmt(parent);
             SetScopeAndParent(ast, parent);
             PostPrepareExprScoping(ast);
 
