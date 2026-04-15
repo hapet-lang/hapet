@@ -34,7 +34,7 @@ public readonly struct Int128
         {
             return CompareTo(other);
         }
-        else if (value is null)
+        else if (value == null)
         {
             return 1;
         }
@@ -92,7 +92,7 @@ public readonly struct Int128
         return Number.FormatInt128(this, format, null);
     }
 
-    public string ToString(string format, IFormatProvider? provider)
+    public string ToString(string format, IFormatProvider provider)
     {
         return Number.FormatInt128(this, format, provider);
     }
