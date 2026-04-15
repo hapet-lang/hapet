@@ -170,6 +170,8 @@ namespace HapetFrontend.Types
             foreach (var expr in inhFrom)
             {
                 var outT = expr.OutType as ClassType;
+                if (outT == null)
+                    continue;
                 if (outT == type || (checkParents && outT.IsInheritedFrom(type)))
                     return true;
             }

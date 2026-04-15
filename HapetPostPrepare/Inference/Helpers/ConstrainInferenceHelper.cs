@@ -190,7 +190,9 @@ namespace HapetPostPrepare
             // inference the ident
             PostPrepareExprInference(constrain.Expr, inInfo, ref outInfo);
             // custom constains are always interface/class
-            var theClass = (constrain.Expr.OutType as ClassType).Declaration;
+            var theClass = (constrain.Expr.OutType as ClassType)?.Declaration;
+            if (theClass == null)
+                return;
 
             // we need to copy all the class decls to our genericDecl
             foreach (var d in theClass.Declarations)
