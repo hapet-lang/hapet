@@ -183,7 +183,7 @@ namespace HapetFrontend.Parsing
         [DebuggerHidden]
         private AstStatement ParseAsExpression(ParserInInfo inInfo, ref ParserOutInfo outInfo)
         {
-            var lhs = ParseComparisonExpression(inInfo, ref outInfo);
+            var lhs = ParseBitOrExpression(inInfo, ref outInfo);
             AstStatement rhs;
 
             while (CheckToken(inInfo, TokenType.KwAs))
@@ -194,7 +194,7 @@ namespace HapetFrontend.Parsing
                 // we want to prefer generics
                 var saved1 = inInfo.PreferGenericShite;
                 inInfo.PreferGenericShite = true;
-                rhs = ParseComparisonExpression(inInfo, ref outInfo);
+                rhs = ParseBitOrExpression(inInfo, ref outInfo);
                 inInfo.PreferGenericShite = saved1;
 
                 var binExpr = new AstBinaryExpr("as", lhs as AstExpression, rhs as AstExpression, new Location(lhs.Beginning, rhs.Ending))
@@ -218,25 +218,42 @@ namespace HapetFrontend.Parsing
         [DebuggerStepThrough]
         [StackTraceHidden]
         [DebuggerHidden]
+        private AstStatement ParseBitOrExpression(ParserInInfo inInfo, ref ParserOutInfo outInfo)
+        {
+            return ParseBinaryLeftAssociativeExpression(ParseBitXorExpression, inInfo, ref outInfo,
+                (TokenType.VerticalSlash, "|"));
+        }
+
+        [DebuggerStepThrough]
+        [StackTraceHidden]
+        [DebuggerHidden]
+        private AstStatement ParseBitXorExpression(ParserInInfo inInfo, ref ParserOutInfo outInfo)
+        {
+            return ParseBinaryLeftAssociativeExpression(ParseBitAndExpression, inInfo, ref outInfo,
+                (TokenType.Hat, "^"));
+        }
+
+        [DebuggerStepThrough]
+        [StackTraceHidden]
+        [DebuggerHidden]
+        private AstStatement ParseBitAndExpression(ParserInInfo inInfo, ref ParserOutInfo outInfo)
+        {
+            return ParseBinaryLeftAssociativeExpression(ParseComparisonExpression, inInfo, ref outInfo,
+                (TokenType.Ampersand, "&"));
+        }
+
+        [DebuggerStepThrough]
+        [StackTraceHidden]
+        [DebuggerHidden]
         private AstStatement ParseComparisonExpression(ParserInInfo inInfo, ref ParserOutInfo outInfo)
         {
-            return ParseBinaryLeftAssociativeExpression(ParseBitAndOrExpression, inInfo, ref outInfo,
+            return ParseBinaryLeftAssociativeExpression(ParseBitShiftExpression, inInfo, ref outInfo,
                 (TokenType.Less, "<"),
                 (TokenType.LessEqual, "<="),
                 (TokenType.Greater, ">"),
                 (TokenType.GreaterEqual, ">="),
                 (TokenType.DoubleEqual, "=="),
                 (TokenType.NotEqual, "!="));
-        }
-
-        [DebuggerStepThrough]
-        [StackTraceHidden]
-        [DebuggerHidden]
-        private AstStatement ParseBitAndOrExpression(ParserInInfo inInfo, ref ParserOutInfo outInfo)
-        {
-            return ParseBinaryLeftAssociativeExpression(ParseBitShiftExpression, inInfo, ref outInfo,
-                (TokenType.Ampersand, "&"),
-                (TokenType.VerticalSlash, "|"));
         }
 
         [DebuggerStepThrough]
@@ -472,6 +489,10 @@ namespace HapetFrontend.Parsing
                 {
                     case TokenType.OpenParen:
                         {
+                            // just return the expression if call expression is not allowed here
+                            if (!inInfo.AllowCallExpr)
+                                return expr;
+
                             var savedPrev = inInfo.PreviousNestedForNullCheck;
                             inInfo.PreviousNestedForNullCheck = null;
                             // TODO: not only nested should be allowed. tuples, lamdas and other shite

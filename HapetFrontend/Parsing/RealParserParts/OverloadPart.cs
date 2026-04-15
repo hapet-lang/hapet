@@ -46,9 +46,12 @@ namespace HapetFrontend.Parsing
 
                 // getting cast result type
                 var saved1 = inInfo.AllowMultiplyExpression;
+                var saved2 = inInfo.AllowCallExpr;
                 inInfo.AllowMultiplyExpression = false;
+                inInfo.AllowCallExpr = false;
                 returns = ParseExpression(inInfo, ref outInfo) as AstExpression;
                 inInfo.AllowMultiplyExpression = saved1;
+                inInfo.AllowCallExpr = saved2;
 
                 var func = ParseFuncDeclaration(inInfo, ref outInfo, null, null, isVoidType);
                 paramDecls = func.Parameters;

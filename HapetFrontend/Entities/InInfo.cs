@@ -36,6 +36,10 @@ namespace HapetFrontend.Entities
         /// </summary>
         public bool AllowNestedFunc { get; set; }
         /// <summary>
+        /// 'true' when call expression is allowed to be parsed. For example: not allowed when parsing cast operators overrides
+        /// </summary>
+        public bool AllowCallExpr { get; set; }
+        /// <summary>
         /// The parent func decl that is used when <see cref="AllowNestedFunc"/> is 'true'
         /// </summary>
         public AstFuncDecl ParentFuncDecl { get; set; }
@@ -99,6 +103,7 @@ namespace HapetFrontend.Entities
             AllowArrayExpression = true,
             AllowTypedTuple = false,
             AllowMultiplyExpression = true,
+            AllowCallExpr = true,
             ExternalMetadata = false,
             Message = null,
         };
