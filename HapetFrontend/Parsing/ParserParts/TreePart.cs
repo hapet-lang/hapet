@@ -472,6 +472,10 @@ namespace HapetFrontend.Parsing
                 {
                     case TokenType.OpenParen:
                         {
+                            // just return the expression if call expression is not allowed here
+                            if (!inInfo.AllowCallExpr)
+                                return expr;
+
                             var savedPrev = inInfo.PreviousNestedForNullCheck;
                             inInfo.PreviousNestedForNullCheck = null;
                             // TODO: not only nested should be allowed. tuples, lamdas and other shite
