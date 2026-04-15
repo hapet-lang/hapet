@@ -718,6 +718,7 @@ namespace HapetFrontend.Parsing
                                 Body = block
                             };
                         }
+                        var dbg = PeekToken(inInfo);
                         throw new NotImplementedException();
                     }
 

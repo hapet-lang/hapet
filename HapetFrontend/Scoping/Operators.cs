@@ -131,6 +131,8 @@ namespace HapetFrontend.Scoping
 
         public virtual int Accepts(HapetType lhs, HapetType rhs)
         {
+            if (LhsType == null || RhsType == null) return -1;
+
             var ml = LhsType.Match(lhs);
             var mr = RhsType.Match(rhs);
             if (ml == -1 || mr == -1)

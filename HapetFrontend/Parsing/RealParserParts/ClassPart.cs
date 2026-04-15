@@ -64,10 +64,12 @@ namespace HapetFrontend.Parsing
                 {
                     var ident = ParseIdentifierExpression(inInfo, allowGenerics: true);
                     inherited.Add(ident);
+                    SkipNewlines(inInfo);
                     // if there is something else
                     if (CheckToken(inInfo, TokenType.Comma))
                     {
                         Consume(inInfo, TokenType.Comma, ErrMsg(",", "before the next inherited type"));
+                        SkipNewlines(inInfo);
                         continue;
                     }
 

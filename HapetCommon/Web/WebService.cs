@@ -78,7 +78,7 @@ namespace HapetCommon.Web
                         }
 
                         // Open the connection to the target host/port
-                        using TcpClient tcp = new();
+                        TcpClient tcp = new();
                         await tcp.ConnectAsync(ipAddress, context.DnsEndPoint.Port, cancellationToken);
 
                         // Return the NetworkStream to the caller

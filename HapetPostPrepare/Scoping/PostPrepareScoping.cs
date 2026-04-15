@@ -720,6 +720,8 @@ namespace HapetPostPrepare
 
         private void PostPrepareIdGenericExprScoping(AstIdGenericExpr genExpr)
         {
+            PostPrepareIdExprScoping(genExpr);
+
             foreach (var g in genExpr.GenericRealTypes)
             {
                 SetScopeAndParent(g, genExpr);

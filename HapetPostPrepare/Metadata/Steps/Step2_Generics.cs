@@ -101,7 +101,9 @@ namespace HapetPostPrepare
                 {
                     if (c.ConstrainType == GenericConstrainType.CustomType && (c.Expr.UnrollToRightPart<AstIdExpr>() is AstIdGenericExpr idExprG))
                     {
-                        var orig = (idExprG.FindSymbol as DeclSymbol).Decl.OriginalGenericDecl;
+                        var orig = (idExprG.FindSymbol as DeclSymbol)?.Decl?.OriginalGenericDecl;
+                        if (orig == null)
+                            continue;
                         PostPrepareMetadataGenerics(orig);
                         // check for constrains. if something goes wrong - it will error inside the function
                         CheckIfTheTypesAreAllowedForConstrains(orig, idExprG.GenericRealTypes);

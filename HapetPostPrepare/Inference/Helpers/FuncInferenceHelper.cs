@@ -682,7 +682,7 @@ namespace HapetPostPrepare
                 decls.Remove(d);
 
                 // search if there funcs from interfaces - remove them also
-                string pureSearchParent = (funcDecl.Name.AdditionalData.OutType as ClassType).Declaration.Name.Name;
+                //string pureSearchParent = (funcDecl.Name.AdditionalData.OutType as ClassType).Declaration.Name.Name;
                 string pureSearchName = onlyFuncName;
                 foreach (var dIn in declsCopied)
                 {
