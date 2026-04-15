@@ -2,6 +2,8 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // Some modifications were made for hapet-lang compatibility.
 
+using System;
+
 // TimeSpan represents a duration of time.  A TimeSpan can be negative
 // or positive.
 //
@@ -14,12 +16,7 @@
 // we do not provide Years() or Months().
 //
 public readonly struct TimeSpan
-    : IComparable,
-        IComparable<TimeSpan>,
-        IEquatable<TimeSpan>,
-        ISpanFormattable,
-        ISpanParsable<TimeSpan>,
-        IUtf8SpanFormattable
+    : IComparable, IComparable<TimeSpan>, IEquatable<TimeSpan>
 {
     /// <summary>
     /// Represents the number of nanoseconds per tick. This field is constant.
@@ -387,9 +384,9 @@ public readonly struct TimeSpan
     public static int Compare(TimeSpan t1, TimeSpan t2) => t1._ticks.CompareTo(t2._ticks);
 
     // Returns a value less than zero if this  object
-    public int CompareTo(object? value)
+    public int CompareTo(object value)
     {
-        if (value is null)
+        if (value == null)
         {
             return 1;
         }
@@ -415,7 +412,12 @@ public readonly struct TimeSpan
         return new TimeSpan(_ticks >= 0 ? _ticks : -_ticks);
     }
 
-    public override bool Equals([NotNullWhen(true)] object? value) => (value is TimeSpan other) && Equals(other);
+    public override bool Equals(object value)
+    {
+        if (value is TimeSpan other)
+            return Equals(other);
+        return false;
+    }
 
     public bool Equals(TimeSpan obj) => Equals(this, obj);
 
@@ -425,8 +427,9 @@ public readonly struct TimeSpan
 
     private static inline TimeSpan FromUnits(long units, long ticksPerUnit, long minUnits, long maxUnits)
     {
-        System.Diagnostics.Debug.Assert(minUnits < 0);
-        System.Diagnostics.Debug.Assert(maxUnits > 0);
+        // TODO:
+        // System.Diagnostics.Debug.Assert(minUnits < 0);
+        // System.Diagnostics.Debug.Assert(maxUnits > 0);
 
         if (units > maxUnits || units < minUnits)
         {
@@ -787,7 +790,7 @@ public readonly struct TimeSpan
     public static bool TryParse(ReadOnlySpan<char> input, IFormatProvider formatProvider, out TimeSpan result) => TimeSpanParse.TryParse(input, formatProvider, out result);
     public static bool TryParseExact(string input, string format, IFormatProvider formatProvider, out TimeSpan result)
     {
-        if (input is null || format is null)
+        if (input == null || format == null)
         {
             result = default;
             return false;
@@ -800,7 +803,7 @@ public readonly struct TimeSpan
 
     public static bool TryParseExact(string input, string[] formats, IFormatProvider formatProvider, out TimeSpan result)
     {
-        if (input is null)
+        if (input == null)
         {
             result = default;
             return false;
@@ -814,7 +817,7 @@ public readonly struct TimeSpan
     {
         ValidateStyles(styles);
 
-        if (input is null || format is null)
+        if (input == null || format == null)
         {
             result = default;
             return false;
@@ -831,7 +834,7 @@ public readonly struct TimeSpan
     {
         ValidateStyles(styles);
 
-        if (input is null)
+        if (input == null)
         {
             result = default;
             return false;
