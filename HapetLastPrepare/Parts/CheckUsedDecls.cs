@@ -436,12 +436,15 @@ namespace HapetLastPrepare
             {
                 CheckUsedDeclsArgumentExpr(a, usedDecls, goDeep);
             }
-            CheckUsedDeclsDecl(expr.ConstructorSymbol.Decl, usedDecls, goDeep);
+            if (expr.ConstructorSymbol != null)
+            {
+                CheckUsedDeclsDecl(expr.ConstructorSymbol.Decl, usedDecls, goDeep);
 
-            // if ctor is used then dtor is also has to be used
-            var parent = expr.ConstructorSymbol.Decl.ContainingParent;
-            var dtor = parent.GetDeclarations().FirstOrDefault(x => x is AstFuncDecl fnc && fnc.ClassFunctionType == ClassFunctionType.Dtor);
-            CheckUsedDeclsDecl(dtor, usedDecls, goDeep);
+                // if ctor is used then dtor is also has to be used
+                var parent = expr.ConstructorSymbol.Decl.ContainingParent;
+                var dtor = parent.GetDeclarations().FirstOrDefault(x => x is AstFuncDecl fnc && fnc.ClassFunctionType == ClassFunctionType.Dtor);
+                CheckUsedDeclsDecl(dtor, usedDecls, goDeep);
+            }
         }
 
         private void CheckUsedDeclsArgumentExpr(AstArgumentExpr expr, List<AstDeclaration> usedDecls = null, bool goDeep = false)
