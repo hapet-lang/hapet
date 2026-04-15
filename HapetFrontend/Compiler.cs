@@ -341,5 +341,10 @@ namespace HapetFrontend
                     _files.Remove(k);
             }
         }
+
+        public void ClearLists()
+        {
+            LambdasAndNested.Clear();
+        }
     }
 }

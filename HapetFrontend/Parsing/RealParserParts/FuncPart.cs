@@ -105,7 +105,8 @@ namespace HapetFrontend.Parsing
             if (!isReturnVoid)
             {
                 var retStmt = onlyStmt as AstExpression;
-                Debug.Assert(retStmt != null);
+                // do not uncomment - it could be null on wrong parsing
+                // Debug.Assert(retStmt != null);
                 onlyStmt = new AstReturnStmt(retStmt, onlyStmt.Location)
                 {
                     IsArrowedReturn = true,

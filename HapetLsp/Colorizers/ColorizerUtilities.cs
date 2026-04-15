@@ -65,6 +65,7 @@ namespace HapetLsp.Handlers
             PointerType.Types.Clear();
             ReferenceType.Types.Clear();
             postPrepare.ClearLists();
+            compiler.ClearLists();
 
             // actualize files
             compiler.ActualizeFiles();
