@@ -182,6 +182,10 @@ namespace HapetFrontend.Helpers
 
         public static bool ShouldTheDeclBeSkippedFromCodeGen(AstDeclaration decl)
         {
+            // skip wrong parsed shite
+            if (decl == null)
+                return true;
+
             // DO NOT SKIP ANY STORS!
             if (decl is AstFuncDecl fnc && fnc.ClassFunctionType == Enums.ClassFunctionType.StaticCtor)
                 return false;

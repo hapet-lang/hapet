@@ -707,7 +707,7 @@ namespace HapetLsp.Colorizers
             ColorizeExpr(expr.TypeName);
             foreach (var s in expr.SizeExprs)
             {
-                if (s.IsSyntheticStatement)
+                if (s == null || s.IsSyntheticStatement)
                     continue;
                 ColorizeExpr(s);
             }
