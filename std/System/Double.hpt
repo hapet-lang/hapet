@@ -65,4 +65,9 @@ public struct Double : IComparable, IComparable<double>, IFormattable
         // TODO: is it correct way or need to do as in c#?
         return d == NaN;
     }
+
+    public static inline bool IsNegative(double d)
+    {
+        return BitConverter.DoubleToInt64Bits(d) < 0;
+    }
 }
