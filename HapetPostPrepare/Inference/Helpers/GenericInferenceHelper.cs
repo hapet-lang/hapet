@@ -139,7 +139,7 @@ namespace HapetPostPrepare
 
         private bool CheckIfAllowedForConstrains(List<AstConstrainStmt> constrains, AstExpression type)
         {
-            if (type.OutType == null) 
+            if (type == null || type.OutType == null) 
                 return false;
 
             var allNorm = new List<bool>();

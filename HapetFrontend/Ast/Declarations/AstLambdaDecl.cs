@@ -80,7 +80,7 @@ namespace HapetFrontend.Ast.Declarations
         {
             var fnc = new AstFuncDecl(
                 Parameters.Select(x => x.GetDeepCopy() as AstParamDecl).ToList(),
-                Returns.GetDeepCopy() as AstExpression,
+                Returns?.GetDeepCopy() as AstExpression,
                 Body.GetDeepCopy() as AstBlockExpr,
                 new AstIdExpr(name, Location),
                 location: Location)

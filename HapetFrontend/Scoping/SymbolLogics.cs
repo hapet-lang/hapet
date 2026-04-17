@@ -185,7 +185,7 @@ namespace HapetFrontend.Scoping
                         bool allEqual = true;
                         for (int i = 0; i < gAmountSymbol; ++i)
                         {
-                            if (genK.GenericRealTypes[i].OutType == genId.GenericRealTypes[i].OutType)
+                            if (genK.GenericRealTypes[i].OutType == genId.GenericRealTypes[i]?.OutType)
                                 continue;
                             allEqual = false;
                             break;

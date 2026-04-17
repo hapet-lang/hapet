@@ -21,7 +21,7 @@ namespace HapetPostPrepare
         public void CheckThatThereIsEnoughReturnsInFunc(AstFuncDecl func)
         {
             // skip with empty bodies and void return types
-            if (func.Body == null || func.Returns.OutType is VoidType)
+            if (func.Body == null || func.Returns?.OutType is VoidType)
                 return;
             // if there is already return stmt at the end of func - no need to check anything
             if (AstBlockExpr.IsBlockHasItsOwnBr(func.Body, true))

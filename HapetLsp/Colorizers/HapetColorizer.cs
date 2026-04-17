@@ -580,7 +580,11 @@ namespace HapetLsp.Colorizers
 
             // go over generic types
             foreach (var g in expr.GenericRealTypes)
+            {
+                if (g == null)
+                    continue;
                 ColorizeExpr(g);
+            }
         }
 
         private void ColorizeIdExpr(AstIdExpr expr)
@@ -729,7 +733,7 @@ namespace HapetLsp.Colorizers
                 ColorizeExpr(expr.Condition);
             if (!expr.TrueExpr.IsSyntheticStatement)
                 ColorizeExpr(expr.TrueExpr);
-            if (!expr.FalseExpr.IsSyntheticStatement)
+            if (expr.FalseExpr != null && !expr.FalseExpr.IsSyntheticStatement)
                 ColorizeExpr(expr.FalseExpr);
         }
 

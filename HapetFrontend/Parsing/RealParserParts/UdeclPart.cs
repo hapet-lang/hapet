@@ -49,7 +49,11 @@ namespace HapetFrontend.Parsing
                 if (CheckToken(inInfo, TokenType.KwStatic))
                     staticKwForLambda = NextToken(inInfo);
 
+                var saved = inInfo.AllowMultiplyExpression;
+                inInfo.AllowMultiplyExpression = true;
                 initializer = ParseExpression(inInfo, ref outInfo);
+                inInfo.AllowMultiplyExpression = saved;
+
                 end = initializer.Ending;
 
                 // check if the initer is lambda - try apply static kw

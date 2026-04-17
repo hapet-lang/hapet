@@ -331,7 +331,7 @@ namespace HapetPostPrepare
                 {
                     var tpG = new AstIdGenericExpr("ValueTuple", new List<AstExpression>(), tuple.Location);
                     var tp = new AstNestedExpr(tpG, new AstNestedExpr(new AstIdExpr("System", tuple.Location), null, tuple.Location), tuple.Location);
-                    var args = tuple.Elements.Select(x => new AstArgumentExpr(x, location: x.Location)).ToList();
+                    var args = tuple.Elements.Select(x => new AstArgumentExpr(x, location: (x != null ? x.Location : tuple.Location))).ToList();
                     var newTuple = new AstNewExpr(tp, args, tuple.Location) { IsTupleCreation = true };
                     expr.RightPart = newTuple;
 

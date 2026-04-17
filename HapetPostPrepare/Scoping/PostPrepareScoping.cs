@@ -388,9 +388,12 @@ namespace HapetPostPrepare
                     PostPrepareExprScoping(a);
                 }
             }
-            // return type is the same
-            SetScopeAndParent(funcDecl.Returns, funcDecl, blockScope);
-            PostPrepareExprScoping(funcDecl.Returns);
+            if (funcDecl.Returns != null)
+            {
+                // return type is the same
+                SetScopeAndParent(funcDecl.Returns, funcDecl, blockScope);
+                PostPrepareExprScoping(funcDecl.Returns);
+            }
 
             // base ctor call scoping
             if (funcDecl.BaseCtorCall != null)
@@ -724,8 +727,11 @@ namespace HapetPostPrepare
 
             foreach (var g in genExpr.GenericRealTypes)
             {
-                SetScopeAndParent(g, genExpr);
-                PostPrepareExprScoping(g);
+                if (g != null)
+                {
+                    SetScopeAndParent(g, genExpr);
+                    PostPrepareExprScoping(g);
+                }
             }
         }
 

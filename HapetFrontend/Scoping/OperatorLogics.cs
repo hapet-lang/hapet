@@ -356,6 +356,10 @@ namespace HapetFrontend.Scoping
 
         public void DefineUnaryOperator(IUnaryOperator op)
         {
+            // skip cringe
+            if (string.IsNullOrWhiteSpace(op.Name))
+                return;
+
             List<IUnaryOperator> list;
             if (_unaryOperatorTable.ContainsKey(op.Name))
                 list = _unaryOperatorTable[op.Name];
