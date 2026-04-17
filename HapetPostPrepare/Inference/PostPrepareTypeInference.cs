@@ -365,7 +365,8 @@ namespace HapetPostPrepare
                 // if it is an impl of generic type - no need to error about it 
                 // because probably non-deep copy was created, so do not care
                 if (!(varDecl.ContainingParent.HasGenericTypes && varDecl.ContainingParent.IsImplOfGeneric))
-                    _compiler.MessageHandler.ReportMessage(_currentSourceFile, varDecl.Name, [], ErrorCode.Get(CTEN.ConstValueNonComptime));
+                    _compiler.MessageHandler.ReportMessage(_currentSourceFile, varDecl.Name ?? varDecl.Location, 
+                        [], ErrorCode.Get(CTEN.ConstValueNonComptime));
             }
         }
 
@@ -1123,6 +1124,9 @@ namespace HapetPostPrepare
         {
             foreach (var sz in arrayExpr.SizeExprs)
             {
+                // may be on wrong parsing
+                if (sz == null)
+                    continue;
                 PostPrepareExprInference(sz, inInfo, ref outInfo);
             }
 

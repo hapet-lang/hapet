@@ -802,8 +802,12 @@ namespace HapetPostPrepare
         {
             foreach (var sz in arrayExpr.SizeExprs)
             {
-                SetScopeAndParent(sz, arrayExpr);
-                PostPrepareExprScoping(sz);
+                // may be on wrong parsing
+                if (sz != null)
+                {
+                    SetScopeAndParent(sz, arrayExpr);
+                    PostPrepareExprScoping(sz);
+                }
             }
             SetScopeAndParent(arrayExpr.TypeName, arrayExpr);
             PostPrepareExprScoping(arrayExpr.TypeName);
@@ -821,8 +825,12 @@ namespace HapetPostPrepare
                 SetScopeAndParent(arrayAccExpr.ParameterExpr, arrayAccExpr);
                 PostPrepareExprScoping(arrayAccExpr.ParameterExpr);
             }
-            SetScopeAndParent(arrayAccExpr.ObjectName, arrayAccExpr);
-            PostPrepareExprScoping(arrayAccExpr.ObjectName);
+            // on wrong parsing
+            if (arrayAccExpr.ObjectName != null)
+            {
+                SetScopeAndParent(arrayAccExpr.ObjectName, arrayAccExpr);
+                PostPrepareExprScoping(arrayAccExpr.ObjectName);
+            }
         }
 
         private void PostPrepareTernaryExprScoping(AstTernaryExpr ternaryExpr)

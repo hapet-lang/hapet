@@ -36,7 +36,7 @@ namespace HapetFrontend.Ast.Expressions
         public override AstStatement GetDeepCopy()
         {
             var copy = new AstArgumentExpr(
-                Expr.GetDeepCopy() as AstExpression,
+                Expr?.GetDeepCopy() as AstExpression,
                 Name?.GetDeepCopy() as AstIdExpr,
                 Location)
             {
