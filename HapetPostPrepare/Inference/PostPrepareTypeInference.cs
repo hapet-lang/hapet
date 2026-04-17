@@ -117,7 +117,8 @@ namespace HapetPostPrepare
                     savedMute = inInfo.MuteErrors;
                     if (funcDecl.IsPropertyFunction)
                         inInfo.MuteErrors = true;
-                    PostPrepareExprInference(funcDecl.Returns, inInfo, ref outInfo);
+                    if (funcDecl.Returns != null)
+                        PostPrepareExprInference(funcDecl.Returns, inInfo, ref outInfo);
                     if (funcDecl.IsPropertyFunction)
                         inInfo.MuteErrors = savedMute;
                 }
@@ -1642,9 +1643,9 @@ namespace HapetPostPrepare
                 // casting to func return type
                 returnStmt.ReturnExpression = PostPrepareVarValueAssign(returnStmt.ReturnExpression, currFuncRet.OutType, inInfo, ref outInfo);
             }
-            else if (returnStmt.ReturnExpression == null && currFuncRet.OutType is not VoidType)
+            else if (returnStmt.ReturnExpression == null && currFuncRet?.OutType is not VoidType)
             {
-                _compiler.MessageHandler.ReportMessage(_currentSourceFile, returnStmt, [HapetType.AsString(currFuncRet.OutType)], ErrorCode.Get(CTEN.EmptyReturnStmt));
+                _compiler.MessageHandler.ReportMessage(_currentSourceFile, returnStmt, [HapetType.AsString(currFuncRet?.OutType)], ErrorCode.Get(CTEN.EmptyReturnStmt));
             }
         }
 

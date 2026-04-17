@@ -35,7 +35,8 @@ namespace HapetPostPrepare
                 for (int i = 0; i < genId.GenericRealTypes.Count; ++i)
                 {
                     var g = genId.GenericRealTypes[i];
-                    PostPrepareExprInference(g, inInfo, ref outInfo);
+                    if (g != null)
+                        PostPrepareExprInference(g, inInfo, ref outInfo);
                 }
             }
 
@@ -433,6 +434,8 @@ namespace HapetPostPrepare
             for (int i = 0; i < realId.GenericRealTypes.Count; ++i)
             {
                 var g = realId.GenericRealTypes[i];
+                // skip wrong parsed
+                if (g == null) continue;
                 // infer if not infered
                 if (g.OutType == null)
                     PostPrepareExprInference(g, inInfo, ref outInfo);
@@ -448,7 +451,7 @@ namespace HapetPostPrepare
                 // we need to make sure that the generic types are really the same
                 for (int i = 0; i < realName.GenericRealTypes.Count; ++i)
                 {
-                    if (realName.GenericRealTypes[i].OutType != declName.GenericRealTypes[i].OutType)
+                    if (realName.GenericRealTypes[i]?.OutType != declName.GenericRealTypes[i]?.OutType)
                         areTheSame = false;
                 }
                 // return if exists and types are the same

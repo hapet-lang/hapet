@@ -78,7 +78,7 @@ namespace HapetFrontend.Ast.Expressions
             string newName = string.IsNullOrWhiteSpace(name) ? Name : name;
             var newId = new AstIdGenericExpr(
                 newName, 
-                GenericRealTypes.Select(x => x.GetDeepCopy() as AstExpression).ToList(), 
+                GenericRealTypes.Select(x => x?.GetDeepCopy() as AstExpression).ToList(), 
                 Location)
             {
                 IsSyntheticStatement = IsSyntheticStatement,

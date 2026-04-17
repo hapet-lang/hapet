@@ -25,6 +25,8 @@ namespace HapetPostPrepare
         /// <returns></returns>
         private AstExpression GetPreparedAst(HapetType hpt, AstStatement parent)
         {
+            if (hpt == null)
+                return null;
             var ast = hpt.GetAst();
             ast.SetDataFromStmt(parent);
             SetScopeAndParent(ast, parent);

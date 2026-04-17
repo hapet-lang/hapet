@@ -237,8 +237,8 @@ namespace HapetFrontend.Types
 
         public override string ToString()
         {
-            if (Declaration.Returns.OutType != CurrentTypeContext.VoidTypeInstance)
-                return $"({Declaration.Returns.OutType}:_lambda)";
+            if (Declaration.Returns?.OutType != CurrentTypeContext.VoidTypeInstance)
+                return $"({Declaration.Returns?.OutType}:_lambda)";
             else
                 return $"(void:_lambda)";
         }
