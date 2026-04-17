@@ -36,6 +36,7 @@ internal static class SR
     internal const string Arg_MustBeUInt16 = "Object must be of type UInt16 (ushort).";
     internal const string Arg_MustBeUInt32 = "Object must be of type UInt32 (uint).";
     internal const string Arg_MustBeUInt64 = "Object must be of type UInt64 (ulong).";
+    internal const string Arg_MustBeUInt128 = "Object must be of type UInt128.";
     internal const string Arg_MustBePtrDiff = "Object must be of type PtrDiff.";
     internal const string Arg_MustBeUIntPtr = "Object must be of type UIntPtr.";
 

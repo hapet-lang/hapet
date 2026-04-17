@@ -31,4 +31,11 @@ public static class BitConverter
     /// <param name="value">The number to convert.</param>
     /// <returns>A 64-bit unsigned integer whose bits are identical to <paramref name="value"/>.</returns>
     public static inline ulong DoubleToUInt64Bits(double value) => Unsafe.BitCast<double, ulong>(value);
+
+    /// <summary>
+    /// Converts the specified 64-bit unsigned integer to a double-precision floating point number.
+    /// </summary>
+    /// <param name="value">The number to convert.</param>
+    /// <returns>A double-precision floating point number whose bits are identical to <paramref name="value"/>.</returns>
+    public static inline double UInt64BitsToDouble(ulong value) => Unsafe.BitCast<ulong, double>(value);
 }

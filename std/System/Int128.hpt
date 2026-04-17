@@ -1,3 +1,7 @@
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+// Some modifications were made for hapet-lang compatibility.
+
 using System.Globalization;
 using System.Text.Formatting;
 using System.Runtime.InteropServices;
@@ -781,7 +785,8 @@ public readonly struct Int128
     {
         // This follows the same logic as is used in `long Math.BigMul(long, long, out long)`
 
-        UInt128 upper = UInt128.BigMul((UInt128)(left), (UInt128)(right), out UInt128 ulower);
+        UInt128 ulower;
+        UInt128 upper = UInt128.BigMul((UInt128)(left), (UInt128)(right), out ulower);
         lower = (Int128)(ulower);
         return (Int128)(upper) - ((left >> 127) & right) - ((right >> 127) & left);
     }
