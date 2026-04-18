@@ -358,6 +358,18 @@ namespace HapetFrontend.Parsing
                     return lhs;
                 }
 
+                // make one more token eat because of pseudo >>
+                if (next.Type == TokenType.GreaterGreater)
+                {
+                    NextToken(inInfo);
+                }
+                // make two more tokens eat because of pseudo >>>
+                if (next.Type == TokenType.GreaterGreaterGreater)
+                {
+                    NextToken(inInfo);
+                    NextToken(inInfo);
+                }
+
                 NextToken(inInfo);
                 SkipNewlines(inInfo);
                 rhs = sub(inInfo, ref outInfo);
