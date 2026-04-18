@@ -389,11 +389,12 @@ namespace HapetPostPrepare
             // check that the var and param are in the local scope
             if ((decl is AstVarDecl || decl is AstParamDecl) && isNstLambdaStatic)
             {
-                var declScope = decl.Scope;
-                var nstScope = inInfo.NestedLambdaFunctionInference is AstFuncDecl fnc ? fnc.SubScope :
-                    (inInfo.NestedLambdaFunctionInference as AstLambdaExpr).SubScope;
-                var gg = nstScope.IsChildOf(declScope);
-                if (gg)
+                var nestStmt = inInfo.NestedLambdaFunctionInference is AstFuncDecl fnc ? fnc : inInfo.NestedLambdaFunctionInference;
+                // get parent function that contains the lambda or nested
+                var parentFunc = nestStmt.FindContainingFunction();
+
+                // if the var is in func and NOT in nested
+                if (!nestStmt.IsParentOf(decl) && parentFunc.IsParentOf(decl))
                 {
                     // error - cannot access this shite from static nested/lambda 
                     _compiler.MessageHandler.ReportMessage(_currentSourceFile, idExpr, [idExpr.Name], ErrorCode.Get(CTEN.StaticLambdaToParams));
