@@ -111,6 +111,11 @@ namespace HapetBackend.Llvm
         public unsafe static LLVMValueRef BuildRShift(LLVMBuilderRef builder, LLVMValueRef left, LLVMValueRef right, string op)
         {
             using var marshaledName = new MarshaledString(op.AsSpan());
+            return LLVM.BuildAShr(builder, left, right, marshaledName); // logical shift, not arithmetic
+        }
+        public unsafe static LLVMValueRef BuildURShift(LLVMBuilderRef builder, LLVMValueRef left, LLVMValueRef right, string op)
+        {
+            using var marshaledName = new MarshaledString(op.AsSpan());
             return LLVM.BuildLShr(builder, left, right, marshaledName); // logical shift, not arithmetic
         }
 
