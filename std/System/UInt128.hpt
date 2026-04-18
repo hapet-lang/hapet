@@ -634,7 +634,7 @@ public readonly struct UInt128
         // This gives us the carry to add to upper to compute the correct result
 
         ulong lower = left._lower + right._lower;
-        ulong carry = (lower < left._lower) ? (ulong)1UL : 0UL;
+        ulong carry = (lower < left._lower) ? 1UL : 0UL;
 
         ulong upper = left._upper + right._upper + carry;
         return new UInt128(upper, lower);
