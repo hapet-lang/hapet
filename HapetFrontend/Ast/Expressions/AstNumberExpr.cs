@@ -15,30 +15,54 @@ namespace HapetFrontend.Ast.Expressions
         {
             Data = data;
             OutValue = data;
-            this.Suffix = suffix;
+            Suffix = suffix ?? string.Empty;
 
             if (numberType == null)
             {
-                if (data.Type == Enums.NumberType.Float)
+                if (data.Type == Enums.NumberType.Float && Suffix.Contains('f'))
                 {
+                    OutType = HapetType.CurrentTypeContext.GetFloatType(4);
+                }
+                else if (data.Type == Enums.NumberType.Float || Suffix.Contains('d'))
+                { 
                     OutType = HapetType.CurrentTypeContext.GetFloatType(8); // default is double
                 }
                 else
                 {
-                    // check if signed
-                    if (data.IntValue < 0)
+                    // TODO: check suffix and overflow of real value
+                    if (Suffix.Contains('U') || Suffix.Contains('u'))
                     {
-                        if (data.IntValue >= int.MinValue)
-                            OutType = HapetType.CurrentTypeContext.GetIntType(4, true);
+                        if (Suffix.Contains('L') || Suffix.Contains('l'))
+                        {
+                            OutType = HapetType.CurrentTypeContext.GetIntType(8, false);
+                        }
                         else
-                            OutType = HapetType.CurrentTypeContext.GetIntType(8, true);
+                        {
+                            OutType = HapetType.CurrentTypeContext.GetIntType(4, false);
+                        }
                     }
+                    else if (Suffix.Contains('L') || Suffix.Contains('l'))
+                    {
+                        OutType = HapetType.CurrentTypeContext.GetIntType(8, true);
+                    }
+                    // no known suffix specified
                     else
                     {
-                        if (data.IntValue <= int.MaxValue)
-                            OutType = HapetType.CurrentTypeContext.GetIntType(4, true);
+                        // check if signed
+                        if (data.IntValue < 0)
+                        {
+                            if (data.IntValue >= int.MinValue)
+                                OutType = HapetType.CurrentTypeContext.GetIntType(4, true);
+                            else
+                                OutType = HapetType.CurrentTypeContext.GetIntType(8, true);
+                        }
                         else
-                            OutType = HapetType.CurrentTypeContext.GetIntType(8, true);
+                        {
+                            if (data.IntValue <= int.MaxValue)
+                                OutType = HapetType.CurrentTypeContext.GetIntType(4, true);
+                            else
+                                OutType = HapetType.CurrentTypeContext.GetIntType(8, true);
+                        }
                     }
                 }
             }
