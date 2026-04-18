@@ -28,13 +28,13 @@ namespace HapetFrontend.Parsing
             AstExpression returns = udecl.Name ?? udecl.Type;
             bool isVoidType = returns is AstNestedExpr nst && nst.RightPart is AstIdExpr idE && idE.Name == "void";
 
-            Token operatorTkn = null;
+            ILocation operatorTknLocation;
             // cast override
             if ((CheckToken(inInfo, TokenType.KwImplicit) || CheckToken(inInfo, TokenType.KwExplicit)))
             {
                 // just check
-                operatorTkn = NextToken(inInfo);
-                if (operatorTkn.Type == TokenType.KwImplicit)
+                var implExplToken = NextToken(inInfo);
+                if (implExplToken.Type == TokenType.KwImplicit)
                     overloadType = OverloadType.ImplicitCast;
                 else
                     overloadType = OverloadType.ExplicitCast;
@@ -42,7 +42,8 @@ namespace HapetFrontend.Parsing
                 // always 'cast' name to be able to store the operator in Scope 
                 op = "cast";
 
-                Consume(inInfo, TokenType.KwOperator, ErrMsg("'operator'", "after implicit/explicit cast overloading"));
+                var operatorTkn = Consume(inInfo, TokenType.KwOperator, ErrMsg("'operator'", "after implicit/explicit cast overloading"));
+                operatorTknLocation = new Location(implExplToken.Location.Beginning, operatorTkn?.Location.Ending);
 
                 // getting cast result type
                 var saved1 = inInfo.AllowMultiplyExpression;
@@ -67,7 +68,7 @@ namespace HapetFrontend.Parsing
             else if (CheckToken(inInfo, TokenType.KwOperator))
             {
                 // skip 'operator' word
-                operatorTkn = NextToken(inInfo);
+                operatorTknLocation = NextToken(inInfo).Location;
 
                 var opToken = NextToken(inInfo);
                 switch (opToken.Type)
@@ -137,7 +138,7 @@ namespace HapetFrontend.Parsing
             var endLocation = body == null ? possibleEndLocation : body.Ending;
             var overload = new AstOverloadDecl(paramDecls, returns, body, new AstIdExpr(""), "", new Location(udecl.Beginning, endLocation))
             {
-                OperatorTokenLocation = operatorTkn?.Location,
+                OperatorTokenLocation = operatorTknLocation,
             };
 
             // set up shite
