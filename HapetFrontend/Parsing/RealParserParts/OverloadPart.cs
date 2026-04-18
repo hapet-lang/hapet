@@ -12,7 +12,7 @@ namespace HapetFrontend.Parsing
     {
         private static readonly TokenType[] AllowedUnOps = { TokenType.Plus, TokenType.Minus, TokenType.Bang, TokenType.Tilda, TokenType.PlusPlus, TokenType.MinusMinus };
         private static readonly TokenType[] AllowedBinOps = { TokenType.Plus, TokenType.Minus, TokenType.ForwardSlash, TokenType.Asterisk, TokenType.Percent, 
-            TokenType.Ampersand, TokenType.VerticalSlash, TokenType.Hat, TokenType.GreaterGreater, TokenType.LessLess, TokenType.DoubleEqual, TokenType.NotEqual, 
+            TokenType.Ampersand, TokenType.VerticalSlash, TokenType.Hat, TokenType.GreaterGreater, TokenType.GreaterGreaterGreater, TokenType.LessLess, TokenType.DoubleEqual, TokenType.NotEqual, 
             TokenType.Less, TokenType.LessEqual, TokenType.Greater, TokenType.GreaterEqual, TokenType.LogicalAnd, TokenType.LogicalOr };
 
         internal AstOverloadDecl ParseOperatorOverride(ParserInInfo inInfo, ref ParserOutInfo outInfo, AstUnknownDecl udecl)
@@ -95,6 +95,7 @@ namespace HapetFrontend.Parsing
                     case TokenType.VerticalSlash: op = "|"; break;
                     case TokenType.Hat: op = "^"; break;
                     case TokenType.GreaterGreater: op = ">>"; break;
+                    case TokenType.GreaterGreaterGreater: op = ">>>"; break;
                     case TokenType.LessLess: op = "<<"; break;
 
                     case TokenType.PlusPlus: op = "++"; break;
@@ -104,11 +105,11 @@ namespace HapetFrontend.Parsing
                 // cringe handle >>
                 // https://github.com/dotnet/roslyn/blob/62646c22f6bd7b213e7e15dbc0dfadfe47a1e30f/src/Compilers/CSharp/Portable/Parser/Lexer.cs#L4118-L4122
                 // https://github.com/dotnet/roslyn/blob/62646c22f6bd7b213e7e15dbc0dfadfe47a1e30f/src/Compilers/CSharp/Portable/Parser/LanguageParser.cs#L11067-L11073
-                if (op == ">" && PeekToken(inInfo).Type == TokenType.Greater)
-                {
-                    NextToken(inInfo);
-                    op = ">>";
-                }
+                //if (op == ">" && PeekToken(inInfo).Type == TokenType.Greater)
+                //{
+                //    NextToken(inInfo);
+                //    op = ">>";
+                //}
 
                 var func = ParseFuncDeclaration(inInfo, ref outInfo, null, null, isVoidType);
                 paramDecls = func.Parameters;
