@@ -79,6 +79,11 @@ namespace HapetFrontend.Entities
         /// </summary>
         public List<ILocation> DirectiveNameLocations { get; } = new List<ILocation>();
 
+        /// <summary>
+        /// Used to handle #region and #endregion directives
+        /// </summary>
+        public int RegionCounter { get; set; } = 0;
+
         private Guid Guid { get; set; } // just for debug
 
         public ProgramFile(string name, StringBuilder text)
@@ -195,6 +200,19 @@ namespace HapetFrontend.Entities
                 currentLineNumber++;
             }
             return currentIndexSum;
+        }
+
+        public void ClearFile()
+        {
+            // clear all decls from namespace and lists
+            NamespaceScope.ClearAllSymbols();
+            Statements.Clear();
+            CommentLocations.Clear();
+            Defines.Clear();
+            DirectiveNameLocations.Clear();
+            NotCompiledLocations.Clear();
+            Usings.Clear();
+            RegionCounter = 0;
         }
     }
 }

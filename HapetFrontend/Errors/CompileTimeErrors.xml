@@ -482,6 +482,14 @@
         <Number>2063</Number>
         <Text>A 'try' block must be followed by a 'catch' or 'finally' block</Text>
     </Item>
+    <Item>
+        <Number>2064</Number>
+        <Text>Expected #endregion directive</Text>
+    </Item>
+    <Item>
+        <Number>2065</Number>
+        <Text>Expected #region directive</Text>
+    </Item>
 
 
     <!--Post prepare errors-->

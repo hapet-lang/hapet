@@ -77,13 +77,7 @@ namespace HapetLsp.Handlers
                     continue;
 
                 // clear all decls from namespace and lists
-                file.NamespaceScope.ClearAllSymbols();
-                file.Statements.Clear();
-                file.CommentLocations.Clear();
-                file.Defines.Clear();
-                file.DirectiveNameLocations.Clear();
-                file.NotCompiledLocations.Clear();
-                file.Usings.Clear();
+                file.ClearFile();
 
                 // clear diagnostic messages of file
                 (compiler.MessageHandler as LspMessageHandler).RemoveDiagnosticMessagesOfFile(file);
@@ -98,13 +92,7 @@ namespace HapetLsp.Handlers
                 if (file.IsImported)
                     continue;
                 // clear all decls from namespace and lists
-                file.NamespaceScope.ClearAllSymbols();
-                file.Statements.Clear();
-                file.CommentLocations.Clear();
-                file.Defines.Clear();
-                file.DirectiveNameLocations.Clear();
-                file.NotCompiledLocations.Clear();
-                file.Usings.Clear();
+                file.ClearFile();
 
                 // clear diagnostic messages of file
                 (compiler.MessageHandler as LspMessageHandler).RemoveDiagnosticMessagesOfFile(file);

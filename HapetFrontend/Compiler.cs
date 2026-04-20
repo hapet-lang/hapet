@@ -265,6 +265,18 @@ namespace HapetFrontend
             var nsScope = GetNamespaceScope(normalNamespace);
             file.NamespaceScope = nsScope;
             file.Namespace = normalNamespace;
+
+            // error if not correct #region/#endregion
+            if (file.RegionCounter > 0)
+            {
+                var endFileLocation = file.GetLocationFromSpan(file.Text.Length - 2, file.Text.Length - 1);
+                MessageHandler.ReportMessage(file, endFileLocation, [], ErrorCode.Get(CTEN.EndRegionExpected));
+            }
+            else if (file.RegionCounter < 0)
+            {
+                var startFileLocation = file.GetLocationFromSpan(0, 1);
+                MessageHandler.ReportMessage(file, startFileLocation, [], ErrorCode.Get(CTEN.RegionExpected));
+            }
         }
 
         private void HandleStatement(AstStatement s, ProgramFile file, ProgramFile currentlyParsingFile)
