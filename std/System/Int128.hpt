@@ -660,7 +660,7 @@ public readonly struct Int128
     {
         if ((right == -1) && (left._upper == 0x8000_0000_0000_0000) && (left._lower == 0))
         {
-            ThrowHelper.ThrowOverflowException();
+            throw new OverflowException();
         }
 
         // We simplify the logic here by just doing unsigned division on the

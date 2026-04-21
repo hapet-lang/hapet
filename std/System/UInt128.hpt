@@ -655,6 +655,20 @@ public readonly struct UInt128
     }
     */
 
+    /// <inheritdoc cref="IBinaryInteger{TSelf}.LeadingZeroCount(TSelf)" />
+    public static UInt128 LeadingZeroCount(UInt128 value)
+        => (uint)LeadingZeroCountAsInt32(value);
+
+    /// <summary>Computes the number of leading zero bits in this value.</summary>
+    private static inline int LeadingZeroCountAsInt32(UInt128 value)
+    {
+        if (value._upper == 0)
+        {
+            return 64 + BitOperations.LeadingZeroCount(value._lower);
+        }
+        return BitOperations.LeadingZeroCount(value._upper);
+    }
+
     /// <inheritdoc cref="IBinaryInteger{TSelf}.PopCount(TSelf)" />
     public static UInt128 PopCount(UInt128 value)
         => ulong.PopCount(value._lower) + ulong.PopCount(value._upper);
@@ -730,7 +744,7 @@ public readonly struct UInt128
         {
             if (right._lower == 0)
             {
-                ThrowHelper.ThrowDivideByZeroException();
+                throw new DivideByZeroException();
             }
 
             if (left._upper == 0)
@@ -800,17 +814,16 @@ public readonly struct UInt128
 
             uint* pLeft = (stackalloc uint[Size / sizeof(uint)]).Buffer;
 
-            Unsafe.WriteUnaligned(ref *(byte*)(pLeft + 0), (uint)(quotient._lower >> 00));
-            Unsafe.WriteUnaligned(ref *(byte*)(pLeft + 1), (uint)(quotient._lower >> 32));
-
-            Unsafe.WriteUnaligned(ref *(byte*)(pLeft + 2), (uint)(quotient._upper >> 00));
-            Unsafe.WriteUnaligned(ref *(byte*)(pLeft + 3), (uint)(quotient._upper >> 32));
+            *(pLeft + 0) = (uint)(quotient._lower >> 00);
+            *(pLeft + 1) = (uint)(quotient._lower >> 32);
+            *(pLeft + 2) = (uint)(quotient._upper >> 00);
+            *(pLeft + 3) = (uint)(quotient._upper >> 32);
 
             Span<uint> left = new Span<uint>(pLeft, (Size / sizeof(uint)) - (LeadingZeroCountAsInt32(quotient) / 32));
 
             // Repeat the same operation with the divisor
 
-            uint* pRight = stackalloc uint[Size / sizeof(uint)];
+            uint* pRight = (stackalloc uint[Size / sizeof(uint)]).Buffer;
 
             Unsafe.WriteUnaligned(ref *(byte*)(pRight + 0), (uint)(divisor._lower >> 00));
             Unsafe.WriteUnaligned(ref *(byte*)(pRight + 1), (uint)(divisor._lower >> 32));
@@ -1003,7 +1016,8 @@ public readonly struct UInt128
     /// <inheritdoc cref="IMultiplyOperators{TSelf, TOther, TResult}.op_Multiply(TSelf, TOther)" />
     public static UInt128 operator *(UInt128 left, UInt128 right)
     {
-        ulong upper = Math.BigMul(left._lower, right._lower, out ulong lower);
+        ulong lower;
+        ulong upper = Math.BigMul(left._lower, right._lower, out lower);
         upper += (left._upper * right._lower) + (left._lower * right._upper);
         return new UInt128(upper, lower);
     }
@@ -1078,7 +1092,7 @@ public readonly struct UInt128
             // and so the upper bits are just the lower shifted by the remaining
             // masked amount
 
-            ulong upper = value._lower << shiftAmount;
+            ulong upper = value._lower << (ulong)shiftAmount;
             return new UInt128(upper, 0);
         }
         else if (shiftAmount != 0)
@@ -1086,8 +1100,8 @@ public readonly struct UInt128
             // Otherwise we need to shift both upper and lower halves by the masked
             // amount and then or that with whatever bits were shifted "out" of lower
 
-            ulong lower = value._lower << shiftAmount;
-            ulong upper = (value._upper << shiftAmount) | (value._lower >> (64 - shiftAmount));
+            ulong lower = value._lower << (ulong)shiftAmount;
+            ulong upper = (value._upper << (ulong)shiftAmount) | (value._lower >> (ulong)(64 - shiftAmount));
 
             return new UInt128(upper, lower);
         }
@@ -1101,7 +1115,6 @@ public readonly struct UInt128
     public static UInt128 operator >>(UInt128 value, int shiftAmount) => value >>> shiftAmount;
 
     /// <inheritdoc cref="IShiftOperators{TSelf, TOther, TResult}.op_UnsignedRightShift(TSelf, TOther)" />
-    /* TODO:
     public static UInt128 operator >>>(UInt128 value, int shiftAmount)
     {
         // C# automatically masks the shift amount for UInt64 to be 0x3F. So we
@@ -1115,7 +1128,7 @@ public readonly struct UInt128
             // and so the lower bits are just the upper shifted by the remaining
             // masked amount
 
-            ulong lower = value._upper >> shiftAmount;
+            ulong lower = value._upper >> (ulong)shiftAmount;
             return new UInt128(0, lower);
         }
         else if (shiftAmount != 0)
@@ -1123,8 +1136,8 @@ public readonly struct UInt128
             // Otherwise we need to shift both upper and lower halves by the masked
             // amount and then or that with whatever bits were shifted "out" of upper
 
-            ulong lower = (value._lower >> shiftAmount) | (value._upper << (64 - shiftAmount));
-            ulong upper = value._upper >> shiftAmount;
+            ulong lower = (value._lower >> (ulong)shiftAmount) | (value._upper << (ulong)(64 - shiftAmount));
+            ulong upper = value._upper >> (ulong)shiftAmount;
 
             return new UInt128(upper, lower);
         }
@@ -1133,7 +1146,6 @@ public readonly struct UInt128
             return value;
         }
     }
-    */
 
     //
     // ISubtractionOperators

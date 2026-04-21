@@ -1,0 +1,23 @@
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+// Some modifications were made for hapet-lang compatibility.
+
+using System.ComponentModel;
+using System.Runtime.CompilerServices;
+using System.Runtime.Serialization;
+
+/// <summary>
+/// The exception that is thrown when there is an attempt to divide an integral or <see cref="decimal"/> value by zero.
+/// </summary>
+public class DivideByZeroException : ArithmeticException
+{
+    public DivideByZeroException()
+        : base(SR.Arg_DivideByZero)
+    {
+    }
+
+    public DivideByZeroException(string message)
+        : base(message)
+    {
+    }
+}
