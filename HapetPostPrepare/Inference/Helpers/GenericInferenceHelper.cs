@@ -160,8 +160,14 @@ namespace HapetPostPrepare
                                     decl = cls.Declaration;
                                 else if (type.OutType is GenericType gen)
                                     decl = gen.Declaration;
-                                else
-                                    decl = (type.OutType as StructType).Declaration;
+                                else if (type.OutType is StructType str)
+                                    decl = str.Declaration;
+                                else 
+                                {
+                                    // unknown shite
+                                    allow = false;
+                                    break;
+                                }
                                 allow = IsInheritedFromWithInference(decl, c.Expr.OutType);
                             }
                             constrainErrorName = HapetType.AsString(c.Expr.OutType);
@@ -185,8 +191,14 @@ namespace HapetPostPrepare
                                 decl = cls.Declaration;
                             else if (type.OutType is GenericType gen)
                                 decl = gen.Declaration;
+                            else if (type.OutType is StructType str)
+                                decl = str.Declaration;
                             else
-                                decl = (type.OutType as StructType).Declaration;
+                            {
+                                // unknown shite
+                                allow = false;
+                                break;
+                            }
 
                             // getting all ctors of the class/struct
                             foreach (var ctor in decl.GetDeclarations().Where(x => x is AstFuncDecl f && f.ClassFunctionType == ClassFunctionType.Ctor))

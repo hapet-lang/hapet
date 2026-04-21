@@ -509,6 +509,10 @@ namespace HapetLsp.Colorizers
 
         private void ColorizeUnaryExpr(AstUnaryExpr expr)
         {
+            // wrong parsing
+            if (expr.SubExpr == null)
+                return;
+
             ColorizeExpr(expr.SubExpr);
         }
 
@@ -983,6 +987,9 @@ namespace HapetLsp.Colorizers
 
         private void AddSemanticToken(AstStatement stmt, ILocation location, SemanticTokenType type, SemanticTokenModifier modifier)
         {
+            if (location == null)
+                return;
+
             CurrentSemanticTokens.Add((new SemanticToken(location.Beginning.Line - 1, location.Beginning.Column - 1,
                     location.Ending.End - location.Beginning.Index, type, modifier), stmt));
         }
