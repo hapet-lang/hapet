@@ -11,7 +11,8 @@ namespace HapetFrontend.Parsing
 {
     public partial class Parser
     {
-        private AstFuncDecl ParseFuncDeclaration(ParserInInfo inInfo, ref ParserOutInfo outInfo, List<AstParamDecl> parameters, Location paramsLocation, bool isReturnVoid)
+        private AstFuncDecl ParseFuncDeclaration(ParserInInfo inInfo, ref ParserOutInfo outInfo, List<AstParamDecl> parameters, 
+            Location paramsLocation, bool isReturnVoid, AstFuncDecl parentFuncOverride = null)
         {
             if (parameters == null)
             {
@@ -67,7 +68,7 @@ namespace HapetFrontend.Parsing
 
             // allow nested func decls
             inInfo.AllowNestedFunc = true;
-            inInfo.ParentFuncDecl = theFunc;
+            inInfo.ParentFuncDecl = parentFuncOverride ?? theFunc;
             if (CheckToken(inInfo, TokenType.Semicolon))
                 NextToken(inInfo); // do nothing
             else if (CheckToken(inInfo, TokenType.Arrow))

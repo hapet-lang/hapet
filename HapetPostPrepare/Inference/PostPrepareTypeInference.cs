@@ -81,11 +81,24 @@ namespace HapetPostPrepare
         {
             /// WARN: attributes are inferrenced in <see cref="PostPrepareMetadataAttributes"/>
 
-            var parent = funcDecl.ContainingParent;
-            if (parent?.IsNestedDecl ?? false)
-                _currentParentStack.AddParent(parent.ParentDecl);
-            if (parent != null)
-                _currentParentStack.AddParent(parent);
+            if (funcDecl.IsNestedDecl)
+            {
+                var parentParent = funcDecl.ParentDecl?.ContainingParent;
+                if (parentParent?.IsNestedDecl ?? false)
+                    _currentParentStack.AddParent(parentParent.ParentDecl);
+                if (parentParent != null)
+                    _currentParentStack.AddParent(parentParent);
+                if (funcDecl.ParentDecl != null)
+                    _currentParentStack.AddParent(funcDecl.ParentDecl);
+            }
+            else
+            {
+                var parent = funcDecl.ContainingParent;
+                if (parent?.IsNestedDecl ?? false)
+                    _currentParentStack.AddParent(parent.ParentDecl);
+                if (parent != null)
+                    _currentParentStack.AddParent(parent);
+            }
 
             _currentParentStack.AddParent(funcDecl);
 
@@ -275,10 +288,24 @@ namespace HapetPostPrepare
             {
                 _currentParentStack.RemoveParent();
 
-                if (parent?.IsNestedDecl ?? false)
-                    _currentParentStack.RemoveParent();
-                if (parent != null)
-                    _currentParentStack.RemoveParent();
+                if (funcDecl.IsNestedDecl)
+                {
+                    var parentParent = funcDecl.ParentDecl?.ContainingParent;
+                    if (parentParent?.IsNestedDecl ?? false)
+                        _currentParentStack.RemoveParent();
+                    if (parentParent != null)
+                        _currentParentStack.RemoveParent();
+                    if (funcDecl.ParentDecl != null)
+                        _currentParentStack.RemoveParent();
+                }
+                else
+                {
+                    var parent = funcDecl.ContainingParent;
+                    if (parent?.IsNestedDecl ?? false)
+                        _currentParentStack.RemoveParent();
+                    if (parent != null)
+                        _currentParentStack.RemoveParent();
+                }
             }
         }
 

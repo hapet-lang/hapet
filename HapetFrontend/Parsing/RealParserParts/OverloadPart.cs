@@ -28,6 +28,9 @@ namespace HapetFrontend.Parsing
             AstExpression returns = udecl.Name ?? udecl.Type;
             bool isVoidType = returns is AstNestedExpr nst && nst.RightPart is AstIdExpr idE && idE.Name == "void";
 
+            // null inited decl to normally handle nested declarations inside it
+            var overload = new AstOverloadDecl(null, null, null, null);
+
             ILocation operatorTknLocation;
             // cast override
             if ((CheckToken(inInfo, TokenType.KwImplicit) || CheckToken(inInfo, TokenType.KwExplicit)))
@@ -54,7 +57,7 @@ namespace HapetFrontend.Parsing
                 inInfo.AllowMultiplyExpression = saved1;
                 inInfo.AllowCallExpr = saved2;
 
-                var func = ParseFuncDeclaration(inInfo, ref outInfo, null, null, isVoidType);
+                var func = ParseFuncDeclaration(inInfo, ref outInfo, null, null, isVoidType, parentFuncOverride: overload);
                 paramDecls = func.Parameters;
                 body = func.Body;
                 possibleEndLocation = func.Location.Ending;
@@ -102,16 +105,21 @@ namespace HapetFrontend.Parsing
                     case TokenType.MinusMinus: op = "--"; break;
                 }
 
-                // cringe handle >>
+                // cringe handle >> and >>>
                 // https://github.com/dotnet/roslyn/blob/62646c22f6bd7b213e7e15dbc0dfadfe47a1e30f/src/Compilers/CSharp/Portable/Parser/Lexer.cs#L4118-L4122
                 // https://github.com/dotnet/roslyn/blob/62646c22f6bd7b213e7e15dbc0dfadfe47a1e30f/src/Compilers/CSharp/Portable/Parser/LanguageParser.cs#L11067-L11073
-                //if (op == ">" && PeekToken(inInfo).Type == TokenType.Greater)
-                //{
-                //    NextToken(inInfo);
-                //    op = ">>";
-                //}
+                if (op == ">" && PeekToken(inInfo).Type == TokenType.Greater)
+                {
+                    NextToken(inInfo);
+                    op = ">>";
+                }
+                if (op == ">>" && PeekToken(inInfo).Type == TokenType.Greater)
+                {
+                    NextToken(inInfo);
+                    op = ">>>";
+                }
 
-                var func = ParseFuncDeclaration(inInfo, ref outInfo, null, null, isVoidType);
+                var func = ParseFuncDeclaration(inInfo, ref outInfo, null, null, isVoidType, parentFuncOverride: overload);
                 paramDecls = func.Parameters;
                 body = func.Body;
                 possibleEndLocation = func.Location.Ending;
@@ -137,10 +145,13 @@ namespace HapetFrontend.Parsing
             }
 
             var endLocation = body == null ? possibleEndLocation : body.Ending;
-            var overload = new AstOverloadDecl(paramDecls, returns, body, new AstIdExpr(""), "", new Location(udecl.Beginning, endLocation))
-            {
-                OperatorTokenLocation = operatorTknLocation,
-            };
+            overload.Parameters = paramDecls;
+            overload.Returns = returns;
+            overload.Body = body;
+            overload.Name = new AstIdExpr("", operatorTknLocation);
+            overload.Documentation = "";
+            overload.Location = new Location(udecl.Beginning, endLocation);
+            overload.OperatorTokenLocation = operatorTknLocation;
 
             // set up shite
             overload.OverloadType = overloadType;
