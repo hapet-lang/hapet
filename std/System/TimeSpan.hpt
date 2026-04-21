@@ -507,7 +507,7 @@ public readonly struct TimeSpan
                                     + Math.BigMul(milliseconds, MicrosecondsPerMillisecond)
                                     + microseconds;
 
-        return FromMicroseconds(totalMicroseconds);
+        return FromMicroseconds((Int128)totalMicroseconds);
     }
 
     /// <summary>
@@ -715,7 +715,7 @@ public readonly struct TimeSpan
     public static TimeSpan Parse(string s)
     {
         /* Constructs a TimeSpan from a string.  Leading and trailing white space characters are allowed. */
-        ArgumentNullException.ThrowIfNull(s, ExceptionArgument.input);
+        ArgumentNullException.ThrowIfNull(s);
         return TimeSpanParse.Parse(s, null);
     }
     public static TimeSpan Parse(string input, IFormatProvider formatProvider)
@@ -726,7 +726,7 @@ public readonly struct TimeSpan
         }
         return TimeSpanParse.Parse(input, formatProvider);
     }
-    public static TimeSpan Parse(ReadOnlySpan<char> input, IFormatProvider? formatProvider = null) => TimeSpanParse.Parse(input, formatProvider);
+    public static TimeSpan Parse(ReadOnlySpan<char> input, IFormatProvider formatProvider = null) => TimeSpanParse.Parse(input, formatProvider);
     public static TimeSpan ParseExact(string input, string format, IFormatProvider formatProvider)
     {
         ArgumentNullException.ThrowIfNull(nameof(input));
@@ -769,7 +769,7 @@ public readonly struct TimeSpan
     }
     public static bool TryParse(string s, out TimeSpan result)
     {
-        if (s is null)
+        if (s == null)
         {
             result = default;
             return false;
@@ -780,7 +780,7 @@ public readonly struct TimeSpan
 
     public static bool TryParse(string input, IFormatProvider formatProvider, out TimeSpan result)
     {
-        if (input is null)
+        if (input == null)
         {
             result = default;
             return false;

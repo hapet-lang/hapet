@@ -85,12 +85,12 @@ public readonly struct UInt128
     /// <inheritdoc cref="object.ToString()" />
     public override string ToString()
     {
-        return Number.UInt128ToDecStr(this);
+        return System.Text.Formatting.Number.Format(this, "");
     }
 
     public string ToString(string format)
     {
-        return Number.FormatUInt128(this, format, null);
+        return System.Text.Formatting.Number.Format(this, format);
     }
 
     //
@@ -669,10 +669,6 @@ public readonly struct UInt128
         return BitOperations.LeadingZeroCount(value._upper);
     }
 
-    /// <inheritdoc cref="IBinaryInteger{TSelf}.PopCount(TSelf)" />
-    public static UInt128 PopCount(UInt128 value)
-        => ulong.PopCount(value._lower) + ulong.PopCount(value._upper);
-
     //
     // IBitwiseOperators
     //
@@ -761,20 +757,20 @@ public readonly struct UInt128
 
         return DivideSlow(left, right);
 
-        static uint AddDivisor(Span<uint> left, ReadOnlySpan<uint> right)
+        static uint AddDivisor(uint* left, int leftLength, uint* right, int rightLength)
         {
-            Debug.Assert(left.Length >= right.Length);
+            // TODO:
+            // Debug.Assert(left.Length >= right.Length);
 
             // Repairs the dividend, if the last subtract was too much
 
             ulong carry = 0UL;
 
-            for (int i = 0; i < right.Length; i++)
+            for (int i = 0; i < rightLength; i++)
             {
-                ref uint leftElement = ref left[i];
-                ulong digit = (leftElement + carry) + right[i];
+                ulong digit = (left[i] + carry) + right[i];
 
-                leftElement = unchecked((uint)digit);
+                left[i] = unchecked((uint)digit);
                 carry = digit >> 32;
             }
 
@@ -819,35 +815,34 @@ public readonly struct UInt128
             *(pLeft + 2) = (uint)(quotient._upper >> 00);
             *(pLeft + 3) = (uint)(quotient._upper >> 32);
 
-            Span<uint> left = new Span<uint>(pLeft, (Size / sizeof(uint)) - (LeadingZeroCountAsInt32(quotient) / 32));
+            var leftLength = (Size / sizeof(uint)) - (LeadingZeroCountAsInt32(quotient) / 32);
 
             // Repeat the same operation with the divisor
 
             uint* pRight = (stackalloc uint[Size / sizeof(uint)]).Buffer;
 
-            Unsafe.WriteUnaligned(ref *(byte*)(pRight + 0), (uint)(divisor._lower >> 00));
-            Unsafe.WriteUnaligned(ref *(byte*)(pRight + 1), (uint)(divisor._lower >> 32));
+            *(pRight + 0) = (uint)(divisor._lower >> 00);
+            *(pRight + 1) = (uint)(divisor._lower >> 32);
+            *(pRight + 2) = (uint)(divisor._upper >> 00);
+            *(pRight + 3) = (uint)(divisor._upper >> 32);
 
-            Unsafe.WriteUnaligned(ref *(byte*)(pRight + 2), (uint)(divisor._upper >> 00));
-            Unsafe.WriteUnaligned(ref *(byte*)(pRight + 3), (uint)(divisor._upper >> 32));
+            var rightLength = (Size / sizeof(uint)) - (LeadingZeroCountAsInt32(divisor) / 32);
 
-            Span<uint> right = new Span<uint>(pRight, (Size / sizeof(uint)) - (LeadingZeroCountAsInt32(divisor) / 32));
+            uint* rawBits = (stackalloc uint[Size / sizeof(uint)]).Buffer;
+            var bitsLength = leftLength - rightLength + 1;
 
-            Span<uint> rawBits = stackalloc uint[Size / sizeof(uint)];
-            rawBits.Clear();
-            Span<uint> bits = rawBits.Slice(0, left.Length - right.Length + 1);
-
-            Debug.Assert(left.Length >= 1);
-            Debug.Assert(right.Length >= 1);
-            Debug.Assert(left.Length >= right.Length);
+            // TODO:
+            // Debug.Assert(left.Length >= 1);
+            // Debug.Assert(right.Length >= 1);
+            // Debug.Assert(left.Length >= right.Length);
 
             // Executes the "grammar-school" algorithm for computing q = a / b.
             // Before calculating q_i, we get more bits into the highest bit
             // block of the divisor. Thus, guessing digits of the quotient
             // will be more precise. Additionally we'll get r = a % b.
 
-            uint divHi = right[^1];
-            uint divLo = right.Length > 1 ? right[^2] : 0;
+            uint divHi = pRight[rightLength - 1];
+            uint divLo = rightLength > 1 ? pRight[rightLength - 2] : 0;
 
             // We measure the leading zeros of the divisor
             int shift = BitOperations.LeadingZeroCount(divHi);
@@ -856,29 +851,29 @@ public readonly struct UInt128
             // And, we make sure the most significant bit is set
             if (shift > 0)
             {
-                uint divNx = right.Length > 2 ? right[^3] : 0;
-
-                divHi = (divHi << shift) | (divLo >> backShift);
-                divLo = (divLo << shift) | (divNx >> backShift);
+                uint divNx = rightLength > 2 ? pRight[rightLength - 3] : 0;
+    
+                divHi = (divHi << (uint)shift) | (divLo >> (uint)backShift);
+                divLo = (divLo << (uint)shift) | (divNx >> (uint)backShift);
             }
 
             // Then, we divide all of the bits as we would do it using
             // pen and paper: guessing the next digit, subtracting, ...
-            for (int i = left.Length; i >= right.Length; i--)
+            for (int i = leftLength; i >= rightLength; i--)
             {
-                int n = i - right.Length;
-                uint t = ((uint)(i) < (uint)(left.Length)) ? left[i] : 0;
+                int n = i - rightLength;
+                uint t = ((uint)(i) < (uint)(leftLength)) ? pLeft[i] : 0;
 
-                ulong valHi = ((ulong)(t) << 32) | left[i - 1];
-                uint valLo = (i > 1) ? left[i - 2] : 0;
+                ulong valHi = ((ulong)(t) << 32) | pLeft[i - 1];
+                uint valLo = (i > 1) ? pLeft[i - 2] : 0;
 
                 // We shifted the divisor, we shift the dividend too
                 if (shift > 0)
                 {
-                    uint valNx = i > 2 ? left[i - 3] : 0;
+                    uint valNx = i > 2 ? pLeft[i - 3] : 0;
 
-                    valHi = (valHi << shift) | (valLo >> backShift);
-                    valLo = (valLo << shift) | (valNx >> backShift);
+                    valHi = (valHi << (uint)shift) | (valLo >> (uint)backShift);
+                    valLo = (valLo << (uint)shift) | (valNx >> (uint)backShift);
                 }
 
                 // First guess for the current digit of the quotient,
@@ -899,29 +894,31 @@ public readonly struct UInt128
                 if (digit > 0)
                 {
                     // Now it's time to subtract our current quotient
-                    uint carry = SubtractDivisor(left.Slice(n), right, digit);
+                    uint carry = SubtractDivisor(pLeft + n, leftLength - n, pRight, rightLength, digit);
 
                     if (carry != t)
                     {
-                        Debug.Assert(carry == (t + 1));
+                        // TODO:
+                        // Debug.Assert(carry == (t + 1));
 
                         // Our guess was still exactly one too high
-                        carry = AddDivisor(left.Slice(n), right);
+                        carry = AddDivisor(pLeft + n, leftLength - n, pRight, rightLength);
 
                         --digit;
-                        Debug.Assert(carry == 1);
+                        // TODO:
+                        // Debug.Assert(carry == 1);
                     }
                 }
 
                 // We have the digit!
-                if ((uint)(n) < (uint)(bits.Length))
+                if ((uint)(n) < (uint)(bitsLength))
                 {
-                    bits[n] = (uint)(digit);
+                    rawBits[n] = (uint)(digit);
                 }
 
-                if ((uint)(i) < (uint)(left.Length))
+                if ((uint)(i) < (uint)(leftLength))
                 {
-                    left[i] = 0;
+                    pLeft[i] = 0;
                 }
             }
 
@@ -931,30 +928,29 @@ public readonly struct UInt128
             );
         }
 
-        static uint SubtractDivisor(Span<uint> left, ReadOnlySpan<uint> right, ulong q)
+        static uint SubtractDivisor(uint* left, int leftLength, uint* right, int rightLength, ulong q)
         {
-            Debug.Assert(left.Length >= right.Length);
-            Debug.Assert(q <= 0xFFFFFFFF);
+            // TODO:
+            //Debug.Assert(left.Length >= rightLength);
+            //Debug.Assert(q <= 0xFFFFFFFF);
 
             // Combines a subtract and a multiply operation, which is naturally
             // more efficient than multiplying and then subtracting...
 
             ulong carry = 0UL;
 
-            for (int i = 0; i < right.Length; i++)
+            for (int i = 0; i < rightLength; i++)
             {
                 carry += right[i] * q;
 
                 uint digit = (uint)(carry);
-                carry >>= 32;
+                carry = carry >> 32;
 
-                ref uint leftElement = ref left[i];
-
-                if (leftElement < digit)
+                if (left[i] < digit)
                 {
                     ++carry;
                 }
-                leftElement -= digit;
+                left[i] = left[i] - digit;
             }
 
             return (uint)(carry);

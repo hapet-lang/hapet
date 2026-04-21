@@ -6,16 +6,49 @@ using System.Runtime.InteropServices;
 
 public static class Math
 {
-    public static int Min(int val1, int val2)
+    public static inline int Min(int val1, int val2)
     {
         return (val1 <= val2) ? val1 : val2;
     }
 
-    public static double Truncate(double d)
+    public static inline double Truncate(double d)
     {
         Marshal.ModF(d, &d);
         return d;
     }
+
+    /// <summary>Produces the full product of two unsigned 32-bit numbers.</summary>
+    /// <param name="a">The first number to multiply.</param>
+    /// <param name="b">The second number to multiply.</param>
+    /// <returns>The number containing the product of the specified numbers.</returns>
+    public static inline ulong BigMul(uint a, uint b)
+    {
+        return ((ulong)a) * b;
+    }
+
+    /// <summary>Produces the full product of two 32-bit numbers.</summary>
+    /// <param name="a">The first number to multiply.</param>
+    /// <param name="b">The second number to multiply.</param>
+    /// <returns>The number containing the product of the specified numbers.</returns>
+    public static inline long BigMul(int a, int b)
+    {
+        return ((long)a) * b;
+    }
+
+
+    /// <summary>
+    /// Perform multiplication between 64 and 32 bit numbers, returning lower 64 bits in <paramref name="low"/>
+    /// </summary>
+    /// <returns>hi bits of the result</returns>
+    /// <remarks>REMOVE once BigMul(ulong, ulong) is treated as intrinsics and optimizes 32 by 64 multiplications</remarks>
+    internal static inline ulong BigMul(ulong a, uint b, out ulong low)
+    {
+        return Math.BigMul((ulong)a, (ulong)b, out low);
+    }
+
+    /// <inheritdoc cref="BigMul(ulong, uint, out ulong)"/>
+    internal static inline ulong BigMul(uint a, ulong b, out ulong low)
+        => BigMul(b, a, out low);
 
     /// <summary>Produces the full product of two unsigned 64-bit numbers.</summary>
     /// <param name="a">The first number to multiply.</param>
@@ -50,6 +83,19 @@ public static class Math
         }
     }
 
+    /// <summary>Produces the full product of two 64-bit numbers.</summary>
+    /// <param name="a">The first number to multiply.</param>
+    /// <param name="b">The second number to multiply.</param>
+    /// <param name="low">The low 64-bit of the product of the specified numbers.</param>
+    /// <returns>The high 64-bit of the product of the specified numbers.</returns>
+    public static inline long BigMul(long a, long b, out long low)
+    {
+        ulong ulow;
+        ulong high = BigMul((ulong)a, (ulong)b, out ulow);
+        low = (long)ulow;
+        return (long)high - ((a >> 63) & b) - ((b >> 63) & a);
+    }
+
     /// <summary>Produces the full product of two unsigned 64-bit numbers.</summary>
     /// <param name="a">The first number to multiply.</param>
     /// <param name="b">The second number to multiply.</param>
@@ -59,5 +105,16 @@ public static class Math
         ulong low;
         ulong high = BigMul(a, b, out low);
         return new UInt128(high, low);
+    }
+
+    /// <summary>Produces the full product of two 64-bit numbers.</summary>
+    /// <param name="a">The first number to multiply.</param>
+    /// <param name="b">The second number to multiply.</param>
+    /// <returns>The full product of the specified numbers.</returns>
+    public static inline Int128 BigMul(long a, long b)
+    {
+        long low;
+        long high = BigMul(a, b, out low);
+        return new Int128((ulong)high, (ulong)low);
     }
 }

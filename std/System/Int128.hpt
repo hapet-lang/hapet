@@ -85,12 +85,12 @@ public readonly struct Int128
     /// <inheritdoc cref="object.ToString()" />
     public override string ToString()
     {
-        return Number.Int128ToDecStr(this);
+        return System.Text.Formatting.Number.Format(this, "");
     }
 
     public string ToString(string format)
     {
-        return Number.FormatInt128(this, format, null);
+        return System.Text.Formatting.Number.Format(this, format);
     }
 
     //
