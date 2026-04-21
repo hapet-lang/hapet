@@ -588,6 +588,10 @@ namespace HapetPostPrepare
 
         private void PostPrepareUnaryExprInference(AstUnaryExpr unExpr, InInfo inInfo, ref OutInfo outInfo)
         {
+            // on wrong parsing just skip
+            if (unExpr.SubExpr == null)
+                return;
+
             // TODO: check for the right size for an existance value (compiletime evaluated) and do some shite (set unExpr OutValue)
             PostPrepareExprInference(unExpr.SubExpr as AstExpression, inInfo, ref outInfo);
 

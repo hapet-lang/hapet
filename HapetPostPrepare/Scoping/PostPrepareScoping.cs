@@ -665,9 +665,11 @@ namespace HapetPostPrepare
 
         private void PostPrepareUnaryExprScoping(AstUnaryExpr unExpr)
         {
-            SetScopeAndParent(unExpr.SubExpr, unExpr);
-            
-            PostPrepareExprScoping(unExpr.SubExpr); 
+            if (unExpr.SubExpr != null)
+            {
+                SetScopeAndParent(unExpr.SubExpr, unExpr);
+                PostPrepareExprScoping(unExpr.SubExpr);
+            }
         }
 
         private void PostPrepareBinaryExprScoping(AstBinaryExpr binExpr)
