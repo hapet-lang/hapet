@@ -263,7 +263,8 @@ namespace HapetFrontend.Parsing
         {
             return ParseBinaryLeftAssociativeExpression(ParseAddSubExpression, inInfo, ref outInfo,
                 (TokenType.LessLess, "<<"),
-                (TokenType.GreaterGreater, ">>"));
+                (TokenType.GreaterGreater, ">>"),
+                (TokenType.GreaterGreaterGreater, ">>>"));
         }
 
         [DebuggerStepThrough]
@@ -328,13 +329,25 @@ namespace HapetFrontend.Parsing
                 if (!savedLookAhead)
                     UpdateLookAheadLocation();
                 SaveLookAheadLocation();
+                // some cringe to create >> and >>>
                 var t1 = PeekToken(inInfo);
                 NextToken(inInfo);
                 var t2 = PeekToken(inInfo);
                 if (t1.Type == TokenType.Greater && t2.Type == TokenType.Greater)
                 {
-                    next.Type = TokenType.GreaterGreater;
-                    next.Location.End = t2.Location.End;
+                    NextToken(inInfo);
+                    var t3 = PeekToken(inInfo);
+                    if (t3.Type == TokenType.Greater)
+                    {
+                        NextToken(inInfo);
+                        next.Type = TokenType.GreaterGreaterGreater;
+                        next.Location.End = t3.Location.End;
+                    }
+                    else
+                    {
+                        next.Type = TokenType.GreaterGreater;
+                        next.Location.End = t2.Location.End;
+                    }
                 }
                 RestoreLookAheadLocation();
                 inInfo.IsLookAheadParsing = savedLookAhead;
@@ -347,7 +360,15 @@ namespace HapetFrontend.Parsing
 
                 // make one more token eat because of pseudo >>
                 if (next.Type == TokenType.GreaterGreater)
+                {
                     NextToken(inInfo);
+                }
+                // make two more tokens eat because of pseudo >>>
+                if (next.Type == TokenType.GreaterGreaterGreater)
+                {
+                    NextToken(inInfo);
+                    NextToken(inInfo);
+                }
 
                 NextToken(inInfo);
                 SkipNewlines(inInfo);

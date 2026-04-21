@@ -34,6 +34,9 @@ namespace HapetFrontend.Parsing
 
                 case "error": type = DirectiveType.Error; break;
                 case "warning": type = DirectiveType.Warning; break;
+
+                case "region": type = DirectiveType.Region; break;
+                case "endregion": type = DirectiveType.EndRegion; break;
             }
 
             var saved = inInfo.CurrentlyParsingDirective;
@@ -79,7 +82,7 @@ namespace HapetFrontend.Parsing
                         {
                             // error here
                             ReportMessage(expr.Location, [], ErrorCode.Get(CTEN.CommonIdentifierExpected));
-                            toReturn = new AstEmptyStmt();
+                            toReturn = new AstEmptyStmt(expr.Location);
                             break;
                         }
 
@@ -102,6 +105,15 @@ namespace HapetFrontend.Parsing
                         Consume(inInfo, TokenType.Semicolon, ErrMsg(";", "at the end of the statement"));
                         break;
                     }
+                case DirectiveType.Region:
+                case DirectiveType.EndRegion:
+                    {
+                        // just skip the name. we don't need it probably
+                        SkipTokensUntilNewlines(inInfo);
+                        toReturn = new AstDirectiveStmt(null, type, new Location(tkn.Location, tkn.Location.Ending));
+                        CurrentSourceFile.RegionCounter += type == DirectiveType.Region ? 1 : -1;
+                        break;
+                    }
             }
 
             inInfo.CurrentlyParsingDirective = saved;
@@ -111,7 +123,7 @@ namespace HapetFrontend.Parsing
 
             // error here
             ReportMessage(tkn.Location, [], ErrorCode.Get(CTEN.UnexpectedDirective));
-            return new AstEmptyStmt();
+            return new AstEmptyStmt(tkn.Location);
         }
 
         internal List<AstStatement> HandleDirective(AstDirectiveStmt directive, ProgramFile file, ParserInInfo inInfo, ref ParserOutInfo outInfo)

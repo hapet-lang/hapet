@@ -17,5 +17,8 @@
 
         Error = 10,
         Warning = 11,
+
+        Region = 12,
+        EndRegion = 13,
     }
 }

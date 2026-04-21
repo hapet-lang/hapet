@@ -247,6 +247,8 @@
                     return "<<";
                 case TokenType.GreaterGreater:
                     return ">>";
+                case TokenType.GreaterGreaterGreater:
+                    return ">>>";
 
                 case TokenType.AddEq:
                     return "+=";

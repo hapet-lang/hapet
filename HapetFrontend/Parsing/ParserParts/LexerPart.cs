@@ -51,6 +51,26 @@ namespace HapetFrontend.Parsing
 
         [SkipInStackFrame]
         [DebuggerStepThrough]
+        public void SkipTokensUntilNewlines(ParserInInfo inInfo)
+        {
+            while (true)
+            {
+                var tok = PeekToken(inInfo);
+
+                switch (tok.Type)
+                {
+                    case TokenType.EOF:
+                    case TokenType.NewLine:
+                        return;
+                    default:
+                        NextToken(inInfo);
+                        continue;
+                }
+            }
+        }
+
+        [SkipInStackFrame]
+        [DebuggerStepThrough]
         public void UpdateLookAheadLocation()
         {
             _lexer.UpdateLookAheadLocation();

@@ -62,6 +62,7 @@ namespace HapetFrontend.Parsing
 
         LessLess,        // <<
         GreaterGreater,  // >>
+        GreaterGreaterGreater,  // >>>
 
         AddEq,           // +=
         SubEq,           // -=
