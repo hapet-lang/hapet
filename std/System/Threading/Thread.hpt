@@ -6,6 +6,33 @@ using System;
 
 public partial class Thread
 {
+    private uintptr _threadHandle;
+    private bool _isDead;
+
+    /// <summary>
+    /// Return the thread state as a consistent set of bits.  This is more
+    /// general then IsAlive or IsBackground.
+    /// </summary>
+    public ThreadState ThreadState
+    {
+        get
+        {
+            if (_isDead)
+            {
+                return System.Threading.ThreadState.Stopped;
+            }
+
+            var state = (System.Threading.ThreadState.ThreadState)GetThreadState();
+            // GC.KeepAlive(this); TODO: do i need it?
+            return state;
+        }
+    }
+
+    private int GetThreadState()
+    {
+        return 0; // TODO:
+    }
+
     private StartHelper _startHelper;
 
     // State associated with starting new thread
@@ -75,7 +102,7 @@ public partial class Thread
     public bool Join(int millisecondsTimeout)
     {
         ArgumentOutOfRangeException.ThrowIfLessThan(millisecondsTimeout, Timeout.Infinite);
-        if ((ThreadState & ThreadState.Unstarted) != 0)
+        if ((int)(ThreadState & ThreadState.Unstarted) != 0)
         {
             throw new ThreadStateException(SR.ThreadState_NotStarted);
         }
