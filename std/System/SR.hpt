@@ -39,13 +39,21 @@ internal static class SR
     internal const string Arg_MustBeUInt128 = "Object must be of type UInt128.";
     internal const string Arg_MustBePtrDiff = "Object must be of type PtrDiff.";
     internal const string Arg_MustBeUIntPtr = "Object must be of type UIntPtr.";
+    internal const string Arg_MustBeTimeSpan = "Object must be of type TimeSpan.";
 
     internal const string Arg_BogusIComparer = "Unable to sort because the IComparer.Compare() method returns inconsistent results. Either a value does not compare equal to itself, or one value repeatedly compared to another value yields different results.";
     internal const string Arg_InvalidConsoleColor = "The ConsoleColor enum value was not defined on that enum. Please use a defined color from the enum.";
     internal const string Arg_OverflowException = "Arithmetic operation resulted in an overflow.";
     internal const string Arg_DivideByZero = "Attempted to divide by zero.";
+    internal const string Argument_InvalidTimeSpanStyles = "An undefined TimeSpanStyles value is being used.";
 
     internal const string Arg_DllNotFoundException = "Dll was not found.";
+    internal const string Arg_CannotBeNaN = "TimeSpan does not accept floating point Not-a-Number values.";
+
+    // overflow
+    internal const string Overflow_TimeSpanTooLong = "TimeSpan overflowed because the duration is too long.";
+    internal const string Overflow_Duration = "The duration cannot be returned for TimeSpan.MinValue because the absolute value of TimeSpan.MinValue exceeds the value of TimeSpan.MaxValue.";
+    internal const string Overflow_NegateTwosCompNum = "Negating the minimum value of a twos complement number is invalid.";
 
     // not
     internal const string NotSupported_ReadOnlyCollection = "Collection is read-only.";

@@ -20,6 +20,8 @@ public struct Double : IComparable, IComparable<double>, IFormattable
     public const double PositiveInfinity = (double)(1.0) / (double)(0.0);
     public const double NaN = (double)0.0 / (double)0.0;
 
+    internal const ulong SignMask = 0x8000_0000_0000_0000;
+
     public int CompareTo(object value)
     {
         if (value == null)

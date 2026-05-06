@@ -2,6 +2,8 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // Some modifications were made for hapet-lang compatibility.
 
+using System;
+
 // A constant used by methods that take a timeout (Object.Wait, Thread.Sleep
 // etc) to indicate that no timeout should occur.
 //
