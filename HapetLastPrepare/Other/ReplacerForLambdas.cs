@@ -477,7 +477,8 @@ namespace HapetLastPrepare
 
         private void ReplaceAllInSATExpr(AstSATOfExpr satExpr)
         {
-            ReplaceAllInNestedExpr(satExpr.TargetType);
+            if (satExpr.TargetType != null)
+                ReplaceAllInNestedExpr(satExpr.TargetType);
         }
 
         private void ReplaceAllInNullableExpr(AstNullableExpr expr)

@@ -784,7 +784,7 @@ namespace HapetFrontend.Parsing
                         Consume(inInfo, TokenType.CloseParen, ErrMsg(")", "after sizeof/alignof/typeof expression"));
 
                         var nst = subExpr as AstNestedExpr;
-                        Debug.Assert(nst != null);
+                        // Debug.Assert(nst != null); // do not assert because of wrong parsing possibility
                         return new AstSATOfExpr(nst, token.Type, new Location(token.Location));
                     }
 
