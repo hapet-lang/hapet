@@ -77,7 +77,7 @@ namespace HapetFrontend.Scoping
                     DefineBinaryOperator(new BuiltInBinaryOperator("+", outType, type, secondType, (a, b) => NumberData.FromObject(a) + NumberData.FromObject(b)));
                     DefineBinaryOperator(new BuiltInBinaryOperator("-", outType, type, secondType, (a, b) => NumberData.FromObject(a) - NumberData.FromObject(b)));
                     DefineBinaryOperator(new BuiltInBinaryOperator("*", outType, type, secondType, (a, b) => NumberData.FromObject(a) * NumberData.FromObject(b)));
-                    DefineBinaryOperator(new BuiltInBinaryOperator("/", type, type, secondType, (a, b) => NumberData.FromObject(a) / NumberData.FromObject(b)));
+                    DefineBinaryOperator(new BuiltInBinaryOperator("/", outType, type, secondType, (a, b) => NumberData.FromObject(a) / NumberData.FromObject(b)));
                     DefineBinaryOperator(new BuiltInBinaryOperator("%", type, type, secondType, (a, b) => NumberData.FromObject(a) % NumberData.FromObject(b)));
 
                     // these are already defined in structs

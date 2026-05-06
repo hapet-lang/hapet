@@ -1371,6 +1371,10 @@ namespace HapetPostPrepare
 
         private void PostPrepareSATExprInference(AstSATOfExpr expr, InInfo inInfo, ref OutInfo outInfo)
         {
+            // wrong parsing
+            if (expr.TargetType == null)
+                return;
+
             PostPrepareExprInference(expr.TargetType, inInfo, ref outInfo);
             if (expr.ExprType == TokenType.KwSizeof || expr.ExprType == TokenType.KwAlignof)
             {

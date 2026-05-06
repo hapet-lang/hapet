@@ -871,8 +871,11 @@ namespace HapetPostPrepare
 
         private void PostPrepareSATExprScoping(AstSATOfExpr satExpr)
         {
-            SetScopeAndParent(satExpr.TargetType, satExpr);
-            PostPrepareExprScoping(satExpr.TargetType);
+            if (satExpr.TargetType != null)
+            {
+                SetScopeAndParent(satExpr.TargetType, satExpr);
+                PostPrepareExprScoping(satExpr.TargetType);
+            }
         }
 
         private void PostPrepareLambdaExprScoping(AstLambdaExpr lambdaExpr)

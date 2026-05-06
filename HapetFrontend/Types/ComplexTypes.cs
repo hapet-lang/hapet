@@ -99,9 +99,11 @@ namespace HapetFrontend.Types
 
         public override int Match(HapetType concrete)
         {
+            if (concrete == this)
+                return 0;
             if (concrete is StructType)
             {
-                int score = 0;
+                int score = 1;
                 return score;
             }
             return -1;
