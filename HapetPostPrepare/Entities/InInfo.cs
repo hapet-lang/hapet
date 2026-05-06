@@ -16,6 +16,14 @@ namespace HapetPostPrepare.Entities
         public bool AllowAccessToEveryShite { get; set; }
 
         /// <summary>
+        /// 'true' if variables and properties could be currently used in AstIdExpr inference
+        /// set to 'false' when inferencing types of properties and fields because it could be this:
+        /// public ThreadState ThreadState { get; set; }
+        /// (the name is the same as the type)
+        /// </summary>
+        public bool AllowVarPropDeclsToBeTypes { get; set; }
+
+        /// <summary>
         /// Currently inferencing nested/lambda
         /// </summary>
         public AstStatement NestedLambdaFunctionInference { get; set; }
@@ -26,6 +34,7 @@ namespace HapetPostPrepare.Entities
             AllowSpecialKeys = false,
             FromCallExpr = false,
             MuteErrors = false,
+            AllowVarPropDeclsToBeTypes = true,
         };
     }
 }

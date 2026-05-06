@@ -81,9 +81,12 @@ namespace HapetPostPrepare
                 var savedMute = inInfo.MuteErrors;
                 if (decl.IsPropertyField)
                     inInfo.MuteErrors = true;
+                var savedTypeInferAllow = inInfo.AllowVarPropDeclsToBeTypes;
+                inInfo.AllowVarPropDeclsToBeTypes = false;
                 PostPrepareExprInference(decl.Type, inInfo, ref outInfo);
                 if (decl.IsPropertyField)
                     inInfo.MuteErrors = savedMute;
+                inInfo.AllowVarPropDeclsToBeTypes = savedTypeInferAllow;
 
                 // do not allow static fields/props with gen types
                 if (GenericsHelper.HasAnyGenericTypes(decl.Type))

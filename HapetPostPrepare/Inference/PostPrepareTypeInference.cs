@@ -320,9 +320,12 @@ namespace HapetPostPrepare
             var savedMute = inInfo.MuteErrors;
             if (varDecl.IsPropertyField)
                 inInfo.MuteErrors = true;
+            var savedTypeInferAllow = inInfo.AllowVarPropDeclsToBeTypes;
+            inInfo.AllowVarPropDeclsToBeTypes = false;
             PostPrepareExprInference(varDecl.Type, inInfo, ref outInfo);
             if (varDecl.IsPropertyField)
                 inInfo.MuteErrors = savedMute;
+            inInfo.AllowVarPropDeclsToBeTypes = savedTypeInferAllow;
 
             // do not infer pure 'default' expr
             // infer at least 'default(...)' expr
@@ -852,12 +855,12 @@ namespace HapetPostPrepare
                 string onlyName = decl.Name.Name.GetClassNameWithoutNamespace();
                 var ctorName = $"{onlyName}_ctor";
                 List<AstArgumentExpr> argsWithClassParam = new List<AstArgumentExpr>(newExpr.Arguments);
-                argsWithClassParam.Insert(0, new AstArgumentExpr(new AstIdExpr("this")
+                argsWithClassParam.Insert(0, new AstArgumentExpr(new AstIdExpr("this", newExpr.Location)
                 {
                     OutType = newExpr.OutType,
                     Scope = newExpr.Scope,
                     IsSyntheticStatement = true,
-                })
+                }, location: newExpr.Location)
                 {
                     OutType = newExpr.OutType,
                     Scope = newExpr.Scope,
@@ -868,7 +871,7 @@ namespace HapetPostPrepare
                 if (decl is AstStructDecl)
                     argsWithClassParam[0].ArgumentModificator = ParameterModificator.Ref;
 
-                var ctorSymbol = GetFuncFromCandidates(new AstIdExpr(ctorName), argsWithClassParam, decl, true, out var casts);
+                var ctorSymbol = GetFuncFromCandidates(new AstIdExpr(ctorName, newExpr.Location), argsWithClassParam, decl, true, out var casts);
                 // error if ctor not found
                 if (ctorSymbol == null)
                 {
@@ -909,7 +912,11 @@ namespace HapetPostPrepare
             // it could be null :))
             if (castExpr.TypeExpr != null)
             {
+                var savedTypeInferAllow = inInfo.AllowVarPropDeclsToBeTypes;
+                inInfo.AllowVarPropDeclsToBeTypes = false;
                 PostPrepareExprInference(castExpr.TypeExpr, inInfo, ref outInfo);
+                inInfo.AllowVarPropDeclsToBeTypes = savedTypeInferAllow;
+
                 castExpr.OutType = castExpr.TypeExpr.OutType;
 
                 // check compile time overflow when in checked context
@@ -1110,7 +1117,8 @@ namespace HapetPostPrepare
                 {
                     // if it is not a namespace - then probably type is done
                     nestExpr.LeftPart.LeftPart = null;
-                    nestExpr.LeftPart.RightPart.Location = nestExpr.LeftPart.Location;
+                    // this is probably not required. this causes namespaces to be colored as type
+                    // nestExpr.LeftPart.RightPart.Location = nestExpr.LeftPart.Location;
                     found = true;
                 }
             }
@@ -1276,6 +1284,10 @@ namespace HapetPostPrepare
 
         private void PostPrepareTernaryExprInference(AstTernaryExpr expr, InInfo inInfo, ref OutInfo outInfo)
         {
+            // wrong parsing
+            if (expr.Condition == null)
+                return;
+
             PostPrepareExprInference(expr.Condition, inInfo, ref outInfo);
             if (expr.Condition.OutType is not BoolType) 
             {
