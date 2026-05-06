@@ -72,7 +72,7 @@ namespace HapetPostPrepare
 
                 // search for the symbol in concrete namespace
                 var smbl = idExpr.Scope.GetSymbolInNamespace(ns, rightPart, handleGenerics: true);
-                if (smbl is DeclSymbol typed)
+                if (smbl is DeclSymbol typed && IsAllowedDeclInContext(typed.Decl, inInfo))
                 {
                     IdentifierOnFoundSymbol(idExpr, typed, string.Empty, inInfo, ref outInfo);
                     return true;
@@ -130,7 +130,7 @@ namespace HapetPostPrepare
             bool SubSearcher(Scope scope, ref OutInfo outInfo) 
             {
                 var smbl = scope.GetSymbol(idExpr, handleGenerics: true);
-                if (smbl is DeclSymbol typed)
+                if (smbl is DeclSymbol typed && IsAllowedDeclInContext(typed.Decl, inInfo))
                 {
                     IdentifierOnFoundSymbol(idExpr, typed, string.Empty, inInfo, ref outInfo);
                     return true;
@@ -141,7 +141,7 @@ namespace HapetPostPrepare
                 {
                     string typeName = (idExpr.AdditionalData.OutType as ClassType).Declaration.Name.Name;
                     smbl = scope.GetSymbol(idExpr.GetCopy($"{typeName}.{name}"), handleGenerics: true);
-                    if (smbl is DeclSymbol typed2)
+                    if (smbl is DeclSymbol typed2 && IsAllowedDeclInContext(typed2.Decl, inInfo))
                     {
                         IdentifierOnFoundSymbol(idExpr, typed2, string.Empty, inInfo, ref outInfo);
                         return true;
@@ -162,7 +162,7 @@ namespace HapetPostPrepare
             // works only for types/objects
             string nameWithNamespace = $"{idExpr.SourceFile.Namespace}.{name}";
             var smblInLocalFile = idExpr.Scope.GetSymbol(idExpr.GetCopy(nameWithNamespace), handleGenerics: true);
-            if (smblInLocalFile is DeclSymbol typed3)
+            if (smblInLocalFile is DeclSymbol typed3 && IsAllowedDeclInContext(typed3.Decl, inInfo))
             {
                 IdentifierOnFoundSymbol(idExpr, typed3, nameWithNamespace, inInfo, ref outInfo);
                 return true;
@@ -186,7 +186,7 @@ namespace HapetPostPrepare
                 // try just get the name from using namespace
                 string fullNameWithNs = $"{ns}.{name}";
                 var usedSmbl = idExpr.Scope.GetSymbolInNamespace(ns, idExpr, handleGenerics: true);
-                if (usedSmbl is DeclSymbol typed5)
+                if (usedSmbl is DeclSymbol typed5 && IsAllowedDeclInContext(typed5.Decl, inInfo))
                 {
                     IdentifierOnFoundSymbol(idExpr, typed5, typed5.Name.Name, inInfo, ref outInfo);
                     return true;
@@ -199,7 +199,7 @@ namespace HapetPostPrepare
                 {
                     // getting a symbol from namespace
                     var includedSmbl = idExpr.Scope.GetSymbolInNamespace($"{ns}.{currNs}", idExpr, handleGenerics: true);
-                    if (includedSmbl is DeclSymbol typed4)
+                    if (includedSmbl is DeclSymbol typed4 && IsAllowedDeclInContext(typed4.Decl, inInfo))
                     {
                         IdentifierOnFoundSymbol(idExpr, typed4, typed4.Name.Name, inInfo, ref outInfo);
                         return true;
@@ -244,7 +244,7 @@ namespace HapetPostPrepare
                 var currentParent = _currentParentStack.GetNearestParentClassOrStruct();
                 string nameWithClass = $"{currentParent?.Name.Name}::{name}";
                 var smblInLocalClass = scope.GetSymbol(idExpr.GetCopy(nameWithClass), handleGenerics: true);
-                if (smblInLocalClass is DeclSymbol typed2)
+                if (smblInLocalClass is DeclSymbol typed2 && IsAllowedDeclInContext(typed2.Decl, inInfo))
                 {
                     IdentifierOnFoundSymbol(idExpr, typed2, typed2.Name.Name, inInfo, ref outInfo);
                     return true;
@@ -298,7 +298,7 @@ namespace HapetPostPrepare
                         return false;
                     }
 
-                    if (funcInAnotherClass is DeclSymbol typed4)
+                    if (funcInAnotherClass is DeclSymbol typed4 && IsAllowedDeclInContext(typed4.Decl, inInfo))
                     {
                         IdentifierOnFoundSymbol(idExpr, typed4, typed4.Name.Name, inInfo, ref outInfo);
                         return true;
@@ -469,6 +469,18 @@ namespace HapetPostPrepare
             var realDecl = GetRealTypeFromGeneric(genDecl, realId.GenericRealTypes.GetNestedList(_compiler.MessageHandler), 
                 realName, GenericsHelper.HasAnyGenericTypes(realId.GenericRealTypes));
             return realDecl;
+        }
+
+        private bool IsAllowedDeclInContext(AstDeclaration decl, InInfo inInfo)
+        {
+            if (inInfo.AllowVarPropDeclsToBeTypes)
+                return true;
+            return decl is AstClassDecl 
+                || decl is AstStructDecl 
+                || decl is AstEnumDecl 
+                || decl is AstDelegateDecl
+                || decl is AstGenericDecl 
+                || decl is AstBuiltInTypeDecl;
         }
     }
 }

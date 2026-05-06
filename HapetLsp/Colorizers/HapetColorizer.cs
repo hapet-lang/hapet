@@ -733,7 +733,7 @@ namespace HapetLsp.Colorizers
 
         private void ColorizeTernaryExpr(AstTernaryExpr expr)
         {
-            if (!expr.Condition.IsSyntheticStatement)
+            if (expr.Condition != null && !expr.Condition.IsSyntheticStatement)
                 ColorizeExpr(expr.Condition);
             if (!expr.TrueExpr.IsSyntheticStatement)
                 ColorizeExpr(expr.TrueExpr);

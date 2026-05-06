@@ -843,8 +843,12 @@ namespace HapetPostPrepare
 
         private void PostPrepareTernaryExprScoping(AstTernaryExpr ternaryExpr)
         {
-            SetScopeAndParent(ternaryExpr.Condition, ternaryExpr);
-            PostPrepareExprScoping(ternaryExpr.Condition);
+            // not a good parsing btw
+            if (ternaryExpr.Condition != null)
+            {
+                SetScopeAndParent(ternaryExpr.Condition, ternaryExpr);
+                PostPrepareExprScoping(ternaryExpr.Condition);
+            }
             SetScopeAndParent(ternaryExpr.TrueExpr, ternaryExpr);
             PostPrepareExprScoping(ternaryExpr.TrueExpr);
             // not a good parsing btw
