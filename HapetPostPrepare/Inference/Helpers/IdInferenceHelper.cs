@@ -88,7 +88,7 @@ namespace HapetPostPrepare
             // at first try to search in decl subscopes
             if (declToSearch != null)
             {
-                var resultCurrent = SubSearcher(declToSearch.SubScope, ref outInfo);
+                var resultCurrent = SubSearcher(declToSearch.SubScope, ref outInfo, false);
                 if (resultCurrent) return true; // handle good result
 
                 // go all over the inherited types
@@ -127,9 +127,10 @@ namespace HapetPostPrepare
 
             return false;
 
-            bool SubSearcher(Scope scope, ref OutInfo outInfo) 
+            bool SubSearcher(Scope scope, ref OutInfo outInfo, bool searchParentAndUsings = true) 
             {
-                var smbl = scope.GetSymbol(idExpr, handleGenerics: true);
+                var smbl = scope.GetSymbol(idExpr, handleGenerics: true, 
+                    searchParentScope: searchParentAndUsings, searchUsedScopes: searchParentAndUsings);
                 if (smbl is DeclSymbol typed && IsAllowedDeclInContext(typed.Decl, inInfo))
                 {
                     IdentifierOnFoundSymbol(idExpr, typed, string.Empty, inInfo, ref outInfo);
@@ -140,7 +141,8 @@ namespace HapetPostPrepare
                 if (idExpr.AdditionalData != null)
                 {
                     string typeName = (idExpr.AdditionalData.OutType as ClassType).Declaration.Name.Name;
-                    smbl = scope.GetSymbol(idExpr.GetCopy($"{typeName}.{name}"), handleGenerics: true);
+                    smbl = scope.GetSymbol(idExpr.GetCopy($"{typeName}.{name}"), handleGenerics: true, 
+                        searchParentScope: searchParentAndUsings, searchUsedScopes: searchParentAndUsings);
                     if (smbl is DeclSymbol typed2 && IsAllowedDeclInContext(typed2.Decl, inInfo))
                     {
                         IdentifierOnFoundSymbol(idExpr, typed2, string.Empty, inInfo, ref outInfo);
