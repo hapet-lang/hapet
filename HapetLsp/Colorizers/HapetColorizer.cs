@@ -754,8 +754,7 @@ namespace HapetLsp.Colorizers
             // colorize 'sat' word
             AddSemanticToken(expr, expr.Location.Beginning, _tokenTypes[2], _tokenModifiers[0]);
 
-            if (expr.TargetType != null)
-                ColorizeExpr(expr.TargetType);
+            ColorizeExpr(expr.TargetType);
         }
 
         private void ColorizeLambdaExpr(AstLambdaExpr expr)
