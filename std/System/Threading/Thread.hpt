@@ -22,7 +22,7 @@ public partial class Thread
                 return System.Threading.ThreadState.Stopped;
             }
 
-            var state = (System.Threading.ThreadState.ThreadState)GetThreadState();
+            var state = (System.Threading.ThreadState)GetThreadState();
             // GC.KeepAlive(this); TODO: do i need it?
             return state;
         }
