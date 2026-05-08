@@ -72,6 +72,10 @@ namespace HapetPostPrepare
 
         private AstExpression PostPrepareDelegateWithType(AstExpression value, DelegateType targetType, CastResult castResult = null)
         {
+            // something wrong
+            if (targetType == null)
+                return value;
+
             // just handlers
             InInfo inInfo = InInfo.Default;
             OutInfo outInfo = OutInfo.Default;

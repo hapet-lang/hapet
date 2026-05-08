@@ -1045,14 +1045,17 @@ namespace HapetPostPrepare
 
             foreach (var cc in switchStmt.Cases)
             {
-                SetScopeAndParent(cc, switchStmt);
-                PostPrepareExprScoping(cc);
+                if (cc != null)
+                {
+                    SetScopeAndParent(cc, switchStmt);
+                    PostPrepareExprScoping(cc);
+                }
             }
         }
 
         private void PostPrepareCaseStmtScoping(AstCaseStmt caseStmt)
         {
-            if (!caseStmt.IsDefaultCase)
+            if (!caseStmt.IsDefaultCase && caseStmt.Pattern != null)
             {
                 SetScopeAndParent(caseStmt.Pattern, caseStmt);
                 PostPrepareExprScoping(caseStmt.Pattern);

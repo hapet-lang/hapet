@@ -994,12 +994,7 @@ namespace HapetPostPrepare
                 accessingFromAnObject = true;
                 // if left part found symbol is a class decl - static access
                 if (nestExpr.LeftPart.TryGetDeclSymbol() is DeclSymbol ds1 && 
-                    (ds1.Decl is AstClassDecl || ds1.Decl is AstStructDecl))
-                {
-                    accessingFromAnObject = false;
-                }
-                // it is not possible for enums to be objects
-                if (nestExpr.LeftPart.OutType is EnumType)
+                    (ds1.Decl is AstClassDecl || ds1.Decl is AstStructDecl || ds1.Decl is AstEnumDecl))
                 {
                     accessingFromAnObject = false;
                 }
@@ -1632,6 +1627,10 @@ namespace HapetPostPrepare
 
             foreach (var cc in switchStmt.Cases)
             {
+                // wrong parsing
+                if (cc == null)
+                    continue;
+
                 PostPrepareExprInference(cc, inInfo, ref outInfo);
 
                 // calc default cases. if there are more than 1 - error
@@ -1647,16 +1646,16 @@ namespace HapetPostPrepare
                 cc.Pattern = PostPrepareExpressionWithType(switchStmt.SubExpression.OutType, cc.Pattern);
 
                 // check that the value is a const 
-                if (cc.Pattern.OutValue == null)
+                if (cc.Pattern?.OutValue == null)
                 {
-                    _compiler.MessageHandler.ReportMessage(_currentSourceFile, cc.Pattern, [], ErrorCode.Get(CTEN.NonConstantCaseValue));
+                    _compiler.MessageHandler.ReportMessage(_currentSourceFile, cc.Pattern ?? cc.Location, [], ErrorCode.Get(CTEN.NonConstantCaseValue));
                 }
             }
         }
 
         private void PostPrepareCaseStmtInference(AstCaseStmt caseStmt, InInfo inInfo, ref OutInfo outInfo)
         {
-            if (!caseStmt.IsDefaultCase)
+            if (!caseStmt.IsDefaultCase && caseStmt.Pattern != null)
                 PostPrepareExprInference(caseStmt.Pattern, inInfo, ref outInfo);
 
             if (!caseStmt.IsFallingCase)
