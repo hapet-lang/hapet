@@ -176,6 +176,8 @@ namespace HapetFrontend.Scoping
             DefineUnaryOperator(new BuiltInUnaryOperator("~", EnumType.LiteralType, EnumType.LiteralType, a => (~NumberData.FromObject(a))));
             DefineBinaryOperator(new BuiltInBinaryOperator("|", EnumType.LiteralType, EnumType.LiteralType, EnumType.LiteralType, (a, b) => (NumberData.FromObject(a) | NumberData.FromObject(b))));
             DefineBinaryOperator(new BuiltInBinaryOperator("&", EnumType.LiteralType, EnumType.LiteralType, EnumType.LiteralType, (a, b) => (NumberData.FromObject(a) & NumberData.FromObject(b))));
+            DefineBinaryOperator(new BuiltInBinaryOperator("==", boolT, EnumType.LiteralType, EnumType.LiteralType, (a, b) => (NumberData.FromObject(a) == NumberData.FromObject(b))));
+            DefineBinaryOperator(new BuiltInBinaryOperator("!=", boolT, EnumType.LiteralType, EnumType.LiteralType, (a, b) => (NumberData.FromObject(a) != NumberData.FromObject(b))));
         }
     }
 }
