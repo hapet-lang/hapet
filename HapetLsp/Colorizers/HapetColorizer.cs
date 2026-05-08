@@ -641,6 +641,8 @@ namespace HapetLsp.Colorizers
                 // static/decl colorizing
                 if (expr.OutType is ClassType clsTT)
                     AddSemanticToken(expr, expr.Location, clsTT.Declaration.IsInterface ? _tokenTypes[3] : _tokenTypes[0], _tokenModifiers[0]);
+                else if (expr.OutType is EnumType)
+                    AddSemanticToken(expr, expr.Location, _tokenTypes[7], _tokenModifiers[0]);
                 else
                     AddSemanticToken(expr, expr.Location, _tokenTypes[4], _tokenModifiers[0]);
             }

@@ -302,6 +302,9 @@ namespace HapetFrontend.Parsing
             while (tmpParenCounter != 0)
             {
                 var curr = NextToken(inInfo);
+                if (curr.Type == TokenType.EOF)
+                    break;
+
                 if (curr.Type == TokenType.OpenParen)
                     tmpParenCounter++;
                 else if (curr.Type == TokenType.CloseParen)
