@@ -9,6 +9,9 @@ using System.Runtime.InteropServices;
 #if TARGET_PLATFORM == "win-x64" || TARGET_PLATFORM == "win-x86";
 internal static class ThreadPal
 {
+    public static void StartThread(Thread thread)
+    {
 
+    }
 }
 #endif

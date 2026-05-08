@@ -6,8 +6,16 @@ using System;
 
 public partial class Thread
 {
+    /// <summary>Gets or sets a value indicating the scheduling priority of a thread.</summary>
+    public ThreadPriority Priority { get; set; } = ThreadPriority.Normal;
+    /// <summary>Returns true if the thread is a threadpool thread.</summary>
+    public bool IsThreadPoolThread { get; set; } = false;
+    /// <summary>Get or sets the name of the thread.</summary>
+    public string Name { get; set; }
+
     private uintptr _threadHandle;
     private bool _isDead;
+    private bool _isThreadPool;
 
     /// <summary>
     /// Return the thread state as a consistent set of bits.  This is more
@@ -33,7 +41,7 @@ public partial class Thread
         return 0; // TODO:
     }
 
-    private StartHelper _startHelper;
+    internal StartHelper _startHelper;
 
     // State associated with starting new thread
     private sealed class StartHelper
