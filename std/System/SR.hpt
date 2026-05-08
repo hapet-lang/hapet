@@ -72,4 +72,5 @@ internal static class SR
     internal const string Arg_ThreadStateException = "Thread was in an invalid state for the operation being executed.";
     internal const string ThreadState_NotStarted = "Thread has not been started.";
     internal const string ThreadState_AlreadyStarted = "Thread is running or terminated; it cannot restart.";
+    internal const string Arg_ThreadStartException = "Thread failed to start.";
 }

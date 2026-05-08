@@ -43,4 +43,10 @@ public static class Marshal
         // TODO: is it crossplatform?
         Fflush(AcrtIobFunc(1));
     }
+
+    [SuppressStackTrace]
+    public static inline string GetLastStringError()
+    {
+        return MarshalPal.GetLastStringError();
+    }
 }

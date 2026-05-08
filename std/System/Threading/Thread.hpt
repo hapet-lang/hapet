@@ -21,38 +21,22 @@ public partial class Thread
     /// Return the thread state as a consistent set of bits.  This is more
     /// general then IsAlive or IsBackground.
     /// </summary>
-    public ThreadState ThreadState
-    {
-        get
-        {
-            if (_isDead)
-            {
-                return System.Threading.ThreadState.Stopped;
-            }
-
-            var state = (System.Threading.ThreadState)GetThreadState();
-            // GC.KeepAlive(this); TODO: do i need it?
-            return state;
-        }
-    }
-
-    private int GetThreadState()
-    {
-        return 0; // TODO:
-    }
+    public ThreadState ThreadState { get; set; }
 
     internal StartHelper _startHelper;
 
     // State associated with starting new thread
     private sealed class StartHelper
     {
+        internal Thread _thread;
         internal int _maxStackSize;
         internal object _start;
         internal object _startArg;
 
-        internal StartHelper(object start)
+        internal StartHelper(object start, Thread thread)
         {
             _start = start;
+            _thread = thread;
         }
 
         // avoid long-lived stack frame in many threads
@@ -64,6 +48,9 @@ public partial class Thread
         // avoid long-lived stack frame in many threads
         private inline void RunWorker()
         {
+            // set that the thread is currently running
+            _thread.ThreadState = System.Threading.ThreadState.Running;
+
             object start = _start;
             _start = default; // anime?
 
@@ -80,7 +67,12 @@ public partial class Thread
             }
             catch (Exception ex)
             {
-                // the handler returned "true" means the exception is now "handled" and we should gracefully exit.
+                
+            }
+            finally 
+            {
+                // set that the thread is stopped
+                _thread.ThreadState = System.Threading.ThreadState.Stopped;
             }
         }
     }
@@ -89,7 +81,7 @@ public partial class Thread
     {
         ArgumentNullException.ThrowIfNull(start);
 
-        _startHelper = new StartHelper(start);
+        _startHelper = new StartHelper(start, this);
     }
 
     private void Start()
@@ -110,13 +102,13 @@ public partial class Thread
             throw new ThreadStateException(SR.ThreadState_AlreadyStarted);
         }
 
-        StartCore();
+        ThreadPal.StartThread(this);
     }
 
     public bool Join(int millisecondsTimeout)
     {
         ArgumentOutOfRangeException.ThrowIfLessThan(millisecondsTimeout, Timeout.Infinite);
-        if ((int)(ThreadState & ThreadState.Unstarted) != 0)
+        if ((int)(ThreadState & System.Threading.ThreadState.Unstarted) != 0)
         {
             throw new ThreadStateException(SR.ThreadState_NotStarted);
         }
