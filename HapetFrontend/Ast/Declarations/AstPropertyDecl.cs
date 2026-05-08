@@ -183,11 +183,11 @@ namespace HapetFrontend.Ast.Declarations
                 // left part is null if it is a static propa
                 AstNestedExpr leftPart = null;
                 if (!SpecialKeys.Contains(TokenType.KwStatic))
-                    leftPart = new AstNestedExpr(new AstIdExpr("this"), null);
+                    leftPart = new AstNestedExpr(new AstIdExpr("this", Location), null, Location);
                 var setBlock = new AstBlockExpr(new List<AstStatement>()
                 {
 					// the stmt is - 'this.field_Prop = value'
-					new AstAssignStmt(new AstNestedExpr(Name.GetCopy($"field_{Name.Name}"), leftPart), new AstIdExpr("value", Location), Location),
+					new AstAssignStmt(new AstNestedExpr(Name.GetCopy($"field_{Name.Name}"), leftPart, Location), new AstIdExpr("value", Location), Location),
                 }, Location);
                 func.Body = setBlock;
             }
@@ -221,7 +221,7 @@ namespace HapetFrontend.Ast.Declarations
                 var getBlock = new AstBlockExpr(new List<AstStatement>()
                 {
 					// the stmt is - 'return this.field_Prop'
-					new AstReturnStmt(new AstNestedExpr(Name.GetCopy($"field_{Name.Name}"), leftPart), Location),
+					new AstReturnStmt(new AstNestedExpr(Name.GetCopy($"field_{Name.Name}"), leftPart, Location), Location),
                 }, Location);
                 func.Body = getBlock;
             }
