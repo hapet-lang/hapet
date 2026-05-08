@@ -166,7 +166,7 @@ namespace HapetFrontend.Parsing
         {
             List<AstStatement> toReturn = new List<AstStatement>();
             var currentDir = ifDir;
-            while (currentDir.DirectiveType != DirectiveType.EndIf)
+            while (currentDir != null && currentDir.DirectiveType != DirectiveType.EndIf)
             {
                 if (currentDir.DirectiveType == DirectiveType.Else)
                 {
@@ -184,7 +184,7 @@ namespace HapetFrontend.Parsing
                 SkipUpToNextDirective();
                 currentDir = ParseTopLevel(inInfo, ref outInfo) as AstDirectiveStmt;
             }
-            while (currentDir.DirectiveType != DirectiveType.EndIf)
+            while (currentDir != null && currentDir.DirectiveType != DirectiveType.EndIf)
             {
                 // if still here - skip statements
                 SkipUpToNextDirective();
@@ -198,6 +198,9 @@ namespace HapetFrontend.Parsing
                 SkipNewlines(inInfo);
                 while (_lexer.PeekToken().Type != TokenType.SharpIdentifier)
                 {
+                    if (_lexer.PeekToken().Type == TokenType.EOF)
+                        break;
+
                     if (inInfo.HandleDirectiveInBlock)
                     {
                         string pp1 = "";
@@ -219,6 +222,8 @@ namespace HapetFrontend.Parsing
                 SkipNewlines(inInfo);
                 while (_lexer.PeekToken().Type != TokenType.SharpIdentifier)
                 {
+                    if (_lexer.PeekToken().Type == TokenType.EOF)
+                        break;
                     var lineLocation = _lexer.SkipLine();
                     CurrentSourceFile.NotCompiledLocations.Add(lineLocation);
                 }
