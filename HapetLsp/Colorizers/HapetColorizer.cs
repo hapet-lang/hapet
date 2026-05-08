@@ -843,8 +843,11 @@ namespace HapetLsp.Colorizers
             // colorize 'if' word
             AddSemanticToken(stmt, stmt.Location.Beginning, _tokenTypes[8], _tokenModifiers[0]);
 
-            ColorizeExpr(stmt.Condition);
-            ColorizeBlockExpr(stmt.BodyTrue);
+            if (stmt.Condition != null)
+            {
+                ColorizeExpr(stmt.Condition);
+                ColorizeBlockExpr(stmt.BodyTrue);
+            }
 
             if (stmt.BodyFalse != null)
             {

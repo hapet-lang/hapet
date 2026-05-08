@@ -1606,6 +1606,10 @@ namespace HapetPostPrepare
 
         private void PostPrepareIfStmtInference(AstIfStmt ifStmt, InInfo inInfo, ref OutInfo outInfo)
         {
+            // wrong parsing
+            if (ifStmt.Condition == null)
+                return;
+
             PostPrepareExprInference(ifStmt.Condition, inInfo, ref outInfo);
 
             // error if it is not a bool type because it has to be
