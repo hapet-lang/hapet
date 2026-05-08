@@ -104,6 +104,12 @@ public partial class Thread
             startHelper._startArg = null;
         }
 
+        // if already running - throw exception
+        if (ThreadState == System.Threading.ThreadState.Running)
+        {
+            throw new ThreadStateException(SR.ThreadState_AlreadyStarted);
+        }
+
         StartCore();
     }
 
