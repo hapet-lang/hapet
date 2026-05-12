@@ -358,7 +358,7 @@ namespace HapetFrontend.Parsing
                         // like '(a & b) == 0'
                         if (list[0].Expr is AstNestedExpr)
                             return list[0].Expr;
-                        return new AstNestedExpr(list[0].Expr, null, list[0].Expr.Location);
+                        return new AstNestedExpr(list[0].Expr, null, list[0].Expr?.Location ?? list[0].Location);
                     }
                 }
             }

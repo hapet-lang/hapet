@@ -181,7 +181,7 @@ namespace HapetPostPrepare
                     continue;
                 }
                 CastResult castResult = new CastResult();
-                var cst = PostPrepareExpressionWithType(parType.OutType, argExpr, castResult);
+                var cst = PostPrepareExpressionWithType(parType.OutType, argExpr, castResult, allowAnyTypeToBeSetToGeneric: true);
                 if (castResult.CouldBeCasted)
                 {
                     score += 1;

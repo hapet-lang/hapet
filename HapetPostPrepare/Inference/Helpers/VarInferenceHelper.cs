@@ -44,7 +44,8 @@ namespace HapetPostPrepare
         /// <param name="neededType">The type that should be outed</param>
         /// <param name="expr">The expr to be casted</param>
         /// <returns>Casted expr</returns>
-        public AstExpression PostPrepareExpressionWithType(HapetType neededType, AstExpression expr, CastResult castResult = null)
+        public AstExpression PostPrepareExpressionWithType(HapetType neededType, AstExpression expr, 
+            CastResult castResult = null, bool allowAnyTypeToBeSetToGeneric = false)
         {
             // special case for empty struct expr
             if (expr is AstEmptyStructExpr es)
@@ -67,7 +68,7 @@ namespace HapetPostPrepare
             {
                 return PostPrepareDelegateWithType(expr, neededType as DelegateType, castResult);
             }
-            return _compiler.TryCastExpr(neededType, expr, castResult, _currentSourceFile);
+            return _compiler.TryCastExpr(neededType, expr, castResult, _currentSourceFile, allowAnyTypeToBeSetToGeneric);
         }
 
         private AstExpression PostPrepareDelegateWithType(AstExpression value, DelegateType targetType, CastResult castResult = null)

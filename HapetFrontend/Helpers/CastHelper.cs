@@ -11,7 +11,8 @@ namespace HapetFrontend
 {
     public partial class Compiler
     {
-        public AstExpression TryCastExpr(HapetType targetType, AstExpression currentExpr, CastResult castResult = null, ProgramFile sourceFile = null)
+        public AstExpression TryCastExpr(HapetType targetType, AstExpression currentExpr, 
+            CastResult castResult = null, ProgramFile sourceFile = null, bool allowAnyTypeToBeSetToGeneric = false)
         {
             HapetType currentType = currentExpr.OutType;
             AstExpression outExpr = null;
@@ -219,7 +220,7 @@ namespace HapetFrontend
             }
 
             // try handle class-struct shite
-            if (HandleOtherTypes(targetType, currentType, castResult, sourceFile))
+            if (HandleOtherTypes(targetType, currentType, castResult, sourceFile, allowAnyTypeToBeSetToGeneric))
             {
                 // here if could be normally casted
                 outExpr = cst;
@@ -236,17 +237,18 @@ namespace HapetFrontend
             return outExpr;
         }
 
-        private bool HandleOtherTypes(HapetType targetType, HapetType currentType, CastResult castResult = null, ProgramFile sourceFile = null)
+        private bool HandleOtherTypes(HapetType targetType, HapetType currentType, 
+            CastResult castResult = null, ProgramFile sourceFile = null, bool allowAnyTypeToBeSetToGeneric = false)
         {
             // unroll pointers
             if (targetType is PointerType ptr1 && currentType is PointerType ptr2)
             {
-                return HandleOtherTypes(ptr1.TargetType, ptr2.TargetType, castResult);
+                return HandleOtherTypes(ptr1.TargetType, ptr2.TargetType, castResult, sourceFile, allowAnyTypeToBeSetToGeneric);
             }
             // unroll arrays
             else if (targetType is ArrayType arr1 && currentType is ArrayType arr2)
             {
-                return HandleOtherTypes(arr1.TargetType, arr2.TargetType, castResult);
+                return HandleOtherTypes(arr1.TargetType, arr2.TargetType, castResult, sourceFile, allowAnyTypeToBeSetToGeneric);
             }
 
             // ok if types are the same or current is inherited from target
@@ -293,9 +295,9 @@ namespace HapetFrontend
                         return true;
                     }
             }
-            
+
             // handle generic
-            if (targetType is GenericType genT)
+            if (targetType is GenericType && allowAnyTypeToBeSetToGeneric)
             {
                 // TODO: check constrains
                 if (castResult != null)
@@ -304,7 +306,7 @@ namespace HapetFrontend
             }
 
             // handling types with generics
-            if (HandleTypesWithGenerics(targetType, currentType, castResult, sourceFile))
+            if (HandleTypesWithGenerics(targetType, currentType, castResult, sourceFile, allowAnyTypeToBeSetToGeneric))
             {
                 // all is ok
                 return true;
@@ -313,7 +315,8 @@ namespace HapetFrontend
             return false;
         }
 
-        private bool HandleTypesWithGenerics(HapetType targetType, HapetType currentType, CastResult castResult = null, ProgramFile sourceFile = null)
+        private bool HandleTypesWithGenerics(HapetType targetType, HapetType currentType, 
+            CastResult castResult = null, ProgramFile sourceFile = null, bool allowAnyTypeToBeSetToGeneric = false)
         {
             // we need to fetch decl's names
             AstIdExpr targetName;
@@ -356,7 +359,7 @@ namespace HapetFrontend
                     var target = genId1.GenericRealTypes[i];
                     var current = genId2.GenericRealTypes[i];
                     var tmpCastResult = new CastResult();
-                    TryCastExpr(target.OutType, current, tmpCastResult, sourceFile);
+                    TryCastExpr(target.OutType, current, tmpCastResult, sourceFile, allowAnyTypeToBeSetToGeneric);
                     // check that could be casted
                     if (!tmpCastResult.CouldBeCasted)
                         return false;
