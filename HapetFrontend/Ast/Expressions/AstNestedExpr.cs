@@ -24,6 +24,12 @@ namespace HapetFrontend.Ast.Expressions
         /// </summary>
         public AstExpression RightPart { get; set; }
 
+        /// <summary>
+        /// 'true' for real types in <>, this means that double inference of the type should be skipped
+        /// because of some trouble with inferencing these types inside files that do not have required 'using's
+        /// </summary>
+        public bool IsGenericRealTypeParameter { get; set; }
+
         public override string AAAName => nameof(AstNestedExpr);
 
         public AstNestedExpr(AstExpression rightPart, AstNestedExpr leftPart, ILocation location = null) : base(location)
@@ -41,6 +47,7 @@ namespace HapetFrontend.Ast.Expressions
             {
                 IsSyntheticStatement = IsSyntheticStatement,
                 IsCompileTimeValue = IsCompileTimeValue,
+                IsGenericRealTypeParameter = IsGenericRealTypeParameter,
                 OutType = OutType,
                 OutValue = OutValue,
                 Scope = Scope,
@@ -48,6 +55,14 @@ namespace HapetFrontend.Ast.Expressions
                 TupleNameList = TupleNameList,
             };
             return copy;
+        }
+
+        public void SetGenericRealTypeParameter()
+        {
+            IsGenericRealTypeParameter = true;
+            LeftPart?.SetGenericRealTypeParameter();
+            if (RightPart is AstIdExpr idE)
+                idE.IsGenericRealTypeParameter = true;
         }
 
         public override void ReplaceChild(AstStatement oldChild, AstStatement newChild)

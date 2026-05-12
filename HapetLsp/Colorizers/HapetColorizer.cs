@@ -279,7 +279,8 @@ namespace HapetLsp.Colorizers
         private void ColorizePropertyDecl(AstPropertyDecl decl)
         {
             ColorizeExpr(decl.Type);
-            ColorizeExpr(decl.Name);
+            if (decl.Name != null)
+                ColorizeExpr(decl.Name);
 
             if (decl.Initializer != null)
                 ColorizeExpr(decl.Initializer);
@@ -737,7 +738,7 @@ namespace HapetLsp.Colorizers
         {
             if (expr.Condition != null && !expr.Condition.IsSyntheticStatement)
                 ColorizeExpr(expr.Condition);
-            if (!expr.TrueExpr.IsSyntheticStatement)
+            if (expr.TrueExpr != null && !expr.TrueExpr.IsSyntheticStatement)
                 ColorizeExpr(expr.TrueExpr);
             if (expr.FalseExpr != null && !expr.FalseExpr.IsSyntheticStatement)
                 ColorizeExpr(expr.FalseExpr);

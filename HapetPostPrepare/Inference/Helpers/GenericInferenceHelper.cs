@@ -274,7 +274,7 @@ namespace HapetPostPrepare
 
         private bool IsInheritedFromWithInference(AstDeclaration type, HapetType from)
         {
-            if (type == null)
+            if (type == null || from == null)
                 return false;
 
             // if generic type - get original
@@ -289,6 +289,9 @@ namespace HapetPostPrepare
                 // infer if not yet
                 if (expr.OutType == null)
                     PostPrepareExprInference(expr, inInfo, ref outInfo);
+                // if could not be infered - just skip. errored somewhere above
+                if (expr.OutType == null)
+                    continue;
 
                 // if generic type - get original
                 var exprType = expr.OutType.GetDeclaration().IsImplOfGeneric ? expr.OutType.GetDeclaration().OriginalGenericDecl.Type.OutType : expr.OutType;

@@ -35,6 +35,8 @@ namespace HapetPostPrepare
             {
                 // PostPrepareStatementUpToCurrentStep(decl);
                 PostPrepareMetadataTypes(decl, false);
+                bool _ = PostPrepareMetadataGenerics(decl);
+                PostPrepareMetadataInheritance(decl);
             }
         }
 
