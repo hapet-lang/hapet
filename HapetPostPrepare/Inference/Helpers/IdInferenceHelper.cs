@@ -94,6 +94,10 @@ namespace HapetPostPrepare
                 // go all over the inherited types
                 foreach (var inh in declToSearch.GetInheritedTypes())
                 {
+                    // wrong inference of inherited 
+                    if ((inh.OutType as ClassType)?.Declaration == null)
+                        continue;
+
                     // try to search in them
                     var result = Step2_IdentifierLocalScope(idExpr, inInfo, ref outInfo, (inh.OutType as ClassType).Declaration);
                     if (result) return true; // handle good result
@@ -223,6 +227,10 @@ namespace HapetPostPrepare
                 // go all over the inherited types
                 foreach (var inh in declToSearch.GetInheritedTypes())
                 {
+                    // wrong inference of inherited 
+                    if ((inh.OutType as ClassType)?.Declaration == null)
+                        continue;
+
                     // try to search in them
                     var result = Step5_IdentifierFuncs(idExpr, inInfo, ref outInfo, (inh.OutType as ClassType).Declaration);
                     if (result) return true; // handle good result
