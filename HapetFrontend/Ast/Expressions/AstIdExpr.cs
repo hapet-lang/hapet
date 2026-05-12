@@ -37,6 +37,12 @@ namespace HapetFrontend.Ast.Expressions
         /// </summary>
         public AstNestedExpr AdditionalData { get; set; }
 
+        /// <summary>
+        /// 'true' for real types in <>, this means that double inference of the type should be skipped
+        /// because of some trouble with inferencing these types inside files that do not have required 'using's
+        /// </summary>
+        public bool IsGenericRealTypeParameter { get; set; }
+
         public override string AAAName => nameof(AstIdExpr);
 
         public AstIdExpr(string name, ILocation location = null) : base(location)
@@ -81,6 +87,7 @@ namespace HapetFrontend.Ast.Expressions
             var newId = new AstIdExpr(newName, Location)
             {
                 IsSyntheticStatement = IsSyntheticStatement,
+                IsGenericRealTypeParameter = IsGenericRealTypeParameter,
                 Suffix = this.Suffix,
                 AdditionalData = this.AdditionalData,
                 Parent = this.Parent,

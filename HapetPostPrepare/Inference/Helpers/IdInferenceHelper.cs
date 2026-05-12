@@ -17,6 +17,10 @@ namespace HapetPostPrepare
     {
         private void PostPrepareIdentifierInference(AstIdExpr idExpr, InInfo inInfo, ref OutInfo outInfo, AstDeclaration declToSearch = null)
         {
+            // skip double inference of generic real parameters
+            if (idExpr.IsGenericRealTypeParameter)
+                return;
+
             string name = idExpr.Name;
 
             // at first - check that the id could be a generic type

@@ -270,7 +270,7 @@ namespace HapetFrontend.Types
 
         public override string ToString()
         {
-            return $"{Declaration.Name.Name}";
+            return $"{Declaration?.Name?.Name}?";
         }
     }
 }

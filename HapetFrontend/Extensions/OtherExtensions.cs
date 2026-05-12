@@ -305,6 +305,8 @@ namespace HapetFrontend.Extensions
             for (int i = 0; i < decls.Count; ++i)
             {
                 var x = decls[i];
+                if (x.Name == null)
+                    continue;
                 if (x.Name.Name == decl.Name.Name && 
                     x.Type.OutType == decl.Type.OutType &&
                     (x.Name.AdditionalData == null && decl.Name.AdditionalData == null))

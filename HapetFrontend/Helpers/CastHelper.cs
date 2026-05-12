@@ -320,18 +320,18 @@ namespace HapetFrontend
             AstIdExpr currentName;
             if (targetType is DelegateType delT1 && currentType is DelegateType delT2)
             {
-                targetName = delT1.TargetDeclaration.Name;
-                currentName = delT2.TargetDeclaration.Name;
+                targetName = delT1.TargetDeclaration?.Name;
+                currentName = delT2.TargetDeclaration?.Name;
             }
             else if (targetType is ClassType clsT1 && currentType is ClassType clsT2)
             {
-                targetName = clsT1.Declaration.Name;
-                currentName = clsT2.Declaration.Name;
+                targetName = clsT1.Declaration?.Name;
+                currentName = clsT2.Declaration?.Name;
             }
             else if (targetType is StructType strT1 && currentType is StructType strT2)
             {
-                targetName = strT1.Declaration.Name;
-                currentName = strT2.Declaration.Name;
+                targetName = strT1.Declaration?.Name;
+                currentName = strT2.Declaration?.Name;
             }
             else
             {
@@ -339,7 +339,7 @@ namespace HapetFrontend
             }
 
             // at first - check that the names are the same
-            if (targetName.Name != currentName.Name)
+            if (targetName == null || currentName == null || targetName.Name != currentName.Name)
                 return false;
 
             // we need to go all over the generic id types

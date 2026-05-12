@@ -17,6 +17,7 @@ namespace HapetPostPrepare
             for (int i = 0; i < generics.Count; ++i)
             {
                 _currentGenericToRealMappings.Add(generics[i].Name, normalTypes[i]);
+                normalTypes[i].SetGenericRealTypeParameter();
             }
         }
 

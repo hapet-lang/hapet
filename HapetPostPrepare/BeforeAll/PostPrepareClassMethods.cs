@@ -74,6 +74,9 @@ namespace HapetPostPrepare
             var allFields = decl.GetDeclarations().Where(x => x is AstVarDecl varD && x is not AstPropertyDecl).Select(x => x as AstVarDecl);
             foreach (var pp in allProps)
             {
+                // skip wrong parsing
+                if (pp.Name == null)
+                    continue;
                 // check if there is already a field named like 'field_Prop'
                 // error in this situation because we probably going to generate the field
                 // also check if the prop is really going to gen field
@@ -278,6 +281,9 @@ namespace HapetPostPrepare
             {
                 foreach (var ct in ctors)
                 {
+                    // skip wrong parsing
+                    if (ct.Body == null)
+                        continue;
                     ct.Name = ct.Name.GetCopy($"{ct.Name.Name}_ctor");
                     // insert ini func call at the beginning of the func body
                     /// make sure that this shite is the same as in <see cref="RenameFromGenericToRealType"/>

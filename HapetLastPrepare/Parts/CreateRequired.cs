@@ -8,15 +8,13 @@ namespace HapetLastPrepare
     {
         private void CreateRequired()
         {
-            foreach (var cls in _postPreparer.AllClassesMetadata)
+            List<AstDeclaration> declarations = new List<AstDeclaration>();
+            declarations.AddRange(_postPreparer.AllClassesMetadata);
+            declarations.AddRange(_postPreparer.AllStructsMetadata);
+            foreach (var decl in declarations)
             {
-                _postPreparer._currentSourceFile = cls.SourceFile;
-                CreateRequiredInDecl(cls);
-            }
-            foreach (var str in _postPreparer.AllStructsMetadata)
-            {
-                _postPreparer._currentSourceFile = str.SourceFile;
-                CreateRequiredInDecl(str);
+                _postPreparer._currentSourceFile = decl.SourceFile;
+                CreateRequiredInDecl(decl);
             }
         }
 

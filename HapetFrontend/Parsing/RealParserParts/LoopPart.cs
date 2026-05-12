@@ -28,7 +28,10 @@ namespace HapetFrontend.Parsing
             // if there is a first param
             if (!CheckToken(inInfo, TokenType.Semicolon))
             {
+                var savedMultiply = inInfo.AllowMultiplyExpression;
+                inInfo.AllowMultiplyExpression = false;
                 first = ParseStatement(inInfo, ref outInfo);
+                inInfo.AllowMultiplyExpression = savedMultiply;
             }
 
             // check if it is a foreach

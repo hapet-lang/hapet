@@ -948,6 +948,9 @@ namespace HapetPostPrepare
             // null on wrong parsing
             if (nestExpr.RightPart == null)
                 return;
+            // skip double inference of generic real parameters
+            if (nestExpr.IsGenericRealTypeParameter)
+                return;
 
             // the var is used to check when static/const field is accessed from an object
             bool accessingFromAnObject = false;

@@ -27,6 +27,7 @@ namespace HapetFrontend.Ast.Expressions
                 Location)
             {
                 IsSyntheticStatement = IsSyntheticStatement,
+                IsGenericRealTypeParameter = IsGenericRealTypeParameter,
                 FindSymbol = FindSymbol,
                 Suffix = Suffix,
                 IsCompileTimeValue = IsCompileTimeValue,

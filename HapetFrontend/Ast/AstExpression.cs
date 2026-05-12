@@ -57,7 +57,7 @@ namespace HapetFrontend.Ast
             if (this is AstIdExpr idExpr)
                 return idExpr.FindSymbol as DeclSymbol;
             else if (this is AstNestedExpr nest)
-                return nest.RightPart.TryGetDeclSymbol(allowOnlyNestedAndId);
+                return nest.RightPart?.TryGetDeclSymbol(allowOnlyNestedAndId);
 
             if (!allowOnlyNestedAndId)
             {
