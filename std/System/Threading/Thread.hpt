@@ -6,6 +6,15 @@ using System;
 
 public partial class Thread
 {
+    private static ThreadStatic<Thread> t_currentThread = new ThreadStatic<Thread>();
+    public static Thread CurrentThread
+    {
+        get
+        {
+            return t_currentThread.Value ?? InitializeCurrentThread();
+        }
+    }
+
     /// <summary>Gets or sets a value indicating the scheduling priority of a thread.</summary>
     public ThreadPriority Priority { get; set; } = ThreadPriority.Normal;
     /// <summary>Returns true if the thread is a threadpool thread.</summary>
@@ -113,5 +122,13 @@ public partial class Thread
             throw new ThreadStateException(SR.ThreadState_NotStarted);
         }
         return JoinInternal(millisecondsTimeout);
+    }
+
+    private static Thread InitializeCurrentThread()
+    {
+        Thread thread = null;
+        GetCurrentThread(ref thread);
+        t_currentThread.Value = thread;
+        return thread;
     }
 }

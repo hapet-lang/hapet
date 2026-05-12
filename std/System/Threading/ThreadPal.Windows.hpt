@@ -9,14 +9,23 @@ using System.Runtime.InteropServices;
 internal static class ThreadPal
 {
     [LibImport("", "CreateThread")]
-    private static extern inline void* CreateThread(void* attrs, uintptr stackSize, void* func, void* funcParam, uint creationFlags, uint* threadId);
+    internal static extern inline void* CreateThread(void* attrs, uintptr stackSize, void* func, void* funcParam, uint creationFlags, uint* threadId);
     [LibImport("", "ResumeThread")]
-    private static extern inline int ResumeThread(void* handle);
+    internal static extern inline int ResumeThread(void* handle);
     [LibImport("", "SetThreadPriority")]
-    private static extern inline int SetThreadPriority(void* handle, int priority);
+    internal static extern inline int SetThreadPriority(void* handle, int priority);
     // fuck win < 10
     [LibImport("", "SetThreadDescription")]
-    private static extern inline int SetThreadDescription(void* handle, ushort* desc);
+    internal static extern inline int SetThreadDescription(void* handle, ushort* desc);
+    [LibImport("", "GetCurrentThreadId")]
+    internal static extern inline int GetCurrentThreadId();
+    [LibImport("", "WaitForSingleObject")]
+    internal static extern inline uint WaitForSingleObject(void* handle, uint millis);
+
+    // cringe winapi consts
+    internal const uint WAIT_FAILED = (0xFFFFFFFF);
+    internal const uint STATUS_WAIT_0 = ((uint)0x00000000L);
+    internal const uint WAIT_OBJECT_0 = ((STATUS_WAIT_0) + 0);
 
     internal static void StartThread(Thread thread)
     {
@@ -53,6 +62,71 @@ internal static class ThreadPal
             case (ThreadPriority.Highest) return 2;
         }
         return 0;
+    }
+
+    internal static bool JoinThread(Thread thread, int millisecondsTimeout)
+    {
+        // This method assumes the thread has been started
+        // Debug.Assert((thread.ThreadState & ThreadState.Unstarted) == 0 || (millisecondsTimeout == 0)); // TODO:
+        
+        if (thread._threadHandle == null)
+        {
+            // If the thread has died, the handle can be marked as invalid.
+            // Waiting on an invalid handle will never complete, so complete now.
+            return true;
+        }
+
+        if (millisecondsTimeout == 0)
+        {
+            int result = (int)WaitForSingleObject(thread._threadHandle, 0);
+            return result == (int)WAIT_OBJECT_0;
+        }
+        else
+        {
+            Thread currentThread = CurrentThread;
+            currentThread.SetWaitSleepJoinState();
+            uint result;
+            if (millisecondsTimeout == Timeout.Infinite)
+            {
+                // Infinite wait
+                while (true)
+                {
+                    result = Interop.Kernel32.WaitForSingleObjectEx(waitHandle.DangerousGetHandle(), Timeout.UnsignedInfinite, Interop.BOOL.TRUE);
+                    if (result != Interop.Kernel32.WAIT_IO_COMPLETION)
+                    {
+                        break;
+                    }
+                    // Check if this was our interrupt APC
+                    CheckForPendingInterrupt();
+                }
+            }
+            else
+            {
+                long startTime = Environment.TickCount64;
+                while (true)
+                {
+                    result = Interop.Kernel32.WaitForSingleObjectEx(waitHandle.DangerousGetHandle(), (uint)millisecondsTimeout, Interop.BOOL.TRUE);
+                    if (result != Interop.Kernel32.WAIT_IO_COMPLETION)
+                    {
+                        break;
+                    }
+                    // Check if this was our interrupt APC
+                    CheckForPendingInterrupt();
+                    // Handle APC completion by adjusting timeout and retrying
+                    long currentTime = Environment.TickCount64;
+                    long elapsed = currentTime - startTime;
+                    if (elapsed >= millisecondsTimeout)
+                    {
+                        result = Interop.Kernel32.WAIT_TIMEOUT;
+                        break;
+                    }
+                    millisecondsTimeout -= (int)elapsed;
+                    startTime = currentTime;
+                }
+            }
+            currentThread.ClearWaitSleepJoinState();
+            return result == (int)Interop.Kernel32.WAIT_OBJECT_0;
+        }
     }
 }
 #endif
