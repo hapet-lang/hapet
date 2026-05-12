@@ -377,6 +377,10 @@ namespace HapetPostPrepare
                 }
             }
 
+            // type not inferenced property
+            if (varDecl.Type.OutType == null)
+                return;
+
             // pp assign value
             if (varDecl.Initializer != null)
                 varDecl.Initializer = PostPrepareVarValueAssign(varDecl.Initializer, varDecl.Type.OutType, inInfo, ref outInfo, false);
