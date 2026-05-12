@@ -103,8 +103,11 @@ namespace HapetBackend.Llvm
             int rawSize = (type is PointerType pp && pp.CreatedByCompiler ? pp.TargetType : type).GetSize();
             LLVMValueRef rawSizeValue = LLVMValueRef.CreateConstInt(_context.Int32Type, (ulong)rawSize);
 
+            // is value type
+            LLVMValueRef isValueType = LLVMValueRef.CreateConstInt(_context.Int1Type, (ulong)(type is StructType ? 1 : 0));
+
             _builder.BuildStore(LLVMValueRef.CreateConstNamedStruct(typeInfoType,
-                [interfaceOffsets, dtorDelegate, rawSizeValue]), globConst);
+                [interfaceOffsets, dtorDelegate, rawSizeValue, isValueType]), globConst);
         }
 
         private LLVMTypeRef _typeInfoType;

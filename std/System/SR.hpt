@@ -12,6 +12,9 @@ internal static class SR
     internal const string ArgumentOutOfRange_IndexMustBeLessOrEqual = "Index was out of range. Must be non-negative and less than or equal to the size of the collection.";
     internal const string ArgumentOutOfRange_Count = "Count must be positive and count must refer to a location within the string/array/collection.";
     internal const string Argument_InvalidOffLen = "Offset and length were out of bounds for the array or count is greater than the number of elements from index to the end of the source collection.";
+    internal const string Argument_AddingDuplicateWithKey = "An item with the same key has already been added. Key: {0}";
+    internal const string Argument_InvalidTimeSpanStyles = "An undefined TimeSpanStyles value is being used.";
+    internal const string Argument_IncompatibleArrayType = "Target array type is not compatible with the type of items in the collection.";
 
     // formatting
     internal const string Formatting_InvalidGroupSizes = "Invalid group sizes in NumberFormatInfo.";
@@ -45,10 +48,13 @@ internal static class SR
     internal const string Arg_InvalidConsoleColor = "The ConsoleColor enum value was not defined on that enum. Please use a defined color from the enum.";
     internal const string Arg_OverflowException = "Arithmetic operation resulted in an overflow.";
     internal const string Arg_DivideByZero = "Attempted to divide by zero.";
-    internal const string Argument_InvalidTimeSpanStyles = "An undefined TimeSpanStyles value is being used.";
 
     internal const string Arg_DllNotFoundException = "Dll was not found.";
     internal const string Arg_CannotBeNaN = "TimeSpan does not accept floating point Not-a-Number values.";
+    internal const string Arg_ArrayPlusOffTooSmall = "Destination array is not long enough to copy all the items in the collection. Check array index and length.";
+    internal const string Arg_KeyNotFound = "The given key was not present in the dictionary.";
+    internal const string Arg_KeyNotFoundWithKey = "The given key '{0}' was not present in the dictionary.";
+    internal const string Arg_ArrayTypeMismatchException = "Attempted to access an element as a type incompatible with the array.";
 
     // overflow
     internal const string Overflow_TimeSpanTooLong = "TimeSpan overflowed because the duration is too long.";
@@ -61,8 +67,11 @@ internal static class SR
     // invalid
     internal const string InvalidOperation_EnumNotStarted = "Enumeration has not started. Call MoveNext.";
     internal const string InvalidOperation_EnumEnded = "Enumeration already finished.";
+    internal const string InvalidOperation_EnumFailedVersion = "Collection was modified; enumeration operation may not execute.";
+    internal const string InvalidOperation_EnumOpCantHappen = "Enumeration has either not started or has already finished.";
     internal const string InvalidOperation_IComparerFailed = "Failed to compare two elements in the array.";
     internal const string InvalidOperation_NoValue = "Nullable object must have a value.";
+    internal const string InvalidOperation_ConcurrentOperationsNotSupported = "Operations that change non-concurrent collections must have exclusive access. A concurrent update was performed on this collection and corrupted its state. The collection's state is no longer correct.";
 
     // io
     internal const string Arg_IOException = "I/O error occurred.";
