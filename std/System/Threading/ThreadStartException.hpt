@@ -1,0 +1,14 @@
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+// Some modifications were made for hapet-lang compatibility.
+
+using System;
+
+/// <summary>
+/// The exception that is thrown when a <see cref="Thread" /> is could not be started.
+/// </summary>
+public class ThreadStartException : SystemException
+{
+    public ThreadStartException() : base(SR.Arg_ThreadStartException) { }
+    public ThreadStartException(string message) : base(message ?? SR.Arg_ThreadStartException) { }
+}

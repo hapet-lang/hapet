@@ -1,0 +1,46 @@
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+// Some modifications were made for hapet-lang compatibility.
+
+using System;
+using System.Text;
+using System.Runtime.InteropServices;
+
+#if TARGET_PLATFORM == "win-x64" || TARGET_PLATFORM == "win-x86";
+[SuppressStaticCtorCall]
+internal static class MarshalPal
+{
+    [DeclarationUsed]
+    [LibImport("", "GetLastError")]
+    internal static extern inline uint GetLastError();
+    [DeclarationUsed]
+    [LibImport("", "FormatMessageA")]
+    internal static extern inline uint FormatMessageA(uint flags, void* source, uint messageId, uint langId, void* buffer, uint size, void* args);
+    [DeclarationUsed]
+    [LibImport("", "LocalFree")]
+    internal static extern inline void* LocalFree(void*);
+
+    internal static string GetLastStringError()
+    {
+        // https://stackoverflow.com/questions/1387064/how-to-get-the-error-message-from-the-error-code-returned-by-getlasterror
+        // get the error message ID, if any.
+        var error = GetLastError();
+        if (error == 0)
+            return "";
+        
+        byte* messageBuffer = null;
+        // FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS
+        uint flags = 0x00000100 | 0x00001000 | 0x00000200;
+        uint langId = (uint)(((short)(0x00) << 10) | ((short)(0x01)));
+        // Ask Win32 to give us the string version of that message ID.
+        // The parameters we pass in, tell Win32 to create the buffer that holds the message for us (because we don't yet know how long the message string will be).
+        uint size = FormatMessageA(flags, null, error, langId, &messageBuffer, 0, null);
+        if (messageBuffer == null)
+            return "";
+        string toReturn = UTF8Encoding.GetString(messageBuffer);
+        // Free the Win32's string's buffer.
+        LocalFree(messageBuffer);
+        return toReturn;
+    }
+}
+#endif

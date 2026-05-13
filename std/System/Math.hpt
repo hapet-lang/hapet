@@ -6,14 +6,188 @@ using System.Runtime.InteropServices;
 
 public static class Math
 {
-    public static int Min(int val1, int val2)
+    public static inline double Abs(double value)
+    {
+        const ulong mask = 0x7FFFFFFFFFFFFFFF;
+        ulong raw = BitConverter.DoubleToUInt64Bits(value);
+
+        return BitConverter.UInt64BitsToDouble(raw & mask);
+    }
+
+    public static inline int Min(int val1, int val2)
     {
         return (val1 <= val2) ? val1 : val2;
     }
 
-    public static double Truncate(double d)
+    public static inline double Truncate(double d)
     {
         Marshal.ModF(d, &d);
         return d;
+    }
+
+    public static inline double Sqrt(double d)
+    {
+        return Marshal.Sqrt(d);
+    }
+
+    public static inline double CopySign(double x, double y)
+    {
+        return SoftwareFallback(x, y);
+
+        static double SoftwareFallback(double x, double y)
+        {
+            // This method is required to work for all inputs,
+            // including NaN, so we operate on the raw bits.
+            ulong xbits = BitConverter.DoubleToUInt64Bits(x);
+            ulong ybits = BitConverter.DoubleToUInt64Bits(y);
+
+            // Remove the sign from x, and remove everything but the sign from y
+            // Then, simply OR them to get the correct sign
+            return BitConverter.UInt64BitsToDouble((xbits & ~double.SignMask) | (ybits & double.SignMask));
+        }
+    }
+
+    /// <summary>Produces the full product of two unsigned 32-bit numbers.</summary>
+    /// <param name="a">The first number to multiply.</param>
+    /// <param name="b">The second number to multiply.</param>
+    /// <returns>The number containing the product of the specified numbers.</returns>
+    public static inline ulong BigMul(uint a, uint b)
+    {
+        return ((ulong)a) * b;
+    }
+
+    /// <summary>Produces the full product of two 32-bit numbers.</summary>
+    /// <param name="a">The first number to multiply.</param>
+    /// <param name="b">The second number to multiply.</param>
+    /// <returns>The number containing the product of the specified numbers.</returns>
+    public static inline long BigMul(int a, int b)
+    {
+        return ((long)a) * b;
+    }
+
+
+    /// <summary>
+    /// Perform multiplication between 64 and 32 bit numbers, returning lower 64 bits in <paramref name="low"/>
+    /// </summary>
+    /// <returns>hi bits of the result</returns>
+    /// <remarks>REMOVE once BigMul(ulong, ulong) is treated as intrinsics and optimizes 32 by 64 multiplications</remarks>
+    internal static inline ulong BigMul(ulong a, uint b, out ulong low)
+    {
+        return Math.BigMul((ulong)a, (ulong)b, out low);
+    }
+
+    /// <inheritdoc cref="BigMul(ulong, uint, out ulong)"/>
+    internal static inline ulong BigMul(uint a, ulong b, out ulong low)
+        => BigMul(b, a, out low);
+
+    /// <summary>Produces the full product of two unsigned 64-bit numbers.</summary>
+    /// <param name="a">The first number to multiply.</param>
+    /// <param name="b">The second number to multiply.</param>
+    /// <param name="low">The low 64-bit of the product of the specified numbers.</param>
+    /// <returns>The high 64-bit of the product of the specified numbers.</returns>
+    public static inline unsafe ulong BigMul(ulong a, ulong b, out ulong low)
+    {
+        return SoftwareFallback(a, b, out low);
+
+        static ulong SoftwareFallback(ulong a, ulong b, out ulong low)
+        {
+            // Adaptation of algorithm for multiplication
+            // of 32-bit unsigned integers described
+            // in Hacker's Delight by Henry S. Warren, Jr. (ISBN 0-201-91465-4), Chapter 8
+            // Basically, it's an optimized version of FOIL method applied to
+            // low and high dwords of each operand
+
+            // Use 32-bit uints to optimize the fallback for 32-bit platforms.
+            uint al = (uint)a;
+            uint ah = (uint)(a >> 32);
+            uint bl = (uint)b;
+            uint bh = (uint)(b >> 32);
+
+            ulong mull = ((ulong)al) * bl;
+            ulong t = ((ulong)ah) * bl + (mull >> 32);
+            ulong tl = ((ulong)al) * bh + (uint)t;
+
+            low = tl << 32 | (uint)mull;
+
+            return ((ulong)ah) * bh + (t >> 32) + (tl >> 32);
+        }
+    }
+
+    /// <summary>Produces the full product of two 64-bit numbers.</summary>
+    /// <param name="a">The first number to multiply.</param>
+    /// <param name="b">The second number to multiply.</param>
+    /// <param name="low">The low 64-bit of the product of the specified numbers.</param>
+    /// <returns>The high 64-bit of the product of the specified numbers.</returns>
+    public static inline long BigMul(long a, long b, out long low)
+    {
+        ulong ulow;
+        ulong high = BigMul((ulong)a, (ulong)b, out ulow);
+        low = (long)ulow;
+        return (long)high - ((a >> 63) & b) - ((b >> 63) & a);
+    }
+
+    /// <summary>Produces the full product of two unsigned 64-bit numbers.</summary>
+    /// <param name="a">The first number to multiply.</param>
+    /// <param name="b">The second number to multiply.</param>
+    /// <returns>The full product of the specified numbers.</returns>
+    public static inline UInt128 BigMul(ulong a, ulong b)
+    {
+        ulong low;
+        ulong high = BigMul(a, b, out low);
+        return new UInt128(high, low);
+    }
+
+    /// <summary>Produces the full product of two 64-bit numbers.</summary>
+    /// <param name="a">The first number to multiply.</param>
+    /// <param name="b">The second number to multiply.</param>
+    /// <returns>The full product of the specified numbers.</returns>
+    public static inline Int128 BigMul(long a, long b)
+    {
+        long low;
+        long high = BigMul(a, b, out low);
+        return new Int128((ulong)high, (ulong)low);
+    }
+
+    public static double Round(double a)
+    {
+        // ************************************************************************************
+        // IMPORTANT: Do not change this implementation without also updating MathF.Round(float),
+        //            FloatingPointUtils::round(double), and FloatingPointUtils::round(float)
+        // ************************************************************************************
+
+        // This code is based on `nearbyint` from amd/aocl-libm-ose
+        // Copyright (C) 2008-2022 Advanced Micro Devices, Inc. All rights reserved.
+        //
+        // Licensed under the BSD 3-Clause "New" or "Revised" License
+        // See THIRD-PARTY-NOTICES.TXT for the full license text
+
+        // This represents the boundary at which point we can only represent whole integers
+        const double IntegerBoundary = 4503599627370496.0; // 2^52
+
+        if (Abs(a) >= IntegerBoundary)
+        {
+            // Values above this boundary don't have a fractional
+            // portion and so we can simply return them as-is.
+            return a;
+        }
+
+        // Otherwise, since floating-point takes the inputs, performs
+        // the computation as if to infinite precision and unbounded
+        // range, and then rounds to the nearest representable result
+        // using the current rounding mode, we can rely on this to
+        // cheaply round.
+        //
+        // In particular, .NET doesn't support changing the rounding
+        // mode and defaults to "round to nearest, ties to even", thus
+        // by adding the original value to the IntegerBoundary we get
+        // an exactly represented whole integer that is precisely the
+        // IntegerBoundary greater in magnitude than the answer we want.
+        //
+        // We can then simply remove that offset to get the correct answer,
+        // noting that we also need to copy back the original sign to
+        // correctly handle -0.0
+
+        double temp = CopySign(IntegerBoundary, a);
+        return CopySign((a + temp) - temp, a);
     }
 }

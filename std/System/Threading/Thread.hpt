@@ -1,0 +1,136 @@
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+// Some modifications were made for hapet-lang compatibility.
+
+using System;
+
+public partial class Thread
+{
+    private static ThreadStatic<Thread> t_currentThread = new ThreadStatic<Thread>();
+    public static Thread CurrentThread
+    {
+        get
+        {
+            return t_currentThread.Value ?? InitializeCurrentThread();
+        }
+    }
+
+    public static int CurrentThreadId => ThreadPal.GetCurrentThreadId();
+
+    /// <summary>Gets or sets a value indicating the scheduling priority of a thread.</summary>
+    public ThreadPriority Priority { get; set; } = ThreadPriority.Normal;
+    /// <summary>Returns true if the thread is a threadpool thread.</summary>
+    public bool IsThreadPoolThread { get; set; } = false;
+    /// <summary>Get or sets the name of the thread.</summary>
+    public string Name { get; set; }
+
+    private uintptr _threadHandle;
+    private bool _isDead;
+    private bool _isThreadPool;
+
+    /// <summary>
+    /// Return the thread state as a consistent set of bits.  This is more
+    /// general then IsAlive or IsBackground.
+    /// </summary>
+    public ThreadState ThreadState { get; set; }
+
+    internal StartHelper _startHelper;
+
+    // State associated with starting new thread
+    private sealed class StartHelper
+    {
+        internal Thread _thread;
+        internal int _maxStackSize;
+        internal object _start;
+        internal object _startArg;
+
+        internal StartHelper(object start, Thread thread)
+        {
+            _start = start;
+            _thread = thread;
+        }
+
+        // avoid long-lived stack frame in many threads
+        internal inline void Run()
+        {
+            RunWorker();
+        }
+
+        // avoid long-lived stack frame in many threads
+        private inline void RunWorker()
+        {
+            // set that the thread is currently running
+            _thread.ThreadState = System.Threading.ThreadState.Running;
+
+            object start = _start;
+            _start = default; // anime?
+
+            try
+            {
+                if (start is ThreadStart threadStart)
+                {
+                    threadStart();
+                }
+                else
+                {
+                    // TODO: parametrized shite
+                }
+            }
+            catch (Exception ex)
+            {
+                
+            }
+            finally 
+            {
+                // set that the thread is stopped
+                _thread.ThreadState = System.Threading.ThreadState.Stopped;
+            }
+        }
+    }
+
+    public Thread(ThreadStart start)
+    {
+        ArgumentNullException.ThrowIfNull(start);
+
+        _startHelper = new StartHelper(start, this);
+    }
+
+    private void Start()
+    {
+        // RuntimeFeature.ThrowIfMultithreadingIsNotSupported();
+        StartHelper startHelper = _startHelper;
+
+        // In the case of a null startHelper (second call to start on same thread)
+        // StartCore method will take care of the error reporting.
+        if (startHelper != null)
+        {
+            startHelper._startArg = null;
+        }
+
+        // if already running - throw exception
+        if (ThreadState == System.Threading.ThreadState.Running)
+        {
+            throw new ThreadStateException(SR.ThreadState_AlreadyStarted);
+        }
+
+        ThreadPal.StartThread(this);
+    }
+
+    public bool Join(int millisecondsTimeout)
+    {
+        ArgumentOutOfRangeException.ThrowIfLessThan(millisecondsTimeout, Timeout.Infinite);
+        if ((int)(ThreadState & System.Threading.ThreadState.Unstarted) != 0)
+        {
+            throw new ThreadStateException(SR.ThreadState_NotStarted);
+        }
+        return JoinInternal(millisecondsTimeout);
+    }
+
+    private static Thread InitializeCurrentThread()
+    {
+        Thread thread = null;
+        GetCurrentThread(ref thread);
+        t_currentThread.Value = thread;
+        return thread;
+    }
+}

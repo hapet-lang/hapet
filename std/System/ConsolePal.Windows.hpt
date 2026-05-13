@@ -7,7 +7,6 @@ using System.Text;
 using System.Runtime.InteropServices;
 
 #if TARGET_PLATFORM == "win-x64" || TARGET_PLATFORM == "win-x86";
-[SuppressStaticCtorCall]
 internal static class ConsolePal
 {
     [LibImport("", "fputs")]

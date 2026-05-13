@@ -1,0 +1,29 @@
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+// Some modifications were made for hapet-lang compatibility.
+
+using System;
+
+// The implementations of most the methods in this file are provided as intrinsics.
+// In CoreCLR, the body of the functions are replaced by the EE with unsafe code. See see getILIntrinsicImplementationForUnsafe for details.
+// In AOT compilers, see Internal.IL.Stubs.UnsafeIntrinsics for details.
+
+/// <summary>
+/// Contains generic, low-level functionality for manipulating pointers.
+/// </summary>
+public static partial unsafe class Unsafe
+{
+    /// <summary>
+    /// Reinterprets the given value of type <typeparamref name="TFrom" /> as a value of type <typeparamref name="TTo" />.
+    /// </summary>
+    /// <exception cref="NotSupportedException">The sizes of <typeparamref name="TFrom" /> and <typeparamref name="TTo" /> are not the same
+    /// or the type parameters are not <see langword="struct"/>s.</exception>
+    public static inline TTo BitCast<TFrom, TTo>(TFrom source)
+    {
+        if (sizeof(TFrom) != sizeof(TTo))
+        {
+            throw new NotSupportedException();
+        }
+        return *((TTo*)source);
+    }
+}

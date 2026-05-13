@@ -40,6 +40,9 @@ public class Comparer : IComparer
         if (b is IComparable ib)
             return -ib.CompareTo(a);
 
+        if (b.Equals(a)) // fallback
+            return 0;
+
         throw new ArgumentException(SR.Argument_ImplementIComparable);
     }
 }
@@ -56,6 +59,8 @@ public class Comparer<T> : IComparer<T>
                     return icmp.CompareTo(y);
                 else if (y is IComparable<T> icmp2)
                     return -icmp2.CompareTo(x);
+                else if (y.Equals(x)) // fallback
+                    return 0;
             } 
             return 1;
         }
