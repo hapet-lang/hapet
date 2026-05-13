@@ -46,8 +46,8 @@ namespace HapetFrontend.Ast.Expressions
         {
             var copy = new AstBinaryExpr(
                 Operator,
-                Left.GetDeepCopy() as AstExpression,
-                Right.GetDeepCopy() as AstExpression,
+                Left?.GetDeepCopy() as AstExpression,
+                Right?.GetDeepCopy() as AstExpression,
                 Location)
             {
                 IsSyntheticStatement = IsSyntheticStatement,

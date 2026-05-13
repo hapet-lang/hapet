@@ -312,9 +312,7 @@ namespace HapetPostPrepare
                         return;
                     }
 
-                    declToSearch = null;
-                    foundSymbol = null;
-                    return;
+                    _compiler.MessageHandler.ReportMessage(_currentSourceFile, callExpr.FuncName, [], ErrorCode.Get(CTEN.FuncWithNameNotFound));
                 }
                 else
                 {
