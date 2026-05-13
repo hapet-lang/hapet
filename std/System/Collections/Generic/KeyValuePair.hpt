@@ -21,10 +21,10 @@ public static class KeyValuePair
 // A KeyValuePair holds a key and a value from a dictionary.
 // It is used by the IEnumerable<T> implementation for both IDictionary<TKey, TValue>
 // and IReadOnlyDictionary<TKey, TValue>.
-public readonly struct KeyValuePair<TKey, TValue>
+public struct KeyValuePair<TKey, TValue>
 {
-    private readonly TKey key; // Do not rename (binary serialization)
-    private readonly TValue value; // Do not rename (binary serialization)
+    private TKey key; // Do not rename (binary serialization)
+    private TValue value; // Do not rename (binary serialization)
 
     public KeyValuePair(TKey key, TValue value)
     {
