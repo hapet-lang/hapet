@@ -39,8 +39,8 @@ namespace HapetFrontend.Ast.Statements
         public override AstStatement GetDeepCopy()
         {
             var copy = new AstIfStmt(
-                Condition.GetDeepCopy() as AstExpression,
-                BodyTrue.GetDeepCopy() as AstBlockExpr,
+                Condition?.GetDeepCopy() as AstExpression,
+                BodyTrue?.GetDeepCopy() as AstBlockExpr,
                 BodyFalse?.GetDeepCopy() as AstBlockExpr,
                 Location)
             {

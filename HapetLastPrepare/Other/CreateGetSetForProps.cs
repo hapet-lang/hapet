@@ -5,6 +5,7 @@ using HapetFrontend.Extensions;
 using HapetFrontend.Helpers;
 using HapetFrontend.Parsing;
 using HapetFrontend.Types;
+using HapetPostPrepare.Entities;
 using System.Collections.Generic;
 
 namespace HapetLastPrepare
@@ -22,7 +23,7 @@ namespace HapetLastPrepare
             {
                 _postPreparer.SetScopeAndParent(d, propDecl);
                 _postPreparer.PostPrepareDeclScoping(d);
-                _postPreparer.PostPrepareStatementUpToCurrentStep(false, d);
+                _postPreparer.PostPrepareStatementUpToCurrentStep(InInfo.Default, false, d);
 
                 // we need to add the funcs to arr
                 if ((propDecl.SpecialKeys.ContainsAny(TokenType.KwAbstract, TokenType.KwVirtual, TokenType.KwOverride) ||

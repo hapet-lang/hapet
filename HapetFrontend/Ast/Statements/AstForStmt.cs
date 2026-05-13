@@ -63,8 +63,8 @@ namespace HapetFrontend.Ast.Statements
         {
             var copy = new AstForStmt(
                 FirstArgument.GetDeepCopy() as AstStatement,
-                SecondArgument.GetDeepCopy() as AstExpression,
-                ThirdArgument.GetDeepCopy() as AstStatement,
+                SecondArgument?.GetDeepCopy() as AstExpression,
+                ThirdArgument?.GetDeepCopy() as AstStatement,
                 Body.GetDeepCopy() as AstBlockExpr,
                 Location)
             {

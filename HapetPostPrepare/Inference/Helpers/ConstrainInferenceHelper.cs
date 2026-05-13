@@ -182,7 +182,7 @@ namespace HapetPostPrepare
             decl.InheritedFrom = inheritedFrom;
 
             // single post prepare
-            PostPrepareStatementUpToCurrentStep(false, decl);
+            PostPrepareStatementUpToCurrentStep(inInfo, false, decl);
         }
 
         private void HandleCustomConstrainType(AstGenericDecl decl, AstConstrainStmt constrain, InInfo inInfo, ref OutInfo outInfo)

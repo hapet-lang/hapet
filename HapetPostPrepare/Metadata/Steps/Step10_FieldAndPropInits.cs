@@ -10,10 +10,9 @@ namespace HapetPostPrepare
 {
     public partial class PostPrepare
     {
-        private void PostPrepareMetadataTypeFieldInits(AstStatement stmt)
+        private void PostPrepareMetadataTypeFieldInits(InInfo inInfo, AstStatement stmt)
         {
             // just handlers
-            InInfo inInfo = InInfo.Default;
             OutInfo outInfo = OutInfo.Default;
 
             if (stmt is AstClassDecl cls)

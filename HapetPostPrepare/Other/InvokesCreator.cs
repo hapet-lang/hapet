@@ -4,12 +4,13 @@ using HapetFrontend.Ast.Statements;
 using HapetFrontend.Ast;
 using HapetFrontend.Parsing;
 using HapetFrontend.Types;
+using HapetPostPrepare.Entities;
 
 namespace HapetPostPrepare
 {
     public partial class PostPrepare
     {
-        private void AddInvokeDeclarationToDelegate(AstDelegateDecl del)
+        private void AddInvokeDeclarationToDelegate(InInfo inInfo, AstDelegateDecl del)
         {
             List<AstArgumentExpr> args = new List<AstArgumentExpr>();
             foreach (var p in del.Parameters)
@@ -35,7 +36,7 @@ namespace HapetPostPrepare
             FuncPrepareAfterAll(func, del);
             SetScopeAndParent(func, del, del.SubScope);
             PostPrepareFunctionScoping(func);
-            PostPrepareStatementUpToCurrentStep(false, func);
+            PostPrepareStatementUpToCurrentStep(inInfo, false, func);
         }
 
         private void AddInvokeDeclarationToEvent(AstClassDecl cls, bool declareOnly)

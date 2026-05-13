@@ -1,18 +1,19 @@
-﻿using HapetFrontend.Ast.Declarations;
+﻿using HapetFrontend.Ast;
+using HapetFrontend.Ast.Declarations;
 using HapetFrontend.Ast.Statements;
-using HapetFrontend.Ast;
+using HapetFrontend.Enums;
 using HapetFrontend.Errors;
 using HapetFrontend.Extensions;
-using HapetFrontend.Scoping;
 using HapetFrontend.Helpers;
-using HapetFrontend.Types;
 using HapetFrontend.Parsing;
-using HapetFrontend.Enums;
+using HapetFrontend.Scoping;
+using HapetFrontend.Types;
+using HapetPostPrepare.Entities;
 namespace HapetPostPrepare
 {
     public partial class PostPrepare
     {
-        private void PostPrepareMetadataTypes(AstStatement stmt, bool needSerialize = false)
+        private void PostPrepareMetadataTypes(InInfo inInfo, AstStatement stmt, bool needSerialize = false)
         {
             // just skip allowed statements
             if (stmt is AstUsingStmt || stmt is AstFuncDecl)

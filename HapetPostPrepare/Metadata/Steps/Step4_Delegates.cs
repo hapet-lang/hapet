@@ -11,10 +11,9 @@ namespace HapetPostPrepare
 {
     public partial class PostPrepare
     {
-        private void PostPrepareMetadataDelegates(AstStatement stmt)
+        private void PostPrepareMetadataDelegates(InInfo inInfo, AstStatement stmt)
         {
             // just handlers
-            InInfo inInfo = InInfo.Default;
             OutInfo outInfo = OutInfo.Default;
 
             if (stmt is AstDelegateDecl del)
@@ -30,7 +29,7 @@ namespace HapetPostPrepare
                     var structScope = new Scope($"{del.Name.Name}_scope", del.Scope) { GlobalScope = _compiler.GlobalScope };
                     del.SubScope = structScope;
 
-                    AddInvokeDeclarationToDelegate(del);
+                    AddInvokeDeclarationToDelegate(inInfo, del);
                 }
             }
         }

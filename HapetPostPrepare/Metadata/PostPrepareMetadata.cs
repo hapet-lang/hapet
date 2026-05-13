@@ -5,6 +5,7 @@ using HapetFrontend.Entities;
 using HapetFrontend.Helpers;
 using HapetPostPrepare.Entities;
 using System;
+using System.Runtime;
 
 namespace HapetPostPrepare
 {
@@ -46,18 +47,18 @@ namespace HapetPostPrepare
             AllGenericsMetadata.Clear();
         }
 
-        private int PostPrepareMetadata(bool createMetadataFile = true)
+        private int PostPrepareMetadata(InInfo inInfo, bool createMetadataFile = true)
         {
-            AllPostPrepareMetadataTypes();
-            AllPostPrepareMetadataGenerics();
-            AllPostPrepareMetadataInheritance();
-            AllPostPrepareMetadataDelegates();
-            AllPostPrepareMetadataNestedTypes();
-            AllPostPrepareMetadataFunctions();
-            AllPostPrepareMetadataTypeFieldDecls();
-            AllPostPrepareMetadataNestedTypesInside();
-            AllPostPrepareMetadataTypeFieldInits();
-            AllPostPrepareMetadataAttributes();
+            AllPostPrepareMetadataTypes(inInfo);
+            AllPostPrepareMetadataGenerics(inInfo);
+            AllPostPrepareMetadataInheritance(inInfo);
+            AllPostPrepareMetadataDelegates(inInfo);
+            AllPostPrepareMetadataNestedTypes(inInfo);
+            AllPostPrepareMetadataFunctions(inInfo);
+            AllPostPrepareMetadataTypeFieldDecls(inInfo);
+            AllPostPrepareMetadataNestedTypesInside(inInfo);
+            AllPostPrepareMetadataTypeFieldInits(inInfo);
+            AllPostPrepareMetadataAttributes(inInfo);
 
             // if there were errors while preparing for metafile
             if (_compiler.MessageHandler.HasErrors)
@@ -77,28 +78,28 @@ namespace HapetPostPrepare
             return 0;
         }
 
-        private void AllPostPrepareMetadataTypes()
+        private void AllPostPrepareMetadataTypes(InInfo inInfo)
         {
             _currentPreparationStep = PreparationStep.Types;
 
             foreach (var (_, file) in _compiler.GetFiles())
             {
-                AllPostPrepareMetadataTypesInFile(file);
+                AllPostPrepareMetadataTypesInFile(inInfo, file);
             }
         }
 
-        public void AllPostPrepareMetadataTypesInFile(ProgramFile file)
+        public void AllPostPrepareMetadataTypesInFile(InInfo inInfo, ProgramFile file)
         {
             _currentSourceFile = file;
             foreach (var stmt in file.Statements)
             {
                 // do not serialize imported shite
                 var needSerialize = (!(stmt as AstDeclaration)?.IsImported ?? false);
-                PostPrepareMetadataTypes(stmt, needSerialize);
+                PostPrepareMetadataTypes(inInfo, stmt, needSerialize);
             }
         }
 
-        private void AllPostPrepareMetadataGenerics()
+        private void AllPostPrepareMetadataGenerics(InInfo inInfo)
         {
             _currentPreparationStep = PreparationStep.Generics;
 
@@ -107,7 +108,7 @@ namespace HapetPostPrepare
             {
                 _currentSourceFile = cls.SourceFile;
                 _currentParentStack.AddParent(cls);
-                bool _ = PostPrepareMetadataGenerics(cls);
+                bool _ = PostPrepareMetadataGenerics(inInfo, cls);
                 _currentParentStack.RemoveParent();
             }
             // resolve generic shite of structs
@@ -115,7 +116,7 @@ namespace HapetPostPrepare
             {
                 _currentSourceFile = str.SourceFile;
                 _currentParentStack.AddParent(str);
-                bool _ = PostPrepareMetadataGenerics(str);
+                bool _ = PostPrepareMetadataGenerics(inInfo, str);
                 _currentParentStack.RemoveParent();
             }
             // resolve generic shite of delegates
@@ -123,12 +124,12 @@ namespace HapetPostPrepare
             {
                 _currentSourceFile = del.SourceFile;
                 _currentParentStack.AddParent(del);
-                bool _ = PostPrepareMetadataGenerics(del);
+                bool _ = PostPrepareMetadataGenerics(inInfo, del);
                 _currentParentStack.RemoveParent();
             }
         }
 
-        private void AllPostPrepareMetadataInheritance()
+        private void AllPostPrepareMetadataInheritance(InInfo inInfo)
         {
             _currentPreparationStep = PreparationStep.Inheritance;
 
@@ -137,7 +138,7 @@ namespace HapetPostPrepare
             {
                 _currentSourceFile = cls.SourceFile;
                 _currentParentStack.AddParent(cls);
-                PostPrepareMetadataInheritance(cls);
+                PostPrepareMetadataInheritance(inInfo, cls);
                 _currentParentStack.RemoveParent();
             }
             // resolve inheritance shite of structs
@@ -145,7 +146,7 @@ namespace HapetPostPrepare
             {
                 _currentSourceFile = str.SourceFile;
                 _currentParentStack.AddParent(str);
-                PostPrepareMetadataInheritance(str);
+                PostPrepareMetadataInheritance(inInfo, str);
                 _currentParentStack.RemoveParent();
             }
             // resolve inheritance shite of enums
@@ -153,12 +154,12 @@ namespace HapetPostPrepare
             {
                 _currentSourceFile = enm.SourceFile;
                 _currentParentStack.AddParent(enm);
-                PostPrepareMetadataInheritance(enm);
+                PostPrepareMetadataInheritance(inInfo, enm);
                 _currentParentStack.RemoveParent();
             }
         }
 
-        private void AllPostPrepareMetadataDelegates()
+        private void AllPostPrepareMetadataDelegates(InInfo inInfo)
         {
             _currentPreparationStep = PreparationStep.Delegates;
 
@@ -167,12 +168,12 @@ namespace HapetPostPrepare
             {
                 _currentSourceFile = del.SourceFile;
                 _currentParentStack.AddParent(del);
-                PostPrepareMetadataDelegates(del);
+                PostPrepareMetadataDelegates(inInfo, del);
                 _currentParentStack.RemoveParent();
             }
         }
 
-        private void AllPostPrepareMetadataNestedTypes()
+        private void AllPostPrepareMetadataNestedTypes(InInfo inInfo)
         {
             _currentPreparationStep = PreparationStep.NestedTypes;
 
@@ -182,7 +183,7 @@ namespace HapetPostPrepare
                 _currentSourceFile = cls.SourceFile;
                 _currentParentStack.AddParent(cls);
 
-                PostPrepareMetadataNestedTypes(cls);
+                PostPrepareMetadataNestedTypes(inInfo, cls);
                 _currentParentStack.RemoveParent();
             }
             foreach (var str in AllStructsMetadata.ToList())
@@ -190,12 +191,12 @@ namespace HapetPostPrepare
                 _currentSourceFile = str.SourceFile;
                 _currentParentStack.AddParent(str);
 
-                PostPrepareMetadataNestedTypes(str);
+                PostPrepareMetadataNestedTypes(inInfo, str);
                 _currentParentStack.RemoveParent();
             }
         }
 
-        private void AllPostPrepareMetadataFunctions()
+        private void AllPostPrepareMetadataFunctions(InInfo inInfo)
         {
             _currentPreparationStep = PreparationStep.Functions;
 
@@ -227,7 +228,7 @@ namespace HapetPostPrepare
                 _currentParentStack.AddParent(func.ContainingParent);
 
                 bool isImported = func.IsImported;
-                PostPrepareMetadataFunctions(func, !isImported);
+                PostPrepareMetadataFunctions(inInfo, func, !isImported);
 
                 _currentParentStack.RemoveParent();
                 if (func.ContainingParent.IsNestedDecl)
@@ -238,7 +239,7 @@ namespace HapetPostPrepare
         /// <summary>
         /// We need to infer all decl at first and only then - their intializers
         /// </summary>
-        private void AllPostPrepareMetadataTypeFieldDecls()
+        private void AllPostPrepareMetadataTypeFieldDecls(InInfo inInfo)
         {
             _currentPreparationStep = PreparationStep.FieldAndPropDecls;
 
@@ -249,7 +250,7 @@ namespace HapetPostPrepare
                 if (cls.IsNestedDecl)
                     _currentParentStack.AddParent(cls.ParentDecl);
                 _currentParentStack.AddParent(cls);
-                PostPrepareMetadataTypeFieldDecls(cls);
+                PostPrepareMetadataTypeFieldDecls(inInfo, cls);
                 _currentParentStack.RemoveParent();
                 if (cls.IsNestedDecl)
                     _currentParentStack.RemoveParent();
@@ -261,7 +262,7 @@ namespace HapetPostPrepare
                 if (str.IsNestedDecl)
                     _currentParentStack.AddParent(str.ParentDecl);
                 _currentParentStack.AddParent(str);
-                PostPrepareMetadataTypeFieldDecls(str);
+                PostPrepareMetadataTypeFieldDecls(inInfo, str);
                 _currentParentStack.RemoveParent();
                 if (str.IsNestedDecl)
                     _currentParentStack.RemoveParent();
@@ -272,7 +273,7 @@ namespace HapetPostPrepare
                 if (gen.IsNestedDecl)
                     _currentParentStack.AddParent(gen.ParentDecl);
                 _currentParentStack.AddParent(gen);
-                PostPrepareMetadataTypeFieldDecls(gen);
+                PostPrepareMetadataTypeFieldDecls(inInfo, gen);
                 _currentParentStack.RemoveParent();
                 if (gen.IsNestedDecl)
                     _currentParentStack.RemoveParent();
@@ -283,14 +284,14 @@ namespace HapetPostPrepare
                 if (enm.IsNestedDecl)
                     _currentParentStack.AddParent(enm.ParentDecl);
                 _currentParentStack.AddParent(enm);
-                PostPrepareMetadataTypeFieldDecls(enm);
+                PostPrepareMetadataTypeFieldDecls(inInfo, enm);
                 _currentParentStack.RemoveParent();
                 if (enm.IsNestedDecl)
                     _currentParentStack.RemoveParent();
             }
         }
 
-        private void AllPostPrepareMetadataNestedTypesInside()
+        private void AllPostPrepareMetadataNestedTypesInside(InInfo inInfo)
         {
             _currentPreparationStep = PreparationStep.NestedTypesInside;
 
@@ -300,7 +301,7 @@ namespace HapetPostPrepare
                 _currentSourceFile = cls.SourceFile;
                 _currentParentStack.AddParent(cls);
 
-                PostPrepareMetadataNestedTypesInside(cls);
+                PostPrepareMetadataNestedTypesInside(inInfo, cls);
                 _currentParentStack.RemoveParent();
             }
             foreach (var str in AllStructsMetadata.ToList())
@@ -308,12 +309,12 @@ namespace HapetPostPrepare
                 _currentSourceFile = str.SourceFile;
                 _currentParentStack.AddParent(str);
 
-                PostPrepareMetadataNestedTypesInside(str);
+                PostPrepareMetadataNestedTypesInside(inInfo, str);
                 _currentParentStack.RemoveParent();
             }
         }
 
-        private void AllPostPrepareMetadataTypeFieldInits()
+        private void AllPostPrepareMetadataTypeFieldInits(InInfo inInfo)
         {
             _currentPreparationStep = PreparationStep.FieldAndPropInits;
 
@@ -324,7 +325,7 @@ namespace HapetPostPrepare
                 if (cls.IsNestedDecl)
                     _currentParentStack.AddParent(cls.ParentDecl);
                 _currentParentStack.AddParent(cls);
-                PostPrepareMetadataTypeFieldInits(cls);
+                PostPrepareMetadataTypeFieldInits(inInfo, cls);
                 _currentParentStack.RemoveParent();
                 if (cls.IsNestedDecl)
                     _currentParentStack.RemoveParent();
@@ -336,7 +337,7 @@ namespace HapetPostPrepare
                 if (str.IsNestedDecl)
                     _currentParentStack.AddParent(str.ParentDecl);
                 _currentParentStack.AddParent(str);
-                PostPrepareMetadataTypeFieldInits(str);
+                PostPrepareMetadataTypeFieldInits(inInfo, str);
                 _currentParentStack.RemoveParent();
                 if (str.IsNestedDecl)
                     _currentParentStack.RemoveParent();
@@ -347,14 +348,14 @@ namespace HapetPostPrepare
                 if (enm.IsNestedDecl)
                     _currentParentStack.AddParent(enm.ParentDecl);
                 _currentParentStack.AddParent(enm);
-                PostPrepareMetadataTypeFieldInits(enm);
+                PostPrepareMetadataTypeFieldInits(inInfo, enm);
                 _currentParentStack.RemoveParent();
                 if (enm.IsNestedDecl)
                     _currentParentStack.RemoveParent();
             }
         }
 
-        private void AllPostPrepareMetadataAttributes()
+        private void AllPostPrepareMetadataAttributes(InInfo inInfo)
         {
             _currentPreparationStep = PreparationStep.Attributes;
 
@@ -367,7 +368,7 @@ namespace HapetPostPrepare
 
                 _currentSourceFile = fnc.SourceFile;
                 _currentParentStack.AddParent(fnc);
-                PostPrepareMetadataAttributes(fnc);
+                PostPrepareMetadataAttributes(inInfo, fnc);
                 _currentParentStack.RemoveParent();
 
                 _currentParentStack.RemoveParent();
@@ -379,7 +380,7 @@ namespace HapetPostPrepare
             {
                 _currentSourceFile = cls.SourceFile;
                 _currentParentStack.AddParent(cls);
-                PostPrepareMetadataAttributes(cls);
+                PostPrepareMetadataAttributes(inInfo, cls);
                 _currentParentStack.RemoveParent();
             }
             // inferrencing attribtues of structs
@@ -387,7 +388,7 @@ namespace HapetPostPrepare
             {
                 _currentSourceFile = str.SourceFile;
                 _currentParentStack.AddParent(str);
-                PostPrepareMetadataAttributes(str);
+                PostPrepareMetadataAttributes(inInfo, str);
                 _currentParentStack.RemoveParent();
             }
             // inferrencing attribtues of enums
@@ -395,7 +396,7 @@ namespace HapetPostPrepare
             {
                 _currentSourceFile = enm.SourceFile;
                 _currentParentStack.AddParent(enm);
-                PostPrepareMetadataAttributes(enm);
+                PostPrepareMetadataAttributes(inInfo, enm);
                 _currentParentStack.RemoveParent();
             }
             // inferrencing attribtues of delegates
@@ -403,7 +404,7 @@ namespace HapetPostPrepare
             {
                 _currentSourceFile = del.SourceFile;
                 _currentParentStack.AddParent(del);
-                PostPrepareMetadataAttributes(del);
+                PostPrepareMetadataAttributes(inInfo, del);
                 _currentParentStack.RemoveParent();
             }
         }

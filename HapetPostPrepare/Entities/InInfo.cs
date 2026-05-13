@@ -1,4 +1,5 @@
 ﻿using HapetFrontend.Ast;
+using HapetFrontend.Ast.Expressions;
 
 namespace HapetPostPrepare.Entities
 {
@@ -22,6 +23,11 @@ namespace HapetPostPrepare.Entities
         /// (the name is the same as the type)
         /// </summary>
         public bool AllowVarPropDeclsToBeTypes { get; set; }
+
+        /// <summary>
+        /// 'true' when forcing inference ignoring shite like <see cref="AstIdExpr.IsGenericRealTypeParameter"/>
+        /// </summary>
+        public bool ForceInference { get; set; }
 
         /// <summary>
         /// Currently inferencing nested/lambda

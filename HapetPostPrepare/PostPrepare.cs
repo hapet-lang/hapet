@@ -4,6 +4,7 @@ using HapetFrontend.Ast.Expressions;
 using HapetFrontend.Entities;
 using HapetFrontend.Errors;
 using HapetFrontend.Types;
+using HapetPostPrepare.Entities;
 using HapetPostPrepare.Other;
 
 namespace HapetPostPrepare
@@ -34,6 +35,9 @@ namespace HapetPostPrepare
 
         public int StartPreparation(bool createMetadataFile = true, bool forLsp = false)
         {
+            // just handlers
+            InInfo inInfo = InInfo.Default;
+            OutInfo outInfo = OutInfo.Default;
             _currentParentStack = ParentStackManager.Create(_compiler.MessageHandler);
 
             // we are checking for errors after each function 
@@ -55,11 +59,11 @@ namespace HapetPostPrepare
                 return 0;
 
             // generate metadata file
-            int result = PostPrepareMetadata(createMetadataFile);
+            int result = PostPrepareMetadata(inInfo, createMetadataFile);
             if (result != 0 && !forLsp)
                 return result;
 
-            PostPrepareTypeInference();
+            PostPrepareTypeInference(inInfo, ref outInfo);
             if (_compiler.MessageHandler.HasErrors && !forLsp)
                 return 0;
 
@@ -75,7 +79,7 @@ namespace HapetPostPrepare
             if (forLsp)
                 return 0;
 
-            CallAllStaticCtors();
+            CallAllStaticCtors(inInfo);
 
             MakeOtherShite();
             return 0;

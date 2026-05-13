@@ -45,14 +45,13 @@ namespace HapetPostPrepare
             }
         }
 
-        private void CallAllStaticCtors()
+        private void CallAllStaticCtors(InInfo inInfo)
         {
             // just handlers
-            InInfo inInfo = InInfo.Default;
             OutInfo outInfo = OutInfo.Default;
 
             // call other stor callers in caller and all current stors
-            _compiler.StorsCallerFunction = CreateStorsCallerFunc();
+            _compiler.StorsCallerFunction = CreateStorsCallerFunc(inInfo);
             AstBlockExpr bodyOfStorsToCall = _compiler.StorsCallerFunction.Body;
 
             // we also need to call dependent projects' stor_callers
@@ -119,7 +118,7 @@ namespace HapetPostPrepare
             bodyOfStorsToCall.Statements.AddRange(allStorCalls.OrderBy(StorSorterFunc));
         }
 
-        private AstFuncDecl CreateStorsCallerFunc()
+        private AstFuncDecl CreateStorsCallerFunc(InInfo inInfo)
         {
             // just handlers
             Location loc = new Location(new TokenLocation(), new TokenLocation());
@@ -142,7 +141,7 @@ namespace HapetPostPrepare
 
             SetScopeAndParent(storDecl, null, _compiler.GlobalScope);
             PostPrepareDeclScoping(storDecl);
-            PostPrepareStatementUpToCurrentStep(false, storDecl);
+            PostPrepareStatementUpToCurrentStep(inInfo, false, storDecl);
 
             return storDecl;
         }

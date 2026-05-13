@@ -13,10 +13,9 @@ namespace HapetPostPrepare
 {
     public partial class PostPrepare
     {
-        private void PostPrepareMetadataInheritance(AstStatement stmt)
+        private void PostPrepareMetadataInheritance(InInfo inInfo, AstStatement stmt)
         {
             // just handlers
-            InInfo inInfo = InInfo.Default;
             OutInfo outInfo = OutInfo.Default;
 
             if (stmt is AstClassDecl cls)

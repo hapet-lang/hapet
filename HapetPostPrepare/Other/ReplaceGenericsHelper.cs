@@ -3,6 +3,7 @@ using HapetFrontend.Ast.Declarations;
 using HapetFrontend.Ast.Expressions;
 using HapetFrontend.Ast.Statements;
 using HapetFrontend.Errors;
+using HapetPostPrepare.Entities;
 
 namespace HapetPostPrepare
 {
@@ -10,7 +11,7 @@ namespace HapetPostPrepare
     {
         private Dictionary<string, AstNestedExpr> _currentGenericToRealMappings = new Dictionary<string, AstNestedExpr>();
 
-        private void MakeGenericMapping(List<AstIdExpr> generics, List<AstNestedExpr> normalTypes)
+        private void MakeGenericMapping(List<AstIdExpr> generics, List<AstNestedExpr> normalTypes, InInfo inInfo, ref OutInfo outInfo)
         {
             // ini the dict
             _currentGenericToRealMappings = new Dictionary<string, AstNestedExpr>();
@@ -145,6 +146,11 @@ namespace HapetPostPrepare
             if (funcDecl.BaseCtorCall != null)
             {
                 ReplaceAllGenericTypesInExpr(funcDecl.BaseCtorCall);
+            }
+            // this ctor call replacing
+            if (funcDecl.ThisCtorCall != null)
+            {
+                ReplaceAllGenericTypesInExpr(funcDecl.ThisCtorCall);
             }
 
             // body replacing

@@ -7,10 +7,9 @@ namespace HapetPostPrepare
 {
     public partial class PostPrepare
     {
-        private void PostPrepareMetadataAttributes(AstStatement stmt)
+        private void PostPrepareMetadataAttributes(InInfo inInfo, AstStatement stmt)
         {
             // just handlers
-            InInfo inInfo = InInfo.Default;
             OutInfo outInfo = OutInfo.Default;
 
             if (stmt is AstFuncDecl fnc)

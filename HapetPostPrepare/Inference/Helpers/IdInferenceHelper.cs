@@ -18,7 +18,7 @@ namespace HapetPostPrepare
         private void PostPrepareIdentifierInference(AstIdExpr idExpr, InInfo inInfo, ref OutInfo outInfo, AstDeclaration declToSearch = null)
         {
             // skip double inference of generic real parameters
-            if (idExpr.IsGenericRealTypeParameter)
+            if (idExpr.IsGenericRealTypeParameter && !GenericsHelper.HasAnyGenericTypes(idExpr))
                 return;
 
             string name = idExpr.Name;
@@ -57,7 +57,7 @@ namespace HapetPostPrepare
             if (Step5_IdentifierFuncs(idExpr, inInfo, ref outInfo, declToSearch)) return;
 
             if (!inInfo.MuteErrors && !inInfo.FromCallExpr)
-                _compiler.MessageHandler.ReportMessage(_currentSourceFile, idExpr, [], ErrorCode.Get(CTEN.TypeCouldNotBeInfered));
+                _compiler.MessageHandler.ReportMessage(idExpr.SourceFile, idExpr, [], ErrorCode.Get(CTEN.TypeCouldNotBeInfered));
         }
 
         private bool Step1_IdentifierFullNamespace(AstIdExpr idExpr, InInfo inInfo, ref OutInfo outInfo, AstDeclaration scopeToSearch = null)
@@ -452,8 +452,11 @@ namespace HapetPostPrepare
                 // skip wrong parsed
                 if (g == null) continue;
                 // infer if not infered
-                if (g.OutType == null)
-                    PostPrepareExprInference(g, inInfo, ref outInfo);
+                //if (g.OutType == null)
+                //var saved = inInfo.ForceInference;
+                //inInfo.ForceInference = true;
+                PostPrepareExprInference(g, inInfo, ref outInfo);
+                //inInfo.ForceInference = saved;
             }
 
             // generating generic shite name
@@ -476,12 +479,12 @@ namespace HapetPostPrepare
 
             if (!inInfo.SkipGenericConstrainsCheckWhenInstancing)
                 // check for constrains. if something goes wrong - it will error inside the function
-                if (!CheckIfTheTypesAreAllowedForConstrains(genDecl, realId.GenericRealTypes))
+                if (!CheckIfTheTypesAreAllowedForConstrains(inInfo, genDecl, realId.GenericRealTypes))
                     return genDecl;
 
             // create a new shite with real types
             var realDecl = GetRealTypeFromGeneric(genDecl, realId.GenericRealTypes.GetNestedList(_compiler.MessageHandler), 
-                realName, GenericsHelper.HasAnyGenericTypes(realId.GenericRealTypes));
+                realName, GenericsHelper.HasAnyGenericTypes(realId.GenericRealTypes), inInfo);
             return realDecl;
         }
 

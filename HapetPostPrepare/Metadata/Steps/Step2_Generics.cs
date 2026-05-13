@@ -18,7 +18,7 @@ namespace HapetPostPrepare
 {
     public partial class PostPrepare
     {
-        private bool PostPrepareMetadataGenerics(AstStatement stmt)
+        private bool PostPrepareMetadataGenerics(InInfo inInfo, AstStatement stmt)
         {
             if (stmt is not AstDeclaration decl)
                 return false;
@@ -32,7 +32,6 @@ namespace HapetPostPrepare
                 return false;
 
             // just handlers
-            InInfo inInfo = InInfo.Default;
             OutInfo outInfo = OutInfo.Default;
 
             // gens that do not have generic constrains
@@ -104,9 +103,9 @@ namespace HapetPostPrepare
                         var orig = (idExprG.FindSymbol as DeclSymbol)?.Decl?.OriginalGenericDecl;
                         if (orig == null)
                             continue;
-                        PostPrepareMetadataGenerics(orig);
+                        PostPrepareMetadataGenerics(inInfo, orig);
                         // check for constrains. if something goes wrong - it will error inside the function
-                        CheckIfTheTypesAreAllowedForConstrains(orig, idExprG.GenericRealTypes);
+                        CheckIfTheTypesAreAllowedForConstrains(inInfo, orig, idExprG.GenericRealTypes);
                     }
                 }
             }

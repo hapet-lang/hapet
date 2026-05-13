@@ -19,13 +19,9 @@ namespace HapetPostPrepare
 {
     public partial class PostPrepare
     {
-        private void PostPrepareTypeInference()
+        private void PostPrepareTypeInference(InInfo inInfo, ref OutInfo outInfo)
         {
             _currentPreparationStep = PreparationStep.Inferencing;
-
-            // just handlers
-            InInfo inInfo = InInfo.Default;
-            OutInfo outInfo = OutInfo.Default;
 
             var delegates = AllDelegatesMetadata.ToList();
             var funcs = AllFunctionsMetadata.ToList();
@@ -953,7 +949,7 @@ namespace HapetPostPrepare
             if (nestExpr.RightPart == null)
                 return;
             // skip double inference of generic real parameters
-            if (nestExpr.IsGenericRealTypeParameter)
+            if (nestExpr.IsGenericRealTypeParameter && !inInfo.ForceInference)
                 return;
 
             // the var is used to check when static/const field is accessed from an object

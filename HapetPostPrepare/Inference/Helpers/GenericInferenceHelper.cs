@@ -22,7 +22,7 @@ namespace HapetPostPrepare
     public partial class PostPrepare
     {
         private AstDeclaration GetRealTypeFromGeneric(AstDeclaration decl, List<AstNestedExpr> genericTypes, 
-            AstIdGenericExpr realName, bool implHasGenerics)
+            AstIdGenericExpr realName, bool implHasGenerics, InInfo inInfo)
         {
             // we need to save previous info about current shite and then reload it 
             var savedSourceFile = _currentSourceFile;
@@ -75,7 +75,8 @@ namespace HapetPostPrepare
             // getting pure generics from original generic decl
             var pureGenerics = GenericsHelper.GetGenericsFromName(decl.Name as AstIdGenericExpr, _compiler.MessageHandler);
             // replaces all T with normal types like int
-            MakeGenericMapping(pureGenerics, genericTypes);
+            OutInfo outInfo = OutInfo.Default;
+            MakeGenericMapping(pureGenerics, genericTypes, inInfo, ref outInfo);
             ReplaceAllGenericTypesInDecl(realDecl);
             // replaces all System.Anime::Func(Pivo) with just Func and etc.
             GenericsHelper.ResetDeclarationNames(realDecl);
@@ -101,7 +102,10 @@ namespace HapetPostPrepare
             }
 
             // pp up to the current metadata step
-            PostPrepareStatementUpToCurrentStep(false, realDecl);
+            //var saved = inInfo.ForceInference;
+            //inInfo.ForceInference = true;
+            PostPrepareStatementUpToCurrentStep(inInfo, false, realDecl);
+            //inInfo.ForceInference = saved;
 
             // no need to remove anything from the current parent stack - it would be cleared
 
@@ -113,7 +117,7 @@ namespace HapetPostPrepare
         }
 
         private readonly Stack<(AstDeclaration, List<AstExpression>)> _currentlyCheckingDeclarations = new Stack<(AstDeclaration, List<AstExpression>)>();
-        private bool CheckIfTheTypesAreAllowedForConstrains(AstDeclaration genDecl, List<AstExpression> realTypes)
+        private bool CheckIfTheTypesAreAllowedForConstrains(InInfo inInfo, AstDeclaration genDecl, List<AstExpression> realTypes)
         {
             // check if the decl with types is already preparing - preventing stack overflow
             if (_currentlyCheckingDeclarations.Any(x => x.Item1 == genDecl && x.Item2 == realTypes))
@@ -129,7 +133,7 @@ namespace HapetPostPrepare
                 var currType = realTypes[i];
                 var currContrains = genDecl.GenericConstrains.FirstOrDefault(x => x.Key.Name == currGeneric.Name).Value;
 
-                var result = CheckIfAllowedForConstrains(currContrains, currType);
+                var result = CheckIfAllowedForConstrains(inInfo, currContrains, currType);
                 allNorm.Add(result);
             }
 
@@ -138,7 +142,7 @@ namespace HapetPostPrepare
             return allNorm.All(x => x);
         }
 
-        private bool CheckIfAllowedForConstrains(List<AstConstrainStmt> constrains, AstExpression type)
+        private bool CheckIfAllowedForConstrains(InInfo inInfo, List<AstConstrainStmt> constrains, AstExpression type)
         {
             if (type == null || type.OutType == null) 
                 return false;
@@ -185,7 +189,6 @@ namespace HapetPostPrepare
                         }
                     case GenericConstrainType.NewType:
                         {
-                            InInfo inInfo = InInfo.Default;
                             OutInfo outInfo = OutInfo.Default;
 
                             constrainErrorName = "new"; // better text with param types?
@@ -298,7 +301,7 @@ namespace HapetPostPrepare
                 if (decl.GetInheritedTypes().Count != 0)
                     return;
                 // pp up to the current metadata step
-                PostPrepareStatementUpToCurrentStep(true, decl);
+                PostPrepareStatementUpToCurrentStep(inInfo, true, decl);
             }
         }
 

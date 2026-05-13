@@ -9,10 +9,9 @@ namespace HapetPostPrepare
 {
     public partial class PostPrepare
     {
-        private void PostPrepareMetadataFunctions(AstStatement stmt, bool needSerialize = false)
+        private void PostPrepareMetadataFunctions(InInfo inInfo, AstStatement stmt, bool needSerialize = false)
         {
             // just handlers
-            InInfo inInfo = InInfo.Default;
             OutInfo outInfo = OutInfo.Default;
 
             if (stmt is AstClassDecl cls)
@@ -50,7 +49,7 @@ namespace HapetPostPrepare
                 AllFunctionsMetadata.Add(func);
 
                 // p func generics here
-                bool _ = PostPrepareMetadataGenerics(func);
+                bool _ = PostPrepareMetadataGenerics(inInfo, func);
 
                 var saved = inInfo.ForMetadata;
                 inInfo.ForMetadata = true;
@@ -67,7 +66,7 @@ namespace HapetPostPrepare
                     // check for nested funcs - prepare them
                     foreach (var nestedFunc in func.Body.Statements.Where(x => x is AstFuncDecl).Select(x => x as AstFuncDecl).ToList())
                     {
-                        PostPrepareMetadataFunctions(nestedFunc, false);
+                        PostPrepareMetadataFunctions(inInfo, nestedFunc, false);
                     }
             }
         }

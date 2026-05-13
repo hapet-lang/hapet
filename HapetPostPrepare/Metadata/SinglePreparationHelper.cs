@@ -13,7 +13,7 @@ namespace HapetPostPrepare
 {
     public partial class PostPrepare
     {
-        public void PostPrepareStatementUpToCurrentStep(bool skipFirstStep, params AstStatement[] stmts)
+        public void PostPrepareStatementUpToCurrentStep(InInfo inInfo, bool skipFirstStep, params AstStatement[] stmts)
         {
             if (stmts.Length == 0)
                 return;
@@ -33,7 +33,7 @@ namespace HapetPostPrepare
                 foreach (var stmt in stmts)
                 {
                     First(stmt);
-                    PostPrepareMetadataTypes(stmt, false);
+                    PostPrepareMetadataTypes(inInfo, stmt, false);
                     Last(stmt);
                 }
             }
@@ -42,7 +42,7 @@ namespace HapetPostPrepare
                 foreach (var stmt in stmts)
                 {
                     First(stmt);
-                    PostPrepareMetadataGenerics(stmt);
+                    PostPrepareMetadataGenerics(inInfo, stmt);
                     bool isDecl = stmt is AstDeclaration;
                     if (isDecl) _currentParentStack.RemoveParent(); // required to update generics
                     if (isDecl) _currentParentStack.AddParent(stmt);
@@ -55,7 +55,7 @@ namespace HapetPostPrepare
                 foreach (var stmt in stmts)
                 {
                     First(stmt);
-                    PostPrepareMetadataInheritance(stmt);
+                    PostPrepareMetadataInheritance(inInfo, stmt);
                     Last(stmt);
                 }
             }
@@ -64,7 +64,7 @@ namespace HapetPostPrepare
                 foreach (var stmt in stmts)
                 {
                     First(stmt);
-                    PostPrepareMetadataDelegates(stmt);
+                    PostPrepareMetadataDelegates(inInfo, stmt);
                     Last(stmt);
                 }
             }
@@ -73,7 +73,7 @@ namespace HapetPostPrepare
                 foreach (var stmt in stmts)
                 {
                     First(stmt);
-                    PostPrepareMetadataNestedTypes(stmt);
+                    PostPrepareMetadataNestedTypes(inInfo, stmt);
                     Last(stmt);
                 }
             }
@@ -82,7 +82,7 @@ namespace HapetPostPrepare
                 foreach (var stmt in stmts)
                 {
                     First(stmt);
-                    PostPrepareMetadataFunctions(stmt);
+                    PostPrepareMetadataFunctions(inInfo, stmt);
                     Last(stmt);
                 }
             }
@@ -91,7 +91,7 @@ namespace HapetPostPrepare
                 foreach (var stmt in stmts)
                 {
                     First(stmt);
-                    PostPrepareMetadataTypeFieldDecls(stmt);
+                    PostPrepareMetadataTypeFieldDecls(inInfo, stmt);
                     Last(stmt);
                 }
             }
@@ -100,7 +100,7 @@ namespace HapetPostPrepare
                 foreach (var stmt in stmts)
                 {
                     First(stmt);
-                    PostPrepareMetadataNestedTypesInside(stmt);
+                    PostPrepareMetadataNestedTypesInside(inInfo, stmt);
                     Last(stmt);
                 }
             }
@@ -109,7 +109,7 @@ namespace HapetPostPrepare
                 foreach (var stmt in stmts)
                 {
                     First(stmt);
-                    PostPrepareMetadataTypeFieldInits(stmt);
+                    PostPrepareMetadataTypeFieldInits(inInfo, stmt);
                     Last(stmt);
                 }
             }
@@ -118,7 +118,7 @@ namespace HapetPostPrepare
                 foreach (var stmt in stmts)
                 {
                     First(stmt);
-                    PostPrepareMetadataAttributes(stmt);
+                    PostPrepareMetadataAttributes(inInfo, stmt);
                     Last(stmt);
                 }
             }
@@ -129,7 +129,6 @@ namespace HapetPostPrepare
                 {
                     First(stmt);
                     // just handlers
-                    InInfo inInfo = InInfo.Default;
                     OutInfo outInfo = OutInfo.Default;
 
                     // we need to inference it manually

@@ -6,10 +6,9 @@ namespace HapetPostPrepare
 {
     public partial class PostPrepare
     {
-        private void PostPrepareMetadataNestedTypes(AstStatement stmt)
+        private void PostPrepareMetadataNestedTypes(InInfo inInfo, AstStatement stmt)
         {
             // just handlers
-            InInfo inInfo = InInfo.Default;
             OutInfo outInfo = OutInfo.Default;
 
             if (stmt is AstClassDecl cls)
@@ -34,16 +33,15 @@ namespace HapetPostPrepare
             void PPNested(AstDeclaration decl)
             {
                 // PostPrepareStatementUpToCurrentStep(decl);
-                PostPrepareMetadataTypes(decl, false);
-                bool _ = PostPrepareMetadataGenerics(decl);
-                PostPrepareMetadataInheritance(decl);
+                PostPrepareMetadataTypes(inInfo, decl, false);
+                bool _ = PostPrepareMetadataGenerics(inInfo, decl);
+                PostPrepareMetadataInheritance(inInfo, decl);
             }
         }
 
-        private void PostPrepareMetadataNestedTypesInside(AstStatement stmt)
+        private void PostPrepareMetadataNestedTypesInside(InInfo inInfo, AstStatement stmt)
         {
             // just handlers
-            InInfo inInfo = InInfo.Default;
             OutInfo outInfo = OutInfo.Default;
 
             if (stmt is AstClassDecl cls)
@@ -85,7 +83,7 @@ namespace HapetPostPrepare
                 }
 
                 // PostPrepareMetadataTypes(decl, false);
-                PostPrepareStatementUpToCurrentStep(true, decl);
+                PostPrepareStatementUpToCurrentStep(inInfo, true, decl);
             }
         }
     }

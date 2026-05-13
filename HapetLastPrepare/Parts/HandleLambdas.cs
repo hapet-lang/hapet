@@ -160,7 +160,7 @@ namespace HapetLastPrepare
                 _postPreparer.SetScopeAndParent(sytheticClass, parentFunc.ContainingParent);
                 _postPreparer.PostPrepareDeclScoping(sytheticClass);
                 // pp up to the current metadata step
-                _postPreparer.PostPrepareStatementUpToCurrentStep(false, sytheticClass);
+                _postPreparer.PostPrepareStatementUpToCurrentStep(inInfo, false, sytheticClass);
                 _postPreparer.PostPrepareInheritedShiteOnDecl(sytheticClass);
 
                 // create instance of the synthetic class in parent func

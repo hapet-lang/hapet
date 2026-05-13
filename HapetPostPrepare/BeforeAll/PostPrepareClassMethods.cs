@@ -530,9 +530,8 @@ namespace HapetPostPrepare
                 if (parentDecl.HasGenericTypes)
                 {
                     // getting pure generics from decl
-                    var pureGenerics = GenericsHelper.GetGenericsFromName(parentDecl.Name as AstIdGenericExpr, _compiler.MessageHandler);
                     thisParamType = AstIdGenericExpr.FromAstIdExpr(parentDecl.Name.GetCopy(),
-                        pureGenerics.Select(x => x as AstExpression).ToList());
+                        (parentDecl.Name as AstIdGenericExpr).GenericRealTypes.Select(x => x as AstExpression).ToList());
                 }
                 else
                     thisParamType = parentDecl.Name.GetCopy();

@@ -15,10 +15,9 @@ namespace HapetPostPrepare
 {
     public partial class PostPrepare
     {
-        private void PostPrepareMetadataTypeFieldDecls(AstStatement stmt)
+        private void PostPrepareMetadataTypeFieldDecls(InInfo inInfo, AstStatement stmt)
         {
             // just handlers
-            InInfo inInfo = InInfo.Default;
             OutInfo outInfo = OutInfo.Default;
 
             if (stmt is AstClassDecl cls)
@@ -67,7 +66,7 @@ namespace HapetPostPrepare
             {
                 // p prop generics here
                 if (decl is AstPropertyDecl prop)
-                    _ = PostPrepareMetadataGenerics(prop);
+                    _ = PostPrepareMetadataGenerics(inInfo, prop);
 
                 if (decl is AstIndexerDecl indexer)
                     PostPrepareParamInference(indexer.IndexerParameter, inInfo, ref outInfo);
