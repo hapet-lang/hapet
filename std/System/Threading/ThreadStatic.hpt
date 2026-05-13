@@ -2,9 +2,13 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // Some modifications were made for hapet-lang compatibility.
 
+using System.Collections.Generic;
+
 public class ThreadStatic<T>
 {
+    private Dictionary<int, T> _values = new Dictionary<int, T>();
     private T _defaultValue;
+
     public ThreadStatic(T defaultValue = default)
     {
         _defaultValue = defaultValue;
@@ -13,8 +17,17 @@ public class ThreadStatic<T>
     public T Value
     {
         get
-        {}
+        {
+            int currThread = Thread.CurrentThreadId;
+            T val;
+            if (_values.TryGetValue(Thread.CurrentThreadId, out val))
+                return val;
+            return _defaultValue;
+        }
         set
-        {}
+        {
+            int currThread = Thread.CurrentThreadId;
+            _values[currThread] = value;
+        }
     }
 }
