@@ -28,13 +28,14 @@ namespace HapetPostPrepare
         {
             PrepareNonGenericConstrains(constrains, inInfo, ref outInfo);
             PrepareGenericConstrains(constrains, inInfo, ref outInfo);
+            AddObjectClassConstainIfNeeded(constrains, containingParent, inInfo, ref outInfo, true);
 
             // need to search for the same constrain
             foreach (var k in AllGenericTypes.Keys)
             {
                 // skip not the same names
-                //if (k.Name.Name != currGeneric.Name)
-                //    continue;
+                if (k.Name.Name != currGeneric.Name)
+                    continue;
 
                 List<bool> collisions = new List<bool>();
                 var existingConstrains = AllGenericTypes[k];
@@ -83,7 +84,6 @@ namespace HapetPostPrepare
                     return k; // just return the constrain
             }
 
-            AddObjectClassConstainIfNeeded(constrains, containingParent, inInfo, ref outInfo, true);
             // check that constrains are ok
             CheckIfConstrainsAreOk(constrains);
 

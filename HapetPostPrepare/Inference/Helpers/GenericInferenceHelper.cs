@@ -99,6 +99,7 @@ namespace HapetPostPrepare
                 else if (realDecl is AstDelegateDecl delegateDecl)
                     AllDelegatesMetadata.Add(delegateDecl);
             }
+
             // pp up to the current metadata step
             PostPrepareStatementUpToCurrentStep(false, realDecl);
 
@@ -157,11 +158,20 @@ namespace HapetPostPrepare
                             {
                                 AstDeclaration decl;
                                 if (type.OutType is ClassType cls)
+                                {
                                     decl = cls.Declaration;
+                                    InferIfNotYet(decl);
+                                }
                                 else if (type.OutType is GenericType gen)
+                                {
                                     decl = gen.Declaration;
+                                    InferIfNotYet(decl);
+                                }
                                 else if (type.OutType is StructType str)
+                                {
                                     decl = str.Declaration;
+                                    InferIfNotYet(decl);
+                                }
                                 else 
                                 {
                                     // unknown shite
@@ -188,11 +198,20 @@ namespace HapetPostPrepare
                             }
                             AstDeclaration decl;
                             if (type.OutType is ClassType cls)
+                            {
                                 decl = cls.Declaration;
+                                InferIfNotYet(decl);
+                            }
                             else if (type.OutType is GenericType gen)
+                            {
                                 decl = gen.Declaration;
+                                InferIfNotYet(decl);
+                            }
                             else if (type.OutType is StructType str)
+                            {
                                 decl = str.Declaration;
+                                InferIfNotYet(decl);
+                            }
                             else
                             {
                                 // unknown shite
@@ -270,6 +289,17 @@ namespace HapetPostPrepare
             }
 
             return allNorm.All(x => x);
+
+            void InferIfNotYet(AstDeclaration decl)
+            {
+                // this is required because some generic contrain checks are done 
+                // before the checked type inherited shite is even inferenced
+                // so we need to be sure that the inherited types are inferenced before contain checks
+                if (decl.GetInheritedTypes().Count != 0)
+                    return;
+                // pp up to the current metadata step
+                PostPrepareStatementUpToCurrentStep(true, decl);
+            }
         }
 
         private bool IsInheritedFromWithInference(AstDeclaration type, HapetType from)

@@ -21,6 +21,25 @@ namespace HapetPostPrepare
 
             if (stmt is AstClassDecl cls)
             {
+                // set System.Object inheritance if there is nothing
+                if ((cls.InheritedFrom.Count <= 0 ||
+                    (cls.InheritedFrom[0].OutType is ClassType clsTT &&
+                    clsTT.Declaration.IsInterface)) &&
+                    cls.NameWithNs != "System.Object") // skip itself
+                {
+                    // set it only if there are not inheritances or only interfaces
+                    var nst = new AstNestedExpr(new AstIdExpr("System.Object", cls)
+                    {
+                        IsSyntheticStatement = true,
+                    }, null, cls)
+                    {
+                        IsSyntheticStatement = true,
+                    };
+                    cls.InheritedFrom.Insert(0, nst);
+                    SetScopeAndParent(nst, cls);
+                    PostPrepareExprScoping(nst);
+                }
+
                 foreach (var inh in cls.InheritedFrom)
                 {
                     PostPrepareExprInference(inh, inInfo, ref outInfo);
@@ -42,30 +61,28 @@ namespace HapetPostPrepare
                         // error - cannot inherit from sealed
                         _compiler.MessageHandler.ReportMessage(_currentSourceFile, inh, [], ErrorCode.Get(CTEN.DerivedFromSealed));
                     }
-                }
-
-                // set System.Object inheritance if there is nothing
-                if ((cls.InheritedFrom.Count <= 0 ||
-                    (cls.InheritedFrom[0].OutType is ClassType clsTT &&
-                    clsTT.Declaration.IsInterface)) &&
-                    cls.NameWithNs != "System.Object") // skip itself
-                {
-                    // set it only if there are not inheritances or only interfaces
-                    var nst = new AstNestedExpr(new AstIdExpr("System.Object", cls)
-                    {
-                        IsSyntheticStatement = true,
-                    }, null, cls)
-                    { 
-                        IsSyntheticStatement = true,
-                    };
-                    cls.InheritedFrom.Insert(0, nst);
-                    SetScopeAndParent(nst, cls);
-                    PostPrepareExprScoping(nst);
-                    PostPrepareExprInference(nst, inInfo, ref outInfo);
-                }
+                }                
             }
             else if (stmt is AstStructDecl str)
             {
+                // set System.Object inheritance if there is nothing
+                if ((str.InheritedFrom.Count <= 0 ||
+                    (str.InheritedFrom[0].OutType is ClassType &&
+                    (str.InheritedFrom[0].OutType as ClassType).Declaration.IsInterface)))
+                {
+                    // set it only if there are not inheritances or only interfaces
+                    var nst = new AstNestedExpr(new AstIdExpr("System.ValueType", str)
+                    {
+                        IsSyntheticStatement = true,
+                    }, null, str)
+                    {
+                        IsSyntheticStatement = true,
+                    };
+                    str.InheritedFrom.Insert(0, nst);
+                    SetScopeAndParent(nst, str);
+                    PostPrepareExprScoping(nst);
+                }
+
                 foreach (var inh in str.InheritedFrom)
                 {
                     PostPrepareExprInference(inh, inInfo, ref outInfo);
@@ -89,25 +106,6 @@ namespace HapetPostPrepare
                         // error - cannot inherit from sealed
                         _compiler.MessageHandler.ReportMessage(_currentSourceFile, inh, [], ErrorCode.Get(CTEN.DerivedFromSealed));
                     }
-                }
-
-                // set System.Object inheritance if there is nothing
-                if ((str.InheritedFrom.Count <= 0 ||
-                    (str.InheritedFrom[0].OutType is ClassType &&
-                    (str.InheritedFrom[0].OutType as ClassType).Declaration.IsInterface)))
-                {
-                    // set it only if there are not inheritances or only interfaces
-                    var nst = new AstNestedExpr(new AstIdExpr("System.ValueType", str)
-                    {
-                        IsSyntheticStatement = true,
-                    }, null, str)
-                    {
-                        IsSyntheticStatement = true,
-                    };
-                    str.InheritedFrom.Insert(0, nst);
-                    SetScopeAndParent(nst, str);
-                    PostPrepareExprScoping(nst);
-                    PostPrepareExprInference(nst, inInfo, ref outInfo);
                 }
             }
             else if (stmt is AstEnumDecl enm)
