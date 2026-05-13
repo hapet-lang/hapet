@@ -25,6 +25,11 @@ public static class Math
         return d;
     }
 
+    public static inline double Sqrt(double d)
+    {
+        return Marshal.Sqrt(d);
+    }
+
     public static inline double CopySign(double x, double y)
     {
         return SoftwareFallback(x, y);

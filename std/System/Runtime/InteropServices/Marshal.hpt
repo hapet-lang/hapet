@@ -30,6 +30,9 @@ public static class Marshal
     [LibImport("", "modf")]
     public static extern inline double ModF(double num, double* i);
 
+    [LibImport("", "sqrt")]
+    public static extern inline double Sqrt(double arg);
+
     [DeclarationUsed]
     [LibImport("", "fflush")]
     public static extern inline int Fflush(void* stream);

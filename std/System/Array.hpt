@@ -136,6 +136,11 @@ public static class Array
         array = newArray;
     }
 
+    public static void Clear<T>(T[] array)
+    {
+        Marshal.Memset(array.Buffer, 0, array.Length * sizeof(T));
+    }
+
     public static void Clear<T>(T[] array, int index, int length)
     {
         Marshal.Memset(array.Buffer + index, 0, length * sizeof(T));

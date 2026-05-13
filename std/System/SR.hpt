@@ -55,6 +55,7 @@ internal static class SR
     internal const string Arg_KeyNotFound = "The given key was not present in the dictionary.";
     internal const string Arg_KeyNotFoundWithKey = "The given key '{0}' was not present in the dictionary.";
     internal const string Arg_ArrayTypeMismatchException = "Attempted to access an element as a type incompatible with the array.";
+    internal const string Arg_HTCapacityOverflow = "Hashtable's capacity overflowed and went negative. Check load factor, capacity and the current size of the table.";
 
     // overflow
     internal const string Overflow_TimeSpanTooLong = "TimeSpan overflowed because the duration is too long.";

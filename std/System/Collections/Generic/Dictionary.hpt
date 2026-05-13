@@ -184,7 +184,7 @@ public class Dictionary<TKey, TValue> : IDictionary<TKey, TValue>
         return false;
     }
 
-    bool ICollection<KeyValuePair<TKey, TValue>>.Remove(KeyValuePair<TKey, TValue> keyValuePair)
+    public bool Remove(KeyValuePair<TKey, TValue> keyValuePair)
     {
         TValue* value = FindValue(keyValuePair.Key);
         if (value != null && System.Comparer.Default<TValue>().Compare(value, keyValuePair.Value) == 0)
@@ -205,12 +205,12 @@ public class Dictionary<TKey, TValue> : IDictionary<TKey, TValue>
             // Debug.Assert(_buckets != null, "_buckets should be non-null");
             // Debug.Assert(_entries != null, "_entries should be non-null");
 
-            Array.Clear(_buckets);
+            Array.Clear<int>(_buckets);
 
             _count = 0;
             _freeList = -1;
             _freeCount = 0;
-            Array.Clear(_entries, 0, count);
+            Array.Clear<DictionaryEntry>(_entries, 0, count);
         }
     }
 
@@ -258,7 +258,7 @@ public class Dictionary<TKey, TValue> : IDictionary<TKey, TValue>
         return false;
     }
 
-    private void CopyTo(KeyValuePair<TKey, TValue>[] array, int index)
+    public void CopyTo(KeyValuePair<TKey, TValue>[] array, int index)
     {
         if (array == null)
         {
@@ -275,22 +275,27 @@ public class Dictionary<TKey, TValue> : IDictionary<TKey, TValue>
             throw new ArgumentException(nameof(array), SR.Arg_ArrayPlusOffTooSmall);
         }
 
-        int count = _count;
-        DictionaryEntry[] entries = _entries;
-        for (int i = 0; i < count; i++)
+        try
         {
-            if (entries[i].next >= -1)
+            int count = _count;
+            DictionaryEntry[] entries = _entries;
+            for (int i = 0; i < count; i++)
             {
-                array[index++] = new KeyValuePair<TKey, TValue>(entries[i].key, entries[i].value);
+                if (entries[i].next >= -1)
+                {
+                    array[index++] = new KeyValuePair<TKey, TValue>(entries[i].key, entries[i].value);
+                }
             }
+        }
+        catch (ArrayTypeMismatchException)
+        {
+            throw new ArgumentException(SR.Argument_IncompatibleArrayType);
         }
     }
 
-    public DictionaryEnumerator GetEnumerator() => new DictionaryEnumerator(this, DictionaryEnumerator.KeyValuePair);
-
-    IEnumerator<KeyValuePair<TKey, TValue>> IEnumerable<KeyValuePair<TKey, TValue>>.GetEnumerator() =>
-        Count == 0 ? EmptyEnumerator.Get<KeyValuePair<TKey, TValue>>() :
-        GetEnumerator();
+    public IEnumerator<KeyValuePair<TKey, TValue>> GetEnumerator() =>
+        Count == 0 ? (IEnumerator<KeyValuePair<TKey, TValue>>)EmptyEnumerator.Get<KeyValuePair<TKey, TValue>>() :
+        new DictionaryEnumerator(this, DictionaryEnumerator.KeyValuePair);
 
     internal TValue* FindValue(TKey key)
     {
@@ -683,7 +688,7 @@ public class Dictionary<TKey, TValue> : IDictionary<TKey, TValue>
         DictionaryEntry[] entries = new DictionaryEntry[newSize];
 
         int count = _count;
-        Array.Copy(_entries, entries, count);
+        Array.Copy<DictionaryEntry, DictionaryEntry>(_entries, 0, entries, 0, count);
 
         if (!typeof(TKey).IsValueType && forceNewHashCodes)
         {
@@ -973,44 +978,6 @@ public class Dictionary<TKey, TValue> : IDictionary<TKey, TValue>
         TryInsert(key, value, InsertionBehavior.None);
 
     bool ICollection<KeyValuePair<TKey, TValue>>.IsReadOnly => false;
-
-    void ICollection<KeyValuePair<TKey, TValue>>.CopyTo(KeyValuePair<TKey, TValue>[] array, int index) =>
-        CopyTo(array, index);
-
-    void CopyTo(KeyValuePair<TKey, TValue>[] array, int index)
-    {
-        if (array == null)
-        {
-            throw new ArgumentNullException(nameof(array));
-        }
-
-        if ((uint)index > (uint)array.Length)
-        {
-            throw new ArgumentOutOfRangeException(nameof(index), SR.ArgumentOutOfRange_NeedNonNegNum);
-        }
-
-        if (array.Length - index < Count)
-        {
-            throw new ArgumentException(nameof(array), SR.Arg_ArrayPlusOffTooSmall);
-        }
-
-        try
-        {
-            int count = _count;
-            DictionaryEntry[] entries = _entries;
-            for (int i = 0; i < count; i++)
-            {
-                if (entries[i].next >= -1)
-                {
-                    array[index++] = new KeyValuePair<TKey, TValue>(entries[i].key, entries[i].value);
-                }
-            }
-        }
-        catch (ArrayTypeMismatchException)
-        {
-            throw new ArgumentException(SR.Argument_IncompatibleArrayType);
-        }
-    }
 
     IEnumerator IEnumerable.GetEnumerator() => ((IEnumerable<KeyValuePair<TKey, TValue>>)this).GetEnumerator();
 
