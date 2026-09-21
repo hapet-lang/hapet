@@ -1,12 +1,12 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFramework>net8.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
         <EnableNETAnalyzers>false</EnableNETAnalyzers>
         <AnalysisMode>AllEnabledByDefault</AnalysisMode>
-    </PropertyGroup>
+		<ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+	</PropertyGroup>
 
     <ItemGroup>
         <ProjectReference Include="..\HapetFrontend\HapetFrontend.csproj" />
@@ -15,7 +15,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="LLVMSharp" Version="20.1.2" />
+        <PackageReference Include="LLVMSharp" />
     </ItemGroup>
     
 </Project>

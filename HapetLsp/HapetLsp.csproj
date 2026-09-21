@@ -1,13 +1,13 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
+	<ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="OmniSharp.Extensions.LanguageServer" Version="0.19.9" />
-    <PackageReference Include="GuiLabs.Language.Xml" Version="1.2.93" />
+    <PackageReference Include="OmniSharp.Extensions.LanguageServer" />
+    <PackageReference Include="GuiLabs.Language.Xml" />
   </ItemGroup>
 
   <ItemGroup>
