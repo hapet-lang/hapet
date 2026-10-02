@@ -4,5 +4,7 @@
 	  <PackageVersion Include="LLVMSharp" Version="20.1.2" />
 	  <PackageVersion Include="GuiLabs.Language.Xml" Version="1.2.93" />
 	  <PackageVersion Include="OmniSharp.Extensions.LanguageServer" Version="0.19.9" />
+	  <PackageVersion Include="Microsoft.Extensions.ObjectPool" Version="10.0.12" />
+	  <PackageVersion Include="Microsoft.CodeAnalysis.Common" Version="5.9.0" />
   </ItemGroup>
 </Project>
