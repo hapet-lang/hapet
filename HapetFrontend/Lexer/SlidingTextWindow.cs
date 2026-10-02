@@ -1,4 +1,6 @@
-﻿using Microsoft.CodeAnalysis.Text;
+﻿using HapetFrontend.Entities;
+using Microsoft.CodeAnalysis.Text;
+using System.Text;
 
 namespace HapetFrontend.Lexer
 {
@@ -18,12 +20,14 @@ namespace HapetFrontend.Lexer
 
         private ArraySegment<char> _characterWindow;
         private int _characterWindowStartPositionInText;
+        private readonly QuickQuickSet<string> _strings;
 
         public SlidingTextWindow(SourceText text)
         {
             Text = text;
             _textEnd = text.Length;
             _characterWindow = new char[DefaultWindowLength];
+            _strings = new QuickQuickSet<string>();
 
             ReadChunkAt(0);
         }
@@ -105,5 +109,9 @@ namespace HapetFrontend.Lexer
 
             return _characterWindow.Array![position - _characterWindowStartPositionInText];
         }
+
+        public readonly string Intern(StringBuilder text) => _strings.Intern(text);
+        public readonly string Intern(char[] array, int start, int length) => Intern(array.AsSpan(start, length));
+        public readonly string Intern(ReadOnlySpan<char> chars) => _strings.Intern(chars);
     }
 }

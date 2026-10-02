@@ -7,12 +7,6 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <Compile Remove="Errors\**" />
-      <EmbeddedResource Remove="Errors\**" />
-      <None Remove="Errors\**" />
-    </ItemGroup>
-
-    <ItemGroup>
       <ProjectReference Include="..\HapetCommon\HapetCommon.csproj" />
     </ItemGroup>
 
