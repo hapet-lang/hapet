@@ -7,9 +7,9 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <None Remove="Errors\CompileTimeErrors.xml" />
-        <None Remove="Errors\CompileTimeWarnings.xml" />
-        <None Remove="Errors\RunTimeErrors.xml" />
+      <Compile Remove="Errors\**" />
+      <EmbeddedResource Remove="Errors\**" />
+      <None Remove="Errors\**" />
     </ItemGroup>
 
     <ItemGroup>
@@ -18,17 +18,7 @@
 
     <ItemGroup>
 		<PackageReference Include="GuiLabs.Language.Xml" />
-    </ItemGroup>
-
-    <ItemGroup>
-        <Content Include="Errors\CompileTimeErrors.xml">
-            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-        </Content>
-        <Content Include="Errors\CompileTimeWarnings.xml">
-            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-        </Content>
-        <Content Include="Errors\RunTimeErrors.xml">
-            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-        </Content>
+		<PackageReference Include="Microsoft.Extensions.ObjectPool" />
+		<PackageReference Include="Microsoft.CodeAnalysis.Common" />
     </ItemGroup>
 </Project>
