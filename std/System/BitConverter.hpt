@@ -2,6 +2,8 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // Some modifications were made for hapet-lang compatibility.
 
+using System.Runtime.CompilerServices;
+
 /// <summary>
 /// Converts base data types to an array of bytes, and an array of bytes to base data types.
 /// </summary>
@@ -15,4 +17,25 @@ public static class BitConverter
 #else
     public static readonly bool IsLittleEndian = true;
 #endif
+
+    /// <summary>
+    /// Converts the specified double-precision floating point number to a 64-bit signed integer.
+    /// </summary>
+    /// <param name="value">The number to convert.</param>
+    /// <returns>A 64-bit signed integer whose bits are identical to <paramref name="value"/>.</returns>
+    public static inline long DoubleToInt64Bits(double value) => Unsafe.BitCast<double, long>(value);
+
+    /// <summary>
+    /// Converts the specified double-precision floating point number to a 64-bit unsigned integer.
+    /// </summary>
+    /// <param name="value">The number to convert.</param>
+    /// <returns>A 64-bit unsigned integer whose bits are identical to <paramref name="value"/>.</returns>
+    public static inline ulong DoubleToUInt64Bits(double value) => Unsafe.BitCast<double, ulong>(value);
+
+    /// <summary>
+    /// Converts the specified 64-bit unsigned integer to a double-precision floating point number.
+    /// </summary>
+    /// <param name="value">The number to convert.</param>
+    /// <returns>A double-precision floating point number whose bits are identical to <paramref name="value"/>.</returns>
+    public static inline double UInt64BitsToDouble(ulong value) => Unsafe.BitCast<ulong, double>(value);
 }

@@ -1,0 +1,132 @@
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+// Some modifications were made for hapet-lang compatibility.
+
+using System;
+using System.Runtime.InteropServices;
+
+#if TARGET_PLATFORM == "win-x64" || TARGET_PLATFORM == "win-x86";
+internal static class ThreadPal
+{
+    [LibImport("", "CreateThread")]
+    internal static extern inline void* CreateThread(void* attrs, uintptr stackSize, void* func, void* funcParam, uint creationFlags, uint* threadId);
+    [LibImport("", "ResumeThread")]
+    internal static extern inline int ResumeThread(void* handle);
+    [LibImport("", "SetThreadPriority")]
+    internal static extern inline int SetThreadPriority(void* handle, int priority);
+    // fuck win < 10
+    [LibImport("", "SetThreadDescription")]
+    internal static extern inline int SetThreadDescription(void* handle, ushort* desc);
+    [LibImport("", "GetCurrentThreadId")]
+    internal static extern inline int GetCurrentThreadId();
+    [LibImport("", "WaitForSingleObject")]
+    internal static extern inline uint WaitForSingleObject(void* handle, uint millis);
+
+    // cringe winapi consts
+    internal const uint WAIT_FAILED = (0xFFFFFFFF);
+    internal const uint STATUS_WAIT_0 = ((uint)0x00000000L);
+    internal const uint WAIT_OBJECT_0 = ((STATUS_WAIT_0) + 0);
+
+    internal static void StartThread(Thread thread)
+    {
+        uint threadId = 0;
+        // get delegate to extract func and object ptrs
+        Delegate del = thread._startHelper.Run;
+        // CREATE_SUSPENDED and STACK_SIZE_PARAM_IS_A_RESERVATION
+        uint creationFlags = 0x00000004 | 0x00010000;
+        // create a thread in suspended state and start it manually
+        uintptr handle = CreateThread(null, thread._startHelper._maxStackSize, del._funcPtr, del._objectPtr, creationFlags, &threadId);
+        if (handle == null) throw new ThreadStartException(Marshal.GetLastStringError());
+
+        // set handle
+        thread._threadHandle = handle;
+        // set name
+        SetThreadDescription(handle, (ushort*)thread.Name.Buffer); // do we need to check result?
+        // set priority
+        SetThreadPriority(handle, ConvertPriority(thread.Priority)); // do we need to check result?
+
+        // resume thread
+        int resumeResult = ResumeThread(handle);
+        if (resumeResult == -1) throw new ThreadStartException(Marshal.GetLastStringError());
+    }
+
+    private static int ConvertPriority(ThreadPriority priority)
+    {
+        // https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-setthreadpriority#parameters
+        switch (priority)
+        {
+            case (ThreadPriority.Lowest) return -2;
+            case (ThreadPriority.BelowNormal) return -1;
+            case (ThreadPriority.Normal) return 0;
+            case (ThreadPriority.AboveNormal) return 1;
+            case (ThreadPriority.Highest) return 2;
+        }
+        return 0;
+    }
+
+    internal static bool JoinThread(Thread thread, int millisecondsTimeout)
+    {
+        // This method assumes the thread has been started
+        // Debug.Assert((thread.ThreadState & ThreadState.Unstarted) == 0 || (millisecondsTimeout == 0)); // TODO:
+        
+        if (thread._threadHandle == null)
+        {
+            // If the thread has died, the handle can be marked as invalid.
+            // Waiting on an invalid handle will never complete, so complete now.
+            return true;
+        }
+
+        if (millisecondsTimeout == 0)
+        {
+            int result = (int)WaitForSingleObject(thread._threadHandle, 0);
+            return result == (int)WAIT_OBJECT_0;
+        }
+        else
+        {
+            Thread currentThread = CurrentThread;
+            currentThread.SetWaitSleepJoinState();
+            uint result;
+            if (millisecondsTimeout == Timeout.Infinite)
+            {
+                // Infinite wait
+                while (true)
+                {
+                    result = Interop.Kernel32.WaitForSingleObjectEx(waitHandle.DangerousGetHandle(), Timeout.UnsignedInfinite, Interop.BOOL.TRUE);
+                    if (result != Interop.Kernel32.WAIT_IO_COMPLETION)
+                    {
+                        break;
+                    }
+                    // Check if this was our interrupt APC
+                    CheckForPendingInterrupt();
+                }
+            }
+            else
+            {
+                long startTime = Environment.TickCount64;
+                while (true)
+                {
+                    result = Interop.Kernel32.WaitForSingleObjectEx(waitHandle.DangerousGetHandle(), (uint)millisecondsTimeout, Interop.BOOL.TRUE);
+                    if (result != Interop.Kernel32.WAIT_IO_COMPLETION)
+                    {
+                        break;
+                    }
+                    // Check if this was our interrupt APC
+                    CheckForPendingInterrupt();
+                    // Handle APC completion by adjusting timeout and retrying
+                    long currentTime = Environment.TickCount64;
+                    long elapsed = currentTime - startTime;
+                    if (elapsed >= millisecondsTimeout)
+                    {
+                        result = Interop.Kernel32.WAIT_TIMEOUT;
+                        break;
+                    }
+                    millisecondsTimeout -= (int)elapsed;
+                    startTime = currentTime;
+                }
+            }
+            currentThread.ClearWaitSleepJoinState();
+            return result == (int)Interop.Kernel32.WAIT_OBJECT_0;
+        }
+    }
+}
+#endif

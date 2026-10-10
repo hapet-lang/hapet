@@ -1,0 +1,1218 @@
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
+using System;
+using System.Collections;
+
+public class Dictionary<TKey, TValue> : IDictionary<TKey, TValue>
+{
+    // constants for serialization
+    private const string VersionName = "Version"; // Do not rename (binary serialization)
+    private const string HashSizeName = "HashSize"; // Do not rename (binary serialization). Must save buckets.Length
+    private const string KeyValuePairsName = "KeyValuePairs"; // Do not rename (binary serialization)
+    private const string ComparerName = "Comparer"; // Do not rename (binary serialization)
+
+    private int[] _buckets;
+    private DictionaryEntry[] _entries;
+#if TARGET_64BIT;
+    private ulong _fastModMultiplier;
+#endif
+    private int _count;
+    private int _freeList;
+    private int _freeCount;
+    private int _version;
+    private IComparer<TKey> _comparer;
+    private List<TKey> _keys;
+    private List<TValue> _values;
+    private const int StartOfFreeList = -3;
+
+    public Dictionary() : this(0, null) { }
+
+    public Dictionary(int capacity) : this(capacity, null) { }
+
+    public Dictionary(IComparer<TKey> comparer) : this(0, comparer) { }
+
+    public Dictionary(int capacity, IComparer<TKey> comparer)
+    {
+        if (capacity < 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(capacity), SR.ArgumentOutOfRange_NeedNonNegNum);
+        }
+
+        if (capacity > 0)
+        {
+            Initialize(capacity);
+        }
+
+        // For reference types, we always want to store a comparer instance, either
+        // the one provided, or if one wasn't provided, the default (accessing
+        // EqualityComparer<TKey>.Default with shared generics on every dictionary
+        // access can add measurable overhead).  For value types, if no comparer is
+        // provided, or if the default is provided, we'd prefer to use
+        // EqualityComparer<TKey>.Default.Equals on every use, enabling the JIT to
+        // devirtualize and possibly inline the operation.
+        if (!typeof(TKey).IsValueType)
+        {
+            _comparer = comparer ?? System.Comparer.Default<TKey>();
+        }
+        else if (comparer != null && // first check for null to avoid forcing default comparer instantiation unnecessarily
+                    comparer != System.Comparer.Default<TKey>())
+        {
+            _comparer = comparer;
+        }
+    }
+
+    public Dictionary(IDictionary<TKey, TValue> dictionary) : this(dictionary, null) { }
+
+    public Dictionary(IDictionary<TKey, TValue> dictionary, IComparer<TKey> comparer) :
+        this(dictionary?.Count ?? 0, comparer)
+    {
+        if (dictionary == null)
+        {
+            throw new ArgumentNullException(nameof(dictionary));
+        }
+
+        AddRange(dictionary);
+    }
+
+    public Dictionary(IEnumerable<KeyValuePair<TKey, TValue>> collection) : this(collection, null) { }
+
+    public Dictionary(IEnumerable<KeyValuePair<TKey, TValue>> collection, IComparer<TKey> comparer) :
+        this((collection as ICollection<KeyValuePair<TKey, TValue>>)?.Count ?? 0, comparer)
+    {
+        if (collection == null)
+        {
+            throw new ArgumentNullException(nameof(collection));
+        }
+
+        AddRange(collection);
+    }
+
+    private void AddRange(IEnumerable<KeyValuePair<TKey, TValue>> enumerable)
+    {
+        // Fallback path for all other enumerables
+        for (KeyValuePair<TKey, TValue> pair in enumerable)
+        {
+            Add(pair.Key, pair.Value);
+        }
+    }
+
+    public IComparer<TKey> Comparer
+    {
+        get
+        {
+            if (typeof(TKey) == typeof(string))
+            {
+                // TODO:
+                // Debug.Assert(_comparer is not null, "The comparer should never be null for a reference type.");
+                return (IComparer<TKey>)_comparer;
+            }
+            else
+            {
+                return _comparer ?? System.Comparer.Default<TKey>();
+            }
+        }
+    }
+
+    public int Count => _count - _freeCount;
+
+    /// <summary>
+    /// Gets the total numbers of elements the internal data structure can hold without resizing.
+    /// </summary>
+    public int Capacity => (int)(_entries?.Length ?? 0);
+
+    public List<TKey> Keys 
+    {
+        get 
+        {
+            _keys ??= new List<TKey>();
+            return _keys;
+        }
+    }
+
+    ICollection<TKey> IDictionary<TKey, TValue>.Keys => Keys;
+
+    public List<TValue> Values 
+    {
+        get
+        {
+            _values ??= new List<TValue>();
+            return _values;
+        }
+    }
+
+    ICollection<TValue> IDictionary<TKey, TValue>.Values => Values;
+
+    public TValue this[TKey key]
+    {
+        get
+        {
+            TValue* value = FindValue(key);
+            if (value != null)
+            {
+                return *value;
+            }
+
+            throw new KeyNotFoundException(string.Format(SR.Arg_KeyNotFoundWithKey, key.ToString()));
+            return default;
+        }
+        set
+        {
+            bool modified = TryInsert(key, value, InsertionBehavior.OverwriteExisting);
+            // Debug.Assert(modified); // TODO:
+        }
+    }
+
+    public void Add(TKey key, TValue value)
+    {
+        bool modified = TryInsert(key, value, InsertionBehavior.ThrowOnExisting);
+        // TODO:
+        // Debug.Assert(modified); // If there was an existing key and the Add failed, an exception will already have been thrown.
+    }
+
+    void ICollection<KeyValuePair<TKey, TValue>>.Add(KeyValuePair<TKey, TValue> keyValuePair) =>
+        Add(keyValuePair.Key, keyValuePair.Value);
+
+    bool ICollection<KeyValuePair<TKey, TValue>>.Contains(KeyValuePair<TKey, TValue> keyValuePair)
+    {
+        TValue* value = FindValue(keyValuePair.Key);
+        if (value != null && System.Comparer.Default<TValue>().Compare(*value, keyValuePair.Value) == 0)
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    public bool Remove(KeyValuePair<TKey, TValue> keyValuePair)
+    {
+        TValue* value = FindValue(keyValuePair.Key);
+        if (value != null && System.Comparer.Default<TValue>().Compare(*value, keyValuePair.Value) == 0)
+        {
+            Remove(keyValuePair.Key);
+            return true;
+        }
+
+        return false;
+    }
+
+    public void Clear()
+    {
+        int count = _count;
+        if (count > 0)
+        {
+            // TODO:
+            // Debug.Assert(_buckets != null, "_buckets should be non-null");
+            // Debug.Assert(_entries != null, "_entries should be non-null");
+
+            Array.Clear<int>(_buckets);
+
+            _count = 0;
+            _freeList = -1;
+            _freeCount = 0;
+            Array.Clear<DictionaryEntry>(_entries, 0, count);
+        }
+    }
+
+    public bool ContainsKey(TKey key) => FindValue(key) != null;
+
+    public bool ContainsValue(TValue value)
+    {
+        DictionaryEntry[] entries = _entries;
+        if (value == null)
+        {
+            for (int i = 0; i < _count; i++)
+            {
+                if (entries[i].next >= -1 && entries[i].value == null)
+                {
+                    return true;
+                }
+            }
+        }
+        else if (typeof(TValue).IsValueType)
+        {
+            // ValueType: Devirtualize with EqualityComparer<TValue>.Default intrinsic
+            for (int i = 0; i < _count; i++)
+            {
+                if (entries[i].next >= -1 && System.Comparer.Default<TValue>().Compare(entries[i].value, value) == 0)
+                {
+                    return true;
+                }
+            }
+        }
+        else
+        {
+            // Object type: Shared Generic, EqualityComparer<TValue>.Default won't devirtualize
+            // https://github.com/dotnet/runtime/issues/10050
+            // So cache in a local rather than get EqualityComparer per loop iteration
+            Comparer<TValue> defaultComparer = System.Comparer.Default<TValue>();
+            for (int i = 0; i < _count; i++)
+            {
+                if (entries[i].next >= -1 && defaultComparer.Compare(entries[i].value, value) == 0)
+                {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    public void CopyTo(KeyValuePair<TKey, TValue>[] array, int index)
+    {
+        if (array == null)
+        {
+            throw new ArgumentNullException(nameof(array));
+        }
+
+        if ((uint)index > (uint)array.Length)
+        {
+            throw new ArgumentOutOfRangeException(nameof(index), SR.ArgumentOutOfRange_NeedNonNegNum);
+        }
+
+        if (array.Length - index < Count)
+        {
+            throw new ArgumentException(nameof(array), SR.Arg_ArrayPlusOffTooSmall);
+        }
+
+        try
+        {
+            int count = _count;
+            DictionaryEntry[] entries = _entries;
+            for (int i = 0; i < count; i++)
+            {
+                if (entries[i].next >= -1)
+                {
+                
+                    array[index++] = new KeyValuePair<TKey, TValue>(entries[i].key, entries[i].value);
+                }
+            }
+        }
+        catch (ArrayTypeMismatchException)
+        {
+            throw new ArgumentException(SR.Argument_IncompatibleArrayType);
+        }
+    }
+
+    public IEnumerator<KeyValuePair<TKey, TValue>> GetEnumerator() =>
+        Count == 0 ? (IEnumerator<KeyValuePair<TKey, TValue>>)EmptyEnumerator.Get<KeyValuePair<TKey, TValue>>() :
+        new DictionaryEnumerator(this, DictionaryEnumerator.KeyValuePair);
+
+    internal TValue* FindValue(TKey key)
+    {
+        if (key == null)
+        {
+            throw new ArgumentNullException(nameof(key));
+        }
+
+        DictionaryEntry entry = null;
+        if (_buckets != null)
+        {
+            // Debug.Assert(_entries != null, "expected entries to be != null"); // TODO: 
+            IComparer<TKey> comparer = _comparer;
+            if (typeof(TKey).IsValueType && // comparer can only be null for value types; enable JIT to eliminate entire if block for ref types
+                comparer == null)
+            {
+                // TODO: Replace with just key.GetHashCode once https://github.com/dotnet/runtime/issues/117521 is resolved.
+                uint hashCode = (uint)key.GetHashCode();
+                int* i = GetBucket(hashCode);
+                DictionaryEntry[] entries = _entries;
+                uint collisionCount = 0;
+
+                // ValueType: Devirtualize with EqualityComparer<TKey>.Default intrinsic
+                *i -= 1; // Value in _buckets is 1-based; subtract 1 from i. We do it here so it fuses with the following conditional.
+                do
+                {
+                    // Test in if to drop range check for following array access
+                    if ((uint)(*i) >= (uint)entries.Length)
+                    {
+                        TValue* value = null;
+                        return value;
+                    }
+
+                    entry = entries[*i];
+
+                    if (entry.hashCode == hashCode && System.Comparer.Default<TKey>().Compare(entry.key, key) == 0)
+                    {
+                        TValue* value = &entry.value;
+                        return value;
+                    }
+
+                    *i = entry.next;
+
+                    collisionCount++;
+                } while (collisionCount <= (uint)entries.Length);
+
+                // The chain of entries forms a loop; which means a concurrent update has happened.
+                // Break out of the loop and throw, rather than looping forever.
+                throw new InvalidOperationException(SR.InvalidOperation_ConcurrentOperationsNotSupported);
+            }
+            else
+            {
+                // Debug.Assert(comparer is not null); // TODO:
+                uint hashCode = (uint)key.GetHashCode();
+                int* i = GetBucket(hashCode);
+                DictionaryEntry[] entries = _entries;
+                uint collisionCount = 0;
+                *i -= 1; // Value in _buckets is 1-based; subtract 1 from i. We do it here so it fuses with the following conditional.
+                do
+                {
+                    // Test in if to drop range check for following array access
+                    if ((uint)(*i) >= (uint)entries.Length)
+                    {
+                        TValue* value = null;
+                        return value;
+                    }
+
+                    entry = entries[*i];
+                    if (entry.hashCode == hashCode && comparer.Compare(entry.key, key) == 0)
+                    {
+                        TValue* value = &entry.value;
+                        return value;
+                    }
+
+                    *i = entry.next;
+
+                    collisionCount++;
+                } while (collisionCount <= (uint)entries.Length);
+
+                // The chain of entries forms a loop; which means a concurrent update has happened.
+                // Break out of the loop and throw, rather than looping forever.
+                throw new InvalidOperationException(SR.InvalidOperation_ConcurrentOperationsNotSupported);
+            }
+        }
+
+        var value = null;
+        return value;
+    }
+
+    private int Initialize(int capacity)
+    {
+        int size = HashHelpers.GetPrime(capacity);
+        int[] buckets = new int[size];
+        DictionaryEntry[] entries = new DictionaryEntry[size];
+
+        // Assign member variables after both arrays allocated to guard against corruption from OOM if second fails
+        _freeList = -1;
+#if TARGET_64BIT;
+        _fastModMultiplier = HashHelpers.GetFastModMultiplier((uint)size);
+#endif
+        _buckets = buckets;
+        _entries = entries;
+
+        return size;
+    }
+
+    private bool TryInsert(TKey key, TValue value, InsertionBehavior behavior)
+    {
+        // NOTE: this method is mirrored in CollectionsMarshal.GetValueRefOrAddDefault below.
+        // If you make any changes here, make sure to keep that version in sync as well.
+
+        if (key == null)
+        {
+            throw new ArgumentNullException(nameof(key));
+        }
+
+        if (_buckets == null)
+        {
+            Initialize(0);
+        }
+        // Debug.Assert(_buckets != null); // TODO:
+
+        DictionaryEntry[] entries = _entries;
+        // Debug.Assert(entries != null, "expected entries to be non-null"); // TODO:
+
+        IComparer<TKey> comparer = _comparer;
+        // Debug.Assert(comparer is not null || typeof(TKey).IsValueType); // TODO:
+        uint hashCode = (uint)(key.GetHashCode());
+
+        uint collisionCount = 0;
+        int* bucket = GetBucket(hashCode);
+        int i = *bucket - 1; // Value in _buckets is 1-based
+
+        if (typeof(TKey).IsValueType && // comparer can only be null for value types; enable JIT to eliminate entire if block for ref types
+            comparer == null)
+        {
+            // ValueType: Devirtualize with EqualityComparer<TKey>.Default intrinsic
+            while ((uint)i < (uint)entries.Length)
+            {
+                if (entries[i].hashCode == hashCode && System.Comparer.Default<TKey>().Compare(entries[i].key, key) == 0)
+                {
+                    if (behavior == InsertionBehavior.OverwriteExisting)
+                    {
+                        entries[i].value = value;
+                        return true;
+                    }
+
+                    if (behavior == InsertionBehavior.ThrowOnExisting)
+                    {
+                        throw new ArgumentException(string.Format(SR.Argument_AddingDuplicateWithKey, key.ToString()));
+                    }
+
+                    return false;
+                }
+
+                i = entries[i].next;
+
+
+                collisionCount++;
+                if (collisionCount > (uint)entries.Length)
+                {
+
+                    // The chain of entries forms a loop; which means a concurrent update has happened.
+                    // Break out of the loop and throw, rather than looping forever.
+                    throw new InvalidOperationException(SR.InvalidOperation_ConcurrentOperationsNotSupported);
+                }
+            }
+        }
+        else
+        {
+            // Debug.Assert(comparer is not null); // TODO:
+            while ((uint)i < (uint)entries.Length)
+            {
+                if (entries[i].hashCode == hashCode && comparer.Compare(entries[i].key, key) == 0)
+                {
+                    if (behavior == InsertionBehavior.OverwriteExisting)
+                    {
+                        entries[i].value = value;
+                        return true;
+                    }
+
+                    if (behavior == InsertionBehavior.ThrowOnExisting)
+                    {
+                        throw new ArgumentException(string.Format(SR.Argument_AddingDuplicateWithKey, key));
+                    }
+
+                    return false;
+                }
+
+                i = entries[i].next;
+
+                collisionCount++;
+                if (collisionCount > (uint)entries.Length)
+                {
+                    // The chain of entries forms a loop; which means a concurrent update has happened.
+                    // Break out of the loop and throw, rather than looping forever.
+                    throw new InvalidOperationException(SR.InvalidOperation_ConcurrentOperationsNotSupported);
+                }
+            }
+        }
+
+        int index;
+        if (_freeCount > 0)
+        {
+            index = _freeList;
+            // TODO:
+            // Debug.Assert((StartOfFreeList - entries[_freeList].next) >= -1, "shouldn't overflow because `next` cannot underflow");
+            _freeList = StartOfFreeList - entries[_freeList].next;
+            _freeCount--;
+        }
+        else
+        {
+            int count = _count;
+            if (count == entries.Length)
+            {
+                Resize();
+                bucket = GetBucket(hashCode);
+            }
+            index = count;
+            _count = count + 1;
+            entries = _entries;
+        }
+
+        DictionaryEntry entry = entries[index];
+        entry.hashCode = hashCode;
+        entry.next = *bucket - 1; // Value in _buckets is 1-based
+        entry.key = key;
+        entry.value = value;
+        *bucket = index + 1; // Value in _buckets is 1-based
+        _version++;
+
+        // Value types never rehash
+        if (!typeof(TKey).IsValueType && collisionCount > HashHelpers.HashCollisionThreshold)
+        {
+            // If we hit the collision threshold we'll need to switch to the comparer which is using randomized string hashing
+            // i.e. EqualityComparer<string>.Default.
+            Resize(entries.Length, true);
+        }
+
+        return true;
+    }
+
+    /// <summary>
+    /// A helper class containing APIs exposed through <see cref="CollectionsMarshal"/> or <see cref="CollectionExtensions"/>.
+    /// These methods are relatively niche and only used in specific scenarios, so adding them in a separate type avoids
+    /// the additional overhead on each <see cref="Dictionary{TKey, TValue}"/> instantiation, especially in AOT scenarios.
+    /// </summary>
+    internal static class CollectionsMarshalHelper
+    {
+        /// <inheritdoc cref="CollectionsMarshal.GetValueRefOrAddDefault{TKey, TValue}(Dictionary{TKey, TValue}, TKey, out bool)"/>
+        public static TValue GetValueRefOrAddDefault(Dictionary<TKey, TValue> dictionary, TKey key, out bool exists)
+        {
+            // NOTE: this method is mirrored by Dictionary<TKey, TValue>.TryInsert above.
+            // If you make any changes here, make sure to keep that version in sync as well.
+
+            if (key == null)
+            {
+                throw new ArgumentNullException(nameof(key));
+            }
+
+            if (dictionary._buckets == null)
+            {
+                dictionary.Initialize(0);
+            }
+            // Debug.Assert(dictionary._buckets != null); // TODO:
+
+            DictionaryEntry[] entries = dictionary._entries;
+            // Debug.Assert(entries != null, "expected entries to be non-null"); // TODO:
+
+            IComparer<TKey> comparer = dictionary._comparer;
+            // Debug.Assert(comparer is not null || typeof(TKey).IsValueType); // TODO:
+            uint hashCode = (uint)(key.GetHashCode());
+
+            uint collisionCount = 0;
+            int* bucket = dictionary.GetBucket(hashCode);
+            int i = *bucket - 1; // Value in _buckets is 1-based
+
+            if (typeof(TKey).IsValueType && // comparer can only be null for value types; enable JIT to eliminate entire if block for ref types
+                comparer == null)
+            {
+                // ValueType: Devirtualize with EqualityComparer<TKey>.Default intrinsic
+                while ((uint)i < (uint)entries.Length)
+                {
+                    if (entries[i].hashCode == hashCode && System.Comparer.Default<TKey>().Compare(entries[i].key, key) == 0)
+                    {
+                        exists = true;
+
+                        return entries[i].value;
+                    }
+
+                    i = entries[i].next;
+
+                    collisionCount++;
+                    if (collisionCount > (uint)entries.Length)
+                    {
+                        // The chain of entries forms a loop; which means a concurrent update has happened.
+                        // Break out of the loop and throw, rather than looping forever.
+                        throw new InvalidOperationException(SR.InvalidOperation_ConcurrentOperationsNotSupported);
+                    }
+                }
+            }
+            else
+            {
+                // Debug.Assert(comparer is not null); // TODO:
+                while ((uint)i < (uint)entries.Length)
+                {
+                    if (entries[i].hashCode == hashCode && comparer.Compare(entries[i].key, key) == 0)
+                    {
+                        exists = true;
+
+                        return entries[i].value;
+                    }
+
+                    i = entries[i].next;
+
+                    collisionCount++;
+                    if (collisionCount > (uint)entries.Length)
+                    {
+                        // The chain of entries forms a loop; which means a concurrent update has happened.
+                        // Break out of the loop and throw, rather than looping forever.
+                        throw new InvalidOperationException(SR.InvalidOperation_ConcurrentOperationsNotSupported);
+                    }
+                }
+            }
+
+            int index;
+            if (dictionary._freeCount > 0)
+            {
+                index = dictionary._freeList;
+                // TODO:
+                // Debug.Assert((StartOfFreeList - entries[dictionary._freeList].next) >= -1, "shouldn't overflow because `next` cannot underflow");
+                dictionary._freeList = StartOfFreeList - entries[dictionary._freeList].next;
+                dictionary._freeCount--;
+            }
+            else
+            {
+                int count = dictionary._count;
+                if (count == entries.Length)
+                {
+                    dictionary.Resize();
+                    bucket = dictionary.GetBucket(hashCode);
+                }
+                index = count;
+                dictionary._count = count + 1;
+                entries = dictionary._entries;
+            }
+
+            DictionaryEntry entry = entries[index];
+            entry.hashCode = hashCode;
+            entry.next = *bucket - 1; // Value in _buckets is 1-based
+            entry.key = key;
+            entry.value = default;
+            *bucket = index + 1; // Value in _buckets is 1-based
+            dictionary._version++;
+
+            // Value types never rehash
+            if (!typeof(TKey).IsValueType && collisionCount > HashHelpers.HashCollisionThreshold)
+            {
+                // If we hit the collision threshold we'll need to switch to the comparer which is using randomized string hashing
+                // i.e. EqualityComparer<string>.Default.
+                dictionary.Resize(entries.Length, true);
+
+                exists = false;
+
+                // At this point the entries array has been resized, so the current reference we have is no longer valid.
+                // We're forced to do a new lookup and return an updated reference to the new entry instance. This new
+                // lookup is guaranteed to always find a value though and it will never return a null reference here.
+                TValue* value = dictionary.FindValue(key);
+
+                // Debug.Assert(!Unsafe.IsNullRef(ref value), "the lookup result cannot be a null ref here"); // TODO:
+
+                return *value;
+            }
+
+            exists = false;
+
+            return entry.value;
+        }
+    }
+
+    private void Resize() => Resize(HashHelpers.ExpandPrime(_count), false);
+
+    private void Resize(int newSize, bool forceNewHashCodes)
+    {
+        // Value types never rehash
+        // TODO:
+        // Debug.Assert(!forceNewHashCodes || !typeof(TKey).IsValueType);
+        // Debug.Assert(_entries != null, "_entries should be non-null");
+        // Debug.Assert(newSize >= _entries.Length);
+
+        DictionaryEntry[] entries = new DictionaryEntry[newSize];
+
+        int count = _count;
+        Array.Copy<DictionaryEntry, DictionaryEntry>(_entries, 0, entries, 0, count);
+
+        if (!typeof(TKey).IsValueType && forceNewHashCodes)
+        {
+            // Debug.Assert(_comparer is NonRandomizedStringEqualityComparer); // TODO:
+            for (int i = 0; i < count; i++)
+            {
+                if (entries[i].next >= -1)
+                {
+                    entries[i].hashCode = (uint)entries[i].key.GetHashCode();
+                }
+            }
+        }
+
+        // Assign member variables after both arrays allocated to guard against corruption from OOM if second fails
+        _buckets = new int[newSize];
+#if TARGET_64BIT;
+        _fastModMultiplier = HashHelpers.GetFastModMultiplier((uint)newSize);
+#endif
+        for (int i = 0; i < count; i++)
+        {
+            if (entries[i].next >= -1)
+            {
+                int* bucket = GetBucket(entries[i].hashCode);
+                entries[i].next = *bucket - 1; // Value in _buckets is 1-based
+                *bucket = i + 1;
+            }
+        }
+
+        _entries = entries;
+    }
+
+    public bool Remove(TKey key)
+    {
+        // The overload Remove(TKey key, out TValue value) is a copy of this method with one additional
+        // statement to copy the value for entry being removed into the output parameter.
+        // Code has been intentionally duplicated for performance reasons.
+        // If you make any changes here, make sure to keep that version in sync as well.
+
+        if (key == null)
+        {
+            throw new ArgumentNullException(nameof(key));
+        }
+
+        if (_buckets != null)
+        {
+            // Debug.Assert(_entries != null, "entries should be non-null"); // TODO:
+            uint collisionCount = 0;
+
+            IComparer<TKey> comparer = _comparer;
+            // Debug.Assert(typeof(TKey).IsValueType || comparer is not null); // TODO:
+            uint hashCode = (uint)(key.GetHashCode());
+
+            int* bucket = GetBucket(hashCode);
+            DictionaryEntry[] entries = _entries;
+            int last = -1;
+            int i = *bucket - 1; // Value in buckets is 1-based
+
+            if (typeof(TKey).IsValueType && // comparer can only be null for value types; enable JIT to eliminate entire if block for ref types
+                comparer == null)
+            {
+                while ((uint)i < (uint)entries.Length)
+                {
+                    DictionaryEntry entry = entries[i];
+
+                    if (entry.hashCode == hashCode && System.Comparer.Default<TKey>().Compare(entry.key, key) == 0)
+                    {
+                        if (last < 0)
+                        {
+                            *bucket = entry.next + 1; // Value in buckets is 1-based
+                        }
+                        else
+                        {
+                            entries[last].next = entry.next;
+                        }
+
+                        // TODO:
+                        // Debug.Assert((StartOfFreeList - _freeList) < 0, "shouldn't underflow because max hashtable length is MaxPrimeArrayLength = 0x7FEFFFFD(2146435069) _freelist underflow threshold 2147483646");
+                        entry.next = StartOfFreeList - _freeList;
+
+                        entry.key = default;
+                        entry.value = default;
+
+                        _freeList = i;
+                        _freeCount++;
+                        return true;
+                    }
+
+                    last = i;
+                    i = entry.next;
+
+                    collisionCount++;
+                    if (collisionCount > (uint)entries.Length)
+                    {
+                        // The chain of entries forms a loop; which means a concurrent update has happened.
+                        // Break out of the loop and throw, rather than looping forever.
+                        throw new InvalidOperationException(SR.InvalidOperation_ConcurrentOperationsNotSupported);
+                    }
+                }
+            }
+            else
+            {
+                // Debug.Assert(comparer is not null); // TODO:
+                while ((uint)i < (uint)entries.Length)
+                {
+                    DictionaryEntry entry = entries[i];
+
+                    if (entry.hashCode == hashCode && comparer.Compare(entry.key, key) == 0)
+                    {
+                        if (last < 0)
+                        {
+                            *bucket = entry.next + 1; // Value in buckets is 1-based
+                        }
+                        else
+                        {
+                            entries[last].next = entry.next;
+                        }
+
+                        // TODO:
+                        // Debug.Assert((StartOfFreeList - _freeList) < 0, "shouldn't underflow because max hashtable length is MaxPrimeArrayLength = 0x7FEFFFFD(2146435069) _freelist underflow threshold 2147483646");
+                        entry.next = StartOfFreeList - _freeList;
+
+                        entry.key = default;
+                        entry.value = default;
+
+                        _freeList = i;
+                        _freeCount++;
+                        return true;
+                    }
+
+                    last = i;
+                    i = entry.next;
+
+                    collisionCount++;
+                    if (collisionCount > (uint)entries.Length)
+                    {
+                        // The chain of entries forms a loop; which means a concurrent update has happened.
+                        // Break out of the loop and throw, rather than looping forever.
+                        throw new InvalidOperationException(SR.InvalidOperation_ConcurrentOperationsNotSupported);
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
+    public bool Remove(TKey key, out TValue value)
+    {
+        // This overload is a copy of the overload Remove(TKey key) with one additional
+        // statement to copy the value for entry being removed into the output parameter.
+        // Code has been intentionally duplicated for performance reasons.
+        // If you make any changes here, make sure to keep the other overload in sync as well.
+
+        if (key == null)
+        {
+            throw new ArgumentNullException(nameof(key));
+        }
+
+        if (_buckets != null)
+        {
+            // TODO:
+            // Debug.Assert(_entries != null, "entries should be non-null");
+            uint collisionCount = 0;
+
+            IComparer<TKey> comparer = _comparer;
+            // Debug.Assert(typeof(TKey).IsValueType || comparer is not null); // TODO:
+            uint hashCode = (uint)(key.GetHashCode());
+
+            int* bucket = GetBucket(hashCode);
+            DictionaryEntry[] entries = _entries;
+            int last = -1;
+            int i = *bucket - 1; // Value in buckets is 1-based
+
+            if (typeof(TKey).IsValueType && // comparer can only be null for value types; enable JIT to eliminate entire if block for ref types
+                comparer == null)
+            {
+                while ((uint)i < (uint)entries.Length)
+                {
+                    DictionaryEntry entry = entries[i];
+
+                    if (entry.hashCode == hashCode && System.Comparer.Default<TKey>().Compare(entry.key, key) == 0)
+                    {
+                        if (last < 0)
+                        {
+                            *bucket = entry.next + 1; // Value in buckets is 1-based
+                        }
+                        else
+                        {
+                            entries[last].next = entry.next;
+                        }
+
+                        value = entry.value;
+
+                        // TODO:
+                        // Debug.Assert((StartOfFreeList - _freeList) < 0, "shouldn't underflow because max hashtable length is MaxPrimeArrayLength = 0x7FEFFFFD(2146435069) _freelist underflow threshold 2147483646");
+                        entry.next = StartOfFreeList - _freeList;
+
+                        entry.key = default;
+                        entry.value = default;
+
+                        _freeList = i;
+                        _freeCount++;
+                        return true;
+                    }
+
+                    last = i;
+                    i = entry.next;
+
+                    collisionCount++;
+                    if (collisionCount > (uint)entries.Length)
+                    {
+                        // The chain of entries forms a loop; which means a concurrent update has happened.
+                        // Break out of the loop and throw, rather than looping forever.
+                        throw new InvalidOperationException(SR.InvalidOperation_ConcurrentOperationsNotSupported);
+                    }
+                }
+            }
+            else
+            {
+                // Debug.Assert(comparer is not null); // TODO:
+                while ((uint)i < (uint)entries.Length)
+                {
+                    DictionaryEntry entry = entries[i];
+
+                    if (entry.hashCode == hashCode && comparer.Compare(entry.key, key) == 0)
+                    {
+                        if (last < 0)
+                        {
+                            *bucket = entry.next + 1; // Value in buckets is 1-based
+                        }
+                        else
+                        {
+                            entries[last].next = entry.next;
+                        }
+
+                        value = entry.value;
+
+                        // TODO:
+                        // Debug.Assert((StartOfFreeList - _freeList) < 0, "shouldn't underflow because max hashtable length is MaxPrimeArrayLength = 0x7FEFFFFD(2146435069) _freelist underflow threshold 2147483646");
+                        entry.next = StartOfFreeList - _freeList;
+
+                        entry.key = default;
+                        entry.value = default;
+
+                        _freeList = i;
+                        _freeCount++;
+                        return true;
+                    }
+
+                    last = i;
+                    i = entry.next;
+
+                    collisionCount++;
+                    if (collisionCount > (uint)entries.Length)
+                    {
+                        // The chain of entries forms a loop; which means a concurrent update has happened.
+                        // Break out of the loop and throw, rather than looping forever.
+                        throw new InvalidOperationException(SR.InvalidOperation_ConcurrentOperationsNotSupported);
+                    }
+                }
+            }
+        }
+
+        value = default;
+        return false;
+    }
+
+    public int RemoveAll(Predicate<TKey> match)
+    {
+        // TODO: 
+        return 0;
+    }
+
+    public bool TryGetValue(TKey key, out TValue value)
+    {
+        TValue* valRef = FindValue(key);
+        if (valRef != null)
+        {
+            value = *valRef;
+            return true;
+        }
+
+        value = default;
+        return false;
+    }
+
+    public bool TryAdd(TKey key, TValue value) =>
+        TryInsert(key, value, InsertionBehavior.None);
+
+    bool ICollection<KeyValuePair<TKey, TValue>>.IsReadOnly => false;
+
+    IEnumerator IEnumerable.GetEnumerator() => ((IEnumerable<KeyValuePair<TKey, TValue>>)this).GetEnumerator();
+
+    /// <summary>
+    /// Ensures that the dictionary can hold up to 'capacity' entries without any further expansion of its backing storage
+    /// </summary>
+    public int EnsureCapacity(int capacity)
+    {
+        if (capacity < 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(capacity), SR.ArgumentOutOfRange_NeedNonNegNum);
+        }
+
+        int currentCapacity = _entries == null ? 0 : _entries.Length;
+        if (currentCapacity >= capacity)
+        {
+            return currentCapacity;
+        }
+
+        _version++;
+
+        if (_buckets == null)
+        {
+            return Initialize(capacity);
+        }
+
+        int newSize = HashHelpers.GetPrime(capacity);
+        Resize(newSize, forceNewHashCodes: false);
+        return newSize;
+    }
+
+    /// <summary>
+    /// Sets the capacity of this dictionary to what it would be if it had been originally initialized with all its entries
+    /// </summary>
+    /// <remarks>
+    /// This method can be used to minimize the memory overhead
+    /// once it is known that no new elements will be added.
+    ///
+    /// To allocate minimum size storage array, execute the following statements:
+    ///
+    /// dictionary.Clear();
+    /// dictionary.TrimExcess();
+    /// </remarks>
+    public void TrimExcess() => TrimExcess(Count);
+
+    /// <summary>
+    /// Sets the capacity of this dictionary to hold up 'capacity' entries without any further expansion of its backing storage
+    /// </summary>
+    /// <remarks>
+    /// This method can be used to minimize the memory overhead
+    /// once it is known that no new elements will be added.
+    /// </remarks>
+    /// <exception cref="ArgumentOutOfRangeException">Passed capacity is lower than entries count.</exception>
+    public void TrimExcess(int capacity)
+    {
+        if (capacity < Count)
+        {
+            throw new ArgumentOutOfRangeException(nameof(capacity), SR.ArgumentOutOfRange_NeedNonNegNum);
+        }
+
+        int newSize = HashHelpers.GetPrime(capacity);
+        DictionaryEntry[] oldEntries = _entries;
+        int currentCapacity = oldEntries == null ? 0 : oldEntries.Length;
+        if (newSize >= currentCapacity)
+        {
+            return;
+        }
+
+        int oldCount = _count;
+        _version++;
+        Initialize(newSize);
+
+        // Debug.Assert(oldEntries is not null); // TODO:
+
+        CopyEntries(oldEntries, oldCount);
+    }
+
+    private void CopyEntries(DictionaryEntry[] entries, int count)
+    {
+        // Debug.Assert(_entries is not null); // TODO:
+
+        DictionaryEntry[] newEntries = _entries;
+        int newCount = 0;
+        for (int i = 0; i < count; i++)
+        {
+            uint hashCode = entries[i].hashCode;
+            if (entries[i].next >= -1)
+            {
+                DictionaryEntry entry = newEntries[newCount];
+                entry = entries[i];
+                int* bucket = GetBucket(hashCode);
+                entry.next = *bucket - 1; // Value in _buckets is 1-based
+                *bucket = newCount + 1;
+                newCount++;
+            }
+        }
+
+        _count = newCount;
+        _freeCount = 0;
+    }
+
+    public bool IsSynchronized => false;
+    public object SyncRoot => this;
+    public bool IsFixedSize => false;
+
+    private static bool IsCompatibleKey(object key)
+    {
+        if (key == null)
+        {
+            throw new ArgumentNullException(nameof(key));
+        }
+        return key is TKey;
+    }
+
+    private int* GetBucket(uint hashCode)
+    {
+#if TARGET_64BIT;
+        return ref buckets[HashHelpers.FastMod(hashCode, (uint)buckets.Length, _fastModMultiplier)];
+#else
+        return &_buckets[(int)(hashCode % (uint)_buckets.Length)];
+#endif
+    }
+
+    private class DictionaryEntry
+    {
+        public uint hashCode;
+        /// <summary>
+        /// 0-based index of next entry in chain: -1 means end of chain
+        /// also encodes whether this entry _itself_ is part of the free list by changing sign and subtracting 3,
+        /// so -2 means end of free list, -3 means index 0 but on free list, -4 means index 1 but on free list, etc.
+        /// </summary>
+        public int next;
+        public TKey key;     // Key of entry
+        public TValue value; // Value of entry
+    }
+
+    public struct DictionaryEnumerator : IDictionaryEnumerator<TKey, TValue>
+    {
+        private readonly Dictionary<TKey, TValue> _dictionary;
+        private readonly int _version;
+        private int _index;
+        private KeyValuePair<TKey, TValue> _current;
+        private readonly int _getEnumeratorRetType;  // What should Enumerator.Current return?
+
+        internal const int DictEntry = 1;
+        internal const int KeyValuePair = 2;
+
+        internal DictionaryEnumerator(Dictionary<TKey, TValue> dictionary, int getEnumeratorRetType)
+        {
+            _dictionary = dictionary;
+            _version = dictionary._version;
+            _index = 0;
+            _getEnumeratorRetType = getEnumeratorRetType;
+            _current = default;
+        }
+
+        public bool MoveNext()
+        {
+            if (_version != _dictionary._version)
+            {
+                throw new InvalidOperationException(SR.InvalidOperation_EnumFailedVersion);
+            }
+
+            // Use unsigned comparison since we set index to dictionary.count+1 when the enumeration ends.
+            // dictionary.count+1 could be negative if dictionary.count is int.MaxValue
+            while ((uint)_index < (uint)_dictionary._count)
+            {
+                DictionaryEntry entry = _dictionary._entries[_index++];
+
+                if (entry.next >= -1)
+                {
+                    _current = new KeyValuePair<TKey, TValue>(entry.key, entry.value);
+                    return true;
+                }
+            }
+
+            _index = _dictionary._count + 1;
+            _current = default;
+            return false;
+        }
+
+        public KeyValuePair<TKey, TValue> Current => _current;
+
+        public void Dispose() { }
+
+        object IEnumerator.Current
+        {
+            get
+            {
+                if (_index == 0 || (_index == _dictionary._count + 1))
+                {
+                    throw new InvalidOperationException(SR.InvalidOperation_EnumOpCantHappen);
+                }
+
+                return new KeyValuePair<TKey, TValue>(_current.Key, _current.Value);
+            }
+        }
+
+        void IEnumerator.Reset()
+        {
+            if (_version != _dictionary._version)
+            {
+                throw new InvalidOperationException(SR.InvalidOperation_EnumFailedVersion);
+            }
+
+            _index = 0;
+            _current = default;
+        }
+
+        object IDictionaryEnumerator<TKey, TValue>.Key
+        {
+            get
+            {
+                if (_index == 0 || (_index == _dictionary._count + 1))
+                {
+                    throw new InvalidOperationException(SR.InvalidOperation_EnumOpCantHappen);
+                }
+
+                return _current.Key;
+            }
+        }
+
+        object IDictionaryEnumerator<TKey, TValue>.Value
+        {
+            get
+            {
+                if (_index == 0 || (_index == _dictionary._count + 1))
+                {
+                    throw new InvalidOperationException(SR.InvalidOperation_EnumOpCantHappen);
+                }
+
+                return _current.Value;
+            }
+        }
+    }
+}

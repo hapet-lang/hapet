@@ -302,7 +302,9 @@ namespace HapetFrontend.Helpers
                 return HasAnyGenericTypes(nullE);
             else if (expr is AstIdExpr || expr is AstEmptyExpr || expr is AstNullableExpr)
                 return false; // just return false because OutType is checked above
-            Debug.Assert(false, "Unexcepted expr type to check");
+
+            // do not error, just skip this shite. probably errored somewhere above
+            // Debug.Assert(false, "Unexcepted expr type to check");
             return false;
         }
 

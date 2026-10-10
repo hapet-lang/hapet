@@ -12,6 +12,9 @@ internal static class SR
     internal const string ArgumentOutOfRange_IndexMustBeLessOrEqual = "Index was out of range. Must be non-negative and less than or equal to the size of the collection.";
     internal const string ArgumentOutOfRange_Count = "Count must be positive and count must refer to a location within the string/array/collection.";
     internal const string Argument_InvalidOffLen = "Offset and length were out of bounds for the array or count is greater than the number of elements from index to the end of the source collection.";
+    internal const string Argument_AddingDuplicateWithKey = "An item with the same key has already been added. Key: {0}";
+    internal const string Argument_InvalidTimeSpanStyles = "An undefined TimeSpanStyles value is being used.";
+    internal const string Argument_IncompatibleArrayType = "Target array type is not compatible with the type of items in the collection.";
 
     // formatting
     internal const string Formatting_InvalidGroupSizes = "Invalid group sizes in NumberFormatInfo.";
@@ -31,18 +34,33 @@ internal static class SR
     internal const string Arg_MustBeInt16 = "Object must be of type Int16 (short).";
     internal const string Arg_MustBeInt32 = "Object must be of type Int32 (int).";
     internal const string Arg_MustBeInt64 = "Object must be of type Int64 (long).";
+    internal const string Arg_MustBeInt128 = "Object must be of type Int128.";
     internal const string Arg_MustBeByte = "Object must be of type Byte.";
     internal const string Arg_MustBeUInt16 = "Object must be of type UInt16 (ushort).";
     internal const string Arg_MustBeUInt32 = "Object must be of type UInt32 (uint).";
     internal const string Arg_MustBeUInt64 = "Object must be of type UInt64 (ulong).";
+    internal const string Arg_MustBeUInt128 = "Object must be of type UInt128.";
     internal const string Arg_MustBePtrDiff = "Object must be of type PtrDiff.";
     internal const string Arg_MustBeUIntPtr = "Object must be of type UIntPtr.";
+    internal const string Arg_MustBeTimeSpan = "Object must be of type TimeSpan.";
 
     internal const string Arg_BogusIComparer = "Unable to sort because the IComparer.Compare() method returns inconsistent results. Either a value does not compare equal to itself, or one value repeatedly compared to another value yields different results.";
     internal const string Arg_InvalidConsoleColor = "The ConsoleColor enum value was not defined on that enum. Please use a defined color from the enum.";
     internal const string Arg_OverflowException = "Arithmetic operation resulted in an overflow.";
+    internal const string Arg_DivideByZero = "Attempted to divide by zero.";
 
     internal const string Arg_DllNotFoundException = "Dll was not found.";
+    internal const string Arg_CannotBeNaN = "TimeSpan does not accept floating point Not-a-Number values.";
+    internal const string Arg_ArrayPlusOffTooSmall = "Destination array is not long enough to copy all the items in the collection. Check array index and length.";
+    internal const string Arg_KeyNotFound = "The given key was not present in the dictionary.";
+    internal const string Arg_KeyNotFoundWithKey = "The given key '{0}' was not present in the dictionary.";
+    internal const string Arg_ArrayTypeMismatchException = "Attempted to access an element as a type incompatible with the array.";
+    internal const string Arg_HTCapacityOverflow = "Hashtable's capacity overflowed and went negative. Check load factor, capacity and the current size of the table.";
+
+    // overflow
+    internal const string Overflow_TimeSpanTooLong = "TimeSpan overflowed because the duration is too long.";
+    internal const string Overflow_Duration = "The duration cannot be returned for TimeSpan.MinValue because the absolute value of TimeSpan.MinValue exceeds the value of TimeSpan.MaxValue.";
+    internal const string Overflow_NegateTwosCompNum = "Negating the minimum value of a twos complement number is invalid.";
 
     // not
     internal const string NotSupported_ReadOnlyCollection = "Collection is read-only.";
@@ -50,10 +68,19 @@ internal static class SR
     // invalid
     internal const string InvalidOperation_EnumNotStarted = "Enumeration has not started. Call MoveNext.";
     internal const string InvalidOperation_EnumEnded = "Enumeration already finished.";
+    internal const string InvalidOperation_EnumFailedVersion = "Collection was modified; enumeration operation may not execute.";
+    internal const string InvalidOperation_EnumOpCantHappen = "Enumeration has either not started or has already finished.";
     internal const string InvalidOperation_IComparerFailed = "Failed to compare two elements in the array.";
     internal const string InvalidOperation_NoValue = "Nullable object must have a value.";
+    internal const string InvalidOperation_ConcurrentOperationsNotSupported = "Operations that change non-concurrent collections must have exclusive access. A concurrent update was performed on this collection and corrupted its state. The collection's state is no longer correct.";
 
     // io
     internal const string Arg_IOException = "I/O error occurred.";
     internal const string IO_NoConsole = "There is no console.";
+
+    // threading
+    internal const string Arg_ThreadStateException = "Thread was in an invalid state for the operation being executed.";
+    internal const string ThreadState_NotStarted = "Thread has not been started.";
+    internal const string ThreadState_AlreadyStarted = "Thread is running or terminated; it cannot restart.";
+    internal const string Arg_ThreadStartException = "Thread failed to start.";
 }

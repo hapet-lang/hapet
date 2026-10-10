@@ -1,0 +1,14 @@
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+// Some modifications were made for hapet-lang compatibility.
+
+using System;
+
+/// <summary>
+/// The exception that is thrown when a <see cref="Thread" /> is in an invalid <see cref="Thread.ThreadState" /> for the method call.
+/// </summary>
+public class ThreadStateException : SystemException
+{
+    public ThreadStateException() : base(SR.Arg_ThreadStateException) { }
+    public ThreadStateException(string message) : base(message ?? SR.Arg_ThreadStateException) { }
+}

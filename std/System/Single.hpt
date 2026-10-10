@@ -18,6 +18,8 @@ public struct Single : IComparable, IComparable<float>, IFormattable
     public const float PositiveInfinity = (float)(1.0) / (float)(0.0);
     public const float NaN = (float)0.0 / (float)0.0;
 
+    internal const uint SignMask = 0x8000_0000;
+
     public int CompareTo(object value)
     {
         if (value == null)

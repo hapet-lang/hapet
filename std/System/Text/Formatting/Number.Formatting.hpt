@@ -23,6 +23,8 @@ public static class Number
     const int UInt32Precision = 10;
     const int Int64Precision = 19;
     const int UInt64Precision = 20;
+    const int Int128Precision = 39;
+    const int UInt128Precision = 39;
     const int FloatPrecision = 7;
     const int DoublePrecision = 15;
     const int DecimalPrecision = 29;
@@ -81,6 +83,18 @@ public static class Number
     {
         CachedCulture cc = culture == null ? CachedInvariantCulture : new CachedCulture(culture);
         return FormatUInt64(value, specifier, cc);
+    } 
+
+    public static inline string Format(Int128 value, string specifier, CultureInfo culture = null)
+    {
+        CachedCulture cc = culture == null ? CachedInvariantCulture : new CachedCulture(culture);
+        return FormatInt128(value, specifier, cc);
+    } 
+
+    public static inline string Format(UInt128 value, string specifier, CultureInfo culture = null)
+    {
+        CachedCulture cc = culture == null ? CachedInvariantCulture : new CachedCulture(culture);
+        return FormatUInt128(value, specifier, cc);
     } 
 
     public static inline string Format(float value, string specifier, CultureInfo culture = null)
@@ -427,6 +441,84 @@ public static class Number
         }
     }
 
+    static string FormatInt128(Int128 value, string specifier, CachedCulture culture)
+    {
+        int digits;
+        var fmt = ParseFormatSpecifier(specifier, out digits);
+
+        // ANDing with 0xFFDF has the effect of uppercasing the character
+        switch (fmt & 0xFFDF)
+        {
+            case ('G')
+            {
+                if (digits > 0)
+                    goto caseDefault;
+                else
+                    goto caseD;
+            }
+            case ('D') $caseD
+            {
+                return Int128ToDecStr(value, digits, culture.NegativeSign);
+            }
+            case ('X')
+            {
+                // fmt-('X'-'A'+1) gives us the base hex character in either
+                // uppercase or lowercase, depending on the casing of fmt
+                return Int128ToHexStr((UInt128)value, fmt - ('X' - 'A' + 10), digits);
+            }
+            default $caseDefault
+            {
+                var number = new NumberStruct();
+                var buffer = (stackalloc char[MaxNumberDigits + 1]).Buffer;
+                number.Digits = buffer;
+                Int128ToNumber(value, ref number);
+                if (fmt != 0)
+                    return NumberToString(ref number, fmt, digits, culture);
+                else
+                    return NumberToCustomFormatString(ref number, specifier, culture);
+            }
+        }
+    }
+    
+    static string FormatUInt128(UInt128 value, string specifier, CachedCulture culture)
+    {
+        int digits;
+        var fmt = ParseFormatSpecifier(specifier, out digits);
+
+        // ANDing with 0xFFDF has the effect of uppercasing the character
+        switch (fmt & 0xFFDF)
+        {
+            case ('G')
+            {
+                if (digits > 0)
+                    goto caseDefault;
+                else
+                    goto caseD;
+            }
+            case ('D') $caseD
+            {
+                return UInt128ToDecStr(value, digits);
+            }
+            case ('X')
+            {
+                // fmt-('X'-'A'+1) gives us the base hex character in either
+                // uppercase or lowercase, depending on the casing of fmt
+                return Int128ToHexStr(value, fmt - ('X' - 'A' + 10), digits);
+            }
+            default $caseDefault
+            {
+                var number = new NumberStruct();
+                var buffer = (stackalloc char[MaxNumberDigits + 1]).Buffer;
+                number.Digits = buffer;
+                UInt128ToNumber(value, ref number);
+                if (fmt != 0)
+                    return NumberToString(ref number, fmt, digits, culture);
+                else
+                    return NumberToCustomFormatString(ref number, specifier, culture);
+            }
+        }
+    }
+
     static string FormatSingle(float value, string specifier, CachedCulture culture)
     {
         int digits;
@@ -598,6 +690,47 @@ public static class Number
         return GetStringFromBufferCopy(p, (int)(buffer + bufferLength - p));
     }
 
+    static string Int128ToDecStr(Int128 value, int digits, string negativeSign)
+    {
+        if (digits < 1)
+            digits = 1;
+
+        int sign = (int)High32((ulong)(value >> 64));
+        int maxDigits = 39;
+        int bufferLength = maxDigits > 100 ? maxDigits : 100;
+
+        if (sign < 0)
+        {
+            value = -value;
+            var negativeLength = negativeSign.Length;
+            if (negativeLength > bufferLength - maxDigits)
+                bufferLength = negativeLength + maxDigits;
+        }
+
+        var buffer = (stackalloc char[bufferLength]).Buffer;
+        var p = UInt128ToDecChars(buffer + bufferLength, (UInt128)value, digits);
+        if (sign < 0)
+        {
+            // add the negative sign
+            for (int i = negativeSign.Length - 1; i >= 0; i--)
+                *(--p) = negativeSign[i];
+        }
+        return GetStringFromBufferCopy(p, (int)(buffer + bufferLength - p));
+    }
+
+    static string UInt128ToDecStr(UInt128 value, int digits)
+    {
+        if (digits < 1)
+            digits = 1;
+
+        int maxDigits = 39;
+        int bufferLength = maxDigits > 100 ? maxDigits : 100;
+
+        var buffer = (stackalloc char[bufferLength]).Buffer;
+        var p = UInt128ToDecChars(buffer + bufferLength, value, digits);
+        return GetStringFromBufferCopy(p, (int)(buffer + bufferLength - p));
+    }
+
     [SuppressStackTrace]
     internal static char* UInt32ToDecChars(char* p, uint value, int digits)
     {
@@ -652,6 +785,24 @@ public static class Number
         return p;
     }
 
+    [SuppressStackTrace]
+    internal static char* UInt128ToDecChars(char* p, UInt128 value, int digits)
+    {
+        while (value != 0)
+        {
+            char c = (char)(value % 10 + '0');
+            *--p = c;
+            value /= 10;
+            digits--;
+        }
+
+        while (--digits >= 0)
+        {
+            *--p = '0';
+        }
+        return p;
+    }
+
     static string Int32ToHexStr(uint value, int hexBase, int digits)
     {
         var buffer = (stackalloc char[100]).Buffer;
@@ -664,7 +815,7 @@ public static class Number
 
     static string Int64ToHexStr(ulong value, int hexBase, int digits)
     {
-        var buffer = (stackalloc char[100]).Buffer;
+        char* buffer = (stackalloc char[100]).Buffer;
         char* ptr;
         if (High32(value) != 0)
         {
@@ -679,6 +830,40 @@ public static class Number
         }
 
         return GetStringFromBufferCopy(ptr, (int)(buffer + 100 - ptr));
+    }
+
+    static string Int128ToHexStr(UInt128 value, int hexBase, int digits)
+    {
+        char* buffer = (stackalloc char[200]).Buffer;
+        char* ptr;
+
+        ulong low = Low64(value);
+        ulong high = High64(value);
+
+        if (high != 0)
+        {
+            Int64ToHexChars(buffer + 200, low, hexBase, 16);
+            ptr = Int64ToHexChars(buffer + 200 - 16, high, hexBase, digits - 16);
+        }
+        else
+        {
+            if (digits < 1)
+                digits = 1;
+            ptr = Int64ToHexChars(buffer + 200, low, hexBase, digits);
+        }
+
+        return GetStringFromBufferCopy(ptr, (int)(buffer + 200 - ptr));
+    }
+
+    static char* Int64ToHexChars(char* p, ulong value, int hexBase, int digits)
+    {
+        while (--digits >= 0 || value != 0)
+        {
+            var digit = value & 0xF;
+            *--p = (char)((int)digit + (digit < 10 ? '0' : hexBase));
+            value = value >> 4;
+        }
+        return p;
     }
 
     static char* Int32ToHexChars(char* p, uint value, int hexBase, int digits)
@@ -760,6 +945,44 @@ public static class Number
         var buffer = (stackalloc char[UInt64Precision + 1]).Buffer;
         var ptr = UInt64ToDecChars(buffer + UInt64Precision, value, 0);
         var len = (int)(buffer + UInt64Precision - ptr);
+        number.Scale = len;
+
+        var dest = number.Digits;
+        while (--len >= 0)
+            *dest++ = *ptr++;
+        *dest = '\0';
+    }
+
+    static void Int128ToNumber(Int128 value, ref NumberStruct number)
+    {
+        number.Precision = Int128Precision;
+        if (value >= 0)
+            number.Sign = 0;
+        else
+        {
+            number.Sign = 1;
+            value = -value;
+        }
+
+        var buffer = (stackalloc char[Int128Precision + 1]).Buffer;
+        var ptr = UInt128ToDecChars(buffer + Int128Precision, (UInt128)value, 0);
+        var len = (int)(buffer + Int128Precision - ptr);
+        number.Scale = len;
+
+        var dest = number.Digits;
+        while (--len >= 0)
+            *dest++ = *ptr++;
+        *dest = '\0';
+    }
+
+    static void UInt128ToNumber(UInt128 value, ref NumberStruct number)
+    {
+        number.Precision = UInt128Precision;
+        number.Sign = 0;
+
+        var buffer = (stackalloc char[UInt128Precision + 1]).Buffer;
+        var ptr = UInt128ToDecChars(buffer + UInt128Precision, value, 0);
+        var len = (int)(buffer + UInt128Precision - ptr);
         number.Scale = len;
 
         var dest = number.Digits;
@@ -1272,6 +1495,18 @@ public static class Number
     internal static uint High32(ulong value)
     {
         return (uint)((value & 0xFFFFFFFF00000000) >> 32);
+    }
+
+    [SuppressStackTrace]
+    internal static ulong Low64(UInt128 value)
+    {
+        return (ulong)value;
+    }
+
+    [SuppressStackTrace]
+    internal static ulong High64(UInt128 value)
+    {
+        return (ulong)(value >> 64);
     }
 
     static readonly CachedCulture CachedInvariantCulture = new CachedCulture(CultureInfo.InvariantCulture);

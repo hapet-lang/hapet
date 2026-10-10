@@ -10,4 +10,5 @@ internal struct TypeInfoUnsafe
     internal int** _interfaceOffsets;
     internal DtorDelegate _dtorDelegate;
     internal int _rawSize;
+    internal bool _isValueType;
 }

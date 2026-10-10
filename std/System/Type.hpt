@@ -36,6 +36,8 @@ public struct Type
 
     /// Returns raw size of the type
     public int RawSize => (*_typeInfo)._rawSize;
+    /// Returns 'true' when value type
+    public bool IsValueType => (*_typeInfo)._isValueType;
 
     public static bool operator ==(Type t1, Type t2)
     {
