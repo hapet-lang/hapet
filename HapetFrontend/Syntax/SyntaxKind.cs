@@ -6,7 +6,8 @@
         /// These are for lexer tokens
         /// </summary>
         
-        Unknown,
+        Unknown,  
+        ListNode,      // just for list-like nodes
 
         Whitespace,    // trivia shite
         NewLine,
@@ -200,6 +201,7 @@
         IdentifierGenericExpr,
         IdentifierTupledExpr, // for cringe like 'var a, b, c = FuncThatReturnsTuple();'
         InvokationExpr,       // a.b(), (Expression = a.b, ArgumentList = ())
+        LambdaExpr,
         MemberAccessExpr,     // a.b
         NewExpr,
         NullableExpr,
@@ -216,6 +218,26 @@
 
         // declarations
         ClassDecl = 2000,
+        DelegateDecl,
+        EnumDecl,
+        FieldDecl,
+        FunctionDecl,
+        IndexerDecl,
+        OverloadDecl,
+        ParamDecl,
+        PropertyDecl,
+        StructDecl,
+        VarDecl,
+
+        // statements
+        AssignStmt = 3000,
+        AttributeStmt,
+        BaseCtorStmt, // do i need it?
+        BreakStmt,
+        ContinueStmt,
+        ConstraintStmt,
+        DirectiveStmt,
+        DoWhileStmt,
 
     }
 }

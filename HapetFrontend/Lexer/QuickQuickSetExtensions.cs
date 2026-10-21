@@ -1,4 +1,4 @@
-﻿using HapetFrontend.Entities;
+﻿using HapetFrontend.Pools;
 using Microsoft.Language.Xml;
 using System.Text;
 

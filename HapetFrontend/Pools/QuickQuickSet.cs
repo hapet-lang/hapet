@@ -1,4 +1,4 @@
-﻿namespace HapetFrontend.Entities
+﻿namespace HapetFrontend.Pools
 {
     /// <summary>
     /// Quick set with buckets. Taken from Hypocrite.Container https://github.com/CrackAndDie/Hypocrite.Container
