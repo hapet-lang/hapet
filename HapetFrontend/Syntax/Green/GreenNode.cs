@@ -1,9 +1,12 @@
-﻿
+﻿// This file is ported and adapted from the Akbura
+
+using HapetFrontend.Entities;
 using HapetFrontend.Extensions;
 using HapetFrontend.Pools;
 using HapetFrontend.Syntax.Diagnostics;
 using HapetFrontend.Syntax.Red;
 using System.Collections.Immutable;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 
@@ -28,29 +31,44 @@ namespace HapetFrontend.Syntax.Green
         /// Width of the node
         /// </summary>
         private readonly int _fullWidth;
-        /// <summary>
-        /// Fast info storage
-        /// </summary>
-        private readonly ushort _nodeFlagsAndSlotCount;
-        /// <summary>
-        /// Raw node kind to check without abstractions
-        /// </summary>
-        private readonly SyntaxKind _rawKind;
-
         public int FullWidth
         {
             get => _fullWidth;
             protected init => _fullWidth = value;
         }
+        public virtual int Width => _fullWidth - GetLeadingTriviaWidth() - GetTrailingTriviaWidth();
+        public virtual int GetLeadingTriviaWidth()
+            => FullWidth != 0 ? GetFirstTerminal()?.GetLeadingTriviaWidth() ?? 0 : 0;
+        public virtual int GetTrailingTriviaWidth()
+            => FullWidth != 0 ? GetLastTerminal()?.GetTrailingTriviaWidth() ?? 0 : 0;
+        public bool HasLeadingTrivia => GetLeadingTriviaWidth() != 0;
+        public bool HasTrailingTrivia => GetTrailingTriviaWidth() != 0;
 
+
+        /// <summary>
+        /// Raw node kind to check without abstractions
+        /// </summary>
+        private readonly SyntaxKind _rawKind;
         public SyntaxKind Kind => _rawKind;
         public ushort RawKind => (ushort)_rawKind;
 
-        public int SmallSlotCount => _nodeFlagsAndSlotCount & 0b_0000_0000_0000_1111;
 
-        private static readonly ConditionalWeakTable<GreenNode, HapetDiagnostic[]> _diagnosticsTable = new();
-        private static readonly ConditionalWeakTable<GreenNode, HapetSyntaxAnnotation[]> _annotationsTable = new();
-
+        /// <summary>
+        /// Fast info storage
+        /// </summary>
+        private readonly ushort _nodeFlagsAndSlotCount;
+        public const ushort SlotCountMask = 0b_0000_0000_0000_1111;
+        public const ushort FlagsMask = 0b_1111_1111_1111_0000;
+        public int SmallSlotCount => _nodeFlagsAndSlotCount & SlotCountMask;
+        protected ushort Flags
+        {
+            get => (ushort)(_nodeFlagsAndSlotCount & FlagsMask);
+            init
+            {
+                var existingSlots = (ushort)(_nodeFlagsAndSlotCount & SlotCountMask);
+                _nodeFlagsAndSlotCount = (ushort)((value & FlagsMask) | existingSlots);
+            }
+        }
         public int SlotCount
         {
             get
@@ -73,17 +91,9 @@ namespace HapetFrontend.Syntax.Green
             }
         }
 
-        public virtual int Width => _fullWidth - GetLeadingTriviaWidth() - GetTrailingTriviaWidth();
+        private static readonly ConditionalWeakTable<GreenNode, HapetDiagnostic[]> _diagnosticsTable = new();
+        private static readonly ConditionalWeakTable<GreenNode, HapetSyntaxAnnotation[]> _annotationsTable = new();
 
-        public virtual int GetLeadingTriviaWidth()
-            => FullWidth != 0 ? GetFirstTerminal()?.GetLeadingTriviaWidth() ?? 0 : 0;
-
-        public virtual int GetTrailingTriviaWidth()
-            => FullWidth != 0 ? GetLastTerminal()?.GetTrailingTriviaWidth() ?? 0 : 0;
-
-        public bool HasLeadingTrivia => GetLeadingTriviaWidth() != 0;
-
-        public bool HasTrailingTrivia => GetTrailingTriviaWidth() != 0;
 
         internal protected ushort InheritMask => (ushort)(_nodeFlagsAndSlotCount & (ushort)GreenNodeFlags.InheritMask);
 
@@ -127,6 +137,9 @@ namespace HapetFrontend.Syntax.Green
                 : (_nodeFlagsAndSlotCount & ~(int)GreenNodeFlags.ContainsAnnotations));
         }
 
+        internal bool IsList => _rawKind == SyntaxKind.ListNode;
+        internal virtual bool IsToken => false;
+
         protected GreenNode(SyntaxKind kind, ImmutableArray<HapetDiagnostic>? diagnosticInfos, ImmutableArray<HapetSyntaxAnnotation>? annotations)
         {
             _rawKind = kind;
@@ -150,6 +163,59 @@ namespace HapetFrontend.Syntax.Green
         protected virtual int GetSlotCount()
         {
             return SmallSlotCount;
+        }
+
+        public virtual int GetSlotOffset(int index)
+        {
+            var offset = 0;
+            for (var i = 0; i < index; i++)
+            {
+                var child = GetSlot(i);
+
+                if (child != null)
+                {
+                    offset += child.FullWidth;
+                }
+            }
+
+            return offset;
+        }
+
+        /// <summary>
+        /// Find the slot that contains the given offset.
+        /// </summary>
+        /// <param name="offset">
+        /// The target offset. Must be between 0 and <see cref="FullWidth"/>.
+        /// </param>
+        /// <returns>
+        /// The slot index of the slot containing the given offset.
+        /// </returns>
+        /// <remarks>
+        /// The base implementation is a linear search. This should be overridden
+        /// if a derived class can implement it more efficiently.
+        /// </remarks>
+        public virtual int FindSlotIndexContainingOffset(int offset)
+        {
+            HapetAssert.Assert(0 <= offset && offset < FullWidth);
+
+            int i;
+            var accumulatedWidth = 0;
+
+            for (i = 0; ; i++)
+            {
+                Debug.Assert(i < SlotCount);
+                var child = GetSlot(i);
+                if (child != null)
+                {
+                    accumulatedWidth += child.FullWidth;
+                    if (offset < accumulatedWidth)
+                    {
+                        break;
+                    }
+                }
+            }
+
+            return i;
         }
 
         public GreenNode GetFirstTerminal()
@@ -272,7 +338,7 @@ namespace HapetFrontend.Syntax.Green
             return true;
         }
 
-        public abstract GreenNode WithDiagnostics(ImmutableArray<HapetDiagnostic> diagnostics);
+        public abstract GreenNode WithDiagnostics(ImmutableArray<HapetDiagnostic>? diagnostics);
 
         #endregion
 
@@ -461,7 +527,7 @@ namespace HapetFrontend.Syntax.Green
             }
         }
 
-        public abstract GreenNode WithAnnotations(ImmutableArray<HapetSyntaxAnnotation> annotations);
+        public abstract GreenNode WithAnnotations(ImmutableArray<HapetSyntaxAnnotation>? annotations);
 
         public GreenNode WithoutAnnotations(IEnumerable<HapetSyntaxAnnotation> annotations)
         {
@@ -489,6 +555,130 @@ namespace HapetFrontend.Syntax.Green
             }
 
             return WithAnnotations(toKeep.ToImmutable());
+        }
+
+        #endregion
+
+        #region Width and flags
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static void AdjustWidthAndFlags(GreenNode slot, ref int width, ref ushort flags)
+        {
+            width += slot.FullWidth;
+            flags |= (ushort)(slot.Flags & slot.InheritMask);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static void AdjustWidthAndFlags(ReadOnlySpan<GreenNode> slots, ref int width, ref ushort flags)
+        {
+            for (var i = 0; i < slots.Length; i++)
+            {
+                var slot = slots[i];
+
+                width += slot.FullWidth;
+                flags |= (ushort)(slot.Flags | slot.InheritMask);
+            }
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static void AdjustWidthAndFlags(ArrayElement<GreenNode>[] slots, ref int width, ref ushort flags)
+        {
+            for (var i = 0; i < slots.Length; i++)
+            {
+                var slot = slots[i].Value;
+
+                width += slot.FullWidth;
+                flags |= (ushort)(slot.Flags | slot.InheritMask);
+            }
+        }
+        #endregion
+
+        #region Caching
+
+        /// <summary>
+        /// Maximum number of child nodes allowed for caching.
+        /// Nodes exceeding this number of children are not eligible for caching.
+        /// </summary>
+        public const int MaxCachedChildNum = 3;
+
+        /// <summary>
+        /// Determines if the current node is eligible for caching based on its flags and slot count.
+        /// Nodes are cacheable if they are not missing and their slot count does not exceed <see cref="MaxCachedChildNum"/>.
+        /// </summary>
+        public bool IsCacheable => IsNotMissing && SlotCount <= MaxCachedChildNum;
+
+        /// <summary>
+        /// Computes a unique hash code for caching the node, combining node flags, slot count, kind, and identities of child nodes.
+        /// <para>
+        /// The method uses <see cref="SmallSlotCount"/> directly to avoid virtual method calls, ensuring optimal performance.
+        /// Since cacheable nodes always have a slot count within the small limit (<= <see cref="MaxCachedChildNum"/>),
+        /// the use of <see cref="SmallSlotCount"/> is guaranteed to be safe here.
+        /// </para>
+        /// </summary>
+        /// <returns>
+        /// A positive integer representing the computed hash code.
+        /// </returns>
+        public int GetCacheHash()
+        {
+            HapetAssert.Assert(IsCacheable);
+
+            var code = (_nodeFlagsAndSlotCount << 16) | (ushort)_rawKind;
+            var count = SlotCount;
+
+            for (var i = 0; i < count; i++)
+            {
+                var child = GetSlot(i);
+                if (child != null)
+                {
+                    code = HashCode.Combine(RuntimeHelpers.GetHashCode(child), code);
+                }
+            }
+
+            return code & int.MaxValue;
+        }
+
+        /// <summary>
+        /// Checks if the current node is equivalent to another node in the cache,
+        /// based on kind, combined flags and slot count, and one child node.
+        /// </summary>
+        public bool IsCacheEquivalent(SyntaxKind kind, ushort flagsAndSlotCount, GreenNode? child1)
+        {
+            Debug.Assert(IsCacheable);
+
+            return Kind == kind &&
+                _nodeFlagsAndSlotCount == flagsAndSlotCount &&
+                SmallSlotCount == 1 &&
+                GetSlot(0) == child1;
+        }
+
+        /// <summary>
+        /// Checks if the current node is equivalent to another node in the cache,
+        /// based on kind, combined flags and slot count, and two child nodes.
+        /// </summary>
+        public bool IsCacheEquivalent(SyntaxKind kind, ushort flagsAndSlotCount, GreenNode? child1, GreenNode? child2)
+        {
+            Debug.Assert(IsCacheable);
+
+            return Kind == kind &&
+                _nodeFlagsAndSlotCount == flagsAndSlotCount &&
+                SmallSlotCount == 2 &&
+                GetSlot(0) == child1 &&
+                GetSlot(1) == child2;
+        }
+
+        /// <summary>
+        /// Checks if the current node is equivalent to another node in the cache,
+        /// based on kind, combined flags and slot count, and three child nodes.
+        /// </summary>
+        public bool IsCacheEquivalent(SyntaxKind kind, ushort flagsAndSlotCount, GreenNode? child1, GreenNode? child2, GreenNode? child3)
+        {
+            Debug.Assert(IsCacheable);
+
+            return Kind == kind &&
+                _nodeFlagsAndSlotCount == flagsAndSlotCount &&
+                SmallSlotCount == 3 &&
+                GetSlot(0) == child1 &&
+                GetSlot(1) == child2 &&
+                GetSlot(2) == child3;
         }
 
         #endregion

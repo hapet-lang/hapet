@@ -1,6 +1,7 @@
 ﻿// This file is ported and adapted from the Akbura
 
 using HapetFrontend.Entities;
+using HapetFrontend.Pools;
 using HapetFrontend.Syntax.Diagnostics;
 using System;
 using System.Collections.Generic;
@@ -11,7 +12,7 @@ namespace HapetFrontend.Syntax.Green
 {
     internal abstract partial class GreenSyntaxList : GreenNode
     {
-        public GreenSyntaxList(ImmutableArray<HapetDiagnostic> diagnostics, ImmutableArray<HapetSyntaxAnnotation> annotations) : base(SyntaxKind.ListNode, diagnostics, annotations)
+        public GreenSyntaxList(ImmutableArray<HapetDiagnostic>? diagnostics, ImmutableArray<HapetSyntaxAnnotation>? annotations) : base(SyntaxKind.ListNode, diagnostics, annotations)
         {
         }
 
@@ -68,7 +69,7 @@ namespace HapetFrontend.Syntax.Green
             return result;
         }
 
-        public new static GreenNode List(GreenNode[] nodes)
+        public static GreenNode List(GreenNode[] nodes)
         {
             return List(nodes, nodes.Length);
         }
@@ -86,7 +87,7 @@ namespace HapetFrontend.Syntax.Green
             return List(array);
         }
 
-        public new static GreenSyntaxList List(ReadOnlySpan<GreenNode> nodes)
+        public static GreenSyntaxList List(ReadOnlySpan<GreenNode> nodes)
         {
             return List(nodes, nodes.Length);
         }

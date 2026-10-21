@@ -91,37 +91,6 @@ namespace HapetFrontend.Syntax.Green
             }
         }
 
-        public GreenSyntaxListBuilder AddRange(GreenSyntaxList<GreenNode> list)
-        {
-            AddRange(list, 0, list.Count);
-            return this;
-        }
-
-        public void AddRange(GreenSyntaxList<GreenNode> list, int offset, int length)
-        {
-            // Necessary, but not sufficient (e.g. for nested lists).
-            EnsureAdditionalCapacity(length - offset);
-
-            var oldCount = Count;
-
-            for (var i = offset; i < length; i++)
-            {
-                Add(list[i]);
-            }
-
-            Validate(oldCount, Count);
-        }
-
-        public void AddRange<TNode>(GreenSyntaxList<TNode> list) where TNode : GreenNode
-        {
-            AddRange(list, 0, list.Count);
-        }
-
-        public void AddRange<TNode>(GreenSyntaxList<TNode> list, int offset, int length) where TNode : GreenNode
-        {
-            AddRange(new GreenSyntaxList<GreenNode>(list.Node), offset, length);
-        }
-
         public void RemoveLast()
         {
             Count--;
@@ -188,16 +157,6 @@ namespace HapetFrontend.Syntax.Green
                     Array.Copy(_nodes, tmp, Count);
                     return GreenSyntaxList.List(tmp);
             }
-        }
-
-        public GreenSyntaxList<GreenNode> ToList()
-        {
-            return new GreenSyntaxList<GreenNode>(ToListNode());
-        }
-
-        public GreenSyntaxList<TNode> ToList<TNode>() where TNode : GreenNode
-        {
-            return new GreenSyntaxList<TNode>(ToListNode());
         }
     }
 }
