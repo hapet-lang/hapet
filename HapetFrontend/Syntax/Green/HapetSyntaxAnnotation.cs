@@ -10,6 +10,11 @@ namespace HapetFrontend.Syntax.Green
     /// </summary>
     public sealed class HapetSyntaxAnnotation : IEquatable<HapetSyntaxAnnotation>
     {
+        /// <summary>
+        /// A predefined syntax annotation that indicates whether the syntax element has elastic trivia.
+        /// </summary>
+        public static HapetSyntaxAnnotation ElasticAnnotation { get; } = new();
+
         // use a value identity instead of object identity so a deserialized instance matches the original instance.
         private readonly long _id;
         private static long _nextId;

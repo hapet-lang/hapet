@@ -10,7 +10,7 @@ using System.Text;
 
 namespace HapetFrontend.Syntax.Green
 {
-    public abstract class WithManyChildrenBaseGreen : GreenSyntaxList
+    internal abstract class WithManyChildrenBaseGreen : GreenSyntaxList
     {
         public readonly ArrayElement<GreenNode>[] _children;
 

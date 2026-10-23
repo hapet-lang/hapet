@@ -15,11 +15,6 @@
 
         DocComment,
 
-        StringLiteral,
-        CharLiteral,
-        NumberLiteral,
-
-        Identifier,
         DollarIdentifier,// $
         SharpIdentifier, // #
         AtSignIdentifier,// @
@@ -82,7 +77,15 @@
 
         ArrayDef,        // []
 
-        // words
+        // words and other
+        FirstTokenWithWellKnownText = 400,
+#pragma warning disable CA1069
+        Identifier = 400,
+#pragma warning restore CA1069
+        StringLiteral,
+        CharLiteral,
+        NumberLiteral,
+
         KwStruct,
         KwEnum,
         KwInterface,
@@ -176,6 +179,8 @@
         KwImplicit,
         // for overriding operators
         KwOperator,
+
+        LastTokenWithWellKnownText = KwOperator,
 
 
         /// <summary>

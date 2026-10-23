@@ -139,6 +139,7 @@ namespace HapetFrontend.Syntax.Green
 
         internal bool IsList => _rawKind == SyntaxKind.ListNode;
         internal virtual bool IsToken => false;
+        internal virtual bool IsTrivia => false;
 
         protected GreenNode(SyntaxKind kind, ImmutableArray<HapetDiagnostic>? diagnosticInfos, ImmutableArray<HapetSyntaxAnnotation>? annotations)
         {
@@ -681,6 +682,75 @@ namespace HapetFrontend.Syntax.Green
                 GetSlot(2) == child3;
         }
 
+        #endregion
+
+        #region Equivalence 
+        public virtual bool IsEquivalentTo([NotNullWhen(true)] GreenNode? other)
+        {
+            if (this == other)
+            {
+                return true;
+            }
+
+            if (other == null)
+            {
+                return false;
+            }
+
+            return EquivalentToInternal(this, other);
+        }
+
+        private static bool EquivalentToInternal(GreenNode node1, GreenNode node2)
+        {
+            if (node1.Kind != node2.Kind)
+            {
+                // A single-element list is usually represented as just a single node,
+                // but can be represented as a List node with one child. Move to that
+                // child if necessary.
+                if (node1.IsList && node1.SlotCount == 1)
+                {
+                    node1 = node1.GetSlot(0);
+                }
+
+                if (node2.IsList && node2.SlotCount == 1)
+                {
+                    node2 = node2.GetSlot(0);
+                }
+
+                if (node1 == null || node2 == null)
+                {
+                    return false;
+                }
+
+                if (node1.Kind != node2.Kind)
+                {
+                    return false;
+                }
+            }
+
+            if (node1._fullWidth != node2._fullWidth)
+            {
+                return false;
+            }
+
+            var n = node1.SlotCount;
+            if (n != node2.SlotCount)
+            {
+                return false;
+            }
+
+            for (var i = 0; i < n; i++)
+            {
+                var node1Child = node1.GetSlot(i);
+                var node2Child = node2.GetSlot(i);
+                if (node1Child != null && node2Child != null && !node1Child.IsEquivalentTo(node2Child))
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
         #endregion
     }
 }
