@@ -23,7 +23,6 @@ namespace HapetFrontend.Syntax.Green.Tokens
             IsMissing = false;
         }
 
-
         /// <summary>
         /// Indicates whether this is a token.
         /// </summary>
@@ -32,12 +31,22 @@ namespace HapetFrontend.Syntax.Green.Tokens
         /// <summary>
         /// Gets the text representation of the token.
         /// </summary>
-        public virtual string Text => ""; // TODO: token type to its string repr as in old hapet for meta file creation
+        public virtual string Text => SyntaxFacts.GetText(Kind);
 
         /// <summary>
         /// Gets the width of the token.
         /// </summary>
         public override int Width => Text.Length;
+
+        /// <summary>
+        /// Gets the value text of the token.
+        /// </summary>
+        public virtual string ValueText => Text;
+
+        /// <summary>
+        /// Gets the value associated with the token based on its kind.
+        /// </summary>
+        public virtual object Value => SyntaxFacts.GetValue(Kind, Text);
 
         /// <summary>
         /// Retrieves a specific slot of this syntax token.
@@ -142,7 +151,7 @@ namespace HapetFrontend.Syntax.Green.Tokens
         /// <summary>
         /// Creates a missing token with trivia.
         /// </summary>
-        public static GreenSyntaxToken CreateMissing(SyntaxKind kind, GreenNode? leading, GreenNode? trailing)
+        public static GreenSyntaxToken CreateMissing(SyntaxKind kind, GreenNode leading, GreenNode trailing)
         {
             return new MissingTokenWithTrivia(kind, leading, trailing);
         }
@@ -158,54 +167,20 @@ namespace HapetFrontend.Syntax.Green.Tokens
         /// <summary>
         /// Creates a token with a value and trivia.
         /// </summary>
-        public static GreenSyntaxToken WithValue<T>(SyntaxKind kind, GreenNode? leading, string text, T value, GreenNode? trailing)
+        public static GreenSyntaxToken WithValue<T>(SyntaxKind kind, GreenNode leading, string text, T value, GreenNode trailing)
         {
             return new SyntaxTokenWithValueAndTrivia<T>(kind, text, value, leading, trailing);
         }
 
         /// <summary>
-        /// Creates a string literal token.
-        /// </summary>
-        public static GreenSyntaxToken StringLiteral(string text)
-        {
-            return new SyntaxTokenWithValue<string>(SyntaxKind.StringLiteral, text, text);
-        }
-
-        /// <summary>
-        /// Creates a string literal token with trivia.
-        /// </summary>
-        public static GreenSyntaxToken StringLiteral(GreenNode leading, string text, GreenNode trailing)
-        {
-            return new SyntaxTokenWithValueAndTrivia<string>(SyntaxKind.StringLiteral, text, text, leading, trailing);
-        }
-
-        public static GreenSyntaxToken CharLiteral(char rawChar)
-        {
-            return new SyntaxTokenWithValue<char>(SyntaxKind.CharLiteral, rawChar, rawChar);
-        }
-        public static GreenSyntaxToken CharLiteral(GreenNode leading, char rawChar, GreenNode trailing)
-        {
-            return new SyntaxTokenWithValueAndTrivia<char>(SyntaxKind.StringLiteral, rawChar, rawChar, leading, trailing);
-        }
-
-        public static GreenSyntaxToken NumberLiteral(NumberData number)
-        {
-            return new SyntaxTokenWithValue<NumberData>(SyntaxKind.NumberLiteral, number, number);
-        }
-        public static GreenSyntaxToken NumberLiteral(GreenNode leading, NumberData number, GreenNode trailing)
-        {
-            return new SyntaxTokenWithValueAndTrivia<NumberData>(SyntaxKind.StringLiteral, number, number, leading, trailing);
-        }
-
-        /// <summary>
         /// Gets the leading trivia.
         /// </summary>
-        public GreenSyntaxList<GreenNode> LeadingTrivia => new(GetLeadingTrivia());
+        public GreenNode LeadingTrivia => GreenSyntaxList.List(GetLeadingTrivia());
 
         /// <summary>
         /// Gets the trailing trivia.
         /// </summary>
-        public GreenSyntaxList<GreenNode> TrailingTrivia => new(GetTrailingTrivia());
+        public GreenNode TrailingTrivia => GreenSyntaxList.List(GetTrailingTrivia());
 
         /// <summary>
         /// Creates a new token with leading trivia.
@@ -303,7 +278,7 @@ namespace HapetFrontend.Syntax.Green.Tokens
             return new SyntaxIdentifier(text);
         }
 
-        public static GreenSyntaxToken Identifier(GreenNode? leading, string text, GreenNode? trailing)
+        public static GreenSyntaxToken Identifier(GreenNode leading, string text, GreenNode trailing)
         {
             if (leading == null)
             {
@@ -316,10 +291,10 @@ namespace HapetFrontend.Syntax.Green.Tokens
                     return new SyntaxIdentifierWithTrailingTrivia(text, trailing);
                 }
             }
-            return new SyntaxIdentifierWithTrivia(SyntaxKind.IdentifierToken, text, text, leading, trailing);
+            return new SyntaxIdentifierWithTrivia(SyntaxKind.Identifier, text, text, leading, trailing);
         }
 
-        public static GreenSyntaxToken Identifier(SyntaxKind contextualKind, GreenNode? leading, string text, string valueText, GreenNode? trailing)
+        public static GreenSyntaxToken Identifier(SyntaxKind contextualKind, GreenNode leading, string text, string valueText, GreenNode trailing)
         {
             if (contextualKind == SyntaxKind.Identifier && valueText == text)
             {
@@ -392,21 +367,21 @@ namespace HapetFrontend.Syntax.Green.Tokens
             return true;
         }
 
-        protected override void WriteTokenTo(TextWriter writer, bool leading, bool trailing)
-        {
-            if (leading)
-            {
-                var trivia = GetLeadingTrivia();
-                trivia?.WriteTo(writer, true, true);
-            }
+        //protected override void WriteTokenTo(TextWriter writer, bool leading, bool trailing)
+        //{
+        //    if (leading)
+        //    {
+        //        var trivia = GetLeadingTrivia();
+        //        trivia?.WriteTo(writer, true, true);
+        //    }
 
-            writer.Write(Text);
+        //    writer.Write(Text);
 
-            if (trailing)
-            {
-                var trivia = GetTrailingTrivia();
-                trivia?.WriteTo(writer, true, true);
-            }
-        }
+        //    if (trailing)
+        //    {
+        //        var trivia = GetTrailingTrivia();
+        //        trivia?.WriteTo(writer, true, true);
+        //    }
+        //}
     }
 }

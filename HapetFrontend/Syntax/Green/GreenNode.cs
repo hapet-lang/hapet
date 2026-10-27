@@ -50,6 +50,7 @@ namespace HapetFrontend.Syntax.Green
         /// </summary>
         private readonly SyntaxKind _rawKind;
         public SyntaxKind Kind => _rawKind;
+        public virtual SyntaxKind ContextualKind => Kind; // some kinds could be contextual
         public ushort RawKind => (ushort)_rawKind;
 
 
@@ -217,55 +218,6 @@ namespace HapetFrontend.Syntax.Green
             }
 
             return i;
-        }
-
-        public GreenNode GetFirstTerminal()
-        {
-            var node = this;
-
-            do
-            {
-                GreenNode firstChild = null;
-                for (int i = 0, n = node.SlotCount; i < n; i++)
-                {
-                    var child = node.GetSlot(i);
-                    if (child != null)
-                    {
-                        firstChild = child;
-                        break;
-                    }
-                }
-                node = firstChild;
-            }
-            while (node?.SmallSlotCount > 0);
-
-            return node;
-        }
-
-        public GreenNode GetLastTerminal()
-        {
-            var node = this;
-
-            do
-            {
-                GreenNode lastChild = null;
-                for (var i = node.SlotCount - 1; i >= 0; i--)
-                {
-                    var child = node.GetSlot(i);
-                    if (child != null)
-                    {
-                        lastChild = child;
-                        break;
-                    }
-                }
-                node = lastChild;
-            }
-            // Note: it's ok to examine SmallSlotCount here.  All we're trying to do is make sure we have at least one
-            // child.  And SmallSlotCount works both for small counts and large counts.  This avoids an unnecessary
-            // virtual call for large list nodes.
-            while (node?.SmallSlotCount > 0);
-
-            return node;
         }
 
         #region Diagnostics
@@ -641,7 +593,7 @@ namespace HapetFrontend.Syntax.Green
         /// Checks if the current node is equivalent to another node in the cache,
         /// based on kind, combined flags and slot count, and one child node.
         /// </summary>
-        public bool IsCacheEquivalent(SyntaxKind kind, ushort flagsAndSlotCount, GreenNode? child1)
+        public bool IsCacheEquivalent(SyntaxKind kind, ushort flagsAndSlotCount, GreenNode child1)
         {
             Debug.Assert(IsCacheable);
 
@@ -655,7 +607,7 @@ namespace HapetFrontend.Syntax.Green
         /// Checks if the current node is equivalent to another node in the cache,
         /// based on kind, combined flags and slot count, and two child nodes.
         /// </summary>
-        public bool IsCacheEquivalent(SyntaxKind kind, ushort flagsAndSlotCount, GreenNode? child1, GreenNode? child2)
+        public bool IsCacheEquivalent(SyntaxKind kind, ushort flagsAndSlotCount, GreenNode child1, GreenNode child2)
         {
             Debug.Assert(IsCacheable);
 
@@ -670,7 +622,7 @@ namespace HapetFrontend.Syntax.Green
         /// Checks if the current node is equivalent to another node in the cache,
         /// based on kind, combined flags and slot count, and three child nodes.
         /// </summary>
-        public bool IsCacheEquivalent(SyntaxKind kind, ushort flagsAndSlotCount, GreenNode? child1, GreenNode? child2, GreenNode? child3)
+        public bool IsCacheEquivalent(SyntaxKind kind, ushort flagsAndSlotCount, GreenNode child1, GreenNode child2, GreenNode child3)
         {
             Debug.Assert(IsCacheable);
 
@@ -685,7 +637,7 @@ namespace HapetFrontend.Syntax.Green
         #endregion
 
         #region Equivalence 
-        public virtual bool IsEquivalentTo([NotNullWhen(true)] GreenNode? other)
+        public virtual bool IsEquivalentTo([NotNullWhen(true)] GreenNode other)
         {
             if (this == other)
             {
@@ -750,6 +702,91 @@ namespace HapetFrontend.Syntax.Green
             }
 
             return true;
+        }
+        #endregion
+
+        #region Tokens 
+        public virtual object GetValue() => null;
+        public virtual string GetValueText() => string.Empty;
+        public virtual GreenNode GetLeadingTrivia() => null;
+        public virtual GreenNode GetTrailingTrivia() => null;
+
+        public virtual GreenNode WithLeadingTrivia(GreenNode trivia) => this;
+        public virtual GreenNode WithTrailingTrivia(GreenNode trivia) => this;
+
+        public GreenNode GetFirstTerminal()
+        {
+            var node = this;
+
+            do
+            {
+                GreenNode firstChild = null;
+                for (int i = 0, n = node.SlotCount; i < n; i++)
+                {
+                    var child = node.GetSlot(i);
+                    if (child != null)
+                    {
+                        firstChild = child;
+                        break;
+                    }
+                }
+                node = firstChild;
+            }
+            while (node?.SmallSlotCount > 0);
+
+            return node;
+        }
+
+        public GreenNode GetLastTerminal()
+        {
+            var node = this;
+
+            do
+            {
+                GreenNode lastChild = null;
+                for (var i = node.SlotCount - 1; i >= 0; i--)
+                {
+                    var child = node.GetSlot(i);
+                    if (child != null)
+                    {
+                        lastChild = child;
+                        break;
+                    }
+                }
+                node = lastChild;
+            }
+            // Note: it's ok to examine SmallSlotCount here.  All we're trying to do is make sure we have at least one
+            // child.  And SmallSlotCount works both for small counts and large counts.  This avoids an unnecessary
+            // virtual call for large list nodes.
+            while (node?.SmallSlotCount > 0);
+
+            return node;
+        }
+
+        public GreenNode GetLastNonmissingTerminal()
+        {
+            var node = this;
+
+            do
+            {
+                GreenNode nonmissingChild = null;
+                for (var i = node.SlotCount - 1; i >= 0; i--)
+                {
+                    var child = node.GetSlot(i);
+                    if (child != null && child.IsNotMissing)
+                    {
+                        nonmissingChild = child;
+                        break;
+                    }
+                }
+                node = nonmissingChild;
+            }
+            // Note: it's ok to examine SmallSlotCount here.  All we're trying to do is make sure we have at least one
+            // child.  And SmallSlotCount works both for small counts and large counts.  This avoids an unnecessary
+            // virtual call for large list nodes.
+            while (node?.SmallSlotCount > 0);
+
+            return node;
         }
         #endregion
     }

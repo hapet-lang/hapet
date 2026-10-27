@@ -53,7 +53,7 @@ namespace HapetFrontend.Syntax.Green
             Flags = nodeFlags;
         }
 
-        public override GreenNode? GetSlot(int index)
+        public override GreenNode GetSlot(int index)
         {
             return index switch
             {

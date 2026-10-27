@@ -1,4 +1,5 @@
-﻿using HapetFrontend.Syntax.Diagnostics;
+﻿using HapetFrontend.Entities;
+using HapetFrontend.Syntax.Diagnostics;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -212,10 +213,10 @@ namespace HapetFrontend.Syntax.Green.Tokens
 
         public static GreenSyntaxToken Identifier(
             SyntaxKind contextualKind,
-            GreenNode? leading,
+            GreenNode leading,
             string text,
             string valueText,
-            GreenNode? trailing)
+            GreenNode trailing)
         {
             return GreenSyntaxToken.Identifier(contextualKind, leading, text, valueText, trailing);
         }
